@@ -33,6 +33,15 @@ test_that("exclude_nca", {
                c(rep(NA_character_, 4),
                  rep("Half-life r-squared < 0.95", 10)))
 
+  my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.adj.r.squared())
+  expect_equal(as.data.frame(my_result_excluded)$exclude,
+               c(rep(NA_character_, 4),
+                 rep("Half-life adj. r-squared < 0.9", 10)))
+  my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.adj.r.squared(0.95))
+  expect_equal(as.data.frame(my_result_excluded)$exclude,
+               c(rep(NA_character_, 4),
+                 rep("Half-life adj. r-squared < 0.95", 10)))
+
   my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, cmax=TRUE))
   suppressMessages(
     my_result <- pk.nca(my_data)
@@ -45,6 +54,9 @@ test_that("exclude_nca", {
                info="Result is ignored when not calculated")
   expect_equal(my_result,
                exclude(my_result, FUN=exclude_nca_min.hl.r.squared()),
+               info="Result is ignored when not calculated")
+  expect_equal(my_result,
+               exclude(my_result, FUN=exclude_nca_min.hl.adj.r.squared()),
                info="Result is ignored when not calculated")
 })
 
