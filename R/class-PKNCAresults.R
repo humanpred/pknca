@@ -113,7 +113,7 @@ getGroups.PKNCAresults <- function(object,
                                    form=formula(object$data$conc), level,
                                    data=object$result, sep) {
   # Include the start time as a group; this may be dropped later
-  grpnames <- c(unlist(object$data$conc$columns$groups), "start")
+  grpnames <- c(unlist(object$data$conc$columns$groups), "start", "end")
   if (is_sparse_pk(object)) {
     grpnames <- setdiff(grpnames, object$data$conc$columns$subject)
   }
