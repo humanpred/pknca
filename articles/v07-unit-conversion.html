@@ -225,8 +225,8 @@ automatically generates the units for each NCA parameter.</p>
 <span><span class="co"># Show a selection of the units generated</span></span>
 <span><span class="va">d_units_auto</span><span class="op">[</span><span class="va">d_units_auto</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cmax"</span>, <span class="st">"tmax"</span>, <span class="st">"auclast"</span>, <span class="st">"cl.obs"</span>, <span class="st">"vd.obs"</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;          PPORRESU PPTESTCD</span></span>
-<span><span class="co">#&gt; 23             hr     tmax</span></span>
-<span><span class="co">#&gt; 52          ng/mL     cmax</span></span>
+<span><span class="co">#&gt; 22             hr     tmax</span></span>
+<span><span class="co">#&gt; 51          ng/mL     cmax</span></span>
 <span><span class="co">#&gt; 82       hr*ng/mL  auclast</span></span>
 <span><span class="co">#&gt; 118 mg/(hr*ng/mL)   cl.obs</span></span></code></pre></div>
 <p>As you see above, the default units table has a column for the
@@ -239,21 +239,24 @@ to work, the units must always be convertible (by the <code>units</code>
 library). Notably for automatic conversion, you cannot go from mass to
 molar units since there is not a unique conversion from mass to
 moles.</p>
+<p>Loading the PKNCA package adds a unit of <code>"fraction"</code> so
+that it is usable for fraction excreted (<code>fe</code>).</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_units_clean</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="../reference/pknca_units_table.html">pknca_units_table</a></span><span class="op">(</span></span>
-<span>    concu<span class="op">=</span><span class="st">"ng/mL"</span>, doseu<span class="op">=</span><span class="st">"mg"</span>, amountu<span class="op">=</span><span class="st">"mg"</span>, timeu<span class="op">=</span><span class="st">"hr"</span>,</span>
+<span>    concu<span class="op">=</span><span class="st">"ng/mL"</span>, doseu<span class="op">=</span><span class="st">"mg"</span>, amountu<span class="op">=</span><span class="st">"ng"</span>, timeu<span class="op">=</span><span class="st">"hr"</span>,</span>
 <span>    conversions<span class="op">=</span></span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>        PPORRESU<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mg/(hr*ng/mL)"</span>, <span class="st">"mg/(ng/mL)"</span>, <span class="st">"hr"</span><span class="op">)</span>,</span>
-<span>        PPSTRESU<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"L/hr"</span>, <span class="st">"L"</span>, <span class="st">"day"</span><span class="op">)</span></span>
+<span>        PPORRESU<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mg/(hr*ng/mL)"</span>, <span class="st">"mg/(ng/mL)"</span>, <span class="st">"hr"</span>, <span class="st">"ng/mg"</span><span class="op">)</span>,</span>
+<span>        PPSTRESU<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"L/hr"</span>, <span class="st">"L"</span>, <span class="st">"day"</span>, <span class="st">"fraction"</span><span class="op">)</span></span>
 <span>      <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="co"># Show a selection of the units generated</span></span>
-<span><span class="va">d_units_clean</span><span class="op">[</span><span class="va">d_units_clean</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cmax"</span>, <span class="st">"tmax"</span>, <span class="st">"auclast"</span>, <span class="st">"cl.obs"</span>, <span class="st">"vd.obs"</span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="va">d_units_clean</span><span class="op">[</span><span class="va">d_units_clean</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cmax"</span>, <span class="st">"tmax"</span>, <span class="st">"auclast"</span>, <span class="st">"cl.obs"</span>, <span class="st">"vd.obs"</span>, <span class="st">"fe"</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;          PPORRESU PPTESTCD PPSTRESU conversion_factor</span></span>
-<span><span class="co">#&gt; 23             hr     tmax      day      4.166667e-02</span></span>
-<span><span class="co">#&gt; 52          ng/mL     cmax    ng/mL      1.000000e+00</span></span>
+<span><span class="co">#&gt; 22             hr     tmax      day      4.166667e-02</span></span>
+<span><span class="co">#&gt; 51          ng/mL     cmax    ng/mL      1.000000e+00</span></span>
+<span><span class="co">#&gt; 64          ng/mg       fe fraction      1.000000e-06</span></span>
 <span><span class="co">#&gt; 82       hr*ng/mL  auclast hr*ng/mL      1.000000e+00</span></span>
 <span><span class="co">#&gt; 118 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03</span></span></code></pre></div>
 <p>Now, the units are much cleaner to look at.</p>
@@ -279,8 +282,8 @@ not specify that conversion; all conversions must be specified.</p>
 <span><span class="co"># Show a selection of the units generated</span></span>
 <span><span class="va">d_units_clean_manual</span><span class="op">[</span><span class="va">d_units_clean_manual</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cmax"</span>, <span class="st">"tmax"</span>, <span class="st">"auclast"</span>, <span class="st">"cl.obs"</span>, <span class="st">"vd.obs"</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;          PPORRESU PPTESTCD PPSTRESU conversion_factor</span></span>
-<span><span class="co">#&gt; 23             hr     tmax      day      4.166667e-02</span></span>
-<span><span class="co">#&gt; 52          ng/mL     cmax   nmol/L      8.130081e+00</span></span>
+<span><span class="co">#&gt; 22             hr     tmax      day      4.166667e-02</span></span>
+<span><span class="co">#&gt; 51          ng/mL     cmax   nmol/L      8.130081e+00</span></span>
 <span><span class="co">#&gt; 82       hr*ng/mL  auclast hr*ng/mL      1.000000e+00</span></span>
 <span><span class="co">#&gt; 118 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03</span></span></code></pre></div>
 </div>
