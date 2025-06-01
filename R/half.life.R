@@ -192,7 +192,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
         lambda.z=-Inf,
         lambda.z.n.points=NA_integer_,
         lambda.z.time.first=dfK$time,
-        lambda.z.time.last=dfK$time,
+        lambda.z.time.last=NA_real_,
         log_conc=dfK$log_conc,
         span.ratio=NA_real_,
         half.life=NA_real_
