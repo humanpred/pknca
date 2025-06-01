@@ -15,7 +15,12 @@
 #' @family PKNCA objects
 #' @export
 PKNCAresults <- function(result, data, exclude = NULL) {
-  result <- pknca_unit_conversion(result = result, units = data$units)
+  result <-
+    pknca_unit_conversion(
+      result = result,
+      units = data$units,
+      allow_partial_missing_units = data$options$allow_partial_missing_units
+    )
   # Add all the parts into the object
   ret <- list(result=result,
               data=data)
@@ -108,7 +113,7 @@ getGroups.PKNCAresults <- function(object,
                                    form=formula(object$data$conc), level,
                                    data=object$result, sep) {
   # Include the start time as a group; this may be dropped later
-  grpnames <- c(unlist(object$data$conc$columns$groups), "start")
+  grpnames <- c(unlist(object$data$conc$columns$groups), "start", "end")
   if (is_sparse_pk(object)) {
     grpnames <- setdiff(grpnames, object$data$conc$columns$subject)
   }

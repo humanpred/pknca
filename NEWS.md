@@ -4,7 +4,7 @@ will continue until then.  These will be especially noticeable around
 the inclusion of IV NCA parameters and additional specifications of
 the dosing including dose amount and route.
 
-# PKNCA 0.11.0.9000
+# PKNCA 0.12.0
 
 ## Breaking changes
 
@@ -33,8 +33,13 @@ the dosing including dose amount and route.
 * `group_vars()` methods were added for `PKNCAdata` and `PKNCAresults` objects.
 * If intervals have attributes on the columns, there will no longer be an error
   during parameter calculation, and the attributes are preserved (#381)
+* When adding units, if some but not all units are provided, then an error will
+  be raised. This error can be converted to a warning using the option
+  `allow_partial_missing_units = TRUE`. (#398)
+* A new function `get_halflife_points()` lets users know which points were used
+  for half-life calculation. (#387)
 
-# Minor changes (unlikely to affect PKNCA use)
+## Minor changes (unlikely to affect PKNCA use)
 
 * PKNCA will now verify the `intervals` data.frame when creating PKNCAdata. The
   checking includes confirming intended column naming and ensuring the correct
@@ -46,6 +51,7 @@ the dosing including dose amount and route.
 * Removed native pipes (`|>`) so that PKNCA will work with older versions of R
   (#304).
 * Missing dosing times to `pk.calc.c0()` will not cause an error (#344)
+* `getGroups()` includes the `end` column when applied to a `PKNCAresults` object (#419).
 
 # PKNCA 0.11.0
 
@@ -286,7 +292,7 @@ the dosing including dose amount and route.
 # PKNCA 0.9.0
 
 * Breaking Change: `plot.PKNCAconc()` was moved to the pknca.reporting package
-  (https://github.com/billdenney/pknca.reporting)
+  (https://github.com/humanpred/pknca.reporting)
 * Breaking Change: `summary.PKNCAresults()` now provides a caption
   including the summary method for each parameter.  If you change
   summary functions using `PKNCA.set.summary()`, you must now use the
