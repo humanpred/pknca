@@ -224,3 +224,22 @@ test_that("two-point half-life succeeds (fix #114)", {
     class = "pknca_adjr2_2points"
   )
 })
+
+test_that("When tlast is excluded, lambda.z.time.last != tlast", {
+  d_conc <- data.frame(
+    conc = c(1, 0.5, 0.25, 0.1251, 0.05, 0),
+    time = c(0, 1, 2, 3, 4, 5),
+    exclude_hl = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE),
+    subject = 1
+  )
+  d_dose <- data.frame(dose = 1, time = 0, subject = 1)
+
+  PKNCAconc <- PKNCAconc(d_conc, formula = conc ~ time | subject, exclude_half.life = "exclude_hl")
+  PKNCAdose <- PKNCAdose(d_dose, formula = dose ~ time | subject)
+  PKNCAdata <- PKNCAdata(PKNCAconc, PKNCAdose)
+  PKNCAresults <- pk.nca(PKNCAdata)
+  expect_equal(
+    PKNCAresults$result[PKNCAresults$result$PPTESTCD == "lambda.z.time.last",]$PPORRES,
+    3
+  )
+})
