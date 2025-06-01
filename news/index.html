@@ -83,6 +83,8 @@
 <li>Duplicate data checks now account for excluded rows. So, if a row is duplicated and all but one of the duplicated rows is excluded, it is not an error. (<a href="https://github.com/humanpred/pknca/issues/298" class="external-link">#298</a>)</li>
 <li>Removed native pipes (<code>|&gt;</code>) so that PKNCA will work with older versions of R (<a href="https://github.com/humanpred/pknca/issues/304" class="external-link">#304</a>).</li>
 <li>Missing dosing times to <code><a href="../reference/pk.calc.c0.html">pk.calc.c0()</a></code> will not cause an error (<a href="https://github.com/humanpred/pknca/issues/344" class="external-link">#344</a>)</li>
+<li>
+<code><a href="https://rdrr.io/pkg/nlme/man/getGroups.html" class="external-link">getGroups()</a></code> includes the <code>end</code> column when applied to a <code>PKNCAresults</code> object (<a href="https://github.com/humanpred/pknca/issues/419" class="external-link">#419</a>).</li>
 </ul></div>
 </div>
     <div class="section level2">
@@ -333,7 +335,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer></div>
