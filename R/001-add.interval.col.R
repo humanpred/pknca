@@ -114,7 +114,7 @@ add.interval.col <- function(name,
       choices=c(
         "unitless", "fraction", "%", "count",
         "time", "inverse_time",
-        "amount",
+        "amount", "amount_dose",
         "conc", "conc_dosenorm",
         "dose",
         "volume",

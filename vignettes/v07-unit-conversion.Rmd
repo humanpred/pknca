@@ -119,7 +119,8 @@ summary(o_nca)
 A unit assignment and conversion table can be generated as a data.frame to use
 with the `pknca_units_table()` function or manually.
 
-The simplest method each of the types of units for inputs and automatically generates the units for each NCA parameter.
+The simplest method each of the types of units for inputs and automatically
+generates the units for each NCA parameter.
 
 ```{r create-units-auto}
 d_units_auto <- pknca_units_table(concu="ng/mL", doseu="mg", amountu="mg", timeu="hr")
@@ -127,22 +128,32 @@ d_units_auto <- pknca_units_table(concu="ng/mL", doseu="mg", amountu="mg", timeu
 d_units_auto[d_units_auto$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
 ```
 
-As you see above, the default units table has a column for the `PPTESTCD` indicating the parameter.  And, the column `PPORRESU` indicates what the default units are.
+As you see above, the default units table has a column for the `PPTESTCD`
+indicating the parameter.  And, the column `PPORRESU` indicates what the default
+units are.
 
-Without unit conversion, the units for some parameters (notably clearances and volumes) are not so useful.  You can add a conversion table to make any units into the desired units.  For automatic conversion to work, the units must always be convertible (by the `units` library).  Notably for automatic conversion, you cannot go from mass to molar units since there is not a unique conversion from mass to moles.
+Without unit conversion, the units for some parameters (notably clearances and
+volumes) are not so useful.  You can add a conversion table to make any units
+into the desired units.  For automatic conversion to work, the units must always
+be convertible (by the `units` library).  Notably for automatic conversion, you
+cannot go from mass to molar units since there is not a unique conversion from
+mass to moles.
+
+Loading the PKNCA package adds a unit of `"fraction"` so that it is usable for
+fraction excreted (`fe`).
 
 ```{r create-units-semi-manual}
 d_units_clean <-
   pknca_units_table(
-    concu="ng/mL", doseu="mg", amountu="mg", timeu="hr",
+    concu="ng/mL", doseu="mg", amountu="ng", timeu="hr",
     conversions=
       data.frame(
-        PPORRESU=c("mg/(hr*ng/mL)", "mg/(ng/mL)", "hr"),
-        PPSTRESU=c("L/hr", "L", "day")
+        PPORRESU=c("mg/(hr*ng/mL)", "mg/(ng/mL)", "hr", "ng/mg"),
+        PPSTRESU=c("L/hr", "L", "day", "fraction")
       )
   )
 # Show a selection of the units generated
-d_units_clean[d_units_clean$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
+d_units_clean[d_units_clean$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs", "fe"), ]
 ```
 
 Now, the units are much cleaner to look at.
