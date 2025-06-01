@@ -36,11 +36,11 @@ test_that("exclude_nca", {
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.adj.r.squared())
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("Half-life adj. r-squared < 0.9", 10)))
+                 rep("Half-life adj. r-squared < 0.9", 11)))
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.adj.r.squared(0.95))
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("Half-life adj. r-squared < 0.95", 10)))
+                 rep("Half-life adj. r-squared < 0.95", 11)))
 
   my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, cmax=TRUE))
   suppressMessages(
