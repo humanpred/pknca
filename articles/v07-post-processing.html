@@ -154,7 +154,7 @@ illustrated below.</p>
 <span><span class="co"># Without any exclusions applied, the 'exclude' column is all NA.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 14 × 6</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 15 × 6</span></span></span>
 <span><span class="co">##    Subject start   end PPTESTCD             PPORRES exclude</span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 1</span>       1     0    24 auclast              92.4    <span style="color: #BB0000;">NA</span>     </span></span>
@@ -166,16 +166,17 @@ illustrated below.</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> r.squared             1.00   <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       1     0   <span style="color: #BB0000;">Inf</span> adj.r.squared         1.00   <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.first   9.05   <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points     3      <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">11</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.pred            3.28   <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">12</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">13</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">14</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.last   24.4    <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">11</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points     3      <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">12</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.pred            3.28   <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">13</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">14</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">15</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     <span style="color: #BB0000;">NA</span></span></span></code></pre>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># With exclusions applied, the 'exclude' column has the reason for exclusion.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_excl_span</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 14 × 6</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 15 × 6</span></span></span>
 <span><span class="co">##    Subject start   end PPTESTCD             PPORRES exclude       </span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 1</span>       1     0    24 auclast              92.4    <span style="color: #BB0000;">NA</span>            </span></span>
@@ -187,11 +188,12 @@ illustrated below.</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> r.squared             1.00   Span ratio &lt; 2</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       1     0   <span style="color: #BB0000;">Inf</span> adj.r.squared         1.00   Span ratio &lt; 2</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.first   9.05   Span ratio &lt; 2</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points     3      Span ratio &lt; 2</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">11</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.pred            3.28   Span ratio &lt; 2</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">12</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    Span ratio &lt; 2</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">13</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   Span ratio &lt; 2</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">14</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Span ratio &lt; 2</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.last   24.4    Span ratio &lt; 2</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">11</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points     3      Span ratio &lt; 2</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">12</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.pred            3.28   Span ratio &lt; 2</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">13</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    Span ratio &lt; 2</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">14</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   Span ratio &lt; 2</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">15</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Span ratio &lt; 2</span></span></code></pre>
 <p>You may also write your own exclusion function. The exclusion
 functions built-into PKNCA are a bit more complex than required because
 they handle options and manage general functionality that may not apply
@@ -225,7 +227,7 @@ will not be excluded.</p>
 <span><span class="va">results_obj</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 14 × 6</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 15 × 6</span></span></span>
 <span><span class="co">##    Subject start   end PPTESTCD             PPORRES exclude</span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 1</span>       1     0    24 auclast              92.4    <span style="color: #BB0000;">NA</span>     </span></span>
@@ -237,17 +239,18 @@ will not be excluded.</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> r.squared             1.00   <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       1     0   <span style="color: #BB0000;">Inf</span> adj.r.squared         1.00   <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.first   9.05   <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points     3      <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">11</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.pred            3.28   <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">12</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">13</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">14</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.last   24.4    <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">11</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points     3      <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">12</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.pred            3.28   <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">13</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">14</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">15</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     <span style="color: #BB0000;">NA</span></span></span></code></pre>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># With exclusions applied, the 'exclude' column has the reason for exclusion.</span></span>
 <span><span class="va">results_excl_specific</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 14 × 6</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 15 × 6</span></span></span>
 <span><span class="co">##    Subject start   end PPTESTCD             PPORRES exclude                     </span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 1</span>       1     0    24 auclast              92.4    <span style="color: #BB0000;">NA</span>                          </span></span>
@@ -259,11 +262,12 @@ will not be excluded.</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> r.squared             1.00   <span style="color: #BB0000;">NA</span>                          </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       1     0   <span style="color: #BB0000;">Inf</span> adj.r.squared         1.00   <span style="color: #BB0000;">NA</span>                          </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.first   9.05   <span style="color: #BB0000;">NA</span>                          </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points     3      <span style="color: #BB0000;">NA</span>                          </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">11</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.pred            3.28   <span style="color: #BB0000;">NA</span>                          </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">12</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    <span style="color: #BB0000;">NA</span>                          </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">13</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   <span style="color: #BB0000;">NA</span>                          </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">14</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.last   24.4    <span style="color: #BB0000;">NA</span>                          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">11</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points     3      <span style="color: #BB0000;">NA</span>                          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">12</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.pred            3.28   <span style="color: #BB0000;">NA</span>                          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">13</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    <span style="color: #BB0000;">NA</span>                          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">14</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   <span style="color: #BB0000;">NA</span>                          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">15</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     <span style="color: #BB0000;">NA</span></span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="multiple-exclusions">Multiple Exclusions<a class="anchor" aria-label="anchor" href="#multiple-exclusions"></a>
@@ -299,7 +303,7 @@ the example below.</p>
 <span><span class="va">results_excl_multi</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 14 × 6</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 15 × 6</span></span></span>
 <span><span class="co">##    Subject start   end PPTESTCD             PPORRES exclude                     </span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 1</span>       1     0    24 auclast              92.4    <span style="color: #BB0000;">NA</span>                          </span></span>
@@ -311,11 +315,12 @@ the example below.</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> r.squared             1.00   Span ratio &lt; 2              </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       1     0   <span style="color: #BB0000;">Inf</span> adj.r.squared         1.00   Span ratio &lt; 2              </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.first   9.05   Span ratio &lt; 2              </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points     3      Span ratio &lt; 2              </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">11</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.pred            3.28   Span ratio &lt; 2              </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">12</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    Span ratio &lt; 2              </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">13</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   Span ratio &lt; 2              </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">14</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Span ratio &lt; 2</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.last   24.4    Span ratio &lt; 2              </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">11</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points     3      Span ratio &lt; 2              </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">12</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.pred            3.28   Span ratio &lt; 2              </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">13</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    Span ratio &lt; 2              </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">14</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   Span ratio &lt; 2              </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">15</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Span ratio &lt; 2</span></span></code></pre>
 </div>
 </div>
 </div>
@@ -382,17 +387,17 @@ differ).</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> r.squared             1.00   <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       1     0   <span style="color: #BB0000;">Inf</span> adj.r.squared         1.00   <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.first   9.05   <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points     3      <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">11</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.pred            3.28   <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">12</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">13</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">14</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">15</span>       2     0    24 auclast              67.2    <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">16</span>       2     0   <span style="color: #BB0000;">Inf</span> cmax                  8.33   <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">17</span>       2     0   <span style="color: #BB0000;">Inf</span> tmax                  1.92   <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">18</span>       2     0   <span style="color: #BB0000;">Inf</span> tlast                24.3    <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">19</span>       2     0   <span style="color: #BB0000;">Inf</span> clast.obs             0.9    <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">20</span>       2     0   <span style="color: #BB0000;">Inf</span> lambda.z              0.104  <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.last   24.4    <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">11</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points     3      <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">12</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.pred            3.28   <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">13</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">14</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">15</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">16</span>       2     0    24 auclast              67.2    <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">17</span>       2     0   <span style="color: #BB0000;">Inf</span> cmax                  8.33   <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">18</span>       2     0   <span style="color: #BB0000;">Inf</span> tmax                  1.92   <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">19</span>       2     0   <span style="color: #BB0000;">Inf</span> tlast                24.3    <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">20</span>       2     0   <span style="color: #BB0000;">Inf</span> clast.obs             0.9    <span style="color: #BB0000;">NA</span></span></span></code></pre>
 <p>Excluded values remain in the listing.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_excl_span</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -409,17 +414,17 @@ differ).</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> r.squared             1.00   Span ratio &lt; 2</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       1     0   <span style="color: #BB0000;">Inf</span> adj.r.squared         1.00   Span ratio &lt; 2</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.first   9.05   Span ratio &lt; 2</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points     3      Span ratio &lt; 2</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">11</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.pred            3.28   Span ratio &lt; 2</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">12</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    Span ratio &lt; 2</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">13</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   Span ratio &lt; 2</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">14</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Span ratio &lt; 2</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">15</span>       2     0    24 auclast              67.2    <span style="color: #BB0000;">NA</span>            </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">16</span>       2     0   <span style="color: #BB0000;">Inf</span> cmax                  8.33   <span style="color: #BB0000;">NA</span>            </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">17</span>       2     0   <span style="color: #BB0000;">Inf</span> tmax                  1.92   <span style="color: #BB0000;">NA</span>            </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">18</span>       2     0   <span style="color: #BB0000;">Inf</span> tlast                24.3    <span style="color: #BB0000;">NA</span>            </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">19</span>       2     0   <span style="color: #BB0000;">Inf</span> clast.obs             0.9    <span style="color: #BB0000;">NA</span>            </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">20</span>       2     0   <span style="color: #BB0000;">Inf</span> lambda.z              0.104  <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.last   24.4    Span ratio &lt; 2</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">11</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points     3      Span ratio &lt; 2</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">12</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.pred            3.28   Span ratio &lt; 2</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">13</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    Span ratio &lt; 2</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">14</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   Span ratio &lt; 2</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">15</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Span ratio &lt; 2</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">16</span>       2     0    24 auclast              67.2    <span style="color: #BB0000;">NA</span>            </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">17</span>       2     0   <span style="color: #BB0000;">Inf</span> cmax                  8.33   <span style="color: #BB0000;">NA</span>            </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">18</span>       2     0   <span style="color: #BB0000;">Inf</span> tmax                  1.92   <span style="color: #BB0000;">NA</span>            </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">19</span>       2     0   <span style="color: #BB0000;">Inf</span> tlast                24.3    <span style="color: #BB0000;">NA</span>            </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">20</span>       2     0   <span style="color: #BB0000;">Inf</span> clast.obs             0.9    <span style="color: #BB0000;">NA</span></span></span></code></pre>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
