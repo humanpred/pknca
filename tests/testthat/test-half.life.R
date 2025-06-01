@@ -72,6 +72,7 @@ test_that("pk.calc.half.life", {
                           r.squared=0.9999999,
                           adj.r.squared=0.9999999,
                           lambda.z.time.first=0,
+                          lambda.z.time.last=3,
                           lambda.z.n.points=4,
                           clast.pred=0.12507,
                           half.life=1.000346,
@@ -89,6 +90,7 @@ test_that("pk.calc.half.life", {
                           r.squared=0.9999999,
                           adj.r.squared=0.9999999,
                           lambda.z.time.first=0,
+                          lambda.z.time.last=3,
                           lambda.z.n.points=4,
                           clast.pred=0.12507,
                           half.life=1.000346,
@@ -106,6 +108,7 @@ test_that("pk.calc.half.life", {
                           r.squared=0.9999999,
                           adj.r.squared=0.9999999,
                           lambda.z.time.first=0,
+                          lambda.z.time.last=3,
                           lambda.z.n.points=4,
                           clast.pred=0.12507,
                           half.life=1.000346,
@@ -178,6 +181,7 @@ test_that("half-life manual point selection", {
       r.squared = 1,
       adj.r.squared = 1,
       lambda.z.time.first = 1L,
+      lambda.z.time.last = 3L,
       lambda.z.n.points = 3L,
       clast.pred = 8,
       half.life = -1,
@@ -207,6 +211,7 @@ test_that("two-point half-life succeeds (fix #114)", {
         r.squared=1,
         adj.r.squared=NA_real_,
         lambda.z.time.first=0,
+        lambda.z.time.last=1,
         lambda.z.n.points=2,
         clast.pred=0.5,
         half.life=1,
@@ -217,6 +222,25 @@ test_that("two-point half-life succeeds (fix #114)", {
     ),
     class = "pknca_halflife_2points"),
     class = "pknca_adjr2_2points"
+  )
+})
+
+test_that("When tlast is excluded, lambda.z.time.last != tlast", {
+  d_conc <- data.frame(
+    conc = c(1, 0.5, 0.25, 0.1251, 0.05, 0),
+    time = c(0, 1, 2, 3, 4, 5),
+    exclude_hl = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE),
+    subject = 1
+  )
+  d_dose <- data.frame(dose = 1, time = 0, subject = 1)
+
+  o_conc <- PKNCAconc(d_conc, formula = conc ~ time | subject, exclude_half.life = "exclude_hl")
+  o_dose <- PKNCAdose(d_dose, formula = dose ~ time | subject)
+  o_data <- PKNCAdata(o_conc, o_dose)
+  myresult <- pk.nca(o_data)
+  expect_equal(
+    myresult$result[myresult$result$PPTESTCD == "lambda.z.time.last",]$PPORRES,
+    3
   )
 })
 
