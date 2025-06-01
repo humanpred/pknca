@@ -397,6 +397,10 @@ test_that("getGroups.PKNCAresults", {
     getGroups(myresult, level=2:3),
     myresult$result[, c("ID", "start")]
   )
+  expect_equal(
+    getGroups(myresult, level=3:4),
+    myresult$result[, c("start", "end")]
+  )
 })
 
 test_that("group_vars.PKNCAresult", {
