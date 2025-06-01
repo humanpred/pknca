@@ -173,13 +173,9 @@ exclude_nca_min.hl.r.squared <- function(min.hl.r.squared) {
 
 #' @describeIn exclude_nca Exclude based on half-life adjusted r-squared
 #' @export
-exclude_nca_min.hl.adj.r.squared <- function(min.hl.adj.r.squared) {
+exclude_nca_min.hl.adj.r.squared <- function(min.hl.adj.r.squared = 0.9) {
   affected_parameters <- get.parameter.deps("half.life")
-  missing_min.hl.adj.r.squared <- missing(min.hl.adj.r.squared)
   function(x, ...) {
-    if (missing_min.hl.adj.r.squared) {
-      min.hl.adj.r.squared <- 0.9
-    }
     ret <- rep(NA_character_, nrow(x))
     if (!is.na(min.hl.adj.r.squared)) {
       idx_adj.r.squared <- which(x$PPTESTCD %in% "adj.r.squared")

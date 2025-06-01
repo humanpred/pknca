@@ -23,7 +23,7 @@ exclude_nca_count_conc_measured(
 
 exclude_nca_min.hl.r.squared(min.hl.r.squared)
 
-exclude_nca_min.hl.adj.r.squared(min.hl.adj.r.squared)
+exclude_nca_min.hl.adj.r.squared(min.hl.adj.r.squared = 0.9)
 
 exclude_nca_tmax_early(tmax_early = 0)
 
