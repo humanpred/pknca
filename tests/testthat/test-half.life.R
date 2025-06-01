@@ -234,12 +234,12 @@ test_that("When tlast is excluded, lambda.z.time.last != tlast", {
   )
   d_dose <- data.frame(dose = 1, time = 0, subject = 1)
 
-  PKNCAconc <- PKNCAconc(d_conc, formula = conc ~ time | subject, exclude_half.life = "exclude_hl")
-  PKNCAdose <- PKNCAdose(d_dose, formula = dose ~ time | subject)
-  PKNCAdata <- PKNCAdata(PKNCAconc, PKNCAdose)
-  PKNCAresults <- pk.nca(PKNCAdata)
+  o_conc <- PKNCAconc(d_conc, formula = conc ~ time | subject, exclude_half.life = "exclude_hl")
+  o_dose <- PKNCAdose(d_dose, formula = dose ~ time | subject)
+  o_data <- PKNCAdata(o_conc, o_dose)
+  myresult <- pk.nca(o_data)
   expect_equal(
-    PKNCAresults$result[PKNCAresults$result$PPTESTCD == "lambda.z.time.last",]$PPORRES,
+    myresult$result[myresult$result$PPTESTCD == "lambda.z.time.last",]$PPORRES,
     3
   )
 })
