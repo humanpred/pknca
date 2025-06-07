@@ -4,6 +4,13 @@ will continue until then.  These will be especially noticeable around
 the inclusion of IV NCA parameters and additional specifications of
 the dosing including dose amount and route.
 
+# PKNCA (development version)
+
+## Minor changes (unlikely to affect PKNCA use)
+
+* Units for fraction excretion parameter (fe) are now accurately captured as
+  amount/dose units rather than "fraction" (#426)
+
 # PKNCA 0.12.0
 
 ## Breaking changes
@@ -38,6 +45,8 @@ the dosing including dose amount and route.
   `allow_partial_missing_units = TRUE`. (#398)
 * A new function `get_halflife_points()` lets users know which points were used
   for half-life calculation. (#387)
+* A new function `exclude_nca_min.hl.adj.r.squared()` to allow exclusion of
+  half-life results based on a minimum adjusted r-squared threshold.
 
 ## Minor changes (unlikely to affect PKNCA use)
 

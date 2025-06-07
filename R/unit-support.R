@@ -73,6 +73,7 @@ pknca_units_table <- function(concu, doseu, amountu, timeu,
       pknca_units_table_time(timeu=timeu),
       pknca_units_table_conc(concu=concu),
       pknca_units_table_amount(amountu=amountu),
+      pknca_units_table_amount_dose(amountu = amountu, doseu = doseu),
       pknca_units_table_dose(doseu = doseu),
       pknca_units_table_conc_dose(concu=concu, doseu=doseu),
       pknca_units_table_conc_time(concu=concu, timeu=timeu),
@@ -243,6 +244,19 @@ pknca_units_table_amount <- function(amountu) {
   data.frame(
     PPORRESU=amountu,
     PPTESTCD=pknca_find_units_param(unit_type="amount"),
+    stringsAsFactors=FALSE
+  )
+}
+
+pknca_units_table_amount_dose <- function(amountu, doseu) {
+  if (useless(amountu) || useless(doseu)) {
+    amount_doseu <- NA_character_
+  } else {
+    amount_doseu <- sprintf("%s/%s", pknca_units_add_paren(amountu), pknca_units_add_paren(doseu))
+  }
+  data.frame(
+    PPORRESU=amount_doseu,
+    PPTESTCD=pknca_find_units_param(unit_type="amount_dose"),
     stringsAsFactors=FALSE
   )
 }

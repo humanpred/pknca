@@ -112,6 +112,25 @@ test_that("pknca_units_table", {
     ),
     regexp = "Only one unit may be provided at a time: ng/mL, umol/L"
   )
+  # fraction excreted now has units of amount/dose
+  unit_fe_kg <-
+    pknca_units_table(
+      doseu="mg/kg", amountu="ng",
+      conversions=data.frame(PPORRESU="ng/(mg/kg)", PPSTRESU="kg")
+    )
+  expect_equal(
+    unit_fe_kg$conversion_factor[unit_fe_kg$PPTESTCD == "fe"],
+    1e-6
+  )
+  unit_fe_fraction <-
+    pknca_units_table(
+      doseu="mg", amountu="ng",
+      conversions=data.frame(PPORRESU="ng/mg", PPSTRESU="fraction")
+    )
+  expect_equal(
+    unit_fe_fraction$conversion_factor[unit_fe_fraction$PPTESTCD == "fe"],
+    1e-6
+  )
 })
 
 test_that("pknca_units_add_paren", {
