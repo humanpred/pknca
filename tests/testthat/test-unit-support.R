@@ -345,6 +345,7 @@ describe("PKNCA_build_units_table", {
       )
     }
   })
+
   it("creates a stratified units table when PKNCAconc has two unit-stratifying group columns", {
     d_conc$concu_col <- ifelse(d_conc$analyte == "A", "ng/mL", "ug/mL")
     d_conc$concu_col <- ifelse(d_conc$specimen == "blood", d_conc$concu_col, "pg/mL")
@@ -408,6 +409,21 @@ describe("PKNCA_build_units_table", {
       data.frame(
         PPTESTCD = c("cmax", "totdose"),
         PPORRESU = c(NA_character_, NA_character_)
+      ), ignore_attr = TRUE
+    )
+  })
+
+  it("does not strictly need o_dose (PKNCAdose object) to be provided", {
+    o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte,
+                        concu = "concu_col")
+    units_table <- expect_no_error(pknca_units_table_auto(o_conc))
+    expect_equal(
+      units_table[units_table$PPTESTCD == "cmax",],
+      data.frame(
+        specimen = c("blood", "urine", "blood", "urine"),
+        analyte = rep(c("A", "B"), each = 2),
+        PPTESTCD = "cmax",
+        PPORRESU = c("ng/mL", "pg/mL", "ug/mL", "pg/mL")
       ), ignore_attr = TRUE
     )
   })

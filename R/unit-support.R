@@ -468,8 +468,12 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
 #' @importFrom rlang sym syms
 #' @importFrom utils capture.output
 #' @export
-pknca_units_table_auto <- function(o_conc, o_dose) { # nolint
+pknca_units_table_auto <- function(o_conc, o_dose = NULL) {
 
+  # PKNCAdose is an optional argument with dose units, if not provided it will be ignored
+  if (is.null(o_dose)) o_dose <- o_conc
+
+  # If needed, ensure that the PKNCA objects have the required unit columns
   o_conc <- ensure_column_unit_exists(o_conc, c("concu", "timeu", "amountu"))
   o_dose <- ensure_column_unit_exists(o_dose, c("doseu"))
 
