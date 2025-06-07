@@ -6,6 +6,7 @@
 \alias{exclude_nca_max.aucinf.pext}
 \alias{exclude_nca_count_conc_measured}
 \alias{exclude_nca_min.hl.r.squared}
+\alias{exclude_nca_min.hl.adj.r.squared}
 \alias{exclude_nca_tmax_early}
 \alias{exclude_nca_tmax_0}
 \title{Exclude NCA parameters based on examining the parameter set.}
@@ -21,6 +22,8 @@ exclude_nca_count_conc_measured(
 )
 
 exclude_nca_min.hl.r.squared(min.hl.r.squared)
+
+exclude_nca_min.hl.adj.r.squared(min.hl.adj.r.squared = 0.9)
 
 exclude_nca_tmax_early(tmax_early = 0)
 
@@ -41,6 +44,9 @@ to exclude}
 \item{min.hl.r.squared}{The minimum acceptable r-squared value for half-life
 (uses \code{PKNCA.options("min.hl.r.squared")} if not provided).}
 
+\item{min.hl.adj.r.squared}{The minimum acceptable adjusted r-squared for half-life
+(uses 0.9 if not provided).}
+
 \item{tmax_early}{The time for Tmax which is considered too early to be a
 valid NCA result}
 }
@@ -58,6 +64,8 @@ observed and predicted)
 concentrations measured and not below the lower limit of quantification
 
 \item \code{exclude_nca_min.hl.r.squared()}: Exclude based on half-life r-squared
+
+\item \code{exclude_nca_min.hl.adj.r.squared()}: Exclude based on half-life adjusted r-squared
 
 \item \code{exclude_nca_tmax_early()}: Exclude based on implausibly early Tmax (often used
 for extravascular dosing with a Tmax value of 0)

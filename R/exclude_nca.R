@@ -6,6 +6,8 @@
 #'   `PKNCA.options("max.aucinf.pext")` if not provided).
 #' @param min.hl.r.squared The minimum acceptable r-squared value for half-life
 #'   (uses `PKNCA.options("min.hl.r.squared")` if not provided).
+#' @param min.hl.adj.r.squared The minimum acceptable adjusted r-squared for half-life
+#'   (uses 0.9 if not provided).
 #' @examples
 #' my_conc <- PKNCAconc(data.frame(conc=1.1^(3:0),
 #'                                 time=0:3,
@@ -163,6 +165,33 @@ exclude_nca_min.hl.r.squared <- function(min.hl.r.squared) {
         }
       } else if (length(idx_r.squared) > 1) { # nocov
         stop("Should not see more than one r.squared (please report this as a bug)") # nocov
+      }
+    }
+    ret
+  }
+}
+
+#' @describeIn exclude_nca Exclude based on half-life adjusted r-squared
+#' @export
+exclude_nca_min.hl.adj.r.squared <- function(min.hl.adj.r.squared = 0.9) {
+  affected_parameters <- get.parameter.deps("half.life")
+  function(x, ...) {
+    ret <- rep(NA_character_, nrow(x))
+    if (!is.na(min.hl.adj.r.squared)) {
+      idx_adj.r.squared <- which(x$PPTESTCD %in% "adj.r.squared")
+      if (length(idx_adj.r.squared) == 0) {
+        # Do nothing, it wasn't calculated
+      } else if (length(idx_adj.r.squared) == 1) {
+        current_adj.r.squared <- x$PPORRES[idx_adj.r.squared]
+        drop_adj.r.squared <-
+          !is.na(current_adj.r.squared) &
+          current_adj.r.squared < min.hl.adj.r.squared
+        if (drop_adj.r.squared) {
+          ret[x$PPTESTCD %in% affected_parameters] <-
+            sprintf("Half-life adj. r-squared < %g", min.hl.adj.r.squared)
+        }
+      } else if (length(idx_adj.r.squared) > 1) { # nocov
+        stop("Should not see more than one adj.r.squared (please report this as a bug)") # nocov
       }
     }
     ret
