@@ -421,13 +421,13 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
   ret
 }
 
-#' Build Units Table for PKNCA
+#' Build Units Table from PKNCA object(s)
 #'
 #' This function generates a PKNCA units table including the potential unit segregating columns
 #' among the dose and/or concentration groups.
 #'
 #' @param o_conc A PKNCA concentration object (PKNCAconc).
-#' @param o_dose A PKNCA dose object (PKNCAdose).
+#' @param o_dose A PKNCA dose object (PKNCAdose). Optional, if not provided dose units are considered missing.
 #'
 #' @returns A data frame containing the PKNCA formatted units table.
 #'
@@ -468,7 +468,7 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
 #' @importFrom rlang sym syms
 #' @importFrom utils capture.output
 #' @export
-pknca_units_table_auto <- function(o_conc, o_dose = NULL) {
+pknca_units_table_from_pknca <- function(o_conc, o_dose = NULL) {
 
   # PKNCAdose is an optional argument with dose units, if not provided it will be ignored
   if (is.null(o_dose)) o_dose <- o_conc
