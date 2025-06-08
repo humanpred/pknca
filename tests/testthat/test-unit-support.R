@@ -377,8 +377,8 @@ describe("PKNCA_build_units_table", {
       data.frame(
         specimen = c("blood", "urine", "blood", "urine"),
         analyte = rep(c("A", "B"), each = 2),
-        PPTESTCD = "cmax",
-        PPORRESU = c("ng/mL", "pg/mL", "ug/mL", "pg/mL")
+        PPORRESU = c("ng/mL", "pg/mL", "ug/mL", "pg/mL"),
+        PPTESTCD = "cmax"
       ), ignore_attr = TRUE
     )
   })
@@ -389,12 +389,12 @@ describe("PKNCA_build_units_table", {
     o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject, doseu = "doseu_col")
     units_table <- expect_no_error(pknca_units_table_from_pknca(o_conc, o_dose))
 
-      expect_equal(
+    expect_equal(
         units_table[units_table$PPTESTCD == "totdose",],
         data.frame(
           treatment = c("drug1", "drug2"),
-          PPTESTCD = "totdose",
-          PPORRESU = c("mg", "ug")
+          PPORRESU = c("mg", "ug"),
+          PPTESTCD = "totdose"
         ), ignore_attr = TRUE
       )
   })
@@ -412,27 +412,23 @@ describe("PKNCA_build_units_table", {
     expect_equal(
       units_table[units_table$PPTESTCD == "cmax.dn",],
       data.frame(
-        PPTESTCD = c("cmax.dn"),
-        PPORRESU = c("(ng/mL)/mg")
+        PPORRESU = c("(ng/mL)/mg"),
+        PPTESTCD = c("cmax.dn")
       ), ignore_attr = TRUE
     )
   })
 
-  it("creates a NA units table when units are not defined at all in the PKNCA objects", {
+  it("returns NULL when units are not defined at all in the PKNCA objects", {
     o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte)
     o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject)
     units_table <- expect_no_error(pknca_units_table_from_pknca(o_conc, o_dose))
-
-    expect_equal(
-      units_table[units_table$PPTESTCD %in% c("cmax", "totdose"),],
-      data.frame(
-        PPTESTCD = c("cmax", "totdose"),
-        PPORRESU = c(NA_character_, NA_character_)
-      ), ignore_attr = TRUE
-    )
+    
+    expect_true(is.null(units_table))
   })
 
   it("does not strictly need o_dose (PKNCAdose object) to be provided", {
+    d_conc$concu_col <- ifelse(d_conc$analyte == "A", "ng/mL", "ug/mL")
+    d_conc$concu_col <- ifelse(d_conc$specimen == "blood", d_conc$concu_col, "pg/mL")
     o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte,
                         concu = "concu_col")
     units_table <- expect_no_error(pknca_units_table_from_pknca(o_conc))
@@ -441,8 +437,8 @@ describe("PKNCA_build_units_table", {
       data.frame(
         specimen = c("blood", "urine", "blood", "urine"),
         analyte = rep(c("A", "B"), each = 2),
-        PPTESTCD = "cmax",
-        PPORRESU = c("ng/mL", "pg/mL", "ug/mL", "pg/mL")
+        PPORRESU = c("ng/mL", "pg/mL", "ug/mL", "pg/mL"),
+        PPTESTCD = "cmax"
       ), ignore_attr = TRUE
     )
   })

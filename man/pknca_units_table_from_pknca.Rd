@@ -2,14 +2,14 @@
 % Please edit documentation in R/unit-support.R
 \name{pknca_units_table_from_pknca}
 \alias{pknca_units_table_from_pknca}
-\title{Build Units Table for PKNCA}
+\title{Build Units Table from PKNCA object(s)}
 \usage{
 pknca_units_table_from_pknca(o_conc, o_dose = NULL)
 }
 \arguments{
 \item{o_conc}{A PKNCA concentration object (PKNCAconc).}
 
-\item{o_dose}{A PKNCA dose object (PKNCAdose).}
+\item{o_dose}{A PKNCA dose object (PKNCAdose). Optional, if not provided dose units are considered missing.}
 }
 \value{
 A data frame containing the PKNCA formatted units table.
@@ -25,6 +25,8 @@ The function performs the following steps:
 \item Joins the concentration and dose data based on their grouping columns.
 \item Generates a PKNCA units table for each group, including conversion factors and custom units.
 \item Returns a unique table with relevant columns for PKNCA analysis.
+Note: NA values in the unit columns are allowed, but at least one unit must be present for each concentration group.
+Units should be uniform across concentration groups, and mismatches will raise an error.
 }
 }
 \examples{

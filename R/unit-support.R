@@ -451,6 +451,8 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
 #' 2. Joins the concentration and dose data based on their grouping columns.
 #' 3. Generates a PKNCA units table for each group, including conversion factors and custom units.
 #' 4. Returns a unique table with relevant columns for PKNCA analysis.
+#' Note: NA values in the unit columns are allowed, but at least one unit must be present for each concentration group.
+#' Units should be uniform across concentration groups, and mismatches will raise an error.
 #'
 #' @examples
 #' # Assuming `o_conc` and `o_dose` are valid PKNCA objects:
@@ -512,6 +514,11 @@ pknca_units_table_from_pknca <- function(o_conc, o_dose = NULL) {
   ) %>%
     # Prevent any issue with NAs in the group(s) or unit columns
     mutate(across(everything(), ~ as.character(.))) %>%
+    # Ignore NAs in the unit columns within groups
+    # TODO: (? Gerardo): Shouldn't we disallow missing units? test "PKNCAdata units (#336)"
+    group_by(!!!syms(group_conc_cols)) %>%
+    tidyr::fill(!!!syms(all_unit_cols), .direction = "downup") %>%
+    ungroup() %>%
     unique()
 
   # Check that at least for each concentration group units are uniform
@@ -521,11 +528,16 @@ pknca_units_table_from_pknca <- function(o_conc, o_dose = NULL) {
     select(-n)
   if (nrow(mismatching_units_groups) > 0) {
     stop(
-      "Units should be uniform at least across concentration groups.",
+      "Units should be uniform at least across concentration groups. ",
       "Review the units for the next group(s):\n",
       paste(utils::capture.output(print(mismatching_units_groups)), collapse = "\n")
     )
   }
+
+  # Check that at least one unit column is not NA
+  # TODO (? Gerardo): Shouldn't pk.nca be able to deal with empty pknca_units_table() and just warn?
+  units.are.all.na <- all(is.na(groups_units_tbl[,all_unit_cols]))
+  if (units.are.all.na) return(NULL)
 
   # Generate the PKNCA units table
   groups_units_tbl %>%
@@ -550,11 +562,7 @@ pknca_units_table_from_pknca <- function(o_conc, o_dose = NULL) {
     ) %>%
     # Combine all PKNCA units tables into one
     unnest(cols = c(pknca_units_tbl)) %>%
-    # Order the columns to have them in a clean display
-    select(
-      any_of(c(group_conc_cols, group_dose_cols)),
-      any_of(c("PPTESTCD", "PPORRESU", "PPSTRESU", "conversion_factor"))
-    ) %>%
+    select(-any_of(all_unit_cols)) %>%
     as.data.frame()
 }
 
