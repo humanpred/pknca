@@ -479,8 +479,8 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
 #' o_dose <- PKNCAdose(d_dose, dose ~ time | subj, doseu = "doseu")
 #' units_table <- PKNCA_build_units_table(o_conc, o_dose)
 #'
-#' @importFrom dplyr select mutate rowwise any_of across everything %>% add_count inner_join group_vars
-#' @importFrom tidyr unnest
+#' @importFrom dplyr select mutate rowwise any_of across everything %>% add_count inner_join group_vars group_by ungroup left_join
+#' @importFrom tidyr unnest fill
 #' @importFrom rlang sym syms
 #' @importFrom utils capture.output
 #' @export
