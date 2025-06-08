@@ -112,10 +112,11 @@ test_that("exclude_nca_tmax_early", {
 
 test_that("exclude_nca_by_param works as expected", {
   # Define the input
-  my_result <- FIXTURE_PKNCA_RES %>%
-    filter(USUBJID == 2) %>%
-    mutate(PPTESTCD = translate_terms(PPTESTCD, "PPTESTCD", "PKNCA")) %>%
-    filter(PPTESTCD %in% c("cmax", "span.ratio"))
+  my_conc <- PKNCAconc(data.frame(conc=c(1.1^(3:0), 1.1), time=0:4, subject=1), conc~time|subject)
+  my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, span.ratio=TRUE))
+  suppressMessages(
+    my_result <- pk.nca(my_data)
+  )
 
   # excludes rows based on min_thr
   res_min_excluded <- PKNCA::exclude(
@@ -124,7 +125,7 @@ test_that("exclude_nca_by_param works as expected", {
   )
   expect_equal(
     as.data.frame(res_min_excluded)$exclude,
-    c(NA, "Lambda z Span < 100", NA, "Lambda z Span < 100")
+    c(rep(NA, 10), "span.ratio < 100")
   )
 
   # does not exclude rows when min_thr is not met
@@ -134,7 +135,7 @@ test_that("exclude_nca_by_param works as expected", {
   )
   expect_equal(
     as.data.frame(res_min_not_excluded)$exclude,
-    rep(NA_character_, 4)
+    rep(NA_character_, 11)
   )
 
   # excludes rows based on max_thr
@@ -144,7 +145,7 @@ test_that("exclude_nca_by_param works as expected", {
   )
   expect_equal(
     as.data.frame(res_max_excluded)$exclude,
-    c(NA, "Lambda z Span > 0.01", NA, "Lambda z Span > 0.01")
+    c(rep(NA, 10), "span.ratio > 0.01")
   )
 
   # does not exclude rows when max_thr is not exceeded
@@ -154,7 +155,7 @@ test_that("exclude_nca_by_param works as expected", {
   )
   expect_equal(
     as.data.frame(res_max_not_excluded)$exclude,
-    rep(NA_character_, 4)
+    rep(NA_character_, 11)
   )
 
   # throws an error for invalid min_thr
@@ -192,11 +193,12 @@ test_that("exclude_nca_by_param works as expected", {
   res <- PKNCA::exclude(
     my_result,
     FUN = exclude_nca_by_param(
-      "span.ratio", min_thr = 0.01, affected_parameters = c("cmax", "span.ratio")
+      "span.ratio", min_thr = 0.01, affected_parameters = c("lambda.z", "span.ratio")
     )
   )
   # All span.ratio records should be NA (not excluded)
   expect_true(all(is.na(as.data.frame(res)$exclude[res$result$PPTESTCD == "span.ratio"])))
+  expect_true(all(is.na(as.data.frame(res)$exclude[res$result$PPTESTCD == "lambda.z"])))
 
   # produces an error when more than 1 PPORRES is per parameter (should never happen in real code)
   expect_error(
