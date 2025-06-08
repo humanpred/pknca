@@ -8,12 +8,12 @@ test_that("exclude_nca", {
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_max.aucinf.pext())
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, nrow(my_result_excluded$result)-2),
-                 rep("aucpext.obs > 20", 2)))
+                 rep("aucpext > 20", 2)))
 
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_max.aucinf.pext(50))
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, nrow(my_result_excluded$result)-2),
-                 rep("aucpext.obs > 50", 2)))
+                 rep("aucpext > 50", 2)))
 
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_span.ratio())
   expect_equal(as.data.frame(my_result_excluded)$exclude,
