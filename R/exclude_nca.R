@@ -28,77 +28,57 @@ NULL
 #' @describeIn exclude_nca Exclude based on span.ratio
 #' @export
 exclude_nca_span.ratio <- function(min.span.ratio) {
-  affected_parameters <- get.parameter.deps("half.life")
   missing_min.span.ratio <- missing(min.span.ratio)
-  function(x, ...) {
-    if (missing_min.span.ratio) {
-      min.span.ratio <- PKNCA.options("min.span.ratio")
-    }
-    ret <- rep(NA_character_, nrow(x))
-    if (!is.na(min.span.ratio)) {
-      idx_span.ratio <- which(x$PPTESTCD %in% "span.ratio")
-      if (length(idx_span.ratio) == 0) {
-        # Do nothing, it wasn't calculated
-      } else if (length(idx_span.ratio) == 1) {
-        current_span.ratio <- x$PPORRES[idx_span.ratio]
-        drop_span_ratio <-
-          !is.na(current_span.ratio) &
-          current_span.ratio < min.span.ratio
-        if (drop_span_ratio) {
-          ret[x$PPTESTCD %in% affected_parameters] <-
-            sprintf("Span ratio < %g", min.span.ratio)
-        }
-      } else if (length(idx_span.ratio) > 1) { # nocov
-        stop("Should not see more than one span.ratio (please report this as a bug)") # nocov
-      }
-    }
-    ret
+  if (missing_min.span.ratio) {
+    min.span.ratio <- PKNCA.options("min.span.ratio")
   }
+  exclude_nca_by_param(
+    parameter = "span.ratio",
+    min_thr = min.span.ratio,
+    affected_parameters = get.parameter.deps("half.life")
+  )
 }
 
-#' @describeIn exclude_nca Exclude based on AUC percent extrapolated (both
-#'   observed and predicted)
+#' @describeIn exclude_nca Exclude based on AUC percent extrapolated (both observed and predicted)
 #' @export
-exclude_nca_max.aucinf.pext <-  function(max.aucinf.pext) {
-  affected_parameters <-
-    list(obs=get.parameter.deps("aucinf.obs"),
-         pred=get.parameter.deps("aucinf.pred"))
+exclude_nca_max.aucinf.pext <- function(max.aucinf.pext) {
   missing_max.aucinf.pext <- missing(max.aucinf.pext)
+  if (missing_max.aucinf.pext) {
+    max.aucinf.pext <- PKNCA.options("max.aucinf.pext")
+  }
+  # Exclude for both obs and pred
   function(x, ...) {
-    if (missing_max.aucinf.pext) {
-      max.aucinf.pext <- PKNCA.options("max.aucinf.pext")
-    }
-    ret <- rep(NA_character_, nrow(x))
-    if (!is.na(max.aucinf.pext)) {
-      for (ext_type in c("obs", "pred")) {
-        idx_pext <- which(x$PPTESTCD %in% paste0("aucpext.", ext_type))
-        if (length(idx_pext) == 0) {
-          # Do nothing, it wasn't calculated
-        } else if (length(idx_pext) == 1) {
-          current_pext <- x$PPORRES[idx_pext]
-          drop_pext <-
-            !is.na(current_pext) &
-            current_pext > max.aucinf.pext
-          if (drop_pext) {
-            ret[x$PPTESTCD %in% affected_parameters[[ext_type]]] <-
-              sprintf("AUC percent extrapolated > %g", max.aucinf.pext)
-          }
-        } else if (length(idx_pext) > 1) { # nocov
-          stop("Should not see more than one aucpext.", ext_type, " (please report this as a bug)") # nocov
-        }
-      }
-    }
+    res_obs <- exclude_nca_by_param(
+      parameter = "aucpext.obs",
+      max_thr = max.aucinf.pext,
+      affected_parameters = get.parameter.deps("aucinf.obs")
+    )(x, ...)
+    res_pred <- exclude_nca_by_param(
+      parameter = "aucpext.pred",
+      max_thr = max.aucinf.pext,
+      affected_parameters = get.parameter.deps("aucinf.pred")
+    )(x, ...)
+    # Combine results, prioritizing non-NA from either
+    is.obs <- grepl(paste0("aucpext.obs > ", max.aucinf.pext), res_obs)
+    is.pred <- grepl(paste0("aucpext.pred > ", max.aucinf.pext), res_pred)
+    ret <- ifelse(
+      is.obs | is.pred,
+      gsub(
+        pattern = paste0("aucpext...+ > ", max.aucinf.pext),
+        replacement = paste0("aucpext > ", max.aucinf.pext),
+        x = dplyr::coalesce(res_obs, res_pred)
+      ),
+      res_obs
+    )
     ret
   }
 }
 
-#' @describeIn exclude_nca Exclude AUC measurements based on count of
-#'   concentrations measured and not below the lower limit of quantification
+#' @describeIn exclude_nca Exclude AUC measurements based on count of concentrations measured and not below the lower limit of quantification
 #' @param min_count Minimum number of measured concentrations
-#' @param exclude_param_pattern Character vector of regular expression patterns
-#'   to exclude
+#' @param exclude_param_pattern Character vector of regular expression patterns to exclude
 #' @export
-exclude_nca_count_conc_measured <-  function(min_count, exclude_param_pattern = c("^aucall", "^aucinf", "^aucint", "^auciv", "^auclast", "^aumc", "^sparse_auc")) {
+exclude_nca_count_conc_measured <- function(min_count, exclude_param_pattern = c("^aucall", "^aucinf", "^aucint", "^auciv", "^auclast", "^aumc", "^sparse_auc")) {
   all_parameters <- names(PKNCA::get.interval.cols())
   affected_parameters_base <-
     sort(unique(unlist(
@@ -116,116 +96,82 @@ exclude_nca_count_conc_measured <-  function(min_count, exclude_param_pattern = 
         FUN = get.parameter.deps
       )
     )))
-  force(min_count)
-  function(x, ...) {
-    ret <- rep(NA_character_, nrow(x))
-    if (!is.na(min_count)) {
-      idx_count <- which(x$PPTESTCD %in% "count_conc_measured")
-      if (length(idx_count) == 0) {
-        # Do nothing, it wasn't calculated
-      } else if (length(idx_count) == 1) {
-        current_count <- x$PPORRES[idx_count]
-        drop_count <-
-          !is.na(current_count) &
-          current_count < min_count
-        if (drop_count) {
-          ret[x$PPTESTCD %in% affected_parameters] <-
-            sprintf("Number of measured concentrations is < %g", min_count)
-        }
-      } else { # nocov
-        stop("Should not see more than one count_conc_measured (please report this as a bug)") # nocov
-      }
-    }
-    ret
-  }
+  exclude_nca_by_param(
+    parameter = "count_conc_measured",
+    min_thr = min_count,
+    affected_parameters = affected_parameters
+  )
 }
 
 #' @describeIn exclude_nca Exclude based on half-life r-squared
 #' @export
 exclude_nca_min.hl.r.squared <- function(min.hl.r.squared) {
-  affected_parameters <- get.parameter.deps("half.life")
   missing_min.hl.r.squared <- missing(min.hl.r.squared)
-  function(x, ...) {
-    if (missing_min.hl.r.squared) {
-      min.hl.r.squared <- PKNCA.options("min.hl.r.squared")
-    }
-    ret <- rep(NA_character_, nrow(x))
-    if (!is.na(min.hl.r.squared)) {
-      idx_r.squared <- which(x$PPTESTCD %in% "r.squared")
-      if (length(idx_r.squared) == 0) {
-        # Do nothing, it wasn't calculated
-      } else if (length(idx_r.squared) == 1) {
-        current_r.squared <- x$PPORRES[idx_r.squared]
-        drop_r.squared <-
-          !is.na(current_r.squared) &
-          current_r.squared < min.hl.r.squared
-        if (drop_r.squared) {
-          ret[x$PPTESTCD %in% affected_parameters] <-
-            sprintf("Half-life r-squared < %g", min.hl.r.squared)
-        }
-      } else if (length(idx_r.squared) > 1) { # nocov
-        stop("Should not see more than one r.squared (please report this as a bug)") # nocov
-      }
-    }
-    ret
+  if (missing_min.hl.r.squared) {
+    min.hl.r.squared <- PKNCA.options("min.hl.r.squared")
   }
+  exclude_nca_by_param(
+    parameter = "r.squared",
+    min_thr = min.hl.r.squared,
+    affected_parameters = get.parameter.deps("half.life")
+  )
 }
 
 #' @describeIn exclude_nca Exclude based on half-life adjusted r-squared
 #' @export
 exclude_nca_min.hl.adj.r.squared <- function(min.hl.adj.r.squared = 0.9) {
-  affected_parameters <- get.parameter.deps("half.life")
-  function(x, ...) {
-    ret <- rep(NA_character_, nrow(x))
-    if (!is.na(min.hl.adj.r.squared)) {
-      idx_adj.r.squared <- which(x$PPTESTCD %in% "adj.r.squared")
-      if (length(idx_adj.r.squared) == 0) {
-        # Do nothing, it wasn't calculated
-      } else if (length(idx_adj.r.squared) == 1) {
-        current_adj.r.squared <- x$PPORRES[idx_adj.r.squared]
-        drop_adj.r.squared <-
-          !is.na(current_adj.r.squared) &
-          current_adj.r.squared < min.hl.adj.r.squared
-        if (drop_adj.r.squared) {
-          ret[x$PPTESTCD %in% affected_parameters] <-
-            sprintf("Half-life adj. r-squared < %g", min.hl.adj.r.squared)
-        }
-      } else if (length(idx_adj.r.squared) > 1) { # nocov
-        stop("Should not see more than one adj.r.squared (please report this as a bug)") # nocov
-      }
-    }
-    ret
-  }
+  exclude_nca_by_param(
+    parameter = "adj.r.squared",
+    min_thr = min.hl.adj.r.squared,
+    affected_parameters = get.parameter.deps("half.life")
+  )
 }
 
-#' @describeIn exclude_nca Exclude based on implausibly early Tmax (often used
-#'   for extravascular dosing with a Tmax value of 0)
-#' @param tmax_early The time for Tmax which is considered too early to be a
-#'   valid NCA result
+#' @describeIn exclude_nca Exclude based on implausibly early Tmax (often used for extravascular dosing with a Tmax value of 0)
+#' @param tmax_early The time for Tmax which is considered too early to be a valid NCA result
 #' @export
 exclude_nca_tmax_early <- function(tmax_early = 0) {
-  force(tmax_early)
-  function(x, ...) {
-    ret <- rep(NA_character_, nrow(x))
-    idx_tmax <- which(x$PPTESTCD %in% "tmax")
-    if (length(idx_tmax) == 1) {
-      current_tmax <- x$PPORRES[idx_tmax]
-      drop <- !is.na(current_tmax) & current_tmax <= tmax_early
-      if (drop) {
-        ret <- rep(sprintf("Tmax is <=%g (likely missed dose, insufficient PK samples, or PK sample swap)", tmax_early), nrow(x))
-      }
-    } else if (length(idx_tmax) != 0) {
-      stop("Should not see more than one tmax (please report this as a bug)") # nocov
-    }
+    
+    exc_fun <- exclude_nca_by_param(
+      parameter = "tmax",
+      min_thr = tmax_early,
+      affected_parameters = names(get.interval.cols())
+    )
+
+    function(x, ...) {
+    # Get the exclusion messages
+    ret <- exc_fun(x, ...)
+    # Add the special annotation for tmax_early cases (if not already annotated)
+    tmax_cases <- grepl(pattern = "^tmax < ", x = ret)
+    tmax_already_annotated <- grepl("(likely missed dose, insufficient PK samples, or PK sample swap)", x = ret, fixed = TRUE)
+    ret <- ifelse(
+        test = tmax_cases & !tmax_already_annotated & !is.na(ret),
+        yes = gsub(
+          pattern = paste0("^tmax < ", tmax_early),
+          replacement = paste0("tmax < ", tmax_early, " (likely missed dose, insufficient PK samples, or PK sample swap)"),
+          x = ret
+        ),
+        no = ret
+      )
     ret
-  }
+    }
 }
 
-#' @describeIn exclude_nca Exclude based on implausibly early Tmax (special case
-#'   for `tmax_early = 0`)
+#' @describeIn exclude_nca Exclude based on implausibly early Tmax (special case for `tmax_early = 0`)
 #' @export
 exclude_nca_tmax_0 <- function() {
-  exclude_nca_tmax_early()
+  exc_fun <- exclude_nca_tmax_early(1e-99)
+  function(x, ...) {
+    ret <- exc_fun(x, ...)
+
+    # Replace the messages
+    ret <- gsub(
+      pattern = "^tmax < 1e-99",
+      replacement = "tmax <= 0",
+      x = ret
+    )
+    ret
+  }
 }
 
 

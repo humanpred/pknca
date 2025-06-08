@@ -8,39 +8,39 @@ test_that("exclude_nca", {
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_max.aucinf.pext())
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, nrow(my_result_excluded$result)-2),
-                 rep("AUC percent extrapolated > 20", 2)))
+                 rep("aucpext.obs > 20", 2)))
 
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_max.aucinf.pext(50))
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, nrow(my_result_excluded$result)-2),
-                 rep("AUC percent extrapolated > 50", 2)))
+                 rep("aucpext.obs > 50", 2)))
 
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_span.ratio())
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("Span ratio < 2", 11)))
+                 rep("span.ratio < 2", 11)))
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_span.ratio(1))
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("Span ratio < 1", 11)))
+                 rep("span.ratio < 1", 11)))
 
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.r.squared())
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("Half-life r-squared < 0.9", 11)))
+                 rep("r.squared < 0.9", 11)))
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.r.squared(0.95))
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("Half-life r-squared < 0.95", 11)))
+                 rep("r.squared < 0.95", 11)))
 
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.adj.r.squared())
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("Half-life adj. r-squared < 0.9", 11)))
+                 rep("adj.r.squared < 0.9", 11)))
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.adj.r.squared(0.95))
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("Half-life adj. r-squared < 0.95", 11)))
+                 rep("adj.r.squared < 0.95", 11)))
 
   my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, cmax=TRUE))
   suppressMessages(
@@ -58,6 +58,28 @@ test_that("exclude_nca", {
   expect_equal(my_result,
                exclude(my_result, FUN=exclude_nca_min.hl.adj.r.squared()),
                info="Result is ignored when not calculated")
+})
+
+test_that("exclude_nca_max.aucinf.pext", {
+  my_conc <- PKNCAconc(data.frame(conc=c(1.1^(3:0), 1.1), time=0:4, subject=1), conc~time|subject)
+  my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, aucpext.pred=TRUE, aucpext.obs=TRUE))
+  suppressMessages(
+    my_result <- pk.nca(my_data)
+  )
+  expect_equal(
+    as.data.frame(my_result)$exclude,
+    rep(NA_character_, nrow(as.data.frame(my_result)))
+  )
+  my_result_exclude_20 <- exclude(my_result, FUN = exclude_nca_max.aucinf.pext(max.aucinf.pext = 20))
+  expect_equal(
+    as.data.frame(my_result_exclude_20)$exclude,
+    c(rep(NA_character_, nrow(as.data.frame(my_result_exclude_20))-4), rep("aucpext > 20", 4))
+  )
+  my_result_exclude_50 <- exclude(my_result, FUN = exclude_nca_max.aucinf.pext(max.aucinf.pext = 50))
+  expect_equal(
+    as.data.frame(my_result_exclude_50)$exclude,
+    c(rep(NA_character_, nrow(as.data.frame(my_result_exclude_50))-4), rep("aucpext > 50", 4))
+  )
 })
 
 test_that("exclude_nca_count_conc_measured", {
@@ -78,7 +100,7 @@ test_that("exclude_nca_count_conc_measured", {
   my_result_exclude10 <- exclude(my_result, FUN = exclude_nca_count_conc_measured(min_count = 10))
   expect_equal(
     as.data.frame(my_result_exclude10)$exclude,
-    c("Number of measured concentrations is < 10", rep(NA_character_, 13), rep("Number of measured concentrations is < 10", 2))
+    c("count_conc_measured < 10", rep(NA_character_, 13), rep("count_conc_measured < 10", 2))
   )
 })
 
@@ -95,12 +117,12 @@ test_that("exclude_nca_tmax_early", {
   my_result_exclude_1 <- exclude(my_result, FUN = exclude_nca_tmax_early(tmax_early = 1))
   expect_equal(
     as.data.frame(my_result_exclude_1)$exclude,
-    rep("Tmax is <=1 (likely missed dose, insufficient PK samples, or PK sample swap)", nrow(as.data.frame(my_result_exclude_1)))
+    rep("tmax < 1 (likely missed dose, insufficient PK samples, or PK sample swap)", nrow(as.data.frame(my_result_exclude_1)))
   )
   my_result_exclude_0 <- exclude(my_result, FUN = exclude_nca_tmax_0())
   expect_equal(
     as.data.frame(my_result_exclude_0)$exclude,
-    rep("Tmax is <=0 (likely missed dose, insufficient PK samples, or PK sample swap)", nrow(as.data.frame(my_result_exclude_0)))
+    rep("tmax <= 0 (likely missed dose, insufficient PK samples, or PK sample swap)", nrow(as.data.frame(my_result_exclude_0)))
   )
   # This should never happen in real code
   expect_error(
