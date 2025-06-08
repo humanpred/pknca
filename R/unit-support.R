@@ -485,7 +485,7 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
 pknca_units_table_from_pknca <- function(o_conc, o_dose = NULL) {
 
   # PKNCAdose is an optional argument with dose units, if not provided it will be ignored
-  if (is.null(o_dose)) o_dose <- o_conc
+  if (is.null(o_dose) || is.na(o_dose)) o_dose <- o_conc
 
   # If needed, ensure that the PKNCA objects have the required unit columns
   o_conc <- ensure_column_unit_exists(o_conc, c("concu", "timeu", "amountu"))
