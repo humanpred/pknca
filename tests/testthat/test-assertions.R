@@ -99,6 +99,17 @@ test_that("assert_lambdaz", {
   )
 })
 
+test_that("assert_param_name", {
+  expect_error(
+    assert_param_name("foo"),
+    regexp = "foo is not a valid PKNCA parameter name"
+  )
+  expect_error(
+    assert_param_name(c("foo", "bar")),
+    regexp = "foo, bar are not valid PKNCA parameter names"
+  )
+})
+
 test_that("assert_PKNCAdata", {
   expect_error(
     assert_PKNCAdata("A"),
@@ -113,12 +124,12 @@ test_that("element_find", {
     element_find(values5),
     element_find(values10)
   )
-  
+
   expect_equal(
     element_find(values5),
     "Elements 1, 2, 3, 4, 5"
   )
-  
+
   expect_equal(
     element_find(values10),
     "Elements 1, 2, 3, 4, 5"
