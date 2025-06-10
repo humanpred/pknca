@@ -119,12 +119,9 @@ example</a>.)</p>
 <span><span class="co">##     intersect, setdiff, setequal, union</span></span></code></pre>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Load the PK concentration data</span></span>
-<span><span class="va">d_conc</span> <span class="op">&lt;-</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Subject<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">Subject</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">d_conc</span> <span class="op">&lt;-</span> <span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span></span>
 <span><span class="co">## Generate the dosing data</span></span>
 <span><span class="va">d_dose</span> <span class="op">&lt;-</span> <span class="va">d_conc</span><span class="op">[</span><span class="va">d_conc</span><span class="op">$</span><span class="va">Time</span> <span class="op">==</span> <span class="fl">0</span>,<span class="op">]</span></span>
-<span><span class="va">d_dose</span><span class="op">$</span><span class="va">Time</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
 <span></span>
 <span><span class="co">## Create a concentration object specifying the concentration, time, and</span></span>
 <span><span class="co">## subject columns.  (Note that any number of grouping levels is</span></span>
