@@ -196,6 +196,23 @@ assert_aucmethod <- function(method = c("lin up/log down", "linear", "lin-log"))
   match.arg(method)
 }
 
+#' Assert that a character vector only contains PKNCA parameter names
+#' @param param A vector of parameter names to check
+assert_param_name <- function(param) {
+  missing_param <- setdiff(param, names(get.interval.cols()))
+  if (length(missing_param) > 0) {
+    stop(
+      paste(missing_param, collapse = ", "),
+      ngettext(
+        length(missing_param),
+        msg1 = " is not a valid PKNCA parameter name",
+        msg2 = " are not valid PKNCA parameter names"
+      )
+    )
+  }
+  param
+}
+
 #' Assert that an object is a PKNCAdata object
 #' @param object The PKNCAdata object
 #' @returns The PKNCAdata object (confirmed to be usable)
