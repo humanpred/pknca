@@ -285,6 +285,34 @@ test_that("lambda.z.time.first is after the absorption phase in infusion studies
   expect_true(lz_first2 > lz_first1)
 })
 
+test_that("for an interval with multiple doses lambda.z is calculated for the last one", {
+  # Simulate two infusions: one at time 0 (duration 2), one at time 4 (duration 2)
+  d_conc <- data.frame(
+    conc = c(0.5, 1.0, 0.99, 0.98, 0.97, 0.96,
+             0.5, 1.0, 0.8, 0.5, 0.2, 0.1),
+    time = 1:12,
+    subject = 1
+  )
+  d_dose <- data.frame(
+    dose = c(1, 1),
+    time = c(0, 6),
+    duration = c(2, 2),
+    route = "intravascular",
+    subject = 1
+  )
+  o_data <- PKNCAdata(
+    PKNCAconc(d_conc, conc ~ time | subject),
+    PKNCAdose(d_dose, dose ~ time | subject, route = "route", duration = "duration"),
+    intervals = data.frame(start = c(0, 0, 6),
+                           end = c(Inf, 6, 12),
+                           half.life = TRUE)
+  )
+  res <- pk.nca(o_data)
+  lzs <- res$result$PPORRES[res$result$PPTESTCD == "lambda.z"]
+  # Lambda z for the first interval (0 to Inf) should be the same as for the third interval (6 to 12)
+  expect_equal(lzs[1], lzs[3])
+})
+
 test_that("get_halflife_points", {
   o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
