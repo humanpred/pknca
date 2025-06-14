@@ -132,7 +132,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   # Filter out points with 0 concentration. as.numeric() to handle units objects
   data <- data[as.numeric(data$conc) > 0,]
   # Filter out points that start before the last dose and/or involve the absorption phase (infusion)
-  if (!is.null(time.dose)) {
+  if (!is.null(time.dose) && !is.na(time.dose) && !is.na(duration.dose)) {
     data <- data[as.numeric(data$time) > as.numeric(time.dose) + as.numeric(duration.dose), ]
   }
   # Prepare the return values
