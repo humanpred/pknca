@@ -9,6 +9,8 @@ pk.calc.half.life(
   time,
   tmax,
   tlast,
+  time.dose = NULL,
+  duration.dose = 0,
   manually.selected.points = FALSE,
   options = list(),
   min.hl.points = NULL,
@@ -31,6 +33,14 @@ included in the return data frame if not given)}
 \item{tlast}{Time of last concentration above the limit of
 quantification (will be calculated and included in the return data
 frame if not given)}
+
+\item{time.dose}{Only use points with time > time.dose + duration.dose
+for half-life calculation. This can be used to exclude points from
+the calculation that are affected by the dosing regimen.}
+
+\item{duration.dose}{The duration of the dose administration. Points
+within this time frame after time.dose will be excluded from the
+half-life calculation.}
 
 \item{manually.selected.points}{Have the input points (\code{conc} and
 \code{time}) been manually selected?  The impact of setting this to

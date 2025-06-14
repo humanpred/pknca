@@ -10,6 +10,7 @@ the dosing including dose amount and route.
 
 * Units for fraction excretion parameter (fe) are now accurately captured as
   amount/dose units rather than "fraction" (#426)
+* `lambda.z` calculations will now only consider time points that occur after the last dose & for infusions that are after the dose administration.
 
 # PKNCA 0.12.0
 
