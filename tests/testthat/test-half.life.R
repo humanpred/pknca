@@ -244,6 +244,47 @@ test_that("When tlast is excluded, lambda.z.time.last != tlast", {
   )
 })
 
+
+test_that("lambda.z.time.first is after the absorption phase in infusion studies (shifts with duration)", {
+  # Simulate an infusion with two different durations
+  d_conc <- data.frame(
+    conc = c(0.5, 1.0, 0.5, 0.12, 0.25, 0.05),
+    time = 1:6,
+    subject = 1
+  )
+  d_dose <- data.frame(
+    dose = 1,
+    time = 0,
+    duration1 = 2,  # Duration for case 1
+    duration2 = 3,  # Duration for case 2
+    route = "intravascular",
+    subject = 1
+  )
+  
+  # First case: duration = 2, so lambda.z.time.first should be after 2
+  o_data1 <- PKNCAdata(
+    PKNCAconc(d_conc, conc ~ time | subject),
+    PKNCAdose(d_dose, dose ~ time | subject, route = "route", duration = "duration1"),
+    intervals = data.frame(start = 0, end = Inf, half.life = TRUE)
+  )
+  res1 <- pk.nca(o_data1)
+  lz_first1 <- res1$result$PPORRES[res1$result$PPTESTCD == "lambda.z.time.first"]
+  expect_equal(lz_first1, 3)
+  
+  # Second case: duration = 4, so lambda.z.time.first should be after 3
+  o_data2 <- PKNCAdata(
+    PKNCAconc(d_conc, conc ~ time | subject),
+    PKNCAdose(d_dose, dose ~ time | subject, route = "route", duration = "duration2"),
+    intervals = data.frame(start = 0, end = Inf, half.life = TRUE)
+  )
+  res2 <- pk.nca(o_data2)
+  lz_first2 <- res2$result$PPORRES[res2$result$PPTESTCD == "lambda.z.time.first"]
+  expect_equal(lz_first2, 4)
+  
+  # And the second case should be later than the first
+  expect_true(lz_first2 > lz_first1)
+})
+
 test_that("get_halflife_points", {
   o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
