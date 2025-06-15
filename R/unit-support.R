@@ -477,18 +477,18 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
 #' )
 #' o_conc <- PKNCAconc(d_conc, conc ~ time | subj / analyte, concu = "concu")
 #' o_dose <- PKNCAdose(d_dose, dose ~ time | subj, doseu = "doseu")
-#' units_table <- PKNCA_build_units_table(o_conc, o_dose)
+#' units_table <- pknca_units_table_from_pknca(o_conc, o_dose)
 #'
-#' @importFrom dplyr select mutate rowwise any_of across everything %>% add_count inner_join group_vars group_by ungroup left_join
-#' @importFrom tidyr unnest fill
+#' @importFrom dplyr select mutate rowwise any_of across everything %>% add_count inner_join group_vars
+#' @importFrom tidyr unnest
 #' @importFrom rlang sym syms
 #' @importFrom utils capture.output
 #' @export
 pknca_units_table_from_pknca <- function(o_conc, o_dose = NULL) {
 
   # PKNCAdose is an optional argument with dose units, if not provided it will be ignored
-  if (is.null(o_dose) || is.na(o_dose)) o_dose <- o_conc
-
+  if (is.null(o_dose) || all(is.na(o_dose))) o_dose <- o_conc
+  
   # If needed, ensure that the PKNCA objects have the required unit columns
   o_conc <- ensure_column_unit_exists(o_conc, c("concu", "timeu", "amountu"))
   o_dose <- ensure_column_unit_exists(o_dose, c("doseu"))
@@ -553,10 +553,10 @@ pknca_units_table_from_pknca <- function(o_conc, o_dose = NULL) {
           doseu = !!sym(doseu_col),
           amountu = !!sym(amountu_col),
           timeu = !!sym(timeu_col),
-          concu_pref = o_conc$units$concu_pref,
-          doseu_pref = o_dose$units$doseu_pref,
-          amountu_pref = o_conc$units$amountu_pref,
-          timeu_pref = o_conc$units$timeu_pref
+          concu_pref = o_conc$units$concu_pref[1],
+          doseu_pref = o_dose$units$doseu_pref[1],
+          amountu_pref = o_conc$units$amountu_pref[1],
+          timeu_pref = o_conc$units$timeu_pref[1]
         )
       )
     ) %>%
@@ -614,8 +614,8 @@ select_minimal_grouping_cols <- function(df, strata_cols) {
   # Obtain the comb_vals values of the target column(s)
   strata_vals <- df %>%
     mutate(strata_cols_comb = paste(!!!syms(strata_cols), sep = "_")) %>%
-    pull(strata_cols_comb)
-
+    .[["strata_cols_comb"]]
+  
   # If the target column(s) only has one level, there are no relevant columns
   if (length(unique(strata_vals)) == 1) {
     return(df[strata_cols])
