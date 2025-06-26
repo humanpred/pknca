@@ -285,7 +285,7 @@ test_that("lambda.z.time.first is after the absorption phase in infusion studies
   expect_true(lz_first2 > lz_first1)
 })
 
-test_that("for an interval with multiple doses lambda.z is calculated for the last one", {
+test_that("for an interval with multiple doses lambda.z is calculated for the latest one", {
   # Simulate two infusions: one at time 0 (duration 2), one at time 4 (duration 2)
   d_conc <- data.frame(
     conc = c(0.5, 1.0, 0.99, 0.98, 0.97, 0.96,
@@ -295,7 +295,7 @@ test_that("for an interval with multiple doses lambda.z is calculated for the la
   )
   d_dose <- data.frame(
     dose = c(1, 1),
-    time = c(0, 6),
+    time = c(6, 0),
     duration = c(2, 2),
     route = "intravascular",
     subject = 1

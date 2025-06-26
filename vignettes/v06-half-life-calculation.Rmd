@@ -29,7 +29,7 @@ When automatic point selection is performed for curve stripping, the algorithm d
 All sets of points that are applicable according to the current options are selected.
 
 * Drop all BLQ values, then
-* Drop all points before the end of the last dose administration, then
+* Drop all points before the end of the last dose administration (if dosing information is provided), then
 * Choose all sets of points that start from the $T_{last}$ and step back:
     * at least `r PKNCA.options("min.hl.points")` points (customizable with `PKNCA.options("min.hl.points")`)
     * `r c("Not including", "Including")[PKNCA.options("allow.tmax.in.half.life") + 1]` $T_{max}$ (customizable with `PKNCA.options("allow.tmax.in.half.life")`)

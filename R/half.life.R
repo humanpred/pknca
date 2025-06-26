@@ -27,17 +27,12 @@
 #' @inheritParams assert_conc_time
 #' @inheritParams choose_interval_method
 #' @inheritParams PKNCA.choose.option
+#' @inheritParams pk.nca.interval
 #' @param tmax Time of maximum concentration (will be calculated and
 #'   included in the return data frame if not given)
 #' @param tlast Time of last concentration above the limit of
 #'   quantification (will be calculated and included in the return data
 #'   frame if not given)
-#' @param time.dose Only use points with time > time.dose + duration.dose
-#'   for half-life calculation. This can be used to exclude points from
-#'   the calculation that are affected by the dosing regimen.
-#' @param duration.dose The duration of the dose administration. Points
-#'   within this time frame after time.dose will be excluded from the
-#'   half-life calculation.
 #' @param manually.selected.points Have the input points (`conc` and
 #'   `time`) been manually selected?  The impact of setting this to
 #'   `TRUE` is that no selection for the best points will be done.  When
@@ -132,11 +127,11 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   # Filter out points with 0 concentration. as.numeric() to handle units objects
   data <- data[as.numeric(data$conc) > 0,]
   if (!is.null(time.dose)) {
-    # If multiple doses are within the interval, consider only the last one
-    time.dose = time.dose[length(time.dose)]
-    duration.dose = duration.dose[length(duration.dose)]
-    if (!is.na(time.dose) && !is.na(duration.dose))
-      data <- data[as.numeric(data$time) > as.numeric(time.dose) + as.numeric(duration.dose), ]
+    # If multiple doses are within the interval, consider only the one ending the latest
+    end.dose <- as.numeric(time.dose) + as.numeric(duration.dose)
+    if (any(!is.na(end.dose))) {
+      data <- data[as.numeric(data$time) > max(end.dose, na.rm = TRUE), ]
+    }
   }
   # Prepare the return values
   ret <- data.frame(
