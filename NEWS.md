@@ -10,6 +10,7 @@ the dosing including dose amount and route.
 
 * Units for fraction excretion parameter (fe) are now accurately captured as
   amount/dose units rather than "fraction" (#426)
+* `get_halflife_points` will disconsider later points to `lambda.z.time.last`, instead of `tlast`
 
 # PKNCA 0.12.0
 

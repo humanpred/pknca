@@ -498,7 +498,7 @@ get_halflife_points_single <- function(conc, results, rowid_col) {
       ret$hl_used <- conc$include_half.life %in% TRUE
     } else {
       time_first <- results$PPORRES[results$PPTESTCD %in% "lambda.z.time.first"]
-      time_last <- results$PPORRES[results$PPTESTCD %in% "tlast"]
+      time_last <- results$PPORRES[results$PPTESTCD %in% "lambda.z.time.last"]
       excluded <-
         if ("exclude_half.life" %in% names(conc)) {
           conc$exclude_half.life %in% TRUE
