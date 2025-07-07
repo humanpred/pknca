@@ -6,6 +6,10 @@ the dosing including dose amount and route.
 
 # PKNCA (development version)
 
+## New Features
+
+* New post-processing functions to normalize PKNCA result parameters based on weight (`normalize_weight`), surface area (`normalize_sa`), BMI (`normalize_bmi`) or molecular weight (`normalize_mw`). Custom normalizations are also possible (`normalize`).
+
 ## Minor changes (unlikely to affect PKNCA use)
 
 * Units for fraction excretion parameter (fe) are now accurately captured as
