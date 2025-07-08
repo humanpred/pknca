@@ -273,7 +273,8 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
       }
       # Try the calculation
       if (!is.null(PKNCA.options()$debug)) {
-        calculated_interval <- do.call(pk.nca.interval, args)
+        # debugging mode does not need coverage
+        calculated_interval <- do.call(pk.nca.interval, args) # nocov
       } else {
         calculated_interval <-
           tryCatch(
