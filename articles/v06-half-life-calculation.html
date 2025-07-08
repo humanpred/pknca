@@ -105,6 +105,9 @@ algorithm described below is used.</p>
 options are selected.</p>
 <ul>
 <li>Drop all BLQ values, then</li>
+<li>Drop all points at or before the end of the last dose
+administration, including infusion duration (if dosing information is
+provided), then</li>
 <li>Choose all sets of points that start from the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">T_{last}</annotation></semantics></math>
 and step back:
@@ -193,8 +196,8 @@ fit with the most points included.</li>
 <span><span class="co">## <span style="color: #BCBCBC;"> 1</span> 1           0   <span style="color: #BB0000;">Inf</span> tmax                 1.12   <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 2</span> 1           0   <span style="color: #BB0000;">Inf</span> tlast               24.4    <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 3</span> 1           0   <span style="color: #BB0000;">Inf</span> lambda.z             0.048<span style="text-decoration: underline;">5</span> <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 4</span> 1           0   <span style="color: #BB0000;">Inf</span> r.squared            1.00   <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 5</span> 1           0   <span style="color: #BB0000;">Inf</span> adj.r.squared        1.00   <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 4</span> 1           0   <span style="color: #BB0000;">Inf</span> r.squared            1.000  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 5</span> 1           0   <span style="color: #BB0000;">Inf</span> adj.r.squared        1.000  <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 6</span> 1           0   <span style="color: #BB0000;">Inf</span> lambda.z.time.first  9.05   <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 7</span> 1           0   <span style="color: #BB0000;">Inf</span> lambda.z.time.last  24.4    <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span> 1           0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points    3      <span style="color: #BB0000;">NA</span>     </span></span>
@@ -251,7 +254,7 @@ below.</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 1</span> 1           0   <span style="color: #BB0000;">Inf</span> tmax                 1.12   <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 2</span> 1           0   <span style="color: #BB0000;">Inf</span> tlast               24.4    <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 3</span> 1           0   <span style="color: #BB0000;">Inf</span> lambda.z             0.048<span style="text-decoration: underline;">2</span> <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 4</span> 1           0   <span style="color: #BB0000;">Inf</span> r.squared            1.00   <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 4</span> 1           0   <span style="color: #BB0000;">Inf</span> r.squared            1.000  <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 5</span> 1           0   <span style="color: #BB0000;">Inf</span> adj.r.squared        0.999  <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 6</span> 1           0   <span style="color: #BB0000;">Inf</span> lambda.z.time.first  5.1    <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 7</span> 1           0   <span style="color: #BB0000;">Inf</span> lambda.z.time.last  24.4    <span style="color: #BB0000;">NA</span>     </span></span>

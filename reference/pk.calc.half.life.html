@@ -74,6 +74,8 @@ with automated selection of the points for calculation (unless
 <span>  <span class="va">time</span>,</span>
 <span>  <span class="va">tmax</span>,</span>
 <span>  <span class="va">tlast</span>,</span>
+<span>  time.dose <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  duration.dose <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  manually.selected.points <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  min.hl.points <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -107,6 +109,18 @@ included in the return data frame if not given)</p></dd>
 <dd><p>Time of last concentration above the limit of
 quantification (will be calculated and included in the return data
 frame if not given)</p></dd>
+
+
+<dt id="arg-time-dose">time.dose<a class="anchor" aria-label="anchor" href="#arg-time-dose"></a></dt>
+<dd><p>Only use points with time &gt; time.dose + duration.dose
+for half-life calculation. This can be used to exclude points from
+the calculation that are affected by the dosing regimen.</p></dd>
+
+
+<dt id="arg-duration-dose">duration.dose<a class="anchor" aria-label="anchor" href="#arg-duration-dose"></a></dt>
+<dd><p>The duration of the dose administration. Points
+within this time frame after time.dose will be excluded from the
+half-life calculation.</p></dd>
 
 
 <dt id="arg-manually-selected-points">manually.selected.points<a class="anchor" aria-label="anchor" href="#arg-manually-selected-points"></a></dt>
