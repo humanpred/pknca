@@ -342,7 +342,7 @@ test_that("get_halflife_points", {
     subject = 1
   )
   o_conc <- PKNCAconc(d_conc, formula = conc ~ time | subject, exclude_half.life = "exclude_hl")
-  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
   o_nca <- suppressMessages(pk.nca(o_data))
   hl_points <- suppressMessages(get_halflife_points(o_nca))
   # lambda.z.time.last should be 4, tlast is 6 and excluded
