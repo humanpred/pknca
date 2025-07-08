@@ -334,7 +334,7 @@ test_that("get_halflife_points", {
     regexp = "More than one half-life calculation was attempted on the following rows: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11"
   )
 
-  # Half-life points guess right even if lambda.z.time.last != tlast
+  # Half-life points are selected right even if lambda.z.time.last != tlast (#448)
   d_conc <- data.frame(
     conc = c(1, 0.5, 0.25, 0.125, 0.07, 0, 0.01),
     time = c(0, 1, 2, 3, 4, 5, 6),
