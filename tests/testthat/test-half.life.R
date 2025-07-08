@@ -247,7 +247,7 @@ test_that("When tlast is excluded, lambda.z.time.last != tlast", {
 test_that("get_halflife_points", {
   o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
-  o_nca <- pk.nca(o_data)
+  o_nca <- suppressMessages(pk.nca(o_data))
   hl_points <- suppressMessages(get_halflife_points(o_nca))
 
   # Visualize the results
@@ -332,5 +332,23 @@ test_that("get_halflife_points", {
   expect_error(
     suppressMessages(get_halflife_points(o_nca)),
     regexp = "More than one half-life calculation was attempted on the following rows: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11"
+  )
+
+  # Half-life points guess right even if lambda.z.time.last != tlast
+  d_conc <- data.frame(
+    conc = c(1, 0.5, 0.25, 0.125, 0.07, 0, 0.01),
+    time = c(0, 1, 2, 3, 4, 5, 6),
+    exclude_hl = c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE),
+    subject = 1
+  )
+  o_conc <- PKNCAconc(d_conc, formula = conc ~ time | subject, exclude_half.life = "exclude_hl")
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  hl_points <- suppressMessages(get_halflife_points(o_nca))
+  # lambda.z.time.last should be 4, tlast is 6 and excluded
+  expect_equal(
+    d_conc$time[which(hl_points)],
+    1:4,
+    info = "get_halflife_points uses lambda.z.time.last, not tlast"
   )
 })
