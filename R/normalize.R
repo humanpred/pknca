@@ -68,6 +68,7 @@ normalize.data.frame <- function(object, norm_table, parameters, suffix) {
 #' @param parameters Character vector of parameter names to normalize
 #' @param suffix Suffix to add to normalized parameter names
 #' @return A PKNCAresults object with normalized parameters appended
+#' @keywords internal
 normalize_by_column <- function(object, column_type, column_values, normalization_values, unit, parameters, suffix) {
     if (!inherits(object, "PKNCAresults")) {
         stop("The object must be a PKNCAresults object.")
@@ -101,6 +102,7 @@ normalize_by_column <- function(object, column_type, column_values, normalizatio
 #' @param unit The unit for weight normalization (e.g., "kg")
 #' @param parameters Character vector of parameter names to normalize
 #' @return A PKNCAresults object with normalized parameters appended (suffix ".wn")
+#' @export
 normalize_weight <- function(object, subject, weight, unit, parameters) {
     normalize_by_column(
         object = object,
@@ -121,6 +123,7 @@ normalize_weight <- function(object, subject, weight, unit, parameters) {
 #' @param unit The unit for BMI normalization (e.g., "kg/m^2")
 #' @param parameters Character vector of parameter names to normalize
 #' @return A PKNCAresults object with normalized parameters appended (suffix ".bmin")
+#' @export
 normalize_bmi <- function(object, subject, bmi, unit, parameters) {
     normalize_by_column(
         object = object,
@@ -141,6 +144,7 @@ normalize_bmi <- function(object, subject, bmi, unit, parameters) {
 #' @param unit The unit for surface area normalization (e.g., "m^2")
 #' @param parameters Character vector of parameter names to normalize
 #' @return A PKNCAresults object with normalized parameters appended (suffix ".san")
+#' @export
 normalize_sa <- function(object, subject, sa, unit, parameters) {
     normalize_by_column(
         object = object,
@@ -161,6 +165,7 @@ normalize_sa <- function(object, subject, sa, unit, parameters) {
 #' @param unit The unit for molecular weight normalization (e.g., "g/mol")
 #' @param parameters Character vector of parameter names to normalize
 #' @return A PKNCAresults object with normalized parameters appended (suffix ".mwn")
+#' @export
 normalize_mw <- function(object, analyte, mw, unit, parameters) {
     normalize_by_column(
         object = object,
