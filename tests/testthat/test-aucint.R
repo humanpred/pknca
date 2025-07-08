@@ -443,19 +443,13 @@ test_that("aucint.inf.pred returns NA when half-life is not estimable (#450)", {
       time = c(0.00, 1.08, 2.08, 4.08, 6.08, 8.08, 13.90),
       conc = c(0.4, 0.8, 1.6, 1.9, 1.7, 1.2, 0.3)
     )
-
-  intervals <-
-    data.frame(
-      start = 0,
-      end = c(12,24),
-      aucint.inf.pred = TRUE
-    )
-
+  intervals <- data.frame(start = 0, end = 12, aucint.inf.pred = TRUE)
   o_conc <- PKNCAconc(d_conc, conc ~ time)
-
   o_data <- PKNCAdata(o_conc, intervals = intervals)
-
-  o_nca <- pk.nca(o_data)
+  expect_warning(
+    o_nca <- suppressMessages(pk.nca(o_data)),
+    regexp = "Too few points for half-life calculation"
+  )
   aucint_inf_pred_prep <- as.data.frame(o_nca)
   aucint_inf_pred <- aucint_inf_pred_prep$PPORRES[aucint_inf_pred_prep$PPTESTCD %in% "aucint.inf.pred"]
   expect_equal(aucint_inf_pred, NA_real_)
