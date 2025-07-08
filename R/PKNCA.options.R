@@ -133,6 +133,15 @@
     }
     x
   },
+  debug = function(x, default = FALSE, description = FALSE) {
+    if (description) {
+      return("Enable PKNCA debugging mode (not for production use)")
+    }
+    if (default) {
+      return(NULL)
+    }
+    x
+  },
   first.tmax=function(x, default=FALSE, description=FALSE) {
     if (description)
       return(paste(
