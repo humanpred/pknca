@@ -138,6 +138,44 @@ results_excl_multi %>%
   filter(Subject == 1)
 ```
 
+# Normalizing Results
+
+PKNCA provides functions to normalize calculated parameters by subject characteristics (i.e, body weight, BMI, surface area) or analyte properties (molecular weight).
+
+## Example: Normalize by Weight
+
+Use `normalize_weight()` to normalize a parameter (e.g., Cmax) by subject weight. The output will provide the parameter with a suffix `.wn` indicating the weight normalization  (e.g., `cmax.wn`).:
+
+```{r normalize-weight}
+# Suppose you have a vector of subject weights (in kg) matching your results:
+subject_weights <- c(79, 72, 68, 90, 65, 80, 77, 85, 70, 75, 82, 88)
+results_norm_weight <- normalize_weight(
+  results_obj,
+  subject = unique(d_conc$Subject),
+  weight = subject_weights,
+  unit = "kg",
+  parameters = "cmax"
+)
+as.data.frame(results_norm_weight) %>% filter(PPTESTCD == "cmax.wn")
+```
+
+Other available normalization functions will provide different suffixes: `.bmin` for BMI normalization, `.san` for surface area normalization, and `.mwn` for molecular weight normalization.
+
+## Doing custom normalizations
+If none of the built-in normalization functions meet your needs, you can perform custom normalizations using the `normalize()` function. This function allows you to specify a normalization table and parameters to normalize.
+An example imitating the previous weight normalization is shown below, using a custom suffix `.custom`:
+```{r normalize-custom}
+# Create a normalization table for each subject
+norm_table <- data.frame(Subject = unique(d_conc$Subject), normalization = subject_weights, unit = "kg")
+results_norm_custom <- normalize(
+  results_obj,
+  norm_table = norm_table,
+  parameters = "cmax",
+  suffix = ".custom"
+)
+as.data.frame(results_norm_custom) %>% filter(PPTESTCD == "cmax.custom")
+```
+
 # Extracting Results
 
 ## Summary Results
