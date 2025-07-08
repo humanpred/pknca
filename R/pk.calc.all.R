@@ -272,14 +272,19 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
         args$exclude_half.life <- conc_data_interval$exclude_half.life
       }
       # Try the calculation
-      calculated_interval <-
-        tryCatch(
-          do.call(pk.nca.interval, args),
-          error=function(e) {
-            e$message <- paste("Please report a bug.\n", error_preamble, e$message, sep=": ") # nocov
-            stop(e) # nocov
-          }
-        )
+      if (!is.null(PKNCA.options()$debug)) {
+        # debugging mode does not need coverage
+        calculated_interval <- do.call(pk.nca.interval, args) # nocov
+      } else {
+        calculated_interval <-
+          tryCatch(
+            do.call(pk.nca.interval, args),
+            error=function(e) {
+              e$message <- paste("Please report a bug.\n", error_preamble, e$message, sep=": ") # nocov
+              stop(e) # nocov
+            }
+          )
+      }
       # Add all the new data into the output
       new_ret <-
         cbind(
