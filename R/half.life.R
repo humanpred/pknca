@@ -27,6 +27,7 @@
 #' @inheritParams assert_conc_time
 #' @inheritParams choose_interval_method
 #' @inheritParams PKNCA.choose.option
+#' @inheritParams pk.nca.interval
 #' @param tmax Time of maximum concentration (will be calculated and
 #'   included in the return data frame if not given)
 #' @param tlast Time of last concentration above the limit of
@@ -75,6 +76,8 @@
 #' @family NCA parameter calculations
 #' @export
 pk.calc.half.life <- function(conc, time, tmax, tlast,
+                              time.dose=NULL,
+                              duration.dose=0,
                               manually.selected.points=FALSE,
                               options=list(),
                               min.hl.points=NULL,
@@ -118,11 +121,18 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   # if (inherits(data$conc, "units")) {
   #   conc_units <- units(data$conc)
   # } else {
-    conc_units <- NULL
+  conc_units <- NULL
   #}
   data$log_conc <- log(data$conc)
-  # as.numeric() to handle units objects
+  # Filter out points with 0 concentration. as.numeric() to handle units objects
   data <- data[as.numeric(data$conc) > 0,]
+  if (!is.null(time.dose)) {
+    # If multiple doses are within the interval, consider only the one ending the latest
+    end.dose <- as.numeric(time.dose) + as.numeric(duration.dose)
+    if (any(!is.na(end.dose))) {
+      data <- data[as.numeric(data$time) > max(end.dose, na.rm = TRUE), ]
+    }
+  }
   # Prepare the return values
   ret <- data.frame(
     # Terminal elimination slope
@@ -282,16 +292,16 @@ fit_half_life <- function(data, tlast, conc_units) {
   # } else if (inherits(tlast, "mixed_units")) {
   #   time_units <- units(units::as_units(tlast))
   # } else {
-    time_units <- NULL
+  time_units <- NULL
   # }
   # if (!is.null(time_units)) {
   #   inverse_time_units <- time_units
   #   inverse_time_units$numerator <- time_units$denominator
   #   inverse_time_units$denominator <- time_units$numerator
   # } else {
-    inverse_time_units <- NULL
+  inverse_time_units <- NULL
   # }
-
+  
   # as.numeric is so that it works for units objects
   r_squared <- 1 - as.numeric(sum(fit$residuals^2))/as.numeric(sum((data$log_conc - mean(data$log_conc))^2))
   clast_pred <- exp(sum(fit$coefficients*c(1, as.numeric(tlast))))
@@ -454,7 +464,7 @@ get_halflife_points <- function(object) {
   # Insert a ROWID column so that we can reconstruct the order at the end
   rowid_col <- paste0(max(names(as.data.frame(as_PKNCAconc(object)))), "ROWID")
   object$data$conc$data[[rowid_col]] <- seq_len(nrow(object$data$conc$data))
-
+  
   # Find the concentrations and results that go together
   splitdata <- full_join_PKNCAdata(as_PKNCAdata(object), extra_conc_cols = rowid_col)
   splitresults_prep <- as.data.frame(object)
@@ -468,7 +478,7 @@ get_halflife_points <- function(object) {
       splitdata, splitresults,
       by = intersect(names(splitdata), names(splitresults))
     )
-
+  
   ret <- rep(NA, nrow(as.data.frame(as_PKNCAconc(object))))
   for (idx in seq_len(nrow(base_results))) {
     ret_current <-
