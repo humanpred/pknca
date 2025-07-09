@@ -183,13 +183,13 @@ test_that("exclude_nca_by_param works as expected", {
   # throws an error for invalid min_thr
   expect_error(
     exclude_nca_by_param("span.ratio", min_thr = "invalid"),
-    "when defined min_thr must be a single numeric value"
+    "Check on 'min_thr' failed: Must be of type 'number'"
   )
 
   # throws an error for invalid max_thr
   expect_error(
     exclude_nca_by_param(parameter = "span.ratio", max_thr = c(1, 2)),
-    "when defined max_thr must be a single numeric value"
+    "Check on 'max_thr' failed: Must have length 1"
   )
 
   # throws an error when min_thr is greater than max_thr
