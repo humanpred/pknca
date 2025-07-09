@@ -7,7 +7,7 @@
 normalize(object, norm_table, parameters, suffix)
 }
 \arguments{
-\item{object}{A PKNCAresults object or data.frame}
+\item{object}{A PKNCAresults object or result data.frame}
 
 \item{norm_table}{data.frame with group columns, normalization values (\code{normalization}), and units (\code{unit})}
 

@@ -1,38 +1,30 @@
 
 #' Normalize parameters in a PKNCAresults object or data.frame
 #'
-#' @param object A PKNCAresults object or data.frame
+#' @param object A PKNCAresults object or result data.frame
 #' @param norm_table data.frame with group columns, normalization values (`normalization`), and units (`unit`)
 #' @param parameters character vector of parameter names to normalize
 #' @param suffix character value to add for the normalized parameter names
 #' @return A data.frame with normalized parameters
 #' @export
 normalize <- function(object, norm_table, parameters, suffix) {
-  UseMethod("normalize")
+  UseMethod("normalize", object)
 }
 
 #' @export
 normalize.PKNCAresults <- function(object, norm_table, parameters, suffix) {
-  if (!"PPSTRES" %in% names(object$result)) {
-    object$result$PPSTRES <- object$result$PPORRES
-    if (!"PPORRESU" %in% names(object$result)) {
-      object$result$PPORRESU <- NA_character_
-    }
-    object$result$PPSTRESU <- object$result$PPORRESU
-  }
   norm_parameters <- normalize(as.data.frame(object), norm_table, parameters, suffix)
-  object$result <- dplyr::bind_rows(object$result, norm_parameters)
+  object$result <- rbind(object$result, norm_parameters)
   object
 }
 
 #' @export
 normalize.data.frame <- function(object, norm_table, parameters, suffix) {
-  data <- object
   common_colnames <- setdiff(
-    intersect(names(data), names(norm_table)),
+    intersect(names(object), names(norm_table)),
     c("unit", "normalization")
   )
-  not_common_groups <- dplyr::anti_join(norm_table, data, by = common_colnames)
+  not_common_groups <- dplyr::anti_join(norm_table, object, by = common_colnames)
   if (nrow(not_common_groups) > 0) {
     stop(
       "The normalization table contains groups not present in the data: ",
@@ -42,19 +34,21 @@ normalize.data.frame <- function(object, norm_table, parameters, suffix) {
   if (any(duplicated(norm_table[, common_colnames, drop = FALSE]))) {
     stop("The normalization table contains duplicate groups.")
   }
-  df <- data[data$PPTESTCD %in% parameters, ]
+  df <- object[object$PPTESTCD %in% parameters, ]
   df <- merge(df, norm_table, by = common_colnames)
-  if (!"PPSTRES" %in% names(df)) {
-    df$PPSTRES <- df$PPORRES
-    if (!"PPORRESU" %in% names(df)) {
-      df$PPORRESU <- NA_character_
-    }
-    df$PPSTRESU <- df$PPORRESU
+
+  df$PPORRES <- df$PPORRES / df$normalization
+  if ("PPORRESU" %in% names(df)) {
+    df$PPORRESU <- paste0(df$PPORRESU, "/", df$unit)
   }
-  df$PPSTRES <- df$PPSTRES / df$normalization
-  df$PPSTRESU <- paste0(df$PPSTRESU, "/", df$unit)
+  if ("PPSTRES" %in% names(df)) {
+    df$PPSTRES <- df$PPSTRES / df$normalization
+    if ("PPSTRESU" %in% names(df)) {
+      df$PPSTRESU <- paste0(df$PPSTRESU, "/", df$unit)
+    }
+  }
   df$PPTESTCD <- paste0(df$PPTESTCD, suffix)
-  df[, unique(c(colnames(data), "PPSTRES", "PPSTRESU")), drop = FALSE]
+  df[, colnames(object), drop = FALSE]
 }
 
 
@@ -73,9 +67,11 @@ normalize_by_column <- function(object, column_type, column_values, normalizatio
     if (!inherits(object, "PKNCAresults")) {
         stop("The object must be a PKNCAresults object.")
     }
-    colname <- unlist(object$data$conc$columns)[[column_type]]
-    if (is.null(colname)) {
+    obj_columns <- unlist(object$data$conc$columns)
+    if (!column_type %in% names(obj_columns)) {
         stop("Column ", column_type, " not found in the PKNCAresults object.")
+    } else {
+        colname <- obj_columns[[column_type]]
     }
     if (length(column_values) != length(normalization_values)) {
         stop("The length of ", column_type, " values and normalization_values must be the same.")
