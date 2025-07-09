@@ -191,8 +191,8 @@ exclude_nca_tmax_0 <- function() {
 #' @examples
 #' # Example dataset
 #' my_data <- PKNCA::PKNCAdata(
-#'   PKNCA::PKNCAconc(data.frame(conc = c(1, 2, 3, 4),
-#'                               time = c(0, 1, 2, 3),
+#'   PKNCA::PKNCAconc(data.frame(conc = 5:1,
+#'                               time = 0:4,
 #'                               subject = 1),
 #'                    conc ~ time | subject),
 #'   PKNCA::PKNCAdose(data.frame(subject = 1, dose = 100, time = 0),
@@ -200,10 +200,10 @@ exclude_nca_tmax_0 <- function() {
 #' )
 #' my_result <- PKNCA::pk.nca(my_data)
 #'
-#' # Exclude rows where span.ratio is less than 100
+#' # Exclude rows where span.ratio is less than 2
 #' excluded_result <- PKNCA::exclude(
 #'   my_result,
-#'   FUN = exclude_nca_by_param("span.ratio", min_thr = 100)
+#'   FUN = exclude_nca_by_param("span.ratio", min_thr = 2)
 #' )
 #' as.data.frame(excluded_result)
 #'
