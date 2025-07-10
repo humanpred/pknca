@@ -395,7 +395,7 @@ test_that("PKNCAdata units (#336)", {
   o_dose <- PKNCAdose(data = d_dose, dose~time, doseu = "doseu_x")
   expect_error(
     PKNCAdata(o_conc, o_dose),
-    regexp = "Only one unit may be provided at a time: A, C"
+    regexp = "Units should be uniform at least across concentration groups"
   )
 })
 
