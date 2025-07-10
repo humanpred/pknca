@@ -1588,37 +1588,39 @@ dependent on an excluded parameter will be excluded.</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">o_nca_excluded</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">o_nca</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="../reference/exclude.html">exclude</a></span><span class="op">(</span>FUN<span class="op">=</span><span class="fu"><a href="../reference/exclude_nca.html">exclude_nca_span.ratio</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">o_nca_excluded</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="../reference/exclude.html">exclude</a></span><span class="op">(</span>FUN<span class="op">=</span><span class="fu"><a href="../reference/exclude_nca.html">exclude_nca_span.ratio</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Loading required namespace: testthat</span></span></code></pre>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">o_nca_excluded</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 13 × 5</span></span></span>
 <span><span class="co">##    start   end PPTESTCD            PPORRES exclude       </span></span>
 <span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 1</span>     0   <span style="color: #BB0000;">Inf</span> tmax                 0      <span style="color: #BB0000;">NA</span>            </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 2</span>     0   <span style="color: #BB0000;">Inf</span> tlast                3      <span style="color: #BB0000;">NA</span>            </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 3</span>     0   <span style="color: #BB0000;">Inf</span> clast.obs            0.062<span style="text-decoration: underline;">5</span> <span style="color: #BB0000;">NA</span>            </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 4</span>     0   <span style="color: #BB0000;">Inf</span> lambda.z             0.693  Span ratio &lt; 3</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 5</span>     0   <span style="color: #BB0000;">Inf</span> r.squared            1      Span ratio &lt; 3</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 6</span>     0   <span style="color: #BB0000;">Inf</span> adj.r.squared        1      Span ratio &lt; 3</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.first  1      Span ratio &lt; 3</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 8</span>     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.last   3      Span ratio &lt; 3</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 9</span>     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points    3      Span ratio &lt; 3</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">10</span>     0   <span style="color: #BB0000;">Inf</span> clast.pred           0.062<span style="text-decoration: underline;">5</span> Span ratio &lt; 3</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">11</span>     0   <span style="color: #BB0000;">Inf</span> half.life            1      Span ratio &lt; 3</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">12</span>     0   <span style="color: #BB0000;">Inf</span> span.ratio           2      Span ratio &lt; 3</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">13</span>     0   <span style="color: #BB0000;">Inf</span> aucinf.obs           0.721  Span ratio &lt; 3</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;"> 4</span>     0   <span style="color: #BB0000;">Inf</span> lambda.z             0.693  span.ratio &lt; 3</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 5</span>     0   <span style="color: #BB0000;">Inf</span> r.squared            1      span.ratio &lt; 3</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 6</span>     0   <span style="color: #BB0000;">Inf</span> adj.r.squared        1      span.ratio &lt; 3</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.first  1      span.ratio &lt; 3</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 8</span>     0   <span style="color: #BB0000;">Inf</span> lambda.z.time.last   3      span.ratio &lt; 3</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 9</span>     0   <span style="color: #BB0000;">Inf</span> lambda.z.n.points    3      span.ratio &lt; 3</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span>     0   <span style="color: #BB0000;">Inf</span> clast.pred           0.062<span style="text-decoration: underline;">5</span> span.ratio &lt; 3</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">11</span>     0   <span style="color: #BB0000;">Inf</span> half.life            1      span.ratio &lt; 3</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">12</span>     0   <span style="color: #BB0000;">Inf</span> span.ratio           2      span.ratio &lt; 3</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">13</span>     0   <span style="color: #BB0000;">Inf</span> aucinf.obs           0.721  span.ratio &lt; 3</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 class="smaller" id="excluding-results-the-best-way-22">Excluding results (The best way, 2/2)<a class="anchor" aria-label="anchor" href="#excluding-results-the-best-way-22"></a>
 </h3>
 <p>Now, everything dependent on the half-life is excluded in
 summaries.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end aucinf.obs</span></span>
 <span><span class="co">##      0 Inf      0.721</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Caption: aucinf.obs: geometric mean and geometric coefficient of variation</span></span></code></pre>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca_excluded</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end aucinf.obs</span></span>
 <span><span class="co">##      0 Inf         NC</span></span>
@@ -1634,7 +1636,7 @@ summaries.</p>
 </h3>
 <p>Superposition assumes linear kinetics and can convert a single-dose
 profile to multi-dose.</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Subject 2 is selected for a BLQ time=0 concentration</span></span>
 <span><span class="va">d_prep</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -1657,7 +1659,7 @@ profile to multi-dose.</p>
 <span>  <span class="op">)</span></span></code></pre></div>
 <p class="forceBreak">
 </p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Want the profile for the first two doses</span></span>
 <span><span class="co"># together?</span></span>
 <span><span class="va">d_first_two</span> <span class="op">&lt;-</span></span>
@@ -1678,7 +1680,7 @@ a subject is at steady-state. PKNCA can calculate tss using trough
 concentrations either with a monoexponential increase toward
 steady-state (preferred) or a linear trend back from the final
 point.</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dose_times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">96</span><span class="op">-</span><span class="fl">1</span>, by<span class="op">=</span><span class="fl">6</span><span class="op">)</span></span>
 <span><span class="va">d_multidose</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="../reference/superposition.html">superposition</a></span><span class="op">(</span></span>
@@ -1706,7 +1708,7 @@ tricks that can help…<a class="anchor" aria-label="anchor" href="#graphics-are
 </h3>
 <p>Generate all individual profiles using the groups that you
 defined:</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">o_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">conc</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span>, data<span class="op">=</span><span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span><span class="op">)</span></span>
 <span><span class="va">d_plot</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/grouped_df.html" class="external-link">grouped_df</a></span><span class="op">(</span>data<span class="op">=</span><span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span>, vars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/nlme/man/getGroups.html" class="external-link">getGroups</a></span><span class="op">(</span><span class="va">o_conc</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -1727,7 +1729,7 @@ defined:</p>
 <p>Make summary tables using the <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> function on the
 NCA results, and use <code><a href="https://rdrr.io/pkg/pander/man/pander.html" class="external-link">pander::pander()</a></code> to make a pretty
 table with captions.</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pander</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pander/man/pander.html" class="external-link">pander</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table style="width:38%;" class="table">
 <caption>aucinf.obs: geometric mean and geometric coefficient of
@@ -1750,7 +1752,7 @@ variation</caption>
 </table>
 <p>Make an NCA data listing using the <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>
 function on the NCA results.</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pander</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pander/man/pander.html" class="external-link">pander</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -1817,7 +1819,7 @@ Validation</a> vignette.</p>
 <h3 class="smaller" id="single--and-multiple-dose-single-analyte-setup-the-underlying-datasets">Single- and Multiple-dose, single analyte: Setup the
 underlying datasets<a class="anchor" aria-label="anchor" href="#single--and-multiple-dose-single-analyte-setup-the-underlying-datasets"></a>
 </h3>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_conc</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>time<span class="op">=</span><span class="va">Time</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -1846,7 +1848,7 @@ underlying datasets<a class="anchor" aria-label="anchor" href="#single--and-mult
 <h3 class="smaller" id="single--and-multiple-dose-single-analyte-setup-the-concentration-and-dose-datasets">Single- and Multiple-dose, single analyte: Setup the
 concentration and dose datasets<a class="anchor" aria-label="anchor" href="#single--and-multiple-dose-single-analyte-setup-the-concentration-and-dose-datasets"></a>
 </h3>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_single_multi_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">d_singledose_single_analyte</span>, <span class="va">d_multidose_single_analyte</span><span class="op">)</span></span>
 <span><span class="va">d_single_multi_dose</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">d_single_multi_conc</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -1859,7 +1861,7 @@ concentration and dose datasets<a class="anchor" aria-label="anchor" href="#sing
 <h3 class="smaller" id="single--and-multiple-dose-single-analyte-perform-basic-analysis">Single- and Multiple-dose, single analyte: Perform
 basic analysis<a class="anchor" aria-label="anchor" href="#single--and-multiple-dose-single-analyte-perform-basic-analysis"></a>
 </h3>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">o_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">d_single_multi_conc</span>, <span class="va">conc</span><span class="op">~</span><span class="va">time</span><span class="op">|</span><span class="va">Study_Part</span><span class="op">+</span><span class="va">Subject</span><span class="op">)</span></span>
 <span><span class="va">o_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">d_single_multi_dose</span>, <span class="va">Dose</span><span class="op">~</span><span class="va">time</span><span class="op">|</span><span class="va">Study_Part</span><span class="op">+</span><span class="va">Subject</span><span class="op">)</span></span>
 <span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span><span class="op">)</span></span>
@@ -1964,14 +1966,14 @@ basic analysis<a class="anchor" aria-label="anchor" href="#single--and-multiple-
 <span><span class="co">## 2         FALSE  FALSE      FALSE     Single</span></span>
 <span><span class="co">## 3         FALSE  FALSE      FALSE   Multiple</span></span>
 <span><span class="co">## 4         FALSE  FALSE      FALSE   Multiple</span></span></code></pre>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 class="smaller" id="single--and-multiple-dose-single-analyte-use-intervals-for-fewer-subjects">Single- and Multiple-dose, single analyte: Use
 intervals for fewer subjects<a class="anchor" aria-label="anchor" href="#single--and-multiple-dose-single-analyte-use-intervals-for-fewer-subjects"></a>
 </h3>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_intervals</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    start<span class="op">=</span><span class="fl">0</span>,</span>
@@ -2004,7 +2006,7 @@ intervals for fewer subjects<a class="anchor" aria-label="anchor" href="#single-
 <pre><code><span><span class="co">## Warning: Study_Part=Multiple; Subject=10: No intervals for data</span></span></code></pre>
 <pre><code><span><span class="co">## Warning: Study_Part=Multiple; Subject=11: No intervals for data</span></span></code></pre>
 <pre><code><span><span class="co">## Warning: Study_Part=Multiple; Subject=12: No intervals for data</span></span></code></pre>
-<div class="sourceCode" id="cb73"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb75"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end Study_Part N aucinf.obs</span></span>
 <span><span class="co">##      0  24     Single 2 144 [69.0]</span></span>
@@ -2015,7 +2017,7 @@ intervals for fewer subjects<a class="anchor" aria-label="anchor" href="#single-
 <h3 class="smaller" id="single--and-multiple-dose-single-analyte-use-custom-intervals-per-subjects">Single- and Multiple-dose, single analyte: Use
 custom intervals per subjects<a class="anchor" aria-label="anchor" href="#single--and-multiple-dose-single-analyte-use-custom-intervals-per-subjects"></a>
 </h3>
-<div class="sourceCode" id="cb75"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb77"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Find the time closest to 12 hours</span></span>
 <span><span class="va">d_intervals_prep</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">d_single_multi_conc</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -2047,7 +2049,7 @@ custom intervals per subjects<a class="anchor" aria-label="anchor" href="#single
 <pre><code><span><span class="co">## Warning: Study_Part=Multiple; Subject=10: No intervals for data</span></span></code></pre>
 <pre><code><span><span class="co">## Warning: Study_Part=Multiple; Subject=11: No intervals for data</span></span></code></pre>
 <pre><code><span><span class="co">## Warning: Study_Part=Multiple; Subject=12: No intervals for data</span></span></code></pre>
-<div class="sourceCode" id="cb88"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb90"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span>, drop.group<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Subject"</span>, <span class="st">"end"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Warning: The `drop.group` argument of `summary.PKNCAresults()` is deprecated as of PKNCA</span></span>
 <span><span class="co">## 0.11.0.</span></span>
@@ -2066,7 +2068,7 @@ custom intervals per subjects<a class="anchor" aria-label="anchor" href="#single
 <div class="section level3">
 <h3 id="single--and-multiple-dose-parent-and-metabolite">Single- and Multiple-dose, parent and metabolite<a class="anchor" aria-label="anchor" href="#single--and-multiple-dose-parent-and-metabolite"></a>
 </h3>
-<div class="sourceCode" id="cb92"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb94"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_single_multi_conc_multi_analyte</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
 <span>    <span class="va">d_single_multi_conc</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Analyte<span class="op">=</span><span class="st">"Parent"</span><span class="op">)</span>,</span>
