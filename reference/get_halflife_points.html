@@ -73,11 +73,12 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A logical vector with <code>TRUE</code> if the point was used for half-life,
-<code>FALSE</code> if it was not used for half-life but the half-life was calculated
-for the interval, and <code>NA</code> if half-life was not calculated for the
-interval. If a row is excluded from all calculations, it is set to <code>NA</code> as
-well.</p>
+    <p>A logical vector with <code>TRUE</code> if the point was used for half-life
+(including concentrations below the limit of quantification within the
+range of times for calculation), <code>FALSE</code> if it was not used for half-life
+but the half-life was calculated for the interval, and <code>NA</code> if half-life
+was not calculated for the interval. If a row is excluded from all
+calculations, it is set to <code>NA</code> as well.</p>
     </div>
 
     <div class="section level2">
