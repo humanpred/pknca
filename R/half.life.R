@@ -301,7 +301,7 @@ fit_half_life <- function(data, tlast, conc_units) {
   # } else {
   inverse_time_units <- NULL
   # }
-  
+
   # as.numeric is so that it works for units objects
   r_squared <- 1 - as.numeric(sum(fit$residuals^2))/as.numeric(sum((data$log_conc - mean(data$log_conc))^2))
   clast_pred <- exp(sum(fit$coefficients*c(1, as.numeric(tlast))))
@@ -449,11 +449,12 @@ PKNCA.set.summary(
 #' Determine which concentrations were used for half-life calculation
 #'
 #' @param object A PKNCAresults object
-#' @returns A logical vector with `TRUE` if the point was used for half-life,
-#'   `FALSE` if it was not used for half-life but the half-life was calculated
-#'   for the interval, and `NA` if half-life was not calculated for the
-#'   interval. If a row is excluded from all calculations, it is set to `NA` as
-#'   well.
+#' @returns A logical vector with `TRUE` if the point was used for half-life
+#'   (including concentrations below the limit of quantification within the
+#'   range of times for calculation), `FALSE` if it was not used for half-life
+#'   but the half-life was calculated for the interval, and `NA` if half-life
+#'   was not calculated for the interval. If a row is excluded from all
+#'   calculations, it is set to `NA` as well.
 #' @examples
 #' o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
 #' o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
@@ -464,7 +465,7 @@ get_halflife_points <- function(object) {
   # Insert a ROWID column so that we can reconstruct the order at the end
   rowid_col <- paste0(max(names(as.data.frame(as_PKNCAconc(object)))), "ROWID")
   object$data$conc$data[[rowid_col]] <- seq_len(nrow(object$data$conc$data))
-  
+
   # Find the concentrations and results that go together
   splitdata <- full_join_PKNCAdata(as_PKNCAdata(object), extra_conc_cols = rowid_col)
   splitresults_prep <- as.data.frame(object)
@@ -478,7 +479,7 @@ get_halflife_points <- function(object) {
       splitdata, splitresults,
       by = intersect(names(splitdata), names(splitresults))
     )
-  
+
   ret <- rep(NA, nrow(as.data.frame(as_PKNCAconc(object))))
   for (idx in seq_len(nrow(base_results))) {
     ret_current <-
