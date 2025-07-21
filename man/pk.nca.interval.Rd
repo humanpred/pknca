@@ -46,13 +46,12 @@ for urine and fecal measurements)}
 \item{dose, dose.group}{Dose amount (may be a scalar or vector) for the
 current interval or all data for the group}
 
-\item{time.dose, time.dose.group}{Time of the dose for the current interval or
-all data for the group (must be the same length as \code{dose} or \code{dose.group})}
+\item{time.dose}{Time of the dose for the current interval (must be the same
+length as \code{dose})}
 
-\item{duration.dose, duration.dose.group}{The duration of the dose
-administration for the current interval or all data for the group
-(typically zero for extravascular and intravascular bolus and nonzero for
-intravascular infusion)}
+\item{duration.dose}{The duration of the dose administration for the current
+interval (typically zero for extravascular and intravascular bolus and
+nonzero for intravascular infusion)}
 
 \item{route, route.group}{The route of dosing for the current interval or all
 data for the group}
@@ -60,6 +59,13 @@ data for the group}
 \item{conc.group}{All concentrations measured for the group}
 
 \item{time.group}{Time of all concentrations measured for the group}
+
+\item{time.dose.group}{Time of the dose for all data for the group (must be
+the same length as \code{dose.group})}
+
+\item{duration.dose.group}{The duration of the dose administration for all
+data for the group (typically zero for extravascular and intravascular
+bolus and nonzero for intravascular infusion)}
 
 \item{impute_method}{The method to use for imputation as a character string}
 
