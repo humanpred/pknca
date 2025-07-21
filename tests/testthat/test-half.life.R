@@ -260,7 +260,7 @@ test_that("lambda.z.time.first is after the absorption phase in infusion studies
     route = "intravascular",
     subject = 1
   )
-  
+
   # First case: duration = 2, so lambda.z.time.first should be after 2
   o_data1 <- PKNCAdata(
     PKNCAconc(d_conc, conc ~ time | subject),
@@ -270,7 +270,7 @@ test_that("lambda.z.time.first is after the absorption phase in infusion studies
   res1 <- pk.nca(o_data1)
   lz_first1 <- res1$result$PPORRES[res1$result$PPTESTCD == "lambda.z.time.first"]
   expect_equal(lz_first1, 3)
-  
+
   # Second case: duration = 4, so lambda.z.time.first should be after 3
   o_data2 <- PKNCAdata(
     PKNCAconc(d_conc, conc ~ time | subject),
@@ -280,7 +280,7 @@ test_that("lambda.z.time.first is after the absorption phase in infusion studies
   res2 <- pk.nca(o_data2)
   lz_first2 <- res2$result$PPORRES[res2$result$PPTESTCD == "lambda.z.time.first"]
   expect_equal(lz_first2, 4)
-  
+
   # And the second case should be later than the first
   expect_true(lz_first2 > lz_first1)
 })
@@ -316,7 +316,7 @@ test_that("for an interval with multiple doses lambda.z is calculated for the la
 test_that("get_halflife_points", {
   o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
-  o_nca <- pk.nca(o_data)
+  o_nca <- suppressMessages(pk.nca(o_data))
   hl_points <- suppressMessages(get_halflife_points(o_nca))
 
   # Visualize the results
@@ -401,5 +401,35 @@ test_that("get_halflife_points", {
   expect_error(
     suppressMessages(get_halflife_points(o_nca)),
     regexp = "More than one half-life calculation was attempted on the following rows: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11"
+  )
+
+  # Half-life points are selected right even if lambda.z.time.last != tlast (#448)
+  d_conc <- data.frame(
+    conc = c(1, 0.5, 0.25, 0.125, 0.07, 0, 0.01),
+    time = c(0, 1, 2, 3, 4, 5, 6),
+    exclude_hl = c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE),
+    subject = 1
+  )
+  # without exclusion of Tlast
+  o_conc <- PKNCAconc(d_conc, formula = conc ~ time | subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  hl_points <- suppressMessages(get_halflife_points(o_nca))
+  # Note that BLQ times are included
+  expect_equal(
+    d_conc$time[which(hl_points)],
+    1:6,
+    info = "get_halflife_points uses lambda.z.time.last, not tlast"
+  )
+  # with exclusion of Tlast
+  o_conc <- PKNCAconc(d_conc, formula = conc ~ time | subject, exclude_half.life = "exclude_hl")
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  hl_points <- suppressMessages(get_halflife_points(o_nca))
+  # lambda.z.time.last should be 4, tlast is 6 and excluded
+  expect_equal(
+    d_conc$time[which(hl_points)],
+    1:4,
+    info = "get_halflife_points uses lambda.z.time.last, not tlast"
   )
 })

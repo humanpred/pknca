@@ -34,6 +34,13 @@ included in the return data frame if not given)}
 quantification (will be calculated and included in the return data
 frame if not given)}
 
+\item{time.dose}{Time of the dose for the current interval (must be the same
+length as \code{dose})}
+
+\item{duration.dose}{The duration of the dose administration for the current
+interval (typically zero for extravascular and intravascular bolus and
+nonzero for intravascular infusion)}
+
 \item{manually.selected.points}{Have the input points (\code{conc} and
 \code{time}) been manually selected?  The impact of setting this to
 \code{TRUE} is that no selection for the best points will be done.  When
