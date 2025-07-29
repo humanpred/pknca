@@ -4,10 +4,22 @@ will continue until then.  These will be especially noticeable around
 the inclusion of IV NCA parameters and additional specifications of
 the dosing including dose amount and route.
 
-# PKNCA development version
+# PKNCA (development version)
 
-## New Features
+## Minor changes (unlikely to affect PKNCA use)
 
+* Units for fraction excretion parameter (fe) are now accurately captured as
+  amount/dose units rather than "fraction" (#426)
+* `get_halflife_points` will disconsider later points to `lambda.z.time.last`, instead of `tlast` (#448)
+* `lambda.z` calculations will now only consider time points that occur after
+  the end of the latest dose administration (#139)
+* `aucint.inf.pred` is `NA` when half-life is not estimable (#450)
+
+## New features
+
+* PKNCA now has a debugging mode to support troubleshooting; it is not intended
+  for production use. Debugging mode can be enabled using
+  `PKNCA.options(debug = TRUE)`.
 * It is now possible to update an existing analysis when data changes but other
   NCA settings stay the same (fix #417)
 * New assertion functions were created to ensure that an object is the correct
@@ -24,6 +36,7 @@ the dosing including dose amount and route.
   calculate `c0` and does not raise an error when `is.na(c0)` (#353).
 * Manual calculation of half.life no longer allows negative half-live values
   (#373).
+* pk.calc.half.life() now returns also lambda.z.time.last, the last time point used for terminal slope estimation.
 
 ## New Features
 
@@ -46,6 +59,8 @@ the dosing including dose amount and route.
   `allow_partial_missing_units = TRUE`. (#398)
 * A new function `get_halflife_points()` lets users know which points were used
   for half-life calculation. (#387)
+* A new function `exclude_nca_min.hl.adj.r.squared()` to allow exclusion of
+  half-life results based on a minimum adjusted r-squared threshold.
 
 ## Minor changes (unlikely to affect PKNCA use)
 
@@ -59,6 +74,7 @@ the dosing including dose amount and route.
 * Removed native pipes (`|>`) so that PKNCA will work with older versions of R
   (#304).
 * Missing dosing times to `pk.calc.c0()` will not cause an error (#344)
+* `getGroups()` includes the `end` column when applied to a `PKNCAresults` object (#419).
 
 # PKNCA 0.11.0
 

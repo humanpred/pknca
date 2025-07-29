@@ -27,6 +27,7 @@
 #' @inheritParams assert_conc_time
 #' @inheritParams choose_interval_method
 #' @inheritParams PKNCA.choose.option
+#' @inheritParams pk.nca.interval
 #' @param tmax Time of maximum concentration (will be calculated and
 #'   included in the return data frame if not given)
 #' @param tlast Time of last concentration above the limit of
@@ -58,6 +59,7 @@
 #'   \item{adj.r.squared}{adjusted coefficient of determination}
 #'   \item{lambda.z}{elimination rate}
 #'   \item{lambda.z.time.first}{first time for half-life calculation}
+#'   \item{lambda.z.time.last}{last time for half-life calculation}
 #'   \item{lambda.z.n.points}{number of points in half-life calculation}
 #'   \item{clast.pred}{Concentration at tlast as predicted by the half-life
 #'     line}
@@ -74,6 +76,8 @@
 #' @family NCA parameter calculations
 #' @export
 pk.calc.half.life <- function(conc, time, tmax, tlast,
+                              time.dose=NULL,
+                              duration.dose=0,
                               manually.selected.points=FALSE,
                               options=list(),
                               min.hl.points=NULL,
@@ -117,11 +121,18 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   # if (inherits(data$conc, "units")) {
   #   conc_units <- units(data$conc)
   # } else {
-    conc_units <- NULL
+  conc_units <- NULL
   #}
   data$log_conc <- log(data$conc)
-  # as.numeric() to handle units objects
+  # Filter out points with 0 concentration. as.numeric() to handle units objects
   data <- data[as.numeric(data$conc) > 0,]
+  if (!is.null(time.dose)) {
+    # If multiple doses are within the interval, consider only the one ending the latest
+    end.dose <- as.numeric(time.dose) + as.numeric(duration.dose)
+    if (any(!is.na(end.dose))) {
+      data <- data[as.numeric(data$time) > max(end.dose, na.rm = TRUE), ]
+    }
+  }
   # Prepare the return values
   ret <- data.frame(
     # Terminal elimination slope
@@ -132,6 +143,8 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     adj.r.squared=NA,
     # First time point used in the slope estimation (for plotting later)
     lambda.z.time.first=NA,
+    # Last time point used in the slope estimation (for plotting later)
+    lambda.z.time.last=NA,
     # Number of points in the half-life estimate
     lambda.z.n.points=NA,
     # Concentration at Tlast predicted by the half-life
@@ -142,7 +155,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     span.ratio=NA)
   ret_replacements <-
     c("lambda.z", "r.squared", "adj.r.squared", "lambda.z.time.first",
-      "lambda.z.n.points", "clast.pred", "half.life", "span.ratio")
+      "lambda.z.time.last", "lambda.z.n.points", "clast.pred", "half.life", "span.ratio")
   if (missing(tmax)) {
     ret$tmax <-
       pk.calc.tmax(
@@ -189,6 +202,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
         lambda.z=-Inf,
         lambda.z.n.points=NA_integer_,
         lambda.z.time.first=dfK$time,
+        lambda.z.time.last=NA_real_,
         log_conc=dfK$log_conc,
         span.ratio=NA_real_,
         half.life=NA_real_
@@ -278,14 +292,14 @@ fit_half_life <- function(data, tlast, conc_units) {
   # } else if (inherits(tlast, "mixed_units")) {
   #   time_units <- units(units::as_units(tlast))
   # } else {
-    time_units <- NULL
+  time_units <- NULL
   # }
   # if (!is.null(time_units)) {
   #   inverse_time_units <- time_units
   #   inverse_time_units$numerator <- time_units$denominator
   #   inverse_time_units$denominator <- time_units$numerator
   # } else {
-    inverse_time_units <- NULL
+  inverse_time_units <- NULL
   # }
 
   # as.numeric is so that it works for units objects
@@ -305,6 +319,7 @@ fit_half_life <- function(data, tlast, conc_units) {
       lambda.z=lambda_z,
       clast.pred=clast_pred,
       lambda.z.time.first=min(data$time, na.rm=TRUE),
+      lambda.z.time.last=max(data$time, na.rm=TRUE),
       lambda.z.n.points=nrow(data)
     )
   ret$half.life <- log(2)/ret$lambda.z
@@ -378,6 +393,19 @@ PKNCA.set.summary(
   point=business.median,
   spread=business.range
 )
+add.interval.col("lambda.z.time.last",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="time",
+                 pretty_name="Last time for $\\lambda_z$",
+                 desc="The last time point used for the calculation of half-life",
+                 depends="half.life")
+PKNCA.set.summary(
+  name="lambda.z.time.last",
+  description="median and range",
+  point=business.median,
+  spread=business.range
+)
 add.interval.col("lambda.z.n.points",
                  FUN=NA,
                  values=c(FALSE, TRUE),
@@ -421,11 +449,12 @@ PKNCA.set.summary(
 #' Determine which concentrations were used for half-life calculation
 #'
 #' @param object A PKNCAresults object
-#' @returns A logical vector with `TRUE` if the point was used for half-life,
-#'   `FALSE` if it was not used for half-life but the half-life was calculated
-#'   for the interval, and `NA` if half-life was not calculated for the
-#'   interval. If a row is excluded from all calculations, it is set to `NA` as
-#'   well.
+#' @returns A logical vector with `TRUE` if the point was used for half-life
+#'   (including concentrations below the limit of quantification within the
+#'   range of times for calculation), `FALSE` if it was not used for half-life
+#'   but the half-life was calculated for the interval, and `NA` if half-life
+#'   was not calculated for the interval. If a row is excluded from all
+#'   calculations, it is set to `NA` as well.
 #' @examples
 #' o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
 #' o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
@@ -480,7 +509,7 @@ get_halflife_points_single <- function(conc, results, rowid_col) {
       ret$hl_used <- conc$include_half.life %in% TRUE
     } else {
       time_first <- results$PPORRES[results$PPTESTCD %in% "lambda.z.time.first"]
-      time_last <- results$PPORRES[results$PPTESTCD %in% "tlast"]
+      time_last <- results$PPORRES[results$PPTESTCD %in% "lambda.z.time.last"]
       excluded <-
         if ("exclude_half.life" %in% names(conc)) {
           conc$exclude_half.life %in% TRUE

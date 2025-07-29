@@ -272,14 +272,19 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
         args$exclude_half.life <- conc_data_interval$exclude_half.life
       }
       # Try the calculation
-      calculated_interval <-
-        tryCatch(
-          do.call(pk.nca.interval, args),
-          error=function(e) {
-            e$message <- paste("Please report a bug.\n", error_preamble, e$message, sep=": ") # nocov
-            stop(e) # nocov
-          }
-        )
+      if (!is.null(PKNCA.options()$debug)) {
+        # debugging mode does not need coverage
+        calculated_interval <- do.call(pk.nca.interval, args) # nocov
+      } else {
+        calculated_interval <-
+          tryCatch(
+            do.call(pk.nca.interval, args),
+            error=function(e) {
+              e$message <- paste("Please report a bug.\n", error_preamble, e$message, sep=": ") # nocov
+              stop(e) # nocov
+            }
+          )
+      }
       # Add all the new data into the output
       new_ret <-
         cbind(
@@ -317,12 +322,16 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
 #'   for urine and fecal measurements)
 #' @param dose,dose.group Dose amount (may be a scalar or vector) for the
 #'   current interval or all data for the group
-#' @param time.dose,time.dose.group Time of the dose for the current interval or
-#'   all data for the group (must be the same length as `dose` or `dose.group`)
-#' @param duration.dose,duration.dose.group The duration of the dose
-#'   administration for the current interval or all data for the group
-#'   (typically zero for extravascular and intravascular bolus and nonzero for
-#'   intravascular infusion)
+#' @param time.dose Time of the dose for the current interval (must be the same
+#'   length as `dose`)
+#' @param time.dose.group Time of the dose for all data for the group (must be
+#'   the same length as `dose.group`)
+#' @param duration.dose The duration of the dose administration for the current
+#'   interval (typically zero for extravascular and intravascular bolus and
+#'   nonzero for intravascular infusion)
+#' @param duration.dose.group The duration of the dose administration for all
+#'   data for the group (typically zero for extravascular and intravascular
+#'   bolus and nonzero for intravascular infusion)
 #' @param route,route.group The route of dosing for the current interval or all
 #'   data for the group
 #' @param impute_method The method to use for imputation as a character string

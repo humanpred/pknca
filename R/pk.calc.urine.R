@@ -123,7 +123,7 @@ pk.calc.fe <- function(ae, dose) {
 }
 add.interval.col("fe",
                  FUN="pk.calc.fe",
-                 unit_type="fraction",
+                 unit_type="amount_dose",
                  pretty_name="Fraction excreted",
                  values=c(FALSE, TRUE),
                  desc="The fraction of the dose excreted")
