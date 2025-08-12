@@ -79,7 +79,7 @@ pknca_units_table <- function(concu, doseu, amountu, timeu,
       pknca_units_table_conc_time(concu=concu, timeu=timeu),
       pknca_units_table_conc_time_dose(concu=concu, timeu=timeu, doseu=doseu),
       pknca_units_table_conc_time_amount(concu=concu, timeu=timeu, amountu=amountu),
-      pknca_units_table_conc_time_dose_amount(concu=concu, timeu=timeu, doseu=doseu, amountu=amountu)
+      pknca_units_table_conc_time_amount_dose(concu=concu, timeu=timeu, amountu=amountu, doseu=doseu)
     )
 
   # Generate preferred units and merge them into `conversions`
