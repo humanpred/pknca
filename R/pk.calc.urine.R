@@ -4,7 +4,8 @@
 #' @return The sum of urine volumes for the interval
 #' @export
 pk.calc.volpk <- function(volume) {
-  sum(volume, na.rm = TRUE)
+  if (length(volume) == 0) return(NA_real_)
+  sum(volume)
 }
 add.interval.col("volpk",
                  FUN="pk.calc.volpk",
