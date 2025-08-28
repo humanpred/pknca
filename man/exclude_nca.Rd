@@ -38,8 +38,7 @@ exclude_nca_tmax_0()
 
 \item{min_count}{Minimum number of measured concentrations}
 
-\item{exclude_param_pattern}{Character vector of regular expression patterns
-to exclude}
+\item{exclude_param_pattern}{Character vector of regular expression patterns to exclude}
 
 \item{min.hl.r.squared}{The minimum acceptable r-squared value for half-life
 (uses \code{PKNCA.options("min.hl.r.squared")} if not provided).}
@@ -47,8 +46,7 @@ to exclude}
 \item{min.hl.adj.r.squared}{The minimum acceptable adjusted r-squared for half-life
 (uses 0.9 if not provided).}
 
-\item{tmax_early}{The time for Tmax which is considered too early to be a
-valid NCA result}
+\item{tmax_early}{The time for Tmax which is considered too early to be a valid NCA result}
 }
 \description{
 Exclude NCA parameters based on examining the parameter set.
@@ -57,21 +55,17 @@ Exclude NCA parameters based on examining the parameter set.
 \itemize{
 \item \code{exclude_nca_span.ratio()}: Exclude based on span.ratio
 
-\item \code{exclude_nca_max.aucinf.pext()}: Exclude based on AUC percent extrapolated (both
-observed and predicted)
+\item \code{exclude_nca_max.aucinf.pext()}: Exclude based on AUC percent extrapolated (both observed and predicted)
 
-\item \code{exclude_nca_count_conc_measured()}: Exclude AUC measurements based on count of
-concentrations measured and not below the lower limit of quantification
+\item \code{exclude_nca_count_conc_measured()}: Exclude AUC measurements based on count of concentrations measured and not below the lower limit of quantification
 
 \item \code{exclude_nca_min.hl.r.squared()}: Exclude based on half-life r-squared
 
 \item \code{exclude_nca_min.hl.adj.r.squared()}: Exclude based on half-life adjusted r-squared
 
-\item \code{exclude_nca_tmax_early()}: Exclude based on implausibly early Tmax (often used
-for extravascular dosing with a Tmax value of 0)
+\item \code{exclude_nca_tmax_early()}: Exclude based on implausibly early Tmax (often used for extravascular dosing with a Tmax value of 0)
 
-\item \code{exclude_nca_tmax_0()}: Exclude based on implausibly early Tmax (special case
-for \code{tmax_early = 0})
+\item \code{exclude_nca_tmax_0()}: Exclude based on implausibly early Tmax (special case for \code{tmax_early = 0})
 
 }}
 \examples{

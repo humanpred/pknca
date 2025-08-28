@@ -10,7 +10,18 @@ the dosing including dose amount and route.
 
 * Units for fraction excretion parameter (fe) are now accurately captured as
   amount/dose units rather than "fraction" (#426)
-* The `PKNCAconc` won't give an error for a concentration-time check when the issue is due to an excluded point
+* `get_halflife_points` will disconsider later points to `lambda.z.time.last`, instead of `tlast` (#448)
+* `lambda.z` calculations will now only consider time points that occur after
+  the end of the latest dose administration (#139)
+* `aucint.inf.pred` is `NA` when half-life is not estimable (#450)
+* The `PKNCAconc` function won't give an error for a concentration-time check
+when the issue is due to an excluded point (#310)
+
+## New features
+
+* PKNCA now has a debugging mode to support troubleshooting; it is not intended
+  for production use. Debugging mode can be enabled using
+  `PKNCA.options(debug = TRUE)`.
 
 # PKNCA 0.12.0
 

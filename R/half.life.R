@@ -27,6 +27,7 @@
 #' @inheritParams assert_conc_time
 #' @inheritParams choose_interval_method
 #' @inheritParams PKNCA.choose.option
+#' @inheritParams pk.nca.interval
 #' @param tmax Time of maximum concentration (will be calculated and
 #'   included in the return data frame if not given)
 #' @param tlast Time of last concentration above the limit of
@@ -75,6 +76,8 @@
 #' @family NCA parameter calculations
 #' @export
 pk.calc.half.life <- function(conc, time, tmax, tlast,
+                              time.dose=NULL,
+                              duration.dose=0,
                               manually.selected.points=FALSE,
                               options=list(),
                               min.hl.points=NULL,
@@ -118,11 +121,18 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   # if (inherits(data$conc, "units")) {
   #   conc_units <- units(data$conc)
   # } else {
-    conc_units <- NULL
+  conc_units <- NULL
   #}
   data$log_conc <- log(data$conc)
-  # as.numeric() to handle units objects
+  # Filter out points with 0 concentration. as.numeric() to handle units objects
   data <- data[as.numeric(data$conc) > 0,]
+  if (!is.null(time.dose)) {
+    # If multiple doses are within the interval, consider only the one ending the latest
+    end.dose <- as.numeric(time.dose) + as.numeric(duration.dose)
+    if (any(!is.na(end.dose))) {
+      data <- data[as.numeric(data$time) > max(end.dose, na.rm = TRUE), ]
+    }
+  }
   # Prepare the return values
   ret <- data.frame(
     # Terminal elimination slope
@@ -282,14 +292,14 @@ fit_half_life <- function(data, tlast, conc_units) {
   # } else if (inherits(tlast, "mixed_units")) {
   #   time_units <- units(units::as_units(tlast))
   # } else {
-    time_units <- NULL
+  time_units <- NULL
   # }
   # if (!is.null(time_units)) {
   #   inverse_time_units <- time_units
   #   inverse_time_units$numerator <- time_units$denominator
   #   inverse_time_units$denominator <- time_units$numerator
   # } else {
-    inverse_time_units <- NULL
+  inverse_time_units <- NULL
   # }
 
   # as.numeric is so that it works for units objects
@@ -439,11 +449,12 @@ PKNCA.set.summary(
 #' Determine which concentrations were used for half-life calculation
 #'
 #' @param object A PKNCAresults object
-#' @returns A logical vector with `TRUE` if the point was used for half-life,
-#'   `FALSE` if it was not used for half-life but the half-life was calculated
-#'   for the interval, and `NA` if half-life was not calculated for the
-#'   interval. If a row is excluded from all calculations, it is set to `NA` as
-#'   well.
+#' @returns A logical vector with `TRUE` if the point was used for half-life
+#'   (including concentrations below the limit of quantification within the
+#'   range of times for calculation), `FALSE` if it was not used for half-life
+#'   but the half-life was calculated for the interval, and `NA` if half-life
+#'   was not calculated for the interval. If a row is excluded from all
+#'   calculations, it is set to `NA` as well.
 #' @examples
 #' o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
 #' o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
@@ -498,7 +509,7 @@ get_halflife_points_single <- function(conc, results, rowid_col) {
       ret$hl_used <- conc$include_half.life %in% TRUE
     } else {
       time_first <- results$PPORRES[results$PPTESTCD %in% "lambda.z.time.first"]
-      time_last <- results$PPORRES[results$PPTESTCD %in% "tlast"]
+      time_last <- results$PPORRES[results$PPTESTCD %in% "lambda.z.time.last"]
       excluded <-
         if ("exclude_half.life" %in% names(conc)) {
           conc$exclude_half.life %in% TRUE
