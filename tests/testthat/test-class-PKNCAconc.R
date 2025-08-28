@@ -12,6 +12,12 @@ test_that("PKNCAconc expected errors", {
   )
 })
 
+test_that("PKNCAconc not expected errors", {
+  # EMissing time points that are excluded are not checked
+  tmp.conc <- data.frame(time = c(1, NA), conc = c(1, NA), exclude = c(NA, "foo"))
+  expect_no_error(PKNCAconc(conc~time, data = tmp.conc, exclude = "exclude"))
+})
+
 test_that("PKNCAconc", {
   tmp.conc <- generate.conc(nsub=5, ntreat=2, time.points=0:24)
   tmp.conc.analyte <- generate.conc(nsub=5, ntreat=2, time.points=0:24,
