@@ -136,7 +136,12 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   # Do some general checking of the concentration and time data.
   # Do not check monotonic.time because the data may contain information
   # for more than one subject. Disconsider points that will be excluded.
-  is_excluded <- !is.na(data[[exclude]])
+  if (!is.null(exclude)) {
+    is_excluded <- !is.na(data[[exclude]])
+  } else {
+    is_excluded <- rep(FALSE, nrow(data))
+  }
+
   assert_conc_time(
     conc = data[[parsed_form$concentration]][!is_excluded],
     time = data[[parsed_form$time]][!is_excluded],
