@@ -10,6 +10,7 @@ the dosing including dose amount and route.
 
 * Units for fraction excretion parameter (fe) are now accurately captured as
   amount/dose units rather than "fraction" (#426)
+* The `PKNCAconc` won't give an error for a concentration-time check when the issue is due to an excluded point
 
 # PKNCA 0.12.0
 
