@@ -363,6 +363,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   if (nrow(interval) != 1) {
     stop("Please report a bug.  Interval must be a one-row data.frame")
   }
+  tmp_method <- ""
   if (!all(is.na(impute_method))) {
     impute_funs <- PKNCA_impute_fun_list(impute_method)
     stopifnot(length(impute_funs) == 1)
@@ -378,6 +379,10 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     }
     conc <- impute_data$conc
     time <- impute_data$time
+    tmp_method <- paste(
+      tmp_method, "Imputation: ",
+      paste0(impute_method, collapse = ", "), ".", sep=" "
+    )
   }
   # Prepare the return value using SDTM names
   ret <- data.frame(PPTESTCD=NA, PPORRES=NA)[-1,]
@@ -485,6 +490,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           }
         }
       }
+
       # Apply manual inclusion and exclusion
       if (n %in% "half.life") {
         if (!is.null(include_half.life) && !all(is.na(include_half.life))) {
@@ -497,6 +503,28 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           call_args$conc <- call_args$conc[!exclude_tf]
           call_args$time <- call_args$time[!exclude_tf]
         }
+      }
+      # For half-life related parameters, indicate if there was any manual inclusion / exclusion
+      if (n %in% get.parameter.deps("half.life")) {
+        any_inclusion <- !is.null(include_half.life) && !all(is.na(include_half.life))
+        any_exclusion <- !is.null(exclude_half.life) && !all(is.na(exclude_half.life))
+        tmp_method <- paste0(
+          tmp_method,
+          "Lambda Z: ",
+          {if (any_inclusion) "Manual selection" else if (any_exclusion) "Manual exclusion" else "Default"},
+          sep=" "
+        )
+      }
+      # For AUC parameters, indicate the calculation method
+      auc_parameters <- grep("auc", names(get.interval.cols()), value = TRUE)
+      if (n %in% auc_parameters) {
+        tmp_method <- paste0(
+          tmp_method,
+          "AUC: ",
+          options$auc.method,
+          ".",
+          collapse = " "
+        )
       }
       # Do the calculation
       tmp_result <- do.call(all_intervals[[n]]$FUN, call_args)
@@ -548,6 +576,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         data.frame(
           PPTESTCD=tmp_testcd,
           PPORRES=tmp_result,
+          PPANMETH=tmp_method,
           exclude=exclude_reason,
           stringsAsFactors=FALSE
         )
