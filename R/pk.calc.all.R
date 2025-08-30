@@ -10,13 +10,15 @@
 #' the interval.  For example, if an interval starts at 168 hours, ends at 192
 #' hours, and and the maximum concentration is at 169 hours, `tmax=169-168=1`.
 #'
-#' @param data A PKNCAdata object
-#' @param verbose Indicate, by `message()`, the current state of calculation.
-#' @returns A `PKNCAresults` object.
-#' @seealso [PKNCAdata()], [PKNCA.options()], [summary.PKNCAresults()],
-#'   [as.data.frame.PKNCAresults()], [exclude()]
-#' @export
-pk.nca <- function(data, verbose=FALSE) {
+##' @param data A PKNCAdata object
+##' @param verbose Indicate, by `message()`, the current state of calculation.
+##' @param include_ppanmeth Logical; if TRUE, output includes the PPANMETH column
+##' with the analysis method specifications for the parameter. Default is FALSE.
+##' @returns A `PKNCAresults` object.
+##' @seealso [PKNCAdata()], [PKNCA.options()], [summary.PKNCAresults()],
+##'   [as.data.frame.PKNCAresults()], [exclude()]
+##' @export
+pk.nca <- function(data, verbose=FALSE, include_ppanmeth=FALSE) {
   assert_PKNCAdata(data)
   results <- data.frame()
   if (nrow(data$intervals) > 0) {
@@ -72,6 +74,10 @@ pk.nca <- function(data, verbose=FALSE) {
           pk_nca_result_to_df(group_info, results_sparse)
         )
     }
+  }
+  # Remove PPANMETH column if include_ppanmeth is FALSE
+  if (!include_ppanmeth && "PPANMETH" %in% names(results)) {
+    results$PPANMETH <- NULL
   }
   PKNCAresults(
     result=results,
@@ -363,7 +369,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   if (nrow(interval) != 1) {
     stop("Please report a bug.  Interval must be a one-row data.frame")
   }
-  tmp_method <- ""
+
   if (!all(is.na(impute_method))) {
     impute_funs <- PKNCA_impute_fun_list(impute_method)
     stopifnot(length(impute_funs) == 1)
@@ -379,10 +385,11 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     }
     conc <- impute_data$conc
     time <- impute_data$time
-    tmp_method <- paste(
-      tmp_method, "Imputation: ",
-      paste0(impute_method, collapse = ", "), ".", sep=" "
+    tmp_imp_method <- c(
+      paste0("Imputation: ", paste(na.omit(impute_method), collapse = ", "))
     )
+  } else {
+    tmp_imp_method <- c()
   }
   # Prepare the return value using SDTM names
   ret <- data.frame(PPTESTCD=NA, PPORRES=NA)[-1,]
@@ -404,6 +411,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   }
   # Do the calculations
   for (n in names(all_intervals)) {
+    tmp_method <- c(tmp_imp_method)
     request_to_calculate <- as.logical(interval[[n]])
     has_calculation_function <- !is.na(all_intervals[[n]]$FUN)
     is_correct_sparse_dense <- all_intervals[[n]]$sparse == sparse
@@ -508,22 +516,20 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       if (n %in% get.parameter.deps("half.life")) {
         any_inclusion <- !is.null(include_half.life) && !all(is.na(include_half.life))
         any_exclusion <- !is.null(exclude_half.life) && !all(is.na(exclude_half.life))
-        tmp_method <- paste0(
+        tmp_method <- c(
           tmp_method,
-          "Lambda Z: ",
-          {if (any_inclusion) "Manual selection" else if (any_exclusion) "Manual exclusion" else "Default"},
-          sep=" "
+          paste0(
+            "Lambda Z: ",
+            {if (any_inclusion) "Manual selection" else if (any_exclusion) "Manual exclusion" else "Default"}
+          )
         )
       }
       # For AUC parameters, indicate the calculation method
       auc_parameters <- grep("auc", names(get.interval.cols()), value = TRUE)
       if (n %in% auc_parameters) {
-        tmp_method <- paste0(
+        tmp_method <- c(
           tmp_method,
-          "AUC: ",
-          options$auc.method,
-          ".",
-          collapse = " "
+          paste0("AUC: ", options$auc.method)
         )
       }
       # Do the calculation
@@ -576,7 +582,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         data.frame(
           PPTESTCD=tmp_testcd,
           PPORRES=tmp_result,
-          PPANMETH=tmp_method,
+          PPANMETH=paste(tmp_method, collapse=". "),
           exclude=exclude_reason,
           stringsAsFactors=FALSE
         )
