@@ -758,3 +758,100 @@ test_that("do not give rbind error when interval columns have attributes (#381)"
     list(label = "start")
   )
 })
+
+test_that("pk.nca with include_ppanmeth=TRUE", {
+  # --- Setup shared concentration and dose data ---
+  tmpconc <- generate.conc(2, 1, 0:24)
+  tmpdose <- generate.dose(tmpconc)
+  myconc <- PKNCAconc(tmpconc, formula=conc~time|treatment+ID)
+  mydose <- PKNCAdose(tmpdose, formula=dose~time|treatment+ID)
+
+  # --- PPANMETH differentiates based on the AUC method used ---
+  mydata_linear <- PKNCAdata(myconc, mydose, intervals=data.frame(start=0, end=24, auclast=TRUE), options=list(auc.method="linear"))
+  mydata_linlog <- PKNCAdata(myconc, mydose, intervals=data.frame(start=0, end=24, auclast=TRUE), options=list(auc.method="lin up/log down"))
+  res_linear <- pk.nca(mydata_linear, include_ppanmeth=TRUE)
+  res_linlog <- pk.nca(mydata_linlog, include_ppanmeth=TRUE)
+  expect_true("PPANMETH" %in% names(res_linear$result))
+  expect_true("PPANMETH" %in% names(res_linlog$result))
+  expect_true(any(grepl("AUC: linear", res_linear$result$PPANMETH, fixed=TRUE)))
+  expect_true(any(grepl("AUC: lin up/log down", res_linlog$result$PPANMETH, fixed=TRUE)))
+
+  # --- PPANMETH distinguishes how the half.life was adjusted ---
+  tmpconc$include_hl <- tmpconc$time <= 22
+  tmpconc$exclude_hl <- tmpconc$time == 22
+  myconc_base <- PKNCAconc(tmpconc, formula=conc~time|treatment+ID)
+  myconc_incl <- PKNCAconc(tmpconc, formula=conc~time|treatment+ID, include_half.life="include_hl")
+  myconc_excl <- PKNCAconc(tmpconc, formula=conc~time|treatment+ID, exclude_half.life="exclude_hl")
+  mydata_base <- PKNCAdata(myconc_base, mydose, intervals=data.frame(start=0, end=24, lambda.z=TRUE))
+  mydata_incl <- PKNCAdata(myconc_incl, mydose, intervals=data.frame(start=0, end=24, lambda.z=TRUE))
+  mydata_excl <- PKNCAdata(myconc_excl, mydose, intervals=data.frame(start=0, end=24, lambda.z=TRUE))
+  res_base <- pk.nca(mydata_base, include_ppanmeth=TRUE)
+  res_incl <- pk.nca(mydata_incl, include_ppanmeth=TRUE)
+  res_excl <- pk.nca(mydata_excl, include_ppanmeth=TRUE)
+  expect_true("PPANMETH" %in% names(res_base$result))
+  expect_true("PPANMETH" %in% names(res_incl$result))
+  expect_true("PPANMETH" %in% names(res_excl$result))
+  expect_equal(
+    unique(res_base$result$PPANMETH[res_base$result$PPTESTCD %in% c("lambda.z", "half.life", "r.squared")]),
+    "Lambda Z: Default"
+  )
+  expect_equal(
+    unique(res_incl$result$PPANMETH[res_incl$result$PPTESTCD %in% c("lambda.z", "half.life", "r.squared")]),
+    "Lambda Z: Manual selection"
+  )
+  expect_equal(
+    unique(res_excl$result$PPANMETH[res_excl$result$PPTESTCD %in% c("lambda.z", "half.life", "r.squared")]),
+    "Lambda Z: Manual exclusion"
+  )
+  expect_equal(
+    unique(res_base$result$PPANMETH[res_base$result$PPTESTCD %in% c("tmax", "cmax")]),
+    ""
+  )
+  expect_equal(
+    unique(res_incl$result$PPANMETH[res_incl$result$PPTESTCD %in% c("tmax", "cmax")]),
+    ""
+  )
+  expect_equal(
+    unique(res_excl$result$PPANMETH[res_excl$result$PPTESTCD %in% c("tmax", "cmax")]),
+    ""
+  )
+
+  # --- PPANMETH specifies if an imputation method was used in the interval ---
+  tmpconc1 <- generate.conc(1, 1, 1:24)
+  tmpdose1 <- generate.dose(tmpconc1)
+  myconc1 <- PKNCAconc(tmpconc1, formula=conc~time|treatment+ID)
+  mydose1 <- PKNCAdose(tmpdose1, formula=dose~time|treatment+ID)
+  o_data <- PKNCAdata(myconc1, mydose1, intervals=data.frame(start=0, end=24, c0=TRUE))
+  o_data_impute <- PKNCAdata(myconc1, mydose1, intervals=data.frame(start=0, end=24, c0=TRUE), impute="start_conc0")
+  res <- pk.nca(o_data, include_ppanmeth=TRUE)
+  res_impute <- pk.nca(o_data_impute, include_ppanmeth=TRUE)
+  expect_equal(res$result$PPANMETH, "")
+  expect_true("PPANMETH" %in% names(res$result))
+  expect_equal(res$result$PPANMETH, "")
+  expect_equal(res_impute$result$PPANMETH, "Imputation: start_conc0")
+
+  # --- PPANMETH reports based on the parameter dependencies ---
+  tmpconc2 <- generate.conc(1, 1, 1:12)
+  tmpdose2 <- generate.dose(tmpconc2)
+  tmpconc2$include_hl <- tmpconc2$time <= 22
+  myconc2 <- PKNCAconc(tmpconc2, formula=conc~time|treatment+ID, include_half.life="include_hl")
+  mydose2 <- PKNCAdose(tmpdose2, formula=dose~time|treatment+ID)
+  mydata2 <- PKNCAdata(
+    myconc2, mydose2,
+    intervals=data.frame(start=0, end=24, c0 = TRUE, half.life = TRUE, aucinf.pred=TRUE),
+    impute = "start_conc0"
+  )
+  res2 <- pk.nca(mydata2, include_ppanmeth=TRUE)
+  expect_equal(
+    res2$result$PPANMETH[res2$result$PPTESTCD == "c0"],
+    "Imputation: start_conc0"
+  )
+  expect_equal(
+    res2$result$PPANMETH[res2$result$PPTESTCD == "half.life"],
+    "Imputation: start_conc0. Lambda Z: Manual selection"
+  )
+  expect_equal(
+    res2$result$PPANMETH[res2$result$PPTESTCD == "aucinf.pred"],
+    "Imputation: start_conc0. Lambda Z: Manual selection. AUC: lin up/log down"
+  )
+})
