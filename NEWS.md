@@ -20,6 +20,7 @@ the dosing including dose amount and route.
 * PKNCA now has a debugging mode to support troubleshooting; it is not intended
   for production use. Debugging mode can be enabled using
   `PKNCA.options(debug = TRUE)`.
+* `pk.nca` now has a logical argument `include_ppanmeth` (default `FALSE`). When set to `TRUE`, the output includes a `PPANMETH` column describing the analysis methods used for each parameter.
 
 # PKNCA 0.12.0
 
