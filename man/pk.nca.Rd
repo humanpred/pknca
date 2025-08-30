@@ -4,12 +4,15 @@
 \alias{pk.nca}
 \title{Compute NCA parameters for each interval for each subject.}
 \usage{
-pk.nca(data, verbose = FALSE)
+pk.nca(data, verbose = FALSE, include_ppanmeth = FALSE)
 }
 \arguments{
 \item{data}{A PKNCAdata object}
 
 \item{verbose}{Indicate, by \code{message()}, the current state of calculation.}
+
+\item{include_ppanmeth}{Logical; if TRUE, output includes the PPANMETH column
+with the analysis method specifications for the parameter. Default is FALSE.}
 }
 \value{
 A \code{PKNCAresults} object.
