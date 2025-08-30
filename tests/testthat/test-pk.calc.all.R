@@ -761,7 +761,7 @@ test_that("do not give rbind error when interval columns have attributes (#381)"
 
 test_that("pk.nca with include_ppanmeth=TRUE", {
   # --- Setup shared concentration and dose data ---
-  tmpconc <- generate.conc(2, 1, 0:24)
+  tmpconc <- generate.conc(1, 1, 0:24)
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula=conc~time|treatment+ID)
   mydose <- PKNCAdose(tmpdose, formula=dose~time|treatment+ID)
@@ -817,12 +817,8 @@ test_that("pk.nca with include_ppanmeth=TRUE", {
   )
 
   # --- PPANMETH specifies if an imputation method was used in the interval ---
-  tmpconc1 <- generate.conc(1, 1, 1:24)
-  tmpdose1 <- generate.dose(tmpconc1)
-  myconc1 <- PKNCAconc(tmpconc1, formula=conc~time|treatment+ID)
-  mydose1 <- PKNCAdose(tmpdose1, formula=dose~time|treatment+ID)
-  o_data <- PKNCAdata(myconc1, mydose1, intervals=data.frame(start=0, end=24, c0=TRUE))
-  o_data_impute <- PKNCAdata(myconc1, mydose1, intervals=data.frame(start=0, end=24, c0=TRUE), impute="start_conc0")
+  o_data <- PKNCAdata(myconc, mydose, intervals=data.frame(start=0, end=24, c0=TRUE))
+  o_data_impute <- PKNCAdata(myconc, mydose, intervals=data.frame(start=0, end=24, c0=TRUE), impute="start_conc0")
   res <- pk.nca(o_data, include_ppanmeth=TRUE)
   res_impute <- pk.nca(o_data_impute, include_ppanmeth=TRUE)
   expect_equal(res$result$PPANMETH, "")
@@ -831,27 +827,22 @@ test_that("pk.nca with include_ppanmeth=TRUE", {
   expect_equal(res_impute$result$PPANMETH, "Imputation: start_conc0")
 
   # --- PPANMETH reports based on the parameter dependencies ---
-  tmpconc2 <- generate.conc(1, 1, 1:12)
-  tmpdose2 <- generate.dose(tmpconc2)
-  tmpconc2$include_hl <- tmpconc2$time <= 22
-  myconc2 <- PKNCAconc(tmpconc2, formula=conc~time|treatment+ID, include_half.life="include_hl")
-  mydose2 <- PKNCAdose(tmpdose2, formula=dose~time|treatment+ID)
-  mydata2 <- PKNCAdata(
-    myconc2, mydose2,
+  mydata <- PKNCAdata(
+    myconc_incl, mydose,
     intervals=data.frame(start=0, end=24, c0 = TRUE, half.life = TRUE, aucinf.pred=TRUE),
     impute = "start_conc0"
   )
-  res2 <- pk.nca(mydata2, include_ppanmeth=TRUE)
+  res <- pk.nca(mydata, include_ppanmeth=TRUE)
   expect_equal(
-    res2$result$PPANMETH[res2$result$PPTESTCD == "c0"],
+    res$result$PPANMETH[res$result$PPTESTCD == "c0"],
     "Imputation: start_conc0"
   )
   expect_equal(
-    res2$result$PPANMETH[res2$result$PPTESTCD == "half.life"],
+    res$result$PPANMETH[res$result$PPTESTCD == "half.life"],
     "Imputation: start_conc0. Lambda Z: Manual selection"
   )
   expect_equal(
-    res2$result$PPANMETH[res2$result$PPTESTCD == "aucinf.pred"],
+    res$result$PPANMETH[res$result$PPTESTCD == "aucinf.pred"],
     "Imputation: start_conc0. Lambda Z: Manual selection. AUC: lin up/log down"
   )
 })
