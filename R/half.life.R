@@ -486,6 +486,7 @@ get_halflife_points <- function(object) {
       get_halflife_points_single(
         conc = base_results$data_conc[[idx]],
         results = base_results$data_results[[idx]],
+        time_start = base_results$data_intervals[[idx]]$start,
         rowid_col = rowid_col
       )
     if (any(!is.na(ret[ret_current$rowid]))) {
@@ -500,7 +501,8 @@ get_halflife_points <- function(object) {
 }
 
 # Get the half-life points for a single interval
-get_halflife_points_single <- function(conc, results, rowid_col) {
+get_halflife_points_single <- function(conc, results, time_start, rowid_col) {
+  checkmate::assert_number(time_start, na.ok = FALSE, finite = TRUE, null.ok = FALSE)
   # "include_half.life" and "exclude_half.life" columns are present in conc, if
   # they apply. That comes from `full_join_PKNCAdata()`
   ret <- data.frame(hl_used = NA, rowid = conc[[rowid_col]])
@@ -508,8 +510,10 @@ get_halflife_points_single <- function(conc, results, rowid_col) {
     if ("include_half.life" %in% names(conc) && !all(is.na(conc$include_half.life))) {
       ret$hl_used <- conc$include_half.life %in% TRUE
     } else {
-      time_first <- results$PPORRES[results$PPTESTCD %in% "lambda.z.time.first"]
-      time_last <- results$PPORRES[results$PPTESTCD %in% "lambda.z.time.last"]
+      # Shift the time by time_start to account for the fact that
+      # lambda.z.time.first and are relative to the start of the interval
+      time_first <- time_start + results$PPORRES[results$PPTESTCD %in% "lambda.z.time.first"]
+      time_last <- time_start + results$PPORRES[results$PPTESTCD %in% "lambda.z.time.last"]
       excluded <-
         if ("exclude_half.life" %in% names(conc)) {
           conc$exclude_half.life %in% TRUE
