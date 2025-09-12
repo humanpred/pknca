@@ -759,7 +759,7 @@ test_that("do not give rbind error when interval columns have attributes (#381)"
   )
 })
 
-test_that("pk.nca with include_ppanmeth=TRUE", {
+test_that("pk.nca produces the PPANMETH column", {
   # --- Setup shared concentration and dose data ---
   tmpconc <- generate.conc(1, 1, 0:24)
   tmpdose <- generate.dose(tmpconc)
@@ -769,8 +769,8 @@ test_that("pk.nca with include_ppanmeth=TRUE", {
   # --- PPANMETH differentiates based on the AUC method used ---
   mydata_linear <- PKNCAdata(myconc, mydose, intervals=data.frame(start=0, end=24, auclast=TRUE), options=list(auc.method="linear"))
   mydata_linlog <- PKNCAdata(myconc, mydose, intervals=data.frame(start=0, end=24, auclast=TRUE), options=list(auc.method="lin up/log down"))
-  res_linear <- pk.nca(mydata_linear, include_ppanmeth=TRUE)
-  res_linlog <- pk.nca(mydata_linlog, include_ppanmeth=TRUE)
+  res_linear <- pk.nca(mydata_linear)
+  res_linlog <- pk.nca(mydata_linlog)
   expect_true("PPANMETH" %in% names(res_linear$result))
   expect_true("PPANMETH" %in% names(res_linlog$result))
   expect_true(any(grepl("AUC: linear", res_linear$result$PPANMETH, fixed=TRUE)))
@@ -785,9 +785,9 @@ test_that("pk.nca with include_ppanmeth=TRUE", {
   mydata_base <- PKNCAdata(myconc_base, mydose, intervals=data.frame(start=0, end=24, lambda.z=TRUE))
   mydata_incl <- PKNCAdata(myconc_incl, mydose, intervals=data.frame(start=0, end=24, lambda.z=TRUE))
   mydata_excl <- PKNCAdata(myconc_excl, mydose, intervals=data.frame(start=0, end=24, lambda.z=TRUE))
-  res_base <- pk.nca(mydata_base, include_ppanmeth=TRUE)
-  res_incl <- pk.nca(mydata_incl, include_ppanmeth=TRUE)
-  res_excl <- pk.nca(mydata_excl, include_ppanmeth=TRUE)
+  res_base <- pk.nca(mydata_base)
+  res_incl <- pk.nca(mydata_incl)
+  res_excl <- pk.nca(mydata_excl)
   expect_true("PPANMETH" %in% names(res_base$result))
   expect_true("PPANMETH" %in% names(res_incl$result))
   expect_true("PPANMETH" %in% names(res_excl$result))
@@ -819,8 +819,8 @@ test_that("pk.nca with include_ppanmeth=TRUE", {
   # --- PPANMETH specifies if an imputation method was used in the interval ---
   o_data <- PKNCAdata(myconc, mydose, intervals=data.frame(start=0, end=24, c0=TRUE))
   o_data_impute <- PKNCAdata(myconc, mydose, intervals=data.frame(start=0, end=24, c0=TRUE), impute="start_conc0")
-  res <- pk.nca(o_data, include_ppanmeth=TRUE)
-  res_impute <- pk.nca(o_data_impute, include_ppanmeth=TRUE)
+  res <- pk.nca(o_data)
+  res_impute <- pk.nca(o_data_impute)
   expect_equal(res$result$PPANMETH, "")
   expect_true("PPANMETH" %in% names(res$result))
   expect_equal(res$result$PPANMETH, "")
@@ -832,7 +832,7 @@ test_that("pk.nca with include_ppanmeth=TRUE", {
     intervals=data.frame(start=0, end=24, c0 = TRUE, half.life = TRUE, aucinf.pred=TRUE),
     impute = "start_conc0"
   )
-  res <- pk.nca(mydata, include_ppanmeth=TRUE)
+  res <- pk.nca(mydata)
   expect_equal(
     res$result$PPANMETH[res$result$PPTESTCD == "c0"],
     "Imputation: start_conc0"
