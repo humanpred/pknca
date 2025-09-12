@@ -347,7 +347,9 @@ test_that("get_halflife_points", {
   o_nca_nzstart <- suppressMessages(pk.nca(o_data_nzstart))
   hl_points_nzstart <- suppressMessages(get_halflife_points(o_nca_nzstart))
   # Find the specific rows that have differences
-  expect_equal(which(!is.na(hl_points_nzstart) & hl_points != hl_points_nzstart), c(60:63, 83:84))
+  expect_equal(which(!is.na(hl_points_nzstart) & hl_points != hl_points_nzstart), c(62, 63, 84))
+  expect_true(all(is.na(hl_points_nzstart[Theoph$Time < 5])))
+  expect_true(!any(is.na(hl_points_nzstart[Theoph$Time > 5])))
 
   # Setup for the remaining tests
   d_conc <- as.data.frame(Theoph[Theoph$Subject %in% Theoph$Subject[1], ])

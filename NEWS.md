@@ -8,7 +8,8 @@ the dosing including dose amount and route.
 
 ## Bugs fixed
 
-* `get_halflife_points()` now correctly accounts for start time != 0 (#470)
+* `get_halflife_points()` now correctly accounts for start time != 0 and sets
+  times outside of any interval to `NA` (#470)
 
 # PKNCA 0.12.1
 
