@@ -11,6 +11,11 @@ the dosing including dose amount and route.
 * `get_halflife_points()` now correctly accounts for start time != 0 and sets
   times outside of any interval to `NA` (#470)
 
+## New features
+
+* `pk.calc.half.life()` now returns also `lambda.z.corrxy`, the correlation between
+  the time and the log-concentration of the lambda z points.
+
 # PKNCA 0.12.1
 
 ## Minor changes (unlikely to affect PKNCA use)
@@ -28,8 +33,6 @@ the dosing including dose amount and route.
 * PKNCA now has a debugging mode to support troubleshooting; it is not intended
   for production use. Debugging mode can be enabled using
   `PKNCA.options(debug = TRUE)`.
-* `pk.calc.half.life()` now returns also `lambda.z.corrxy`, the correlation between
-  the time and the log-concentration of the lambda z points.
 
 # PKNCA 0.12.0
 
