@@ -504,7 +504,7 @@ get_halflife_points <- function(object) {
 # Get the half-life points for a single interval
 get_halflife_points_single <- function(conc, results, time_start, time_end, rowid_col) {
   checkmate::assert_number(time_start, na.ok = FALSE, finite = TRUE, null.ok = FALSE)
-  checkmate::assert_number(time_end, na.ok = FALSE, finite = TRUE, null.ok = FALSE)
+  checkmate::assert_number(time_end, na.ok = FALSE, null.ok = FALSE)
   checkmate::assert_true(time_start < time_end)
   # Values for the current group outside of the interval time range are not
   # included in the current half-life calculations.
