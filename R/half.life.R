@@ -503,6 +503,8 @@ get_halflife_points <- function(object) {
       get_halflife_points_single(
         conc = base_results$data_conc[[idx]],
         results = base_results$data_results[[idx]],
+        time_start = base_results$start[[idx]],
+        time_end = base_results$end[[idx]],
         rowid_col = rowid_col
       )
     if (any(!is.na(ret[ret_current$rowid]))) {
@@ -517,23 +519,31 @@ get_halflife_points <- function(object) {
 }
 
 # Get the half-life points for a single interval
-get_halflife_points_single <- function(conc, results, rowid_col) {
-  # "include_half.life" and "exclude_half.life" columns are present in conc, if
-  # they apply. That comes from `full_join_PKNCAdata()`
-  ret <- data.frame(hl_used = NA, rowid = conc[[rowid_col]])
+get_halflife_points_single <- function(conc, results, time_start, time_end, rowid_col) {
+  checkmate::assert_number(time_start, na.ok = FALSE, finite = TRUE, null.ok = FALSE)
+  checkmate::assert_number(time_end, na.ok = FALSE, null.ok = FALSE)
+  checkmate::assert_true(time_start < time_end)
+  # Values for the current group outside of the interval time range are not
+  # included in the current half-life calculations.
+  conc_included <- conc[conc$time >= time_start & conc$time <= time_end, ]
+  ret <- data.frame(hl_used = NA, rowid = conc_included[[rowid_col]])
   if ("half.life" %in% results$PPTESTCD) {
-    if ("include_half.life" %in% names(conc) && !all(is.na(conc$include_half.life))) {
-      ret$hl_used <- conc$include_half.life %in% TRUE
+    # "include_half.life" and "exclude_half.life" columns are present in conc, if
+    # they apply. That comes from `full_join_PKNCAdata()`
+    if ("include_half.life" %in% names(conc_included) && !all(is.na(conc_included$include_half.life))) {
+      ret$hl_used <- conc_included$include_half.life %in% TRUE
     } else {
-      time_first <- results$PPORRES[results$PPTESTCD %in% "lambda.z.time.first"]
-      time_last <- results$PPORRES[results$PPTESTCD %in% "lambda.z.time.last"]
+      # Shift the time by time_start to account for the fact that
+      # lambda.z.time.first and are relative to the start of the interval
+      time_first <- time_start + results$PPORRES[results$PPTESTCD %in% "lambda.z.time.first"]
+      time_last <- time_start + results$PPORRES[results$PPTESTCD %in% "lambda.z.time.last"]
       excluded <-
-        if ("exclude_half.life" %in% names(conc)) {
-          conc$exclude_half.life %in% TRUE
+        if ("exclude_half.life" %in% names(conc_included)) {
+          conc_included$exclude_half.life %in% TRUE
         } else {
           FALSE
         }
-      ret$hl_used <- (time_first <= conc$time) & (conc$time <= time_last) & !excluded
+      ret$hl_used <- (time_first <= conc_included$time) & (conc_included$time <= time_last) & !excluded
     }
   }
   ret
