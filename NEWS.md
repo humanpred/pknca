@@ -10,6 +10,9 @@ the dosing including dose amount and route.
 
 * `get_halflife_points()` now correctly accounts for start time != 0 and sets
   times outside of any interval to `NA` (#470)
+* The `PKNCAconc` function won't give an error for a concentration-time check
+when the issue is due to an excluded point (#310)
+* The `PKNCAdose` function won't give an error for a missing-time check when the issue is due to an excluded point (#310)
 
 ## New features
 
@@ -27,8 +30,6 @@ the dosing including dose amount and route.
 * `lambda.z` calculations will now only consider time points that occur after
   the end of the latest dose administration (#139)
 * `aucint.inf.pred` is `NA` when half-life is not estimable (#450)
-* The `PKNCAconc` function won't give an error for a concentration-time check
-when the issue is due to an excluded point (#310)
 
 ## New features
 
