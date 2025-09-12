@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PKNCA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.12.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.12.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,19 +54,19 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="pknca-development-version">PKNCA (development version)<a class="anchor" aria-label="anchor" href="#pknca-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.12.1" id="pknca-0121">PKNCA 0.12.1<a class="anchor" aria-label="anchor" href="#pknca-0121"></a></h2><p class="text-muted">CRAN release: 2025-08-19</p>
 <div class="section level3">
-<h3 id="minor-changes-unlikely-to-affect-pknca-use-development-version">Minor changes (unlikely to affect PKNCA use)<a class="anchor" aria-label="anchor" href="#minor-changes-unlikely-to-affect-pknca-use-development-version"></a></h3>
+<h3 id="minor-changes-unlikely-to-affect-pknca-use-0-12-1">Minor changes (unlikely to affect PKNCA use)<a class="anchor" aria-label="anchor" href="#minor-changes-unlikely-to-affect-pknca-use-0-12-1"></a></h3>
 <ul><li>Units for fraction excretion parameter (fe) are now accurately captured as amount/dose units rather than “fraction” (<a href="https://github.com/humanpred/pknca/issues/426" class="external-link">#426</a>)</li>
 <li>
-<code>get_halflife_points</code> will disconsider later points to <code>lambda.z.time.last</code>, instead of <code>tlast</code> (<a href="https://github.com/humanpred/pknca/issues/448" class="external-link">#448</a>)</li>
+<code>get_halflife_points</code> will ignore points after <code>lambda.z.time.last</code>, instead of <code>tlast</code> (<a href="https://github.com/humanpred/pknca/issues/448" class="external-link">#448</a>)</li>
 <li>
 <code>lambda.z</code> calculations will now only consider time points that occur after the end of the latest dose administration (<a href="https://github.com/humanpred/pknca/issues/139" class="external-link">#139</a>)</li>
 <li>
 <code>aucint.inf.pred</code> is <code>NA</code> when half-life is not estimable (<a href="https://github.com/humanpred/pknca/issues/450" class="external-link">#450</a>)</li>
 </ul></div>
 <div class="section level3">
-<h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<h3 id="new-features-0-12-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-12-1"></a></h3>
 <ul><li>PKNCA now has a debugging mode to support troubleshooting; it is not intended for production use. Debugging mode can be enabled using <code>PKNCA.options(debug = TRUE)</code>.</li>
 </ul></div>
 </div>
