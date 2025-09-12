@@ -52,6 +52,7 @@ Useful links:
 Authors:
 \itemize{
   \item Clare Buckeridge \email{clare.buckeridge@pfizer.com}
+  \item Gerardo Jose Rodriguez \email{gerardo.jrac@gmail.com} (\href{https://orcid.org/0000-0003-1413-0060}{ORCID})
 }
 
 Other contributors:
