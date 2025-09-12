@@ -18,29 +18,29 @@ test_that("exclude_nca", {
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_span.ratio())
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("span.ratio < 2", 11)))
+                 rep("span.ratio < 2", 12)))
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_span.ratio(1))
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("span.ratio < 1", 11)))
+                 rep("span.ratio < 1", 12)))
 
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.r.squared())
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("r.squared < 0.9", 11)))
+                 rep("r.squared < 0.9", 12)))
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.r.squared(0.95))
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("r.squared < 0.95", 11)))
+                 rep("r.squared < 0.95", 12)))
 
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.adj.r.squared())
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("adj.r.squared < 0.9", 11)))
+                 rep("adj.r.squared < 0.9", 12)))
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.adj.r.squared(0.95))
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("adj.r.squared < 0.95", 11)))
+                 rep("adj.r.squared < 0.95", 12)))
 
   my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, cmax=TRUE))
   suppressMessages(
@@ -90,17 +90,17 @@ test_that("exclude_nca_count_conc_measured", {
   )
   expect_equal(
     as.data.frame(my_result)$exclude,
-    rep(NA_character_, 16)
+    rep(NA_character_, 17)
   )
   my_result_exclude5 <- exclude(my_result, FUN = exclude_nca_count_conc_measured(min_count = 5))
   expect_equal(
     as.data.frame(my_result_exclude5)$exclude,
-    rep(NA_character_, 16)
+    rep(NA_character_, 17)
   )
   my_result_exclude10 <- exclude(my_result, FUN = exclude_nca_count_conc_measured(min_count = 10))
   expect_equal(
     as.data.frame(my_result_exclude10)$exclude,
-    c("count_conc_measured < 10", rep(NA_character_, 13), rep("count_conc_measured < 10", 2))
+    c("count_conc_measured < 10", rep(NA_character_, 14), rep("count_conc_measured < 10", 2))
   )
 })
 
@@ -147,7 +147,7 @@ test_that("exclude_nca_by_param works as expected", {
   )
   expect_equal(
     as.data.frame(res_min_excluded)$exclude,
-    c(rep(NA, 10), "span.ratio < 100")
+    c(rep(NA, 11), "span.ratio < 100")
   )
 
   # does not exclude rows when min_thr is not met
@@ -157,7 +157,7 @@ test_that("exclude_nca_by_param works as expected", {
   )
   expect_equal(
     as.data.frame(res_min_not_excluded)$exclude,
-    rep(NA_character_, 11)
+    rep(NA_character_, 12)
   )
 
   # excludes rows based on max_thr
@@ -167,7 +167,7 @@ test_that("exclude_nca_by_param works as expected", {
   )
   expect_equal(
     as.data.frame(res_max_excluded)$exclude,
-    c(rep(NA, 10), "span.ratio > 0.01")
+    c(rep(NA, 11), "span.ratio > 0.01")
   )
 
   # does not exclude rows when max_thr is not exceeded
@@ -177,7 +177,7 @@ test_that("exclude_nca_by_param works as expected", {
   )
   expect_equal(
     as.data.frame(res_max_not_excluded)$exclude,
-    rep(NA_character_, 11)
+    rep(NA_character_, 12)
   )
 
   # throws an error for invalid min_thr

@@ -58,6 +58,7 @@
 #'   \item{r.squared}{coefficient of determination}
 #'   \item{adj.r.squared}{adjusted coefficient of determination}
 #'   \item{lambda.z}{elimination rate}
+#'   \item{lambda.z.corrxy}{correlation between time and log-conc half-life points}
 #'   \item{lambda.z.time.first}{first time for half-life calculation}
 #'   \item{lambda.z.time.last}{last time for half-life calculation}
 #'   \item{lambda.z.n.points}{number of points in half-life calculation}
@@ -141,6 +142,8 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     r.squared=NA,
     # Adjusted r-squared of terminal elimination slope
     adj.r.squared=NA,
+    # Correlation between time and log-conc for lambda.z points
+    lambda.z.corrxy=NA,
     # First time point used in the slope estimation (for plotting later)
     lambda.z.time.first=NA,
     # Last time point used in the slope estimation (for plotting later)
@@ -154,7 +157,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     # T1/2 span ratio
     span.ratio=NA)
   ret_replacements <-
-    c("lambda.z", "r.squared", "adj.r.squared", "lambda.z.time.first",
+    c("lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy", "lambda.z.time.first",
       "lambda.z.time.last", "lambda.z.n.points", "clast.pred", "half.life", "span.ratio")
   if (missing(tmax)) {
     ret$tmax <-
@@ -316,6 +319,7 @@ fit_half_life <- function(data, tlast, conc_units) {
     data.frame(
       r.squared=r_squared,
       adj.r.squared=adj.r.squared(r_squared, nrow(data)),
+      lambda.z.corrxy=if(nrow(data) > 1) cor(data$time, data$log_conc) else NA,
       lambda.z=lambda_z,
       clast.pred=clast_pred,
       lambda.z.time.first=min(data$time, na.rm=TRUE),
@@ -363,6 +367,19 @@ add.interval.col("adj.r.squared",
                  depends="half.life")
 PKNCA.set.summary(
   name="adj.r.squared",
+  description="arithmetic mean and standard deviation",
+  point=business.mean,
+  spread=business.sd
+)
+add.interval.col("lambda.z.corrxy",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="unitless",
+                 pretty_name="Correlation (time, log-conc)",
+                 desc="Correlation between time and log-concentration for lambda.z points",
+                 depends="half.life")
+PKNCA.set.summary(
+  name="lambda.z.corrxy",
   description="arithmetic mean and standard deviation",
   point=business.mean,
   spread=business.sd
