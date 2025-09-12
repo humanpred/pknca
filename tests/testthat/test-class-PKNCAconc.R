@@ -12,7 +12,7 @@ test_that("PKNCAconc expected errors", {
   )
 })
 
-test_that("PKNCAconc not expected errors", {
+test_that("PKNCAconc does not error for excluded, invalid times (#310)", {
   # Missing time points that are excluded are not checked
   tmp.conc <- data.frame(time = c(1, NA), conc = c(1, NA), exclude = c(NA, "foo"))
   expect_no_error(PKNCAconc(conc~time, data = tmp.conc, exclude = "exclude"))
