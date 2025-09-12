@@ -482,12 +482,14 @@ get_halflife_points <- function(object) {
 
   ret <- rep(NA, nrow(as.data.frame(as_PKNCAconc(object))))
   for (idx in seq_len(nrow(base_results))) {
+    browser()
+    stop()
     ret_current <-
       get_halflife_points_single(
         conc = base_results$data_conc[[idx]],
         results = base_results$data_results[[idx]],
-        time_start = base_results$data_intervals[[idx]]$start,
-        time_end = base_results$data_intervals[[idx]]$end,
+        time_start = base_results$start[[idx]],
+        time_end = base_results$end[[idx]],
         rowid_col = rowid_col
       )
     if (any(!is.na(ret[ret_current$rowid]))) {
@@ -504,6 +506,8 @@ get_halflife_points <- function(object) {
 # Get the half-life points for a single interval
 get_halflife_points_single <- function(conc, results, time_start, time_end, rowid_col) {
   checkmate::assert_number(time_start, na.ok = FALSE, finite = TRUE, null.ok = FALSE)
+  checkmate::assert_number(time_end, na.ok = FALSE, finite = TRUE, null.ok = FALSE)
+  checkmate::assert_true(time_start < time_end)
   # Values for the current group outside of the interval time range are not
   # included in the current half-life calculations.
   conc_included <- conc[conc$time >= time_start & conc$time <= time_end, ]
