@@ -18,7 +18,7 @@
 ##' @seealso [PKNCAdata()], [PKNCA.options()], [summary.PKNCAresults()],
 ##'   [as.data.frame.PKNCAresults()], [exclude()]
 ##' @export
-pk.nca <- function(data, verbose=FALSE, include_ppanmeth=FALSE) {
+pk.nca <- function(data, verbose=FALSE) {
   assert_PKNCAdata(data)
   results <- data.frame()
   if (nrow(data$intervals) > 0) {
@@ -74,10 +74,6 @@ pk.nca <- function(data, verbose=FALSE, include_ppanmeth=FALSE) {
           pk_nca_result_to_df(group_info, results_sparse)
         )
     }
-  }
-  # Remove PPANMETH column if include_ppanmeth is FALSE
-  if (!include_ppanmeth && "PPANMETH" %in% names(results)) {
-    results$PPANMETH <- NULL
   }
   PKNCAresults(
     result=results,

@@ -4,7 +4,7 @@
 \alias{pk.nca}
 \title{Compute NCA parameters for each interval for each subject.}
 \usage{
-pk.nca(data, verbose = FALSE, include_ppanmeth = FALSE)
+pk.nca(data, verbose = FALSE)
 }
 \arguments{
 \item{data}{A PKNCAdata object}
