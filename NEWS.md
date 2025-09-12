@@ -4,6 +4,13 @@ will continue until then.  These will be especially noticeable around
 the inclusion of IV NCA parameters and additional specifications of
 the dosing including dose amount and route.
 
+# Development version
+
+## Bugs fixed
+
+* `get_halflife_points()` now correctly accounts for start time != 0 and sets
+  times outside of any interval to `NA` (#470)
+
 # PKNCA 0.12.1
 
 ## Minor changes (unlikely to affect PKNCA use)
