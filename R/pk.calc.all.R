@@ -12,8 +12,6 @@
 #'
 ##' @param data A PKNCAdata object
 ##' @param verbose Indicate, by `message()`, the current state of calculation.
-##' @param include_ppanmeth Logical; if TRUE, output includes the PPANMETH column
-##' with the analysis method specifications for the parameter. Default is FALSE.
 ##' @returns A `PKNCAresults` object.
 ##' @seealso [PKNCAdata()], [PKNCA.options()], [summary.PKNCAresults()],
 ##'   [as.data.frame.PKNCAresults()], [exclude()]

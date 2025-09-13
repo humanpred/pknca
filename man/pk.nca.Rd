@@ -10,9 +10,6 @@ pk.nca(data, verbose = FALSE)
 \item{data}{A PKNCAdata object}
 
 \item{verbose}{Indicate, by \code{message()}, the current state of calculation.}
-
-\item{include_ppanmeth}{Logical; if TRUE, output includes the PPANMETH column
-with the analysis method specifications for the parameter. Default is FALSE.}
 }
 \value{
 A \code{PKNCAresults} object.
