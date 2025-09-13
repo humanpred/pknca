@@ -173,21 +173,26 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
 ##' Method for PKNCAdata objects
 #'
 #' @rdname pknca_units_table
-#' @importFrom dplyr across any_of bind_rows case_when filter group_by left_join mutate n select ungroup
+#' @importFrom dplyr across any_of bind_rows case_when filter group_by left_join mutate n select ungroup group_vars
 #' @importFrom tidyr fill unnest
 #' @importFrom rlang syms
 #' @export
 pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) {
+
   # concu is the PKNCAdata object
   o_conc <- concu$conc
   o_dose <- concu$dose
+
+  # PKNCAdose can optionally be no present, being unit undefining
+  if (is.null(o_dose) || all(is.na(o_dose))) o_dose <- o_conc
+
   # If needed, ensure that the PKNCA objects have the required unit columns
   o_conc <- ensure_column_unit_exists(o_conc, c("concu", "timeu", "amountu"))
   o_dose <- ensure_column_unit_exists(o_dose, c("doseu"))
 
   # Extract relevant columns from o_conc and o_dose
-  group_dose_cols <- unname(unlist(o_dose$columns$groups))
-  group_conc_cols <- unname(unlist(o_conc$columns$groups))
+  group_dose_cols <- dplyr::group_vars(o_dose)
+  group_conc_cols <- dplyr::group_vars(o_conc)
   concu_col <- o_conc$columns$concu
   amountu_col <- o_conc$columns$amountu
   timeu_col <- o_conc$columns$timeu
