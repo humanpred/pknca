@@ -353,7 +353,8 @@ describe("PKNCA_build_units_table", {
 
       o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte, concu = "concu_col")
       o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject)
-      units_table <- expect_no_error(pknca_units_table_from_pknca(o_conc, o_dose))
+      o_data <- PKNCAdata(o_conc, o_dose)
+      units_table <- expect_no_error(pknca_units_table(o_data))
 
       expect_equal(
         units_table[units_table$PPTESTCD == "cmax", c(strat_var, "PPORRESU")],
@@ -370,7 +371,8 @@ describe("PKNCA_build_units_table", {
     d_conc$concu_col <- ifelse(d_conc$specimen == "blood", d_conc$concu_col, "pg/mL")
     o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte, concu = "concu_col")
     o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject)
-    units_table <- expect_no_error(pknca_units_table_from_pknca(o_conc, o_dose))
+    o_data <- PKNCAdata(o_conc, o_dose)
+    units_table <- expect_no_error(pknca_units_table(o_data))
 
     expect_equal(
       units_table[units_table$PPTESTCD == "cmax",],
@@ -387,7 +389,8 @@ describe("PKNCA_build_units_table", {
     d_dose$doseu_col <- ifelse(d_dose$treatment == d_dose$treatment[1], "mg", "ug")
     o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte)
     o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject, doseu = "doseu_col")
-    units_table <- expect_no_error(pknca_units_table_from_pknca(o_conc, o_dose))
+    o_data <- PKNCAdata(o_conc, o_dose)
+    units_table <- expect_no_error(pknca_units_table(o_data))
 
     expect_equal(
         units_table[units_table$PPTESTCD == "totdose",],
@@ -408,7 +411,8 @@ describe("PKNCA_build_units_table", {
       d_dose, dose ~ time | treatment + subject,
       doseu = "mg"
     )
-    units_table <- expect_no_error(pknca_units_table_from_pknca(o_conc, o_dose))
+    o_data <- PKNCAdata(o_conc, o_dose)
+    units_table <- expect_no_error(pknca_units_table(o_data))
     expect_equal(
       units_table[units_table$PPTESTCD == "cmax.dn",],
       data.frame(
@@ -421,26 +425,10 @@ describe("PKNCA_build_units_table", {
   it("returns NULL when units are not defined at all in the PKNCA objects", {
     o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte)
     o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject)
-    units_table <- expect_no_error(pknca_units_table_from_pknca(o_conc, o_dose))
-    
-    expect_true(is.null(units_table))
-  })
+    o_data <- PKNCAdata(o_conc, o_dose)
+    units_table <- expect_no_error(pknca_units_table(o_data))
 
-  it("does not strictly need o_dose (PKNCAdose object) to be provided", {
-    d_conc$concu_col <- ifelse(d_conc$analyte == "A", "ng/mL", "ug/mL")
-    d_conc$concu_col <- ifelse(d_conc$specimen == "blood", d_conc$concu_col, "pg/mL")
-    o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte,
-                        concu = "concu_col")
-    units_table <- expect_no_error(pknca_units_table_from_pknca(o_conc))
-    expect_equal(
-      units_table[units_table$PPTESTCD == "cmax",],
-      data.frame(
-        specimen = c("blood", "urine", "blood", "urine"),
-        analyte = rep(c("A", "B"), each = 2),
-        PPORRESU = c("ng/mL", "pg/mL", "ug/mL", "pg/mL"),
-        PPTESTCD = "cmax"
-      ), ignore_attr = TRUE
-    )
+    expect_true(is.null(units_table))
   })
 
   it("reports an error when units are inconsistent through all concentration groups", {
@@ -449,7 +437,7 @@ describe("PKNCA_build_units_table", {
     o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte, concu = "concu_col")
     o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject)
     expect_error(
-      pknca_units_table_from_pknca(o_conc, o_dose),
+      PKNCAdata(o_conc, o_dose),
       regexp = "Units should be uniform at least across concentration groups.*"
     )
   })
