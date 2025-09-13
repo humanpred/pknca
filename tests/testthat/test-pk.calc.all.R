@@ -63,6 +63,16 @@ test_that("pk.nca", {
                 24.00, 0.3148, 0.05689, 0.9000, 0.8944, -0.952,
                 5.000, 24.00, 20.00, 0.3011, 12.18,
                 1.560, 19.56),
+      PPANMETH = c(
+        "AUC: lin up/log down",
+        rep("", 4),
+        rep("Lambda Z: Default", 10),
+        "Lambda Z: Default. AUC: lin up/log down",
+        "AUC: lin up/log down",
+        rep("", 4),
+        rep("Lambda Z: Default", 10),
+        "Lambda Z: Default. AUC: lin up/log down"
+      ),
       exclude=NA_character_
     )
   expect_equal(
@@ -244,6 +254,12 @@ test_that("Calculations when no dose info is given", {
       PPTESTCD=rep(c("auclast", "cmax", "cl.last"), 2),
       PPORRES=c(13.5417297156528, 0.999812606062292, NA,
                 14.0305397438242, 0.94097296083447, NA),
+      PPANMETH = c(
+        "AUC: lin up/log down",
+        rep("", 2),
+        "AUC: lin up/log down",
+        rep("", 2)
+      ),
       exclude=NA_character_
     )
   )
