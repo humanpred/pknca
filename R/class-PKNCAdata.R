@@ -171,7 +171,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   # Insert the unit conversion table
   if (missing(units)) {
     # Use the new automatic units table builder
-    ret$units <- pknca_units_table_from_pknca(ret$conc, ret$dose)
+    ret$units <- pknca_units_table(ret)
   } else {
     stopifnot("`units` must be a data.frame"=is.data.frame(units))
     stopifnot(

@@ -50,10 +50,21 @@
 #'   concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
 #'   timeu_pref = "day"
 #' )
+
+#' S3 generic for pknca_units_table
+#'
 #' @export
-pknca_units_table <- function(concu, doseu, amountu, timeu,
+pknca_units_table <- function(concu, ...) {
+  UseMethod("pknca_units_table")
+}
+
+##' Default method for pknca_units_table
+#'
+#' @rdname pknca_units_table
+#' @export
+pknca_units_table.default <- function(concu, doseu, amountu, timeu,
                               concu_pref = NULL, doseu_pref = NULL, amountu_pref = NULL, timeu_pref = NULL,
-                              conversions = data.frame()) {
+                              conversions = data.frame(), ...) {
   checkmate::assert_data_frame(conversions)
   if (nrow(conversions) > 0) {
     checkmate::assert_names(
@@ -156,6 +167,87 @@ pknca_units_table <- function(concu, doseu, amountu, timeu,
     ret$conversion_factor[is.na(ret$conversion_factor)] <- 1
   }
   ret
+}
+
+##' Method for PKNCAdata objects
+#'
+#' @rdname pknca_units_table
+#' @importFrom dplyr across any_of bind_rows case_when filter group_by left_join mutate n select ungroup
+#' @importFrom tidyr fill unnest
+#' @importFrom rlang syms
+#' @export
+pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) {
+  # concu is the PKNCAdata object
+  o_conc <- concu$conc
+  o_dose <- concu$dose
+  # If needed, ensure that the PKNCA objects have the required unit columns
+  o_conc <- ensure_column_unit_exists(o_conc, c("concu", "timeu", "amountu"))
+  o_dose <- ensure_column_unit_exists(o_dose, c("doseu"))
+
+  # Extract relevant columns from o_conc and o_dose
+  group_dose_cols <- unname(unlist(o_dose$columns$groups))
+  group_conc_cols <- unname(unlist(o_conc$columns$groups))
+  concu_col <- o_conc$columns$concu
+  amountu_col <- o_conc$columns$amountu
+  timeu_col <- o_conc$columns$timeu
+  doseu_col <- o_dose$columns$doseu
+  all_unit_cols <- c(concu_col, amountu_col, timeu_col, doseu_col)
+
+  # Join dose units with concentration group columns and units
+  groups_units_tbl <- dplyr::left_join(
+    o_conc$data %>%
+      dplyr::select(dplyr::any_of(c(group_conc_cols, concu_col, amountu_col, timeu_col))) %>%
+      unique(),
+    o_dose$data %>%
+      dplyr::select(dplyr::any_of(c(group_dose_cols, doseu_col))) %>%
+      unique(),
+    by = intersect(group_conc_cols, group_dose_cols)
+  ) %>%
+    dplyr::mutate(dplyr::across(dplyr::everything(), ~ as.character(.))) %>%
+    dplyr::group_by(!!!rlang::syms(group_conc_cols)) %>%
+    tidyr::fill(!!!rlang::syms(all_unit_cols), .direction = "downup") %>%
+    dplyr::ungroup() %>%
+    unique()
+
+  # Check that at least for each concentration group units are uniform
+  mismatching_units_groups <- groups_units_tbl %>%
+    dplyr::add_count(!!!rlang::syms(group_conc_cols), name = "n") %>%
+    dplyr::filter(n > 1) %>%
+    dplyr::select(-n)
+  if (nrow(mismatching_units_groups) > 0) {
+    stop(
+      "Units should be uniform at least across concentration groups. ",
+      "Review the units for the next group(s):\n",
+      paste(utils::capture.output(print(mismatching_units_groups)), collapse = "\n")
+    )
+  }
+
+  # Check that at least one unit column is not NA
+  units.are.all.na <- all(is.na(groups_units_tbl[,all_unit_cols]))
+  if (units.are.all.na) return(NULL)
+
+  groups_units_tbl %>%
+    select_minimal_grouping_cols(all_unit_cols) %>%
+    unique() %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(
+      pknca_units_tbl = list(
+        pknca_units_table(
+          concu = !!rlang::sym(concu_col),
+          doseu = !!rlang::sym(doseu_col),
+          amountu = !!rlang::sym(amountu_col),
+          timeu = !!rlang::sym(timeu_col),
+          concu_pref = o_conc$units$concu_pref[1],
+          doseu_pref = o_dose$units$doseu_pref[1],
+          amountu_pref = o_conc$units$amountu_pref[1],
+          timeu_pref = o_conc$units$timeu_pref[1],
+          conversions = conversions
+        )
+      )
+    ) %>%
+    tidyr::unnest(cols = c(pknca_units_tbl)) %>%
+    dplyr::select(-dplyr::any_of(all_unit_cols)) %>%
+    as.data.frame()
 }
 
 pknca_units_table_unitless <- function() {
@@ -435,136 +527,6 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
   ret
 }
 
-#' Build Units Table from PKNCA object(s)
-#'
-#' This function generates a PKNCA units table including the potential unit segregating columns
-#' among the dose and/or concentration groups.
-#'
-#' @param o_conc A PKNCA concentration object (PKNCAconc).
-#' @param o_dose A PKNCA dose object (PKNCAdose). Optional, if not provided dose units are considered missing.
-#'
-#' @returns A data frame containing the PKNCA formatted units table.
-#'
-#' @details
-#' The function performs the following steps:
-#' 1. Ensures the unit columns (e.g., `concu`, `timeu`, `doseu`, `amountu`) exist in the inputs.
-#' 2. Joins the concentration and dose data based on their grouping columns.
-#' 3. Generates a PKNCA units table for each group, including conversion factors and custom units.
-#' 4. Returns a unique table with relevant columns for PKNCA analysis.
-#' Note: NA values in the unit columns are allowed, but at least one unit must be present for each concentration group.
-#' Units should be uniform across concentration groups, and mismatches will raise an error.
-#'
-#' @examples
-#' # Assuming `o_conc` and `o_dose` are valid PKNCA objects:
-#' # 1) Sharing group variables in their formulas
-#' # 2) Time units are the same within dose and concentration groups
-#' # 3) Units are the same for subjects within the same concentration group
-#'
-#' d_conc <- data.frame(
-#'   subj = 1,
-#'   analyte = rep(c("A", "B"), each = 2),
-#'   concu = rep(c("ng/mL", "ug/mL"), each = 2),
-#'   conc = c(0, 2, 0, 5),
-#'   time = rep(0:1, 2),
-#'   timeu = "h"
-#' )
-#' d_dose <- data.frame(
-#'   subj = 1,
-#'   dose = 100,
-#'   doseu = "mg",
-#'   time = 0,
-#'   timeu = "h"
-#' )
-#' o_conc <- PKNCAconc(d_conc, conc ~ time | subj / analyte, concu = "concu")
-#' o_dose <- PKNCAdose(d_dose, dose ~ time | subj, doseu = "doseu")
-#' units_table <- pknca_units_table_from_pknca(o_conc, o_dose)
-#'
-#' @importFrom dplyr select mutate rowwise any_of across everything %>% add_count inner_join group_vars
-#' @importFrom tidyr unnest
-#' @importFrom rlang sym syms
-#' @importFrom utils capture.output
-#' @export
-pknca_units_table_from_pknca <- function(o_conc, o_dose = NULL) {
-
-  # PKNCAdose is an optional argument with dose units, if not provided it will be ignored
-  if (is.null(o_dose) || all(is.na(o_dose))) o_dose <- o_conc
-  
-  # If needed, ensure that the PKNCA objects have the required unit columns
-  o_conc <- ensure_column_unit_exists(o_conc, c("concu", "timeu", "amountu"))
-  o_dose <- ensure_column_unit_exists(o_dose, c("doseu"))
-
-  # Extract relevant columns from o_conc and o_dose
-  group_dose_cols <- group_vars(o_dose)
-  group_conc_cols <- group_vars(o_conc)
-  concu_col <- o_conc$columns$concu
-  amountu_col <- o_conc$columns$amountu
-  timeu_col <- o_conc$columns$timeu
-  doseu_col <- o_dose$columns$doseu
-  all_unit_cols <- c(concu_col, amountu_col, timeu_col, doseu_col)
-
-  # Join dose units with concentration group columns and units
-  groups_units_tbl <- left_join(
-    o_conc$data %>%
-      select(any_of(c(group_conc_cols, concu_col, amountu_col, timeu_col))) %>%
-      unique(),
-    o_dose$data %>%
-      select(any_of(c(group_dose_cols, doseu_col))) %>%
-      unique(),
-    by = intersect(group_conc_cols, group_dose_cols)
-  ) %>%
-    # Prevent any issue with NAs in the group(s) or unit columns
-    mutate(across(everything(), ~ as.character(.))) %>%
-    # Ignore NAs in the unit columns within groups
-    # TODO: (? Gerardo): Shouldn't we disallow missing units? test "PKNCAdata units (#336)"
-    group_by(!!!syms(group_conc_cols)) %>%
-    tidyr::fill(!!!syms(all_unit_cols), .direction = "downup") %>%
-    ungroup() %>%
-    unique()
-
-  # Check that at least for each concentration group units are uniform
-  mismatching_units_groups <- groups_units_tbl %>%
-    add_count(!!!syms(group_conc_cols), name = "n") %>%
-    filter(n > 1) %>%
-    select(-n)
-  if (nrow(mismatching_units_groups) > 0) {
-    stop(
-      "Units should be uniform at least across concentration groups. ",
-      "Review the units for the next group(s):\n",
-      paste(utils::capture.output(print(mismatching_units_groups)), collapse = "\n")
-    )
-  }
-
-  # Check that at least one unit column is not NA
-  # TODO (? Gerardo): Shouldn't pk.nca be able to deal with empty pknca_units_table() and just warn?
-  units.are.all.na <- all(is.na(groups_units_tbl[,all_unit_cols]))
-  if (units.are.all.na) return(NULL)
-
-  # Generate the PKNCA units table
-  groups_units_tbl %>%
-    # Pick only the group columns that are relevant in stratifying the units
-    select_minimal_grouping_cols(all_unit_cols) %>%
-    unique() %>%
-    # Create a PKNCA units table for each group
-    rowwise() %>%
-    mutate(
-      pknca_units_tbl = list(
-        pknca_units_table(
-          concu = !!sym(concu_col),
-          doseu = !!sym(doseu_col),
-          amountu = !!sym(amountu_col),
-          timeu = !!sym(timeu_col),
-          concu_pref = o_conc$units$concu_pref[1],
-          doseu_pref = o_dose$units$doseu_pref[1],
-          amountu_pref = o_conc$units$amountu_pref[1],
-          timeu_pref = o_conc$units$timeu_pref[1]
-        )
-      )
-    ) %>%
-    # Combine all PKNCA units tables into one
-    unnest(cols = c(pknca_units_tbl)) %>%
-    select(-any_of(all_unit_cols)) %>%
-    as.data.frame()
-}
 
 #' Ensure Unit Columns Exist in PKNCA Object
 #'
@@ -606,6 +568,9 @@ ensure_column_unit_exists <- function(pknca_obj, unit_name) {
 #' @param df A data frame.
 #' @param strata_cols Column names in df whose unique combination defines the strata.
 #' @returns A data frame containing the strata columns and their minimal set of grouping columns.
+#' @importFrom dplyr mutate select any_of
+#' @importFrom rlang syms
+#' @importFrom stats combn
 #' @keywords Internal
 select_minimal_grouping_cols <- function(df, strata_cols) {
   # If there is no strata_cols specified, simply return the original df
@@ -613,7 +578,7 @@ select_minimal_grouping_cols <- function(df, strata_cols) {
 
   # Obtain the comb_vals values of the target column(s)
   strata_vals <- df %>%
-    mutate(strata_cols_comb = paste(!!!syms(strata_cols), sep = "_")) %>%
+    mutate(strata_cols_comb = paste(!!!rlang::syms(strata_cols), sep = "_")) %>%
     .[["strata_cols_comb"]]
   
   # If the target column(s) only has one level, there are no relevant columns
