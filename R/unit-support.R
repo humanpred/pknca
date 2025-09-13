@@ -14,6 +14,7 @@
 #'   by to get a standardized value.  This argument overrides any preferred unit
 #'   conversions from `concu_pref`, `doseu_pref`, `amountu_pref`, or
 #'   `timeu_pref`.
+#' @param ... Additional arguments (not used)
 #' @returns A unit conversion table with columns for "PPTESTCD" and "PPORRESU"
 #'   if `conversions` is not given, and adding "PPSTRESU" and
 #'   "conversion_factor" if `conversions` is given.
@@ -570,7 +571,7 @@ ensure_column_unit_exists <- function(pknca_obj, unit_name) {
 #' @returns A data frame containing the strata columns and their minimal set of grouping columns.
 #' @importFrom dplyr mutate select any_of
 #' @importFrom rlang syms
-#' @importFrom stats combn
+#' @importFrom utils combn
 #' @keywords Internal
 select_minimal_grouping_cols <- function(df, strata_cols) {
   # If there is no strata_cols specified, simply return the original df

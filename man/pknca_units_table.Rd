@@ -27,6 +27,8 @@ pknca_units_table(concu, ...)
 \item{concu, doseu, amountu, timeu}{Units for concentration, dose, amount, and
 time in the source data}
 
+\item{...}{Additional arguments (not used)}
+
 \item{concu_pref, doseu_pref, amountu_pref, timeu_pref}{Preferred units for
 reporting; \code{conversions} will be automatically.}
 
