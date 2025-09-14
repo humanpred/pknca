@@ -173,7 +173,7 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
 ##' Method for PKNCAdata objects
 #'
 #' @rdname pknca_units_table
-#' @importFrom dplyr across any_of bind_rows case_when filter group_by left_join mutate n select ungroup group_vars
+#' @importFrom dplyr across any_of bind_rows case_when filter group_by mutate n select ungroup group_vars
 #' @importFrom tidyr fill unnest
 #' @importFrom rlang syms
 #' @export
@@ -200,15 +200,14 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
   all_unit_cols <- c(concu_col, amountu_col, timeu_col, doseu_col)
 
   # Join dose units with concentration group columns and units
-  groups_units_tbl <- dplyr::left_join(
-    o_conc$data %>%
-      dplyr::select(dplyr::any_of(c(group_conc_cols, concu_col, amountu_col, timeu_col))) %>%
-      unique(),
-    o_dose$data %>%
-      dplyr::select(dplyr::any_of(c(group_dose_cols, doseu_col))) %>%
-      unique(),
-    by = intersect(group_conc_cols, group_dose_cols)
-  ) %>%
+  d_concu <- o_conc$data %>%
+    dplyr::select(dplyr::any_of(c(group_conc_cols, concu_col, amountu_col, timeu_col))) %>%
+    unique()
+  d_doseu <- o_dose$data %>%
+    dplyr::select(dplyr::any_of(c(group_dose_cols, doseu_col))) %>%
+    unique()
+
+  groups_units_tbl <- merge(d_concu, d_doseu, all.x = TRUE) %>%
     dplyr::mutate(dplyr::across(dplyr::everything(), ~ as.character(.))) %>%
     dplyr::group_by(!!!rlang::syms(group_conc_cols)) %>%
     tidyr::fill(!!!rlang::syms(all_unit_cols), .direction = "downup") %>%
