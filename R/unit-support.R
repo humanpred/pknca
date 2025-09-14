@@ -51,8 +51,6 @@
 #'   concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
 #'   timeu_pref = "day"
 #' )
-
-#' S3 generic for pknca_units_table
 #'
 #' @export
 pknca_units_table <- function(concu, ...) {

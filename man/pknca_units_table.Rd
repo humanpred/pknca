@@ -81,7 +81,6 @@ pknca_units_table(
   concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
   timeu_pref = "day"
 )
-S3 generic for pknca_units_table
 
 }
 \seealso{
