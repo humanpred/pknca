@@ -52,39 +52,61 @@ test_that("normalize.data.frame errors for duplicate group", {
   )
 })
 
-test_that("normalize_by_column errors for wrong object type", {
+# Create a basic PKNCAresults object for use in tests
+d_conc <- data.frame(
+  ID = c(1, 1, 2, 2),
+  weight = c(2, 2, 4, 4),
+  analyte = c("A", "B", "A", "B"),
+  analyte_mw = c(200, 300, 200, 300),
+  analyte_mw_unit = c("g/mol", "kg/mol", "g/mol", "kg/mol"),
+  time = 0:1,
+  conc = c(10, 20, 30, 40),
+  weight = c(2, 2, 4, 4), weight_unit = c("kg", "kg", "kg", "kg")
+)
+o_conc <- PKNCAconc(d_conc, conc ~ time | ID / analyte, concu = "ng/mL", concu_pref = "g/mL")
+d_dose <- data.frame(ID = c(1, 2), dose = c(100, 200), time = 0, doseu = "mg")
+o_dose <- PKNCAdose(d_dose, dose ~ time | ID)
+o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(cmax = TRUE, start = 0, end = 1))
+o_nca <- pk.nca(o_data)
+
+test_that("normalize_by_col normalizes by a numeric column in PKNCAconc data", {
+  # Use the highlighted d_conc/o_conc/o_nca objects
+  # Normalize by the 'weight' column (numeric), unit = 'kg', parameter = 'cmax', suffix = '.wn'
+  res <- normalize_by_col(o_nca, col = "weight", unit = "kg", parameters = "cmax", suffix = ".wn")
+  # Check that normalization occurred as expected, and values were appended
+  expect_equal(res$result$PPTESTCD,  rep(c("cmax", "cmax.wn"), each = 4))
+  expect_equal(res$result$PPORRES, rep(c(10, 20, 30, 40, 10/2, 20/2, 30/4, 40/4), each = 1))
+  expect_equal(res$result$PPORRESU, rep(c("ng/mL", "ng/mL/kg"), each = 4))
+})
+
+test_that("normalize_by_col normalizes by a unit column in PKNCAconc data", {
+  # Use the highlighted d_conc/o_conc/o_nca objects
+  # Normalize by the 'analyte_mw' column, unit = 'analyte_mw_unit', parameter = 'cmax', suffix = '.mwn'
+  res <- normalize_by_col(o_nca, col = "analyte_mw", unit = "analyte_mw_unit", parameters = "cmax", suffix = ".mwn")
+  expect_equal(res$result$PPTESTCD,  rep(c("cmax", "cmax.mwn"), each = 4))
+  expect_equal(res$result$PPORRES, c(10, 20, 30, 40, 10/200, 20/300, 30/200, 40/300))
+  expect_equal(res$result$PPORRESU, c(rep("ng/mL", 4), rep(c("ng/mL/g/mol", "ng/mL/kg/mol"), 2)))
+})
+
+test_that("normalize_by_col errors for missing normalization column in PKNCAconc data", {
   expect_error(
-    normalize_by_column(1, "subject", 1, 1, "kg", "cmax", ".wn"),
-    "The object must be a PKNCAresults object"
+    normalize_by_col(o_nca, col = "not_a_column", unit = "kg", parameters = "cmax", suffix = ".wn"),
+    "Column not_a_column not found"
   )
 })
 
-test_that("normalize_by_column errors for missing column", {
-  o_nca2 <- o_nca
-  o_nca2$data$conc$columns$subject <- NULL
+test_that("normalize_by_col errors for duplicate normalizations per PKNCAconc group", {
+  # Duplicate group: all rows have same ID and weight
+  d_conc_dup <- d_conc
+  d_conc_dup$analyte <- "A"
+  d_conc_dup$weight <- 1:4
+  o_conc_dup <- PKNCAconc(d_conc_dup, conc ~ time | ID / analyte, concu = "ng/mL", concu_pref = "g/mL")
+  d_dose_dup <- data.frame(ID = 1, dose = 100, time = 0, doseu = "mg")
+  o_dose_dup <- PKNCAdose(d_dose_dup, dose ~ time | ID)
+  o_data_dup <- PKNCAdata(o_conc_dup, o_dose_dup, intervals = data.frame(cmax = TRUE, start = 0, end = 1))
+  o_nca_dup <- pk.nca(o_data_dup)
   expect_error(
-    normalize_by_column(o_nca2, "subject", 1, 1, "kg", "cmax", ".wn"),
-    "Column subject not found"
+    normalize_by_col(o_nca_dup, col = "weight", unit = "kg", parameters = "cmax", suffix = ".wn"),
+    "There is at least one concentration group with multiple normalization values"
   )
-})
-
-test_that("normalize_by_column errors for mismatched lengths", {
-  expect_error(
-    normalize_by_column(o_nca, "subject", 1:2, 1, "kg", "cmax", ".wn"),
-    "The length of subject values and normalization_values must be the same"
-  )
-})
-
-test_that("normalize_by_column errors for duplicate values", {
-  expect_error(
-    normalize_by_column(o_nca, "subject", c(1, 1), c(1, 2), "kg", "cmax", ".wn"),
-    "The subject values must not contain duplicates"
-  )
-})
-
-test_that("normalize_weight, normalize_bmi, normalize_sa, normalize_mw call normalize_by_column", {
-  expect_silent(normalize_weight(o_nca, 1, 2, "kg", "cmax"))
-  expect_silent(normalize_bmi(o_nca, 1, 2, "kg/m^2", "cmax"))
-  expect_silent(normalize_sa(o_nca, 1, 2, "m^2", "cmax"))
-  expect_silent(normalize_mw(o_nca, "A", 2, "g/mol", "cmax"))
 })
