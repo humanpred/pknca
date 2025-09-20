@@ -4,7 +4,19 @@ will continue until then.  These will be especially noticeable around
 the inclusion of IV NCA parameters and additional specifications of
 the dosing including dose amount and route.
 
-# PKNCA (development version)
+# Development version
+
+## Bugs fixed
+
+* `get_halflife_points()` now correctly accounts for start time != 0 and sets
+  times outside of any interval to `NA` (#470)
+
+## New features
+
+* `pk.calc.half.life()` now returns also `lambda.z.corrxy`, the correlation between
+  the time and the log-concentration of the lambda z points.
+
+# PKNCA 0.12.1
 
 ## New Features
 
@@ -14,6 +26,17 @@ the dosing including dose amount and route.
 
 * Units for fraction excretion parameter (fe) are now accurately captured as
   amount/dose units rather than "fraction" (#426)
+* `get_halflife_points` will ignore points after `lambda.z.time.last`, instead
+  of `tlast` (#448)
+* `lambda.z` calculations will now only consider time points that occur after
+  the end of the latest dose administration (#139)
+* `aucint.inf.pred` is `NA` when half-life is not estimable (#450)
+
+## New features
+
+* PKNCA now has a debugging mode to support troubleshooting; it is not intended
+  for production use. Debugging mode can be enabled using
+  `PKNCA.options(debug = TRUE)`.
 
 # PKNCA 0.12.0
 
