@@ -16,11 +16,9 @@ the dosing including dose amount and route.
 * `pk.calc.half.life()` now returns also `lambda.z.corrxy`, the correlation between
   the time and the log-concentration of the lambda z points.
 
-# PKNCA 0.12.1
-
-## New Features
-
 * New post-processing functions to normalize PKNCA result parameters based on weight (`normalize_weight`), surface area (`normalize_sa`), BMI (`normalize_bmi`) or molecular weight (`normalize_mw`). Custom normalizations are also possible (`normalize`).
+
+# PKNCA 0.12.1
 
 ## Minor changes (unlikely to affect PKNCA use)
 
