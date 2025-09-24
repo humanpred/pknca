@@ -18,6 +18,12 @@ the dosing including dose amount and route.
 
 # PKNCA 0.12.1
 
+## New features
+
+* `choose_params()` is a new function that helps choose the parameters to use
+  based on parameters you want to calculate based on dosing route, number of
+  doses, and other choices.
+
 ## Minor changes (unlikely to affect PKNCA use)
 
 * Units for fraction excretion parameter (fe) are now accurately captured as
