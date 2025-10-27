@@ -133,3 +133,120 @@ PKNCA.set.summary(
   point=business.geomean,
   spread=business.geocv
 )
+
+#' Calculate the midpoint collection time of the last measurable excretion rate
+#'
+#' @param conc The concentration in the excreta (e.g., urine or feces)
+#' @param volume The volume (or mass) of the sample
+#' @param time The starting time of the collection interval
+#' @param duration.conc The duration of the collection interval
+#' @param check Should the concentration and time data be checked?
+#' @return The midpoint collection time of the last measurable excretion rate, or NA/0 if not available
+#' @export
+pk.calc.ertlst <- function(conc, volume, time, duration.conc, check = TRUE) {
+  if (check) {
+    assert_conc_time(conc = conc, time = time)
+  }
+  if (all(is.na(conc))) {
+    NA_real_
+  } else if (all(conc %in% c(0, NA))) {
+    0
+  } else {
+    er <- conc * volume / duration.conc
+    midtime <- time + duration.conc / 2
+    max(midtime[!(conc %in% c(NA, 0))])
+  }
+}
+
+# Add the column to the interval specification
+add.interval.col("ertlst",
+                 FUN="pk.calc.ertlst",
+                 unit_type="time",
+                 pretty_name="Tlast excretion rate",
+                 desc="The midpoint collection time of the last measurable excretion rate (typically in urine or feces)")
+
+PKNCA.set.summary(
+  name="ertlst",
+  description="median and range",
+  point=business.median,
+  spread=business.range
+)
+
+#' Calculate the maximum excretion rate
+#'
+#' @param conc The concentration in the excreta (e.g., urine or feces)
+#' @param volume The volume (or mass) of the sample
+#' @param time The starting time of the collection interval
+#' @param duration.conc The duration of the collection interval
+#' @param check Should the concentration data be checked?
+#' @return The maximum excretion rate, or NA if not available
+#' @export
+pk.calc.ermax <- function(conc, volume, time, duration.conc, check = TRUE) {
+  if (check) {
+    assert_conc(conc = conc)
+  }
+  if (length(conc) == 0 | all(is.na(conc))) {
+    NA
+  } else {
+    er <- conc * volume / duration.conc
+    max(er, na.rm=TRUE)
+  }
+}
+
+add.interval.col("ermax",
+                 FUN="pk.calc.ermax",
+                 unit_type="amount_time",
+                 pretty_name="Maximum excretion rate",
+                 desc="The maximum excretion rate (typically in urine or feces)")
+
+PKNCA.set.summary(
+  name="ermax",
+  description="geometric mean and geometric coefficient of variation",
+  point=business.geomean,
+  spread=business.geocv
+)
+
+#' Calculate the midpoint collection time of the maximum excretion rate
+#'
+#' @param conc The concentration in the excreta (e.g., urine or feces)
+#' @param volume The volume (or mass) of the sample
+#' @param time The starting time of the collection interval
+#' @param duration.conc The duration of the collection interval
+#' @param check Should the concentration and time data be checked?
+#' @param first.tmax If TRUE, return the first time of maximum excretion rate; otherwise, return the last
+#' @return The midpoint collection time of the maximum excretion rate, or NA if not available
+#' @export
+pk.calc.ertmax <- function(conc, volume, time, duration.conc, check = TRUE, first.tmax = NULL) {
+
+  if (check) {
+    assert_conc_time(conc = conc, time = time)
+  }
+
+  if (length(conc) == 0 | all(conc %in% c(NA, 0))) {
+    NA
+  } else {
+    er <- conc * volume / duration.conc
+    ermax <- pk.calc.ermax(conc, volume, time, duration.conc, check = FALSE)
+    midtime <- time + duration.conc / 2
+    ret <- midtime[er %in% ermax]
+
+    if (first.tmax) {
+      ret[1]
+    } else {
+      ret[length(ret)]
+    }
+  }
+}
+
+add.interval.col("ertmax",
+                 FUN="pk.calc.ertmax",
+                 unit_type="time",
+                 pretty_name="Tmax excretion rate",
+                 desc="The midpoint collection time of the maximum excretion rate (typically in urine or feces)")
+
+PKNCA.set.summary(
+  name="ertmax",
+  description="median and range",
+  point=business.median,
+  spread=business.range
+)
