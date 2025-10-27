@@ -126,6 +126,7 @@ add.interval.col("fe",
                  unit_type="amount_dose",
                  pretty_name="Fraction excreted",
                  values=c(FALSE, TRUE),
+                 depends = "ae",
                  desc="The fraction of the dose excreted")
 PKNCA.set.summary(
   name="fe",
