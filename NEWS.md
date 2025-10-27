@@ -16,6 +16,9 @@ the dosing including dose amount and route.
 * `pk.calc.half.life()` now returns also `lambda.z.corrxy`, the correlation between
   the time and the log-concentration of the lambda z points.
 
+* New excretion rate parameters: `ermax` (Maximum excretion rate), `ertmax` (Midpoint time
+  of maximum excretion rate) and `ertlst` (Time of last excretion rate measurement) (#433)
+
 # PKNCA 0.12.1
 
 ## Minor changes (unlikely to affect PKNCA use)
