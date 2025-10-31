@@ -271,10 +271,6 @@ PKNCA.set.summary(
                                       name_a = "concentrations",
                                       name_b = "volumes") {
   
-  if (length(a) != length(b)) {
-    stop("'a' and 'b' must have the same length")
-  }
-  
   mask_a <- is.na(a)
   mask_b <- is.na(b)
   
