@@ -56,9 +56,19 @@ test_that("pk.calc.fe", {
 
 test_that("pk.calc.ertlst", {
   # All NA
-  expect_true(is.na(pk.calc.ertlst(conc = c(NA, NA), volume = c(1, 1), time = c(0, 1), duration.conc = c(1, 1))))
+  expect_equal(
+    pk.calc.ertlst(conc = c(NA, NA), volume = c(1, 1), time = c(0, 1), duration.conc = c(1, 1)),
+    structure(NA_real_, exclude = "All concentrations are missing")
+  )
+  expect_equal(
+    pk.calc.ertlst(conc = c(NA, NA), volume = c(NA, NA), time = c(0, 1), duration.conc = c(1, 1)),
+    structure(NA_real_, exclude = "All concentrations and volumes are missing")
+  )
   # All 0 or NA
-  expect_equal(pk.calc.ertlst(conc = c(0, NA), volume = c(1, 1), time = c(0, 1), duration.conc = c(1, 1)), 0)
+  expect_equal(
+    pk.calc.ertlst(conc = c(0, NA), volume = c(1, 1), time = c(0, 1), duration.conc = c(1, 1)),
+    structure(0, exclude = "1 of 2 concentrations are missing")
+  )
   # Normal case
   expect_equal(
     pk.calc.ertlst(conc = c(1, 2, 0), volume = c(1, 1, 1), time = c(0, 1, 2), duration.conc = c(1, 1, 1)),
@@ -68,7 +78,10 @@ test_that("pk.calc.ertlst", {
 
 test_that("pk.calc.ermax", {
   # All NA
-  expect_true(is.na(pk.calc.ermax(conc = c(NA, NA), volume = c(1, 1), time = c(0, 1), duration.conc = c(1, 1))))
+  expect_equal(
+    pk.calc.ermax(conc = c(NA, NA), volume = c(1, 1), time = c(0, 1), duration.conc = c(1, 1)),
+    structure(NA, exclude = "All concentrations are missing")
+  )
   # Normal case
   expect_equal(
     pk.calc.ermax(conc = c(1, 2, 3), volume = c(2, 2, 2), time = c(0, 1, 2), duration.conc = c(2, 2, 2)),
@@ -78,7 +91,10 @@ test_that("pk.calc.ermax", {
 
 test_that("pk.calc.ertmax", {
   # All NA or 0
-  expect_true(is.na(pk.calc.ertmax(conc = c(NA, 0), volume = c(1, 1), time = c(0, 1), duration.conc = c(1, 1))))
+  expect_equal(
+    pk.calc.ertmax(conc = c(NA, 0), volume = c(1, 1), time = c(0, 1), duration.conc = c(1, 1)),
+    structure(NA, exclude = "1 of 2 concentrations are missing")
+  )
   # Normal case, last tmax
   expect_equal(
     pk.calc.ertmax(conc = c(1, 3, 2), volume = c(2, 2, 2), time = c(0, 1, 2), duration.conc = c(2, 2, 2), first.tmax = FALSE),
