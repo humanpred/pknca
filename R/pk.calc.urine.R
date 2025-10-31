@@ -11,29 +11,12 @@
 #' @seealso [pk.calc.clr()], [pk.calc.fe()]
 #' @export
 pk.calc.ae <- function(conc, volume, check=TRUE) {
-  mask_missing_conc <- is.na(conc)
-  mask_missing_vol <- is.na(volume)
-  mask_missing_both <- mask_missing_conc & mask_missing_vol
-  mask_missing_conc <- mask_missing_conc & !mask_missing_both
-  mask_missing_vol <- mask_missing_vol & !mask_missing_both
-  message_both <- message_conc <- message_vol <- NA_character_
-  if (all(mask_missing_both)) {
-    message_both <- "All concentrations and volumes are missing"
-  } else if (any(mask_missing_both)) {
-    message_both <- sprintf("%g of %g concentrations and volumes are missing", sum(mask_missing_both), length(conc))
-  }
-  if (all(mask_missing_conc)) {
-    message_conc <- "All concentrations are missing"
-  } else if (any(mask_missing_conc)) {
-    message_conc <- sprintf("%g of %g concentrations are missing", sum(mask_missing_conc), length(conc))
-  }
-  if (all(mask_missing_vol)) {
-    message_vol <- "All volumes are missing"
-  } else if (any(mask_missing_vol)) {
-    message_vol <- sprintf("%g of %g volumes are missing", sum(mask_missing_vol), length(conc))
-  }
-  message_all <- stats::na.omit(c(message_both, message_conc, message_vol))
-  ret <- sum(conc*volume)
+  # Generate combined missing-data messages for conc/volume using helper
+  message_all <- .generate_missing_messages(conc, volume,
+                                           name_a = "concentrations",
+                                           name_b = "volumes")
+
+  ret <- sum(conc * volume)
   if (length(message_all) != 0) {
     message <- paste(message_all, collapse = "; ")
     ret <- structure(ret, exclude = message)
@@ -144,18 +127,27 @@ PKNCA.set.summary(
 #' @return The midpoint collection time of the last measurable excretion rate, or NA/0 if not available
 #' @export
 pk.calc.ertlst <- function(conc, volume, time, duration.conc, check = TRUE) {
-  if (check) {
-    assert_conc_time(conc = conc, time = time)
-  }
+
+  # Generate messages about missing concentrations/volumes
+  message_all <- .generate_missing_messages(conc, volume,
+                                           name_a = "concentrations",
+                                           name_b = "volumes")
+
   if (all(is.na(conc))) {
-    NA_real_
+    ret <- NA_real_
   } else if (all(conc %in% c(0, NA))) {
-    0
+    ret <- 0
   } else {
-    er <- conc * volume / duration.conc
+      midtime <- time + duration.conc / 2
     midtime <- time + duration.conc / 2
-    max(midtime[!(conc %in% c(NA, 0))])
+    ret <- max(midtime[!(conc %in% c(NA, 0))])
   }
+
+  if (length(message_all) != 0) {
+    message <- paste(message_all, collapse = "; ")
+    ret <- structure(ret, exclude = message)
+  }
+  ret
 }
 
 # Add the column to the interval specification
@@ -182,15 +174,24 @@ PKNCA.set.summary(
 #' @return The maximum excretion rate, or NA if not available
 #' @export
 pk.calc.ermax <- function(conc, volume, time, duration.conc, check = TRUE) {
-  if (check) {
-    assert_conc(conc = conc)
-  }
-  if (length(conc) == 0 | all(is.na(conc))) {
-    NA
+
+  # Generate messages about missing concentrations/volumes
+  message_all <- .generate_missing_messages(conc, volume,
+                                           name_a = "concentrations",
+                                           name_b = "volumes")
+
+  if (length(conc) == 0 || all(is.na(conc))) {
+    ret <- NA
   } else {
     er <- conc * volume / duration.conc
-    max(er, na.rm=TRUE)
+    ret <- max(er, na.rm=TRUE)
   }
+
+  if (length(message_all) != 0) {
+    message <- paste(message_all, collapse = "; ")
+    ret <- structure(ret, exclude = message)
+  }
+  ret
 }
 
 add.interval.col("ermax",
@@ -218,12 +219,13 @@ PKNCA.set.summary(
 #' @export
 pk.calc.ertmax <- function(conc, volume, time, duration.conc, check = TRUE, first.tmax = NULL) {
 
-  if (check) {
-    assert_conc_time(conc = conc, time = time)
-  }
+  # Generate messages about missing concentrations/volumes
+  message_all <- .generate_missing_messages(conc, volume,
+                                           name_a = "concentrations",
+                                           name_b = "volumes")
 
-  if (length(conc) == 0 | all(conc %in% c(NA, 0))) {
-    NA
+  if (length(conc) == 0 || all(conc %in% c(NA, 0))) {
+    ret <- NA
   } else {
     er <- conc * volume / duration.conc
     ermax <- pk.calc.ermax(conc, volume, time, duration.conc, check = FALSE)
@@ -231,11 +233,17 @@ pk.calc.ertmax <- function(conc, volume, time, duration.conc, check = TRUE, firs
     ret <- midtime[er %in% ermax]
 
     if (first.tmax) {
-      ret[1]
+      ret <- ret[1]
     } else {
-      ret[length(ret)]
+      ret <- ret[length(ret)]
     }
   }
+
+  if (length(message_all) != 0) {
+    message <- paste(message_all, collapse = "; ")
+    ret <- structure(ret, exclude = message)
+  }
+  ret
 }
 
 add.interval.col("ertmax",
@@ -250,3 +258,51 @@ PKNCA.set.summary(
   point=business.median,
   spread=business.range
 )
+
+
+
+# Helper to generate missing-data checking messages for paired vectors
+#
+# This function accepts two columns/vectors (for example, concentrations
+# and volumes). It computes missingness internally and produces a character
+# vector of human-readable messages describing the missingness that matches
+# the style used in the package (used previously in `pk.calc.ae`).
+.generate_missing_messages <- function(a, b,
+                                      name_a = "concentrations",
+                                      name_b = "volumes") {
+  
+  if (length(a) != length(b)) {
+    stop("'a' and 'b' must have the same length")
+  }
+  
+  mask_a <- is.na(a)
+  mask_b <- is.na(b)
+  
+  mask_both <- mask_a & mask_b
+  mask_a_only <- mask_a & !mask_both
+  mask_b_only <- mask_b & !mask_both
+  
+  msg_both <- msg_a <- msg_b <- NA_character_
+  n <- length(mask_a)
+  
+  if (all(mask_both)) {
+    msg_both <- sprintf("All %s and %s are missing", name_a, name_b)
+  } else if (any(mask_both)) {
+    msg_both <- sprintf("%g of %g %s and %s are missing", sum(mask_both), n, name_a, name_b)
+  }
+  
+  if (all(mask_a_only)) {
+    msg_a <- sprintf("All %s are missing", name_a)
+  } else if (any(mask_a_only)) {
+    msg_a <- sprintf("%g of %g %s are missing", sum(mask_a_only), n, name_a)
+  }
+  
+  if (all(mask_b_only)) {
+    msg_b <- sprintf("All %s are missing", name_b)
+  } else if (any(mask_b_only)) {
+    msg_b <- sprintf("%g of %g %s are missing", sum(mask_b_only), n, name_b)
+  }
+  
+  # Return non-NA messages
+  stats::na.omit(c(msg_both, msg_a, msg_b))
+}
