@@ -532,8 +532,9 @@ get_halflife_points.PKNCAdata <- function(object) {
   object$intervals <- object$intervals[hl_col & !is.na(hl_col),]
 
   # Only calculate half.life for the results object
-  all_params <- setdiff(names(get.interval.cols()), c("start", "end", "half.life"))
-  object$intervals[, all_params] <- NA_real_
+  params_not_needed <- setdiff(names(get.interval.cols()), c("start", "end", "half.life"))
+  params_to_ignore <- intersect(names(object$intervals), params_not_needed)
+  object$intervals[, params_to_ignore] <- FALSE # NA does not work here with tests
   o_nca <- pk.nca(object)
 
   # Get the half-life points from the results object
