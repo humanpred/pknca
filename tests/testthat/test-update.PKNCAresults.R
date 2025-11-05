@@ -57,7 +57,7 @@ expect_equal("update() keeps concentration data", {
   d_conc_setzero$conc[d_conc$Time == 0] <- 0
   o_conc_update <- PKNCAconc(d_conc_setzero, conc~Time|Subject)
   o_data_update <- PKNCAdata(o_conc_update, o_dose)
-  o_nca_update <- update(o_nca, o_data_update)
+  o_nca_update <- suppressWarnings(update(o_nca, o_data_update))
   expect_equal(
     o_nca_update$data$conc,
     o_conc_update
