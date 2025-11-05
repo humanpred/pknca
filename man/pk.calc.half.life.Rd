@@ -78,6 +78,7 @@ included if not given as an input)}
 \item{r.squared}{coefficient of determination}
 \item{adj.r.squared}{adjusted coefficient of determination}
 \item{lambda.z}{elimination rate}
+\item{lambda.z.corrxy}{correlation between time and log-conc half-life points}
 \item{lambda.z.time.first}{first time for half-life calculation}
 \item{lambda.z.time.last}{last time for half-life calculation}
 \item{lambda.z.n.points}{number of points in half-life calculation}
