@@ -42,3 +42,23 @@ test_that("update.PKNCAresults", {
     o_nca_chconc_reordered$result
   )
 })
+
+expect_equal("update() test changing data", {
+  d_conc <- as.data.frame(datasets::Theoph)
+  d_dose <- d_conc[d_conc$Time == 0,]
+  o_conc <- PKNCAconc(d_conc, conc~Time|Subject)
+  o_dose <- PKNCAdose(d_dose, Dose~Time|Subject)
+  o_data <- PKNCAdata(o_conc, o_dose)
+  o_nca <- pk.nca(o_data)
+
+  d_conc_setzero <- as.data.frame(datasets::Theoph)
+  d_conc_setzero$conc[d_conc$Time == 0] <- 0
+  o_conc_update <- PKNCAconc(d_conc_setzero, conc~Time|Subject)
+  o_data_update <- PKNCAdata(o_conc_update, o_dose)
+  o_nca_update <- update(o_nca, o_data_update)
+  expect_equal(
+    o_nca_update$data$conc,
+    o_conc_update
+  )
+  #summary(o_nca_update)
+})

@@ -108,7 +108,7 @@ filter_changed_inner_join <- function(data, changed) {
     # Return a zero-row data.frame if nothing changed
     data[0,]
   } else if (length(intersect(names(data), names(changed))) == 0) {
-    # Return all the data if there is not an interesction in column names
+    # Return all the data if there is not an intersection in column names
     data
   } else {
     dplyr::inner_join(data, changed, by = intersect(names(data), names(changed)))
