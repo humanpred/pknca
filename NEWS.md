@@ -33,6 +33,10 @@ the dosing including dose amount and route.
 * PKNCA now has a debugging mode to support troubleshooting; it is not intended
   for production use. Debugging mode can be enabled using
   `PKNCA.options(debug = TRUE)`.
+* It is now possible to update an existing analysis when data changes but other
+  NCA settings stay the same (fix #417)
+* New assertion functions were created to ensure that an object is the correct
+  type (fix #328)
 
 # PKNCA 0.12.0
 
