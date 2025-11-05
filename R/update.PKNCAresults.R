@@ -87,7 +87,7 @@ find_changed_group <- function(old, new) {
         FUN.VALUE = TRUE
       )
     # Find the unique set of groups that changed
-    unique(d_nest_combo[mask_changed_id, group_col])
+    unique(d_nest_combo[mask_changed_id, group_col, drop = FALSE])
   }
 }
 
