@@ -11,7 +11,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, echo=FALSE, include=FALSE}
+```{r setup, echo = FALSE, include = FALSE}
 library(PKNCA)
 ```
 
@@ -34,7 +34,7 @@ The simplest analysis requires concentration and dosing data at a minimum. Given
 
 ```{r setup_data}
 library(PKNCA)
-library(dplyr, quietly=TRUE)
+library(dplyr, quietly = TRUE)
 
 ## Load the PK concentration data
 d_conc <- datasets::Theoph
@@ -44,7 +44,7 @@ d_dose <- d_conc[d_conc$Time == 0,]
 ## Create a concentration object specifying the concentration, time, and
 ## subject columns.  (Note that any number of grouping levels is
 ## supported; you are not restricted to just grouping by subject.)
-conc_obj <-
+o_conc <-
   PKNCAconc(
     d_conc,
     conc~Time|Subject
@@ -54,7 +54,7 @@ conc_obj <-
 ## subset of the grouping factors for concentration, and the grouping
 ## columns must have the same names between concentration and dose
 ## objects.)
-dose_obj <-
+o_dose <-
   PKNCAdose(
     d_dose,
     Dose~Time|Subject
@@ -62,13 +62,13 @@ dose_obj <-
 ## Combine the concentration and dosing information both to
 ## automatically define the intervals for NCA calculation and provide
 ## doses for calculations requiring dose.
-data_obj <- PKNCAdata(conc_obj, dose_obj)
+o_data <- PKNCAdata(o_conc, o_dose)
 
 ## Calculate the NCA parameters
-results_obj <- pk.nca(data_obj)
+o_nca <- pk.nca(o_data)
 
 ## Summarize the results
-summary(results_obj)
+summary(o_nca)
 ```
 
 # Data Handling
@@ -98,8 +98,8 @@ PKNCA.options()
 And, to reset the current values to the library defaults, run the function with
 the default argument set to `TRUE`.
 
-```{r eval=FALSE}
-PKNCA.options(default=TRUE)
+```{r eval = FALSE}
+PKNCA.options(default = TRUE)
 ```
 
 Each of the options is documented where it is used; for example, the first.tmax
@@ -120,13 +120,13 @@ geometric CV using three significant figures, and having a summary result
 requires that at least half of the available values are present (not missing).
 The code below will set this example.
 
-```{r eval=FALSE}
+```{r eval = FALSE}
 PKNCA.set.summary(
   name = "cmax",
   description = "geometric mean and geometric coefficient of variation",
   point = business.geomean,
   spread = business.geocv,
-  rounding = list(signif=3)
+  rounding = list(signif = 3)
 )
 ```
 
@@ -134,13 +134,13 @@ Another example is that T~max~ is usually summarized by the median and
 range, and as measurements are often taken with minute resolution and
 recorded in hours, reporting is usually to the second decimal place.
 
-```{r eval=FALSE}
+```{r eval = FALSE}
 PKNCA.set.summary(
   name = "tmax",
   description = "median and range",
   point = business.median,
   spread = business.range,
-  rounding = list(round=2)
+  rounding = list(round = 2)
 )
 ```
 
@@ -148,19 +148,19 @@ If the functions or default rounding options provided in the library
 do not meet the summarization needs, a user-supplied function can be
 used for rounding.
 
-```{r custom_summary_fun, eval=FALSE}
+```{r custom_summary_fun, eval = FALSE}
 median_na <- function(x) {
   median(x, na.rm = TRUE)
 }
 quantprob_na <- function(x) {
-  quantile(x, probs = c(0.05, 0.95), na.rm=TRUE)
+  quantile(x, probs = c(0.05, 0.95), na.rm = TRUE)
 }
 PKNCA.set.summary(
-  name="auclast",
+  name = "auclast",
   description = "median and 5th to 95th percentile",
-  point=median_na,
-  spread=quantprob_na,
-  rounding=list(signif=3)
+  point = median_na,
+  spread = quantprob_na,
+  rounding = list(signif = 3)
 )
 ```
 
@@ -168,19 +168,19 @@ In some cases multiple parameters may need the same summary functions
 (as often occurs with simulated data).  Many parameters can be set
 simultaneously by specifying a vector of `name`s.
 
-```{r multi_summary_settings, eval=FALSE}
+```{r multi_summary_settings, eval = FALSE}
 median_na <- function(x) {
-  median(x, na.rm=TRUE)
+  median(x, na.rm = TRUE)
 }
 quantprob_na <- function(x) {
-  quantile(x, probs=c(0.05, 0.95), na.rm=TRUE)
+  quantile(x, probs = c(0.05, 0.95), na.rm = TRUE)
 }
 PKNCA.set.summary(
-  name=c("auclast", "cmax", "tmax", "half.life", "aucinf.pred"),
+  name = c("auclast", "cmax", "tmax", "half.life", "aucinf.pred"),
   description = "median and 5th to 95th percentile",
-  point=median_na,
-  spread=quantprob_na,
-  rounding=list(signif=3)
+  point = median_na,
+  spread = quantprob_na,
+  rounding = list(signif = 3)
 )
 ```
 
@@ -202,7 +202,7 @@ to be the subject, and as noted before, the subject is (by default)
 excluded from the summary grouping (so that summaries are grouped by
 study, treatment, etc., but not by subject).
 
-```{r grouping, eval=FALSE}
+```{r grouping, eval = FALSE}
 ## Generate a faux multi-study, multi-analyte dataset.
 d_conc_parent <- d_conc
 d_conc_parent$Subject <- as.numeric(as.character(d_conc_parent$Subject))
@@ -219,19 +219,17 @@ d_dose_both <- d_conc_both[d_conc_both$Time == 0 & d_conc_both$Analyte %in% "Par
 ## Create a concentration object specifying the concentration, time,
 ## study, and subject columns.  (Note that any number of grouping
 ## levels is supporting; you are not restricted to this list.)
-conc_obj <- PKNCAconc(d_conc_both,
-                      conc~Time|Study+Subject/Analyte)
+o_conc <- PKNCAconc(d_conc_both, conc~Time|Study+Subject/Analyte)
 ## Create a dosing object specifying the dose, time, study, and
 ## subject columns.  (Note that the grouping factors should be a
 ## subset of the grouping factors for concentration, and the columns
 ## must have the same names between concentration and dose objects.)
-dose_obj <- PKNCAdose(d_dose_both,
-                     Dose~Time|Study+Subject)
+o_dose <- PKNCAdose(d_dose_both, Dose~Time|Study+Subject)
 
 # Perform and summarize the PK data as previously described
-data_obj <- PKNCAdata(conc_obj, dose_obj)
-results_obj <- pk.nca(data_obj)
-summary(results_obj)
+o_data <- PKNCAdata(o_conc, o_dose)
+o_nca <- pk.nca(o_data)
+summary(o_nca)
 ```
 
 # Selecting Calculation Intervals
@@ -348,9 +346,9 @@ intervals_manual <-
     auclast=TRUE,
     aucinf.obs=c(FALSE, TRUE)
   )
-data_obj <-
+o_data <-
   PKNCAdata(
-    conc_obj, dose_obj, 
+    o_conc, o_dose, 
     intervals=intervals_manual
   )
 ```
@@ -358,10 +356,10 @@ data_obj <-
 To update the automatically-selected intervals, extract the intervals, modify them, and put them back.
 
 ```{r eval=FALSE}
-data_obj <- PKNCAdata(conc_obj, dose_obj)
-intervals_manual <- data_obj$intervals
+o_data <- PKNCAdata(o_conc, o_dose)
+intervals_manual <- o_data$intervals
 intervals_manual$aucinf.obs[1] <- TRUE
-data_obj$intervals <- intervals_manual
+o_data$intervals <- intervals_manual
 ```
 
 ## Keeping a column from intervals
@@ -373,7 +371,7 @@ start and end times.  So, you may keep the interval columns using the option
 intervals):
 
 ```{r eval=FALSE}
-data_obj <- PKNCAdata(conc_obj, dose_obj, options = list(keep_interval_cols = "dosetype"))
+o_data <- PKNCAdata(o_conc, o_dose, options = list(keep_interval_cols = "dosetype"))
 ```
 
 # Summarizing results
@@ -395,3 +393,61 @@ geometric statistics.
 Edge cases like two unique subjects where one has an excluded value and one has
 duplicated values (`N = 2` and `n = 2` even though both measurements come from a
 single subject) are to be handled by the user.
+
+# Updating existing results
+
+Updating existing results is most helpful if you are writing a `shiny` or other
+user interface for PKNCA. If you are using PKNCA from a script, this is not the
+preferred way to perform analysis.
+
+If you need to rerun analyses with minor updates-- changing half-life point
+selection, for instance-- you can use `update()` on a `PKNCAresults` object
+(`o_nca` in the example above). Using `update()` will recalculate the
+minimum-required number of calculations for the data that are changed.
+
+To use `update()`, give it your existing results and the new `PKNCAdata` object
+you want to use.
+
+Starting from the theophylline example in the [Quick Start](Quick Start) section above:
+
+```{r update-example-setup}
+d_conc <- datasets::Theoph
+d_dose <- d_conc[d_conc$Time == 0,]
+o_conc <- PKNCAconc(d_conc, conc~Time|Subject)
+o_dose <- PKNCAdose(d_dose, Dose~Time|Subject)
+o_data <- PKNCAdata(o_conc, o_dose)
+o_nca <- pk.nca(o_data)
+summary(o_nca)
+```
+
+In these data, some participants have a nonzero predose concentration. Assume
+that we want to manually change those concentrations to zero and then
+recalculate. You can change the concentration data, and use `update()` to
+recalculate only for the changed participants.
+
+```{r update-example-setup}
+d_conc_setzero <- datasets::Theoph
+d_conc_setzero$conc[d_conc$Time == 0] <- 0
+o_conc_update <- PKNCAconc(d_conc_setzero, conc~Time|Subject)
+o_data_update <- PKNCAdata(o_conc_update, o_dose)
+o_nca_update <- update(o_nca, o_data_update)
+summary(o_nca_update)
+```
+
+Now, assume that instead of calculating `auclast` from time 0 to 24, we want to
+calculate `aucint.inf.obs`. We can change the intervals to create a new
+`PKNCAdata` object:
+
+```{r update-example-newdata}
+d_intervals <- o_data$intervals
+d_intervals$aucint.inf.obs <- d_intervals$auclast
+d_intervals$auclast <- FALSE
+o_data_update <- PKNCAdata(o_conc, o_dose, intervals = d_intervals)
+```
+
+Then, we can update the `PKNCAresults`:
+
+```{r update-example-complete}
+o_nca_update <- update(o_nca, o_data_update)
+summary(o_nca_update)
+```

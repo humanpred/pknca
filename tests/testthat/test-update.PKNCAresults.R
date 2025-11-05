@@ -43,7 +43,7 @@ test_that("update.PKNCAresults", {
   )
 })
 
-expect_equal("update() test changing data", {
+expect_equal("update() keeps concentration data", {
   d_conc <- as.data.frame(datasets::Theoph)
   d_dose <- d_conc[d_conc$Time == 0,]
   o_conc <- PKNCAconc(d_conc, conc~Time|Subject)
@@ -60,5 +60,4 @@ expect_equal("update() test changing data", {
     o_nca_update$data$conc,
     o_conc_update
   )
-  #summary(o_nca_update)
 })

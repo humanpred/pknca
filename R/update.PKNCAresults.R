@@ -45,7 +45,8 @@ update.PKNCAresults <- function(object, data, ...) {
   drop_old_groups <- unique(getGroups(result_new))
   result_old_df_keep <- dplyr::anti_join(result_old_df, drop_old_groups, by = names(drop_old_groups))
   ret <- object
-  ret$data <- rbind(result_old_df_keep, result_new_df)
+  ret$data <- data
+  ret$result <- rbind(result_old_df_keep, result_new_df)
   addProvenance(ret, replace = TRUE)
 }
 
