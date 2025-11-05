@@ -71,6 +71,7 @@ test_that("pk.calc.half.life", {
                data.frame(lambda.z=0.6929073,
                           r.squared=0.9999999,
                           adj.r.squared=0.9999999,
+                          lambda.z.corrxy = -1.000000,
                           lambda.z.time.first=0,
                           lambda.z.time.last=3,
                           lambda.z.n.points=4,
@@ -89,6 +90,7 @@ test_that("pk.calc.half.life", {
                data.frame(lambda.z=0.6929073,
                           r.squared=0.9999999,
                           adj.r.squared=0.9999999,
+                          lambda.z.corrxy = -1.000000,
                           lambda.z.time.first=0,
                           lambda.z.time.last=3,
                           lambda.z.n.points=4,
@@ -107,6 +109,7 @@ test_that("pk.calc.half.life", {
                data.frame(lambda.z=0.6929073,
                           r.squared=0.9999999,
                           adj.r.squared=0.9999999,
+                          lambda.z.corrxy = -1.000000,
                           lambda.z.time.first=0,
                           lambda.z.time.last=3,
                           lambda.z.n.points=4,
@@ -180,6 +183,7 @@ test_that("half-life manual point selection", {
       lambda.z = -log(2),
       r.squared = 1,
       adj.r.squared = 1,
+      lambda.z.corrxy = 1,
       lambda.z.time.first = 1L,
       lambda.z.time.last = 3L,
       lambda.z.n.points = 3L,
@@ -210,6 +214,7 @@ test_that("two-point half-life succeeds (fix #114)", {
         lambda.z=log(2),
         r.squared=1,
         adj.r.squared=NA_real_,
+        lambda.z.corrxy = -1,
         lambda.z.time.first=0,
         lambda.z.time.last=1,
         lambda.z.n.points=2,
@@ -341,6 +346,15 @@ test_that("get_halflife_points", {
       FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE,
       FALSE, FALSE, FALSE, TRUE, TRUE, TRUE)
   )
+
+  # start != 0 (#470)
+  o_data_nzstart <- PKNCAdata(o_conc, intervals = data.frame(start = 5, end = Inf, half.life = TRUE))
+  o_nca_nzstart <- suppressMessages(pk.nca(o_data_nzstart))
+  hl_points_nzstart <- suppressMessages(get_halflife_points(o_nca_nzstart))
+  # Find the specific rows that have differences
+  expect_equal(which(!is.na(hl_points_nzstart) & hl_points != hl_points_nzstart), c(62, 63, 84))
+  expect_true(all(is.na(hl_points_nzstart[Theoph$Time < 5])))
+  expect_true(!any(is.na(hl_points_nzstart[Theoph$Time > 5])))
 
   # Setup for the remaining tests
   d_conc <- as.data.frame(Theoph[Theoph$Subject %in% Theoph$Subject[1], ])

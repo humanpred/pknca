@@ -39,21 +39,21 @@ test_that("PKNCAresults generation", {
   verify.result <-
     tibble::tibble(
       treatment="Trt 1",
-      ID=as.integer(rep(c(1, 2), each=15)),
+      ID=as.integer(rep(c(1, 2), each=16)),
       start=0,
-      end=c(24, rep(Inf, 14),
-            24, rep(Inf, 14)),
+      end=c(24, rep(Inf, 15),
+            24, rep(Inf, 15)),
       PPTESTCD=rep(c("auclast", "cmax", "tmax", "tlast", "clast.obs",
-                     "lambda.z", "r.squared", "adj.r.squared",
+                     "lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy",
                      "lambda.z.time.first", "lambda.z.time.last", "lambda.z.n.points",
                      "clast.pred", "half.life", "span.ratio", "aucinf.obs"),
                    times=2),
       PPORRES=c(13.54, 0.9998, 4.000, 24.00, 0.3441,
-                0.04297, 0.9072, 0.9021, 5.000, 24.00,
+                0.04297, 0.9072, 0.9021, -0.9521, 5.000, 24.00,
                 20.00, 0.3356, 16.13, 1.178,
                 21.55, 14.03, 0.9410, 2.000,
                 24.00, 0.3148, 0.05689, 0.9000,
-                0.8944, 5.000, 24.00, 20.00, 0.3011,
+                0.8944, -0.9487, 5.000, 24.00, 20.00, 0.3011,
                 12.18, 1.560, 19.56),
       exclude=NA_character_
     )
@@ -123,7 +123,7 @@ test_that("PKNCAresults has exclude, when applicable", {
   expect_true(
     all(o_result_df$PPTESTCD %in%
           c(
-            "adj.r.squared", "aucinf.obs", "auclast", "clast.obs",
+            "adj.r.squared", "lambda.z.corrxy", "aucinf.obs", "auclast", "clast.obs",
             "clast.pred", "cmax", "half.life", "lambda.z", "lambda.z.n.points",
             "lambda.z.time.first", "lambda.z.time.last", "r.squared",
             "span.ratio", "tlast", "tmax"
@@ -133,11 +133,14 @@ test_that("PKNCAresults has exclude, when applicable", {
   )
   expect_equal(
     unique(
-      o_result_df$exclude[
-        o_result_df$ID == 2 &
-          o_result_df$PPTESTCD %in%
-          c("lambda.z", "r.squared", "adj.r.squared", "lambda.z.time.first",
-            "lambda.z.n.points", "clast.pred", "half.life", "span.ratio")
+      myresult_df$exclude[
+        myresult_df$ID == 2 &
+          myresult_df$PPTESTCD %in%
+          c(
+            "lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy",
+            "lambda.z.time.first", "lambda.z.time.last",
+            "lambda.z.n.points", "clast.pred", "half.life", "span.ratio"
+          )
         ]
     ),
     "Too few points for half-life calculation (min.hl.points=3 with only 0 points)",
@@ -145,10 +148,10 @@ test_that("PKNCAresults has exclude, when applicable", {
   )
   expect_equal(
     unique(
-      o_result_df$exclude[
-        !(o_result_df$ID == 2 &
-            o_result_df$PPTESTCD %in%
-            c("lambda.z", "r.squared", "adj.r.squared", "lambda.z.time.first",
+      myresult_df$exclude[
+        !(myresult_df$ID == 2 &
+            myresult_df$PPTESTCD %in%
+            c("lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy", "lambda.z.time.first",
               "lambda.z.time.last", "lambda.z.n.points", "clast.pred", "half.life", "span.ratio")
         )
         ]
@@ -426,8 +429,8 @@ test_that("as.data.frame.PKNCAresults can filter for only requested parameters",
   o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
   o_result <- pk.nca(o_data)
 
-  expect_equal(nrow(as.data.frame(o_result)), 20)
-  expect_equal(nrow(as.data.frame(o_result, filter_requested = TRUE)), 2)
+  expect_equal(nrow(as.data.frame(myresult)), 24)
+  expect_equal(nrow(as.data.frame(myresult, filter_requested = TRUE)), 2)
 })
 
 test_that("as.data.frame.PKNCAresults can filter to remove excluded parameters", {
@@ -438,6 +441,6 @@ test_that("as.data.frame.PKNCAresults can filter to remove excluded parameters",
   o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
   o_result <- exclude(pk.nca(o_data), FUN = exclude_nca_span.ratio(1))
 
-  expect_equal(nrow(as.data.frame(o_result)), 20)
-  expect_equal(nrow(as.data.frame(o_result, filter_excluded = TRUE)), 12)
+  expect_equal(nrow(as.data.frame(myresult)), 24)
+  expect_equal(nrow(as.data.frame(myresult, filter_excluded = TRUE)), 14)
 })
