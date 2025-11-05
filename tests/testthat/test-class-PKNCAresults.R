@@ -133,9 +133,9 @@ test_that("PKNCAresults has exclude, when applicable", {
   )
   expect_equal(
     unique(
-      myresult_df$exclude[
-        myresult_df$ID == 2 &
-          myresult_df$PPTESTCD %in%
+      o_result_df$exclude[
+        o_result_df$ID == 2 &
+          o_result_df$PPTESTCD %in%
           c(
             "lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy",
             "lambda.z.time.first", "lambda.z.time.last",
@@ -148,9 +148,9 @@ test_that("PKNCAresults has exclude, when applicable", {
   )
   expect_equal(
     unique(
-      myresult_df$exclude[
-        !(myresult_df$ID == 2 &
-            myresult_df$PPTESTCD %in%
+      o_result_df$exclude[
+        !(o_result_df$ID == 2 &
+            o_result_df$PPTESTCD %in%
             c("lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy", "lambda.z.time.first",
               "lambda.z.time.last", "lambda.z.n.points", "clast.pred", "half.life", "span.ratio")
         )
@@ -401,8 +401,8 @@ test_that("getGroups.PKNCAresults", {
     o_result$result[, c("ID", "start")]
   )
   expect_equal(
-    getGroups(myresult, level=3:4),
-    myresult$result[, c("start", "end")]
+    getGroups(o_result, level=3:4),
+    o_result$result[, c("start", "end")]
   )
 })
 
@@ -429,8 +429,8 @@ test_that("as.data.frame.PKNCAresults can filter for only requested parameters",
   o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
   o_result <- pk.nca(o_data)
 
-  expect_equal(nrow(as.data.frame(myresult)), 24)
-  expect_equal(nrow(as.data.frame(myresult, filter_requested = TRUE)), 2)
+  expect_equal(nrow(as.data.frame(o_result)), 24)
+  expect_equal(nrow(as.data.frame(o_result, filter_requested = TRUE)), 2)
 })
 
 test_that("as.data.frame.PKNCAresults can filter to remove excluded parameters", {
@@ -441,6 +441,6 @@ test_that("as.data.frame.PKNCAresults can filter to remove excluded parameters",
   o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
   o_result <- exclude(pk.nca(o_data), FUN = exclude_nca_span.ratio(1))
 
-  expect_equal(nrow(as.data.frame(myresult)), 24)
-  expect_equal(nrow(as.data.frame(myresult, filter_excluded = TRUE)), 14)
+  expect_equal(nrow(as.data.frame(o_result)), 24)
+  expect_equal(nrow(as.data.frame(o_result, filter_excluded = TRUE)), 14)
 })
