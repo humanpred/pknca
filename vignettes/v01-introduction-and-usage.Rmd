@@ -37,7 +37,7 @@ library(PKNCA)
 library(dplyr, quietly = TRUE)
 
 ## Load the PK concentration data
-d_conc <- datasets::Theoph
+d_conc <- as.data.frame(datasets::Theoph)
 ## Generate the dosing data
 d_dose <- d_conc[d_conc$Time == 0,]
 
@@ -411,7 +411,7 @@ you want to use.
 Starting from the theophylline example in the [Quick Start](Quick Start) section above:
 
 ```{r update-example-setup}
-d_conc <- datasets::Theoph
+d_conc <- as.data.frame(datasets::Theoph)
 d_dose <- d_conc[d_conc$Time == 0,]
 o_conc <- PKNCAconc(d_conc, conc~Time|Subject)
 o_dose <- PKNCAdose(d_dose, Dose~Time|Subject)
@@ -426,7 +426,7 @@ recalculate. You can change the concentration data, and use `update()` to
 recalculate only for the changed participants.
 
 ```{r update-example-setzero}
-d_conc_setzero <- datasets::Theoph
+d_conc_setzero <- as.data.frame(datasets::Theoph)
 d_conc_setzero$conc[d_conc$Time == 0] <- 0
 o_conc_update <- PKNCAconc(d_conc_setzero, conc~Time|Subject)
 o_data_update <- PKNCAdata(o_conc_update, o_dose)
