@@ -425,7 +425,7 @@ that we want to manually change those concentrations to zero and then
 recalculate. You can change the concentration data, and use `update()` to
 recalculate only for the changed participants.
 
-```{r update-example-setup}
+```{r update-example-setzero}
 d_conc_setzero <- datasets::Theoph
 d_conc_setzero$conc[d_conc$Time == 0] <- 0
 o_conc_update <- PKNCAconc(d_conc_setzero, conc~Time|Subject)
