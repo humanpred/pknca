@@ -37,9 +37,11 @@ test_that("update.PKNCAresults", {
   o_data_chconc_reordered <- PKNCAdata(o_conc_changed_reordered, o_dose, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
 
   o_nca_chconc_reordered <- pk.nca(o_data_chconc_reordered)
+  result_reorder <- o_nca_chconc_reordered$result
+  result_update <- update(o_result, o_data_chconc)$result
   expect_equal(
-    update(o_result, o_data_chconc)$result,
-    o_nca_chconc_reordered$result
+    result_update[order(result_update$treatment, result_update$ID, result_update$start, result_update$end, result_update$PPTESTCD), ],
+    result_reorder[order(result_reorder$treatment, result_reorder$ID, result_reorder$start, result_reorder$end, result_reorder$PPTESTCD), ]
   )
 })
 
