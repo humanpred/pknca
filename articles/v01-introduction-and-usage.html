@@ -108,7 +108,7 @@ not intended to run directly. For an example to run directly, please see
 example</a>.)</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://humanpred.github.io/pknca/" class="external-link">PKNCA</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span>, quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## Attaching package: 'dplyr'</span></span></code></pre>
 <pre><code><span><span class="co">## The following objects are masked from 'package:stats':</span></span>
@@ -119,14 +119,14 @@ example</a>.)</p>
 <span><span class="co">##     intersect, setdiff, setequal, union</span></span></code></pre>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Load the PK concentration data</span></span>
-<span><span class="va">d_conc</span> <span class="op">&lt;-</span> <span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span></span>
+<span><span class="va">d_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span><span class="op">)</span></span>
 <span><span class="co">## Generate the dosing data</span></span>
 <span><span class="va">d_dose</span> <span class="op">&lt;-</span> <span class="va">d_conc</span><span class="op">[</span><span class="va">d_conc</span><span class="op">$</span><span class="va">Time</span> <span class="op">==</span> <span class="fl">0</span>,<span class="op">]</span></span>
 <span></span>
 <span><span class="co">## Create a concentration object specifying the concentration, time, and</span></span>
 <span><span class="co">## subject columns.  (Note that any number of grouping levels is</span></span>
 <span><span class="co">## supported; you are not restricted to just grouping by subject.)</span></span>
-<span><span class="va">conc_obj</span> <span class="op">&lt;-</span></span>
+<span><span class="va">o_conc</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span></span>
 <span>    <span class="va">d_conc</span>,</span>
 <span>    <span class="va">conc</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span></span>
@@ -136,7 +136,7 @@ example</a>.)</p>
 <span><span class="co">## subset of the grouping factors for concentration, and the grouping</span></span>
 <span><span class="co">## columns must have the same names between concentration and dose</span></span>
 <span><span class="co">## objects.)</span></span>
-<span><span class="va">dose_obj</span> <span class="op">&lt;-</span></span>
+<span><span class="va">o_dose</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span></span>
 <span>    <span class="va">d_dose</span>,</span>
 <span>    <span class="va">Dose</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span></span>
@@ -144,13 +144,13 @@ example</a>.)</p>
 <span><span class="co">## Combine the concentration and dosing information both to</span></span>
 <span><span class="co">## automatically define the intervals for NCA calculation and provide</span></span>
 <span><span class="co">## doses for calculations requiring dose.</span></span>
-<span><span class="va">data_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">conc_obj</span>, <span class="va">dose_obj</span><span class="op">)</span></span>
+<span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## Calculate the NCA parameters</span></span>
-<span><span class="va">results_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj</span><span class="op">)</span></span>
+<span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## Summarize the results</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax   half.life aucinf.obs</span></span>
 <span><span class="co">##      0  24 12 74.6 [24.3]           .                  .           .          .</span></span>
 <span><span class="co">##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]</span></span>
@@ -301,7 +301,7 @@ no arguments:</p>
 <p>And, to reset the current values to the library defaults, run the
 function with the default argument set to <code>TRUE</code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/PKNCA.options.html">PKNCA.options</a></span><span class="op">(</span>default<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/PKNCA.options.html">PKNCA.options</a></span><span class="op">(</span>default <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Each of the options is documented where it is used; for example, the
 first.tmax option is documented in the <code>pk.calc.tmax</code>
 function.</p>
@@ -326,7 +326,7 @@ present (not missing). The code below will set this example.</p>
 <span>  description <span class="op">=</span> <span class="st">"geometric mean and geometric coefficient of variation"</span>,</span>
 <span>  point <span class="op">=</span> <span class="va">business.geomean</span>,</span>
 <span>  spread <span class="op">=</span> <span class="va">business.geocv</span>,</span>
-<span>  rounding <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>signif<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span>
+<span>  rounding <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>signif <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Another example is that T<sub>max</sub> is usually summarized by the
 median and range, and as measurements are often taken with minute
@@ -338,7 +338,7 @@ decimal place.</p>
 <span>  description <span class="op">=</span> <span class="st">"median and range"</span>,</span>
 <span>  point <span class="op">=</span> <span class="va">business.median</span>,</span>
 <span>  spread <span class="op">=</span> <span class="va">business.range</span>,</span>
-<span>  rounding <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>round<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
+<span>  rounding <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>round <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>If the functions or default rounding options provided in the library
 do not meet the summarization needs, a user-supplied function can be
@@ -348,31 +348,31 @@ used for rounding.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="va">quantprob_na</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">x</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.95</span><span class="op">)</span>, na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">x</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.95</span><span class="op">)</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu"><a href="../reference/PKNCA.set.summary.html">PKNCA.set.summary</a></span><span class="op">(</span></span>
-<span>  name<span class="op">=</span><span class="st">"auclast"</span>,</span>
+<span>  name <span class="op">=</span> <span class="st">"auclast"</span>,</span>
 <span>  description <span class="op">=</span> <span class="st">"median and 5th to 95th percentile"</span>,</span>
-<span>  point<span class="op">=</span><span class="va">median_na</span>,</span>
-<span>  spread<span class="op">=</span><span class="va">quantprob_na</span>,</span>
-<span>  rounding<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>signif<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span>
+<span>  point <span class="op">=</span> <span class="va">median_na</span>,</span>
+<span>  spread <span class="op">=</span> <span class="va">quantprob_na</span>,</span>
+<span>  rounding <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>signif <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>In some cases multiple parameters may need the same summary functions
 (as often occurs with simulated data). Many parameters can be set
 simultaneously by specifying a vector of <code>name</code>s.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">median_na</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">x</span>, na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="va">quantprob_na</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">x</span>, probs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.95</span><span class="op">)</span>, na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">x</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.95</span><span class="op">)</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu"><a href="../reference/PKNCA.set.summary.html">PKNCA.set.summary</a></span><span class="op">(</span></span>
-<span>  name<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auclast"</span>, <span class="st">"cmax"</span>, <span class="st">"tmax"</span>, <span class="st">"half.life"</span>, <span class="st">"aucinf.pred"</span><span class="op">)</span>,</span>
+<span>  name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auclast"</span>, <span class="st">"cmax"</span>, <span class="st">"tmax"</span>, <span class="st">"half.life"</span>, <span class="st">"aucinf.pred"</span><span class="op">)</span>,</span>
 <span>  description <span class="op">=</span> <span class="st">"median and 5th to 95th percentile"</span>,</span>
-<span>  point<span class="op">=</span><span class="va">median_na</span>,</span>
-<span>  spread<span class="op">=</span><span class="va">quantprob_na</span>,</span>
-<span>  rounding<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>signif<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span>
+<span>  point <span class="op">=</span> <span class="va">median_na</span>,</span>
+<span>  spread <span class="op">=</span> <span class="va">quantprob_na</span>,</span>
+<span>  rounding <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>signif <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
@@ -410,19 +410,17 @@ etc., but not by subject).</p>
 <span><span class="co">## Create a concentration object specifying the concentration, time,</span></span>
 <span><span class="co">## study, and subject columns.  (Note that any number of grouping</span></span>
 <span><span class="co">## levels is supporting; you are not restricted to this list.)</span></span>
-<span><span class="va">conc_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc_both</span>,</span>
-<span>                      <span class="va">conc</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Study</span><span class="op">+</span><span class="va">Subject</span><span class="op">/</span><span class="va">Analyte</span><span class="op">)</span></span>
+<span><span class="va">o_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc_both</span>, <span class="va">conc</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Study</span><span class="op">+</span><span class="va">Subject</span><span class="op">/</span><span class="va">Analyte</span><span class="op">)</span></span>
 <span><span class="co">## Create a dosing object specifying the dose, time, study, and</span></span>
 <span><span class="co">## subject columns.  (Note that the grouping factors should be a</span></span>
 <span><span class="co">## subset of the grouping factors for concentration, and the columns</span></span>
 <span><span class="co">## must have the same names between concentration and dose objects.)</span></span>
-<span><span class="va">dose_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span><span class="va">d_dose_both</span>,</span>
-<span>                     <span class="va">Dose</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Study</span><span class="op">+</span><span class="va">Subject</span><span class="op">)</span></span>
+<span><span class="va">o_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span><span class="va">d_dose_both</span>, <span class="va">Dose</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Study</span><span class="op">+</span><span class="va">Subject</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Perform and summarize the PK data as previously described</span></span>
-<span><span class="va">data_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">conc_obj</span>, <span class="va">dose_obj</span><span class="op">)</span></span>
-<span><span class="va">results_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span><span class="op">)</span></span>
+<span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="selecting-calculation-intervals">Selecting Calculation Intervals<a class="anchor" aria-label="anchor" href="#selecting-calculation-intervals"></a>
@@ -1052,18 +1050,18 @@ intervals) and updating the automatic intervals.</p>
 <span>    auclast<span class="op">=</span><span class="cn">TRUE</span>,</span>
 <span>    aucinf.obs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="va">data_obj</span> <span class="op">&lt;-</span></span>
+<span><span class="va">o_data</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span></span>
-<span>    <span class="va">conc_obj</span>, <span class="va">dose_obj</span>, </span>
+<span>    <span class="va">o_conc</span>, <span class="va">o_dose</span>, </span>
 <span>    intervals<span class="op">=</span><span class="va">intervals_manual</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <p>To update the automatically-selected intervals, extract the
 intervals, modify them, and put them back.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">data_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">conc_obj</span>, <span class="va">dose_obj</span><span class="op">)</span></span>
-<span><span class="va">intervals_manual</span> <span class="op">&lt;-</span> <span class="va">data_obj</span><span class="op">$</span><span class="va">intervals</span></span>
+<code class="sourceCode R"><span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span><span class="op">)</span></span>
+<span><span class="va">intervals_manual</span> <span class="op">&lt;-</span> <span class="va">o_data</span><span class="op">$</span><span class="va">intervals</span></span>
 <span><span class="va">intervals_manual</span><span class="op">$</span><span class="va">aucinf.obs</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
-<span><span class="va">data_obj</span><span class="op">$</span><span class="va">intervals</span> <span class="op">&lt;-</span> <span class="va">intervals_manual</span></span></code></pre></div>
+<span><span class="va">o_data</span><span class="op">$</span><span class="va">intervals</span> <span class="op">&lt;-</span> <span class="va">intervals_manual</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="keeping-a-column-from-intervals">Keeping a column from intervals<a class="anchor" aria-label="anchor" href="#keeping-a-column-from-intervals"></a>
@@ -1074,7 +1072,7 @@ different start and end times. So, you may keep the interval columns
 using the option <code>"keep_interval_cols"</code> as follows (where
 “dosetype” must be a column name in the intervals):</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">data_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">conc_obj</span>, <span class="va">dose_obj</span>, options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>keep_interval_cols <span class="op">=</span> <span class="st">"dosetype"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span>, options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>keep_interval_cols <span class="op">=</span> <span class="st">"dosetype"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -1095,6 +1093,86 @@ from geometric statistics.</p>
 and one has duplicated values (<code>N = 2</code> and <code>n = 2</code>
 even though both measurements come from a single subject) are to be
 handled by the user.</p>
+</div>
+<div class="section level2">
+<h2 id="updating-existing-results">Updating existing results<a class="anchor" aria-label="anchor" href="#updating-existing-results"></a>
+</h2>
+<p>Updating existing results is most helpful if you are writing a
+<code>shiny</code> or other user interface for PKNCA. If you are using
+PKNCA from a script, this is not the preferred way to perform
+analysis.</p>
+<p>If you need to rerun analyses with minor updates– changing half-life
+point selection, for instance– you can use <code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update()</a></code> on a
+<code>PKNCAresults</code> object (<code>o_nca</code> in the example
+above). Using <code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update()</a></code> will recalculate the
+minimum-required number of calculations for the data that are
+changed.</p>
+<p>To use <code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update()</a></code>, give it your existing results and the
+new <code>PKNCAdata</code> object you want to use.</p>
+<p>Starting from the theophylline example in the <a href="Quick%20Start">Quick Start</a> section above:</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">d_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span><span class="op">)</span></span>
+<span><span class="va">d_dose</span> <span class="op">&lt;-</span> <span class="va">d_conc</span><span class="op">[</span><span class="va">d_conc</span><span class="op">$</span><span class="va">Time</span> <span class="op">==</span> <span class="fl">0</span>,<span class="op">]</span></span>
+<span><span class="va">o_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc</span>, <span class="va">conc</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span><span class="op">)</span></span>
+<span><span class="va">o_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span><span class="va">d_dose</span>, <span class="va">Dose</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span><span class="op">)</span></span>
+<span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span><span class="op">)</span></span>
+<span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax   half.life aucinf.obs</span></span>
+<span><span class="co">##      0  24 12 74.6 [24.3]           .                  .           .          .</span></span>
+<span><span class="co">##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
+<p>In these data, some participants have a nonzero predose
+concentration. Assume that we want to manually change those
+concentrations to zero and then recalculate. You can change the
+concentration data, and use <code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update()</a></code> to recalculate only
+for the changed participants.</p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">d_conc_setzero</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span><span class="op">)</span></span>
+<span><span class="va">d_conc_setzero</span><span class="op">$</span><span class="va">conc</span><span class="op">[</span><span class="va">d_conc</span><span class="op">$</span><span class="va">Time</span> <span class="op">==</span> <span class="fl">0</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span><span class="va">o_conc_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc_setzero</span>, <span class="va">conc</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span><span class="op">)</span></span>
+<span><span class="va">o_data_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc_update</span>, <span class="va">o_dose</span><span class="op">)</span></span>
+<span><span class="va">o_nca_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">o_nca</span>, <span class="va">o_data_update</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Warning: Subject=2: No concentration data</span></span></code></pre>
+<pre><code><span><span class="co">## Warning: Subject=3: No concentration data</span></span></code></pre>
+<pre><code><span><span class="co">## Warning: Subject=4: No concentration data</span></span></code></pre>
+<pre><code><span><span class="co">## Warning: Subject=5: No concentration data</span></span></code></pre>
+<pre><code><span><span class="co">## Warning: Subject=6: No concentration data</span></span></code></pre>
+<pre><code><span><span class="co">## Warning: Subject=8: No concentration data</span></span></code></pre>
+<pre><code><span><span class="co">## Warning: Subject=9: No concentration data</span></span></code></pre>
+<pre><code><span><span class="co">## Warning: Subject=11: No concentration data</span></span></code></pre>
+<pre><code><span><span class="co">## Warning: Subject=12: No concentration data</span></span></code></pre>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca_update</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax   half.life aucinf.obs</span></span>
+<span><span class="co">##      0  24 12 74.6 [24.2]           .                  .           .          .</span></span>
+<span><span class="co">##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
+<p>Now, assume that instead of calculating <code>auclast</code> from
+time 0 to 24, we want to calculate <code>aucint.inf.obs</code>. We can
+change the intervals to create a new <code>PKNCAdata</code> object:</p>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">d_intervals</span> <span class="op">&lt;-</span> <span class="va">o_data</span><span class="op">$</span><span class="va">intervals</span></span>
+<span><span class="va">d_intervals</span><span class="op">$</span><span class="va">aucint.inf.obs</span> <span class="op">&lt;-</span> <span class="va">d_intervals</span><span class="op">$</span><span class="va">auclast</span></span>
+<span><span class="va">d_intervals</span><span class="op">$</span><span class="va">auclast</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span></span>
+<span><span class="va">o_data_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span>, intervals <span class="op">=</span> <span class="va">d_intervals</span><span class="op">)</span></span></code></pre></div>
+<p>Then, we can update the <code>PKNCAresults</code>:</p>
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">o_nca_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">o_nca</span>, <span class="va">o_data_update</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Warning in update.PKNCAresults(o_nca, o_data_update): Full recalculation:</span></span>
+<span><span class="co">## changes detected in data other than source concentration or dose data</span></span></code></pre>
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca_update</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##  start end  N        cmax               tmax   half.life aucinf.obs</span></span>
+<span><span class="co">##      0  24 12           .                  .           .          .</span></span>
+<span><span class="co">##      0 Inf 12 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]</span></span>
+<span><span class="co">##  aucint.inf.obs</span></span>
+<span><span class="co">##     98.4 [22.5]</span></span>
+<span><span class="co">##               .</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Caption: cmax, aucinf.obs, aucint.inf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
