@@ -6,6 +6,10 @@ the dosing including dose amount and route.
 
 # Development version
 
+## Breaking changes
+
+* Both include and excluding half-life points may not be done for the same interval (#406)
+
 ## Bugs fixed
 
 * `get_halflife_points()` now correctly accounts for start time != 0 and sets
