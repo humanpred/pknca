@@ -15,6 +15,8 @@ the dosing including dose amount and route.
 
 * `pk.calc.half.life()` now returns also `lambda.z.corrxy`, the correlation between
   the time and the log-concentration of the lambda z points.
+* `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
+  `summary()` (#477)
 
 # PKNCA 0.12.1
 
