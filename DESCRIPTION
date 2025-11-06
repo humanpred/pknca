@@ -41,7 +41,7 @@ URL: https://humanpred.github.io/pknca/,
 BugReports: https://github.com/humanpred/pknca/issues
 NeedsCompilation: no
 VignetteBuilder: knitr
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
 Encoding: UTF-8

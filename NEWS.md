@@ -15,7 +15,11 @@ the dosing including dose amount and route.
 
 * `pk.calc.half.life()` now returns also `lambda.z.corrxy`, the correlation between
   the time and the log-concentration of the lambda z points.
-* New excretion parameters: `volpk` (total urine volume for an interval) and dose-normalized renal clearance parameters: `clr.last.dn`, `clr.obs.dn`, `clr.pred.dn` (#433)
+* New excretion parameters: `volpk` (total urine volume for an interval) and
+  dose-normalized renal clearance parameters: `clr.last.dn`, `clr.obs.dn`,
+  `clr.pred.dn` (#433)
+* `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
+  `summary()` (#477)
 
 # PKNCA 0.12.1
 
@@ -34,6 +38,10 @@ the dosing including dose amount and route.
 * PKNCA now has a debugging mode to support troubleshooting; it is not intended
   for production use. Debugging mode can be enabled using
   `PKNCA.options(debug = TRUE)`.
+* It is now possible to update an existing analysis when data changes but other
+  NCA settings stay the same (fix #417)
+* New assertion functions were created to ensure that an object is the correct
+  type (fix #328)
 
 # PKNCA 0.12.0
 
