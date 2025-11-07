@@ -120,7 +120,7 @@ add.interval.col <- function(name,
         "volume",
         "auc", "aumc",
         "auc_dosenorm", "aumc_dosenorm",
-        "clearance", "renal_clearance"
+        "clearance", "renal_clearance", "renal_clearance_dosenorm"
       )
     )
   stopifnot("pretty_name must be a scalar"=length(pretty_name) == 1)
