@@ -758,3 +758,16 @@ test_that("do not give rbind error when interval columns have attributes (#381)"
     list(label = "start")
   )
 })
+
+test_that("pk.nca can be run for each parameter independently", {
+  all_params <- setdiff(names(get.interval.cols()), c("start", "end"))
+  d_conc <- Theoph
+  d_conc$volume <- 1
+  o_conc <- PKNCAconc(d_conc, formula = conc~Time|Subject, volume = "volume")
+
+  for (param in all_params){
+    expect_no_error(
+      
+    )
+  }
+})
