@@ -12,7 +12,7 @@
 #' @export
 pk.calc.ae <- function(conc, volume, check=TRUE) {
   # Generate combined missing-data messages for conc/volume using helper
-  message_all <- .generate_missing_messages(conc, volume,
+  message_all <- generate_missing_messages(conc, volume,
                                            name_a = "concentrations",
                                            name_b = "volumes")
 
@@ -129,7 +129,7 @@ PKNCA.set.summary(
 pk.calc.ertlst <- function(conc, volume, time, duration.conc, check = TRUE) {
 
   # Generate messages about missing concentrations/volumes
-  message_all <- .generate_missing_messages(conc, volume,
+  message_all <- generate_missing_messages(conc, volume,
                                            name_a = "concentrations",
                                            name_b = "volumes")
 
@@ -176,7 +176,7 @@ PKNCA.set.summary(
 pk.calc.ermax <- function(conc, volume, time, duration.conc, check = TRUE) {
 
   # Generate messages about missing concentrations/volumes
-  message_all <- .generate_missing_messages(conc, volume,
+  message_all <- generate_missing_messages(conc, volume,
                                            name_a = "concentrations",
                                            name_b = "volumes")
 
@@ -220,7 +220,7 @@ PKNCA.set.summary(
 pk.calc.ertmax <- function(conc, volume, time, duration.conc, check = TRUE, first.tmax = NULL) {
 
   # Generate messages about missing concentrations/volumes
-  message_all <- .generate_missing_messages(conc, volume,
+  message_all <- generate_missing_messages(conc, volume,
                                            name_a = "concentrations",
                                            name_b = "volumes")
 
@@ -267,7 +267,7 @@ PKNCA.set.summary(
 # and volumes). It computes missingness internally and produces a character
 # vector of human-readable messages describing the missingness that matches
 # the style used in the package (used previously in `pk.calc.ae`).
-.generate_missing_messages <- function(a, b,
+generate_missing_messages <- function(a, b,
                                       name_a = "concentrations",
                                       name_b = "volumes") {
   
