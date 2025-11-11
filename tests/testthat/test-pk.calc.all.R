@@ -787,6 +787,7 @@ test_that("pk.nca can be run for each parameter independently (#473)", {
       info = paste0("Parameter ", param, " can be calculated independently")
     )
   }
+})
 
 test_that("Cannot include and exclude half-life points at the same time (#406)", {
   o_conc <- PKNCAconc(data = data.frame(conc = 1, time = 0, inex = TRUE), conc~time, include_half.life = "inex", exclude_half.life = "inex")
