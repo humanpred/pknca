@@ -14,7 +14,7 @@ the dosing including dose amount and route.
 
 * `get_halflife_points()` now correctly accounts for start time != 0 and sets
   times outside of any interval to `NA` (#470)
-* `pk.nca` will calculate `fe` even if `ae` was not requested to be calculated in the intervals (#473)
+* `pk.nca` will calculate `fe` and `clr` even if their dependant parameters (e.g, `ae`) were not requested to be calculated in the intervals (#473)
 
 ## New features
 
