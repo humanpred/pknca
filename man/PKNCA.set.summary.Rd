@@ -34,7 +34,8 @@ digits to round.  If a function, it is expected to return a scalar number
 or character string with the correct results for an input of either a
 scalar or a two-long vector.}
 
-\item{reset}{Reset all the summary instructions}
+\item{reset}{Reset all the summary instructions to no instruction (this is
+not intended for general use)}
 }
 \value{
 All current summary settings (invisibly)

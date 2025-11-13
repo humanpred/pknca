@@ -265,11 +265,18 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
       if ("subject" %in% names(conc_data_interval)) {
         args$subject <- conc_data_interval$subject
       }
+      uses_include_hl <- FALSE
       if ("include_half.life" %in% names(conc_data_interval)) {
         args$include_half.life <- conc_data_interval$include_half.life
+        uses_include_hl <- !is.null(args$include_half.life) && !all(is.na(args$include_half.life))
       }
+      uses_exclude_hl <- FALSE
       if ("exclude_half.life" %in% names(conc_data_interval)) {
         args$exclude_half.life <- conc_data_interval$exclude_half.life
+        uses_exclude_hl <- !is.null(args$exclude_half.life) && !all(is.na(args$exclude_half.life))
+      }
+      if (uses_include_hl & uses_exclude_hl) {
+        stop("Cannot both include and exclude half-life points for the same interval")
       }
       # Try the calculation
       if (!is.null(PKNCA.options()$debug)) {
@@ -495,12 +502,14 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
 
       # Apply manual inclusion and exclusion
       if (n %in% "half.life") {
-        if (!is.null(include_half.life) && !all(is.na(include_half.life))) {
+        uses_include_hl <- !is.null(include_half.life) && !all(is.na(include_half.life))
+        uses_exclude_hl <- !is.null(exclude_half.life) && !all(is.na(exclude_half.life))
+        if (uses_include_hl) {
           include_tf <- include_half.life %in% TRUE
           call_args$conc <- call_args$conc[include_tf]
           call_args$time <- call_args$time[include_tf]
           call_args$manually.selected.points <- TRUE
-        } else if (!is.null(exclude_half.life) && !all(is.na(exclude_half.life))) {
+        } else if (uses_exclude_hl) {
           exclude_tf <- exclude_half.life %in% TRUE
           call_args$conc <- call_args$conc[!exclude_tf]
           call_args$time <- call_args$time[!exclude_tf]

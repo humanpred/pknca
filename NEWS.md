@@ -6,6 +6,10 @@ the dosing including dose amount and route.
 
 # Development version
 
+## Breaking changes
+
+* Both include and excluding half-life points may not be done for the same interval (#406)
+
 ## Bugs fixed
 
 * `get_halflife_points()` now correctly accounts for start time != 0 and sets
@@ -15,6 +19,8 @@ the dosing including dose amount and route.
 
 * `pk.calc.half.life()` now returns also `lambda.z.corrxy`, the correlation between
   the time and the log-concentration of the lambda z points.
+* `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
+  `summary()` (#477)
 
 * `pk.nca` output now includes a `PPANMETH` column describing the analysis methods used for each parameter regarding imputations, AUC and half.life calculations (#457)
 
@@ -35,6 +41,10 @@ the dosing including dose amount and route.
 * PKNCA now has a debugging mode to support troubleshooting; it is not intended
   for production use. Debugging mode can be enabled using
   `PKNCA.options(debug = TRUE)`.
+* It is now possible to update an existing analysis when data changes but other
+  NCA settings stay the same (fix #417)
+* New assertion functions were created to ensure that an object is the correct
+  type (fix #328)
 
 # PKNCA 0.12.0
 
