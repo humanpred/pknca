@@ -465,7 +465,7 @@ PKNCA.set.summary(
 
 #' Determine which concentrations were used for half-life calculation
 #'
-#' @param object A PKNCAresults object
+#' @param object A PKNCAresults or PKNCAdata object
 #' @returns A logical vector with `TRUE` if the point was used for half-life
 #'   (including concentrations below the limit of quantification within the
 #'   range of times for calculation), `FALSE` if it was not used for half-life
@@ -478,7 +478,13 @@ PKNCA.set.summary(
 #' o_nca <- pk.nca(o_data)
 #' get_halflife_points(o_nca)
 #' @export
+#' 
 get_halflife_points <- function(object) {
+  UseMethod("get_halflife_points")
+}
+
+#' @export
+get_halflife_points.PKNCAresults <- function(object) {
   # Insert a ROWID column so that we can reconstruct the order at the end
   rowid_col <- paste0(max(names(as.data.frame(as_PKNCAconc(object)))), "ROWID")
   object$data$conc$data[[rowid_col]] <- seq_len(nrow(object$data$conc$data))
@@ -516,6 +522,25 @@ get_halflife_points <- function(object) {
     ret[ret_current$rowid] <- ret_current$hl_used
   }
   ret
+}
+
+#' @export
+get_halflife_points.PKNCAdata <- function(object) {
+
+  # Keep only intervals with half-life calculations
+  hl_dep_cols <- c("half.life" ,get.parameter.deps("half.life"))
+  int_to_keep <- rowSums(object$intervals[, hl_dep_cols]) > 0
+  object$intervals <- object$intervals[int_to_keep, ]
+  object$intervals[, "half.life"] <- TRUE
+  params_to_ignore <- setdiff(names(get.interval.cols()), c("half.life", "start", "end"))
+  object$intervals[, params_to_ignore] <- FALSE
+  object$intervals <- unique(object$intervals)
+
+  # Only calculate half.life for the results object
+  o_nca <- pk.nca(object)
+
+  # Get the half-life points from the results object
+  get_halflife_points(o_nca)
 }
 
 # Get the half-life points for a single interval
