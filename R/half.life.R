@@ -319,7 +319,7 @@ fit_half_life <- function(data, tlast, conc_units) {
     data.frame(
       r.squared=r_squared,
       adj.r.squared=adj.r.squared(r_squared, nrow(data)),
-      lambda.z.corrxy=if(nrow(data) > 1) cor(data$time, data$log_conc) else NA,
+      lambda.z.corrxy=if(nrow(data) > 1) stats::cor(data$time, data$log_conc) else NA,
       lambda.z=lambda_z,
       clast.pred=clast_pred,
       lambda.z.time.first=min(data$time, na.rm=TRUE),
