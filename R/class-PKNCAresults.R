@@ -89,7 +89,7 @@ as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide'), f
     # Since we moved the results into PPTESTCD and PPORRES regardless of what
     # they really are in the source data, remove the extra units and unit
     # conversion columns to allow spread to work.
-    ret <- ret[, setdiff(names(ret), c("PPSTRES", "PPSTRESU", "PPORRESU"))]
+    ret <- ret[, setdiff(names(ret), c("PPSTRES", "PPSTRESU", "PPORRESU", "PPANMETH"))]
     ret <- tidyr::spread(ret, key="PPTESTCD", value="PPORRES")
   }
   ret

@@ -22,6 +22,8 @@ the dosing including dose amount and route.
 * `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
   `summary()` (#477)
 
+* `pk.nca` output now includes a `PPANMETH` column describing the analysis methods used for each parameter regarding imputations, AUC and half.life calculations (#457)
+
 # PKNCA 0.12.1
 
 ## Minor changes (unlikely to affect PKNCA use)
