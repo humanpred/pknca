@@ -222,7 +222,7 @@ PKNCA has several foci:
 
 I hope that you have a whale of a good time during this training.
 
-![](https://apps-afsc.fisheries.noaa.gov/Quarterly/amj2005/images/killerwhales.jpg)
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Killerwhales_jumping.jpg/1920px-Killerwhales_jumping.jpg){width=50%}
 
 (Foreshadowing...)
 
@@ -599,7 +599,7 @@ Columns must be created for:
 <p class="forceBreak"></p>
 
 <div class="autoImageWidth">
-![](https://apps-afsc.fisheries.noaa.gov/Quarterly/amj2005/images/killerwhales.jpg)<br />
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Killerwhales_jumping.jpg/1920px-Killerwhales_jumping.jpg){width=50%}<br />
 Group: <span style="color: green;">&#128504;</span> a pod of killer whales
 </div>
 
@@ -844,7 +844,7 @@ With an interval start and end of 0 and 24 (and the last measurement time just a
 
 The data for the exercise are from a PK study of amikacin in a killer whale and a beluga whale.  (DOI: 10.1638/03-078)
 
-![](https://apps-afsc.fisheries.noaa.gov/Quarterly/amj2005/images/killerwhales.jpg)
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Killerwhales_jumping.jpg/1920px-Killerwhales_jumping.jpg){width=50%}
 
 (Callback...)
 
@@ -852,7 +852,7 @@ The data for the exercise are from a PK study of amikacin in a killer whale and 
 
 ```{r eval=FALSE, echo=TRUE}
 library(PKNCA)
-
+# Data available from https://github.com/humanpred/pknca/tree/main/data-raw/whale
 d_conc <- read.csv("c:/tmp/whale_conc.csv")
 d_dose <- read.csv("c:/tmp/whale_dose.csv")
 head(d_conc)
