@@ -22,6 +22,9 @@ the dosing including dose amount and route.
 * `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
   `summary()` (#477)
 
+* New excretion rate parameters: `ermax` (Maximum excretion rate), `ertmax` (Midpoint time
+  of maximum excretion rate) and `ertlst` (Time of last excretion rate measurement) (#433)
+
 # PKNCA 0.12.1
 
 ## Minor changes (unlikely to affect PKNCA use)
