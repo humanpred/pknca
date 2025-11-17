@@ -281,7 +281,7 @@ result, either no result will output or an error will be raised.</li>
 <h3 class="build" id="enjoy">Enjoy!<a class="anchor" aria-label="anchor" href="#enjoy"></a>
 </h3>
 <p>I hope that you have a whale of a good time during this training.</p>
-<p><img src="https://apps-afsc.fisheries.noaa.gov/Quarterly/amj2005/images/killerwhales.jpg"></p>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Killerwhales_jumping.jpg/1920px-Killerwhales_jumping.jpg" style="width:50.0%"></p>
 <p>(Foreshadowing…)</p>
 </div>
 <div class="section level3">
@@ -343,7 +343,7 @@ output)</li>
 </h3>
 <p>PKNCA requires at least the concentration, time, and what you want to
 calculate.</p>
-<p><img src="v30-training-session_files/figure-html/unnamed-chunk-1-1.png" width="576"></p>
+<p><img src="v30-training-session_files/figure-html/unnamed-chunk-1-1.png" class="r-plt" width="576"></p>
 </div>
 <div class="section level3">
 <h3 id="dataset-basics-what-columns-are-needed">Dataset Basics: What columns are needed?<a class="anchor" aria-label="anchor" href="#dataset-basics-what-columns-are-needed"></a>
@@ -928,7 +928,7 @@ Shaded regions indicate intervals. Arrows indicate points shared between
 intervals within the group.</p>
 <p class="forceBreak">
 </p>
-<p><img src="v30-training-session_files/figure-html/unnamed-chunk-17-1.png" width="384"></p>
+<p><img src="v30-training-session_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" width="384"></p>
 </div>
 <div class="section level3">
 <h3 class="smaller" id="common-data-management-requirements-before-sending-data-to-pknca">Common data management requirements before sending
@@ -996,8 +996,8 @@ NA
 <p class="forceBreak">
 </p>
 <div class="autoImageWidth">
-<p><img src="https://apps-afsc.fisheries.noaa.gov/Quarterly/amj2005/images/killerwhales.jpg"><br>
-Group: <span style="color: green;">🗸</span> a pod of killer whales</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Killerwhales_jumping.jpg/1920px-Killerwhales_jumping.jpg" style="width:50.0%"><br> Group: <span style="color: green;">🗸</span>
+a pod of killer whales</p>
 </div>
 </div>
 <div class="section level3">
@@ -1180,7 +1180,7 @@ aucinf.obs</li>
 <div class="section level3">
 <h3 class="columns-2" id="auc-considerations-with-pknca-13">AUC considerations with PKNCA (1/3)<a class="anchor" aria-label="anchor" href="#auc-considerations-with-pknca-13"></a>
 </h3>
-<p><img src="v30-training-session_files/figure-html/unnamed-chunk-23-1.png" width="100%"></p>
+<p><img src="v30-training-session_files/figure-html/unnamed-chunk-23-1.png" class="r-plt" width="100%"></p>
 <p class="forceBreak">
 </p>
 <p>The considerations below mainly apply to actual-time data;
@@ -1197,7 +1197,7 @@ points within the interval (the AUClast color in the figure)</li>
 <div class="section level3">
 <h3 class="columns-2" id="auc-considerations-with-pknca-23">AUC considerations with PKNCA (2/3)<a class="anchor" aria-label="anchor" href="#auc-considerations-with-pknca-23"></a>
 </h3>
-<p><img src="v30-training-session_files/figure-html/unnamed-chunk-24-1.png" width="100%"></p>
+<p><img src="v30-training-session_files/figure-html/unnamed-chunk-24-1.png" class="r-plt" width="100%"></p>
 <p class="forceBreak">
 </p>
 <p>The considerations below mainly apply to actual-time data;
@@ -1216,7 +1216,7 @@ AUCint color in the figure)</li>
 <div class="section level3">
 <h3 class="columns-2" id="auc-considerations-with-pknca-33">AUC considerations with PKNCA (3/3)<a class="anchor" aria-label="anchor" href="#auc-considerations-with-pknca-33"></a>
 </h3>
-<p><img src="v30-training-session_files/figure-html/unnamed-chunk-25-1.png" width="100%"></p>
+<p><img src="v30-training-session_files/figure-html/unnamed-chunk-25-1.png" class="r-plt" width="100%"></p>
 <p class="forceBreak">
 </p>
 <p>The considerations below mainly apply to actual-time data;
@@ -1243,7 +1243,7 @@ includes all the points desired (usually, <code>end=Inf</code>).</li>
 </h3>
 <p>The data for the exercise are from a PK study of amikacin in a killer
 whale and a beluga whale. (DOI: 10.1638/03-078)</p>
-<p><img src="https://apps-afsc.fisheries.noaa.gov/Quarterly/amj2005/images/killerwhales.jpg"></p>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Killerwhales_jumping.jpg/1920px-Killerwhales_jumping.jpg" style="width:50.0%"></p>
 <p>(Callback…)</p>
 </div>
 <div class="section level3">
@@ -1251,7 +1251,7 @@ whale and a beluga whale. (DOI: 10.1638/03-078)</p>
 </h3>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://humanpred.github.io/pknca/" class="external-link">PKNCA</a></span><span class="op">)</span></span>
-<span></span>
+<span><span class="co"># Data available from https://github.com/humanpred/pknca/tree/main/data-raw/whale</span></span>
 <span><span class="va">d_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"c:/tmp/whale_conc.csv"</span><span class="op">)</span></span>
 <span><span class="va">d_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"c:/tmp/whale_dose.csv"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">d_conc</span><span class="op">)</span></span>
@@ -1550,7 +1550,7 @@ the concentration at <code>end</code>.</p>
 <p>Note: Watch out for a dose before the next concentration (e.g. a dose
 at 24 hours but the prior sample is around 12 and the next is around
 25):</p>
-<p><img src="v30-training-session_files/figure-html/unnamed-chunk-32-1.png" width="700"></p>
+<p><img src="v30-training-session_files/figure-html/unnamed-chunk-32-1.png" class="r-plt" width="700"></p>
 </div>
 </div>
 <div class="section level2">
@@ -1673,7 +1673,7 @@ profile to multi-dose.</p>
 <span>    n.tau<span class="op">=</span><span class="fl">1</span>, <span class="co"># One tau interval (0 to 48 hours)</span></span>
 <span>    dose.times<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">24</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<p><img src="v30-training-session_files/figure-html/unnamed-chunk-36-1.png" width="288"></p>
+<p><img src="v30-training-session_files/figure-html/unnamed-chunk-36-1.png" class="r-plt" width="288"></p>
 </div>
 <div class="section level3">
 <h3 class="smaller" id="time-to-steady-state-calculations">Time-to-Steady-state calculations<a class="anchor" aria-label="anchor" href="#time-to-steady-state-calculations"></a>
@@ -2128,7 +2128,7 @@ custom intervals per subjects<a class="anchor" aria-label="anchor" href="#single
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
