@@ -10,12 +10,12 @@
 #' the interval.  For example, if an interval starts at 168 hours, ends at 192
 #' hours, and and the maximum concentration is at 169 hours, `tmax=169-168=1`.
 #'
-#' @param data A PKNCAdata object
-#' @param verbose Indicate, by `message()`, the current state of calculation.
-#' @returns A `PKNCAresults` object.
-#' @seealso [PKNCAdata()], [PKNCA.options()], [summary.PKNCAresults()],
-#'   [as.data.frame.PKNCAresults()], [exclude()]
-#' @export
+##' @param data A PKNCAdata object
+##' @param verbose Indicate, by `message()`, the current state of calculation.
+##' @returns A `PKNCAresults` object.
+##' @seealso [PKNCAdata()], [PKNCA.options()], [summary.PKNCAresults()],
+##'   [as.data.frame.PKNCAresults()], [exclude()]
+##' @export
 pk.nca <- function(data, verbose=FALSE) {
   assert_PKNCAdata(data)
   results <- data.frame()
@@ -370,6 +370,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   if (nrow(interval) != 1) {
     stop("Please report a bug.  Interval must be a one-row data.frame")
   }
+
   if (!all(is.na(impute_method))) {
     impute_funs <- PKNCA_impute_fun_list(impute_method)
     stopifnot(length(impute_funs) == 1)
@@ -385,6 +386,11 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     }
     conc <- impute_data$conc
     time <- impute_data$time
+    tmp_imp_method <- c(
+      paste0("Imputation: ", paste(na.omit(impute_method), collapse = ", "))
+    )
+  } else {
+    tmp_imp_method <- c()
   }
   # Prepare the return value using SDTM names
   ret <- data.frame(PPTESTCD=NA, PPORRES=NA)[-1,]
@@ -406,6 +412,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   }
   # Do the calculations
   for (n in names(all_intervals)) {
+    tmp_method <- c(tmp_imp_method)
     request_to_calculate <- as.logical(interval[[n]])
     has_calculation_function <- !is.na(all_intervals[[n]]$FUN)
     is_correct_sparse_dense <- all_intervals[[n]]$sparse == sparse
@@ -492,6 +499,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           }
         }
       }
+
       # Apply manual inclusion and exclusion
       if (n %in% "half.life") {
         uses_include_hl <- !is.null(include_half.life) && !all(is.na(include_half.life))
@@ -506,6 +514,26 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           call_args$conc <- call_args$conc[!exclude_tf]
           call_args$time <- call_args$time[!exclude_tf]
         }
+      }
+      # For half-life related parameters, indicate if there was any manual inclusion / exclusion
+      if (n %in% get.parameter.deps("half.life")) {
+        any_inclusion <- !is.null(include_half.life) && !all(is.na(include_half.life))
+        any_exclusion <- !is.null(exclude_half.life) && !all(is.na(exclude_half.life))
+        tmp_method <- c(
+          tmp_method,
+          paste0(
+            "Lambda Z: ",
+            {if (any_inclusion) "Manual selection" else if (any_exclusion) "Manual exclusion" else "Default"}
+          )
+        )
+      }
+      # For AUC parameters, indicate the calculation method
+      auc_parameters <- grep("auc", names(get.interval.cols()), value = TRUE)
+      if (n %in% auc_parameters) {
+        tmp_method <- c(
+          tmp_method,
+          paste0("AUC: ", options$auc.method)
+        )
       }
       # Do the calculation
       tmp_result <- do.call(all_intervals[[n]]$FUN, call_args)
@@ -557,6 +585,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         data.frame(
           PPTESTCD=tmp_testcd,
           PPORRES=tmp_result,
+          PPANMETH=paste(tmp_method, collapse=". "),
           exclude=exclude_reason,
           stringsAsFactors=FALSE
         )
