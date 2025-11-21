@@ -7,7 +7,7 @@
 get_halflife_points(object)
 }
 \arguments{
-\item{object}{A PKNCAresults object}
+\item{object}{A PKNCAresults or PKNCAdata object}
 }
 \value{
 A logical vector with \code{TRUE} if the point was used for half-life
