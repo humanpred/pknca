@@ -172,8 +172,8 @@ d_units_auto[d_units_auto$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "
 #>          PPORRESU PPTESTCD
 #> 23             hr     tmax
 #> 53          ng/mL     cmax
-#> 84       hr*ng/mL  auclast
-#> 120 mg/(hr*ng/mL)   cl.obs
+#> 85       hr*ng/mL  auclast
+#> 121 mg/(hr*ng/mL)   cl.obs
 ```
 
 As you see above, the default units table has a column for the
@@ -206,8 +206,8 @@ d_units_clean[d_units_clean$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs",
 #> 23             hr     tmax      day      4.166667e-02
 #> 53          ng/mL     cmax    ng/mL      1.000000e+00
 #> 66          ng/mg       fe fraction      1.000000e-06
-#> 84       hr*ng/mL  auclast hr*ng/mL      1.000000e+00
-#> 120 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
+#> 85       hr*ng/mL  auclast hr*ng/mL      1.000000e+00
+#> 121 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
 ```
 
 Now, the units are much cleaner to look at.
@@ -237,8 +237,8 @@ d_units_clean_manual[d_units_clean_manual$PPTESTCD %in% c("cmax", "tmax", "aucla
 #>          PPORRESU PPTESTCD PPSTRESU conversion_factor
 #> 23             hr     tmax      day      4.166667e-02
 #> 53          ng/mL     cmax   nmol/L      8.130081e+00
-#> 84       hr*ng/mL  auclast hr*ng/mL      1.000000e+00
-#> 120 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
+#> 85       hr*ng/mL  auclast hr*ng/mL      1.000000e+00
+#> 121 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
 ```
 
 ## How do I add different unit conversions for different analytes?

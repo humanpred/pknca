@@ -1226,6 +1226,35 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $volpk
+#> $volpk$FUN
+#> [1] "pk.calc.volpk"
+#> 
+#> $volpk$values
+#> [1] FALSE  TRUE
+#> 
+#> $volpk$unit_type
+#> [1] "volume"
+#> 
+#> $volpk$pretty_name
+#> [1] "Total Urine Volume"
+#> 
+#> $volpk$desc
+#> [1] "The sum of urine volumes for the interval"
+#> 
+#> $volpk$sparse
+#> [1] FALSE
+#> 
+#> $volpk$formalsmap
+#> list()
+#> 
+#> $volpk$depends
+#> NULL
+#> 
+#> $volpk$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $ae
 #> $ae$FUN
 #> [1] "pk.calc.ae"
@@ -3902,6 +3931,99 @@ get.interval.cols()
 #> [1] "ctrough"
 #> 
 #> $ctrough.dn$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $clr.last.dn
+#> $clr.last.dn$FUN
+#> [1] "pk.calc.dn"
+#> 
+#> $clr.last.dn$values
+#> [1] FALSE  TRUE
+#> 
+#> $clr.last.dn$unit_type
+#> [1] "renal_clearance_dosenorm"
+#> 
+#> $clr.last.dn$pretty_name
+#> [1] "Renal clearance (from AUClast) (dose-normalized)"
+#> 
+#> $clr.last.dn$desc
+#> [1] "Dose normalized clr.last"
+#> 
+#> $clr.last.dn$sparse
+#> [1] FALSE
+#> 
+#> $clr.last.dn$formalsmap
+#> $clr.last.dn$formalsmap$parameter
+#> [1] "clr.last"
+#> 
+#> 
+#> $clr.last.dn$depends
+#> [1] "clr.last"
+#> 
+#> $clr.last.dn$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $clr.obs.dn
+#> $clr.obs.dn$FUN
+#> [1] "pk.calc.dn"
+#> 
+#> $clr.obs.dn$values
+#> [1] FALSE  TRUE
+#> 
+#> $clr.obs.dn$unit_type
+#> [1] "renal_clearance_dosenorm"
+#> 
+#> $clr.obs.dn$pretty_name
+#> [1] "Renal clearance (from AUCinf,obs) (dose-normalized)"
+#> 
+#> $clr.obs.dn$desc
+#> [1] "Dose normalized clr.obs"
+#> 
+#> $clr.obs.dn$sparse
+#> [1] FALSE
+#> 
+#> $clr.obs.dn$formalsmap
+#> $clr.obs.dn$formalsmap$parameter
+#> [1] "clr.obs"
+#> 
+#> 
+#> $clr.obs.dn$depends
+#> [1] "clr.obs"
+#> 
+#> $clr.obs.dn$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $clr.pred.dn
+#> $clr.pred.dn$FUN
+#> [1] "pk.calc.dn"
+#> 
+#> $clr.pred.dn$values
+#> [1] FALSE  TRUE
+#> 
+#> $clr.pred.dn$unit_type
+#> [1] "renal_clearance_dosenorm"
+#> 
+#> $clr.pred.dn$pretty_name
+#> [1] "Renal clearance (from AUCinf,pred) (dose-normalized)"
+#> 
+#> $clr.pred.dn$desc
+#> [1] "Dose normalized clr.pred"
+#> 
+#> $clr.pred.dn$sparse
+#> [1] FALSE
+#> 
+#> $clr.pred.dn$formalsmap
+#> $clr.pred.dn$formalsmap$parameter
+#> [1] "clr.pred"
+#> 
+#> 
+#> $clr.pred.dn$depends
+#> [1] "clr.pred"
+#> 
+#> $clr.pred.dn$datatype
 #> [1] "interval"
 #> 
 #> 

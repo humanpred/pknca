@@ -446,6 +446,9 @@
 - [`pk.calc.totdose()`](http://humanpred.github.io/pknca/reference/pk.calc.totdose.md)
   : Extract the dose used for calculations
 
+- [`pk.calc.volpk()`](http://humanpred.github.io/pknca/reference/pk.calc.volpk.md)
+  : Calculate the total urine volume
+
 - [`pk.calc.vss()`](http://humanpred.github.io/pknca/reference/pk.calc.vss.md)
   : Calculate the steady-state volume of distribution (Vss)
 
