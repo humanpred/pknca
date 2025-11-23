@@ -19,6 +19,9 @@ the dosing including dose amount and route.
 
 * `pk.calc.half.life()` now returns also `lambda.z.corrxy`, the correlation between
   the time and the log-concentration of the lambda z points.
+* New excretion parameters: `volpk` (total urine volume for an interval) and
+  dose-normalized renal clearance parameters: `clr.last.dn`, `clr.obs.dn`,
+  `clr.pred.dn` (#433)
 * `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
   `summary()` (#477)
 
