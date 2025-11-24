@@ -178,8 +178,8 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
 pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) {
 
   # concu is the PKNCAdata object
-  o_conc <- concu$conc
-  o_dose <- concu$dose
+  o_conc <- as_PKNCAconc(concu)
+  o_dose <- as_PKNCAdose(concu)
 
   # PKNCAdose can optionally be no present, being unit undefining
   if (is.null(o_dose) || all(is.na(o_dose))) o_dose <- o_conc
