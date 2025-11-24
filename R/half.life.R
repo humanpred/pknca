@@ -141,7 +141,9 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   method_vec <- character()
   # Imputation method
   if (!all(is.na(impute_method))) {
-    method_vec <- c(method_vec, paste0("Imputation: ", paste(na.omit(impute_method), collapse = ", ")))
+    method_vec <- c(method_vec, paste0(
+      "Imputation: ", paste(stats::na.omit(impute_method), collapse = ", ")
+    ))
   }
 
   # Prepare the return values
