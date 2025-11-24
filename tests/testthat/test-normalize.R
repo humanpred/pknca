@@ -3,7 +3,7 @@ test_that("normalize.data.frame works for basic normalization", {
   norm_table <- data.frame(ID = 1:2, normalization = c(2, 4), unit = "kg")
   res <- normalize(df, norm_table, parameters = "cmax", suffix = ".wn")
   expect_equal(res$PPORRES, c(5, 5))
-  expect_equal(res$PPORRESU, c("ng/mL/kg", "ng/mL/kg"))
+  expect_equal(res$PPORRESU, c("(ng/mL)/kg", "(ng/mL)/kg"))
   expect_equal(res$PPTESTCD, c("cmax.wn", "cmax.wn"))
 })
 
@@ -30,7 +30,7 @@ test_that("normalize.PKNCAresults appends normalized parameters", {
   )
   expect_equal(
     res$result$PPSTRESU[res$result$PPTESTCD == "cmax.wn"],
-    paste0(res$result$PPSTRESU[res$result$PPTESTCD == "cmax"], "/kg")
+    paste0("(", res$result$PPSTRESU[res$result$PPTESTCD == "cmax"], ")/kg")
   )
 })
 
@@ -76,7 +76,7 @@ test_that("normalize_by_col normalizes by a numeric column in PKNCAconc data", {
   # Check that normalization occurred as expected, and values were appended
   expect_equal(res$result$PPTESTCD,  rep(c("cmax", "cmax.wn"), each = 4))
   expect_equal(res$result$PPORRES, rep(c(10, 20, 30, 40, 10/2, 20/2, 30/4, 40/4), each = 1))
-  expect_equal(res$result$PPORRESU, rep(c("ng/mL", "ng/mL/kg"), each = 4))
+  expect_equal(res$result$PPORRESU, rep(c("ng/mL", "(ng/mL)/kg"), each = 4))
 })
 
 test_that("normalize_by_col normalizes by a unit column in PKNCAconc data", {
@@ -85,7 +85,7 @@ test_that("normalize_by_col normalizes by a unit column in PKNCAconc data", {
   res <- normalize_by_col(o_nca, col = "analyte_mw", unit = "analyte_mw_unit", parameters = "cmax", suffix = ".mwn")
   expect_equal(res$result$PPTESTCD,  rep(c("cmax", "cmax.mwn"), each = 4))
   expect_equal(res$result$PPORRES, c(10, 20, 30, 40, 10/200, 20/300, 30/200, 40/300))
-  expect_equal(res$result$PPORRESU, c(rep("ng/mL", 4), rep(c("ng/mL/g/mol", "ng/mL/kg/mol"), 2)))
+  expect_equal(res$result$PPORRESU, c(rep("ng/mL", 4), rep(c("(ng/mL)/(g/mol)", "(ng/mL)/(kg/mol)"), 2)))
 })
 
 test_that("normalize_by_col errors for missing normalization column in PKNCAconc data", {
