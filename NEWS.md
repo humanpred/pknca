@@ -28,6 +28,8 @@ the dosing including dose amount and route.
   `summary()` (#477)
 
 * New post-processing functions to normalize PKNCA result parameters based on any column in PKNCAconc data.frame (`normalize_by_col()`) or by using a custom normalization table (`normalize()`)
+* New excretion rate parameters: `ermax` (Maximum excretion rate), `ertmax` (Midpoint time
+  of maximum excretion rate) and `ertlst` (Time of last excretion rate measurement) (#433)
 
 # PKNCA 0.12.1
 
