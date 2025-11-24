@@ -746,8 +746,6 @@ test_that("dose is calculable", {
 
 test_that("do not give rbind error when interval columns have attributes (#381)", {
   o_conc <- PKNCAconc(data = data.frame(conc = 1, time = 0), conc~time)
-  d_interval <- data.frame(start = 0, end = Inf, cmax = TRUE)
-
   d_interval <- data.frame(start = 0, end = Inf, cmax = TRUE, tmax = TRUE)
   attr(d_interval$start, "label") <- "start"
   o_data <- PKNCAdata(o_conc, intervals = d_interval)
@@ -756,5 +754,15 @@ test_that("do not give rbind error when interval columns have attributes (#381)"
   expect_equal(
     attributes(as.data.frame(o_nca)$start),
     list(label = "start")
+  )
+})
+
+test_that("Cannot include and exclude half-life points at the same time (#406)", {
+  o_conc <- PKNCAconc(data = data.frame(conc = 1, time = 0, inex = TRUE), conc~time, include_half.life = "inex", exclude_half.life = "inex")
+  d_interval <- data.frame(start = 0, end = Inf, half.life = TRUE)
+  o_data <- PKNCAdata(o_conc, intervals = d_interval)
+  expect_error(
+    suppressMessages(pk.nca(o_data)),
+    regexp = "Cannot both include and exclude half-life points for the same interval"
   )
 })
