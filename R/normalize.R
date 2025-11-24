@@ -26,9 +26,14 @@ normalize.data.frame <- function(object, norm_table, parameters, suffix) {
   )
   not_common_groups <- dplyr::anti_join(norm_table, object, by = common_colnames)
   if (nrow(not_common_groups) > 0) {
+    df_error_string <- paste(
+      paste(names(not_common_groups), collapse = "\t"),
+      paste(apply(not_common_groups, 1, paste, collapse = "\t"), collapse = "\n"),
+      sep = "\n"
+    )
     stop(
-      "The normalization table contains groups not present in the data: ",
-      paste(utils::capture.output(print(not_common_groups)), collapse = ", ")
+      "The normalization table contains groups not present in the data:\n",
+      df_error_string
     )
   }
   if (any(duplicated(norm_table[, common_colnames, drop = FALSE]))) {
@@ -39,12 +44,12 @@ normalize.data.frame <- function(object, norm_table, parameters, suffix) {
 
   df$PPORRES <- df$PPORRES / df$normalization
   if ("PPORRESU" %in% names(df)) {
-    df$PPORRESU <- paste0(df$PPORRESU, "/", df$unit)
+    df$PPORRESU <- sprintf("%s/%s", pknca_units_add_paren(df$PPORRESU), pknca_units_add_paren(df$unit))
   }
   if ("PPSTRES" %in% names(df)) {
     df$PPSTRES <- df$PPSTRES / df$normalization
     if ("PPSTRESU" %in% names(df)) {
-      df$PPSTRESU <- paste0(df$PPSTRESU, "/", df$unit)
+      df$PPSTRESU <- sprintf("%s/%s", pknca_units_add_paren(df$PPSTRESU), pknca_units_add_paren(df$unit))
     }
   }
   df$PPTESTCD <- paste0(df$PPTESTCD, suffix)
