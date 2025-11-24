@@ -316,6 +316,14 @@ pk.calc.sparse_auc <- function(conc, time, subject,
       auc.type=auc.type,
       method="linear"
     )
+
+  # Add method details as an attribute
+  method_vec <- character()
+  auc_method <- "linear"
+  method_vec <- c(method_vec, paste0("AUC: ", auc_method))
+  method_vec <- c(method_vec, paste0("Sparse: ", "arithmetic mean, <=50% BLQ"))
+  attr(auc, "method") <- method_vec
+
   var_auc <- var_sparse_auc(sparse_pk_mean)
   data.frame(
     sparse_auc=auc,
