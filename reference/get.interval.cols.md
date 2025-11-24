@@ -1406,6 +1406,93 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $ertlst
+#> $ertlst$FUN
+#> [1] "pk.calc.ertlst"
+#> 
+#> $ertlst$values
+#> [1] FALSE  TRUE
+#> 
+#> $ertlst$unit_type
+#> [1] "time"
+#> 
+#> $ertlst$pretty_name
+#> [1] "Tlast excretion rate"
+#> 
+#> $ertlst$desc
+#> [1] "The midpoint collection time of the last measurable excretion rate (typically in urine or feces)"
+#> 
+#> $ertlst$sparse
+#> [1] FALSE
+#> 
+#> $ertlst$formalsmap
+#> list()
+#> 
+#> $ertlst$depends
+#> NULL
+#> 
+#> $ertlst$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $ermax
+#> $ermax$FUN
+#> [1] "pk.calc.ermax"
+#> 
+#> $ermax$values
+#> [1] FALSE  TRUE
+#> 
+#> $ermax$unit_type
+#> [1] "amount_time"
+#> 
+#> $ermax$pretty_name
+#> [1] "Maximum excretion rate"
+#> 
+#> $ermax$desc
+#> [1] "The maximum excretion rate (typically in urine or feces)"
+#> 
+#> $ermax$sparse
+#> [1] FALSE
+#> 
+#> $ermax$formalsmap
+#> list()
+#> 
+#> $ermax$depends
+#> NULL
+#> 
+#> $ermax$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $ertmax
+#> $ertmax$FUN
+#> [1] "pk.calc.ertmax"
+#> 
+#> $ertmax$values
+#> [1] FALSE  TRUE
+#> 
+#> $ertmax$unit_type
+#> [1] "time"
+#> 
+#> $ertmax$pretty_name
+#> [1] "Tmax excretion rate"
+#> 
+#> $ertmax$desc
+#> [1] "The midpoint collection time of the maximum excretion rate (typically in urine or feces)"
+#> 
+#> $ertmax$sparse
+#> [1] FALSE
+#> 
+#> $ertmax$formalsmap
+#> list()
+#> 
+#> $ertmax$depends
+#> NULL
+#> 
+#> $ertmax$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $sparse_auclast
 #> $sparse_auclast$FUN
 #> [1] "pk.calc.sparse_auclast"

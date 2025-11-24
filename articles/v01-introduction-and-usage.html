@@ -250,15 +250,15 @@ no arguments:</p>
 <span><span class="co">##   aucabove.predose.all aucabove.trough.all count_conc count_conc_measured</span></span>
 <span><span class="co">## 1                FALSE               FALSE      FALSE               FALSE</span></span>
 <span><span class="co">## 2                FALSE               FALSE      FALSE               FALSE</span></span>
-<span><span class="co">##   totdose volpk    ae clr.last clr.obs clr.pred    fe sparse_auclast</span></span>
-<span><span class="co">## 1   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE          FALSE</span></span>
-<span><span class="co">## 2   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE          FALSE</span></span>
-<span><span class="co">##   sparse_auc_se sparse_auc_df time_above aucivlast aucivall aucivint.last</span></span>
-<span><span class="co">## 1         FALSE         FALSE      FALSE     FALSE    FALSE         FALSE</span></span>
-<span><span class="co">## 2         FALSE         FALSE      FALSE     FALSE    FALSE         FALSE</span></span>
-<span><span class="co">##   aucivint.all aucivpbextlast aucivpbextall aucivpbextint.last</span></span>
-<span><span class="co">## 1        FALSE          FALSE         FALSE              FALSE</span></span>
-<span><span class="co">## 2        FALSE          FALSE         FALSE              FALSE</span></span>
+<span><span class="co">##   totdose volpk    ae clr.last clr.obs clr.pred    fe ertlst ermax ertmax</span></span>
+<span><span class="co">## 1   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE</span></span>
+<span><span class="co">## 2   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE</span></span>
+<span><span class="co">##   sparse_auclast sparse_auc_se sparse_auc_df time_above aucivlast aucivall</span></span>
+<span><span class="co">## 1          FALSE         FALSE         FALSE      FALSE     FALSE    FALSE</span></span>
+<span><span class="co">## 2          FALSE         FALSE         FALSE      FALSE     FALSE    FALSE</span></span>
+<span><span class="co">##   aucivint.last aucivint.all aucivpbextlast aucivpbextall aucivpbextint.last</span></span>
+<span><span class="co">## 1         FALSE        FALSE          FALSE         FALSE              FALSE</span></span>
+<span><span class="co">## 2         FALSE        FALSE          FALSE         FALSE              FALSE</span></span>
 <span><span class="co">##   aucivpbextint.all half.life r.squared adj.r.squared lambda.z.corrxy lambda.z</span></span>
 <span><span class="co">## 1             FALSE     FALSE     FALSE         FALSE           FALSE    FALSE</span></span>
 <span><span class="co">## 2             FALSE      TRUE     FALSE         FALSE           FALSE    FALSE</span></span>
@@ -530,6 +530,9 @@ dosing data.</p>
 <col width="0%">
 <col width="0%">
 <col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
 <col width="1%">
 <col width="0%">
 <col width="0%">
@@ -660,6 +663,9 @@ dosing data.</p>
 <th align="left">clr.obs</th>
 <th align="left">clr.pred</th>
 <th align="left">fe</th>
+<th align="left">ertlst</th>
+<th align="left">ermax</th>
+<th align="left">ertmax</th>
 <th align="left">sparse_auclast</th>
 <th align="left">sparse_auc_se</th>
 <th align="left">sparse_auc_df</th>
@@ -874,6 +880,9 @@ dosing data.</p>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
 </tr>
 <tr class="even">
 <td align="right">0</td>
@@ -890,6 +899,9 @@ dosing data.</p>
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>

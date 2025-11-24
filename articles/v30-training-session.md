@@ -1171,21 +1171,21 @@ o_data$intervals %>% select(-Subject) %>% unique() %>% as.data.frame()
     ## 2                FALSE               FALSE      FALSE               FALSE
     ## 3                FALSE               FALSE      FALSE               FALSE
     ## 4                FALSE               FALSE      FALSE               FALSE
-    ##   totdose volpk    ae clr.last clr.obs clr.pred    fe sparse_auclast
-    ## 1   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE          FALSE
-    ## 2   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE          FALSE
-    ## 3   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE          FALSE
-    ## 4   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE          FALSE
-    ##   sparse_auc_se sparse_auc_df time_above aucivlast aucivall aucivint.last
-    ## 1         FALSE         FALSE      FALSE     FALSE    FALSE         FALSE
-    ## 2         FALSE         FALSE      FALSE     FALSE    FALSE         FALSE
-    ## 3         FALSE         FALSE      FALSE     FALSE    FALSE         FALSE
-    ## 4         FALSE         FALSE      FALSE     FALSE    FALSE         FALSE
-    ##   aucivint.all aucivpbextlast aucivpbextall aucivpbextint.last
-    ## 1        FALSE          FALSE         FALSE              FALSE
-    ## 2        FALSE          FALSE         FALSE              FALSE
-    ## 3        FALSE          FALSE         FALSE              FALSE
-    ## 4        FALSE          FALSE         FALSE              FALSE
+    ##   totdose volpk    ae clr.last clr.obs clr.pred    fe ertlst ermax ertmax
+    ## 1   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
+    ## 2   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
+    ## 3   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
+    ## 4   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
+    ##   sparse_auclast sparse_auc_se sparse_auc_df time_above aucivlast aucivall
+    ## 1          FALSE         FALSE         FALSE      FALSE     FALSE    FALSE
+    ## 2          FALSE         FALSE         FALSE      FALSE     FALSE    FALSE
+    ## 3          FALSE         FALSE         FALSE      FALSE     FALSE    FALSE
+    ## 4          FALSE         FALSE         FALSE      FALSE     FALSE    FALSE
+    ##   aucivint.last aucivint.all aucivpbextlast aucivpbextall aucivpbextint.last
+    ## 1         FALSE        FALSE          FALSE         FALSE              FALSE
+    ## 2         FALSE        FALSE          FALSE         FALSE              FALSE
+    ## 3         FALSE        FALSE          FALSE         FALSE              FALSE
+    ## 4         FALSE        FALSE          FALSE         FALSE              FALSE
     ##   aucivpbextint.all half.life r.squared adj.r.squared lambda.z.corrxy lambda.z
     ## 1             FALSE     FALSE     FALSE         FALSE           FALSE    FALSE
     ## 2             FALSE      TRUE     FALSE         FALSE           FALSE    FALSE
