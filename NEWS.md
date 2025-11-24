@@ -21,6 +21,9 @@ the dosing including dose amount and route.
   the time and the log-concentration of the lambda z points.
 * `get_halflife_points()` can now be used on PKNCAdata objects to see which points
   would be used for half-life calculation (#476)
+* New excretion parameters: `volpk` (total urine volume for an interval) and
+  dose-normalized renal clearance parameters: `clr.last.dn`, `clr.obs.dn`,
+  `clr.pred.dn` (#433)
 * `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
   `summary()` (#477)
 
