@@ -112,6 +112,25 @@ test_that("pknca_units_table", {
     ),
     regexp = "Only one unit may be provided at a time: ng/mL, umol/L"
   )
+  # fraction excreted now has units of amount/dose
+  unit_fe_kg <-
+    pknca_units_table(
+      doseu="mg/kg", amountu="ng",
+      conversions=data.frame(PPORRESU="ng/(mg/kg)", PPSTRESU="kg")
+    )
+  expect_equal(
+    unit_fe_kg$conversion_factor[unit_fe_kg$PPTESTCD == "fe"],
+    1e-6
+  )
+  unit_fe_fraction <-
+    pknca_units_table(
+      doseu="mg", amountu="ng",
+      conversions=data.frame(PPORRESU="ng/mg", PPSTRESU="fraction")
+    )
+  expect_equal(
+    unit_fe_fraction$conversion_factor[unit_fe_fraction$PPTESTCD == "fe"],
+    1e-6
+  )
 })
 
 test_that("pknca_units_add_paren", {
@@ -253,6 +272,61 @@ test_that("pknca_units_table expected errors", {
         ),
         "condition"
       )$message,
+    fixed = TRUE
+  )
+})
+
+test_that("pknca_unit_conversion", {
+  results <- data.frame(PPORRES = 1, PPTESTCD = "cmax")
+
+  # No change when no unit conversion occurs
+  expect_equal(pknca_unit_conversion(results, units = NULL), results)
+
+  # Adding units with no conversion
+  d_u <- data.frame(PPTESTCD = "cmax", PPORRESU = "ng/mL")
+  results_u <- data.frame(PPORRES = 1, PPTESTCD = "cmax", PPORRESU = "ng/mL")
+  expect_equal(pknca_unit_conversion(results, units = d_u), results_u)
+
+  # Adding units with conversion
+  d_u_conv <- data.frame(PPTESTCD = "cmax", PPORRESU = "ng/mL", conversion_factor = 0.001, PPSTRESU = "ug/mL")
+  results_u_conv <- data.frame(PPORRES = 1, PPTESTCD = "cmax", PPORRESU = "ng/mL", PPSTRESU = "ug/mL", PPSTRES = 0.001)
+  expect_equal(pknca_unit_conversion(results, units = d_u_conv), results_u_conv)
+
+  # Adding units with some units missing gives an error
+  d_u_missing <- data.frame(PPTESTCD = "cmax", PPORRESU = NA_character_)
+  results_u_missing <- data.frame(PPORRES = 1, PPTESTCD = "cmax", PPORRESU = NA_character_)
+  expect_error(
+    pknca_unit_conversion(results, units = d_u_missing),
+    regexp = "Units are provided for some but not all parameters; missing for: cmax\nThis error can be converted to a warning using `PKNCA.options(allow_partial_missing_units = TRUE)`",
+    fixed = TRUE
+  )
+
+  # Adding units with some units missing gives an error; that error can be converted to a warning
+  d_u_missing <- data.frame(PPTESTCD = "cmax", PPORRESU = NA_character_)
+  results_u_missing <- data.frame(PPORRES = 1, PPTESTCD = "cmax", PPORRESU = NA_character_)
+  expect_warning(
+    pknca_unit_conversion(results, units = d_u_missing, allow_partial_missing_units = TRUE),
+    regexp = "Units are provided for some but not all parameters; missing for: cmax",
+    fixed = TRUE
+  )
+
+  # Fully-integrated test
+  d_conc <- as.data.frame(Theoph[Theoph$Subject %in% Theoph$Subject[1], ])
+  o_conc <- PKNCAconc(d_conc, conc~Time|Subject)
+  o_dose <- PKNCAdose(d_conc[d_conc$Time == 0, ], Dose~Time|Subject)
+  # Do not give dose units
+  d_units <- pknca_units_table(concu = "mg/L", timeu = "hr")
+  d_interval <- data.frame(start = 0, end = Inf, cmax = TRUE, cl.obs = TRUE)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = d_interval, units = d_units)
+  expect_error(
+    pk.nca(o_data),
+    regexp = "Units are provided for some but not all parameters; missing for: cl.obs\nThis error can be converted to a warning using `PKNCA.options(allow_partial_missing_units = TRUE)`",
+    fixed = TRUE
+  )
+  o_data_warn <- PKNCAdata(o_conc, o_dose, intervals = d_interval, units = d_units, options = list(allow_partial_missing_units = TRUE))
+  expect_warning(
+    pk.nca(o_data_warn),
+    regexp = "Units are provided for some but not all parameters; missing for: cl.obs",
     fixed = TRUE
   )
 })

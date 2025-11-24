@@ -73,11 +73,14 @@ pknca_units_table <- function(concu, doseu, amountu, timeu,
       pknca_units_table_time(timeu=timeu),
       pknca_units_table_conc(concu=concu),
       pknca_units_table_amount(amountu=amountu),
+      pknca_units_table_amount_dose(amountu = amountu, doseu = doseu),
       pknca_units_table_dose(doseu = doseu),
       pknca_units_table_conc_dose(concu=concu, doseu=doseu),
       pknca_units_table_conc_time(concu=concu, timeu=timeu),
+      pknca_units_table_time_amount(timeu=timeu, amountu=amountu),
       pknca_units_table_conc_time_dose(concu=concu, timeu=timeu, doseu=doseu),
-      pknca_units_table_conc_time_amount(concu=concu, timeu=timeu, amountu=amountu)
+      pknca_units_table_conc_time_amount(concu=concu, timeu=timeu, amountu=amountu),
+      pknca_units_table_conc_time_amount_dose(concu=concu, timeu=timeu, amountu=amountu, doseu=doseu)
     )
 
   # Generate preferred units and merge them into `conversions`
@@ -247,6 +250,19 @@ pknca_units_table_amount <- function(amountu) {
   )
 }
 
+pknca_units_table_amount_dose <- function(amountu, doseu) {
+  if (useless(amountu) || useless(doseu)) {
+    amount_doseu <- NA_character_
+  } else {
+    amount_doseu <- sprintf("%s/%s", pknca_units_add_paren(amountu), pknca_units_add_paren(doseu))
+  }
+  data.frame(
+    PPORRESU=amount_doseu,
+    PPTESTCD=pknca_find_units_param(unit_type="amount_dose"),
+    stringsAsFactors=FALSE
+  )
+}
+
 pknca_units_table_dose <- function(doseu) {
   if (useless(doseu)) {
     doseu <- NA_character_
@@ -352,6 +368,33 @@ pknca_units_table_conc_time_amount <- function(concu, timeu, amountu) {
   )
 }
 
+pknca_units_table_time_amount <- function(timeu, amountu) {
+  if (useless(timeu) || useless(amountu)) {
+    time_amount <- NA_character_
+  } else {
+    time_amount <- sprintf("%s*%s", timeu, amountu)
+  }
+  data.frame(
+    PPORRESU = time_amount,
+    PPTESTCD = pknca_find_units_param(unit_type = "amount_time"),
+    stringsAsFactors = FALSE
+  )
+}
+
+pknca_units_table_conc_time_amount_dose <- function(concu, timeu, amountu, doseu) {
+  if (useless(concu) || useless(timeu) || useless(amountu) || useless(doseu)) {
+    renal_clearance_dosenorm <- NA_character_
+  } else {
+    renal_clearance_dosenorm <- sprintf("(%s/(%s*%s))/%s", pknca_units_add_paren(amountu), timeu, concu, pknca_units_add_paren(doseu))
+  }
+  data.frame(
+    # Renal clearance, dose-normalized
+    PPORRESU=renal_clearance_dosenorm,
+    PPTESTCD=pknca_find_units_param(unit_type="renal_clearance_dosenorm"),
+    stringsAsFactors=FALSE
+  )
+}
+
 #' Find NCA parameters with a given unit type
 #'
 #' @param unit_type The type of unit as assigned with `add.interval.col`
@@ -387,9 +430,11 @@ pknca_units_add_paren <- function(unit) {
 #'
 #' @param result The results data.frame
 #' @param units The unit conversion table
+#' @param allow_partial_missing_units Should missing units be allowed for some
+#'   but not all parameters?
 #' @returns The result table with units converted
 #' @keywords Internal
-pknca_unit_conversion <- function(result, units) {
+pknca_unit_conversion <- function(result, units, allow_partial_missing_units = FALSE) {
   ret <- result
   if (!is.null(units)) {
     ret <-
@@ -397,6 +442,19 @@ pknca_unit_conversion <- function(result, units) {
         ret, units,
         by=intersect(names(ret), names(units))
       )
+    mask_missing_units <- is.na(ret$PPORRESU)
+    if (any(mask_missing_units)) {
+      msg_missing <-
+        paste(
+          "Units are provided for some but not all parameters; missing for:",
+          paste(sort(unique(ret$PPTESTCD[mask_missing_units])), collapse = ", ")
+        )
+      if (allow_partial_missing_units) {
+        warning(msg_missing)
+      } else {
+        stop(msg_missing, "\nThis error can be converted to a warning using `PKNCA.options(allow_partial_missing_units = TRUE)`")
+      }
+    }
     if ("conversion_factor" %in% names(units)) {
       ret$PPSTRES <- ret$PPORRES * ret$conversion_factor
       # Drop the conversion factor column, since it shouldn't be in the output.
@@ -405,3 +463,4 @@ pknca_unit_conversion <- function(result, units) {
   }
   ret
 }
+

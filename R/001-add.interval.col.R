@@ -114,13 +114,13 @@ add.interval.col <- function(name,
       choices=c(
         "unitless", "fraction", "%", "count",
         "time", "inverse_time",
-        "amount",
+        "amount", "amount_dose", "amount_time",
         "conc", "conc_dosenorm",
-        "dose",
+        "dose", 
         "volume",
         "auc", "aumc",
         "auc_dosenorm", "aumc_dosenorm",
-        "clearance", "renal_clearance"
+        "clearance", "renal_clearance", "renal_clearance_dosenorm"
       )
     )
   stopifnot("pretty_name must be a scalar"=length(pretty_name) == 1)

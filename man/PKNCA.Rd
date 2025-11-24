@@ -39,10 +39,10 @@ as.data.frame(my.results)
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://billdenney.github.io/pknca/}
-  \item \url{https://github.com/billdenney/pknca}
-  \item \url{http://billdenney.github.io/pknca/}
-  \item Report bugs at \url{https://github.com/billdenney/pknca/issues}
+  \item \url{https://humanpred.github.io/pknca/}
+  \item \url{https://github.com/humanpred/pknca}
+  \item \url{http://humanpred.github.io/pknca/}
+  \item Report bugs at \url{https://github.com/humanpred/pknca/issues}
 }
 
 }
@@ -52,6 +52,7 @@ Useful links:
 Authors:
 \itemize{
   \item Clare Buckeridge \email{clare.buckeridge@pfizer.com}
+  \item Gerardo Jose Rodriguez \email{gerardo.jrac@gmail.com} (\href{https://orcid.org/0000-0003-1413-0060}{ORCID})
 }
 
 Other contributors:

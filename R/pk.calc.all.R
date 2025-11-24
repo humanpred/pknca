@@ -265,31 +265,46 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
       if ("subject" %in% names(conc_data_interval)) {
         args$subject <- conc_data_interval$subject
       }
+      uses_include_hl <- FALSE
       if ("include_half.life" %in% names(conc_data_interval)) {
         args$include_half.life <- conc_data_interval$include_half.life
+        uses_include_hl <- !is.null(args$include_half.life) && !all(is.na(args$include_half.life))
       }
+      uses_exclude_hl <- FALSE
       if ("exclude_half.life" %in% names(conc_data_interval)) {
         args$exclude_half.life <- conc_data_interval$exclude_half.life
+        uses_exclude_hl <- !is.null(args$exclude_half.life) && !all(is.na(args$exclude_half.life))
+      }
+      if (uses_include_hl & uses_exclude_hl) {
+        stop("Cannot both include and exclude half-life points for the same interval")
       }
       # Try the calculation
-      calculated_interval <-
-        tryCatch(
-          do.call(pk.nca.interval, args),
-          error=function(e) {
-            e$message <- paste("Please report a bug.\n", error_preamble, e$message, sep=": ") # nocov
-            stop(e) # nocov
-          }
-        )
-      # Add all the new data into the output
-      ret <-
-        rbind(
-          ret,
-          cbind(
-            current_interval[, c("start", "end", options$keep_interval_cols)],
-            calculated_interval,
-            row.names=NULL
+      if (!is.null(PKNCA.options()$debug)) {
+        # debugging mode does not need coverage
+        calculated_interval <- do.call(pk.nca.interval, args) # nocov
+      } else {
+        calculated_interval <-
+          tryCatch(
+            do.call(pk.nca.interval, args),
+            error=function(e) {
+              e$message <- paste("Please report a bug.\n", error_preamble, e$message, sep=": ") # nocov
+              stop(e) # nocov
+            }
           )
+      }
+      # Add all the new data into the output
+      new_ret <-
+        cbind(
+          # The rep(1, ...) is to fix #381 where attributes on an interval
+          # column cause cbind to fail
+          current_interval[
+            rep(1, nrow(calculated_interval)),
+            c("start", "end", options$keep_interval_cols)
+          ],
+          calculated_interval,
+          row.names=NULL
         )
+      ret <- rbind(ret, new_ret)
     }
   }
   ret
@@ -314,12 +329,16 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
 #'   for urine and fecal measurements)
 #' @param dose,dose.group Dose amount (may be a scalar or vector) for the
 #'   current interval or all data for the group
-#' @param time.dose,time.dose.group Time of the dose for the current interval or
-#'   all data for the group (must be the same length as `dose` or `dose.group`)
-#' @param duration.dose,duration.dose.group The duration of the dose
-#'   administration for the current interval or all data for the group
-#'   (typically zero for extravascular and intravascular bolus and nonzero for
-#'   intravascular infusion)
+#' @param time.dose Time of the dose for the current interval (must be the same
+#'   length as `dose`)
+#' @param time.dose.group Time of the dose for all data for the group (must be
+#'   the same length as `dose.group`)
+#' @param duration.dose The duration of the dose administration for the current
+#'   interval (typically zero for extravascular and intravascular bolus and
+#'   nonzero for intravascular infusion)
+#' @param duration.dose.group The duration of the dose administration for all
+#'   data for the group (typically zero for extravascular and intravascular
+#'   bolus and nonzero for intravascular infusion)
 #' @param route,route.group The route of dosing for the current interval or all
 #'   data for the group
 #' @param impute_method The method to use for imputation as a character string
@@ -475,12 +494,14 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       }
       # Apply manual inclusion and exclusion
       if (n %in% "half.life") {
-        if (!is.null(include_half.life) && !all(is.na(include_half.life))) {
+        uses_include_hl <- !is.null(include_half.life) && !all(is.na(include_half.life))
+        uses_exclude_hl <- !is.null(exclude_half.life) && !all(is.na(exclude_half.life))
+        if (uses_include_hl) {
           include_tf <- include_half.life %in% TRUE
           call_args$conc <- call_args$conc[include_tf]
           call_args$time <- call_args$time[include_tf]
           call_args$manually.selected.points <- TRUE
-        } else if (!is.null(exclude_half.life) && !all(is.na(exclude_half.life))) {
+        } else if (uses_exclude_hl) {
           exclude_tf <- exclude_half.life %in% TRUE
           call_args$conc <- call_args$conc[!exclude_tf]
           call_args$time <- call_args$time[!exclude_tf]

@@ -9,6 +9,8 @@ pk.calc.half.life(
   time,
   tmax,
   tlast,
+  time.dose = NULL,
+  duration.dose = 0,
   manually.selected.points = FALSE,
   options = list(),
   min.hl.points = NULL,
@@ -31,6 +33,13 @@ included in the return data frame if not given)}
 \item{tlast}{Time of last concentration above the limit of
 quantification (will be calculated and included in the return data
 frame if not given)}
+
+\item{time.dose}{Time of the dose for the current interval (must be the same
+length as \code{dose})}
+
+\item{duration.dose}{The duration of the dose administration for the current
+interval (typically zero for extravascular and intravascular bolus and
+nonzero for intravascular infusion)}
 
 \item{manually.selected.points}{Have the input points (\code{conc} and
 \code{time}) been manually selected?  The impact of setting this to
@@ -69,7 +78,9 @@ included if not given as an input)}
 \item{r.squared}{coefficient of determination}
 \item{adj.r.squared}{adjusted coefficient of determination}
 \item{lambda.z}{elimination rate}
+\item{lambda.z.corrxy}{correlation between time and log-conc half-life points}
 \item{lambda.z.time.first}{first time for half-life calculation}
+\item{lambda.z.time.last}{last time for half-life calculation}
 \item{lambda.z.n.points}{number of points in half-life calculation}
 \item{clast.pred}{Concentration at tlast as predicted by the half-life
 line}

@@ -70,8 +70,11 @@ pk.calc.aucint <- function(conc, time,
   if (auc.type %in% "AUCinf") {
     tlast <- pk.calc.tlast(conc=data$conc, time=data$time)
     clast_obs <- pk.calc.clast.obs(conc=data$conc, time=data$time)
-    if (is.na(clast)) {
-      stop("Please report a bug. clast is NA") # nocov
+    if (is.na(clast) && is.na(lambda.z)) {
+      # clast.pred is NA likely because the half-life was not calculable
+      return(structure(NA_real_, exclude = "clast.pred is NA because the half-life is NA"))
+    } else if (is.na(clast)) {
+      stop("Please report a bug. clast is NA and the half-life is not NA") # nocov
     } else if (clast != clast_obs & interval[2] > tlast) {
       # If using clast.pred, we need to doubly calculate at tlast.
       conc_clast <- clast
@@ -227,8 +230,9 @@ pk.calc.aucint.inf.obs <- function(conc, time, start=NULL, end=NULL, time.dose, 
 #'   AUCinf.pred
 #' @export
 pk.calc.aucint.inf.pred <- function(conc, time, start=NULL, end=NULL, time.dose, lambda.z, clast.pred, ..., options=list()) {
-  if (missing(time.dose))
+  if (missing(time.dose)) {
     time.dose <- NULL
+  }
   pk.calc.aucint(conc=conc, time=time,
                  start=start, end=end,
                  time.dose=time.dose,

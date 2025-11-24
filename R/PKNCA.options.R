@@ -112,13 +112,13 @@
     if (is.list(x)) {
       tfirst_names <- c("first", "last", "middle")
       tmax_names <- c("before.tmax", "after.tmax")
-      
+
       are.names.mixed <- any(names(x) %in% tfirst_names) & any(names(x) %in% tmax_names)
       extra.names <- setdiff(names(x), c(tfirst_names, tmax_names))
       missing.names <- if (any(names(x) %in% tfirst_names)) setdiff(tfirst_names, names(x)) else setdiff(tmax_names, names(x))
       duplicated.names <- names(x)[duplicated(names(x))]
       if (are.names.mixed)
-        stop("When given as a list, prevent mixing arguments of different BLQ strategies. 
+        stop("When given as a list, prevent mixing arguments of different BLQ strategies.
              Either define 'first', 'middle' and 'last' or 'before.tmax' and 'after.tmax'.")
       if (length(extra.names) != 0)
         stop("When given as a list, conc.blq must only have elements named 'first', 'middle' and 'last' or 'before.tmax' and 'after.tmax'.")
@@ -130,6 +130,15 @@
       x <- lapply(x, check.element)
     } else {
       x <- check.element(x)
+    }
+    x
+  },
+  debug = function(x, default = FALSE, description = FALSE) {
+    if (description) {
+      return("Enable PKNCA debugging mode (not for production use)")
+    }
+    if (default) {
+      return(NULL)
     }
     x
   },
@@ -308,7 +317,17 @@
         cmax=c(FALSE, TRUE))
     }
     check.interval.specification(x)
-  })
+  },
+  allow_partial_missing_units = function(x, default = FALSE, description = FALSE) {
+    if (description)
+      return("When using unit assignment and conversions, should some units be allowed to be missing?")
+    if (default) {
+      return(FALSE)
+    }
+    checkmate::assert_logical(x, any.missing = FALSE, len = 1)
+    x
+  }
+)
 
 # Functions controlling and modifying options ####
 
@@ -475,7 +494,8 @@ PKNCA.options.describe <- function(name) {
 #'   digits to round.  If a function, it is expected to return a scalar number
 #'   or character string with the correct results for an input of either a
 #'   scalar or a two-long vector.
-#' @param reset Reset all the summary instructions
+#' @param reset Reset all the summary instructions to no instruction (this is
+#'   not intended for general use)
 #' @returns All current summary settings (invisibly)
 #' @seealso [summary.PKNCAresults()]
 #' @family PKNCA calculation and summary settings
@@ -493,6 +513,7 @@ PKNCA.options.describe <- function(name) {
 PKNCA.set.summary <- function(name, description, point, spread,
                               rounding=list(signif=3), reset=FALSE) {
   if (reset) {
+    warning("`reset = TRUE` is not intended for general use, summary() may not work after resetting summary instructions")
     current <- list()
   } else {
     current <- get("summary", envir=.PKNCAEnv)
