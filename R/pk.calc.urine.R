@@ -78,6 +78,7 @@ add.interval.col("clr.last",
                  unit_type="renal_clearance",
                  pretty_name="Renal clearance (from AUClast)",
                  formalsmap=list(auc="auclast"),
+                 depends = c("ae", "auclast"),
                  desc="The renal clearance calculated using AUClast")
 PKNCA.set.summary(
   name="clr.last",
@@ -91,6 +92,7 @@ add.interval.col("clr.obs",
                  unit_type="renal_clearance",
                  pretty_name="Renal clearance (from AUCinf,obs)",
                  formalsmap=list(auc="aucinf.obs"),
+                 depends = c("ae", "aucinf.obs"),
                  desc="The renal clearance calculated using AUCinf,obs")
 PKNCA.set.summary(
   name="clr.obs",
@@ -104,6 +106,7 @@ add.interval.col("clr.pred",
                  unit_type="renal_clearance",
                  pretty_name="Renal clearance (from AUCinf,pred)",
                  formalsmap=list(auc="aucinf.pred"),
+                 depends = c("ae", "aucinf.pred"),
                  desc="The renal clearance calculated using AUCinf,pred")
 PKNCA.set.summary(
   name="clr.pred",
@@ -131,6 +134,7 @@ add.interval.col("fe",
                  unit_type="amount_dose",
                  pretty_name="Fraction excreted",
                  values=c(FALSE, TRUE),
+                 depends = "ae",
                  desc="The fraction of the dose excreted")
 PKNCA.set.summary(
   name="fe",
