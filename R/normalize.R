@@ -69,7 +69,7 @@ normalize_by_col <- function(object, col, unit, parameters, suffix){
   if (!inherits(object, "PKNCAresults")) {
     stop("The object must be a PKNCAresults object")
   }
-  obj_conc_cols <- names(object$data$conc$data)
+  obj_conc_cols <- names(as.data.frame(as_PKNCAconc(object)))
   if (!col %in% obj_conc_cols) {
     stop("Column ", col, " not found in the PKNCAconc of the PKNCAresults object")
   }
