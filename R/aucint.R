@@ -184,6 +184,16 @@ pk.calc.aucint <- function(conc, time,
       fun_log = aucintegrate_log,
       fun_inf = aucintegrate_inf
     )
+  # Add method details as an attribute
+  method_vec <- character()
+  auc_method <- if (is.null(method)) {
+    PKNCA.options()$auc.method
+  } else {
+    method
+  }
+  method_vec <- c(method_vec, paste0("AUC: ", auc_method))
+  attr(ret, "method") <- method_vec
+
   ret
 }
 

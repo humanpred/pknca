@@ -87,7 +87,10 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
                               conc.na=NULL,
                               first.tmax=NULL,
                               allow.tmax.in.half.life=NULL,
-                              check=TRUE) {
+                              check=TRUE,
+                              impute_method=NA_character_,
+                              include_half.life=NULL,
+                              exclude_half.life=NULL) {
   # Check inputs
   min.hl.points <-
     PKNCA.choose.option(
@@ -134,6 +137,13 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       data <- data[as.numeric(data$time) > max(end.dose, na.rm = TRUE), ]
     }
   }
+  # Build method attribute
+  method_vec <- character()
+  # Imputation method
+  if (!all(is.na(impute_method))) {
+    method_vec <- c(method_vec, paste0("Imputation: ", paste(na.omit(impute_method), collapse = ", ")))
+  }
+
   # Prepare the return values
   ret <- data.frame(
     # Terminal elimination slope
@@ -181,6 +191,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     dfK <- data[as.numeric(data$time) > as.numeric(ret$tmax), ]
   }
   if (manually.selected.points) {
+    method_vec <- c(method_vec, "Lambda Z: Manual selection")
     if (nrow(data) > 0) {
       fit <- fit_half_life(data=data, tlast=ret$tlast, conc_units=conc_units)
       ret[,ret_replacements] <- fit[,ret_replacements]
@@ -271,6 +282,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     ret$tmax <- NULL
   if (!missing(tlast))
     ret$tlast <- NULL
+  attr(ret, "method") <- method_vec
   ret
 }
 

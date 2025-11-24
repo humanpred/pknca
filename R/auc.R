@@ -184,6 +184,16 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
         fun_linear = fun_linear, fun_log = fun_log, fun_inf = fun_inf
       )
   }
+  # Add method details as an attribute
+  method_vec <- character()
+  auc_method <- if (is.null(method)) {
+    PKNCA.options()$auc.method
+  } else {
+    method
+  }
+  method_vec <- c(method_vec, paste0("AUC: ", auc_method))
+  attr(ret, "method") <- method_vec
+
   ret
 }
 
