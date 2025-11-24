@@ -122,3 +122,13 @@ test_that("pk.calc.ertmax", {
     (2 + 2/2)
   )
 })
+
+test_that("generate_missing_messages", {
+  # Ensure that the deparse(substitute()) methods work
+  conc <- NA_real_
+  volume <- NA_real_
+  expect_equal(
+    as.character(generate_missing_messages(conc, volume)),
+    "All conc and volume are missing"
+  )
+})
