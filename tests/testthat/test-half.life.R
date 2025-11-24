@@ -319,6 +319,7 @@ test_that("for an interval with multiple doses lambda.z is calculated for the la
 })
 
 test_that("get_halflife_points method (1: PKNCAdata, 2: PKNCAresults)", {
+  # Standard analysis ----
   o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
   o_nca <- suppressMessages(pk.nca(o_data))
@@ -350,7 +351,40 @@ test_that("get_halflife_points method (1: PKNCAdata, 2: PKNCAresults)", {
       FALSE, FALSE, FALSE, TRUE, TRUE, TRUE)
   )
 
-  # start != 0 (#470)
+  # Other analyses that are dependent on half-life trigger the half-life calculation ----
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, aucinf.obs = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+
+  hl_points1 <- suppressMessages(get_halflife_points(o_data))
+  hl_points2 <- suppressMessages(get_halflife_points(o_nca))
+
+  # Visualize the results
+  # d_all <- Theoph
+  # d_all$hl_points2 <- hl_points2
+  # ggplot(d_all, aes(x = Time, y = conc, colour = hl_points2, groups = Subject)) +
+  #   geom_point() + geom_line()
+  expect_equal(hl_points1, hl_points2)
+  expect_equal(
+    hl_points2,
+    c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE,
+      TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
+      TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
+      FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE,
+      FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE,
+      FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE,
+      FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE,
+      FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE,
+      FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
+      FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE,
+      TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
+      FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
+      FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE,
+      FALSE, FALSE, FALSE, TRUE, TRUE, TRUE)
+  )
+
+
+  # start != 0 (#470) ----
   o_data_nzstart <- PKNCAdata(o_conc, intervals = data.frame(start = 5, end = Inf, half.life = TRUE))
   o_nca_nzstart <- suppressMessages(pk.nca(o_data_nzstart))
 
@@ -362,13 +396,13 @@ test_that("get_halflife_points method (1: PKNCAdata, 2: PKNCAresults)", {
   expect_true(all(is.na(hl_points2_nzstart[Theoph$Time < 5])))
   expect_true(!any(is.na(hl_points2_nzstart[Theoph$Time > 5])))
 
-  # Setup for the remaining tests
+  # Setup for the remaining tests ----
   d_conc <- as.data.frame(Theoph[Theoph$Subject %in% Theoph$Subject[1], ])
   d_conc$incl <- c(FALSE, TRUE, rep(NA, 8), TRUE)
   d_conc$excl_txt <- c(NA, "x", rep(NA, 8), "x")
   d_conc$excl <- c(NA, TRUE, rep(NA, 6), TRUE, FALSE, TRUE)
 
-  # No modification
+  ## No modification/exclusion ----
   o_conc <- PKNCAconc(d_conc, conc~Time|Subject)
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
   o_nca <- suppressMessages(suppressWarnings(pk.nca(o_data)))
@@ -380,7 +414,7 @@ test_that("get_halflife_points method (1: PKNCAdata, 2: PKNCAresults)", {
     c(rep(FALSE, 8), rep(TRUE, 3))
   )
 
-  # Test include_half.life
+  ## Test include_half.life ----
   o_conc <- PKNCAconc(d_conc, conc~Time|Subject, include_half.life = "incl")
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
   o_nca <- suppressMessages(suppressWarnings(pk.nca(o_data)))
@@ -393,7 +427,7 @@ test_that("get_halflife_points method (1: PKNCAdata, 2: PKNCAresults)", {
     c(FALSE, TRUE, rep(FALSE, 8), TRUE)
   )
 
-  # Test exclude
+  ## Test exclude ----
   o_conc <- PKNCAconc(d_conc, conc~Time|Subject, exclude = "excl_txt")
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
   o_nca <- suppressMessages(pk.nca(o_data))
@@ -407,7 +441,7 @@ test_that("get_halflife_points method (1: PKNCAdata, 2: PKNCAresults)", {
     c(FALSE, NA, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, NA)
   )
 
-  # Test exclude_half.life
+  ## Test exclude_half.life ----
   o_conc <- PKNCAconc(d_conc, conc~Time|Subject, exclude_half.life = "excl")
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
   o_nca <- suppressMessages(pk.nca(o_data))
@@ -421,7 +455,7 @@ test_that("get_halflife_points method (1: PKNCAdata, 2: PKNCAresults)", {
     c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, TRUE, FALSE)
   )
 
-  # Multiple, overlapping half-life calculations gives an error
+  ## Multiple, overlapping half-life calculations gives an error ----
   o_conc <- PKNCAconc(d_conc, conc~Time|Subject)
   o_data <-
     PKNCAdata(
@@ -438,7 +472,7 @@ test_that("get_halflife_points method (1: PKNCAdata, 2: PKNCAresults)", {
   expect_error(suppressMessages(get_halflife_points(o_data)), regexp = exp_error)
   expect_error(suppressMessages(get_halflife_points(o_nca)), regexp = exp_error)
 
-  # Half-life points are selected right even if lambda.z.time.last != tlast (#448)
+  ## Half-life points are selected right even if lambda.z.time.last != tlast (#448) ----
   d_conc <- data.frame(
     conc = c(1, 0.5, 0.25, 0.125, 0.07, 0, 0.01),
     time = c(0, 1, 2, 3, 4, 5, 6),
@@ -458,7 +492,7 @@ test_that("get_halflife_points method (1: PKNCAdata, 2: PKNCAresults)", {
     1:6,
     info = "get_halflife_points uses lambda.z.time.last, not tlast"
   )
-  # with exclusion of Tlast
+  ## with exclusion of Tlast ----
   o_conc <- PKNCAconc(d_conc, formula = conc ~ time | subject, exclude_half.life = "exclude_hl")
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
   o_nca <- suppressMessages(pk.nca(o_data))
