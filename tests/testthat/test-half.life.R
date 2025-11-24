@@ -78,6 +78,7 @@ test_that("pk.calc.half.life", {
                           clast.pred=0.12507,
                           half.life=1.000346,
                           span.ratio=2.998962),
+               ignore_attr=TRUE,
                tolerance=0.0001)
   # It only gives tlast or tmax if you don't give them as inputs.
   expect_equal(pk.calc.half.life(conc=c(1, 0.5, 0.25, 0.1251),
@@ -98,6 +99,7 @@ test_that("pk.calc.half.life", {
                           half.life=1.000346,
                           span.ratio=2.998962,
                           tmax=0),
+               ignore_attr=TRUE,
                tolerance=0.0001)
     expect_equal(pk.calc.half.life(conc=c(1, 0.5, 0.25, 0.1251),
                                  time=c(0, 1, 2, 3),
@@ -117,6 +119,7 @@ test_that("pk.calc.half.life", {
                           half.life=1.000346,
                           span.ratio=2.998962,
                           tlast=3),
+               ignore_attr=TRUE,
                tolerance=0.0001)
 
 })
@@ -194,6 +197,7 @@ test_that("half-life manual point selection", {
       tlast = 3L
     )
   attr(excluded_result, "exclude") <- "Negative half-life estimated with manually-selected points"
+  attr(excluded_result, "method") <- "Lambda Z: Manual selection"
   expect_equal(
     pk.calc.half.life(conc = 2^(1:3), time = 1:3, manually.selected.points = TRUE),
     excluded_result
@@ -223,7 +227,8 @@ test_that("two-point half-life succeeds (fix #114)", {
         span.ratio=1,
         tmax=0,
         tlast=1
-      )
+      ),
+      ignore_attr=TRUE
     ),
     class = "pknca_halflife_2points"),
     class = "pknca_adjr2_2points"

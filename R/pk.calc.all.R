@@ -370,6 +370,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   if (nrow(interval) != 1) {
     stop("Please report a bug.  Interval must be a one-row data.frame")
   }
+
   if (!all(is.na(impute_method))) {
     impute_funs <- PKNCA_impute_fun_list(impute_method)
     stopifnot(length(impute_funs) == 1)
@@ -385,6 +386,11 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     }
     conc <- impute_data$conc
     time <- impute_data$time
+    tmp_imp_method <- c(
+      paste0("Imputation: ", paste(na.omit(impute_method), collapse = ", "))
+    )
+  } else {
+    tmp_imp_method <- character()
   }
   # Prepare the return value using SDTM names
   ret <- data.frame(PPTESTCD=NA, PPORRES=NA)[-1,]
@@ -492,6 +498,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           }
         }
       }
+
       # Apply manual inclusion and exclusion
       if (n %in% "half.life") {
         uses_include_hl <- !is.null(include_half.life) && !all(is.na(include_half.life))
@@ -507,6 +514,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           call_args$time <- call_args$time[!exclude_tf]
         }
       }
+
       # Do the calculation
       tmp_result <- do.call(all_intervals[[n]]$FUN, call_args)
       # The handling of the exclude column is documented in the
@@ -524,6 +532,10 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         } else {
           NA_character_
         }
+      # The handling of the method column (PPANMETH)
+      tmp_method <- c(tmp_imp_method, attr(tmp_result, "method"))
+      attr(tmp_result, "method") <- NULL
+
       # If the function returns a data frame, save all the returned values,
       # otherwise, save the value returned.
       if (is.data.frame(tmp_result)) {
@@ -557,6 +569,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         data.frame(
           PPTESTCD=tmp_testcd,
           PPORRES=tmp_result,
+          PPANMETH=paste(tmp_method, collapse=". "),
           exclude=exclude_reason,
           stringsAsFactors=FALSE
         )

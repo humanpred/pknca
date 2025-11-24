@@ -453,6 +453,7 @@ test_that("pk.calc.aucabove", {
           pk.calc.aucabove(conc = d_conc$conc, time = d_conc$time, conc_above = 2),
           pk.calc.aucabove(conc = d_conc$conc, time = d_conc$time, conc_above = 3)
         ),
+      PPANMETH = c("", "", "AUC: lin up/log down", "AUC: lin up/log down"),
       exclude = NA_character_
     )
   )
