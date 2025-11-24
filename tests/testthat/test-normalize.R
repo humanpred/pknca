@@ -52,6 +52,15 @@ test_that("normalize.data.frame errors for duplicate group", {
   )
 })
 
+test_that("normalize.data.frame works for ungrouped data", {
+  df <- data.frame(PPTESTCD = "cmax", PPORRES = c(10, 20), PPORRESU = "ng/mL")
+  norm_table <- data.frame(normalization = 2, unit = "kg")
+  res <- normalize(df, norm_table, parameters = "cmax", suffix = ".wn")
+  expect_equal(res$PPORRES, c(5, 10))
+  expect_equal(res$PPORRESU, c("(ng/mL)/kg", "(ng/mL)/kg"))
+  expect_equal(res$PPTESTCD, c("cmax.wn", "cmax.wn"))
+})
+
 # Create a basic PKNCAresults object for use in tests
 d_conc <- data.frame(
   ID = c(1, 1, 2, 2),
