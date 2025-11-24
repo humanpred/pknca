@@ -268,9 +268,9 @@ PKNCA.set.summary(
 # vector of human-readable messages describing the missingness that matches
 # the style used in the package (used previously in `pk.calc.ae`).
 generate_missing_messages <- function(a, b,
-                                      name_a = "concentrations",
-                                      name_b = "volumes") {
-  
+                    name_a = deparse(substitute(a)),
+                    name_b = deparse(substitute(b))) {
+
   mask_a <- is.na(a)
   mask_b <- is.na(b)
   
