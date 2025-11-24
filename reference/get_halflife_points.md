@@ -12,7 +12,7 @@ get_halflife_points(object)
 
 - object:
 
-  A PKNCAresults object
+  A PKNCAresults or PKNCAdata object
 
 ## Value
 
