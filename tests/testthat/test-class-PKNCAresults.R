@@ -67,12 +67,12 @@ test_that("PKNCAresults generation", {
       PPANMETH = c(
         "AUC: lin up/log down",
         rep("", 4),
-        rep("Lambda Z: Default", 10),
-        "Lambda Z: Default. AUC: lin up/log down",
+        rep("", 10),
+        "AUC: lin up/log down",
         "AUC: lin up/log down",
         rep("", 4),
-        rep("Lambda Z: Default", 10),
-        "Lambda Z: Default. AUC: lin up/log down"
+        rep("", 10),
+        "AUC: lin up/log down"
       ),
       exclude = NA_character_
     )
@@ -98,7 +98,7 @@ test_that("PKNCAresults generation", {
   )
   expect_equal(
     as.data.frame(o_result, out_format="wide"),
-    tidyr::spread(verify.result, key="PPTESTCD", value="PPORRES"),
+    tidyr::spread(verify.result[names(verify.result) != "PPANMETH"], key="PPTESTCD", value="PPORRES"),
     tolerance=0.001,
     info="Conversion of PKNCAresults to a data.frame in wide format (specifying wide format)"
   )

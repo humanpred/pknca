@@ -66,12 +66,12 @@ test_that("pk.nca", {
       PPANMETH = c(
         "AUC: lin up/log down",
         rep("", 4),
-        rep("Lambda Z: Default", 10),
-        "Lambda Z: Default. AUC: lin up/log down",
+        rep("", 10),
+        "AUC: lin up/log down",
         "AUC: lin up/log down",
         rep("", 4),
-        rep("Lambda Z: Default", 10),
-        "Lambda Z: Default. AUC: lin up/log down"
+        rep("", 10),
+        "AUC: lin up/log down"
       ),
       exclude=NA_character_
     )
@@ -807,7 +807,7 @@ test_that("pk.nca produces the PPANMETH column", {
   expect_true("PPANMETH" %in% names(res_excl$result))
   expect_equal(
     unique(res_base$result$PPANMETH[res_base$result$PPTESTCD %in% c("lambda.z", "half.life", "r.squared")]),
-    "Lambda Z: Default"
+    ""
   )
   expect_equal(
     unique(res_incl$result$PPANMETH[res_incl$result$PPTESTCD %in% c("lambda.z", "half.life", "r.squared")]),
@@ -815,7 +815,7 @@ test_that("pk.nca produces the PPANMETH column", {
   )
   expect_equal(
     unique(res_excl$result$PPANMETH[res_excl$result$PPTESTCD %in% c("lambda.z", "half.life", "r.squared")]),
-    "Lambda Z: Manual exclusion"
+    ""
   )
   expect_equal(
     unique(res_base$result$PPANMETH[res_base$result$PPTESTCD %in% c("tmax", "cmax")]),
@@ -857,7 +857,7 @@ test_that("pk.nca produces the PPANMETH column", {
   )
   expect_equal(
     res$result$PPANMETH[res$result$PPTESTCD == "aucinf.pred"],
-    "Imputation: start_conc0. Lambda Z: Manual selection. AUC: lin up/log down"
+    "Imputation: start_conc0. AUC: lin up/log down"
   )
 })
 test_that("Cannot include and exclude half-life points at the same time (#406)", {
