@@ -19,10 +19,18 @@ the dosing including dose amount and route.
 
 * `pk.calc.half.life()` now returns also `lambda.z.corrxy`, the correlation between
   the time and the log-concentration of the lambda z points.
+* `get_halflife_points()` can now be used on PKNCAdata objects to see which points
+  would be used for half-life calculation (#476)
+* New excretion parameters: `volpk` (total urine volume for an interval) and
+  dose-normalized renal clearance parameters: `clr.last.dn`, `clr.obs.dn`,
+  `clr.pred.dn` (#433)
 * `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
   `summary()` (#477)
 
 * `pk.nca` output now includes a `PPANMETH` column describing the analysis methods used for each parameter regarding imputations, AUC and half.life calculations (#457)
+* New post-processing functions to normalize PKNCA result parameters based on any column in PKNCAconc data.frame (`normalize_by_col()`) or by using a custom normalization table (`normalize()`)
+* New excretion rate parameters: `ermax` (Maximum excretion rate), `ertmax` (Midpoint time
+  of maximum excretion rate) and `ertlst` (Time of last excretion rate measurement) (#433)
 
 # PKNCA 0.12.1
 
