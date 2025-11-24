@@ -368,7 +368,6 @@ pknca_units_table_conc_time_amount <- function(concu, timeu, amountu) {
   )
 }
 
-
 pknca_units_table_time_amount <- function(timeu, amountu) {
   if (useless(timeu) || useless(amountu)) {
     time_amount <- NA_character_
@@ -379,6 +378,9 @@ pknca_units_table_time_amount <- function(timeu, amountu) {
     PPORRESU = time_amount,
     PPTESTCD = pknca_find_units_param(unit_type = "amount_time"),
     stringsAsFactors = FALSE
+  )
+}
+
 pknca_units_table_conc_time_amount_dose <- function(concu, timeu, amountu, doseu) {
   if (useless(concu) || useless(timeu) || useless(amountu) || useless(doseu)) {
     renal_clearance_dosenorm <- NA_character_
