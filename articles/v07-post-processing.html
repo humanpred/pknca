@@ -331,6 +331,100 @@ the example below.</p>
 </div>
 </div>
 <div class="section level2">
+<h2 id="normalizing-results">Normalizing Results<a class="anchor" aria-label="anchor" href="#normalizing-results"></a>
+</h2>
+<p>PKNCA provides functions to normalize calculated parameters by
+columns in your data or by using normalization tables.</p>
+<div class="section level3">
+<h3 id="example-normalize-by-a-column-in-the-concentration-data">Example: Normalize by a column in the concentration data<a class="anchor" aria-label="anchor" href="#example-normalize-by-a-column-in-the-concentration-data"></a>
+</h3>
+<p>The function <code><a href="../reference/normalize_by_col.html">normalize_by_col()</a></code> allows you to normalize
+parameters by any column present in the concentration data of your
+PKNCAresults object. You can also specify the unit as another column in
+the concentration data or as a constant value.</p>
+<p>Suppose your concentration data includes a column for body weight,
+and you want to normalize Cmax by each subject’s weight:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Add a weight column to the concentration data</span></span>
+<span><span class="va">d_conc2</span> <span class="op">&lt;-</span> <span class="va">d_conc</span></span>
+<span><span class="va">d_conc2</span><span class="op">$</span><span class="va">weight</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fl">60</span><span class="op">:</span><span class="fl">71</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">12</span><span class="op">)</span><span class="op">[</span><span class="va">d_conc2</span><span class="op">$</span><span class="va">Subject</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">d_conc2</span><span class="op">$</span><span class="va">weight_unit</span> <span class="op">&lt;-</span> <span class="st">"kg"</span></span>
+<span></span>
+<span><span class="co"># Recreate the PKNCA objects with the new column</span></span>
+<span><span class="va">conc_obj2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span></span>
+<span>  <span class="va">d_conc2</span>,</span>
+<span>  <span class="va">conc</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">dose_obj2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span></span>
+<span>  <span class="va">d_dose</span>,</span>
+<span>  <span class="va">Dose</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">data_obj2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">conc_obj2</span>, <span class="va">dose_obj2</span><span class="op">)</span></span>
+<span><span class="va">results_obj2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Normalize Cmax by the 'weight' column</span></span>
+<span><span class="va">results_norm_by_col</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/normalize_by_col.html">normalize_by_col</a></span><span class="op">(</span></span>
+<span>  <span class="va">results_obj2</span>,</span>
+<span>  col <span class="op">=</span> <span class="st">"weight"</span>,</span>
+<span>  unit <span class="op">=</span> <span class="st">"weigth_unit"</span>,</span>
+<span>  parameters <span class="op">=</span> <span class="st">"cmax"</span>,</span>
+<span>  suffix <span class="op">=</span> <span class="st">".wn"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Show the normalized results appended</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_norm_by_col</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">PPTESTCD</span> <span class="op">==</span> <span class="st">"cmax.wn"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 12 × 6</span></span></span>
+<span><span class="co">##    Subject start   end PPTESTCD PPORRES exclude</span></span>
+<span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 1</span>       1     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.175  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 2</span>       2     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.137  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 3</span>       3     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.132  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 4</span>       4     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.137  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 5</span>       5     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.178  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 6</span>       6     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.099<span style="text-decoration: underline;">1</span> <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       7     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.107  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       8     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.113  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       9     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.133  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span>      10     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.148  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">11</span>      11     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.114  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">12</span>      12     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.137  <span style="color: #BB0000;">NA</span></span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="doing-custom-normalizations">Doing custom normalizations<a class="anchor" aria-label="anchor" href="#doing-custom-normalizations"></a>
+</h3>
+<p>If your data does not have the normalization column explicitly, you
+can perform the same normalization using the <code><a href="../reference/normalize.html">normalize()</a></code>
+function by providing a normalization table. Below, we use the same
+subject weights as above to normalize Cmax, but without adding the
+weight column to the concentration data:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Use the same subject_weights as above</span></span>
+<span><span class="va">norm_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Subject <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">d_conc</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span>, normalization <span class="op">=</span> <span class="fl">60</span><span class="op">:</span><span class="fl">71</span>, unit <span class="op">=</span> <span class="st">"kg"</span><span class="op">)</span></span>
+<span><span class="va">results_norm_custom</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/normalize.html">normalize</a></span><span class="op">(</span></span>
+<span>  <span class="va">results_obj</span>,</span>
+<span>  norm_table <span class="op">=</span> <span class="va">norm_table</span>,</span>
+<span>  parameters <span class="op">=</span> <span class="st">"cmax"</span>,</span>
+<span>  suffix <span class="op">=</span> <span class="st">".wn"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_norm_custom</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">PPTESTCD</span> <span class="op">==</span> <span class="st">"cmax.wn"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 12 × 6</span></span></span>
+<span><span class="co">##    Subject start   end PPTESTCD PPORRES exclude</span></span>
+<span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 1</span>       1     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.175  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 2</span>       2     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.137  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 3</span>       3     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.132  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 4</span>       4     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.137  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 5</span>       5     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.178  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 6</span>       6     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.099<span style="text-decoration: underline;">1</span> <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       7     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.107  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       8     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.113  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       9     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.133  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span>      10     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.148  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">11</span>      11     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.114  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">12</span>      12     0   <span style="color: #BB0000;">Inf</span> cmax.wn   0.137  <span style="color: #BB0000;">NA</span></span></span></code></pre>
+</div>
+</div>
+<div class="section level2">
 <h2 id="extracting-results">Extracting Results<a class="anchor" aria-label="anchor" href="#extracting-results"></a>
 </h2>
 <div class="section level3">
@@ -352,7 +446,7 @@ shown in the summary.</p>
 <p>The summary will have one column for each grouping variable other
 than the subject grouping variable; one column each for the start and
 end time; and one column per parameter calculated.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax   half.life aucinf.obs</span></span>
 <span><span class="co">##      0  24 12 74.6 [24.3]           .                  .           .          .</span></span>
@@ -362,7 +456,7 @@ end time; and one column per parameter calculated.</p>
 <p>When values are excluded as described above, the excluded values are
 not included in the summary (note that half.life and aucinf.obs
 differ).</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_excl_span</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax         half.life</span></span>
 <span><span class="co">##      0  24 12 74.6 [24.3]           .                  .                 .</span></span>
@@ -378,7 +472,7 @@ differ).</p>
 </h3>
 <p>A listing of all calculated values is available using
 <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 20 × 6</span></span></span>
@@ -405,7 +499,7 @@ differ).</p>
 <span><span class="co">## <span style="color: #BCBCBC;">19</span>       2     0   <span style="color: #BB0000;">Inf</span> tmax                  1.92   <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">20</span>       2     0   <span style="color: #BB0000;">Inf</span> tlast                24.3    <span style="color: #BB0000;">NA</span></span></span></code></pre>
 <p>Excluded values remain in the listing.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_excl_span</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 20 × 6</span></span></span>

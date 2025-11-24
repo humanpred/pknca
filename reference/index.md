@@ -299,6 +299,12 @@
   [`mutate(`*`<PKNCAdose>`*`)`](http://humanpred.github.io/pknca/reference/mutate.PKNCAresults.md)
   : dplyr mutate-based modification for PKNCA
 
+- [`normalize()`](http://humanpred.github.io/pknca/reference/normalize.md)
+  : Normalize parameters in a PKNCAresults object or data.frame
+
+- [`normalize_by_col()`](http://humanpred.github.io/pknca/reference/normalize_by_col.md)
+  : Internal function to normalize by a specified column
+
 - [`normalize_exclude()`](http://humanpred.github.io/pknca/reference/normalize_exclude.md)
   : Normalize the exclude column by setting blanks to NA
 

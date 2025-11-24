@@ -97,6 +97,8 @@
 <url><loc>http://humanpred.github.io/pknca/reference/is_sparse_pk.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/model.frame.PKNCAconc.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/mutate.PKNCAresults.html</loc></url>
+<url><loc>http://humanpred.github.io/pknca/reference/normalize.html</loc></url>
+<url><loc>http://humanpred.github.io/pknca/reference/normalize_by_col.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/normalize_exclude.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/parse_formula_to_cols.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/pk.business.html</loc></url>

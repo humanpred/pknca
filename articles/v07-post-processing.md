@@ -258,6 +258,106 @@ results_excl_multi %>%
     ## 15       1     0   Inf span.ratio            1.07   span.ratio < 2              
     ## 16       1     0   Inf aucinf.obs          215.     span.ratio < 2
 
+## Normalizing Results
+
+PKNCA provides functions to normalize calculated parameters by columns
+in your data or by using normalization tables.
+
+### Example: Normalize by a column in the concentration data
+
+The function
+[`normalize_by_col()`](http://humanpred.github.io/pknca/reference/normalize_by_col.md)
+allows you to normalize parameters by any column present in the
+concentration data of your PKNCAresults object. You can also specify the
+unit as another column in the concentration data or as a constant value.
+
+Suppose your concentration data includes a column for body weight, and
+you want to normalize Cmax by each subject’s weight:
+
+``` r
+# Add a weight column to the concentration data
+d_conc2 <- d_conc
+d_conc2$weight <- unname(setNames(60:71, 1:12)[d_conc2$Subject])
+d_conc2$weight_unit <- "kg"
+
+# Recreate the PKNCA objects with the new column
+conc_obj2 <- PKNCAconc(
+  d_conc2,
+  conc~Time|Subject
+)
+dose_obj2 <- PKNCAdose(
+  d_dose,
+  Dose~Time|Subject
+)
+data_obj2 <- PKNCAdata(conc_obj2, dose_obj2)
+results_obj2 <- pk.nca(data_obj2)
+
+# Normalize Cmax by the 'weight' column
+results_norm_by_col <- normalize_by_col(
+  results_obj2,
+  col = "weight",
+  unit = "weigth_unit",
+  parameters = "cmax",
+  suffix = ".wn"
+)
+
+# Show the normalized results appended
+as.data.frame(results_norm_by_col) %>% filter(PPTESTCD == "cmax.wn")
+```
+
+    ## # A tibble: 12 × 6
+    ##    Subject start   end PPTESTCD PPORRES exclude
+    ##      <dbl> <dbl> <dbl> <chr>      <dbl> <chr>  
+    ##  1       1     0   Inf cmax.wn   0.175  NA     
+    ##  2       2     0   Inf cmax.wn   0.137  NA     
+    ##  3       3     0   Inf cmax.wn   0.132  NA     
+    ##  4       4     0   Inf cmax.wn   0.137  NA     
+    ##  5       5     0   Inf cmax.wn   0.178  NA     
+    ##  6       6     0   Inf cmax.wn   0.0991 NA     
+    ##  7       7     0   Inf cmax.wn   0.107  NA     
+    ##  8       8     0   Inf cmax.wn   0.113  NA     
+    ##  9       9     0   Inf cmax.wn   0.133  NA     
+    ## 10      10     0   Inf cmax.wn   0.148  NA     
+    ## 11      11     0   Inf cmax.wn   0.114  NA     
+    ## 12      12     0   Inf cmax.wn   0.137  NA
+
+### Doing custom normalizations
+
+If your data does not have the normalization column explicitly, you can
+perform the same normalization using the
+[`normalize()`](http://humanpred.github.io/pknca/reference/normalize.md)
+function by providing a normalization table. Below, we use the same
+subject weights as above to normalize Cmax, but without adding the
+weight column to the concentration data:
+
+``` r
+# Use the same subject_weights as above
+norm_table <- data.frame(Subject = unique(d_conc$Subject), normalization = 60:71, unit = "kg")
+results_norm_custom <- normalize(
+  results_obj,
+  norm_table = norm_table,
+  parameters = "cmax",
+  suffix = ".wn"
+)
+as.data.frame(results_norm_custom) %>% filter(PPTESTCD == "cmax.wn")
+```
+
+    ## # A tibble: 12 × 6
+    ##    Subject start   end PPTESTCD PPORRES exclude
+    ##      <dbl> <dbl> <dbl> <chr>      <dbl> <chr>  
+    ##  1       1     0   Inf cmax.wn   0.175  NA     
+    ##  2       2     0   Inf cmax.wn   0.137  NA     
+    ##  3       3     0   Inf cmax.wn   0.132  NA     
+    ##  4       4     0   Inf cmax.wn   0.137  NA     
+    ##  5       5     0   Inf cmax.wn   0.178  NA     
+    ##  6       6     0   Inf cmax.wn   0.0991 NA     
+    ##  7       7     0   Inf cmax.wn   0.107  NA     
+    ##  8       8     0   Inf cmax.wn   0.113  NA     
+    ##  9       9     0   Inf cmax.wn   0.133  NA     
+    ## 10      10     0   Inf cmax.wn   0.148  NA     
+    ## 11      11     0   Inf cmax.wn   0.114  NA     
+    ## 12      12     0   Inf cmax.wn   0.137  NA
+
 ## Extracting Results
 
 ### Summary Results
