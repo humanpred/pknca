@@ -27,6 +27,8 @@ the dosing including dose amount and route.
 * `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
   `summary()` (#477)
 
+* New post-processing functions to normalize PKNCA result parameters based on any column in PKNCAconc data.frame (`normalize_by_col()`) or by using a custom normalization table (`normalize()`)
+
 # PKNCA 0.12.1
 
 ## Minor changes (unlikely to affect PKNCA use)
