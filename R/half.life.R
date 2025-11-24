@@ -87,10 +87,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
                               conc.na=NULL,
                               first.tmax=NULL,
                               allow.tmax.in.half.life=NULL,
-                              check=TRUE,
-                              impute_method=NA_character_,
-                              include_half.life=NULL,
-                              exclude_half.life=NULL) {
+                              check=TRUE) {
   # Check inputs
   min.hl.points <-
     PKNCA.choose.option(
@@ -137,14 +134,6 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       data <- data[as.numeric(data$time) > max(end.dose, na.rm = TRUE), ]
     }
   }
-  # Build method attribute
-  method_vec <- character()
-  # Imputation method
-  if (!all(is.na(impute_method))) {
-    method_vec <- c(method_vec, paste0(
-      "Imputation: ", paste(stats::na.omit(impute_method), collapse = ", ")
-    ))
-  }
 
   # Prepare the return values
   ret <- data.frame(
@@ -168,6 +157,11 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     half.life=NA,
     # T1/2 span ratio
     span.ratio=NA)
+
+  
+  # Build method attribute
+  attr(ret, "method") <- character()
+  
   ret_replacements <-
     c("lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy", "lambda.z.time.first",
       "lambda.z.time.last", "lambda.z.n.points", "clast.pred", "half.life", "span.ratio")
@@ -193,7 +187,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     dfK <- data[as.numeric(data$time) > as.numeric(ret$tmax), ]
   }
   if (manually.selected.points) {
-    method_vec <- c(method_vec, "Lambda Z: Manual selection")
+    attr(ret, "method") <- c(attr(ret, "method"), "Lambda Z: Manual selection")
     if (nrow(data) > 0) {
       fit <- fit_half_life(data=data, tlast=ret$tlast, conc_units=conc_units)
       ret[,ret_replacements] <- fit[,ret_replacements]
@@ -284,7 +278,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     ret$tmax <- NULL
   if (!missing(tlast))
     ret$tlast <- NULL
-  attr(ret, "method") <- method_vec
+
   ret
 }
 
