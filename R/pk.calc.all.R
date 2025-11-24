@@ -534,6 +534,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         }
       # The handling of the method column (PPANMETH)
       tmp_method <- c(tmp_imp_method, attr(tmp_result, "method"))
+      attr(tmp_result, "method") <- NULL
 
       # If the function returns a data frame, save all the returned values,
       # otherwise, save the value returned.
