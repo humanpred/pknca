@@ -125,7 +125,15 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
   # in duplicate checking.
   duplicate_check(object = ret, data_type = "dosing")
 
-  mask.indep <- is.na(getIndepVar.PKNCAdose(ret))
+  # Do some general checking of the dose and time data.
+  # Disconsider points that will be excluded.
+  if (!is.null(exclude)) {
+    is_excluded <- !is.na(data[[exclude]])
+  } else {
+    is_excluded <- rep(FALSE, nrow(data))
+  }
+  # Check for missing independent variable (time) in non-excluded rows
+  mask.indep <- is.na(getIndepVar.PKNCAdose(ret)) & !is_excluded
   if (any(mask.indep) & !all(mask.indep)) {
     stop("Some but not all values are missing for the independent variable, please see the help for PKNCAdose for how to specify the formula and confirm that your data has dose times for all doses.")
   }
@@ -207,17 +215,17 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
   if (missing(dose)) {
     dose <- object$columns$dose
   }
-  if (missing(duration) & missing(rate)) {
+  if (missing(duration) && missing(rate)) {
     object <- setAttributeColumn(object=object, attr_name="duration", default_value=0,
                                  message_if_default="Assuming instant dosing (duration=0)")
 
-  } else if (!missing(duration) & !missing(rate)) {
+  } else if (!missing(duration) && !missing(rate)) {
     stop("Both duration and rate cannot be given at the same time")
     # TODO: A consistency check could be done, but that would get into
     # requiring near-equal checks for floating point error.
   } else if (!missing(duration)) {
     object <- setAttributeColumn(object=object, attr_name="duration", col_or_value=duration)
-  } else if (!missing(rate) & !missing(dose) && !is.na(dose)) {
+  } else if (!missing(rate) && !missing(dose) && !is.na(dose)) {
     tmprate <- getColumnValueOrNot(object$data, rate, "rate")
     tmpdose <- getColumnValueOrNot(object$data, dose, "dose")
     duration <- tmpdose$data[[tmpdose$name]]/tmprate$data[[tmprate$name]]

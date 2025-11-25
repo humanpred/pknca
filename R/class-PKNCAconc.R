@@ -100,14 +100,7 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   if (length(parsed_form$time) != 1) {
     stop("The right hand side of the formula (excluding groups) must have exactly one variable")
   }
-  # Do some general checking of the concentration and time data to give an early
-  # error if the data are not correct.  Do not check monotonic.time because the
-  # data may contain information for more than one subject.
-  assert_conc_time(
-    conc = data[[parsed_form$concentration]],
-    time = data[[parsed_form$time]],
-    sorted_time = FALSE
-  )
+
   # Assign the subject
   if (missing(subject)) {
     subject <- parsed_form$groups$group_vars[length(parsed_form$groups$group_vars)]
@@ -139,6 +132,22 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   }
   class(ret) <- c("PKNCAconc", class(ret))
   ret <- setExcludeColumn(ret, exclude = exclude, dataname = getDataName.PKNCAconc(ret))
+
+  # Do some general checking of the concentration and time data.
+  # Do not check monotonic.time because the data may contain information
+  # for more than one subject. Disconsider points that will be excluded.
+  if (!is.null(exclude)) {
+    is_excluded <- !is.na(data[[exclude]])
+  } else {
+    is_excluded <- rep(FALSE, nrow(data))
+  }
+
+  assert_conc_time(
+    conc = data[[parsed_form$concentration]][!is_excluded],
+    time = data[[parsed_form$time]][!is_excluded],
+    sorted_time = FALSE
+  )
+
   # Values must be unique (one value per measurement), check after the exclusion
   # column has been added to the object so that exclusions can be accounted for
   # in duplicate checking.
