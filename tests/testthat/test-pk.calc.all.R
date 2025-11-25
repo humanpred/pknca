@@ -46,21 +46,21 @@ test_that("pk.nca", {
   verify.result <-
     tibble::tibble(
       treatment="Trt 1",
-      ID=rep(c(1, 2), each=15),
+      ID=rep(c(1, 2), each=16),
       start=0,
-      end=c(24, rep(Inf, 14),
-            24, rep(Inf, 14)),
+      end=c(24, rep(Inf, 15),
+            24, rep(Inf, 15)),
       PPTESTCD=rep(c("auclast", "cmax", "tmax", "tlast", "clast.obs",
-                     "lambda.z", "r.squared", "adj.r.squared",
+                     "lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy",
                      "lambda.z.time.first", "lambda.z.time.last",
                      "lambda.z.n.points", "clast.pred", "half.life",
                      "span.ratio", "aucinf.obs"),
                    times=2),
       PPORRES=c(13.54, 0.9998, 4.000, 24.00, 0.3441,
-                0.04297, 0.9072, 0.9021, 5.000, 24.00,
+                0.04297, 0.9072, 0.9021, -0.952, 5.000, 24.00,
                 20.00, 0.3356, 16.13, 1.178,
                 21.55, 14.03, 0.9410, 2.000,
-                24.00, 0.3148, 0.05689, 0.9000, 0.8944,
+                24.00, 0.3148, 0.05689, 0.9000, 0.8944, -0.952,
                 5.000, 24.00, 20.00, 0.3011, 12.18,
                 1.560, 19.56),
       exclude=NA_character_
@@ -697,7 +697,7 @@ test_that("aucint works within pk.calc.all for all zero concentrations with inte
   ))
   expect_equal(
     as.data.frame(o_nca)$PPORRES,
-    c(rep(NA_real_, 11), 0)
+    c(rep(NA_real_, 12), 0)
   )
 })
 
@@ -746,8 +746,6 @@ test_that("dose is calculable", {
 
 test_that("do not give rbind error when interval columns have attributes (#381)", {
   o_conc <- PKNCAconc(data = data.frame(conc = 1, time = 0), conc~time)
-  d_interval <- data.frame(start = 0, end = Inf, cmax = TRUE)
-
   d_interval <- data.frame(start = 0, end = Inf, cmax = TRUE, tmax = TRUE)
   attr(d_interval$start, "label") <- "start"
   o_data <- PKNCAdata(o_conc, intervals = d_interval)
@@ -756,5 +754,15 @@ test_that("do not give rbind error when interval columns have attributes (#381)"
   expect_equal(
     attributes(as.data.frame(o_nca)$start),
     list(label = "start")
+  )
+})
+
+test_that("Cannot include and exclude half-life points at the same time (#406)", {
+  o_conc <- PKNCAconc(data = data.frame(conc = 1, time = 0, inex = TRUE), conc~time, include_half.life = "inex", exclude_half.life = "inex")
+  d_interval <- data.frame(start = 0, end = Inf, half.life = TRUE)
+  o_data <- PKNCAdata(o_conc, intervals = d_interval)
+  expect_error(
+    suppressMessages(pk.nca(o_data)),
+    regexp = "Cannot both include and exclude half-life points for the same interval"
   )
 })

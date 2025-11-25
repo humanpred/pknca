@@ -133,6 +133,15 @@
     }
     x
   },
+  debug = function(x, default = FALSE, description = FALSE) {
+    if (description) {
+      return("Enable PKNCA debugging mode (not for production use)")
+    }
+    if (default) {
+      return(NULL)
+    }
+    x
+  },
   first.tmax=function(x, default=FALSE, description=FALSE) {
     if (description)
       return(paste(
@@ -485,7 +494,8 @@ PKNCA.options.describe <- function(name) {
 #'   digits to round.  If a function, it is expected to return a scalar number
 #'   or character string with the correct results for an input of either a
 #'   scalar or a two-long vector.
-#' @param reset Reset all the summary instructions
+#' @param reset Reset all the summary instructions to no instruction (this is
+#'   not intended for general use)
 #' @returns All current summary settings (invisibly)
 #' @seealso [summary.PKNCAresults()]
 #' @family PKNCA calculation and summary settings
@@ -503,6 +513,7 @@ PKNCA.options.describe <- function(name) {
 PKNCA.set.summary <- function(name, description, point, spread,
                               rounding=list(signif=3), reset=FALSE) {
   if (reset) {
+    warning("`reset = TRUE` is not intended for general use, summary() may not work after resetting summary instructions")
     current <- list()
   } else {
     current <- get("summary", envir=.PKNCAEnv)

@@ -4,12 +4,54 @@ will continue until then.  These will be especially noticeable around
 the inclusion of IV NCA parameters and additional specifications of
 the dosing including dose amount and route.
 
-# PKNCA (development version)
+# Development version
+
+## Breaking changes
+
+* Both include and excluding half-life points may not be done for the same interval (#406)
+
+## Bugs fixed
+
+* `get_halflife_points()` now correctly accounts for start time != 0 and sets
+  times outside of any interval to `NA` (#470)
+
+## New features
+
+* `pk.calc.half.life()` now returns also `lambda.z.corrxy`, the correlation between
+  the time and the log-concentration of the lambda z points.
+* `get_halflife_points()` can now be used on PKNCAdata objects to see which points
+  would be used for half-life calculation (#476)
+* New excretion parameters: `volpk` (total urine volume for an interval) and
+  dose-normalized renal clearance parameters: `clr.last.dn`, `clr.obs.dn`,
+  `clr.pred.dn` (#433)
+* `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
+  `summary()` (#477)
+
+* New post-processing functions to normalize PKNCA result parameters based on any column in PKNCAconc data.frame (`normalize_by_col()`) or by using a custom normalization table (`normalize()`)
+* New excretion rate parameters: `ermax` (Maximum excretion rate), `ertmax` (Midpoint time
+  of maximum excretion rate) and `ertlst` (Time of last excretion rate measurement) (#433)
+
+# PKNCA 0.12.1
 
 ## Minor changes (unlikely to affect PKNCA use)
 
 * Units for fraction excretion parameter (fe) are now accurately captured as
   amount/dose units rather than "fraction" (#426)
+* `get_halflife_points` will ignore points after `lambda.z.time.last`, instead
+  of `tlast` (#448)
+* `lambda.z` calculations will now only consider time points that occur after
+  the end of the latest dose administration (#139)
+* `aucint.inf.pred` is `NA` when half-life is not estimable (#450)
+
+## New features
+
+* PKNCA now has a debugging mode to support troubleshooting; it is not intended
+  for production use. Debugging mode can be enabled using
+  `PKNCA.options(debug = TRUE)`.
+* It is now possible to update an existing analysis when data changes but other
+  NCA settings stay the same (fix #417)
+* New assertion functions were created to ensure that an object is the correct
+  type (fix #328)
 
 # PKNCA 0.12.0
 

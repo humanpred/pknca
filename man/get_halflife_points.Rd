@@ -7,14 +7,15 @@
 get_halflife_points(object)
 }
 \arguments{
-\item{object}{A PKNCAresults object}
+\item{object}{A PKNCAresults or PKNCAdata object}
 }
 \value{
-A logical vector with \code{TRUE} if the point was used for half-life,
-\code{FALSE} if it was not used for half-life but the half-life was calculated
-for the interval, and \code{NA} if half-life was not calculated for the
-interval. If a row is excluded from all calculations, it is set to \code{NA} as
-well.
+A logical vector with \code{TRUE} if the point was used for half-life
+(including concentrations below the limit of quantification within the
+range of times for calculation), \code{FALSE} if it was not used for half-life
+but the half-life was calculated for the interval, and \code{NA} if half-life
+was not calculated for the interval. If a row is excluded from all
+calculations, it is set to \code{NA} as well.
 }
 \description{
 Determine which concentrations were used for half-life calculation

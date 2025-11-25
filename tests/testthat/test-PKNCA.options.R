@@ -64,6 +64,7 @@ test_that("PKNCA.options", {
         middle = "drop",
         last = "keep"
       ),
+      debug = NULL,
       first.tmax = TRUE,
       allow.tmax.in.half.life = FALSE,
       keep_interval_cols = NULL,
