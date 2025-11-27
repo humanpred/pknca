@@ -708,8 +708,8 @@ add.interval.col("cl.iv.obs",
                  unit_type = "clearance",
                  pretty_name = "CL (for IV dosing,  based on AUCinf,obs)",
                  desc = "Clearance for intravenous dosing calculated with AUCinf,obs",
-                 formalsmap = list(auc = "auciv.obs"),
-                 depends = "auciv.obs")
+                 formalsmap = list(auc = "aucivinf.obs"),
+                 depends = "aucivinf.obs")
 
 add.interval.col("cl.iv.pred",
                  FUN = "pk.calc.cl",
@@ -717,8 +717,8 @@ add.interval.col("cl.iv.pred",
                  unit_type = "clearance",
                  pretty_name = "CL (for IV dosing,  based on AUCinf,pred)",
                  desc = "Clearance for intravenous dosing calculated with AUCinf,pred",
-                 formalsmap = list(auc = "auciv.pred"),
-                 depends = "auciv.pred")
+                 formalsmap = list(auc = "aucivinf.pred"),
+                 depends = "aucivinf.pred")
 
 add.interval.col("cl.ivint.all",
                  FUN = "pk.calc.cl",
