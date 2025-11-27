@@ -1079,8 +1079,8 @@ add.interval.col("vz.all",
                  unit_type = "volume",
                  pretty_name = "Vz (based on AUCall)",
                  desc = "Terminal volume of distribution calculated with AUCall-based CL",
-                 formalsmap = list(cl = "cl.all", kel = "kel.all"),
-                 depends = c("cl.all", "kel.all"))
+                 formalsmap = list(cl = "cl.all"),
+                 depends = c("cl.all", "lambda.z"))
 
 add.interval.col("vz.int.all",
                  FUN = "pk.calc.vz",
@@ -1088,8 +1088,8 @@ add.interval.col("vz.int.all",
                  unit_type = "volume",
                  pretty_name = "Vz (based on AUCint.all)",
                  desc = "Terminal volume of distribution using interval AUCint.all",
-                 formalsmap = list(cl = "cl.int.all", kel = "kel.int.all"),
-                 depends = c("cl.int.all", "kel.int.all"))
+                 formalsmap = list(cl = "cl.int.all"),
+                 depends = c("cl.int.all", "lambda.z"))
 
 add.interval.col("vz.int.inf.obs",
                  FUN = "pk.calc.vz",
@@ -1097,8 +1097,8 @@ add.interval.col("vz.int.inf.obs",
                  unit_type = "volume",
                  pretty_name = "Vz (based on AUCint.inf.obs)",
                  desc = "Terminal volume of distribution using interval AUCint.inf.obs",
-                 formalsmap = list(cl = "cl.int.inf.obs", kel = "kel.int.inf.obs"),
-                 depends = c("cl.int.inf.obs", "kel.int.inf.obs"))
+                 formalsmap = list(cl = "cl.int.inf.obs"),
+                 depends = c("cl.int.inf.obs", "lambda.z"))
 
 add.interval.col("vz.int.inf.pred",
                  FUN = "pk.calc.vz",
@@ -1106,8 +1106,8 @@ add.interval.col("vz.int.inf.pred",
                  unit_type = "volume",
                  pretty_name = "Vz (based on AUCint.inf.pred)",
                  desc = "Terminal volume of distribution using interval AUCint.inf.pred",
-                 formalsmap = list(cl = "cl.int.inf.pred", kel = "kel.int.inf.pred"),
-                 depends = c("cl.int.inf.pred", "kel.int.inf.pred"))
+                 formalsmap = list(cl = "cl.int.inf.pred"),
+                 depends = c("cl.int.inf.pred", "lambda.z"))
 
 add.interval.col("vz.int.last",
                  FUN = "pk.calc.vz",
@@ -1115,8 +1115,8 @@ add.interval.col("vz.int.last",
                  unit_type = "volume",
                  pretty_name = "Vz (based on AUCint.last)",
                  desc = "Terminal volume of distribution using interval AUCint.last",
-                 formalsmap = list(cl = "cl.int.last", kel = "kel.int.last"),
-                 depends = c("cl.int.last", "kel.int.last"))
+                 formalsmap = list(cl = "cl.int.last"),
+                 depends = c("cl.int.last", "lambda.z"))
 
 add.interval.col("vz.iv.all",
                  FUN = "pk.calc.vz",
@@ -1124,8 +1124,8 @@ add.interval.col("vz.iv.all",
                  unit_type = "volume",
                  pretty_name = "Vz (for IV dosing,  based on AUCall)",
                  desc = "Terminal volume of distribution for IV dosing using AUCall",
-                 formalsmap = list(cl = "cl.iv.all", kel = "kel.iv.all"),
-                 depends = c("cl.iv.all", "kel.iv.all"))
+                 formalsmap = list(cl = "cl.iv.all"),
+                 depends = c("cl.iv.all", "lambda.z"))
 
 add.interval.col("vz.iv.last",
                  FUN = "pk.calc.vz",
@@ -1133,8 +1133,8 @@ add.interval.col("vz.iv.last",
                  unit_type = "volume",
                  pretty_name = "Vz (for IV dosing,  based on AUClast)",
                  desc = "Terminal volume of distribution for IV dosing using AUClast",
-                 formalsmap = list(cl = "cl.iv.last", kel = "kel.iv.last"),
-                 depends = c("cl.iv.last", "kel.iv.last"))
+                 formalsmap = list(cl = "cl.iv.last"),
+                 depends = c("cl.iv.last", "lambda.z"))
 
 add.interval.col("vz.iv.obs",
                  FUN = "pk.calc.vz",
@@ -1142,7 +1142,7 @@ add.interval.col("vz.iv.obs",
                  unit_type = "volume",
                  pretty_name = "Vz (for IV dosing,  based on AUCinf,obs)",
                  desc = "Terminal volume of distribution for IV dosing using observed AUCinf",
-                 formalsmap = list(cl = "cl.iv.obs", kel = "lambda.z"),
+                 formalsmap = list(cl = "cl.iv.obs"),
                  depends = c("cl.iv.obs", "lambda.z"))
 
 add.interval.col("vz.iv.pred",
@@ -1151,7 +1151,7 @@ add.interval.col("vz.iv.pred",
                  unit_type = "volume",
                  pretty_name = "Vz (for IV dosing,  based on AUCinf,pred)",
                  desc = "Terminal volume of distribution for IV dosing using predicted AUCinf",
-                 formalsmap = list(cl = "cl.iv.pred", kel = "lambda.z"),
+                 formalsmap = list(cl = "cl.iv.pred"),
                  depends = c("cl.iv.pred", "lambda.z"))
 
 add.interval.col("vz.ivint.all",
@@ -1160,8 +1160,8 @@ add.interval.col("vz.ivint.all",
                  unit_type = "volume",
                  pretty_name = "Vz (IV dose interval, based on AUCint.all)",
                  desc = "Terminal volume of distribution for IV interval using AUCint.all",
-                 formalsmap = list(cl = "cl.ivint.all", kel = "kel.ivint.all"),
-                 depends = c("cl.ivint.all", "kel.ivint.all"))
+                 formalsmap = list(cl = "cl.ivint.all"),
+                 depends = c("cl.ivint.all", "lambda.z"))
 
 add.interval.col("vz.ivint.last",
                  FUN = "pk.calc.vz",
@@ -1169,8 +1169,8 @@ add.interval.col("vz.ivint.last",
                  unit_type = "volume",
                  pretty_name = "Vz (IV dose interval, based on AUCint.last)",
                  desc = "Terminal volume of distribution for IV interval using AUCint.last",
-                 formalsmap = list(cl = "cl.ivint.last", kel = "kel.ivint.last"),
-                 depends = c("cl.ivint.last", "kel.ivint.last"))
+                 formalsmap = list(cl = "cl.ivint.last"),
+                 depends = c("cl.ivint.last", "lambda.z"))
 
 add.interval.col("vz.last",
                  FUN = "pk.calc.vz",
@@ -1178,7 +1178,7 @@ add.interval.col("vz.last",
                  unit_type = "volume",
                  pretty_name = "Vz (based on AUClast)",
                  desc = "Terminal volume of distribution calculated with AUClast-based CL",
-                 formalsmap = list(cl = "cl.last", kel = "lambda.z"),
+                 formalsmap = list(cl = "cl.last"),
                  depends = c("cl.last", "lambda.z"))
 
 add.interval.col("vz.sparse.last",
@@ -1188,8 +1188,8 @@ add.interval.col("vz.sparse.last",
                  pretty_name = "Vz (for sparse data, based on AUClast)",
                  desc = "Terminal volume of distribution from sparse sampling",
                  sparse = TRUE,
-                 formalsmap = list(cl = "cl.sparse.last", kel = "kel.sparse.last"),
-                 depends = c("cl.sparse.last", "kel.sparse.last"))
+                 formalsmap = list(cl = "cl.sparse.last"),
+                 depends = c("cl.sparse.last", "lambda.z"))
 
 PKNCA.set.summary(
   name = c(
