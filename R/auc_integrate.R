@@ -183,3 +183,48 @@ auc_integrate <- function(conc, time, clast, tlast, lambda.z, interval_method, f
   ret <- sum(ret)
   ret
 }
+
+#' Support function for AUMC integration (reuses the same interval_method logic as AUC)
+#'
+#' @inheritParams auc_integrate
+#' @param fun_linear Linear trapezoidal rule for t×conc (AUMC)
+#' @param fun_log    Log trapezoidal rule for t×conc (AUMC)
+#' @param fun_inf    Analytical extrapolation to infinity for AUMC
+#'
+#' @details
+#' This function works identically to `auc_integrate()`, but integrates
+#' the first moment curve (t × conc) instead of conc.
+#' The `interval_method` vector from `choose_interval_method()` is reused directly.
+#'
+#' @returns The numeric value of the AUMC
+#' @keywords internal
+aumc_integrate <- function(conc, time, clast, tlast, lambda.z, interval_method, 
+                           fun_linear, fun_log, fun_inf) {
+  assert_lambdaz(lambda.z = lambda.z)
+  
+  interval_method_within <- interval_method[-length(interval_method)]
+  interval_method_extrap <- interval_method[length(interval_method)]
+  
+  idx_1 <- seq_len(length(conc) - 1)
+  idx_1_linear <- idx_1[interval_method_within == "linear"]
+  idx_1_log    <- idx_1[interval_method_within == "log"]
+  
+  ret <-
+    c(
+      fun_linear(conc[idx_1_linear], conc[idx_1_linear + 1],
+                 time[idx_1_linear], time[idx_1_linear + 1]),
+      fun_log(conc[idx_1_log], conc[idx_1_log + 1],
+              time[idx_1_log], time[idx_1_log + 1])
+    )
+  
+  if (interval_method_extrap %in% "extrap_log") {
+    # Whether AUMCinf,obs or AUMCinf,pred is calculated depends on if clast,obs
+    # or clast,pred is passed in.
+    ret[length(ret)+1] <- fun_inf(clast, tlast, lambda.z)
+  } else if (interval_method_extrap != "zero") {
+    stop("Invalid interval_method_extrap in aumc_integrate, please report a bug: ", interval_method_extrap) # nocov
+  }
+  
+  ret <- sum(ret)
+  ret
+}

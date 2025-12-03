@@ -745,8 +745,8 @@ add.interval.col("cl.sparse.last",
                  pretty_name = "CL (for sparse data, based on AUClast)",
                  desc = "Clearance from sparse sampling calculated with population AUClast",
                  sparse = TRUE,
-                 formalsmap = list(auc = "sparse.auclast"),
-                 depends = "sparse.auclast")
+                 formalsmap = list(auc = "sparse_auclast"),
+                 depends = "sparse_auclast")
 
 PKNCA.set.summary(
   name = c(
@@ -894,8 +894,8 @@ add.interval.col("mrt.sparse.last",
                  pretty_name = "MRT (for sparse data, based on AUClast)",
                  desc = "Mean residence time from sparse sampling",
                  sparse = TRUE,
-                 formalsmap = list(auc = "sparse.auclast", aumc = "aumc.sparse.last"),
-                 depends = c("sparse.auclast", "aumc.sparse.last"))
+                 formalsmap = list(auc = "sparse_auclast", aumc = "sparse_aumclast"),
+                 depends = c("sparse_auclast", "sparse_aumclast"))
 
 PKNCA.set.summary(
   name = c(
@@ -953,8 +953,8 @@ add.interval.col("mrt.iv.all",
                  unit_type = "time",
                  pretty_name = "MRT (for IV dosing, based on AUCall)",
                  desc = "Mean residence time for IV dosing calculated with AUCall/AUMCall",
-                 formalsmap = list(auc = "aucall.iv", aumc = "aumcall.iv"),
-                 depends = c("aucall.iv", "aumcall.iv"))
+                 formalsmap = list(auc = "aucivall", aumc = "aumcivall"),
+                 depends = c("aucivall", "aumcivall"))
 
 add.interval.col("mrt.ivint.all",
                  FUN = "pk.calc.mrt.iv",
