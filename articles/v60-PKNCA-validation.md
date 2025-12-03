@@ -31,7 +31,7 @@ results: Tests were not run because tests are not installed.
 Sys.Date()
 ```
 
-    ## [1] "2025-11-24"
+    ## [1] "2025-12-03"
 
 ``` r
 sessionInfo()
@@ -58,14 +58,14 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] dplyr_1.1.4       testthat_3.3.0    knitr_1.50        PKNCA_0.12.1.9000
+    ## [1] dplyr_1.1.4       testthat_3.3.1    knitr_1.50        PKNCA_0.12.1.9000
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] vctrs_0.6.5       nlme_3.1-168      cli_3.6.5         rlang_1.1.6      
     ##  [5] xfun_0.54         generics_0.1.4    textshaping_1.0.4 jsonlite_2.0.0   
     ##  [9] glue_1.8.0        htmltools_0.5.8.1 ragg_1.5.0        sass_0.4.10      
     ## [13] brio_1.1.5        rmarkdown_2.30    grid_4.5.2        tibble_3.3.0     
-    ## [17] evaluate_1.0.5    jquerylib_0.1.4   fastmap_1.2.0     yaml_2.3.10      
+    ## [17] evaluate_1.0.5    jquerylib_0.1.4   fastmap_1.2.0     yaml_2.3.11      
     ## [21] lifecycle_1.0.4   compiler_4.5.2    fs_1.6.6          Rcpp_1.1.0       
     ## [25] pkgconfig_2.0.3   lattice_0.22-7    systemfonts_1.3.1 digest_0.6.39    
     ## [29] R6_2.6.1          tidyselect_1.2.1  pillar_1.11.1     magrittr_2.0.4   

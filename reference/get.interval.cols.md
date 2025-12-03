@@ -351,6 +351,154 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $aumcint.last
+#> $aumcint.last$FUN
+#> [1] "pk.calc.aumcint.last"
+#> 
+#> $aumcint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcint.last$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcint.last$pretty_name
+#> [1] "AUMCint (based on AUMClast extrapolation)"
+#> 
+#> $aumcint.last$desc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)"
+#> 
+#> $aumcint.last$sparse
+#> [1] FALSE
+#> 
+#> $aumcint.last$formalsmap
+#> $aumcint.last$formalsmap$conc
+#> [1] "conc.group"
+#> 
+#> $aumcint.last$formalsmap$time
+#> [1] "time.group"
+#> 
+#> $aumcint.last$formalsmap$time.dose
+#> NULL
+#> 
+#> 
+#> $aumcint.last$depends
+#> NULL
+#> 
+#> $aumcint.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $aumcint.last.dose
+#> $aumcint.last.dose$FUN
+#> [1] "pk.calc.aumcint.last"
+#> 
+#> $aumcint.last.dose$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcint.last.dose$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcint.last.dose$pretty_name
+#> [1] "AUMCint (based on AUMClast extrapolation, dose-aware)"
+#> 
+#> $aumcint.last.dose$desc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations"
+#> 
+#> $aumcint.last.dose$sparse
+#> [1] FALSE
+#> 
+#> $aumcint.last.dose$formalsmap
+#> $aumcint.last.dose$formalsmap$conc
+#> [1] "conc.group"
+#> 
+#> $aumcint.last.dose$formalsmap$time
+#> [1] "time.group"
+#> 
+#> $aumcint.last.dose$formalsmap$time.dose
+#> [1] "time.dose.group"
+#> 
+#> 
+#> $aumcint.last.dose$depends
+#> NULL
+#> 
+#> $aumcint.last.dose$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $aumcint.all
+#> $aumcint.all$FUN
+#> [1] "pk.calc.aumcint.all"
+#> 
+#> $aumcint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcint.all$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcint.all$pretty_name
+#> [1] "AUMCint (based on AUMCall extrapolation)"
+#> 
+#> $aumcint.all$desc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)"
+#> 
+#> $aumcint.all$sparse
+#> [1] FALSE
+#> 
+#> $aumcint.all$formalsmap
+#> $aumcint.all$formalsmap$conc
+#> [1] "conc.group"
+#> 
+#> $aumcint.all$formalsmap$time
+#> [1] "time.group"
+#> 
+#> $aumcint.all$formalsmap$time.dose
+#> NULL
+#> 
+#> 
+#> $aumcint.all$depends
+#> NULL
+#> 
+#> $aumcint.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $aumcint.all.dose
+#> $aumcint.all.dose$FUN
+#> [1] "pk.calc.aumcint.all"
+#> 
+#> $aumcint.all.dose$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcint.all.dose$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcint.all.dose$pretty_name
+#> [1] "AUMCint (based on AUMCall extrapolation, dose-aware)"
+#> 
+#> $aumcint.all.dose$desc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations"
+#> 
+#> $aumcint.all.dose$sparse
+#> [1] FALSE
+#> 
+#> $aumcint.all.dose$formalsmap
+#> $aumcint.all.dose$formalsmap$conc
+#> [1] "conc.group"
+#> 
+#> $aumcint.all.dose$formalsmap$time
+#> [1] "time.group"
+#> 
+#> $aumcint.all.dose$formalsmap$time.dose
+#> [1] "time.dose.group"
+#> 
+#> 
+#> $aumcint.all.dose$depends
+#> NULL
+#> 
+#> $aumcint.all.dose$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $c0
 #> $c0$FUN
 #> [1] "pk.calc.c0"
@@ -616,6 +764,68 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $cl.int.all
+#> $cl.int.all$FUN
+#> [1] "pk.calc.cl"
+#> 
+#> $cl.int.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $cl.int.all$unit_type
+#> [1] "clearance"
+#> 
+#> $cl.int.all$pretty_name
+#> [1] "CL (based on AUCint.all)"
+#> 
+#> $cl.int.all$desc
+#> [1] "Clearance or observed oral clearance calculated with AUCint.all"
+#> 
+#> $cl.int.all$sparse
+#> [1] FALSE
+#> 
+#> $cl.int.all$formalsmap
+#> $cl.int.all$formalsmap$auc
+#> [1] "aucint.all"
+#> 
+#> 
+#> $cl.int.all$depends
+#> [1] "aucint.all"
+#> 
+#> $cl.int.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $cl.int.last
+#> $cl.int.last$FUN
+#> [1] "pk.calc.cl"
+#> 
+#> $cl.int.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $cl.int.last$unit_type
+#> [1] "clearance"
+#> 
+#> $cl.int.last$pretty_name
+#> [1] "CL (based on AUCint.last)"
+#> 
+#> $cl.int.last$desc
+#> [1] "Clearance or observed oral clearance calculated with AUCint.last"
+#> 
+#> $cl.int.last$sparse
+#> [1] FALSE
+#> 
+#> $cl.int.last$formalsmap
+#> $cl.int.last$formalsmap$auc
+#> [1] "aucint.last"
+#> 
+#> 
+#> $cl.int.last$depends
+#> [1] "aucint.last"
+#> 
+#> $cl.int.last$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $f
 #> $f$FUN
 #> [1] "pk.calc.f"
@@ -676,6 +886,108 @@ get.interval.cols()
 #> [1] "auclast"  "aumclast"
 #> 
 #> $mrt.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $mrt.all
+#> $mrt.all$FUN
+#> [1] "pk.calc.mrt"
+#> 
+#> $mrt.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $mrt.all$unit_type
+#> [1] "time"
+#> 
+#> $mrt.all$pretty_name
+#> [1] "MRT (based on AUCall)"
+#> 
+#> $mrt.all$desc
+#> [1] "Mean residence time calculated with AUCall/AUMCall"
+#> 
+#> $mrt.all$sparse
+#> [1] FALSE
+#> 
+#> $mrt.all$formalsmap
+#> $mrt.all$formalsmap$auc
+#> [1] "aucall"
+#> 
+#> $mrt.all$formalsmap$aumc
+#> [1] "aumcall"
+#> 
+#> 
+#> $mrt.all$depends
+#> [1] "aucall"  "aumcall"
+#> 
+#> $mrt.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $mrt.int.all
+#> $mrt.int.all$FUN
+#> [1] "pk.calc.mrt"
+#> 
+#> $mrt.int.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $mrt.int.all$unit_type
+#> [1] "time"
+#> 
+#> $mrt.int.all$pretty_name
+#> [1] "MRT (based on AUCint.all)"
+#> 
+#> $mrt.int.all$desc
+#> [1] "Mean residence time over interval calculated with AUCint.all/AUMCint.all"
+#> 
+#> $mrt.int.all$sparse
+#> [1] FALSE
+#> 
+#> $mrt.int.all$formalsmap
+#> $mrt.int.all$formalsmap$auc
+#> [1] "aucint.all"
+#> 
+#> $mrt.int.all$formalsmap$aumc
+#> [1] "aumcint.all"
+#> 
+#> 
+#> $mrt.int.all$depends
+#> [1] "aucint.all"  "aumcint.all"
+#> 
+#> $mrt.int.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $mrt.int.last
+#> $mrt.int.last$FUN
+#> [1] "pk.calc.mrt"
+#> 
+#> $mrt.int.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $mrt.int.last$unit_type
+#> [1] "time"
+#> 
+#> $mrt.int.last$pretty_name
+#> [1] "MRT (based on AUCint.last)"
+#> 
+#> $mrt.int.last$desc
+#> [1] "Mean residence time over interval calculated with AUCint.last/AUMCint.last"
+#> 
+#> $mrt.int.last$sparse
+#> [1] FALSE
+#> 
+#> $mrt.int.last$formalsmap
+#> $mrt.int.last$formalsmap$auc
+#> [1] "aucint.last"
+#> 
+#> $mrt.int.last$formalsmap$aumc
+#> [1] "aumcint.last"
+#> 
+#> 
+#> $mrt.int.last$depends
+#> [1] "aucint.last"  "aumcint.last"
+#> 
+#> $mrt.int.last$datatype
 #> [1] "interval"
 #> 
 #> 
@@ -778,6 +1090,108 @@ get.interval.cols()
 #> [1] "cl.last"     "mrt.iv.last"
 #> 
 #> $vss.iv.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vss.all
+#> $vss.all$FUN
+#> [1] "pk.calc.vss"
+#> 
+#> $vss.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $vss.all$unit_type
+#> [1] "volume"
+#> 
+#> $vss.all$pretty_name
+#> [1] "Vss (based on AUCall)"
+#> 
+#> $vss.all$desc
+#> [1] "Steady-state volume of distribution calculated with AUCall-based CL and MRT"
+#> 
+#> $vss.all$sparse
+#> [1] FALSE
+#> 
+#> $vss.all$formalsmap
+#> $vss.all$formalsmap$cl
+#> [1] "cl.all"
+#> 
+#> $vss.all$formalsmap$mrt
+#> [1] "mrt.all"
+#> 
+#> 
+#> $vss.all$depends
+#> [1] "cl.all"  "mrt.all"
+#> 
+#> $vss.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vss.int.all
+#> $vss.int.all$FUN
+#> [1] "pk.calc.vss"
+#> 
+#> $vss.int.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $vss.int.all$unit_type
+#> [1] "volume"
+#> 
+#> $vss.int.all$pretty_name
+#> [1] "Vss (based on AUCint.all)"
+#> 
+#> $vss.int.all$desc
+#> [1] "Steady-state volume of distribution using interval AUCint.all"
+#> 
+#> $vss.int.all$sparse
+#> [1] FALSE
+#> 
+#> $vss.int.all$formalsmap
+#> $vss.int.all$formalsmap$cl
+#> [1] "cl.int.all"
+#> 
+#> $vss.int.all$formalsmap$mrt
+#> [1] "mrt.int.all"
+#> 
+#> 
+#> $vss.int.all$depends
+#> [1] "cl.int.all"  "mrt.int.all"
+#> 
+#> $vss.int.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vss.int.last
+#> $vss.int.last$FUN
+#> [1] "pk.calc.vss"
+#> 
+#> $vss.int.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $vss.int.last$unit_type
+#> [1] "volume"
+#> 
+#> $vss.int.last$pretty_name
+#> [1] "Vss (based on AUCint.last)"
+#> 
+#> $vss.int.last$desc
+#> [1] "Steady-state volume of distribution using interval AUCint.last"
+#> 
+#> $vss.int.last$sparse
+#> [1] FALSE
+#> 
+#> $vss.int.last$formalsmap
+#> $vss.int.last$formalsmap$cl
+#> [1] "cl.int.last"
+#> 
+#> $vss.int.last$formalsmap$mrt
+#> [1] "mrt.int.last"
+#> 
+#> 
+#> $vss.int.last$depends
+#> [1] "cl.int.last"  "mrt.int.last"
+#> 
+#> $vss.int.last$datatype
 #> [1] "interval"
 #> 
 #> 
@@ -1580,6 +1994,93 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $sparse_aumclast
+#> $sparse_aumclast$FUN
+#> [1] "pk.calc.sparse_aumclast"
+#> 
+#> $sparse_aumclast$values
+#> [1] FALSE  TRUE
+#> 
+#> $sparse_aumclast$unit_type
+#> [1] "aumc"
+#> 
+#> $sparse_aumclast$pretty_name
+#> [1] "Sparse AUMClast"
+#> 
+#> $sparse_aumclast$desc
+#> [1] "For sparse PK sampling, the area under the moment curve from the beginning of the interval to the last concentration above the limit of quantification"
+#> 
+#> $sparse_aumclast$sparse
+#> [1] TRUE
+#> 
+#> $sparse_aumclast$formalsmap
+#> list()
+#> 
+#> $sparse_aumclast$depends
+#> NULL
+#> 
+#> $sparse_aumclast$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $sparse_aumc_se
+#> $sparse_aumc_se$FUN
+#> [1] NA
+#> 
+#> $sparse_aumc_se$values
+#> [1] FALSE  TRUE
+#> 
+#> $sparse_aumc_se$unit_type
+#> [1] "aumc"
+#> 
+#> $sparse_aumc_se$pretty_name
+#> [1] "Sparse AUMC standard error"
+#> 
+#> $sparse_aumc_se$desc
+#> [1] "For sparse PK sampling, the standard error of the area under the moment curve"
+#> 
+#> $sparse_aumc_se$sparse
+#> [1] FALSE
+#> 
+#> $sparse_aumc_se$formalsmap
+#> list()
+#> 
+#> $sparse_aumc_se$depends
+#> [1] "sparse_aumclast"
+#> 
+#> $sparse_aumc_se$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $sparse_aumc_df
+#> $sparse_aumc_df$FUN
+#> [1] NA
+#> 
+#> $sparse_aumc_df$values
+#> [1] FALSE  TRUE
+#> 
+#> $sparse_aumc_df$unit_type
+#> [1] "count"
+#> 
+#> $sparse_aumc_df$pretty_name
+#> [1] "Sparse AUMC degrees of freedom"
+#> 
+#> $sparse_aumc_df$desc
+#> [1] "For sparse PK sampling, the degrees of freedom for the AUMC variance estimate"
+#> 
+#> $sparse_aumc_df$sparse
+#> [1] FALSE
+#> 
+#> $sparse_aumc_df$formalsmap
+#> list()
+#> 
+#> $sparse_aumc_df$depends
+#> [1] "sparse_aumclast"
+#> 
+#> $sparse_aumc_df$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $time_above
 #> $time_above$FUN
 #> [1] "pk.calc.time_above"
@@ -1866,6 +2367,130 @@ get.interval.cols()
 #> [1] "aucint.all"   "aucivint.all"
 #> 
 #> $aucivpbextint.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $aumcivlast
+#> $aumcivlast$FUN
+#> [1] "pk.calc.aumciv"
+#> 
+#> $aumcivlast$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcivlast$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcivlast$pretty_name
+#> [1] "AUMClast (IV dosing)"
+#> 
+#> $aumcivlast$desc
+#> [1] "AUMClast with back-extrapolation using extrapolated C0 for IV dosing"
+#> 
+#> $aumcivlast$sparse
+#> [1] FALSE
+#> 
+#> $aumcivlast$formalsmap
+#> $aumcivlast$formalsmap$aumc
+#> [1] "aumclast"
+#> 
+#> 
+#> $aumcivlast$depends
+#> [1] "aumclast" "c0"      
+#> 
+#> $aumcivlast$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $aumcivall
+#> $aumcivall$FUN
+#> [1] "pk.calc.aumciv"
+#> 
+#> $aumcivall$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcivall$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcivall$pretty_name
+#> [1] "AUMCall (IV dosing)"
+#> 
+#> $aumcivall$desc
+#> [1] "AUMCall with back-extrapolation using extrapolated C0 for IV dosing"
+#> 
+#> $aumcivall$sparse
+#> [1] FALSE
+#> 
+#> $aumcivall$formalsmap
+#> $aumcivall$formalsmap$aumc
+#> [1] "aumcall"
+#> 
+#> 
+#> $aumcivall$depends
+#> [1] "aumcall" "c0"     
+#> 
+#> $aumcivall$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $aumcivint.last
+#> $aumcivint.last$FUN
+#> [1] "pk.calc.aumciv"
+#> 
+#> $aumcivint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcivint.last$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcivint.last$pretty_name
+#> [1] "AUMCint,last (IV dosing)"
+#> 
+#> $aumcivint.last$desc
+#> [1] "The AUMCint,last calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> 
+#> $aumcivint.last$sparse
+#> [1] FALSE
+#> 
+#> $aumcivint.last$formalsmap
+#> $aumcivint.last$formalsmap$aumc
+#> [1] "aumcint.last"
+#> 
+#> 
+#> $aumcivint.last$depends
+#> [1] "aumcint.last" "c0"          
+#> 
+#> $aumcivint.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $aumcivint.all
+#> $aumcivint.all$FUN
+#> [1] "pk.calc.aumciv"
+#> 
+#> $aumcivint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcivint.all$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcivint.all$pretty_name
+#> [1] "AUMCint,all (IV dosing)"
+#> 
+#> $aumcivint.all$desc
+#> [1] "The AUMCint,all calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> 
+#> $aumcivint.all$sparse
+#> [1] FALSE
+#> 
+#> $aumcivint.all$formalsmap
+#> $aumcivint.all$formalsmap$aumc
+#> [1] "aumcint.all"
+#> 
+#> 
+#> $aumcivint.all$depends
+#> [1] "aumcint.all" "c0"         
+#> 
+#> $aumcivint.all$datatype
 #> [1] "interval"
 #> 
 #> 
@@ -2283,6 +2908,805 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $kel.all
+#> $kel.all$FUN
+#> [1] "pk.calc.kel"
+#> 
+#> $kel.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $kel.all$unit_type
+#> [1] "inverse_time"
+#> 
+#> $kel.all$pretty_name
+#> [1] "Kel (based on AUCall)"
+#> 
+#> $kel.all$desc
+#> [1] "Elimination rate (as calculated from the MRTall)"
+#> 
+#> $kel.all$sparse
+#> [1] FALSE
+#> 
+#> $kel.all$formalsmap
+#> $kel.all$formalsmap$mrt
+#> [1] "mrt.all"
+#> 
+#> 
+#> $kel.all$depends
+#> [1] "mrt.all"
+#> 
+#> $kel.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $kel.int.all
+#> $kel.int.all$FUN
+#> [1] "pk.calc.kel"
+#> 
+#> $kel.int.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $kel.int.all$unit_type
+#> [1] "inverse_time"
+#> 
+#> $kel.int.all$pretty_name
+#> [1] "Kel (based on AUCint.all)"
+#> 
+#> $kel.int.all$desc
+#> [1] "Elimination rate (as calculated from the MRTint.all)"
+#> 
+#> $kel.int.all$sparse
+#> [1] FALSE
+#> 
+#> $kel.int.all$formalsmap
+#> $kel.int.all$formalsmap$mrt
+#> [1] "mrt.int.all"
+#> 
+#> 
+#> $kel.int.all$depends
+#> [1] "mrt.int.all"
+#> 
+#> $kel.int.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $kel.int.last
+#> $kel.int.last$FUN
+#> [1] "pk.calc.kel"
+#> 
+#> $kel.int.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $kel.int.last$unit_type
+#> [1] "inverse_time"
+#> 
+#> $kel.int.last$pretty_name
+#> [1] "Kel (based on AUCint.last)"
+#> 
+#> $kel.int.last$desc
+#> [1] "Elimination rate (as calculated from the MRTint.last)"
+#> 
+#> $kel.int.last$sparse
+#> [1] FALSE
+#> 
+#> $kel.int.last$formalsmap
+#> $kel.int.last$formalsmap$mrt
+#> [1] "mrt.int.last"
+#> 
+#> 
+#> $kel.int.last$depends
+#> [1] "mrt.int.last"
+#> 
+#> $kel.int.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $cl.iv.all
+#> $cl.iv.all$FUN
+#> [1] "pk.calc.cl"
+#> 
+#> $cl.iv.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $cl.iv.all$unit_type
+#> [1] "clearance"
+#> 
+#> $cl.iv.all$pretty_name
+#> [1] "CL (for IV dosing,  based on AUCall)"
+#> 
+#> $cl.iv.all$desc
+#> [1] "Clearance for intravenous dosing calculated with AUCall"
+#> 
+#> $cl.iv.all$sparse
+#> [1] FALSE
+#> 
+#> $cl.iv.all$formalsmap
+#> $cl.iv.all$formalsmap$auc
+#> [1] "aucivall"
+#> 
+#> 
+#> $cl.iv.all$depends
+#> [1] "aucivall"
+#> 
+#> $cl.iv.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $cl.iv.last
+#> $cl.iv.last$FUN
+#> [1] "pk.calc.cl"
+#> 
+#> $cl.iv.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $cl.iv.last$unit_type
+#> [1] "clearance"
+#> 
+#> $cl.iv.last$pretty_name
+#> [1] "CL (for IV dosing,  based on AUClast)"
+#> 
+#> $cl.iv.last$desc
+#> [1] "Clearance for intravenous dosing calculated with AUClast"
+#> 
+#> $cl.iv.last$sparse
+#> [1] FALSE
+#> 
+#> $cl.iv.last$formalsmap
+#> $cl.iv.last$formalsmap$auc
+#> [1] "aucivlast"
+#> 
+#> 
+#> $cl.iv.last$depends
+#> [1] "aucivlast"
+#> 
+#> $cl.iv.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $cl.ivint.all
+#> $cl.ivint.all$FUN
+#> [1] "pk.calc.cl"
+#> 
+#> $cl.ivint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $cl.ivint.all$unit_type
+#> [1] "clearance"
+#> 
+#> $cl.ivint.all$pretty_name
+#> [1] "CL (IV dose interval, based on AUCint.all)"
+#> 
+#> $cl.ivint.all$desc
+#> [1] "Clearance for intravenous dosing calculated with interval AUCint.all"
+#> 
+#> $cl.ivint.all$sparse
+#> [1] FALSE
+#> 
+#> $cl.ivint.all$formalsmap
+#> $cl.ivint.all$formalsmap$auc
+#> [1] "aucivint.all"
+#> 
+#> 
+#> $cl.ivint.all$depends
+#> [1] "aucivint.all"
+#> 
+#> $cl.ivint.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $cl.ivint.last
+#> $cl.ivint.last$FUN
+#> [1] "pk.calc.cl"
+#> 
+#> $cl.ivint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $cl.ivint.last$unit_type
+#> [1] "clearance"
+#> 
+#> $cl.ivint.last$pretty_name
+#> [1] "CL (IV dose interval, based on AUCint.last)"
+#> 
+#> $cl.ivint.last$desc
+#> [1] "Clearance for intravenous dosing calculated with interval AUCint.last"
+#> 
+#> $cl.ivint.last$sparse
+#> [1] FALSE
+#> 
+#> $cl.ivint.last$formalsmap
+#> $cl.ivint.last$formalsmap$auc
+#> [1] "aucivint.last"
+#> 
+#> 
+#> $cl.ivint.last$depends
+#> [1] "aucivint.last"
+#> 
+#> $cl.ivint.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $cl.sparse.last
+#> $cl.sparse.last$FUN
+#> [1] "pk.calc.cl"
+#> 
+#> $cl.sparse.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $cl.sparse.last$unit_type
+#> [1] "clearance"
+#> 
+#> $cl.sparse.last$pretty_name
+#> [1] "CL (for sparse data, based on AUClast)"
+#> 
+#> $cl.sparse.last$desc
+#> [1] "Clearance from sparse sampling calculated with population AUClast"
+#> 
+#> $cl.sparse.last$sparse
+#> [1] TRUE
+#> 
+#> $cl.sparse.last$formalsmap
+#> $cl.sparse.last$formalsmap$auc
+#> [1] "sparse_auclast"
+#> 
+#> 
+#> $cl.sparse.last$depends
+#> [1] "sparse_auclast"
+#> 
+#> $cl.sparse.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $mrt.sparse.last
+#> $mrt.sparse.last$FUN
+#> [1] "pk.calc.mrt"
+#> 
+#> $mrt.sparse.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $mrt.sparse.last$unit_type
+#> [1] "time"
+#> 
+#> $mrt.sparse.last$pretty_name
+#> [1] "MRT (for sparse data, based on AUClast)"
+#> 
+#> $mrt.sparse.last$desc
+#> [1] "Mean residence time from sparse sampling"
+#> 
+#> $mrt.sparse.last$sparse
+#> [1] TRUE
+#> 
+#> $mrt.sparse.last$formalsmap
+#> $mrt.sparse.last$formalsmap$auc
+#> [1] "sparse_auclast"
+#> 
+#> $mrt.sparse.last$formalsmap$aumc
+#> [1] "sparse_aumclast"
+#> 
+#> 
+#> $mrt.sparse.last$depends
+#> [1] "sparse_auclast"  "sparse_aumclast"
+#> 
+#> $mrt.sparse.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $mrt.iv.all
+#> $mrt.iv.all$FUN
+#> [1] "pk.calc.mrt.iv"
+#> 
+#> $mrt.iv.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $mrt.iv.all$unit_type
+#> [1] "time"
+#> 
+#> $mrt.iv.all$pretty_name
+#> [1] "MRT (for IV dosing, based on AUCall)"
+#> 
+#> $mrt.iv.all$desc
+#> [1] "Mean residence time for IV dosing calculated with AUCall/AUMCall"
+#> 
+#> $mrt.iv.all$sparse
+#> [1] FALSE
+#> 
+#> $mrt.iv.all$formalsmap
+#> $mrt.iv.all$formalsmap$auc
+#> [1] "aucivall"
+#> 
+#> $mrt.iv.all$formalsmap$aumc
+#> [1] "aumcivall"
+#> 
+#> 
+#> $mrt.iv.all$depends
+#> [1] "aucivall"  "aumcivall"
+#> 
+#> $mrt.iv.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $mrt.ivint.all
+#> $mrt.ivint.all$FUN
+#> [1] "pk.calc.mrt.iv"
+#> 
+#> $mrt.ivint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $mrt.ivint.all$unit_type
+#> [1] "time"
+#> 
+#> $mrt.ivint.all$pretty_name
+#> [1] "MRT (IV dose interval, based on AUCint.all)"
+#> 
+#> $mrt.ivint.all$desc
+#> [1] "Mean residence time for IV interval calculated with AUCint.all/AUMCint.all"
+#> 
+#> $mrt.ivint.all$sparse
+#> [1] FALSE
+#> 
+#> $mrt.ivint.all$formalsmap
+#> $mrt.ivint.all$formalsmap$auc
+#> [1] "aucivint.all"
+#> 
+#> $mrt.ivint.all$formalsmap$aumc
+#> [1] "aumcivint.all"
+#> 
+#> 
+#> $mrt.ivint.all$depends
+#> [1] "aucivint.all"  "aumcivint.all"
+#> 
+#> $mrt.ivint.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $mrt.ivint.last
+#> $mrt.ivint.last$FUN
+#> [1] "pk.calc.mrt.iv"
+#> 
+#> $mrt.ivint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $mrt.ivint.last$unit_type
+#> [1] "time"
+#> 
+#> $mrt.ivint.last$pretty_name
+#> [1] "MRT (IV dose interval, based on AUCint.last)"
+#> 
+#> $mrt.ivint.last$desc
+#> [1] "Mean residence time for IV interval calculated with AUCint.last/AUMCint.last"
+#> 
+#> $mrt.ivint.last$sparse
+#> [1] FALSE
+#> 
+#> $mrt.ivint.last$formalsmap
+#> $mrt.ivint.last$formalsmap$auc
+#> [1] "aucivint.last"
+#> 
+#> $mrt.ivint.last$formalsmap$aumc
+#> [1] "aumcivint.last"
+#> 
+#> 
+#> $mrt.ivint.last$depends
+#> [1] "aucivint.last"  "aumcivint.last"
+#> 
+#> $mrt.ivint.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vz.all
+#> $vz.all$FUN
+#> [1] "pk.calc.vz"
+#> 
+#> $vz.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $vz.all$unit_type
+#> [1] "volume"
+#> 
+#> $vz.all$pretty_name
+#> [1] "Vz (based on AUCall)"
+#> 
+#> $vz.all$desc
+#> [1] "Terminal volume of distribution calculated with AUCall-based CL"
+#> 
+#> $vz.all$sparse
+#> [1] FALSE
+#> 
+#> $vz.all$formalsmap
+#> $vz.all$formalsmap$cl
+#> [1] "cl.all"
+#> 
+#> 
+#> $vz.all$depends
+#> [1] "cl.all"   "lambda.z"
+#> 
+#> $vz.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vz.int.all
+#> $vz.int.all$FUN
+#> [1] "pk.calc.vz"
+#> 
+#> $vz.int.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $vz.int.all$unit_type
+#> [1] "volume"
+#> 
+#> $vz.int.all$pretty_name
+#> [1] "Vz (based on AUCint.all)"
+#> 
+#> $vz.int.all$desc
+#> [1] "Terminal volume of distribution using interval AUCint.all"
+#> 
+#> $vz.int.all$sparse
+#> [1] FALSE
+#> 
+#> $vz.int.all$formalsmap
+#> $vz.int.all$formalsmap$cl
+#> [1] "cl.int.all"
+#> 
+#> 
+#> $vz.int.all$depends
+#> [1] "cl.int.all" "lambda.z"  
+#> 
+#> $vz.int.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vz.int.last
+#> $vz.int.last$FUN
+#> [1] "pk.calc.vz"
+#> 
+#> $vz.int.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $vz.int.last$unit_type
+#> [1] "volume"
+#> 
+#> $vz.int.last$pretty_name
+#> [1] "Vz (based on AUCint.last)"
+#> 
+#> $vz.int.last$desc
+#> [1] "Terminal volume of distribution using interval AUCint.last"
+#> 
+#> $vz.int.last$sparse
+#> [1] FALSE
+#> 
+#> $vz.int.last$formalsmap
+#> $vz.int.last$formalsmap$cl
+#> [1] "cl.int.last"
+#> 
+#> 
+#> $vz.int.last$depends
+#> [1] "cl.int.last" "lambda.z"   
+#> 
+#> $vz.int.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vz.iv.all
+#> $vz.iv.all$FUN
+#> [1] "pk.calc.vz"
+#> 
+#> $vz.iv.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $vz.iv.all$unit_type
+#> [1] "volume"
+#> 
+#> $vz.iv.all$pretty_name
+#> [1] "Vz (for IV dosing,  based on AUCall)"
+#> 
+#> $vz.iv.all$desc
+#> [1] "Terminal volume of distribution for IV dosing using AUCall"
+#> 
+#> $vz.iv.all$sparse
+#> [1] FALSE
+#> 
+#> $vz.iv.all$formalsmap
+#> $vz.iv.all$formalsmap$cl
+#> [1] "cl.iv.all"
+#> 
+#> 
+#> $vz.iv.all$depends
+#> [1] "cl.iv.all" "lambda.z" 
+#> 
+#> $vz.iv.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vz.iv.last
+#> $vz.iv.last$FUN
+#> [1] "pk.calc.vz"
+#> 
+#> $vz.iv.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $vz.iv.last$unit_type
+#> [1] "volume"
+#> 
+#> $vz.iv.last$pretty_name
+#> [1] "Vz (for IV dosing,  based on AUClast)"
+#> 
+#> $vz.iv.last$desc
+#> [1] "Terminal volume of distribution for IV dosing using AUClast"
+#> 
+#> $vz.iv.last$sparse
+#> [1] FALSE
+#> 
+#> $vz.iv.last$formalsmap
+#> $vz.iv.last$formalsmap$cl
+#> [1] "cl.iv.last"
+#> 
+#> 
+#> $vz.iv.last$depends
+#> [1] "cl.iv.last" "lambda.z"  
+#> 
+#> $vz.iv.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vz.ivint.all
+#> $vz.ivint.all$FUN
+#> [1] "pk.calc.vz"
+#> 
+#> $vz.ivint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $vz.ivint.all$unit_type
+#> [1] "volume"
+#> 
+#> $vz.ivint.all$pretty_name
+#> [1] "Vz (IV dose interval, based on AUCint.all)"
+#> 
+#> $vz.ivint.all$desc
+#> [1] "Terminal volume of distribution for IV interval using AUCint.all"
+#> 
+#> $vz.ivint.all$sparse
+#> [1] FALSE
+#> 
+#> $vz.ivint.all$formalsmap
+#> $vz.ivint.all$formalsmap$cl
+#> [1] "cl.ivint.all"
+#> 
+#> 
+#> $vz.ivint.all$depends
+#> [1] "cl.ivint.all" "lambda.z"    
+#> 
+#> $vz.ivint.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vz.ivint.last
+#> $vz.ivint.last$FUN
+#> [1] "pk.calc.vz"
+#> 
+#> $vz.ivint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $vz.ivint.last$unit_type
+#> [1] "volume"
+#> 
+#> $vz.ivint.last$pretty_name
+#> [1] "Vz (IV dose interval, based on AUCint.last)"
+#> 
+#> $vz.ivint.last$desc
+#> [1] "Terminal volume of distribution for IV interval using AUCint.last"
+#> 
+#> $vz.ivint.last$sparse
+#> [1] FALSE
+#> 
+#> $vz.ivint.last$formalsmap
+#> $vz.ivint.last$formalsmap$cl
+#> [1] "cl.ivint.last"
+#> 
+#> 
+#> $vz.ivint.last$depends
+#> [1] "cl.ivint.last" "lambda.z"     
+#> 
+#> $vz.ivint.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vz.last
+#> $vz.last$FUN
+#> [1] "pk.calc.vz"
+#> 
+#> $vz.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $vz.last$unit_type
+#> [1] "volume"
+#> 
+#> $vz.last$pretty_name
+#> [1] "Vz (based on AUClast)"
+#> 
+#> $vz.last$desc
+#> [1] "Terminal volume of distribution calculated with AUClast-based CL"
+#> 
+#> $vz.last$sparse
+#> [1] FALSE
+#> 
+#> $vz.last$formalsmap
+#> $vz.last$formalsmap$cl
+#> [1] "cl.last"
+#> 
+#> 
+#> $vz.last$depends
+#> [1] "cl.last"  "lambda.z"
+#> 
+#> $vz.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vz.sparse.last
+#> $vz.sparse.last$FUN
+#> [1] "pk.calc.vz"
+#> 
+#> $vz.sparse.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $vz.sparse.last$unit_type
+#> [1] "volume"
+#> 
+#> $vz.sparse.last$pretty_name
+#> [1] "Vz (for sparse data, based on AUClast)"
+#> 
+#> $vz.sparse.last$desc
+#> [1] "Terminal volume of distribution from sparse sampling"
+#> 
+#> $vz.sparse.last$sparse
+#> [1] TRUE
+#> 
+#> $vz.sparse.last$formalsmap
+#> $vz.sparse.last$formalsmap$cl
+#> [1] "cl.sparse.last"
+#> 
+#> 
+#> $vz.sparse.last$depends
+#> [1] "cl.sparse.last" "lambda.z"      
+#> 
+#> $vz.sparse.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vss.iv.all
+#> $vss.iv.all$FUN
+#> [1] "pk.calc.vss"
+#> 
+#> $vss.iv.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $vss.iv.all$unit_type
+#> [1] "volume"
+#> 
+#> $vss.iv.all$pretty_name
+#> [1] "Vss (for IV dosing,  based on AUCall)"
+#> 
+#> $vss.iv.all$desc
+#> [1] "Steady-state volume of distribution for IV dosing using AUCall"
+#> 
+#> $vss.iv.all$sparse
+#> [1] FALSE
+#> 
+#> $vss.iv.all$formalsmap
+#> $vss.iv.all$formalsmap$cl
+#> [1] "cl.iv.all"
+#> 
+#> $vss.iv.all$formalsmap$mrt
+#> [1] "mrt.iv.all"
+#> 
+#> 
+#> $vss.iv.all$depends
+#> [1] "cl.iv.all"  "mrt.iv.all"
+#> 
+#> $vss.iv.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vss.ivint.all
+#> $vss.ivint.all$FUN
+#> [1] "pk.calc.vss"
+#> 
+#> $vss.ivint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $vss.ivint.all$unit_type
+#> [1] "volume"
+#> 
+#> $vss.ivint.all$pretty_name
+#> [1] "Vss (IV dose interval, based on AUCint.all)"
+#> 
+#> $vss.ivint.all$desc
+#> [1] "Steady-state volume of distribution for IV interval using AUCint.all"
+#> 
+#> $vss.ivint.all$sparse
+#> [1] FALSE
+#> 
+#> $vss.ivint.all$formalsmap
+#> $vss.ivint.all$formalsmap$cl
+#> [1] "cl.ivint.all"
+#> 
+#> $vss.ivint.all$formalsmap$mrt
+#> [1] "mrt.ivint.all"
+#> 
+#> 
+#> $vss.ivint.all$depends
+#> [1] "cl.ivint.all"  "mrt.ivint.all"
+#> 
+#> $vss.ivint.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vss.ivint.last
+#> $vss.ivint.last$FUN
+#> [1] "pk.calc.vss"
+#> 
+#> $vss.ivint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $vss.ivint.last$unit_type
+#> [1] "volume"
+#> 
+#> $vss.ivint.last$pretty_name
+#> [1] "Vss (IV dose interval, based on AUCint.last)"
+#> 
+#> $vss.ivint.last$desc
+#> [1] "Steady-state volume of distribution for IV interval using AUCint.last"
+#> 
+#> $vss.ivint.last$sparse
+#> [1] FALSE
+#> 
+#> $vss.ivint.last$formalsmap
+#> $vss.ivint.last$formalsmap$cl
+#> [1] "cl.ivint.last"
+#> 
+#> $vss.ivint.last$formalsmap$mrt
+#> [1] "mrt.ivint.last"
+#> 
+#> 
+#> $vss.ivint.last$depends
+#> [1] "cl.ivint.last"  "mrt.ivint.last"
+#> 
+#> $vss.ivint.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vss.sparse.last
+#> $vss.sparse.last$FUN
+#> [1] "pk.calc.vss"
+#> 
+#> $vss.sparse.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $vss.sparse.last$unit_type
+#> [1] "volume"
+#> 
+#> $vss.sparse.last$pretty_name
+#> [1] "Vss (for sparse data, based on AUClast)"
+#> 
+#> $vss.sparse.last$desc
+#> [1] "Steady-state volume of distribution from sparse sampling"
+#> 
+#> $vss.sparse.last$sparse
+#> [1] TRUE
+#> 
+#> $vss.sparse.last$formalsmap
+#> $vss.sparse.last$formalsmap$cl
+#> [1] "cl.sparse.last"
+#> 
+#> $vss.sparse.last$formalsmap$mrt
+#> [1] "mrt.sparse.last"
+#> 
+#> 
+#> $vss.sparse.last$depends
+#> [1] "cl.sparse.last"  "mrt.sparse.last"
+#> 
+#> $vss.sparse.last$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $aucinf.obs
 #> $aucinf.obs$FUN
 #> [1] "pk.calc.auc.inf.obs"
@@ -2547,6 +3971,154 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $aumcint.inf.obs
+#> $aumcint.inf.obs$FUN
+#> [1] "pk.calc.aumcint.inf.obs"
+#> 
+#> $aumcint.inf.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcint.inf.obs$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcint.inf.obs$pretty_name
+#> [1] "AUMCint (based on AUMCinf,obs extrapolation)"
+#> 
+#> $aumcint.inf.obs$desc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)"
+#> 
+#> $aumcint.inf.obs$sparse
+#> [1] FALSE
+#> 
+#> $aumcint.inf.obs$formalsmap
+#> $aumcint.inf.obs$formalsmap$conc
+#> [1] "conc.group"
+#> 
+#> $aumcint.inf.obs$formalsmap$time
+#> [1] "time.group"
+#> 
+#> $aumcint.inf.obs$formalsmap$time.dose
+#> NULL
+#> 
+#> 
+#> $aumcint.inf.obs$depends
+#> [1] "lambda.z"  "clast.obs"
+#> 
+#> $aumcint.inf.obs$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $aumcint.inf.obs.dose
+#> $aumcint.inf.obs.dose$FUN
+#> [1] "pk.calc.aumcint.inf.obs"
+#> 
+#> $aumcint.inf.obs.dose$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcint.inf.obs.dose$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcint.inf.obs.dose$pretty_name
+#> [1] "AUMCint (based on AUMCinf,obs extrapolation, dose-aware)"
+#> 
+#> $aumcint.inf.obs.dose$desc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations"
+#> 
+#> $aumcint.inf.obs.dose$sparse
+#> [1] FALSE
+#> 
+#> $aumcint.inf.obs.dose$formalsmap
+#> $aumcint.inf.obs.dose$formalsmap$conc
+#> [1] "conc.group"
+#> 
+#> $aumcint.inf.obs.dose$formalsmap$time
+#> [1] "time.group"
+#> 
+#> $aumcint.inf.obs.dose$formalsmap$time.dose
+#> [1] "time.dose.group"
+#> 
+#> 
+#> $aumcint.inf.obs.dose$depends
+#> [1] "lambda.z"  "clast.obs"
+#> 
+#> $aumcint.inf.obs.dose$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $aumcint.inf.pred
+#> $aumcint.inf.pred$FUN
+#> [1] "pk.calc.aumcint.inf.pred"
+#> 
+#> $aumcint.inf.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcint.inf.pred$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcint.inf.pred$pretty_name
+#> [1] "AUMCint (based on AUMCinf,pred extrapolation)"
+#> 
+#> $aumcint.inf.pred$desc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)"
+#> 
+#> $aumcint.inf.pred$sparse
+#> [1] FALSE
+#> 
+#> $aumcint.inf.pred$formalsmap
+#> $aumcint.inf.pred$formalsmap$conc
+#> [1] "conc.group"
+#> 
+#> $aumcint.inf.pred$formalsmap$time
+#> [1] "time.group"
+#> 
+#> $aumcint.inf.pred$formalsmap$time.dose
+#> NULL
+#> 
+#> 
+#> $aumcint.inf.pred$depends
+#> [1] "lambda.z"   "clast.pred"
+#> 
+#> $aumcint.inf.pred$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $aumcint.inf.pred.dose
+#> $aumcint.inf.pred.dose$FUN
+#> [1] "pk.calc.aumcint.inf.pred"
+#> 
+#> $aumcint.inf.pred.dose$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcint.inf.pred.dose$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcint.inf.pred.dose$pretty_name
+#> [1] "AUMCint (based on AUMCinf,pred extrapolation, dose-aware)"
+#> 
+#> $aumcint.inf.pred.dose$desc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations"
+#> 
+#> $aumcint.inf.pred.dose$sparse
+#> [1] FALSE
+#> 
+#> $aumcint.inf.pred.dose$formalsmap
+#> $aumcint.inf.pred.dose$formalsmap$conc
+#> [1] "conc.group"
+#> 
+#> $aumcint.inf.pred.dose$formalsmap$time
+#> [1] "time.group"
+#> 
+#> $aumcint.inf.pred.dose$formalsmap$time.dose
+#> [1] "time.dose.group"
+#> 
+#> 
+#> $aumcint.inf.pred.dose$depends
+#> [1] "lambda.z"   "clast.pred"
+#> 
+#> $aumcint.inf.pred.dose$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $aucivinf.obs
 #> $aucivinf.obs$FUN
 #> [1] "pk.calc.auciv"
@@ -2677,6 +4249,68 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $aumcivinf.obs
+#> $aumcivinf.obs$FUN
+#> [1] "pk.calc.aumciv"
+#> 
+#> $aumcivinf.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcivinf.obs$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcivinf.obs$pretty_name
+#> [1] "AUMCinf,obs (IV dosing)"
+#> 
+#> $aumcivinf.obs$desc
+#> [1] "AUMCinf,obs with back-extrapolation using extrapolated C0"
+#> 
+#> $aumcivinf.obs$sparse
+#> [1] FALSE
+#> 
+#> $aumcivinf.obs$formalsmap
+#> $aumcivinf.obs$formalsmap$aumc
+#> [1] "aumcinf.obs"
+#> 
+#> 
+#> $aumcivinf.obs$depends
+#> [1] "aumcinf.obs" "c0"         
+#> 
+#> $aumcivinf.obs$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $aumcivinf.pred
+#> $aumcivinf.pred$FUN
+#> [1] "pk.calc.aumciv"
+#> 
+#> $aumcivinf.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcivinf.pred$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcivinf.pred$pretty_name
+#> [1] "AUMCinf,pred (IV dosing)"
+#> 
+#> $aumcivinf.pred$desc
+#> [1] "AUMCinf,pred with back-extrapolation using extrapolated C0"
+#> 
+#> $aumcivinf.pred$sparse
+#> [1] FALSE
+#> 
+#> $aumcivinf.pred$formalsmap
+#> $aumcivinf.pred$formalsmap$aumc
+#> [1] "aumcinf.pred"
+#> 
+#> 
+#> $aumcivinf.pred$depends
+#> [1] "aumcinf.pred" "c0"          
+#> 
+#> $aumcivinf.pred$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $aucpext.obs
 #> $aucpext.obs$FUN
 #> [1] "pk.calc.aucpext"
@@ -2739,6 +4373,130 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $kel.iv.all
+#> $kel.iv.all$FUN
+#> [1] "pk.calc.kel"
+#> 
+#> $kel.iv.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $kel.iv.all$unit_type
+#> [1] "inverse_time"
+#> 
+#> $kel.iv.all$pretty_name
+#> [1] "Kel (for IV dosing,  based on AUCall)"
+#> 
+#> $kel.iv.all$desc
+#> [1] "Elimination rate (as calculated from the MRTiv.all))"
+#> 
+#> $kel.iv.all$sparse
+#> [1] FALSE
+#> 
+#> $kel.iv.all$formalsmap
+#> $kel.iv.all$formalsmap$mrt
+#> [1] "mrt.iv.all"
+#> 
+#> 
+#> $kel.iv.all$depends
+#> [1] "mrt.iv.all"
+#> 
+#> $kel.iv.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $kel.ivint.all
+#> $kel.ivint.all$FUN
+#> [1] "pk.calc.kel"
+#> 
+#> $kel.ivint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $kel.ivint.all$unit_type
+#> [1] "inverse_time"
+#> 
+#> $kel.ivint.all$pretty_name
+#> [1] "Kel (IV dose interval, based on AUCint.all)"
+#> 
+#> $kel.ivint.all$desc
+#> [1] "Elimination rate (as calculated from the MRTivint.all)"
+#> 
+#> $kel.ivint.all$sparse
+#> [1] FALSE
+#> 
+#> $kel.ivint.all$formalsmap
+#> $kel.ivint.all$formalsmap$mrt
+#> [1] "mrt.ivint.all"
+#> 
+#> 
+#> $kel.ivint.all$depends
+#> [1] "mrt.ivint.all"
+#> 
+#> $kel.ivint.all$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $kel.ivint.last
+#> $kel.ivint.last$FUN
+#> [1] "pk.calc.kel"
+#> 
+#> $kel.ivint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $kel.ivint.last$unit_type
+#> [1] "inverse_time"
+#> 
+#> $kel.ivint.last$pretty_name
+#> [1] "Kel (IV dose interval, based on AUCint.last)"
+#> 
+#> $kel.ivint.last$desc
+#> [1] "Elimination rate (as calculated from the MRTivint.last)"
+#> 
+#> $kel.ivint.last$sparse
+#> [1] FALSE
+#> 
+#> $kel.ivint.last$formalsmap
+#> $kel.ivint.last$formalsmap$mrt
+#> [1] "mrt.ivint.last"
+#> 
+#> 
+#> $kel.ivint.last$depends
+#> [1] "mrt.ivint.last"
+#> 
+#> $kel.ivint.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $kel.sparse.last
+#> $kel.sparse.last$FUN
+#> [1] "pk.calc.kel"
+#> 
+#> $kel.sparse.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $kel.sparse.last$unit_type
+#> [1] "inverse_time"
+#> 
+#> $kel.sparse.last$pretty_name
+#> [1] "Kel (for sparse data, based on AUClast)"
+#> 
+#> $kel.sparse.last$desc
+#> [1] "Elimination rate (as calculated from the MRTsparse.last)"
+#> 
+#> $kel.sparse.last$sparse
+#> [1] TRUE
+#> 
+#> $kel.sparse.last$formalsmap
+#> $kel.sparse.last$formalsmap$mrt
+#> [1] "mrt.sparse.last"
+#> 
+#> 
+#> $kel.sparse.last$depends
+#> [1] "mrt.sparse.last"
+#> 
+#> $kel.sparse.last$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $cl.obs
 #> $cl.obs$FUN
 #> [1] "pk.calc.cl"
@@ -2798,6 +4556,130 @@ get.interval.cols()
 #> [1] "aucinf.pred"
 #> 
 #> $cl.pred$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $cl.int.inf.obs
+#> $cl.int.inf.obs$FUN
+#> [1] "pk.calc.cl"
+#> 
+#> $cl.int.inf.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $cl.int.inf.obs$unit_type
+#> [1] "clearance"
+#> 
+#> $cl.int.inf.obs$pretty_name
+#> [1] "CL (based on AUCint.inf.obs)"
+#> 
+#> $cl.int.inf.obs$desc
+#> [1] "Clearance or observed oral clearance calculated with AUCint.inf.obs"
+#> 
+#> $cl.int.inf.obs$sparse
+#> [1] FALSE
+#> 
+#> $cl.int.inf.obs$formalsmap
+#> $cl.int.inf.obs$formalsmap$auc
+#> [1] "aucint.inf.obs"
+#> 
+#> 
+#> $cl.int.inf.obs$depends
+#> [1] "aucint.inf.obs"
+#> 
+#> $cl.int.inf.obs$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $cl.int.inf.pred
+#> $cl.int.inf.pred$FUN
+#> [1] "pk.calc.cl"
+#> 
+#> $cl.int.inf.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $cl.int.inf.pred$unit_type
+#> [1] "clearance"
+#> 
+#> $cl.int.inf.pred$pretty_name
+#> [1] "CL (based on AUCint.inf.pred)"
+#> 
+#> $cl.int.inf.pred$desc
+#> [1] "Clearance or observed oral clearance calculated with AUCint.inf.pred"
+#> 
+#> $cl.int.inf.pred$sparse
+#> [1] FALSE
+#> 
+#> $cl.int.inf.pred$formalsmap
+#> $cl.int.inf.pred$formalsmap$auc
+#> [1] "aucint.inf.pred"
+#> 
+#> 
+#> $cl.int.inf.pred$depends
+#> [1] "aucint.inf.pred"
+#> 
+#> $cl.int.inf.pred$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $cl.iv.obs
+#> $cl.iv.obs$FUN
+#> [1] "pk.calc.cl"
+#> 
+#> $cl.iv.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $cl.iv.obs$unit_type
+#> [1] "clearance"
+#> 
+#> $cl.iv.obs$pretty_name
+#> [1] "CL (for IV dosing,  based on AUCinf,obs)"
+#> 
+#> $cl.iv.obs$desc
+#> [1] "Clearance for intravenous dosing calculated with AUCinf,obs"
+#> 
+#> $cl.iv.obs$sparse
+#> [1] FALSE
+#> 
+#> $cl.iv.obs$formalsmap
+#> $cl.iv.obs$formalsmap$auc
+#> [1] "aucivinf.obs"
+#> 
+#> 
+#> $cl.iv.obs$depends
+#> [1] "aucivinf.obs"
+#> 
+#> $cl.iv.obs$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $cl.iv.pred
+#> $cl.iv.pred$FUN
+#> [1] "pk.calc.cl"
+#> 
+#> $cl.iv.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $cl.iv.pred$unit_type
+#> [1] "clearance"
+#> 
+#> $cl.iv.pred$pretty_name
+#> [1] "CL (for IV dosing,  based on AUCinf,pred)"
+#> 
+#> $cl.iv.pred$desc
+#> [1] "Clearance for intravenous dosing calculated with AUCinf,pred"
+#> 
+#> $cl.iv.pred$sparse
+#> [1] FALSE
+#> 
+#> $cl.iv.pred$formalsmap
+#> $cl.iv.pred$formalsmap$auc
+#> [1] "aucivinf.pred"
+#> 
+#> 
+#> $cl.iv.pred$depends
+#> [1] "aucivinf.pred"
+#> 
+#> $cl.iv.pred$datatype
 #> [1] "interval"
 #> 
 #> 
@@ -2866,6 +4748,74 @@ get.interval.cols()
 #> [1] "aucinf.pred"  "aumcinf.pred"
 #> 
 #> $mrt.pred$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $mrt.int.inf.obs
+#> $mrt.int.inf.obs$FUN
+#> [1] "pk.calc.mrt"
+#> 
+#> $mrt.int.inf.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $mrt.int.inf.obs$unit_type
+#> [1] "time"
+#> 
+#> $mrt.int.inf.obs$pretty_name
+#> [1] "MRT (based on AUCint.inf.obs)"
+#> 
+#> $mrt.int.inf.obs$desc
+#> [1] "Mean residence time over interval calculated with AUCint.inf.obs/AUMCint.inf.obs"
+#> 
+#> $mrt.int.inf.obs$sparse
+#> [1] FALSE
+#> 
+#> $mrt.int.inf.obs$formalsmap
+#> $mrt.int.inf.obs$formalsmap$auc
+#> [1] "aucint.inf.obs"
+#> 
+#> $mrt.int.inf.obs$formalsmap$aumc
+#> [1] "aumcint.inf.obs"
+#> 
+#> 
+#> $mrt.int.inf.obs$depends
+#> [1] "aucint.inf.obs"  "aumcint.inf.obs"
+#> 
+#> $mrt.int.inf.obs$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $mrt.int.inf.pred
+#> $mrt.int.inf.pred$FUN
+#> [1] "pk.calc.mrt"
+#> 
+#> $mrt.int.inf.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $mrt.int.inf.pred$unit_type
+#> [1] "time"
+#> 
+#> $mrt.int.inf.pred$pretty_name
+#> [1] "MRT (based on AUCint.inf.pred)"
+#> 
+#> $mrt.int.inf.pred$desc
+#> [1] "Mean residence time over interval calculated with AUCint.inf.pred/AUMCint.inf.pred"
+#> 
+#> $mrt.int.inf.pred$sparse
+#> [1] FALSE
+#> 
+#> $mrt.int.inf.pred$formalsmap
+#> $mrt.int.inf.pred$formalsmap$auc
+#> [1] "aucint.inf.pred"
+#> 
+#> $mrt.int.inf.pred$formalsmap$aumc
+#> [1] "aumcint.inf.pred"
+#> 
+#> 
+#> $mrt.int.inf.pred$depends
+#> [1] "aucint.inf.pred"  "aumcint.inf.pred"
+#> 
+#> $mrt.int.inf.pred$datatype
 #> [1] "interval"
 #> 
 #> 
@@ -3073,6 +5023,130 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $vz.int.inf.obs
+#> $vz.int.inf.obs$FUN
+#> [1] "pk.calc.vz"
+#> 
+#> $vz.int.inf.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $vz.int.inf.obs$unit_type
+#> [1] "volume"
+#> 
+#> $vz.int.inf.obs$pretty_name
+#> [1] "Vz (based on AUCint.inf.obs)"
+#> 
+#> $vz.int.inf.obs$desc
+#> [1] "Terminal volume of distribution using interval AUCint.inf.obs"
+#> 
+#> $vz.int.inf.obs$sparse
+#> [1] FALSE
+#> 
+#> $vz.int.inf.obs$formalsmap
+#> $vz.int.inf.obs$formalsmap$cl
+#> [1] "cl.int.inf.obs"
+#> 
+#> 
+#> $vz.int.inf.obs$depends
+#> [1] "cl.int.inf.obs" "lambda.z"      
+#> 
+#> $vz.int.inf.obs$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vz.int.inf.pred
+#> $vz.int.inf.pred$FUN
+#> [1] "pk.calc.vz"
+#> 
+#> $vz.int.inf.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $vz.int.inf.pred$unit_type
+#> [1] "volume"
+#> 
+#> $vz.int.inf.pred$pretty_name
+#> [1] "Vz (based on AUCint.inf.pred)"
+#> 
+#> $vz.int.inf.pred$desc
+#> [1] "Terminal volume of distribution using interval AUCint.inf.pred"
+#> 
+#> $vz.int.inf.pred$sparse
+#> [1] FALSE
+#> 
+#> $vz.int.inf.pred$formalsmap
+#> $vz.int.inf.pred$formalsmap$cl
+#> [1] "cl.int.inf.pred"
+#> 
+#> 
+#> $vz.int.inf.pred$depends
+#> [1] "cl.int.inf.pred" "lambda.z"       
+#> 
+#> $vz.int.inf.pred$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vz.iv.obs
+#> $vz.iv.obs$FUN
+#> [1] "pk.calc.vz"
+#> 
+#> $vz.iv.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $vz.iv.obs$unit_type
+#> [1] "volume"
+#> 
+#> $vz.iv.obs$pretty_name
+#> [1] "Vz (for IV dosing,  based on AUCinf,obs)"
+#> 
+#> $vz.iv.obs$desc
+#> [1] "Terminal volume of distribution for IV dosing using observed AUCinf"
+#> 
+#> $vz.iv.obs$sparse
+#> [1] FALSE
+#> 
+#> $vz.iv.obs$formalsmap
+#> $vz.iv.obs$formalsmap$cl
+#> [1] "cl.iv.obs"
+#> 
+#> 
+#> $vz.iv.obs$depends
+#> [1] "cl.iv.obs" "lambda.z" 
+#> 
+#> $vz.iv.obs$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vz.iv.pred
+#> $vz.iv.pred$FUN
+#> [1] "pk.calc.vz"
+#> 
+#> $vz.iv.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $vz.iv.pred$unit_type
+#> [1] "volume"
+#> 
+#> $vz.iv.pred$pretty_name
+#> [1] "Vz (for IV dosing,  based on AUCinf,pred)"
+#> 
+#> $vz.iv.pred$desc
+#> [1] "Terminal volume of distribution for IV dosing using predicted AUCinf"
+#> 
+#> $vz.iv.pred$sparse
+#> [1] FALSE
+#> 
+#> $vz.iv.pred$formalsmap
+#> $vz.iv.pred$formalsmap$cl
+#> [1] "cl.iv.pred"
+#> 
+#> 
+#> $vz.iv.pred$depends
+#> [1] "cl.iv.pred" "lambda.z"  
+#> 
+#> $vz.iv.pred$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $vss.obs
 #> $vss.obs$FUN
 #> [1] "pk.calc.vss"
@@ -3274,6 +5348,74 @@ get.interval.cols()
 #> [1] "cl.last"     "mrt.md.pred"
 #> 
 #> $vss.md.pred$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vss.int.inf.obs
+#> $vss.int.inf.obs$FUN
+#> [1] "pk.calc.vss"
+#> 
+#> $vss.int.inf.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $vss.int.inf.obs$unit_type
+#> [1] "volume"
+#> 
+#> $vss.int.inf.obs$pretty_name
+#> [1] "Vss (based on AUCint.inf.obs)"
+#> 
+#> $vss.int.inf.obs$desc
+#> [1] "Steady-state volume of distribution using interval AUCint.inf.obs"
+#> 
+#> $vss.int.inf.obs$sparse
+#> [1] FALSE
+#> 
+#> $vss.int.inf.obs$formalsmap
+#> $vss.int.inf.obs$formalsmap$cl
+#> [1] "cl.int.inf.obs"
+#> 
+#> $vss.int.inf.obs$formalsmap$mrt
+#> [1] "mrt.int.inf.obs"
+#> 
+#> 
+#> $vss.int.inf.obs$depends
+#> [1] "cl.int.inf.obs"  "mrt.int.inf.obs"
+#> 
+#> $vss.int.inf.obs$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vss.int.inf.pred
+#> $vss.int.inf.pred$FUN
+#> [1] "pk.calc.vss"
+#> 
+#> $vss.int.inf.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $vss.int.inf.pred$unit_type
+#> [1] "volume"
+#> 
+#> $vss.int.inf.pred$pretty_name
+#> [1] "Vss (based on AUCint.inf.pred)"
+#> 
+#> $vss.int.inf.pred$desc
+#> [1] "Steady-state volume of distribution using interval AUCint.inf.pred"
+#> 
+#> $vss.int.inf.pred$sparse
+#> [1] FALSE
+#> 
+#> $vss.int.inf.pred$formalsmap
+#> $vss.int.inf.pred$formalsmap$cl
+#> [1] "cl.int.inf.pred"
+#> 
+#> $vss.int.inf.pred$formalsmap$mrt
+#> [1] "mrt.int.inf.pred"
+#> 
+#> 
+#> $vss.int.inf.pred$depends
+#> [1] "cl.int.inf.pred"  "mrt.int.inf.pred"
+#> 
+#> $vss.int.inf.pred$datatype
 #> [1] "interval"
 #> 
 #> 
@@ -3584,6 +5726,68 @@ get.interval.cols()
 #> [1] "mrt.iv.pred"
 #> 
 #> $kel.iv.pred$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $kel.int.inf.obs
+#> $kel.int.inf.obs$FUN
+#> [1] "pk.calc.kel"
+#> 
+#> $kel.int.inf.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $kel.int.inf.obs$unit_type
+#> [1] "inverse_time"
+#> 
+#> $kel.int.inf.obs$pretty_name
+#> [1] "Kel (based on AUCint.inf.obs)"
+#> 
+#> $kel.int.inf.obs$desc
+#> [1] "Elimination rate (as calculated from the MRTint.inf.obs)"
+#> 
+#> $kel.int.inf.obs$sparse
+#> [1] FALSE
+#> 
+#> $kel.int.inf.obs$formalsmap
+#> $kel.int.inf.obs$formalsmap$mrt
+#> [1] "mrt.int.inf.obs"
+#> 
+#> 
+#> $kel.int.inf.obs$depends
+#> [1] "mrt.int.inf.obs"
+#> 
+#> $kel.int.inf.obs$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $kel.int.inf.pred
+#> $kel.int.inf.pred$FUN
+#> [1] "pk.calc.kel"
+#> 
+#> $kel.int.inf.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $kel.int.inf.pred$unit_type
+#> [1] "inverse_time"
+#> 
+#> $kel.int.inf.pred$pretty_name
+#> [1] "Kel (based on AUCint.inf.pred)"
+#> 
+#> $kel.int.inf.pred$desc
+#> [1] "Elimination rate (as calculated from the MRTint.inf.pred)"
+#> 
+#> $kel.int.inf.pred$sparse
+#> [1] FALSE
+#> 
+#> $kel.int.inf.pred$formalsmap
+#> $kel.int.inf.pred$formalsmap$mrt
+#> [1] "mrt.int.inf.pred"
+#> 
+#> 
+#> $kel.int.inf.pred$depends
+#> [1] "mrt.int.inf.pred"
+#> 
+#> $kel.int.inf.pred$datatype
 #> [1] "interval"
 #> 
 #> 
