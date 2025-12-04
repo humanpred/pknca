@@ -1,6 +1,7 @@
-#' Calculate the AUXC (AUC or AUMC) over an interval with interpolation and/or
-#' extrapolation of concentrations for the beginning and end of the
-#' interval.
+#' Calculate AUXC (AUC or AUMC) over an interval with interpolation/extrapolation
+#'
+#' Calculates AUC or AUMC over a given interval, optionally interpolating or
+#' extrapolating concentrations.
 #'
 #' @details
 #' When `pk.calc.auxcint()` needs to extrapolate using `lambda.z` (in other
@@ -12,22 +13,23 @@
 #' @inheritParams assert_intervaltime_single
 #' @inheritParams assert_lambdaz
 #' @param clast,clast.obs,clast.pred The last concentration above the limit of
-#'   quantification; this is used for AUCinf calculations.  If provided as
-#'   clast.obs (observed clast value, default), AUCinf is AUCinf,obs. If
-#'   provided as clast.pred, AUCinf is AUCinf,pred.
+#'   quantification; this is used for AUCinf calculations. If provided as
+#'   `clast.obs` (observed clast value, default), AUCinf is AUCinf,obs. If
+#'   provided as `clast.pred`, AUCinf is AUCinf,pred.
 #' @param time.dose,route,duration.dose The time of doses, route of
 #'   administration, and duration of dose used with interpolation and
-#'   extrapolation of concentration data (see [interp.extrap.conc.dose()]).  If
-#'   `NULL`, [interp.extrap.conc()] will be used instead (assuming that no doses
-#'   affecting concentrations are in the interval).
-#' @param fun_linear,fun_log,fun_inf Integration functions for linear, 
+#'   extrapolation of concentration data (see [interp.extrap.conc.dose()]).
+#'   If `NULL`, [interp.extrap.conc()] will be used instead.
+#' @param fun_linear,fun_log,fun_inf Integration functions for linear,
 #'   logarithmic, and infinite extrapolation methods.
 #' @param ... Additional arguments passed to `pk.calc.auxc` and
 #'   `interp.extrap.conc`
+#'
+#' @return The AUXC for an interval of time as a number
+#'
 #' @family AUC calculations
 #' @family AUMC calculations
 #' @seealso [PKNCA.options()], [interp.extrap.conc.dose()]
-#' @returns The AUXC for an interval of time as a number
 #' @export
 pk.calc.auxcint <- function(conc, time,
                             interval=NULL, start=NULL, end=NULL,
@@ -44,7 +46,8 @@ pk.calc.auxcint <- function(conc, time,
                             check=TRUE,
                             fun_linear,
                             fun_log,
-                            fun_inf) {
+                            fun_inf,
+                            ...) {
   # Check inputs
   auc.type <- match.arg(auc.type)
   method <- PKNCA.choose.option(name="auc.method", value=method, options=options)
@@ -175,20 +178,7 @@ pk.calc.auxcint <- function(conc, time,
   ret
 }
 
-#' Calculate the AUC over an interval with interpolation and/or
-#' extrapolation of concentrations for the beginning and end of the
-#' interval.
-#'
-#' @details
-#' When `pk.calc.aucint()` needs to extrapolate using `lambda.z` (in other
-#' words, using the half-life), it will always extrapolate using the logarithmic
-#' trapezoidal rule to align with using a half-life calculation for the
-#' extrapolation.
-#'
-#' @inheritParams pk.calc.auxcint
-#' @family AUC calculations
-#' @seealso [PKNCA.options()], [interp.extrap.conc.dose()]
-#' @returns The AUC for an interval of time as a number
+#' @describeIn pk.calc.auxcint Calculate AUC over an interval
 #' @export
 pk.calc.aucint <- function(conc, time, ..., options=list()) {
   pk.calc.auxcint(
@@ -333,19 +323,7 @@ PKNCA.set.summary(
 )
 
 
-#' Calculate the AUMC over an interval with interpolation and/or
-#' extrapolation of concentrations for the beginning and end of the
-#' interval.
-#'
-#' @details
-#' When `pk.calc.aumcint()` needs to extrapolate using `lambda.z` (in other
-#' words, using the half-life), it will always extrapolate using the logarithmic
-#' trapezoidal rule to align with using a half-life calculation for the
-#' extrapolation.
-#'
-#' @inheritParams pk.calc.auxcint
-#' @family AUMC calculations
-#' @returns The AUMC for an interval of time as a number
+#' @describeIn pk.calc.auxcint Calculate AUMC over an interval
 #' @export
 pk.calc.aumcint <- function(conc, time, ..., options=list()) {
   pk.calc.auxcint(

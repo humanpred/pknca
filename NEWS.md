@@ -6,6 +6,16 @@ the dosing including dose amount and route.
 
 # Development version
 
+## 2025-12-04 Changes in this version
+
+* Added new AUC Parameters related to CL, Kel, MRT, Vss and Vz
+* Removed `aumc_integrate()` function; simplified usage by using `auc_integrate()` with arguments `fun_linear`, `fun_log`, and `fun_inf`. (#493)
+* Refactored `pk.calc.aucint()` and `pk.calc.aumcint()`:
+    - Renamed original `pk.calc.aucint()` to `pk.calc.auxcint()` and added integration functions as arguments.
+    - Created new `pk.calc.aucint()` and `pk.calc.aumcint()` calling `pk.calc.auxcint()` with proper integration functions. (#494)
+* Refactored `pk.calc.auciv()` and `pk.calc.aumciv()` similarly to #494. (#495)
+
+
 ## Breaking changes
 
 * Both include and excluding half-life points may not be done for the same interval (#406)

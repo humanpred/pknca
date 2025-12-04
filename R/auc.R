@@ -70,7 +70,7 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
                          conc.blq=NULL,
                          conc.na=NULL,
                          check=TRUE,
-                         fun_linear, fun_log, fun_inf) {
+                         fun_linear, fun_log, fun_inf, ...) {
   # Check the inputs
   method <- PKNCA.choose.option(name="auc.method", value=method, options=options)
   if (check) {
