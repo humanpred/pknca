@@ -1,3 +1,52 @@
+#' Calculate AUXC (AUC or AUMC) for intravenous dosing with C0 back-extrapolation
+#'
+#' @details The AUXC for intravenous (IV) dosing extrapolates the AUXC back from
+#'   the first measurement to time 0 using c0 and the AUXC calculated by another
+#'   method (for example the auclast or aumclast).
+#'
+#' The calculation method takes the following steps:
+#'
+#' \itemize{
+#'   \item{`time = 0` must be present in the data with a measured concentration.}
+#'   \item{The AUXC between `time = 0` and the next time point is calculated (`auxc_first`).}
+#'   \item{The AUXC between `time = 0` with `c0` and the next time point is calculated (`auxc_second`).}
+#'   \item{The final AUXC is the initial AUXC plus the difference between the two AUXCs (`auxc_final <- auxc + auxc_second - auxc_first`).}
+#' }
+#' @inheritParams pk.calc.auxc
+#' @inheritParams PKNCA.choose.option
+#' @param c0 The concentration at time 0, typically calculated using
+#'   `pk.calc.c0()`
+#' @param auxc The AUXC calculated using `conc` and `time` without `c0` (it may be
+#'   calculated using any method)
+#' @param fun_auxc_last Function to calculate the AUXC for the last interval
+#'   (e.g., `pk.calc.auc.last` or `pk.calc.aumc.last`)
+#' @return The AUXC calculated using `c0`
+#' @family AUC calculations
+#' @family AUMC calculations
+#' @export
+pk.calc.auxciv <- function(conc, time, c0, auxc, fun_auxc_last, ..., options = list(), check = TRUE) {
+  if (check) {
+    assert_conc_time(conc = conc, time = time)
+    data <-
+      clean.conc.blq(
+        conc, time,
+        options = options,
+        check = FALSE
+      )
+  } else {
+    data <- data.frame(conc = conc, time = time)
+  }
+  if (!(0 %in% time)) {
+    return(structure(NA_real_, exclude = "No time 0 in data"))
+  } else if (is.na(c0)) {
+    return(structure(NA_real_, exclude = "c0 is not calculated"))
+  }
+  auxc_first <- fun_auxc_last(conc = data$conc[1:2], time = data$time[1:2], ..., check = FALSE)
+  auxc_second <- fun_auxc_last(conc = c(c0, data$conc[2]), time = data$time[1:2], ..., check = FALSE)
+  auxc_final <- auxc + auxc_second - auxc_first
+  auxc_final
+}
+
 #' Calculate AUC for intravenous dosing
 #'
 #' @details The AUC for intravenous (IV) dosing extrapolates the AUC back from
@@ -12,36 +61,22 @@
 #'   \item{The AUC between `time = 0` with `c0` and the next time point is calculated (`auc_second`).}
 #'   \item{The final AUC is the initial AUC plus the difference between the two AUCs (`auc_final <- auc + auc_second - auc_first`).}
 #' }
-#' @inheritParams pk.calc.auxc
-#' @inheritParams PKNCA.choose.option
-#' @param c0 The concentration at time 0, typically calculated using
-#'   `pk.calc.c0()`
+#' @inheritParams pk.calc.auxciv
 #' @param auc The AUC calculated using `conc` and `time` without `c0` (it may be
 #'   calculated using any method)
 #' @return `pk.calc.auciv`: The AUC calculated using `c0`
 #' @export
-pk.calc.auciv <- function(conc, time, c0, auc, ..., options = list(), check=TRUE) {
-  if (check) {
-    assert_conc_time(conc = conc, time = time)
-    data <-
-      clean.conc.blq(
-        conc, time,
-        options = options,
-        check=FALSE
-      )
-  } else {
-    data <- data.frame(conc = conc, time = time)
-  }
-  if (!(0 %in% time)) {
-    return(structure(NA_real_, exclude="No time 0 in data"))
-  } else if (is.na(c0)) {
-    return(structure(NA_real_, exclude="c0 is not calculated"))
-  }
-  auc_first <- pk.calc.auc.last(conc = data$conc[1:2], time = data$time[1:2], ..., check=FALSE)
-  auc_second <- pk.calc.auc.last(conc = c(c0, data$conc[2]), time = data$time[1:2], ..., check=FALSE)
-  auc_final <- auc + auc_second - auc_first
-  auc_final
+pk.calc.auciv <- function(conc, time, c0, auc, ..., options = list(), check = TRUE) {
+  pk.calc.auxciv(
+    conc = conc, time = time,
+    c0 = c0, auxc = auc,
+    fun_auxc_last = pk.calc.auc.last,
+    ...,
+    options = options,
+    check = check
+  )
 }
+
 
 add.interval.col(
   name = "aucivlast",
@@ -205,45 +240,20 @@ PKNCA.set.summary(
 #' @details Analogous to pk.calc.auciv but for AUMC.
 #' Replaces the first AUMC interval (from measured C0) with one using extrapolated c0.
 #'
-#' @inheritParams pk.calc.auxc
-#' @param c0 The concentration at time 0 (extrapolated)
+#' @inheritParams pk.calc.auxciv
 #' @param aumc The AUMC calculated without c0 adjustment (e.g., aumcall, aumclast)
 #' @return The AUMC with IV back-extrapolation applied
 #' @export
 pk.calc.aumciv <- function(conc, time, c0, aumc, ..., options = list(), check = TRUE) {
-  if (check) {
-    assert_conc_time(conc = conc, time = time)
-    data <- clean.conc.blq(conc, time, options = options, check = FALSE)
-  } else {
-    data <- data.frame(conc = conc, time = time)
-  }
-  
-  if (!(0 %in% time)) {
-    return(structure(NA_real_, exclude = "No time 0 in data"))
-  } else if (is.na(c0)) {
-    return(structure(NA_real_, exclude = "c0 is not calculated"))
-  }
-  
-  # AUMC for first interval using measured concentrations
-  aumc_first <- pk.calc.aumc.last(
-    conc = data$conc[1:2],
-    time = data$time[1:2],
+  pk.calc.auxciv(
+    conc = conc, time = time,
+    c0 = c0, auxc = aumc,
+    fun_auxc_last = pk.calc.aumc.last,
     ...,
-    check = FALSE
+    options = options,
+    check = check
   )
-  
-  # AUMC for first interval using extrapolated c0
-  aumc_second <- pk.calc.aumc.last(
-    conc = c(c0, data$conc[2]),
-    time = data$time[1:2],
-    ...,
-    check = FALSE
-  )
-  
-  aumc_final <- aumc + aumc_second - aumc_first
-  aumc_final
 }
-
 # Register all standard AUMC IV versions
 add.interval.col(
   name = "aumcivlast",
