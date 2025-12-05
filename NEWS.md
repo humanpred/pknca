@@ -14,7 +14,7 @@ the dosing including dose amount and route.
     - Renamed original `pk.calc.aucint()` to `pk.calc.auxcint()` and added integration functions as arguments.
     - Created new `pk.calc.aucint()` and `pk.calc.aumcint()` calling `pk.calc.auxcint()` with proper integration functions. (#494)
 * Refactored `pk.calc.auciv()` and `pk.calc.aumciv()` similarly to #494. (#495)
-
+* Saprse AUMC functions added
 
 ## Breaking changes
 
