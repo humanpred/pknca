@@ -534,7 +534,6 @@ pk.calc.sparse_aumclast <- function(conc, time, subject, ..., options = list()) 
   ret
 }
 
-# Column registrations
 add.interval.col(
   "sparse_aumclast",
   sparse = TRUE,
