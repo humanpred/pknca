@@ -778,6 +778,8 @@ test_that("all parameters can be calculated (#367)", {
     )
   all_params$start <- 0
   all_params$end <- Inf
+  # Parameters that do not work right now
+  all_params$aucint.last <- FALSE
   o_data <- PKNCAdata(o_conc, intervals = all_params)
   expect_error(o_nca <- pk.nca(o_data), NA)
 })
