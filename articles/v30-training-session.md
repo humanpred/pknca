@@ -1181,31 +1181,31 @@ o_data$intervals %>% select(-Subject) %>% unique() %>% as.data.frame()
     ## 2                FALSE               FALSE      FALSE               FALSE
     ## 3                FALSE               FALSE      FALSE               FALSE
     ## 4                FALSE               FALSE      FALSE               FALSE
-    ##   totdose volpk    ae clr.last clr.obs clr.pred    fe ertlst ermax ertmax
-    ## 1   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
-    ## 2   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
-    ## 3   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
-    ## 4   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
-    ##   sparse_auclast sparse_auc_se sparse_auc_df sparse_aumclast sparse_aumc_se
-    ## 1          FALSE         FALSE         FALSE           FALSE          FALSE
-    ## 2          FALSE         FALSE         FALSE           FALSE          FALSE
-    ## 3          FALSE         FALSE         FALSE           FALSE          FALSE
-    ## 4          FALSE         FALSE         FALSE           FALSE          FALSE
-    ##   sparse_aumc_df time_above aucivlast aucivall aucivint.last aucivint.all
-    ## 1          FALSE      FALSE     FALSE    FALSE         FALSE        FALSE
-    ## 2          FALSE      FALSE     FALSE    FALSE         FALSE        FALSE
-    ## 3          FALSE      FALSE     FALSE    FALSE         FALSE        FALSE
-    ## 4          FALSE      FALSE     FALSE    FALSE         FALSE        FALSE
-    ##   aucivpbextlast aucivpbextall aucivpbextint.last aucivpbextint.all aumcivlast
-    ## 1          FALSE         FALSE              FALSE             FALSE      FALSE
-    ## 2          FALSE         FALSE              FALSE             FALSE      FALSE
-    ## 3          FALSE         FALSE              FALSE             FALSE      FALSE
-    ## 4          FALSE         FALSE              FALSE             FALSE      FALSE
-    ##   aumcivall aumcivint.last aumcivint.all half.life r.squared adj.r.squared
-    ## 1     FALSE          FALSE         FALSE     FALSE     FALSE         FALSE
-    ## 2     FALSE          FALSE         FALSE      TRUE     FALSE         FALSE
-    ## 3     FALSE          FALSE         FALSE     FALSE     FALSE         FALSE
-    ## 4     FALSE          FALSE         FALSE     FALSE     FALSE         FALSE
+    ##   totdose volpk    ae clr.last    fe ertlst ermax ertmax sparse_auclast
+    ## 1   FALSE FALSE FALSE    FALSE FALSE  FALSE FALSE  FALSE          FALSE
+    ## 2   FALSE FALSE FALSE    FALSE FALSE  FALSE FALSE  FALSE          FALSE
+    ## 3   FALSE FALSE FALSE    FALSE FALSE  FALSE FALSE  FALSE          FALSE
+    ## 4   FALSE FALSE FALSE    FALSE FALSE  FALSE FALSE  FALSE          FALSE
+    ##   sparse_auc_se sparse_auc_df sparse_aumclast sparse_aumc_se sparse_aumc_df
+    ## 1         FALSE         FALSE           FALSE          FALSE          FALSE
+    ## 2         FALSE         FALSE           FALSE          FALSE          FALSE
+    ## 3         FALSE         FALSE           FALSE          FALSE          FALSE
+    ## 4         FALSE         FALSE           FALSE          FALSE          FALSE
+    ##   time_above aucivlast aucivall aucivint.last aucivint.all aucivpbextlast
+    ## 1      FALSE     FALSE    FALSE         FALSE        FALSE          FALSE
+    ## 2      FALSE     FALSE    FALSE         FALSE        FALSE          FALSE
+    ## 3      FALSE     FALSE    FALSE         FALSE        FALSE          FALSE
+    ## 4      FALSE     FALSE    FALSE         FALSE        FALSE          FALSE
+    ##   aucivpbextall aucivpbextint.last aucivpbextint.all aumcivlast aumcivall
+    ## 1         FALSE              FALSE             FALSE      FALSE     FALSE
+    ## 2         FALSE              FALSE             FALSE      FALSE     FALSE
+    ## 3         FALSE              FALSE             FALSE      FALSE     FALSE
+    ## 4         FALSE              FALSE             FALSE      FALSE     FALSE
+    ##   aumcivint.last aumcivint.all half.life r.squared adj.r.squared
+    ## 1          FALSE         FALSE     FALSE     FALSE         FALSE
+    ## 2          FALSE         FALSE      TRUE     FALSE         FALSE
+    ## 3          FALSE         FALSE     FALSE     FALSE         FALSE
+    ## 4          FALSE         FALSE     FALSE     FALSE         FALSE
     ##   lambda.z.corrxy lambda.z lambda.z.time.first lambda.z.time.last
     ## 1           FALSE    FALSE               FALSE              FALSE
     ## 2           FALSE    FALSE               FALSE              FALSE
@@ -1286,36 +1286,36 @@ o_data$intervals %>% select(-Subject) %>% unique() %>% as.data.frame()
     ## 2      FALSE   FALSE    FALSE      FALSE       FALSE      FALSE       FALSE
     ## 3      FALSE   FALSE    FALSE      FALSE       FALSE      FALSE       FALSE
     ## 4      FALSE   FALSE    FALSE      FALSE       FALSE      FALSE       FALSE
-    ##   vss.int.inf.obs vss.int.inf.pred cav.int.inf.obs cav.int.inf.pred
-    ## 1           FALSE            FALSE           FALSE            FALSE
-    ## 2           FALSE            FALSE           FALSE            FALSE
-    ## 3           FALSE            FALSE           FALSE            FALSE
-    ## 4           FALSE            FALSE           FALSE            FALSE
-    ##   thalf.eff.obs thalf.eff.pred thalf.eff.iv.obs thalf.eff.iv.pred kel.obs
-    ## 1         FALSE          FALSE            FALSE             FALSE   FALSE
-    ## 2         FALSE          FALSE            FALSE             FALSE   FALSE
-    ## 3         FALSE          FALSE            FALSE             FALSE   FALSE
-    ## 4         FALSE          FALSE            FALSE             FALSE   FALSE
-    ##   kel.pred kel.iv.obs kel.iv.pred kel.int.inf.obs kel.int.inf.pred auclast.dn
-    ## 1    FALSE      FALSE       FALSE           FALSE            FALSE      FALSE
-    ## 2    FALSE      FALSE       FALSE           FALSE            FALSE      FALSE
-    ## 3    FALSE      FALSE       FALSE           FALSE            FALSE      FALSE
-    ## 4    FALSE      FALSE       FALSE           FALSE            FALSE      FALSE
-    ##   aucall.dn aucinf.obs.dn aucinf.pred.dn aumclast.dn aumcall.dn aumcinf.obs.dn
-    ## 1     FALSE         FALSE          FALSE       FALSE      FALSE          FALSE
-    ## 2     FALSE         FALSE          FALSE       FALSE      FALSE          FALSE
-    ## 3     FALSE         FALSE          FALSE       FALSE      FALSE          FALSE
-    ## 4     FALSE         FALSE          FALSE       FALSE      FALSE          FALSE
-    ##   aumcinf.pred.dn cmax.dn cmin.dn clast.obs.dn clast.pred.dn cav.dn ctrough.dn
-    ## 1           FALSE   FALSE   FALSE        FALSE         FALSE  FALSE      FALSE
-    ## 2           FALSE   FALSE   FALSE        FALSE         FALSE  FALSE      FALSE
-    ## 3           FALSE   FALSE   FALSE        FALSE         FALSE  FALSE      FALSE
-    ## 4           FALSE   FALSE   FALSE        FALSE         FALSE  FALSE      FALSE
-    ##   clr.last.dn clr.obs.dn clr.pred.dn Study_Part
-    ## 1       FALSE      FALSE       FALSE     Single
-    ## 2       FALSE      FALSE       FALSE     Single
-    ## 3       FALSE      FALSE       FALSE   Multiple
-    ## 4       FALSE      FALSE       FALSE   Multiple
+    ##   vss.int.inf.obs vss.int.inf.pred cav.int.inf.obs cav.int.inf.pred clr.obs
+    ## 1           FALSE            FALSE           FALSE            FALSE   FALSE
+    ## 2           FALSE            FALSE           FALSE            FALSE   FALSE
+    ## 3           FALSE            FALSE           FALSE            FALSE   FALSE
+    ## 4           FALSE            FALSE           FALSE            FALSE   FALSE
+    ##   clr.pred thalf.eff.obs thalf.eff.pred thalf.eff.iv.obs thalf.eff.iv.pred
+    ## 1    FALSE         FALSE          FALSE            FALSE             FALSE
+    ## 2    FALSE         FALSE          FALSE            FALSE             FALSE
+    ## 3    FALSE         FALSE          FALSE            FALSE             FALSE
+    ## 4    FALSE         FALSE          FALSE            FALSE             FALSE
+    ##   kel.obs kel.pred kel.iv.obs kel.iv.pred kel.int.inf.obs kel.int.inf.pred
+    ## 1   FALSE    FALSE      FALSE       FALSE           FALSE            FALSE
+    ## 2   FALSE    FALSE      FALSE       FALSE           FALSE            FALSE
+    ## 3   FALSE    FALSE      FALSE       FALSE           FALSE            FALSE
+    ## 4   FALSE    FALSE      FALSE       FALSE           FALSE            FALSE
+    ##   auclast.dn aucall.dn aucinf.obs.dn aucinf.pred.dn aumclast.dn aumcall.dn
+    ## 1      FALSE     FALSE         FALSE          FALSE       FALSE      FALSE
+    ## 2      FALSE     FALSE         FALSE          FALSE       FALSE      FALSE
+    ## 3      FALSE     FALSE         FALSE          FALSE       FALSE      FALSE
+    ## 4      FALSE     FALSE         FALSE          FALSE       FALSE      FALSE
+    ##   aumcinf.obs.dn aumcinf.pred.dn cmax.dn cmin.dn clast.obs.dn clast.pred.dn
+    ## 1          FALSE           FALSE   FALSE   FALSE        FALSE         FALSE
+    ## 2          FALSE           FALSE   FALSE   FALSE        FALSE         FALSE
+    ## 3          FALSE           FALSE   FALSE   FALSE        FALSE         FALSE
+    ## 4          FALSE           FALSE   FALSE   FALSE        FALSE         FALSE
+    ##   cav.dn ctrough.dn clr.last.dn clr.obs.dn clr.pred.dn Study_Part
+    ## 1  FALSE      FALSE       FALSE      FALSE       FALSE     Single
+    ## 2  FALSE      FALSE       FALSE      FALSE       FALSE     Single
+    ## 3  FALSE      FALSE       FALSE      FALSE       FALSE   Multiple
+    ## 4  FALSE      FALSE       FALSE      FALSE       FALSE   Multiple
 
 ``` r
 o_nca <- pk.nca(o_data)

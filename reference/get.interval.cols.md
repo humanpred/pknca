@@ -1723,71 +1723,9 @@ get.interval.cols()
 #> 
 #> 
 #> $clr.last$depends
-#> NULL
+#> [1] "ae"      "auclast"
 #> 
 #> $clr.last$datatype
-#> [1] "interval"
-#> 
-#> 
-#> $clr.obs
-#> $clr.obs$FUN
-#> [1] "pk.calc.clr"
-#> 
-#> $clr.obs$values
-#> [1] FALSE  TRUE
-#> 
-#> $clr.obs$unit_type
-#> [1] "renal_clearance"
-#> 
-#> $clr.obs$pretty_name
-#> [1] "Renal clearance (from AUCinf,obs)"
-#> 
-#> $clr.obs$desc
-#> [1] "The renal clearance calculated using AUCinf,obs"
-#> 
-#> $clr.obs$sparse
-#> [1] FALSE
-#> 
-#> $clr.obs$formalsmap
-#> $clr.obs$formalsmap$auc
-#> [1] "aucinf.obs"
-#> 
-#> 
-#> $clr.obs$depends
-#> NULL
-#> 
-#> $clr.obs$datatype
-#> [1] "interval"
-#> 
-#> 
-#> $clr.pred
-#> $clr.pred$FUN
-#> [1] "pk.calc.clr"
-#> 
-#> $clr.pred$values
-#> [1] FALSE  TRUE
-#> 
-#> $clr.pred$unit_type
-#> [1] "renal_clearance"
-#> 
-#> $clr.pred$pretty_name
-#> [1] "Renal clearance (from AUCinf,pred)"
-#> 
-#> $clr.pred$desc
-#> [1] "The renal clearance calculated using AUCinf,pred"
-#> 
-#> $clr.pred$sparse
-#> [1] FALSE
-#> 
-#> $clr.pred$formalsmap
-#> $clr.pred$formalsmap$auc
-#> [1] "aucinf.pred"
-#> 
-#> 
-#> $clr.pred$depends
-#> NULL
-#> 
-#> $clr.pred$datatype
 #> [1] "interval"
 #> 
 #> 
@@ -1814,7 +1752,7 @@ get.interval.cols()
 #> list()
 #> 
 #> $fe$depends
-#> NULL
+#> [1] "ae"
 #> 
 #> $fe$datatype
 #> [1] "interval"
@@ -5478,6 +5416,68 @@ get.interval.cols()
 #> [1] "aucint.inf.pred"
 #> 
 #> $cav.int.inf.pred$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $clr.obs
+#> $clr.obs$FUN
+#> [1] "pk.calc.clr"
+#> 
+#> $clr.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $clr.obs$unit_type
+#> [1] "renal_clearance"
+#> 
+#> $clr.obs$pretty_name
+#> [1] "Renal clearance (from AUCinf,obs)"
+#> 
+#> $clr.obs$desc
+#> [1] "The renal clearance calculated using AUCinf,obs"
+#> 
+#> $clr.obs$sparse
+#> [1] FALSE
+#> 
+#> $clr.obs$formalsmap
+#> $clr.obs$formalsmap$auc
+#> [1] "aucinf.obs"
+#> 
+#> 
+#> $clr.obs$depends
+#> [1] "ae"         "aucinf.obs"
+#> 
+#> $clr.obs$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $clr.pred
+#> $clr.pred$FUN
+#> [1] "pk.calc.clr"
+#> 
+#> $clr.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $clr.pred$unit_type
+#> [1] "renal_clearance"
+#> 
+#> $clr.pred$pretty_name
+#> [1] "Renal clearance (from AUCinf,pred)"
+#> 
+#> $clr.pred$desc
+#> [1] "The renal clearance calculated using AUCinf,pred"
+#> 
+#> $clr.pred$sparse
+#> [1] FALSE
+#> 
+#> $clr.pred$formalsmap
+#> $clr.pred$formalsmap$auc
+#> [1] "aucinf.pred"
+#> 
+#> 
+#> $clr.pred$depends
+#> [1] "ae"          "aucinf.pred"
+#> 
+#> $clr.pred$datatype
 #> [1] "interval"
 #> 
 #> 

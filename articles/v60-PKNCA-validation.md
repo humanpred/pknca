@@ -31,7 +31,7 @@ results: Tests were not run because tests are not installed.
 Sys.Date()
 ```
 
-    ## [1] "2025-12-03"
+    ## [1] "2025-12-10"
 
 ``` r
 sessionInfo()
@@ -63,7 +63,7 @@ sessionInfo()
     ## loaded via a namespace (and not attached):
     ##  [1] vctrs_0.6.5       nlme_3.1-168      cli_3.6.5         rlang_1.1.6      
     ##  [5] xfun_0.54         generics_0.1.4    textshaping_1.0.4 jsonlite_2.0.0   
-    ##  [9] glue_1.8.0        htmltools_0.5.8.1 ragg_1.5.0        sass_0.4.10      
+    ##  [9] glue_1.8.0        htmltools_0.5.9   ragg_1.5.0        sass_0.4.10      
     ## [13] brio_1.1.5        rmarkdown_2.30    grid_4.5.2        tibble_3.3.0     
     ## [17] evaluate_1.0.5    jquerylib_0.1.4   fastmap_1.2.0     yaml_2.3.11      
     ## [21] lifecycle_1.0.4   compiler_4.5.2    fs_1.6.6          Rcpp_1.1.0       
