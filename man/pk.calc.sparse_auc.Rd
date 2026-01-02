@@ -58,6 +58,7 @@ Where:
 \seealso{
 Other Sparse Methods: 
 \code{\link{as_sparse_pk}()},
+\code{\link{pk.calc.sparse_aumc}()},
 \code{\link{sparse_auc_weight_linear}()},
 \code{\link{sparse_mean}()}
 }
