@@ -180,6 +180,10 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     # as.numeric is for units handling
     dfK <- data[as.numeric(data$time) > as.numeric(ret$tmax), ]
   }
+  if (sd(data$log_conc, na.rm = TRUE) == 0) {
+    # All concentrations are the same (non-zero) value
+    attr(ret, "exclude") <- "No point variability in concentrations for half-life calculation"
+  }
   if (manually.selected.points) {
     if (nrow(data) > 0) {
       fit <- fit_half_life(data=data, tlast=ret$tlast, conc_units=conc_units)
@@ -266,6 +270,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       class = "pknca_halflife_too_few_points"
     )
   }
+
   # Drop the inputs of tmax and tlast, if given.
   if (!missing(tmax))
     ret$tmax <- NULL
