@@ -183,6 +183,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   if (sd(data$log_conc, na.rm = TRUE) == 0) {
     # All concentrations are the same (non-zero) value
     attr(ret, "exclude") <- "No point variability in concentrations for half-life calculation"
+    return(ret)
   }
   if (manually.selected.points) {
     if (nrow(data) > 0) {
