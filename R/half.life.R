@@ -180,8 +180,8 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     # as.numeric is for units handling
     dfK <- data[as.numeric(data$time) > as.numeric(ret$tmax), ]
   }
+  # When all concentrations are the same (non-zero) value cannot compute half-life (#503)
   if (sd(data$log_conc, na.rm = TRUE) == 0) {
-    # All concentrations are the same (non-zero) value
     attr(ret, "exclude") <- "No point variability in concentrations for half-life calculation"
     return(ret)
   }

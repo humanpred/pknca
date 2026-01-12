@@ -507,7 +507,7 @@ test_that("get_halflife_points method (1: PKNCAdata, 2: PKNCAresults)", {
   )
 })
 
-test_that("half-life has a exclude message when it cannot be calculated for flat data", {
+test_that("half-life has a exclude message when it cannot be calculated for flat data (#503)", {
   result <- suppressMessages(
     pk.calc.half.life(
       conc = c(1, 1, 1, 1),
