@@ -506,3 +506,20 @@ test_that("get_halflife_points method (1: PKNCAdata, 2: PKNCAresults)", {
     info = "get_halflife_points uses lambda.z.time.last, not tlast"
   )
 })
+
+test_that("half-life has a exclude message when it cannot be calculated for flat data", {
+  result <- suppressMessages(
+    pk.calc.half.life(
+      conc = c(1, 1, 1, 1),
+      time = c(0, 1, 2, 3),
+      min.hl.points = 3,
+      allow.tmax.in.half.life = TRUE,
+      adj.r.squared.factor = 0.0001,
+      check = FALSE
+    )
+  )
+  expect_equal(
+    attr(result, "exclude"),
+    "No point variability in concentrations for half-life calculation"
+  )
+})
