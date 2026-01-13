@@ -142,6 +142,28 @@
     }
     x
   },
+  first.ertmax=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return(paste(
+        "If there is more than one concentration equal to maximum excretion rate, which time",
+        "should be selected for ertmax?  If 'TRUE', the first will be selected.",
+        "If 'FALSE', the last will be selected."))
+    if (default)
+      return(TRUE)
+    if (length(x) != 1)
+      stop("first.ertmax must be a scalar")
+    if (is.na(x))
+      stop("first.ertmax may not be NA")
+    if (!is.logical(x)) {
+      x <- as.logical(x)
+      if (is.na(x)) {
+        stop("Could not convert first.ertmax to a logical value")
+      } else {
+        warning("Converting first.ertmax to a logical value: ", x)
+      }
+    }
+    x
+  },
   first.tmax=function(x, default=FALSE, description=FALSE) {
     if (description)
       return(paste(
@@ -579,4 +601,3 @@ PKNCA.set.summary <- function(name, description, point, spread,
   assign("summary", current, envir=.PKNCAEnv)
   invisible(current)
 }
-
