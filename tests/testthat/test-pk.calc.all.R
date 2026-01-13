@@ -757,9 +757,7 @@ test_that("do not give rbind error when interval columns have attributes (#381)"
   )
 })
 
-
 test_that("pk.nca can be run for each parameter independently (#473)", {
-
   d_conc <- Theoph[Theoph$Subject %in% "1", ]
   d_conc <- rbind(d_conc, mutate(d_conc, Time = Time + 25))
   d_conc$volume <- 1
