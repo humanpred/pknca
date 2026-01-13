@@ -240,11 +240,11 @@ PKNCA.set.summary(
 #' @param time The starting time of the collection interval
 #' @param duration.conc The duration of the collection interval
 #' @param check Should the concentration and time data be checked?
-#' @param first.tmax If TRUE, return the first time of maximum excretion rate; otherwise, return the last
+#' @param first.ertmax If TRUE, return the first time of maximum excretion rate; otherwise, return the last
 #' @return The midpoint collection time of the maximum excretion rate, or NA if not available
 #' @export
-pk.calc.ertmax <- function(conc, volume, time, duration.conc, check = TRUE, first.tmax = NULL) {
-
+pk.calc.ertmax <- function(conc, volume, time, duration.conc, check = TRUE, first.ertmax = NULL) {
+  first.ertmax <- PKNCA.choose.option(name="first.ertmax", value=first.ertmax, options=options)
   # Generate messages about missing concentrations/volumes
   message_all <- generate_missing_messages(conc, volume,
                                            name_a = "concentrations",
@@ -258,7 +258,7 @@ pk.calc.ertmax <- function(conc, volume, time, duration.conc, check = TRUE, firs
     midtime <- time + duration.conc / 2
     ret <- midtime[er %in% ermax]
 
-    if (first.tmax) {
+    if (first.ertmax) {
       ret <- ret[1]
     } else {
       ret <- ret[length(ret)]
@@ -299,32 +299,32 @@ generate_missing_messages <- function(a, b,
 
   mask_a <- is.na(a)
   mask_b <- is.na(b)
-  
+
   mask_both <- mask_a & mask_b
   mask_a_only <- mask_a & !mask_both
   mask_b_only <- mask_b & !mask_both
-  
+
   msg_both <- msg_a <- msg_b <- NA_character_
   n <- length(mask_a)
-  
+
   if (all(mask_both)) {
     msg_both <- sprintf("All %s and %s are missing", name_a, name_b)
   } else if (any(mask_both)) {
     msg_both <- sprintf("%g of %g %s and %s are missing", sum(mask_both), n, name_a, name_b)
   }
-  
+
   if (all(mask_a_only)) {
     msg_a <- sprintf("All %s are missing", name_a)
   } else if (any(mask_a_only)) {
     msg_a <- sprintf("%g of %g %s are missing", sum(mask_a_only), n, name_a)
   }
-  
+
   if (all(mask_b_only)) {
     msg_b <- sprintf("All %s are missing", name_b)
   } else if (any(mask_b_only)) {
     msg_b <- sprintf("%g of %g %s are missing", sum(mask_b_only), n, name_b)
   }
-  
+
   # Return non-NA messages
   stats::na.omit(c(msg_both, msg_a, msg_b))
 }
