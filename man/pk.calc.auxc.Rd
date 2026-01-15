@@ -30,7 +30,8 @@ pk.calc.auxc(
   check = TRUE,
   fun_linear,
   fun_log,
-  fun_inf
+  fun_inf,
+  ...
 )
 
 pk.calc.auc(conc, time, ..., options = list())
@@ -173,6 +174,7 @@ Press, 2000.  164-7.
 \code{\link[=clean.conc.blq]{clean.conc.blq()}}
 
 Other AUC calculations: 
-\code{\link{pk.calc.aucint}()}
+\code{\link{pk.calc.auxcint}()},
+\code{\link{pk.calc.auxciv}()}
 }
 \concept{AUC calculations}
