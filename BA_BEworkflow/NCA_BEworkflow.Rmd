@@ -1,0 +1,356 @@
+---
+title: "PKNCA-BEworkflow"
+author: "Natalie"
+date: "2025-12-01"
+output: html_document
+---
+CONDUCT NCA
+
+The following BTIF requirements can be added to the NCA part;
+1. A table of mean and individual subject concentrations
+2. A table of mean and individual linear and semi-logarithmic subject drug concentration vs. time plots
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(PKNCA)
+library(dplyr, quietly=TRUE)
+
+NCA_data <-(list.files(path = "data", pattern = "\\.csv$", full.names = TRUE))
+
+twofdc <- read.csv("data/2fdc.csv")
+fourfdc <- read.csv("data/4fdc.csv")
+
+```
+
+Replace the dataset names as needed. 
+```{r}
+fourfdc_unique <- fourfdc %>%
+  group_by(ID, occ, time, form, sequ) 
+
+conc_obj <- PKNCAconc(fourfdc_unique, rif ~ time | occ + form + sequ + ID)
+
+## Dosing data needs to only have one row per dose, so subset for
+## that first.
+d_dose <- fourfdc_unique %>%
+  filter(time == 0) %>%          
+  select(AMT, time, ID, form, sequ) %>%      
+  distinct()  
+
+knitr::kable(head (d_dose),
+             caption="Example dosing data extracted from the data set")
+```
+
+```{r}
+dose_obj <- PKNCAdose(d_dose, AMT~time|occ+form+sequ+ID)
+```
+
+```{r}
+intervals_manual <- data.frame(start=0,
+                               end=Inf,
+                               cmax=TRUE,
+                               tmax=TRUE,
+                               aucinf.obs=TRUE,
+                               auclast=TRUE)
+                       
+data_obj_manual <- PKNCAdata(conc_obj, dose_obj,
+                             intervals=intervals_manual)
+```
+
+```{r}
+PKNCA.options(auc.method="lin up/log down", min.hl.points=3)
+results_obj_manual <- pk.nca(data_obj_manual)
+```
+
+```{r}
+summary(results_obj_manual)
+ncafulldata <- as.data.frame(results_obj_manual)
+```
+ 
+ CONDUCT BIOEQUIVALENCE
+The following BTIF requirements can be added to the BE part
+1. Software  used for computing ANOVA in this case linear mixed effect ANOVA
+2. State method of CI calculation in this case exponentiated differences in least square means
+3. Table containing geometric means of AUC0-t to AUC0-inf and Cmax for both test and ref, % Ratio of geometric means, 90%CI, Degrees of Freedom (DF) and derived CV (intra-subject) 
+4. Mean AUC0-t to AUC0-inf ratio for both test and reference
+5. Individual AUC0-t to AUC0-inf ratio for both test and reference
+
+```{r}
+library(lmerTest, quietly = TRUE)
+library(lme4, quietly = TRUE)
+library(readr, quietly = TRUE)
+library(emmeans, quietly = TRUE)
+library(tidyr, quietly = TRUE)
+```
+
+```{r}
+
+BEdata <- ncafulldata %>% 
+  mutate(across(c(ID, occ, sequ), as.factor),
+  form = as.character(form),
+  form = factor(form, levels = c(reference_value, setdiff(unique(form), reference_value)))
+  ) %>%
+  pivot_wider(names_from = PPTESTCD,values_from = PPORRES)
+  
+BEdata<- BEdata %>%
+  mutate(AUC_ratio = auclast/ aucinf.obs)  
+
+reference_value <- "3" 
+```
+
+Generate tables of individual and mean AUC0-t to AUC0-inf ratio for both test and reference
+
+```{r}
+individual_ratios <- BEdata %>% 
+  select(ID, form, AUC_ratio)
+
+mean_ratios <- BEdata %>%
+  group_by(form) %>%
+  summarise(Mean_AUC_ratio = mean(AUC_ratio, na.rm = TRUE))
+
+knitr::kable(individual_ratios, digits = 3, caption = "Individual AUC0-t / AUC0-inf Ratios by Formulation")
+knitr::kable(mean_ratios, digits = 3, caption = "Mean AUC0-t / AUC0-inf Ratios by Formulation")
+```
+
+Fit a linear mixed-effects model
+
+```{r}
+fit_BE_endpoints <- function(
+  obj,
+  endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
+  formula_fixed = NULL,
+  random_effect = NULL,
+  reference_col,
+  reference_value
+) {
+  # Step 1: Convert to data.frame and clean 
+  if (inherits(obj, "PKNCAresults")) {
+    data <- as.data.frame(obj)
+  } else if (is.data.frame(obj)) {
+    data <- obj
+  } else {
+    stop("Input 'obj' must be a PKNCA object or a data.frame.")
+  }
+
+  data <- na.omit(data)
+  
+  # Step 2: Handle random effects 
+  if (is.null(random_effect)) {
+    if (inherits(obj, "PKNCAresults")) {
+      subj_col <- as_PKNCAconc(obj)$columns$subject
+    } else {
+      possible_subjects <- c("ID", "id", "Subject", "subject", "USUBJID")
+      subj_col <- possible_subjects[possible_subjects %in% colnames(data)][1]
+    }
+
+    if (is.null(subj_col) || is.na(subj_col)) {
+      stop("Could not automatically determine the subject column for the random effect. Please provide `random_effect` explicitly. If parallel design, random error is na")
+    }
+
+    random_effect <- paste0("(1|", subj_col, ")")
+  }
+
+  # Step 3: Handle fixed-effect formula 
+  
+  if (is.null(formula_fixed)) {
+  if (inherits(obj, "PKNCAresults")) {
+    group_vars <- names(PKNCA::getGroups(obj))
+  } else {
+    group_vars <- NULL
+  }
+    # Exclude subject from fixed effects
+    group_vars <- setdiff(group_vars, subj_col)
+
+  # If we found grouping vars, use them; otherwise, use default BE model
+  # Add warning for defaulting 
+  if (length(group_vars)>0) {
+    formula_fixed <- paste0("~ ", paste(group_vars, collapse = " + "))
+  } else {
+    warning("No grouping variables found in the PKNCA object. Defaulting to '~ sequence + occasion + formulation'.")
+    formula_fixed <- "~ sequence + occassion + formulation"
+  }
+}
+
+  # Step 4: Validate reference information 
+  if (is.null(reference_col)) {
+    stop("Reference column must be provided for bioequivalence analysis.")
+  }
+  if (is.null(reference_value)) {
+    stop("Reference value must be provided for bioequivalence analysis.")
+  }
+  if (!(reference_col %in% colnames(data))) {
+    stop(paste("Reference column", reference_col, "does not exist in the dataset."))
+  }
+  if (!(reference_value %in% data[[reference_col]])) {
+    stop(paste("Reference value", reference_value, "not found in column", reference_col))
+    
+  }
+  #convert form column as factor with ref as the 1st lvl. 
+  data[[reference_col]] <- as.factor(data[[reference_col]])
+  all_levels <- levels(data[[reference_col]])
+  new_levels <- c(reference_value, setdiff(all_levels, reference_value))
+  data[[reference_col]] <- factor(data[[reference_col]], levels = new_levels)
+  
+  # Step 5: Prepare storage 
+  ret <- list()
+  fe_all <- list()
+  re_all <- list()
+
+  # Step 6: Fit models for each endpoint 
+  for (ep in endpoints) {
+    data_ep <- data[data$PPTESTCD == ep, , drop = FALSE]
+    if (nrow(data_ep) == 0) {
+      warning(paste("No data found for endpoint:", ep))
+      next
+    }
+
+    if ("PPSTRES" %in% colnames(data_ep)) {
+      y_var <-'PPSTRES'
+    } else if ("PPORRES" %in% colnames(data_ep)) {
+      y_var<-'PPORRES'
+    } else {
+      stop("No valid response column found (PPSTRES or PPORRES).")
+    }
+
+    f <- as.formula(paste0("log(",y_var, ")", formula_fixed, " + ", random_effect))
+    mod <- lmer(f, data = data_ep)
+
+    if (is.null(ret[[ep]])) ret[[ep]] <- list()
+    ret[[ep]]$models <- mod
+
+    # Fixed effects
+    fe <- as.data.frame(coef(summary(mod)))
+    fe$term <- rownames(fe)
+    fe$endpoint <- ep
+    rownames(fe) <- NULL
+    fe_all[[ep]] <- fe
+
+    # Random effects
+    re <- as.data.frame(VarCorr(mod))
+    re$endpoint <- ep
+    re_all[[ep]] <- re
+  }
+
+  # Step 7: Combine summaries 
+  fe_combined <- do.call(rbind, fe_all)
+  re_combined <- do.call(rbind, re_all)
+
+  # Step 8: Return all results
+  list(
+    models  = ret,
+    fixed    = fe_combined,
+    variance = re_combined
+  )
+}
+```
+
+```{r}
+results <- fit_BE_endpoints(BEdata, 
+                            endpoints = c("aucinf.obs", "auclast", "cmax"), 
+                            reference_col = "form",reference_value = "3")
+
+results$fixed     
+results$variance  
+summaries <- lapply(results$models, summary)
+summaries$aucinf.obs
+summaries$auclast
+summaries$cmax
+```
+
+
+
+```{r}
+create_BE_table <- function(results, alpha = 0.10) {
+  
+  be_table <- list()
+  
+  for (ep in names(results$models)) {
+    
+    model <- results$models[[ep]]$models
+    
+    # Compute emmeans and GMR
+    emm <- emmeans(model, ~ form, type = "response", mode = "satterthwaite")
+    emm_df <- as.data.frame(emm)
+    
+    ref_val  <- levels(emm_df$form)[1]
+    test_val <- setdiff(levels(emm_df$form), ref_val)
+    
+    gm_ref  <- emm_df$emmean[emm_df$form == ref_val]
+    gm_test <- emm_df$emmean[emm_df$form == test_val]
+    
+    gmr_ci <- contrast(emm, method = "revpairwise", infer = c(TRUE, TRUE),
+                       adjust = "none", mode = "satterthwaite")
+    gmr_exp <- summary(gmr_ci, type = "response", level = 1 - alpha)
+    
+    gmr_percent   <- gmr_exp$ratio * 100
+    lower_percent <- gmr_exp$lower.CL * 100
+    upper_percent <- gmr_exp$upper.CL * 100
+    
+    df_val <- results$fixed %>%
+      filter(endpoint == ep, term == paste0("form", test_val)) %>%
+      pull(df)
+    
+    resid_sd <- results$variance %>%
+      filter(endpoint == ep, grp == "Residual") %>%
+      pull(sdcor)
+    CV_intra <- sqrt(exp(resid_sd^2) - 1) * 100
+    
+    be_table[[ep]] <- data.frame(
+      Endpoint = ep,
+      GM_Test = gm_test,
+      GM_Reference = gm_ref,
+      GMR_percent = gmr_percent,
+      CI90_lower = lower_percent,
+      CI90_upper = upper_percent,
+      DF = df_val,
+      CV_intra_percent = CV_intra
+    )
+  }
+  
+  # Combine all endpoints into one table
+  BE_Final_Table <- do.call(rbind, be_table)
+  
+  # Print table
+  kable(BE_Final_Table, digits = 2, caption = "Bioequivalence Summary Table")
+  
+  # Print software, versions, and CI method
+  cat("\n")
+  cat(
+    "Software used: lmer (from lme4 version", as.character(packageVersion("lme4")), 
+    ") with emmeans (version", as.character(packageVersion("emmeans")), 
+    ") on R version", R.version.string, "\n"
+  )
+  cat("Method of 90% CI calculation: Exponentiated differences in least-squares means\n")
+}
+```
+
+```{r}
+calculate_BE <- function(data, endpoints = c("aucinf.obs", "auclast", "cmax"),
+  formula_fixed = NULL, random_effect = NULL,
+  reference_col,reference_value, alpha = 0.10
+) {
+  
+  results <- fit_BE_endpoints(
+    obj = data,
+    endpoints = endpoints,
+    formula_fixed = formula_fixed,
+    random_effect = random_effect,
+    reference_col = reference_col,
+    reference_value = reference_value
+  )
+  
+  create_BE_table(results, alpha = alpha)
+  
+  invisible(results)
+}
+```
+
+```{r}
+calculate_BE(
+  data = BEdata,
+  endpoints = c("aucinf.obs", "auclast", "cmax"),
+  reference_col = "form",
+  reference_value = "3",
+  alpha = 0.10
+)
+```
