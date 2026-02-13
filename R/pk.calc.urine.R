@@ -12,7 +12,8 @@ add.interval.col("volpk",
                  values=c(FALSE, TRUE),
                  unit_type="volume",
                  pretty_name="Total Urine Volume",
-                 desc="The sum of urine volumes for the interval")
+                 desc="The sum of urine volumes for the interval",
+                 formula="$V_{\\text{urine}} = \\sum_i V_i$")
 PKNCA.set.summary(
   name="volpk",
   description="geometric mean and geometric coefficient of variation",
@@ -50,7 +51,8 @@ add.interval.col("ae",
                  values=c(FALSE, TRUE),
                  unit_type="amount",
                  pretty_name="Amount excreted",
-                 desc="The amount excreted (typically into urine or feces)")
+                 desc="The amount excreted (typically into urine or feces)",
+                 formula="$AE = \\sum_i C_i V_i$")
 PKNCA.set.summary(
   name="ae",
   description="geometric mean and geometric coefficient of variation",
@@ -79,7 +81,8 @@ add.interval.col("clr.last",
                  pretty_name="Renal clearance (from AUClast)",
                  formalsmap=list(auc="auclast"),
                  depends = c("ae", "auclast"),
-                 desc="The renal clearance calculated using AUClast")
+                 desc="The renal clearance calculated using AUClast",
+                 formula="$CL_R = \\frac{AE}{AUC_{\\text{last}}}$")
 PKNCA.set.summary(
   name="clr.last",
   description="geometric mean and geometric coefficient of variation",
@@ -93,7 +96,8 @@ add.interval.col("clr.obs",
                  pretty_name="Renal clearance (from AUCinf,obs)",
                  formalsmap=list(auc="aucinf.obs"),
                  depends = c("ae", "aucinf.obs"),
-                 desc="The renal clearance calculated using AUCinf,obs")
+                 desc="The renal clearance calculated using AUCinf,obs",
+                 formula="$CL_R = \\frac{AE}{AUC_{\\infty,\\text{obs}}}$")
 PKNCA.set.summary(
   name="clr.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -107,7 +111,8 @@ add.interval.col("clr.pred",
                  pretty_name="Renal clearance (from AUCinf,pred)",
                  formalsmap=list(auc="aucinf.pred"),
                  depends = c("ae", "aucinf.pred"),
-                 desc="The renal clearance calculated using AUCinf,pred")
+                 desc="The renal clearance calculated using AUCinf,pred",
+                 formula="$CL_R = \\frac{AE}{AUC_{\\infty,\\text{pred}}}$")
 PKNCA.set.summary(
   name="clr.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -135,7 +140,8 @@ add.interval.col("fe",
                  pretty_name="Fraction excreted",
                  values=c(FALSE, TRUE),
                  depends = "ae",
-                 desc="The fraction of the dose excreted")
+                 desc="The fraction of the dose excreted",
+                 formula="$f_e = \\frac{AE}{Dose}$")
 PKNCA.set.summary(
   name="fe",
   description="geometric mean and geometric coefficient of variation",
@@ -181,7 +187,8 @@ add.interval.col("ertlst",
                  FUN="pk.calc.ertlst",
                  unit_type="time",
                  pretty_name="Tlast excretion rate",
-                 desc="The midpoint collection time of the last measurable excretion rate (typically in urine or feces)")
+                 desc="The midpoint collection time of the last measurable excretion rate (typically in urine or feces)",
+                 formula="$T_{\text{last,ER}} = t_{\text{mid},i: ER_i > 0, i = \max}$")
 
 PKNCA.set.summary(
   name="ertlst",
@@ -224,7 +231,8 @@ add.interval.col("ermax",
                  FUN="pk.calc.ermax",
                  unit_type="amount_time",
                  pretty_name="Maximum excretion rate",
-                 desc="The maximum excretion rate (typically in urine or feces)")
+                 desc="The maximum excretion rate (typically in urine or feces)",
+                 formula="$ER_{\max} = \max_i \left( \frac{C_i V_i}{d_i} \right)$")
 
 PKNCA.set.summary(
   name="ermax",
@@ -276,7 +284,8 @@ add.interval.col("ertmax",
                  FUN="pk.calc.ertmax",
                  unit_type="time",
                  pretty_name="Tmax excretion rate",
-                 desc="The midpoint collection time of the maximum excretion rate (typically in urine or feces)")
+                 desc="The midpoint collection time of the maximum excretion rate (typically in urine or feces)",
+                 formula="$T_{\max,ER} = t_{\text{mid},i: ER_i = ER_{\max}}$")
 
 PKNCA.set.summary(
   name="ertmax",
