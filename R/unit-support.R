@@ -77,7 +77,6 @@ pknca_units_table <- function(concu, doseu, amountu, timeu,
       pknca_units_table_dose(doseu = doseu),
       pknca_units_table_conc_dose(concu=concu, doseu=doseu),
       pknca_units_table_conc_time(concu=concu, timeu=timeu),
-      pknca_units_table_time_amount(timeu=timeu, amountu=amountu),
       pknca_units_table_conc_time_dose(concu=concu, timeu=timeu, doseu=doseu),
       pknca_units_table_conc_time_amount(concu=concu, timeu=timeu, amountu=amountu),
       pknca_units_table_conc_time_amount_dose(concu=concu, timeu=timeu, amountu=amountu, doseu=doseu)
@@ -365,19 +364,6 @@ pknca_units_table_conc_time_amount <- function(concu, timeu, amountu) {
     PPORRESU=renal_clearance,
     PPTESTCD=pknca_find_units_param(unit_type="renal_clearance"),
     stringsAsFactors=FALSE
-  )
-}
-
-pknca_units_table_time_amount <- function(timeu, amountu) {
-  if (useless(timeu) || useless(amountu)) {
-    time_amount <- NA_character_
-  } else {
-    time_amount <- sprintf("%s*%s", timeu, amountu)
-  }
-  data.frame(
-    PPORRESU = time_amount,
-    PPTESTCD = pknca_find_units_param(unit_type = "amount_time"),
-    stringsAsFactors = FALSE
   )
 }
 
