@@ -14,6 +14,7 @@ the dosing including dose amount and route.
 
 * `get_halflife_points()` now correctly accounts for start time != 0 and sets
   times outside of any interval to `NA` (#470)
+* `pk.nca` will calculate `fe` and `clr` even if their dependant parameters (e.g, `ae`) were not requested to be calculated in the intervals (#473)
 
 ## New features
 
@@ -28,8 +29,6 @@ the dosing including dose amount and route.
   `summary()` (#477)
 
 * New post-processing functions to normalize PKNCA result parameters based on any column in PKNCAconc data.frame (`normalize_by_col()`) or by using a custom normalization table (`normalize()`)
-* New excretion rate parameters: `ermax` (Maximum excretion rate), `ertmax` (Midpoint time
-  of maximum excretion rate) and `ertlst` (Time of last excretion rate measurement) (#433)
 
 # PKNCA 0.12.1
 
