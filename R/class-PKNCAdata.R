@@ -170,34 +170,8 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
 
   # Insert the unit conversion table
   if (missing(units)) {
-    # What unit types are recognized?
-    possible_units <-
-      setdiff(
-        grep(x = names(formals(pknca_units_table)), pattern = "_", invert = TRUE, value = TRUE),
-        "conversions"
-      )
-    possible_units_pref <- paste0(possible_units, "_pref")
-    # Accumulate available units
-    conc_units_values <- ret$conc$units
-    conc_units_cols <- ret$conc$columns[names(ret$conc$columns) %in% possible_units]
-
-    unit_args <- conc_units_values
-    for (nm in names(conc_units_cols)) {
-      unit_args[[nm]] <- unique(stats::na.omit(ret$conc$data[[conc_units_cols[[nm]]]]))
-    }
-
-    if (!identical(ret$dose, NA)) {
-      unit_args <- append(unit_args, ret$dose$units)
-      dose_units_cols <- ret$dose$columns[names(ret$dose$columns) %in% possible_units]
-      for (nm in names(dose_units_cols)) {
-        unit_args[[nm]] <- unique(stats::na.omit(ret$dose$data[[dose_units_cols[[nm]]]]))
-      }
-    }
-    # If there are any units to set, set them here
-    if (length(unit_args) > 0) {
-      unit_args <- lapply(X = unit_args, FUN = drop_attributes)
-      ret$units <- do.call(pknca_units_table, args = unit_args)
-    }
+    # Use the new automatic units table builder
+    ret$units <- pknca_units_table(ret)
   } else {
     stopifnot("`units` must be a data.frame"=is.data.frame(units))
     stopifnot(

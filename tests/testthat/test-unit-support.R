@@ -330,3 +330,131 @@ test_that("pknca_unit_conversion", {
     fixed = TRUE
   )
 })
+
+# Tests for pknca_units_table for PKNCAdata
+test_that("pknca_units_table for PKNCAdata", {
+
+  # Subset the data to only include USUBJID 8 (2 analytes, A & B)
+  d_conc <- data.frame(
+    subject = 1,
+    time = rep(1:10, times = 4),
+    conc = rep(c(0:5, 4:1), times = 4),
+    analyte = rep(c("A", "B"), each = 20),
+    specimen = rep(c("blood", "urine"), each = 10, times = 4),
+    dose = 100,
+    treatment = rep(c("drug1", "drug2"), each = 10 * 4)
+  )
+  d_dose <- unique(d_conc[d_conc$time %in% c(0, 5), c("dose", "time", "subject", "treatment")])
+
+  # Creates a stratified units table when PKNCAconc has a unit-stratifying group column
+  for (strat_var in c("specimen", "analyte")) {
+    d_conc$concu_col <- ifelse(d_conc[[strat_var]] == d_conc[[strat_var]][1], "ng/mL", "ug/mL")
+
+    o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte, concu = "concu_col")
+    o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject)
+    o_data <- PKNCAdata(o_conc, o_dose)
+    units_table <- expect_no_error(pknca_units_table(o_data))
+
+    expect_equal(
+      units_table[units_table$PPTESTCD == "cmax", c(strat_var, "PPORRESU")],
+      data.frame(
+        specimen = c(unique(d_conc[[strat_var]])[1], unique(d_conc[[strat_var]])[2]),
+        PPORRESU = c("ng/mL", "ug/mL")
+      ), ignore_attr = TRUE
+    )
+  }
+
+  # Creates a stratified units table when PKNCAconc has two unit-stratifying group columns
+  d_conc$concu_col <- ifelse(d_conc$analyte == "A", "ng/mL", "ug/mL")
+  d_conc$concu_col <- ifelse(d_conc$specimen == "blood", d_conc$concu_col, "pg/mL")
+  o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte, concu = "concu_col")
+  o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject)
+  o_data <- PKNCAdata(o_conc, o_dose)
+  units_table <- expect_no_error(pknca_units_table(o_data))
+
+  expect_equal(
+    units_table[units_table$PPTESTCD == "cmax",],
+    data.frame(
+      specimen = c("blood", "urine", "blood", "urine"),
+      analyte = rep(c("A", "B"), each = 2),
+      PPORRESU = c("ng/mL", "pg/mL", "ug/mL", "pg/mL"),
+      PPTESTCD = "cmax"
+    ), ignore_attr = TRUE
+  )
+
+  # Creates a stratified units table when PKNCAdose has a unit-stratifying group column
+  d_dose$doseu_col <- ifelse(d_dose$treatment == d_dose$treatment[1], "mg", "ug")
+  o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject, doseu = "doseu_col")
+  o_data <- PKNCAdata(o_conc, o_dose)
+  units_table <- expect_no_error(pknca_units_table(o_data))
+
+  expect_equal(
+      units_table[units_table$PPTESTCD == "totdose",],
+      data.frame(
+        treatment = c("drug1", "drug2"),
+        PPORRESU = c("mg", "ug"),
+        PPTESTCD = "totdose"
+      ), ignore_attr = TRUE
+    )
+
+  # Creates an uniform units table when units are not defined as columns
+  o_conc <- PKNCAconc(
+    d_conc, conc ~ time | treatment + specimen + subject / analyte,
+    concu = "ng/mL", timeu = "h"
+  )
+  o_dose <- PKNCAdose(
+    d_dose, dose ~ time | treatment + subject,
+    doseu = "mg"
+  )
+  o_data <- PKNCAdata(o_conc, o_dose)
+  units_table <- expect_no_error(pknca_units_table(o_data))
+  expect_equal(
+    units_table[units_table$PPTESTCD == "cmax.dn",],
+    data.frame(
+      PPORRESU = c("(ng/mL)/mg"),
+      PPTESTCD = c("cmax.dn")
+    ), ignore_attr = TRUE
+  )
+
+  # Returns NULL when no units are defined anywhere
+  o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject)
+  o_data <- PKNCAdata(o_conc, o_dose)
+  units_table <- expect_no_error(pknca_units_table(o_data))
+
+  expect_true(is.null(units_table))
+
+  # Errors when units are not uniform within a concentration group
+  d_conc$concu_col <- "ng/mL"
+  d_conc$concu_col[1] <- "pg/L"  # Introduce inconsistency
+  o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte, concu = "concu_col")
+  o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject)
+  expect_error(
+    PKNCAdata(o_conc, o_dose),
+    regexp = "Units should be uniform at least across concentration groups.*"
+  )
+})
+
+test_that("select_level_grouping_cols", {
+  # Make a dataset where a variable `d` depends on `a` & `b`
+  data <- data.frame(
+    a = rep(letters[c(1, 2, 3)], each = 4),
+    b = rep(letters[c(1, 2)], each = 3),
+    c = letters[1]
+  ) 
+  data$d <- paste0(data$a, data$b)
+
+  # Returns the minimal grouping_columns (a, b) for one target columns
+  result <- select_minimal_grouping_cols(data, "d")
+  expect_equal(result, data[c("a", "b", "d")])
+
+  # Returns the original data if all grouping columns are needed
+  result <- select_minimal_grouping_cols(data, c("c", "d"))
+  expect_equal(result, data)
+
+  # Returns just the strata columns if no stratification groups are found
+  data[, "a"] <- 10
+  result <- select_minimal_grouping_cols(data, "d")
+  expect_equal(result, data["d"])
+})
