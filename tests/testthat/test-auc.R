@@ -71,7 +71,7 @@ test_that("pk.calc.auc: Linear AUC when the conc at the end of the interval is a
                              lambda.z=NA,
                              auc.type=t,
                              method="linear"))
-    expect_equal(v1, tests[[t]], info=t)
+    expect_equal(v1, tests[[t]], info=t, ignore_attr = TRUE)
   }
 })
 
@@ -95,7 +95,7 @@ test_that("pk.calc.auc: Linear AUC when the conc at the end of the interval is B
                              lambda.z=NA,
                              auc.type=t,
                              method="linear"))
-    expect_equal(v1, tests[[t]], info=t)
+    expect_equal(v1, tests[[t]], info=t, ignore_attr = TRUE)
   }
 })
 
@@ -118,7 +118,7 @@ test_that("pk.calc.auc: Linear AUC when the conc at the end of the interval is B
                              lambda.z=1,
                              auc.type=t,
                              method="linear"))
-    expect_equal(v1, tests[[t]], info=t)
+    expect_equal(v1, tests[[t]], info=t, ignore_attr = TRUE)
   }
 })
 
@@ -140,7 +140,7 @@ test_that("pk.calc.auc: Linear AUC when when there are multiple BLQ values at th
                              lambda.z=1,
                              auc.type=t,
                              method="linear"))
-    expect_equal(v1, tests[[t]], info=t)
+    expect_equal(v1, tests[[t]], info=t, ignore_attr = TRUE)
   }
 })
 
@@ -171,7 +171,7 @@ test_that("pk.calc.auc: Confirm that center BLQ points are dropped, kept, or imp
                                auc.type=n,
                                conc.blq="keep",
                                method=t))
-      expect_equal(v1, tests[[t]][[n]], info=paste(t, n))
+      expect_equal(v1, tests[[t]][[n]], info=paste(t, n), ignore_attr = TRUE)
     }
   }
 })
@@ -203,7 +203,7 @@ test_that("pk.calc.auc: Confirm BLQ in the middle or end are calculated correctl
                                auc.type=n,
                                conc.blq="keep",
                                method=t))
-      expect_equal(v1, tests[[t]][[n]], info=paste(t, n))
+      expect_equal(v1, tests[[t]][[n]], info=paste(t, n), ignore_attr = TRUE)
     }
   }
 
@@ -238,9 +238,12 @@ test_that("pk.calc.auc: Confirm BLQ in the middle or end are calculated correctl
                                  middle="drop",
                                  last="keep"),
                                method=t))
-      expect_equal(v1,
-                   tests[[t]][[n]],
-                   info=paste(t, n))
+      expect_equal(
+        v1,
+        tests[[t]][[n]],
+        info=paste(t, n),
+        ignore_attr = TRUE
+      )
     }
   }
 })
@@ -274,9 +277,12 @@ test_that("pk.calc.auc: When AUCinf is requested with NA for lambda.z, the resul
                                  middle="drop",
                                  last="keep"),
                                method=t))
-      expect_equal(v1,
-                   tests[[t]][[n]],
-                   info=paste(t, n))
+      expect_equal(
+        v1,
+        tests[[t]][[n]],
+        info=paste(t, n),
+        ignore_attr = TRUE
+      )
     }
   }
 })
@@ -314,9 +320,12 @@ test_that("pk.calc.auc: Test NA at the end", {
                                  middle="drop",
                                  last="keep"),
                                method=t))
-      expect_equal(v1,
-                   tests[[t]][[n]],
-                   info=paste(t, n))
+      expect_equal(
+        v1,
+        tests[[t]][[n]],
+        info=paste(t, n),
+        ignore_attr = TRUE
+      )
     }
 })
 
@@ -349,9 +358,12 @@ test_that("pk.calc.auc: interpolation of times within the time interval", {
                                  middle="drop",
                                  last="keep"),
                                method=t))
-      expect_equal(v1,
-                   tests[[t]][[n]],
-                   info=paste(t, n))
+      expect_equal(
+        v1,
+        tests[[t]][[n]],
+        info=paste(t, n),
+        ignore_attr = TRUE
+      )
     }
   }
 })
@@ -397,7 +409,8 @@ test_that("pk.calc.auc: warning with beginning of interval before the beginning 
       expect_equal(
         v1,
         tests[[t]][[n]],
-        info=paste(t, n)
+        info=paste(t, n),
+        ignore_attr = TRUE
       )
     }
   }
@@ -449,7 +462,8 @@ test_that("pk.calc.auc: warning with beginning of interval before the beginning 
       )
       expect_equal(v1,
                    tests[[t]][[n]],
-                   info=paste(t, n))
+                   info=paste(t, n),
+                   ignore_attr = TRUE)
     }
 
   # Confirm error with concentration and time not of equal lengths
@@ -563,14 +577,18 @@ test_that("pk.calc.aumc", {
       time=0:3,
       interval=c(0, 3),
       method="linear"),
-    3.75)
+    3.75,
+    ignore_attr = TRUE
+  )
   expect_equal(
     pk.calc.aumc(
       conc=c(0, 1, 1, 0.5),
       time=0:3,
       interval=c(0, 3),
       method="lin up/log down"),
-    2-0.5/log(0.5)+0.5/(log(0.5)^2))
+    2-0.5/log(0.5)+0.5/(log(0.5)^2),
+    ignore_attr = TRUE
+  )
   expect_equal(
     pk.calc.aumc(
       conc=c(0, 1, 1, 0.5),
@@ -579,7 +597,9 @@ test_that("pk.calc.aumc", {
       auc.type="AUCinf",
       lambda.z=1,
       method="lin up/log down"),
-    2 - 0.5/log(0.5) + 0.5/(log(0.5)^2) + 1.5 + 0.5)
+    2 - 0.5/log(0.5) + 0.5/(log(0.5)^2) + 1.5 + 0.5,
+    ignore_attr = TRUE
+  )
 })
 
 
@@ -727,4 +747,35 @@ test_that("AUC with a single concentration measured should return NA (fix #176)"
       exclude="AUC cannot be calculated with only one measured concentration"
     )
   )
+})
+
+test_that("pk.calc.auc and wrappers: method attribute is set and propagated", {
+
+  auc_params <- c(
+    "auc", "auc.last", "auc.inf.obs", "auc.inf.pred", "auc.all",
+    "aumc.last", "aumc.inf.obs", "aumc.inf.pred", "aumc.all"
+  )
+  auc_methods <- c("linear", "lin up/log down", "lin-log")
+  auc_args <- list(
+    conc=c(0,1,1),
+    time=0:2,
+    interval=c(0,2),
+    lambda.z=1,
+    clast.pred = 1,
+    clast.obs = 1
+  )
+
+  for (param in auc_params) {
+    auc_fun <- get(paste0("pk.calc.", param))
+    args_fun <- auc_args[intersect(names(auc_args), names(formals(auc_fun)))]
+    for (method in auc_methods) {
+      args_fun$method <- method
+      v <- do.call(auc_fun, args_fun)
+      expect_equal(
+        attr(v, "method"),
+        paste0("AUC: ", method),
+        info=paste("pk.calc.param sets method attribute for", param, "with method", method)
+      )
+    }
+  }
 })

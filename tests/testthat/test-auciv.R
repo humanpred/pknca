@@ -6,12 +6,14 @@ test_that("pk.calc.auciv", {
   expect_equal(
     # No check is done to confirm that the auc argument matches the data
     pk.calc.auciv(conc = 0:5, time = 0:5, c0 = 1, auc = 2.75),
-    2.75 + 1 - 0.5
+    2.75 + 1 - 0.5,
+    ignore_attr = TRUE
   )
   expect_equal(
     # No verifications are made on the data
     pk.calc.auciv(conc = 0:5, time = 0:5, c0 = 1, auc = 2.75, check=FALSE),
-    2.75 + 1 - 0.5
+    2.75 + 1 - 0.5,
+    ignore_attr = TRUE
   )
 })
 
@@ -51,4 +53,31 @@ test_that("missing dose information does not cause NA time (#353)", {
     regexp = "time.dose is NA"
   )
   expect_s3_class(o_nca, "PKNCAresults")
+})
+
+
+test_that("pk.calc.auciv: method attribute is set and propagated", {
+
+  auc_params <- c("auciv")
+  auc_methods <- c("linear", "lin up/log down", "lin-log")
+  auc_args <- list(
+    conc=3:1,
+    time=0:2,
+    c0 = 1,
+    auc = 2
+  )
+
+  for (param in auc_params) {
+    auc_fun <- get(paste0("pk.calc.", param))
+    args_fun <- auc_args[intersect(names(auc_args), names(formals(auc_fun)))]
+    for (method in auc_methods) {
+      args_fun$method <- method
+      v <- do.call(auc_fun, args_fun)
+      expect_equal(
+        attr(v, "method"),
+        paste0("AUC: ", method),
+        info=paste("pk.calc.param sets method attribute for", param, "with method", method)
+      )
+    }
+  }
 })

@@ -316,13 +316,24 @@ pk.calc.sparse_auc <- function(conc, time, subject,
       auc.type=auc.type,
       method="linear"
     )
+
   var_auc <- var_sparse_auc(sparse_pk_mean)
-  data.frame(
+  ret <- data.frame(
     sparse_auc=auc,
     # as.numeric() drops the "df" attribute
     sparse_auc_se=sqrt(as.numeric(var_auc)),
     sparse_auc_df=attr(var_auc, "df")
   )
+
+  # Add method details as an attribute
+  for (col in names(ret)) {
+    attr(ret[[col]], "method") <- character()
+    auc_method <- "linear"
+    attr(ret[[col]], "method") <- c(attr(ret[[col]], "method"), paste0("AUC: ", auc_method))
+    attr(ret[[col]], "method") <- c(attr(ret[[col]], "method"), paste0("Sparse: ", "arithmetic mean, <=50% BLQ"))
+  }
+
+  ret
 }
 
 #' @describeIn pk.calc.sparse_auc Compute the AUClast for sparse PK

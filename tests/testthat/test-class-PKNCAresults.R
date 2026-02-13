@@ -1,7 +1,7 @@
 test_that("PKNCAresults object creation", {
-  minimal_result <- PKNCAresults(data.frame(a=1), data=list())
+  minimal_result <- PKNCAresults(data.frame(a = 1), data = list())
   expect_equal(minimal_result$columns$exclude, "exclude")
-  result_with_exclude_col <- PKNCAresults(data.frame(exclude=1), data=list())
+  result_with_exclude_col <- PKNCAresults(data.frame(exclude = 1), data = list())
   expect_equal(result_with_exclude_col$columns$exclude, "exclude.exclude")
 })
 
@@ -18,7 +18,7 @@ test_that("PKNCAresults generation", {
   expect_equal(
     names(o_result),
     c("result", "data", "columns"),
-    info="Make sure that the result has the expected names (and only the expected names) in it."
+    info = "Make sure that the result has the expected names (and only the expected names) in it."
   )
   expect_true(
     checkProvenance(o_result),
@@ -33,53 +33,72 @@ test_that("PKNCAresults generation", {
       # calculations are done.
       tmp$options <- PKNCA.options()
       tmp
-    }, info="The data is just a copy of the input data plus an instantiation of the PKNCA.options"
+    },
+    info = "The data is just a copy of the input data plus an instantiation of the PKNCA.options"
   )
 
   verify.result <-
     tibble::tibble(
-      treatment="Trt 1",
-      ID=as.integer(rep(c(1, 2), each=16)),
-      start=0,
-      end=c(24, rep(Inf, 15),
-            24, rep(Inf, 15)),
-      PPTESTCD=rep(c("auclast", "cmax", "tmax", "tlast", "clast.obs",
-                     "lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy",
-                     "lambda.z.time.first", "lambda.z.time.last", "lambda.z.n.points",
-                     "clast.pred", "half.life", "span.ratio", "aucinf.obs"),
-                   times=2),
-      PPORRES=c(13.54, 0.9998, 4.000, 24.00, 0.3441,
-                0.04297, 0.9072, 0.9021, -0.9521, 5.000, 24.00,
-                20.00, 0.3356, 16.13, 1.178,
-                21.55, 14.03, 0.9410, 2.000,
-                24.00, 0.3148, 0.05689, 0.9000,
-                0.8944, -0.9487, 5.000, 24.00, 20.00, 0.3011,
-                12.18, 1.560, 19.56),
-      exclude=NA_character_
+      treatment = "Trt 1",
+      ID = as.integer(rep(c(1, 2), each = 16)),
+      start = 0,
+      end = c(
+        24, rep(Inf, 15),
+        24, rep(Inf, 15)
+      ),
+      PPTESTCD = rep(
+        c(
+          "auclast", "cmax", "tmax", "tlast", "clast.obs",
+          "lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy",
+          "lambda.z.time.first", "lambda.z.time.last", "lambda.z.n.points",
+          "clast.pred", "half.life", "span.ratio", "aucinf.obs"
+        ),
+        times = 2
+      ),
+      PPORRES = c(
+        13.54, 0.9998, 4.000, 24.00, 0.3441,
+        0.04297, 0.9072, 0.9021, -0.9521, 5.000, 24.00,
+        20.00, 0.3356, 16.13, 1.178,
+        21.55, 14.03, 0.9410, 2.000,
+        24.00, 0.3148, 0.05689, 0.9000,
+        0.8944, -0.9487, 5.000, 24.00, 20.00, 0.3011,
+        12.18, 1.560, 19.56
+      ),
+      PPANMETH = c(
+        "AUC: lin up/log down",
+        rep("", 4),
+        rep("", 10),
+        "AUC: lin up/log down",
+        "AUC: lin up/log down",
+        rep("", 4),
+        rep("", 10),
+        "AUC: lin up/log down"
+      ),
+      exclude = NA_character_
     )
   expect_equal(
     o_result$result,
     verify.result,
-    tolerance=0.001,
-    info="The specific order of the levels isn't important-- the fact that they are factors and that the set doesn't change is important."
+    tolerance = 0.001,
+    info = "The specific order of the levels isn't important-- the fact that they are factors and that the set doesn't change is important."
   )
 
   # Test conversion to a data.frame
   expect_equal(
     as.data.frame(o_result),
     verify.result,
-    tolerance=0.001,
-    info="Conversion of PKNCAresults to a data.frame in long format (default long format)"
+    tolerance = 0.001,
+    info = "Conversion of PKNCAresults to a data.frame in long format (default long format)"
   )
   expect_equal(
     as.data.frame(o_result, out_format="long"),
     verify.result,
-    tolerance=0.001,
-    info="Conversion of PKNCAresults to a data.frame in long format (specifying long format)"
+    tolerance = 0.001,
+    info = "Conversion of PKNCAresults to a data.frame in long format (specifying long format)"
   )
   expect_equal(
     as.data.frame(o_result, out_format="wide"),
-    tidyr::spread(verify.result, key="PPTESTCD", value="PPORRES"),
+    tidyr::spread(verify.result[names(verify.result) != "PPANMETH"], key="PPTESTCD", value="PPORRES"),
     tolerance=0.001,
     info="Conversion of PKNCAresults to a data.frame in wide format (specifying wide format)"
   )
@@ -103,7 +122,7 @@ test_that("PKNCAresults generation", {
   expect_equal(
     comparison_orig$PPORRES[comparison_orig$PPTESTCD %in% "aucint.inf.obs"],
     comparison_12$PPORRES[comparison_12$PPTESTCD %in% "aucint.inf.obs"],
-    info="Time shift does not affect aucint calculations."
+    info = "Time shift does not affect aucint calculations."
   )
 })
 
@@ -144,7 +163,7 @@ test_that("PKNCAresults has exclude, when applicable", {
         ]
     ),
     "Too few points for half-life calculation (min.hl.points=3 with only 0 points)",
-    info="exclusions are propogated to results"
+    info = "exclusions are propogated to results"
   )
   expect_equal(
     unique(
@@ -154,10 +173,10 @@ test_that("PKNCAresults has exclude, when applicable", {
             c("lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy", "lambda.z.time.first",
               "lambda.z.time.last", "lambda.z.n.points", "clast.pred", "half.life", "span.ratio")
         )
-        ]
+      ]
     ),
     NA_character_,
-    info="exclusions are propogated to results only when applicable"
+    info = "exclusions are propogated to results only when applicable"
   )
 })
 
@@ -173,7 +192,7 @@ test_that("ptr works as a parameter", {
   expect_equal(
     ptr_result$PPORRES[ptr_result$PPTESTCD %in% "ptr"],
     c(2.9055, 2.9885),
-    tolerance=0.0001
+    tolerance = 0.0001
   )
 })
 
@@ -185,23 +204,23 @@ test_that("exclude values are maintained in derived parameters during automatic 
       subject = 1
     )
 
-  conc_obj <- PKNCAconc(my_conc, conc~time|subject)
+  conc_obj <- PKNCAconc(my_conc, conc ~ time | subject)
   data_obj <-
     PKNCAdata(
-      data.conc=conc_obj,
-      intervals=
+      data.conc = conc_obj,
+      intervals =
         data.frame(
-          start=0,
-          end=Inf,
-          aucinf.obs=TRUE
+          start = 0,
+          end = Inf,
+          aucinf.obs = TRUE
         )
     )
   expect_message(
     expect_warning(
       results_obj <- pk.nca(data_obj),
-      regexp="Too few points for half-life"
+      regexp = "Too few points for half-life"
     ),
-    regexp="No dose information provided"
+    regexp = "No dose information provided"
   )
   d_results <- as.data.frame(results_obj)
   expect_equal(
@@ -211,16 +230,16 @@ test_that("exclude values are maintained in derived parameters during automatic 
 })
 
 test_that("ctrough is correctly calculated", {
-  my_conc <- data.frame(time=0:6, conc=2^(0:-6), subject=1)
-  conc_obj <- PKNCAconc(my_conc, conc~time|subject)
+  my_conc <- data.frame(time = 0:6, conc = 2^(0:-6), subject = 1)
+  conc_obj <- PKNCAconc(my_conc, conc ~ time | subject)
   data_obj <-
     PKNCAdata(
-      data.conc=conc_obj,
-      intervals=
+      data.conc = conc_obj,
+      intervals =
         data.frame(
-          start=0,
-          end=c(6, Inf),
-          ctrough=TRUE
+          start = 0,
+          end = c(6, Inf),
+          ctrough = TRUE
         )
     )
   expect_message(
@@ -228,21 +247,21 @@ test_that("ctrough is correctly calculated", {
       as.data.frame(pk.nca(data_obj))$PPORRES,
       c(2^-6, NA_real_)
     ),
-    regexp="No dose information provided"
+    regexp = "No dose information provided"
   )
 })
 
 test_that("single subject, ungrouped data works (#74)", {
-  my_conc <- data.frame(time=0:6, conc=2^(0:-6))
-  conc_obj <- PKNCAconc(my_conc, conc~time)
+  my_conc <- data.frame(time = 0:6, conc = 2^(0:-6))
+  conc_obj <- PKNCAconc(my_conc, conc ~ time)
   data_obj <-
     PKNCAdata(
-      data.conc=conc_obj,
-      intervals=
+      data.conc = conc_obj,
+      intervals =
         data.frame(
-          start=0,
-          end=Inf,
-          cmax=TRUE
+          start = 0,
+          end = Inf,
+          cmax = TRUE
         )
     )
   expect_message(
@@ -250,7 +269,7 @@ test_that("single subject, ungrouped data works (#74)", {
       as.data.frame(pk.nca(data_obj))$PPORRES,
       1
     ),
-    regexp="No dose information provided",
+    regexp = "No dose information provided",
   )
 })
 
@@ -262,11 +281,11 @@ test_that("units work for calculations and summaries with one set of units acros
   o_data <- PKNCAdata(o_conc, o_dose)
   o_result <- pk.nca(o_data)
 
-  d_units_orig <- pknca_units_table(concu="ng/mL", doseu="mg", amountu="mg", timeu="hr")
+  d_units_orig <- pknca_units_table(concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr")
   d_units_std <-
     pknca_units_table(
-      concu="ng/mL", doseu="mg", amountu="mg", timeu="hr",
-      conversions=data.frame(PPORRESU="ng/mL", PPSTRESU="mg/mL")
+      concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr",
+      conversions = data.frame(PPORRESU = "ng/mL", PPSTRESU = "mg/mL")
     )
   o_data_orig <- PKNCAdata(o_conc, o_dose, units=d_units_orig)
   o_result_units_orig <- pk.nca(o_data_orig)
@@ -300,12 +319,12 @@ test_that("units work for calculations and summaries with one set of units acros
     as.data.frame(o_result, out_format="wide"),
     # The difference is the addition of units to the column names
     df_wide_orig %>%
-      dplyr::rename_with(.fn=gsub, pattern=" \\(.*$", replacement="")
+      dplyr::rename_with(.fn = gsub, pattern = " \\(.*$", replacement = "")
   )
   expect_true(
     all(
       names(df_wide_orig) %in% c("treatment", "ID", "start", "end", "exclude") |
-        grepl(x=names(df_wide_orig), pattern=" (", fixed=TRUE)
+        grepl(x = names(df_wide_orig), pattern = " (", fixed = TRUE)
     )
   )
   # Everything is the same unless it is a concentration which has been converted
@@ -316,7 +335,7 @@ test_that("units work for calculations and summaries with one set of units acros
   # Concentration conversion works correctly
   expect_equal(
     df_wide_orig$`cmax (ng/mL)`,
-    df_wide_std$`cmax (mg/mL)`*1e6
+    df_wide_std$`cmax (mg/mL)` * 1e6
   )
 })
 
@@ -335,14 +354,14 @@ test_that("units work for calculations and summaries with one set of units acros
 
   d_units_std1 <-
     pknca_units_table(
-      concu="ng/mL", doseu="mg", amountu="mg", timeu="hr",
-      conversions=data.frame(PPORRESU="ng/mL", PPSTRESU="mg/mL")
+      concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr",
+      conversions = data.frame(PPORRESU = "ng/mL", PPSTRESU = "mg/mL")
     )
   d_units_std1$analyte <- "drug1"
   d_units_std2 <-
     pknca_units_table(
-      concu="ng/mL", doseu="mg", amountu="mg", timeu="hr",
-      conversions=data.frame(PPORRESU="ng/mL", PPSTRESU="mmol/L", conversion_factor=2)
+      concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr",
+      conversions = data.frame(PPORRESU = "ng/mL", PPSTRESU = "mmol/L", conversion_factor = 2)
     )
   d_units_std2$analyte <- "drug2"
   d_units_std <- rbind(d_units_std1, d_units_std2)
@@ -407,14 +426,14 @@ test_that("getGroups.PKNCAresults", {
 })
 
 test_that("group_vars.PKNCAresult", {
-  o_conc_group <- PKNCAconc(as.data.frame(datasets::Theoph), conc~Time|Subject)
+  o_conc_group <- PKNCAconc(as.data.frame(datasets::Theoph), conc ~ Time | Subject)
   o_data_group <- PKNCAdata(o_conc_group, intervals = data.frame(start = 0, end = 1, cmax = TRUE))
   suppressMessages(o_nca_group <- pk.nca(o_data_group))
 
   expect_equal(dplyr::group_vars(o_nca_group), "Subject")
 
   # Check that it works without groupings as expected [empty]
-  o_conc_nongroup <- PKNCAconc(as.data.frame(datasets::Theoph)[datasets::Theoph$Subject == 1,], conc~Time)
+  o_conc_nongroup <- PKNCAconc(as.data.frame(datasets::Theoph)[datasets::Theoph$Subject == 1, ], conc ~ Time)
   o_data_nogroup <- PKNCAdata(o_conc_nongroup, intervals = data.frame(start = 0, end = 1, cmax = TRUE))
   suppressMessages(o_nca_nogroup <- pk.nca(o_data_nogroup))
 

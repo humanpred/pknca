@@ -27,7 +27,7 @@ the dosing including dose amount and route.
   `clr.pred.dn` (#433)
 * `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
   `summary()` (#477)
-
+* `pk.nca` output now includes a `PPANMETH` column describing the analysis methods used for each parameter regarding imputations, AUC and half.life calculations (#457)
 * New post-processing functions to normalize PKNCA result parameters based on any column in PKNCAconc data.frame (`normalize_by_col()`) or by using a custom normalization table (`normalize()`)
 
 # PKNCA 0.12.1

@@ -84,6 +84,7 @@ test_that("AUCint gives the same value when no interpolation/extrapolation is re
       conc = concdata$conc, time = concdata$time,
       interval = c(0, 3)
     ),
+    ignore_attr = TRUE,
     info = "No interpolation/extrapolation is equivalent to normal AUC"
   )
   expect_equal(
@@ -95,6 +96,7 @@ test_that("AUCint gives the same value when no interpolation/extrapolation is re
       conc = concdata$conc, time = concdata$time,
       interval = c(0, 3)
     ),
+    ignore_attr = TRUE,
     info = "Giving interval and start+end are the same, no interp/extrap (test 1)"
   )
   expect_equal(
@@ -106,6 +108,7 @@ test_that("AUCint gives the same value when no interpolation/extrapolation is re
       conc = concdata$conc, time = concdata$time,
       interval = c(0, 2)
     ),
+    ignore_attr = TRUE,
     info = "Giving interval and start+end are the same, no interp/extrap (test 2)"
   )
 })
@@ -177,6 +180,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
       conc = c(concdata$conc, 0.5), time = c(concdata$time, 4),
       interval = c(0, 4)
     ),
+    ignore_attr = TRUE,
     info = "AUCinf is traced"
   )
   expect_equal(
@@ -192,6 +196,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
         conc = c(2, 1), time = c(3, 4),
         interval = c(3, 4)
       ),
+    ignore_attr = TRUE,
     info = "AUCinf is traced with clast respected"
   )
   expect_equal(
@@ -203,6 +208,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
       conc = c(concdata$conc, 0.25), time = c(concdata$time, 4),
       interval = c(0, 4)
     ),
+    ignore_attr = TRUE,
     info = "AUCinf is traced with lambda.z respected"
   )
   expect_equal(
@@ -218,6 +224,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
         conc = c(2, 0.5), time = c(3, 4),
         interval = c(3, 4)
       ),
+    ignore_attr = TRUE,
     info = "AUCinf is traced with clast and lambda.z respected"
   )
 
@@ -230,6 +237,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
       conc = concdata$conc, time = concdata$time,
       interval = c(0, 3), auc.type = "AUCall"
     ),
+    ignore_attr = TRUE,
     info = "AUCall is the same as AUClast when no BLQ follow tlast (both AUCall)"
   )
   expect_equal(
@@ -241,6 +249,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
       conc = concdata$conc, time = concdata$time,
       interval = c(0, 3), auc.type = "AUClast"
     ),
+    ignore_attr = TRUE,
     info = "AUCall is the same as AUClast when no BLQ follow tlast (test AUClast)"
   )
   expect_equal(
@@ -252,6 +261,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
       conc = concdata_blq$conc, time = concdata_blq$time,
       interval = c(0, 4), auc.type = "AUCall"
     ),
+    ignore_attr = TRUE,
     info = "AUCall is the same the normal calculation when no interpolation/extrapolation happens"
   )
   expect_equal(
@@ -263,6 +273,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
       conc = c(concdata$conc, 0.5), time = c(concdata$time, 3.5),
       interval = c(0, 4), auc.type = "AUClast"
     ),
+    ignore_attr = TRUE,
     info = "AUCall traces correctly"
   )
 })
@@ -321,10 +332,12 @@ test_that("aucint works with infinite intervals", {
   concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
   expect_equal(pk.calc.aucint.last(conc = concdata$conc, time = concdata$time, start = 0, end = Inf),
     pk.calc.auc.last(conc = concdata$conc, time = concdata$time),
+    ignore_attr = TRUE,
     info = "Simple AUClast = aucint.last"
   )
   expect_equal(pk.calc.aucint.all(conc = concdata$conc, time = concdata$time, start = 0, end = Inf),
     pk.calc.auc.all(conc = concdata$conc, time = concdata$time),
+    ignore_attr = TRUE,
     info = "Simple AUCall = aucint.all"
   )
   expect_equal(
@@ -337,6 +350,7 @@ test_that("aucint works with infinite intervals", {
       conc = concdata$conc, time = concdata$time,
       clast.obs = 1, lambda.z = log(2)
     ),
+    ignore_attr = TRUE,
     info = "Simple AUCinf.obs = aucint.inf.obs"
   )
   expect_equal(
@@ -349,6 +363,7 @@ test_that("aucint works with infinite intervals", {
       conc = concdata$conc, time = concdata$time,
       clast.pred = 2, lambda.z = log(2)
     ),
+    ignore_attr = TRUE,
     info = "Simple AUCinf.pred = aucint.inf.pred"
   )
 })
@@ -429,11 +444,13 @@ test_that("aucint uses log extrapolation regardless of the interpolation method 
   # the second is more directly mathematical.
   expect_equal(
     aucinf_obs6_lin - aucinf_obs5_lin,
-    aucinf_obs6_log - aucinf_obs5_log
+    aucinf_obs6_log - aucinf_obs5_log,
+    ignore_attr = TRUE
   )
   expect_equal(
     aucinf_obs6_lin,
-    aucinf_obs5_lin + (6-5)*(clast-ctau_extrap)/log(clast/ctau_extrap)
+    aucinf_obs5_lin + (6-5)*(clast-ctau_extrap)/log(clast/ctau_extrap),
+    ignore_attr = TRUE
   )
 })
 
@@ -453,4 +470,33 @@ test_that("aucint.inf.pred returns NA when half-life is not estimable (#450)", {
   aucint_inf_pred_prep <- as.data.frame(o_nca)
   aucint_inf_pred <- aucint_inf_pred_prep$PPORRES[aucint_inf_pred_prep$PPTESTCD %in% "aucint.inf.pred"]
   expect_equal(aucint_inf_pred, NA_real_)
+})
+
+test_that("pk.calc.aucint and wrappers: method attribute is set and propagated", {
+  aucint_params <- c("aucint", "aucint.last", "aucint.inf.obs", "aucint.inf.pred", "aucint.all")
+  auc_methods <- c("linear", "lin up/log down", "lin-log")
+  auc_args <- list(
+    conc = c(0,1,1),
+    time = 0:2,
+    interval = c(0,2),
+    lambda.z = 1,
+    clast.pred = 1,
+    clast.obs = 1,
+    start = 0,
+    end = 2
+  )
+
+  for (param in aucint_params) {
+    auc_fun <- get(paste0("pk.calc.", param))
+    args_fun <- auc_args[intersect(names(auc_args), names(formals(auc_fun)))]
+    for (method in auc_methods) {
+      args_fun$method <- method
+      v <- do.call(auc_fun, args_fun)
+      expect_equal(
+        attr(v, "method"),
+        paste0("AUC: ", method),
+        info = paste("pk.calc.param sets method attribute for", param, "with method", method)
+      )
+    }
+  }
 })
