@@ -138,6 +138,65 @@ results_excl_multi %>%
   filter(Subject == 1)
 ```
 
+# Normalizing Results
+
+PKNCA provides functions to normalize calculated parameters by columns in your data or by using normalization tables.
+
+
+## Example: Normalize by a column in the concentration data
+
+The function `normalize_by_col()` allows you to normalize parameters by any column present in the concentration data of your PKNCAresults object. You can also specify the unit as another column in the concentration data or as a constant value.
+
+Suppose your concentration data includes a column for body weight, and you want to normalize Cmax by each subject's weight:
+
+```{r normalize-by-col}
+# Add a weight column to the concentration data
+d_conc2 <- d_conc
+d_conc2$weight <- unname(setNames(60:71, 1:12)[d_conc2$Subject])
+d_conc2$weight_unit <- "kg"
+
+# Recreate the PKNCA objects with the new column
+conc_obj2 <- PKNCAconc(
+  d_conc2,
+  conc~Time|Subject
+)
+dose_obj2 <- PKNCAdose(
+  d_dose,
+  Dose~Time|Subject
+)
+data_obj2 <- PKNCAdata(conc_obj2, dose_obj2)
+results_obj2 <- pk.nca(data_obj2)
+
+# Normalize Cmax by the 'weight' column
+results_norm_by_col <- normalize_by_col(
+  results_obj2,
+  col = "weight",
+  unit = "weigth_unit",
+  parameters = "cmax",
+  suffix = ".wn"
+)
+
+# Show the normalized results appended
+as.data.frame(results_norm_by_col) %>% filter(PPTESTCD == "cmax.wn")
+```
+
+
+
+## Doing custom normalizations
+If your data does not have the normalization column explicitly, you can perform the same normalization using the `normalize()` function by providing a normalization table. Below, we use the same subject weights as above to normalize Cmax, but without adding the weight column to the concentration data:
+
+```{r normalize-custom}
+# Use the same subject_weights as above
+norm_table <- data.frame(Subject = unique(d_conc$Subject), normalization = 60:71, unit = "kg")
+results_norm_custom <- normalize(
+  results_obj,
+  norm_table = norm_table,
+  parameters = "cmax",
+  suffix = ".wn"
+)
+as.data.frame(results_norm_custom) %>% filter(PPTESTCD == "cmax.wn")
+```
+
 # Extracting Results
 
 ## Summary Results

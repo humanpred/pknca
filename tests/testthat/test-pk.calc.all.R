@@ -746,8 +746,6 @@ test_that("dose is calculable", {
 
 test_that("do not give rbind error when interval columns have attributes (#381)", {
   o_conc <- PKNCAconc(data = data.frame(conc = 1, time = 0), conc~time)
-  d_interval <- data.frame(start = 0, end = Inf, cmax = TRUE)
-
   d_interval <- data.frame(start = 0, end = Inf, cmax = TRUE, tmax = TRUE)
   attr(d_interval$start, "label") <- "start"
   o_data <- PKNCAdata(o_conc, intervals = d_interval)
@@ -756,5 +754,47 @@ test_that("do not give rbind error when interval columns have attributes (#381)"
   expect_equal(
     attributes(as.data.frame(o_nca)$start),
     list(label = "start")
+  )
+})
+
+
+test_that("pk.nca can be run for each parameter independently (#473)", {
+
+  d_conc <- Theoph[Theoph$Subject %in% "1", ]
+  d_conc <- rbind(d_conc, mutate(d_conc, Time = Time + 25))
+  d_conc$volume <- 1
+  d_conc$duration <- 1
+  d_dose <- data.frame(Subject = "1", Time = c(0, 25), Dose = 5, duration = 1)
+
+  o_conc <- PKNCAconc(d_conc, formula = conc~Time|Subject, volume = "volume", duration = "duration")
+  o_dose <- PKNCAdose(d_dose, formula = Dose~Time|Subject, route = "intravascular", duration = "duration")
+
+  non_pknca_covered_params <- c(
+    "f", "time_above", "mrt.md.obs", "mrt.md.pred", "sparse_auclast", "sparse_auc_se", "sparse_auc_df",
+    "vss.md.obs", "vss.md.pred", "ceoi"
+  )
+  all_params <- setdiff(names(get.interval.cols()), c("start", "end", non_pknca_covered_params))
+  intervals <- data.frame(start = c(0, 25), end = c(25, Inf))
+
+  for (param in all_params){
+    intervals_with_param <- intervals
+    intervals_with_param[[param]] <- TRUE
+    o_data <- PKNCAdata(o_conc, o_dose, intervals = intervals_with_param)
+
+    expect_no_error(param_res <- pk.nca(o_data))
+    expect_false(
+      all(is.na(param_res$result$PPORRES)),
+      info = paste0("Parameter ", param, " can be calculated independently")
+    )
+  }
+})
+
+test_that("Cannot include and exclude half-life points at the same time (#406)", {
+  o_conc <- PKNCAconc(data = data.frame(conc = 1, time = 0, inex = TRUE), conc~time, include_half.life = "inex", exclude_half.life = "inex")
+  d_interval <- data.frame(start = 0, end = Inf, half.life = TRUE)
+  o_data <- PKNCAdata(o_conc, intervals = d_interval)
+  expect_error(
+    suppressMessages(pk.nca(o_data)),
+    regexp = "Cannot both include and exclude half-life points for the same interval"
   )
 })

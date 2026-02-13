@@ -879,6 +879,7 @@ PKNCA.set.summary(
   point=business.geomean,
   spread=business.geocv
 )
+
 add.interval.col("vss.pred",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
@@ -949,7 +950,6 @@ PKNCA.set.summary(
   point=business.geomean,
   spread=business.geocv
 )
-
 add.interval.col("vss.md.obs",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
