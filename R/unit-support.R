@@ -207,9 +207,6 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
 
   groups_units_tbl <- merge(d_concu, d_doseu, all.x = TRUE) %>%
     dplyr::mutate(dplyr::across(dplyr::everything(), ~ as.character(.))) %>%
-    dplyr::grouped_df(data = ., vars = group_conc_cols) %>%
-    tidyr::fill(dplyr::all_of(all_unit_cols), .direction = "downup") %>%
-    dplyr::ungroup() %>%
     unique()
 
   # Check that at least for each concentration group units are uniform
@@ -261,7 +258,9 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
       conversions = conversions
     )
     if (length(groups_cols) > 0) {
-      ret[[i]] <- cbind(groups_units_tbl[i, groups_cols, drop = FALSE], pknca_units_tbl_i)
+      groups_values <- groups_units_tbl[i, groups_cols, drop = FALSE]
+      row.names(groups_values) <- NULL
+      ret[[i]] <- cbind(groups_values, pknca_units_tbl_i)
     } else {
       ret[[i]] <- pknca_units_tbl_i
     }
