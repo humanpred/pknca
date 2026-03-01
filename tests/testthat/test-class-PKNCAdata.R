@@ -379,11 +379,9 @@ test_that("PKNCAdata units (#336)", {
 
   o_conc <- PKNCAconc(data = d_conc, conc~time, concu = "concu_x")
   o_dose <- PKNCAdose(data = d_dose, dose~time, doseu = "doseu_x")
-  err <- tryCatch(PKNCAdata(o_conc, o_dose), error = identity)
-  expect_s3_class(err, "error")
-  expect_match(
-    conditionMessage(err),
-    "Units should be uniform at least across concentration groups"
+  expect_error(
+    PKNCAdata(o_conc, o_dose),
+    regexp = "Units should be uniform at least across concentration groups"
   )
 })
 
