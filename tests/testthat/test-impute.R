@@ -159,40 +159,6 @@ test_that("PKNCA_impute_fun_list_paste", {
   )
 })
 
-test_that("add_impute_to_intervals", {
-  d_conc <- generate.conc(nsub=5, ntreat=2, time.points=0:24)
-  d_dose <- generate.dose(d_conc)
-  o_conc <- PKNCAconc(d_conc, formula=conc~time|treatment+ID)
-  o_dose <- PKNCAdose(d_dose, formula=dose~time|treatment+ID)
-  o_data <- PKNCAdata(o_conc, o_dose)
-  expect_error(
-    add_impute_to_intervals(o_data),
-    class = "pknca_add_impute_to_intervals_NA"
-  )
-  # Nothing if impute is in the data
-  o_data_start <- o_data
-  o_data_start$impute <- "start"
-  expect_equal(
-    add_impute_to_intervals(PKNCAdata(o_conc, o_dose, impute = "start")),
-    o_data_start
-  )
-  # Impute added to the intervals and the column is modified, if it is not in
-  # the data
-  o_data <- PKNCAdata(o_conc, o_dose, impute = "start_conc0")
-  expect_equal(add_impute_to_intervals(o_data)$impute, "impute")
-  expect_true(all(
-    add_impute_to_intervals(o_data)$intervals$impute %in% "start_conc0"
-  ))
-  # If impute is already in the names of the intervals, add something else as
-  # the impute column name
-  o_data <- PKNCAdata(o_conc, o_dose, impute = "start_conc0")
-  o_data$intervals$impute <- "foo"
-  expect_equal(add_impute_to_intervals(o_data)$impute, "imputeX")
-  expect_true(all(
-    add_impute_to_intervals(o_data)$intervals$imputeX %in% "start_conc0"
-  ))
-})
-
 test_that("PKNCAdata moves imputation to the intervals column, as applicable", {
   d_conc <- generate.conc(nsub = 1, ntreat = 1, time.points = 1:3, nstudies = 1)
   o_conc <- PKNCAconc(conc~time, data = d_conc)

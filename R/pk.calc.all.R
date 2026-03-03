@@ -527,30 +527,9 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       # If the function returns a data frame, save all the returned values,
       # otherwise, save the value returned.
       if (is.data.frame(tmp_result)) {
-        # if (uses_units) {
-        #   # Convert to mixed_units so that rbind will work
-        #   for (nm in names(tmp_result)) {
-        #     if (inherits(tmp_result[[nm]], "units")) {
-        #       tmp_result[[nm]] <- units::mixed_units(tmp_result[[nm]])
-        #     } else {
-        #       # unitless
-        #       tmp_result[[nm]] <- units::mixed_units(tmp_result[[nm]], "")
-        #     }
-        #   }
-        # }
         tmp_testcd <- names(tmp_result)
         tmp_result <- unlist(tmp_result, use.names=FALSE, recursive=FALSE)
       } else {
-        # if (uses_units) {
-        #   if (inherits(tmp_result, "units")) {
-        #     # I() due to https://github.com/r-quantities/units/issues/309
-        #     tmp_result <- I(units::mixed_units(tmp_result))
-        #   } else {
-        #     # unitless
-        #     # I() due to https://github.com/r-quantities/units/issues/309
-        #     tmp_result <- I(units::mixed_units(tmp_result, ""))
-        #   }
-        # }
         tmp_testcd <- n
       }
       single_result <-

@@ -30,6 +30,11 @@ the dosing including dose amount and route.
 
 * New post-processing functions to normalize PKNCA result parameters based on any column in PKNCAconc data.frame (`normalize_by_col()`) or by using a custom normalization table (`normalize()`)
 
+## Minor changes (unlikely to affect PKNCA use)
+
+* Remove dead code: unused internal functions, commented-out code, unused
+  variable, stale comment, and unused `pmxTools` Suggests dependency
+
 # PKNCA 0.12.1
 
 ## Minor changes (unlikely to affect PKNCA use)
