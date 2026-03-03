@@ -71,29 +71,3 @@ get.best.model <- function(object, ...) {
   object[stats::AIC(object, ...)$isBest %in% "Best Model"][[1]]
 }
 
-#' Get the first model from a list of models
-#'
-#' @param object the list of (lists of, ...) models
-#' @returns The first item in the `object` that is not a list or `NA`.  If `NA`
-#'   is passed in or the list (of lists) is all `NA`, then `NA` is returned.
-get.first.model <- function(object) {
-  ret <- NA
-  if (inherits(object, "list")) {
-    idx <- 0
-    while (identical(NA, ret) & idx < length(object)) {
-      idx <- idx + 1
-      if (identical(NA, object[[idx]])) {
-        # Do nothing
-      } else if (inherits(object[[idx]], "list")) {
-        ret <- get.first.model(object[[idx]])
-      } else {
-        # It is neither NA or a list, it's our first usable object;
-        # return it.
-        ret <- object[[idx]]
-      }
-    }
-  } else {
-    ret <- object
-  }
-  ret
-}
