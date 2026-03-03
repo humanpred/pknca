@@ -7,7 +7,7 @@ components are done.
 ## Usage
 
 ``` r
-fit_half_life(data, tlast, conc_units)
+fit_half_life(data, tlast)
 ```
 
 ## Arguments
@@ -20,10 +20,6 @@ fit_half_life(data, tlast, conc_units)
 
   The time of last observed concentration above the limit of
   quantification.
-
-- conc_units:
-
-  NULL or the units to set for concentration measures
 
 ## Value
 

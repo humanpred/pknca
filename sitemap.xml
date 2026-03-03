@@ -39,7 +39,6 @@
 <url><loc>http://humanpred.github.io/pknca/reference/PKNCAresults.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/add.interval.col.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/addProvenance.html</loc></url>
-<url><loc>http://humanpred.github.io/pknca/reference/add_impute_to_intervals.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/adj.r.squared.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/any_sparse_dense_in_interval.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/as.data.frame.PKNCAresults.html</loc></url>
@@ -58,7 +57,6 @@
 <url><loc>http://humanpred.github.io/pknca/reference/auc_integrate.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/business.mean.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/check.conversion.html</loc></url>
-<url><loc>http://humanpred.github.io/pknca/reference/check.interval.deps.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/check.interval.specification.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/checkProvenance.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/choose.auc.intervals.html</loc></url>
@@ -77,7 +75,6 @@
 <url><loc>http://humanpred.github.io/pknca/reference/formula.PKNCAconc.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/geomean.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/get.best.model.html</loc></url>
-<url><loc>http://humanpred.github.io/pknca/reference/get.first.model.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/get.interval.cols.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/get.parameter.deps.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/getAttributeColumn.html</loc></url>

@@ -34,7 +34,6 @@ The vignette "Selection of Calculation Intervals"
 
 Other Interval specifications:
 [`add.interval.col()`](http://humanpred.github.io/pknca/reference/add.interval.col.md),
-[`check.interval.deps()`](http://humanpred.github.io/pknca/reference/check.interval.deps.md),
 [`choose.auc.intervals()`](http://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
 [`get.interval.cols()`](http://humanpred.github.io/pknca/reference/get.interval.cols.md),
 [`get.parameter.deps()`](http://humanpred.github.io/pknca/reference/get.parameter.deps.md)

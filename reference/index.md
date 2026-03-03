@@ -125,11 +125,6 @@
   : Check that the conversion to a data type does not change the number
   of NA values
 
-- [`check.interval.deps()`](http://humanpred.github.io/pknca/reference/check.interval.deps.md)
-  : Take in a single row of an interval specification and return that
-  row updated with any additional calculations that must be done to
-  fulfill all dependencies.
-
 - [`check.interval.specification()`](http://humanpred.github.io/pknca/reference/check.interval.specification.md)
   : Check the formatting of a calculation interval specification data
   frame.
@@ -201,9 +196,6 @@
 
 - [`get.best.model()`](http://humanpred.github.io/pknca/reference/get.best.model.md)
   : Extract the best model from a list of models using the AIC.
-
-- [`get.first.model()`](http://humanpred.github.io/pknca/reference/get.first.model.md)
-  : Get the first model from a list of models
 
 - [`get.interval.cols()`](http://humanpred.github.io/pknca/reference/get.interval.cols.md)
   : Get the columns that can be used in an interval specification
