@@ -17,33 +17,6 @@ get_impute_method <- function(intervals, impute) {
   impute_funs
 }
 
-#' Add the imputation column to the intervals, if it is not already there
-#'
-#' @param object The PKNCAdata object to impute data within
-#' @return The PKNCAdata object with an impute column added to the intervals (if
-#'   it is not already there) and the object$impute set to that column name
-#' @keywords internal
-add_impute_to_intervals <- function(object) {
-  if (is.na(object$impute)) {
-    rlang::abort(
-      message = "add_impute_to_intervals cannot have an NA imputation defined",
-      class = "pknca_add_impute_to_intervals_NA"
-    )
-  }
-  # Do nothing if the impute column is already in the data
-  if (!(object$impute %in% names(object$intervals))) {
-    impute_col <-
-      if (!("impute" %in% names(object$intervals))) {
-        "impute"
-      } else {
-        paste0(max(grep(x = names(object$intervals), "^impute", value = TRUE)), "X")
-      }
-    object$intervals[[impute_col]] <- object$impute
-    object$impute <- impute_col
-  }
-  object
-}
-
 #' Methods for imputation of data with PKNCA
 #' @name PKNCA_impute_method
 #' @return A data.frame with one column named conc with imputed concentrations
