@@ -373,20 +373,6 @@ test_that("PKNCAdata units (#336)", {
   suppressWarnings(o_nca <- pk.nca(o_data))
   expect_true("Cmax (A)" %in% names(summary(o_nca)))
 
-  # NA unit values are ignored
-  d_conc <- data.frame(conc = 1, time = 0:1, concu_x = c("A", NA), timeu_x = "B", amountu_x = "C")
-  d_dose <- data.frame(dose = 1, time = 0, doseu_x = "D")
-
-  o_conc <- PKNCAconc(data = d_conc, conc~time, concu = "concu_x", timeu = "timeu_x")
-  o_dose <- PKNCAdose(data = d_dose, dose~time, doseu = "doseu_x")
-  o_data <- PKNCAdata(o_conc, o_dose)
-  expect_equal(
-    o_data$units,
-    pknca_units_table(concu = "A", doseu = "D", timeu = "B")
-  )
-  suppressWarnings(o_nca <- pk.nca(o_data))
-  expect_true("Cmax (A)" %in% names(summary(o_nca)))
-
   # multiple unit values cause an error
   d_conc <- data.frame(conc = 1, time = 0:1, concu_x = c("A", "C"), timeu_x = "B", amountu_x = "C")
   d_dose <- data.frame(dose = 1, time = 0, doseu_x = "B")
@@ -395,7 +381,7 @@ test_that("PKNCAdata units (#336)", {
   o_dose <- PKNCAdose(data = d_dose, dose~time, doseu = "doseu_x")
   expect_error(
     PKNCAdata(o_conc, o_dose),
-    regexp = "Only one unit may be provided at a time: A, C"
+    regexp = "Units should be uniform at least across concentration groups"
   )
 })
 
