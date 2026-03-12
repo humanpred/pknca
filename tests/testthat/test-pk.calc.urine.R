@@ -128,7 +128,7 @@ test_that("generate_missing_messages", {
   conc <- NA_real_
   volume <- NA_real_
   expect_equal(
-    as.character(generate_missing_messages(conc, volume)),
+    as.character(PKNCA:::generate_missing_messages(conc, volume)),
     "All conc and volume are missing"
   )
 })
