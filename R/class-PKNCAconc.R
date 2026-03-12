@@ -319,11 +319,9 @@ print.PKNCAconc <- function(x, n=6, summarize=FALSE, ...) {
   print(stats::formula(x), ...)
   if (is_sparse_pk(x)) {
     data_current <- x$data_sparse
-    is_sparse <- TRUE
     cat("Data are sparse PK.\n")
   } else {
     data_current <- x$data
-    is_sparse <- FALSE
     cat("Data are dense PK.\n")
   }
   single_subject <- is.na(x$columns$subject) || (length(x$columns$subject) == 0)

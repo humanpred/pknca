@@ -32,6 +32,11 @@ the dosing including dose amount and route.
 
 * New excretion rate parameters: `ermax`  (Maximum excretion rate), `ertmax` (Midpoint time of maximum excretion rate) and `ertlst` (Time of last excretion rate measurement) (#433)
 
+## Minor changes (unlikely to affect PKNCA use)
+
+* Remove dead code: unused internal functions, commented-out code, unused
+  variable, stale comment, and unused `pmxTools` Suggests dependency
+
 # PKNCA 0.12.1
 
 ## Minor changes (unlikely to affect PKNCA use)
