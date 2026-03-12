@@ -134,6 +134,7 @@ add.interval.col("fe",
                  unit_type="amount_dose",
                  pretty_name="Fraction excreted",
                  values=c(FALSE, TRUE),
+                 depends="ae",
                  desc="The fraction of the dose excreted")
 PKNCA.set.summary(
   name="fe",
@@ -158,13 +159,15 @@ pk.calc.ertlst <- function(conc, volume, time, duration.conc, check = TRUE) {
                                            name_a = "concentrations",
                                            name_b = "volumes")
 
-  if (all(is.na(conc))) {
+  er <- conc * volume / duration.conc
+
+  if (all(is.na(er))) {
     ret <- NA_real_
-  } else if (all(conc %in% c(0, NA))) {
+  } else if (all(er %in% c(0, NA))) {
     ret <- 0
   } else {
     midtime <- time + duration.conc / 2
-    ret <- max(midtime[!(conc %in% c(NA, 0))])
+    ret <- max(midtime[!is.na(er) & er != 0])
   }
 
   if (length(message_all) != 0) {
@@ -208,7 +211,11 @@ pk.calc.ermax <- function(conc, volume, time, duration.conc, check = TRUE) {
     ret <- NA_real_
   } else {
     er <- conc * volume / duration.conc
-    ret <- max(er, na.rm=TRUE)
+    if (all(is.na(er))) {
+      ret <- NA_real_
+    } else {
+      ret <- max(er, na.rm=TRUE)
+    }
   }
 
   if (length(message_all) != 0) {
