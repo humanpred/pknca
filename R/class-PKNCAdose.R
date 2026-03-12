@@ -134,7 +134,7 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
   }
   # Check for missing independent variable (time) in non-excluded rows
   mask.indep <- is.na(getIndepVar.PKNCAdose(ret)) & !is_excluded
-  if (any(mask.indep) & !all(mask.indep)) {
+  if (any(mask.indep) & !all(is.na(getIndepVar.PKNCAdose(ret)[!is_excluded]))) {
     stop("Some but not all values are missing for the independent variable, please see the help for PKNCAdose for how to specify the formula and confirm that your data has dose times for all doses.")
   }
   if (missing(route)) {
