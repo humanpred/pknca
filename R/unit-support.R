@@ -210,9 +210,15 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
     unique()
 
   # Check that at least for each concentration group units are uniform
-  mask_duplicated_groups <- duplicated(groups_units_tbl[group_conc_cols]) |
-    duplicated(groups_units_tbl[group_conc_cols], fromLast = TRUE)
-  mismatching_units_groups <- groups_units_tbl[mask_duplicated_groups, , drop = FALSE]
+  if (length(group_conc_cols) == 0) {
+    # No grouping columns: all rows must collapse to a single unique unit set
+    mismatching_units_groups <-
+      if (nrow(groups_units_tbl) > 1) groups_units_tbl else groups_units_tbl[0, , drop = FALSE]
+  } else {
+    mask_duplicated_groups <- duplicated(groups_units_tbl[group_conc_cols]) |
+      duplicated(groups_units_tbl[group_conc_cols], fromLast = TRUE)
+    mismatching_units_groups <- groups_units_tbl[mask_duplicated_groups, , drop = FALSE]
+  }
   if (nrow(mismatching_units_groups) > 0) {
     mismatching_units_groups_msg <- vapply(
       seq_len(nrow(mismatching_units_groups)),
