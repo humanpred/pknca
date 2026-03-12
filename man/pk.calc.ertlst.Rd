@@ -16,8 +16,6 @@ pk.calc.ertlst(conc, volume, time, duration.conc, check = TRUE)
 \item{duration.conc}{The duration of the collection interval}
 
 \item{check}{Should the concentration and time data be checked?}
-
-\item{options}{List of changes to the default PKNCA options (see \code{PKNCA.options()})}
 }
 \value{
 The midpoint collection time of the last measurable excretion rate, or NA/0 if not available
