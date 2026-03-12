@@ -372,7 +372,7 @@ pknca_units_table_time_amount <- function(timeu, amountu) {
   if (useless(timeu) || useless(amountu)) {
     time_amount <- NA_character_
   } else {
-    time_amount <- sprintf("%s*%s", timeu, amountu)
+    time_amount <- sprintf("%s/%s", pknca_units_add_paren(amountu), pknca_units_add_paren(timeu))
   }
   data.frame(
     PPORRESU = time_amount,
