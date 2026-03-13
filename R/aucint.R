@@ -1,47 +1,55 @@
-#' Calculate the AUC over an interval with interpolation and/or
-#' extrapolation of concentrations for the beginning and end of the
-#' interval.
+#' Calculate AUXC (AUC or AUMC) over an interval with interpolation/extrapolation
+#'
+#' Calculates AUC or AUMC over a given interval, optionally interpolating or
+#' extrapolating concentrations.
 #'
 #' @details
-#' When `pk.calc.aucint()` needs to extrapolate using `lambda.z` (in other
+#' When `pk.calc.auxcint()` needs to extrapolate using `lambda.z` (in other
 #' words, using the half-life), it will always extrapolate using the logarithmic
 #' trapezoidal rule to align with using a half-life calculation for the
 #' extrapolation.
-#'
 #'
 #' @inheritParams pk.calc.auxc
 #' @inheritParams assert_intervaltime_single
 #' @inheritParams assert_lambdaz
 #' @param clast,clast.obs,clast.pred The last concentration above the limit of
-#'   quantification; this is used for AUCinf calculations.  If provided as
-#'   clast.obs (observed clast value, default), AUCinf is AUCinf,obs. If
-#'   provided as clast.pred, AUCinf is AUCinf,pred.
+#'   quantification; this is used for AUCinf calculations. If provided as
+#'   `clast.obs` (observed clast value, default), AUCinf is AUCinf,obs. If
+#'   provided as `clast.pred`, AUCinf is AUCinf,pred.
 #' @param time.dose,route,duration.dose The time of doses, route of
 #'   administration, and duration of dose used with interpolation and
-#'   extrapolation of concentration data (see [interp.extrap.conc.dose()]).  If
-#'   `NULL`, [interp.extrap.conc()] will be used instead (assuming that no doses
-#'   affecting concentrations are in the interval).
+#'   extrapolation of concentration data (see [interp.extrap.conc.dose()]).
+#'   If `NULL`, [interp.extrap.conc()] will be used instead.
+#' @param fun_linear,fun_log,fun_inf Integration functions for linear,
+#'   logarithmic, and infinite extrapolation methods.
 #' @param ... Additional arguments passed to `pk.calc.auxc` and
 #'   `interp.extrap.conc`
+#'
+#' @return The AUXC for an interval of time as a number
+#'
 #' @family AUC calculations
+#' @family AUMC calculations
 #' @seealso [PKNCA.options()], [interp.extrap.conc.dose()]
-#' @returns The AUC for an interval of time as a number
 #' @export
-pk.calc.aucint <- function(conc, time,
-                           interval=NULL, start=NULL, end=NULL,
-                           clast=pk.calc.clast.obs(conc, time),
-                           lambda.z=NA,
-                           time.dose=NULL,
-                           route="extravascular",
-                           duration.dose=0,
-                           method=NULL,
-                           auc.type="AUClast",
-                           conc.blq=NULL,
-                           conc.na=NULL,
-                           check=TRUE,
-                           ...,
-                           options=list()) {
+pk.calc.auxcint <- function(conc, time,
+                            interval=NULL, start=NULL, end=NULL,
+                            clast=pk.calc.clast.obs(conc, time),
+                            lambda.z=NA,
+                            time.dose=NULL,
+                            route="extravascular",
+                            duration.dose=0,
+                            auc.type=c("AUClast", "AUCinf", "AUCall"),
+                            options=list(),
+                            method=NULL,
+                            conc.blq=NULL,
+                            conc.na=NULL,
+                            check=TRUE,
+                            fun_linear,
+                            fun_log,
+                            fun_inf,
+                            ...) {
   # Check inputs
+  auc.type <- match.arg(auc.type)
   method <- PKNCA.choose.option(name="auc.method", value=method, options=options)
   if (check) {
     assert_conc_time(conc, time)
@@ -64,7 +72,7 @@ pk.calc.aucint <- function(conc, time,
     } else {
       setdiff(c(interval, time.dose), data$time)
     }
-  # Handle the potential double-calculation (before/after tlast) with AUCinf
+  # Handle the potential double-calculation (before/after tlast) with AUCinf/AUMCinf
   conc_clast <- NULL
   time_clast <- NULL
   if (auc.type %in% "AUCinf") {
@@ -142,24 +150,7 @@ pk.calc.aucint <- function(conc, time,
     conc_interp <- data$conc[mask_time]
     time_interp <- data$time[mask_time]
   }
-  # AUCinf traces an AUClast curve if the interval is finite (because
-  # the interval doesn't go to infinity) while AUCall and AUClast trace
-  # their own curves.  Or, they all trace their own curves.
-  auc.type_map <-
-    if (is.infinite(interval[2])) {
-      list(
-        AUClast="AUClast",
-        AUCall="AUCall",
-        AUCinf="AUCinf"
-      )[[auc.type]]
-    } else {
-      list(
-        AUClast="AUClast",
-        AUCall="AUCall",
-        AUCinf="AUClast"
-      )[[auc.type]]
-    }
-
+  
   interval_method <-
     choose_interval_method(
       conc = conc_interp,
@@ -180,14 +171,26 @@ pk.calc.aucint <- function(conc, time,
       conc = conc_interp, time = time_interp,
       clast = clast, tlast = tlast, lambda.z = lambda.z,
       interval_method = interval_method,
-      fun_linear = aucintegrate_linear,
-      fun_log = aucintegrate_log,
-      fun_inf = aucintegrate_inf
+      fun_linear = fun_linear,
+      fun_log = fun_log,
+      fun_inf = fun_inf
     )
   ret
 }
 
-#' @describeIn pk.calc.aucint Interpolate or extrapolate concentrations for
+#' @describeIn pk.calc.auxcint Calculate AUC over an interval
+#' @export
+pk.calc.aucint <- function(conc, time, ..., options=list()) {
+  pk.calc.auxcint(
+    conc = conc, time = time, ...,
+    options = options,
+    fun_linear = aucintegrate_linear,
+    fun_log = aucintegrate_log,
+    fun_inf = aucintegrate_inf
+  )
+}
+
+#' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUClast
 #' @export
 pk.calc.aucint.last <- function(conc, time, start=NULL, end=NULL, time.dose, ..., options=list()) {
@@ -200,7 +203,7 @@ pk.calc.aucint.last <- function(conc, time, start=NULL, end=NULL, time.dose, ...
                  ...,
                  auc.type="AUClast")
 }
-#' @describeIn pk.calc.aucint Interpolate or extrapolate concentrations for
+#' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUCall
 #' @export
 pk.calc.aucint.all <- function(conc, time, start=NULL, end=NULL, time.dose, ..., options=list()) {
@@ -213,7 +216,7 @@ pk.calc.aucint.all <- function(conc, time, start=NULL, end=NULL, time.dose, ...,
                  ...,
                  auc.type="AUCall")
 }
-#' @describeIn pk.calc.aucint Interpolate or extrapolate concentrations for
+#' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUCinf.obs
 #' @export
 pk.calc.aucint.inf.obs <- function(conc, time, start=NULL, end=NULL, time.dose, lambda.z, clast.obs, ..., options=list()) {
@@ -226,7 +229,7 @@ pk.calc.aucint.inf.obs <- function(conc, time, start=NULL, end=NULL, time.dose, 
                  options=options, ...,
                  auc.type="AUCinf")
 }
-#' @describeIn pk.calc.aucint Interpolate or extrapolate concentrations for
+#' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUCinf.pred
 #' @export
 pk.calc.aucint.inf.pred <- function(conc, time, start=NULL, end=NULL, time.dose, lambda.z, clast.pred, ..., options=list()) {
@@ -248,12 +251,6 @@ add.interval.col("aucint.last",
                  pretty_name="AUCint (based on AUClast extrapolation)",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL))
-PKNCA.set.summary(
-  name="aucint.last",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("aucint.last.dose",
                  FUN="pk.calc.aucint.last",
@@ -262,12 +259,6 @@ add.interval.col("aucint.last.dose",
                  pretty_name="AUCint (based on AUClast extrapolation, dose-aware)",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast) with dose-aware interpolation/extrapolation of concentrations",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"))
-PKNCA.set.summary(
-  name="aucint.last.dose",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("aucint.all",
                  FUN="pk.calc.aucint.all",
@@ -276,12 +267,6 @@ add.interval.col("aucint.all",
                  pretty_name="AUCint (based on AUCall extrapolation)",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL))
-PKNCA.set.summary(
-  name="aucint.all",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("aucint.all.dose",
                  FUN="pk.calc.aucint.all",
@@ -290,12 +275,6 @@ add.interval.col("aucint.all.dose",
                  pretty_name="AUCint (based on AUCall extrapolation, dose-aware)",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall) with dose-aware interpolation/extrapolation of concentrations",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"))
-PKNCA.set.summary(
-  name="aucint.all.dose",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("aucint.inf.obs",
                  FUN="pk.calc.aucint.inf.obs",
@@ -305,12 +284,6 @@ add.interval.col("aucint.inf.obs",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
                  depends=c("lambda.z", "clast.obs"))
-PKNCA.set.summary(
-  name="aucint.inf.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("aucint.inf.obs.dose",
                  FUN="pk.calc.aucint.inf.obs",
@@ -320,12 +293,6 @@ add.interval.col("aucint.inf.obs.dose",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast) with dose-aware interpolation/extrapolation of concentrations",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
                  depends=c("lambda.z", "clast.obs"))
-PKNCA.set.summary(
-  name="aucint.inf.obs.dose",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("aucint.inf.pred",
                  FUN="pk.calc.aucint.inf.pred",
@@ -335,12 +302,6 @@ add.interval.col("aucint.inf.pred",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
                  depends=c("lambda.z", "clast.pred"))
-PKNCA.set.summary(
-  name="aucint.inf.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("aucint.inf.pred.dose",
                  FUN="pk.calc.aucint.inf.pred",
@@ -350,8 +311,166 @@ add.interval.col("aucint.inf.pred.dose",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall) with dose-aware interpolation/extrapolation of concentrations",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
                  depends=c("lambda.z", "clast.pred"))
+
+
+#' @describeIn pk.calc.auxcint Calculate AUMC over an interval
+#' @export
+pk.calc.aumcint <- function(conc, time, ..., options=list()) {
+  pk.calc.auxcint(
+    conc = conc, time = time, ...,
+    options = options,
+    fun_linear = aumcintegrate_linear,
+    fun_log = aumcintegrate_log,
+    fun_inf = aumcintegrate_inf
+  )
+}
+
+#' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
+#'   AUMClast
+#' @export
+pk.calc.aumcint.last <- function(conc, time, start=NULL, end=NULL, time.dose, ..., options=list()) {
+  if (missing(time.dose))
+    time.dose <- NULL
+  pk.calc.aumcint(conc=conc, time=time,
+                  start=start, end=end,
+                  options=options,
+                  time.dose=time.dose,
+                  ...,
+                  auc.type="AUClast")
+}
+
+#' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
+#'   AUMCall
+#' @export
+pk.calc.aumcint.all <- function(conc, time, start=NULL, end=NULL, time.dose, ..., options=list()) {
+  if (missing(time.dose))
+    time.dose <- NULL
+  pk.calc.aumcint(conc=conc, time=time,
+                  start=start, end=end,
+                  options=options,
+                  time.dose=time.dose,
+                  ...,
+                  auc.type="AUCall")
+}
+
+#' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
+#'   AUMCinf.obs
+#' @export
+pk.calc.aumcint.inf.obs <- function(conc, time, start=NULL, end=NULL, time.dose, lambda.z, clast.obs, ..., options=list()) {
+  if (missing(time.dose))
+    time.dose <- NULL
+  pk.calc.aumcint(conc=conc, time=time,
+                  start=start, end=end,
+                  time.dose=time.dose,
+                  lambda.z=lambda.z, clast=clast.obs,
+                  options=options, ...,
+                  auc.type="AUCinf")
+}
+
+#' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
+#'   AUMCinf.pred
+#' @export
+pk.calc.aumcint.inf.pred <- function(conc, time, start=NULL, end=NULL, time.dose, lambda.z, clast.pred, ..., options=list()) {
+  if (missing(time.dose))
+    time.dose <- NULL
+  pk.calc.aumcint(conc=conc, time=time,
+                  start=start, end=end,
+                  time.dose=time.dose,
+                  lambda.z=lambda.z, clast=clast.pred,
+                  options=options, ...,
+                  auc.type="AUCinf")
+}
+
+
+# aumcint.last (without dose awareness)
+add.interval.col("aumcint.last",
+                 FUN="pk.calc.aumcint.last",
+                 values=c(FALSE, TRUE),
+                 unit_type="aumc",
+                 pretty_name="AUMCint (based on AUMClast extrapolation)",
+                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)",
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL))
+
+# aumcint.last.dose (WITH dose awareness)
+add.interval.col("aumcint.last.dose",
+                 FUN="pk.calc.aumcint.last",
+                 values=c(FALSE, TRUE),
+                 unit_type="aumc",
+                 pretty_name="AUMCint (based on AUMClast extrapolation, dose-aware)",
+                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations",
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"))
+
+# aumcint.all (without dose awareness)
+add.interval.col("aumcint.all",
+                 FUN="pk.calc.aumcint.all",
+                 values=c(FALSE, TRUE),
+                 unit_type="aumc",
+                 pretty_name="AUMCint (based on AUMCall extrapolation)",
+                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)",
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL))
+
+# aumcint.all.dose (WITH dose awareness)
+add.interval.col("aumcint.all.dose",
+                 FUN="pk.calc.aumcint.all",
+                 values=c(FALSE, TRUE),
+                 unit_type="aumc",
+                 pretty_name="AUMCint (based on AUMCall extrapolation, dose-aware)",
+                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations",
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"))
+
+# aumcint.inf.obs (without dose awareness)
+add.interval.col("aumcint.inf.obs",
+                 FUN="pk.calc.aumcint.inf.obs",
+                 values=c(FALSE, TRUE),
+                 unit_type="aumc",
+                 pretty_name="AUMCint (based on AUMCinf,obs extrapolation)",
+                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)",
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
+                 depends=c("lambda.z", "clast.obs"))
+
+# aumcint.inf.obs.dose (WITH dose awareness)
+add.interval.col("aumcint.inf.obs.dose",
+                 FUN="pk.calc.aumcint.inf.obs",
+                 values=c(FALSE, TRUE),
+                 unit_type="aumc",
+                 pretty_name="AUMCint (based on AUMCinf,obs extrapolation, dose-aware)",
+                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations",
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
+                 depends=c("lambda.z", "clast.obs"))
+
+# aumcint.inf.pred (without dose awareness)
+add.interval.col("aumcint.inf.pred",
+                 FUN="pk.calc.aumcint.inf.pred",
+                 values=c(FALSE, TRUE),
+                 unit_type="aumc",
+                 pretty_name="AUMCint (based on AUMCinf,pred extrapolation)",
+                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)",
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
+                 depends=c("lambda.z", "clast.pred"))
+
+# aumcint.inf.pred.dose (WITH dose awareness)
+add.interval.col("aumcint.inf.pred.dose",
+                 FUN="pk.calc.aumcint.inf.pred",
+                 values=c(FALSE, TRUE),
+                 unit_type="aumc",
+                 pretty_name="AUMCint (based on AUMCinf,pred extrapolation, dose-aware)",
+                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations",
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
+                 depends=c("lambda.z", "clast.pred"))
+
+# =============================================================================
+# SET SUMMARY STATISTICS - Count (16)
+# =============================================================================
 PKNCA.set.summary(
-  name="aucint.inf.pred.dose",
+  name= c(
+    # AUC related
+    "aucint.last", "aucint.last.dose", "aucint.all", "aucint.all.dose",
+    "aucint.inf.obs", "aucint.inf.obs.dose", "aucint.inf.pred", "aucint.inf.pred.dose",
+    
+    # AUMC related
+    "aumcint.last", "aumcint.last.dose", "aumcint.all",  "aumcint.all.dose",
+    "aumcint.inf.obs", "aumcint.inf.obs.dose", "aumcint.inf.pred", "aumcint.inf.pred.dose"
+  ), 
   description="geometric mean and geometric coefficient of variation",
   point=business.geomean,
   spread=business.geocv
