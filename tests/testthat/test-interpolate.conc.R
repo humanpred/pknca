@@ -1059,3 +1059,110 @@ test_that("interp.extrap.conc.dose", {
   )
 })
 
+# conc_is_increasing_after_dose ####
+
+test_that("conc_is_increasing_after_dose detects dose boundaries", {
+  # Simple decline followed by increase (dose boundary)
+  data_dose_boundary <- data.frame(
+    conc = c(0, 5, 3, 1, 4, 2),
+    time = c(0, 2, 4, 8, 14, 20)
+  )
+  # Time 10 is between (8, 1) declining and (14, 4) increasing
+  expect_true(
+    conc_is_increasing_after_dose(data_dose_boundary, time_out = 10),
+    info = "Decline then increase detected as dose boundary"
+  )
+  # Time 3 is between (2, 5) and (4, 3) - declining, not a dose boundary
+  expect_false(
+    conc_is_increasing_after_dose(data_dose_boundary, time_out = 3),
+    info = "Simple decline is not a dose boundary"
+  )
+
+  # Initial absorption phase (from zero) should not trigger
+  data_absorption <- data.frame(
+    conc = c(0, 0.5, 2, 5),
+    time = c(0, 1, 2, 4)
+  )
+  expect_false(
+    conc_is_increasing_after_dose(data_absorption, time_out = 0.25),
+    info = "Initial absorption from zero is not a dose boundary"
+  )
+
+  # Normal increasing concentrations (no prior decline)
+  data_increasing <- data.frame(
+    conc = c(0, 1, 3, 5),
+    time = c(0, 2, 4, 8)
+  )
+  expect_false(
+    conc_is_increasing_after_dose(data_increasing, time_out = 3),
+    info = "Monotonically increasing concentrations are not a dose boundary"
+  )
+
+  # Exact time match - no interpolation needed
+  expect_false(
+    conc_is_increasing_after_dose(data_dose_boundary, time_out = 8),
+    info = "Exact time match is not a dose boundary"
+  )
+})
+
+# interp.extrap.conc with increasing concentrations after dose ####
+
+test_that("interp.extrap.conc extrapolates when concentrations increase after a decline (#508)", {
+  # Scenario: concentration declines from dose 1, then increases from dose 2
+  # Time 0: predose (0)
+  # Time 2: 5.0 (Cmax dose 1)
+  # Time 4: 3.0 (declining)
+  # Time 8: 1.0 (declining)
+  # [dose at ~10]
+  # Time 14: 4.0 (increasing from dose 2)
+  # Time 20: 2.0 (declining)
+  conc <- c(0, 5, 3, 1, 4, 2)
+  time <- c(0, 2, 4, 8, 14, 20)
+
+  # At time 10 (between declining phase and increasing phase):
+  # Without the fix, this would interpolate between (8, 1) and (14, 4)
+  # giving ~2.0 (linear) which is incorrect.
+  # With the fix, it should extrapolate from the declining phase,
+  # returning 0 for AUClast.
+  result <- interp.extrap.conc(
+    conc = conc, time = time,
+    time.out = 10,
+    auc.type = "AUClast",
+    method = "lin up/log down"
+  )
+  expect_equal(
+    result, 0,
+    info = "Extrapolate to 0 when concentrations are increasing after a decline (AUClast)"
+  )
+
+  # For AUCinf with lambda.z, should extrapolate using the half-life
+  result_inf <- interp.extrap.conc(
+    conc = conc, time = time,
+    time.out = 10,
+    auc.type = "AUCinf",
+    lambda.z = log(2) / 2,  # half-life of 2 hours
+    method = "lin up/log down"
+  )
+  # Expected: clast=2 (last ALQ from full data), but extrapolation from
+  # the declining phase at time 8 (conc=1) with lambda.z
+  # Actually, extrapolate.conc uses the full data, so clast is still
+  # from the full data. The key is that time.out > tlast of the declining phase.
+  expect_true(
+    result_inf < 1,
+    info = "Extrapolated concentration should be less than the last declining concentration"
+  )
+
+  # Normal declining phase should still interpolate normally
+  result_decline <- interp.extrap.conc(
+    conc = conc, time = time,
+    time.out = 6,
+    auc.type = "AUClast",
+    method = "lin up/log down"
+  )
+  # Between (4, 3) and (8, 1) - declining, should interpolate
+  expect_true(
+    result_decline > 0 && result_decline < 3,
+    info = "Normal declining phase still interpolates correctly"
+  )
+})
+

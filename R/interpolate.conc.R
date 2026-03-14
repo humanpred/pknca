@@ -1,3 +1,45 @@
+# Detect if a time point falls in a region where concentrations are increasing
+# after a decline (suggesting a dose boundary).  When concentrations were
+# declining and then start increasing, interpolation between the two flanking
+# observations is inappropriate because the concentration likely went through a
+# trough near zero before rising again due to a new dose.
+#
+# @param data A data.frame with columns `conc` and `time` (cleaned data)
+# @param time_out The time point to check
+# @return TRUE if the concentration pattern at time_out suggests a dose
+#   boundary (decline then increase), FALSE otherwise
+# @keywords Internal
+conc_is_increasing_after_dose <- function(data, time_out) {
+  # Find the bracketing observations
+  idx_before <- max(which(data$time <= time_out))
+  idx_after <- min(which(data$time >= time_out))
+
+  # If time_out matches an observation exactly, no interpolation needed
+
+  if (idx_before == idx_after) {
+    return(FALSE)
+  }
+
+  # Need at least one point before the bracketing point to detect a decline
+  if (idx_before < 2) {
+    return(FALSE)
+  }
+
+  conc_before <- data$conc[idx_before]
+  conc_after <- data$conc[idx_after]
+  conc_prev <- data$conc[idx_before - 1]
+
+  # Concentration was declining (conc_prev > conc_before) and is now increasing
+
+  # (conc_after > conc_before).  Both the preceding and bracketing concentrations
+  # must be above zero to avoid false positives during the initial absorption
+  # phase where concentrations rise from zero.
+  conc_before > 0 &&
+    conc_prev > 0 &&
+    conc_prev > conc_before &&
+    conc_after > conc_before
+}
+
 #' Interpolate concentrations between measurements or extrapolate concentrations
 #' after the last measurement.
 #'
@@ -120,7 +162,8 @@ interp.extrap.conc <- function(conc, time, time.out,
         stop("Please report a bug:  tlast is NA; cannot interpolate/extrapolate") # nocov
       } else if (is.na(time.out[i])) {
         warning("An interpolation/extrapolation time is NA")
-      } else if (time.out[i] <= tlast) {
+      } else if (time.out[i] <= tlast &&
+                   !conc_is_increasing_after_dose(data, time.out[i])) {
         ret[i] <-
           interpolate.conc(
             conc=data$conc, time=data$time,

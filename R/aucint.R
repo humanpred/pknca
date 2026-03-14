@@ -173,7 +173,7 @@ pk.calc.aucint <- function(conc, time,
     interval_method[length(interval_method)] <- "zero"
   }
   if (length(extrap_times) > 0) {
-    interval_method[which(time_interp == extrap_times) - 1] <- "log"
+    interval_method[which(time_interp %in% extrap_times) - 1] <- "log"
   }
   ret <-
     auc_integrate(

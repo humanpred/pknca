@@ -454,3 +454,47 @@ test_that("aucint.inf.pred returns NA when half-life is not estimable (#450)", {
   aucint_inf_pred <- aucint_inf_pred_prep$PPORRES[aucint_inf_pred_prep$PPTESTCD %in% "aucint.inf.pred"]
   expect_equal(aucint_inf_pred, NA_real_)
 })
+
+test_that("aucint does not interpolate across dose boundaries with increasing concentrations (#508)", {
+  # Scenario from issue #508: concentrations decline from dose 1, then
+  # increase from dose 2. AUCint should not interpolate between the two
+  # distant ALQ concentrations spanning the dose boundary.
+  conc <- c(0, 5, 3, 1, 4, 2)
+  time <- c(0, 2, 4, 8, 14, 20)
+
+  # AUCint(0, 10) should not interpolate between (8, 1) and (14, 4)
+  # because concentrations show a decline-then-increase pattern
+  aucint_result <- pk.calc.aucint(
+    conc = conc, time = time,
+    start = 0, end = 10,
+    auc.type = "AUClast"
+  )
+  auclast_0_8 <- pk.calc.auc.last(
+    conc = conc[1:4], time = time[1:4]
+  )
+  # AUCint(0, 10) should be similar to AUClast(0, 8) because the
+  # concentration after 8 extrapolates to 0 (AUClast behavior)
+  expect_equal(
+    aucint_result, auclast_0_8,
+    info = "AUCint should not inflate when concentrations increase after a dose boundary"
+  )
+})
+
+test_that("aucint extrap_times uses correct vector comparison (#508)", {
+  # This test verifies that the %in% fix (vs ==) works correctly
+  # when there are multiple extrapolation time points
+  concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
+
+  # With lambda.z, AUCinf extrapolation beyond tlast should work correctly
+  # even when there are multiple extrap_times (from dose times beyond tlast)
+  result <- pk.calc.aucint(
+    conc = concdata$conc, time = concdata$time,
+    interval = c(0, 5), auc.type = "AUCinf",
+    clast = 1, lambda.z = log(2),
+    time.dose = c(0, 4)
+  )
+  expect_true(
+    is.numeric(result) && !is.na(result),
+    info = "AUCint with multiple extrap_times should produce a valid result"
+  )
+})
