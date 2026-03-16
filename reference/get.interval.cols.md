@@ -1308,9 +1308,71 @@ get.interval.cols()
 #> 
 #> 
 #> $clr.last$depends
-#> [1] "ae"      "auclast"
+#> [1] "ae"
 #> 
 #> $clr.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $clr.obs
+#> $clr.obs$FUN
+#> [1] "pk.calc.clr"
+#> 
+#> $clr.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $clr.obs$unit_type
+#> [1] "renal_clearance"
+#> 
+#> $clr.obs$pretty_name
+#> [1] "Renal clearance (from AUCinf,obs)"
+#> 
+#> $clr.obs$desc
+#> [1] "The renal clearance calculated using AUCinf,obs"
+#> 
+#> $clr.obs$sparse
+#> [1] FALSE
+#> 
+#> $clr.obs$formalsmap
+#> $clr.obs$formalsmap$auc
+#> [1] "aucinf.obs"
+#> 
+#> 
+#> $clr.obs$depends
+#> [1] "ae"
+#> 
+#> $clr.obs$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $clr.pred
+#> $clr.pred$FUN
+#> [1] "pk.calc.clr"
+#> 
+#> $clr.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $clr.pred$unit_type
+#> [1] "renal_clearance"
+#> 
+#> $clr.pred$pretty_name
+#> [1] "Renal clearance (from AUCinf,pred)"
+#> 
+#> $clr.pred$desc
+#> [1] "The renal clearance calculated using AUCinf,pred"
+#> 
+#> $clr.pred$sparse
+#> [1] FALSE
+#> 
+#> $clr.pred$formalsmap
+#> $clr.pred$formalsmap$auc
+#> [1] "aucinf.pred"
+#> 
+#> 
+#> $clr.pred$depends
+#> [1] "ae"
+#> 
+#> $clr.pred$datatype
 #> [1] "interval"
 #> 
 #> 
@@ -1340,6 +1402,93 @@ get.interval.cols()
 #> [1] "ae"
 #> 
 #> $fe$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $ertlst
+#> $ertlst$FUN
+#> [1] "pk.calc.ertlst"
+#> 
+#> $ertlst$values
+#> [1] FALSE  TRUE
+#> 
+#> $ertlst$unit_type
+#> [1] "time"
+#> 
+#> $ertlst$pretty_name
+#> [1] "Tlast excretion rate"
+#> 
+#> $ertlst$desc
+#> [1] "The midpoint collection time of the last measurable excretion rate (typically in urine or feces)"
+#> 
+#> $ertlst$sparse
+#> [1] FALSE
+#> 
+#> $ertlst$formalsmap
+#> list()
+#> 
+#> $ertlst$depends
+#> NULL
+#> 
+#> $ertlst$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $ermax
+#> $ermax$FUN
+#> [1] "pk.calc.ermax"
+#> 
+#> $ermax$values
+#> [1] FALSE  TRUE
+#> 
+#> $ermax$unit_type
+#> [1] "amount_time"
+#> 
+#> $ermax$pretty_name
+#> [1] "Maximum excretion rate"
+#> 
+#> $ermax$desc
+#> [1] "The maximum excretion rate (typically in urine or feces)"
+#> 
+#> $ermax$sparse
+#> [1] FALSE
+#> 
+#> $ermax$formalsmap
+#> list()
+#> 
+#> $ermax$depends
+#> NULL
+#> 
+#> $ermax$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $ertmax
+#> $ertmax$FUN
+#> [1] "pk.calc.ertmax"
+#> 
+#> $ertmax$values
+#> [1] FALSE  TRUE
+#> 
+#> $ertmax$unit_type
+#> [1] "time"
+#> 
+#> $ertmax$pretty_name
+#> [1] "Tmax excretion rate"
+#> 
+#> $ertmax$desc
+#> [1] "The midpoint collection time of the maximum excretion rate (typically in urine or feces)"
+#> 
+#> $ertmax$sparse
+#> [1] FALSE
+#> 
+#> $ertmax$formalsmap
+#> list()
+#> 
+#> $ertmax$depends
+#> NULL
+#> 
+#> $ertmax$datatype
 #> [1] "interval"
 #> 
 #> 
@@ -3186,68 +3335,6 @@ get.interval.cols()
 #> [1] "aucint.inf.pred"
 #> 
 #> $cav.int.inf.pred$datatype
-#> [1] "interval"
-#> 
-#> 
-#> $clr.obs
-#> $clr.obs$FUN
-#> [1] "pk.calc.clr"
-#> 
-#> $clr.obs$values
-#> [1] FALSE  TRUE
-#> 
-#> $clr.obs$unit_type
-#> [1] "renal_clearance"
-#> 
-#> $clr.obs$pretty_name
-#> [1] "Renal clearance (from AUCinf,obs)"
-#> 
-#> $clr.obs$desc
-#> [1] "The renal clearance calculated using AUCinf,obs"
-#> 
-#> $clr.obs$sparse
-#> [1] FALSE
-#> 
-#> $clr.obs$formalsmap
-#> $clr.obs$formalsmap$auc
-#> [1] "aucinf.obs"
-#> 
-#> 
-#> $clr.obs$depends
-#> [1] "ae"         "aucinf.obs"
-#> 
-#> $clr.obs$datatype
-#> [1] "interval"
-#> 
-#> 
-#> $clr.pred
-#> $clr.pred$FUN
-#> [1] "pk.calc.clr"
-#> 
-#> $clr.pred$values
-#> [1] FALSE  TRUE
-#> 
-#> $clr.pred$unit_type
-#> [1] "renal_clearance"
-#> 
-#> $clr.pred$pretty_name
-#> [1] "Renal clearance (from AUCinf,pred)"
-#> 
-#> $clr.pred$desc
-#> [1] "The renal clearance calculated using AUCinf,pred"
-#> 
-#> $clr.pred$sparse
-#> [1] FALSE
-#> 
-#> $clr.pred$formalsmap
-#> $clr.pred$formalsmap$auc
-#> [1] "aucinf.pred"
-#> 
-#> 
-#> $clr.pred$depends
-#> [1] "ae"          "aucinf.pred"
-#> 
-#> $clr.pred$datatype
 #> [1] "interval"
 #> 
 #> 

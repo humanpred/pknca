@@ -35,9 +35,10 @@ pk.calc.tmax(conc, time, options = list(), first.tmax = NULL, check = TRUE)
 
 - first.tmax:
 
-  If there is more than time that matches the maximum concentration,
-  should the first be considered as Tmax? If not, then the last is
-  considered Tmax.
+  If there is more than one time point with the maximum value (Cmax or
+  ERmax), which time should be selected for Tmax/ERTmax? If 'TRUE', the
+  first will be selected. If not, then the last is considered
+  Tmax/ERTmax.
 
 - check:
 

@@ -145,9 +145,9 @@ option.</p>
 <div class="section level3">
 <h3 id="first-tmax">first.tmax<a class="anchor" aria-label="anchor" href="#first-tmax"></a>
 </h3>
-<p>If there is more than one concentration equal to Cmax, which time
-should be selected for Tmax? If ‘TRUE’, the first will be selected. If
-‘FALSE’, the last will be selected.</p>
+<p>If there is more than one time point with the maximum value (Cmax or
+ERmax), which time should be selected for Tmax/ERTmax? If ‘TRUE’, the
+first will be selected. If ‘FALSE’, the last will be selected.</p>
 <p>The default value is: TRUE</p>
 </div>
 <div class="section level3">
@@ -258,9 +258,6 @@ interval.</p>
 <col width="0%">
 <col width="0%">
 <col width="0%">
-<col width="1%">
-<col width="0%">
-<col width="0%">
 <col width="0%">
 <col width="0%">
 <col width="0%">
@@ -268,20 +265,6 @@ interval.</p>
 <col width="0%">
 <col width="1%">
 <col width="0%">
-<col width="1%">
-<col width="1%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="1%">
-<col width="0%">
-<col width="1%">
-<col width="1%">
-<col width="1%">
-<col width="0%">
-<col width="0%">
-<col width="1%">
-<col width="1%">
 <col width="0%">
 <col width="0%">
 <col width="0%">
@@ -289,6 +272,14 @@ interval.</p>
 <col width="0%">
 <col width="0%">
 <col width="1%">
+<col width="0%">
+<col width="1%">
+<col width="1%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="1%">
+<col width="0%">
 <col width="1%">
 <col width="1%">
 <col width="1%">
@@ -302,6 +293,20 @@ interval.</p>
 <col width="0%">
 <col width="0%">
 <col width="0%">
+<col width="1%">
+<col width="1%">
+<col width="1%">
+<col width="1%">
+<col width="0%">
+<col width="0%">
+<col width="1%">
+<col width="1%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
 <col width="0%">
 <col width="0%">
 <col width="0%">
@@ -316,8 +321,6 @@ interval.</p>
 <col width="0%">
 <col width="1%">
 <col width="1%">
-<col width="0%">
-<col width="0%">
 <col width="0%">
 <col width="1%">
 <col width="1%">
@@ -387,7 +390,12 @@ interval.</p>
 <th align="left">volpk</th>
 <th align="left">ae</th>
 <th align="left">clr.last</th>
+<th align="left">clr.obs</th>
+<th align="left">clr.pred</th>
 <th align="left">fe</th>
+<th align="left">ertlst</th>
+<th align="left">ermax</th>
+<th align="left">ertmax</th>
 <th align="left">sparse_auclast</th>
 <th align="left">sparse_auc_se</th>
 <th align="left">sparse_auc_df</th>
@@ -446,8 +454,6 @@ interval.</p>
 <th align="left">vss.md.pred</th>
 <th align="left">cav.int.inf.obs</th>
 <th align="left">cav.int.inf.pred</th>
-<th align="left">clr.obs</th>
-<th align="left">clr.pred</th>
 <th align="left">thalf.eff.obs</th>
 <th align="left">thalf.eff.pred</th>
 <th align="left">thalf.eff.iv.obs</th>
@@ -479,6 +485,9 @@ interval.</p>
 <td align="right">0</td>
 <td align="right">24</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -661,15 +670,6 @@ interval.</p>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
-<td align="left">TRUE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -678,6 +678,18 @@ interval.</p>
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>

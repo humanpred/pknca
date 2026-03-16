@@ -391,6 +391,16 @@
 - [`pk.calc.dn()`](http://humanpred.github.io/pknca/reference/pk.calc.dn.md)
   : Determine dose normalized NCA parameter
 
+- [`pk.calc.ermax()`](http://humanpred.github.io/pknca/reference/pk.calc.ermax.md)
+  : Calculate the maximum excretion rate
+
+- [`pk.calc.ertlst()`](http://humanpred.github.io/pknca/reference/pk.calc.ertlst.md)
+  : Calculate the midpoint collection time of the last measurable
+  excretion rate
+
+- [`pk.calc.ertmax()`](http://humanpred.github.io/pknca/reference/pk.calc.ertmax.md)
+  : Calculate the midpoint collection time of the maximum excretion rate
+
 - [`pk.calc.f()`](http://humanpred.github.io/pknca/reference/pk.calc.f.md)
   : Calculate the absolute (or relative) bioavailability
 

@@ -1171,86 +1171,86 @@ o_data$intervals %>% select(-Subject) %>% unique() %>% as.data.frame()
     ## 2                FALSE               FALSE      FALSE               FALSE
     ## 3                FALSE               FALSE      FALSE               FALSE
     ## 4                FALSE               FALSE      FALSE               FALSE
-    ##   totdose volpk    ae clr.last    fe sparse_auclast sparse_auc_se sparse_auc_df
-    ## 1   FALSE FALSE FALSE    FALSE FALSE          FALSE         FALSE         FALSE
-    ## 2   FALSE FALSE FALSE    FALSE FALSE          FALSE         FALSE         FALSE
-    ## 3   FALSE FALSE FALSE    FALSE FALSE          FALSE         FALSE         FALSE
-    ## 4   FALSE FALSE FALSE    FALSE FALSE          FALSE         FALSE         FALSE
-    ##   time_above aucivlast aucivall aucivint.last aucivint.all aucivpbextlast
-    ## 1      FALSE     FALSE    FALSE         FALSE        FALSE          FALSE
-    ## 2      FALSE     FALSE    FALSE         FALSE        FALSE          FALSE
-    ## 3      FALSE     FALSE    FALSE         FALSE        FALSE          FALSE
-    ## 4      FALSE     FALSE    FALSE         FALSE        FALSE          FALSE
-    ##   aucivpbextall aucivpbextint.last aucivpbextint.all half.life r.squared
-    ## 1         FALSE              FALSE             FALSE     FALSE     FALSE
-    ## 2         FALSE              FALSE             FALSE      TRUE     FALSE
-    ## 3         FALSE              FALSE             FALSE     FALSE     FALSE
-    ## 4         FALSE              FALSE             FALSE     FALSE     FALSE
-    ##   adj.r.squared lambda.z.corrxy lambda.z lambda.z.time.first lambda.z.time.last
-    ## 1         FALSE           FALSE    FALSE               FALSE              FALSE
-    ## 2         FALSE           FALSE    FALSE               FALSE              FALSE
-    ## 3         FALSE           FALSE    FALSE               FALSE              FALSE
-    ## 4         FALSE           FALSE    FALSE               FALSE              FALSE
-    ##   lambda.z.n.points clast.pred span.ratio thalf.eff.last thalf.eff.iv.last
-    ## 1             FALSE      FALSE      FALSE          FALSE             FALSE
-    ## 2             FALSE      FALSE      FALSE          FALSE             FALSE
-    ## 3             FALSE      FALSE      FALSE          FALSE             FALSE
-    ## 4             FALSE      FALSE      FALSE          FALSE             FALSE
-    ##   kel.last kel.iv.last aucinf.obs aucinf.pred aumcinf.obs aumcinf.pred
-    ## 1    FALSE       FALSE      FALSE       FALSE       FALSE        FALSE
-    ## 2    FALSE       FALSE       TRUE       FALSE       FALSE        FALSE
-    ## 3    FALSE       FALSE      FALSE       FALSE       FALSE        FALSE
-    ## 4    FALSE       FALSE      FALSE       FALSE       FALSE        FALSE
-    ##   aucint.inf.obs aucint.inf.obs.dose aucint.inf.pred aucint.inf.pred.dose
-    ## 1          FALSE               FALSE           FALSE                FALSE
-    ## 2          FALSE               FALSE           FALSE                FALSE
-    ## 3          FALSE               FALSE           FALSE                FALSE
-    ## 4          FALSE               FALSE           FALSE                FALSE
-    ##   aucivinf.obs aucivinf.pred aucivpbextinf.obs aucivpbextinf.pred aucpext.obs
-    ## 1        FALSE         FALSE             FALSE              FALSE       FALSE
-    ## 2        FALSE         FALSE             FALSE              FALSE       FALSE
-    ## 3        FALSE         FALSE             FALSE              FALSE       FALSE
-    ## 4        FALSE         FALSE             FALSE              FALSE       FALSE
-    ##   aucpext.pred cl.obs cl.pred mrt.obs mrt.pred mrt.iv.obs mrt.iv.pred
-    ## 1        FALSE  FALSE   FALSE   FALSE    FALSE      FALSE       FALSE
-    ## 2        FALSE  FALSE   FALSE   FALSE    FALSE      FALSE       FALSE
-    ## 3        FALSE  FALSE   FALSE   FALSE    FALSE      FALSE       FALSE
-    ## 4        FALSE  FALSE   FALSE   FALSE    FALSE      FALSE       FALSE
-    ##   mrt.md.obs mrt.md.pred vz.obs vz.pred vss.obs vss.pred vss.iv.obs vss.iv.pred
-    ## 1      FALSE       FALSE  FALSE   FALSE   FALSE    FALSE      FALSE       FALSE
-    ## 2      FALSE       FALSE  FALSE   FALSE   FALSE    FALSE      FALSE       FALSE
-    ## 3      FALSE       FALSE  FALSE   FALSE   FALSE    FALSE      FALSE       FALSE
-    ## 4      FALSE       FALSE  FALSE   FALSE   FALSE    FALSE      FALSE       FALSE
-    ##   vss.md.obs vss.md.pred cav.int.inf.obs cav.int.inf.pred clr.obs clr.pred
-    ## 1      FALSE       FALSE           FALSE            FALSE   FALSE    FALSE
-    ## 2      FALSE       FALSE           FALSE            FALSE   FALSE    FALSE
-    ## 3      FALSE       FALSE           FALSE            FALSE   FALSE    FALSE
-    ## 4      FALSE       FALSE           FALSE            FALSE   FALSE    FALSE
-    ##   thalf.eff.obs thalf.eff.pred thalf.eff.iv.obs thalf.eff.iv.pred kel.obs
-    ## 1         FALSE          FALSE            FALSE             FALSE   FALSE
-    ## 2         FALSE          FALSE            FALSE             FALSE   FALSE
-    ## 3         FALSE          FALSE            FALSE             FALSE   FALSE
-    ## 4         FALSE          FALSE            FALSE             FALSE   FALSE
-    ##   kel.pred kel.iv.obs kel.iv.pred auclast.dn aucall.dn aucinf.obs.dn
-    ## 1    FALSE      FALSE       FALSE      FALSE     FALSE         FALSE
-    ## 2    FALSE      FALSE       FALSE      FALSE     FALSE         FALSE
-    ## 3    FALSE      FALSE       FALSE      FALSE     FALSE         FALSE
-    ## 4    FALSE      FALSE       FALSE      FALSE     FALSE         FALSE
-    ##   aucinf.pred.dn aumclast.dn aumcall.dn aumcinf.obs.dn aumcinf.pred.dn cmax.dn
-    ## 1          FALSE       FALSE      FALSE          FALSE           FALSE   FALSE
-    ## 2          FALSE       FALSE      FALSE          FALSE           FALSE   FALSE
-    ## 3          FALSE       FALSE      FALSE          FALSE           FALSE   FALSE
-    ## 4          FALSE       FALSE      FALSE          FALSE           FALSE   FALSE
-    ##   cmin.dn clast.obs.dn clast.pred.dn cav.dn ctrough.dn clr.last.dn clr.obs.dn
-    ## 1   FALSE        FALSE         FALSE  FALSE      FALSE       FALSE      FALSE
-    ## 2   FALSE        FALSE         FALSE  FALSE      FALSE       FALSE      FALSE
-    ## 3   FALSE        FALSE         FALSE  FALSE      FALSE       FALSE      FALSE
-    ## 4   FALSE        FALSE         FALSE  FALSE      FALSE       FALSE      FALSE
-    ##   clr.pred.dn Study_Part
-    ## 1       FALSE     Single
-    ## 2       FALSE     Single
-    ## 3       FALSE   Multiple
-    ## 4       FALSE   Multiple
+    ##   totdose volpk    ae clr.last clr.obs clr.pred    fe ertlst ermax ertmax
+    ## 1   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
+    ## 2   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
+    ## 3   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
+    ## 4   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
+    ##   sparse_auclast sparse_auc_se sparse_auc_df time_above aucivlast aucivall
+    ## 1          FALSE         FALSE         FALSE      FALSE     FALSE    FALSE
+    ## 2          FALSE         FALSE         FALSE      FALSE     FALSE    FALSE
+    ## 3          FALSE         FALSE         FALSE      FALSE     FALSE    FALSE
+    ## 4          FALSE         FALSE         FALSE      FALSE     FALSE    FALSE
+    ##   aucivint.last aucivint.all aucivpbextlast aucivpbextall aucivpbextint.last
+    ## 1         FALSE        FALSE          FALSE         FALSE              FALSE
+    ## 2         FALSE        FALSE          FALSE         FALSE              FALSE
+    ## 3         FALSE        FALSE          FALSE         FALSE              FALSE
+    ## 4         FALSE        FALSE          FALSE         FALSE              FALSE
+    ##   aucivpbextint.all half.life r.squared adj.r.squared lambda.z.corrxy lambda.z
+    ## 1             FALSE     FALSE     FALSE         FALSE           FALSE    FALSE
+    ## 2             FALSE      TRUE     FALSE         FALSE           FALSE    FALSE
+    ## 3             FALSE     FALSE     FALSE         FALSE           FALSE    FALSE
+    ## 4             FALSE     FALSE     FALSE         FALSE           FALSE    FALSE
+    ##   lambda.z.time.first lambda.z.time.last lambda.z.n.points clast.pred
+    ## 1               FALSE              FALSE             FALSE      FALSE
+    ## 2               FALSE              FALSE             FALSE      FALSE
+    ## 3               FALSE              FALSE             FALSE      FALSE
+    ## 4               FALSE              FALSE             FALSE      FALSE
+    ##   span.ratio thalf.eff.last thalf.eff.iv.last kel.last kel.iv.last aucinf.obs
+    ## 1      FALSE          FALSE             FALSE    FALSE       FALSE      FALSE
+    ## 2      FALSE          FALSE             FALSE    FALSE       FALSE       TRUE
+    ## 3      FALSE          FALSE             FALSE    FALSE       FALSE      FALSE
+    ## 4      FALSE          FALSE             FALSE    FALSE       FALSE      FALSE
+    ##   aucinf.pred aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.obs.dose
+    ## 1       FALSE       FALSE        FALSE          FALSE               FALSE
+    ## 2       FALSE       FALSE        FALSE          FALSE               FALSE
+    ## 3       FALSE       FALSE        FALSE          FALSE               FALSE
+    ## 4       FALSE       FALSE        FALSE          FALSE               FALSE
+    ##   aucint.inf.pred aucint.inf.pred.dose aucivinf.obs aucivinf.pred
+    ## 1           FALSE                FALSE        FALSE         FALSE
+    ## 2           FALSE                FALSE        FALSE         FALSE
+    ## 3           FALSE                FALSE        FALSE         FALSE
+    ## 4           FALSE                FALSE        FALSE         FALSE
+    ##   aucivpbextinf.obs aucivpbextinf.pred aucpext.obs aucpext.pred cl.obs cl.pred
+    ## 1             FALSE              FALSE       FALSE        FALSE  FALSE   FALSE
+    ## 2             FALSE              FALSE       FALSE        FALSE  FALSE   FALSE
+    ## 3             FALSE              FALSE       FALSE        FALSE  FALSE   FALSE
+    ## 4             FALSE              FALSE       FALSE        FALSE  FALSE   FALSE
+    ##   mrt.obs mrt.pred mrt.iv.obs mrt.iv.pred mrt.md.obs mrt.md.pred vz.obs vz.pred
+    ## 1   FALSE    FALSE      FALSE       FALSE      FALSE       FALSE  FALSE   FALSE
+    ## 2   FALSE    FALSE      FALSE       FALSE      FALSE       FALSE  FALSE   FALSE
+    ## 3   FALSE    FALSE      FALSE       FALSE      FALSE       FALSE  FALSE   FALSE
+    ## 4   FALSE    FALSE      FALSE       FALSE      FALSE       FALSE  FALSE   FALSE
+    ##   vss.obs vss.pred vss.iv.obs vss.iv.pred vss.md.obs vss.md.pred
+    ## 1   FALSE    FALSE      FALSE       FALSE      FALSE       FALSE
+    ## 2   FALSE    FALSE      FALSE       FALSE      FALSE       FALSE
+    ## 3   FALSE    FALSE      FALSE       FALSE      FALSE       FALSE
+    ## 4   FALSE    FALSE      FALSE       FALSE      FALSE       FALSE
+    ##   cav.int.inf.obs cav.int.inf.pred thalf.eff.obs thalf.eff.pred
+    ## 1           FALSE            FALSE         FALSE          FALSE
+    ## 2           FALSE            FALSE         FALSE          FALSE
+    ## 3           FALSE            FALSE         FALSE          FALSE
+    ## 4           FALSE            FALSE         FALSE          FALSE
+    ##   thalf.eff.iv.obs thalf.eff.iv.pred kel.obs kel.pred kel.iv.obs kel.iv.pred
+    ## 1            FALSE             FALSE   FALSE    FALSE      FALSE       FALSE
+    ## 2            FALSE             FALSE   FALSE    FALSE      FALSE       FALSE
+    ## 3            FALSE             FALSE   FALSE    FALSE      FALSE       FALSE
+    ## 4            FALSE             FALSE   FALSE    FALSE      FALSE       FALSE
+    ##   auclast.dn aucall.dn aucinf.obs.dn aucinf.pred.dn aumclast.dn aumcall.dn
+    ## 1      FALSE     FALSE         FALSE          FALSE       FALSE      FALSE
+    ## 2      FALSE     FALSE         FALSE          FALSE       FALSE      FALSE
+    ## 3      FALSE     FALSE         FALSE          FALSE       FALSE      FALSE
+    ## 4      FALSE     FALSE         FALSE          FALSE       FALSE      FALSE
+    ##   aumcinf.obs.dn aumcinf.pred.dn cmax.dn cmin.dn clast.obs.dn clast.pred.dn
+    ## 1          FALSE           FALSE   FALSE   FALSE        FALSE         FALSE
+    ## 2          FALSE           FALSE   FALSE   FALSE        FALSE         FALSE
+    ## 3          FALSE           FALSE   FALSE   FALSE        FALSE         FALSE
+    ## 4          FALSE           FALSE   FALSE   FALSE        FALSE         FALSE
+    ##   cav.dn ctrough.dn clr.last.dn clr.obs.dn clr.pred.dn Study_Part
+    ## 1  FALSE      FALSE       FALSE      FALSE       FALSE     Single
+    ## 2  FALSE      FALSE       FALSE      FALSE       FALSE     Single
+    ## 3  FALSE      FALSE       FALSE      FALSE       FALSE   Multiple
+    ## 4  FALSE      FALSE       FALSE      FALSE       FALSE   Multiple
 
 ``` r
 o_nca <- pk.nca(o_data)
