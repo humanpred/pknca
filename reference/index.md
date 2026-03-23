@@ -451,6 +451,9 @@
 - [`pk.calc.tmax()`](http://humanpred.github.io/pknca/reference/pk.calc.tmax.md)
   : Determine time of maximum observed PK concentration
 
+- [`pk.calc.tmin()`](http://humanpred.github.io/pknca/reference/pk.calc.tmin.md)
+  : Determine time of minimum observed PK concentration
+
 - [`pk.calc.totdose()`](http://humanpred.github.io/pknca/reference/pk.calc.totdose.md)
   : Extract the dose used for calculations
 

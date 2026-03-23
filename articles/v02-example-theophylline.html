@@ -291,6 +291,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <col width="0%">
 <col width="0%">
 <col width="0%">
+<col width="0%">
 <col width="1%">
 <col width="1%">
 <col width="0%">
@@ -404,6 +405,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <th align="left">cmax</th>
 <th align="left">cmin</th>
 <th align="left">tmax</th>
+<th align="left">tmin</th>
 <th align="left">tlast</th>
 <th align="left">tfirst</th>
 <th align="left">clast.obs</th>
@@ -655,6 +657,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
 </tr>
 <tr class="even">
 <td align="right">0</td>
@@ -671,6 +674,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -793,7 +797,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 </table>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">data_obj_automatic</span><span class="op">$</span><span class="va">intervals</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
+<table style="width:100%;" class="table">
 <colgroup>
 <col width="0%">
 <col width="0%">
@@ -829,58 +833,13 @@ selected based on the <code>single.dose.aucs setting</code> in
 <col width="0%">
 <col width="0%">
 <col width="0%">
-<col width="1%">
-<col width="1%">
-<col width="0%">
-<col width="1%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="1%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="1%">
 <col width="0%">
 <col width="1%">
 <col width="1%">
 <col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="1%">
-<col width="0%">
-<col width="1%">
-<col width="1%">
 <col width="1%">
 <col width="0%">
 <col width="0%">
-<col width="1%">
-<col width="1%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="1%">
-<col width="1%">
-<col width="1%">
-<col width="1%">
-<col width="0%">
-<col width="0%">
-<col width="1%">
-<col width="1%">
 <col width="0%">
 <col width="0%">
 <col width="0%">
@@ -902,20 +861,66 @@ selected based on the <code>single.dose.aucs setting</code> in
 <col width="1%">
 <col width="1%">
 <col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="1%">
+<col width="0%">
 <col width="1%">
 <col width="1%">
 <col width="1%">
 <col width="0%">
 <col width="0%">
 <col width="0%">
+<col width="1%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
 <col width="0%">
 <col width="0%">
 <col width="0%">
 <col width="0%">
 <col width="1%">
+<col width="1%">
+<col width="1%">
 <col width="0%">
 <col width="0%">
 <col width="1%">
+<col width="1%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="1%">
+<col width="1%">
+<col width="0%">
+<col width="0%">
+<col width="1%">
+<col width="1%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
 <col width="1%">
 <col width="0%">
 <col width="0%">
@@ -943,6 +948,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <th align="left">cmax</th>
 <th align="left">cmin</th>
 <th align="left">tmax</th>
+<th align="left">tmin</th>
 <th align="left">tlast</th>
 <th align="left">tfirst</th>
 <th align="left">clast.obs</th>
@@ -1195,6 +1201,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">1</td>
 </tr>
 <tr class="even">
@@ -1212,6 +1219,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -1335,6 +1343,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="right">0</td>
 <td align="right">24</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -1526,6 +1535,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -1731,6 +1741,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">3</td>
 </tr>
 <tr class="even">
@@ -1748,6 +1759,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -1871,6 +1883,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="right">0</td>
 <td align="right">24</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -2062,6 +2075,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -2267,6 +2281,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">5</td>
 </tr>
 <tr class="even">
@@ -2284,6 +2299,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -2407,6 +2423,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="right">0</td>
 <td align="right">24</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -2598,6 +2615,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -2803,6 +2821,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">7</td>
 </tr>
 <tr class="even">
@@ -2820,6 +2839,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -2943,6 +2963,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="right">0</td>
 <td align="right">24</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -3134,6 +3155,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -3339,6 +3361,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">9</td>
 </tr>
 <tr class="even">
@@ -3356,6 +3379,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -3479,6 +3503,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="right">0</td>
 <td align="right">24</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -3670,6 +3695,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -3875,6 +3901,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">11</td>
 </tr>
 <tr class="even">
@@ -3892,6 +3919,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -4015,6 +4043,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="right">0</td>
 <td align="right">24</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -4160,6 +4189,7 @@ selected based on the <code>single.dose.aucs setting</code> in
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -4339,6 +4369,7 @@ you do not have to specify it in the parameters requested.</p>
 <col width="0%">
 <col width="0%">
 <col width="0%">
+<col width="0%">
 <col width="1%">
 <col width="1%">
 <col width="0%">
@@ -4452,6 +4483,7 @@ you do not have to specify it in the parameters requested.</p>
 <th align="left">cmax</th>
 <th align="left">cmin</th>
 <th align="left">tmax</th>
+<th align="left">tmin</th>
 <th align="left">tlast</th>
 <th align="left">tfirst</th>
 <th align="left">clast.obs</th>
@@ -4585,6 +4617,7 @@ you do not have to specify it in the parameters requested.</p>
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -5005,18 +5038,18 @@ not to calculate anything that was not requested.</p>
 <pre><code><span><span class="co">##   start end auclast aucall aumclast aumcall aucint.last aucint.last.dose</span></span>
 <span><span class="co">## 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE            FALSE</span></span>
 <span><span class="co">## 2   144 168    TRUE  FALSE    FALSE   FALSE       FALSE            FALSE</span></span>
-<span><span class="co">##   aucint.all aucint.all.dose    c0 cmax  cmin  tmax tlast tfirst clast.obs</span></span>
-<span><span class="co">## 1      FALSE           FALSE FALSE TRUE FALSE FALSE FALSE  FALSE     FALSE</span></span>
-<span><span class="co">## 2      FALSE           FALSE FALSE TRUE FALSE FALSE FALSE  FALSE     FALSE</span></span>
-<span><span class="co">##   cl.last cl.all     f mrt.last mrt.iv.last vss.last vss.iv.last   cav</span></span>
-<span><span class="co">## 1   FALSE  FALSE FALSE    FALSE       FALSE    FALSE       FALSE FALSE</span></span>
-<span><span class="co">## 2   FALSE  FALSE FALSE    FALSE       FALSE    FALSE       FALSE FALSE</span></span>
-<span><span class="co">##   cav.int.last cav.int.all ctrough cstart   ptr  tlag deg.fluc swing  ceoi</span></span>
-<span><span class="co">## 1        FALSE       FALSE   FALSE  FALSE FALSE FALSE    FALSE FALSE FALSE</span></span>
-<span><span class="co">## 2        FALSE       FALSE   FALSE  FALSE FALSE FALSE    FALSE FALSE FALSE</span></span>
-<span><span class="co">##   aucabove.predose.all aucabove.trough.all count_conc count_conc_measured</span></span>
-<span><span class="co">## 1                FALSE               FALSE      FALSE               FALSE</span></span>
-<span><span class="co">## 2                FALSE               FALSE      FALSE               FALSE</span></span>
+<span><span class="co">##   aucint.all aucint.all.dose    c0 cmax  cmin  tmax  tmin tlast tfirst</span></span>
+<span><span class="co">## 1      FALSE           FALSE FALSE TRUE FALSE FALSE FALSE FALSE  FALSE</span></span>
+<span><span class="co">## 2      FALSE           FALSE FALSE TRUE FALSE FALSE FALSE FALSE  FALSE</span></span>
+<span><span class="co">##   clast.obs cl.last cl.all     f mrt.last mrt.iv.last vss.last vss.iv.last</span></span>
+<span><span class="co">## 1     FALSE   FALSE  FALSE FALSE    FALSE       FALSE    FALSE       FALSE</span></span>
+<span><span class="co">## 2     FALSE   FALSE  FALSE FALSE    FALSE       FALSE    FALSE       FALSE</span></span>
+<span><span class="co">##     cav cav.int.last cav.int.all ctrough cstart   ptr  tlag deg.fluc swing</span></span>
+<span><span class="co">## 1 FALSE        FALSE       FALSE   FALSE  FALSE FALSE FALSE    FALSE FALSE</span></span>
+<span><span class="co">## 2 FALSE        FALSE       FALSE   FALSE  FALSE FALSE FALSE    FALSE FALSE</span></span>
+<span><span class="co">##    ceoi aucabove.predose.all aucabove.trough.all count_conc count_conc_measured</span></span>
+<span><span class="co">## 1 FALSE                FALSE               FALSE      FALSE               FALSE</span></span>
+<span><span class="co">## 2 FALSE                FALSE               FALSE      FALSE               FALSE</span></span>
 <span><span class="co">##   totdose volpk    ae clr.last clr.obs clr.pred    fe ertlst ermax ertmax</span></span>
 <span><span class="co">## 1   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE</span></span>
 <span><span class="co">## 2   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE</span></span>
@@ -5146,6 +5179,9 @@ progress.</p>
 <span><span class="co">## $first.tmax</span></span>
 <span><span class="co">## [1] TRUE</span></span>
 <span><span class="co">## </span></span>
+<span><span class="co">## $first.tmin</span></span>
+<span><span class="co">## [1] TRUE</span></span>
+<span><span class="co">## </span></span>
 <span><span class="co">## $allow.tmax.in.half.life</span></span>
 <span><span class="co">## [1] FALSE</span></span>
 <span><span class="co">## </span></span>
@@ -5174,18 +5210,18 @@ progress.</p>
 <span><span class="co">##   start end auclast aucall aumclast aumcall aucint.last aucint.last.dose</span></span>
 <span><span class="co">## 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE            FALSE</span></span>
 <span><span class="co">## 2     0 Inf   FALSE  FALSE    FALSE   FALSE       FALSE            FALSE</span></span>
-<span><span class="co">##   aucint.all aucint.all.dose    c0  cmax  cmin  tmax tlast tfirst clast.obs</span></span>
-<span><span class="co">## 1      FALSE           FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE</span></span>
-<span><span class="co">## 2      FALSE           FALSE FALSE  TRUE FALSE  TRUE FALSE  FALSE     FALSE</span></span>
-<span><span class="co">##   cl.last cl.all     f mrt.last mrt.iv.last vss.last vss.iv.last   cav</span></span>
-<span><span class="co">## 1   FALSE  FALSE FALSE    FALSE       FALSE    FALSE       FALSE FALSE</span></span>
-<span><span class="co">## 2   FALSE  FALSE FALSE    FALSE       FALSE    FALSE       FALSE FALSE</span></span>
-<span><span class="co">##   cav.int.last cav.int.all ctrough cstart   ptr  tlag deg.fluc swing  ceoi</span></span>
-<span><span class="co">## 1        FALSE       FALSE   FALSE  FALSE FALSE FALSE    FALSE FALSE FALSE</span></span>
-<span><span class="co">## 2        FALSE       FALSE   FALSE  FALSE FALSE FALSE    FALSE FALSE FALSE</span></span>
-<span><span class="co">##   aucabove.predose.all aucabove.trough.all count_conc count_conc_measured</span></span>
-<span><span class="co">## 1                FALSE               FALSE      FALSE               FALSE</span></span>
-<span><span class="co">## 2                FALSE               FALSE      FALSE               FALSE</span></span>
+<span><span class="co">##   aucint.all aucint.all.dose    c0  cmax  cmin  tmax  tmin tlast tfirst</span></span>
+<span><span class="co">## 1      FALSE           FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE</span></span>
+<span><span class="co">## 2      FALSE           FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE</span></span>
+<span><span class="co">##   clast.obs cl.last cl.all     f mrt.last mrt.iv.last vss.last vss.iv.last</span></span>
+<span><span class="co">## 1     FALSE   FALSE  FALSE FALSE    FALSE       FALSE    FALSE       FALSE</span></span>
+<span><span class="co">## 2     FALSE   FALSE  FALSE FALSE    FALSE       FALSE    FALSE       FALSE</span></span>
+<span><span class="co">##     cav cav.int.last cav.int.all ctrough cstart   ptr  tlag deg.fluc swing</span></span>
+<span><span class="co">## 1 FALSE        FALSE       FALSE   FALSE  FALSE FALSE FALSE    FALSE FALSE</span></span>
+<span><span class="co">## 2 FALSE        FALSE       FALSE   FALSE  FALSE FALSE FALSE    FALSE FALSE</span></span>
+<span><span class="co">##    ceoi aucabove.predose.all aucabove.trough.all count_conc count_conc_measured</span></span>
+<span><span class="co">## 1 FALSE                FALSE               FALSE      FALSE               FALSE</span></span>
+<span><span class="co">## 2 FALSE                FALSE               FALSE      FALSE               FALSE</span></span>
 <span><span class="co">##   totdose volpk    ae clr.last clr.obs clr.pred    fe ertlst ermax ertmax</span></span>
 <span><span class="co">## 1   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE</span></span>
 <span><span class="co">## 2   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE</span></span>
@@ -5247,7 +5283,7 @@ progress.</p>
 <span><span class="co">## attr(,"class")</span></span>
 <span><span class="co">## [1] "PKNCAresults" "list"        </span></span>
 <span><span class="co">## attr(,"provenance")</span></span>
-<span><span class="co">## Provenance hash ee687a520af821aa354fef62aa53cba0 generated on 2026-03-16 11:07:33.815389 with R version 4.5.3 (2026-03-11).</span></span></code></pre>
+<span><span class="co">## Provenance hash ee687a520af821aa354fef62aa53cba0 generated on 2026-03-23 04:00:49.63523 with R version 4.5.3 (2026-03-11).</span></span></code></pre>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N     auclast        cmax</span></span>

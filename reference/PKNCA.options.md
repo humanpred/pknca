@@ -109,6 +109,9 @@ PKNCA.options()
 #> $first.tmax
 #> [1] TRUE
 #> 
+#> $first.tmin
+#> [1] TRUE
+#> 
 #> $allow.tmax.in.half.life
 #> [1] FALSE
 #> 
@@ -137,18 +140,18 @@ PKNCA.options()
 #>   start end auclast aucall aumclast aumcall aucint.last aucint.last.dose
 #> 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE            FALSE
 #> 2     0 Inf   FALSE  FALSE    FALSE   FALSE       FALSE            FALSE
-#>   aucint.all aucint.all.dose    c0  cmax  cmin  tmax tlast tfirst clast.obs
-#> 1      FALSE           FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE
-#> 2      FALSE           FALSE FALSE  TRUE FALSE  TRUE FALSE  FALSE     FALSE
-#>   cl.last cl.all     f mrt.last mrt.iv.last vss.last vss.iv.last   cav
-#> 1   FALSE  FALSE FALSE    FALSE       FALSE    FALSE       FALSE FALSE
-#> 2   FALSE  FALSE FALSE    FALSE       FALSE    FALSE       FALSE FALSE
-#>   cav.int.last cav.int.all ctrough cstart   ptr  tlag deg.fluc swing  ceoi
-#> 1        FALSE       FALSE   FALSE  FALSE FALSE FALSE    FALSE FALSE FALSE
-#> 2        FALSE       FALSE   FALSE  FALSE FALSE FALSE    FALSE FALSE FALSE
-#>   aucabove.predose.all aucabove.trough.all count_conc count_conc_measured
-#> 1                FALSE               FALSE      FALSE               FALSE
-#> 2                FALSE               FALSE      FALSE               FALSE
+#>   aucint.all aucint.all.dose    c0  cmax  cmin  tmax  tmin tlast tfirst
+#> 1      FALSE           FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE
+#> 2      FALSE           FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE
+#>   clast.obs cl.last cl.all     f mrt.last mrt.iv.last vss.last vss.iv.last
+#> 1     FALSE   FALSE  FALSE FALSE    FALSE       FALSE    FALSE       FALSE
+#> 2     FALSE   FALSE  FALSE FALSE    FALSE       FALSE    FALSE       FALSE
+#>     cav cav.int.last cav.int.all ctrough cstart   ptr  tlag deg.fluc swing
+#> 1 FALSE        FALSE       FALSE   FALSE  FALSE FALSE FALSE    FALSE FALSE
+#> 2 FALSE        FALSE       FALSE   FALSE  FALSE FALSE FALSE    FALSE FALSE
+#>    ceoi aucabove.predose.all aucabove.trough.all count_conc count_conc_measured
+#> 1 FALSE                FALSE               FALSE      FALSE               FALSE
+#> 2 FALSE                FALSE               FALSE      FALSE               FALSE
 #>   totdose volpk    ae clr.last clr.obs clr.pred    fe ertlst ermax ertmax
 #> 1   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
 #> 2   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE

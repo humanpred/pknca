@@ -466,6 +466,35 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $tmin
+#> $tmin$FUN
+#> [1] "pk.calc.tmin"
+#> 
+#> $tmin$values
+#> [1] FALSE  TRUE
+#> 
+#> $tmin$unit_type
+#> [1] "time"
+#> 
+#> $tmin$pretty_name
+#> [1] "Tmin"
+#> 
+#> $tmin$desc
+#> [1] "Time of the minimum observed concentration"
+#> 
+#> $tmin$sparse
+#> [1] FALSE
+#> 
+#> $tmin$formalsmap
+#> list()
+#> 
+#> $tmin$depends
+#> NULL
+#> 
+#> $tmin$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $tlast
 #> $tlast$FUN
 #> [1] "pk.calc.tlast"

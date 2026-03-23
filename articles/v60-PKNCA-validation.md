@@ -31,7 +31,7 @@ results: Tests were not run because tests are not installed.
 Sys.Date()
 ```
 
-    ## [1] "2026-03-16"
+    ## [1] "2026-03-23"
 
 ``` r
 sessionInfo()
@@ -61,8 +61,8 @@ sessionInfo()
     ## [1] dplyr_1.2.0       testthat_3.3.2    knitr_1.51        PKNCA_0.12.1.9000
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] vctrs_0.7.1       nlme_3.1-168      cli_3.6.5         rlang_1.1.7      
-    ##  [5] xfun_0.56         generics_0.1.4    textshaping_1.0.5 jsonlite_2.0.0   
+    ##  [1] vctrs_0.7.2       nlme_3.1-168      cli_3.6.5         rlang_1.1.7      
+    ##  [5] xfun_0.57         generics_0.1.4    textshaping_1.0.5 jsonlite_2.0.0   
     ##  [9] glue_1.8.0        htmltools_0.5.9   ragg_1.5.1        sass_0.4.10      
     ## [13] brio_1.1.5        rmarkdown_2.30    grid_4.5.3        tibble_3.3.1     
     ## [17] evaluate_1.0.5    jquerylib_0.1.4   fastmap_1.2.0     yaml_2.3.12      
