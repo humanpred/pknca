@@ -8,6 +8,9 @@ will be `NA`.
 ## Usage
 
 ``` r
+pknca_units_table(concu, ...)
+
+# Default S3 method
 pknca_units_table(
   concu,
   doseu,
@@ -17,8 +20,12 @@ pknca_units_table(
   doseu_pref = NULL,
   amountu_pref = NULL,
   timeu_pref = NULL,
-  conversions = data.frame()
+  conversions = data.frame(),
+  ...
 )
+
+# S3 method for class 'PKNCAdata'
+pknca_units_table(concu, ..., conversions = data.frame())
 ```
 
 ## Arguments
@@ -26,6 +33,10 @@ pknca_units_table(
 - concu, doseu, amountu, timeu:
 
   Units for concentration, dose, amount, and time in the source data
+
+- ...:
+
+  Additional arguments (not used)
 
 - concu_pref, doseu_pref, amountu_pref, timeu_pref:
 

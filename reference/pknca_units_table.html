@@ -66,7 +66,10 @@ If a unit is not given, then all of the units derived from that unit will be
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">pknca_units_table</span><span class="op">(</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">pknca_units_table</span><span class="op">(</span><span class="va">concu</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Default S3 method</span></span>
+<span><span class="fu">pknca_units_table</span><span class="op">(</span></span>
 <span>  <span class="va">concu</span>,</span>
 <span>  <span class="va">doseu</span>,</span>
 <span>  <span class="va">amountu</span>,</span>
@@ -75,8 +78,12 @@ If a unit is not given, then all of the units derived from that unit will be
 <span>  doseu_pref <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  amountu_pref <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  timeu_pref <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  conversions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span>  conversions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'PKNCAdata'</span></span>
+<span><span class="fu">pknca_units_table</span><span class="op">(</span><span class="va">concu</span>, <span class="va">...</span>, conversions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -86,6 +93,10 @@ If a unit is not given, then all of the units derived from that unit will be
 <dl><dt id="arg-concu-doseu-amountu-timeu">concu, doseu, amountu, timeu<a class="anchor" aria-label="anchor" href="#arg-concu-doseu-amountu-timeu"></a></dt>
 <dd><p>Units for concentration, dose, amount, and
 time in the source data</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Additional arguments (not used)</p></dd>
 
 
 <dt id="arg-concu-pref-doseu-pref-amountu-pref-timeu-pref">concu_pref, doseu_pref, amountu_pref, timeu_pref<a class="anchor" aria-label="anchor" href="#arg-concu-pref-doseu-pref-amountu-pref-timeu-pref"></a></dt>
@@ -1211,6 +1222,7 @@ if <code>conversions</code> is not given, and adding "PPSTRESU" and
 <span class="r-out co"><span class="r-pr">#&gt;</span> 130      24.000000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 131      24.000000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 132      24.000000000</span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

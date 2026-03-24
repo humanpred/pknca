@@ -153,6 +153,9 @@
 - [`check.conc.time()`](http://humanpred.github.io/pknca/reference/defunct.md)
   : The following functions are defunct
 
+- [`ensure_column_unit_exists()`](http://humanpred.github.io/pknca/reference/ensure_column_unit_exists.md)
+  : Ensure Unit Columns Exist in PKNCA Object
+
 - [`exclude()`](http://humanpred.github.io/pknca/reference/exclude.md) :
   Exclude data points or results from calculations or summarization.
 
@@ -535,6 +538,9 @@
 - [`roundingSummarize()`](http://humanpred.github.io/pknca/reference/roundingSummarize.md)
   : During the summarization of PKNCAresults, do the rounding of values
   based on the instructions given.
+
+- [`select_minimal_grouping_cols()`](http://humanpred.github.io/pknca/reference/select_minimal_grouping_cols.md)
+  : Find Minimal Grouping Columns for Strata Reconstruction
 
 - [`setAttributeColumn()`](http://humanpred.github.io/pknca/reference/setAttributeColumn.md)
   : Add an attribute to an object where the attribute is added as a name

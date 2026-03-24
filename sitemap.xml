@@ -65,6 +65,7 @@
 <url><loc>http://humanpred.github.io/pknca/reference/clean.conc.na.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/cov_holder.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/defunct.html</loc></url>
+<url><loc>http://humanpred.github.io/pknca/reference/ensure_column_unit_exists.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/exclude.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/exclude_nca.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/exclude_nca_by_param.html</loc></url>
@@ -160,6 +161,7 @@
 <url><loc>http://humanpred.github.io/pknca/reference/reexports.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/roundString.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/roundingSummarize.html</loc></url>
+<url><loc>http://humanpred.github.io/pknca/reference/select_minimal_grouping_cols.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/setAttributeColumn.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/setDuration.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/setExcludeColumn.html</loc></url>
