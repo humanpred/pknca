@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PKNCA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.12.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.12.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,6 +53,36 @@
       <small>Source: <a href="https://github.com/humanpred/pknca/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.12.2" id="pknca-0122">PKNCA 0.12.2<a class="anchor" aria-label="anchor" href="#pknca-0122"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-0-12-2">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-12-2"></a></h3>
+<ul><li><p><code><a href="../reference/pknca_units_table.html">pknca_units_table()</a></code> called on a <code>PKNCAdata</code> object now raises an error if unit columns within the same concentration group contain mixed values (e.g., two different <code>concu</code> strings for the same subject group). Previously, <code>NA</code> values in unit columns were silently ignored and multiple values caused a different error message; now any intra-group inconsistency is detected and reported with the offending group identifiers.</p></li>
+<li><p>Both include and excluding half-life points may not be done for the same interval (<a href="https://github.com/humanpred/pknca/issues/406" class="external-link">#406</a>)</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="bugs-fixed-0-12-2">Bugs fixed<a class="anchor" aria-label="anchor" href="#bugs-fixed-0-12-2"></a></h3>
+<ul><li>
+<code><a href="../reference/get_halflife_points.html">get_halflife_points()</a></code> now correctly accounts for start time != 0 and sets times outside of any interval to <code>NA</code> (<a href="https://github.com/humanpred/pknca/issues/470" class="external-link">#470</a>)</li>
+<li>
+<code>pk.nca</code> will calculate <code>fe</code> and <code>clr</code> even if their dependent parameters (e.g, <code>ae</code>) were not requested to be calculated in the intervals (<a href="https://github.com/humanpred/pknca/issues/473" class="external-link">#473</a>)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-features-0-12-2">New features<a class="anchor" aria-label="anchor" href="#new-features-0-12-2"></a></h3>
+<ul><li><p><code><a href="../reference/pknca_units_table.html">pknca_units_table()</a></code> is now an S3 generic with a <code>PKNCAdata</code> method. When called on a <code>PKNCAdata</code> object it automatically builds the unit conversion table from any unit columns stored in the underlying <code>PKNCAconc</code> and <code>PKNCAdose</code> objects, supporting per-analyte or per-specimen unit stratification. The table is also built automatically on <code><a href="../reference/PKNCAdata.html">PKNCAdata()</a></code> construction when no <code>units</code> argument is supplied.</p></li>
+<li><p><code><a href="../reference/pk.calc.half.life.html">pk.calc.half.life()</a></code> now returns also <code>lambda.z.corrxy</code>, the correlation between the time and the log-concentration of the lambda z points.</p></li>
+<li><p><code><a href="../reference/get_halflife_points.html">get_halflife_points()</a></code> can now be used on PKNCAdata objects to see which points would be used for half-life calculation (<a href="https://github.com/humanpred/pknca/issues/476" class="external-link">#476</a>)</p></li>
+<li><p>New excretion parameters: <code>volpk</code> (total urine volume for an interval) and dose-normalized renal clearance parameters: <code>clr.last.dn</code>, <code>clr.obs.dn</code>, <code>clr.pred.dn</code> (<a href="https://github.com/humanpred/pknca/issues/433" class="external-link">#433</a>)</p></li>
+<li><p><code>PKNCA.set.summary(reset = TRUE)</code> warns that it may break the use of <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> (<a href="https://github.com/humanpred/pknca/issues/477" class="external-link">#477</a>)</p></li>
+<li><p>Added new <code>tmin</code> parameter</p></li>
+<li><p>New post-processing functions to normalize PKNCA result parameters based on any column in PKNCAconc data.frame (<code><a href="../reference/normalize_by_col.html">normalize_by_col()</a></code>) or by using a custom normalization table (<code><a href="../reference/normalize.html">normalize()</a></code>)</p></li>
+<li><p>New excretion rate parameters: <code>ermax</code> (Maximum excretion rate), <code>ertmax</code> (Midpoint time of maximum excretion rate) and <code>ertlst</code> (Time of last excretion rate measurement) (<a href="https://github.com/humanpred/pknca/issues/433" class="external-link">#433</a>)</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="minor-changes-unlikely-to-affect-pknca-use-0-12-2">Minor changes (unlikely to affect PKNCA use)<a class="anchor" aria-label="anchor" href="#minor-changes-unlikely-to-affect-pknca-use-0-12-2"></a></h3>
+<ul><li>Remove dead code: unused internal functions, commented-out code, unused variable, stale comment, and unused <code>pmxTools</code> Suggests dependency</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.12.1" id="pknca-0121">PKNCA 0.12.1<a class="anchor" aria-label="anchor" href="#pknca-0121"></a></h2><p class="text-muted">CRAN release: 2025-08-19</p>
 <div class="section level3">

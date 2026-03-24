@@ -58,7 +58,7 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] dplyr_1.2.0       testthat_3.3.2    knitr_1.51        PKNCA_0.12.1.9000
+    ## [1] dplyr_1.2.0    testthat_3.3.2 knitr_1.51     PKNCA_0.12.2  
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] vctrs_0.7.2       nlme_3.1-168      cli_3.6.5         rlang_1.1.7      

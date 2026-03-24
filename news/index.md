@@ -1,5 +1,78 @@
 # Changelog
 
+## PKNCA 0.12.2
+
+### Breaking changes
+
+- [`pknca_units_table()`](http://humanpred.github.io/pknca/reference/pknca_units_table.md)
+  called on a `PKNCAdata` object now raises an error if unit columns
+  within the same concentration group contain mixed values (e.g., two
+  different `concu` strings for the same subject group). Previously,
+  `NA` values in unit columns were silently ignored and multiple values
+  caused a different error message; now any intra-group inconsistency is
+  detected and reported with the offending group identifiers.
+
+- Both include and excluding half-life points may not be done for the
+  same interval ([\#406](https://github.com/humanpred/pknca/issues/406))
+
+### Bugs fixed
+
+- [`get_halflife_points()`](http://humanpred.github.io/pknca/reference/get_halflife_points.md)
+  now correctly accounts for start time != 0 and sets times outside of
+  any interval to `NA`
+  ([\#470](https://github.com/humanpred/pknca/issues/470))
+- `pk.nca` will calculate `fe` and `clr` even if their dependent
+  parameters (e.g, `ae`) were not requested to be calculated in the
+  intervals ([\#473](https://github.com/humanpred/pknca/issues/473))
+
+### New features
+
+- [`pknca_units_table()`](http://humanpred.github.io/pknca/reference/pknca_units_table.md)
+  is now an S3 generic with a `PKNCAdata` method. When called on a
+  `PKNCAdata` object it automatically builds the unit conversion table
+  from any unit columns stored in the underlying `PKNCAconc` and
+  `PKNCAdose` objects, supporting per-analyte or per-specimen unit
+  stratification. The table is also built automatically on
+  [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md)
+  construction when no `units` argument is supplied.
+
+- [`pk.calc.half.life()`](http://humanpred.github.io/pknca/reference/pk.calc.half.life.md)
+  now returns also `lambda.z.corrxy`, the correlation between the time
+  and the log-concentration of the lambda z points.
+
+- [`get_halflife_points()`](http://humanpred.github.io/pknca/reference/get_halflife_points.md)
+  can now be used on PKNCAdata objects to see which points would be used
+  for half-life calculation
+  ([\#476](https://github.com/humanpred/pknca/issues/476))
+
+- New excretion parameters: `volpk` (total urine volume for an interval)
+  and dose-normalized renal clearance parameters: `clr.last.dn`,
+  `clr.obs.dn`, `clr.pred.dn`
+  ([\#433](https://github.com/humanpred/pknca/issues/433))
+
+- `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
+  [`summary()`](https://rdrr.io/r/base/summary.html)
+  ([\#477](https://github.com/humanpred/pknca/issues/477))
+
+- Added new `tmin` parameter
+
+- New post-processing functions to normalize PKNCA result parameters
+  based on any column in PKNCAconc data.frame
+  ([`normalize_by_col()`](http://humanpred.github.io/pknca/reference/normalize_by_col.md))
+  or by using a custom normalization table
+  ([`normalize()`](http://humanpred.github.io/pknca/reference/normalize.md))
+
+- New excretion rate parameters: `ermax` (Maximum excretion rate),
+  `ertmax` (Midpoint time of maximum excretion rate) and `ertlst` (Time
+  of last excretion rate measurement)
+  ([\#433](https://github.com/humanpred/pknca/issues/433))
+
+### Minor changes (unlikely to affect PKNCA use)
+
+- Remove dead code: unused internal functions, commented-out code,
+  unused variable, stale comment, and unused `pmxTools` Suggests
+  dependency
+
 ## PKNCA 0.12.1
 
 CRAN release: 2025-08-19
