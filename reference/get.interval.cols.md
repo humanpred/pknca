@@ -2187,6 +2187,93 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $tobit_residual
+#> $tobit_residual$FUN
+#> [1] NA
+#> 
+#> $tobit_residual$values
+#> [1] FALSE  TRUE
+#> 
+#> $tobit_residual$unit_type
+#> [1] "unitless"
+#> 
+#> $tobit_residual$pretty_name
+#> [1] "Tobit residual SD"
+#> 
+#> $tobit_residual$desc
+#> [1] "The estimated residual standard deviation (on the log-concentration scale) from the Tobit half-life fit"
+#> 
+#> $tobit_residual$sparse
+#> [1] FALSE
+#> 
+#> $tobit_residual$formalsmap
+#> list()
+#> 
+#> $tobit_residual$depends
+#> [1] "half.life"
+#> 
+#> $tobit_residual$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $adj_tobit_residual
+#> $adj_tobit_residual$FUN
+#> [1] NA
+#> 
+#> $adj_tobit_residual$values
+#> [1] FALSE  TRUE
+#> 
+#> $adj_tobit_residual$unit_type
+#> [1] "unitless"
+#> 
+#> $adj_tobit_residual$pretty_name
+#> [1] "Adjusted Tobit residual SD"
+#> 
+#> $adj_tobit_residual$desc
+#> [1] "The adjusted Tobit residual standard deviation (analogous to adjusted r-squared; penalizes smaller windows)"
+#> 
+#> $adj_tobit_residual$sparse
+#> [1] FALSE
+#> 
+#> $adj_tobit_residual$formalsmap
+#> list()
+#> 
+#> $adj_tobit_residual$depends
+#> [1] "half.life"
+#> 
+#> $adj_tobit_residual$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $lambda.z.n.points_blq
+#> $lambda.z.n.points_blq$FUN
+#> [1] NA
+#> 
+#> $lambda.z.n.points_blq$values
+#> [1] FALSE  TRUE
+#> 
+#> $lambda.z.n.points_blq$unit_type
+#> [1] "count"
+#> 
+#> $lambda.z.n.points_blq$pretty_name
+#> [1] "Number of BLQ points for lambda_z (Tobit)"
+#> 
+#> $lambda.z.n.points_blq$desc
+#> [1] "The number of BLQ points included in the Tobit half-life calculation"
+#> 
+#> $lambda.z.n.points_blq$sparse
+#> [1] FALSE
+#> 
+#> $lambda.z.n.points_blq$formalsmap
+#> list()
+#> 
+#> $lambda.z.n.points_blq$depends
+#> [1] "half.life"
+#> 
+#> $lambda.z.n.points_blq$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $thalf.eff.last
 #> $thalf.eff.last$FUN
 #> [1] "pk.calc.thalf.eff"

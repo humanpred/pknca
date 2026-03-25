@@ -2,7 +2,8 @@
 
 The terminal elimination half-life is estimated from the final points in
 the concentration-time curve using semi-log regression
-(`log(conc)~time`) with automated selection of the points for
+(`log(conc)~time`, the `"log-linear"` method) or Tobit regression
+(`"tobit"` method) with automated selection of the points for
 calculation (unless `manually.selected.points` is `TRUE`).
 
 ## Usage
@@ -15,10 +16,14 @@ pk.calc.half.life(
   tlast,
   time.dose = NULL,
   duration.dose = 0,
+  lloq = NULL,
+  hl_method = c("log-linear", "tobit"),
   manually.selected.points = FALSE,
   options = list(),
   min.hl.points = NULL,
   adj.r.squared.factor = NULL,
+  tobit_n_points_penalty = NULL,
+  tobit_optim_control = NULL,
   conc.blq = NULL,
   conc.na = NULL,
   first.tmax = NULL,
@@ -58,6 +63,19 @@ pk.calc.half.life(
   (typically zero for extravascular and intravascular bolus and nonzero
   for intravascular infusion)
 
+- lloq:
+
+  Lower limit of quantification. A scalar or a vector the same length as
+  `conc`. Required when `hl_method = "tobit"`.
+
+- hl_method:
+
+  The method used to estimate the half-life. `"log-linear"` (default)
+  uses ordinary least-squares regression on log-transformed
+  concentrations. `"tobit"` uses maximum-likelihood Tobit regression
+  that properly accounts for BLQ observations. The global default can be
+  changed via `PKNCA.options(hl_method = "tobit")`.
+
 - manually.selected.points:
 
   Have the input points (`conc` and `time`) been manually selected? The
@@ -74,11 +92,26 @@ pk.calc.half.life(
 - min.hl.points:
 
   The minimum number of points that must be included to calculate the
-  half-life
+  half-life. For `hl_method = "tobit"` this counts only above-LLOQ
+  points.
 
 - adj.r.squared.factor:
 
-  The allowance in adjusted r-squared for adding another point.
+  The allowance in adjusted r-squared for adding another point
+  (log-linear method only).
+
+- tobit_n_points_penalty:
+
+  The penalty exponent on the number of points for Tobit window
+  selection. See
+  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md).
+
+- tobit_optim_control:
+
+  A list of control parameters passed to
+  [`stats::optim()`](https://rdrr.io/r/stats/optim.html) for the Tobit
+  fit. See
+  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md).
 
 - conc.blq:
 
@@ -110,7 +143,9 @@ pk.calc.half.life(
 
 ## Value
 
-A data frame with one row and columns for
+A data frame with one row. Columns depend on `hl_method`:
+
+Columns returned by both methods:
 
 - tmax:
 
@@ -122,21 +157,9 @@ A data frame with one row and columns for
   Time of last observed concentration above the LOQ (only included if
   not given as an input)
 
-- r.squared:
-
-  coefficient of determination
-
-- adj.r.squared:
-
-  adjusted coefficient of determination
-
 - lambda.z:
 
   elimination rate
-
-- lambda.z.corrxy:
-
-  correlation between time and log-conc half-life points
 
 - lambda.z.time.first:
 
@@ -148,7 +171,8 @@ A data frame with one row and columns for
 
 - lambda.z.n.points:
 
-  number of points in half-life calculation
+  number of points in half-life calculation (all points for Tobit,
+  including BLQ)
 
 - clast.pred:
 
@@ -160,17 +184,49 @@ A data frame with one row and columns for
 
 - span.ratio:
 
-  span ratio \[ratio of half-life to time used for half-life calculation
+  ratio of the above-LLOQ time span to the half-life
+
+Additional columns for `hl_method = "log-linear"`:
+
+- r.squared:
+
+  coefficient of determination
+
+- adj.r.squared:
+
+  adjusted coefficient of determination
+
+- lambda.z.corrxy:
+
+  correlation between time and log-conc for the half-life points
+
+Additional columns for `hl_method = "tobit"`:
+
+- lambda.z.n.points_blq:
+
+  number of BLQ points included in the fit
+
+- tobit_residual:
+
+  estimated residual standard deviation from the Tobit fit (on the
+  log-concentration scale)
+
+- adj_tobit_residual:
+
+  adjusted Tobit residual (analogous to adjusted r-squared; penalizes
+  smaller windows)
 
 ## Details
 
-See the "Half-Life Calculation" vignette for more details on the
-calculation methods used.
+See the "Half-Life Calculation" and "Half-Life Calculation with Tobit
+Regression" vignettes for more details on the calculation methods.
 
 If `manually.selected.points` is `FALSE` (default), the half-life is
 calculated by computing the best fit line for all points at or after
-tmax (based on the value of `allow.tmax.in.half.life`). The best
-half-life is chosen by the following rules in order:
+tmax (based on the value of `allow.tmax.in.half.life`).
+
+For `hl_method = "log-linear"`, the best half-life is chosen by the
+following rules in order:
 
 - At least `min.hl.points` points included
 
@@ -179,8 +235,17 @@ half-life is chosen by the following rules in order:
 
 - The one with the most points included
 
+For `hl_method = "tobit"`, BLQ observations are retained and treated as
+left-censored. The best window is the one minimizing
+`tobit_residual * n ^ tobit_n_points_penalty` (default: raw
+`tobit_residual`) among windows with `lambda.z > 0` and at least
+`min.hl.points` above-LLOQ points. On ties the largest window (most
+total points) is preferred.
+
 If `manually.selected.points` is `TRUE`, the `conc` and `time` data are
-used as-is without any form of selection for the best-fit half-life.
+used as-is without any form of point selection. When `TRUE`,
+`adj.r.squared.factor`, `min.hl.points`, and `allow.tmax.in.half.life`
+are ignored.
 
 ## References
 

@@ -37,6 +37,17 @@
   construction when no `units` argument is supplied.
 
 - [`pk.calc.half.life()`](http://humanpred.github.io/pknca/reference/pk.calc.half.life.md)
+  now supports Tobit regression for half-life estimation via
+  `hl_method = "tobit"`. Tobit regression treats BLQ observations as
+  left-censored rather than discarding them, which generally improves
+  half-life accuracy when some measurements are below the LLOQ. The new
+  `lloq` argument (required for Tobit) accepts a scalar or
+  per-observation vector. New PKNCA options: `hl_method` (default
+  `"log-linear"`), `tobit_n_points_penalty` (default 0), and
+  `tobit_optim_control`. New NCA output columns: `tobit_residual`,
+  `adj_tobit_residual`, and `lambda.z.n.points_blq`.
+
+- [`pk.calc.half.life()`](http://humanpred.github.io/pknca/reference/pk.calc.half.life.md)
   now returns also `lambda.z.corrxy`, the correlation between the time
   and the log-concentration of the lambda z points.
 

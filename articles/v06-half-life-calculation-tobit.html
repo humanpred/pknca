@@ -82,6 +82,13 @@
 
     
     
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://humanpred.github.io/pknca/" class="external-link">PKNCA</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'PKNCA'</span></span>
+<span><span class="co">#&gt; The following object is masked from 'package:stats':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     filter</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="half-life-calculation-with-tobit-regression">Half-life calculation with Tobit regression<a class="anchor" aria-label="anchor" href="#half-life-calculation-with-tobit-regression"></a>
 </h2>
@@ -196,6 +203,172 @@ between the theoretical and 2-fold above. The fact that the Tobit
 regression cumulative distribution function is closer to 1 across the
 range of simulations indicates that Tobit regression provides better
 half-life estimate across a broad range of data.</p>
+</div>
+<div class="section level2">
+<h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
+</h2>
+<div class="section level3">
+<h3 id="basic-usage-a-single-subject">Basic usage: a single subject<a class="anchor" aria-label="anchor" href="#basic-usage-a-single-subject"></a>
+</h3>
+<p>The <code>hl_method</code> argument to
+<code><a href="../reference/pk.calc.half.life.html">pk.calc.half.life()</a></code> selects the estimation method. When
+using <code>"tobit"</code>, the <code>lloq</code> argument is required
+and must be either a scalar (one LLOQ applied to all observations) or a
+vector the same length as <code>conc</code>.</p>
+<div class="section level4">
+<h4 id="example-1-all-observations-above-the-lloq">Example 1: All observations above the LLOQ<a class="anchor" aria-label="anchor" href="#example-1-all-observations-above-the-lloq"></a>
+</h4>
+<p>When no observations are below the LLOQ, Tobit and log-linear
+regression produce essentially the same answer.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">conc_no_blq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">5</span>, <span class="fl">2.5</span>, <span class="fl">1.25</span>, <span class="fl">0.625</span><span class="op">)</span></span>
+<span><span class="va">time_points</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,  <span class="fl">1</span>, <span class="fl">2</span>,   <span class="fl">3</span>,    <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="va">lloq</span>         <span class="op">&lt;-</span> <span class="fl">0.1</span>   <span class="co"># well below all observations</span></span>
+<span></span>
+<span><span class="va">hl_loglinear</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.calc.half.life.html">pk.calc.half.life</a></span><span class="op">(</span></span>
+<span>  conc <span class="op">=</span> <span class="va">conc_no_blq</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time_points</span>,</span>
+<span>  allow.tmax.in.half.life <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">hl_tobit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.calc.half.life.html">pk.calc.half.life</a></span><span class="op">(</span></span>
+<span>  conc <span class="op">=</span> <span class="va">conc_no_blq</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time_points</span>,</span>
+<span>  lloq <span class="op">=</span> <span class="va">lloq</span>,</span>
+<span>  hl_method <span class="op">=</span> <span class="st">"tobit"</span>,</span>
+<span>  allow.tmax.in.half.life <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Tobit half-life optimization did not converge (code 10)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Log-linear half-life:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">hl_loglinear</span><span class="op">$</span><span class="va">half.life</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Log-linear half-life: 1</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Tobit half-life:     "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">hl_tobit</span><span class="op">$</span><span class="va">half.life</span>, <span class="fl">3</span><span class="op">)</span>,    <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Tobit half-life:      1</span></span></code></pre></div>
+<p>Note the columns that are returned:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Log-linear returns r-squared and related diagnostics</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">hl_loglinear</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "lambda.z"            "r.squared"           "adj.r.squared"      </span></span>
+<span><span class="co">#&gt;  [4] "lambda.z.corrxy"     "lambda.z.time.first" "lambda.z.time.last" </span></span>
+<span><span class="co">#&gt;  [7] "lambda.z.n.points"   "clast.pred"          "half.life"          </span></span>
+<span><span class="co">#&gt; [10] "span.ratio"          "tmax"                "tlast"</span></span>
+<span></span>
+<span><span class="co"># Tobit returns tobit_residual and BLQ point counts instead</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">hl_tobit</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "lambda.z"              "lambda.z.time.first"   "lambda.z.time.last"   </span></span>
+<span><span class="co">#&gt;  [4] "lambda.z.n.points"     "lambda.z.n.points_blq" "clast.pred"           </span></span>
+<span><span class="co">#&gt;  [7] "half.life"             "span.ratio"            "tobit_residual"       </span></span>
+<span><span class="co">#&gt; [10] "adj_tobit_residual"    "tmax"                  "tlast"</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="example-2-blq-observations-before-tlast">Example 2: BLQ observations before T<sub>last</sub><a class="anchor" aria-label="anchor" href="#example-2-blq-observations-before-tlast"></a>
+</h4>
+<p>When some observations are below the LLOQ, the log-linear method
+drops them entirely. Tobit regression treats them as left-censored,
+which can provide a better estimate.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lloq</span> <span class="op">&lt;-</span> <span class="fl">1.0</span></span>
+<span><span class="va">conc_true</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">5</span>, <span class="fl">2.5</span>, <span class="fl">1.25</span>, <span class="fl">0.5</span>, <span class="fl">0.2</span><span class="op">)</span></span>
+<span><span class="va">time_points</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,  <span class="fl">1</span>, <span class="fl">2</span>,   <span class="fl">3</span>,    <span class="fl">4</span>,   <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co"># Observations below the LLOQ are reported as zero</span></span>
+<span><span class="va">conc_obs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">conc_true</span> <span class="op">&lt;</span> <span class="va">lloq</span>, <span class="fl">0</span>, <span class="va">conc_true</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Observed concentrations:"</span>, <span class="va">conc_obs</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Observed concentrations: 10 5 2.5 1.25 0 0</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"LLOQ:"</span>, <span class="va">lloq</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; LLOQ: 1</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Number of BLQ observations:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">conc_obs</span> <span class="op">&lt;</span> <span class="va">lloq</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Number of BLQ observations: 2</span></span>
+<span></span>
+<span><span class="va">hl_loglinear</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.calc.half.life.html">pk.calc.half.life</a></span><span class="op">(</span></span>
+<span>  conc <span class="op">=</span> <span class="va">conc_obs</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time_points</span>,</span>
+<span>  allow.tmax.in.half.life <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">hl_tobit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.calc.half.life.html">pk.calc.half.life</a></span><span class="op">(</span></span>
+<span>  conc <span class="op">=</span> <span class="va">conc_obs</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time_points</span>,</span>
+<span>  lloq <span class="op">=</span> <span class="va">lloq</span>,</span>
+<span>  hl_method <span class="op">=</span> <span class="st">"tobit"</span>,</span>
+<span>  allow.tmax.in.half.life <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nLog-linear (drops BLQ):\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Log-linear (drops BLQ):</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"  Half-life:      "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">hl_loglinear</span><span class="op">$</span><span class="va">half.life</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   Half-life:       1</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"  Points used:    "</span>, <span class="va">hl_loglinear</span><span class="op">$</span><span class="va">lambda.z.n.points</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   Points used:     4</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nTobit (includes BLQ as censored):\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Tobit (includes BLQ as censored):</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"  Half-life:      "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">hl_tobit</span><span class="op">$</span><span class="va">half.life</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   Half-life:       1</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"  Total points:   "</span>, <span class="va">hl_tobit</span><span class="op">$</span><span class="va">lambda.z.n.points</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   Total points:    6</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"  BLQ points:     "</span>, <span class="va">hl_tobit</span><span class="op">$</span><span class="va">lambda.z.n.points_blq</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   BLQ points:      2</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"  Tobit residual: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">hl_tobit</span><span class="op">$</span><span class="va">tobit_residual</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   Tobit residual:  0</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level3">
+<h3 id="using-the-global-option">Using the global option<a class="anchor" aria-label="anchor" href="#using-the-global-option"></a>
+</h3>
+<p>To use Tobit regression for all half-life calculations in a session,
+set the global option. Calculations that do not explicitly set
+<code>hl_method</code> will then use Tobit regression by default.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/PKNCA.options.html">PKNCA.options</a></span><span class="op">(</span>hl_method <span class="op">=</span> <span class="st">"tobit"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Now all pk.calc.half.life() calls default to Tobit</span></span>
+<span><span class="co"># Reset to the package default when done:</span></span>
+<span><span class="fu"><a href="../reference/PKNCA.options.html">PKNCA.options</a></span><span class="op">(</span>default <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="full-nca-workflow-with-pkncadata">Full NCA workflow with PKNCAdata<a class="anchor" aria-label="anchor" href="#full-nca-workflow-with-pkncadata"></a>
+</h3>
+<p>The <code>lloq</code> argument can be passed through the interval
+calculation via the <code>options</code> list when running a full
+NCA.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Suppose d_conc is your concentration data frame with columns</span></span>
+<span><span class="co"># subject, time, conc, and your LLOQ is 1.0</span></span>
+<span></span>
+<span><span class="va">o_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc</span>, <span class="va">conc</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">subject</span><span class="op">)</span></span>
+<span><span class="va">o_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span><span class="va">d_dose</span>, <span class="va">dose</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">subject</span><span class="op">)</span></span>
+<span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span></span>
+<span>  <span class="va">o_conc</span>, <span class="va">o_dose</span>,</span>
+<span>  intervals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fl">0</span>, end <span class="op">=</span> <span class="cn">Inf</span>, half.life <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>hl_method <span class="op">=</span> <span class="st">"tobit"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co"># Note: lloq must be provided per-subject in the concentration data or</span></span>
+<span><span class="co"># as a scalar in the options when using the Tobit method in pk.nca().</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="controlling-tobit-point-selection">Controlling Tobit point selection<a class="anchor" aria-label="anchor" href="#controlling-tobit-point-selection"></a>
+</h3>
+<p>The <code>tobit_n_points_penalty</code> option controls how the
+number of points influences window selection. With the default value of
+0 the window with the smallest Tobit residual is selected. Positive
+values penalize larger windows, requiring them to have a meaningfully
+lower residual to be preferred.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Penalise larger windows slightly</span></span>
+<span><span class="fu"><a href="../reference/PKNCA.options.html">PKNCA.options</a></span><span class="op">(</span>tobit_n_points_penalty <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/PKNCA.options.html">PKNCA.options</a></span><span class="op">(</span>default <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>  <span class="co"># reset</span></span></code></pre></div>
+<p>The <code>tobit_optim_control</code> option passes a list of control
+parameters directly to <code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim()</a></code>. This is rarely
+needed but can help when the default optimization settings fail to
+converge for unusual concentration-time profiles.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Increase the maximum number of iterations</span></span>
+<span><span class="fu"><a href="../reference/PKNCA.options.html">PKNCA.options</a></span><span class="op">(</span>tobit_optim_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>maxit <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/PKNCA.options.html">PKNCA.options</a></span><span class="op">(</span>default <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>  <span class="co"># reset</span></span></code></pre></div>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -73,6 +73,8 @@
 <url><loc>http://humanpred.github.io/pknca/reference/find.tau.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/findOperator.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/fit_half_life.html</loc></url>
+<url><loc>http://humanpred.github.io/pknca/reference/fit_half_life_tobit.html</loc></url>
+<url><loc>http://humanpred.github.io/pknca/reference/fit_half_life_tobit_LL.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/formula.PKNCAconc.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/geomean.html</loc></url>
 <url><loc>http://humanpred.github.io/pknca/reference/get.best.model.html</loc></url>

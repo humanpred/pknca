@@ -221,7 +221,7 @@ interval.</p>
 <h3 id="single-dose-aucs">single.dose.aucs<a class="anchor" aria-label="anchor" href="#single-dose-aucs"></a>
 </h3>
 <p>When data is single-dose, what intervals should be used?</p>
-<table style="width:100%;" class="table">
+<table class="table">
 <colgroup>
 <col width="0%">
 <col width="0%">
@@ -272,52 +272,6 @@ interval.</p>
 <col width="0%">
 <col width="0%">
 <col width="0%">
-<col width="1%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="1%">
-<col width="0%">
-<col width="1%">
-<col width="1%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="1%">
-<col width="0%">
-<col width="1%">
-<col width="1%">
-<col width="1%">
-<col width="0%">
-<col width="0%">
-<col width="1%">
-<col width="1%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="1%">
-<col width="1%">
-<col width="1%">
-<col width="1%">
-<col width="0%">
-<col width="0%">
-<col width="1%">
-<col width="1%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
 <col width="0%">
 <col width="0%">
 <col width="0%">
@@ -331,20 +285,69 @@ interval.</p>
 <col width="1%">
 <col width="1%">
 <col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="1%">
+<col width="0%">
 <col width="1%">
 <col width="1%">
 <col width="1%">
 <col width="0%">
 <col width="0%">
 <col width="0%">
+<col width="1%">
+<col width="1%">
+<col width="0%">
+<col width="1%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
 <col width="0%">
 <col width="0%">
 <col width="0%">
 <col width="0%">
 <col width="1%">
+<col width="1%">
+<col width="1%">
 <col width="0%">
 <col width="0%">
 <col width="1%">
+<col width="1%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="1%">
+<col width="1%">
+<col width="0%">
+<col width="0%">
+<col width="1%">
+<col width="1%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
 <col width="1%">
 <col width="0%">
 <col width="0%">
@@ -428,6 +431,9 @@ interval.</p>
 <th align="left">lambda.z.n.points</th>
 <th align="left">clast.pred</th>
 <th align="left">span.ratio</th>
+<th align="left">tobit_residual</th>
+<th align="left">adj_tobit_residual</th>
+<th align="left">lambda.z.n.points_blq</th>
 <th align="left">thalf.eff.last</th>
 <th align="left">thalf.eff.iv.last</th>
 <th align="left">kel.last</th>
@@ -495,6 +501,9 @@ interval.</p>
 <td align="right">0</td>
 <td align="right">24</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -701,6 +710,9 @@ interval.</p>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -768,6 +780,31 @@ interval.</p>
 <p>When using unit assignment and conversions, should some units be
 allowed to be missing?</p>
 <p>The default value is: FALSE</p>
+</div>
+<div class="section level3">
+<h3 id="hl_method">hl_method<a class="anchor" aria-label="anchor" href="#hl_method"></a>
+</h3>
+<p>The method used to calculate the half-life and related parameters.
+Options are: “log-linear”, “tobit”</p>
+<p>The default value is: log-linear</p>
+</div>
+<div class="section level3">
+<h3 id="tobit_n_points_penalty">tobit_n_points_penalty<a class="anchor" aria-label="anchor" href="#tobit_n_points_penalty"></a>
+</h3>
+<p>The penalty exponent applied to the number of points when selecting
+the best Tobit regression half-life fit. The selection criterion is
+tobit_residual * n_points ^ tobit_n_points_penalty, and the window
+minimizing this criterion is selected. A value of 0 (the default) uses
+the raw Tobit residual with no point-count penalty.</p>
+<p>The default value is: 0</p>
+</div>
+<div class="section level3">
+<h3 id="tobit_optim_control">tobit_optim_control<a class="anchor" aria-label="anchor" href="#tobit_optim_control"></a>
+</h3>
+<p>A list of control parameters passed to stats::optim() when fitting
+the Tobit regression half-life. See ?stats::optim for available
+options.</p>
+<p>list()</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

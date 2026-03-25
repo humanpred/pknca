@@ -188,6 +188,14 @@
   the data without any validation. No selection of points or any other
   components are done.
 
+- [`fit_half_life_tobit()`](http://humanpred.github.io/pknca/reference/fit_half_life_tobit.md)
+  : Perform a Tobit half-life fit given the data. The function fits the
+  data using maximum likelihood without any point selection or
+  validation.
+
+- [`fit_half_life_tobit_LL()`](http://humanpred.github.io/pknca/reference/fit_half_life_tobit_LL.md)
+  : Negative log-likelihood for Tobit half-life regression
+
 - [`formula(`*`<PKNCAconc>`*`)`](http://humanpred.github.io/pknca/reference/formula.PKNCAconc.md)
   [`formula(`*`<PKNCAdose>`*`)`](http://humanpred.github.io/pknca/reference/formula.PKNCAconc.md)
   : Extract the formula from a PKNCAconc object.
