@@ -56,6 +56,16 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.12.2" id="pknca-0122">PKNCA 0.12.2<a class="anchor" aria-label="anchor" href="#pknca-0122"></a></h2>
 <div class="section level3">
+<h3 id="bug-fixes-0-12-2">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-12-2"></a></h3>
+<ul><li>
+<code>normalize.data.frame()</code> no longer triggers a dplyr deprecation warning (<code>Using 'by = character()' to perform a cross join was deprecated in dplyr 1.1.0</code>) when called with ungrouped data (i.e., no common group columns between <code>object</code> and <code>norm_table</code>). <code><a href="https://dplyr.tidyverse.org/reference/cross_join.html" class="external-link">dplyr::cross_join()</a></code> is now used explicitly for this case.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="improvements-0-12-2">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-12-2"></a></h3>
+<ul><li><p><code>normalize.data.frame()</code> now validates that <code>norm_table</code> contains exactly one row when used with ungrouped data, giving a clear error message instead of silently producing incorrect results.</p></li>
+<li><p><code>normalize.data.frame()</code> now uses <code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">dplyr::inner_join()</a></code> instead of <code><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge()</a></code> for grouped joins, preserving left-table row order. Missing group validation ensures no rows are silently dropped.</p></li>
+</ul></div>
+<div class="section level3">
 <h3 id="breaking-changes-0-12-2">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-12-2"></a></h3>
 <ul><li><p><code><a href="../reference/pknca_units_table.html">pknca_units_table()</a></code> called on a <code>PKNCAdata</code> object now raises an error if unit columns within the same concentration group contain mixed values (e.g., two different <code>concu</code> strings for the same subject group). Previously, <code>NA</code> values in unit columns were silently ignored and multiple values caused a different error message; now any intra-group inconsistency is detected and reported with the offending group identifiers.</p></li>
 <li><p>Both include and excluding half-life points may not be done for the same interval (<a href="https://github.com/humanpred/pknca/issues/406" class="external-link">#406</a>)</p></li>

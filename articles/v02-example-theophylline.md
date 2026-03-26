@@ -547,7 +547,7 @@ print(results_obj)
     ## attr(,"class")
     ## [1] "PKNCAresults" "list"        
     ## attr(,"provenance")
-    ## Provenance hash ee687a520af821aa354fef62aa53cba0 generated on 2026-03-25 19:27:52.937056 with R version 4.5.3 (2026-03-11).
+    ## Provenance hash ee687a520af821aa354fef62aa53cba0 generated on 2026-03-26 15:10:44.996321 with R version 4.5.3 (2026-03-11).
 
 ``` r
 summary(results_obj)
