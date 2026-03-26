@@ -376,16 +376,17 @@
         "The penalty exponent applied to the number of points when selecting the best",
         "Tobit regression half-life fit.  The selection criterion is",
         "tobit_residual * n_points ^ tobit_n_points_penalty, and the window",
-        "minimizing this criterion is selected.  A value of 0 (the default)",
-        "uses the raw Tobit residual with no point-count penalty."))
+        "minimizing this criterion is selected.  A value of 0 (the default) uses the",
+        "raw Tobit residual with no point-count penalty; negative values reward",
+        "including more points.  Simulation (Denney et al.) showed values near 0",
+        "minimize total absolute log error across a wide range of PK scenarios;",
+        "values above ~1 or below ~-0.4 are notably worse."))
     if (default)
       return(0)
     if (length(x) != 1)
       stop("tobit_n_points_penalty must be a scalar")
     if (is.factor(x) || !is.numeric(x))
       stop("tobit_n_points_penalty must be numeric (and not a factor)")
-    if (x < 0)
-      stop("tobit_n_points_penalty must be >= 0")
     x
   },
 
