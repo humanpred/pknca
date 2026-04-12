@@ -2707,7 +2707,7 @@ get.interval.cols()
 #> [1] "AUCinf,pred (IV dosing)"
 #> 
 #> $aucivinf.pred$desc
-#> [1] "The  calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "The AUCinf,pred calculated with back-extrapolation for intravenous dosing using extrapolated C0"
 #> 
 #> $aucivinf.pred$sparse
 #> [1] FALSE

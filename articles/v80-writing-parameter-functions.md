@@ -37,7 +37,7 @@ below:
 - `start` and `end` are the scalar numbers for the start and end time of
   the current interval. NOTE: `end` may be `Inf` (infinity).
 - `options` are the PKNCA options used for the current calculation
-  usually as defined by the `PKNCA.option` function (though these
+  usually as defined by the `PKNCA.options` function (though these
   options may be over-ridden by the `options` argument to the
   `PKNCAdata` function.
 - Or, any NCA parameters by name (as given by

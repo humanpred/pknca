@@ -356,7 +356,7 @@
   [`pk.calc.aumc.inf.obs()`](http://humanpred.github.io/pknca/reference/pk.calc.auxc.md)
   [`pk.calc.aumc.inf.pred()`](http://humanpred.github.io/pknca/reference/pk.calc.auxc.md)
   [`pk.calc.aumc.all()`](http://humanpred.github.io/pknca/reference/pk.calc.auxc.md)
-  : A compute the Area Under the (Moment) Curve
+  : Compute the Area Under the (Moment) Curve
 
 - [`pk.calc.c0()`](http://humanpred.github.io/pknca/reference/pk.calc.c0.md)
   [`pk.calc.c0.method.logslope()`](http://humanpred.github.io/pknca/reference/pk.calc.c0.md)

@@ -70,10 +70,10 @@ PKNCAdose(
 
 - exclude:
 
-  (optional) The name of a column with concentrations to exclude from
+  (optional) The name of a column with doses to exclude from
   calculations and summarization. If given, the column should have
-  values of `NA` or `""` for concentrations to include and non-empty
-  text for concentrations to exclude.
+  values of `NA` or `""` for doses to include and non-empty text for
+  doses to exclude.
 
 - doseu:
 
@@ -86,7 +86,7 @@ PKNCAdose(
 
 ## Value
 
-A PKNCAconc object that can be used for automated NCA.
+A PKNCAdose object that can be used for automated NCA.
 
 ## Details
 
@@ -101,7 +101,8 @@ clearance). When given one-sided missing the right side, the right side
 must be specified as a period (`.`): `dose~.|treatment+subject`, and
 only a single row may be given per group. When the right side is
 missing, PKNCA assumes that the same dose is given in every interval.
-When given as a two-sided formula
+When given as a two-sided formula, both the dose amount and time are
+used directly from the data.
 
 ## See also
 

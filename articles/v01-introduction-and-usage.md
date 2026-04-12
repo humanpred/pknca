@@ -10,7 +10,7 @@ summarize), but it allows the user to override the automatic selections
 at any point.
 
 The library design is modular to allow expansion based on needs
-unforseen by the authors including new NCA parameters, novel data
+unforeseen by the authors including new NCA parameters, novel data
 cleaning methods, and modular summarization decisions. Expanding the
 library will be discussed in a separate vignette.
 

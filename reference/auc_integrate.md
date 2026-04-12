@@ -59,4 +59,4 @@ auc_integrate(
 - fun_inf:
 
   The function to use for extrapolation from the final measurement to
-  infinite time (not required for AUC or AUMC functions.
+  infinite time (not required for AUC or AUMC functions).

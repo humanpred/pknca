@@ -125,10 +125,10 @@ calculations; it is available to assist with data summary and checking.</p></dd>
 
 
 <dt id="arg-exclude">exclude<a class="anchor" aria-label="anchor" href="#arg-exclude"></a></dt>
-<dd><p>(optional) The name of a column with concentrations to exclude
+<dd><p>(optional) The name of a column with doses to exclude
 from calculations and summarization.  If given, the column should have
-values of <code>NA</code> or <code>""</code> for concentrations to include and non-empty text for
-concentrations to exclude.</p></dd>
+values of <code>NA</code> or <code>""</code> for doses to include and non-empty text for
+doses to exclude.</p></dd>
 
 
 <dt id="arg-doseu">doseu<a class="anchor" aria-label="anchor" href="#arg-doseu"></a></dt>
@@ -142,7 +142,7 @@ where units are provided.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A PKNCAconc object that can be used for automated NCA.</p>
+    <p>A PKNCAdose object that can be used for automated NCA.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -159,7 +159,8 @@ side must be specified as a period (<code>.</code>):
 <code>dose~.|treatment+subject</code>, and only a single row may be given
 per group.  When the right side is missing, PKNCA assumes that the
 same dose is given in every interval.  When given as a two-sided
-formula</p>
+formula, both the dose amount and time are used directly from the
+data.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

@@ -1,4 +1,4 @@
-# A compute the Area Under the (Moment) Curve
+# Compute the Area Under the (Moment) Curve
 
 Compute the area under the curve (AUC) and the area under the moment
 curve (AUMC) for pharmacokinetic (PK) data. AUC and AUMC are used for
@@ -119,7 +119,7 @@ pk.calc.aumc.all(conc, time, ..., options = list())
 - fun_inf:
 
   The function to use for extrapolation from the final measurement to
-  infinite time (not required for AUC or AUMC functions.
+  infinite time (not required for AUC or AUMC functions).
 
 - ...:
 

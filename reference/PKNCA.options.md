@@ -35,7 +35,7 @@ PKNCA.options(..., default = FALSE, check = FALSE, name, value)
 - value:
 
   An option value (paired with the `name`) to set or check (if `NULL`,
-  ).
+  the current value of the option is returned).
 
 ## Value
 

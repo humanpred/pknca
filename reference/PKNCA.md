@@ -19,8 +19,6 @@ Useful links:
 
 - <https://github.com/humanpred/pknca>
 
-- <http://humanpred.github.io/pknca/>
-
 - Report bugs at <https://github.com/humanpred/pknca/issues>
 
 ## Author
