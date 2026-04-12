@@ -31,7 +31,7 @@ results: Tests were not run because tests are not installed.
 Sys.Date()
 ```
 
-    ## [1] "2026-03-26"
+    ## [1] "2026-04-12"
 
 ``` r
 sessionInfo()
@@ -39,7 +39,7 @@ sessionInfo()
 
     ## R version 4.5.3 (2026-03-11)
     ## Platform: x86_64-pc-linux-gnu
-    ## Running under: Ubuntu 24.04.3 LTS
+    ## Running under: Ubuntu 24.04.4 LTS
     ## 
     ## Matrix products: default
     ## BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
@@ -58,16 +58,16 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] dplyr_1.2.0    testthat_3.3.2 knitr_1.51     PKNCA_0.12.2  
+    ## [1] dplyr_1.2.1    testthat_3.3.2 knitr_1.51     PKNCA_0.12.2  
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] vctrs_0.7.2       nlme_3.1-168      cli_3.6.5         rlang_1.1.7      
+    ##  [1] vctrs_0.7.3       nlme_3.1-168      cli_3.6.6         rlang_1.2.0      
     ##  [5] xfun_0.57         generics_0.1.4    textshaping_1.0.5 jsonlite_2.0.0   
     ##  [9] glue_1.8.0        htmltools_0.5.9   ragg_1.5.2        sass_0.4.10      
-    ## [13] brio_1.1.5        rmarkdown_2.30    grid_4.5.3        tibble_3.3.1     
+    ## [13] brio_1.1.5        rmarkdown_2.31    grid_4.5.3        tibble_3.3.1     
     ## [17] evaluate_1.0.5    jquerylib_0.1.4   fastmap_1.2.0     yaml_2.3.12      
     ## [21] lifecycle_1.0.5   compiler_4.5.3    fs_2.0.1          Rcpp_1.1.1       
     ## [25] pkgconfig_2.0.3   lattice_0.22-9    systemfonts_1.3.2 digest_0.6.39    
-    ## [29] R6_2.6.1          tidyselect_1.2.1  pillar_1.11.1     magrittr_2.0.4   
+    ## [29] R6_2.6.1          tidyselect_1.2.1  pillar_1.11.1     magrittr_2.0.5   
     ## [33] bslib_0.10.0      tools_4.5.3       units_1.0-1       pkgdown_2.2.0    
     ## [37] cachem_1.1.0      desc_1.4.3
