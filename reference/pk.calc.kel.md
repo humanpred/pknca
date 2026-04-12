@@ -21,3 +21,9 @@ pk.calc.kel(mrt)
 ## Value
 
 the numeric value of the elimination rate
+
+## See also
+
+Other Clearance and volume parameters:
+[`pk.calc.cl()`](http://humanpred.github.io/pknca/reference/pk.calc.cl.md),
+[`pk.calc.vz()`](http://humanpred.github.io/pknca/reference/pk.calc.vz.md)

@@ -48,6 +48,13 @@ pk.calc.tmin(conc, time, options = list(), first.tmin = NULL, check = TRUE)
 
 The time of the minimum concentration
 
+## See also
+
+Other NCA time parameters:
+[`pk.calc.tlag()`](http://humanpred.github.io/pknca/reference/pk.calc.tlag.md),
+[`pk.calc.tlast()`](http://humanpred.github.io/pknca/reference/pk.calc.tlast.md),
+[`pk.calc.tmax()`](http://humanpred.github.io/pknca/reference/pk.calc.tmax.md)
+
 ## Examples
 
 ``` r

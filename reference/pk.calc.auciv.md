@@ -80,3 +80,9 @@ The calculation for back-extrapolation is `100*(1 - auc/auciv)`.
 
 - `pk.calc.auciv_pbext()`: Calculate the percent back-extrapolated AUC
   for IV administration
+
+## See also
+
+Other AUC calculations:
+[`pk.calc.aucint()`](http://humanpred.github.io/pknca/reference/pk.calc.aucint.md),
+[`pk.calc.auxc()`](http://humanpred.github.io/pknca/reference/pk.calc.auxc.md)

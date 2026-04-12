@@ -60,7 +60,9 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">pk.calc.deg.fluc</span><span class="op">(</span><span class="va">cmax</span>, <span class="va">cmin</span>, <span class="va">cav</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">pk.calc.deg.fluc</span><span class="op">(</span><span class="va">cmax</span>, <span class="va">cmin</span>, <span class="va">cav</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">pk.calc.swing</span><span class="op">(</span><span class="va">cmax</span>, <span class="va">cmin</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -82,10 +84,23 @@
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>The degree of fluctuation around the average concentration.</p>
+<p>The swing above the minimum concentration.  If <code>cmin</code> is zero, then
+the result is infinity.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>deg.fluc is <code>100*(cmax - cmin)/cav</code>.</p>
+<p>swing is <code>100*(cmax - cmin)/cmin</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
+
+<ul><li><p><code>pk.calc.swing()</code>: PK swing</p></li>
+</ul></div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p>Other Multiple-dose PK parameters:
+<code><a href="pk.calc.ptr.html">pk.calc.ptr()</a></code></p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

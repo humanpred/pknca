@@ -252,3 +252,10 @@ Gabrielsson J, Weiner D. "Section 2.8.4 Strategies for estimation of
 lambda-z." Pharmacokinetic & Pharmacodynamic Data Analysis: Concepts and
 Applications, 4th Edition. Stockholm, Sweden: Swedish Pharmaceutical
 Press, 2000. 167-9.
+
+## See also
+
+Other Half-life and elimination:
+[`adj.r.squared()`](http://humanpred.github.io/pknca/reference/adj.r.squared.md),
+[`pk.calc.aucpext()`](http://humanpred.github.io/pknca/reference/pk.calc.aucpext.md),
+[`pk.calc.thalf.eff()`](http://humanpred.github.io/pknca/reference/pk.calc.thalf.eff.md)

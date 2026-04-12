@@ -181,4 +181,5 @@ for the extrapolation.
 [`interp.extrap.conc.dose()`](http://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
 
 Other AUC calculations:
+[`pk.calc.auciv()`](http://humanpred.github.io/pknca/reference/pk.calc.auciv.md),
 [`pk.calc.auxc()`](http://humanpred.github.io/pknca/reference/pk.calc.auxc.md)

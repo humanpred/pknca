@@ -9,6 +9,8 @@ multiple-dose data.
 pk.calc.mrt(auc, aumc)
 
 pk.calc.mrt.iv(auc, aumc, duration.dose)
+
+pk.calc.mrt.md(auctau, aumctau, aucinf, tau)
 ```
 
 ## Arguments
@@ -26,6 +28,22 @@ pk.calc.mrt.iv(auc, aumc, duration.dose)
   The duration of the dose (usually an infusion duration for an IV
   infusion)
 
+- auctau:
+
+  the AUC from time 0 to the end of the dosing interval (tau).
+
+- aumctau:
+
+  the AUMC from time 0 to the end of the dosing interval (tau).
+
+- aucinf:
+
+  the AUC from time 0 to infinity (typically using single-dose data)
+
+- tau:
+
+  The dosing interval
+
 ## Value
 
 the numeric value of the mean residence time
@@ -35,10 +53,13 @@ the numeric value of the mean residence time
 mrt is `aumc/auc - duration.dose/2` where `duration.dose = 0` for oral
 administration.
 
+mrt.md is `aumctau/auctau + tau*(aucinf-auctau)/auctau` and should only
+be used for multiple dosing with equal intervals between doses. Note
+that if `aucinf == auctau` (as would be the assumption with linear
+kinetics), the equation becomes the same as the single-dose MRT.
+
 ## Functions
 
 - `pk.calc.mrt.iv()`: MRT for an IV infusion
 
-## See also
-
-[`pk.calc.mrt.md()`](http://humanpred.github.io/pknca/reference/pk.calc.mrt.md.md)
+- `pk.calc.mrt.md()`: MRT for multiple-dose data with nonlinear kinetics

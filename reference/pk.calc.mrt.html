@@ -65,7 +65,9 @@ multiple-dose data.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">pk.calc.mrt</span><span class="op">(</span><span class="va">auc</span>, <span class="va">aumc</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">pk.calc.mrt.iv</span><span class="op">(</span><span class="va">auc</span>, <span class="va">aumc</span>, <span class="va">duration.dose</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">pk.calc.mrt.iv</span><span class="op">(</span><span class="va">auc</span>, <span class="va">aumc</span>, <span class="va">duration.dose</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">pk.calc.mrt.md</span><span class="op">(</span><span class="va">auctau</span>, <span class="va">aumctau</span>, <span class="va">aucinf</span>, <span class="va">tau</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -84,6 +86,23 @@ multiple-dose data.</p>
 <dd><p>The duration of the dose (usually an infusion duration
 for an IV infusion)</p></dd>
 
+
+<dt id="arg-auctau">auctau<a class="anchor" aria-label="anchor" href="#arg-auctau"></a></dt>
+<dd><p>the AUC from time 0 to the end of the dosing interval (tau).</p></dd>
+
+
+<dt id="arg-aumctau">aumctau<a class="anchor" aria-label="anchor" href="#arg-aumctau"></a></dt>
+<dd><p>the AUMC from time 0 to the end of the dosing interval (tau).</p></dd>
+
+
+<dt id="arg-aucinf">aucinf<a class="anchor" aria-label="anchor" href="#arg-aucinf"></a></dt>
+<dd><p>the AUC from time 0 to infinity (typically using single-dose
+data)</p></dd>
+
+
+<dt id="arg-tau">tau<a class="anchor" aria-label="anchor" href="#arg-tau"></a></dt>
+<dd><p>The dosing interval</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -92,16 +111,17 @@ for an IV infusion)</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>mrt is <code>aumc/auc - duration.dose/2</code> where <code>duration.dose = 0</code> for oral administration.</p>
+<p>mrt.md is <code>aumctau/auctau + tau*(aucinf-auctau)/auctau</code> and should
+only be used for multiple dosing with equal intervals between doses.
+Note that if <code>aucinf == auctau</code> (as would be the assumption with
+linear kinetics), the equation becomes the same as the single-dose MRT.</p>
     </div>
     <div class="section level2">
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
 
 <ul><li><p><code>pk.calc.mrt.iv()</code>: MRT for an IV infusion</p></li>
+<li><p><code>pk.calc.mrt.md()</code>: MRT for multiple-dose data with nonlinear kinetics</p></li>
 </ul></div>
-    <div class="section level2">
-    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="pk.calc.mrt.md.html">pk.calc.mrt.md()</a></code></p></div>
-    </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

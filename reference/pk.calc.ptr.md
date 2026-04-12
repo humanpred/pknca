@@ -25,3 +25,8 @@ The ratio of cmax to ctrough (if ctrough == 0, NA)
 ## Details
 
 ptr is `cmax/ctrough`.
+
+## See also
+
+Other Multiple-dose PK parameters:
+[`pk.calc.deg.fluc()`](http://humanpred.github.io/pknca/reference/pk.calc.deg.fluc.md)

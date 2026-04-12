@@ -33,3 +33,10 @@ The time of the last observed concentration measurement
 
 - `pk.calc.tfirst()`: Determine the first concentration above the limit
   of quantification.
+
+## See also
+
+Other NCA time parameters:
+[`pk.calc.tlag()`](http://humanpred.github.io/pknca/reference/pk.calc.tlag.md),
+[`pk.calc.tmax()`](http://humanpred.github.io/pknca/reference/pk.calc.tmax.md),
+[`pk.calc.tmin()`](http://humanpred.github.io/pknca/reference/pk.calc.tmin.md)

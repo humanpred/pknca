@@ -49,6 +49,13 @@ pk.calc.tmax(conc, time, options = list(), first.tmax = NULL, check = TRUE)
 
 The time of the maximum concentration
 
+## See also
+
+Other NCA time parameters:
+[`pk.calc.tlag()`](http://humanpred.github.io/pknca/reference/pk.calc.tlag.md),
+[`pk.calc.tlast()`](http://humanpred.github.io/pknca/reference/pk.calc.tlast.md),
+[`pk.calc.tmin()`](http://humanpred.github.io/pknca/reference/pk.calc.tmin.md)
+
 ## Examples
 
 ``` r

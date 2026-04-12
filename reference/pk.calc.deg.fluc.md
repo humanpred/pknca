@@ -6,6 +6,8 @@ Determine the degree of fluctuation
 
 ``` r
 pk.calc.deg.fluc(cmax, cmin, cav)
+
+pk.calc.swing(cmax, cmin)
 ```
 
 ## Arguments
@@ -26,6 +28,20 @@ pk.calc.deg.fluc(cmax, cmin, cav)
 
 The degree of fluctuation around the average concentration.
 
+The swing above the minimum concentration. If `cmin` is zero, then the
+result is infinity.
+
 ## Details
 
 deg.fluc is `100*(cmax - cmin)/cav`.
+
+swing is `100*(cmax - cmin)/cmin`.
+
+## Functions
+
+- `pk.calc.swing()`: PK swing
+
+## See also
+
+Other Multiple-dose PK parameters:
+[`pk.calc.ptr()`](http://humanpred.github.io/pknca/reference/pk.calc.ptr.md)

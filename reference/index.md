@@ -390,13 +390,12 @@
   [`pk.calc.count_conc_measured()`](http://humanpred.github.io/pknca/reference/pk.calc.count_conc.md)
   : Count the number of concentration measurements in an interval
 
-- [`pk.calc.cstart()`](http://humanpred.github.io/pknca/reference/pk.calc.cstart.md)
-  : Determine the concentration at the beginning of the interval
-
 - [`pk.calc.ctrough()`](http://humanpred.github.io/pknca/reference/pk.calc.ctrough.md)
+  [`pk.calc.cstart()`](http://humanpred.github.io/pknca/reference/pk.calc.ctrough.md)
   : Determine the trough (end of interval) concentration
 
 - [`pk.calc.deg.fluc()`](http://humanpred.github.io/pknca/reference/pk.calc.deg.fluc.md)
+  [`pk.calc.swing()`](http://humanpred.github.io/pknca/reference/pk.calc.deg.fluc.md)
   : Determine the degree of fluctuation
 
 - [`pk.calc.dn()`](http://humanpred.github.io/pknca/reference/pk.calc.dn.md)
@@ -426,12 +425,9 @@
 
 - [`pk.calc.mrt()`](http://humanpred.github.io/pknca/reference/pk.calc.mrt.md)
   [`pk.calc.mrt.iv()`](http://humanpred.github.io/pknca/reference/pk.calc.mrt.md)
+  [`pk.calc.mrt.md()`](http://humanpred.github.io/pknca/reference/pk.calc.mrt.md)
   : Calculate the mean residence time (MRT) for single-dose data or
   linear multiple-dose data.
-
-- [`pk.calc.mrt.md()`](http://humanpred.github.io/pknca/reference/pk.calc.mrt.md.md)
-  : Calculate the mean residence time (MRT) for multiple-dose data with
-  nonlinear kinetics.
 
 - [`pk.calc.ptr()`](http://humanpred.github.io/pknca/reference/pk.calc.ptr.md)
   : Determine the peak-to-trough ratio
@@ -439,9 +435,6 @@
 - [`pk.calc.sparse_auc()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md)
   [`pk.calc.sparse_auclast()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md)
   : Calculate AUC and related parameters using sparse NCA methods
-
-- [`pk.calc.swing()`](http://humanpred.github.io/pknca/reference/pk.calc.swing.md)
-  : Determine the PK swing
 
 - [`pk.calc.thalf.eff()`](http://humanpred.github.io/pknca/reference/pk.calc.thalf.eff.md)
   : Calculate the effective half-life
@@ -471,10 +464,8 @@
 - [`pk.calc.volpk()`](http://humanpred.github.io/pknca/reference/pk.calc.volpk.md)
   : Calculate the total urine volume
 
-- [`pk.calc.vss()`](http://humanpred.github.io/pknca/reference/pk.calc.vss.md)
-  : Calculate the steady-state volume of distribution (Vss)
-
 - [`pk.calc.vz()`](http://humanpred.github.io/pknca/reference/pk.calc.vz.md)
+  [`pk.calc.vss()`](http://humanpred.github.io/pknca/reference/pk.calc.vz.md)
   : Calculate the terminal volume of distribution (Vz)
 
 - [`pk.nca()`](http://humanpred.github.io/pknca/reference/pk.nca.md) :

@@ -35,3 +35,13 @@ pk.calc.ertlst(conc, volume, time, duration.conc, check = TRUE)
 
 The midpoint collection time of the last measurable excretion rate, or
 NA/0 if not available
+
+## See also
+
+Other Urine/Excretion parameters:
+[`pk.calc.ae()`](http://humanpred.github.io/pknca/reference/pk.calc.ae.md),
+[`pk.calc.clr()`](http://humanpred.github.io/pknca/reference/pk.calc.clr.md),
+[`pk.calc.ermax()`](http://humanpred.github.io/pknca/reference/pk.calc.ermax.md),
+[`pk.calc.ertmax()`](http://humanpred.github.io/pknca/reference/pk.calc.ertmax.md),
+[`pk.calc.fe()`](http://humanpred.github.io/pknca/reference/pk.calc.fe.md),
+[`pk.calc.volpk()`](http://humanpred.github.io/pknca/reference/pk.calc.volpk.md)
