@@ -124,9 +124,8 @@ interp.extrap.conc.dose(
 
 - conc.blq:
 
-  How to handle BLQ values. (See
-  [`clean.conc.blq()`](http://humanpred.github.io/pknca/reference/clean.conc.blq.md)
-  for usage instructions.)
+  How to handle a BLQ value that is between above LOQ values? See
+  details for description.
 
 - conc.na:
 
@@ -136,10 +135,7 @@ interp.extrap.conc.dose(
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md),
-  [`clean.conc.blq()`](http://humanpred.github.io/pknca/reference/clean.conc.blq.md),
-  and
-  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md)?
+  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 - conc.origin:
 

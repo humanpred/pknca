@@ -44,7 +44,8 @@ pk.calc.c0.method.cmin(conc, time, time.dose = 0, check = TRUE)
 
 - check:
 
-  Check the `conc` and `time` inputs
+  Run
+  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 ## Value
 

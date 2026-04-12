@@ -115,18 +115,20 @@ pk.calc.half.life(
 
 - conc.blq:
 
-  See
-  [`clean.conc.blq()`](http://humanpred.github.io/pknca/reference/clean.conc.blq.md)
+  How to handle a BLQ value that is between above LOQ values? See
+  details for description.
 
 - conc.na:
 
-  See
-  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md)
+  How to handle NA concentrations. (See
+  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md))
 
 - first.tmax:
 
-  See
-  [`pk.calc.tmax()`](http://humanpred.github.io/pknca/reference/pk.calc.tmax.md).
+  If there is more than one time point with the maximum value (Cmax or
+  ERmax), which time should be selected for Tmax/ERTmax? If 'TRUE', the
+  first will be selected. If not, then the last is considered
+  Tmax/ERTmax.
 
 - allow.tmax.in.half.life:
 
@@ -136,10 +138,7 @@ pk.calc.half.life(
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md),
-  [`clean.conc.blq()`](http://humanpred.github.io/pknca/reference/clean.conc.blq.md),
-  and
-  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md)?
+  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 ## Value
 

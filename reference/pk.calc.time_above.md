@@ -37,10 +37,7 @@ pk.calc.time_above(conc, time, conc_above, ..., options = list(), check = TRUE)
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md),
-  [`clean.conc.blq()`](http://humanpred.github.io/pknca/reference/clean.conc.blq.md),
-  and
-  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md)?
+  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 ## Value
 

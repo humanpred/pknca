@@ -128,24 +128,18 @@ pk.calc.aucint.inf.pred(
 
 - conc.blq:
 
-  How to handle BLQ values in between the first and last above LOQ
-  concentrations. (See
-  [`clean.conc.blq()`](http://humanpred.github.io/pknca/reference/clean.conc.blq.md)
-  for usage instructions.)
+  How to handle a BLQ value that is between above LOQ values? See
+  details for description.
 
 - conc.na:
 
-  How to handle missing concentration values. (See
-  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md)
-  for usage instructions.)
+  How to handle NA concentrations. (See
+  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md))
 
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md),
-  [`clean.conc.blq()`](http://humanpred.github.io/pknca/reference/clean.conc.blq.md),
-  and
-  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md)?
+  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 - ...:
 

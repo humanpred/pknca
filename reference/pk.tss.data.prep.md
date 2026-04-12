@@ -55,13 +55,13 @@ pk.tss.data.prep(
 
 - conc.blq:
 
-  See
-  [`clean.conc.blq()`](http://humanpred.github.io/pknca/reference/clean.conc.blq.md)
+  How to handle a BLQ value that is between above LOQ values? See
+  details for description.
 
 - conc.na:
 
-  See
-  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md)
+  How to handle NA concentrations. (See
+  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md))
 
 - check:
 
