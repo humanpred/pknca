@@ -31,6 +31,8 @@
   methods](http://humanpred.github.io/pknca/articles/v23-auc-integration-methods.md):
 - [PKNCA Training
   Sessions](http://humanpred.github.io/pknca/articles/v30-training-session.md):
+- [PKNCA – an R package for noncompartmental analysis of pharmacokinetic
+  data](http://humanpred.github.io/pknca/articles/v31-FDA-introduction.md):
 - [Options for Controlling
   PKNCA](http://humanpred.github.io/pknca/articles/v40-options-for-controlling-PKNCA.md):
 - [PKNCA
