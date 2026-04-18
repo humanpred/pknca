@@ -429,7 +429,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       )
     }
   }
-
+  
   # Drop the inputs of tmax and tlast, if given.
   if (!missing(tmax)) ret$tmax <- NULL
   if (!missing(tlast)) ret$tlast <- NULL
@@ -450,7 +450,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
 #' @seealso [pk.calc.half.life()]
 fit_half_life <- function(data, tlast) {
   fit <- stats::.lm.fit(x=cbind(1, data$time), y=data$log_conc)
-
+  
   # as.numeric is so that it works for units objects
   r_squared <- 1 - as.numeric(sum(fit$residuals^2))/as.numeric(sum((data$log_conc - mean(data$log_conc))^2))
   clast_pred <- exp(sum(fit$coefficients*c(1, as.numeric(tlast))))
@@ -626,7 +626,8 @@ add.interval.col("half.life",
                  unit_type="time",
                  pretty_name="Half-life",
                  desc="The (terminal) half-life",
-                 depends=c("tmax", "tlast"))
+                 depends=c("tmax", "tlast"),
+                 formula="$t_{1/2} = \\frac{\\ln(2)}{\\lambda_z}$")
 PKNCA.set.summary(
   name="half.life",
   description="arithmetic mean and standard deviation",
@@ -639,7 +640,8 @@ add.interval.col("r.squared",
                  unit_type="unitless",
                  pretty_name="$r^2$",
                  desc="The r^2 value of the half-life calculation",
-                 depends="half.life")
+                 depends="half.life",
+                 formula="$r^2 = 1 - \\frac{\\sum_{i=t_{\\lambda_z,\\text{first}}}^{t_{\\lambda_z,\\text{last}}} (y_i - \\hat{y}_i)^2}{\\sum (y_i - \\bar{y})^2}$")
 PKNCA.set.summary(
   name="r.squared",
   description="arithmetic mean and standard deviation",
@@ -652,7 +654,8 @@ add.interval.col("adj.r.squared",
                  unit_type="unitless",
                  pretty_name="$r^2_{adj}$",
                  desc="The adjusted r^2 value of the half-life calculation",
-                 depends="half.life")
+                 depends="half.life",
+                 formula="$r^2_{adj} = 1 - (1 - r^2) \\frac{n-1}{n-2}$")
 PKNCA.set.summary(
   name="adj.r.squared",
   description="arithmetic mean and standard deviation",
@@ -665,7 +668,8 @@ add.interval.col("lambda.z.corrxy",
                  unit_type="unitless",
                  pretty_name="Correlation (time, log-conc)",
                  desc="Correlation between time and log-concentration for lambda.z points",
-                 depends="half.life")
+                 depends="half.life",
+                 formula="$\\text{cor}(t, \\log C)$")
 PKNCA.set.summary(
   name="lambda.z.corrxy",
   description="arithmetic mean and standard deviation",
@@ -678,7 +682,8 @@ add.interval.col("lambda.z",
                  unit_type="inverse_time",
                  pretty_name="$\\lambda_z$",
                  desc="The elimination rate of the terminal half-life",
-                 depends="half.life")
+                 depends="half.life",
+                 formula="$\\lambda_z = -\\text{slope of } \\log(C) \\text{ vs } t$")
 PKNCA.set.summary(
   name="lambda.z",
   description="geometric mean and geometric coefficient of variation",
@@ -691,7 +696,8 @@ add.interval.col("lambda.z.time.first",
                  unit_type="time",
                  pretty_name="First time for $\\lambda_z$",
                  desc="The first time point used for the calculation of half-life",
-                 depends="half.life")
+                 depends="half.life",
+                 formula="$\\lambda_z t_{\\text{first}} = \\min\\left(t_{\\lambda_z}\\right)$")
 PKNCA.set.summary(
   name="lambda.z.time.first",
   description="median and range",
@@ -704,7 +710,8 @@ add.interval.col("lambda.z.time.last",
                  unit_type="time",
                  pretty_name="Last time for $\\lambda_z$",
                  desc="The last time point used for the calculation of half-life",
-                 depends="half.life")
+                 depends="half.life",
+                 formula="$\\lambda_z t_{\\text{last}} = \\max\\left(t_{\\lambda_z}\\right)$")
 PKNCA.set.summary(
   name="lambda.z.time.last",
   description="median and range",
@@ -717,7 +724,8 @@ add.interval.col("lambda.z.n.points",
                  unit_type="count",
                  pretty_name="Number of points used for lambda_z",
                  desc="The number of points used for the calculation of half-life",
-                 depends="half.life")
+                 depends="half.life",
+                 formula="$n_{\\text{hl}}$")
 PKNCA.set.summary(
   name="lambda.z.n.points",
   description="median and range",
@@ -730,7 +738,8 @@ add.interval.col("clast.pred",
                  unit_type="conc",
                  pretty_name="Clast,pred",
                  desc="The concentration at Tlast as predicted by the half-life",
-                 depends="half.life")
+                 depends="half.life",
+                 formula="$C_{\\text{last,pred}} = e^{\\text{intercept} - \\lambda_z \\cdot t_{\\text{last}}}$")
 PKNCA.set.summary(
   name="clast.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -743,7 +752,8 @@ add.interval.col("span.ratio",
                  unit_type="fraction",
                  pretty_name="Span ratio",
                  desc="The ratio of the half-life to the duration used for half-life calculation",
-                 depends="half.life")
+                 depends="half.life",
+                 formula="$\\text{span ratio} = \\frac{t_{\\text{last}} - t_{\\text{first}}}{t_{1/2}}$")
 PKNCA.set.summary(
   name="span.ratio",
   description="geometric mean and geometric coefficient of variation",
@@ -815,7 +825,7 @@ get_halflife_points.PKNCAresults <- function(object) {
   # Insert a ROWID column so that we can reconstruct the order at the end
   rowid_col <- paste0(max(names(as.data.frame(as_PKNCAconc(object)))), "ROWID")
   object$data$conc$data[[rowid_col]] <- seq_len(nrow(object$data$conc$data))
-
+  
   # Find the concentrations and results that go together
   splitdata <- full_join_PKNCAdata(as_PKNCAdata(object), extra_conc_cols = rowid_col)
   splitresults_prep <- as.data.frame(object)
@@ -829,7 +839,7 @@ get_halflife_points.PKNCAresults <- function(object) {
       splitdata, splitresults,
       by = intersect(names(splitdata), names(splitresults))
     )
-
+  
   ret <- rep(NA, nrow(as.data.frame(as_PKNCAconc(object))))
   for (idx in seq_len(nrow(base_results))) {
     ret_current <-
@@ -853,7 +863,7 @@ get_halflife_points.PKNCAresults <- function(object) {
 
 #' @export
 get_halflife_points.PKNCAdata <- function(object) {
-
+  
   # Keep only intervals with half-life calculations
   hl_dep_cols <- c("half.life" ,get.parameter.deps("half.life"))
   int_to_keep <- rowSums(object$intervals[, hl_dep_cols]) > 0
@@ -862,10 +872,10 @@ get_halflife_points.PKNCAdata <- function(object) {
   params_to_ignore <- setdiff(names(get.interval.cols()), c("half.life", "start", "end"))
   object$intervals[, params_to_ignore] <- FALSE
   object$intervals <- unique(object$intervals)
-
+  
   # Only calculate half.life for the results object
   o_nca <- pk.nca(object)
-
+  
   # Get the half-life points from the results object
   get_halflife_points(o_nca)
 }

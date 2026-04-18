@@ -76,13 +76,13 @@ test_that("pk.nca", {
 
   # Specifying new intervals
   mydata.newinterval <-
-      PKNCAdata(myconc, mydose,
-                intervals=data.frame(start=0, end=c(24, Inf),
-                                     auclast=c(TRUE, FALSE),
-                                     aucinf.obs=c(FALSE, TRUE),
-                                     cmax=c(FALSE, TRUE),
-                                     tmax=c(FALSE, TRUE),
-                                     half.life=c(FALSE, TRUE)))
+    PKNCAdata(myconc, mydose,
+              intervals=data.frame(start=0, end=c(24, Inf),
+                                   auclast=c(TRUE, FALSE),
+                                   aucinf.obs=c(FALSE, TRUE),
+                                   cmax=c(FALSE, TRUE),
+                                   tmax=c(FALSE, TRUE),
+                                   half.life=c(FALSE, TRUE)))
   myresult.newinterval <- pk.nca(mydata)
   expect_equal(myresult.newinterval$result,
                myresult$result,
@@ -268,7 +268,7 @@ test_that("pk.nca with exclusions", {
   myresult.excl <- pk.nca(mydata.excl)
   expect_true(identical(myresult$result[myresult$result$ID %in% 2,],
                         myresult.excl$result[myresult.excl$result$ID %in% 2,]),
-               info="Results are unchanged for the subject who has the same data")
+              info="Results are unchanged for the subject who has the same data")
   expect_false(identical(myresult$result[myresult$result$ID %in% 1,],
                          myresult.excl$result[myresult.excl$result$ID %in% 1,]),
                info="Results are changed for the subject who has the same data")
@@ -421,14 +421,14 @@ test_that("Volume-related calculations", {
                                             stringsAsFactors=FALSE))
   myresult <- pk.nca(mydata)
   expect_equal(as.data.frame(myresult)[["PPORRES"]], c(12, 12, 30, 30),
-              info="ae and fe are correctly calculated")
+               info="ae and fe are correctly calculated")
   tmpdose2 <- tmpdose
   tmpdose2$dose <- 2
   mydose2 <- PKNCAdose(tmpdose2, formula=dose~time|treatment+ID)
   mydata2 <-  PKNCAdata(myconc, mydose2,
-                       intervals=data.frame(treatment="Trt 1", start=0, end=24,
-                                            ae=TRUE, fe=TRUE,
-                                            stringsAsFactors=FALSE))
+                        intervals=data.frame(treatment="Trt 1", start=0, end=24,
+                                             ae=TRUE, fe=TRUE,
+                                             stringsAsFactors=FALSE))
   myresult2 <- pk.nca(mydata2)
   expect_equal(as.data.frame(myresult2)[["PPORRES"]], c(12, 6, 30, 15),
                info="fe respects dose")
@@ -705,8 +705,8 @@ test_that("The option keep_interval_cols is respected", {
   d_interval <- data.frame(start = 0, end = 4, cmax = TRUE, foo = "A")
   d_conctime <- data.frame(conc = c(0, 0, 0, 0), time = 0:3)
   o_conc <- PKNCAconc(d_conctime, conc~time)
- expect_error(PKNCAdata(o_conc, intervals = d_interval),
-              "The following columns in 'intervals' are not allowed:")
+  expect_error(PKNCAdata(o_conc, intervals = d_interval),
+               "The following columns in 'intervals' are not allowed:")
 
   o_data <- PKNCAdata(o_conc, intervals = d_interval, options = list(keep_interval_cols = "foo"))
   suppressWarnings(suppressMessages(
@@ -771,6 +771,7 @@ test_that("pk.nca can be run for each parameter independently (#473)", {
 
   non_pknca_covered_params <- c(
     "f", "time_above", "mrt.md.obs", "mrt.md.pred", "sparse_auclast", "sparse_auc_se", "sparse_auc_df",
+    "cl.sparse.last", "vz.sparse.last",
     "vss.md.obs", "vss.md.pred", "ceoi"
   )
   all_params <- setdiff(names(get.interval.cols()), c("start", "end", non_pknca_covered_params))

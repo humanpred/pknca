@@ -114,7 +114,9 @@ test_that("add.interval.col", {
       sparse=FALSE,
       formalsmap=list(),
       depends=NULL,
-      datatype="interval"
+      datatype="interval",
+      formula=NULL,
+      formula_note=NULL
     ),
     info="interval column assignment works with FUN=NA"
   )
@@ -132,7 +134,9 @@ test_that("add.interval.col", {
       sparse=FALSE,
       formalsmap=list(),
       depends=NULL,
-      datatype="interval"
+      datatype="interval",
+      formula=NULL,
+      formula_note=NULL
     ),
     info="interval column assignment works with FUN=a character string"
   )
@@ -150,7 +154,9 @@ test_that("add.interval.col", {
       sparse=FALSE,
       formalsmap=list(x="values"),
       depends=NULL,
-      datatype="interval"
+      datatype="interval",
+      formula=NULL,
+      formula_note=NULL
     ),
     info="interval column assignment works with FUN=NA"
   )

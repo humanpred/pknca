@@ -352,7 +352,9 @@ add.interval.col(
   values=c(FALSE, TRUE),
   unit_type="auc",
   pretty_name="Sparse AUClast",
-  desc="For sparse PK sampling, the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification"
+  desc="For sparse PK sampling, the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
+  formula="$AUC_{\\text{sparse}} = \\sum_k \\frac{\\bar{C}_k + \\bar{C}_{k+1}}{2} \\Delta t_k$",
+  formula_note="Linear trapezoidal using population mean concentrations"
 )
 PKNCA.set.summary(
   name="sparse_auclast",
@@ -368,7 +370,9 @@ add.interval.col(
   unit_type="auc",
   pretty_name="Sparse AUClast standard error",
   desc="For sparse PK sampling, the standard error of the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
-  depends="sparse_auclast"
+  depends="sparse_auclast",
+  formula="$SE(AUC_{\\text{sparse}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$",
+  formula_note="Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001)"
 )
 PKNCA.set.summary(
   name="sparse_auc_se",
@@ -384,7 +388,9 @@ add.interval.col(
   unit_type="count",
   pretty_name="Sparse AUClast degrees of freedom",
   desc="For sparse PK sampling, the standard error degrees of freedom of the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
-  depends="sparse_auclast"
+  depends="sparse_auclast",
+  formula="$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$",
+  formula_note="Satterthwaite approximation (Nedelman et al 1995, eq. 6a)"
 )
 PKNCA.set.summary(
   name="sparse_auc_df",

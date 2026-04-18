@@ -135,7 +135,8 @@ add.interval.col("c0",
                  unit_type="conc",
                  pretty_name="C0",
                  desc="Initial concentration after an IV bolus",
-                 depends=NULL)
+                 depends=NULL,
+                 formula = "$C_0 = \\text{if measured, } C_{t=0}; \\text{ else, } C_0 = C_1 \\exp\\left(-\\frac{\\ln(C_2) - \\ln(C_1)}{t_2-t_1} (t_1 - 0)\\right)$")
 PKNCA.set.summary(
   name="c0",
   description="geometric mean and geometric coefficient of variation",
