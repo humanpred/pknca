@@ -34,14 +34,18 @@ PKNCAresults <- function(result, data, exclude = NULL) {
 #'
 #' @param x The object to extract results from
 #' @param ... Ignored (for compatibility with generic [as.data.frame()])
-#' @param out_format Should the output be 'long' (default) or 'wide'?
+#' @param out_format Should the output be 'long' (default), 'wide', or 'cdisc'?
+#'   When 'cdisc', the PPTESTCD column is translated to CDISC standard codes
+#'   and a PPTEST column with the CDISC test name is added.  Route-dependent
+#'   parameters (e.g. CL, VZ, MRT) are resolved using the route information
+#'   from the dose data.
 #' @param filter_requested Only return rows with parameters that were
 #'   specifically requested?
 #' @param filter_excluded Should excluded values be removed?
 #' @param out.format Deprecated in favor of `out_format`
 #' @returns A data.frame (or usually a tibble) of results
 #' @export
-as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide'), filter_requested = FALSE, filter_excluded = FALSE, out.format = deprecated()) {
+as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'cdisc'), filter_requested = FALSE, filter_excluded = FALSE, out.format = deprecated()) {
   if (!filter_excluded) {
     ret <- x$result
   } else {
@@ -77,7 +81,9 @@ as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide'), f
       )
   }
 
-  if (out_format %in% 'wide') {
+  if (out_format %in% 'cdisc') {
+    ret <- pknca_cdisc_translate(ret, x)
+  } else if (out_format %in% 'wide') {
     if ("PPSTRESU" %in% names(ret)) {
       # Use standardized results
       ret$PPTESTCD <- sprintf("%s (%s)", ret$PPTESTCD, ret$PPSTRESU)
@@ -93,6 +99,119 @@ as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide'), f
     ret <- tidyr::spread(ret, key="PPTESTCD", value="PPORRES")
   }
   ret
+}
+
+# Translate PPTESTCD to CDISC standard codes and add PPTEST column
+#
+# @param ret The long-format result data.frame
+# @param x The PKNCAresults object (for accessing dose/route data)
+# @returns The data.frame with PPTESTCD translated and PPTEST added
+# @keywords Internal
+# @noRd
+pknca_cdisc_translate <- function(ret, x) {
+  all_intervals <- get.interval.cols()
+  # Determine route for each result row
+  route_per_row <- pknca_cdisc_get_route(ret, x)
+  # Build CDISC PPTESTCD and PPTEST for each row
+  cdisc_pptestcd <- character(nrow(ret))
+  cdisc_pptest <- character(nrow(ret))
+  for (i in seq_len(nrow(ret))) {
+    pknca_name <- ret$PPTESTCD[i]
+    col_def <- all_intervals[[pknca_name]]
+    if (is.null(col_def) || is.null(col_def$pptestcd_cdisc)) {
+      # No mapping available, keep original
+      cdisc_pptestcd[i] <- pknca_name
+      cdisc_pptest[i] <- if (!is.null(col_def$desc)) col_def$desc else ""
+      next
+    }
+    route <- route_per_row[i]
+    cdisc_pptestcd[i] <- resolve_cdisc_value(col_def$pptestcd_cdisc, route)
+    cdisc_pptest[i] <- resolve_cdisc_value(col_def$pptest_cdisc, route)
+  }
+  ret$PPTESTCD <- cdisc_pptestcd
+  # Insert PPTEST after PPTESTCD
+  pptestcd_pos <- which(names(ret) == "PPTESTCD")
+  if (length(pptestcd_pos) == 1) {
+    before <- ret[, seq_len(pptestcd_pos), drop = FALSE]
+    after <- ret[, seq(pptestcd_pos + 1, ncol(ret)), drop = FALSE]
+    ret <- cbind(before, PPTEST = cdisc_pptest, after)
+  } else {
+    ret$PPTEST <- cdisc_pptest
+  }
+  ret
+}
+
+# Resolve a CDISC value that may be a simple string or a route-dependent list
+#
+# @param value A character string or a list with a "route" element
+# @param route The route for the current row ("extravascular" or "intravascular")
+# @returns A character string with the resolved CDISC value
+# @keywords Internal
+# @noRd
+resolve_cdisc_value <- function(value, route) {
+  if (is.character(value)) {
+    return(value)
+  }
+  if (is.list(value) && !is.null(value$route)) {
+    route_lower <- tolower(route)
+    if (route_lower %in% names(value$route)) {
+      return(value$route[[route_lower]])
+    }
+    # Default to first element (extravascular) if route not found
+    return(value$route[[1]])
+  }
+  # Fallback
+  as.character(value)
+}
+
+# Get the route of administration for each row in the results
+#
+# @param ret The long-format result data.frame
+# @param x The PKNCAresults object
+# @returns A character vector of routes, one per row
+# @keywords Internal
+# @noRd
+pknca_cdisc_get_route <- function(ret, x) {
+  default_route <- "extravascular"
+  # Check if dose data is available
+  if (is.null(x$data$dose) || identical(x$data$dose, NA) ||
+      !inherits(x$data$dose, "PKNCAdose")) {
+    return(rep(default_route, nrow(ret)))
+  }
+  route_data <- getAttributeColumn(
+    object = x$data$dose, attr_name = "route", warn_missing = character()
+  )
+  if (is.null(route_data)) {
+    return(rep(default_route, nrow(ret)))
+  }
+  # Get the dose data with route and group columns
+  dose_df <- x$data$dose$data
+  route_col <- x$data$dose$columns$route
+  group_cols <- unlist(x$data$dose$columns$groups)
+  # If route is a scalar (same for all), return it for all rows
+  if (length(unique(route_data[[1]])) == 1) {
+    return(rep(tolower(route_data[[1]][1]), nrow(ret)))
+  }
+  # Route varies by group: merge with results on group columns
+  # Use only group columns that exist in both datasets
+  merge_cols <- intersect(group_cols, names(ret))
+  if (length(merge_cols) == 0) {
+    return(rep(default_route, nrow(ret)))
+  }
+  # Get unique route per group combination
+  dose_route <- unique(dose_df[, c(merge_cols, route_col), drop = FALSE])
+  names(dose_route)[names(dose_route) == route_col] <- ".route_cdisc"
+  merged <- merge(
+    data.frame(.row_id = seq_len(nrow(ret)), ret[, merge_cols, drop = FALSE]),
+    dose_route,
+    by = merge_cols,
+    all.x = TRUE,
+    sort = FALSE
+  )
+  merged <- merged[order(merged$.row_id), ]
+  routes <- tolower(as.character(merged$.route_cdisc))
+  routes[is.na(routes)] <- default_route
+  routes
 }
 
 #' @rdname getDataName
