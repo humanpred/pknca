@@ -44,7 +44,9 @@ add.interval.col("cmax",
                  unit_type="conc",
                  pretty_name="Cmax",
                  desc="Maximum observed concentration",
-                 depends=NULL)
+                 depends=NULL,
+                 pptestcd_cdisc="CMAX",
+                 pptest_cdisc="Max Conc")
 PKNCA.set.summary(
   name="cmax",
   description="geometric mean and geometric coefficient of variation",
@@ -76,7 +78,9 @@ add.interval.col("cmin",
                  unit_type="conc",
                  pretty_name="Cmin",
                  desc="Minimum observed concentration",
-                 depends=NULL)
+                 depends=NULL,
+                 pptestcd_cdisc="CMIN",
+                 pptest_cdisc="Min Conc")
 PKNCA.set.summary(
   name="cmin",
   description="geometric mean and geometric coefficient of variation",
@@ -135,7 +139,9 @@ add.interval.col("tmax",
                  unit_type="time",
                  pretty_name="Tmax",
                  desc="Time of the maximum observed concentration",
-                 depends=NULL)
+                 depends=NULL,
+                 pptestcd_cdisc="TMAX",
+                 pptest_cdisc="Time of CMAX")
 PKNCA.set.summary(
   name="tmax",
   description="median and range",
@@ -194,7 +200,9 @@ add.interval.col("tmin",
                  unit_type="time",
                  pretty_name="Tmin",
                  desc="Time of the minimum observed concentration",
-                 depends=NULL)
+                 depends=NULL,
+                 pptestcd_cdisc="TMIN",
+                 pptest_cdisc="Time of CMIN Observation")
 PKNCA.set.summary(
   name="tmin",
   description="median and range",
@@ -229,7 +237,9 @@ add.interval.col("tlast",
                  unit_type="time",
                  pretty_name="Tlast",
                  desc="Time of the last concentration observed above the limit of quantification",
-                 depends=NULL)
+                 depends=NULL,
+                 pptestcd_cdisc="TLST",
+                 pptest_cdisc="Time of Last Nonzero Conc")
 PKNCA.set.summary(
   name="tlast",
   description="median and range",
@@ -257,7 +267,9 @@ add.interval.col("tfirst",
                  unit_type="time",
                  pretty_name="Tfirst",
                  desc="Time of the first concentration above the limit of quantification",
-                 depends=NULL)
+                 depends=NULL,
+                 pptestcd_cdisc="TFIRST",
+                 pptest_cdisc="Time of First Nonzero Conc")
 PKNCA.set.summary(
   name="tfirst",
   description="median and range",
@@ -302,7 +314,9 @@ add.interval.col("clast.obs",
                  unit_type="conc",
                  pretty_name="Clast",
                  desc="The last concentration observed above the limit of quantification",
-                 depends=NULL)
+                 depends=NULL,
+                 pptestcd_cdisc="CLST",
+                 pptest_cdisc="Last Nonzero Conc")
 PKNCA.set.summary(
   name="clast.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -329,7 +343,9 @@ add.interval.col("thalf.eff.obs",
                  unit_type="time",
                  pretty_name="Effective half-life (based on MRT,obs)",
                  formalsmap=list(mrt="mrt.obs"),
-                 depends="mrt.obs")
+                 depends="mrt.obs",
+                 pptestcd_cdisc="EFFOHL",
+                 pptest_cdisc="Effective Half-Life Obs")
 PKNCA.set.summary(
   name="thalf.eff.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -343,7 +359,9 @@ add.interval.col("thalf.eff.pred",
                  pretty_name="Effective half-life (based on MRT,pred)",
                  desc="The effective half-life (as determined from the MRTpred)",
                  formalsmap=list(mrt="mrt.pred"),
-                 depends="mrt.pred")
+                 depends="mrt.pred",
+                 pptestcd_cdisc="EFFPHL",
+                 pptest_cdisc="Effective Half-Life Pred")
 PKNCA.set.summary(
   name="thalf.eff.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -357,7 +375,9 @@ add.interval.col("thalf.eff.last",
                  pretty_name="Effective half-life (based on MRT,last)",
                  desc="The effective half-life (as determined from the MRTlast)",
                  formalsmap=list(mrt="mrt.last"),
-                 depends="mrt.last")
+                 depends="mrt.last",
+                 pptestcd_cdisc="EFFHL",
+                 pptest_cdisc="Effective Half-Life (based on AUClast)")
 PKNCA.set.summary(
   name="thalf.eff.last",
   description="geometric mean and geometric coefficient of variation",
@@ -371,7 +391,9 @@ add.interval.col("thalf.eff.iv.obs",
                  pretty_name="Effective half-life (for IV dosing, based on MRT,obs)",
                  desc="The effective half-life (as determined from the intravenous MRTobs)",
                  formalsmap=list(mrt="mrt.iv.obs"),
-                 depends="mrt.iv.obs")
+                 depends="mrt.iv.obs",
+                 pptestcd_cdisc="EFFIVOHL",
+                 pptest_cdisc="Effective Half-Life (for IV dosing, based on MRT Obs)")
 PKNCA.set.summary(
   name="thalf.eff.iv.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -385,7 +407,9 @@ add.interval.col("thalf.eff.iv.pred",
                  pretty_name="Effective half-life (for IV dosing, based on MRT,pred)",
                  desc="The effective half-life (as determined from the intravenous MRTpred)",
                  formalsmap=list(mrt="mrt.iv.pred"),
-                 depends="mrt.iv.pred")
+                 depends="mrt.iv.pred",
+                 pptestcd_cdisc="EFFIVPHL",
+                 pptest_cdisc="Effective Half-Life (for IV dosing, based on MRT Pred)")
 PKNCA.set.summary(
   name="thalf.eff.iv.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -399,7 +423,9 @@ add.interval.col("thalf.eff.iv.last",
                  pretty_name="Effective half-life (for IV dosing, based on MRTlast)",
                  desc="The effective half-life (as determined from the intravenous MRTlast)",
                  formalsmap=list(mrt="mrt.iv.last"),
-                 depends="mrt.iv.last")
+                 depends="mrt.iv.last",
+                 pptestcd_cdisc="EFFIVLHL",
+                 pptest_cdisc="Effective Half-Life (for IV dosing, based on AUClast)")
 PKNCA.set.summary(
   name="thalf.eff.iv.last",
   description="geometric mean and geometric coefficient of variation",
@@ -463,7 +489,9 @@ add.interval.col("aucpext.obs",
                  pretty_name="AUCpext (based on AUCinf,obs)",
                  desc="Percent of the AUCinf that is extrapolated after Tlast calculated from the observed Clast",
                  formalsmap=list(aucinf="aucinf.obs"),
-                 depends=c("auclast", "aucinf.obs"))
+                 depends=c("auclast", "aucinf.obs"),
+                 pptestcd_cdisc="AUCPEO",
+                 pptest_cdisc="AUC %Extrapolation Obs")
 PKNCA.set.summary(
   name="aucpext.obs",
   description="arithmetic mean and standard deviation",
@@ -477,7 +505,9 @@ add.interval.col("aucpext.pred",
                  pretty_name="AUCpext (based on AUCinf,pred)",
                  desc="Percent of the AUCinf that is extrapolated after Tlast calculated from the predicted Clast",
                  formalsmap=list(aucinf="aucinf.pred"),
-                 depends=c("auclast", "aucinf.pred"))
+                 depends=c("auclast", "aucinf.pred"),
+                 pptestcd_cdisc="AUCPEP",
+                 pptest_cdisc="AUC %Extrapolation Pred")
 PKNCA.set.summary(
   name="aucpext.pred",
   description="arithmetic mean and standard deviation",
@@ -504,7 +534,9 @@ add.interval.col("kel.obs",
                  pretty_name="Kel (based on AUCinf,obs)",
                  desc="Elimination rate (as calculated from the MRT with observed Clast)",
                  formalsmap=list(mrt="mrt.obs"),
-                 depends="mrt.obs")
+                 depends="mrt.obs",
+                 pptestcd_cdisc="KELOS",
+                 pptest_cdisc="Kel (based on AUCinf,obs)")
 PKNCA.set.summary(
   name="kel.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -518,7 +550,9 @@ add.interval.col("kel.pred",
                  pretty_name="Kel (based on AUCinf,pred)",
                  desc="Elimination rate (as calculated from the MRT with predicted Clast)",
                  formalsmap=list(mrt="mrt.pred"),
-                 depends="mrt.pred")
+                 depends="mrt.pred",
+                 pptestcd_cdisc="KELP",
+                 pptest_cdisc="Kel (based on AUCinf,pred)")
 PKNCA.set.summary(
   name="kel.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -532,7 +566,9 @@ add.interval.col("kel.last",
                  pretty_name="Kel (based on AUClast)",
                  desc="Elimination rate (as calculated from the MRT using AUClast)",
                  formalsmap=list(mrt="mrt.last"),
-                 depends="mrt.last")
+                 depends="mrt.last",
+                 pptestcd_cdisc="KELLST",
+                 pptest_cdisc="Kel (based on AUClast)")
 PKNCA.set.summary(
   name="kel.last",
   description="geometric mean and geometric coefficient of variation",
@@ -546,7 +582,9 @@ add.interval.col("kel.iv.obs",
                  pretty_name="Kel (for IV dosing, based on AUCinf,obs)",
                  desc="Elimination rate (as calculated from the intravenous MRTobs)",
                  formalsmap=list(mrt="mrt.iv.obs"),
-                 depends="mrt.iv.obs")
+                 depends="mrt.iv.obs",
+                 pptestcd_cdisc="KELIVOS",
+                 pptest_cdisc="Kel (for IV dosing, based on AUCinf,obs)")
 PKNCA.set.summary(
   name="kel.iv.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -560,7 +598,9 @@ add.interval.col("kel.iv.pred",
                  pretty_name="Kel (for IV dosing, based on AUCinf,pred)",
                  desc="Elimination rate (as calculated from the intravenous MRTpred)",
                  formalsmap=list(mrt="mrt.iv.pred"),
-                 depends="mrt.iv.pred")
+                 depends="mrt.iv.pred",
+                 pptestcd_cdisc="KELIVP",
+                 pptest_cdisc="Kel (for IV dosing, based on AUCinf,pred)")
 PKNCA.set.summary(
   name="kel.iv.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -574,7 +614,9 @@ add.interval.col("kel.iv.last",
                  pretty_name="Kel (for IV dosing, based on AUClast)",
                  desc="Elimination rate (as calculated from the intravenous MRTlast)",
                  formalsmap=list(mrt="mrt.iv.last"),
-                 depends="mrt.iv.last")
+                 depends="mrt.iv.last",
+                 pptestcd_cdisc="KELIVLT",
+                 pptest_cdisc="Kel (for IV dosing, based on AUClast)")
 PKNCA.set.summary(
   name="kel.iv.last",
   description="geometric mean and geometric coefficient of variation",
@@ -621,7 +663,9 @@ add.interval.col("cl.last",
                  pretty_name="CL (based on AUClast)",
                  desc="Clearance or observed oral clearance calculated to Clast",
                  formalsmap=list(auc="auclast"),
-                 depends="auclast")
+                 depends="auclast",
+                 pptestcd_cdisc=list(route=list(extravascular="CLF/FLST", intravascular="CLLST")),
+                 pptest_cdisc=list(route=list(extravascular="CL by F (based on AUClast)", intravascular="CL (based on AUClast)")))
 PKNCA.set.summary(
   name="cl.last",
   description="geometric mean and geometric coefficient of variation",
@@ -635,7 +679,9 @@ add.interval.col("cl.all",
                  pretty_name="CL (based on AUCall)",
                  desc="Clearance or observed oral clearance calculated with AUCall",
                  formalsmap=list(auc="aucall"),
-                 depends="aucall")
+                 depends="aucall",
+                 pptestcd_cdisc=list(route=list(extravascular="CLF/FALL", intravascular="CLALL")),
+                 pptest_cdisc=list(route=list(extravascular="CL by F (based on AUCall)", intravascular="CL (based on AUCall)")))
 PKNCA.set.summary(
   name="cl.all",
   description="geometric mean and geometric coefficient of variation",
@@ -649,7 +695,9 @@ add.interval.col("cl.obs",
                  pretty_name="CL (based on AUCinf,obs)",
                  desc="Clearance or observed oral clearance calculated with observed Clast",
                  formalsmap=list(auc="aucinf.obs"),
-                 depends="aucinf.obs")
+                 depends="aucinf.obs",
+                 pptestcd_cdisc=list(route=list(extravascular="CLF/FO", intravascular="CLO")),
+                 pptest_cdisc=list(route=list(extravascular="Total CL Obs by F", intravascular="Total CL Obs")))
 PKNCA.set.summary(
   name="cl.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -663,7 +711,9 @@ add.interval.col("cl.pred",
                  pretty_name="CL (based on AUCinf,pred)",
                  desc="Clearance or observed oral clearance calculated with predicted Clast",
                  formalsmap=list(auc="aucinf.pred"),
-                 depends="aucinf.pred")
+                 depends="aucinf.pred",
+                 pptestcd_cdisc=list(route=list(extravascular="CLF/FP", intravascular="CLP")),
+                 pptest_cdisc=list(route=list(extravascular="Total CL Pred by F", intravascular="Total CL Pred")))
 PKNCA.set.summary(
   name="cl.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -699,7 +749,9 @@ add.interval.col("f",
                  unit_type="fraction",
                  pretty_name="Bioavailability",
                  desc="Bioavailability or relative bioavailability",
-                 depends=NULL)
+                 depends=NULL,
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability")
 PKNCA.set.summary(
   name="f",
   description="geometric mean and geometric coefficient of variation",
@@ -731,7 +783,9 @@ add.interval.col("mrt.obs",
                  pretty_name="MRT (based on AUCinf,obs)",
                  desc="The mean residence time to infinity using observed Clast",
                  formalsmap=list(auc="aucinf.obs", aumc="aumcinf.obs"),
-                 depends=c("aucinf.obs", "aumcinf.obs"))
+                 depends=c("aucinf.obs", "aumcinf.obs"),
+                 pptestcd_cdisc=list(route=list(extravascular="MRTEVFO", intravascular="MRTICFO")),
+                 pptest_cdisc=list(route=list(extravascular="MRT Extravasc Infinity Obs", intravascular="MRT IV Cont Inf Infinity Obs")))
 PKNCA.set.summary(
   name="mrt.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -745,7 +799,9 @@ add.interval.col("mrt.pred",
                  pretty_name="MRT (based on AUCinf,pred)",
                  desc="The mean residence time to infinity using predicted Clast",
                  formalsmap=list(auc="aucinf.pred", aumc="aumcinf.pred"),
-                 depends=c("aucinf.pred", "aumcinf.pred"))
+                 depends=c("aucinf.pred", "aumcinf.pred"),
+                 pptestcd_cdisc=list(route=list(extravascular="MRTEVFP", intravascular="MRTICFP")),
+                 pptest_cdisc=list(route=list(extravascular="MRT Extravasc Infinity Pred", intravascular="MRT IV Cont Inf Infinity Pred")))
 PKNCA.set.summary(
   name="mrt.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -759,7 +815,9 @@ add.interval.col("mrt.last",
                  pretty_name="MRT (based on AUClast)",
                  desc="The mean residence time to the last observed concentration above the LOQ",
                  formalsmap=list(auc="auclast", aumc="aumclast"),
-                 depends=c("auclast", "aumclast"))
+                 depends=c("auclast", "aumclast"),
+                 pptestcd_cdisc=list(route=list(extravascular="MRTEVLST", intravascular="MRTICLST")),
+                 pptest_cdisc=list(route=list(extravascular="MRT Extravasc to Last Nonzero Conc", intravascular="MRT IV Cont Inf to Last Nonzero Conc")))
 PKNCA.set.summary(
   name="mrt.last",
   description="geometric mean and geometric coefficient of variation",
@@ -785,7 +843,9 @@ add.interval.col("mrt.iv.obs",
                  pretty_name="MRT (for IV dosing, based on AUCinf,obs)",
                  desc="The mean residence time to infinity using observed Clast correcting for dosing duration",
                  formalsmap=list(auc="aucinf.obs", aumc="aumcinf.obs"),
-                 depends=c("aucinf.obs", "aumcinf.obs"))
+                 depends=c("aucinf.obs", "aumcinf.obs"),
+                 pptestcd_cdisc="MRTIBIFO",
+                 pptest_cdisc="MRT Intravasc Infinity Obs")
 PKNCA.set.summary(
   name="mrt.iv.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -799,7 +859,9 @@ add.interval.col("mrt.iv.pred",
                  pretty_name="MRT (for IV dosing, based on AUCinf,pred)",
                  desc="The mean residence time to infinity using predicted Clast correcting for dosing duration",
                  formalsmap=list(auc="aucinf.pred", aumc="aumcinf.pred"),
-                 depends=c("aucinf.pred", "aumcinf.pred"))
+                 depends=c("aucinf.pred", "aumcinf.pred"),
+                 pptestcd_cdisc="MRTIBIFP",
+                 pptest_cdisc="MRT Intravasc Infinity Pred")
 PKNCA.set.summary(
   name="mrt.iv.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -813,7 +875,9 @@ add.interval.col("mrt.iv.last",
                  pretty_name="MRT (for IV dosing, based on AUClast)",
                  desc="The mean residence time to the last observed concentration above the LOQ correcting for dosing duration",
                  formalsmap=list(auc="auclast", aumc="aumclast"),
-                 depends=c("auclast", "aumclast"))
+                 depends=c("auclast", "aumclast"),
+                 pptestcd_cdisc="MRTIBLST",
+                 pptest_cdisc="MRT Intravasc to Last Nonzero Conc")
 PKNCA.set.summary(
   name="mrt.iv.last",
   description="geometric mean and geometric coefficient of variation",
@@ -849,7 +913,9 @@ add.interval.col("mrt.md.obs",
                  pretty_name="MRT (for multiple dosing, based on AUCinf,obs)",
                  desc="The mean residence time with multiple dosing and nonlinear kinetics using observed Clast",
                  formalsmap=list(auctau="auclast", aumctau="aumclast", aucinf="aucinf.obs"),
-                 depends=c("auclast", "aumclast", "aucinf.obs"))
+                 depends=c("auclast", "aumclast", "aucinf.obs"),
+                 pptestcd_cdisc="MRTMDO",
+                 pptest_cdisc="MRT (for multiple dosing, based on AUCinf,obs)")
 PKNCA.set.summary(
   name="mrt.md.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -863,7 +929,9 @@ add.interval.col("mrt.md.pred",
                  pretty_name="MRT (for multiple dosing, based on AUCinf,pred)",
                  desc="The mean residence time with multiple dosing and nonlinear kinetics using predicted Clast",
                  formalsmap=list(auctau="auclast", aumctau="aumclast", aucinf="aucinf.pred"),
-                 depends=c("auclast", "aumclast", "aucinf.pred"))
+                 depends=c("auclast", "aumclast", "aucinf.pred"),
+                 pptestcd_cdisc="MRTMDP",
+                 pptest_cdisc="MRT (for multiple dosing, based on AUCinf,pred)")
 PKNCA.set.summary(
   name="mrt.md.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -897,7 +965,9 @@ add.interval.col("vz.obs",
                  pretty_name="Vz (based on AUCinf,obs)",
                  desc="The terminal volume of distribution using observed Clast",
                  formalsmap=list(cl="cl.obs"),
-                 depends=c("cl.obs", "lambda.z"))
+                 depends=c("cl.obs", "lambda.z"),
+                 pptestcd_cdisc=list(route=list(extravascular="VZF/FO", intravascular="VZO")),
+                 pptest_cdisc=list(route=list(extravascular="Vz by F Obs", intravascular="Vz Obs")))
 PKNCA.set.summary(
   name="vz.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -911,7 +981,9 @@ add.interval.col("vz.pred",
                  pretty_name="Vz (based on AUCinf,pred)",
                  desc="The terminal volume of distribution using predicted Clast",
                  formalsmap=list(cl="cl.pred"),
-                 depends=c("cl.pred", "lambda.z"))
+                 depends=c("cl.pred", "lambda.z"),
+                 pptestcd_cdisc=list(route=list(extravascular="VZF/FP", intravascular="VZP")),
+                 pptest_cdisc=list(route=list(extravascular="Vz by F Pred", intravascular="Vz Pred")))
 PKNCA.set.summary(
   name="vz.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -936,7 +1008,9 @@ add.interval.col("vss.obs",
                  pretty_name="Vss (based on AUCinf,obs)",
                  desc="The steady-state volume of distribution using observed Clast",
                  formalsmap=list(cl="cl.obs", mrt="mrt.obs"),
-                 depends=c("cl.obs", "mrt.obs"))
+                 depends=c("cl.obs", "mrt.obs"),
+                 pptestcd_cdisc=list(route=list(extravascular="VSSF/FO", intravascular="VSSO")),
+                 pptest_cdisc=list(route=list(extravascular="Vss by F Obs", intravascular="Vol Dist Steady State Obs")))
 PKNCA.set.summary(
   name="vss.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -951,7 +1025,9 @@ add.interval.col("vss.pred",
                  pretty_name="Vss (based on AUCinf,pred)",
                  desc="The steady-state volume of distribution using predicted Clast",
                  formalsmap=list(cl="cl.pred", mrt="mrt.pred"),
-                 depends=c("cl.pred", "mrt.pred"))
+                 depends=c("cl.pred", "mrt.pred"),
+                 pptestcd_cdisc=list(route=list(extravascular="VSSF/FP", intravascular="VSSP")),
+                 pptest_cdisc=list(route=list(extravascular="Vss by F Pred", intravascular="Vol Dist Steady State Pred")))
 PKNCA.set.summary(
   name="vss.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -965,7 +1041,9 @@ add.interval.col("vss.last",
                  pretty_name="Vss (based on AUClast)",
                  desc="The steady-state volume of distribution calculating through Tlast",
                  formalsmap=list(cl="cl.last", mrt="mrt.last"),
-                 depends=c("cl.last", "mrt.last"))
+                 depends=c("cl.last", "mrt.last"),
+                 pptestcd_cdisc=list(route=list(extravascular="VSSF/FLST", intravascular="VSSLST")),
+                 pptest_cdisc=list(route=list(extravascular="Vss by F (based on AUClast)", intravascular="Vss (based on AUClast)")))
 PKNCA.set.summary(
   name="vss.last",
   description="geometric mean and geometric coefficient of variation",
@@ -979,7 +1057,9 @@ add.interval.col("vss.iv.obs",
                  pretty_name="Vss (for IV dosing, based on AUCinf,obs)",
                  desc="The steady-state volume of distribution with intravenous infusion using observed Clast",
                  formalsmap=list(cl="cl.obs", mrt="mrt.iv.obs"),
-                 depends=c("cl.obs", "mrt.iv.obs"))
+                 depends=c("cl.obs", "mrt.iv.obs"),
+                 pptestcd_cdisc="VSSIVO",
+                 pptest_cdisc="Vss (for IV dosing, based on AUCinf,obs)")
 PKNCA.set.summary(
   name="vss.iv.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -993,7 +1073,9 @@ add.interval.col("vss.iv.pred",
                  pretty_name="Vss (for IV dosing, based on AUCinf,pred)",
                  desc="The steady-state volume of distribution with intravenous infusion using predicted Clast",
                  formalsmap=list(cl="cl.pred", mrt="mrt.iv.pred"),
-                 depends=c("cl.pred", "mrt.iv.pred"))
+                 depends=c("cl.pred", "mrt.iv.pred"),
+                 pptestcd_cdisc="VSSIVP",
+                 pptest_cdisc="Vss (for IV dosing, based on AUCinf,pred)")
 PKNCA.set.summary(
   name="vss.iv.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -1007,7 +1089,9 @@ add.interval.col("vss.iv.last",
                  pretty_name="Vss (for IV dosing, based on AUClast)",
                  desc="The steady-state volume of distribution with intravenous infusion calculating through Tlast",
                  formalsmap=list(cl="cl.last", mrt="mrt.iv.last"),
-                 depends=c("cl.last", "mrt.iv.last"))
+                 depends=c("cl.last", "mrt.iv.last"),
+                 pptestcd_cdisc="VSSIVLST",
+                 pptest_cdisc="Vss (for IV dosing, based on AUClast)")
 PKNCA.set.summary(
   name="vss.iv.last",
   description="geometric mean and geometric coefficient of variation",
@@ -1021,7 +1105,9 @@ add.interval.col("vss.md.obs",
                  pretty_name="Vss (for multiple-dose, based on Clast,obs)",
                  desc="The steady-state volume of distribution for nonlinear multiple-dose data using observed Clast",
                  formalsmap=list(cl="cl.last", mrt="mrt.md.obs"),
-                 depends=c("cl.last", "mrt.md.obs"))
+                 depends=c("cl.last", "mrt.md.obs"),
+                 pptestcd_cdisc="VSSMDO",
+                 pptest_cdisc="Vss (for multiple-dose, based on AUCinf,obs)")
 PKNCA.set.summary(
   name="vss.md.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -1035,7 +1121,9 @@ add.interval.col("vss.md.pred",
                  pretty_name="Vss (for multiple-dose, based on Clast,pred)",
                  desc="The steady-state volume of distribution for nonlinear multiple-dose data using predicted Clast",
                  formalsmap=list(cl="cl.last", mrt="mrt.md.pred"),
-                 depends=c("cl.last", "mrt.md.pred"))
+                 depends=c("cl.last", "mrt.md.pred"),
+                 pptestcd_cdisc="VSSMDP",
+                 pptest_cdisc="Vss (for multiple-dose, based on AUCinf,pred)")
 PKNCA.set.summary(
   name="vss.md.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -1068,7 +1156,9 @@ add.interval.col(
   pretty_name = "Cav",
   desc = "The average concentration during an interval (calculated with AUClast)",
   depends = "auclast",
-  formalsmap = list(auc = "auclast")
+  formalsmap = list(auc = "auclast"),
+  pptestcd_cdisc="CAVG",
+  pptest_cdisc="Average Conc"
 )
 add.interval.col(
   "cav.int.last",
@@ -1079,6 +1169,8 @@ add.interval.col(
   desc = "The average concentration during an interval (calculated with AUCint.last)",
   depends = "aucint.last",
   formalsmap = list(auc = "aucint.last"),
+  pptestcd_cdisc="CAVGINT",
+  pptest_cdisc="Average Conc from T1 to T2"
 )
 add.interval.col(
   "cav.int.all",
@@ -1089,6 +1181,8 @@ add.interval.col(
   desc = "The average concentration during an interval (calculated with AUCint.all)",
   depends = "aucint.all",
   formalsmap = list(auc = "aucint.all"),
+  pptestcd_cdisc="CAVGINA",
+  pptest_cdisc="Cavg All"
 )
 add.interval.col(
   "cav.int.inf.obs",
@@ -1099,6 +1193,8 @@ add.interval.col(
   desc = "The average concentration during an interval (calculated with AUCint.inf.obs)",
   depends = "aucint.inf.obs",
   formalsmap = list(auc = "aucint.inf.obs"),
+  pptestcd_cdisc="CAVGINO",
+  pptest_cdisc="Cavg Infinity Obs"
 )
 add.interval.col(
   "cav.int.inf.pred",
@@ -1109,6 +1205,8 @@ add.interval.col(
   desc = "The average concentration during an interval (calculated with AUCint.inf.pred)",
   depends = "aucint.inf.pred",
   formalsmap = list(auc = "aucint.inf.pred"),
+  pptestcd_cdisc="CAVGINP",
+  pptest_cdisc="Cavg Infinity Pred"
 )
 
 PKNCA.set.summary(
@@ -1144,7 +1242,9 @@ add.interval.col("ctrough",
                  unit_type="conc",
                  pretty_name="Ctrough",
                  desc="The trough (end of interval) concentration",
-                 depends=NULL)
+                 depends=NULL,
+                 pptestcd_cdisc="CTROUGH",
+                 pptest_cdisc="Conc Trough")
 PKNCA.set.summary(
   name="ctrough",
   description="geometric mean and geometric coefficient of variation",
@@ -1175,7 +1275,9 @@ add.interval.col("cstart",
                  unit_type="conc",
                  pretty_name="Cstart",
                  desc="The predose concentration",
-                 depends=NULL)
+                 depends=NULL,
+                 pptestcd_cdisc="CSTART",
+                 pptest_cdisc="Cstart")
 PKNCA.set.summary(
   name="cstart",
   description="geometric mean and geometric coefficient of variation",
@@ -1203,7 +1305,9 @@ add.interval.col("ptr",
                  unit_type="fraction",
                  pretty_name="Peak-to-trough ratio",
                  desc="Peak-to-Trough ratio (fraction)",
-                 depends=c("cmax", "ctrough"))
+                 depends=c("cmax", "ctrough"),
+                 pptestcd_cdisc="PTROUGHR",
+                 pptest_cdisc="Peak Trough Ratio")
 PKNCA.set.summary(
   name="ptr",
   description="geometric mean and geometric coefficient of variation",
@@ -1234,7 +1338,9 @@ add.interval.col("tlag",
                  unit_type="time",
                  pretty_name="Tlag",
                  desc="Lag time",
-                 depends=NULL)
+                 depends=NULL,
+                 pptestcd_cdisc="TLAG",
+                 pptest_cdisc="Time to First Nonzero Conc")
 PKNCA.set.summary(
   name="tlag",
   description="median and range",
@@ -1265,7 +1371,9 @@ add.interval.col("deg.fluc",
                  unit_type="%",
                  pretty_name="Degree of fluctuation",
                  desc="Degree of fluctuation",
-                 depends=c("cmax", "cmin", "cav"))
+                 depends=c("cmax", "cmin", "cav"),
+                 pptestcd_cdisc="DEGFLUC",
+                 pptest_cdisc="Degree of fluctuation")
 PKNCA.set.summary(
   name="deg.fluc",
   description="arithmetic mean and standard deviation",
@@ -1292,7 +1400,9 @@ add.interval.col("swing",
                  unit_type="%",
                  pretty_name="Swing",
                  desc="Swing relative to Cmin",
-                 depends=c("cmax", "cmin"))
+                 depends=c("cmax", "cmin"),
+                 pptestcd_cdisc="SWING",
+                 pptest_cdisc="Swing")
 PKNCA.set.summary(
   name="swing",
   description="arithmetic mean and standard deviation",
@@ -1327,7 +1437,9 @@ add.interval.col("ceoi",
                  unit_type="conc",
                  pretty_name="Ceoi",
                  desc="Concentration at the end of infusion",
-                 depends=NULL)
+                 depends=NULL,
+                 pptestcd_cdisc="CEOI",
+                 pptest_cdisc="Ceoi")
 PKNCA.set.summary(
   name="ceoi",
   description="geometric mean and geometric coefficient of variation",
@@ -1364,7 +1476,9 @@ add.interval.col(
   pretty_name="AUC,above",
   desc="The area under the concentration time the beginning of the interval to the last concentration above the limit of quantification plus the triangle from that last concentration to 0 at the first concentration below the limit of quantification, with a concentration subtracted from all concentrations and values below zero after subtraction set to zero",
   depends="cstart",
-  formalsmap = list(conc_above = "cstart")
+  formalsmap = list(conc_above = "cstart"),
+  pptestcd_cdisc="AUCABVPA",
+  pptest_cdisc="AUC above predose"
 )
 PKNCA.set.summary(
   name="aucabove.predose.all",
@@ -1379,7 +1493,9 @@ add.interval.col(
   pretty_name="AUC,above",
   desc="The area under the concentration time the beginning of the interval to the last concentration above the limit of quantification plus the triangle from that last concentration to 0 at the first concentration below the limit of quantification, with a concentration subtracted from all concentrations and values below zero after subtraction set to zero",
   depends="ctrough",
-  formalsmap = list(conc_above = "ctrough")
+  formalsmap = list(conc_above = "ctrough"),
+  pptestcd_cdisc="AUCABVTA",
+  pptest_cdisc="AUC above trough"
 )
 PKNCA.set.summary(
   name="aucabove.trough.all",
@@ -1414,7 +1530,9 @@ add.interval.col(
   unit_type = "count",
   pretty_name = "Concentration count",
   desc = "Number of non-missing concentrations for an interval",
-  depends = NULL
+  depends = NULL,
+  pptestcd_cdisc="CNTCONC",
+  pptest_cdisc="Concentration count"
 )
 
 #' @describeIn pk.calc.count_conc Count the number of concentration measurements
@@ -1461,7 +1579,9 @@ add.interval.col(
   values=c(FALSE, TRUE),
   unit_type="dose",
   pretty_name="Total dose",
-  desc="Total dose administered during an interval"
+  desc="Total dose administered during an interval",
+  pptestcd_cdisc="TDOSE",
+  pptest_cdisc="Total dose administered"
 )
 PKNCA.set.summary(
   name="totdose",
