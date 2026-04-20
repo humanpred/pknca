@@ -23,6 +23,13 @@ assign("interval.cols", list(), envir=.PKNCAEnv)
 #'   to NCA parameter names.  See the details for information on use of
 #'   `formalsmap`.
 #' @param datatype The type of data used for the calculation
+#' @param pptestcd_cdisc The CDISC PPTESTCD code for this parameter.  Can be a
+#'   character string for simple mappings, or a named list for route-dependent
+#'   mappings (e.g., `list(route = list(extravascular = "CLF/FO", intravascular
+#'   = "CLO"))`).  Defaults to `name` if not provided.
+#' @param pptest_cdisc The CDISC PPTEST name for this parameter.  Can be a
+#'   character string or a named list (same structure as `pptestcd_cdisc`).
+#'   Defaults to `desc` if not provided.
 #' @returns NULL (Calling this function has a side effect of changing the
 #'   available intervals for calculations)
 #'
@@ -90,7 +97,9 @@ add.interval.col <- function(name,
                              formalsmap=list(),
                              datatype=c("interval",
                                "individual",
-                               "population")) {
+                               "population"),
+                             pptestcd_cdisc=NULL,
+                             pptest_cdisc=NULL) {
   # Check inputs
   if (!is.character(name)) {
     stop("name must be a character string")
@@ -159,6 +168,21 @@ add.interval.col <- function(name,
       stop("All names for the formalsmap list must be arguments to the function.")
     }
   }
+  # Default CDISC mappings to name/desc when not provided
+  if (is.null(pptestcd_cdisc)) {
+    pptestcd_cdisc <- name
+  }
+  if (is.null(pptest_cdisc)) {
+    pptest_cdisc <- desc
+  }
+  # Validate CDISC arguments: must be a character string or a named list
+  # with a "route" element containing named sub-elements
+  if (!is.character(pptestcd_cdisc) && !is.list(pptestcd_cdisc)) {
+    stop("pptestcd_cdisc must be a character string or a list")
+  }
+  if (!is.character(pptest_cdisc) && !is.list(pptest_cdisc)) {
+    stop("pptest_cdisc must be a character string or a list")
+  }
   current <- get("interval.cols", envir=.PKNCAEnv)
   current[[name]] <-
     list(
@@ -170,7 +194,9 @@ add.interval.col <- function(name,
       sparse=sparse,
       formalsmap=formalsmap,
       depends=depends,
-      datatype=datatype
+      datatype=datatype,
+      pptestcd_cdisc=pptestcd_cdisc,
+      pptest_cdisc=pptest_cdisc
     )
   assign("interval.cols", current, envir=.PKNCAEnv)
 }
