@@ -35,12 +35,14 @@ absent, it is derived from \code{EXSTDTC} and \code{EXENDTC}.}
 Used to derive \code{EXDUR} when not available.}
 
 \item{EXELTM}{Column name for the planned elapsed time since first dose.
+Can be numeric (hours) or ISO 8601 duration (e.g. \code{"PT2H"}).
 If absent, derived from \code{EXSTDTC} and \code{EXRFTDTC}.}
 
 \item{EXTPTNUM}{Column name for the planned time point number}
 
 \item{EXRFTDTC}{Column name for the reference date/time (ISO 8601).
-Used to derive \code{EXELTM} when not available.}
+Used to derive \code{EXELTM} when not available, and to compute
+\code{NFRLT}.}
 
 \item{EXDOSE}{Column name for the dose per administration}
 
@@ -56,4 +58,19 @@ Transforms a CDISC SDTM EX domain data frame into a \code{PKNCAdose} object
 suitable for NCA analysis with PKNCA. Handles date-time parsing, duration
 derivation, elapsed time derivation, route mapping, and relative time
 computation.
+}
+\section{NFRLT derivation}{
+
+When \code{EXRFTDTC} and \code{EXELTM} are available, the function derives
+\code{NFRLT} (nominal time from reference) for each dose record:
+\enumerate{
+  \item \code{EXELTM} is parsed from ISO 8601 duration to numeric hours
+    (if character), or used as-is (if already numeric).
+  \item Per dose grouping (e.g. \code{EXTRT + USUBJID}):
+    \code{nominal_ref = min(EXRFTDTC)}
+  \item \code{NFRLT = (EXRFTDTC + EXELTM) - nominal_ref} (in hours)
+}
+\code{NFRLT} is used as \code{time.nominal} in the PKNCAdose object.
+If \code{EXRFTDTC} or \code{EXELTM} are not available, \code{NFRLT} is
+not derived and \code{time.nominal} is omitted.
 }

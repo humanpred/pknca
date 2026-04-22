@@ -1,3 +1,51 @@
+# --- Tests for shared helpers ------------------------------------------------
+
+test_that("std_dtc_to_rdate parses mixed precision datetimes", {
+  result <- std_dtc_to_rdate(c(
+    "2024-01-01T08:00:00",
+    "2024-01-01T10:30",
+    "2024-01-02T14",
+    "2024-01-03"
+  ))
+  expect_s3_class(result, "POSIXct")
+  expect_equal(length(result), 4)
+  expect_false(any(is.na(result)))
+  # Full precision
+  expect_equal(format(result[1], "%H:%M:%S"), "08:00:00")
+  # Minute precision
+  expect_equal(format(result[2], "%H:%M"), "10:30")
+})
+
+test_that("parse_iso8601_duration handles standard durations", {
+  expect_equal(parse_iso8601_duration("PT1H"), 1)
+  expect_equal(parse_iso8601_duration("PT2H"), 2)
+  expect_equal(parse_iso8601_duration("PT30M"), 0.5)
+  expect_equal(parse_iso8601_duration("PT1H30M"), 1.5)
+  expect_equal(parse_iso8601_duration("PT3600S"), 1)
+  expect_true(is.na(parse_iso8601_duration(NA)))
+  expect_true(is.na(parse_iso8601_duration("not_a_duration")))
+})
+
+test_that("parse_iso8601_duration handles negative elapsed times", {
+  # EXELTM can encode pre-dose times as PT-0.083H
+  expect_equal(parse_iso8601_duration("PT-0.083H"), -0.083)
+})
+
+test_that("parse_iso8601_duration handles vectors", {
+  result <- parse_iso8601_duration(c("PT1H", "PT2H", NA, "PT30M"))
+  expect_equal(result, c(1, 2, NA, 0.5))
+})
+
+test_that("route_cdisc_to_pknca maps routes correctly", {
+  expect_equal(route_cdisc_to_pknca("ORAL"), "extravascular")
+  expect_equal(route_cdisc_to_pknca("INTRAVENOUS INFUSION"), "intravascular")
+  expect_equal(route_cdisc_to_pknca("INTRAVENOUS BOLUS"), "intravascular")
+  expect_equal(route_cdisc_to_pknca("SUBCUTANEOUS"), "extravascular")
+  expect_equal(route_cdisc_to_pknca("INTRAMUSCULAR"), "extravascular")
+})
+
+# --- Tests for ex_to_PKNCAdose -----------------------------------------------
+
 test_that("ex_to_PKNCAdose returns a PKNCAdose object", {
   ex <- data.frame(
     USUBJID = c("SUBJ-001", "SUBJ-001"),
@@ -166,4 +214,104 @@ test_that("ex_to_PKNCAdose works without optional columns", {
   )
   result <- ex_to_PKNCAdose(ex)
   expect_s3_class(result, "PKNCAdose")
+})
+
+test_that("ex_to_PKNCAdose derives NFRLT from EXRFTDTC and numeric EXELTM", {
+  ex <- data.frame(
+    USUBJID  = c("S1", "S1"),
+    EXTRT    = "DRUG A",
+    EXDOSE   = 100,
+    EXDOSU   = "mg",
+    EXROUTE  = "ORAL",
+    EXSTDTC  = c("2024-01-01T08:00:00", "2024-01-02T08:00:00"),
+    EXENDTC  = NA,
+    EXRFTDTC = c("2024-01-01T08:00:00", "2024-01-02T08:00:00"),
+    EXELTM   = c(0, 24),
+    stringsAsFactors = FALSE
+  )
+  result <- ex_to_PKNCAdose(ex)
+  expect_true("NFRLT" %in% names(result$data))
+  # Dose 1: (EXRFTDTC + 0h) - min(EXRFTDTC) = 0
+  # Dose 2: (EXRFTDTC + 24h) - min(EXRFTDTC) = 48
+  #   because EXRFTDTC[2] is already 24h after EXRFTDTC[1], plus EXELTM=24
+  expect_equal(result$data$NFRLT, c(0, 48))
+})
+
+test_that("ex_to_PKNCAdose derives NFRLT from EXRFTDTC and ISO 8601 EXELTM", {
+  ex <- data.frame(
+    USUBJID  = c("S1", "S1"),
+    EXTRT    = "DRUG A",
+    EXDOSE   = 100,
+    EXDOSU   = "mg",
+    EXROUTE  = "ORAL",
+    EXSTDTC  = c("2024-01-01T08:00:00", "2024-01-02T08:00:00"),
+    EXENDTC  = NA,
+    EXRFTDTC = c("2024-01-01T08:00:00", "2024-01-01T08:00:00"),
+    EXELTM   = c("PT0H", "PT24H"),
+    stringsAsFactors = FALSE
+  )
+  result <- ex_to_PKNCAdose(ex)
+  expect_true("NFRLT" %in% names(result$data))
+  # Same EXRFTDTC for both, so:
+  # Dose 1: (EXRFTDTC + 0h) - EXRFTDTC = 0
+  # Dose 2: (EXRFTDTC + 24h) - EXRFTDTC = 24
+  expect_equal(result$data$NFRLT, c(0, 24))
+  # EXELTM should be parsed to numeric
+  expect_equal(result$data$EXELTM, c(0, 24))
+})
+
+test_that("ex_to_PKNCAdose uses NFRLT as time.nominal", {
+  ex <- data.frame(
+    USUBJID  = c("S1", "S1"),
+    EXTRT    = "DRUG A",
+    EXDOSE   = 100,
+    EXDOSU   = "mg",
+    EXROUTE  = "ORAL",
+    EXSTDTC  = c("2024-01-01T08:00:00", "2024-01-02T08:00:00"),
+    EXENDTC  = NA,
+    EXRFTDTC = c("2024-01-01T08:00:00", "2024-01-01T08:00:00"),
+    EXELTM   = c(0, 24),
+    stringsAsFactors = FALSE
+  )
+  result <- ex_to_PKNCAdose(ex)
+  # time.nominal should point to NFRLT
+  expect_equal(result$columns$time.nominal, "NFRLT")
+})
+
+test_that("ex_to_PKNCAdose skips NFRLT when EXRFTDTC is absent", {
+  ex <- data.frame(
+    USUBJID = c("S1", "S1"),
+    EXTRT   = "DRUG A",
+    EXDOSE  = 100,
+    EXDOSU  = "mg",
+    EXROUTE = "ORAL",
+    EXSTDTC = c("2024-01-01T08:00", "2024-01-02T08:00"),
+    EXENDTC = NA,
+    stringsAsFactors = FALSE
+  )
+  result <- ex_to_PKNCAdose(ex)
+  expect_false("NFRLT" %in% names(result$data))
+})
+
+test_that("ex_to_PKNCAdose derives NFRLT per treatment group", {
+  ex <- data.frame(
+    USUBJID  = c("S1", "S1", "S1", "S1"),
+    EXTRT    = c("DRUG A", "DRUG A", "DRUG B", "DRUG B"),
+    EXDOSE   = 100,
+    EXDOSU   = "mg",
+    EXROUTE  = "ORAL",
+    EXSTDTC  = c("2024-01-01T08:00", "2024-01-02T08:00",
+                 "2024-01-01T10:00", "2024-01-02T10:00"),
+    EXENDTC  = NA,
+    EXRFTDTC = c("2024-01-01T08:00", "2024-01-01T08:00",
+                 "2024-01-01T10:00", "2024-01-01T10:00"),
+    EXELTM   = c(0, 24, 0, 24),
+    stringsAsFactors = FALSE
+  )
+  result <- ex_to_PKNCAdose(ex)
+  expect_true("NFRLT" %in% names(result$data))
+  # Each treatment group has its own nominal_ref = min(EXRFTDTC)
+  # DRUG A: NFRLT = (EXRFTDTC + EXELTM) - min(EXRFTDTC_A) = 0, 24
+  # DRUG B: NFRLT = (EXRFTDTC + EXELTM) - min(EXRFTDTC_B) = 0, 24
+  expect_equal(result$data$NFRLT, c(0, 24, 0, 24))
 })
