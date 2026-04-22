@@ -15,6 +15,10 @@ the dosing including dose amount and route.
 * `as.data.frame.PKNCAresults()` gains `out_format = "cdisc"` to translate
   PPTESTCD to CDISC standard codes and add a PPTEST column.  Route-dependent
   translations are resolved from the dose data (#403)
+* When `out_format = "cdisc"` and any parameter has "INT" in its PPTESTCD,
+  PPSTINT and PPENINT columns are added with ISO 8601 durations relative to
+  the last dose time.  The time unit is taken from `timeu_pref` or `timeu`
+  (#403)
 
 ## Bug Fixes
 
