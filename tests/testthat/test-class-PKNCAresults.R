@@ -537,8 +537,11 @@ test_that("as.data.frame.PKNCAresults with out_format='cdisc' adds PPSTINT/PPENI
   o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
   o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(
     start = 0, end = 4, cmax = TRUE, aucint.last = TRUE
-  ))
-  suppressMessages(o_nca <- pk.nca(o_data))
+  ), options = list(allow_partial_missing_units = TRUE))
+  expect_warning(
+    suppressMessages(o_nca <- pk.nca(o_data)),
+    regexp = "Units are provided for some"
+  )
 
   result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
 
@@ -572,8 +575,11 @@ test_that("PPSTINT/PPENINT uses timeu_pref when available", {
   o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
   o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(
     start = 0, end = 4, aucint.last = TRUE
-  ))
-  suppressMessages(o_nca <- pk.nca(o_data))
+  ), options = list(allow_partial_missing_units = TRUE))
+  expect_warning(
+    suppressMessages(o_nca <- pk.nca(o_data)),
+    regexp = "Units are provided for some"
+  )
 
   result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
   int_rows <- grepl("INT", result_cdisc$PPTESTCD, fixed = TRUE)
@@ -594,8 +600,11 @@ test_that("PPSTINT/PPENINT computes relative to last dose time", {
   o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
   o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(
     start = c(0, 5), end = c(5, 9), aucint.last = TRUE
-  ))
-  suppressMessages(o_nca <- pk.nca(o_data))
+  ), options = list(allow_partial_missing_units = TRUE))
+  expect_warning(
+    suppressMessages(o_nca <- pk.nca(o_data)),
+    regexp = "Units are provided for some"
+  )
 
   result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
   int_rows <- grepl("INT", result_cdisc$PPTESTCD, fixed = TRUE)
@@ -623,8 +632,11 @@ test_that("PPSTINT/PPENINT uses day designator for day units", {
   o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
   o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(
     start = 0, end = 3, aucint.last = TRUE
-  ))
-  suppressMessages(o_nca <- pk.nca(o_data))
+  ), options = list(allow_partial_missing_units = TRUE))
+  expect_warning(
+    suppressMessages(o_nca <- pk.nca(o_data)),
+    regexp = "Units are provided for some"
+  )
 
   result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
   int_rows <- grepl("INT", result_cdisc$PPTESTCD, fixed = TRUE)
@@ -654,8 +666,11 @@ test_that("as.data.frame.PKNCAresults default format does not include PPSTINT/PP
   o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
   o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(
     start = 0, end = 4, aucint.last = TRUE
-  ))
-  suppressMessages(o_nca <- pk.nca(o_data))
+  ), options = list(allow_partial_missing_units = TRUE))
+  expect_warning(
+    suppressMessages(o_nca <- pk.nca(o_data)),
+    regexp = "Units are provided for some"
+  )
 
   # Default (long) format should not have PPSTINT/PPENINT
   result_long <- as.data.frame(o_nca)
