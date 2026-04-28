@@ -67,6 +67,10 @@
 <li><p><code>normalize.data.frame()</code> now uses <code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">dplyr::inner_join()</a></code> instead of <code><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge()</a></code> for grouped joins, preserving left-table row order. Missing group validation ensures no rows are silently dropped.</p></li>
 </ul></div>
 <div class="section level3">
+<h3 id="new-features-0-12-2">New features<a class="anchor" aria-label="anchor" href="#new-features-0-12-2"></a></h3>
+<ul><li>Added sparse AUMC function and five sparse AUC parameters (cl.sparse.last, kel.sparse.last, mrt.ivint.last, vss.sparse.last, vz.sparse.last)</li>
+</ul></div>
+<div class="section level3">
 <h3 id="breaking-changes-0-12-2">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-12-2"></a></h3>
 <ul><li><p><code><a href="../reference/pknca_units_table.html">pknca_units_table()</a></code> called on a <code>PKNCAdata</code> object now raises an error if unit columns within the same concentration group contain mixed values (e.g., two different <code>concu</code> strings for the same subject group). Previously, <code>NA</code> values in unit columns were silently ignored and multiple values caused a different error message; now any intra-group inconsistency is detected and reported with the offending group identifiers.</p></li>
 <li><p>Both include and excluding half-life points may not be done for the same interval (<a href="https://github.com/humanpred/pknca/issues/406" class="external-link">#406</a>)</p></li>
@@ -79,7 +83,7 @@
 <code>pk.nca</code> will calculate <code>fe</code> and <code>clr</code> even if their dependent parameters (e.g, <code>ae</code>) were not requested to be calculated in the intervals (<a href="https://github.com/humanpred/pknca/issues/473" class="external-link">#473</a>)</li>
 </ul></div>
 <div class="section level3">
-<h3 id="new-features-0-12-2">New features<a class="anchor" aria-label="anchor" href="#new-features-0-12-2"></a></h3>
+<h3 id="new-features-0-12-2-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-12-2-1"></a></h3>
 <ul><li><p><code><a href="../reference/pknca_units_table.html">pknca_units_table()</a></code> is now an S3 generic with a <code>PKNCAdata</code> method. When called on a <code>PKNCAdata</code> object it automatically builds the unit conversion table from any unit columns stored in the underlying <code>PKNCAconc</code> and <code>PKNCAdose</code> objects, supporting per-analyte or per-specimen unit stratification. The table is also built automatically on <code><a href="../reference/PKNCAdata.html">PKNCAdata()</a></code> construction when no <code>units</code> argument is supplied.</p></li>
 <li><p><code><a href="../reference/pk.calc.half.life.html">pk.calc.half.life()</a></code> now supports Tobit regression for half-life estimation via <code>hl_method = "tobit"</code>. Tobit regression treats BLQ observations as left-censored rather than discarding them, which generally improves half-life accuracy when some measurements are below the LLOQ. The new <code>lloq</code> argument (required for Tobit) accepts a scalar or per-observation vector. New PKNCA options: <code>hl_method</code> (default <code>"log-linear"</code>), <code>tobit_n_points_penalty</code> (default 0), and <code>tobit_optim_control</code>. New NCA output columns: <code>tobit_residual</code>, <code>adj_tobit_residual</code>, and <code>lambda.z.n.points_blq</code>.</p></li>
 <li><p><code><a href="../reference/pk.calc.half.life.html">pk.calc.half.life()</a></code> now returns also <code>lambda.z.corrxy</code>, the correlation between the time and the log-concentration of the lambda z points.</p></li>

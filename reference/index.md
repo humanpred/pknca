@@ -436,6 +436,10 @@
   [`pk.calc.sparse_auclast()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md)
   : Calculate AUC and related parameters using sparse NCA methods
 
+- [`pk.calc.sparse_aumc()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.md)
+  [`pk.calc.sparse_aumclast()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.md)
+  : Calculate AUMC and related parameters using sparse NCA methods
+
 - [`pk.calc.thalf.eff()`](http://humanpred.github.io/pknca/reference/pk.calc.thalf.eff.md)
   : Calculate the effective half-life
 

@@ -1608,6 +1608,93 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $sparse_aumclast
+#> $sparse_aumclast$FUN
+#> [1] "pk.calc.sparse_aumclast"
+#> 
+#> $sparse_aumclast$values
+#> [1] FALSE  TRUE
+#> 
+#> $sparse_aumclast$unit_type
+#> [1] "aumc"
+#> 
+#> $sparse_aumclast$pretty_name
+#> [1] "Sparse AUMClast"
+#> 
+#> $sparse_aumclast$desc
+#> [1] "For sparse PK sampling, the area under the moment curve from the beginning of the interval to the last concentration above the limit of quantification"
+#> 
+#> $sparse_aumclast$sparse
+#> [1] TRUE
+#> 
+#> $sparse_aumclast$formalsmap
+#> list()
+#> 
+#> $sparse_aumclast$depends
+#> [1] "sparse_auclast"
+#> 
+#> $sparse_aumclast$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $sparse_aumc_se
+#> $sparse_aumc_se$FUN
+#> [1] NA
+#> 
+#> $sparse_aumc_se$values
+#> [1] FALSE  TRUE
+#> 
+#> $sparse_aumc_se$unit_type
+#> [1] "aumc"
+#> 
+#> $sparse_aumc_se$pretty_name
+#> [1] "Sparse AUMC standard error"
+#> 
+#> $sparse_aumc_se$desc
+#> [1] "For sparse PK sampling, the standard error of the area under the moment curve"
+#> 
+#> $sparse_aumc_se$sparse
+#> [1] FALSE
+#> 
+#> $sparse_aumc_se$formalsmap
+#> list()
+#> 
+#> $sparse_aumc_se$depends
+#> [1] "sparse_aumclast"
+#> 
+#> $sparse_aumc_se$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $sparse_aumc_df
+#> $sparse_aumc_df$FUN
+#> [1] NA
+#> 
+#> $sparse_aumc_df$values
+#> [1] FALSE  TRUE
+#> 
+#> $sparse_aumc_df$unit_type
+#> [1] "count"
+#> 
+#> $sparse_aumc_df$pretty_name
+#> [1] "Sparse AUMC degrees of freedom"
+#> 
+#> $sparse_aumc_df$desc
+#> [1] "For sparse PK sampling, the degrees of freedom for the AUMC variance estimate"
+#> 
+#> $sparse_aumc_df$sparse
+#> [1] FALSE
+#> 
+#> $sparse_aumc_df$formalsmap
+#> list()
+#> 
+#> $sparse_aumc_df$depends
+#> [1] "sparse_aumclast"
+#> 
+#> $sparse_aumc_df$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $time_above
 #> $time_above$FUN
 #> [1] "pk.calc.time_above"
@@ -2398,6 +2485,105 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $cl.sparse.last
+#> $cl.sparse.last$FUN
+#> [1] "pk.calc.cl"
+#> 
+#> $cl.sparse.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $cl.sparse.last$unit_type
+#> [1] "clearance"
+#> 
+#> $cl.sparse.last$pretty_name
+#> [1] "CL (for sparse data, based on AUClast)"
+#> 
+#> $cl.sparse.last$desc
+#> [1] "Clearance from sparse sampling calculated with population AUClast"
+#> 
+#> $cl.sparse.last$sparse
+#> [1] TRUE
+#> 
+#> $cl.sparse.last$formalsmap
+#> $cl.sparse.last$formalsmap$auc
+#> [1] "sparse_auclast"
+#> 
+#> 
+#> $cl.sparse.last$depends
+#> [1] "sparse_auclast"
+#> 
+#> $cl.sparse.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $mrt.sparse.last
+#> $mrt.sparse.last$FUN
+#> [1] "pk.calc.mrt"
+#> 
+#> $mrt.sparse.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $mrt.sparse.last$unit_type
+#> [1] "time"
+#> 
+#> $mrt.sparse.last$pretty_name
+#> [1] "MRT (for sparse data, based on AUClast)"
+#> 
+#> $mrt.sparse.last$desc
+#> [1] "Mean residence time from sparse sampling"
+#> 
+#> $mrt.sparse.last$sparse
+#> [1] TRUE
+#> 
+#> $mrt.sparse.last$formalsmap
+#> $mrt.sparse.last$formalsmap$auc
+#> [1] "sparse_auclast"
+#> 
+#> $mrt.sparse.last$formalsmap$aumc
+#> [1] "sparse_aumclast"
+#> 
+#> 
+#> $mrt.sparse.last$depends
+#> [1] "sparse_auclast"  "sparse_aumclast"
+#> 
+#> $mrt.sparse.last$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vss.sparse.last
+#> $vss.sparse.last$FUN
+#> [1] "pk.calc.vss"
+#> 
+#> $vss.sparse.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $vss.sparse.last$unit_type
+#> [1] "volume"
+#> 
+#> $vss.sparse.last$pretty_name
+#> [1] "Vss (for sparse data, based on AUClast)"
+#> 
+#> $vss.sparse.last$desc
+#> [1] "Steady-state volume of distribution from sparse sampling"
+#> 
+#> $vss.sparse.last$sparse
+#> [1] TRUE
+#> 
+#> $vss.sparse.last$formalsmap
+#> $vss.sparse.last$formalsmap$cl
+#> [1] "cl.sparse.last"
+#> 
+#> $vss.sparse.last$formalsmap$mrt
+#> [1] "mrt.sparse.last"
+#> 
+#> 
+#> $vss.sparse.last$depends
+#> [1] "cl.sparse.last"  "mrt.sparse.last"
+#> 
+#> $vss.sparse.last$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $aucinf.obs
 #> $aucinf.obs$FUN
 #> [1] "pk.calc.auc.inf.obs"
@@ -2854,6 +3040,37 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> 
+#> $kel.sparse.last
+#> $kel.sparse.last$FUN
+#> [1] "pk.calc.kel"
+#> 
+#> $kel.sparse.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $kel.sparse.last$unit_type
+#> [1] "inverse_time"
+#> 
+#> $kel.sparse.last$pretty_name
+#> [1] "Kel (for sparse data, based on AUClast)"
+#> 
+#> $kel.sparse.last$desc
+#> [1] "Elimination rate (as calculated from the MRTsparse.last)"
+#> 
+#> $kel.sparse.last$sparse
+#> [1] TRUE
+#> 
+#> $kel.sparse.last$formalsmap
+#> $kel.sparse.last$formalsmap$mrt
+#> [1] "mrt.sparse.last"
+#> 
+#> 
+#> $kel.sparse.last$depends
+#> [1] "mrt.sparse.last"
+#> 
+#> $kel.sparse.last$datatype
+#> [1] "interval"
+#> 
+#> 
 #> $cl.obs
 #> $cl.obs$FUN
 #> [1] "pk.calc.cl"
@@ -3185,6 +3402,40 @@ get.interval.cols()
 #> [1] "cl.pred"  "lambda.z"
 #> 
 #> $vz.pred$datatype
+#> [1] "interval"
+#> 
+#> 
+#> $vz.sparse.last
+#> $vz.sparse.last$FUN
+#> [1] "pk.calc.vz"
+#> 
+#> $vz.sparse.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $vz.sparse.last$unit_type
+#> [1] "volume"
+#> 
+#> $vz.sparse.last$pretty_name
+#> [1] "Vz (for sparse data, based on AUClast)"
+#> 
+#> $vz.sparse.last$desc
+#> [1] "Terminal volume of distribution from sparse sampling"
+#> 
+#> $vz.sparse.last$sparse
+#> [1] TRUE
+#> 
+#> $vz.sparse.last$formalsmap
+#> $vz.sparse.last$formalsmap$cl
+#> [1] "cl.sparse.last"
+#> 
+#> $vz.sparse.last$formalsmap$lambda.z
+#> [1] "kel.sparse.last"
+#> 
+#> 
+#> $vz.sparse.last$depends
+#> [1] "cl.sparse.last"  "kel.sparse.last"
+#> 
+#> $vz.sparse.last$datatype
 #> [1] "interval"
 #> 
 #> 

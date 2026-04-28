@@ -1,11 +1,11 @@
-# Calculate AUC and related parameters using sparse NCA methods
+# Calculate AUMC and related parameters using sparse NCA methods
 
-The AUC is calculated as:
+The AUMC is calculated as:
 
 ## Usage
 
 ``` r
-pk.calc.sparse_auc(
+pk.calc.sparse_aumc(
   conc,
   time,
   subject,
@@ -15,7 +15,7 @@ pk.calc.sparse_auc(
   options = list()
 )
 
-pk.calc.sparse_auclast(conc, time, subject, ..., options = list())
+pk.calc.sparse_aumclast(conc, time, subject, ..., options = list())
 ```
 
 ## Arguments
@@ -52,34 +52,49 @@ pk.calc.sparse_auclast(conc, time, subject, ..., options = list())
   List of changes to the default PKNCA options (see
   [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
+## Value
+
+A data.frame with columns:
+
+- sparse_aumc:
+
+  The estimated AUMC
+
+- sparse_aumc_se:
+
+  Standard error of the AUMC estimate
+
+- sparse_aumc_df:
+
+  Degrees of freedom for the variance estimate
+
 ## Details
 
-\$\$AUC=\sum\limits\_{i} w_i \bar{C}\_i\$\$
+\$\$AUMC=\sum\limits\_{i} w_i \overline{t_i C_i}\$\$
 
 Where:
 
-- \\AUC\\:
+- \\AUMC\\:
 
-  is the estimated area under the concentration-time curve
+  is the estimated area under the first moment curve
 
 - \\w_i\\:
 
-  is the weight applied to the concentration at time i (related to the
-  time which it affects, see
+  is the weight applied to time i (same as for AUC, see
   [`sparse_auc_weight_linear()`](http://humanpred.github.io/pknca/reference/sparse_auc_weight_linear.md))
 
-- \\\bar{C}\_i\\:
+- \\\overline{t_i C_i}\\:
 
-  is the average concentration at time i
+  is the average of the moment (time × concentration) at time i
 
 ## Functions
 
-- `pk.calc.sparse_auclast()`: Compute the AUClast for sparse PK
+- `pk.calc.sparse_aumclast()`: Compute the AUMClast for sparse PK
 
 ## See also
 
 Other Sparse Methods:
 [`as_sparse_pk()`](http://humanpred.github.io/pknca/reference/as_sparse_pk.md),
-[`pk.calc.sparse_aumc()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.md),
+[`pk.calc.sparse_auc()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md),
 [`sparse_auc_weight_linear()`](http://humanpred.github.io/pknca/reference/sparse_auc_weight_linear.md),
 [`sparse_mean()`](http://humanpred.github.io/pknca/reference/sparse_mean.md)

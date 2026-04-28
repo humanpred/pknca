@@ -26,14 +26,10 @@ filter(.data, ..., .preserve = FALSE)
 - ...:
 
   \<[`data-masking`](https://rlang.r-lib.org/reference/args_data_masking.html)\>
-  Expressions that return a logical vector, defined in terms of the
-  variables in `.data`. If multiple expressions are included, they are
-  combined with the `&` operator. To combine expressions using `|`
-  instead, wrap them in
-  [`when_any()`](https://dplyr.tidyverse.org/reference/when-any-all.html).
-  Only rows for which all expressions evaluate to `TRUE` are kept (for
-  [`filter()`](https://dplyr.tidyverse.org/reference/filter.html)) or
-  dropped (for `filter_out()`).
+  Expressions that return a logical value, and are defined in terms of
+  the variables in `.data`. If multiple expressions are included, they
+  are combined with the `&` operator. Only rows for which all conditions
+  evaluate to `TRUE` are kept.
 
 - .preserve:
 

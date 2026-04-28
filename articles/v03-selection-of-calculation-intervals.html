@@ -454,7 +454,7 @@ the duration existing within the interval.</p>
 <p>The following parameters are available in an interval. For more
 information about the parameter, see the documentation for the
 function.</p>
-<table class="table">
+<table style="width:100%;" class="table">
 <colgroup>
 <col width="5%">
 <col width="5%">
@@ -874,214 +874,228 @@ predicted Clast</td>
 <td align="left">pk.calc.cl</td>
 </tr>
 <tr class="even">
+<td align="left">cl.sparse.last</td>
+<td align="left">clearance</td>
+<td align="left">Clearance from sparse sampling calculated with
+population AUClast</td>
+<td align="left">pk.calc.cl</td>
+</tr>
+<tr class="odd">
 <td align="left">clast.obs</td>
 <td align="left">conc</td>
 <td align="left">The last concentration observed above the limit of
 quantification</td>
 <td align="left">pk.calc.clast.obs</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">clast.obs.dn</td>
 <td align="left">conc_dosenorm</td>
 <td align="left">Dose normalized clast.obs</td>
 <td align="left">pk.calc.dn</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">clast.pred</td>
 <td align="left">conc</td>
 <td align="left">The concentration at Tlast as predicted by the
 half-life</td>
 <td align="left">See the parameter name half.life</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">clast.pred.dn</td>
 <td align="left">conc_dosenorm</td>
 <td align="left">Dose normalized clast.pred</td>
 <td align="left">pk.calc.dn</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">clr.last</td>
 <td align="left">renal_clearance</td>
 <td align="left">The renal clearance calculated using AUClast</td>
 <td align="left">pk.calc.clr</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">clr.last.dn</td>
 <td align="left">renal_clearance_dosenorm</td>
 <td align="left">Dose normalized clr.last</td>
 <td align="left">pk.calc.dn</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">clr.obs</td>
 <td align="left">renal_clearance</td>
 <td align="left">The renal clearance calculated using AUCinf,obs</td>
 <td align="left">pk.calc.clr</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">clr.obs.dn</td>
 <td align="left">renal_clearance_dosenorm</td>
 <td align="left">Dose normalized clr.obs</td>
 <td align="left">pk.calc.dn</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">clr.pred</td>
 <td align="left">renal_clearance</td>
 <td align="left">The renal clearance calculated using AUCinf,pred</td>
 <td align="left">pk.calc.clr</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">clr.pred.dn</td>
 <td align="left">renal_clearance_dosenorm</td>
 <td align="left">Dose normalized clr.pred</td>
 <td align="left">pk.calc.dn</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">cmax</td>
 <td align="left">conc</td>
 <td align="left">Maximum observed concentration</td>
 <td align="left">pk.calc.cmax</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">cmax.dn</td>
 <td align="left">conc_dosenorm</td>
 <td align="left">Dose normalized cmax</td>
 <td align="left">pk.calc.dn</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">cmin</td>
 <td align="left">conc</td>
 <td align="left">Minimum observed concentration</td>
 <td align="left">pk.calc.cmin</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">cmin.dn</td>
 <td align="left">conc_dosenorm</td>
 <td align="left">Dose normalized cmin</td>
 <td align="left">pk.calc.dn</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">count_conc</td>
 <td align="left">count</td>
 <td align="left">Number of non-missing concentrations for an
 interval</td>
 <td align="left">pk.calc.count_conc</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">count_conc_measured</td>
 <td align="left">count</td>
 <td align="left">Number of measured and non BLQ/ALQ concentrations for
 an interval</td>
 <td align="left">pk.calc.count_conc_measured</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">cstart</td>
 <td align="left">conc</td>
 <td align="left">The predose concentration</td>
 <td align="left">pk.calc.cstart</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">ctrough</td>
 <td align="left">conc</td>
 <td align="left">The trough (end of interval) concentration</td>
 <td align="left">pk.calc.ctrough</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">ctrough.dn</td>
 <td align="left">conc_dosenorm</td>
 <td align="left">Dose normalized ctrough</td>
 <td align="left">pk.calc.dn</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">deg.fluc</td>
 <td align="left">%</td>
 <td align="left">Degree of fluctuation</td>
 <td align="left">pk.calc.deg.fluc</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">end</td>
 <td align="left">time</td>
 <td align="left">Ending time of the interval (potentially infinity)</td>
 <td align="left">(none)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">ermax</td>
 <td align="left">amount_time</td>
 <td align="left">The maximum excretion rate (typically in urine or
 feces)</td>
 <td align="left">pk.calc.ermax</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">ertlst</td>
 <td align="left">time</td>
 <td align="left">The midpoint collection time of the last measurable
 excretion rate (typically in urine or feces)</td>
 <td align="left">pk.calc.ertlst</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">ertmax</td>
 <td align="left">time</td>
 <td align="left">The midpoint collection time of the maximum excretion
 rate (typically in urine or feces)</td>
 <td align="left">pk.calc.ertmax</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">f</td>
 <td align="left">fraction</td>
 <td align="left">Bioavailability or relative bioavailability</td>
 <td align="left">pk.calc.f</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">fe</td>
 <td align="left">amount_dose</td>
 <td align="left">The fraction of the dose excreted</td>
 <td align="left">pk.calc.fe</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">half.life</td>
 <td align="left">time</td>
 <td align="left">The (terminal) half-life</td>
 <td align="left">pk.calc.half.life</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">kel.iv.last</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the intravenous
 MRTlast)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">kel.iv.obs</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the intravenous
 MRTobs)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">kel.iv.pred</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the intravenous
 MRTpred)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">kel.last</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the MRT using
 AUClast)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">kel.obs</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the MRT with
 observed Clast)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">kel.pred</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the MRT with
 predicted Clast)</td>
+<td align="left">pk.calc.kel</td>
+</tr>
+<tr class="even">
+<td align="left">kel.sparse.last</td>
+<td align="left">inverse_time</td>
+<td align="left">Elimination rate (as calculated from the
+MRTsparse.last)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
 <tr class="odd">
@@ -1182,25 +1196,31 @@ Clast</td>
 <td align="left">pk.calc.mrt</td>
 </tr>
 <tr class="odd">
+<td align="left">mrt.sparse.last</td>
+<td align="left">time</td>
+<td align="left">Mean residence time from sparse sampling</td>
+<td align="left">pk.calc.mrt</td>
+</tr>
+<tr class="even">
 <td align="left">ptr</td>
 <td align="left">fraction</td>
 <td align="left">Peak-to-Trough ratio (fraction)</td>
 <td align="left">pk.calc.ptr</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">r.squared</td>
 <td align="left">unitless</td>
 <td align="left">The r^2 value of the half-life calculation</td>
 <td align="left">See the parameter name half.life</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">span.ratio</td>
 <td align="left">fraction</td>
 <td align="left">The ratio of the half-life to the duration used for
 half-life calculation</td>
 <td align="left">See the parameter name half.life</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">sparse_auc_df</td>
 <td align="left">count</td>
 <td align="left">For sparse PK sampling, the standard error degrees of
@@ -1209,7 +1229,7 @@ beginning of the interval to the last concentration above the limit of
 quantification</td>
 <td align="left">See the parameter name sparse_auclast</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">sparse_auc_se</td>
 <td align="left">auc</td>
 <td align="left">For sparse PK sampling, the standard error of the area
@@ -1217,13 +1237,35 @@ under the concentration time curve from the beginning of the interval to
 the last concentration above the limit of quantification</td>
 <td align="left">See the parameter name sparse_auclast</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">sparse_auclast</td>
 <td align="left">auc</td>
 <td align="left">For sparse PK sampling, the area under the
 concentration time curve from the beginning of the interval to the last
 concentration above the limit of quantification</td>
 <td align="left">pk.calc.sparse_auclast</td>
+</tr>
+<tr class="even">
+<td align="left">sparse_aumc_df</td>
+<td align="left">count</td>
+<td align="left">For sparse PK sampling, the degrees of freedom for the
+AUMC variance estimate</td>
+<td align="left">See the parameter name sparse_aumclast</td>
+</tr>
+<tr class="odd">
+<td align="left">sparse_aumc_se</td>
+<td align="left">aumc</td>
+<td align="left">For sparse PK sampling, the standard error of the area
+under the moment curve</td>
+<td align="left">See the parameter name sparse_aumclast</td>
+</tr>
+<tr class="even">
+<td align="left">sparse_aumclast</td>
+<td align="left">aumc</td>
+<td align="left">For sparse PK sampling, the area under the moment curve
+from the beginning of the interval to the last concentration above the
+limit of quantification</td>
+<td align="left">pk.calc.sparse_aumclast</td>
 </tr>
 <tr class="odd">
 <td align="left">start</td>
@@ -1393,17 +1435,31 @@ Clast</td>
 <td align="left">pk.calc.vss</td>
 </tr>
 <tr class="even">
+<td align="left">vss.sparse.last</td>
+<td align="left">volume</td>
+<td align="left">Steady-state volume of distribution from sparse
+sampling</td>
+<td align="left">pk.calc.vss</td>
+</tr>
+<tr class="odd">
 <td align="left">vz.obs</td>
 <td align="left">volume</td>
 <td align="left">The terminal volume of distribution using observed
 Clast</td>
 <td align="left">pk.calc.vz</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">vz.pred</td>
 <td align="left">volume</td>
 <td align="left">The terminal volume of distribution using predicted
 Clast</td>
+<td align="left">pk.calc.vz</td>
+</tr>
+<tr class="odd">
+<td align="left">vz.sparse.last</td>
+<td align="left">volume</td>
+<td align="left">Terminal volume of distribution from sparse
+sampling</td>
 <td align="left">pk.calc.vz</td>
 </tr>
 </tbody>

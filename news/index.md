@@ -24,6 +24,12 @@
   joins, preserving left-table row order. Missing group validation
   ensures no rows are silently dropped.
 
+### New features
+
+- Added sparse AUMC function and five sparse AUC parameters
+  (cl.sparse.last, kel.sparse.last, mrt.ivint.last, vss.sparse.last,
+  vz.sparse.last)
+
 ### Breaking changes
 
 - [`pknca_units_table()`](http://humanpred.github.io/pknca/reference/pknca_units_table.md)

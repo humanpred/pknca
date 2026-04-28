@@ -170,10 +170,10 @@ d_units_auto <- pknca_units_table(concu="ng/mL", doseu="mg", amountu="mg", timeu
 # Show a selection of the units generated
 d_units_auto[d_units_auto$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
 #>          PPORRESU PPTESTCD
-#> 26             hr     tmax
-#> 59          ng/mL     cmax
-#> 91       hr*ng/mL  auclast
-#> 128 mg/(hr*ng/mL)   cl.obs
+#> 27             hr     tmax
+#> 62          ng/mL     cmax
+#> 96       hr*ng/mL  auclast
+#> 136 mg/(hr*ng/mL)   cl.obs
 ```
 
 As you see above, the default units table has a column for the
@@ -203,11 +203,11 @@ d_units_clean <-
 # Show a selection of the units generated
 d_units_clean[d_units_clean$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs", "fe"), ]
 #>          PPORRESU PPTESTCD PPSTRESU conversion_factor
-#> 26             hr     tmax      day      4.166667e-02
-#> 59          ng/mL     cmax    ng/mL      1.000000e+00
-#> 72          ng/mg       fe fraction      1.000000e-06
-#> 91       hr*ng/mL  auclast hr*ng/mL      1.000000e+00
-#> 128 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
+#> 27             hr     tmax      day      4.166667e-02
+#> 62          ng/mL     cmax    ng/mL      1.000000e+00
+#> 75          ng/mg       fe fraction      1.000000e-06
+#> 96       hr*ng/mL  auclast hr*ng/mL      1.000000e+00
+#> 136 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
 ```
 
 Now, the units are much cleaner to look at.
@@ -235,10 +235,10 @@ d_units_clean_manual <-
 # Show a selection of the units generated
 d_units_clean_manual[d_units_clean_manual$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
 #>          PPORRESU PPTESTCD PPSTRESU conversion_factor
-#> 26             hr     tmax      day      4.166667e-02
-#> 59          ng/mL     cmax   nmol/L      8.130081e+00
-#> 91       hr*ng/mL  auclast hr*ng/mL      1.000000e+00
-#> 128 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
+#> 27             hr     tmax      day      4.166667e-02
+#> 62          ng/mL     cmax   nmol/L      8.130081e+00
+#> 96       hr*ng/mL  auclast hr*ng/mL      1.000000e+00
+#> 136 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
 ```
 
 ## How do I add different unit conversions for different analytes?

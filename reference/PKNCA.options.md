@@ -155,36 +155,42 @@ PKNCA.options()
 #>   totdose volpk    ae clr.last clr.obs clr.pred    fe ertlst ermax ertmax
 #> 1   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
 #> 2   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE
-#>   sparse_auclast sparse_auc_se sparse_auc_df time_above aucivlast aucivall
-#> 1          FALSE         FALSE         FALSE      FALSE     FALSE    FALSE
-#> 2          FALSE         FALSE         FALSE      FALSE     FALSE    FALSE
-#>   aucivint.last aucivint.all aucivpbextlast aucivpbextall aucivpbextint.last
-#> 1         FALSE        FALSE          FALSE         FALSE              FALSE
-#> 2         FALSE        FALSE          FALSE         FALSE              FALSE
-#>   aucivpbextint.all half.life r.squared adj.r.squared lambda.z.corrxy lambda.z
-#> 1             FALSE     FALSE     FALSE         FALSE           FALSE    FALSE
-#> 2             FALSE      TRUE     FALSE         FALSE           FALSE    FALSE
-#>   lambda.z.time.first lambda.z.time.last lambda.z.n.points clast.pred
-#> 1               FALSE              FALSE             FALSE      FALSE
-#> 2               FALSE              FALSE             FALSE      FALSE
-#>   span.ratio tobit_residual adj_tobit_residual lambda.z.n.points_blq
-#> 1      FALSE          FALSE              FALSE                 FALSE
-#> 2      FALSE          FALSE              FALSE                 FALSE
-#>   thalf.eff.last thalf.eff.iv.last kel.last kel.iv.last aucinf.obs aucinf.pred
-#> 1          FALSE             FALSE    FALSE       FALSE      FALSE       FALSE
-#> 2          FALSE             FALSE    FALSE       FALSE       TRUE       FALSE
-#>   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.obs.dose aucint.inf.pred
-#> 1       FALSE        FALSE          FALSE               FALSE           FALSE
-#> 2       FALSE        FALSE          FALSE               FALSE           FALSE
-#>   aucint.inf.pred.dose aucivinf.obs aucivinf.pred aucivpbextinf.obs
-#> 1                FALSE        FALSE         FALSE             FALSE
-#> 2                FALSE        FALSE         FALSE             FALSE
-#>   aucivpbextinf.pred aucpext.obs aucpext.pred cl.obs cl.pred mrt.obs mrt.pred
-#> 1              FALSE       FALSE        FALSE  FALSE   FALSE   FALSE    FALSE
-#> 2              FALSE       FALSE        FALSE  FALSE   FALSE   FALSE    FALSE
-#>   mrt.iv.obs mrt.iv.pred mrt.md.obs mrt.md.pred vz.obs vz.pred vss.obs vss.pred
-#> 1      FALSE       FALSE      FALSE       FALSE  FALSE   FALSE   FALSE    FALSE
-#> 2      FALSE       FALSE      FALSE       FALSE  FALSE   FALSE   FALSE    FALSE
+#>   sparse_auclast sparse_auc_se sparse_auc_df sparse_aumclast sparse_aumc_se
+#> 1          FALSE         FALSE         FALSE           FALSE          FALSE
+#> 2          FALSE         FALSE         FALSE           FALSE          FALSE
+#>   sparse_aumc_df time_above aucivlast aucivall aucivint.last aucivint.all
+#> 1          FALSE      FALSE     FALSE    FALSE         FALSE        FALSE
+#> 2          FALSE      FALSE     FALSE    FALSE         FALSE        FALSE
+#>   aucivpbextlast aucivpbextall aucivpbextint.last aucivpbextint.all half.life
+#> 1          FALSE         FALSE              FALSE             FALSE     FALSE
+#> 2          FALSE         FALSE              FALSE             FALSE      TRUE
+#>   r.squared adj.r.squared lambda.z.corrxy lambda.z lambda.z.time.first
+#> 1     FALSE         FALSE           FALSE    FALSE               FALSE
+#> 2     FALSE         FALSE           FALSE    FALSE               FALSE
+#>   lambda.z.time.last lambda.z.n.points clast.pred span.ratio tobit_residual
+#> 1              FALSE             FALSE      FALSE      FALSE          FALSE
+#> 2              FALSE             FALSE      FALSE      FALSE          FALSE
+#>   adj_tobit_residual lambda.z.n.points_blq thalf.eff.last thalf.eff.iv.last
+#> 1              FALSE                 FALSE          FALSE             FALSE
+#> 2              FALSE                 FALSE          FALSE             FALSE
+#>   kel.last kel.iv.last cl.sparse.last mrt.sparse.last vss.sparse.last
+#> 1    FALSE       FALSE          FALSE           FALSE           FALSE
+#> 2    FALSE       FALSE          FALSE           FALSE           FALSE
+#>   aucinf.obs aucinf.pred aumcinf.obs aumcinf.pred aucint.inf.obs
+#> 1      FALSE       FALSE       FALSE        FALSE          FALSE
+#> 2       TRUE       FALSE       FALSE        FALSE          FALSE
+#>   aucint.inf.obs.dose aucint.inf.pred aucint.inf.pred.dose aucivinf.obs
+#> 1               FALSE           FALSE                FALSE        FALSE
+#> 2               FALSE           FALSE                FALSE        FALSE
+#>   aucivinf.pred aucivpbextinf.obs aucivpbextinf.pred aucpext.obs aucpext.pred
+#> 1         FALSE             FALSE              FALSE       FALSE        FALSE
+#> 2         FALSE             FALSE              FALSE       FALSE        FALSE
+#>   kel.sparse.last cl.obs cl.pred mrt.obs mrt.pred mrt.iv.obs mrt.iv.pred
+#> 1           FALSE  FALSE   FALSE   FALSE    FALSE      FALSE       FALSE
+#> 2           FALSE  FALSE   FALSE   FALSE    FALSE      FALSE       FALSE
+#>   mrt.md.obs mrt.md.pred vz.obs vz.pred vz.sparse.last vss.obs vss.pred
+#> 1      FALSE       FALSE  FALSE   FALSE          FALSE   FALSE    FALSE
+#> 2      FALSE       FALSE  FALSE   FALSE          FALSE   FALSE    FALSE
 #>   vss.iv.obs vss.iv.pred vss.md.obs vss.md.pred cav.int.inf.obs
 #> 1      FALSE       FALSE      FALSE       FALSE           FALSE
 #> 2      FALSE       FALSE      FALSE       FALSE           FALSE
