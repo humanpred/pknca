@@ -23,6 +23,7 @@ Suggests:
     covr,
     cowplot,
     ggplot2,
+    ggtibble,
     knitr,
     labeling,
     pander,
