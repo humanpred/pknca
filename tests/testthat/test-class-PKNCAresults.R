@@ -678,3 +678,44 @@ test_that("as.data.frame.PKNCAresults default format does not include PPSTINT/PP
   expect_false("PPENINT" %in% names(result_long))
 })
 
+test_that("pknca_cdisc_get_route falls back to extravascular when no dose data", {
+  d_conc <- data.frame(subject = rep(1, 4), time = 0:3, conc = c(0, 1, 0.5, 0.25))
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 3, cmax = TRUE))
+  suppressMessages(o_nca <- pk.nca(o_data))
+
+  result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
+  expect_true("PPTESTCD" %in% names(result_cdisc))
+  expect_true("CMAX" %in% result_cdisc$PPTESTCD)
+})
+
+test_that("resolve_cdisc_value falls back to first route when route not matched", {
+  # Route-dependent list with unknown route should fall back to first element
+  val <- list(route = list(extravascular = "EV_CODE", intravascular = "IV_CODE"))
+  expect_equal(PKNCA:::resolve_cdisc_value(val, "unknown_route"), "EV_CODE")
+  # Non-list, non-character fallback
+  expect_equal(PKNCA:::resolve_cdisc_value(42, "extravascular"), "42")
+})
+
+test_that("format_iso8601_duration falls back to hours for unknown unit", {
+  expect_equal(PKNCA:::format_iso8601_duration(5, "fortnights"), "PT5H")
+  expect_equal(PKNCA:::format_iso8601_duration(10, NA), "PT10H")
+})
+
+test_that("pknca_cdisc_get_timeu returns NA when no conc data", {
+  # Minimal PKNCAresults with no conc object
+  minimal <- PKNCAresults(data.frame(a = 1), data = list())
+  expect_true(is.na(PKNCA:::pknca_cdisc_get_timeu(minimal)))
+})
+
+test_that("pknca_cdisc_get_last_dose_time returns NA when no dose data", {
+  d_conc <- data.frame(subject = rep(1, 4), time = 0:3, conc = c(0, 1, 0.5, 0.25))
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 3, cmax = TRUE))
+  suppressMessages(o_nca <- pk.nca(o_data))
+
+  ret <- as.data.frame(o_nca)
+  result <- PKNCA:::pknca_cdisc_get_last_dose_time(ret, o_nca)
+  expect_true(all(is.na(result)))
+})
+
