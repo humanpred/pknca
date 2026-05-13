@@ -80,6 +80,7 @@ test_that("sparse_auc and sparse_auclast method attribute", {
   auclast <- pk.calc.sparse_auclast(conc=d_sparse$conc, time=d_sparse$time, subject=seq_len(nrow(d_sparse)))
   expect_equal(attr(auclast$sparse_auclast, "method"),
                c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ"))
+})
 # ============================================================================
 # Sparse AUMC Tests
 # ============================================================================
