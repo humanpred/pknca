@@ -36,6 +36,7 @@
 #' dose time as well), `additional.times`, and `tau`.
 #'
 #' @seealso [interp.extrap.conc()]
+#' @family Superposition
 #' @export
 superposition <- function(conc, ...) {
   UseMethod("superposition", conc)
@@ -122,7 +123,7 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
     if (any(is.na(additional.times))) {
       stop("No additional.times may be NA (to not include any additional.times, enter c() as the function argument)")
     }
-    if (!is.numeric(additional.times) | is.factor(additional.times))
+    if (!is.numeric(additional.times) || is.factor(additional.times))
       stop("additional.times must be a number")
     if (any(additional.times < 0))
       stop("All additional.times must be nonnegative")
@@ -132,9 +133,9 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   # steady.state.tol
   if (length(steady.state.tol) != 1)
     stop("steady.state.tol must be a scalar")
-  if (!is.numeric(steady.state.tol) | is.factor(steady.state.tol) | is.na(steady.state.tol))
+  if (!is.numeric(steady.state.tol) || is.factor(steady.state.tol) || is.na(steady.state.tol))
     stop("steady.state.tol must be a number")
-  if (steady.state.tol <= 0 |
+  if (steady.state.tol <= 0 ||
       steady.state.tol >= 1)
     stop("steady.state.tol must be between 0 and 1, exclusive.")
   if (steady.state.tol > 0.01)
@@ -143,7 +144,7 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   has.lambda.z <- !missing(lambda.z)
   has.clast.pred <- !is.logical(clast.pred)
   has.tlast <- !missing(tlast)
-  if (any(c(has.lambda.z, has.clast.pred, has.tlast)) &
+  if (any(c(has.lambda.z, has.clast.pred, has.tlast)) &&
       !all(c(has.lambda.z, has.clast.pred, has.tlast)))
     stop("Either give all or none of the values for these arguments: lambda.z, clast.pred, and tlast")
   # combine dose.input and dose.amount as applicable to scale the
@@ -195,7 +196,7 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   }
   # cannot continue extrapolating due to missing data (likely due to
   # half-life not calculable)
-  if ((n.tau * tau) > tlast & is.na(lambda.z)) {
+  if ((n.tau * tau) > tlast && is.na(lambda.z)) {
     ret$conc <- NA
   } else {
     # Do the math! (Finally)

@@ -161,7 +161,7 @@ find.tau <- function(x, na.action=stats::na.omit,
       ))
     tau.choices <- all_deltas[all_deltas > 0]
   }
-  if (is.na(ret) &
+  if (is.na(ret) &&
       length(x) > 1) {
     delta_1 <- x[2] - x[1]
     if (all((x[-1] - x[-length(x)]) == delta_1)) {

@@ -27,4 +27,13 @@ The units for the concentration and volume should match such that
 }
 \seealso{
 \code{\link[=pk.calc.clr]{pk.calc.clr()}}, \code{\link[=pk.calc.fe]{pk.calc.fe()}}
+
+Other Urine/Excretion parameters: 
+\code{\link{pk.calc.clr}()},
+\code{\link{pk.calc.ermax}()},
+\code{\link{pk.calc.ertlst}()},
+\code{\link{pk.calc.ertmax}()},
+\code{\link{pk.calc.fe}()},
+\code{\link{pk.calc.volpk}()}
 }
+\concept{Urine/Excretion parameters}

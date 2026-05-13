@@ -99,7 +99,7 @@ add.interval.col <- function(name,
   }
   if (length(FUN) != 1) {
     stop("FUN must have length == 1")
-  } else if (!(is.character(FUN) | is.na(FUN))) {
+  } else if (!(is.character(FUN) || is.na(FUN))) {
     stop("FUN must be a character string or NA")
   }
   if (!is.null(depends)) {
@@ -137,10 +137,10 @@ add.interval.col <- function(name,
   }
   if (!is.list(formalsmap)) {
     stop("formalsmap must be a list")
-  } else if (length(formalsmap) > 0 &
+  } else if (length(formalsmap) > 0 &&
              is.null(names(formalsmap))) {
     stop("formalsmap must be a named list")
-  } else if (length(formalsmap) > 0 &
+  } else if (length(formalsmap) > 0 &&
              is.na(FUN)) {
     stop("formalsmap may not be given when FUN is NA.")
   } else if (!all(nchar(names(formalsmap)) > 0)) {
@@ -151,7 +151,7 @@ add.interval.col <- function(name,
       length(utils::getAnywhere(FUN)$objs) == 0) {
     stop("The function named '", FUN, "' is not defined.  Please define the function before calling add.interval.col.")
   }
-  if (!is.na(FUN) &
+  if (!is.na(FUN) &&
       length(formalsmap) > 0) {
     # Ensure that the formalsmap parameters are all in the list of
     # formal arguments to the function.

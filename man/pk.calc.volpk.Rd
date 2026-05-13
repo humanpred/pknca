@@ -15,3 +15,13 @@ The sum of urine volumes for the interval
 \description{
 Calculate the total urine volume
 }
+\seealso{
+Other Urine/Excretion parameters: 
+\code{\link{pk.calc.ae}()},
+\code{\link{pk.calc.clr}()},
+\code{\link{pk.calc.ermax}()},
+\code{\link{pk.calc.ertlst}()},
+\code{\link{pk.calc.ertmax}()},
+\code{\link{pk.calc.fe}()}
+}
+\concept{Urine/Excretion parameters}

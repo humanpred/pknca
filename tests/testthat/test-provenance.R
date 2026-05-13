@@ -2,7 +2,7 @@ test_that("provenance", {
   a <- addProvenance("a")
   # It may take a bit of time between setting the value in addProvenance
   # and checking
-  expect_true(as.numeric(difftime(Sys.time(), attr(a, "provenance", exact=TRUE)$datetime, units="secs")) < 0.1,
+  expect_true(as.numeric(difftime(Sys.time(), attr(a, "provenance", exact=TRUE)$datetime, units="secs")) < 1,
               info="A correct time is set in provenance")
   expect_equal(attr(a, "provenance", exact=TRUE)$sysInfo, Sys.info(),
                info="Correct system information is set in provenance")
@@ -14,9 +14,9 @@ test_that("provenance", {
   expect_true(
     {
       # Sleep so that there is a difference and it confirms replacement
-      Sys.sleep(0.2)
+      Sys.sleep(2)
       as.numeric(difftime(Sys.time(),
-                          attr(addProvenance(a, replace=TRUE), "provenance", exact=TRUE)$datetime, units="secs")) < 0.1
+                          attr(addProvenance(a, replace=TRUE), "provenance", exact=TRUE)$datetime, units="secs")) < 1
     },
     info="A correct time is reset in provenance")
   

@@ -41,7 +41,6 @@ Useful links:
 \itemize{
   \item \url{https://humanpred.github.io/pknca/}
   \item \url{https://github.com/humanpred/pknca}
-  \item \url{http://humanpred.github.io/pknca/}
   \item Report bugs at \url{https://github.com/humanpred/pknca/issues}
 }
 

@@ -1,11 +1,12 @@
 #' Estimate the concentration at dosing time for an IV bolus dose.
 #'
 #' @inheritParams assert_conc_time
+#' @inheritParams clean.conc.blq
 #' @param time.dose The time when dosing occurred
 #' @param method The order of methods to test (see details)
-#' @param check Check the `conc` and `time` inputs
 #' @returns The estimated concentration at time 0.
 #'
+#' @family NCA parameters for concentrations during the intervals
 #' @details Methods available for interpolation are below, and each
 #' has its own specific function.
 #'
@@ -26,7 +27,7 @@ pk.calc.c0 <- function(conc, time, time.dose=0,
   }
   if (length(time.dose) != 1) {
     stop("time.dose must be a scalar")
-  } else if (!is.numeric(time.dose) | is.factor(time.dose)) {
+  } else if (!is.numeric(time.dose) || is.factor(time.dose)) {
     stop("time.dose must be a number")
   }
   if (is.na(time.dose)) {
@@ -76,7 +77,7 @@ pk.calc.c0.method.logslope <- function(conc, time, time.dose=0,
   c2 <- conc[mask.2]
   t1 <- time[mask.1]
   t2 <- time[mask.2]
-  if (c2 < c1 &
+  if (c2 < c1 &&
       c2 != 0) {
     exp(log(c1) - (log(c2)-log(c1))/(t2-t1)*(t1 - time.dose))
   } else {

@@ -39,7 +39,7 @@ the curve (if log integration is used; not required for AUC or AUMC
 functions)}
 
 \item{fun_inf}{The function to use for extrapolation from the final
-measurement to infinite time (not required for AUC or AUMC functions.}
+measurement to infinite time (not required for AUC or AUMC functions).}
 }
 \description{
 Support function for AUC integration

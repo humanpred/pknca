@@ -87,6 +87,42 @@ test_that("pk.calc.tmax", {
                1)
 })
 
+test_that("pk.calc.tmin", {
+  # No data give a warning and NA
+  expect_warning(expect_warning(
+    v1 <- pk.calc.tmin(numeric(), numeric()),
+    class = "pknca_conc_none"),
+    class = "pknca_time_none"
+  )
+  expect_equal(v1, NA)
+
+  # Either concentration or time is missing, give an error
+  expect_error(
+    suppressWarnings(pk.calc.tmin(conc = numeric())),
+    regexp='argument "time" is missing, with no default'
+  )
+  expect_error(
+    pk.calc.tmin(time=numeric()),
+    regexp='argument "conc" is missing, with no default'
+  )
+
+  # All NA concentrations give NA
+  expect_warning(
+    expect_equal(pk.calc.tmin(c(NA, NA), c(0, 1), first.tmin=TRUE), NA),
+    class = "pknca_conc_all_missing"
+  )
+
+  # It calculates tmin correctly based on the first.tmin option
+  expect_equal(pk.calc.tmin(c(1, 2), c(0, 1), first.tmin=TRUE), 0)
+  expect_equal(pk.calc.tmin(c(1, 2), c(0, 1), first.tmin=FALSE), 0)
+  expect_equal(pk.calc.tmin(c(1, 1), c(0, 1), first.tmin=TRUE), 0)
+  expect_equal(pk.calc.tmin(c(1, 1), c(0, 1), first.tmin=FALSE), 1)
+
+  # Zero concentrations are valid minima
+  expect_equal(pk.calc.tmin(c(0, 1), c(0, 1), first.tmin=TRUE), 0)
+  expect_equal(pk.calc.tmin(c(1, 0), c(0, 1), first.tmin=TRUE), 1)
+})
+
 test_that("pk.calc.tlast", {
   # Either concentration or time is missing, give an error
   expect_error(

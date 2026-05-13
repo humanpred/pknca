@@ -106,14 +106,12 @@ affecting concentrations are in the interval).}
 \item{auc.type}{The type of AUC to compute.  Choices are 'AUCinf', 'AUClast',
 and 'AUCall'.}
 
-\item{conc.blq}{How to handle BLQ values in between the first and last above
-LOQ concentrations. (See \code{\link[=clean.conc.blq]{clean.conc.blq()}} for usage instructions.)}
+\item{conc.blq}{How to handle a BLQ value that is between above LOQ values?
+See details for description.}
 
-\item{conc.na}{How to handle missing concentration values.  (See
-\code{\link[=clean.conc.na]{clean.conc.na()}} for usage instructions.)}
+\item{conc.na}{How to handle NA concentrations.  (See \code{\link[=clean.conc.na]{clean.conc.na()}})}
 
-\item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}, \code{\link[=clean.conc.blq]{clean.conc.blq()}}, and
-\code{\link[=clean.conc.na]{clean.conc.na()}}?}
+\item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 
 \item{...}{Additional arguments passed to \code{pk.calc.auxc} and
 \code{interp.extrap.conc}}
@@ -154,6 +152,7 @@ AUCinf.pred
 \code{\link[=PKNCA.options]{PKNCA.options()}}, \code{\link[=interp.extrap.conc.dose]{interp.extrap.conc.dose()}}
 
 Other AUC calculations: 
+\code{\link{pk.calc.auciv}()},
 \code{\link{pk.calc.auxc}()}
 }
 \concept{AUC calculations}

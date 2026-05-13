@@ -33,3 +33,9 @@ Gabrielsson J, Weiner D. "Section 2.5.1 Derivation of clearance."
 Pharmacokinetic & Pharmacodynamic Data Analysis: Concepts and Applications,
 4th Edition.  Stockholm, Sweden: Swedish Pharmaceutical Press, 2000. 86-7.
 }
+\seealso{
+Other Clearance and volume parameters: 
+\code{\link{pk.calc.kel}()},
+\code{\link{pk.calc.vz}()}
+}
+\concept{Clearance and volume parameters}

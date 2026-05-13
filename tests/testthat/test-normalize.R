@@ -35,7 +35,8 @@ test_that("normalize.PKNCAresults appends normalized parameters", {
 })
 
 test_that("normalize.data.frame errors for missing group", {
-  o_nca2 <- o_nca %>% filter(ID == 1)
+  o_nca2 <- o_nca
+  o_nca2$result <- o_nca$result[o_nca$result$ID == 1, , drop = FALSE]
   norm_table <- data.frame(ID = 2, normalization = 2, unit = "kg")
   expect_error(
     normalize(o_nca2$result, norm_table, parameters = "cmax", suffix = ".wn"),
@@ -47,7 +48,7 @@ test_that("normalize.data.frame errors for duplicate group", {
   df <- data.frame(ID = 1, PPTESTCD = "cmax", PPORRES = 10, PPORRESU = "ng/mL")
   norm_table <- data.frame(ID = c(1, 1), normalization = c(2, 3), unit = "kg")
   expect_error(
-    normalize(o_nca$result, norm_table, parameters = "cmax", suffix = ".wn"),
+    normalize(df, norm_table, parameters = "cmax", suffix = ".wn"),
     "The normalization table contains duplicate groups"
   )
 })
@@ -59,6 +60,15 @@ test_that("normalize.data.frame works for ungrouped data", {
   expect_equal(res$PPORRES, c(5, 10))
   expect_equal(res$PPORRESU, c("(ng/mL)/kg", "(ng/mL)/kg"))
   expect_equal(res$PPTESTCD, c("cmax.wn", "cmax.wn"))
+})
+
+test_that("normalize.data.frame errors for ungrouped data with multiple norm rows", {
+  df <- data.frame(PPTESTCD = "cmax", PPORRES = c(10, 20), PPORRESU = "ng/mL")
+  norm_table <- data.frame(normalization = c(2, 3), unit = "kg")  # 2 rows - should error
+  expect_error(
+    normalize(df, norm_table, parameters = "cmax", suffix = ".wn"),
+    "Normalization table must be a single row for ungrouped data"
+  )
 })
 
 # Create a basic PKNCAresults object for use in tests
@@ -78,14 +88,22 @@ o_dose <- PKNCAdose(d_dose, dose ~ time | ID)
 o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(cmax = TRUE, start = 0, end = 1))
 o_nca <- pk.nca(o_data)
 
+
 test_that("normalize_by_col normalizes by a numeric column in PKNCAconc data", {
-  # Use the highlighted d_conc/o_conc/o_nca objects
-  # Normalize by the 'weight' column (numeric), unit = 'kg', parameter = 'cmax', suffix = '.wn'
   res <- normalize_by_col(o_nca, col = "weight", unit = "kg", parameters = "cmax", suffix = ".wn")
-  # Check that normalization occurred as expected, and values were appended
-  expect_equal(res$result$PPTESTCD,  rep(c("cmax", "cmax.wn"), each = 4))
-  expect_equal(res$result$PPORRES, rep(c(10, 20, 30, 40, 10/2, 20/2, 30/4, 40/4), each = 1))
-  expect_equal(res$result$PPORRESU, rep(c("ng/mL", "(ng/mL)/kg"), each = 4))
+  
+  cmax_rows <- res$result[res$result$PPTESTCD == "cmax", ]
+  wn_rows   <- res$result[res$result$PPTESTCD == "cmax.wn", ]
+  
+  expect_equal(nrow(cmax_rows), 4)
+  expect_equal(nrow(wn_rows), 4)
+  expect_equal(
+    wn_rows$PPORRES[order(wn_rows$ID, wn_rows$analyte)],
+    cmax_rows$PPORRES[order(cmax_rows$ID, cmax_rows$analyte)] / 
+      c(2, 2, 4, 4)  # weight per ID
+  )
+  expect_true(all(wn_rows$PPORRESU == "(ng/mL)/kg"))
+  expect_true(all(cmax_rows$PPORRESU == "ng/mL"))
 })
 
 test_that("normalize_by_col normalizes by a unit column in PKNCAconc data", {

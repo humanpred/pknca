@@ -3,12 +3,15 @@
 \name{pk.calc.mrt}
 \alias{pk.calc.mrt}
 \alias{pk.calc.mrt.iv}
+\alias{pk.calc.mrt.md}
 \title{Calculate the mean residence time (MRT) for single-dose data or linear
 multiple-dose data.}
 \usage{
 pk.calc.mrt(auc, aumc)
 
 pk.calc.mrt.iv(auc, aumc, duration.dose)
+
+pk.calc.mrt.md(auctau, aumctau, aucinf, tau)
 }
 \arguments{
 \item{auc}{the AUC from 0 to infinity or 0 to tau}
@@ -17,6 +20,15 @@ pk.calc.mrt.iv(auc, aumc, duration.dose)
 
 \item{duration.dose}{The duration of the dose (usually an infusion duration
 for an IV infusion)}
+
+\item{auctau}{the AUC from time 0 to the end of the dosing interval (tau).}
+
+\item{aumctau}{the AUMC from time 0 to the end of the dosing interval (tau).}
+
+\item{aucinf}{the AUC from time 0 to infinity (typically using single-dose
+data)}
+
+\item{tau}{The dosing interval}
 }
 \value{
 the numeric value of the mean residence time
@@ -27,12 +39,17 @@ multiple-dose data.
 }
 \details{
 mrt is \code{aumc/auc - duration.dose/2} where \code{duration.dose = 0} for oral administration.
+
+mrt.md is \code{aumctau/auctau + tau*(aucinf-auctau)/auctau} and should
+only be used for multiple dosing with equal intervals between doses.
+Note that if \code{aucinf == auctau} (as would be the assumption with
+linear kinetics), the equation becomes the same as the single-dose MRT.
 }
 \section{Functions}{
 \itemize{
 \item \code{pk.calc.mrt.iv()}: MRT for an IV infusion
 
+\item \code{pk.calc.mrt.md()}: MRT for multiple-dose data with nonlinear kinetics
+
 }}
-\seealso{
-\code{\link[=pk.calc.mrt.md]{pk.calc.mrt.md()}}
-}
+\concept{Mean residence time}

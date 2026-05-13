@@ -241,7 +241,7 @@ getGroups.PKNCAconc <- function(object, form=stats::formula(object), level,
                                 data=as.data.frame(object), sep) {
   grpnames <- unlist(object$columns$groups)
   if (!missing(level))
-    if (is.factor(level) | is.character(level)) {
+    if (is.factor(level) || is.character(level)) {
       level <- as.character(level)
       if (any(!(level %in% grpnames)))
         stop("Not all levels are listed in the group names.  Missing levels are: ",

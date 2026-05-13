@@ -66,6 +66,7 @@ test_that("PKNCA.options", {
       ),
       debug = NULL,
       first.tmax = TRUE,
+      first.tmin = TRUE,
       allow.tmax.in.half.life = FALSE,
       keep_interval_cols = NULL,
       min.hl.points = 3,
@@ -85,7 +86,10 @@ test_that("PKNCA.options", {
           cmax = c(FALSE, TRUE)
         )
       ),
-      allow_partial_missing_units = FALSE
+      allow_partial_missing_units = FALSE,
+      hl_method = "log-linear",
+      tobit_n_points_penalty = 0,
+      tobit_optim_control = list()
     )
   )
 

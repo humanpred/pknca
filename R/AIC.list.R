@@ -42,7 +42,7 @@ AIC.list <- function(object, ..., assess.best=TRUE) {
     tmpAICs$isBest <- NULL
     # Assign the correct rownames to tmpAICs
     if (!(retnames[i] %in% ""))
-      if (nrow(tmpAICs) > 1 |
+      if (nrow(tmpAICs) > 1 ||
           !identical(rownames(tmpAICs), as.character(seq_len(nrow(tmpAICs))))) {
         rownames(tmpAICs) <- paste(retnames[i], rownames(tmpAICs))
       } else {

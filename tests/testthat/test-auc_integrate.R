@@ -243,6 +243,21 @@ test_that("choose_interval_method", {
   )
 })
 
+test_that("choose_interval_method errors when tlast is not exactly in time (floating point)", {
+  # 0.1 + 0.2 != 0.3 in binary floating point, so passing tlast = 0.3 when the
+  # time vector contains 0.1 + 0.2 triggers the idx_tlast length check.
+  expect_error(
+    choose_interval_method(
+      conc = c(1, 2, 0),
+      time = c(0, 0.1 + 0.2, 1),
+      tlast = 0.3,
+      method = "linear",
+      auc.type = "AUClast"
+    ),
+    regexp = "tlast.*not found in time"
+  )
+})
+
 test_that("choose_interval_method expected errors", {
   expect_error(choose_interval_method())
   expect_error(choose_interval_method(conc = "A"))

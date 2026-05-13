@@ -97,3 +97,4 @@ dose time as well), \code{additional.times}, and \code{tau}.
 \seealso{
 \code{\link[=interp.extrap.conc]{interp.extrap.conc()}}
 }
+\concept{Superposition}
