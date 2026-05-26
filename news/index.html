@@ -79,6 +79,8 @@
 <h3 id="bugs-fixed-0-12-2">Bugs fixed<a class="anchor" aria-label="anchor" href="#bugs-fixed-0-12-2"></a></h3>
 <ul><li>
 <code><a href="../reference/get_halflife_points.html">get_halflife_points()</a></code> now correctly accounts for start time != 0 and sets times outside of any interval to <code>NA</code> (<a href="https://github.com/humanpred/pknca/issues/470" class="external-link">#470</a>)</li>
+<li>The <code>PKNCAconc</code> function won’t give an error for a concentration-time check when the issue is due to an excluded point (<a href="https://github.com/humanpred/pknca/issues/310" class="external-link">#310</a>)</li>
+<li>The <code>PKNCAdose</code> function won’t give an error for a missing-time check when the issue is due to an excluded point (<a href="https://github.com/humanpred/pknca/issues/310" class="external-link">#310</a>)</li>
 <li>
 <code>pk.nca</code> will calculate <code>fe</code> and <code>clr</code> even if their dependent parameters (e.g, <code>ae</code>) were not requested to be calculated in the intervals (<a href="https://github.com/humanpred/pknca/issues/473" class="external-link">#473</a>)</li>
 </ul></div>

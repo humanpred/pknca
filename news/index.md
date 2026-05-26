@@ -49,6 +49,12 @@
   now correctly accounts for start time != 0 and sets times outside of
   any interval to `NA`
   ([\#470](https://github.com/humanpred/pknca/issues/470))
+- The `PKNCAconc` function won’t give an error for a concentration-time
+  check when the issue is due to an excluded point
+  ([\#310](https://github.com/humanpred/pknca/issues/310))
+- The `PKNCAdose` function won’t give an error for a missing-time check
+  when the issue is due to an excluded point
+  ([\#310](https://github.com/humanpred/pknca/issues/310))
 - `pk.nca` will calculate `fe` and `clr` even if their dependent
   parameters (e.g, `ae`) were not requested to be calculated in the
   intervals ([\#473](https://github.com/humanpred/pknca/issues/473))
