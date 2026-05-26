@@ -484,6 +484,12 @@ test_that("pknca_units_table for PKNCAdata", {
   expect_false("cmax.dn" %in% units_table$PPTESTCD)
 })
 
+test_that("select_minimal_grouping_cols returns df unchanged when strata_cols is empty", {
+  df <- data.frame(a = 1:3, b = letters[1:3])
+  expect_identical(select_minimal_grouping_cols(df, character(0)), df)
+  expect_identical(select_minimal_grouping_cols(df, c()), df)
+})
+
 test_that("select_minimal_grouping_cols", {
   # Make a dataset where a variable `d` depends on `a` & `b`
   data <- data.frame(
