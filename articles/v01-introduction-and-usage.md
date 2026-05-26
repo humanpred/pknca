@@ -25,6 +25,7 @@ not intended to run directly. For an example to run directly, please see
 example](http://humanpred.github.io/pknca/articles/v02-example-theophylline.md).)
 
 ``` r
+
 library(PKNCA)
 library(dplyr, quietly = TRUE)
 ```
@@ -41,6 +42,7 @@ library(dplyr, quietly = TRUE)
     ##     intersect, setdiff, setequal, union
 
 ``` r
+
 ## Load the PK concentration data
 d_conc <- as.data.frame(datasets::Theoph)
 ## Generate the dosing data
@@ -105,6 +107,7 @@ current value for options can be found by running the command with no
 arguments:
 
 ``` r
+
 PKNCA.options()
 ```
 
@@ -254,6 +257,7 @@ And, to reset the current values to the library defaults, run the
 function with the default argument set to `TRUE`.
 
 ``` r
+
 PKNCA.options(default = TRUE)
 ```
 
@@ -276,6 +280,7 @@ result requires that at least half of the available values are present
 (not missing). The code below will set this example.
 
 ``` r
+
 PKNCA.set.summary(
   name = "cmax",
   description = "geometric mean and geometric coefficient of variation",
@@ -290,6 +295,7 @@ range, and as measurements are often taken with minute resolution and
 recorded in hours, reporting is usually to the second decimal place.
 
 ``` r
+
 PKNCA.set.summary(
   name = "tmax",
   description = "median and range",
@@ -304,6 +310,7 @@ not meet the summarization needs, a user-supplied function can be used
 for rounding.
 
 ``` r
+
 median_na <- function(x) {
   median(x, na.rm = TRUE)
 }
@@ -324,6 +331,7 @@ In some cases multiple parameters may need the same summary functions
 simultaneously by specifying a vector of `name`s.
 
 ``` r
+
 median_na <- function(x) {
   median(x, na.rm = TRUE)
 }
@@ -358,6 +366,7 @@ grouping (so that summaries are grouped by study, treatment, etc., but
 not by subject).
 
 ``` r
+
 ## Generate a faux multi-study, multi-analyte dataset.
 d_conc_parent <- d_conc
 d_conc_parent$Subject <- as.numeric(as.character(d_conc_parent$Subject))
@@ -402,6 +411,7 @@ The parameters requested are specified by setting the entry in a
 data.frame as requested.
 
 ``` r
+
 intervals <-
   data.frame(
     start=0, end=c(24, Inf),
@@ -448,18 +458,19 @@ dosing data.
 Single dose data has a simple interval selection: the option
 `single.dose.aucs` is used from the `PKNCA.options`.
 
-| start | end | auclast | aucall | aumclast | aumcall | aucint.last | aucint.last.dose | aucint.all | aucint.all.dose | c0    | cmax  | cmin  | tmax  | tmin  | tlast | tfirst | clast.obs | cl.last | cl.all | f     | mrt.last | mrt.iv.last | vss.last | vss.iv.last | cav   | cav.int.last | cav.int.all | ctrough | cstart | ptr   | tlag  | deg.fluc | swing | ceoi  | aucabove.predose.all | aucabove.trough.all | count_conc | count_conc_measured | totdose | volpk | ae    | clr.last | clr.obs | clr.pred | fe    | ertlst | ermax | ertmax | sparse_auclast | sparse_auc_se | sparse_auc_df | sparse_aumclast | sparse_aumc_se | sparse_aumc_df | time_above | aucivlast | aucivall | aucivint.last | aucivint.all | aucivpbextlast | aucivpbextall | aucivpbextint.last | aucivpbextint.all | half.life | r.squared | adj.r.squared | lambda.z.corrxy | lambda.z | lambda.z.time.first | lambda.z.time.last | lambda.z.n.points | clast.pred | span.ratio | tobit_residual | adj_tobit_residual | lambda.z.n.points_blq | thalf.eff.last | thalf.eff.iv.last | kel.last | kel.iv.last | cl.sparse.last | mrt.sparse.last | vss.sparse.last | aucinf.obs | aucinf.pred | aumcinf.obs | aumcinf.pred | aucint.inf.obs | aucint.inf.obs.dose | aucint.inf.pred | aucint.inf.pred.dose | aucivinf.obs | aucivinf.pred | aucivpbextinf.obs | aucivpbextinf.pred | aucpext.obs | aucpext.pred | kel.sparse.last | cl.obs | cl.pred | mrt.obs | mrt.pred | mrt.iv.obs | mrt.iv.pred | mrt.md.obs | mrt.md.pred | vz.obs | vz.pred | vz.sparse.last | vss.obs | vss.pred | vss.iv.obs | vss.iv.pred | vss.md.obs | vss.md.pred | cav.int.inf.obs | cav.int.inf.pred | thalf.eff.obs | thalf.eff.pred | thalf.eff.iv.obs | thalf.eff.iv.pred | kel.obs | kel.pred | kel.iv.obs | kel.iv.pred | auclast.dn | aucall.dn | aucinf.obs.dn | aucinf.pred.dn | aumclast.dn | aumcall.dn | aumcinf.obs.dn | aumcinf.pred.dn | cmax.dn | cmin.dn | clast.obs.dn | clast.pred.dn | cav.dn | ctrough.dn | clr.last.dn | clr.obs.dn | clr.pred.dn |
-|------:|----:|:--------|:-------|:---------|:--------|:------------|:-----------------|:-----------|:----------------|:------|:------|:------|:------|:------|:------|:-------|:----------|:--------|:-------|:------|:---------|:------------|:---------|:------------|:------|:-------------|:------------|:--------|:-------|:------|:------|:---------|:------|:------|:---------------------|:--------------------|:-----------|:--------------------|:--------|:------|:------|:---------|:--------|:---------|:------|:-------|:------|:-------|:---------------|:--------------|:--------------|:----------------|:---------------|:---------------|:-----------|:----------|:---------|:--------------|:-------------|:---------------|:--------------|:-------------------|:------------------|:----------|:----------|:--------------|:----------------|:---------|:--------------------|:-------------------|:------------------|:-----------|:-----------|:---------------|:-------------------|:----------------------|:---------------|:------------------|:---------|:------------|:---------------|:----------------|:----------------|:-----------|:------------|:------------|:-------------|:---------------|:--------------------|:----------------|:---------------------|:-------------|:--------------|:------------------|:-------------------|:------------|:-------------|:----------------|:-------|:--------|:--------|:---------|:-----------|:------------|:-----------|:------------|:-------|:--------|:---------------|:--------|:---------|:-----------|:------------|:-----------|:------------|:----------------|:-----------------|:--------------|:---------------|:-----------------|:------------------|:--------|:---------|:-----------|:------------|:-----------|:----------|:--------------|:---------------|:------------|:-----------|:---------------|:----------------|:--------|:--------|:-------------|:--------------|:-------|:-----------|:------------|:-----------|:------------|
-|     0 |  24 | TRUE    | FALSE  | FALSE    | FALSE   | FALSE       | FALSE            | FALSE      | FALSE           | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE  | FALSE     | FALSE   | FALSE  | FALSE | FALSE    | FALSE       | FALSE    | FALSE       | FALSE | FALSE        | FALSE       | FALSE   | FALSE  | FALSE | FALSE | FALSE    | FALSE | FALSE | FALSE                | FALSE               | FALSE      | FALSE               | FALSE   | FALSE | FALSE | FALSE    | FALSE   | FALSE    | FALSE | FALSE  | FALSE | FALSE  | FALSE          | FALSE         | FALSE         | FALSE           | FALSE          | FALSE          | FALSE      | FALSE     | FALSE    | FALSE         | FALSE        | FALSE          | FALSE         | FALSE              | FALSE             | FALSE     | FALSE     | FALSE         | FALSE           | FALSE    | FALSE               | FALSE              | FALSE             | FALSE      | FALSE      | FALSE          | FALSE              | FALSE                 | FALSE          | FALSE             | FALSE    | FALSE       | FALSE          | FALSE           | FALSE           | FALSE      | FALSE       | FALSE       | FALSE        | FALSE          | FALSE               | FALSE           | FALSE                | FALSE        | FALSE         | FALSE             | FALSE              | FALSE       | FALSE        | FALSE           | FALSE  | FALSE   | FALSE   | FALSE    | FALSE      | FALSE       | FALSE      | FALSE       | FALSE  | FALSE   | FALSE          | FALSE   | FALSE    | FALSE      | FALSE       | FALSE      | FALSE       | FALSE           | FALSE            | FALSE         | FALSE          | FALSE            | FALSE             | FALSE   | FALSE    | FALSE      | FALSE       | FALSE      | FALSE     | FALSE         | FALSE          | FALSE       | FALSE      | FALSE          | FALSE           | FALSE   | FALSE   | FALSE        | FALSE         | FALSE  | FALSE      | FALSE       | FALSE      | FALSE       |
-|     0 | Inf | FALSE   | FALSE  | FALSE    | FALSE   | FALSE       | FALSE            | FALSE      | FALSE           | FALSE | TRUE  | FALSE | TRUE  | FALSE | FALSE | FALSE  | FALSE     | FALSE   | FALSE  | FALSE | FALSE    | FALSE       | FALSE    | FALSE       | FALSE | FALSE        | FALSE       | FALSE   | FALSE  | FALSE | FALSE | FALSE    | FALSE | FALSE | FALSE                | FALSE               | FALSE      | FALSE               | FALSE   | FALSE | FALSE | FALSE    | FALSE   | FALSE    | FALSE | FALSE  | FALSE | FALSE  | FALSE          | FALSE         | FALSE         | FALSE           | FALSE          | FALSE          | FALSE      | FALSE     | FALSE    | FALSE         | FALSE        | FALSE          | FALSE         | FALSE              | FALSE             | TRUE      | FALSE     | FALSE         | FALSE           | FALSE    | FALSE               | FALSE              | FALSE             | FALSE      | FALSE      | FALSE          | FALSE              | FALSE                 | FALSE          | FALSE             | FALSE    | FALSE       | FALSE          | FALSE           | FALSE           | TRUE       | FALSE       | FALSE       | FALSE        | FALSE          | FALSE               | FALSE           | FALSE                | FALSE        | FALSE         | FALSE             | FALSE              | FALSE       | FALSE        | FALSE           | FALSE  | FALSE   | FALSE   | FALSE    | FALSE      | FALSE       | FALSE      | FALSE       | FALSE  | FALSE   | FALSE          | FALSE   | FALSE    | FALSE      | FALSE       | FALSE      | FALSE       | FALSE           | FALSE            | FALSE         | FALSE          | FALSE            | FALSE             | FALSE   | FALSE    | FALSE      | FALSE       | FALSE      | FALSE     | FALSE         | FALSE          | FALSE       | FALSE      | FALSE          | FALSE           | FALSE   | FALSE   | FALSE        | FALSE         | FALSE  | FALSE      | FALSE       | FALSE      | FALSE       |
+| start | end | auclast | aucall | aumclast | aumcall | aucint.last | aucint.last.dose | aucint.all | aucint.all.dose | c0 | cmax | cmin | tmax | tmin | tlast | tfirst | clast.obs | cl.last | cl.all | f | mrt.last | mrt.iv.last | vss.last | vss.iv.last | cav | cav.int.last | cav.int.all | ctrough | cstart | ptr | tlag | deg.fluc | swing | ceoi | aucabove.predose.all | aucabove.trough.all | count_conc | count_conc_measured | totdose | volpk | ae | clr.last | clr.obs | clr.pred | fe | ertlst | ermax | ertmax | sparse_auclast | sparse_auc_se | sparse_auc_df | sparse_aumclast | sparse_aumc_se | sparse_aumc_df | time_above | aucivlast | aucivall | aucivint.last | aucivint.all | aucivpbextlast | aucivpbextall | aucivpbextint.last | aucivpbextint.all | half.life | r.squared | adj.r.squared | lambda.z.corrxy | lambda.z | lambda.z.time.first | lambda.z.time.last | lambda.z.n.points | clast.pred | span.ratio | tobit_residual | adj_tobit_residual | lambda.z.n.points_blq | thalf.eff.last | thalf.eff.iv.last | kel.last | kel.iv.last | cl.sparse.last | mrt.sparse.last | vss.sparse.last | aucinf.obs | aucinf.pred | aumcinf.obs | aumcinf.pred | aucint.inf.obs | aucint.inf.obs.dose | aucint.inf.pred | aucint.inf.pred.dose | aucivinf.obs | aucivinf.pred | aucivpbextinf.obs | aucivpbextinf.pred | aucpext.obs | aucpext.pred | kel.sparse.last | cl.obs | cl.pred | mrt.obs | mrt.pred | mrt.iv.obs | mrt.iv.pred | mrt.md.obs | mrt.md.pred | vz.obs | vz.pred | vz.sparse.last | vss.obs | vss.pred | vss.iv.obs | vss.iv.pred | vss.md.obs | vss.md.pred | cav.int.inf.obs | cav.int.inf.pred | thalf.eff.obs | thalf.eff.pred | thalf.eff.iv.obs | thalf.eff.iv.pred | kel.obs | kel.pred | kel.iv.obs | kel.iv.pred | auclast.dn | aucall.dn | aucinf.obs.dn | aucinf.pred.dn | aumclast.dn | aumcall.dn | aumcinf.obs.dn | aumcinf.pred.dn | cmax.dn | cmin.dn | clast.obs.dn | clast.pred.dn | cav.dn | ctrough.dn | clr.last.dn | clr.obs.dn | clr.pred.dn |
+|---:|---:|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
+| 0 | 24 | TRUE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE |
+| 0 | Inf | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | TRUE | FALSE | TRUE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | TRUE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | TRUE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE |
 
 For multiple-dose studies, PKNCA selects one group at a time and
 compares the concentration and dosing times. When there is a
 concentration measurement between doses, an interval row is added. The
-dosing interval ($\tau$) is determined by looking for pattern repeats
+dosing interval ($`\tau`$) is determined by looking for pattern repeats
 within the dosing data using the `find.tau` function.
 
 ``` r
+
 ## find.tau can work when all doses have the same interval...
 dose_times <- seq(0, 168, by=24)
 print(dose_times)
@@ -468,12 +479,14 @@ print(dose_times)
     ## [1]   0  24  48  72  96 120 144 168
 
 ``` r
+
 PKNCA::find.tau(dose_times)
 ```
 
     ## [1] 24
 
 ``` r
+
 ## or when the doses have mixed intervals (10 and 24 hours).
 dose_times <- sort(c(seq(0, 168, by=24),
                      seq(10, 178, by=24)))
@@ -483,19 +496,20 @@ print(dose_times)
     ##  [1]   0  10  24  34  48  58  72  82  96 106 120 130 144 154 168 178
 
 ``` r
+
 PKNCA::find.tau(dose_times)
 ```
 
     ## [1] 24
 
-After finding $\tau$, PKNCA will also look after the last dose (or the
+After finding $`\tau`$, PKNCA will also look after the last dose (or the
 beginning of the last dosing interval), and two additional intervals may
 be added:
 
 - one interval for the dosing interval after the beginning of the last
   dosing interval (if there are concentrations measured in the interval)
 - one interval for the half-life after the last dosing interval (if
-  there are concentration more than $\tau$ after the beginning of the
+  there are concentration more than $`\tau`$ after the beginning of the
   last interval).
 
 One consequence of automatic interval selection is that many rows are
@@ -516,6 +530,7 @@ Fully manual intervals can be specified by providing it to the
 `PKNCAdata` call.
 
 ``` r
+
 intervals_manual <-
   data.frame(
     start=0, end=c(24, Inf),
@@ -535,6 +550,7 @@ To update the automatically-selected intervals, extract the intervals,
 modify them, and put them back.
 
 ``` r
+
 o_data <- PKNCAdata(o_conc, o_dose)
 intervals_manual <- o_data$intervals
 intervals_manual$aucinf.obs[1] <- TRUE
@@ -550,6 +566,7 @@ using the option `"keep_interval_cols"` as follows (where “dosetype”
 must be a column name in the intervals):
 
 ``` r
+
 o_data <- PKNCAdata(o_conc, o_dose, options = list(keep_interval_cols = "dosetype"))
 ```
 
@@ -559,6 +576,7 @@ When NCA has been calculated, you can summarize the results with the
 [`summary()`](https://rdrr.io/r/base/summary.html) function.
 
 ``` r
+
 summary(o_nca)
 ```
 
@@ -594,6 +612,7 @@ Start](http://humanpred.github.io/pknca/articles/Quick%20Start) section
 above:
 
 ``` r
+
 d_conc <- as.data.frame(datasets::Theoph)
 d_dose <- d_conc[d_conc$Time == 0,]
 o_conc <- PKNCAconc(d_conc, conc~Time|Subject)
@@ -616,6 +635,7 @@ then recalculate. You can change the concentration data, and use
 for the changed participants.
 
 ``` r
+
 d_conc_setzero <- as.data.frame(datasets::Theoph)
 d_conc_setzero$conc[d_conc$Time == 0] <- 0
 o_conc_update <- PKNCAconc(d_conc_setzero, conc~Time|Subject)
@@ -642,6 +662,7 @@ o_nca_update <- update(o_nca, o_data_update)
     ## Warning: Subject=12: No concentration data
 
 ``` r
+
 summary(o_nca_update)
 ```
 
@@ -656,6 +677,7 @@ want to calculate `aucint.inf.obs`. We can change the intervals to
 create a new `PKNCAdata` object:
 
 ``` r
+
 d_intervals <- o_data$intervals
 d_intervals$aucint.inf.obs <- d_intervals$auclast
 d_intervals$auclast <- FALSE
@@ -665,6 +687,7 @@ o_data_update <- PKNCAdata(o_conc, o_dose, intervals = d_intervals)
 Then, we can update the `PKNCAresults`:
 
 ``` r
+
 o_nca_update <- update(o_nca, o_data_update)
 ```
 
@@ -672,6 +695,7 @@ o_nca_update <- update(o_nca, o_data_update)
     ## changes detected in data other than source concentration or dose data
 
 ``` r
+
 summary(o_nca_update)
 ```
 

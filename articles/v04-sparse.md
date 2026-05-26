@@ -27,6 +27,7 @@ the curve in serial sacrifice, batch, and complete data designs. Journal
 of Biopharmaceutical Statistics, 9(3):451-464.
 
 ``` r
+
 # Setup the data
 d_sparse <-
     data.frame(
@@ -41,6 +42,7 @@ Look at your data. (This is not technically a required step, but it’s
 good practice.)
 
 ``` r
+
 library(ggplot2)
 ggplot(d_sparse, aes(x=time, y=conc, group=id)) +
   geom_point() +
@@ -60,6 +62,7 @@ single sample, a simple way to handle this is by setting a column with
 sequential numbers and giving that as the subject identifier:
 
 ``` r
+
 d_sparse$id <- 1:nrow(d_sparse)
 ```
 
@@ -68,6 +71,7 @@ d_sparse$id <- 1:nrow(d_sparse)
 Setup PKNCA for calculations and then calculate!
 
 ``` r
+
 library(PKNCA)
 ```
 
@@ -79,6 +83,7 @@ library(PKNCA)
     ##     filter
 
 ``` r
+
 o_conc_sparse <- PKNCAconc(d_sparse, conc~time|id, sparse=TRUE)
 d_intervals <-
   data.frame(
@@ -106,6 +111,7 @@ As with any other PKNCA result, the data are available through the
 [`summary()`](https://rdrr.io/r/base/summary.html) function:
 
 ``` r
+
 summary(o_nca)
 ```
 
@@ -118,6 +124,7 @@ or individual results are available through the
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) function:
 
 ``` r
+
 as.data.frame(o_nca)
 ```
 

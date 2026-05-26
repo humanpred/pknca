@@ -338,221 +338,221 @@ NA.
 
 ## Appendix: Complete Methods Table
 
-| Event Before             | Event At                 | Event After              | Method Used                                                                 |
-|:-------------------------|:-------------------------|:-------------------------|:----------------------------------------------------------------------------|
-| conc                     | conc                     | conc                     | Observed concentration                                                      |
-| conc                     | conc                     | conc_dose                | Observed concentration                                                      |
-| conc                     | conc                     | conc_dose_iv_bolus_after | Observed concentration                                                      |
-| conc                     | conc                     | dose                     | Observed concentration                                                      |
-| conc                     | conc                     | dose_iv_bolus_after      | Observed concentration                                                      |
-| conc                     | conc                     | none                     | Observed concentration                                                      |
-| conc                     | conc_dose                | conc                     | Observed concentration                                                      |
-| conc                     | conc_dose                | conc_dose                | Observed concentration                                                      |
-| conc                     | conc_dose                | conc_dose_iv_bolus_after | Observed concentration                                                      |
-| conc                     | conc_dose                | dose                     | Observed concentration                                                      |
-| conc                     | conc_dose                | dose_iv_bolus_after      | Observed concentration                                                      |
-| conc                     | conc_dose                | none                     | Observed concentration                                                      |
-| conc                     | conc_dose_iv_bolus_after | conc                     | Observed concentration                                                      |
-| conc                     | conc_dose_iv_bolus_after | conc_dose                | Observed concentration                                                      |
-| conc                     | conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| conc                     | conc_dose_iv_bolus_after | dose                     | Observed concentration                                                      |
-| conc                     | conc_dose_iv_bolus_after | dose_iv_bolus_after      | Impossible combinations                                                     |
-| conc                     | conc_dose_iv_bolus_after | none                     | Observed concentration                                                      |
-| conc                     | dose                     | conc                     | Extrapolation                                                               |
-| conc                     | dose                     | conc_dose                | Extrapolation                                                               |
-| conc                     | dose                     | conc_dose_iv_bolus_after | Extrapolation                                                               |
-| conc                     | dose                     | dose                     | Extrapolation                                                               |
-| conc                     | dose                     | dose_iv_bolus_after      | Extrapolation                                                               |
-| conc                     | dose                     | none                     | Extrapolation                                                               |
-| conc                     | dose_iv_bolus_after      | conc                     | Immediately after an IV bolus with a concentration next                     |
-| conc                     | dose_iv_bolus_after      | conc_dose                | Immediately after an IV bolus with a concentration next                     |
-| conc                     | dose_iv_bolus_after      | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| conc                     | dose_iv_bolus_after      | dose                     | Immediately after an IV bolus without a concentration next                  |
-| conc                     | dose_iv_bolus_after      | dose_iv_bolus_after      | Impossible combinations                                                     |
-| conc                     | dose_iv_bolus_after      | none                     | Immediately after an IV bolus without a concentration next                  |
-| conc                     | output_only              | conc                     | Interpolation                                                               |
-| conc                     | output_only              | conc_dose                | Interpolation                                                               |
-| conc                     | output_only              | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| conc                     | output_only              | dose                     | Extrapolation                                                               |
-| conc                     | output_only              | dose_iv_bolus_after      | Impossible combinations                                                     |
-| conc                     | output_only              | none                     | Extrapolation                                                               |
-| conc_dose                | conc                     | conc                     | Observed concentration                                                      |
-| conc_dose                | conc                     | conc_dose                | Observed concentration                                                      |
-| conc_dose                | conc                     | conc_dose_iv_bolus_after | Observed concentration                                                      |
-| conc_dose                | conc                     | dose                     | Observed concentration                                                      |
-| conc_dose                | conc                     | dose_iv_bolus_after      | Observed concentration                                                      |
-| conc_dose                | conc                     | none                     | Observed concentration                                                      |
-| conc_dose                | conc_dose                | conc                     | Observed concentration                                                      |
-| conc_dose                | conc_dose                | conc_dose                | Observed concentration                                                      |
-| conc_dose                | conc_dose                | conc_dose_iv_bolus_after | Observed concentration                                                      |
-| conc_dose                | conc_dose                | dose                     | Observed concentration                                                      |
-| conc_dose                | conc_dose                | dose_iv_bolus_after      | Observed concentration                                                      |
-| conc_dose                | conc_dose                | none                     | Observed concentration                                                      |
-| conc_dose                | conc_dose_iv_bolus_after | conc                     | Observed concentration                                                      |
-| conc_dose                | conc_dose_iv_bolus_after | conc_dose                | Observed concentration                                                      |
-| conc_dose                | conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| conc_dose                | conc_dose_iv_bolus_after | dose                     | Observed concentration                                                      |
-| conc_dose                | conc_dose_iv_bolus_after | dose_iv_bolus_after      | Impossible combinations                                                     |
-| conc_dose                | conc_dose_iv_bolus_after | none                     | Observed concentration                                                      |
-| conc_dose                | dose                     | conc                     | Doses with no concentrations between                                        |
-| conc_dose                | dose                     | conc_dose                | Doses with no concentrations between                                        |
-| conc_dose                | dose                     | conc_dose_iv_bolus_after | Doses with no concentrations between                                        |
-| conc_dose                | dose                     | dose                     | Doses with no concentrations between                                        |
-| conc_dose                | dose                     | dose_iv_bolus_after      | Doses with no concentrations between                                        |
-| conc_dose                | dose                     | none                     | Doses with no concentrations between                                        |
-| conc_dose                | dose_iv_bolus_after      | conc                     | Immediately after an IV bolus with a concentration next                     |
-| conc_dose                | dose_iv_bolus_after      | conc_dose                | Immediately after an IV bolus with a concentration next                     |
-| conc_dose                | dose_iv_bolus_after      | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| conc_dose                | dose_iv_bolus_after      | dose                     | Immediately after an IV bolus without a concentration next                  |
-| conc_dose                | dose_iv_bolus_after      | dose_iv_bolus_after      | Impossible combinations                                                     |
-| conc_dose                | dose_iv_bolus_after      | none                     | Immediately after an IV bolus without a concentration next                  |
-| conc_dose                | output_only              | conc                     | Interpolation                                                               |
-| conc_dose                | output_only              | conc_dose                | Doses with no concentrations between                                        |
-| conc_dose                | output_only              | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| conc_dose                | output_only              | dose                     | Doses with no concentrations between                                        |
-| conc_dose                | output_only              | dose_iv_bolus_after      | Impossible combinations                                                     |
-| conc_dose                | output_only              | none                     | Dose as the last event in the timeline and requesting a concentration after |
-| conc_dose_iv_bolus_after | conc                     | conc                     | Observed concentration                                                      |
-| conc_dose_iv_bolus_after | conc                     | conc_dose                | Observed concentration                                                      |
-| conc_dose_iv_bolus_after | conc                     | conc_dose_iv_bolus_after | Observed concentration                                                      |
-| conc_dose_iv_bolus_after | conc                     | dose                     | Observed concentration                                                      |
-| conc_dose_iv_bolus_after | conc                     | dose_iv_bolus_after      | Observed concentration                                                      |
-| conc_dose_iv_bolus_after | conc                     | none                     | Observed concentration                                                      |
-| conc_dose_iv_bolus_after | conc_dose                | conc                     | Observed concentration                                                      |
-| conc_dose_iv_bolus_after | conc_dose                | conc_dose                | Observed concentration                                                      |
-| conc_dose_iv_bolus_after | conc_dose                | conc_dose_iv_bolus_after | Observed concentration                                                      |
-| conc_dose_iv_bolus_after | conc_dose                | dose                     | Observed concentration                                                      |
-| conc_dose_iv_bolus_after | conc_dose                | dose_iv_bolus_after      | Observed concentration                                                      |
-| conc_dose_iv_bolus_after | conc_dose                | none                     | Observed concentration                                                      |
-| conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | conc                     | Impossible combinations                                                     |
-| conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | conc_dose                | Impossible combinations                                                     |
-| conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | dose                     | Impossible combinations                                                     |
-| conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | dose_iv_bolus_after      | Impossible combinations                                                     |
-| conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | none                     | Impossible combinations                                                     |
-| conc_dose_iv_bolus_after | dose                     | conc                     | Extrapolation                                                               |
-| conc_dose_iv_bolus_after | dose                     | conc_dose                | Extrapolation                                                               |
-| conc_dose_iv_bolus_after | dose                     | conc_dose_iv_bolus_after | Extrapolation                                                               |
-| conc_dose_iv_bolus_after | dose                     | dose                     | Extrapolation                                                               |
-| conc_dose_iv_bolus_after | dose                     | dose_iv_bolus_after      | Extrapolation                                                               |
-| conc_dose_iv_bolus_after | dose                     | none                     | Extrapolation                                                               |
-| conc_dose_iv_bolus_after | dose_iv_bolus_after      | conc                     | Impossible combinations                                                     |
-| conc_dose_iv_bolus_after | dose_iv_bolus_after      | conc_dose                | Impossible combinations                                                     |
-| conc_dose_iv_bolus_after | dose_iv_bolus_after      | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| conc_dose_iv_bolus_after | dose_iv_bolus_after      | dose                     | Impossible combinations                                                     |
-| conc_dose_iv_bolus_after | dose_iv_bolus_after      | dose_iv_bolus_after      | Impossible combinations                                                     |
-| conc_dose_iv_bolus_after | dose_iv_bolus_after      | none                     | Impossible combinations                                                     |
-| conc_dose_iv_bolus_after | output_only              | conc                     | Interpolation                                                               |
-| conc_dose_iv_bolus_after | output_only              | conc_dose                | Interpolation                                                               |
-| conc_dose_iv_bolus_after | output_only              | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| conc_dose_iv_bolus_after | output_only              | dose                     | Extrapolation                                                               |
-| conc_dose_iv_bolus_after | output_only              | dose_iv_bolus_after      | Impossible combinations                                                     |
-| conc_dose_iv_bolus_after | output_only              | none                     | Extrapolation                                                               |
-| dose                     | conc                     | conc                     | Observed concentration                                                      |
-| dose                     | conc                     | conc_dose                | Observed concentration                                                      |
-| dose                     | conc                     | conc_dose_iv_bolus_after | Observed concentration                                                      |
-| dose                     | conc                     | dose                     | Observed concentration                                                      |
-| dose                     | conc                     | dose_iv_bolus_after      | Observed concentration                                                      |
-| dose                     | conc                     | none                     | Observed concentration                                                      |
-| dose                     | conc_dose                | conc                     | Observed concentration                                                      |
-| dose                     | conc_dose                | conc_dose                | Observed concentration                                                      |
-| dose                     | conc_dose                | conc_dose_iv_bolus_after | Observed concentration                                                      |
-| dose                     | conc_dose                | dose                     | Observed concentration                                                      |
-| dose                     | conc_dose                | dose_iv_bolus_after      | Observed concentration                                                      |
-| dose                     | conc_dose                | none                     | Observed concentration                                                      |
-| dose                     | conc_dose_iv_bolus_after | conc                     | Observed concentration                                                      |
-| dose                     | conc_dose_iv_bolus_after | conc_dose                | Observed concentration                                                      |
-| dose                     | conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| dose                     | conc_dose_iv_bolus_after | dose                     | Observed concentration                                                      |
-| dose                     | conc_dose_iv_bolus_after | dose_iv_bolus_after      | Impossible combinations                                                     |
-| dose                     | conc_dose_iv_bolus_after | none                     | Observed concentration                                                      |
-| dose                     | dose                     | conc                     | Doses with no concentrations between                                        |
-| dose                     | dose                     | conc_dose                | Doses with no concentrations between                                        |
-| dose                     | dose                     | conc_dose_iv_bolus_after | Doses with no concentrations between                                        |
-| dose                     | dose                     | dose                     | Doses with no concentrations between                                        |
-| dose                     | dose                     | dose_iv_bolus_after      | Doses with no concentrations between                                        |
-| dose                     | dose                     | none                     | Doses with no concentrations between                                        |
-| dose                     | dose_iv_bolus_after      | conc                     | Immediately after an IV bolus with a concentration next                     |
-| dose                     | dose_iv_bolus_after      | conc_dose                | Immediately after an IV bolus with a concentration next                     |
-| dose                     | dose_iv_bolus_after      | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| dose                     | dose_iv_bolus_after      | dose                     | Immediately after an IV bolus without a concentration next                  |
-| dose                     | dose_iv_bolus_after      | dose_iv_bolus_after      | Impossible combinations                                                     |
-| dose                     | dose_iv_bolus_after      | none                     | Immediately after an IV bolus without a concentration next                  |
-| dose                     | output_only              | conc                     | Dose before, concentration after without a dose                             |
-| dose                     | output_only              | conc_dose                | Doses with no concentrations between                                        |
-| dose                     | output_only              | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| dose                     | output_only              | dose                     | Doses with no concentrations between                                        |
-| dose                     | output_only              | dose_iv_bolus_after      | Impossible combinations                                                     |
-| dose                     | output_only              | none                     | Dose as the last event in the timeline and requesting a concentration after |
-| dose_iv_bolus_after      | conc                     | conc                     | Observed concentration                                                      |
-| dose_iv_bolus_after      | conc                     | conc_dose                | Observed concentration                                                      |
-| dose_iv_bolus_after      | conc                     | conc_dose_iv_bolus_after | Observed concentration                                                      |
-| dose_iv_bolus_after      | conc                     | dose                     | Observed concentration                                                      |
-| dose_iv_bolus_after      | conc                     | dose_iv_bolus_after      | Observed concentration                                                      |
-| dose_iv_bolus_after      | conc                     | none                     | Observed concentration                                                      |
-| dose_iv_bolus_after      | conc_dose                | conc                     | Observed concentration                                                      |
-| dose_iv_bolus_after      | conc_dose                | conc_dose                | Observed concentration                                                      |
-| dose_iv_bolus_after      | conc_dose                | conc_dose_iv_bolus_after | Observed concentration                                                      |
-| dose_iv_bolus_after      | conc_dose                | dose                     | Observed concentration                                                      |
-| dose_iv_bolus_after      | conc_dose                | dose_iv_bolus_after      | Observed concentration                                                      |
-| dose_iv_bolus_after      | conc_dose                | none                     | Observed concentration                                                      |
-| dose_iv_bolus_after      | conc_dose_iv_bolus_after | conc                     | Impossible combinations                                                     |
-| dose_iv_bolus_after      | conc_dose_iv_bolus_after | conc_dose                | Impossible combinations                                                     |
-| dose_iv_bolus_after      | conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| dose_iv_bolus_after      | conc_dose_iv_bolus_after | dose                     | Impossible combinations                                                     |
-| dose_iv_bolus_after      | conc_dose_iv_bolus_after | dose_iv_bolus_after      | Impossible combinations                                                     |
-| dose_iv_bolus_after      | conc_dose_iv_bolus_after | none                     | Impossible combinations                                                     |
-| dose_iv_bolus_after      | dose                     | conc                     | Immediately after an IV bolus without a concentration next                  |
-| dose_iv_bolus_after      | dose                     | conc_dose                | Immediately after an IV bolus without a concentration next                  |
-| dose_iv_bolus_after      | dose                     | conc_dose_iv_bolus_after | Immediately after an IV bolus without a concentration next                  |
-| dose_iv_bolus_after      | dose                     | dose                     | Immediately after an IV bolus without a concentration next                  |
-| dose_iv_bolus_after      | dose                     | dose_iv_bolus_after      | Immediately after an IV bolus without a concentration next                  |
-| dose_iv_bolus_after      | dose                     | none                     | Immediately after an IV bolus without a concentration next                  |
-| dose_iv_bolus_after      | dose_iv_bolus_after      | conc                     | Impossible combinations                                                     |
-| dose_iv_bolus_after      | dose_iv_bolus_after      | conc_dose                | Impossible combinations                                                     |
-| dose_iv_bolus_after      | dose_iv_bolus_after      | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| dose_iv_bolus_after      | dose_iv_bolus_after      | dose                     | Impossible combinations                                                     |
-| dose_iv_bolus_after      | dose_iv_bolus_after      | dose_iv_bolus_after      | Impossible combinations                                                     |
-| dose_iv_bolus_after      | dose_iv_bolus_after      | none                     | Impossible combinations                                                     |
-| dose_iv_bolus_after      | output_only              | conc                     | After an IV bolus with a concentration next                                 |
-| dose_iv_bolus_after      | output_only              | conc_dose                | After an IV bolus with a concentration next                                 |
-| dose_iv_bolus_after      | output_only              | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| dose_iv_bolus_after      | output_only              | dose                     | After an IV bolus without a concentration next                              |
-| dose_iv_bolus_after      | output_only              | dose_iv_bolus_after      | Impossible combinations                                                     |
-| dose_iv_bolus_after      | output_only              | none                     | After an IV bolus without a concentration next                              |
-| none                     | conc                     | conc                     | Observed concentration                                                      |
-| none                     | conc                     | conc_dose                | Observed concentration                                                      |
-| none                     | conc                     | conc_dose_iv_bolus_after | Observed concentration                                                      |
-| none                     | conc                     | dose                     | Observed concentration                                                      |
-| none                     | conc                     | dose_iv_bolus_after      | Observed concentration                                                      |
-| none                     | conc                     | none                     | Observed concentration                                                      |
-| none                     | conc_dose                | conc                     | Observed concentration                                                      |
-| none                     | conc_dose                | conc_dose                | Observed concentration                                                      |
-| none                     | conc_dose                | conc_dose_iv_bolus_after | Observed concentration                                                      |
-| none                     | conc_dose                | dose                     | Observed concentration                                                      |
-| none                     | conc_dose                | dose_iv_bolus_after      | Observed concentration                                                      |
-| none                     | conc_dose                | none                     | Observed concentration                                                      |
-| none                     | conc_dose_iv_bolus_after | conc                     | Observed concentration                                                      |
-| none                     | conc_dose_iv_bolus_after | conc_dose                | Observed concentration                                                      |
-| none                     | conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| none                     | conc_dose_iv_bolus_after | dose                     | Observed concentration                                                      |
-| none                     | conc_dose_iv_bolus_after | dose_iv_bolus_after      | Impossible combinations                                                     |
-| none                     | conc_dose_iv_bolus_after | none                     | Observed concentration                                                      |
-| none                     | dose                     | conc                     | Before all events                                                           |
-| none                     | dose                     | conc_dose                | Before all events                                                           |
-| none                     | dose                     | conc_dose_iv_bolus_after | Before all events                                                           |
-| none                     | dose                     | dose                     | Before all events                                                           |
-| none                     | dose                     | dose_iv_bolus_after      | Before all events                                                           |
-| none                     | dose                     | none                     | Before all events                                                           |
-| none                     | dose_iv_bolus_after      | conc                     | Immediately after an IV bolus with a concentration next                     |
-| none                     | dose_iv_bolus_after      | conc_dose                | Immediately after an IV bolus with a concentration next                     |
-| none                     | dose_iv_bolus_after      | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| none                     | dose_iv_bolus_after      | dose                     | Immediately after an IV bolus without a concentration next                  |
-| none                     | dose_iv_bolus_after      | dose_iv_bolus_after      | Impossible combinations                                                     |
-| none                     | dose_iv_bolus_after      | none                     | Immediately after an IV bolus without a concentration next                  |
-| none                     | output_only              | conc                     | Before all events                                                           |
-| none                     | output_only              | conc_dose                | Before all events                                                           |
-| none                     | output_only              | conc_dose_iv_bolus_after | Impossible combinations                                                     |
-| none                     | output_only              | dose                     | Before all events                                                           |
-| none                     | output_only              | dose_iv_bolus_after      | Impossible combinations                                                     |
-| none                     | output_only              | none                     | Before all events                                                           |
+| Event Before | Event At | Event After | Method Used |
+|:---|:---|:---|:---|
+| conc | conc | conc | Observed concentration |
+| conc | conc | conc_dose | Observed concentration |
+| conc | conc | conc_dose_iv_bolus_after | Observed concentration |
+| conc | conc | dose | Observed concentration |
+| conc | conc | dose_iv_bolus_after | Observed concentration |
+| conc | conc | none | Observed concentration |
+| conc | conc_dose | conc | Observed concentration |
+| conc | conc_dose | conc_dose | Observed concentration |
+| conc | conc_dose | conc_dose_iv_bolus_after | Observed concentration |
+| conc | conc_dose | dose | Observed concentration |
+| conc | conc_dose | dose_iv_bolus_after | Observed concentration |
+| conc | conc_dose | none | Observed concentration |
+| conc | conc_dose_iv_bolus_after | conc | Observed concentration |
+| conc | conc_dose_iv_bolus_after | conc_dose | Observed concentration |
+| conc | conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations |
+| conc | conc_dose_iv_bolus_after | dose | Observed concentration |
+| conc | conc_dose_iv_bolus_after | dose_iv_bolus_after | Impossible combinations |
+| conc | conc_dose_iv_bolus_after | none | Observed concentration |
+| conc | dose | conc | Extrapolation |
+| conc | dose | conc_dose | Extrapolation |
+| conc | dose | conc_dose_iv_bolus_after | Extrapolation |
+| conc | dose | dose | Extrapolation |
+| conc | dose | dose_iv_bolus_after | Extrapolation |
+| conc | dose | none | Extrapolation |
+| conc | dose_iv_bolus_after | conc | Immediately after an IV bolus with a concentration next |
+| conc | dose_iv_bolus_after | conc_dose | Immediately after an IV bolus with a concentration next |
+| conc | dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations |
+| conc | dose_iv_bolus_after | dose | Immediately after an IV bolus without a concentration next |
+| conc | dose_iv_bolus_after | dose_iv_bolus_after | Impossible combinations |
+| conc | dose_iv_bolus_after | none | Immediately after an IV bolus without a concentration next |
+| conc | output_only | conc | Interpolation |
+| conc | output_only | conc_dose | Interpolation |
+| conc | output_only | conc_dose_iv_bolus_after | Impossible combinations |
+| conc | output_only | dose | Extrapolation |
+| conc | output_only | dose_iv_bolus_after | Impossible combinations |
+| conc | output_only | none | Extrapolation |
+| conc_dose | conc | conc | Observed concentration |
+| conc_dose | conc | conc_dose | Observed concentration |
+| conc_dose | conc | conc_dose_iv_bolus_after | Observed concentration |
+| conc_dose | conc | dose | Observed concentration |
+| conc_dose | conc | dose_iv_bolus_after | Observed concentration |
+| conc_dose | conc | none | Observed concentration |
+| conc_dose | conc_dose | conc | Observed concentration |
+| conc_dose | conc_dose | conc_dose | Observed concentration |
+| conc_dose | conc_dose | conc_dose_iv_bolus_after | Observed concentration |
+| conc_dose | conc_dose | dose | Observed concentration |
+| conc_dose | conc_dose | dose_iv_bolus_after | Observed concentration |
+| conc_dose | conc_dose | none | Observed concentration |
+| conc_dose | conc_dose_iv_bolus_after | conc | Observed concentration |
+| conc_dose | conc_dose_iv_bolus_after | conc_dose | Observed concentration |
+| conc_dose | conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations |
+| conc_dose | conc_dose_iv_bolus_after | dose | Observed concentration |
+| conc_dose | conc_dose_iv_bolus_after | dose_iv_bolus_after | Impossible combinations |
+| conc_dose | conc_dose_iv_bolus_after | none | Observed concentration |
+| conc_dose | dose | conc | Doses with no concentrations between |
+| conc_dose | dose | conc_dose | Doses with no concentrations between |
+| conc_dose | dose | conc_dose_iv_bolus_after | Doses with no concentrations between |
+| conc_dose | dose | dose | Doses with no concentrations between |
+| conc_dose | dose | dose_iv_bolus_after | Doses with no concentrations between |
+| conc_dose | dose | none | Doses with no concentrations between |
+| conc_dose | dose_iv_bolus_after | conc | Immediately after an IV bolus with a concentration next |
+| conc_dose | dose_iv_bolus_after | conc_dose | Immediately after an IV bolus with a concentration next |
+| conc_dose | dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations |
+| conc_dose | dose_iv_bolus_after | dose | Immediately after an IV bolus without a concentration next |
+| conc_dose | dose_iv_bolus_after | dose_iv_bolus_after | Impossible combinations |
+| conc_dose | dose_iv_bolus_after | none | Immediately after an IV bolus without a concentration next |
+| conc_dose | output_only | conc | Interpolation |
+| conc_dose | output_only | conc_dose | Doses with no concentrations between |
+| conc_dose | output_only | conc_dose_iv_bolus_after | Impossible combinations |
+| conc_dose | output_only | dose | Doses with no concentrations between |
+| conc_dose | output_only | dose_iv_bolus_after | Impossible combinations |
+| conc_dose | output_only | none | Dose as the last event in the timeline and requesting a concentration after |
+| conc_dose_iv_bolus_after | conc | conc | Observed concentration |
+| conc_dose_iv_bolus_after | conc | conc_dose | Observed concentration |
+| conc_dose_iv_bolus_after | conc | conc_dose_iv_bolus_after | Observed concentration |
+| conc_dose_iv_bolus_after | conc | dose | Observed concentration |
+| conc_dose_iv_bolus_after | conc | dose_iv_bolus_after | Observed concentration |
+| conc_dose_iv_bolus_after | conc | none | Observed concentration |
+| conc_dose_iv_bolus_after | conc_dose | conc | Observed concentration |
+| conc_dose_iv_bolus_after | conc_dose | conc_dose | Observed concentration |
+| conc_dose_iv_bolus_after | conc_dose | conc_dose_iv_bolus_after | Observed concentration |
+| conc_dose_iv_bolus_after | conc_dose | dose | Observed concentration |
+| conc_dose_iv_bolus_after | conc_dose | dose_iv_bolus_after | Observed concentration |
+| conc_dose_iv_bolus_after | conc_dose | none | Observed concentration |
+| conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | conc | Impossible combinations |
+| conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | conc_dose | Impossible combinations |
+| conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations |
+| conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | dose | Impossible combinations |
+| conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | dose_iv_bolus_after | Impossible combinations |
+| conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | none | Impossible combinations |
+| conc_dose_iv_bolus_after | dose | conc | Extrapolation |
+| conc_dose_iv_bolus_after | dose | conc_dose | Extrapolation |
+| conc_dose_iv_bolus_after | dose | conc_dose_iv_bolus_after | Extrapolation |
+| conc_dose_iv_bolus_after | dose | dose | Extrapolation |
+| conc_dose_iv_bolus_after | dose | dose_iv_bolus_after | Extrapolation |
+| conc_dose_iv_bolus_after | dose | none | Extrapolation |
+| conc_dose_iv_bolus_after | dose_iv_bolus_after | conc | Impossible combinations |
+| conc_dose_iv_bolus_after | dose_iv_bolus_after | conc_dose | Impossible combinations |
+| conc_dose_iv_bolus_after | dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations |
+| conc_dose_iv_bolus_after | dose_iv_bolus_after | dose | Impossible combinations |
+| conc_dose_iv_bolus_after | dose_iv_bolus_after | dose_iv_bolus_after | Impossible combinations |
+| conc_dose_iv_bolus_after | dose_iv_bolus_after | none | Impossible combinations |
+| conc_dose_iv_bolus_after | output_only | conc | Interpolation |
+| conc_dose_iv_bolus_after | output_only | conc_dose | Interpolation |
+| conc_dose_iv_bolus_after | output_only | conc_dose_iv_bolus_after | Impossible combinations |
+| conc_dose_iv_bolus_after | output_only | dose | Extrapolation |
+| conc_dose_iv_bolus_after | output_only | dose_iv_bolus_after | Impossible combinations |
+| conc_dose_iv_bolus_after | output_only | none | Extrapolation |
+| dose | conc | conc | Observed concentration |
+| dose | conc | conc_dose | Observed concentration |
+| dose | conc | conc_dose_iv_bolus_after | Observed concentration |
+| dose | conc | dose | Observed concentration |
+| dose | conc | dose_iv_bolus_after | Observed concentration |
+| dose | conc | none | Observed concentration |
+| dose | conc_dose | conc | Observed concentration |
+| dose | conc_dose | conc_dose | Observed concentration |
+| dose | conc_dose | conc_dose_iv_bolus_after | Observed concentration |
+| dose | conc_dose | dose | Observed concentration |
+| dose | conc_dose | dose_iv_bolus_after | Observed concentration |
+| dose | conc_dose | none | Observed concentration |
+| dose | conc_dose_iv_bolus_after | conc | Observed concentration |
+| dose | conc_dose_iv_bolus_after | conc_dose | Observed concentration |
+| dose | conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations |
+| dose | conc_dose_iv_bolus_after | dose | Observed concentration |
+| dose | conc_dose_iv_bolus_after | dose_iv_bolus_after | Impossible combinations |
+| dose | conc_dose_iv_bolus_after | none | Observed concentration |
+| dose | dose | conc | Doses with no concentrations between |
+| dose | dose | conc_dose | Doses with no concentrations between |
+| dose | dose | conc_dose_iv_bolus_after | Doses with no concentrations between |
+| dose | dose | dose | Doses with no concentrations between |
+| dose | dose | dose_iv_bolus_after | Doses with no concentrations between |
+| dose | dose | none | Doses with no concentrations between |
+| dose | dose_iv_bolus_after | conc | Immediately after an IV bolus with a concentration next |
+| dose | dose_iv_bolus_after | conc_dose | Immediately after an IV bolus with a concentration next |
+| dose | dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations |
+| dose | dose_iv_bolus_after | dose | Immediately after an IV bolus without a concentration next |
+| dose | dose_iv_bolus_after | dose_iv_bolus_after | Impossible combinations |
+| dose | dose_iv_bolus_after | none | Immediately after an IV bolus without a concentration next |
+| dose | output_only | conc | Dose before, concentration after without a dose |
+| dose | output_only | conc_dose | Doses with no concentrations between |
+| dose | output_only | conc_dose_iv_bolus_after | Impossible combinations |
+| dose | output_only | dose | Doses with no concentrations between |
+| dose | output_only | dose_iv_bolus_after | Impossible combinations |
+| dose | output_only | none | Dose as the last event in the timeline and requesting a concentration after |
+| dose_iv_bolus_after | conc | conc | Observed concentration |
+| dose_iv_bolus_after | conc | conc_dose | Observed concentration |
+| dose_iv_bolus_after | conc | conc_dose_iv_bolus_after | Observed concentration |
+| dose_iv_bolus_after | conc | dose | Observed concentration |
+| dose_iv_bolus_after | conc | dose_iv_bolus_after | Observed concentration |
+| dose_iv_bolus_after | conc | none | Observed concentration |
+| dose_iv_bolus_after | conc_dose | conc | Observed concentration |
+| dose_iv_bolus_after | conc_dose | conc_dose | Observed concentration |
+| dose_iv_bolus_after | conc_dose | conc_dose_iv_bolus_after | Observed concentration |
+| dose_iv_bolus_after | conc_dose | dose | Observed concentration |
+| dose_iv_bolus_after | conc_dose | dose_iv_bolus_after | Observed concentration |
+| dose_iv_bolus_after | conc_dose | none | Observed concentration |
+| dose_iv_bolus_after | conc_dose_iv_bolus_after | conc | Impossible combinations |
+| dose_iv_bolus_after | conc_dose_iv_bolus_after | conc_dose | Impossible combinations |
+| dose_iv_bolus_after | conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations |
+| dose_iv_bolus_after | conc_dose_iv_bolus_after | dose | Impossible combinations |
+| dose_iv_bolus_after | conc_dose_iv_bolus_after | dose_iv_bolus_after | Impossible combinations |
+| dose_iv_bolus_after | conc_dose_iv_bolus_after | none | Impossible combinations |
+| dose_iv_bolus_after | dose | conc | Immediately after an IV bolus without a concentration next |
+| dose_iv_bolus_after | dose | conc_dose | Immediately after an IV bolus without a concentration next |
+| dose_iv_bolus_after | dose | conc_dose_iv_bolus_after | Immediately after an IV bolus without a concentration next |
+| dose_iv_bolus_after | dose | dose | Immediately after an IV bolus without a concentration next |
+| dose_iv_bolus_after | dose | dose_iv_bolus_after | Immediately after an IV bolus without a concentration next |
+| dose_iv_bolus_after | dose | none | Immediately after an IV bolus without a concentration next |
+| dose_iv_bolus_after | dose_iv_bolus_after | conc | Impossible combinations |
+| dose_iv_bolus_after | dose_iv_bolus_after | conc_dose | Impossible combinations |
+| dose_iv_bolus_after | dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations |
+| dose_iv_bolus_after | dose_iv_bolus_after | dose | Impossible combinations |
+| dose_iv_bolus_after | dose_iv_bolus_after | dose_iv_bolus_after | Impossible combinations |
+| dose_iv_bolus_after | dose_iv_bolus_after | none | Impossible combinations |
+| dose_iv_bolus_after | output_only | conc | After an IV bolus with a concentration next |
+| dose_iv_bolus_after | output_only | conc_dose | After an IV bolus with a concentration next |
+| dose_iv_bolus_after | output_only | conc_dose_iv_bolus_after | Impossible combinations |
+| dose_iv_bolus_after | output_only | dose | After an IV bolus without a concentration next |
+| dose_iv_bolus_after | output_only | dose_iv_bolus_after | Impossible combinations |
+| dose_iv_bolus_after | output_only | none | After an IV bolus without a concentration next |
+| none | conc | conc | Observed concentration |
+| none | conc | conc_dose | Observed concentration |
+| none | conc | conc_dose_iv_bolus_after | Observed concentration |
+| none | conc | dose | Observed concentration |
+| none | conc | dose_iv_bolus_after | Observed concentration |
+| none | conc | none | Observed concentration |
+| none | conc_dose | conc | Observed concentration |
+| none | conc_dose | conc_dose | Observed concentration |
+| none | conc_dose | conc_dose_iv_bolus_after | Observed concentration |
+| none | conc_dose | dose | Observed concentration |
+| none | conc_dose | dose_iv_bolus_after | Observed concentration |
+| none | conc_dose | none | Observed concentration |
+| none | conc_dose_iv_bolus_after | conc | Observed concentration |
+| none | conc_dose_iv_bolus_after | conc_dose | Observed concentration |
+| none | conc_dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations |
+| none | conc_dose_iv_bolus_after | dose | Observed concentration |
+| none | conc_dose_iv_bolus_after | dose_iv_bolus_after | Impossible combinations |
+| none | conc_dose_iv_bolus_after | none | Observed concentration |
+| none | dose | conc | Before all events |
+| none | dose | conc_dose | Before all events |
+| none | dose | conc_dose_iv_bolus_after | Before all events |
+| none | dose | dose | Before all events |
+| none | dose | dose_iv_bolus_after | Before all events |
+| none | dose | none | Before all events |
+| none | dose_iv_bolus_after | conc | Immediately after an IV bolus with a concentration next |
+| none | dose_iv_bolus_after | conc_dose | Immediately after an IV bolus with a concentration next |
+| none | dose_iv_bolus_after | conc_dose_iv_bolus_after | Impossible combinations |
+| none | dose_iv_bolus_after | dose | Immediately after an IV bolus without a concentration next |
+| none | dose_iv_bolus_after | dose_iv_bolus_after | Impossible combinations |
+| none | dose_iv_bolus_after | none | Immediately after an IV bolus without a concentration next |
+| none | output_only | conc | Before all events |
+| none | output_only | conc_dose | Before all events |
+| none | output_only | conc_dose_iv_bolus_after | Impossible combinations |
+| none | output_only | dose | Before all events |
+| none | output_only | dose_iv_bolus_after | Impossible combinations |
+| none | output_only | none | Before all events |

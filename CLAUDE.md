@@ -10,6 +10,7 @@ WinNonlin and Pumas. Licensed under AGPL-3.
 ## Quick Reference Commands
 
 ``` r
+
 devtools::load_all()                                       # Load package for interactive testing
 devtools::test()                                           # Run full testthat suite
 devtools::test_active_file("tests/testthat/test-auc.R")    # Run a single test file
@@ -35,6 +36,7 @@ spelling::spell_check_package()                            # Spell check (wordli
 A typical PKNCA analysis follows this pipeline:
 
 ``` r
+
 # 1. Wrap concentration-time data
 my.conc <- PKNCAconc(d.conc, conc~time|subject)
 
@@ -121,6 +123,7 @@ Units flow from PKNCAconc (`concu`, `amountu`, `timeu`) and PKNCAdose
 Example with units:
 
 ``` r
+
 my.conc <- PKNCAconc(d.conc, conc~time|subject,
                      concu = "ng/mL", timeu = "hr", amountu = "mg")
 my.dose <- PKNCAdose(d.dose, dose~time|subject, doseu = "mg/kg")
@@ -131,13 +134,13 @@ my.data <- PKNCAdata(my.conc, my.dose)  # units table auto-generated
 
 All classes use S3 dispatch (not S4 or R6):
 
-| Class                  | Purpose                                     | Defined in                     |
-|------------------------|---------------------------------------------|--------------------------------|
-| `PKNCAconc`            | Concentration-time data                     | `class-PKNCAconc.R`            |
-| `PKNCAdose`            | Dosing data                                 | `class-PKNCAdose.R`            |
-| `PKNCAdata`            | Combined data + intervals + units + options | `class-PKNCAdata.R`            |
-| `PKNCAresults`         | NCA calculation results                     | `class-PKNCAresults.R`         |
-| `summary_PKNCAresults` | Summary statistics                          | `class-summary_PKNCAresults.R` |
+| Class | Purpose | Defined in |
+|----|----|----|
+| `PKNCAconc` | Concentration-time data | `class-PKNCAconc.R` |
+| `PKNCAdose` | Dosing data | `class-PKNCAdose.R` |
+| `PKNCAdata` | Combined data + intervals + units + options | `class-PKNCAdata.R` |
+| `PKNCAresults` | NCA calculation results | `class-PKNCAresults.R` |
+| `summary_PKNCAresults` | Summary statistics | `class-summary_PKNCAresults.R` |
 
 dplyr verbs are supported on these classes: `filter`, `mutate`,
 `group_by`, `inner_join`, `full_join` (see `R/dplyr.R`).
@@ -209,11 +212,11 @@ dplyr verbs are supported on these classes: `filter`, `mutate`,
 
 Three GitHub Actions workflows in `.github/workflows/`:
 
-| Workflow             | Trigger                     | What it does                                                                         |
-|----------------------|-----------------------------|--------------------------------------------------------------------------------------|
-| `R-CMD-check.yaml`   | push to main, PRs           | R CMD check on macOS (release), Windows (release), Ubuntu (devel, release, oldrel-1) |
-| `test-coverage.yaml` | push to main, PRs           | Code coverage via covr, uploads to Codecov                                           |
-| `pkgdown.yaml`       | push to main, PRs, releases | Builds and deploys documentation site to GitHub Pages                                |
+| Workflow | Trigger | What it does |
+|----|----|----|
+| `R-CMD-check.yaml` | push to main, PRs | R CMD check on macOS (release), Windows (release), Ubuntu (devel, release, oldrel-1) |
+| `test-coverage.yaml` | push to main, PRs | Code coverage via covr, uploads to Codecov |
+| `pkgdown.yaml` | push to main, PRs, releases | Builds and deploys documentation site to GitHub Pages |
 
 Build args: `--no-manual --compact-vignettes=gs+qpdf`
 

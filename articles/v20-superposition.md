@@ -7,6 +7,7 @@ after multiple doses.
 ## Load the data
 
 ``` r
+
 ## It is always a good idea to look at the data
 knitr::kable(head(datasets::Theoph))
 ```
@@ -24,6 +25,7 @@ The columns that we will be interested in for our analysis are conc,
 Time, and Subject in the concentration data.
 
 ``` r
+
 ## By default it is groupedData; convert it to a data frame for use
 conc_obj <- PKNCAconc(as.data.frame(datasets::Theoph), conc~Time|Subject)
 ```
@@ -35,6 +37,7 @@ for each subject. At minimum, the time between dosing (`tau`) must be
 provided.
 
 ``` r
+
 steady_state <- superposition(conc_obj, tau=24)
 ```
 
@@ -48,6 +51,7 @@ single-dose (or a data error should be fixed). Let’s find the offending
 data.
 
 ``` r
+
 knitr::kable(subset(datasets::Theoph, Time == 0 & conc > 0),
              caption="Nonzero predose measurements",
              row.names=FALSE)
@@ -59,12 +63,13 @@ knitr::kable(subset(datasets::Theoph, Time == 0 & conc > 0),
 | 7       | 64.6 | 4.95 |    0 | 0.15 |
 | 10      | 58.2 | 5.50 |    0 | 0.24 |
 
-Nonzero predose measurements
+Nonzero predose measurements {.table}
 
 For this example, we will assume that these were errors, correct them to
 zero, and recalculate.
 
 ``` r
+
 ## Correct nonzero concentrations at time 0 to be BLQ.
 theoph_corrected <- as.data.frame(datasets::Theoph)
 theoph_corrected$conc[theoph_corrected$Time == 0] <- 0
@@ -93,7 +98,7 @@ knitr::kable(head(steady_state, n=14),
 | 2       |  1.010060 |  0.00 |
 | 2       |  2.703513 |  0.27 |
 
-Superposition at steady-state
+Superposition at steady-state {.table}
 
 The output is a tbl_df, tbl, data.frame including all the grouping
 factors as columns, a column for `conc`entration, and a column for
@@ -111,6 +116,7 @@ If simulation to a specific dose is needed, the number of dosing
 intervals (`n.tau`) can be specified.
 
 ``` r
+
 ## Calculate the unsteady-state concentrations with 24 hour dosing
 unsteady_state <- superposition(conc_obj_corrected, tau=24, n.tau=2)
 knitr::kable(head(unsteady_state, n=14),
@@ -134,7 +140,7 @@ knitr::kable(head(unsteady_state, n=14),
 | 2       |  0.9268958 |  0.00 |
 | 2       |  2.6226541 |  0.27 |
 
-Superposition before steady-state
+Superposition before steady-state {.table}
 
 ### Compute the Superposition from Single-Dose Data with \>1 Dose Per Interval
 
@@ -144,6 +150,7 @@ dose times within the interval. The `dose.times` must all be less than
 `tau` (otherwise they are not in the interval).
 
 ``` r
+
 ## Calculate the new steady-state concentrations with 24 hour dosing
 complex_interval_steady_state <- superposition(conc_obj_corrected, tau=24, dose.times=c(0, 2, 4))
 knitr::kable(head(complex_interval_steady_state, n=10),
@@ -163,9 +170,10 @@ knitr::kable(head(complex_interval_steady_state, n=10),
 | 1       | 28.03334 | 2.37 |
 | 1       | 30.10259 | 2.57 |
 
-Superposition at steady-state with complex dosing
+Superposition at steady-state with complex dosing {.table}
 
 ``` r
+
 ggplot(complex_interval_steady_state,
        aes(y=conc, x=time, colour=Subject)) +
   geom_line()
@@ -189,6 +197,7 @@ This command does not technically go to steady-state; if the
 goes for as many doses as requested.
 
 ``` r
+
 up_to_steady_state <- superposition(conc_obj_corrected,
                                     tau=4*24,
                                     n.tau=1,
@@ -196,6 +205,7 @@ up_to_steady_state <- superposition(conc_obj_corrected,
 ```
 
 ``` r
+
 ggplot(up_to_steady_state, aes(x=time, y=conc, colour=Subject)) +
   geom_line()
 ```
@@ -206,7 +216,7 @@ ggplot(up_to_steady_state, aes(x=time, y=conc, colour=Subject)) +
 
 Superposition is often used to estimate NCA parameters with
 nonparametric methods. To ensure that estimated parameters are as
-accurate as possible (especially $C_{max}$), each dose has every
+accurate as possible (especially $`C_{max}`$), each dose has every
 post-dose time point included. Specifically, each dose will have the
 following times:
 
@@ -222,18 +232,21 @@ time points for subject 1 in the steady-state single dosing and the
 complex dosing examples above.
 
 ``` r
+
 steady_state$time[steady_state$Subject == 1]
 ```
 
     ##  [1]  0.00  0.25  0.37  0.57  1.12  2.02  3.82  5.10  7.03  9.05 12.12 24.00
 
 ``` r
+
 sum(steady_state$Subject == 1)
 ```
 
     ## [1] 12
 
 ``` r
+
 complex_interval_steady_state$time[complex_interval_steady_state$Subject == 1]
 ```
 
@@ -242,6 +255,7 @@ complex_interval_steady_state$time[complex_interval_steady_state$Subject == 1]
     ## [25]  9.03  9.05  9.10 11.03 11.05 12.12 13.05 14.12 16.12 24.00
 
 ``` r
+
 sum(complex_interval_steady_state$Subject == 1)
 ```
 
@@ -252,5 +266,5 @@ sum(complex_interval_steady_state$Subject == 1)
 The interpolation and extrapolation methods align with those used for
 calculating the AUC. By default, interpolation uses the `PKNCA.options`
 selection for `"auc.method"` and extrapolation follows the curve of
-$AUC_{inf}$. These can be modified with the `interp.method` and
+$`AUC_{inf}`$. These can be modified with the `interp.method` and
 `extrap.method` arguments.

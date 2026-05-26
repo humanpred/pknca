@@ -1,6 +1,7 @@
 # Half-life calculation with Tobit regression
 
 ``` r
+
 library(PKNCA)
 #> 
 #> Attaching package: 'PKNCA'
@@ -48,7 +49,7 @@ select concentrations for inclusion in the half-life estimate is to:
 4.  Select the best half-life with the following criteria, in order:
     1.  The adjusted r-squared must be within a tolerance factor
         (typically 0.0001) of the largest adjusted r-squared.
-    2.  The $\lambda_{z}$ value (slope for the half-life line) must be
+    2.  The $`\lambda_z`$ value (slope for the half-life line) must be
         positive; in other words, the half-life slope must be
         decreasing.
     3.  If multiple choices of points fit the above criteria, choose the
@@ -81,7 +82,7 @@ The steps for Tobit regression are:
     T_(last) while including all points below the LLOQ after T_(last).
 3.  Select the best half-life with the following criteria, in order:
     1.  The estimated standard deviation of the slope is minimized.
-    2.  The $\lambda_{z}$ value (slope for the half-life line) must be
+    2.  The $`\lambda_z`$ value (slope for the half-life line) must be
         positive; in other words, the half-life slope must be
         decreasing.
 
@@ -130,6 +131,7 @@ When no observations are below the LLOQ, Tobit and log-linear regression
 produce essentially the same answer.
 
 ``` r
+
 conc_no_blq <- c(10, 5, 2.5, 1.25, 0.625)
 time_points  <- c(0,  1, 2,   3,    4)
 lloq         <- 0.1   # well below all observations
@@ -158,6 +160,7 @@ cat("Tobit half-life:     ", round(hl_tobit$half.life, 3),    "\n")
 Note the columns that are returned:
 
 ``` r
+
 # Log-linear returns r-squared and related diagnostics
 names(hl_loglinear)
 #>  [1] "lambda.z"            "r.squared"           "adj.r.squared"      
@@ -180,6 +183,7 @@ them entirely. Tobit regression treats them as left-censored, which can
 provide a better estimate.
 
 ``` r
+
 lloq <- 1.0
 conc_true  <- c(10, 5, 2.5, 1.25, 0.5, 0.2)
 time_points <- c(0,  1, 2,   3,    4,   5)
@@ -235,6 +239,7 @@ the global option. Calculations that do not explicitly set `hl_method`
 will then use Tobit regression by default.
 
 ``` r
+
 PKNCA.options(hl_method = "tobit")
 
 # Now all pk.calc.half.life() calls default to Tobit
@@ -248,6 +253,7 @@ The `lloq` argument can be passed through the interval calculation via
 the `options` list when running a full NCA.
 
 ``` r
+
 # Suppose d_conc is your concentration data frame with columns
 # subject, time, conc, and your LLOQ is 1.0
 
@@ -271,6 +277,7 @@ windows, requiring them to have a meaningfully lower residual to be
 preferred.
 
 ``` r
+
 # Penalise larger windows slightly
 PKNCA.options(tobit_n_points_penalty = 0.5)
 PKNCA.options(default = TRUE)  # reset
@@ -282,6 +289,7 @@ is rarely needed but can help when the default optimization settings
 fail to converge for unusual concentration-time profiles.
 
 ``` r
+
 # Increase the maximum number of iterations
 PKNCA.options(tobit_optim_control = list(maxit = 1000))
 PKNCA.options(default = TRUE)  # reset

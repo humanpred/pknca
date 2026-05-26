@@ -21,16 +21,16 @@ are selected.
 - Drop all BLQ values, then
 - Drop all points at or before the end of the last dose administration,
   including infusion duration (if dosing information is provided), then
-- Choose all sets of points that start from the $T_{last}$ and step
+- Choose all sets of points that start from the $`T_{last}`$ and step
   back:
   - at least 3 points (customizable with
     `PKNCA.options("min.hl.points")`)
-  - Not including $T_{max}$ (customizable with
+  - Not including $`T_{max}`$ (customizable with
     `PKNCA.options("allow.tmax.in.half.life")`)
 
 As a specific example, if measurements were at 0, 1, 2, 3, 4, 6, 8, 12,
-and 24 hours; if $T_{last}$ is 12 hours; and if $T_{max}$ is 1 hour then
-the default point sets that would be fit are:
+and 24 hours; if $`T_{last}`$ is 12 hours; and if $`T_{max}`$ is 1 hour
+then the default point sets that would be fit are:
 
 1.  6, 8, and 12 hours;
 2.  4, 6, 8, and 12 hours;
@@ -47,13 +47,13 @@ If `PKNCA.options("min.hl.points")` were set to `4`, then the 6, 8, and
 After fitting all points, the best fit among the set of possible fit is
 selected by the following rules:
 
-1.  $\lambda_{z} > 0$ and at the same time the maximum r-squared must be
-    within an adjusted $r^{2}$ factor of the best.
-    1.  The adjusted $r^{2}$ factor is controlled by
+1.  $`\lambda_z > 0`$ and at the same time the maximum r-squared must be
+    within an adjusted $`r^2`$ factor of the best.
+    1.  The adjusted $`r^2`$ factor is controlled by
         `PKNCA.options("adj.r.squared.factor")` and it defaults to
         10^{-4}.
     2.  These rules must be met simultaneously, so if the maximum
-        adjusted $r^{2}$ is for a line with $\lambda_{z} \leq 0$, the
+        adjusted $`r^2`$ is for a line with $`\lambda_z \leq 0`$, the
         half-life may end up being unreportable.
 2.  If fitting the log-linear concentration-time line fails, then it is
     not the best line.
@@ -63,6 +63,7 @@ selected by the following rules:
 ### Example
 
 ``` r
+
 # Perform calculations for subject 1, only
 data_conc <- as.data.frame(datasets::Theoph)[datasets::Theoph$Subject == 1, ]
 
@@ -82,6 +83,7 @@ result_obj <- pk.nca(data_obj)
     ## No dose information provided, calculations requiring dose will return NA.
 
 ``` r
+
 # Extract the results for subject 1 
 as.data.frame(result_obj)
 ```
@@ -124,6 +126,7 @@ dataset for
 as illustrated below.
 
 ``` r
+
 data_conc$exclude_hl <- data_conc$Time == 12.12
 # Confirm that we will be excluding exactly one point
 stopifnot(sum(data_conc$exclude_hl) == 1)
@@ -145,6 +148,7 @@ result_obj_exclude1 <- pk.nca(data_obj_exclude1)
     ## No dose information provided, calculations requiring dose will return NA.
 
 ``` r
+
 # Results differ when excluding the 12-hour point for subject 1 (compare to
 # example in the previous section)
 as.data.frame(result_obj_exclude1)
@@ -179,6 +183,7 @@ dataset for
 as illustrated below.
 
 ``` r
+
 data_conc$include_hl <- data_conc$Time > 3
 # Confirm that we will be excluding exactly one point
 stopifnot(sum(data_conc$include_hl) == 6)
@@ -200,6 +205,7 @@ result_obj_include6 <- pk.nca(data_obj_include6)
     ## No dose information provided, calculations requiring dose will return NA.
 
 ``` r
+
 # Results differ when including 6 points (compare to example in the previous
 # section)
 as.data.frame(result_obj_include6)

@@ -140,6 +140,7 @@ two treatments (“A” and “B”) are administered to two subjects (1 and 2).
 ### Dataset Basics: Example interval data
 
 ``` r
+
 d_interval_1 <-
   data.frame(
     start=0, end=8,
@@ -157,6 +158,7 @@ each group.
 ### Hands-on: First NCA calculation with PKNCA
 
 ``` r
+
 library(dplyr)
 library(ggplot2)
 library(tidyr)
@@ -207,6 +209,7 @@ o_result <- suppressMessages(pk.nca(o_data))
 We will break this down in subsequent slides.
 
 ``` r
+
 # Concentration data setup
 d_conc <-
   datasets::Theoph %>%
@@ -227,6 +230,7 @@ o_result <- pk.nca(o_data)
 ### How do I do a simple calculation? Concentration data
 
 ``` r
+
 # Load your dataset as a data.frame
 d_conc <-
   datasets::Theoph %>%
@@ -241,6 +245,7 @@ pander::pander(head(d_conc, 2))
 |    1    | 79.6 | 4.02 | 0.25 | 2.84 |
 
 ``` r
+
 # Define the PKNCAconc object indicating the concentration and time columns, the
 # dataset, and any other options.
 o_conc <- PKNCAconc(conc~Time, data=d_conc)
@@ -249,6 +254,7 @@ o_conc <- PKNCAconc(conc~Time, data=d_conc)
 ### How do I do a simple calculation? Dose data
 
 ``` r
+
 # Load your dataset as a data.frame
 d_dose <-
   datasets::Theoph %>%
@@ -263,6 +269,7 @@ pander::pander(d_dose)
 |    1    | 79.6 | 4.02 |  0   | 0.74 |
 
 ``` r
+
 # Define the PKNCAdose object indicating the dose amount and time columns, the
 # dataset, and any other options.
 o_dose <- PKNCAdose(Dose~Time, data=d_dose)
@@ -271,6 +278,7 @@ o_dose <- PKNCAdose(Dose~Time, data=d_dose)
 ### How do I do a simple calculation? Calculate results
 
 ``` r
+
 # Combine the PKNCAconc and PKNCAdose objects.  You can add interval
 # specifications and calculation options here.
 o_data <- PKNCAdata(o_conc, o_dose)
@@ -297,6 +305,7 @@ if the value should be excluded.
 ### How do I do a simple calculation? Get summary results
 
 ``` r
+
 # Look at summarized results
 pander::pander(summary(o_result))
 ```
@@ -308,7 +317,7 @@ pander::pander(summary(o_result))
 
 auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of
 variation; tmax: median and range; half.life: arithmetic mean and
-standard deviation
+standard deviation {.table style="width:88%;"}
 
 ### How do I do a simple calculation? Get individual results
 
@@ -316,6 +325,7 @@ Use [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) to
 get the individual NCA parameter results.
 
 ``` r
+
 # Look at individual results
 pander::pander(head(
   as.data.frame(o_result),
@@ -452,6 +462,7 @@ Intervals have columns for:
 ### Prepare your data for calculation
 
 ``` r
+
 d_conc <-
   datasets::Theoph %>%
   mutate(
@@ -472,6 +483,7 @@ d_dose <-
 ### Calculate without dosing data
 
 ``` r
+
 o_conc <- PKNCAconc(conc~Time|Treatment+Subject, data=d_conc)
 try({
   o_data <- PKNCAdata(o_conc)
@@ -487,6 +499,7 @@ Whoops! Without dosing, we need intervals.
 ### Calculate without dosing data, try 2
 
 ``` r
+
 o_conc <- PKNCAconc(conc~Time|Treatment+Subject, data=d_conc)
 d_intervals <- data.frame(start=0, end=Inf, cmax=TRUE, tmax=TRUE,
                           half.life=TRUE, aucinf.obs=TRUE)
@@ -505,6 +518,7 @@ summary(pk.nca(o_data_manual_intervals))
 ### Dosing data helps with interval setup
 
 ``` r
+
 o_conc <- PKNCAconc(conc~Time|Treatment+Subject, data=d_conc)
 o_dose <- PKNCAdose(Dose~dose_time|Treatment+Subject, data=d_dose)
 o_data_auto_intervals <- PKNCAdata(o_conc, o_dose)
@@ -585,6 +599,7 @@ whale and a beluga whale. (DOI: 10.1638/03-078)
 ### Steady-state intramuscular administration
 
 ``` r
+
 library(PKNCA)
 # Data available from https://github.com/humanpred/pknca/tree/main/data-raw/whale
 d_conc <- read.csv("c:/tmp/whale_conc.csv")
@@ -628,6 +643,7 @@ or
 When you use `exclude`, this is how you give your data to PKNCA:
 
 ``` r
+
 d_before_exclude <-
  data.frame(
   time=0:4,
@@ -645,6 +661,7 @@ o_conc <-
 And, this is how PKNCA thinks about it:
 
 ``` r
+
 pander::pander(
   d_before_exclude %>%
     filter(is.na(not_this))
@@ -661,6 +678,7 @@ pander::pander(
 ### Exclude data points overall
 
 ``` r
+
 o_conc <- PKNCAconc(data=d_before_exclude, conc~time, exclude="not_this")
 ```
 
@@ -716,6 +734,7 @@ points specifically noted by the analyst are included.
 ### Urine calculations
 
 ``` r
+
 d_urine <-
   data.frame(
     conc=c(1, 2, 3),
@@ -754,6 +773,7 @@ If you don’t need a parameter, PKNCA won’t calculate it.
 For example, if all you need is `cmax`, all you’ll get is `cmax`.
 
 ``` r
+
 o_conc <- PKNCAconc(data=data.frame(conc=2^-(1:4), time=0:3), conc~time)
 o_data <- PKNCAdata(o_conc, intervals=data.frame(start=0, end=Inf, cmax=TRUE))
 o_nca <- suppressMessages(pk.nca(o_data))
@@ -771,6 +791,7 @@ If you need AUC₀₋, PKNCA will calculate other required parameters behind
 the scenes.
 
 ``` r
+
 o_data <-
   PKNCAdata(
     o_conc,
@@ -784,6 +805,7 @@ o_nca <- suppressMessages(pk.nca(o_data))
 ```
 
 ``` r
+
 as.data.frame(o_nca)
 ```
 
@@ -842,6 +864,7 @@ A simple way to exclude a value from results is to convert the results
 to a data.frame and then drop the rows you don’t want:
 
 ``` r
+
 as.data.frame(o_nca) %>%
   filter(PPTESTCD != "half.life")
 ```
@@ -873,6 +896,7 @@ function, parameters that are dependent on an excluded parameter will be
 excluded.
 
 ``` r
+
 o_nca_excluded <-
   o_nca %>%
   exclude(FUN=exclude_nca_span.ratio(3))
@@ -881,6 +905,7 @@ o_nca_excluded <-
     ## Loading required namespace: testthat
 
 ``` r
+
 as.data.frame(o_nca_excluded)
 ```
 
@@ -907,6 +932,7 @@ as.data.frame(o_nca_excluded)
 Now, everything dependent on the half-life is excluded in summaries.
 
 ``` r
+
 summary(o_nca)
 ```
 
@@ -916,6 +942,7 @@ summary(o_nca)
     ## Caption: aucinf.obs: geometric mean and geometric coefficient of variation
 
 ``` r
+
 summary(o_nca_excluded)
 ```
 
@@ -932,6 +959,7 @@ Superposition assumes linear kinetics and can convert a single-dose
 profile to multi-dose.
 
 ``` r
+
 # Subject 2 is selected for a BLQ time=0 concentration
 d_prep <-
   datasets::Theoph %>%
@@ -955,6 +983,7 @@ d_second_dose <-
 ```
 
 ``` r
+
 # Want the profile for the first two doses
 # together?
 d_first_two <-
@@ -977,6 +1006,7 @@ concentrations either with a monoexponential increase toward
 steady-state (preferred) or a linear trend back from the final point.
 
 ``` r
+
 dose_times <- seq(0, 96-1, by=6)
 d_multidose <-
   superposition(
@@ -1003,6 +1033,7 @@ pk.tss.monoexponential(
 Generate all individual profiles using the groups that you defined:
 
 ``` r
+
 o_conc <- PKNCAconc(conc~Time|Subject, data=datasets::Theoph)
 d_plot <-
   grouped_df(data=datasets::Theoph, vars=names(getGroups(o_conc))) %>%
@@ -1027,6 +1058,7 @@ results, and use
 a pretty table with captions.
 
 ``` r
+
 pander::pander(summary(o_nca))
 ```
 
@@ -1035,12 +1067,14 @@ pander::pander(summary(o_nca))
 |   0   | Inf |   0.721    |
 
 aucinf.obs: geometric mean and geometric coefficient of variation
+{.table style="width:38%;"}
 
 Make an NCA data listing using the
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) function
 on the NCA results.
 
 ``` r
+
 pander::pander(as.data.frame(o_nca))
 ```
 
@@ -1100,6 +1134,7 @@ vignette.
 ### Single- and Multiple-dose, single analyte: Setup the underlying datasets
 
 ``` r
+
 d_conc <-
   datasets::Theoph %>%
   rename(time=Time) %>%
@@ -1128,6 +1163,7 @@ d_multidose_single_analyte <-
 ### Single- and Multiple-dose, single analyte: Setup the concentration and dose datasets
 
 ``` r
+
 d_single_multi_conc <- bind_rows(d_singledose_single_analyte, d_multidose_single_analyte)
 d_single_multi_dose <-
   d_single_multi_conc %>%
@@ -1140,6 +1176,7 @@ d_single_multi_dose <-
 ### Single- and Multiple-dose, single analyte: Perform basic analysis
 
 ``` r
+
 o_conc <- PKNCAconc(data=d_single_multi_conc, conc~time|Study_Part+Subject)
 o_dose <- PKNCAdose(data=d_single_multi_dose, Dose~time|Study_Part+Subject)
 o_data <- PKNCAdata(o_conc, o_dose)
@@ -1268,12 +1305,14 @@ o_data$intervals %>% select(-Subject) %>% unique() %>% as.data.frame()
     ## 4       FALSE      FALSE       FALSE   Multiple
 
 ``` r
+
 o_nca <- pk.nca(o_data)
 ```
 
 ### Single- and Multiple-dose, single analyte: Use intervals for fewer subjects
 
 ``` r
+
 d_intervals <-
   data.frame(
     start=0,
@@ -1331,6 +1370,7 @@ o_nca <- pk.nca(o_data)
     ## Warning: Study_Part=Multiple; Subject=12: No intervals for data
 
 ``` r
+
 summary(o_nca)
 ```
 
@@ -1342,6 +1382,7 @@ summary(o_nca)
 ### Single- and Multiple-dose, single analyte: Use custom intervals per subjects
 
 ``` r
+
 # Find the time closest to 12 hours
 d_intervals_prep <-
   d_single_multi_conc %>%
@@ -1388,6 +1429,7 @@ o_nca <- pk.nca(o_data)
     ## Warning: Study_Part=Multiple; Subject=12: No intervals for data
 
 ``` r
+
 summary(o_nca, drop.group=c("Subject", "end"))
 ```
 
@@ -1410,6 +1452,7 @@ summary(o_nca, drop.group=c("Subject", "end"))
 ### Single- and Multiple-dose, parent and metabolite
 
 ``` r
+
 d_single_multi_conc_multi_analyte <-
   bind_rows(
     d_single_multi_conc %>% mutate(Analyte="Parent"),

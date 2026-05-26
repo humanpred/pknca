@@ -79,6 +79,7 @@ Other PKNCA calculation and summary settings:
 ## Examples
 
 ``` r
+
 PKNCA.options()
 #> $adj.r.squared.factor
 #> [1] 1e-04

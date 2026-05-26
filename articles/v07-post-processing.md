@@ -13,6 +13,7 @@ simply to have results available. See that vignette for more details
 about running PKNCA.
 
 ``` r
+
 library(PKNCA)
 suppressPackageStartupMessages(library(dplyr))
 
@@ -50,9 +51,9 @@ function.
 
 Several exclusion functions are built into PKNCA. The built-in functions
 will exclude all results that either apply to the current value or are
-dependencies of the current value. For example, $AUC_{\infty}$ depends
-on $\lambda_{z}$, and excluding based on span ratio will exclude all
-parameters that depend on $\lambda_{z}$, including $AUC_{\infty}$.
+dependencies of the current value. For example, $`AUC_\infty`$ depends
+on $`\lambda_z`$, and excluding based on span ratio will exclude all
+parameters that depend on $`\lambda_z`$, including $`AUC_\infty`$.
 
 To see the built-in functions, type
 [`?exclude_nca`](http://humanpred.github.io/pknca/reference/exclude_nca.md)
@@ -62,12 +63,14 @@ the function to the `FUN` argument of
 illustrated below.
 
 ``` r
+
 results_excl_span <- exclude(results_obj, FUN=exclude_nca_span.ratio())
 ```
 
     ## Loading required namespace: testthat
 
 ``` r
+
 # Without any exclusions applied, the 'exclude' column is all NA.
 as.data.frame(results_obj) %>%
   filter(Subject == 1)
@@ -94,6 +97,7 @@ as.data.frame(results_obj) %>%
     ## 16       1     0   Inf aucinf.obs          215.     NA
 
 ``` r
+
 # With exclusions applied, the 'exclude' column has the reason for exclusion.
 as.data.frame(results_excl_span) %>%
   filter(Subject == 1)
@@ -135,6 +139,7 @@ the analysis because parameters that depend on the excluded parameter
 will not be excluded.
 
 ``` r
+
 mask_exclude_cmax <-
   results_obj %>%
   as.data.frame() %>%
@@ -176,6 +181,7 @@ results_obj %>%
     ## 16       1     0   Inf aucinf.obs          215.     NA
 
 ``` r
+
 # With exclusions applied, the 'exclude' column has the reason for exclusion.
 results_excl_specific %>%
   as.data.frame() %>%
@@ -208,6 +214,7 @@ More than one exclusion can be applied sequentially to results as in the
 example below.
 
 ``` r
+
 mask_exclude_lz <-
   results_obj %>%
   as.data.frame() %>%
@@ -275,6 +282,7 @@ Suppose your concentration data includes a column for body weight, and
 you want to normalize Cmax by each subject’s weight:
 
 ``` r
+
 # Add a weight column to the concentration data
 d_conc2 <- d_conc
 d_conc2$weight <- unname(setNames(60:71, 1:12)[d_conc2$Subject])
@@ -331,6 +339,7 @@ subject weights as above to normalize Cmax, but without adding the
 weight column to the concentration data:
 
 ``` r
+
 # Use the same subject_weights as above
 norm_table <- data.frame(Subject = unique(d_conc$Subject), normalization = 60:71, unit = "kg")
 results_norm_custom <- normalize(
@@ -381,6 +390,7 @@ the subject grouping variable; one column each for the start and end
 time; and one column per parameter calculated.
 
 ``` r
+
 summary(results_obj)
 ```
 
@@ -394,6 +404,7 @@ When values are excluded as described above, the excluded values are not
 included in the summary (note that half.life and aucinf.obs differ).
 
 ``` r
+
 summary(results_excl_span)
 ```
 
@@ -412,6 +423,7 @@ A listing of all calculated values is available using
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html).
 
 ``` r
+
 as.data.frame(results_obj) %>%
   head(20)
 ```
@@ -443,6 +455,7 @@ as.data.frame(results_obj) %>%
 Excluded values remain in the listing.
 
 ``` r
+
 as.data.frame(results_excl_span) %>%
   head(20)
 ```

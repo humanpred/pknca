@@ -13,6 +13,7 @@ looking at
 [`?PKNCA_impute_method`](http://humanpred.github.io/pknca/reference/PKNCA_impute_method.md):
 
 ``` r
+
 library(PKNCA)
 #> 
 #> Attaching package: 'PKNCA'
@@ -86,6 +87,7 @@ If an imputation applies to the full dataset, it can be provided in the
 [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md):
 
 ``` r
+
 library(PKNCA)
 # Remove time 0 to illustrate that imputation works
 d_conc <- as.data.frame(datasets::Theoph)[!datasets::Theoph$Time == 0, ]
@@ -110,6 +112,7 @@ interval data.frame can be provided in the `impute` argument to
 [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md):
 
 ``` r
+
 library(PKNCA)
 # Remove time 0 to illustrate that imputation works
 d_conc <- as.data.frame(datasets::Theoph)[!datasets::Theoph$Time == 0, ]

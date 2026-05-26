@@ -63,6 +63,7 @@ Columns that can be used include:
 ### Dataset Basics: Example interval data
 
 ``` r
+
 d_interval_1 <-
   data.frame(
     start=0, end=8,
@@ -107,6 +108,7 @@ each group.
 We will break this down in subsequent slides.
 
 ``` r
+
 # Concentration data setup
 d_conc <-
   datasets::Theoph |>
@@ -127,6 +129,7 @@ o_result <- pk.nca(o_data)
 ### How do I do a simple calculation? Concentration data
 
 ``` r
+
 # Load your dataset as a data.frame
 d_conc <-
   datasets::Theoph |>
@@ -141,6 +144,7 @@ pander::pander(head(d_conc, 2))
 |    1    | 79.6 | 4.02 | 0.25 | 2.84 |
 
 ``` r
+
 # Define the PKNCAconc object indicating the concentration and time columns, the
 # dataset, and any other options. Optionally include units.
 o_conc <- PKNCAconc(conc~Time, data=d_conc, timeu = "hr", concu = "mg/L")
@@ -149,6 +153,7 @@ o_conc <- PKNCAconc(conc~Time, data=d_conc, timeu = "hr", concu = "mg/L")
 ### How do I do a simple calculation? Dose data
 
 ``` r
+
 # Load your dataset as a data.frame
 d_dose <-
   datasets::Theoph |>
@@ -163,6 +168,7 @@ pander::pander(d_dose)
 |    1    | 79.6 | 4.02 |  0   | 0.74 |
 
 ``` r
+
 # Define the PKNCAdose object indicating the dose amount and time columns, the
 # dataset, and any other options. Optionally include units.
 o_dose <- PKNCAdose(Dose~Time, data=d_dose, doseu = "mg")
@@ -171,6 +177,7 @@ o_dose <- PKNCAdose(Dose~Time, data=d_dose, doseu = "mg")
 ### How do I do a simple calculation? Calculate results
 
 ``` r
+
 # Combine the PKNCAconc and PKNCAdose objects.  You can add interval
 # specifications and calculation options here.
 o_data <- PKNCAdata(o_conc, o_dose)
@@ -200,18 +207,19 @@ All results (summary or individual) can be output either in a
 Quarto/Rmarkdown report or another file for reporting.
 
 ``` r
+
 # Look at summarized results
 pander::pander(summary(o_result), split.tables = Inf)
 ```
 
 | Interval Start | Interval End | AUClast (hr\*mg/L) | Cmax (mg/L) | Tmax (hr) | Half-life (hr) | AUCinf,obs (hr\*mg/L) |
-|:--------------:|:------------:|:------------------:|:-----------:|:---------:|:--------------:|:---------------------:|
-|       0        |      24      |        92.4        |      .      |     .     |       .        |           .           |
-|       0        |     Inf      |         .          |    10.5     |   1.12    |      14.3      |          215          |
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| 0 | 24 | 92.4 | . | . | . | . |
+| 0 | Inf | . | 10.5 | 1.12 | 14.3 | 215 |
 
 AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of
 variation; Tmax: median and range; Half-life: arithmetic mean and
-standard deviation
+standard deviation {.table}
 
 ### How do I do a simple calculation? Get individual results
 
@@ -219,6 +227,7 @@ Use [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) to
 get the individual NCA parameter results.
 
 ``` r
+
 # Look at individual results
 pander::pander(head(
   as.data.frame(o_result),
@@ -279,19 +288,21 @@ a table with a caption.
 NCA results makes a listing.
 
 ``` r
+
 pander::pander(summary(o_result), split.tables = Inf)
 ```
 
 | Interval Start | Interval End | AUClast (hr\*mg/L) | Cmax (mg/L) | Tmax (hr) | Half-life (hr) | AUCinf,obs (hr\*mg/L) |
-|:--------------:|:------------:|:------------------:|:-----------:|:---------:|:--------------:|:---------------------:|
-|       0        |      24      |        92.4        |      .      |     .     |       .        |           .           |
-|       0        |     Inf      |         .          |    10.5     |   1.12    |      14.3      |          215          |
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| 0 | 24 | 92.4 | . | . | . | . |
+| 0 | Inf | . | 10.5 | 1.12 | 14.3 | 215 |
 
 AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of
 variation; Tmax: median and range; Half-life: arithmetic mean and
-standard deviation
+standard deviation {.table}
 
 ``` r
+
 pander::pander(as.data.frame(o_result), split.tables = Inf)
 ```
 
@@ -301,6 +312,7 @@ Generate all individual profiles using the groups that you defined using
 the `ggtibble` package.
 
 ``` r
+
 library(ggtibble)
 ```
 
@@ -312,6 +324,7 @@ library(ggtibble)
     ##     %+%, ggsave
 
 ``` r
+
 o_conc <-
   PKNCAconc(
     conc~Time|Subject,

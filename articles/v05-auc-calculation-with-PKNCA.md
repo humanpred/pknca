@@ -10,6 +10,7 @@ calculate it.
 For the below examples, the following data will be used.
 
 ``` r
+
 suppressPackageStartupMessages({
   library(PKNCA)
   library(dplyr)
@@ -28,6 +29,7 @@ my_conc$measured <- TRUE
 ```
 
 ``` r
+
 ggplot(my_conc,
        aes(x=time,
            y=conc,
@@ -48,6 +50,7 @@ are the set of parameters required to calculate the requested
 parameters.
 
 ``` r
+
 conc_obj <- PKNCAconc(my_conc, conc~time|subject)
 data_obj <- PKNCAdata(data.conc=conc_obj,
                       intervals=data.frame(start=0,
@@ -62,6 +65,7 @@ results_obj <- pk.nca(data_obj)
     ## No dose information provided, calculations requiring dose will return NA.
 
 ``` r
+
 kable(as.data.frame(results_obj))
 ```
 
@@ -93,6 +97,7 @@ above 0). In the figure below, AUC_(0-last) integrates the shaded
 region. Integration after `tlast` is 0.
 
 ``` r
+
 tlast <- pk.calc.tlast(conc=my_conc$conc,
                        time=my_conc$time)
 tlast
@@ -101,10 +106,12 @@ tlast
     ## [1] 8
 
 ``` r
+
 my_conc$include_auclast <- my_conc$time <= tlast
 ```
 
 ``` r
+
 ggplot(my_conc,
        aes(x=time,
            y=conc,
@@ -125,9 +132,10 @@ ggplot(my_conc,
 
 AUC_(all) starts with AUC_(0-last) and then integrates from `tlast` to
 the first point after `tlast` with a linear interpolation to zero. From
-the second point after `tlast` to $\infty$ is considered zero.
+the second point after `tlast` to $`\infty`$ is considered zero.
 
 ``` r
+
 first_after_tlast <- my_conc$time[my_conc$time > tlast][1]
 first_after_tlast
 ```
@@ -135,10 +143,12 @@ first_after_tlast
     ## [1] 12
 
 ``` r
+
 my_conc$include_aucall <- my_conc$time <= first_after_tlast
 ```
 
 ``` r
+
 ggplot(my_conc,
        aes(x=time,
            y=conc,
@@ -155,23 +165,24 @@ ggplot(my_conc,
 
 ![](v05-auc-calculation-with-PKNCA_files/figure-html/aucall-visualization-1.png)
 
-## AUC to Infinity (AUC_($\infty$))
+## AUC to Infinity (AUC_($`\infty`$))
 
-AUC_(0-$\infty$) is commonly used for single-dose data. It calculates
-the AUC_(0-last) and then extrapolates to $\infty$ using the estimated
+AUC_(0-$`\infty`$) is commonly used for single-dose data. It calculates
+the AUC_(0-last) and then extrapolates to $`\infty`$ using the estimated
 half-life. Two starting points are used to estimate from `tlast` to
-$\infty$, the observed or half-life predicted concentration at `tlast`
+$`\infty`$, the observed or half-life predicted concentration at `tlast`
 (`clast.obs` and `clast.pred`).
 
 The two figures below illustrate the integration with
-AUC_(0-$\infty$,obs) and AUC~0-$\infty$,pred\$. The difference between
-the two figures is most evident at time=8 where there is a discontinuity
-in integration at `tlast` due to using `clast.pred` after that point and
-`clast.obs` before that point. (To illustrate the integration
-differences, BLQ indicator shapes have been removed. BLQ is handled
-identically to previous figures.)
+AUC_(0-$`\infty`$,obs) and AUC~0-$`\infty`$,pred\$. The difference
+between the two figures is most evident at time=8 where there is a
+discontinuity in integration at `tlast` due to using `clast.pred` after
+that point and `clast.obs` before that point. (To illustrate the
+integration differences, BLQ indicator shapes have been removed. BLQ is
+handled identically to previous figures.)
 
 ``` r
+
 # Add one row to illustrate extrapolation beyond observed data
 my_conc <-
   rbind(my_conc,
@@ -203,6 +214,7 @@ my_conc$conc_aucinf.pred[my_conc$time == tlast] <-
 ```
 
 ``` r
+
 ggplot(my_conc[!is.na(my_conc$conc),],
        aes(x=time,
            y=conc,
@@ -221,6 +233,7 @@ ggplot(my_conc[!is.na(my_conc$conc),],
 ![](v05-auc-calculation-with-PKNCA_files/figure-html/aucinf-visualization-1.png)
 
 ``` r
+
 ggplot(my_conc[!is.na(my_conc$conc),],
        aes(x=time,
            y=conc,
@@ -250,8 +263,8 @@ ggplot(my_conc[!is.na(my_conc$conc),],
 
 Partial AUCs integrate part of the area within a time range of interest.
 Partial AUCs are often of interest to assess bioequivalence with more
-detail than AUC_(0-$\infty$) or AUC_(0-last) may indicate. Within PKNCA,
-partial AUCs are treated like AUC_(last) with start and end times
+detail than AUC_(0-$`\infty`$) or AUC_(0-last) may indicate. Within
+PKNCA, partial AUCs are treated like AUC_(last) with start and end times
 separately selected. (In a future version of PKNCA, they will be more
 simply calculated using an AUC_(interval).)
 
@@ -260,6 +273,7 @@ AUCs can be calculated using the parameter `auclast` as illustrated
 below.
 
 ``` r
+
 # Interpolation not required
 data_obs_obj <- PKNCAdata(conc_obj, intervals=data.frame(start=0, end=2, auclast=TRUE))
 results_obs_obj <- pk.nca(data_obs_obj)
@@ -268,6 +282,7 @@ results_obs_obj <- pk.nca(data_obs_obj)
     ## No dose information provided, calculations requiring dose will return NA.
 
 ``` r
+
 kable(as.data.frame(results_obs_obj))
 ```
 
@@ -281,6 +296,7 @@ be interpolated and added to the dataset before calculation as
 illustrated below.
 
 ``` r
+
 # Interpolation required
 my_conc_interp <-
   arrange(
@@ -293,21 +309,22 @@ my_conc_interp <-
 kable(my_conc_interp)
 ```
 
-| conc | time | subject | BLQ   | measured | include_auclast | include_aucall | conc_aucinf.obs | conc_aucinf.pred |
-|-----:|-----:|--------:|:------|:---------|:----------------|:---------------|----------------:|-----------------:|
-| 0.00 |  0.0 |       1 | TRUE  | TRUE     | TRUE            | TRUE           |       0.0000000 |        0.0000000 |
-| 2.50 |  1.0 |       1 | FALSE | TRUE     | TRUE            | TRUE           |       2.5000000 |        2.5000000 |
-| 2.75 |  1.5 |       1 | NA    | NA       | NA              | NA             |              NA |               NA |
-| 3.00 |  2.0 |       1 | FALSE | TRUE     | TRUE            | TRUE           |       3.0000000 |        3.0000000 |
-| 2.00 |  3.0 |       1 | FALSE | TRUE     | TRUE            | TRUE           |       2.0000000 |        2.0000000 |
-| 1.50 |  4.0 |       1 | FALSE | TRUE     | TRUE            | TRUE           |       1.5000000 |        1.5000000 |
-| 1.20 |  5.0 |       1 | FALSE | TRUE     | TRUE            | TRUE           |       1.2000000 |        1.2000000 |
-| 1.10 |  8.0 |       1 | FALSE | TRUE     | TRUE            | TRUE           |       1.1000000 |        1.0216136 |
-| 0.00 | 12.0 |       1 | TRUE  | TRUE     | FALSE           | TRUE           |       0.7153906 |        0.6644116 |
-| 0.00 | 24.0 |       1 | TRUE  | TRUE     | FALSE           | FALSE          |       0.1967862 |        0.1827632 |
-|   NA | 36.0 |       1 | NA    | FALSE    | FALSE           | FALSE          |       0.0541310 |        0.0502736 |
+| conc | time | subject | BLQ | measured | include_auclast | include_aucall | conc_aucinf.obs | conc_aucinf.pred |
+|---:|---:|---:|:---|:---|:---|:---|---:|---:|
+| 0.00 | 0.0 | 1 | TRUE | TRUE | TRUE | TRUE | 0.0000000 | 0.0000000 |
+| 2.50 | 1.0 | 1 | FALSE | TRUE | TRUE | TRUE | 2.5000000 | 2.5000000 |
+| 2.75 | 1.5 | 1 | NA | NA | NA | NA | NA | NA |
+| 3.00 | 2.0 | 1 | FALSE | TRUE | TRUE | TRUE | 3.0000000 | 3.0000000 |
+| 2.00 | 3.0 | 1 | FALSE | TRUE | TRUE | TRUE | 2.0000000 | 2.0000000 |
+| 1.50 | 4.0 | 1 | FALSE | TRUE | TRUE | TRUE | 1.5000000 | 1.5000000 |
+| 1.20 | 5.0 | 1 | FALSE | TRUE | TRUE | TRUE | 1.2000000 | 1.2000000 |
+| 1.10 | 8.0 | 1 | FALSE | TRUE | TRUE | TRUE | 1.1000000 | 1.0216136 |
+| 0.00 | 12.0 | 1 | TRUE | TRUE | FALSE | TRUE | 0.7153906 | 0.6644116 |
+| 0.00 | 24.0 | 1 | TRUE | TRUE | FALSE | FALSE | 0.1967862 | 0.1827632 |
+| NA | 36.0 | 1 | NA | FALSE | FALSE | FALSE | 0.0541310 | 0.0502736 |
 
 ``` r
+
 conc_interp_obj <- PKNCAconc(my_conc_interp, conc~time|subject)
 data_interp_obj <- PKNCAdata(conc_interp_obj, intervals=data.frame(start=0, end=1.5, auclast=TRUE))
 results_interp <- pk.nca(data_interp_obj)
@@ -316,6 +333,7 @@ results_interp <- pk.nca(data_interp_obj)
     ## No dose information provided, calculations requiring dose will return NA.
 
 ``` r
+
 as.data.frame(results_interp)
 ```
 

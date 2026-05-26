@@ -18,6 +18,7 @@ vignette](http://humanpred.github.io/pknca/articles/v20-superposition.md)
 will be used.
 
 ``` r
+
 library(PKNCA)
 theoph_corrected <- as.data.frame(datasets::Theoph)
 theoph_corrected$conc[theoph_corrected$Time == 0] <- 0
@@ -35,6 +36,7 @@ steady_state_noise$conc <-
 Examine the data graphically.
 
 ``` r
+
 library(ggplot2)
 ggplot(steady_state_noise, aes(x=time, y=conc, groups=Subject)) + geom_line()
 ```
@@ -58,6 +60,7 @@ steady-state:
     nonlinear model
 
 ``` r
+
 tss_mono <-
   pk.tss.monoexponential(
     conc = steady_state_noise$conc,
@@ -109,6 +112,7 @@ measurement and moving backward in time. It has bias in that more
 individuals will move the time to steady-state to a late time point.
 
 ``` r
+
 tss_step <-
   pk.tss.stepwise.linear(
     conc = steady_state_noise$conc,

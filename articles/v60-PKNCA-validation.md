@@ -28,12 +28,14 @@ results: Tests were not run because tests are not installed.
 ## Session Information
 
 ``` r
+
 Sys.Date()
 ```
 
-    ## [1] "2026-04-28"
+    ## [1] "2026-05-26"
 
 ``` r
+
 sessionInfo()
 ```
 
@@ -69,5 +71,5 @@ sessionInfo()
     ## [21] lifecycle_1.0.5   compiler_4.6.0    fs_2.1.0          Rcpp_1.1.1-1.1   
     ## [25] pkgconfig_2.0.3   lattice_0.22-9    systemfonts_1.3.2 digest_0.6.39    
     ## [29] R6_2.6.1          tidyselect_1.2.1  pillar_1.11.1     magrittr_2.0.5   
-    ## [33] bslib_0.10.0      tools_4.6.0       units_1.0-1       pkgdown_2.2.0    
+    ## [33] bslib_0.11.0      tools_4.6.0       units_1.0-1       pkgdown_2.2.0    
     ## [37] cachem_1.1.0      desc_1.4.3

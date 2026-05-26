@@ -94,7 +94,7 @@ AUCall extrapolation after T_(last) has two rules:
 AUCinf extrapolation requires estimation of a half-life. It extrapolates
 using the equation
 
-$Extrap = \frac{C_{last}}{\lambda_{z}}$
+$`Extrap = \frac{C_{last}}{\lambda_z}`$
 
 ## Examples
 
