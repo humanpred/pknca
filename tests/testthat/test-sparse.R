@@ -61,3 +61,25 @@ test_that("sparse_mean", {
     "arithmetic mean"
   )
 })
+
+test_that("cov_holder clips covariance to Cauchy-Schwartz bound", {
+  # Construct data where the Holder covariance formula exceeds sqrt(var1*var2).
+  # Time 1: subjects 1 & 2, concentrations 0 & 10 → var = 50
+  # Time 2: subjects 1, 2, & 3, concentrations 0, 10, & 5 → var = 25
+  # Both subjects measured at time 1 and time 2, so subject_both = {1,2}.
+  # Holder numerator = (0-5)(0-5) + (10-5)(10-5) = 50
+  # Holder denominator = (2-1) + (1-2/2)*(1-2/3) = 1
+  # raw cov_ij = 50 > sqrt(50*25) ≈ 35.36 → Cauchy-Schwartz is violated
+  conc <- c(0, 10, 0, 10, 5)
+  time <- c(1, 1, 2, 2, 2)
+  subject <- c(1, 2, 1, 2, 3)
+
+  sparse_pk <- as_sparse_pk(conc = conc, time = time, subject = subject)
+  sparse_pk_wt <- sparse_auc_weight_linear(sparse_pk)
+  sparse_pk_mean <- sparse_mean(sparse_pk_wt, sparse_mean_method = "arithmetic mean")
+  cov_mat <- cov_holder(sparse_pk_mean)
+
+  # After clipping, |cov[1,2]| must equal sqrt(var[1,1] * var[2,2])
+  expect_equal(abs(cov_mat[1, 2]), sqrt(cov_mat[1, 1] * cov_mat[2, 2]))
+})
+
