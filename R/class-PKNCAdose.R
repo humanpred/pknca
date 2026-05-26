@@ -126,12 +126,8 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
   duplicate_check(object = ret, data_type = "dosing")
 
   # Do some general checking of the dose and time data.
-  # Disconsider points that will be excluded.
-  if (!is.null(exclude)) {
-    is_excluded <- !is.na(data[[exclude]])
-  } else {
-    is_excluded <- rep(FALSE, nrow(data))
-  }
+  # Disregard points that will be excluded.
+  is_excluded <- !is.na(normalize_exclude(ret))
   # Check for missing independent variable (time) in non-excluded rows
   mask.indep <- is.na(getIndepVar.PKNCAdose(ret)) & !is_excluded
   if (any(mask.indep) & !all(is.na(getIndepVar.PKNCAdose(ret)[!is_excluded]))) {
