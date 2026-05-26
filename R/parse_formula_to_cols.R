@@ -17,8 +17,8 @@ findOperator <- function(x, op, side) {
     return(NULL)
   } else if (is.null(x)) {
     return(NULL)
-  } else if (inherits(x, "call") |
-             inherits(x, "formula") |
+  } else if (inherits(x, "call") ||
+             inherits(x, "formula") ||
              inherits(x, "(")) {
     # This is all or part of a formula
     op <- as.name(op)
@@ -53,8 +53,8 @@ findOperator <- function(x, op, side) {
         stop("call or formula with length 1 found without finding the operator, unknown how to proceed")
       # First search the left side
       ret <- findOperator(x[[2]], op, side)
-      if ((identical(ret, NA) |
-           is.null(ret)) &
+      if ((identical(ret, NA) ||
+           is.null(ret)) &&
           length(x) == 3)
         ret <- findOperator(x[[3]], op, side)
     }

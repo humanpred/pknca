@@ -22,7 +22,6 @@ Calculation Intervals"
 
 Other Interval specifications: 
 \code{\link{add.interval.col}()},
-\code{\link{check.interval.deps}()},
 \code{\link{check.interval.specification}()},
 \code{\link{choose.auc.intervals}()},
 \code{\link{get.parameter.deps}()}

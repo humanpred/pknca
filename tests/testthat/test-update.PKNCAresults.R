@@ -1,3 +1,11 @@
+test_that("filter_changed_inner_join returns all data when no column overlap", {
+  data <- data.frame(a = 1:3, b = letters[1:3])
+  changed <- data.frame(x = 10:12)
+  # nrow(changed) > 0, intersect(names(data), names(changed)) == character(0)
+  # → the function returns all of data unchanged
+  expect_identical(PKNCA:::filter_changed_inner_join(data, changed), data)
+})
+
 test_that("update.PKNCAresults", {
   d_conc <- generate.conc(2, 1, c(0, 2, 6, 12, 24))
   d_dose <- generate.dose(d_conc)

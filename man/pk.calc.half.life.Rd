@@ -11,10 +11,14 @@ pk.calc.half.life(
   tlast,
   time.dose = NULL,
   duration.dose = 0,
+  lloq = NULL,
+  hl_method = c("log-linear", "tobit"),
   manually.selected.points = FALSE,
   options = list(),
   min.hl.points = NULL,
   adj.r.squared.factor = NULL,
+  tobit_n_points_penalty = NULL,
+  tobit_optim_control = NULL,
   conc.blq = NULL,
   conc.na = NULL,
   first.tmax = NULL,
@@ -41,6 +45,15 @@ length as \code{dose})}
 interval (typically zero for extravascular and intravascular bolus and
 nonzero for intravascular infusion)}
 
+\item{lloq}{Lower limit of quantification.  A scalar or a vector the same
+length as \code{conc}.  Required when \code{hl_method = "tobit"}.}
+
+\item{hl_method}{The method used to estimate the half-life.
+\code{"log-linear"} (default) uses ordinary least-squares regression on
+log-transformed concentrations.  \code{"tobit"} uses maximum-likelihood Tobit
+regression that properly accounts for BLQ observations.  The global default
+can be changed via \code{PKNCA.options(hl_method = "tobit")}.}
+
 \item{manually.selected.points}{Have the input points (\code{conc} and
 \code{time}) been manually selected?  The impact of setting this to
 \code{TRUE} is that no selection for the best points will be done.  When
@@ -51,58 +64,86 @@ nonzero for intravascular infusion)}
 \code{PKNCA.options()})}
 
 \item{min.hl.points}{The minimum number of points that must be
-included to calculate the half-life}
+included to calculate the half-life.  For \code{hl_method = "tobit"} this
+counts only above-LLOQ points.}
 
 \item{adj.r.squared.factor}{The allowance in adjusted r-squared for
-adding another point.}
+adding another point (log-linear method only).}
 
-\item{conc.blq}{See \code{\link[=clean.conc.blq]{clean.conc.blq()}}}
+\item{tobit_n_points_penalty}{The penalty exponent on the number of points
+for Tobit window selection.  See \code{\link[=PKNCA.options]{PKNCA.options()}}.}
 
-\item{conc.na}{See \code{\link[=clean.conc.na]{clean.conc.na()}}}
+\item{tobit_optim_control}{A list of control parameters passed to
+\code{\link[stats:optim]{stats::optim()}} for the Tobit fit.  See \code{\link[=PKNCA.options]{PKNCA.options()}}.}
 
-\item{first.tmax}{See \code{\link[=pk.calc.tmax]{pk.calc.tmax()}}.}
+\item{conc.blq}{How to handle a BLQ value that is between above LOQ values?
+See details for description.}
+
+\item{conc.na}{How to handle NA concentrations.  (See \code{\link[=clean.conc.na]{clean.conc.na()}})}
+
+\item{first.tmax}{If there is more than one time point with the maximum value (Cmax or ERmax),
+which time should be selected for Tmax/ERTmax?  If 'TRUE', the first will be selected. If not, then the
+last is considered Tmax/ERTmax.}
 
 \item{allow.tmax.in.half.life}{Allow the concentration point for tmax
 to be included in the half-life slope calculation.}
 
-\item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}},
-\code{\link[=clean.conc.blq]{clean.conc.blq()}}, and \code{\link[=clean.conc.na]{clean.conc.na()}}?}
+\item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 }
 \value{
-A data frame with one row and columns for
+A data frame with one row.  Columns depend on \code{hl_method}:
+
+Columns returned by both methods:
 \describe{
 \item{tmax}{Time of maximum observed concentration (only included
 if not given as an input)}
 \item{tlast}{Time of last observed concentration above the LOQ (only
 included if not given as an input)}
-\item{r.squared}{coefficient of determination}
-\item{adj.r.squared}{adjusted coefficient of determination}
 \item{lambda.z}{elimination rate}
-\item{lambda.z.corrxy}{correlation between time and log-conc half-life points}
 \item{lambda.z.time.first}{first time for half-life calculation}
 \item{lambda.z.time.last}{last time for half-life calculation}
-\item{lambda.z.n.points}{number of points in half-life calculation}
+\item{lambda.z.n.points}{number of points in half-life calculation
+(all points for Tobit, including BLQ)}
 \item{clast.pred}{Concentration at tlast as predicted by the half-life
 line}
 \item{half.life}{half-life}
-\item{span.ratio}{span ratio [ratio of half-life to time used for
-half-life calculation}
+\item{span.ratio}{ratio of the above-LLOQ time span to the half-life}
+}
+
+Additional columns for \code{hl_method = "log-linear"}:
+\describe{
+\item{r.squared}{coefficient of determination}
+\item{adj.r.squared}{adjusted coefficient of determination}
+\item{lambda.z.corrxy}{correlation between time and log-conc for the
+half-life points}
+}
+
+Additional columns for \code{hl_method = "tobit"}:
+\describe{
+\item{lambda.z.n.points_blq}{number of BLQ points included in the fit}
+\item{tobit_residual}{estimated residual standard deviation from the
+Tobit fit (on the log-concentration scale)}
+\item{adj_tobit_residual}{adjusted Tobit residual (analogous to
+adjusted r-squared; penalizes smaller windows)}
 }
 }
 \description{
 The terminal elimination half-life is estimated from the final points in the
-concentration-time curve using semi-log regression (\code{log(conc)~time})
-with automated selection of the points for calculation (unless
-\code{manually.selected.points} is \code{TRUE}).
+concentration-time curve using semi-log regression (\code{log(conc)~time}, the
+\code{"log-linear"} method) or Tobit regression (\code{"tobit"} method) with automated
+selection of the points for calculation (unless \code{manually.selected.points} is
+\code{TRUE}).
 }
 \details{
-See the "Half-Life Calculation" vignette for more details on the calculation
-methods used.
+See the "Half-Life Calculation" and "Half-Life Calculation with Tobit
+Regression" vignettes for more details on the calculation methods.
 
 If \code{manually.selected.points} is \code{FALSE} (default), the
 half-life is calculated by computing the best fit line for all points at or
-after tmax (based on the value of \code{allow.tmax.in.half.life}).  The best
-half-life is chosen by the following rules in order:
+after tmax (based on the value of \code{allow.tmax.in.half.life}).
+
+For \code{hl_method = "log-linear"}, the best half-life is chosen by the
+following rules in order:
 
 \itemize{
 \item{At least \code{min.hl.points} points included}
@@ -111,9 +152,16 @@ half-life is chosen by the following rules in order:
 \item{The one with the most points included}
 }
 
-If \code{manually.selected.points} is \code{TRUE}, the \code{conc}
-and \code{time} data are used as-is without any form of selection for
-the best-fit half-life.
+For \code{hl_method = "tobit"}, BLQ observations are retained and treated as
+left-censored.  The best window is the one minimizing
+\code{tobit_residual * n ^ tobit_n_points_penalty} (default: raw \code{tobit_residual})
+among windows with \code{lambda.z > 0} and at least \code{min.hl.points} above-LLOQ
+points.  On ties the largest window (most total points) is preferred.
+
+If \code{manually.selected.points} is \code{TRUE}, the \code{conc} and \code{time} data are
+used as-is without any form of point selection.  When
+\code{TRUE}, \code{adj.r.squared.factor}, \code{min.hl.points}, and
+\code{allow.tmax.in.half.life} are ignored.
 }
 \references{
 Gabrielsson J, Weiner D.  "Section 2.8.4 Strategies for estimation of
@@ -121,4 +169,11 @@ lambda-z."  Pharmacokinetic & Pharmacodynamic Data Analysis: Concepts
 and Applications, 4th Edition.  Stockholm, Sweden: Swedish
 Pharmaceutical Press, 2000.  167-9.
 }
+\seealso{
+Other Half-life and elimination: 
+\code{\link{adj.r.squared}()},
+\code{\link{pk.calc.aucpext}()},
+\code{\link{pk.calc.thalf.eff}()}
+}
+\concept{Half-life and elimination}
 \concept{NCA parameter calculations}

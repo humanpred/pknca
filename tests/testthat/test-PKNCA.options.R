@@ -66,6 +66,7 @@ test_that("PKNCA.options", {
       ),
       debug = NULL,
       first.tmax = TRUE,
+      first.tmin = TRUE,
       allow.tmax.in.half.life = FALSE,
       keep_interval_cols = NULL,
       min.hl.points = 3,
@@ -85,7 +86,10 @@ test_that("PKNCA.options", {
           cmax = c(FALSE, TRUE)
         )
       ),
-      allow_partial_missing_units = FALSE
+      allow_partial_missing_units = FALSE,
+      hl_method = "log-linear",
+      tobit_n_points_penalty = 0,
+      tobit_optim_control = list()
     )
   )
 
@@ -358,7 +362,8 @@ test_that("PKNCA.choose.option", {
 test_that("PKNCA.set.summary input checking", {
   # Get the current state to reset it at the end
   initial.summary.set <- PKNCA.set.summary()
-  PKNCA.set.summary(reset=TRUE)
+  expect_warning(PKNCA.set.summary(reset = TRUE), 
+                 regexp = "`reset = TRUE` is not intended for general use")
   # Confirm that reset actually resets the summary settings
   expect_equal(PKNCA.set.summary(), list())
 
@@ -413,7 +418,8 @@ test_that("PKNCA.set.summary input checking", {
                list(auclast=list(description="A", point=mean, spread=sd,
                                  rounding=list(round=2))))
   # Changing a vector of settings works
-  PKNCA.set.summary(reset=TRUE)
+  expect_warning(PKNCA.set.summary(reset = TRUE), 
+                 regexp = "`reset = TRUE` is not intended for general use")
   expect_equal(
     PKNCA.set.summary(
       name=c("cmax", "auclast"),
@@ -437,7 +443,8 @@ test_that("PKNCA.set.summary input checking", {
   )
 
   # Reset all the values to the defaults
-  PKNCA.set.summary(reset=TRUE)
+  expect_warning(PKNCA.set.summary(reset = TRUE), 
+                 regexp = "`reset = TRUE` is not intended for general use")
   for (n in names(initial.summary.set)) {
     tmp <- initial.summary.set[[n]]
     tmp$name <- n

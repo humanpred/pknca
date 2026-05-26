@@ -52,10 +52,10 @@ amount must be given (the left hand side of the \code{formula}).}
 main time variable is actual time.  The \code{time.nominal} is not used during
 calculations; it is available to assist with data summary and checking.}
 
-\item{exclude}{(optional) The name of a column with concentrations to exclude
+\item{exclude}{(optional) The name of a column with doses to exclude
 from calculations and summarization.  If given, the column should have
-values of \code{NA} or \code{""} for concentrations to include and non-empty text for
-concentrations to exclude.}
+values of \code{NA} or \code{""} for doses to include and non-empty text for
+doses to exclude.}
 
 \item{doseu}{Either unit values (e.g. "mg") or column names within the data
 where units are provided.}
@@ -63,7 +63,7 @@ where units are provided.}
 \item{doseu_pref}{Preferred units for reporting (not column names)}
 }
 \value{
-A PKNCAconc object that can be used for automated NCA.
+A PKNCAdose object that can be used for automated NCA.
 }
 \description{
 Create a PKNCAdose object
@@ -82,7 +82,8 @@ side must be specified as a period (\code{.}):
 \code{dose~.|treatment+subject}, and only a single row may be given
 per group.  When the right side is missing, PKNCA assumes that the
 same dose is given in every interval.  When given as a two-sided
-formula
+formula, both the dose amount and time are used directly from the
+data.
 }
 \seealso{
 Other PKNCA objects: 

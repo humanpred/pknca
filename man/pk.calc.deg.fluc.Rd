@@ -2,9 +2,12 @@
 % Please edit documentation in R/pk.calc.simple.R
 \name{pk.calc.deg.fluc}
 \alias{pk.calc.deg.fluc}
+\alias{pk.calc.swing}
 \title{Determine the degree of fluctuation}
 \usage{
 pk.calc.deg.fluc(cmax, cmin, cav)
+
+pk.calc.swing(cmax, cmin)
 }
 \arguments{
 \item{cmax}{The maximum observed concentration}
@@ -15,10 +18,25 @@ pk.calc.deg.fluc(cmax, cmin, cav)
 }
 \value{
 The degree of fluctuation around the average concentration.
+
+The swing above the minimum concentration.  If \code{cmin} is zero, then
+the result is infinity.
 }
 \description{
 Determine the degree of fluctuation
 }
 \details{
 deg.fluc is \code{100*(cmax - cmin)/cav}.
+
+swing is \code{100*(cmax - cmin)/cmin}.
 }
+\section{Functions}{
+\itemize{
+\item \code{pk.calc.swing()}: PK swing
+
+}}
+\seealso{
+Other Multiple-dose PK parameters: 
+\code{\link{pk.calc.ptr}()}
+}
+\concept{Multiple-dose PK parameters}

@@ -26,8 +26,7 @@ to \code{pk.calc.auxc}}
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
 
-\item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}, \code{\link[=clean.conc.blq]{clean.conc.blq()}}, and
-\code{\link[=clean.conc.na]{clean.conc.na()}}?}
+\item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 
 \item{auciv}{The AUC calculated using \code{c0}}
 }
@@ -61,3 +60,9 @@ The calculation for back-extrapolation is \code{100*(1 - auc/auciv)}.
 administration
 
 }}
+\seealso{
+Other AUC calculations: 
+\code{\link{pk.calc.aucint}()},
+\code{\link{pk.calc.auxc}()}
+}
+\concept{AUC calculations}

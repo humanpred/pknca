@@ -35,9 +35,9 @@
 # To work with the use of dplyr's pipe within the exclude function
 utils::globalVariables(".")
 
-.onLoad <- function(...) {
+.onLoad <- function(...) { # nocov start
   if (requireNamespace("units", quietly = TRUE)) {
     # Allow "fraction" to be used as a unit for fraction excreted
     units::install_unit(symbol = "fraction", def = "1")
   }
-}
+} # nocov end

@@ -171,7 +171,7 @@ results_obj2 <- pk.nca(data_obj2)
 results_norm_by_col <- normalize_by_col(
   results_obj2,
   col = "weight",
-  unit = "weigth_unit",
+  unit = "weight_unit",
   parameters = "cmax",
   suffix = ".wn"
 )

@@ -1,7 +1,7 @@
 test_that("check.interval.specification", {
 
   # Get the current name order of the expected results
-  nameorder <- names(check.interval.deps(data.frame(start=0, end=1, cmax=TRUE)))
+  nameorder <- names(check.interval.specification(data.frame(start=0, end=1, cmax=TRUE)))
 
   d1 <- data.frame(start=0, end=1)
   r1 <- data.frame(start=0, end=1)
@@ -156,25 +156,6 @@ test_that("check.interval.specification", {
     check.interval.specification(d17),
     regexp="Interval column 'end' should not be a factor",
     info="End must be numeric and not a factor."
-  )
-})
-
-test_that("check.interval.deps", {
-  # Get the current name order of the expected results
-  nameorder <- names(check.interval.deps(data.frame(start=0, end=1, cmax=TRUE)))
-
-  r1 <- data.frame(
-    start = 0,
-    end = 24,
-    lambda.z = TRUE,
-    clast.obs = TRUE,
-    aucinf.obs = TRUE
-  )
-  r1[,setdiff(nameorder, names(r1))] <- FALSE
-  expect_equal(
-    check.interval.deps(data.frame(start=0, end=24, aucinf.obs=TRUE)),
-    r1[,nameorder],
-    info="Confirm that the interval dependencies are accurately added"
   )
 })
 

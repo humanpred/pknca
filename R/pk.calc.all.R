@@ -196,7 +196,11 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
     # No intervals; potentially placebo data
     return(rlang::warning_cnd(class="pknca_no_intervals", message="No intervals for data"))
   }
-  ret <- data.frame()
+  # Hoist the debug check: options is already the fully-merged options object
+  # (merged at the top of pk.nca()), so there is no need to re-query
+  # PKNCA.options() from the environment on every iteration.
+  use_debug <- !is.null(options$debug)
+  ret_list <- list()
   for (i in seq_len(nrow(data_intervals))) {
     current_interval <- data_intervals[i, , drop=FALSE]
     has_calc_sparse_dense <- any_sparse_dense_in_interval(current_interval, sparse=sparse)
@@ -275,11 +279,11 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
         args$exclude_half.life <- conc_data_interval$exclude_half.life
         uses_exclude_hl <- !is.null(args$exclude_half.life) && !all(is.na(args$exclude_half.life))
       }
-      if (uses_include_hl & uses_exclude_hl) {
+      if (uses_include_hl && uses_exclude_hl) {
         stop("Cannot both include and exclude half-life points for the same interval")
       }
       # Try the calculation
-      if (!is.null(PKNCA.options()$debug)) {
+      if (use_debug) {
         # debugging mode does not need coverage
         calculated_interval <- do.call(pk.nca.interval, args) # nocov
       } else {
@@ -304,10 +308,10 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
           calculated_interval,
           row.names=NULL
         )
-      ret <- rbind(ret, new_ret)
+      ret_list[[length(ret_list) + 1L]] <- new_ret
     }
   }
-  ret
+  if (length(ret_list) == 0L) data.frame() else dplyr::bind_rows(ret_list)
 }
 
 #' Compute all PK parameters for a single concentration-time data set
@@ -409,7 +413,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     request_to_calculate <- as.logical(interval[[n]])
     has_calculation_function <- !is.na(all_intervals[[n]]$FUN)
     is_correct_sparse_dense <- all_intervals[[n]]$sparse == sparse
-    if (request_to_calculate & has_calculation_function & is_correct_sparse_dense) {
+    if (request_to_calculate && has_calculation_function && is_correct_sparse_dense) {
       call_args <- list()
       exclude_from_argument <- character(0)
       # Prepare to call the function by setting up its arguments.
@@ -527,30 +531,9 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       # If the function returns a data frame, save all the returned values,
       # otherwise, save the value returned.
       if (is.data.frame(tmp_result)) {
-        # if (uses_units) {
-        #   # Convert to mixed_units so that rbind will work
-        #   for (nm in names(tmp_result)) {
-        #     if (inherits(tmp_result[[nm]], "units")) {
-        #       tmp_result[[nm]] <- units::mixed_units(tmp_result[[nm]])
-        #     } else {
-        #       # unitless
-        #       tmp_result[[nm]] <- units::mixed_units(tmp_result[[nm]], "")
-        #     }
-        #   }
-        # }
         tmp_testcd <- names(tmp_result)
         tmp_result <- unlist(tmp_result, use.names=FALSE, recursive=FALSE)
       } else {
-        # if (uses_units) {
-        #   if (inherits(tmp_result, "units")) {
-        #     # I() due to https://github.com/r-quantities/units/issues/309
-        #     tmp_result <- I(units::mixed_units(tmp_result))
-        #   } else {
-        #     # unitless
-        #     # I() due to https://github.com/r-quantities/units/issues/309
-        #     tmp_result <- I(units::mixed_units(tmp_result, ""))
-        #   }
-        # }
         tmp_testcd <- n
       }
       single_result <-

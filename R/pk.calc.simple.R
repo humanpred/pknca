@@ -5,6 +5,7 @@
 #' @param r.sq The r-squared value
 #' @param n The number of points
 #' @return The numeric adjusted r-squared value
+#' @family Half-life and elimination
 #' @export
 adj.r.squared <- function(r.sq, n) {
   if (n <= 2) {
@@ -30,7 +31,7 @@ pk.calc.cmax <- function(conc, check=TRUE) {
   if (check) {
     assert_conc(conc = conc)
   }
-  if (length(conc) == 0 | all(is.na(conc))) {
+  if (length(conc) == 0 || all(is.na(conc))) {
     NA
   } else {
     max(conc, na.rm=TRUE)
@@ -62,7 +63,7 @@ pk.calc.cmin <- function(conc, check=TRUE) {
   if (check) {
     assert_conc(conc=conc)
   }
-  if (length(conc) == 0 | all(is.na(conc))) {
+  if (length(conc) == 0 || all(is.na(conc))) {
     NA
   } else {
     min(conc, na.rm=TRUE)
@@ -98,11 +99,12 @@ PKNCA.set.summary(
 #'
 #' @inheritParams assert_conc_time
 #' @inheritParams PKNCA.choose.option
-#' @param first.tmax If there is more than time that matches the maximum
-#'   concentration, should the first be considered as Tmax?  If not, then the
-#'   last is considered Tmax.
-#' @param check Run [assert_conc_time()]?
+#' @inheritParams clean.conc.blq
+#' @param first.tmax If there is more than one time point with the maximum value (Cmax or ERmax),
+#'   which time should be selected for Tmax/ERTmax?  If 'TRUE', the first will be selected. If not, then the
+#'   last is considered Tmax/ERTmax.
 #' @returns The time of the maximum concentration
+#' @family NCA time parameters
 #' @examples
 #' conc_data <- Theoph[Theoph$Subject == 1,]
 #' pk.calc.tmax(conc = conc_data$conc, time = conc_data$Time)
@@ -115,7 +117,7 @@ pk.calc.tmax <- function(conc, time,
   if (check) {
     assert_conc_time(conc = conc, time = time)
   }
-  if (length(conc) == 0 | all(conc %in% c(NA, 0))) {
+  if (length(conc) == 0 || all(conc %in% c(NA, 0))) {
     NA
   } else {
     ret <- time[conc %in% pk.calc.cmax(conc, check=FALSE)]
@@ -141,14 +143,74 @@ PKNCA.set.summary(
   spread=business.range
 )
 
+#' Determine time of minimum observed PK concentration
+#'
+#' Input restrictions are:
+#' \enumerate{
+#'   \item the `conc` and `time` must be the same length,
+#'   \item the `time` may have no NAs,
+#' }
+#' `NA` will be returned if:
+#' \enumerate{
+#'   \item the length of `conc` and `time` is 0
+#'   \item all `conc` is `NA`
+#' }
+#'
+#' @inheritParams assert_conc_time
+#' @inheritParams PKNCA.choose.option
+#' @inheritParams clean.conc.blq
+#' @param first.tmin If there is more than one time point with the minimum value (Cmin),
+#'   which time should be selected for Tmin?  If 'TRUE', the first will be selected. If not,
+#'   then the last is considered Tmin.
+#' @returns The time of the minimum concentration
+#' @family NCA time parameters
+#' @examples
+#' conc_data <- Theoph[Theoph$Subject == 1,]
+#' pk.calc.tmin(conc = conc_data$conc, time = conc_data$Time)
+#' @export
+pk.calc.tmin <- function(conc, time,
+                         options=list(),
+                         first.tmin=NULL,
+                         check=TRUE) {
+  first.tmin <- PKNCA.choose.option(name="first.tmin", value=first.tmin, options=options)
+  if (check) {
+    assert_conc_time(conc = conc, time = time)
+  }
+  if (length(conc) == 0 || all(is.na(conc))) {
+    NA
+  } else {
+    ret <- time[conc %in% pk.calc.cmin(conc, check=FALSE)]
+    if (first.tmin) {
+      ret[1]
+    } else {
+      ret[length(ret)]
+    }
+  }
+}
+# Add the column to the interval specification
+add.interval.col("tmin",
+                 FUN="pk.calc.tmin",
+                 values=c(FALSE, TRUE),
+                 unit_type="time",
+                 pretty_name="Tmin",
+                 desc="Time of the minimum observed concentration",
+                 depends=NULL)
+PKNCA.set.summary(
+  name="tmin",
+  description="median and range",
+  point=business.median,
+  spread=business.range
+)
+
 #' Determine time of last observed concentration above the limit of
 #' quantification.
 #'
 #' `NA` will be returned if all `conc` are `NA` or 0.
 #'
 #' @inheritParams assert_conc_time
-#' @param check Run [assert_conc_time()]?
+#' @inheritParams clean.conc.blq
 #' @returns The time of the last observed concentration measurement
+#' @family NCA time parameters
 #' @export
 pk.calc.tlast <- function(conc, time, check=TRUE) {
   if (check) {
@@ -212,7 +274,7 @@ PKNCA.set.summary(
 #' this will return `NA_real_`.
 #'
 #' @inheritParams assert_conc_time
-#' @param check Run [assert_conc_time()]?
+#' @inheritParams clean.conc.blq
 #' @returns The last observed concentration above the LOQ
 #' @family NCA parameters for concentrations during the intervals
 #' @export
@@ -254,6 +316,7 @@ PKNCA.set.summary(
 #'
 #' @param mrt the mean residence time to infinity
 #' @return the numeric value of the effective half-life
+#' @family Half-life and elimination
 #' @export
 pk.calc.thalf.eff <- function(mrt) {
   log(2)*mrt
@@ -354,13 +417,14 @@ PKNCA.set.summary(
 #' @returns The numeric value of the AUC percent extrapolated or `NA_real_` if
 #'   any of the following are true `is.na(aucinf)`, `is.na(auclast)`,
 #'   `aucinf <= 0`, or `auclast <= 0`.
+#' @family Half-life and elimination
 #' @export
 pk.calc.aucpext <- function(auclast, aucinf) {
   scalar_auclast <- length(auclast) == 1
   scalar_aucinf <- length(aucinf) == 1
-  if (scalar_auclast | scalar_aucinf) {
+  if (scalar_auclast || scalar_aucinf) {
     # no length checking needs to occur
-  } else if ((!scalar_auclast & !scalar_aucinf) &
+  } else if ((!scalar_auclast && !scalar_aucinf) &&
              length(auclast) != length(aucinf)) {
     stop("auclast and aucinf must either be a scalar or the same length.")
   }
@@ -427,6 +491,7 @@ PKNCA.set.summary(
 #'
 #' @param mrt the mean residence time
 #' @returns the numeric value of the elimination rate
+#' @family Clearance and volume parameters
 #' @export
 pk.calc.kel <- function(mrt) {
   1/mrt
@@ -517,6 +582,16 @@ PKNCA.set.summary(
   spread=business.geocv
 )
 
+add.interval.col("kel.sparse.last",
+                 FUN = "pk.calc.kel",
+                 values = c(FALSE, TRUE),
+                 unit_type = "inverse_time",
+                 pretty_name = "Kel (for sparse data, based on AUClast)",
+                 desc = "Elimination rate (as calculated from the MRTsparse.last)",
+                 sparse = TRUE,
+                 formalsmap = list(mrt = "mrt.sparse.last"),
+                 depends = "mrt.sparse.last")
+
 #' Calculate the (observed oral) clearance
 #'
 #' @details cl is `dose/auc`.
@@ -534,6 +609,7 @@ PKNCA.set.summary(
 #' @references Gabrielsson J, Weiner D. "Section 2.5.1 Derivation of clearance."
 #'   Pharmacokinetic & Pharmacodynamic Data Analysis: Concepts and Applications,
 #'   4th Edition.  Stockholm, Sweden: Swedish Pharmaceutical Press, 2000. 86-7.
+#' @family Clearance and volume parameters
 #' @export
 pk.calc.cl <- function(dose, auc) {
   if (length(auc) == 1) {
@@ -605,6 +681,16 @@ PKNCA.set.summary(
   spread=business.geocv
 )
 
+add.interval.col("cl.sparse.last",
+                 FUN = "pk.calc.cl",
+                 values = c(FALSE, TRUE),
+                 unit_type = "clearance",
+                 pretty_name = "CL (for sparse data, based on AUClast)",
+                 desc = "Clearance from sparse sampling calculated with population AUClast",
+                 sparse = TRUE,
+                 formalsmap = list(auc = "sparse_auclast"),
+                 depends = "sparse_auclast")
+
 #' Calculate the absolute (or relative) bioavailability
 #'
 #' @details f is `(auc2/dose2)/(auc1/dose1)`.
@@ -652,7 +738,7 @@ PKNCA.set.summary(
 #' @param duration.dose The duration of the dose (usually an infusion duration
 #'   for an IV infusion)
 #' @returns the numeric value of the mean residence time
-#' @seealso [pk.calc.mrt.md()]
+#' @family Mean residence time
 #' @export
 pk.calc.mrt <- function(auc, aumc) {
   pk.calc.mrt.iv(auc, aumc, duration.dose=0)
@@ -700,6 +786,16 @@ PKNCA.set.summary(
   point=business.geomean,
   spread=business.geocv
 )
+
+add.interval.col("mrt.sparse.last",
+                 FUN = "pk.calc.mrt",
+                 values = c(FALSE, TRUE),
+                 unit_type = "time",
+                 pretty_name = "MRT (for sparse data, based on AUClast)",
+                 desc = "Mean residence time from sparse sampling",
+                 sparse = TRUE,
+                 formalsmap = list(auc = "sparse_auclast", aumc = "sparse_aumclast"),
+                 depends = c("sparse_auclast", "sparse_aumclast"))
 
 #' @describeIn pk.calc.mrt MRT for an IV infusion
 #' @export
@@ -755,20 +851,18 @@ PKNCA.set.summary(
   spread=business.geocv
 )
 
-#' Calculate the mean residence time (MRT) for multiple-dose data with nonlinear
-#' kinetics.
+#' @describeIn pk.calc.mrt MRT for multiple-dose data with nonlinear kinetics
 #'
 #' @details mrt.md is `aumctau/auctau + tau*(aucinf-auctau)/auctau` and should
 #'   only be used for multiple dosing with equal intervals between doses.
+#'   Note that if `aucinf == auctau` (as would be the assumption with
+#'   linear kinetics), the equation becomes the same as the single-dose MRT.
 #'
 #' @param auctau the AUC from time 0 to the end of the dosing interval (tau).
 #' @param aumctau the AUMC from time 0 to the end of the dosing interval (tau).
 #' @param aucinf the AUC from time 0 to infinity (typically using single-dose
 #'   data)
 #' @inheritParams assert_dosetau
-#' @details Note that if `aucinf == auctau` (as would be the assumption with
-#'   linear kinetics), the equation becomes the same as the single-dose MRT.
-#' @seealso [pk.calc.mrt()]
 #' @export
 pk.calc.mrt.md <- function(auctau, aumctau, aucinf, tau) {
   ret <- aumctau/auctau + tau*(aucinf-auctau)/auctau
@@ -813,13 +907,14 @@ PKNCA.set.summary(
 #'
 #' @inheritParams assert_lambdaz
 #' @param cl the clearance (or apparent observed clearance)
+#' @family Clearance and volume parameters
 #' @export
 pk.calc.vz <- function(cl, lambda.z) {
   assert_lambdaz(lambda.z)
   # Ensure that cl is either a scalar or the same length as AUC
   # (more complex repeating patterns while valid for general R are
   # likely errors here).
-  if (!(length(cl) %in% c(1, length(lambda.z))) |
+  if (!(length(cl) %in% c(1, length(lambda.z))) ||
       !(length(lambda.z) %in% c(1, length(cl))))
     stop("'cl' and 'lambda.z' must be the same length")
   cl/lambda.z
@@ -854,10 +949,22 @@ PKNCA.set.summary(
   spread=business.geocv
 )
 
-#' Calculate the steady-state volume of distribution (Vss)
+
+add.interval.col(
+  "vz.sparse.last",
+  FUN         = "pk.calc.vz",
+  values      = c(FALSE, TRUE),
+  unit_type   = "volume",
+  pretty_name = "Vz (for sparse data, based on AUClast)",
+  desc        = "Terminal volume of distribution from sparse sampling",
+  sparse      = TRUE,
+  formalsmap  = list(cl = "cl.sparse.last", lambda.z = "kel.sparse.last"),
+  depends     = c("cl.sparse.last", "kel.sparse.last")
+)
+
+#' @describeIn pk.calc.vz Steady-state volume of distribution (Vss)
 #'
 #' @details vss is `cl*mrt`.
-#' @param cl the clearance
 #' @param mrt the mean residence time
 #' @return the volume of distribution at steady-state
 #' @export
@@ -979,6 +1086,16 @@ PKNCA.set.summary(
   spread=business.geocv
 )
 
+add.interval.col("vss.sparse.last",
+                 FUN = "pk.calc.vss",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vss (for sparse data, based on AUClast)",
+                 desc = "Steady-state volume of distribution from sparse sampling",
+                 sparse = TRUE,
+                 formalsmap = list(cl = "cl.sparse.last", mrt = "mrt.sparse.last"),
+                 depends = c("cl.sparse.last", "mrt.sparse.last"))
+
 #' Calculate the average concentration during an interval.
 #'
 #' @details cav is `auc/(end-start)`.
@@ -986,6 +1103,7 @@ PKNCA.set.summary(
 #' @param auc The area under the curve during the interval
 #' @inheritParams assert_intervaltime_single
 #' @returns The Cav (average concentration during the interval)
+#' @family NCA parameters for concentrations during the intervals
 #' @export
 pk.calc.cav <- function(auc, start, end) {
   ret <- auc/(end-start)
@@ -1087,11 +1205,8 @@ PKNCA.set.summary(
   spread=business.geocv
 )
 
-#' Determine the concentration at the beginning of the interval
+#' @describeIn pk.calc.ctrough Concentration at the beginning of the interval
 #'
-#' @inheritParams assert_conc_time
-#' @inheritParams assert_intervaltime_single
-#' @return The concentration when `time == end`.  If none match, then `NA`
 #' @family NCA parameters for concentrations during the intervals
 #' @export
 pk.calc.cstart <- function(conc, time, start) {
@@ -1128,6 +1243,7 @@ PKNCA.set.summary(
 #' @param cmax The maximum observed concentration
 #' @param ctrough The last concentration in an interval
 #' @return The ratio of cmax to ctrough (if ctrough == 0, NA)
+#' @family Multiple-dose PK parameters
 #' @export
 pk.calc.ptr <- function(cmax, ctrough) {
   ret <- cmax/ctrough
@@ -1154,6 +1270,7 @@ PKNCA.set.summary(
 #'
 #' @inheritParams assert_conc_time
 #' @returns The time associated with the first increasing concentration
+#' @family NCA time parameters
 #' @export
 pk.calc.tlag <- function(conc, time) {
   assert_conc_time(conc = conc, time = time)
@@ -1186,6 +1303,7 @@ PKNCA.set.summary(
 #' @param cmin The minimum observed concentration
 #' @param cav The average concentration in the interval
 #' @returns The degree of fluctuation around the average concentration.
+#' @family Multiple-dose PK parameters
 #' @export
 pk.calc.deg.fluc <- function(cmax, cmin, cav) {
   ret <- 100*(cmax - cmin)/cav
@@ -1208,12 +1326,10 @@ PKNCA.set.summary(
   spread=business.sd
 )
 
-#' Determine the PK swing
+#' @describeIn pk.calc.deg.fluc PK swing
 #'
 #' @details swing is `100*(cmax - cmin)/cmin`.
 #'
-#' @param cmax The maximum observed concentration
-#' @param cmin The minimum observed concentration
 #' @returns The swing above the minimum concentration.  If `cmin` is zero, then
 #'   the result is infinity.
 #' @export
@@ -1240,11 +1356,12 @@ PKNCA.set.summary(
 #' Determine the concentration at the end of infusion
 #'
 #' @inheritParams assert_conc_time
+#' @inheritParams clean.conc.blq
 #' @param duration.dose The duration for the dosing administration (typically
 #'   from IV infusion)
-#' @param check Run [assert_conc_time()]?
 #' @returns The concentration at the end of the infusion, `NA` if
 #'   `duration.dose` is `NA`, or `NA` if all `time != duration.dose`
+#' @family NCA parameters for concentrations during the intervals
 #' @export
 pk.calc.ceoi <- function(conc, time, duration.dose=NA, check=TRUE) {
   if (check) {
@@ -1404,4 +1521,14 @@ PKNCA.set.summary(
   description="median and range",
   point=business.median,
   spread=business.range
+)
+
+PKNCA.set.summary(
+  name = c(
+    "cl.sparse.last",   "kel.sparse.last",  "mrt.sparse.last",  "vss.sparse.last",
+    "vz.sparse.last"
+  ),
+  description = "geometric mean and geometric coefficient of variation",
+  point = business.geomean,
+  spread = business.geocv
 )

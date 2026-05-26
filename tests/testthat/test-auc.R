@@ -534,6 +534,20 @@ test_that("pk.calc.auc.inf", {
     regexp="auc.type cannot be changed when calling pk.calc.auc.inf, please use pk.calc.auc")
 })
 
+test_that("pk.calc.auc.inf.obs returns NA when lambda.z is NA", {
+  expect_equal(
+    pk.calc.auc.inf.obs(
+      conc = c(0, 1, 1, 0.5),
+      time = 0:3,
+      clast.obs = 0.5,
+      lambda.z = NA,
+      interval = c(0, Inf),
+      method = "linear"
+    ),
+    NA_real_
+  )
+})
+
 test_that("pk.calc.auc.all", {
   # Just ensuring that it is a simple wrapper.  Computation testing
   # is done elsewhere.

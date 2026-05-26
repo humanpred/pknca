@@ -19,6 +19,7 @@
 #' @param auc The AUC calculated using `conc` and `time` without `c0` (it may be
 #'   calculated using any method)
 #' @return `pk.calc.auciv`: The AUC calculated using `c0`
+#' @family AUC calculations
 #' @export
 pk.calc.auciv <- function(conc, time, c0, auc, ..., options = list(), check=TRUE) {
   if (check) {
@@ -104,7 +105,7 @@ add.interval.col(
   unit_type = "auc",
   pretty_name = "AUCinf,pred (IV dosing)",
   depends = c("aucinf.pred", "c0"),
-  desc = "The  calculated with back-extrapolation for intravenous dosing using extrapolated C0",
+  desc = "The AUCinf,pred calculated with back-extrapolation for intravenous dosing using extrapolated C0",
   sparse = FALSE,
   formalsmap = list(auc="aucinf.pred")
 )

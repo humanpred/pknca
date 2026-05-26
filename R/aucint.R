@@ -12,10 +12,6 @@
 #' @inheritParams pk.calc.auxc
 #' @inheritParams assert_intervaltime_single
 #' @inheritParams assert_lambdaz
-#' @param clast,clast.obs,clast.pred The last concentration above the limit of
-#'   quantification; this is used for AUCinf calculations.  If provided as
-#'   clast.obs (observed clast value, default), AUCinf is AUCinf,obs. If
-#'   provided as clast.pred, AUCinf is AUCinf,pred.
 #' @param time.dose,route,duration.dose The time of doses, route of
 #'   administration, and duration of dose used with interpolation and
 #'   extrapolation of concentration data (see [interp.extrap.conc.dose()]).  If
@@ -75,7 +71,7 @@ pk.calc.aucint <- function(conc, time,
       return(structure(NA_real_, exclude = "clast.pred is NA because the half-life is NA"))
     } else if (is.na(clast)) {
       stop("Please report a bug. clast is NA and the half-life is not NA") # nocov
-    } else if (clast != clast_obs & interval[2] > tlast) {
+    } else if (clast != clast_obs && interval[2] > tlast) {
       # If using clast.pred, we need to doubly calculate at tlast.
       conc_clast <- clast
       time_clast <- tlast

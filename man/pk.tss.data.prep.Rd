@@ -36,9 +36,10 @@ to be on the same treatment)}
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
 
-\item{conc.blq}{See \code{\link[=clean.conc.blq]{clean.conc.blq()}}}
+\item{conc.blq}{How to handle a BLQ value that is between above LOQ values?
+See details for description.}
 
-\item{conc.na}{See \code{\link[=clean.conc.na]{clean.conc.na()}}}
+\item{conc.na}{How to handle NA concentrations.  (See \code{\link[=clean.conc.na]{clean.conc.na()}})}
 
 \item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 

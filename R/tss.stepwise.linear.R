@@ -27,7 +27,7 @@ pk.tss.stepwise.linear <- function(...,
                                    check=TRUE) {
   # Check inputs
   modeldata <- pk.tss.data.prep(..., check=check)
-  if (is.factor(min.points) |
+  if (is.factor(min.points) ||
       !is.numeric(min.points))
     stop("min.points must be a number")
   if (!length(min.points) == 1) {
@@ -36,7 +36,7 @@ pk.tss.stepwise.linear <- function(...,
   }
   if (min.points < 3)
     stop("min.points must be at least 3")
-  if (is.factor(level) |
+  if (is.factor(level) ||
       !is.numeric(level)) {
     stop("level must be a number")
   }
@@ -44,7 +44,7 @@ pk.tss.stepwise.linear <- function(...,
     warning("Only first value of level is being used")
     level <- level[1]
   }
-  if (level <= 0 | level >= 1) {
+  if (level <= 0 || level >= 1) {
     stop("level must be between 0 and 1, exclusive")
   }
   # Confirm that we may have sufficient data to complete the

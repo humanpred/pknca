@@ -182,27 +182,3 @@ get.parameter.deps <- function(x) {
     )
   sort(get.parameter.deps_helper_searchdeps(x, funmap, all_intervals))
 }
-
-#' Take in a single row of an interval specification and return that row updated
-#' with any additional calculations that must be done to fulfill all
-#' dependencies.
-#'
-#' @param x A data frame with one or more rows of the PKNCA interval
-#' @returns The interval specification with additional calculations added where
-#'   requested outputs require them.
-#' @family Interval specifications
-check.interval.deps <- function(x) {
-  # Ensure that the input is a valid interval specification
-  ret <- check.interval.specification(x)
-  colspec <- get.interval.cols()
-  for (n in names(colspec)) {
-    if (is.logical(ret[,n])) {
-      # This is a calculation to complete, otherwise it's something informative
-      # but not caluclated.
-      mask_calculated <- ret[,n]
-      for (deps in colspec[[n]]$depends)
-        ret[,deps] <- mask_calculated | ret[,deps]
-    }
-  }
-  ret
-}

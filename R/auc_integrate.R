@@ -5,6 +5,9 @@ aucintegrate_linear <- function(conc.1, conc.2, time.1, time.2) {
 }
 
 aucintegrate_log <- function(conc.1, conc.2, time.1, time.2) {
+  # conc.1 != conc.2 is guaranteed by choose_interval_method(), which only
+  # assigns "log" to intervals where concentrations are strictly declining and
+  # neither endpoint is zero.
   (time.2-time.1) * (conc.2-conc.1)/log(conc.2/conc.1)
 }
 
@@ -17,6 +20,9 @@ aumcintegrate_linear <- function(conc.1, conc.2, time.1, time.2) {
 }
 
 aumcintegrate_log <- function(conc.1, conc.2, time.1, time.2) {
+  # conc.1 != conc.2 is guaranteed by choose_interval_method(), which only
+  # assigns "log" to intervals where concentrations are strictly declining and
+  # neither endpoint is zero.
   ((time.2-time.1) * (conc.2*time.2-conc.1*time.1) / log(conc.2/conc.1)-
      (time.2-time.1)^2 * (conc.2-conc.1) / (log(conc.2/conc.1)^2))
 }
@@ -44,6 +50,9 @@ interpolate_conc_linear <- function(conc_1, conc_2, time_1, time_2, time_out) {
 
 #' @rdname interp_extrap_conc_method
 interpolate_conc_log <- function(conc_1, conc_2, time_1, time_2, time_out) {
+  # conc_1 > 0 and conc_2 > 0 are guaranteed by choose_interval_method(),
+  # which assigns "zero" or "linear" to any interval where either endpoint
+  # is zero, so log() will never receive a zero or negative value here.
   exp(
     log(conc_1)+
       (time_out-time_1)/(time_2-time_1)*(log(conc_2)-log(conc_1))
@@ -92,19 +101,37 @@ choose_interval_method <- function(conc, time, tlast, method, auc.type, options)
     stopifnot(length(tlast) == 1)
   }
 
-  # Where is tlast in the data?
-  idx_tlast <- which(time == tlast)
-
   ret <- rep(NA_character_, length(conc))
   # Handle all interpolation
   idx_1 <- seq(1, length(conc) - 1)
   idx_2 <- idx_1 + 1
   mask_zero <- conc[idx_1] == 0 & conc[idx_2] == 0
+  # %in% 0 is used throughout instead of == 0 because BLQ concentrations are
+  # cleaned to exactly 0 upstream (by clean.conc.blq()), making exact equality
+  # definitionally correct. We cannot use a tolerance here because we do not
+  # know what a "low" concentration may be in all situations.
   if (all(conc %in% 0)) {
     ret[] <- "zero"
-    # short circuit other options
+    # short circuit other options — tlast is NA for all-zero data, so
+    # idx_tlast is not computed here.
     return(ret)
-  } else if (method == "linear") {
+  }
+
+  # Where is tlast in the data?  Must be checked after the all-zeros early
+  # return above, since tlast is NA when all concentrations are zero.
+  idx_tlast <- which(time == tlast)
+  if (length(idx_tlast) != 1) {
+    stop(
+      "tlast (", tlast, ") must occur exactly once in time; ",
+      if (length(idx_tlast) == 0) {
+        "tlast was not found in time (possible floating point issue)"
+      } else {
+        "tlast was found multiple times"
+      }
+    )
+  }
+
+  if (method == "linear") {
     ret[seq_len(idx_tlast - 1)] <- "linear"
   } else if (method == "lin up/log down") {
     mask_down <- conc[idx_2] < conc[idx_1] & conc[idx_2] != 0

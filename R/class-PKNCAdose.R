@@ -18,12 +18,12 @@
 #' @param time.nominal (optional) The name of the nominal time column (if the
 #'   main time variable is actual time.  The `time.nominal` is not used during
 #'   calculations; it is available to assist with data summary and checking.
-#' @param exclude (optional) The name of a column with concentrations to exclude
+#' @param exclude (optional) The name of a column with doses to exclude
 #'   from calculations and summarization.  If given, the column should have
-#'   values of `NA` or `""` for concentrations to include and non-empty text for
-#'   concentrations to exclude.
+#'   values of `NA` or `""` for doses to include and non-empty text for
+#'   doses to exclude.
 #' @param ... Ignored.
-#' @returns A PKNCAconc object that can be used for automated NCA.
+#' @returns A PKNCAdose object that can be used for automated NCA.
 #' @details The `formula` for a `PKNCAdose` object can be
 #'   given three ways: one-sided (missing left side), one-sided (missing
 #'   right side), or two-sided.  Each of the three ways can be given
@@ -37,7 +37,8 @@
 #'   `dose~.|treatment+subject`, and only a single row may be given
 #'   per group.  When the right side is missing, PKNCA assumes that the
 #'   same dose is given in every interval.  When given as a two-sided
-#'   formula
+#'   formula, both the dose amount and time are used directly from the
+#'   data.
 #' @family PKNCA objects
 #' @export
 PKNCAdose <- function(data, ...)
@@ -130,7 +131,7 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
   is_excluded <- !is.na(normalize_exclude(ret))
   # Check for missing independent variable (time) in non-excluded rows
   mask.indep <- is.na(getIndepVar.PKNCAdose(ret)) & !is_excluded
-  if (any(mask.indep) & !all(is.na(getIndepVar.PKNCAdose(ret)[!is_excluded]))) {
+  if (any(mask.indep) && !all(is.na(getIndepVar.PKNCAdose(ret)[!is_excluded]))) {
     stop("Some but not all values are missing for the independent variable, please see the help for PKNCAdose for how to specify the formula and confirm that your data has dose times for all doses.")
   }
   if (missing(route)) {

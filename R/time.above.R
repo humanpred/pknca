@@ -16,7 +16,6 @@
 #' @export
 pk.calc.time_above <- function(conc, time,
                                conc_above,
-                               #method=NULL,
                                ...,
                                options=list(),
                                check=TRUE) {

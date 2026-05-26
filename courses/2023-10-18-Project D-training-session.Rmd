@@ -13,7 +13,6 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
-requireNamespace("pmxTools")
 library(PKNCA)
 library(dplyr)
 library(ggplot2)
