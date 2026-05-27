@@ -14,7 +14,9 @@ add.interval.col(
   desc = "",
   sparse = FALSE,
   formalsmap = list(),
-  datatype = c("interval", "individual", "population")
+  datatype = c("interval", "individual", "population"),
+  pptestcd_cdisc = NULL,
+  pptest_cdisc = NULL
 )
 }
 \arguments{
@@ -44,6 +46,14 @@ to NCA parameter names.  See the details for information on use of
 \code{formalsmap}.}
 
 \item{datatype}{The type of data used for the calculation}
+
+\item{pptestcd_cdisc}{The CDISC PPTESTCD code for this parameter.  Can be a
+character string for simple mappings, or a named list for route-dependent
+mappings (e.g., \code{list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))}).  Defaults to \code{name} if not provided.}
+
+\item{pptest_cdisc}{The CDISC PPTEST name for this parameter.  Can be a
+character string or a named list (same structure as \code{pptestcd_cdisc}).
+Defaults to \code{desc} if not provided.}
 }
 \value{
 NULL (Calling this function has a side effect of changing the

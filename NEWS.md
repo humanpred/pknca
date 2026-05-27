@@ -6,6 +6,20 @@ the dosing including dose amount and route.
 
 # PKNCA 0.12.2
 
+## Features added
+
+* `add.interval.col()` gains `pptestcd_cdisc` and `pptest_cdisc` arguments for
+  CDISC standard parameter code and name mappings.  Route-dependent parameters
+  (CL, VZ, MRT, VSS) accept a nested list to distinguish intravascular and
+  extravascular CDISC codes (#403)
+* `as.data.frame.PKNCAresults()` gains `out_format = "cdisc"` to translate
+  PPTESTCD to CDISC standard codes and add a PPTEST column.  Route-dependent
+  translations are resolved from the dose data (#403)
+* When `out_format = "cdisc"` and any parameter has "INT" in its PPTESTCD,
+  PPSTINT and PPENINT columns are added with ISO 8601 durations relative to
+  the last dose time.  The time unit is taken from `timeu_pref` or `timeu`
+  (#403)
+
 ## Bug Fixes
 
 * `normalize.data.frame()` no longer triggers a dplyr deprecation warning
