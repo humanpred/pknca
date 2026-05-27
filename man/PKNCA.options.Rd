@@ -17,7 +17,7 @@ of the values when used in another function)}
 \item{name}{An option name to use with the \code{value}.}
 
 \item{value}{An option value (paired with the \code{name}) to set or check (if
-\code{NULL}, ).}
+\code{NULL}, the current value of the option is returned).}
 }
 \value{
 If...

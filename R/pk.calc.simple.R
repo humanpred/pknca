@@ -420,7 +420,10 @@ pk.calc.aucpext <- function(auclast, aucinf) {
     # no length checking needs to occur
   } else if ((!scalar_auclast & !scalar_aucinf) &
              length(auclast) != length(aucinf)) {
-    stop("auclast and aucinf must either be a scalar or the same length.")
+    rlang::abort(
+      message = "auclast and aucinf must either be a scalar or the same length.",
+      class = "pknca_error_auclast_aucinf_length"
+    )
   }
   ret <- rep(NA_real_, max(c(length(auclast), length(aucinf))))
   mask_na <-
@@ -879,7 +882,10 @@ pk.calc.vz <- function(cl, lambda.z) {
   # likely errors here).
   if (!(length(cl) %in% c(1, length(lambda.z))) |
       !(length(lambda.z) %in% c(1, length(cl))))
-    stop("'cl' and 'lambda.z' must be the same length")
+    rlang::abort(
+      message = "'cl' and 'lambda.z' must be the same length",
+      class = "pknca_error_cl_lambdaz_length"
+    )
   cl/lambda.z
 }
 # Add the columns to the interval specification
@@ -1128,7 +1134,10 @@ pk.calc.ctrough <- function(conc, time, end) {
   } else {
     # This should be impossible as assert_conc_time should catch
     # duplicates.
-    stop("More than one time matches the starting time.  Please report this as a bug with a reproducible example.") # nocov
+    rlang::abort(
+      message = "More than one time matches the starting time.  Please report this as a bug with a reproducible example.",
+      class = "pknca_error_multiple_start_times"
+    ) # nocov
   }
 }
 add.interval.col("ctrough",
@@ -1162,7 +1171,10 @@ pk.calc.cstart <- function(conc, time, start) {
   } else {
     # This should be impossible as assert_conc_time should catch
     # duplicates.
-    stop("More than one time matches the starting time.  Please report this as a bug with a reproducible example.") # nocov
+    rlang::abort(
+      message = "More than one time matches the starting time.  Please report this as a bug with a reproducible example.",
+      class = "pknca_error_multiple_start_times"
+    ) # nocov
   }
 }
 add.interval.col("cstart",
@@ -1337,8 +1349,7 @@ PKNCA.set.summary(
 #' @returns The AUC of the concentration above the limit
 #' @export
 pk.calc.aucabove <- function(conc, time, conc_above = NA_real_, ..., options=list()) {
-  stopifnot(length(conc_above) == 1)
-  stopifnot(is.numeric(conc_above))
+  checkmate::assert_number(conc_above, na.ok = TRUE, finite = TRUE)
   if (is.na(conc_above)) {
     ret <- structure(NA_real_, exclude = "Missing concentration to be above")
   } else {

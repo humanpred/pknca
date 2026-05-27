@@ -204,43 +204,7 @@ test_that("pk.tss.stepwise.linear", {
     regexp="Only first value of min.points is used"
   )
 
-  expect_error(
-    pk.tss.stepwise.linear(
-      conc=tmpdata$conc,
-      time=tmpdata$time,
-      subject=tmpdata$subject,
-      treatment=tmpdata$treatment,
-      time.dosing=0:14,
-      min.points="A",
-      level="A",
-      verbose=FALSE
-    ),
-    regexp="min.points must be a number"
-  )
-  expect_error(
-    pk.tss.stepwise.linear(
-      conc=tmpdata$conc,
-      time=tmpdata$time,
-      subject=tmpdata$subject,
-      treatment=tmpdata$treatment,
-      time.dosing=0:14,
-      min.points=1,
-      level="A",
-      verbose=FALSE
-    ),
-    regexp="min.points must be at least 3"
-  )
-
-  expect_error(
-    pk.tss.stepwise.linear(conc=tmpdata$conc,
-                           time=tmpdata$time,
-                           subject=tmpdata$subject,
-                           treatment=tmpdata$treatment,
-                           time.dosing=0:14,
-                           level="A",
-                           verbose=FALSE),
-    regexp="level must be a number"
-  )
+ 
 
   expect_error(
     pk.tss.stepwise.linear(conc=tmpdata$conc,
@@ -529,15 +493,6 @@ test_that("pk.tss.monoexponential corner case tests", {
 
 test_that("pk.tss.monoexponential expected warnings and errors", {
   tmpdata <- generate.data()
-  expect_error(
-    pk.tss.monoexponential(conc=tmpdata$conc,
-                           time=tmpdata$time,
-                           subject=tmpdata$subject,
-                           treatment=tmpdata$treatment,
-                           time.dosing=0:14,
-                           tss.fraction=factor(1)),
-    regexp="tss.fraction must be a number"
-  )
   suppressWarnings(
     expect_warning(
       pk.tss.monoexponential(

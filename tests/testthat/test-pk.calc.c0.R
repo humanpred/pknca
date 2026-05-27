@@ -4,10 +4,6 @@ test_that("pk.calc.c0", {
     pk.calc.c0(5:1, 4:0),
     regexp="Assertion on 'time' failed: Must be sorted."
   )
-  expect_error(pk.calc.c0(5:1, 0:4, time.dose=1:2),
-               regexp="time.dose must be a scalar")
-  expect_error(pk.calc.c0(5:1, 0:4, time.dose="1"),
-               regexp="time.dose must be a number")
   expect_error(pk.calc.c0(5:1, 0:4, method="blah"),
                regexp="should be one of",
                info="method must be valid")

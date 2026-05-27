@@ -4,7 +4,7 @@
 #' @param impute the imputation definition
 #' @return The imputation function vector
 get_impute_method <- function(intervals, impute) {
-  stopifnot(length(impute) == 1)
+  checkmate::assert_scalar(impute, na.ok = TRUE)
   checkmate::assert_data_frame(intervals)
   if (impute %in% names(intervals)) {
     impute_funs <- intervals[[impute]]
@@ -124,9 +124,12 @@ PKNCA_impute_fun_list <- function(x) {
     }
   }
   if (length(bad_fun) > 0) {
-    stop(
-      "The following imputation functions were not found: ",
-      paste(bad_fun, collapse = ", ")
+    rlang::abort(
+      message = paste0(
+        "The following imputation functions were not found: ",
+        paste(bad_fun, collapse = ", ")
+      ),
+      class = "pknca_error_impute_funs_not_found"
     )
   }
   ret

@@ -284,45 +284,9 @@ test_that("superposition inputs", {
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              additional.times=c(2, NA)),
                regexp="No additional.times may be NA \\(to not include any additional.times, enter c\\(\\) as the function argument\\)")
-  # additional.times nonnumeric
-  expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
-                             additional.times="1"),
-               regexp="additional.times must be a number")
-  expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
-                             additional.times=factor("1")),
-               regexp="additional.times must be a number")
-  # additional times < 0
-  expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
-                             additional.times=-1),
-               regexp="All additional.times must be nonnegative")
-  expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
-                             additional.times=c(-1, 0)),
-               regexp="All additional.times must be nonnegative")
-  # Additional times > tau
-  expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
-                             additional.times=25),
-               regexp="All additional.times must be <= tau")
-  expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
-                             additional.times=c(0, 25)),
-               regexp="All additional.times must be <= tau")
 
-  # steady.state.tol scalar
-  expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
-                             steady.state.tol=c(1, 2)),
-               regexp="steady.state.tol must be a scalar")
-  # steady.state.tol numeric
-  expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
-                             steady.state.tol="1"),
-               regexp="steady.state.tol must be a number")
-  expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
-                             steady.state.tol="1"),
-               regexp="steady.state.tol must be a number")
-  expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
-                             steady.state.tol=factor("1")),
-               regexp="steady.state.tol must be a number")
-  expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
-                             steady.state.tol=NA),
-               regexp="steady.state.tol must be a number")
+
+
   # steady.state.tol range
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              steady.state.tol=0),

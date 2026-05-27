@@ -74,7 +74,10 @@ pk.calc.aucint <- function(conc, time,
       # clast.pred is NA likely because the half-life was not calculable
       return(structure(NA_real_, exclude = "clast.pred is NA because the half-life is NA"))
     } else if (is.na(clast)) {
-      stop("Please report a bug. clast is NA and the half-life is not NA") # nocov
+      rlang::abort(
+        message = "Please report a bug. clast is NA and the half-life is not NA",
+        class = "pknca_error_internal_clast_na"
+      ) # nocov
     } else if (clast != clast_obs & interval[2] > tlast) {
       # If using clast.pred, we need to doubly calculate at tlast.
       conc_clast <- clast
@@ -134,7 +137,10 @@ pk.calc.aucint <- function(conc, time,
                 "Time points with missing data are: ",
                 paste(missing_times, collapse=", "))
         }
-      warning(warning_message)
+      rlang::warn(
+        message = warning_message,
+        class = "pknca_warning_missing_interpolated_concentrations"
+      )
       return(NA_real_)
     }
   } else {
@@ -248,12 +254,6 @@ add.interval.col("aucint.last",
                  pretty_name="AUCint (based on AUClast extrapolation)",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL))
-PKNCA.set.summary(
-  name="aucint.last",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("aucint.last.dose",
                  FUN="pk.calc.aucint.last",
@@ -262,12 +262,6 @@ add.interval.col("aucint.last.dose",
                  pretty_name="AUCint (based on AUClast extrapolation, dose-aware)",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast) with dose-aware interpolation/extrapolation of concentrations",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"))
-PKNCA.set.summary(
-  name="aucint.last.dose",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("aucint.all",
                  FUN="pk.calc.aucint.all",
@@ -276,12 +270,6 @@ add.interval.col("aucint.all",
                  pretty_name="AUCint (based on AUCall extrapolation)",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL))
-PKNCA.set.summary(
-  name="aucint.all",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("aucint.all.dose",
                  FUN="pk.calc.aucint.all",
@@ -290,12 +278,6 @@ add.interval.col("aucint.all.dose",
                  pretty_name="AUCint (based on AUCall extrapolation, dose-aware)",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall) with dose-aware interpolation/extrapolation of concentrations",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"))
-PKNCA.set.summary(
-  name="aucint.all.dose",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("aucint.inf.obs",
                  FUN="pk.calc.aucint.inf.obs",
@@ -305,12 +287,6 @@ add.interval.col("aucint.inf.obs",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
                  depends=c("lambda.z", "clast.obs"))
-PKNCA.set.summary(
-  name="aucint.inf.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("aucint.inf.obs.dose",
                  FUN="pk.calc.aucint.inf.obs",
@@ -320,12 +296,6 @@ add.interval.col("aucint.inf.obs.dose",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast) with dose-aware interpolation/extrapolation of concentrations",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
                  depends=c("lambda.z", "clast.obs"))
-PKNCA.set.summary(
-  name="aucint.inf.obs.dose",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("aucint.inf.pred",
                  FUN="pk.calc.aucint.inf.pred",
@@ -335,12 +305,6 @@ add.interval.col("aucint.inf.pred",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
                  depends=c("lambda.z", "clast.pred"))
-PKNCA.set.summary(
-  name="aucint.inf.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("aucint.inf.pred.dose",
                  FUN="pk.calc.aucint.inf.pred",
@@ -350,8 +314,22 @@ add.interval.col("aucint.inf.pred.dose",
                  desc="The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall) with dose-aware interpolation/extrapolation of concentrations",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
                  depends=c("lambda.z", "clast.pred"))
+
 PKNCA.set.summary(
-  name="aucint.inf.pred.dose",
+  name=
+    c(
+      "aucint.last",
+      "aucint.last.dose",
+      
+      "aucint.all",
+      "aucint.all.dose",
+      
+      "aucint.inf.obs",
+      "aucint.inf.obs.dose",
+      
+      "aucint.inf.pred",
+      "aucint.inf.pred.dose"
+    ),
   description="geometric mean and geometric coefficient of variation",
   point=business.geomean,
   spread=business.geocv

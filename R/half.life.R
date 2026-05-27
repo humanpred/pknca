@@ -158,7 +158,10 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     tobit_optim_control <-
       PKNCA.choose.option(name="tobit_optim_control", value=tobit_optim_control, options=options)
     if (is.null(lloq)) {
-      stop("lloq must be provided when hl_method is 'tobit'")
+      rlang::abort(
+        message = "lloq must be provided when hl_method is 'tobit'",
+        class = "pknca_error_lloq_required_tobit"
+      )
     }
   }
 
@@ -280,7 +283,10 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           attr(ret, "exclude") <- "Negative half-life estimated with manually-selected points"
         }
       } else {
-        warning("No data to manually fit for half-life (all concentrations may be 0 or excluded)")
+        rlang::warn(
+          message = "No data to manually fit for half-life (all concentrations may be 0 or excluded)",
+          class = "pknca_warning_no_halflife_data"
+        )
         ret <- structure(
           ret,
           exclude = "No data to manually fit for half-life (all concentrations may be 0 or excluded)"
@@ -376,7 +382,10 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           attr(ret, "exclude") <- "Negative half-life estimated with manually-selected points"
         }
       } else {
-        warning("No data to manually fit for half-life (all concentrations may be 0 or excluded)")
+        rlang::warn(
+          message = "No data to manually fit for half-life (all concentrations may be 0 or excluded)",
+          class = "pknca_warning_no_halflife_data"
+        )
         ret <- structure(
           ret,
           exclude = "No data to manually fit for half-life (all concentrations may be 0 or excluded)"
@@ -843,9 +852,12 @@ get_halflife_points.PKNCAresults <- function(object) {
         rowid_col = rowid_col
       )
     if (any(!is.na(ret[ret_current$rowid]))) {
-      stop(
-        "More than one half-life calculation was attempted on the following rows: ",
-        paste(ret_current$rowid, collapse = ", ")
+      rlang::abort(
+        message = paste0(
+          "More than one half-life calculation was attempted on the following rows: ",
+          paste(ret_current$rowid, collapse = ", ")
+        ),
+        class = "pknca_error_duplicate_halflife_rows"
       )
     }
     ret[ret_current$rowid] <- ret_current$hl_used

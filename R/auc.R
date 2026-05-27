@@ -106,7 +106,10 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
   auc.type <- match.arg(auc.type)
   interval <- assert_intervaltime_single(interval = interval)
   if (auc.type %in% "AUCinf" & is.finite(interval[2])) {
-    warning("Requesting AUCinf when the end of the interval is not Inf")
+    rlang::warn(
+      message = "Requesting AUCinf when the end of the interval is not Inf",
+      class = "pknca_warning_aucinf_finite_interval"
+    )
   }
 
   # Subset the data to the range of interest ####
@@ -123,8 +126,14 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
     return(structure(NA_real_, exclude=warn_message))
   } else if (interval_start > max(data$time)) {
     # Give this as a warning, but allow it to continue
-    warning(sprintf("AUC start time (%g) is after the maximum observed time (%g)",
-                    interval_start, max(data$time)))
+    rlang::warn(
+      message = sprintf(
+        "AUC start time (%g) is after the maximum observed time (%g)",
+        interval_start,
+        max(data$time)
+      ),
+      class = "pknca_warning_auc_after_max_time"
+    )
   }
   # Ensure that we have clean concentration and time data.  This means that we
   # need to make sure that we have our starting point. Interpolation ensures
@@ -173,7 +182,10 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
     # All concentrations are BLQ (note that this has to be checked
     # after full subsetting and interpolation to ensure that it is
     # still true)
-    stop("Unknown error with NA tlast but non-BLQ concentrations") # nocov
+    rlang::abort(
+      message = "Unknown error with NA tlast but non-BLQ concentrations",
+      class = "pknca_error_internal_tlast"
+    ) # nocov
   } else {
     interval_method <- choose_interval_method(conc = data$conc, time = data$time, tlast = tlast, method = method, auc.type = auc.type, options = options)
     ret <-
@@ -206,7 +218,13 @@ pk.calc.auc <- function(conc, time, ..., options=list()) {
 #' @export
 pk.calc.auc.last <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.auc.last, please use pk.calc.auc")
+    rlang::abort(
+      message = paste(
+        "auc.type cannot be changed when calling pk.calc.auc.last,",
+        "please use pk.calc.auc"
+      ),
+      class = "pknca_error_auc_type_override"
+    )
   pk.calc.auc(conc=conc, time=time, ...,
               options=options,
               auc.type="AUClast",
@@ -217,7 +235,13 @@ pk.calc.auc.last <- function(conc, time, ..., options=list()) {
 #' @export
 pk.calc.auc.inf <- function(conc, time, ..., options=list(), lambda.z) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.auc.inf, please use pk.calc.auc")
+    rlang::abort(
+      message = paste(
+        "auc.type cannot be changed when calling pk.calc.auc.inf,",
+        "please use pk.calc.auc"
+      ),
+      class = "pknca_error_auc_type_override"
+    )
   pk.calc.auc(conc=conc, time=time, ...,
               options=options,
               auc.type="AUCinf",
@@ -246,7 +270,13 @@ pk.calc.auc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
 #' @export
 pk.calc.auc.all <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.auc.all, please use pk.calc.auc")
+    rlang::abort(
+      message = paste(
+        "auc.type cannot be changed when calling pk.calc.auc.all,",
+        "please use pk.calc.auc"
+      ),
+      class = "pknca_error_auc_type_override"
+    )
   pk.calc.auc(conc=conc, time=time, ..., options=options,
               auc.type="AUCall",
               lambda.z=NA)
@@ -267,7 +297,13 @@ pk.calc.aumc <- function(conc, time, ..., options=list()) {
 #' @export
 pk.calc.aumc.last <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.aumc.last, please use pk.calc.aumc")
+    rlang::abort(
+      message = paste(
+        "auc.type cannot be changed when calling pk.calc.aumc.last,",
+        "please use pk.calc.aumc"
+      ),
+      class = "pknca_error_aumc_type_override"
+    )
   pk.calc.aumc(conc=conc, time=time, ..., options=options,
                auc.type="AUClast",
                lambda.z=NA)
@@ -278,7 +314,13 @@ pk.calc.aumc.last <- function(conc, time, ..., options=list()) {
 pk.calc.aumc.inf <- function(conc, time, ..., options=list(),
                              lambda.z) {
   if ("auc.type" %in% names(list(...))) {
-    stop("auc.type cannot be changed when calling pk.calc.aumc.inf, please use pk.calc.aumc")
+    rlang::abort(
+      message = paste(
+        "auc.type cannot be changed when calling pk.calc.aumc.inf,",
+        "please use pk.calc.aumc"
+      ),
+      class = "pknca_error_aumc_type_override"
+    )
   }
   pk.calc.aumc(conc=conc, time=time, ..., options=options,
                auc.type="AUCinf",
@@ -305,7 +347,13 @@ pk.calc.aumc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
 #' @export
 pk.calc.aumc.all <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.aumc.all, please use pk.calc.aumc")
+    rlang::abort(
+      message = paste(
+        "auc.type cannot be changed when calling pk.calc.aumc.all,",
+        "please use pk.calc.aumc"
+      ),
+      class = "pknca_error_aumc_type_override"
+    )
   pk.calc.aumc(conc=conc, time=time, ..., options=options,
                auc.type="AUCall",
                lambda.z=NA)

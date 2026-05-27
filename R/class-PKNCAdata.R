@@ -56,7 +56,10 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
                               impute = NA_character_,
                               intervals, units, options=list()) {
   if (length(list(...))) {
-    stop("Unknown argument provided to PKNCAdata.  All arguments other than `data.conc` and `data.dose` must be named.")
+    rlang::abort(
+      message = "Unknown argument provided to PKNCAdata.  All arguments other than `data.conc` and `data.dose` must be named.",
+      class = "pknca_error_unknown_argument"
+    )
   }
   ret <- list()
   # Generate the conc element
@@ -87,12 +90,10 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
     ret$dose <- PKNCAdose(data.dose, formula.dose)
   }
   # Check the options
-  if (!is.list(options)) {
-    stop("options must be a list.")
-  }
+  checkmate::assert_list(options)
+  
   if (length(options) > 0) {
-    if (is.null(names(options)))
-      stop("options must have names.")
+    checkmate::assert_named(options)
     for (n in names(options)) {
       tmp.opt <- list(options[[n]], TRUE)
       names(tmp.opt) <- c(n, "check")
@@ -106,12 +107,18 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
 
   # Check the intervals
   if (missing(intervals) & identical(ret$dose, NA)) {
-    stop("If data.dose is not given, intervals must be given")
+    rlang::abort(
+      message = "If data.dose is not given, intervals must be given",
+      class = "pknca_error_missing_intervals"
+    )
   } else if (missing(intervals)) {
     # Generate the intervals for each grouping of concentration and
     # dosing.
     if (length(ret$dose$columns$time) == 0) {
-      stop("Dose times were not given, so intervals must be manually specified.")
+      rlang::abort(
+        message = "Dose times were not given, so intervals must be manually specified.",
+        class = "pknca_error_missing_dose_times"
+      )
     }
     n_conc_dose <-
       full_join_PKNCAconc_PKNCAdose(
@@ -147,7 +154,10 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
         if (nrow(generated_intervals) > 0) {
           n_conc_dose$data_intervals[[idx]] <- generated_intervals
         } else {
-          warning(warning_prefix, "No intervals generated likely due to limited concentration data")
+          rlang::warn(
+            message = paste0(warning_prefix, "No intervals generated likely due to limited concentration data"),
+            class = "pknca_warning_no_intervals_limited_data"
+          )
         }
       } else {
         rlang::warn(
@@ -173,12 +183,26 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
     # Use the new automatic units table builder
     ret$units <- pknca_units_table(ret)
   } else {
-    stopifnot("`units` must be a data.frame"=is.data.frame(units))
-    stopifnot(
-      "`units` data.frame must have at least names 'PPTESTCD' and 'PPORRESU'"=
-        all(c("PPTESTCD", "PPORRESU") %in% names(units))
-    )
-    stopifnot("`units` must have at least one row"=nrow(units) > 0)
+    # stopifnot("`units` must be a data.frame"=is.data.frame(units))
+    # stopifnot(
+    #   "`units` data.frame must have at least names 'PPTESTCD' and 'PPORRESU'"=
+    #     all(c("PPTESTCD", "PPORRESU") %in% names(units))
+    # )
+    # stopifnot("`units` must have at least one row"=nrow(units) > 0)
+    checkmate::assert_data_frame(units)
+    missing_unit_cols <- setdiff(c("PPTESTCD", "PPORRESU"), names(units))
+    if (length(missing_unit_cols) > 0) {
+      rlang::abort(
+        message = "`units` data.frame must have at least names 'PPTESTCD' and 'PPORRESU'",
+        class = "pknca_error_units_missing_cols"
+      )
+    }
+    if (nrow(units) == 0) {
+      rlang::abort(
+        message = "`units` must have at least one row",
+        class = "pknca_error_units_no_rows"
+      )
+    }
     ret$units <- units
   }
 

@@ -23,13 +23,22 @@ time_calc <- function(time_event, time_obs, units=NULL) {
 #' @export
 time_calc.numeric <- function(time_event, time_obs, units=NULL) {
   if (length(time_event) == 0) {
-    warning("No events provided")
+    rlang::warn(
+      message = "No events provided",
+      class = "pknca_warning_time_calc_no_events"
+    )
     time_event <- NA_real_
   } else if (any(order(stats::na.omit(time_event)) != seq_along(stats::na.omit(time_event)))) {
-    stop("`time_event` must be sorted.")
+    rlang::abort(
+      message = "`time_event` must be sorted.",
+      class = "pknca_error_time_calc_unsorted"
+    )
   }
   if (!is.numeric(time_obs)) {
-    stop("Both `time_event` and `time_obs` must be the same class (numeric).")
+    rlang::abort(
+      message = "Both `time_event` and `time_obs` must be the same class (numeric).",
+      class = "pknca_error_time_calc_class_mismatch_numeric"
+    )
   }
   ret <-
     data.frame(
@@ -70,10 +79,16 @@ time_calc.numeric <- function(time_event, time_obs, units=NULL) {
 #' @export
 time_calc.POSIXt <- function(time_event, time_obs, units=NULL) {
   if (is.null(units)) {
-    stop("`units` must be provided.")
+    rlang::abort(
+      message = "`units` must be provided.",
+      class = "pknca_error_time_calc_missing_units"
+    )
   }
   if (!("POSIXt" %in% class(time_obs))) {
-    stop("Both `time_event` and `time_obs` must be the same class (POSIXt).")
+    rlang::abort(
+      message = "Both `time_event` and `time_obs` must be the same class (POSIXt).",
+      class = "pknca_error_time_calc_class_mismatch_posix"
+    )
   }
   first_event <- min(time_event, na.rm=TRUE)
   time_calc(
@@ -86,10 +101,16 @@ time_calc.POSIXt <- function(time_event, time_obs, units=NULL) {
 #' @export
 time_calc.difftime <- function(time_event, time_obs, units=NULL) {
   if (is.null(units)) {
-    stop("`units` must be provided.")
+    rlang::abort(
+      message = "`units` must be provided.",
+      class = "pknca_error_time_calc_missing_units"
+    )
   }
   if (!("difftime" %in% class(time_obs))) {
-    stop("Both `time_event` and `time_obs` must be the same class (difftime).")
+    rlang::abort(
+      message = "Both `time_event` and `time_obs` must be the same class (difftime).",
+      class = "pknca_error_time_calc_class_mismatch_difftime"
+    )
   }
   time_calc(
     time_event=as.numeric(time_event, units=units),

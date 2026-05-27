@@ -25,7 +25,10 @@ findOperator <- function(x, op, side) {
     if (identical(x[[1]], op)) {
       # We found the operator
       if (length(x) == 1) {
-        stop("call or formula with length 1 found after finding the operator, unknown how to proceed") # nocov
+        rlang::abort(
+          message = "call or formula with length 1 found after finding the operator, unknown how to proceed", # nocov
+          class = "pknca_error_formula_length1_after_op"
+        ) # nocov
       } else if (length(x) == 2) {
         # Unary operators have a right hand side only
         if (side == "left") {
@@ -35,7 +38,10 @@ findOperator <- function(x, op, side) {
         } else if (side == "both") {
           return(x)
         }
-        stop("Unknown side with a found unary operator") # nocov
+        rlang::abort(
+          message = "Unknown side with a found unary operator", # nocov
+          class = "pknca_error_unknown_side_unary"
+        )
       } else if (length(x) == 3) {
         # Binary operator
         if (side == "left") {
@@ -45,12 +51,18 @@ findOperator <- function(x, op, side) {
         } else if (side == "both") {
           return(x)
         }
-        stop("Unknown side with a found binary operator") # nocov
+        rlang::abort(
+          message = "Unknown side with a found binary operator", # nocov
+          class = "pknca_error_unknown_side_binary"
+        )
       }
     } else {
       # Go down the left then right side of the tree
       if (length(x) == 1)
-        stop("call or formula with length 1 found without finding the operator, unknown how to proceed")
+        rlang::abort(
+          message = "call or formula with length 1 found without finding the operator, unknown how to proceed",
+          class = "pknca_error_formula_length1_no_op"
+        )
       # First search the left side
       ret <- findOperator(x[[2]], op, side)
       if ((identical(ret, NA) |
@@ -60,8 +72,10 @@ findOperator <- function(x, op, side) {
     }
   } else {
     # This should not happen-- find the class that the object is
-    stop(sprintf("Cannot handle class %s",
-         paste(class(x), sep=", ")))
+    rlang::abort(
+      message = sprintf("Cannot handle class %s", paste(class(x), collapse = ", ")),
+      class = "pknca_error_unhandled_class"
+    )
   }
   ret
 }
@@ -78,7 +92,10 @@ parse_formula_to_cols <- function(form) {
     form <- try({stats::as.formula(form)}, silent = TRUE)
   }
   if (!inherits(form, "formula")) {
-    stop("form must be a formula or coercable into one")
+    rlang::abort(
+      message = "form must be a formula or coercable into one",
+      class = "pknca_error_form_not_formula"
+    )
   }
   rhs_raw <- findOperator(form, "~", "right")
   groups_raw <- findOperator(rhs_raw, "|", "right")

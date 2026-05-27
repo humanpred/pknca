@@ -43,11 +43,16 @@ as_sparse_pk <- function(conc, time, subject) {
 #' @keywords Internal
 sparse_pk_attribute <- function(sparse_pk, ...) {
   args <- list(...)
-  stopifnot(length(args) == 1)
+  checkmate::assert_list(args, len = 1, .var.name = "args")
   if (is.null(names(args))) {
     vapply(X=sparse_pk, FUN="[[", args[[1]], FUN.VALUE = 1)
   } else {
-    stopifnot(length(args[[1]]) == length(sparse_pk))
+    if (length(args[[1]]) != length(sparse_pk)){
+      rlang::abort(
+        message = "The length of the argument must match the length of sparse_pk",
+        class = "pknca_error_sparse_pk_attribute_length"
+      ) 
+    }
     for (idx in seq_along(sparse_pk)) {
       sparse_pk[[idx]][names(args)[1]] <- args[[1]][idx]
     }
@@ -127,7 +132,10 @@ sparse_mean <- function(sparse_pk, sparse_mean_method=c("arithmetic mean, <=50% 
   } else if (sparse_mean_method == "arithmetic mean") {
     # do nothing
   } else {
-    stop("Invalid sparse_mean_method: ", sparse_mean_method) # nocov
+    rlang::abort(
+      message = paste("Invalid sparse_mean_method:", sparse_mean_method),
+      class = "pknca_error_invalid_sparse_mean_method"
+    )
   }
   sparse_pk <- sparse_pk_attribute(sparse_pk, mean=ret)
   sparse_pk <- sparse_pk_attribute(sparse_pk, mean_method=rep(sparse_mean_method, length(ret)))

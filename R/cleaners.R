@@ -30,7 +30,10 @@ clean.conc.na <- function(conc, time, ...,
   } else {
     # This case should already have been captured by the PKNCA.options
     # call above.
-    stop("Unknown how to handle conc.na") # nocov
+    rlang::abort(
+      message = "Unknown how to handle conc.na", # nocov
+      class = "pknca_error_unknown_conc_na"
+    )
   }
   ret
 }
@@ -123,7 +126,10 @@ clean.conc.blq <- function(conc, time,
       } else if (time_type == "after.tmax") {
         mask <- tmax <= ret$time & ret$conc %in% 0
       } else {
-        stop("There is a bug in cleaning the conc.blq with position names") # nocov
+        rlang::abort(
+          message = "There is a bug in cleaning the conc.blq with position names", # nocov
+          class = "pknca_error_conc_blq_position_bug"
+        )
       }
       # Choose the rule to apply
       this_rule <- unname(conc.blq)[[i]]
@@ -137,8 +143,13 @@ clean.conc.blq <- function(conc, time,
       } else {
         # This case should already have been captured by the PKNCA.options
         # call above.
-        stop(sprintf("Unknown how to handle conc.blq rule %s", # nocov
-                     as.character(this_rule)))                 # nocov
+        rlang::abort(
+          message = sprintf(
+            "Unknown how to handle conc.blq rule %s", # nocov
+            as.character(this_rule)
+          ),
+          class = "pknca_error_unknown_conc_blq_rule"
+        ) # nocov
       }
     }
   }
