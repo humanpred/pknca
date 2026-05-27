@@ -25,6 +25,13 @@ the dosing including dose amount and route.
 
 ## New features
 * Added sparse AUMC function and five sparse AUC parameters (cl.sparse.last, kel.sparse.last, mrt.ivint.last, vss.sparse.last, vz.sparse.last)
+* Added bioequivalence functions `fitbe_models()`, `fitbe_table()`, and
+  `fitbe_calculate()` for average-bioequivalence inferential statistics
+  (geometric mean ratio, 90% confidence interval, and intra-subject coefficient
+  of variation) computed from NCA results; see the new
+  `vignette("v50-bioequivalence")`.  The modeling packages `lme4`, `lmerTest`,
+  and `emmeans` are suggested rather than required.  Based on work by
+  @Sang-j111 (#490)
 
 ## Breaking changes
 

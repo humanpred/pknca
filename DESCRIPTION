@@ -22,10 +22,13 @@ Imports:
 Suggests:
     covr,
     cowplot,
+    emmeans,
     ggplot2,
     ggtibble,
     knitr,
     labeling,
+    lme4,
+    lmerTest,
     pander,
     rmarkdown,
     spelling,

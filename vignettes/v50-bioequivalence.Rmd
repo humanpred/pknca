@@ -1,0 +1,190 @@
+---
+title: "Bioequivalence Calculations"
+author: "Bill Denney"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Bioequivalence Calculations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(PKNCA)
+
+# The bioequivalence functions rely on packages that are Suggested (optional)
+# rather than required.  The analysis chunks below only run when they are
+# available.
+has_be_pkgs <-
+  requireNamespace("lme4", quietly = TRUE) &&
+  requireNamespace("lmerTest", quietly = TRUE) &&
+  requireNamespace("emmeans", quietly = TRUE)
+```
+
+After noncompartmental analysis (NCA) parameters such as the area under the
+curve (AUC) and maximum concentration (C~max~) have been calculated, average
+bioequivalence (BE) of a test formulation relative to a reference formulation is
+assessed with inferential statistics.  PKNCA provides three functions for this
+step:
+
+* `fitbe_models()` fits a linear mixed-effects model to the log-transformed value
+  of each NCA endpoint,
+* `fitbe_table()` summarizes those fits into the geometric mean ratio (GMR), its
+  confidence interval, and the intra-subject coefficient of variation, and
+* `fitbe_calculate()` runs both in a single step.
+
+These functions consume the results of `pk.nca()` directly, so the same workflow
+that produces NCA parameters flows into the bioequivalence assessment.
+
+## Optional packages
+
+The bioequivalence calculations use [`lme4`](https://cran.r-project.org/package=lme4),
+[`lmerTest`](https://cran.r-project.org/package=lmerTest), and
+[`emmeans`](https://cran.r-project.org/package=emmeans) to fit the mixed model
+and estimate least-squares means.  They are *Suggested* packages, so install them
+if they are not already present:
+
+```{r install, eval = FALSE}
+install.packages(c("lme4", "lmerTest", "emmeans"))
+```
+
+```{r no-pkgs, echo = FALSE, results = "asis", eval = !has_be_pkgs}
+cat("> **Note:** `lme4`, `lmerTest`, and/or `emmeans` are not installed, so the",
+    "analysis output below is not shown.  Install them to run this vignette.\n")
+```
+
+## Simulating a 2x2 crossover study
+
+A classic average-bioequivalence study uses a two-sequence, two-period crossover
+design: each subject receives both the test (T) and reference (R) formulations,
+in an order determined by their randomized sequence (RT or TR).  We simulate
+concentration-time data from a one-compartment model with first-order
+absorption, with between-subject variability on clearance and a small difference
+between formulations.
+
+```{r simulate}
+simulate_crossover <- function(nsub = 24, seed = 20251201) {
+  set.seed(seed)
+  times <- c(0, 0.25, 0.5, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24)
+  sequence <- rep(c("RT", "TR"), length.out = nsub)
+  subj_cl <- stats::rnorm(nsub, mean = log(5), sd = 0.25)
+  dose <- 100
+  v <- 50
+  ka <- 1.1
+  rows <- list()
+  for (i in seq_len(nsub)) {
+    forms <- if (sequence[i] == "RT") c("R", "T") else c("T", "R")
+    for (p in 1:2) {
+      form <- forms[p]
+      # The test formulation has slightly higher exposure (lower clearance)
+      cl <- exp(subj_cl[i] + ifelse(form == "T", -0.05, 0) + stats::rnorm(1, sd = 0.06))
+      ke <- cl / v
+      conc <- (dose * ka / (v * (ka - ke))) * (exp(-ke * times) - exp(-ka * times))
+      conc <- conc * exp(stats::rnorm(length(times), sd = 0.05))
+      conc[times == 0] <- 0
+      rows[[length(rows) + 1]] <-
+        data.frame(
+          subject = i, sequence = sequence[i], period = p, formulation = form,
+          time = times, conc = conc
+        )
+    }
+  }
+  do.call(rbind, rows)
+}
+
+conc_data <- simulate_crossover()
+head(conc_data)
+```
+
+## Noncompartmental analysis
+
+The crossover structure is described in the grouping formula.  The grouping
+variables are the sequence, period, and formulation, with the subject as the
+final grouping variable.
+
+```{r nca, message = FALSE, warning = FALSE}
+dose_data <- conc_data[conc_data$time == 0, c("subject", "sequence", "period", "formulation")]
+dose_data$dose <- 100
+dose_data$time <- 0
+
+o_conc <- PKNCAconc(conc_data, conc ~ time | sequence + period + formulation + subject)
+o_dose <- PKNCAdose(dose_data, dose ~ time | sequence + period + formulation + subject)
+
+intervals <-
+  data.frame(start = 0, end = Inf, cmax = TRUE, auclast = TRUE, aucinf.obs = TRUE)
+o_data <- PKNCAdata(o_conc, o_dose, intervals = intervals)
+
+o_results <- pk.nca(o_data)
+```
+
+The NCA parameters are available with `summary()` and `as.data.frame()` as usual:
+
+```{r nca-results}
+knitr::kable(head(as.data.frame(o_results)), digits = 2)
+```
+
+## Bioequivalence assessment
+
+`fitbe_calculate()` takes the `PKNCAresults` object, the column that identifies
+the formulation (`reference_col`), and the value of that column that is the
+reference (`reference_value`).  When the fixed and random effects are not
+specified, they are derived from the grouping structure: the subject becomes the
+random intercept and the remaining grouping variables (sequence, period, and
+formulation) become the fixed effects.
+
+```{r be, eval = has_be_pkgs}
+be <- fitbe_calculate(
+  o_results,
+  endpoints = c("cmax", "auclast", "aucinf.obs"),
+  reference_col = "formulation",
+  reference_value = "R"
+)
+
+knitr::kable(be$table, digits = 2)
+```
+
+```{r be-method, eval = has_be_pkgs}
+attr(be$table, "method")
+```
+
+## Interpreting the results
+
+For each endpoint the table reports:
+
+* `gm_test`, `gm_reference`: the geometric mean of the test and reference
+  formulations (least-squares means back-transformed from the log scale),
+* `gmr_percent`: the geometric mean ratio (test / reference), expressed as a
+  percentage,
+* `ci_lower`, `ci_upper`: the bounds of the confidence interval for the GMR
+  (90% by default, controlled by `alpha`),
+* `df`: the Satterthwaite degrees of freedom, and
+* `cv_intra_percent`: the intra-subject coefficient of variation, derived from
+  the residual standard deviation as `sqrt(exp(s^2) - 1) * 100`.
+
+Two formulations are typically declared bioequivalent when the 90% confidence
+interval for the geometric mean ratio falls entirely within 80.00%-125.00% for
+the primary endpoints (commonly AUC and C~max~).
+
+The model fit for each endpoint is
+
+$$\log(\text{value}) = \text{sequence} + \text{period} + \text{formulation} + (1 \mid \text{subject})$$
+
+fit with `lmerTest::lmer()` so that Satterthwaite degrees of freedom are
+available, and the confidence interval is obtained by exponentiating the
+difference in least-squares means between the test and reference formulations.
+
+## Reporting checklist
+
+The summary supports common bioequivalence reporting requirements:
+
+1. **Software and method**: recorded in the `method` attribute of the table
+   (mixed-effects ANOVA via `lmerTest`/`lme4`, confidence interval by
+   exponentiated differences in least-squares means via `emmeans`).
+2. **Geometric means, %GMR, confidence interval, degrees of freedom, and
+   intra-subject CV**: one row per endpoint in `be$table`.
+3. **Individual data**: available from `as.data.frame(o_results)` for listings
+   and figures.
