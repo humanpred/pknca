@@ -89,6 +89,11 @@ test_that("pk.calc.ermax", {
     pk.calc.ermax(conc = c(NA, NA), volume = c(1, 1), time = c(0, 1), duration.conc = c(1, 1)),
     structure(NA_real_, exclude = "All concentrations are missing")
   )
+  # Concentrations present but all volumes NA → all er values are NA
+  expect_equal(
+    pk.calc.ermax(conc = c(1, 2), volume = c(NA, NA), time = c(0, 1), duration.conc = c(1, 1)),
+    structure(NA_real_, exclude = "All volumes are missing")
+  )
   # Normal case
   expect_equal(
     pk.calc.ermax(conc = c(1, 2, 3), volume = c(2, 2, 2), time = c(0, 1, 2), duration.conc = c(2, 2, 2)),
