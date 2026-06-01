@@ -394,6 +394,20 @@ information about the parameter, see the documentation for the function.
 | aumcinf.obs.dn | aumc_dosenorm | Dose normalized aumcinf.obs | pk.calc.dn |
 | aumcinf.pred | aumc | The area under the concentration time moment curve from the beginning of the interval to infinity with extrapolation to infinity from the predicted Clast | pk.calc.aumc.inf.pred |
 | aumcinf.pred.dn | aumc_dosenorm | Dose normalized aumcinf.pred | pk.calc.dn |
+| aumcint.all | aumc | The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) | pk.calc.aumcint.all |
+| aumcint.all.dose | aumc | The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations | pk.calc.aumcint.all |
+| aumcint.inf.obs | aumc | The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) | pk.calc.aumcint.inf.obs |
+| aumcint.inf.obs.dose | aumc | The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations | pk.calc.aumcint.inf.obs |
+| aumcint.inf.pred | aumc | The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) | pk.calc.aumcint.inf.pred |
+| aumcint.inf.pred.dose | aumc | The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations | pk.calc.aumcint.inf.pred |
+| aumcint.last | aumc | The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) | pk.calc.aumcint.last |
+| aumcint.last.dose | aumc | The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations | pk.calc.aumcint.last |
+| aumcivall | aumc | The AUMCall calculated with back-extrapolation for intravenous dosing using extrapolated C0 | pk.calc.aumciv |
+| aumcivinf.obs | aumc | The AUMCinf,obs calculated with back-extrapolation for intravenous dosing using extrapolated C0 | pk.calc.aumciv |
+| aumcivinf.pred | aumc | The AUMCinf,pred calculated with back-extrapolation for intravenous dosing using extrapolated C0 | pk.calc.aumciv |
+| aumcivint.all | aumc | The AUMCint,all calculated with back-extrapolation for intravenous dosing using extrapolated C0 | pk.calc.aumciv |
+| aumcivint.last | aumc | The AUMCint,last calculated with back-extrapolation for intravenous dosing using extrapolated C0 | pk.calc.aumciv |
+| aumcivlast | aumc | The AUMClast calculated with back-extrapolation for intravenous dosing using extrapolated C0 | pk.calc.aumciv |
 | aumclast | aumc | The area under the concentration time moment curve from the beginning of the interval to the last concentration above the limit of quantification | pk.calc.aumc.last |
 | aumclast.dn | aumc_dosenorm | Dose normalized aumclast | pk.calc.dn |
 | c0 | conc | Initial concentration after an IV bolus | pk.calc.c0 |
@@ -405,6 +419,16 @@ information about the parameter, see the documentation for the function.
 | cav.int.last | conc | The average concentration during an interval (calculated with AUCint.last) | pk.calc.cav |
 | ceoi | conc | Concentration at the end of infusion | pk.calc.ceoi |
 | cl.all | clearance | Clearance or observed oral clearance calculated with AUCall | pk.calc.cl |
+| cl.int.all | clearance | Clearance or observed oral clearance calculated with AUCint.all | pk.calc.cl |
+| cl.int.inf.obs | clearance | Clearance or observed oral clearance calculated with AUCint.inf.obs | pk.calc.cl |
+| cl.int.inf.pred | clearance | Clearance or observed oral clearance calculated with AUCint.inf.pred | pk.calc.cl |
+| cl.int.last | clearance | Clearance or observed oral clearance calculated with AUCint.last | pk.calc.cl |
+| cl.iv.all | clearance | Clearance for intravenous dosing calculated with AUCall | pk.calc.cl |
+| cl.iv.last | clearance | Clearance for intravenous dosing calculated with AUClast | pk.calc.cl |
+| cl.iv.obs | clearance | Clearance for intravenous dosing calculated with AUCinf,obs | pk.calc.cl |
+| cl.iv.pred | clearance | Clearance for intravenous dosing calculated with AUCinf,pred | pk.calc.cl |
+| cl.ivint.all | clearance | Clearance for intravenous dosing calculated with interval AUCint.all | pk.calc.cl |
+| cl.ivint.last | clearance | Clearance for intravenous dosing calculated with interval AUCint.last | pk.calc.cl |
 | cl.last | clearance | Clearance or observed oral clearance calculated to Clast | pk.calc.cl |
 | cl.obs | clearance | Clearance or observed oral clearance calculated with observed Clast | pk.calc.cl |
 | cl.pred | clearance | Clearance or observed oral clearance calculated with predicted Clast | pk.calc.cl |
@@ -436,9 +460,17 @@ information about the parameter, see the documentation for the function.
 | f | fraction | Bioavailability or relative bioavailability | pk.calc.f |
 | fe | amount_dose | The fraction of the dose excreted | pk.calc.fe |
 | half.life | time | The (terminal) half-life | pk.calc.half.life |
+| kel.all | inverse_time | Elimination rate (as calculated from the MRTall) | pk.calc.kel |
+| kel.int.all | inverse_time | Elimination rate (as calculated from the MRTint.all) | pk.calc.kel |
+| kel.int.inf.obs | inverse_time | Elimination rate (as calculated from the MRTint.inf.obs) | pk.calc.kel |
+| kel.int.inf.pred | inverse_time | Elimination rate (as calculated from the MRTint.inf.pred) | pk.calc.kel |
+| kel.int.last | inverse_time | Elimination rate (as calculated from the MRTint.last) | pk.calc.kel |
+| kel.iv.all | inverse_time | Elimination rate (as calculated from the MRTiv.all)) | pk.calc.kel |
 | kel.iv.last | inverse_time | Elimination rate (as calculated from the intravenous MRTlast) | pk.calc.kel |
 | kel.iv.obs | inverse_time | Elimination rate (as calculated from the intravenous MRTobs) | pk.calc.kel |
 | kel.iv.pred | inverse_time | Elimination rate (as calculated from the intravenous MRTpred) | pk.calc.kel |
+| kel.ivint.all | inverse_time | Elimination rate (as calculated from the MRTivint.all) | pk.calc.kel |
+| kel.ivint.last | inverse_time | Elimination rate (as calculated from the MRTivint.last) | pk.calc.kel |
 | kel.last | inverse_time | Elimination rate (as calculated from the MRT using AUClast) | pk.calc.kel |
 | kel.obs | inverse_time | Elimination rate (as calculated from the MRT with observed Clast) | pk.calc.kel |
 | kel.pred | inverse_time | Elimination rate (as calculated from the MRT with predicted Clast) | pk.calc.kel |
@@ -449,9 +481,17 @@ information about the parameter, see the documentation for the function.
 | lambda.z.n.points_blq | count | The number of BLQ points included in the Tobit half-life calculation | See the parameter name half.life |
 | lambda.z.time.first | time | The first time point used for the calculation of half-life | See the parameter name half.life |
 | lambda.z.time.last | time | The last time point used for the calculation of half-life | See the parameter name half.life |
+| mrt.all | time | Mean residence time calculated with AUCall/AUMCall | pk.calc.mrt |
+| mrt.int.all | time | Mean residence time over interval calculated with AUCint.all/AUMCint.all | pk.calc.mrt |
+| mrt.int.inf.obs | time | Mean residence time over interval calculated with AUCint.inf.obs/AUMCint.inf.obs | pk.calc.mrt |
+| mrt.int.inf.pred | time | Mean residence time over interval calculated with AUCint.inf.pred/AUMCint.inf.pred | pk.calc.mrt |
+| mrt.int.last | time | Mean residence time over interval calculated with AUCint.last/AUMCint.last | pk.calc.mrt |
+| mrt.iv.all | time | Mean residence time for IV dosing calculated with AUCall/AUMCall | pk.calc.mrt.iv |
 | mrt.iv.last | time | The mean residence time to the last observed concentration above the LOQ correcting for dosing duration | pk.calc.mrt.iv |
 | mrt.iv.obs | time | The mean residence time to infinity using observed Clast correcting for dosing duration | pk.calc.mrt.iv |
 | mrt.iv.pred | time | The mean residence time to infinity using predicted Clast correcting for dosing duration | pk.calc.mrt.iv |
+| mrt.ivint.all | time | Mean residence time for IV interval calculated with AUCint.all/AUMCint.all | pk.calc.mrt.iv |
+| mrt.ivint.last | time | Mean residence time for IV interval calculated with AUCint.last/AUMCint.last | pk.calc.mrt.iv |
 | mrt.last | time | The mean residence time to the last observed concentration above the LOQ | pk.calc.mrt |
 | mrt.md.obs | time | The mean residence time with multiple dosing and nonlinear kinetics using observed Clast | pk.calc.mrt.md |
 | mrt.md.pred | time | The mean residence time with multiple dosing and nonlinear kinetics using predicted Clast | pk.calc.mrt.md |
@@ -484,15 +524,35 @@ information about the parameter, see the documentation for the function.
 | tobit_residual | unitless | The estimated residual standard deviation (on the log-concentration scale) from the Tobit half-life fit | See the parameter name half.life |
 | totdose | dose | Total dose administered during an interval | pk.calc.totdose |
 | volpk | volume | The sum of urine volumes for the interval | pk.calc.volpk |
+| vss.all | volume | Steady-state volume of distribution calculated with AUCall-based CL and MRT | pk.calc.vss |
+| vss.int.all | volume | Steady-state volume of distribution using interval AUCint.all | pk.calc.vss |
+| vss.int.inf.obs | volume | Steady-state volume of distribution using interval AUCint.inf.obs | pk.calc.vss |
+| vss.int.inf.pred | volume | Steady-state volume of distribution using interval AUCint.inf.pred | pk.calc.vss |
+| vss.int.last | volume | Steady-state volume of distribution using interval AUCint.last | pk.calc.vss |
+| vss.iv.all | volume | Steady-state volume of distribution for IV dosing using AUCall | pk.calc.vss |
 | vss.iv.last | volume | The steady-state volume of distribution with intravenous infusion calculating through Tlast | pk.calc.vss |
 | vss.iv.obs | volume | The steady-state volume of distribution with intravenous infusion using observed Clast | pk.calc.vss |
 | vss.iv.pred | volume | The steady-state volume of distribution with intravenous infusion using predicted Clast | pk.calc.vss |
+| vss.ivint.all | volume | Steady-state volume of distribution for IV interval using AUCint.all | pk.calc.vss |
+| vss.ivint.last | volume | Steady-state volume of distribution for IV interval using AUCint.last | pk.calc.vss |
 | vss.last | volume | The steady-state volume of distribution calculating through Tlast | pk.calc.vss |
 | vss.md.obs | volume | The steady-state volume of distribution for nonlinear multiple-dose data using observed Clast | pk.calc.vss |
 | vss.md.pred | volume | The steady-state volume of distribution for nonlinear multiple-dose data using predicted Clast | pk.calc.vss |
 | vss.obs | volume | The steady-state volume of distribution using observed Clast | pk.calc.vss |
 | vss.pred | volume | The steady-state volume of distribution using predicted Clast | pk.calc.vss |
 | vss.sparse.last | volume | Steady-state volume of distribution from sparse sampling | pk.calc.vss |
+| vz.all | volume | Terminal volume of distribution calculated with AUCall-based CL | pk.calc.vz |
+| vz.int.all | volume | Terminal volume of distribution using interval AUCint.all | pk.calc.vz |
+| vz.int.inf.obs | volume | Terminal volume of distribution using interval AUCint.inf.obs | pk.calc.vz |
+| vz.int.inf.pred | volume | Terminal volume of distribution using interval AUCint.inf.pred | pk.calc.vz |
+| vz.int.last | volume | Terminal volume of distribution using interval AUCint.last | pk.calc.vz |
+| vz.iv.all | volume | Terminal volume of distribution for IV dosing using AUCall | pk.calc.vz |
+| vz.iv.last | volume | Terminal volume of distribution for IV dosing using AUClast | pk.calc.vz |
+| vz.iv.obs | volume | Terminal volume of distribution for IV dosing using observed AUCinf | pk.calc.vz |
+| vz.iv.pred | volume | Terminal volume of distribution for IV dosing using predicted AUCinf | pk.calc.vz |
+| vz.ivint.all | volume | Terminal volume of distribution for IV interval using AUCint.all | pk.calc.vz |
+| vz.ivint.last | volume | Terminal volume of distribution for IV interval using AUCint.last | pk.calc.vz |
+| vz.last | volume | Terminal volume of distribution calculated with AUClast-based CL | pk.calc.vz |
 | vz.obs | volume | The terminal volume of distribution using observed Clast | pk.calc.vz |
 | vz.pred | volume | The terminal volume of distribution using predicted Clast | pk.calc.vz |
 | vz.sparse.last | volume | Terminal volume of distribution from sparse sampling | pk.calc.vz |

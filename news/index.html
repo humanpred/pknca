@@ -55,53 +55,6 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.12.2" id="pknca-0122">PKNCA 0.12.2<a class="anchor" aria-label="anchor" href="#pknca-0122"></a></h2>
-<div class="section level3">
-<h3 id="bug-fixes-0-12-2">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-12-2"></a></h3>
-<ul><li>
-<code>normalize.data.frame()</code> no longer triggers a dplyr deprecation warning (<code>Using 'by = character()' to perform a cross join was deprecated in dplyr 1.1.0</code>) when called with ungrouped data (i.e., no common group columns between <code>object</code> and <code>norm_table</code>). <code><a href="https://dplyr.tidyverse.org/reference/cross_join.html" class="external-link">dplyr::cross_join()</a></code> is now used explicitly for this case.</li>
-</ul></div>
-<div class="section level3">
-<h3 id="improvements-0-12-2">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-12-2"></a></h3>
-<ul><li><p><code>normalize.data.frame()</code> now validates that <code>norm_table</code> contains exactly one row when used with ungrouped data, giving a clear error message instead of silently producing incorrect results.</p></li>
-<li><p><code>normalize.data.frame()</code> now uses <code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">dplyr::inner_join()</a></code> instead of <code><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge()</a></code> for grouped joins, preserving left-table row order. Missing group validation ensures no rows are silently dropped.</p></li>
-</ul></div>
-<div class="section level3">
-<h3 id="new-features-0-12-2">New features<a class="anchor" aria-label="anchor" href="#new-features-0-12-2"></a></h3>
-<ul><li>Added sparse AUMC function and five sparse AUC parameters (cl.sparse.last, kel.sparse.last, mrt.ivint.last, vss.sparse.last, vz.sparse.last)</li>
-</ul></div>
-<div class="section level3">
-<h3 id="breaking-changes-0-12-2">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-12-2"></a></h3>
-<ul><li><p><code><a href="../reference/pknca_units_table.html">pknca_units_table()</a></code> called on a <code>PKNCAdata</code> object now raises an error if unit columns within the same concentration group contain mixed values (e.g., two different <code>concu</code> strings for the same subject group). Previously, <code>NA</code> values in unit columns were silently ignored and multiple values caused a different error message; now any intra-group inconsistency is detected and reported with the offending group identifiers.</p></li>
-<li><p>Both include and excluding half-life points may not be done for the same interval (<a href="https://github.com/humanpred/pknca/issues/406" class="external-link">#406</a>)</p></li>
-</ul></div>
-<div class="section level3">
-<h3 id="bugs-fixed-0-12-2">Bugs fixed<a class="anchor" aria-label="anchor" href="#bugs-fixed-0-12-2"></a></h3>
-<ul><li>
-<code><a href="../reference/get_halflife_points.html">get_halflife_points()</a></code> now correctly accounts for start time != 0 and sets times outside of any interval to <code>NA</code> (<a href="https://github.com/humanpred/pknca/issues/470" class="external-link">#470</a>)</li>
-<li>The <code>PKNCAconc</code> function won’t give an error for a concentration-time check when the issue is due to an excluded point (<a href="https://github.com/humanpred/pknca/issues/310" class="external-link">#310</a>)</li>
-<li>The <code>PKNCAdose</code> function won’t give an error for a missing-time check when the issue is due to an excluded point (<a href="https://github.com/humanpred/pknca/issues/310" class="external-link">#310</a>)</li>
-<li>
-<code>pk.nca</code> will calculate <code>fe</code> and <code>clr</code> even if their dependent parameters (e.g, <code>ae</code>) were not requested to be calculated in the intervals (<a href="https://github.com/humanpred/pknca/issues/473" class="external-link">#473</a>)</li>
-</ul></div>
-<div class="section level3">
-<h3 id="new-features-0-12-2-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-12-2-1"></a></h3>
-<ul><li><p><code><a href="../reference/pknca_units_table.html">pknca_units_table()</a></code> is now an S3 generic with a <code>PKNCAdata</code> method. When called on a <code>PKNCAdata</code> object it automatically builds the unit conversion table from any unit columns stored in the underlying <code>PKNCAconc</code> and <code>PKNCAdose</code> objects, supporting per-analyte or per-specimen unit stratification. The table is also built automatically on <code><a href="../reference/PKNCAdata.html">PKNCAdata()</a></code> construction when no <code>units</code> argument is supplied.</p></li>
-<li><p><code><a href="../reference/pk.calc.half.life.html">pk.calc.half.life()</a></code> now supports Tobit regression for half-life estimation via <code>hl_method = "tobit"</code>. Tobit regression treats BLQ observations as left-censored rather than discarding them, which generally improves half-life accuracy when some measurements are below the LLOQ. The new <code>lloq</code> argument (required for Tobit) accepts a scalar or per-observation vector. New PKNCA options: <code>hl_method</code> (default <code>"log-linear"</code>), <code>tobit_n_points_penalty</code> (default 0), and <code>tobit_optim_control</code>. New NCA output columns: <code>tobit_residual</code>, <code>adj_tobit_residual</code>, and <code>lambda.z.n.points_blq</code>.</p></li>
-<li><p><code><a href="../reference/pk.calc.half.life.html">pk.calc.half.life()</a></code> now returns also <code>lambda.z.corrxy</code>, the correlation between the time and the log-concentration of the lambda z points.</p></li>
-<li><p><code><a href="../reference/get_halflife_points.html">get_halflife_points()</a></code> can now be used on PKNCAdata objects to see which points would be used for half-life calculation (<a href="https://github.com/humanpred/pknca/issues/476" class="external-link">#476</a>)</p></li>
-<li><p>New excretion parameters: <code>volpk</code> (total urine volume for an interval) and dose-normalized renal clearance parameters: <code>clr.last.dn</code>, <code>clr.obs.dn</code>, <code>clr.pred.dn</code> (<a href="https://github.com/humanpred/pknca/issues/433" class="external-link">#433</a>)</p></li>
-<li><p><code>PKNCA.set.summary(reset = TRUE)</code> warns that it may break the use of <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> (<a href="https://github.com/humanpred/pknca/issues/477" class="external-link">#477</a>)</p></li>
-<li><p>Added new <code>tmin</code> parameter</p></li>
-<li><p>New post-processing functions to normalize PKNCA result parameters based on any column in PKNCAconc data.frame (<code><a href="../reference/normalize_by_col.html">normalize_by_col()</a></code>) or by using a custom normalization table (<code><a href="../reference/normalize.html">normalize()</a></code>)</p></li>
-<li><p>New excretion rate parameters: <code>ermax</code> (Maximum excretion rate), <code>ertmax</code> (Midpoint time of maximum excretion rate) and <code>ertlst</code> (Time of last excretion rate measurement) (<a href="https://github.com/humanpred/pknca/issues/433" class="external-link">#433</a>)</p></li>
-</ul></div>
-<div class="section level3">
-<h3 id="minor-changes-unlikely-to-affect-pknca-use-0-12-2">Minor changes (unlikely to affect PKNCA use)<a class="anchor" aria-label="anchor" href="#minor-changes-unlikely-to-affect-pknca-use-0-12-2"></a></h3>
-<ul><li>Remove dead code: unused internal functions, commented-out code, unused variable, stale comment, and unused <code>pmxTools</code> Suggests dependency</li>
-</ul></div>
-</div>
-    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.12.1" id="pknca-0121">PKNCA 0.12.1<a class="anchor" aria-label="anchor" href="#pknca-0121"></a></h2><p class="text-muted">CRAN release: 2025-08-19</p>
 <div class="section level3">
 <h3 id="minor-changes-unlikely-to-affect-pknca-use-0-12-1">Minor changes (unlikely to affect PKNCA use)<a class="anchor" aria-label="anchor" href="#minor-changes-unlikely-to-affect-pknca-use-0-12-1"></a></h3>

@@ -327,19 +327,6 @@
 - [`pk.calc.aucabove()`](http://humanpred.github.io/pknca/reference/pk.calc.aucabove.md)
   : Calculate the AUC above a given concentration
 
-- [`pk.calc.aucint()`](http://humanpred.github.io/pknca/reference/pk.calc.aucint.md)
-  [`pk.calc.aucint.last()`](http://humanpred.github.io/pknca/reference/pk.calc.aucint.md)
-  [`pk.calc.aucint.all()`](http://humanpred.github.io/pknca/reference/pk.calc.aucint.md)
-  [`pk.calc.aucint.inf.obs()`](http://humanpred.github.io/pknca/reference/pk.calc.aucint.md)
-  [`pk.calc.aucint.inf.pred()`](http://humanpred.github.io/pknca/reference/pk.calc.aucint.md)
-  : Calculate the AUC over an interval with interpolation and/or
-  extrapolation of concentrations for the beginning and end of the
-  interval.
-
-- [`pk.calc.auciv()`](http://humanpred.github.io/pknca/reference/pk.calc.auciv.md)
-  [`pk.calc.auciv_pbext()`](http://humanpred.github.io/pknca/reference/pk.calc.auciv.md)
-  : Calculate AUC for intravenous dosing
-
 - [`pk.calc.aucpext()`](http://humanpred.github.io/pknca/reference/pk.calc.aucpext.md)
   : Calculate the AUC percent extrapolated
 
@@ -357,6 +344,27 @@
   [`pk.calc.aumc.inf.pred()`](http://humanpred.github.io/pknca/reference/pk.calc.auxc.md)
   [`pk.calc.aumc.all()`](http://humanpred.github.io/pknca/reference/pk.calc.auxc.md)
   : Compute the Area Under the (Moment) Curve
+
+- [`pk.calc.auxcint()`](http://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+  [`pk.calc.aucint()`](http://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+  [`pk.calc.aucint.last()`](http://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+  [`pk.calc.aucint.all()`](http://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+  [`pk.calc.aucint.inf.obs()`](http://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+  [`pk.calc.aucint.inf.pred()`](http://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+  [`pk.calc.aumcint()`](http://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+  [`pk.calc.aumcint.last()`](http://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+  [`pk.calc.aumcint.all()`](http://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+  [`pk.calc.aumcint.inf.obs()`](http://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+  [`pk.calc.aumcint.inf.pred()`](http://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+  : Calculate AUXC (AUC or AUMC) over an interval with
+  interpolation/extrapolation
+
+- [`pk.calc.auxciv()`](http://humanpred.github.io/pknca/reference/pk.calc.auxciv.md)
+  [`pk.calc.auciv()`](http://humanpred.github.io/pknca/reference/pk.calc.auxciv.md)
+  [`pk.calc.auciv_pbext()`](http://humanpred.github.io/pknca/reference/pk.calc.auxciv.md)
+  [`pk.calc.aumciv()`](http://humanpred.github.io/pknca/reference/pk.calc.auxciv.md)
+  : Calculate AUXC (AUC or AUMC) for IV dosing with C0
+  back-extrapolation
 
 - [`pk.calc.c0()`](http://humanpred.github.io/pknca/reference/pk.calc.c0.md)
   [`pk.calc.c0.method.logslope()`](http://humanpred.github.io/pknca/reference/pk.calc.c0.md)

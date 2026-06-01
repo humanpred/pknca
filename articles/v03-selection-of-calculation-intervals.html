@@ -779,6 +779,112 @@ from the predicted Clast</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="even">
+<td align="left">aumcint.all</td>
+<td align="left">aumc</td>
+<td align="left">The area under the moment curve in the interval
+extrapolating from Tlast to infinity with the triangle from Tlast to the
+next point and zero thereafter (matching AUMCall)</td>
+<td align="left">pk.calc.aumcint.all</td>
+</tr>
+<tr class="odd">
+<td align="left">aumcint.all.dose</td>
+<td align="left">aumc</td>
+<td align="left">The area under the moment curve in the interval
+extrapolating from Tlast to infinity with the triangle from Tlast to the
+next point and zero thereafter (matching AUMCall) with dose-aware
+interpolation/extrapolation of concentrations</td>
+<td align="left">pk.calc.aumcint.all</td>
+</tr>
+<tr class="even">
+<td align="left">aumcint.inf.obs</td>
+<td align="left">aumc</td>
+<td align="left">The area under the moment curve in the interval
+extrapolating from Tlast to infinity with zeros (matching AUMClast)</td>
+<td align="left">pk.calc.aumcint.inf.obs</td>
+</tr>
+<tr class="odd">
+<td align="left">aumcint.inf.obs.dose</td>
+<td align="left">aumc</td>
+<td align="left">The area under the moment curve in the interval
+extrapolating from Tlast to infinity with zeros (matching AUMClast) with
+dose-aware interpolation/extrapolation of concentrations</td>
+<td align="left">pk.calc.aumcint.inf.obs</td>
+</tr>
+<tr class="even">
+<td align="left">aumcint.inf.pred</td>
+<td align="left">aumc</td>
+<td align="left">The area under the moment curve in the interval
+extrapolating from Tlast to infinity with the triangle from Tlast to the
+next point and zero thereafter (matching AUMCall)</td>
+<td align="left">pk.calc.aumcint.inf.pred</td>
+</tr>
+<tr class="odd">
+<td align="left">aumcint.inf.pred.dose</td>
+<td align="left">aumc</td>
+<td align="left">The area under the moment curve in the interval
+extrapolating from Tlast to infinity with the triangle from Tlast to the
+next point and zero thereafter (matching AUMCall) with dose-aware
+interpolation/extrapolation of concentrations</td>
+<td align="left">pk.calc.aumcint.inf.pred</td>
+</tr>
+<tr class="even">
+<td align="left">aumcint.last</td>
+<td align="left">aumc</td>
+<td align="left">The area under the moment curve in the interval
+extrapolating from Tlast to infinity with zeros (matching AUMClast)</td>
+<td align="left">pk.calc.aumcint.last</td>
+</tr>
+<tr class="odd">
+<td align="left">aumcint.last.dose</td>
+<td align="left">aumc</td>
+<td align="left">The area under the moment curve in the interval
+extrapolating from Tlast to infinity with zeros (matching AUMClast) with
+dose-aware interpolation/extrapolation of concentrations</td>
+<td align="left">pk.calc.aumcint.last</td>
+</tr>
+<tr class="even">
+<td align="left">aumcivall</td>
+<td align="left">aumc</td>
+<td align="left">The AUMCall calculated with back-extrapolation for
+intravenous dosing using extrapolated C0</td>
+<td align="left">pk.calc.aumciv</td>
+</tr>
+<tr class="odd">
+<td align="left">aumcivinf.obs</td>
+<td align="left">aumc</td>
+<td align="left">The AUMCinf,obs calculated with back-extrapolation for
+intravenous dosing using extrapolated C0</td>
+<td align="left">pk.calc.aumciv</td>
+</tr>
+<tr class="even">
+<td align="left">aumcivinf.pred</td>
+<td align="left">aumc</td>
+<td align="left">The AUMCinf,pred calculated with back-extrapolation for
+intravenous dosing using extrapolated C0</td>
+<td align="left">pk.calc.aumciv</td>
+</tr>
+<tr class="odd">
+<td align="left">aumcivint.all</td>
+<td align="left">aumc</td>
+<td align="left">The AUMCint,all calculated with back-extrapolation for
+intravenous dosing using extrapolated C0</td>
+<td align="left">pk.calc.aumciv</td>
+</tr>
+<tr class="even">
+<td align="left">aumcivint.last</td>
+<td align="left">aumc</td>
+<td align="left">The AUMCint,last calculated with back-extrapolation for
+intravenous dosing using extrapolated C0</td>
+<td align="left">pk.calc.aumciv</td>
+</tr>
+<tr class="odd">
+<td align="left">aumcivlast</td>
+<td align="left">aumc</td>
+<td align="left">The AUMClast calculated with back-extrapolation for
+intravenous dosing using extrapolated C0</td>
+<td align="left">pk.calc.aumciv</td>
+</tr>
+<tr class="even">
 <td align="left">aumclast</td>
 <td align="left">aumc</td>
 <td align="left">The area under the concentration time moment curve from
@@ -850,6 +956,76 @@ of quantification</td>
 <td align="left">clearance</td>
 <td align="left">Clearance or observed oral clearance calculated with
 AUCall</td>
+<td align="left">pk.calc.cl</td>
+</tr>
+<tr class="odd">
+<td align="left">cl.int.all</td>
+<td align="left">clearance</td>
+<td align="left">Clearance or observed oral clearance calculated with
+AUCint.all</td>
+<td align="left">pk.calc.cl</td>
+</tr>
+<tr class="even">
+<td align="left">cl.int.inf.obs</td>
+<td align="left">clearance</td>
+<td align="left">Clearance or observed oral clearance calculated with
+AUCint.inf.obs</td>
+<td align="left">pk.calc.cl</td>
+</tr>
+<tr class="odd">
+<td align="left">cl.int.inf.pred</td>
+<td align="left">clearance</td>
+<td align="left">Clearance or observed oral clearance calculated with
+AUCint.inf.pred</td>
+<td align="left">pk.calc.cl</td>
+</tr>
+<tr class="even">
+<td align="left">cl.int.last</td>
+<td align="left">clearance</td>
+<td align="left">Clearance or observed oral clearance calculated with
+AUCint.last</td>
+<td align="left">pk.calc.cl</td>
+</tr>
+<tr class="odd">
+<td align="left">cl.iv.all</td>
+<td align="left">clearance</td>
+<td align="left">Clearance for intravenous dosing calculated with
+AUCall</td>
+<td align="left">pk.calc.cl</td>
+</tr>
+<tr class="even">
+<td align="left">cl.iv.last</td>
+<td align="left">clearance</td>
+<td align="left">Clearance for intravenous dosing calculated with
+AUClast</td>
+<td align="left">pk.calc.cl</td>
+</tr>
+<tr class="odd">
+<td align="left">cl.iv.obs</td>
+<td align="left">clearance</td>
+<td align="left">Clearance for intravenous dosing calculated with
+AUCinf,obs</td>
+<td align="left">pk.calc.cl</td>
+</tr>
+<tr class="even">
+<td align="left">cl.iv.pred</td>
+<td align="left">clearance</td>
+<td align="left">Clearance for intravenous dosing calculated with
+AUCinf,pred</td>
+<td align="left">pk.calc.cl</td>
+</tr>
+<tr class="odd">
+<td align="left">cl.ivint.all</td>
+<td align="left">clearance</td>
+<td align="left">Clearance for intravenous dosing calculated with
+interval AUCint.all</td>
+<td align="left">pk.calc.cl</td>
+</tr>
+<tr class="even">
+<td align="left">cl.ivint.last</td>
+<td align="left">clearance</td>
+<td align="left">Clearance for intravenous dosing calculated with
+interval AUCint.last</td>
 <td align="left">pk.calc.cl</td>
 </tr>
 <tr class="odd">
@@ -1050,6 +1226,47 @@ rate (typically in urine or feces)</td>
 <td align="left">pk.calc.half.life</td>
 </tr>
 <tr class="even">
+<td align="left">kel.all</td>
+<td align="left">inverse_time</td>
+<td align="left">Elimination rate (as calculated from the MRTall)</td>
+<td align="left">pk.calc.kel</td>
+</tr>
+<tr class="odd">
+<td align="left">kel.int.all</td>
+<td align="left">inverse_time</td>
+<td align="left">Elimination rate (as calculated from the
+MRTint.all)</td>
+<td align="left">pk.calc.kel</td>
+</tr>
+<tr class="even">
+<td align="left">kel.int.inf.obs</td>
+<td align="left">inverse_time</td>
+<td align="left">Elimination rate (as calculated from the
+MRTint.inf.obs)</td>
+<td align="left">pk.calc.kel</td>
+</tr>
+<tr class="odd">
+<td align="left">kel.int.inf.pred</td>
+<td align="left">inverse_time</td>
+<td align="left">Elimination rate (as calculated from the
+MRTint.inf.pred)</td>
+<td align="left">pk.calc.kel</td>
+</tr>
+<tr class="even">
+<td align="left">kel.int.last</td>
+<td align="left">inverse_time</td>
+<td align="left">Elimination rate (as calculated from the
+MRTint.last)</td>
+<td align="left">pk.calc.kel</td>
+</tr>
+<tr class="odd">
+<td align="left">kel.iv.all</td>
+<td align="left">inverse_time</td>
+<td align="left">Elimination rate (as calculated from the
+MRTiv.all))</td>
+<td align="left">pk.calc.kel</td>
+</tr>
+<tr class="even">
 <td align="left">kel.iv.last</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the intravenous
@@ -1068,6 +1285,20 @@ MRTobs)</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the intravenous
 MRTpred)</td>
+<td align="left">pk.calc.kel</td>
+</tr>
+<tr class="odd">
+<td align="left">kel.ivint.all</td>
+<td align="left">inverse_time</td>
+<td align="left">Elimination rate (as calculated from the
+MRTivint.all)</td>
+<td align="left">pk.calc.kel</td>
+</tr>
+<tr class="even">
+<td align="left">kel.ivint.last</td>
+<td align="left">inverse_time</td>
+<td align="left">Elimination rate (as calculated from the
+MRTivint.last)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
 <tr class="odd">
@@ -1140,6 +1371,47 @@ half-life</td>
 <td align="left">See the parameter name half.life</td>
 </tr>
 <tr class="odd">
+<td align="left">mrt.all</td>
+<td align="left">time</td>
+<td align="left">Mean residence time calculated with AUCall/AUMCall</td>
+<td align="left">pk.calc.mrt</td>
+</tr>
+<tr class="even">
+<td align="left">mrt.int.all</td>
+<td align="left">time</td>
+<td align="left">Mean residence time over interval calculated with
+AUCint.all/AUMCint.all</td>
+<td align="left">pk.calc.mrt</td>
+</tr>
+<tr class="odd">
+<td align="left">mrt.int.inf.obs</td>
+<td align="left">time</td>
+<td align="left">Mean residence time over interval calculated with
+AUCint.inf.obs/AUMCint.inf.obs</td>
+<td align="left">pk.calc.mrt</td>
+</tr>
+<tr class="even">
+<td align="left">mrt.int.inf.pred</td>
+<td align="left">time</td>
+<td align="left">Mean residence time over interval calculated with
+AUCint.inf.pred/AUMCint.inf.pred</td>
+<td align="left">pk.calc.mrt</td>
+</tr>
+<tr class="odd">
+<td align="left">mrt.int.last</td>
+<td align="left">time</td>
+<td align="left">Mean residence time over interval calculated with
+AUCint.last/AUMCint.last</td>
+<td align="left">pk.calc.mrt</td>
+</tr>
+<tr class="even">
+<td align="left">mrt.iv.all</td>
+<td align="left">time</td>
+<td align="left">Mean residence time for IV dosing calculated with
+AUCall/AUMCall</td>
+<td align="left">pk.calc.mrt.iv</td>
+</tr>
+<tr class="odd">
 <td align="left">mrt.iv.last</td>
 <td align="left">time</td>
 <td align="left">The mean residence time to the last observed
@@ -1158,6 +1430,20 @@ Clast correcting for dosing duration</td>
 <td align="left">time</td>
 <td align="left">The mean residence time to infinity using predicted
 Clast correcting for dosing duration</td>
+<td align="left">pk.calc.mrt.iv</td>
+</tr>
+<tr class="even">
+<td align="left">mrt.ivint.all</td>
+<td align="left">time</td>
+<td align="left">Mean residence time for IV interval calculated with
+AUCint.all/AUMCint.all</td>
+<td align="left">pk.calc.mrt.iv</td>
+</tr>
+<tr class="odd">
+<td align="left">mrt.ivint.last</td>
+<td align="left">time</td>
+<td align="left">Mean residence time for IV interval calculated with
+AUCint.last/AUMCint.last</td>
 <td align="left">pk.calc.mrt.iv</td>
 </tr>
 <tr class="even">
@@ -1379,6 +1665,48 @@ log-concentration scale) from the Tobit half-life fit</td>
 <td align="left">pk.calc.volpk</td>
 </tr>
 <tr class="even">
+<td align="left">vss.all</td>
+<td align="left">volume</td>
+<td align="left">Steady-state volume of distribution calculated with
+AUCall-based CL and MRT</td>
+<td align="left">pk.calc.vss</td>
+</tr>
+<tr class="odd">
+<td align="left">vss.int.all</td>
+<td align="left">volume</td>
+<td align="left">Steady-state volume of distribution using interval
+AUCint.all</td>
+<td align="left">pk.calc.vss</td>
+</tr>
+<tr class="even">
+<td align="left">vss.int.inf.obs</td>
+<td align="left">volume</td>
+<td align="left">Steady-state volume of distribution using interval
+AUCint.inf.obs</td>
+<td align="left">pk.calc.vss</td>
+</tr>
+<tr class="odd">
+<td align="left">vss.int.inf.pred</td>
+<td align="left">volume</td>
+<td align="left">Steady-state volume of distribution using interval
+AUCint.inf.pred</td>
+<td align="left">pk.calc.vss</td>
+</tr>
+<tr class="even">
+<td align="left">vss.int.last</td>
+<td align="left">volume</td>
+<td align="left">Steady-state volume of distribution using interval
+AUCint.last</td>
+<td align="left">pk.calc.vss</td>
+</tr>
+<tr class="odd">
+<td align="left">vss.iv.all</td>
+<td align="left">volume</td>
+<td align="left">Steady-state volume of distribution for IV dosing using
+AUCall</td>
+<td align="left">pk.calc.vss</td>
+</tr>
+<tr class="even">
 <td align="left">vss.iv.last</td>
 <td align="left">volume</td>
 <td align="left">The steady-state volume of distribution with
@@ -1397,6 +1725,20 @@ intravenous infusion using observed Clast</td>
 <td align="left">volume</td>
 <td align="left">The steady-state volume of distribution with
 intravenous infusion using predicted Clast</td>
+<td align="left">pk.calc.vss</td>
+</tr>
+<tr class="odd">
+<td align="left">vss.ivint.all</td>
+<td align="left">volume</td>
+<td align="left">Steady-state volume of distribution for IV interval
+using AUCint.all</td>
+<td align="left">pk.calc.vss</td>
+</tr>
+<tr class="even">
+<td align="left">vss.ivint.last</td>
+<td align="left">volume</td>
+<td align="left">Steady-state volume of distribution for IV interval
+using AUCint.last</td>
 <td align="left">pk.calc.vss</td>
 </tr>
 <tr class="odd">
@@ -1440,6 +1782,90 @@ Clast</td>
 <td align="left">Steady-state volume of distribution from sparse
 sampling</td>
 <td align="left">pk.calc.vss</td>
+</tr>
+<tr class="odd">
+<td align="left">vz.all</td>
+<td align="left">volume</td>
+<td align="left">Terminal volume of distribution calculated with
+AUCall-based CL</td>
+<td align="left">pk.calc.vz</td>
+</tr>
+<tr class="even">
+<td align="left">vz.int.all</td>
+<td align="left">volume</td>
+<td align="left">Terminal volume of distribution using interval
+AUCint.all</td>
+<td align="left">pk.calc.vz</td>
+</tr>
+<tr class="odd">
+<td align="left">vz.int.inf.obs</td>
+<td align="left">volume</td>
+<td align="left">Terminal volume of distribution using interval
+AUCint.inf.obs</td>
+<td align="left">pk.calc.vz</td>
+</tr>
+<tr class="even">
+<td align="left">vz.int.inf.pred</td>
+<td align="left">volume</td>
+<td align="left">Terminal volume of distribution using interval
+AUCint.inf.pred</td>
+<td align="left">pk.calc.vz</td>
+</tr>
+<tr class="odd">
+<td align="left">vz.int.last</td>
+<td align="left">volume</td>
+<td align="left">Terminal volume of distribution using interval
+AUCint.last</td>
+<td align="left">pk.calc.vz</td>
+</tr>
+<tr class="even">
+<td align="left">vz.iv.all</td>
+<td align="left">volume</td>
+<td align="left">Terminal volume of distribution for IV dosing using
+AUCall</td>
+<td align="left">pk.calc.vz</td>
+</tr>
+<tr class="odd">
+<td align="left">vz.iv.last</td>
+<td align="left">volume</td>
+<td align="left">Terminal volume of distribution for IV dosing using
+AUClast</td>
+<td align="left">pk.calc.vz</td>
+</tr>
+<tr class="even">
+<td align="left">vz.iv.obs</td>
+<td align="left">volume</td>
+<td align="left">Terminal volume of distribution for IV dosing using
+observed AUCinf</td>
+<td align="left">pk.calc.vz</td>
+</tr>
+<tr class="odd">
+<td align="left">vz.iv.pred</td>
+<td align="left">volume</td>
+<td align="left">Terminal volume of distribution for IV dosing using
+predicted AUCinf</td>
+<td align="left">pk.calc.vz</td>
+</tr>
+<tr class="even">
+<td align="left">vz.ivint.all</td>
+<td align="left">volume</td>
+<td align="left">Terminal volume of distribution for IV interval using
+AUCint.all</td>
+<td align="left">pk.calc.vz</td>
+</tr>
+<tr class="odd">
+<td align="left">vz.ivint.last</td>
+<td align="left">volume</td>
+<td align="left">Terminal volume of distribution for IV interval using
+AUCint.last</td>
+<td align="left">pk.calc.vz</td>
+</tr>
+<tr class="even">
+<td align="left">vz.last</td>
+<td align="left">volume</td>
+<td align="left">Terminal volume of distribution calculated with
+AUClast-based CL</td>
+<td align="left">pk.calc.vz</td>
 </tr>
 <tr class="odd">
 <td align="left">vz.obs</td>
