@@ -1,3 +1,7 @@
+
+# ============================================================================
+# Basic Error Handling Tests
+# ============================================================================
 test_that("AUCint gives errors appropriately", {
   expect_error(
     pk.calc.aucint(conc = 1, time = 1),
@@ -19,7 +23,7 @@ test_that("AUCint gives errors appropriately", {
     pk.calc.aucint(conc = 1, time = 1, start = 1, end = 1:2),
     regexp = "Assertion on 'end' failed: Must have length 1."
   )
-
+  
   expect_error(
     pk.calc.aucint(conc = 1, time = 1, start = "A", end = 1),
     regexp = "Assertion on 'start' failed: Must be of type 'number', not 'character'."
@@ -32,7 +36,7 @@ test_that("AUCint gives errors appropriately", {
     pk.calc.aucint(conc = 1, time = 1, start = Inf, end = 1),
     regexp = "Assertion on 'start' failed: Must be finite."
   )
-
+  
   expect_error(
     pk.calc.aucint(conc = 1, time = 1, end = "A", start = 1),
     regexp = "Assertion on 'end' failed: Must be of type 'number', not 'character'."
@@ -41,7 +45,7 @@ test_that("AUCint gives errors appropriately", {
     pk.calc.aucint(conc = 1, time = 1, end = factor("A"), start = 1),
     regexp = "Assertion on 'end' failed: Must be of type 'number', not 'factor'."
   )
-
+  
   expect_error(
     pk.calc.aucint(conc = 1, time = 1, interval = 1:3),
     regexp = "Assertion on 'interval' failed: Must have length 2, but has length 3."
@@ -60,8 +64,7 @@ test_that("AUCint gives errors appropriately", {
   )
   expect_error(
     pk.calc.aucint(conc = 1, time = 1, interval = c(-Inf, 1)),
-    regexp = "Assertion on 'interval[1]' failed: Must be finite.",
-    fixed = TRUE
+    regexp = "Assertion on 'interval\\[1\\]' failed: Must be finite."
   )
   expect_error(
     pk.calc.aucint(conc = 1, time = 1, interval = c(1, 1)),
@@ -73,8 +76,12 @@ test_that("AUCint gives errors appropriately", {
   )
 })
 
+# ============================================================================
+# Basic Equivalence Tests (no interpolation/extrapolation)
+# ============================================================================
 test_that("AUCint gives the same value when no interpolation/extrapolation is required", {
   concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata$conc, time = concdata$time,
@@ -86,6 +93,7 @@ test_that("AUCint gives the same value when no interpolation/extrapolation is re
     ),
     info = "No interpolation/extrapolation is equivalent to normal AUC"
   )
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata$conc, time = concdata$time,
@@ -97,6 +105,7 @@ test_that("AUCint gives the same value when no interpolation/extrapolation is re
     ),
     info = "Giving interval and start+end are the same, no interp/extrap (test 1)"
   )
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata$conc, time = concdata$time,
@@ -110,8 +119,12 @@ test_that("AUCint gives the same value when no interpolation/extrapolation is re
   )
 })
 
+# ============================================================================
+# Warning and NA Handling Tests
+# ============================================================================
 test_that("AUCint gives a warning and NA when it cannot interpolate or extrapolate a value", {
   concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
+  
   expect_warning(
     over_dose <-
       pk.calc.aucint(
@@ -122,14 +135,13 @@ test_that("AUCint gives a warning and NA when it cannot interpolate or extrapola
         lambda.z = NA,
         auc.type = "AUCinf"
       ),
-    regexp = "Some interpolated/extrapolated concentration values are missing (may be due to interpolating or extrapolating over a dose with lambda.z=NA). Time points with missing data are:  1.5, 4",
-    fixed = TRUE,
+    regexp = "Some interpolated/extrapolated concentration values are missing \\(may be due to interpolating or extrapolating over a dose with lambda.z=NA\\). Time points with missing data are:  1.5, 4",
     info = "warned when integrating over a dose with lambda.z=NA"
   )
   expect_equal(over_dose, NA_real_,
-    info = "When you cannot integrate over a dose, you get NA"
+               info = "When you cannot integrate over a dose, you get NA"
   )
-
+  
   expect_warning(
     expect_warning(
       before_time <-
@@ -142,7 +154,6 @@ test_that("AUCint gives a warning and NA when it cannot interpolate or extrapola
           auc.type = "AUCinf"
         ),
       regexp = "Some interpolated/extrapolated concentration values are missing Time points with missing data are:  -1, -0.5",
-      fixed = TRUE,
       info = "warned when integrating over a dose with lambda.z=NA"
     ),
     regexp = "Cannot interpolate between two doses or after a dose without a concentration after the first dose"
@@ -153,9 +164,13 @@ test_that("AUCint gives a warning and NA when it cannot interpolate or extrapola
   )
 })
 
+# ============================================================================
+# AUC Type Tests (AUClast, AUCall, AUCinf)
+# ============================================================================
 test_that("AUCint respects auc.type and does the correct calculations for each AUC type", {
   concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
   concdata_blq <- data.frame(conc = c(8, 4, 2, 1, 0), time = 0:4)
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata$conc, time = concdata$time,
@@ -167,7 +182,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
     ),
     info = "Default AUC type is AUClast"
   )
-
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata$conc, time = concdata$time,
@@ -179,6 +194,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
     ),
     info = "AUCinf is traced"
   )
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata$conc, time = concdata$time,
@@ -194,6 +210,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
       ),
     info = "AUCinf is traced with clast respected"
   )
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata$conc, time = concdata$time,
@@ -205,6 +222,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
     ),
     info = "AUCinf is traced with lambda.z respected"
   )
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata$conc, time = concdata$time,
@@ -220,7 +238,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
       ),
     info = "AUCinf is traced with clast and lambda.z respected"
   )
-
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata$conc, time = concdata$time,
@@ -232,6 +250,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
     ),
     info = "AUCall is the same as AUClast when no BLQ follow tlast (both AUCall)"
   )
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata$conc, time = concdata$time,
@@ -243,6 +262,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
     ),
     info = "AUCall is the same as AUClast when no BLQ follow tlast (test AUClast)"
   )
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata_blq$conc, time = concdata_blq$time,
@@ -254,6 +274,7 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
     ),
     info = "AUCall is the same the normal calculation when no interpolation/extrapolation happens"
   )
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata_blq$conc, time = concdata_blq$time,
@@ -267,13 +288,15 @@ test_that("AUCint respects auc.type and does the correct calculations for each A
   )
 })
 
+# ============================================================================
+# Dose Handling Tests
+# ============================================================================
 test_that("aucint respects doses", {
   concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
   concdata_blq <- data.frame(conc = c(8, 4, 2, 1, 0), time = 0:4)
   time.dose_at <- 1
-  time.dose_between <- 1.5
-  time.dose_after_tlast <- 3.5
   time.dose_after_all <- 4.5
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata_blq$conc, time = concdata_blq$time,
@@ -285,6 +308,7 @@ test_that("aucint respects doses", {
     ),
     info = "Calculation with dosing at the same time as an observation causes no change."
   )
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata_blq$conc, time = concdata_blq$time,
@@ -296,13 +320,7 @@ test_that("aucint respects doses", {
     ),
     info = "Calculation with dosing at a time after all observations causes no change."
   )
-  # expect_warning(no_lambda.z_dose <-
-  #                  pk.calc.aucint(conc=concdata_blq$conc, time=concdata_blq$time,
-  #                                 interval=c(0, 4), auc.type="AUCall", time.dose=time.dose_between),
-  #                regexp="Cannot interpolate/extrapolate to dosing times in pk.calc.aucint without lambda.z",
-  #                fixed=TRUE)
-  # expect_equal(no_lambda.z_dose, NA_real_,
-  #              info="Calculating with dosing times, without observations, and without lambda.z")
+  
   expect_equal(
     pk.calc.aucint(
       conc = concdata_blq$conc, time = concdata_blq$time,
@@ -317,16 +335,24 @@ test_that("aucint respects doses", {
   )
 })
 
+# ============================================================================
+# Infinite Interval Tests
+# ============================================================================
 test_that("aucint works with infinite intervals", {
   concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
-  expect_equal(pk.calc.aucint.last(conc = concdata$conc, time = concdata$time, start = 0, end = Inf),
+  
+  expect_equal(
+    pk.calc.aucint.last(conc = concdata$conc, time = concdata$time, start = 0, end = Inf),
     pk.calc.auc.last(conc = concdata$conc, time = concdata$time),
     info = "Simple AUClast = aucint.last"
   )
-  expect_equal(pk.calc.aucint.all(conc = concdata$conc, time = concdata$time, start = 0, end = Inf),
+  
+  expect_equal(
+    pk.calc.aucint.all(conc = concdata$conc, time = concdata$time, start = 0, end = Inf),
     pk.calc.auc.all(conc = concdata$conc, time = concdata$time),
     info = "Simple AUCall = aucint.all"
   )
+  
   expect_equal(
     pk.calc.aucint.inf.obs(
       conc = concdata$conc, time = concdata$time,
@@ -339,6 +365,7 @@ test_that("aucint works with infinite intervals", {
     ),
     info = "Simple AUCinf.obs = aucint.inf.obs"
   )
+  
   expect_equal(
     pk.calc.aucint.inf.pred(
       conc = concdata$conc, time = concdata$time,
@@ -353,12 +380,17 @@ test_that("aucint works with infinite intervals", {
   )
 })
 
+# ============================================================================
+# Check Argument Tests
+# ============================================================================
 test_that("aucint respects the check argument", {
   concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
+  
   expect_equal(
     pk.calc.aucint.last(conc = concdata$conc, time = concdata$time, start = 0, end = Inf),
     pk.calc.aucint.last(conc = concdata$conc, time = concdata$time, start = 0, end = Inf, check = FALSE)
   )
+  
   baddata <- data.frame(
     conc = c(8, 4, 2, NA),
     time = c(0:2, NA)
@@ -368,17 +400,24 @@ test_that("aucint respects the check argument", {
   )
 })
 
+# ============================================================================
+# All-Zero Concentration Tests
+# ============================================================================
 test_that("aucint works for all zero concentrations with interpolated or extrapolated concentrations", {
   expect_equal(
     pk.calc.aucint(conc = c(0, 0, 0, 0), time = 0:3, interval = c(0, 4)),
     structure(0, exclude = "DO NOT EXCLUDE")
   )
+  
   expect_equal(
     pk.calc.aucint(conc = c(0, 0, 0, 0), time = 0:3, interval = c(0, 2.5)),
     structure(0, exclude = "DO NOT EXCLUDE")
   )
 })
 
+# ============================================================================
+# Logarithmic Extrapolation Tests (#203)
+# ============================================================================
 test_that("aucint uses log extrapolation regardless of the interpolation method (#203)", {
   d_conc <-
     data.frame(
@@ -388,7 +427,7 @@ test_that("aucint uses log extrapolation regardless of the interpolation method 
   lambda_z <- 0.661
   clast <- d_conc$conc[nrow(d_conc)]
   ctau_extrap <- clast*exp(-lambda_z*(6-5))
-
+  
   aucinf_obs5_lin <-
     pk.calc.aucint.inf.obs(
       conc = d_conc$conc,
@@ -425,6 +464,7 @@ test_that("aucint uses log extrapolation regardless of the interpolation method 
       lambda.z = lambda_z,
       options = list(auc.method="lin up/log down")
     )
+  
   # These are two ways of saying the same thing, the first is simpler logically,
   # the second is more directly mathematical.
   expect_equal(
@@ -437,6 +477,9 @@ test_that("aucint uses log extrapolation regardless of the interpolation method 
   )
 })
 
+# ============================================================================
+# Half-Life NA Handling Tests (#450)
+# ============================================================================
 test_that("aucint.inf.pred returns NA when half-life is not estimable (#450)", {
   d_conc <-
     data.frame(
@@ -453,4 +496,213 @@ test_that("aucint.inf.pred returns NA when half-life is not estimable (#450)", {
   aucint_inf_pred_prep <- as.data.frame(o_nca)
   aucint_inf_pred <- aucint_inf_pred_prep$PPORRES[aucint_inf_pred_prep$PPTESTCD %in% "aucint.inf.pred"]
   expect_equal(aucint_inf_pred, NA_real_)
+})
+
+# ============================================================================
+# AUMC Tests (parallel to AUC tests)
+# ============================================================================
+test_that("AUMCint functions work analogously to AUCint", {
+  concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
+  
+  # Test that aumcint.last works
+  expect_true(
+    is.numeric(pk.calc.aumcint.last(conc = concdata$conc, time = concdata$time, start = 0, end = Inf))
+  )
+  
+  # Test that aumcint.all works
+  expect_true(
+    is.numeric(pk.calc.aumcint.all(conc = concdata$conc, time = concdata$time, start = 0, end = Inf))
+  )
+  
+  # Test that aumcint.inf.obs works with lambda.z and clast
+  expect_true(
+    is.numeric(
+      pk.calc.aumcint.inf.obs(
+        conc = concdata$conc, time = concdata$time,
+        start = 0, end = Inf,
+        clast.obs = 1, lambda.z = log(2)
+      )
+    )
+  )
+  
+  # Test that aumcint.inf.pred works with lambda.z and clast
+  expect_true(
+    is.numeric(
+      pk.calc.aumcint.inf.pred(
+        conc = concdata$conc, time = concdata$time,
+        start = 0, end = Inf,
+        clast.pred = 2, lambda.z = log(2)
+      )
+    )
+  )
+})
+
+test_that("AUMCint gives the same value when no interpolation/extrapolation is required", {
+  concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
+  
+  expect_equal(
+    pk.calc.aumcint(
+      conc = concdata$conc, time = concdata$time,
+      interval = c(0, 3)
+    ),
+    pk.calc.aumc(
+      conc = concdata$conc, time = concdata$time,
+      interval = c(0, 3)
+    ),
+    info = "No interpolation/extrapolation is equivalent to normal AUMC"
+  )
+})
+
+test_that("aumcint works with infinite intervals", {
+  concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
+  
+  expect_equal(
+    pk.calc.aumcint.last(conc = concdata$conc, time = concdata$time, start = 0, end = Inf),
+    pk.calc.aumc.last(conc = concdata$conc, time = concdata$time),
+    info = "Simple AUMClast = aumcint.last"
+  )
+  
+  expect_equal(
+    pk.calc.aumcint.all(conc = concdata$conc, time = concdata$time, start = 0, end = Inf),
+    pk.calc.aumc.all(conc = concdata$conc, time = concdata$time),
+    info = "Simple AUMCall = aumcint.all"
+  )
+  
+  expect_equal(
+    pk.calc.aumcint.inf.obs(
+      conc = concdata$conc, time = concdata$time,
+      start = 0, end = Inf,
+      clast.obs = 1, lambda.z = log(2)
+    ),
+    pk.calc.aumc.inf.obs(
+      conc = concdata$conc, time = concdata$time,
+      clast.obs = 1, lambda.z = log(2)
+    ),
+    info = "Simple AUMCinf.obs = aumcint.inf.obs"
+  )
+  
+  expect_equal(
+    pk.calc.aumcint.inf.pred(
+      conc = concdata$conc, time = concdata$time,
+      start = 0, end = Inf,
+      clast.pred = 2, lambda.z = log(2)
+    ),
+    pk.calc.aumc.inf.pred(
+      conc = concdata$conc, time = concdata$time,
+      clast.pred = 2, lambda.z = log(2)
+    ),
+    info = "Simple AUMCinf.pred = aumcint.inf.pred"
+  )
+})
+
+# ============================================================================
+# Wrapper Function Tests (pk.calc.auxcint)
+# ============================================================================
+test_that("pk.calc.auxcint wrapper correctly delegates to AUC and AUMC functions", {
+  concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
+  
+  # Test that aucint uses auxcint with AUC integration functions
+  auc_direct <- pk.calc.aucint(
+    conc = concdata$conc, time = concdata$time,
+    interval = c(0, 3)
+  )
+  
+  auc_via_auxcint <- pk.calc.auxcint(
+    conc = concdata$conc, time = concdata$time,
+    interval = c(0, 3),
+    fun_linear = aucintegrate_linear,
+    fun_log = aucintegrate_log,
+    fun_inf = aucintegrate_inf
+  )
+  
+  expect_equal(auc_direct, auc_via_auxcint,
+               info = "aucint should use auxcint wrapper with AUC integration functions"
+  )
+  
+  # Test that aumcint uses auxcint with AUMC integration functions
+  aumc_direct <- pk.calc.aumcint(
+    conc = concdata$conc, time = concdata$time,
+    interval = c(0, 3)
+  )
+  
+  aumc_via_auxcint <- pk.calc.auxcint(
+    conc = concdata$conc, time = concdata$time,
+    interval = c(0, 3),
+    fun_linear = aumcintegrate_linear,
+    fun_log = aumcintegrate_log,
+    fun_inf = aumcintegrate_inf
+  )
+  
+  expect_equal(aumc_direct, aumc_via_auxcint,
+               info = "aumcint should use auxcint wrapper with AUMC integration functions"
+  )
+})
+
+# ============================================================================
+# Dose-Aware vs Non-Dose-Aware Wrapper Function Tests
+# ============================================================================
+test_that("Dose-aware and non-dose-aware wrapper functions work correctly", {
+  concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
+  
+  # Test aucint.last (no dose)
+  auc_no_dose <- pk.calc.aucint.last(
+    conc = concdata$conc, time = concdata$time,
+    start = 0, end = 4
+  )
+  expect_true(is.numeric(auc_no_dose))
+  
+  # Test aucint.last with dose at observation time
+  auc_with_dose <- pk.calc.aucint.last(
+    conc = concdata$conc, time = concdata$time,
+    start = 0, end = 4,
+    time.dose = 0  # Dose at observation time
+  )
+  expect_equal(auc_no_dose, auc_with_dose,
+               info = "Dose at observation time should not affect AUC"
+  )
+  
+  # Test aumcint.last (no dose)
+  aumc_no_dose <- pk.calc.aumcint.last(
+    conc = concdata$conc, time = concdata$time,
+    start = 0, end = 4
+  )
+  expect_true(is.numeric(aumc_no_dose))
+  
+  # Test aumcint.all
+  aumc_all <- pk.calc.aumcint.all(
+    conc = concdata$conc, time = concdata$time,
+    start = 0, end = 4
+  )
+  expect_true(is.numeric(aumc_all))
+})
+
+# ============================================================================
+# Integration Function Tests
+# ============================================================================
+test_that("Integration functions are passed correctly through wrapper", {
+  concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
+  
+  # Test that auxcint can be called directly with different integration functions
+  auc_result <- pk.calc.auxcint(
+    conc = concdata$conc, time = concdata$time,
+    interval = c(0, 3),
+    fun_linear = aucintegrate_linear,
+    fun_log = aucintegrate_log,
+    fun_inf = aucintegrate_inf
+  )
+  
+  aumc_result <- pk.calc.auxcint(
+    conc = concdata$conc, time = concdata$time,
+    interval = c(0, 3),
+    fun_linear = aumcintegrate_linear,
+    fun_log = aumcintegrate_log,
+    fun_inf = aumcintegrate_inf
+  )
+  
+  # AUC and AUMC should be different
+  expect_false(auc_result == aumc_result)
+  
+  # Both should be positive numeric values
+  expect_true(is.numeric(auc_result) && auc_result > 0)
+  expect_true(is.numeric(aumc_result) && aumc_result > 0)
 })
