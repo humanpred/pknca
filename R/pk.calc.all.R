@@ -361,6 +361,7 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
 #'
 #' @seealso [check.interval.specification()]
 #' @export
+#' @importFrom stats na.omit
 pk.nca.interval <- function(conc, time, volume, duration.conc,
                             dose, time.dose, duration.dose, route,
                             conc.group=NULL, time.group=NULL, volume.group=NULL, duration.conc.group=NULL,
@@ -389,6 +390,9 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     }
     conc <- impute_data$conc
     time <- impute_data$time
+    tmp_imp_method <- paste0("Imputation: ", paste(na.omit(impute_method), collapse = ", "))
+  } else {
+    tmp_imp_method <- character()
   }
   # Prepare the return value using SDTM names
   ret <- data.frame(PPTESTCD=NA, PPORRES=NA)[-1,]
@@ -528,6 +532,10 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         } else {
           NA_character_
         }
+      # The handling of the method column (PPANMETH)
+      tmp_method <- c(tmp_imp_method, attr(tmp_result, "method"))
+      attr(tmp_result, "method") <- NULL
+
       # If the function returns a data frame, save all the returned values,
       # otherwise, save the value returned.
       if (is.data.frame(tmp_result)) {
@@ -540,6 +548,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         data.frame(
           PPTESTCD=tmp_testcd,
           PPORRES=tmp_result,
+          PPANMETH=paste(tmp_method, collapse=". "),
           exclude=exclude_reason,
           stringsAsFactors=FALSE
         )

@@ -55,6 +55,16 @@ test_that("PKNCAresults generation", {
                 24.00, 0.3148, 0.05689, 0.9000,
                 0.8944, -0.9487, 5.000, 24.00, 20.00, 0.3011,
                 12.18, 1.560, 19.56),
+      PPANMETH=c(
+        "AUC: lin up/log down",
+        rep("", 4),
+        rep("", 10),
+        "AUC: lin up/log down",
+        "AUC: lin up/log down",
+        rep("", 4),
+        rep("", 10),
+        "AUC: lin up/log down"
+      ),
       exclude=NA_character_
     )
   expect_equal(
@@ -79,7 +89,7 @@ test_that("PKNCAresults generation", {
   )
   expect_equal(
     as.data.frame(o_result, out_format="wide"),
-    tidyr::spread(verify.result, key="PPTESTCD", value="PPORRES"),
+    tidyr::spread(verify.result[names(verify.result) != "PPANMETH"], key="PPTESTCD", value="PPORRES"),
     tolerance=0.001,
     info="Conversion of PKNCAresults to a data.frame in wide format (specifying wide format)"
   )

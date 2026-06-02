@@ -194,6 +194,7 @@ test_that("half-life manual point selection", {
       tlast = 3L
     )
   attr(excluded_result, "exclude") <- "Negative half-life estimated with manually-selected points"
+  attr(excluded_result, "method") <- "Lambda Z: Manual selection"
   expect_equal(
     pk.calc.half.life(conc = 2^(1:3), time = 1:3, manually.selected.points = TRUE),
     excluded_result
