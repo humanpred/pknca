@@ -94,13 +94,13 @@ setAttributeColumn <- function(object, attr_name, col_or_value, col_name, defaul
                                stop_if_default, warn_if_default, message_if_default) {
   dataname <- getDataName(object)
   # Check inputs
-  if (!is.character(attr_name) | (length(attr_name) != 1)) {
+  if (!is.character(attr_name) || (length(attr_name) != 1)) {
     rlang::abort(
       message = "attr_name must be a character scalar.",
       class = "pknca_error_invalid_attr_name"
     )
   }
-  if (!missing(col_or_value) &
+  if (!missing(col_or_value) &&
       any(!c(missing(col_name), missing(default_value)))) {
     rlang::abort(
       message = "Cannot provide col_or_value and col_name or default_value",
@@ -124,7 +124,7 @@ setAttributeColumn <- function(object, attr_name, col_or_value, col_name, defaul
         class = paste0("pknca_foundcolumn_", attr_name)
       )
     }
-  } else if (!is.character(col_name) | (length(col_name) != 1)) {
+  } else if (!is.character(col_name) || (length(col_name) != 1)) {
     rlang::abort(
       message = "col_name must be a character scalar.",
       class = "pknca_error_invalid_col_name"

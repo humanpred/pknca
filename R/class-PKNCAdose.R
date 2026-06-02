@@ -18,12 +18,12 @@
 #' @param time.nominal (optional) The name of the nominal time column (if the
 #'   main time variable is actual time.  The `time.nominal` is not used during
 #'   calculations; it is available to assist with data summary and checking.
-#' @param exclude (optional) The name of a column with concentrations to exclude
+#' @param exclude (optional) The name of a column with doses to exclude
 #'   from calculations and summarization.  If given, the column should have
-#'   values of `NA` or `""` for concentrations to include and non-empty text for
-#'   concentrations to exclude.
+#'   values of `NA` or `""` for doses to include and non-empty text for
+#'   doses to exclude.
 #' @param ... Ignored.
-#' @returns A PKNCAconc object that can be used for automated NCA.
+#' @returns A PKNCAdose object that can be used for automated NCA.
 #' @details The `formula` for a `PKNCAdose` object can be
 #'   given three ways: one-sided (missing left side), one-sided (missing
 #'   right side), or two-sided.  Each of the three ways can be given
@@ -37,7 +37,8 @@
 #'   `dose~.|treatment+subject`, and only a single row may be given
 #'   per group.  When the right side is missing, PKNCA assumes that the
 #'   same dose is given in every interval.  When given as a two-sided
-#'   formula
+#'   formula, both the dose amount and time are used directly from the
+#'   data.
 #' @family PKNCA objects
 #' @export
 PKNCAdose <- function(data, ...)
@@ -237,11 +238,11 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
   if (missing(dose)) {
     dose <- object$columns$dose
   }
-  if (missing(duration) & missing(rate)) {
+  if (missing(duration) && missing(rate)) {
     object <- setAttributeColumn(object=object, attr_name="duration", default_value=0,
                                  message_if_default="Assuming instant dosing (duration=0)")
 
-  } else if (!missing(duration) & !missing(rate)) {
+  } else if (!missing(duration) && !missing(rate)) {
     rlang::abort(
       message = "Both duration and rate cannot be given at the same time",
       class = "pknca_error_duration_and_rate"
@@ -250,7 +251,7 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
     # requiring near-equal checks for floating point error.
   } else if (!missing(duration)) {
     object <- setAttributeColumn(object=object, attr_name="duration", col_or_value=duration)
-  } else if (!missing(rate) & !missing(dose) && !is.na(dose)) {
+  } else if (!missing(rate) && !missing(dose) && !is.na(dose)) {
     tmprate <- getColumnValueOrNot(object$data, rate, "rate")
     tmpdose <- getColumnValueOrNot(object$data, dose, "dose")
     duration <- tmpdose$data[[tmpdose$name]]/tmprate$data[[tmprate$name]]

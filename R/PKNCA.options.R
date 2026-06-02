@@ -718,25 +718,25 @@ PKNCA.set.summary <- function(name, description, point, spread,
     current[[current_name]] <- list()
   }
   # Confirm that description is a scalar character string
-  checkmate::assert_string(description, .var.name = "description")
+  checkmate::assert_string(description)
   for (current_name in name) {
     current[[current_name]]$description <- description
   }
   # Confirm that point is a function
-  checkmate::assert_function(point, .var.name = "point")
+  checkmate::assert_function(point)
   for (current_name in name) {
     current[[current_name]]$point <- point
   }
   # Confirm that spread is a function (if given)
   if (!missing(spread)) {
-    checkmate::assert_function(spread, .var.name = "spread")
+    checkmate::assert_function(spread)
     for (current_name in name) {
       current[[current_name]]$spread <- spread
     }
   }
   # Confirm that rounding is either a single-entry list or a function
   if (is.list(rounding)) {
-    checkmate::assert_list(rounding, len = 1, .var.name = "rounding")
+    checkmate::assert_list(rounding, len = 1)
 
     if (!(names(rounding) %in% c("signif", "round"))) {
       rlang::abort(

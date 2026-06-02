@@ -134,12 +134,12 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
         class = "pknca_error_superposition_additional_times_na"
       )
     }
-    checkmate::assert_numeric(additional.times, lower = 0, upper = tau, .var.name = "additional.times")
+    checkmate::assert_numeric(additional.times, lower = 0, upper = tau)
     # if (any(additional.times > tau))
     #   stop("All additional.times must be <= tau")
   }
   # steady.state.tol
-  checkmate::assert_number(steady.state.tol, na.ok = FALSE, .var.name = "steady.state.tol")
+  checkmate::assert_number(steady.state.tol, na.ok = FALSE)
   if (steady.state.tol <= 0 || steady.state.tol >= 1)
     rlang::abort(
       message = "steady.state.tol must be between 0 and 1, exclusive.",
@@ -156,7 +156,7 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   has.lambda.z <- !missing(lambda.z)
   has.clast.pred <- !is.logical(clast.pred)
   has.tlast <- !missing(tlast)
-  if (any(c(has.lambda.z, has.clast.pred, has.tlast)) &
+  if (any(c(has.lambda.z, has.clast.pred, has.tlast)) &&
       !all(c(has.lambda.z, has.clast.pred, has.tlast)))
     rlang::abort(
       message = "Either give all or none of the values for these arguments: lambda.z, clast.pred, and tlast",
@@ -214,7 +214,7 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   }
   # cannot continue extrapolating due to missing data (likely due to
   # half-life not calculable)
-  if ((n.tau * tau) > tlast & is.na(lambda.z)) {
+  if ((n.tau * tau) > tlast && is.na(lambda.z)) {
     ret$conc <- NA
   } else {
     # Do the math! (Finally)

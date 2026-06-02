@@ -106,7 +106,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   class(ret) <- c("PKNCAdata", class(ret))
 
   # Check the intervals
-  if (missing(intervals) & identical(ret$dose, NA)) {
+  if (missing(intervals) && identical(ret$dose, NA)) {
     rlang::abort(
       message = "If data.dose is not given, intervals must be given",
       class = "pknca_error_missing_intervals"

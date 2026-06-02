@@ -43,7 +43,7 @@ pk.calc.c0 <- function(conc, time, time.dose=0,
   method <- match.arg(method, several.ok=TRUE)
   # Find the value
   ret <- NA
-  while (is.na(ret) &
+  while (is.na(ret) &&
          length(method) > 0) {
     current.method <- method[1]
     method <- method[-1]

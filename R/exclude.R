@@ -39,7 +39,7 @@ utils::globalVariables(c("exclude_current_group_XXX", "row_number_XXX", "exclude
 exclude.default <- function(object, reason, mask, FUN) {
   dataname <- getDataName(object)
   # Check inputs
-  if (missing(mask) & !missing(FUN)) {
+  if (missing(mask) && !missing(FUN)) {
     # operate on one group at a time
     groupnames <-
       unique(c(
@@ -84,7 +84,7 @@ exclude.default <- function(object, reason, mask, FUN) {
       class = "pknca_error_reason_length"
     )
   }
-  checkmate::assert_character(reason, .var.name = "reason")
+  checkmate::assert_character(reason)
   
   if (!("exclude" %in% names(object$columns))) {
     rlang::abort(
@@ -159,7 +159,7 @@ setExcludeColumn <- function(object, exclude = NULL, dataname = "data") {
     add.exclude <- TRUE
   }
   if (add.exclude) {
-    if (missing(exclude) | is.null(exclude)) {
+    if (missing(exclude) || is.null(exclude)) {
       # Generate the column name
       exclude <-
         setdiff(c("exclude", paste0("exclude.", max(names(object[[dataname]])))),
@@ -175,7 +175,7 @@ setExcludeColumn <- function(object, exclude = NULL, dataname = "data") {
     } else {
       if (is.factor(object[[dataname]][[exclude]])) {
         object[[dataname]][[exclude]] <- as.character(object[[dataname]][[exclude]])
-      } else if (is.logical(object[[dataname]][[exclude]]) &
+      } else if (is.logical(object[[dataname]][[exclude]]) &&
                  all(is.na(object[[dataname]][[exclude]]))) {
         object[[dataname]][[exclude]] <- rep(NA_character_, nrow(object[[dataname]]))
       } else if (!is.character(object[[dataname]][[exclude]])) {

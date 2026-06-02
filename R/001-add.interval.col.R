@@ -92,14 +92,13 @@ add.interval.col <- function(name,
                                "individual",
                                "population")) {
   # Check inputs
-  checkmate::assert_character(x = name, len = 1, min.chars = 1, any.missing = FALSE, .var.name = "name")
-  checkmate::assert_character(x = FUN, len = 1, any.missing = TRUE, .var.name = "FUN") # allows NA
-  checkmate::assert_logical(x = sparse, len = 1, any.missing=FALSE, .var.name = "sparse")
-  checkmate::assert_character(x = pretty_name, len = 1, min.chars = 1, any.missing=FALSE, .var.name = "pretty_name")
-  checkmate::assert_character(x = desc, len = 1, any.missing=FALSE, .var.name = "desc")
-  checkmate::assert_character(x = depends, null.ok = TRUE, .var.name = "depends")
+  checkmate::assert_character(x = name, len = 1, min.chars = 1, any.missing = FALSE)
+  checkmate::assert_character(x = FUN, len = 1, any.missing = TRUE) # allows NA
+  checkmate::assert_logical(x = sparse, len = 1, any.missing=FALSE)
+  checkmate::assert_character(x = pretty_name, len = 1, min.chars = 1, any.missing=FALSE)
+  checkmate::assert_character(x = desc, len = 1, any.missing=FALSE)
+  checkmate::assert_character(x = depends, null.ok = TRUE)
   
-
   unit_type <-
     match.arg(
       unit_type,
@@ -116,18 +115,19 @@ add.interval.col <- function(name,
       )
     )
   
+  # Validate datatype
   datatype <- match.arg(datatype)
-  #c("interval", "individual", "population"),
-  checkmate::assert_choice(x = datatype, choices = "interval", .var.name = "datatype")
-
+  #c("interval", "individual", "population"),  # Currently only interval datatype is supported
+  checkmate::assert_choice(x = datatype, choices = "interval")
+  
+  # Validate formalsmap
   checkmate::assert_list(
     x = formalsmap,
-    names = if (length(formalsmap) > 0) "named" else NULL,
-    .var.name = "formalsmap"
+    names = if (length(formalsmap) > 0) "named" else NULL
   )
   
+  # Validate formalsmap and function compatibility
   if (length(formalsmap) > 0) {
-    
     # Ensure FUN exists
     if (is.na(FUN)) {
       rlang::abort(
@@ -135,12 +135,10 @@ add.interval.col <- function(name,
         class = "pknca_error_invalid_formalsmap"
       )
     }
-    
-    checkmate::assert_character(x= names(formalsmap), min.chars = 1, any.missing = FALSE,
-                                unique = TRUE, .var.name = "names(formalsmap)"
-    )
+    # Ensure formalsmap names are unique
+    checkmate::assert_character(x= names(formalsmap), min.chars = 1,
+                                any.missing = FALSE, unique = TRUE)
   }
-  
 
   # Ensure that the function exists
   if (!is.na(FUN)) {
@@ -206,7 +204,7 @@ sort.interval.cols <- function() {
   myorder <- rep(NA, length(current))
   names(myorder) <- names(current)
   nextnum <- 1
-  while (any(is.na(myorder))) {
+  while (anyNA(myorder)) {
     for (nextorder in seq_along(myorder)[is.na(myorder)]) {
       if (length(current[[nextorder]]$depends) == 0) {
         # If it doesn't depend on anything then it can go next in order.
@@ -230,7 +228,7 @@ sort.interval.cols <- function() {
             class = "pknca_error_invalid_dependency"
           )
         }
-        if (!any(is.na(myorder[deps]))) {
+        if (!anyNA(myorder[deps])) {
           myorder[nextorder] <- nextnum
           nextnum <- nextnum + 1
         }

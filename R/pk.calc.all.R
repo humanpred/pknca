@@ -316,7 +316,7 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
         args$exclude_half.life <- conc_data_interval$exclude_half.life
         uses_exclude_hl <- !is.null(args$exclude_half.life) && !all(is.na(args$exclude_half.life))
       }
-      if (uses_include_hl & uses_exclude_hl) {
+      if (uses_include_hl && uses_exclude_hl) {
         rlang::abort(
           message = "Cannot both include and exclude half-life points for the same interval",
           class = "pknca_error_include_exclude_halflife"
@@ -330,9 +330,11 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
         calculated_interval <-
           tryCatch(
             do.call(pk.nca.interval, args),
-            error=function(e) {
-              e$message <- paste("Please report a bug.\n", error_preamble, e$message, sep=": ") # nocov
-              stop(e) # nocov
+            error=function(e) {rlang::abort( # nocov
+              message = paste("Please report a bug.\n", error_preamble, e$message, sep=": "), # nocov
+              class = "pknca_error_interval_calculation", # nocov
+              parent = e # nocov
+            )
             }
           )
       }
@@ -462,7 +464,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     request_to_calculate <- as.logical(interval[[n]])
     has_calculation_function <- !is.na(all_intervals[[n]]$FUN)
     is_correct_sparse_dense <- all_intervals[[n]]$sparse == sparse
-    if (request_to_calculate & has_calculation_function & is_correct_sparse_dense) {
+    if (request_to_calculate && has_calculation_function && is_correct_sparse_dense) {
       call_args <- list()
       exclude_from_argument <- character(0)
       # Prepare to call the function by setting up its arguments.

@@ -8,7 +8,7 @@
 #' @returns `interval` (or `c(start, end)`)
 #' @keywords Internal
 assert_intervaltime_single <- function(interval = NULL, start = NULL, end = NULL) {
-  if (is.null(interval) & is.null(start) & is.null(end)) {
+  if (is.null(interval) && is.null(start) && is.null(end)) {
     rlang::abort(
       message = "One of `interval` or `start` and `end` must be given",
       class = "pknca_error_missing_interval"
@@ -140,7 +140,7 @@ assert_conc_time <- function(conc, time, any_missing_conc = TRUE, sorted_time = 
 #' @returns `x`
 assert_numeric_between <- function(x, any.missing = FALSE, null.ok = FALSE, lower_eq = -Inf, lower = -Inf, upper = Inf, upper_eq = Inf, ..., .var.name = checkmate::vname(x)) {
   checkmate::assert_numeric(x, any.missing = any.missing, null.ok = null.ok, lower = lower_eq, upper = upper_eq, ..., .var.name = .var.name)
-  if (is.null(x) & null.ok) {
+  if (is.null(x) && null.ok) {
     # do nothing
   } else {
     # disallowed missing will have been previously caught
@@ -228,10 +228,16 @@ assert_aucmethod <- function(method = c("lin up/log down", "linear", "lin-log"))
 #' @returns The object
 assert_PKNCAdata <- function(object) {
   if (!inherits(object, "PKNCAdata")) {
-    stop("Must be a PKNCAdata object")
+    rlang::abort(
+      message = "Must be a PKNCAdata object",
+      class = "pknca_error_not_PKNCAdata"
+    )
   }
   if (nrow(object$intervals) == 0) {
-    warning("No intervals given; no calculations will be done.")
+    rlang::warn(
+      message = "No intervals given; no calculations will be done.",
+      class = "pknca_warning_no_intervals"
+    )
   }
   object
 }

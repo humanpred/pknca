@@ -45,9 +45,9 @@ pk.tss.monoexponential <- function(...,
     )
     tss.fraction <- tss.fraction[1]
   }
-  checkmate::assert_number(tss.fraction, na.ok = FALSE, .var.name = "tss.fraction")
+  checkmate::assert_number(tss.fraction, na.ok = FALSE)
 
-  if (tss.fraction <= 0 | tss.fraction >= 1) {
+  if (tss.fraction <= 0 || tss.fraction >= 1) {
     rlang::abort(
       message = "tss.fraction must be between 0 and 1, exclusive",
       class = "pknca_error_tss_fraction_range"
@@ -92,7 +92,7 @@ pk.tss.monoexponential <- function(...,
       NA
     }
   ret <-
-    if (!identical(NA, ret_population) & !identical(NA, ret_individual)) {
+    if (!identical(NA, ret_population) && !identical(NA, ret_individual)) {
       merge(ret_population, ret_individual)
     } else if (!identical(NA, ret_population)) {
       ret_population
@@ -250,7 +250,7 @@ pk.tss.monoexponential.population <- function(data,
     )
   if (verbose)
     print(all.model.summary)
-  if (all(is.na(all.model.summary$AIC)) |
+  if (all(is.na(all.model.summary$AIC)) ||
       length(all.model.summary) == 0) {
     rlang::warn(
       message = "No population model for monoexponential Tss converged, no results given",
@@ -378,7 +378,7 @@ pk.tss.monoexponential.individual <- function(data,
           )
         )
     )
-  if ("subject" %in% names(data) &
+  if ("subject" %in% names(data) &&
       "individual" %in% output) {
     data_grouped <-
       if (all(c("treatment", "subject") %in% names(data))) {
