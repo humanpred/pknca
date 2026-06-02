@@ -135,7 +135,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
             ": "
           )
         } else {
-          ""
+          "" # nocov
         }
       if (!is.null(current_conc)) {
         generated_intervals <-
@@ -191,10 +191,6 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   ret
 }
 
-drop_attributes <- function(x) {
-  attributes(x) <- NULL
-  x
-}
 
 #' @rdname is_sparse_pk
 #' @export

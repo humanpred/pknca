@@ -1002,3 +1002,51 @@ test_that("Cannot include and exclude half-life points at the same time (#406)",
     regexp = "Cannot both include and exclude half-life points for the same interval"
   )
 })
+
+test_that("pk.nca.interval covers route, volume.group, duration.conc.group, dose.group, duration.dose.group, route.group branches", {
+  # Lines 449, 457, 459, 461, 467, 469 in pk.calc.all.R are only reached when a
+  # registered NCA function has one of these names as a formal argument.
+  # Register a temporary test function that accepts all six, save and restore state.
+  fn_name <- "pknca_test_grp_args_cov_fn_"
+  assign(
+    fn_name,
+    function(conc, time, route, volume.group, duration.conc.group,
+             dose.group, duration.dose.group, route.group) {
+      sum(conc, na.rm = TRUE)
+    },
+    envir = .GlobalEnv
+  )
+  old_cols <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
+  old_sorted <- get0("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
+  on.exit({
+    assign("interval.cols", old_cols, envir = PKNCA:::.PKNCAEnv)
+    if (!is.null(old_sorted)) {
+      assign("interval.cols_sorted", old_sorted, envir = PKNCA:::.PKNCAEnv)
+    } else if (exists("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv, inherits = FALSE)) {
+      rm("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
+    }
+    rm(list = fn_name, envir = .GlobalEnv)
+  }, add = TRUE)
+
+  add.interval.col(
+    "pknca_test_grp_args_cov_col_",
+    FUN = fn_name,
+    unit_type = "conc",
+    pretty_name = "Test: group arg branches",
+    desc = "Coverage test for group argument branches in pk.nca.interval"
+  )
+
+  d <- as.data.frame(datasets::Theoph[datasets::Theoph$Subject == "1", ])
+  d$volume <- 1
+  d$duration <- 1
+  d_dose <- d[d$Time == 0, , drop = FALSE]
+
+  o_conc <- PKNCAconc(d, formula = conc~Time|Subject, volume = "volume", duration = "duration")
+  o_dose <- PKNCAdose(d_dose, formula = Dose~Time|Subject, route = "intravascular", duration = "duration")
+  o_data <- PKNCAdata(
+    o_conc, o_dose,
+    intervals = data.frame(start = 0, end = 24, pknca_test_grp_args_cov_col_ = TRUE)
+  )
+  result <- pk.nca(o_data)
+  expect_true("pknca_test_grp_args_cov_col_" %in% as.data.frame(result)$PPTESTCD)
+})

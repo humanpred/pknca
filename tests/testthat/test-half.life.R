@@ -779,3 +779,166 @@ test_that("pk.calc.half.life log-linear result is unaffected by Tobit additions"
   expect_null(result$tobit_residual)
   expect_null(result$lambda.z.n.points_blq)
 })
+
+test_that("pk.calc.half.life drops explicit tmax/tlast when no concentration variability (#503)", {
+  # Lines 259-260: ret$tmax and ret$tlast are nulled when sd=0 and tmax/tlast
+  # are passed explicitly.
+  result <- suppressMessages(
+    pk.calc.half.life(
+      conc = c(1, 1, 1, 1),
+      time = c(0, 1, 2, 3),
+      tmax = 0,
+      tlast = 3,
+      min.hl.points = 3,
+      allow.tmax.in.half.life = TRUE,
+      adj.r.squared.factor = 0.0001,
+      check = FALSE
+    )
+  )
+  expect_equal(attr(result, "exclude"), "No point variability in concentrations for half-life calculation")
+  expect_null(result$tmax)
+  expect_null(result$tlast)
+})
+
+test_that("pk.calc.half.life tobit uses allow.tmax.in.half.life=FALSE", {
+  # Line 356: dfK_all = data_tobit[time > tmax, ] (strict >)
+  # Use data where tmax is at time=1 (last above-LLOQ point before a BLQ)
+  # so that excluding vs. including tmax flips whether min.hl.points is met.
+  conc <- c(0, 2, 1, 0)
+  time <- 0:3
+  lloq <- 0.1
+  # FALSE (strict >): keep time > 1 → only conc=1 at time 2 is above-LLOQ
+  # → 1 point < min.hl.points=2 → pknca_halflife_too_few_points warning
+  expect_warning(
+    pk.calc.half.life(conc, time, lloq = lloq, hl_method = "tobit",
+                      allow.tmax.in.half.life = FALSE, min.hl.points = 2),
+    class = "pknca_halflife_too_few_points"
+  )
+  # TRUE (>=): keep time >= 1 → conc=2 and conc=1 both above-LLOQ
+  # → 2 points meets min.hl.points=2 → fitting succeeds
+  result_true <- pk.calc.half.life(conc, time, lloq = lloq, hl_method = "tobit",
+                                   allow.tmax.in.half.life = TRUE, min.hl.points = 2)
+  expect_false(is.na(result_true$lambda.z))
+})
+
+test_that("pk.calc.half.life tobit with time.dose filters data_tobit", {
+  # Lines 185-187: when time.dose is given, data_tobit is filtered to
+  # time > max(end.dose).
+  conc <- c(4, 3, 2, 1)
+  time <- c(1, 2, 3, 4)
+  lloq <- 0.1
+  # end.dose = time.dose + duration.dose = 0 + 4 = 4: all conc times <= 4
+  # so data_tobit becomes empty after filtering time > 4
+  # With manually.selected.points=TRUE and empty data_tobit, we expect a warning
+  expect_warning(
+    result <- pk.calc.half.life(
+      conc = conc, time = time, lloq = lloq,
+      hl_method = "tobit",
+      time.dose = 0, duration.dose = 4,
+      manually.selected.points = TRUE,
+      allow.tmax.in.half.life = TRUE,
+      check = FALSE
+    ),
+    regexp = "No data to manually fit for half-life"
+  )
+  expect_true(is.na(result$lambda.z))
+})
+
+test_that("pk.calc.half.life tobit tie-breaking prefers largest window", {
+  # Lines 412-413: when two windows tie on selection_criterion, prefer the one
+  # with more points.
+  # lloq=Inf trick: a BLQ row with lloq=Inf contributes pnorm(Inf)=1 → log(1)=0
+  # to the Tobit log-likelihood, so windows j=1 (row 1 included) and j=2
+  # (row 1 excluded) have IDENTICAL tobit_residual — a mathematically guaranteed
+  # tie.  A real BLQ row at the end prevents smaller windows from overfitting.
+  conc <- c(100, 0.53, 0.24, 0.13, 0.076, 0.001)
+  time <- 0:5
+  lloq <- c(Inf, 0.005, 0.005, 0.005, 0.005, 0.005)
+
+  # Verify the tie: fit with vs without the lloq=Inf row must give equal residual
+  d <- data.frame(
+    conc    = as.numeric(conc), time = as.numeric(time),
+    lloq    = as.numeric(lloq),
+    mask_blq = conc < lloq,
+    log_lloq = log(lloq),
+    log_conc = log(conc)
+  )
+  fit_j1 <- PKNCA:::fit_half_life_tobit(d,      tlast = 5)
+  fit_j2 <- PKNCA:::fit_half_life_tobit(d[-1, ], tlast = 5)
+  expect_equal(fit_j1$tobit_residual, fit_j2$tobit_residual,
+               info = "lloq=Inf row contributes 0 to LL; residuals must be identical")
+
+  # Tie-breaking must select window j=1 (6 rows) over j=2 (5 rows)
+  result <- pk.calc.half.life(
+    conc = conc, time = time, lloq = lloq,
+    hl_method = "tobit",
+    allow.tmax.in.half.life = TRUE,
+    min.hl.points = 2,
+    tobit_n_points_penalty = 0
+  )
+  expect_false(is.na(result$lambda.z))
+  expect_equal(result$lambda.z.n.points, 6L)
+})
+
+test_that("fit_half_life_tobit handles degenerate time range (all above-LLOQ at same time)", {
+  # Line 567: init_lambda_z is set to 0.1 when all above-LLOQ points share the
+  # same time (diff(range(time)) = 0), making the ratio non-finite.
+  # Two above-LLOQ points at time=2 with different concentrations → sd != 0.
+  data_degenerate <- data.frame(
+    conc    = c(2, 1),
+    time    = c(2, 2),
+    lloq    = c(0.1, 0.1),
+    mask_blq = c(FALSE, FALSE),
+    log_lloq = log(c(0.1, 0.1)),
+    log_conc = log(c(2, 1))
+  )
+  # Verify that neither early-exit guard fired (sd=0 or too-few-points),
+  # confirming that execution reached the degenerate-time fallback at line 567.
+  expect_no_condition(
+    result <- withCallingHandlers(
+      PKNCA:::fit_half_life_tobit(data_degenerate, tlast = 2),
+      pknca_tobit_no_variability = function(e) stop("guard fired unexpectedly: no_variability"),
+      pknca_tobit_too_few_points = function(e) stop("guard fired unexpectedly: too_few_points")
+    )
+  )
+  expect_true(is.data.frame(result))
+})
+
+test_that("fit_half_life_tobit warns on optimization non-convergence", {
+  # Lines 586-592: optim returns convergence != 0 → a warning is issued and
+  # NA is returned.  Force non-convergence by setting maxit = 1 via
+  # tobit_optim_control (the last occurrence of 'maxit' in the merged control
+  # list wins inside stats::optim).
+  conc <- c(1.02, 0.49, 0.26, 0.123, 0.064)
+  time <- c(0, 1, 2, 3, 4)
+  lloq <- 0.01
+  expect_warning(
+    result <- pk.calc.half.life(
+      conc = conc, time = time, lloq = lloq,
+      hl_method = "tobit",
+      allow.tmax.in.half.life = TRUE,
+      min.hl.points = 3,
+      tobit_optim_control = list(maxit = 1)
+    ),
+    class = "pknca_tobit_no_convergence"
+  )
+  expect_true(is.na(result$lambda.z))
+})
+
+test_that("pk.calc.half.life tobit manually.selected.points sets exclude for negative half-life", {
+  # Monotonically increasing concentrations → positive log-linear slope →
+  # lambda.z = -slope < 0 → half.life = log(2)/lambda.z < 0 → line 374 reached.
+  conc <- c(1, 2, 4, 8)
+  time <- 0:3
+  lloq <- rep(0.1, 4)
+  result <- pk.calc.half.life(
+    conc = conc, time = time, lloq = lloq,
+    hl_method = "tobit",
+    manually.selected.points = TRUE,
+    min.hl.points = 2
+  )
+  expect_equal(
+    attr(result, "exclude"),
+    "Negative half-life estimated with manually-selected points"
+  )
+})
