@@ -97,7 +97,7 @@ add.interval.col <- function(name,
   checkmate::assert_logical(x = sparse, len = 1, any.missing=FALSE)
   checkmate::assert_character(x = pretty_name, len = 1, min.chars = 1, any.missing=FALSE)
   checkmate::assert_character(x = desc, len = 1, any.missing=FALSE)
-  checkmate::assert_character(x = depends, null.ok = TRUE)
+  checkmate::assert_character(x = depends, null.ok = TRUE)  
   
   unit_type <-
     match.arg(
@@ -139,7 +139,7 @@ add.interval.col <- function(name,
     checkmate::assert_character(x= names(formalsmap), min.chars = 1,
                                 any.missing = FALSE, unique = TRUE)
   }
-
+  
   # Ensure that the function exists
   if (!is.na(FUN)) {
     # Ensure that the function exists
@@ -151,8 +151,7 @@ add.interval.col <- function(name,
           FUN
         ),
         class = "pknca_error_fun_not_found"
-      )
-    }
+      )    }
     
     # Validate formalsmap parameters match function formals
     if (length(formalsmap) > 0) {

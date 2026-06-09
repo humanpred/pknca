@@ -64,12 +64,8 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
                                  time.nominal, exclude = NULL, ...,
                                  doseu = NULL, doseu_pref = NULL) {
   # The data must have... data
-  if (nrow(data) == 0) {
-    rlang::abort(
-      message = "data must have at least one row.",
-      class = "pknca_error_data_no_rows"
-    )
-  }
+  checkmate::assert_data_frame(data, min.rows = 1)
+
   # Check inputs
   if (!missing(time.nominal)) {
     if (!(time.nominal %in% names(data))) {
@@ -150,8 +146,12 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
   # in duplicate checking.
   duplicate_check(object = ret, data_type = "dosing")
 
-  mask.indep <- is.na(getIndepVar.PKNCAdose(ret))
-  if (any(mask.indep) & !all(mask.indep)) {
+  # Do some general checking of the dose and time data.
+  # Disregard points that will be excluded.
+  is_excluded <- !is.na(normalize_exclude(ret))
+  # Check for missing independent variable (time) in non-excluded rows
+  mask.indep <- is.na(getIndepVar.PKNCAdose(ret)) & !is_excluded
+  if (any(mask.indep) && !all(is.na(getIndepVar.PKNCAdose(ret)[!is_excluded]))) {
     rlang::abort(
       message = "Some but not all values are missing for the independent variable, please see the help for PKNCAdose for how to specify the formula and confirm that your data has dose times for all doses.",
       class = "pknca_error_partial_missing_indepvar"
@@ -246,8 +246,7 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
     rlang::abort(
       message = "Both duration and rate cannot be given at the same time",
       class = "pknca_error_duration_and_rate"
-    )
-    # TODO: A consistency check could be done, but that would get into
+    )    # TODO: A consistency check could be done, but that would get into
     # requiring near-equal checks for floating point error.
   } else if (!missing(duration)) {
     object <- setAttributeColumn(object=object, attr_name="duration", col_or_value=duration)

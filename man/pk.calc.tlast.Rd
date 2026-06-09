@@ -29,3 +29,10 @@ The time of the last observed concentration measurement
 the limit of quantification.
 
 }}
+\seealso{
+Other NCA time parameters: 
+\code{\link{pk.calc.tlag}()},
+\code{\link{pk.calc.tmax}()},
+\code{\link{pk.calc.tmin}()}
+}
+\concept{NCA time parameters}

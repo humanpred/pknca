@@ -1,47 +1,73 @@
-#' Calculate AUC for intravenous dosing
+#' Calculate AUXC (AUC or AUMC) for IV dosing with C0 back-extrapolation
 #'
-#' @details The AUC for intravenous (IV) dosing extrapolates the AUC back from
-#'   the first measurement to time 0 using c0 and the AUC calculated by another
-#'   method (for example the auclast).
+#' Calculates AUC or AUMC for intravenous dosing, with optional back-extrapolation
+#' to C0.
+#'
+#' @details
+#' The AUXC for intravenous (IV) dosing extrapolates the AUXC back from the first
+#' measurement to time 0 using `c0` and the AUXC calculated by another method
+#' (e.g., auclast or aumclast).
 #'
 #' The calculation method takes the following steps:
-#'
-#' \itemize{
-#'   \item{`time = 0` must be present in the data with a measured concentration.}
-#'   \item{The AUC between `time = 0` and the next time point is calculated (`auc_first`).}
-#'   \item{The AUC between `time = 0` with `c0` and the next time point is calculated (`auc_second`).}
-#'   \item{The final AUC is the initial AUC plus the difference between the two AUCs (`auc_final <- auc + auc_second - auc_first`).}
+#' \enumerate{
+#'   \item `time = 0` must be present in the data with a measured concentration.
+#'   \item The AUXC between `time = 0` and the next time point is calculated (`auxc_first`).
+#'   \item The AUXC between `time = 0` with `c0` and the next time point is calculated (`auxc_second`).
+#'   \item The final AUXC is the initial AUXC plus the difference between the two
+#'         AUXCs (`auxc_final <- auxc + auxc_second - auxc_first`).
 #' }
+#'
 #' @inheritParams pk.calc.auxc
 #' @inheritParams PKNCA.choose.option
-#' @param c0 The concentration at time 0, typically calculated using
-#'   `pk.calc.c0()`
-#' @param auc The AUC calculated using `conc` and `time` without `c0` (it may be
-#'   calculated using any method)
-#' @return `pk.calc.auciv`: The AUC calculated using `c0`
+#' @param c0 The concentration at time 0, typically calculated using [pk.calc.c0()]
+#' @param auxc The AUXC calculated using `conc` and `time` without `c0`
+#'   (it may be calculated using any method)
+#' @param fun_auxc_last Function to calculate the AUXC for the last interval
+#'   (e.g., `pk.calc.auc.last` or `pk.calc.aumc.last`)
+#'
+#' @return The AUXC calculated using `c0`
+#'
+#' @family AUC calculations
+#' @family AUMC calculations
 #' @export
-pk.calc.auciv <- function(conc, time, c0, auc, ..., options = list(), check=TRUE) {
+pk.calc.auxciv <- function(conc, time, c0, auxc, fun_auxc_last, ..., options = list(), check = TRUE) {
   if (check) {
     assert_conc_time(conc = conc, time = time)
     data <-
       clean.conc.blq(
         conc, time,
         options = options,
-        check=FALSE
+        check = FALSE
       )
   } else {
     data <- data.frame(conc = conc, time = time)
   }
   if (!(0 %in% time)) {
-    return(structure(NA_real_, exclude="No time 0 in data"))
+    return(structure(NA_real_, exclude = "No time 0 in data"))
   } else if (is.na(c0)) {
-    return(structure(NA_real_, exclude="c0 is not calculated"))
+    return(structure(NA_real_, exclude = "c0 is not calculated"))
   }
-  auc_first <- pk.calc.auc.last(conc = data$conc[1:2], time = data$time[1:2], ..., check=FALSE)
-  auc_second <- pk.calc.auc.last(conc = c(c0, data$conc[2]), time = data$time[1:2], ..., check=FALSE)
-  auc_final <- auc + auc_second - auc_first
-  auc_final
+  auxc_first <- fun_auxc_last(conc = data$conc[1:2], time = data$time[1:2], ..., check = FALSE)
+  auxc_second <- fun_auxc_last(conc = c(c0, data$conc[2]), time = data$time[1:2], ..., check = FALSE)
+  auxc_final <- auxc + auxc_second - auxc_first
+  auxc_final
 }
+
+
+#' @describeIn pk.calc.auxciv Calculate AUC for intravenous dosing with C0 back-extrapolation
+#' @param auc The AUC calculated using `conc` and `time` without `c0`
+#' @export
+pk.calc.auciv <- function(conc, time, c0, auc, ..., options = list(), check = TRUE) {
+  pk.calc.auxciv(
+    conc = conc, time = time,
+    c0 = c0, auxc = auc,
+    fun_auxc_last = pk.calc.auc.last,
+    ...,
+    options = options,
+    check = check
+  )
+}
+
 
 add.interval.col(
   name = "aucivlast",
@@ -104,25 +130,21 @@ add.interval.col(
   unit_type = "auc",
   pretty_name = "AUCinf,pred (IV dosing)",
   depends = c("aucinf.pred", "c0"),
-  desc = "The  calculated with back-extrapolation for intravenous dosing using extrapolated C0",
+  desc = "The AUCinf,pred calculated with back-extrapolation for intravenous dosing using extrapolated C0",
   sparse = FALSE,
   formalsmap = list(auc="aucinf.pred")
 )
 
-PKNCA.set.summary(
-  name=c("aucivlast", "aucivall", "aucivint.last", "aucivint.all", "aucivinf.obs", "aucivinf.pred"),
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
-#' @describeIn pk.calc.auciv Calculate the percent back-extrapolated AUC for IV
+#' @describeIn pk.calc.auxciv Calculate the percent back-extrapolated AUC for IV
 #'   administration
 #' @details The calculation for back-extrapolation is `100*(1 - auc/auciv)`.
+#' @param auc The AUC calculated without C0 back-extrapolation 
 #' @param auciv The AUC calculated using `c0`
 #' @returns `pk.calc.auciv_pctbackextrap`: The AUC percent back-extrapolated
 #' @export
 pk.calc.auciv_pbext <- function(auc, auciv) {
+  if (!is.na(auciv) && !is.na(auc) && auciv < auc){rlang::abort("auciv must be >= auc; back-extrapolation cannot be negative.")}
   100*(1 - auc/auciv)
 }
 
@@ -192,9 +214,109 @@ add.interval.col(
   formalsmap = list(auc="aucinf.pred", auciv="aucivinf.pred")
 )
 
+
+#' @describeIn pk.calc.auxciv Calculate AUMC for intravenous dosing with C0 back-extrapolation
+#' @param aumc The AUMC calculated using `conc` and `time` without `c0`
+#' @export
+pk.calc.aumciv <- function(conc, time, c0, aumc, ..., options = list(), check = TRUE) {
+  pk.calc.auxciv(
+    conc = conc, time = time,
+    c0 = c0, auxc = aumc,
+    fun_auxc_last = pk.calc.aumc.last,
+    ...,
+    options = options,
+    check = check
+  )
+}
+# Register all standard AUMC IV versions
+add.interval.col(
+  name = "aumcivlast",
+  FUN = "pk.calc.aumciv",
+  unit_type = "aumc",
+  pretty_name = "AUMClast (IV dosing)",
+  depends = c("aumclast", "c0"),
+  desc = "The AUMClast calculated with back-extrapolation for intravenous dosing using extrapolated C0",
+  sparse = FALSE,
+  formalsmap = list(aumc = "aumclast")
+)
+
+add.interval.col(
+  name = "aumcivall",
+  FUN = "pk.calc.aumciv",
+  unit_type = "aumc",
+  pretty_name = "AUMCall (IV dosing)",
+  depends = c("aumcall", "c0"),
+  desc = "The AUMCall calculated with back-extrapolation for intravenous dosing using extrapolated C0",
+  sparse = FALSE,
+  formalsmap = list(aumc = "aumcall")
+)
+
+add.interval.col(
+  name = "aumcivint.last",
+  FUN = "pk.calc.aumciv",
+  unit_type = "aumc",
+  pretty_name = "AUMCint,last (IV dosing)",
+  depends = c("aumcint.last", "c0"),
+  desc = "The AUMCint,last calculated with back-extrapolation for intravenous dosing using extrapolated C0",
+  sparse = FALSE,
+  formalsmap = list(aumc = "aumcint.last")
+)
+
+add.interval.col(
+  name = "aumcivint.all",
+  FUN = "pk.calc.aumciv",
+  unit_type = "aumc",
+  pretty_name = "AUMCint,all (IV dosing)",
+  depends = c("aumcint.all", "c0"),
+  desc = "The AUMCint,all calculated with back-extrapolation for intravenous dosing using extrapolated C0",
+  sparse = FALSE,
+  formalsmap = list(aumc = "aumcint.all")
+)
+
+add.interval.col(
+  name = "aumcivinf.obs",
+  FUN = "pk.calc.aumciv",
+  unit_type = "aumc",
+  pretty_name = "AUMCinf,obs (IV dosing)",
+  depends = c("aumcinf.obs", "c0"),
+  desc = "The AUMCinf,obs calculated with back-extrapolation for intravenous dosing using extrapolated C0",
+  sparse = FALSE,
+  formalsmap = list(aumc = "aumcinf.obs")
+)
+
+add.interval.col(
+  name = "aumcivinf.pred",
+  FUN = "pk.calc.aumciv",
+  unit_type = "aumc",
+  pretty_name = "AUMCinf,pred (IV dosing)",
+  depends = c("aumcinf.pred", "c0"),
+  desc = "The AUMCinf,pred calculated with back-extrapolation for intravenous dosing using extrapolated C0",
+  sparse = FALSE,
+  formalsmap = list(aumc = "aumcinf.pred")
+)
+
+
+#===============================================================================
+# PKNCA.set.summary - Count: 18
+# Ordered: base → int (last → all) → inf (obs → pred)
+#===============================================================================
+# Geometric summaries for AUC and AUMC IV
 PKNCA.set.summary(
-  name = c("aucivpbextlast", "aucivpbextall", "aucivpbextint.last", "aucivpbextint.all", "aucivpbextinf.obs", "aucivpbextinf.pred"),
-  description="arithmetic mean and standard deviation",
-  point=business.mean,
-  spread=business.sd
+  name = c(
+    "aucivlast", "aucivall", "aucivint.last", "aucivint.all", "aucivinf.obs", "aucivinf.pred",
+    "aumcivlast", "aumcivall", "aumcivint.last", "aumcivint.all", "aumcivinf.obs", "aumcivinf.pred"
+  ),
+  description = "geometric mean and geometric coefficient of variation",
+  point = business.geomean,
+  spread = business.geocv
+)
+
+# Arithmetic summaries for percent back-extrapolation
+PKNCA.set.summary(
+  name = c(
+    "aucivpbextlast", "aucivpbextall", "aucivpbextint.last", "aucivpbextint.all", "aucivpbextinf.obs", "aucivpbextinf.pred"
+  ),
+  description = "arithmetic mean and standard deviation",
+  point = business.mean,
+  spread = business.sd
 )

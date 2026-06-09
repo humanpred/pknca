@@ -23,6 +23,7 @@ Suggests:
     covr,
     cowplot,
     ggplot2,
+    ggtibble,
     knitr,
     labeling,
     pander,
@@ -35,8 +36,7 @@ Description: Compute standard Non-Compartmental Analysis (NCA) parameters for
     typical pharmacokinetic analyses and summarize them.
 License: AGPL-3
 URL: https://humanpred.github.io/pknca/,
-    https://github.com/humanpred/pknca,
-    http://humanpred.github.io/pknca/
+    https://github.com/humanpred/pknca
 BugReports: https://github.com/humanpred/pknca/issues
 NeedsCompilation: no
 VignetteBuilder: knitr

@@ -42,7 +42,7 @@ pk.tss.monoexponential <- function(...,
     rlang::warn(
       message = "Only first value of tss.fraction is being used",
       class = "pknca_warning_tss_fraction_multiple"
-    )
+    )    
     tss.fraction <- tss.fraction[1]
   }
   checkmate::assert_number(tss.fraction, na.ok = FALSE)
@@ -51,8 +51,7 @@ pk.tss.monoexponential <- function(...,
     rlang::abort(
       message = "tss.fraction must be between 0 and 1, exclusive",
       class = "pknca_error_tss_fraction_range"
-    )
-  } else if (tss.fraction < 0.8) {
+    )  } else if (tss.fraction < 0.8) {
     rlang::warn(
       message = "tss.fraction is usually >= 0.8",
       class = "pknca_warning_tss_fraction_small"

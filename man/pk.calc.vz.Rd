@@ -2,19 +2,40 @@
 % Please edit documentation in R/pk.calc.simple.R
 \name{pk.calc.vz}
 \alias{pk.calc.vz}
+\alias{pk.calc.vss}
 \title{Calculate the terminal volume of distribution (Vz)}
 \usage{
 pk.calc.vz(cl, lambda.z)
+
+pk.calc.vss(cl, mrt)
 }
 \arguments{
 \item{cl}{the clearance (or apparent observed clearance)}
 
 \item{lambda.z}{The elimination rate (in units of inverse time) for
 extrapolation}
+
+\item{mrt}{the mean residence time}
+}
+\value{
+the volume of distribution at steady-state
 }
 \description{
 Calculate the terminal volume of distribution (Vz)
 }
 \details{
 vz is \code{cl/lambda.z}.
+
+vss is \code{cl*mrt}.
 }
+\section{Functions}{
+\itemize{
+\item \code{pk.calc.vss()}: Steady-state volume of distribution (Vss)
+
+}}
+\seealso{
+Other Clearance and volume parameters: 
+\code{\link{pk.calc.cl}()},
+\code{\link{pk.calc.kel}()}
+}
+\concept{Clearance and volume parameters}

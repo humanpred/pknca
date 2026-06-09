@@ -25,9 +25,7 @@
 #'   `conc.origin` is typically used to set predose values to zero (default),
 #'   set a predose concentration for endogenous compounds, or set predose
 #'   concentrations to `NA` if otherwise unknown.
-#' @param conc.blq How to handle BLQ values. (See [clean.conc.blq()] for usage
-#'   instructions.)
-#' @param conc.na How to handle NA concentrations.  (See [clean.conc.na()])
+#' @inheritParams clean.conc.blq
 #' @param route.dose What is the route of administration ("intravascular" or
 #'   "extravascular").  See the details for how this parameter is used.
 #' @param duration.dose What is the duration of administration? See the details
@@ -36,8 +34,6 @@
 #'   after (`TRUE`) the interpolated point?  See the details for how this
 #'   parameter is used.  It only has a meaningful effect at the instant of an IV
 #'   bolus dose.
-#' @param check Run [assert_conc_time()], [clean.conc.blq()], and
-#'   [clean.conc.na()]?
 #' @param ... Additional arguments passed to `interpolate.conc()` or
 #'   `extrapolate.conc()`.
 #' @returns The interpolated or extrapolated concentration value as a scalar
@@ -71,6 +67,7 @@
 #' from the data after dosing.
 #'
 #' @seealso [pk.calc.clast.obs()], [pk.calc.half.life()], [pk.calc.c0()]
+#' @family Concentration interpolation and extrapolation
 #' @export
 interp.extrap.conc <- function(conc, time, time.out,
                                lambda.z = NA,
@@ -192,7 +189,7 @@ interpolate.conc <- function(conc, time, time.out,
   if (time.out > max(data$time)) {
     rlang::abort(
       message = "`interpolate.conc()` does not extrapolate, use `interp.extrap.conc()`",
-      class = "pknca_error_interpolate_beyond_tlast"
+      class = "pknca_error_interpolate_beyond_maxtime"
     )
   }
   # Verify that we are interpolating between the first concentration
@@ -204,10 +201,10 @@ interpolate.conc <- function(conc, time, time.out,
     ret <- 0
   } else if (time.out > tlast) {
     rlang::abort(
-      message = "`interpolate.conc()` can only works through Tlast, please use `interp.extrap.conc()` to combine both interpolation and extrapolation.",
+      message = "`interpolate.conc()` only works through Tlast, please use `interp.extrap.conc()` to combine both interpolation and extrapolation.",
       class = "pknca_error_interpolate_beyond_tlast"
-    )
-  } else if (time.out %in% data$time) {
+    )  
+    } else if (time.out %in% data$time) {
     # See if there is an exact time match and return that if it
     # exists.
     ret <- data$conc[time.out == data$time]

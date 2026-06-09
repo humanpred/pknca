@@ -98,13 +98,12 @@ and 'AUCall'.}
 \item{...}{Additional arguments passed to \code{interpolate.conc()} or
 \code{extrapolate.conc()}.}
 
-\item{conc.blq}{How to handle BLQ values. (See \code{\link[=clean.conc.blq]{clean.conc.blq()}} for usage
-instructions.)}
+\item{conc.blq}{How to handle a BLQ value that is between above LOQ values?
+See details for description.}
 
 \item{conc.na}{How to handle NA concentrations.  (See \code{\link[=clean.conc.na]{clean.conc.na()}})}
 
-\item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}, \code{\link[=clean.conc.blq]{clean.conc.blq()}}, and
-\code{\link[=clean.conc.na]{clean.conc.na()}}?}
+\item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 
 \item{conc.origin}{The concentration before the first measurement.
 \code{conc.origin} is typically used to set predose values to zero (default),
@@ -175,3 +174,4 @@ without interpolating or extrapolating beyond doses.
 \seealso{
 \code{\link[=pk.calc.clast.obs]{pk.calc.clast.obs()}}, \code{\link[=pk.calc.half.life]{pk.calc.half.life()}}, \code{\link[=pk.calc.c0]{pk.calc.c0()}}
 }
+\concept{Concentration interpolation and extrapolation}

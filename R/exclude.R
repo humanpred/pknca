@@ -74,10 +74,9 @@ exclude.default <- function(object, reason, mask, FUN) {
     }
   } else if (!xor(missing(mask), missing(FUN))) {
     rlang::abort(
-      message = "Either mask for FUN must be given (but not both).",
+      message = "Either mask or FUN must be given (but not both).",
       class = "pknca_error_mask_or_fun"
-    )
-  }
+    )  }
   if (!(length(reason) %in% c(1, nrow(object[[dataname]])))) {
     rlang::abort(
       message = "reason must be a scalar or have the same length as the data.",

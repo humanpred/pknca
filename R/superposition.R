@@ -36,6 +36,7 @@
 #' dose time as well), `additional.times`, and `tau`.
 #'
 #' @seealso [interp.extrap.conc()]
+#' @family Superposition
 #' @export
 superposition <- function(conc, ...) {
   UseMethod("superposition", conc)
@@ -134,10 +135,7 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
         class = "pknca_error_superposition_additional_times_na"
       )
     }
-    checkmate::assert_numeric(additional.times, lower = 0, upper = tau)
-    # if (any(additional.times > tau))
-    #   stop("All additional.times must be <= tau")
-  }
+   checkmate::assert_numeric(additional.times, lower = 0, upper = tau)  }
   # steady.state.tol
   checkmate::assert_number(steady.state.tol, na.ok = FALSE)
   if (steady.state.tol <= 0 || steady.state.tol >= 1)
@@ -151,7 +149,6 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
       class = "pknca_warning_superposition_steady_state_tol_large"
     )
   }
-
   # We get all or none of lambda.z, clast, and tlast
   has.lambda.z <- !missing(lambda.z)
   has.clast.pred <- !is.logical(clast.pred)

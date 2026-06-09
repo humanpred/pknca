@@ -89,6 +89,13 @@ o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(cmax = TRUE, start = 
 o_nca <- pk.nca(o_data)
 
 
+test_that("normalize_by_col errors when object is not PKNCAresults", {
+  expect_error(
+    normalize_by_col("not_a_results_object", col = "weight", unit = "kg", parameters = "cmax", suffix = ".wn"),
+    regexp = "Must be a PKNCAresults object"
+  )
+})
+
 test_that("normalize_by_col normalizes by a numeric column in PKNCAconc data", {
   res <- normalize_by_col(o_nca, col = "weight", unit = "kg", parameters = "cmax", suffix = ".wn")
   

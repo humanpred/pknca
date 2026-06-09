@@ -108,12 +108,12 @@ summary.PKNCAresults <- function(object, ...,
   has_subject_col <- length(subject_col) > 0
   if (is.na(summarize_n)) {
     summarize_n <- has_subject_col
-  } else if (summarize_n && !has_subject_col) {
+ } else if (summarize_n && !has_subject_col) {
     rlang::warn(
       message = "summarize_n was requested, but no subject column exists",
       class = "pknca_warning_summarize_n_no_subject"
-    )
-    summarize_n <- FALSE
+    )    
+   summarize_n <- FALSE
   }
 
   # Preparation ####
@@ -139,7 +139,7 @@ summary.PKNCAresults <- function(object, ...,
       X = object$data$intervals[, parameter_cols, drop = FALSE],
       FUN = any
     )
-  # Then, filter them the the ones that have any "TRUE" values
+  # Then, filter them to the ones that have any "TRUE" values
   result_data_cols_list <- result_data_cols_list[unlist(result_data_cols_list)]
 
   # Prepare for unit management
@@ -225,7 +225,7 @@ get_summary_PKNCAresults_result_number_col <- function(object) {
   intersect(c("PPSTRES", "PPORRES"), names(data))[1]
 }
 
-# Get the column name with the result unitss to use for summarization
+# Get the column name with the result units to use for summarization
 get_summary_PKNCAresults_result_unit_col <- function(object) {
   if (is.data.frame(object)) {
     data <- object

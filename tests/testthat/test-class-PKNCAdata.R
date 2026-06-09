@@ -395,6 +395,15 @@ test_that("getGroups works", {
   expect_equal(getGroups(o_data_nogroup), data.frame(A = 1:11)[, -1])
 })
 
+test_that("PKNCAdata auto-interval generation works with no grouping variables", {
+  d <- as.data.frame(datasets::Theoph[datasets::Theoph$Subject == 1, ])
+  o_conc <- PKNCAconc(d, conc~Time)
+  d_dose <- d[d$Time == 0, , drop = FALSE]
+  o_dose <- PKNCAdose(d_dose, Dose~Time)
+  o_data <- PKNCAdata(o_conc, o_dose)
+  expect_true(nrow(o_data$intervals) > 0)
+})
+
 test_that("group_vars.PKNCAdata", {
   o_conc_group <- PKNCAconc(as.data.frame(datasets::Theoph), conc~Time|Subject)
   o_data_group <- PKNCAdata(o_conc_group, intervals = data.frame(start = 0, end = 1, cmax = TRUE))

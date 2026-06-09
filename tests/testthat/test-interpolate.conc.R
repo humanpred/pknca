@@ -83,7 +83,7 @@ test_that("interpolate.conc expected errors", {
       time=0:2,
       time.out=1.5
     ),
-    regexp="`interpolate.conc()` can only works through Tlast, please use `interp.extrap.conc()` to combine both interpolation and extrapolation.",
+    regexp="`interpolate.conc()` only works through Tlast, please use `interp.extrap.conc()` to combine both interpolation and extrapolation.",
     fixed=TRUE
   )
 })

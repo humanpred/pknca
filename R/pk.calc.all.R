@@ -207,7 +207,7 @@ any_sparse_dense_in_interval <- function(interval, sparse) {
 #'   output from `prepare_PKNCAdose()`
 #' @param data_intervals A data.frame or tibble with standardized column names
 #'   as output from `prepare_PKNCAintervals()`
-#' @param impute The  column name in `data_intervals` to use for imputation
+#' @param impute The column name in `data_intervals` to use for imputation
 #' @inheritParams PKNCAdata
 #' @inheritParams pk.nca
 #' @inheritParams pk.nca.interval
@@ -316,12 +316,11 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
         args$exclude_half.life <- conc_data_interval$exclude_half.life
         uses_exclude_hl <- !is.null(args$exclude_half.life) && !all(is.na(args$exclude_half.life))
       }
-      if (uses_include_hl && uses_exclude_hl) {
+  if (uses_include_hl && uses_exclude_hl) {
         rlang::abort(
           message = "Cannot both include and exclude half-life points for the same interval",
           class = "pknca_error_include_exclude_halflife"
-        )
-      }
+        )      }
       # Try the calculation
       if (use_debug) {
         # debugging mode does not need coverage

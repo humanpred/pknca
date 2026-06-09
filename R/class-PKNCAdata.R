@@ -110,8 +110,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
     rlang::abort(
       message = "If data.dose is not given, intervals must be given",
       class = "pknca_error_missing_intervals"
-    )
-  } else if (missing(intervals)) {
+    )  } else if (missing(intervals)) {
     # Generate the intervals for each grouping of concentration and
     # dosing.
     if (length(ret$dose$columns$time) == 0) {
@@ -142,7 +141,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
             ": "
           )
         } else {
-          ""
+          "" # nocov
         }
       if (!is.null(current_conc)) {
         generated_intervals <-
@@ -183,13 +182,9 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
     # Use the new automatic units table builder
     ret$units <- pknca_units_table(ret)
   } else {
-    # stopifnot("`units` must be a data.frame"=is.data.frame(units))
-    # stopifnot(
-    #   "`units` data.frame must have at least names 'PPTESTCD' and 'PPORRESU'"=
-    #     all(c("PPTESTCD", "PPORRESU") %in% names(units))
-    # )
-    # stopifnot("`units` must have at least one row"=nrow(units) > 0)
+
     checkmate::assert_data_frame(units)
+    
     missing_unit_cols <- setdiff(c("PPTESTCD", "PPORRESU"), names(units))
     if (length(missing_unit_cols) > 0) {
       rlang::abort(
@@ -197,12 +192,9 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
         class = "pknca_error_units_missing_cols"
       )
     }
-    if (nrow(units) == 0) {
-      rlang::abort(
-        message = "`units` must have at least one row",
-        class = "pknca_error_units_no_rows"
-      )
-    }
+    
+    checkmate::assert_data_frame(units, min.rows = 1)
+
     ret$units <- units
   }
 
@@ -215,10 +207,6 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   ret
 }
 
-drop_attributes <- function(x) {
-  attributes(x) <- NULL
-  x
-}
 
 #' @rdname is_sparse_pk
 #' @export

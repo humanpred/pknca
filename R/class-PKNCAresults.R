@@ -118,7 +118,7 @@ getGroups.PKNCAresults <- function(object,
     grpnames <- setdiff(grpnames, object$data$conc$columns$subject)
   }
   if (!missing(level))
-    if (is.factor(level) | is.character(level)) {
+    if (is.factor(level) || is.character(level)) {
       level <- as.character(level)
       if (any(!(level %in% grpnames))){
         rlang::abort(

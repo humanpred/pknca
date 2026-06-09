@@ -2,9 +2,12 @@
 % Please edit documentation in R/pk.calc.simple.R
 \name{pk.calc.ctrough}
 \alias{pk.calc.ctrough}
+\alias{pk.calc.cstart}
 \title{Determine the trough (end of interval) concentration}
 \usage{
 pk.calc.ctrough(conc, time, end)
+
+pk.calc.cstart(conc, time, start)
 }
 \arguments{
 \item{conc}{Measured concentrations}
@@ -12,6 +15,8 @@ pk.calc.ctrough(conc, time, end)
 \item{time}{Time of the measurement of the concentrations}
 
 \item{end}{The end time of the interval}
+
+\item{start}{The start time of the interval}
 }
 \value{
 The concentration when \code{time == end}.  If none match, then \code{NA}
@@ -19,11 +24,26 @@ The concentration when \code{time == end}.  If none match, then \code{NA}
 \description{
 Determine the trough (end of interval) concentration
 }
+\section{Functions}{
+\itemize{
+\item \code{pk.calc.cstart()}: Concentration at the beginning of the interval
+
+}}
 \seealso{
 Other NCA parameters for concentrations during the intervals: 
+\code{\link{pk.calc.c0}()},
+\code{\link{pk.calc.cav}()},
+\code{\link{pk.calc.ceoi}()},
 \code{\link{pk.calc.clast.obs}()},
 \code{\link{pk.calc.cmax}()},
-\code{\link{pk.calc.count_conc}()},
-\code{\link{pk.calc.cstart}()}
+\code{\link{pk.calc.count_conc}()}
+
+Other NCA parameters for concentrations during the intervals: 
+\code{\link{pk.calc.c0}()},
+\code{\link{pk.calc.cav}()},
+\code{\link{pk.calc.ceoi}()},
+\code{\link{pk.calc.clast.obs}()},
+\code{\link{pk.calc.cmax}()},
+\code{\link{pk.calc.count_conc}()}
 }
 \concept{NCA parameters for concentrations during the intervals}

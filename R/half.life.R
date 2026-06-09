@@ -64,11 +64,8 @@
 #'   for Tobit window selection.  See [PKNCA.options()].
 #' @param tobit_optim_control A list of control parameters passed to
 #'   [stats::optim()] for the Tobit fit.  See [PKNCA.options()].
-#' @param conc.blq See [clean.conc.blq()]
-#' @param conc.na See [clean.conc.na()]
-#' @param check Run [assert_conc_time()],
-#'   [clean.conc.blq()], and [clean.conc.na()]?
-#' @param first.tmax See [pk.calc.tmax()].
+#' @inheritParams clean.conc.blq
+#' @inheritParams pk.calc.tmax
 #' @param allow.tmax.in.half.life Allow the concentration point for tmax
 #'   to be included in the half-life slope calculation.
 #' @return A data frame with one row.  Columns depend on `hl_method`:
@@ -113,6 +110,7 @@
 #' and Applications, 4th Edition.  Stockholm, Sweden: Swedish
 #' Pharmaceutical Press, 2000.  167-9.
 #' @family NCA parameter calculations
+#' @family Half-life and elimination
 #' @export
 pk.calc.half.life <- function(conc, time, tmax, tlast,
                               time.dose=NULL,
@@ -900,7 +898,7 @@ get_halflife_points_single <- function(conc, results, time_start, time_end, rowi
       ret$hl_used <- conc_included$include_half.life %in% TRUE
     } else {
       # Shift the time by time_start to account for the fact that
-      # lambda.z.time.first and are relative to the start of the interval
+      # lambda.z.time.first and lambda.z.time.last are relative to the start of the interval
       time_first <- time_start + results$PPORRES[results$PPTESTCD %in% "lambda.z.time.first"]
       time_last <- time_start + results$PPORRES[results$PPTESTCD %in% "lambda.z.time.last"]
       excluded <-

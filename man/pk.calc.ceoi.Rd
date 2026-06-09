@@ -23,3 +23,13 @@ The concentration at the end of the infusion, \code{NA} if
 \description{
 Determine the concentration at the end of infusion
 }
+\seealso{
+Other NCA parameters for concentrations during the intervals: 
+\code{\link{pk.calc.c0}()},
+\code{\link{pk.calc.cav}()},
+\code{\link{pk.calc.clast.obs}()},
+\code{\link{pk.calc.cmax}()},
+\code{\link{pk.calc.count_conc}()},
+\code{\link{pk.calc.ctrough}()}
+}
+\concept{NCA parameters for concentrations during the intervals}

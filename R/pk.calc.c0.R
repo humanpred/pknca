@@ -1,11 +1,12 @@
 #' Estimate the concentration at dosing time for an IV bolus dose.
 #'
 #' @inheritParams assert_conc_time
+#' @inheritParams clean.conc.blq
 #' @param time.dose The time when dosing occurred
 #' @param method The order of methods to test (see details)
-#' @param check Check the `conc` and `time` inputs
 #' @returns The estimated concentration at time 0.
 #'
+#' @family NCA parameters for concentrations during the intervals
 #' @details Methods available for interpolation are below, and each
 #' has its own specific function.
 #'
@@ -24,10 +25,8 @@ pk.calc.c0 <- function(conc, time, time.dose=0,
   if (check) {
     assert_conc_time(conc = conc, time = time)
   }
-  
-  checkmate::assert_number(time.dose, na.ok = TRUE, finite = FALSE)
-
-  if (is.na(time.dose)) {
+checkmate::assert_number(time.dose, na.ok = TRUE, finite = FALSE)  
+if (is.na(time.dose)) {
     rlang::warn(
       message = "time.dose is NA",
       class = "pknca_warning_timedose_na"

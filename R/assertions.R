@@ -8,12 +8,11 @@
 #' @returns `interval` (or `c(start, end)`)
 #' @keywords Internal
 assert_intervaltime_single <- function(interval = NULL, start = NULL, end = NULL) {
-  if (is.null(interval) && is.null(start) && is.null(end)) {
+ if (is.null(interval) && is.null(start) && is.null(end)) {
     rlang::abort(
       message = "One of `interval` or `start` and `end` must be given",
       class = "pknca_error_missing_interval"
-    )
-  }
+    )  }
   
   if (xor(is.null(start), is.null(end))) {
     rlang::abort(

@@ -34,9 +34,9 @@ pk.tss.stepwise.linear <- function(...,
     )
     min.points <- min.points[1]
   }
-
-  checkmate::assert_number(min.points, lower = 3, .var.name = "min.points")
-
+  
+  checkmate::assert_number(min.points, lower = 3)
+  
   if (!length(level) == 1) {
     rlang::warn(
       message = "Only first value of level is being used",
@@ -45,15 +45,14 @@ pk.tss.stepwise.linear <- function(...,
     level <- level[1]
   }
   
-  checkmate::assert_numeric(level, any.missing = FALSE, .var.name = "level")
-
+  checkmate::assert_numeric(level, any.missing = FALSE)
+  
   if (level <= 0 || level >= 1){
     rlang::abort(
       message = "level must be between 0 and 1, exclusive",
       class = "pknca_error_tss_level_range"
-    )
-  }
-    
+    )  }
+  
   # Confirm that we may have sufficient data to complete the
   # modeling.  Because of the variety of methods used for estimating
   # time to steady-state, assurance that we have enough data is more

@@ -8,9 +8,7 @@
 #'   to be on the same treatment)
 #' @param subject.dosing Subject number for dosing
 #' @param time.dosing Time of dosing
-#' @param conc.blq See [clean.conc.blq()]
-#' @param conc.na See [clean.conc.na()]
-#' @param check Run [assert_conc_time()]?
+#' @inheritParams clean.conc.blq
 #' @param \dots Discarded inputs to allow generic calls between tss methods.
 #' @returns a data frame with columns for `conc`entration, `time`, `subject`,
 #'   and `treatment`.
@@ -30,8 +28,7 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
     rlang::abort(
       message = "Cannot give subject.dosing without subject",
       class = "pknca_error_tss_subject_dosing_without_subject"
-    )
-  }
+    )  }
   if (anyNA(time.dosing)) {
     rlang::abort(
       message = "time.dosing may not contain any NA values",

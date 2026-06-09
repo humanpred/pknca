@@ -9,9 +9,7 @@
         "data points to be preferred in the calculation of half-life."))
     if (default)
       return(0.0001)
-    
-    checkmate::assert_number(x, .var.name = "adj.r.squared.factor")
-    # Must be between 0 and 1, exclusive
+    checkmate::assert_number(x, .var.name = "adj.r.squared.factor")    # Must be between 0 and 1, exclusive
     if (x <= 0 || x >= 1) {
       rlang::abort(
         message = "adj.r.squared.factor must be between 0 and 1, exclusive",
@@ -24,7 +22,7 @@
         message = "adj.r.squared.factor is usually <0.01",
         class = "pknca_warning_adj_r2_factor_large"
       )
-    }
+    }    
     x
   },
   max.missing=function(x, default=FALSE, description=FALSE) {
@@ -34,9 +32,7 @@
         "calculate summary statistics with the business.* functions."))
     if (default)
       return(0.5)
-    
-    checkmate::assert_number(x, .var.name = "max.missing")
-    # Must be between 0 and 1, inclusive
+    checkmate::assert_number(x, .var.name = "max.missing")    # Must be between 0 and 1, inclusive
     if (x < 0 || x >= 1) {
       rlang::abort(
         message = "max.missing must be between 0 and 1",
@@ -49,7 +45,7 @@
         message = "max.missing is usually <= 0.5",
         class = "pknca_warning_max_missing_large"
       )
-    }
+    }    
     x
   },
   auc.method=function(x, default=FALSE, description=FALSE) {
@@ -150,7 +146,7 @@
     if (is.list(x)) {
       tfirst_names <- c("first", "last", "middle")
       tmax_names <- c("before.tmax", "after.tmax")
-
+      
       are.names.mixed <- any(names(x) %in% tfirst_names) & any(names(x) %in% tmax_names)
       extra.names <- setdiff(names(x), c(tfirst_names, tmax_names))
       missing.names <- if (any(names(x) %in% tfirst_names)) setdiff(tfirst_names, names(x)) else setdiff(tmax_names, names(x))
@@ -265,12 +261,11 @@
         rlang::warn(
           message = paste("Converting allow.tmax.in.half.life to a logical value:", x),
           class = "pknca_warning_allow_tmax_hl_converted"
-        )
-      }
+        )      }
     }
     x
   },
-
+  
   keep_interval_cols = function(x, default = FALSE, description = FALSE) {
     if (description)
       return("What additional columns from the intervals should be kept in the results?")
@@ -279,14 +274,14 @@
     checkmate::assert_names(x)
     x
   },
-
+  
   min.hl.points=function(x, default=FALSE, description=FALSE) {
     if (description)
       return("What is the minimum number of points required to calculate half-life?")
     if (default)
       return(3)
     checkmate::assert_number(x, lower = 2, na.ok = FALSE, .var.name = "min.hl.points")
-
+    
     if (min(x %% 1, 1 - (x %% 1)) >
         100*.Machine$double.eps) {
       rlang::warn(
@@ -346,7 +341,6 @@
       return("What is the minimum r-squared value to consider a half-life calculation valid?")
     if (default)
       return(0.9)
-    
     checkmate::assert_number(x, .var.name = "min.hl.r.squared")
     if (x <= 0 || x >= 1) {
       rlang::abort(
@@ -360,10 +354,10 @@
         message = "min.hl.r.squared is usually >= 0.9",
         class = "pknca_warning_min_hl_r2_small"
       )
-    }
+    }    
     x
   },
-
+  
   progress = function(x, default = FALSE, description = FALSE) {
     if (description)
       return("A value to pass to purrr::pmap(.progress = ) to create a progress bar while running")
@@ -372,7 +366,7 @@
     }
     x
   },
-
+  
   tau.choices=function(x, default=FALSE, description=FALSE) {
     if (description)
       return(paste(
@@ -383,7 +377,6 @@
         "interval."))
     if (default)
       return(NA)
-    
     # NA mixed into a numeric vector is not allowed
     if (length(x) > 1 && anyNA(x)){
       rlang::abort(
@@ -395,7 +388,6 @@
     # Only validate non-NA cases
     if (!identical(x, NA)) {
       checkmate::assert_numeric(x, .var.name = "tau.choices")
-      
       if (!is.vector(x)) {
         rlang::warn(
           message = "tau.choices must be a vector, converting",
@@ -432,7 +424,7 @@
     checkmate::assert_logical(x, any.missing = FALSE, len = 1)
     x
   },
-
+  
   hl_method = function(x, default = FALSE, description = FALSE) {
     choices <- c("log-linear", "tobit")
     if (description)
@@ -447,7 +439,7 @@
     x <- match.arg(x, choices)
     x
   },
-
+  
   tobit_n_points_penalty = function(x, default = FALSE, description = FALSE) {
     if (description)
       return(paste(
@@ -462,7 +454,7 @@
     )
     x
   },
-
+  
   tobit_optim_control = function(x, default = FALSE, description = FALSE) {
     if (description)
       return(paste(
@@ -545,11 +537,11 @@ PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
       args <- append(args, name)
     }
   }
-  if (default && check)
+ if (default && check)
     rlang::abort(
       message = "Cannot request both default and check",
       class = "pknca_error_default_and_check"
-    )
+    )  
   if (default) {
     if (length(args) > 0)
       rlang::abort(
@@ -761,4 +753,3 @@ PKNCA.set.summary <- function(name, description, point, spread,
   assign("summary", current, envir=.PKNCAEnv)
   invisible(current)
 }
-

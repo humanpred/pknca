@@ -104,6 +104,8 @@ test_that("assert_PKNCAconc", {
     assert_PKNCAconc("A"),
     regexp = "Must be a PKNCAconc object"
   )
+  obj <- PKNCAconc(data.frame(conc = 1, time = 0), conc~time)
+  expect_identical(assert_PKNCAconc(obj), obj)
 })
 
 test_that("assert_PKNCAdata", {
@@ -118,6 +120,8 @@ test_that("assert_PKNCAdose", {
     assert_PKNCAdose("A"),
     regexp = "Must be a PKNCAdose object"
   )
+  obj <- PKNCAdose(data.frame(dose = 1, time = 0), dose~time)
+  expect_identical(assert_PKNCAdose(obj), obj)
 })
 
 test_that("assert_PKNCAresults", {

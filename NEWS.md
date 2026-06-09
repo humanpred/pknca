@@ -4,7 +4,23 @@ will continue until then.  These will be especially noticeable around
 the inclusion of IV NCA parameters and additional specifications of
 the dosing including dose amount and route.
 
-# PKNCA 0.12.2
+# New features
+
+* Added sparse AUMC function and five sparse AUC parameters (cl.sparse.last, kel.sparse.last, mrt.ivint.last, vss.sparse.last, vz.sparse.last)
+
+* New IV dosing AUMC parameters with C0 back-extrapolation (`aumciv*`)
+
+* New interval AUMC parameters with interpolation/extrapolation support
+  (`aumcint*`), mirroring the existing `aucint` family (#152)
+
+* New derived PK parameters to complete coverage across all AUC variants
+  (#152):
+  * 11 clearance parameters (`cl.*`)
+  * 9 elimination rate constant parameters (`kel.*`)
+  * 6 mean residence time parameters (`mrt.*`)
+  * 3 IV mean residence time parameters (`mrt.iv.*`)
+  * 9 volume of distribution at steady state parameters (`vss.*`)
+  * 13 terminal volume of distribution parameters (`vz.*`)
 
 ## Improvements
 
@@ -33,6 +49,7 @@ the dosing including dose amount and route.
   for grouped joins, preserving left-table row order. Missing group validation 
   ensures no rows are silently dropped.
 
+
 ## Breaking changes
 
 * `pknca_units_table()` called on a `PKNCAdata` object now raises an error if
@@ -48,6 +65,9 @@ the dosing including dose amount and route.
 
 * `get_halflife_points()` now correctly accounts for start time != 0 and sets
   times outside of any interval to `NA` (#470)
+* The `PKNCAconc` function won't give an error for a concentration-time check
+when the issue is due to an excluded point (#310)
+* The `PKNCAdose` function won't give an error for a missing-time check when the issue is due to an excluded point (#310)
 * `pk.nca` will calculate `fe` and `clr` even if their dependent parameters (e.g, `ae`) were not requested to be calculated in the intervals (#473)
 
 ## New features

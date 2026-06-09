@@ -76,17 +76,19 @@ for Tobit window selection.  See \code{\link[=PKNCA.options]{PKNCA.options()}}.}
 \item{tobit_optim_control}{A list of control parameters passed to
 \code{\link[stats:optim]{stats::optim()}} for the Tobit fit.  See \code{\link[=PKNCA.options]{PKNCA.options()}}.}
 
-\item{conc.blq}{See \code{\link[=clean.conc.blq]{clean.conc.blq()}}}
+\item{conc.blq}{How to handle a BLQ value that is between above LOQ values?
+See details for description.}
 
-\item{conc.na}{See \code{\link[=clean.conc.na]{clean.conc.na()}}}
+\item{conc.na}{How to handle NA concentrations.  (See \code{\link[=clean.conc.na]{clean.conc.na()}})}
 
-\item{first.tmax}{See \code{\link[=pk.calc.tmax]{pk.calc.tmax()}}.}
+\item{first.tmax}{If there is more than one time point with the maximum value (Cmax or ERmax),
+which time should be selected for Tmax/ERTmax?  If 'TRUE', the first will be selected. If not, then the
+last is considered Tmax/ERTmax.}
 
 \item{allow.tmax.in.half.life}{Allow the concentration point for tmax
 to be included in the half-life slope calculation.}
 
-\item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}},
-\code{\link[=clean.conc.blq]{clean.conc.blq()}}, and \code{\link[=clean.conc.na]{clean.conc.na()}}?}
+\item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 }
 \value{
 A data frame with one row.  Columns depend on \code{hl_method}:
@@ -167,4 +169,11 @@ lambda-z."  Pharmacokinetic & Pharmacodynamic Data Analysis: Concepts
 and Applications, 4th Edition.  Stockholm, Sweden: Swedish
 Pharmaceutical Press, 2000.  167-9.
 }
+\seealso{
+Other Half-life and elimination: 
+\code{\link{adj.r.squared}()},
+\code{\link{pk.calc.aucpext}()},
+\code{\link{pk.calc.thalf.eff}()}
+}
+\concept{Half-life and elimination}
 \concept{NCA parameter calculations}

@@ -17,3 +17,9 @@ the numeric value of the elimination rate
 \description{
 Calculate the elimination rate (Kel)
 }
+\seealso{
+Other Clearance and volume parameters: 
+\code{\link{pk.calc.cl}()},
+\code{\link{pk.calc.vz}()}
+}
+\concept{Clearance and volume parameters}
