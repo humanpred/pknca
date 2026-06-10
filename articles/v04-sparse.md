@@ -66,6 +66,52 @@ sequential numbers and giving that as the subject identifier:
 d_sparse$id <- 1:nrow(d_sparse)
 ```
 
+### How Subjects Are Grouped for Sparse Calculations
+
+With dense (normal) PK, every subject has a full concentration-time
+profile, so NCA parameters are calculated one subject at a time. Sparse
+parameters are different: they are calculated from the *pooled* samples
+of every subject that belongs to the same group. Knowing what defines a
+“group” is therefore important.
+
+The groups are taken from the grouping variables on the right of the `|`
+in the
+[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md)
+formula, **with the subject column removed**. Every subject that shares
+the same combination of the remaining (non-subject) grouping variables
+contributes to a single pooled sparse concentration-time profile.
+
+In the simple example above, the formula is `conc~time|id`. Here `id` is
+the subject, and removing it leaves no other grouping variables, so all
+of the data form a single sparse group.
+
+The behavior is easier to see with more grouping variables. Suppose the
+concentration and dose objects are created with the formulas below
+(illustrative code; not run here):
+
+``` r
+
+o_conc_sparse <- PKNCAconc(d_conc, conc~time|matrix+drug+usubjid/analyte, sparse=TRUE)
+o_dose_sparse <- PKNCAdose(d_dose, dose~time|drug+usubjid)
+```
+
+`usubjid` is the subject because, by default, the subject is the last
+grouping variable before any `/` (or the last grouping variable when
+there is no `/`). After dropping the subject, the grouping variables
+that remain are `matrix`, `drug`, and `analyte`. Sparse parameters are
+therefore calculated by combining all subjects within each unique
+combination of `matrix`, `drug`, and `analyte`.
+
+In other words, with that formula PKNCA does **not** keep each `usubjid`
+separate, and it does **not** group by `matrix`, `drug`, or `analyte`
+alone. It pools subjects using the full set of non-subject grouping
+variables together (`matrix` + `drug` + `analyte`).
+
+Because subjects are pooled within a group, all subjects in a group must
+share the same dosing. If subjects in the same group have different
+dosing information (for example, different dose amounts or dose times),
+PKNCA stops with an error identifying the inconsistent group.
+
 ## Calculate!
 
 Setup PKNCA for calculations and then calculate!
