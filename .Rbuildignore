@@ -21,3 +21,4 @@ cran-comments.md
 ^\.claude$
 ^design$
 ^CLAUDE\.md$
+^coverage_check\.R$

@@ -1845,13 +1845,3 @@ PKNCA.set.summary(
   point = business.geomean,
   spread = business.geocv
 )
-
-PKNCA.set.summary(
-  name = c(
-    "cl.sparse.last",   "kel.sparse.last",  "mrt.sparse.last",  "vss.sparse.last",
-    "vz.sparse.last"
-  ),
-  description = "geometric mean and geometric coefficient of variation",
-  point = business.geomean,
-  spread = business.geocv
-)

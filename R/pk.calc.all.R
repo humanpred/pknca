@@ -545,7 +545,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
                 arg_text, all_intervals[[n]]$FUN
               ), # nocov end
               class = "pknca_error_missing_nca_argument"
-            ) # nocov end
+            )
           }
         }
       }
