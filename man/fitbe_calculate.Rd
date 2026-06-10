@@ -75,7 +75,7 @@ fitbe_calculate(
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-Other bioequivalence: 
+Other Bioequivalence: 
 \code{\link{be_assess}()},
 \code{\link{be_compare}()},
 \code{\link{be_design}()},
@@ -85,4 +85,4 @@ Other bioequivalence:
 \code{\link{fitbe_models}()},
 \code{\link{fitbe_table}()}
 }
-\concept{bioequivalence}
+\concept{Bioequivalence}

@@ -36,7 +36,7 @@
 #'   coefficients with Satterthwaite degrees of freedom), `variance` (a
 #'   data.frame of variance components from [lme4::VarCorr()]), and the
 #'   `reference_col`, `reference_value`, and `value_col` that were used.
-#' @family bioequivalence
+#' @family Bioequivalence
 #' @seealso [fitbe_table()] to summarize the fits and [fitbe_calculate()] for a
 #'   one-step wrapper.
 #' @export
@@ -182,7 +182,7 @@ fitbe_models <- function(object,
 #'   columns `endpoint`, `test`, `reference`, `gm_test`, `gm_reference`,
 #'   `gmr_percent`, `ci_lower`, `ci_upper`, `df`, and `cv_intra_percent`.  A
 #'   `method` attribute records the CI method and the software versions used.
-#' @family bioequivalence
+#' @family Bioequivalence
 #' @export
 fitbe_table <- function(fit, alpha = 0.10) {
   if (!inherits(fit, "fitbe_models")) {
@@ -259,7 +259,7 @@ fitbe_table <- function(fit, alpha = 0.10) {
 #'   interval has confidence level `1 - alpha`.
 #' @returns A list with elements `table` (the [fitbe_table()] data.frame) and
 #'   `fit` (the [fitbe_models()] object).
-#' @family bioequivalence
+#' @family Bioequivalence
 #' @examplesIf requireNamespace("lme4", quietly = TRUE) && requireNamespace("lmerTest", quietly = TRUE) && requireNamespace("emmeans", quietly = TRUE)
 #' # A small 2x2 crossover example in PKNCAresults long format
 #' set.seed(1)
@@ -362,7 +362,7 @@ fitbe_calculate <- function(object,
 #'   `scaling` (one of `"none"`, `"abel"`, `"rsabe"`, `"ntid"`, `"hvntid"`),
 #'   `cvswitch`, `r_const`, `cvcap`, `switch_swr`, `pe_constr`, `est_method`
 #'   (`"anova"` or `"isc"`), and `switch_basis`.
-#' @family bioequivalence
+#' @family Bioequivalence
 #' @seealso [be_expand_limits()] for the ABEL acceptance limits and [be_assess()]
 #'   for the full assessment.
 #' @examples
@@ -472,7 +472,7 @@ print.be_regulator <- function(x, ...) {
 #'   always returns 80.00-125.00%.
 #' @returns A named numeric vector `c(lower, upper)` of acceptance limits as
 #'   percentages.
-#' @family bioequivalence
+#' @family Bioequivalence
 #' @seealso [be_regulator()], [be_assess()]
 #' @examples
 #' be_expand_limits(0.485, "EMA") # capped expansion
@@ -523,7 +523,7 @@ be_expand_limits <- function(swR, regulator) {
 #'   `treatments`, `reference`, `replicate_reference`, `replicate_test`,
 #'   `reps_reference`, `reps_test`, `balanced`, and `feasible` (a named logical
 #'   vector for `abe`, `abel`, `rsabe`, `ntid`, `hvntid`).
-#' @family bioequivalence
+#' @family Bioequivalence
 #' @seealso [be_assess()]
 #' @examples
 #' d <- data.frame(
@@ -690,7 +690,7 @@ print.be_design <- function(x, ...) {
 #'   confidence bound of the ratio), `method`, and `alpha`.  `swT` and the ratio
 #'   are `NA` when the test formulation is not replicated (for example a partial
 #'   replicate design).
-#' @family bioequivalence
+#' @family Bioequivalence
 #' @seealso [be_assess()]
 #' @export
 be_within_var <- function(data, value, subject, period, treatment, reference_value,
@@ -1130,7 +1130,7 @@ print.be_within_var <- function(x, ...) {
 #'   `cvwt_percent`, `swr`, `limit_lower`, `limit_upper`, `criterion`,
 #'   `regulator`, `method`, and `pass`.  `limit_*` are `NA` for the RSABE
 #'   criterion and `criterion` is `NA` for the limit-based frameworks.
-#' @family bioequivalence
+#' @family Bioequivalence
 #' @seealso [be_compare()] to assess one dataset under several frameworks,
 #'   [be_within_var()], and [be_regulator()].
 #' @examplesIf requireNamespace("lme4", quietly = TRUE) && requireNamespace("lmerTest", quietly = TRUE) && requireNamespace("emmeans", quietly = TRUE)
@@ -1328,7 +1328,7 @@ print.summary_be_assess <- function(x, ...) {
 #'   [be_regulator()]).
 #' @returns An object of class `be_compare` (a data.frame) with the [be_assess()]
 #'   columns for every endpoint, test formulation, and regulator.
-#' @family bioequivalence
+#' @family Bioequivalence
 #' @seealso [be_assess()]
 #' @examplesIf requireNamespace("lme4", quietly = TRUE) && requireNamespace("lmerTest", quietly = TRUE) && requireNamespace("emmeans", quietly = TRUE)
 #' set.seed(1)

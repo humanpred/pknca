@@ -34,7 +34,7 @@ be_expand_limits(0.40, "GCC")  # fixed GCC band
 \seealso{
 \code{\link[=be_regulator]{be_regulator()}}, \code{\link[=be_assess]{be_assess()}}
 
-Other bioequivalence: 
+Other Bioequivalence: 
 \code{\link{be_assess}()},
 \code{\link{be_compare}()},
 \code{\link{be_design}()},
@@ -44,4 +44,4 @@ Other bioequivalence:
 \code{\link{fitbe_models}()},
 \code{\link{fitbe_table}()}
 }
-\concept{bioequivalence}
+\concept{Bioequivalence}

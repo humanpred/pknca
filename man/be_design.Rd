@@ -45,7 +45,7 @@ be_design(d, "subject", "sequence", "period", "treatment", reference_value = "R"
 \seealso{
 \code{\link[=be_assess]{be_assess()}}
 
-Other bioequivalence: 
+Other Bioequivalence: 
 \code{\link{be_assess}()},
 \code{\link{be_compare}()},
 \code{\link{be_expand_limits}()},
@@ -55,4 +55,4 @@ Other bioequivalence:
 \code{\link{fitbe_models}()},
 \code{\link{fitbe_table}()}
 }
-\concept{bioequivalence}
+\concept{Bioequivalence}

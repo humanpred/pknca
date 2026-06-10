@@ -64,7 +64,7 @@ usually \code{random}) must be given.
 \code{\link[=fitbe_table]{fitbe_table()}} to summarize the fits and \code{\link[=fitbe_calculate]{fitbe_calculate()}} for a
 one-step wrapper.
 
-Other bioequivalence: 
+Other Bioequivalence: 
 \code{\link{be_assess}()},
 \code{\link{be_compare}()},
 \code{\link{be_design}()},
@@ -74,4 +74,4 @@ Other bioequivalence:
 \code{\link{fitbe_calculate}()},
 \code{\link{fitbe_table}()}
 }
-\concept{bioequivalence}
+\concept{Bioequivalence}

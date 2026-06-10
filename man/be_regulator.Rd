@@ -63,7 +63,7 @@ be_regulator("FDA")
 \code{\link[=be_expand_limits]{be_expand_limits()}} for the ABEL acceptance limits and \code{\link[=be_assess]{be_assess()}}
 for the full assessment.
 
-Other bioequivalence: 
+Other Bioequivalence: 
 \code{\link{be_assess}()},
 \code{\link{be_compare}()},
 \code{\link{be_design}()},
@@ -73,4 +73,4 @@ Other bioequivalence:
 \code{\link{fitbe_models}()},
 \code{\link{fitbe_table}()}
 }
-\concept{bioequivalence}
+\concept{Bioequivalence}

@@ -99,7 +99,7 @@ be_assess(d, reference_col = "treatment", reference_value = "R",
 \code{\link[=be_compare]{be_compare()}} to assess one dataset under several frameworks,
 \code{\link[=be_within_var]{be_within_var()}}, and \code{\link[=be_regulator]{be_regulator()}}.
 
-Other bioequivalence: 
+Other Bioequivalence: 
 \code{\link{be_compare}()},
 \code{\link{be_design}()},
 \code{\link{be_expand_limits}()},
@@ -109,4 +109,4 @@ Other bioequivalence:
 \code{\link{fitbe_models}()},
 \code{\link{fitbe_table}()}
 }
-\concept{bioequivalence}
+\concept{Bioequivalence}
