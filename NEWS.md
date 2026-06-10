@@ -4,7 +4,23 @@ will continue until then.  These will be especially noticeable around
 the inclusion of IV NCA parameters and additional specifications of
 the dosing including dose amount and route.
 
-# PKNCA 0.12.2
+# New features
+
+* Added sparse AUMC function and five sparse AUC parameters (cl.sparse.last, kel.sparse.last, mrt.ivint.last, vss.sparse.last, vz.sparse.last)
+
+* New IV dosing AUMC parameters with C0 back-extrapolation (`aumciv*`)
+
+* New interval AUMC parameters with interpolation/extrapolation support
+  (`aumcint*`), mirroring the existing `aucint` family (#152)
+
+* New derived PK parameters to complete coverage across all AUC variants
+  (#152):
+  * 11 clearance parameters (`cl.*`)
+  * 9 elimination rate constant parameters (`kel.*`)
+  * 6 mean residence time parameters (`mrt.*`)
+  * 3 IV mean residence time parameters (`mrt.iv.*`)
+  * 9 volume of distribution at steady state parameters (`vss.*`)
+  * 13 terminal volume of distribution parameters (`vz.*`)
 
 ## Bug Fixes
 
@@ -22,16 +38,6 @@ the dosing including dose amount and route.
 * `normalize.data.frame()` now uses `dplyr::inner_join()` instead of `merge()` 
   for grouped joins, preserving left-table row order. Missing group validation 
   ensures no rows are silently dropped.
-
-## New features
-* Added sparse AUMC function and five sparse AUC parameters (cl.sparse.last, kel.sparse.last, mrt.ivint.last, vss.sparse.last, vz.sparse.last)
-* Added bioequivalence functions `fitbe_models()`, `fitbe_table()`, and
-  `fitbe_calculate()` for average-bioequivalence inferential statistics
-  (geometric mean ratio, 90% confidence interval, and intra-subject coefficient
-  of variation) computed from NCA results; see the new
-  `vignette("v50-bioequivalence")`.  The modeling packages `lme4`, `lmerTest`,
-  and `emmeans` are suggested rather than required.  Based on work by
-  @Sang-j111 (#490)
 
 ## Breaking changes
 
@@ -54,6 +60,14 @@ when the issue is due to an excluded point (#310)
 * `pk.nca` will calculate `fe` and `clr` even if their dependent parameters (e.g, `ae`) were not requested to be calculated in the intervals (#473)
 
 ## New features
+
+* Added bioequivalence functions `fitbe_models()`, `fitbe_table()`, and
+  `fitbe_calculate()` for average-bioequivalence inferential statistics
+  (geometric mean ratio, 90% confidence interval, and intra-subject coefficient
+  of variation) computed from NCA results; see the new
+  `vignette("v50-bioequivalence")`.  The modeling packages `lme4`, `lmerTest`,
+  and `emmeans` are suggested rather than required.  Based on work by
+  @Sang-j111 (#490)
 
 * `pknca_units_table()` is now an S3 generic with a `PKNCAdata` method.  When
   called on a `PKNCAdata` object it automatically builds the unit conversion
