@@ -34,8 +34,8 @@ Pharmacokinetic & Pharmacodynamic Data Analysis: Concepts and Applications,
 4th Edition.  Stockholm, Sweden: Swedish Pharmaceutical Press, 2000. 86-7.
 }
 \seealso{
-Other Clearance and volume parameters: 
-\code{\link{pk.calc.kel}()},
-\code{\link{pk.calc.vz}()}
+Other Clearance and volume parameters:
+\code{\link[=pk.calc.kel]{pk.calc.kel()}},
+\code{\link[=pk.calc.vz]{pk.calc.vz()}}
 }
 \concept{Clearance and volume parameters}

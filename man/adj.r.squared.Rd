@@ -18,9 +18,9 @@ The numeric adjusted r-squared value
 Calculate the adjusted r-squared value
 }
 \seealso{
-Other Half-life and elimination: 
-\code{\link{pk.calc.aucpext}()},
-\code{\link{pk.calc.half.life}()},
-\code{\link{pk.calc.thalf.eff}()}
+Other Half-life and elimination:
+\code{\link[=pk.calc.aucpext]{pk.calc.aucpext()}},
+\code{\link[=pk.calc.half.life]{pk.calc.half.life()}},
+\code{\link[=pk.calc.thalf.eff]{pk.calc.thalf.eff()}}
 }
 \concept{Half-life and elimination}
