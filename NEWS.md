@@ -31,6 +31,10 @@ the dosing including dose amount and route.
 
 ## Improvements
 
+* The sparse NCA vignette now explains how subjects are grouped: sparse
+  parameters pool all subjects that share the same concentration grouping
+  variables with the subject column removed (#530).
+
 * `normalize.data.frame()` now validates that `norm_table` contains exactly one
   row when used with ungrouped data, giving a clear error message instead of
   silently producing incorrect results.
