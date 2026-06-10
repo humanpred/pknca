@@ -38,7 +38,11 @@ step:
 * `fitbe_calculate()` runs both in a single step.
 
 These functions consume the results of `pk.nca()` directly, so the same workflow
-that produces NCA parameters flows into the bioequivalence assessment.
+that produces NCA parameters flows into the bioequivalence assessment.  For
+reference-scaled assessments and regulatory pass/fail decisions (EMA, Health
+Canada, GCC, and the FDA RSABE/NTID frameworks), see
+[Reference scaling and regulatory frameworks](#reference-scaling-and-regulatory-frameworks)
+below and `be_assess()`.
 
 ## Optional packages
 
@@ -176,6 +180,100 @@ $$\log(\text{value}) = \text{sequence} + \text{period} + \text{formulation} + (1
 fit with `lmerTest::lmer()` so that Satterthwaite degrees of freedom are
 available, and the confidence interval is obtained by exponentiating the
 difference in least-squares means between the test and reference formulations.
+
+## Reference scaling and regulatory frameworks
+
+Highly variable drugs (within-subject coefficient of variation above 30%) are
+difficult to show bioequivalent against the fixed 80.00-125.00% limits, so
+regulators allow the limits to be *scaled* by the within-reference variability,
+estimated from a replicate design in which the reference is given more than
+once.  PKNCA implements the major frameworks through `be_assess()`:
+
+* **ABE** -- average bioequivalence, the unscaled 80.00-125.00% criterion.
+* **EMA**, **Health Canada (HC)**, and **GCC** -- average bioequivalence with
+  expanding limits (ABEL); the limits widen with the within-reference standard
+  deviation, with framework-specific caps.
+* **FDA RSABE** -- reference-scaled average bioequivalence using the linearized
+  Howe/Hyslop criterion.
+* **FDA NTID** and **HVNTID** -- the (highly variable) narrow therapeutic index
+  drug frameworks, which add a constraint on the ratio of within-subject
+  standard deviations.
+
+All regulatory constants are built into PKNCA (see `be_regulator()`); no
+external package is required.
+
+### A replicate-design study
+
+Reference scaling needs the reference replicated, so we simulate a four-period,
+two-sequence full replicate design (`TRTR`/`RTRT`) with high within-subject
+variability.
+
+```{r simulate-replicate}
+simulate_replicate <- function(nsub = 24, seed = 20251015, cv_wr = 0.45, cv_wt = 0.40) {
+  set.seed(seed)
+  seqs <- rep(c("TRTR", "RTRT"), length.out = nsub)
+  swR <- sqrt(log(cv_wr^2 + 1))
+  swT <- sqrt(log(cv_wt^2 + 1))
+  subj <- stats::rnorm(nsub, sd = 0.4)
+  rows <- list()
+  for (i in seq_len(nsub)) {
+    trt <- strsplit(seqs[i], "")[[1]]
+    for (p in seq_along(trt)) {
+      sw <- if (trt[p] == "R") swR else swT
+      eff <- if (trt[p] == "T") log(1.05) else 0
+      rows[[length(rows) + 1]] <- data.frame(
+        subject = i, sequence = seqs[i], period = p, treatment = trt[p],
+        PPTESTCD = "auclast",
+        PPORRES = exp(log(100) + eff + subj[i] + stats::rnorm(1, sd = sw))
+      )
+    }
+  }
+  do.call(rbind, rows)
+}
+
+rep_data <- simulate_replicate()
+```
+
+`be_assess()` takes the long data (or a `PKNCAresults` object), the column that
+identifies the formulation, the reference value, and the framework.  It returns
+one row per endpoint and test formulation with the geometric mean ratio, the
+confidence interval, the within-subject variability, the (possibly scaled)
+acceptance limits or criterion, and the pass/fail decision.
+
+```{r be-assess, eval = has_be_pkgs}
+ema <- be_assess(rep_data, reference_col = "treatment", reference_value = "R",
+                 endpoints = "auclast", regulator = "EMA")
+knitr::kable(as.data.frame(ema), digits = 3)
+```
+
+For this dataset the within-reference CV is about 50%, so the EMA limits expand
+from 80.00-125.00% toward their cap.  The FDA reference-scaled criterion instead
+reports the linearized bound (`criterion`), which passes when it is at most
+zero:
+
+```{r be-assess-fda, eval = has_be_pkgs}
+fda <- be_assess(rep_data, reference_col = "treatment", reference_value = "R",
+                 endpoints = "auclast", regulator = "FDA")
+knitr::kable(as.data.frame(fda)[, c("gmr_percent", "ci_lower", "ci_upper",
+                                    "cvwr_percent", "swr", "criterion", "pass")],
+             digits = 4)
+```
+
+### Comparing frameworks side by side
+
+`be_compare()` runs the same study under several frameworks at once; frameworks
+the design cannot support are skipped with a warning.
+
+```{r be-compare, eval = has_be_pkgs}
+cmp <- be_compare(rep_data, reference_col = "treatment", reference_value = "R",
+                  endpoints = "auclast",
+                  regulators = c("EMA", "HC", "GCC", "FDA", "NTID", "HVNTID"))
+summary(cmp)
+```
+
+The pass/fail decision can differ between frameworks for the same data: the
+narrow therapeutic index criterion is the strictest because it additionally
+requires the conventional 90% confidence interval to lie within 80.00-125.00%.
 
 ## Reporting checklist
 

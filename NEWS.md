@@ -68,6 +68,16 @@ when the issue is due to an excluded point (#310)
   `vignette("v50-bioequivalence")`.  The modeling packages `lme4`, `lmerTest`,
   and `emmeans` are suggested rather than required.  Based on work by
   @Sang-j111 (#490)
+* Added a regulatory bioequivalence assessment and reference-scaling layer:
+  `be_assess()` performs the full pass/fail decision for average
+  bioequivalence, the EMA/Health Canada/GCC expanding-limits (ABEL) frameworks,
+  and the FDA reference-scaled (RSABE), narrow therapeutic index (NTID), and
+  highly variable NTID (HVNTID) frameworks.  Supporting functions `be_design()`
+  (design classification), `be_within_var()` (within-subject variability),
+  `be_regulator()` and `be_expand_limits()` (regulatory constants and scaled
+  limits), and `be_compare()` (assess one dataset under several frameworks) are
+  also exported.  All regulatory constants and criteria are internalized, so no
+  additional packages are required beyond those used for the average-BE model.
 
 * `pknca_units_table()` is now an S3 generic with a `PKNCAdata` method.  When
   called on a `PKNCAdata` object it automatically builds the unit conversion

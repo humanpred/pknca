@@ -29,7 +29,13 @@ differences in least-squares means, the standard method for average
 bioequivalence.
 }
 \seealso{
-Other bioequivalence:
+Other bioequivalence: 
+\code{\link{be_assess}()},
+\code{\link{be_compare}()},
+\code{\link{be_design}()},
+\code{\link{be_expand_limits}()},
+\code{\link{be_regulator}()},
+\code{\link{be_within_var}()},
 \code{\link{fitbe_calculate}()},
 \code{\link{fitbe_models}()}
 }
