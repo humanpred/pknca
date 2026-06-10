@@ -37,9 +37,9 @@ object.
 
 }}
 \seealso{
-Other PKNCA object extractors: 
-\code{\link{getDepVar}()},
-\code{\link{getIndepVar}()}
+Other PKNCA object extractors:
+\code{\link[=getDepVar]{getDepVar()}},
+\code{\link[=getIndepVar]{getIndepVar()}}
 }
 \concept{PKNCA object extractors}
 \keyword{Internal}

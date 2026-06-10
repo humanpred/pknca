@@ -223,12 +223,12 @@ AUMCinf.pred
 \seealso{
 \code{\link[=PKNCA.options]{PKNCA.options()}}, \code{\link[=interp.extrap.conc.dose]{interp.extrap.conc.dose()}}
 
-Other AUC calculations: 
-\code{\link{pk.calc.auxc}()},
-\code{\link{pk.calc.auxciv}()}
+Other AUC calculations:
+\code{\link[=pk.calc.auxc]{pk.calc.auxc()}},
+\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}}
 
-Other AUMC calculations: 
-\code{\link{pk.calc.auxciv}()}
+Other AUMC calculations:
+\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}}
 }
 \concept{AUC calculations}
 \concept{AUMC calculations}

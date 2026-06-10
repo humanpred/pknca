@@ -45,8 +45,8 @@ Estimating Time to Steady State with Examples from Phase 1 Studies. AAPS
 Journal 10(1):141-7. doi:10.1208/s12248-008-9014-y
 }
 \seealso{
-Other Time to steady-state calculations: 
-\code{\link{pk.tss}()},
-\code{\link{pk.tss.monoexponential}()}
+Other Time to steady-state calculations:
+\code{\link[=pk.tss]{pk.tss()}},
+\code{\link[=pk.tss.monoexponential]{pk.tss.monoexponential()}}
 }
 \concept{Time to steady-state calculations}

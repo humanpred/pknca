@@ -33,9 +33,9 @@ if ungrouped).
 dplyr mutate-based modification for PKNCA
 }
 \seealso{
-Other dplyr verbs: 
-\code{\link{filter.PKNCAresults}()},
-\code{\link{group_by.PKNCAresults}()},
-\code{\link{inner_join.PKNCAresults}()}
+Other dplyr verbs:
+\code{\link[=filter.PKNCAresults]{filter.PKNCAresults()}},
+\code{\link[=group_by.PKNCAresults]{group_by.PKNCAresults()}},
+\code{\link[=inner_join.PKNCAresults]{inner_join.PKNCAresults()}}
 }
 \concept{dplyr verbs}

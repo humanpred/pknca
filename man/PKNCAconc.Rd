@@ -94,9 +94,9 @@ A PKNCAconc object that can be used for automated NCA.
 Create a PKNCAconc object
 }
 \seealso{
-Other PKNCA objects: 
-\code{\link{PKNCAdata}()},
-\code{\link{PKNCAdose}()},
-\code{\link{PKNCAresults}()}
+Other PKNCA objects:
+\code{\link[=PKNCAdata]{PKNCAdata()}},
+\code{\link[=PKNCAdose]{PKNCAdose()}},
+\code{\link[=PKNCAresults]{PKNCAresults()}}
 }
 \concept{PKNCA objects}
