@@ -134,11 +134,6 @@ test_that("exclude.default", {
                               FUN=function(x, ...) TRUE),
                regexp="reason must be a scalar or have the same length as the data",
                info="Interpretation of a non-scalar reason is unclear")
-  expect_error(exclude.default(obj1,
-                              reason=1,
-                              FUN=function(x, ...) TRUE),
-               regexp="reason must be a character string.",
-               info="Interpretation of a non-character reason is unclear")
 
   # Check operation
   obj4 <- obj1

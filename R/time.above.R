@@ -22,14 +22,18 @@ pk.calc.time_above <- function(conc, time,
   arglist <- list(...)
   method <- PKNCA.choose.option(name="auc.method", value=arglist$method, options=options)
   if (missing(conc)) {
-    stop("conc must be given")
+    rlang::abort(
+      message = "conc must be given",
+      class = "pknca_error_time_above_missing_conc"
+    )
   }
   if (missing(time)) {
-    stop("time must be given")
+    rlang::abort(
+      message = "time must be given",
+      class = "pknca_error_time_above_missing_time"
+    )
   }
-  stopifnot("conc_above must be a scalar"=length(conc_above) == 1)
-  stopifnot("conc_above must not be NA"=!is.na(conc_above))
-  stopifnot("conc_above must be numeric"=is.numeric(conc_above))
+  checkmate::assert_number(conc_above, na.ok = FALSE, .var.name = "conc_above")
   if (check) {
     assert_conc_time(conc = conc, time = time)
   }

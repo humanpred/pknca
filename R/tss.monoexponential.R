@@ -38,25 +38,34 @@ pk.tss.monoexponential <- function(...,
                                    verbose=FALSE) {
   # Check inputs
   modeldata <- pk.tss.data.prep(..., check=check)
-  if (is.factor(tss.fraction) ||
-      !is.numeric(tss.fraction))
-    stop("tss.fraction must be a number")
-  if (!length(tss.fraction) == 1) {
-    warning("Only first value of tss.fraction is being used")
+  if (length(tss.fraction) > 1) {
+    rlang::warn(
+      message = "Only first value of tss.fraction is being used",
+      class = "pknca_warning_tss_fraction_multiple"
+    )    
     tss.fraction <- tss.fraction[1]
   }
+  checkmate::assert_number(tss.fraction, na.ok = FALSE)
+
   if (tss.fraction <= 0 || tss.fraction >= 1) {
-    stop("tss.fraction must be between 0 and 1, exclusive")
-  } else if (tss.fraction < 0.8) {
-    warning("tss.fraction is usually >= 0.8")
+    rlang::abort(
+      message = "tss.fraction must be between 0 and 1, exclusive",
+      class = "pknca_error_tss_fraction_range"
+    )  } else if (tss.fraction < 0.8) {
+    rlang::warn(
+      message = "tss.fraction is usually >= 0.8",
+      class = "pknca_warning_tss_fraction_small"
+    )
   }
   # Note that this will by default choose "population" if nothing is
   # requested.
   output <- match.arg(output, several.ok=TRUE)
   if (!("subject" %in% names(modeldata))) {
     if (any(c("population", "popind", "individual") %in% output)) {
-      warning("Cannot give 'population', 'popind', or 'individual' ",
-              "output without multiple subjects of data")
+      rlang::warn(
+        message = "Cannot give 'population', 'popind', or 'individual' output without multiple subjects of data",
+        class = "pknca_warning_tss_output_no_subjects"
+      )
       output <- setdiff(output, c("population", "popind", "individual"))
     }
   }
@@ -89,7 +98,13 @@ pk.tss.monoexponential <- function(...,
     } else if (!identical(NA, ret_individual)) {
       ret_individual
     } else {
-      stop("Error in selection of return values for pk.tss.monoexponential.  This is likely a bug.") # nocov
+      rlang::abort(
+        message = paste(
+          "Error in selection of return values for pk.tss.monoexponential.",
+          "This is likely a bug."
+        ),
+        class = "pknca_error_tss_return_selection"
+      ) # nocov
     }
   ret
 }
@@ -236,7 +251,10 @@ pk.tss.monoexponential.population <- function(data,
     print(all.model.summary)
   if (all(is.na(all.model.summary$AIC)) ||
       length(all.model.summary) == 0) {
-    warning("No population model for monoexponential Tss converged, no results given")
+    rlang::warn(
+      message = "No population model for monoexponential Tss converged, no results given",
+      class = "pknca_warning_tss_population_no_convergence"
+    )
     ret <-
       data.frame(
         tss.monoexponential.population=NA,
@@ -267,7 +285,10 @@ pk.tss.monoexponential.population <- function(data,
           all=TRUE
         )
     } else if ("popind" %in% output) {
-      warning("tss.monoexponential.popind was requested, but the best model did not include a random effect for tss.  Set to NA.")
+      rlang::warn(
+        message = "tss.monoexponential.popind was requested, but the best model did not include a random effect for tss.  Set to NA.",
+        class = "pknca_warning_tss_popind_no_random_effect"
+      )
       ret <-
         merge(
           ret,
@@ -364,7 +385,13 @@ pk.tss.monoexponential.individual <- function(data,
       } else if ("subject" %in% names(data)) {
         dplyr::grouped_df(data, vars="subject")
       } else {
-        stop("Please report a bug. Subject must be specified to have subject-level fitting") # nocov
+        rlang::abort(
+          message = paste(
+            "Please report a bug. Subject must be specified",
+            "to have subject-level fitting"
+          ),
+          class = "pknca_error_tss_no_subject_for_individual"
+        ) # nocov
       }
     ret_sub <-
       dplyr::summarize(

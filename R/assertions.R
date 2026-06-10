@@ -8,11 +8,17 @@
 #' @returns `interval` (or `c(start, end)`)
 #' @keywords Internal
 assert_intervaltime_single <- function(interval = NULL, start = NULL, end = NULL) {
-  if (is.null(interval) && is.null(start) && is.null(end)) {
-    stop("One of `interval` or `start` and `end` must be given")
-  }
+ if (is.null(interval) && is.null(start) && is.null(end)) {
+    rlang::abort(
+      message = "One of `interval` or `start` and `end` must be given",
+      class = "pknca_error_missing_interval"
+    )  }
+  
   if (xor(is.null(start), is.null(end))) {
-    stop("Both `start` and `end` or neither must be given")
+    rlang::abort(
+      message = "Both `start` and `end` or neither must be given",
+      class = "pknca_error_partial_interval"
+    )
   }
   if (!is.null(interval)) {
     checkmate::assert_numeric(x = interval, sorted = TRUE, unique = TRUE, any.missing = FALSE, len = 2)
@@ -27,9 +33,23 @@ assert_intervaltime_single <- function(interval = NULL, start = NULL, end = NULL
     if (is.null(interval)) {
       interval <- c(start, end)
     } else if (start != interval[1]) {
-      stop("`start` must be the same as the first value in the interval if both are given: ", start, "!=", interval[1])
+      rlang::abort(
+        message = sprintf(
+          "`start` must be the same as the first value in the interval if both are given: %s!=%s",
+          start,
+          interval[1]
+        ),
+        class = "pknca_error_interval_mismatch"
+      )
     } else if (end != interval[2]) {
-      stop("`end` must be the same as the second value in the interval if both are given: ", end, "!=", interval[2])
+      rlang::abort(
+        message = sprintf(
+          "`end` must be the same as the second value in the interval if both are given: %s!=%s",
+          end,
+          interval[2]
+        ),
+        class = "pknca_error_interval_mismatch"
+      )
     }
   }
 
@@ -57,7 +77,10 @@ assert_conc <- function(conc, any_missing_conc = TRUE) {
       )
     } else if (any(!is.na(conc) & as.numeric(conc) < 0)) {
       # as.numeric(conc) is required for compatibility with units
-      warning("Negative concentrations found")
+      rlang::warn(
+        message = "Negative concentrations found",
+        class = "pknca_warning_negative_concentration"
+      )
     }
   }
   conc
@@ -139,7 +162,10 @@ assert_numeric_between <- function(x, any.missing = FALSE, null.ok = FALSE, lowe
         )
     }
     if (length(msg) > 0) {
-      stop(paste(msg, collapse = "\n"))
+      rlang::abort(
+        message = paste(msg, collapse = "\n"),
+        class = "pknca_error_numeric_between"
+      )
     }
   }
   x
@@ -201,10 +227,16 @@ assert_aucmethod <- function(method = c("lin up/log down", "linear", "lin-log"))
 #' @returns The object
 assert_PKNCAdata <- function(object) {
   if (!inherits(object, "PKNCAdata")) {
-    stop("Must be a PKNCAdata object")
+    rlang::abort(
+      message = "Must be a PKNCAdata object",
+      class = "pknca_error_not_PKNCAdata"
+    )
   }
   if (nrow(object$intervals) == 0) {
-    warning("No intervals given; no calculations will be done.")
+    rlang::warn(
+      message = "No intervals given; no calculations will be done.",
+      class = "pknca_warning_no_intervals"
+    )
   }
   object
 }
@@ -214,7 +246,10 @@ assert_PKNCAdata <- function(object) {
 #' @export
 assert_PKNCAresults <- function(object) {
   if (!inherits(object, "PKNCAresults")) {
-    stop("Must be a PKNCAresults object")
+    rlang::abort(
+      message = "Must be a PKNCAresults object",
+      class = "pknca_error_not_pkncresults"
+    )
   }
   object
 }
@@ -224,7 +259,10 @@ assert_PKNCAresults <- function(object) {
 #' @export
 assert_PKNCAconc <- function(object) {
   if (!inherits(object, "PKNCAconc")) {
-    stop("Must be a PKNCAconc object")
+    rlang::abort(
+      message = "Must be a PKNCAconc object",
+      class = "pknca_error_not_concdata"
+    )
   }
   object
 }
@@ -234,7 +272,10 @@ assert_PKNCAconc <- function(object) {
 #' @export
 assert_PKNCAdose <- function(object) {
   if (!inherits(object, "PKNCAdose")) {
-    stop("Must be a PKNCAdose object")
+    rlang::abort(
+      message = "Must be a PKNCAdose object",
+      class = "pknca_error_not_dosedata"
+    )
   }
   object
 }
@@ -242,16 +283,21 @@ assert_PKNCAdose <- function(object) {
 #' @describeIn assert_unit Assert that a column name contains a character string
 #'   (that could be a unit specification)
 assert_unit_col <- function(unit, data) {
-  if (length(unit) != 1) {
-    stop("`unit` must be a single value")
-  } else if (!is.character(unit)) {
-    stop("`unit` must be a character string")
-  } else if (!is.data.frame(data)) {
-    stop("`data` must be a data.frame")
-  } else if (!(unit %in% names(data))) {
-    stop("`unit` (", unit, ") must be a column name in the data")
-  } else if (!is.character(data[[unit]])) {
-    stop("`unit` (", unit, ") must contain character data")
+  checkmate::assert_character(unit, len = 1)
+  checkmate::assert_data_frame(data)
+  
+  if (!(unit %in% names(data))) {
+    rlang::abort(
+      message = sprintf("`unit` (%s) must be a column name in the data", unit),
+      class = "pknca_error_invalid_unit_column"
+    )
+  }
+  
+  if (!is.character(data[[unit]])) {
+    rlang::abort(
+      message = sprintf("`unit` (%s) must contain character data", unit),
+      class = "pknca_error_invalid_unit_data"
+    )
   }
   structure(unit, unit_type = "column")
 }
@@ -264,12 +310,9 @@ assert_unit_value <- function(unit) {
   if (is.null(unit)) {
     return(unit)
   }
+  
+  checkmate::assert_character(unit, len = 1)
 
-  if (length(unit) != 1) {
-    stop("`unit` must be a single value")
-  } else if (!is.character(unit)) {
-    stop("`unit` must be a character string")
-  }
   structure(unit, unit_type = "value")
 }
 
@@ -290,6 +333,10 @@ assert_unit <- function(unit, data) {
   } else {
     # Re-raise the unit_col error. That is better than unit_value since it is
     # stricter.
-    stop(unit_col, call. = FALSE)
+    rlang::abort(
+      message = conditionMessage(attr(unit_col, "condition")),
+      class = "pknca_error_invalid_unit"
+    )
+    #stop(unit_col, call. = FALSE)
   }
 }

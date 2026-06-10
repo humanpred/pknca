@@ -73,17 +73,28 @@ exclude.default <- function(object, reason, mask, FUN) {
       mask <- !is.na(reason)
     }
   } else if (!xor(missing(mask), missing(FUN))) {
-    stop("Either mask or FUN must be given (but not both).")
-  }
+    rlang::abort(
+      message = "Either mask or FUN must be given (but not both).",
+      class = "pknca_error_mask_or_fun"
+    )  }
   if (!(length(reason) %in% c(1, nrow(object[[dataname]])))) {
-    stop("reason must be a scalar or have the same length as the data.")
-  } else if (!is.character(reason)) {
-    stop("reason must be a character string.")
+    rlang::abort(
+      message = "reason must be a scalar or have the same length as the data.",
+      class = "pknca_error_reason_length"
+    )
   }
+  checkmate::assert_character(reason)
+  
   if (!("exclude" %in% names(object$columns))) {
-    stop("object must have an exclude column specified.")
+    rlang::abort(
+      message = "object must have an exclude column specified.",
+      class = "pknca_error_no_exclude_col"
+    )
   } else if (!(object$columns$exclude %in% names(object[[dataname]]))) {
-    stop("exclude column must exist in object[['", dataname, "']].")
+    rlang::abort(
+      message = paste0("exclude column must exist in object[['", dataname, "']]."),
+      class = "pknca_error_exclude_col_missing"
+    )
   }
   # Make a scalar reason a vector
   if (length(reason) == 1)
@@ -91,7 +102,10 @@ exclude.default <- function(object, reason, mask, FUN) {
   # Find the original value of the 'exclude' column.
   orig <- object[[dataname]][[object$columns$exclude]]
   if (length(mask) != length(orig)) {
-    stop("mask must match the length of the data.")
+    rlang::abort(
+      message = "mask must match the length of the data.",
+      class = "pknca_error_mask_length"
+    )
   }
   # No current value for exclude
   mask.none <- orig %in% c(NA, "")
@@ -133,7 +147,10 @@ setExcludeColumn <- function(object, exclude = NULL, dataname = "data") {
     # If exclude is already in the object, then make sure it matches
     # (and do nothing).
     if (!(object$columns$exclude == exclude)) {
-      stop("exclude is already set for the object.")
+      rlang::abort(
+        message = "exclude is already set for the object.",
+        class = "pknca_error_exclude_already_set"
+      )
     }
   } else {
     # If exclude is not already in the object and it is given, then add
@@ -150,7 +167,10 @@ setExcludeColumn <- function(object, exclude = NULL, dataname = "data") {
     } else if (nrow(object[[dataname]]) == 0) {
       object[[dataname]][[exclude]] <- rep(NA_character_, nrow(object[[dataname]]))
     } else if (!(exclude %in% names(object[[dataname]]))) {
-      stop("exclude, if given, must be a column name in the input data.")
+      rlang::abort(
+        message = "exclude, if given, must be a column name in the input data.",
+        class = "pknca_error_exclude_not_in_data"
+      )
     } else {
       if (is.factor(object[[dataname]][[exclude]])) {
         object[[dataname]][[exclude]] <- as.character(object[[dataname]][[exclude]])
@@ -158,7 +178,10 @@ setExcludeColumn <- function(object, exclude = NULL, dataname = "data") {
                  all(is.na(object[[dataname]][[exclude]]))) {
         object[[dataname]][[exclude]] <- rep(NA_character_, nrow(object[[dataname]]))
       } else if (!is.character(object[[dataname]][[exclude]])) {
-        stop("exclude column must be character vector or something convertable to character without loss of information.")
+        rlang::abort(
+          message = "exclude column must be character vector or something convertable to character without loss of information.",
+          class = "pknca_error_exclude_not_character"
+        )
       }
     }
     object$columns$exclude <- exclude

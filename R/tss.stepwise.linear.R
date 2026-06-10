@@ -27,32 +27,41 @@ pk.tss.stepwise.linear <- function(...,
                                    check=TRUE) {
   # Check inputs
   modeldata <- pk.tss.data.prep(..., check=check)
-  if (is.factor(min.points) ||
-      !is.numeric(min.points))
-    stop("min.points must be a number")
   if (!length(min.points) == 1) {
-    warning("Only first value of min.points is used")
+    rlang::warn(
+      message = "Only first value of min.points is used",
+      class = "pknca_warning_min_points_length"
+    )
     min.points <- min.points[1]
   }
-  if (min.points < 3)
-    stop("min.points must be at least 3")
-  if (is.factor(level) ||
-      !is.numeric(level)) {
-    stop("level must be a number")
-  }
+  
+  checkmate::assert_number(min.points, lower = 3)
+  
   if (!length(level) == 1) {
-    warning("Only first value of level is being used")
+    rlang::warn(
+      message = "Only first value of level is being used",
+      class = "pknca_warning_tss_level_multiple"
+    )
     level <- level[1]
   }
-  if (level <= 0 || level >= 1) {
-    stop("level must be between 0 and 1, exclusive")
-  }
+  
+  checkmate::assert_numeric(level, any.missing = FALSE)
+  
+  if (level <= 0 || level >= 1){
+    rlang::abort(
+      message = "level must be between 0 and 1, exclusive",
+      class = "pknca_error_tss_level_range"
+    )  }
+  
   # Confirm that we may have sufficient data to complete the
   # modeling.  Because of the variety of methods used for estimating
   # time to steady-state, assurance that we have enough data is more
   # simply determined by model convergence.
   if (length(unique(modeldata$time)) < min.points) {
-    warning("After removing non-dosing time points, insufficient data remains for tss calculation")
+    rlang::warn(
+      message = "After removing non-dosing time points, insufficient data remains for tss calculation",
+      class = "pknca_warning_tss_insufficient_data"
+    )
     return(NA)
   }
   # Assign treatment if given and with multiple levels
@@ -66,7 +75,10 @@ pk.tss.stepwise.linear <- function(...,
   while (is.na(ret) &
          (length(remaining.time) >= min.points)) {
     if (verbose) {
-      message("Trying ", min(remaining.time, na.rm=TRUE))
+      rlang::inform(
+        message = paste("Trying", min(remaining.time, na.rm = TRUE)),
+        class = "pknca_message_tss_trying_time"
+      )
     }
     try({
       # Try to make the model
@@ -91,11 +103,14 @@ pk.tss.stepwise.linear <- function(...,
           c(ci[1], stats::coef(current.model)[["time"]], ci[2])
         }
       if (verbose) {
-        message(
-          sprintf("Current interval %g [%g, %g]",
-                  current.interval[2],
-                  current.interval[1],
-                  current.interval[3])
+        rlang::inform(
+          message = sprintf(
+            "Current interval %g [%g, %g]",
+            current.interval[2],
+            current.interval[1],
+            current.interval[3]
+          ),
+          class = "pknca_message_tss_interval"
         )
       }
       # If the signs of the upper and lower bounds of the slope of

@@ -25,7 +25,13 @@ AIC.list <- function(object, ..., assess.best=TRUE) {
           if ("indentation" %in% names(ret)) {
             ret$indentation <- ret$indentation + 1
           } else {
-            stop("Unknown way to get a data.frame without indentation set.  This is likely a bug.") # nocov
+            rlang::abort(
+              message = paste(
+                "Unknown way to get a data.frame without indentation set.",
+                "This is likely a bug." # nocov
+              ),
+              class = "pknca_error_unknown_dataframe_indentation"
+            )
           }
         }
       }

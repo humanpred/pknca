@@ -47,7 +47,10 @@ getColumnValueOrNot <- function(data, value, prefix="X") {
     data[[col.name]] <- value
     ret <- list(data=data, name=col.name)
   } else {
-    stop("value was not a column name nor was it a scalar or a vector matching the length of the data.")
+    rlang::abort(
+      message = "value was not a column name nor was it a scalar or a vector matching the length of the data.",
+      class = "pknca_error_invalid_column_value"
+    )
   }
   ret
 }
@@ -92,11 +95,16 @@ setAttributeColumn <- function(object, attr_name, col_or_value, col_name, defaul
   dataname <- getDataName(object)
   # Check inputs
   if (!is.character(attr_name) || (length(attr_name) != 1)) {
-    stop("attr_name must be a character scalar.")
-  }
+    rlang::abort(
+      message = "attr_name must be a character scalar.",
+      class = "pknca_error_invalid_attr_name"
+    )  }
   if (!missing(col_or_value) &&
       any(!c(missing(col_name), missing(default_value)))) {
-    stop("Cannot provide col_or_value and col_name or default_value")
+    rlang::abort(
+      message = "Cannot provide col_or_value and col_name or default_value",
+      class = "pknca_error_conflicting_column_args"
+    )
   }
   # Apply col_or_value to col_name or to default_value
   if (!missing(col_or_value)) {
@@ -116,8 +124,10 @@ setAttributeColumn <- function(object, attr_name, col_or_value, col_name, defaul
       )
     }
   } else if (!is.character(col_name) || (length(col_name) != 1)) {
-    stop("col_name must be a character scalar.")
-  }
+    rlang::abort(
+      message = "col_name must be a character scalar.",
+      class = "pknca_error_invalid_col_name"
+    )  }
   # Set the default value
   if (missing(default_value)) {
     if (col_name %in% names(object[[dataname]])) {
@@ -126,17 +136,29 @@ setAttributeColumn <- function(object, attr_name, col_or_value, col_name, defaul
       default_value <- NA
       # React to using the default value, if requested
       if (!missing(stop_if_default)) {
-        stop(stop_if_default)
+        rlang::abort(
+          message = stop_if_default,
+          class = "pknca_error_used_default_value"
+        )
       } else if (!missing(warn_if_default)) {
-        warning(warn_if_default)
+        rlang::warn(
+          message = warn_if_default,
+          class = "pknca_warning_used_default_value"
+        )
       } else if (!missing(message_if_default)) {
-        message(message_if_default)
+        rlang::inform(
+          message = message_if_default,
+          class = "pknca_message_used_default_value"
+        )
       }
     }
   }
   # Check that the default_value can work
   if (!(length(default_value) %in% c(1, nrow(object[[dataname]])))) {
-    stop("default_value must be a scalar or the same length as the rows in the data.")
+    rlang::abort(
+      message = "default_value must be a scalar or the same length as the rows in the data.",
+      class = "pknca_error_invalid_default_value"
+    )
   }
   object[[dataname]][[col_name]] <- default_value
   # Inform the object that the column exists
@@ -157,18 +179,27 @@ setAttributeColumn <- function(object, attr_name, col_or_value, col_name, defaul
 #'   the column does not exist)
 getAttributeColumn <- function(object, attr_name, warn_missing=c("attr", "column")) {
   if (length(setdiff(warn_missing, c("attr", "column")))) {
-    stop("warn_missing must have a valid value or be empty")
+    rlang::abort(
+      message = "warn_missing must have a valid value or be empty",
+      class = "pknca_error_invalid_warn_missing"
+    )
   }
   warn_missing <- warn_missing[warn_missing %in% c("attr", "column")]
   columns <- object$columns[[attr_name]]
   dataname <- getDataName(object)
   if (is.null(columns)) {
     if ("attr" %in% warn_missing)
-      warning(attr_name, " is not set.")
+      rlang::warn(
+        message = paste0(attr_name, " is not set."),
+        class = "pknca_warning_attr_not_set"
+      )
     NULL
   } else if (length(missing_cols <- setdiff(columns, names(object[[dataname]])))) {
     if ("column" %in% warn_missing)
-      warning("Columns ", paste(missing_cols, collapse=", "), " are not present.")
+      rlang::warn(
+        message = paste("Columns", paste(missing_cols, collapse = ", "), "are not present."),
+        class = "pknca_warning_cols_not_present"
+      )
     NULL
   } else {
     object[[dataname]][, columns, drop=FALSE]
@@ -197,11 +228,14 @@ duplicate_check <- function(object, data_type) {
     mask_dup[!mask_excluded] <- duplicated(object$data[!mask_excluded, key_cols])
   }
   if (any(mask_dup)) {
-    stop(
-      "Rows that are not unique per group and time (column names: ",
-      paste(key_cols, collapse=", "),
-      ") found within ", data_type, " data.  Row numbers: ",
-      paste(which(mask_dup), collapse=", ")
+    rlang::abort(
+      message = paste0(
+        "Rows that are not unique per group and time (column names: ",
+        paste(key_cols, collapse = ", "),
+        ") found within ", data_type, " data.  Row numbers: ",
+        paste(which(mask_dup), collapse = ", ")
+      ),
+      class = "pknca_error_duplicate_rows"
     )
   }
   object
@@ -237,7 +271,10 @@ pknca_set_units <- function(object, units_orig = list(), units_pref = list()) {
     } else if (current_unit_type %in% "value") {
       object$units[[col_units]] <- all_units$orig[[col_units]]
     } else {
-      stop(paste("Please report a bug. Unit setting for", col_units)) # nocov
+      rlang::abort(
+        message = paste("Please report a bug. Unit setting for", col_units),
+        class = "pknca_error_unit_setting_bug"
+      ) # nocov
     }
   }
   for (pref_units in names(all_units$pref)) {
@@ -248,11 +285,17 @@ pknca_set_units <- function(object, units_orig = list(), units_pref = list()) {
       # you can only set preferred units if you set original units
       original_unit_col <- gsub(x = pref_units, pattern = "_pref", replacement = "")
       if (!(original_unit_col %in% c(names(object$columns), names(object$units)))) {
-        stop("Preferred units may not be set unless original units are set: ", pref_units)
+        rlang::abort(
+          message = paste("Preferred units may not be set unless original units are set:", pref_units),
+          class = "pknca_error_pref_units_without_orig"
+        )
       }
       object$units[[pref_units]] <- all_units$pref[[pref_units]]
     } else {
-      stop(paste("Please report a bug. Preferred unit setting for", pref_units)) # nocov
+      rlang::abort(
+        message = paste("Please report a bug. Preferred unit setting for", pref_units),
+        class = "pknca_error_pref_unit_setting_bug"
+      ) # nocov
     }
   }
 

@@ -13,12 +13,17 @@
 #' @keywords Internal
 #' @noRd
 full_join_PKNCAconc_PKNCAdose <- function(o_conc, o_dose, extra_cols_conc = character()) {
-  stopifnot(inherits(x=o_conc, what="PKNCAconc"))
+  #stopifnot(inherits(x=o_conc, what="PKNCAconc"))
+  checkmate::assert_class(o_conc, "PKNCAconc")
   if (identical(o_dose, NA)) {
-    message("No dose information provided, calculations requiring dose will return NA.")
+    rlang::inform(
+      message = "No dose information provided, calculations requiring dose will return NA.",
+      class = "pknca_message_missing_dose"
+    )
     n_dose <- tibble::tibble(data_dose=list(NA))
   } else {
-    stopifnot(inherits(x=o_dose, what="PKNCAdose"))
+    #stopifnot(inherits(x=o_dose, what="PKNCAdose"))
+    checkmate::assert_class(o_dose, "PKNCAdose")
     n_dose <- prepare_PKNCAdose(o_dose, sparse=is_sparse_pk(o_conc), subject_col=o_conc$columns$subject)
   }
   n_conc <- prepare_PKNCAconc(o_conc, extra_cols = extra_cols_conc)
@@ -206,9 +211,12 @@ prepare_PKNCAdose <- function(.dat, sparse, subject_col) {
           } else {
             "Not all subjects have the same dosing information."
           }
-        stop(
-          "With sparse PK, all subjects in a group must have the same dosing information.\n",
-          msg_error
+        rlang::abort(
+          message = paste0(
+            "With sparse PK, all subjects in a group must have the same dosing information.\n",
+            msg_error
+          ),
+          class = "pknca_error_sparse_dose_mismatch"
         )
       }
     }
@@ -280,7 +288,10 @@ check_reserved_column_names <- function(x) {
         ngettext(length(overlap), msg1="name", msg2="names"),
         "and retry."
       )
-    stop(msg)
+    rlang::abort(
+      message = msg,
+      class = "pknca_error_reserved_column_names"
+    )
   }
 }
 
@@ -295,25 +306,32 @@ check_reserved_column_names <- function(x) {
 #' @noRd
 #' @keywords Internal
 standardize_column_names <- function(x, cols, group_cols=NULL, insert_if_missing=list()) {
-  stopifnot("cols must be a list"=is.list(cols))
-  stopifnot("cols must be named"=!is.null(names(cols)))
-  stopifnot("all cols must be named"=!any(names(cols) %in% ""))
-  stopifnot("all original cols names must be names of x"=all(unlist(cols) %in% names(x)))
-  stopifnot("group_cols must be NULL or a character vector"=is.null(group_cols) || is.character(group_cols))
+  checkmate::assert_list(cols, .var.name = "cols")
+  checkmate::assert_named(cols, .var.name = "cols")
+  checkmate::assert_subset(unlist(cols), choices = names(x), .var.name = "cols")
+  checkmate::assert_character(group_cols, null.ok = TRUE,.var.name = "group_cols")
+  # stopifnot("all original cols names must be names of x"=all(unlist(cols) %in% names(x)))
+  # stopifnot("group_cols must be NULL or a character vector"=is.null(group_cols) || is.character(group_cols))
   if (!is.null(group_cols) && (length(group_cols) > 0)) {
     # Give a clear error message if group columns overlap
     mask_overlap_colvalues <- group_cols %in% unlist(cols)
     mask_overlap_colnames <- group_cols %in% names(cols)
     if (any(mask_overlap_colvalues)) {
-      stop(
-        "group_cols must not overlap with other column names.  Change the name of the following groups: ",
-        paste(group_cols[mask_overlap_colvalues], collapse=", ")
+      rlang::abort(
+        message = paste0(
+          "group_cols must not overlap with other column names.  Change the name of the following groups: ",
+          paste(group_cols[mask_overlap_colvalues], collapse=", ")
+        ),
+        class = "pknca_error_group_cols_overlap_values"
       )
     }
     if (any(mask_overlap_colnames)) {
-      stop(
-        "group_cols must not overlap with standardized column names.  Change the name of the following groups: ",
-        paste(group_cols[mask_overlap_colnames], collapse=", ")
+      rlang::abort(
+        message = paste0(
+          "group_cols must not overlap with standardized column names.  Change the name of the following groups: ",
+          paste(group_cols[mask_overlap_colnames], collapse=", ")
+        ),
+        class = "pknca_error_group_cols_overlap_names"
       )
     }
     new_group_cols <- paste0("group", seq_along(group_cols))
@@ -340,11 +358,16 @@ restore_group_col_names <- function(x, group_cols=NULL) {
     return(x)
   }
   new_group_cols <- paste0("group", seq_along(group_cols))
-  stopifnot("missing intermediate group_cols names"=all(new_group_cols %in% names(x)))
-  stopifnot(
-    "Intermediate group_cols are out of order"=
-      all(names(x)[names(x) %in% new_group_cols] == new_group_cols)
-  )
+  if (!all(new_group_cols %in% names(x)))
+    rlang::abort(
+      message = "missing intermediate group_cols names",
+      class = "pknca_error_missing_group_cols"
+    )
+  if (!all(names(x)[names(x) %in% new_group_cols] == new_group_cols))
+    rlang::abort(
+      message = "Intermediate group_cols are out of order",
+      class = "pknca_error_group_cols_order"
+    )
   names(x)[names(x) %in% new_group_cols] <- group_cols
   x
 }

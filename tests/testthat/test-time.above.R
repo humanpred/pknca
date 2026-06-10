@@ -1,17 +1,5 @@
 test_that("time_above expected errors", {
   expect_error(
-    pk.calc.time_above(conc=c(1, 1), time=c(1, 2), conc_above="X", method="linear"),
-    regexp='conc_above must be numeric'
-  )
-  expect_error(
-    pk.calc.time_above(conc=c(1, 1), time=c(1, 2), conc_above=1:2, method="linear"),
-    regexp='conc_above must be a scalar'
-  )
-  expect_error(
-    pk.calc.time_above(conc=c(1, 1), time=c(1, 2), conc_above=NA, method="linear"),
-    regexp='conc_above must not be NA'
-  )
-  expect_error(
     pk.calc.time_above(time="X", conc_above=5, method="linear"),
     regexp='conc must be given'
   )

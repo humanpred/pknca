@@ -22,6 +22,16 @@ the dosing including dose amount and route.
   * 9 volume of distribution at steady state parameters (`vss.*`)
   * 13 terminal volume of distribution parameters (`vz.*`)
 
+## Improvements
+
+* Replaced all `stop()` and `warning()` calls with `rlang::abort()` and
+  `rlang::warn()` respectively, providing structured error and warning classes
+  for programmatic handling (e.g. `tryCatch(..., pknca_error_* = ...)` and
+  `withCallingHandlers(..., pknca_warning_* = ...)`).
+* Replaced manual scalar, type, and range checks with `checkmate` assertions
+  (`assert_number()`, `assert_numeric()`, `assert_string()`, `assert_class()`,
+  etc.) for cleaner and more consistent input validation across all functions.
+
 ## Bug Fixes
 
 * `normalize.data.frame()` no longer triggers a dplyr deprecation warning

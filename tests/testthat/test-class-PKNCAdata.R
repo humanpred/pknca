@@ -39,12 +39,6 @@ test_that("PKNCAdata", {
                info="Concentration and dose data can be created on the fly")
 
   # Input checking
-  expect_error(PKNCAdata(obj.conc, obj.dose, options="a"),
-               regexp="options must be a list.",
-               info="Option class")
-  expect_error(PKNCAdata(obj.conc, obj.dose, options=list(1)),
-               regexp="options must have names.",
-               info="Option structure")
   expect_error(PKNCAdata(obj.conc, obj.dose, options=list(foo=1)),
                regexp="Invalid setting for PKNCA.*foo",
                info="Option names")

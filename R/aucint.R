@@ -15,7 +15,7 @@
 #' @param clast,clast.obs,clast.pred The last concentration above the limit of
 #'   quantification; this is used for AUCinf calculations. If provided as
 #'   `clast.obs` (observed clast value, default), AUCinf is AUCinf,obs. If
-#'   provided as `clast.pred`, AUCinf is AUCinf,pred.
+#'   provided as `clast.pred`, AUCinf is AUCinf,pred.#' 
 #' @param time.dose,route,duration.dose The time of doses, route of
 #'   administration, and duration of dose used with interpolation and
 #'   extrapolation of concentration data (see [interp.extrap.conc.dose()]).
@@ -82,9 +82,11 @@ pk.calc.auxcint <- function(conc, time,
       # clast.pred is NA likely because the half-life was not calculable
       return(structure(NA_real_, exclude = "clast.pred is NA because the half-life is NA"))
     } else if (is.na(clast)) {
-      stop("Please report a bug. clast is NA and the half-life is not NA") # nocov
-    } else if (clast != clast_obs && interval[2] > tlast) {
-      # If using clast.pred, we need to doubly calculate at tlast.
+      rlang::abort(
+        message = "Please report a bug. clast is NA and the half-life is not NA",
+        class = "pknca_error_internal_clast_na"
+      ) # nocov
+    } else if (clast != clast_obs && interval[2] > tlast) {      # If using clast.pred, we need to doubly calculate at tlast.
       conc_clast <- clast
       time_clast <- tlast
     }
@@ -142,7 +144,10 @@ pk.calc.auxcint <- function(conc, time,
                 "Time points with missing data are: ",
                 paste(missing_times, collapse=", "))
         }
-      warning(warning_message)
+      rlang::warn(
+        message = warning_message,
+        class = "pknca_warning_missing_interpolated_concentrations"
+      )
       return(NA_real_)
     }
   } else {
@@ -312,7 +317,6 @@ add.interval.col("aucint.inf.pred.dose",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
                  depends=c("lambda.z", "clast.pred"))
 
-
 #' @describeIn pk.calc.auxcint Calculate AUMC over an interval
 #' @export
 pk.calc.aumcint <- function(conc, time, ..., options=list()) {
@@ -470,7 +474,7 @@ PKNCA.set.summary(
     # AUMC related
     "aumcint.last", "aumcint.last.dose", "aumcint.all",  "aumcint.all.dose",
     "aumcint.inf.obs", "aumcint.inf.obs.dose", "aumcint.inf.pred", "aumcint.inf.pred.dose"
-  ), 
+  ),
   description="geometric mean and geometric coefficient of variation",
   point=business.geomean,
   spread=business.geocv

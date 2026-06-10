@@ -23,7 +23,10 @@ addProvenance <- function(object, replace=FALSE) {
     attr(object, "provenance")$hash <-
       digest::digest(as.character(object), serialize=FALSE)
   } else {
-    stop("object already has provenance and the option to replace it was not selected.")
+    rlang::abort(
+      message = "object already has provenance and the option to replace it was not selected.",
+      class = "pknca_error_provenance_already_exists"
+    )
   }
   object
 }

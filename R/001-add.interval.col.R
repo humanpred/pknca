@@ -92,22 +92,13 @@ add.interval.col <- function(name,
                                "individual",
                                "population")) {
   # Check inputs
-  if (!is.character(name)) {
-    stop("name must be a character string")
-  } else if (length(name) != 1) {
-    stop("name must have length == 1")
-  }
-  if (length(FUN) != 1) {
-    stop("FUN must have length == 1")
-  } else if (!(is.character(FUN) || is.na(FUN))) {
-    stop("FUN must be a character string or NA")
-  }
-  if (!is.null(depends)) {
-    if (!is.character(depends)) {
-      stop("'depends' must be NULL or a character vector")
-    }
-  }
-  checkmate::assert_logical(sparse, any.missing=FALSE, len=1)
+  checkmate::assert_character(x = name, len = 1, min.chars = 1, any.missing = FALSE)
+  checkmate::assert_character(x = FUN, len = 1, any.missing = TRUE) # allows NA
+  checkmate::assert_logical(x = sparse, len = 1, any.missing=FALSE)
+  checkmate::assert_character(x = pretty_name, len = 1, min.chars = 1, any.missing=FALSE)
+  checkmate::assert_character(x = desc, len = 1, any.missing=FALSE)
+  checkmate::assert_character(x = depends, null.ok = TRUE)  
+  
   unit_type <-
     match.arg(
       unit_type,
@@ -123,42 +114,64 @@ add.interval.col <- function(name,
         "clearance", "renal_clearance", "renal_clearance_dosenorm"
       )
     )
-  stopifnot("pretty_name must be a scalar"=length(pretty_name) == 1)
-  stopifnot("pretty_name must be a character"=is.character(pretty_name))
-  stopifnot("pretty_name must not be an empty string"=nchar(pretty_name) > 0)
+  
+  # Validate datatype
   datatype <- match.arg(datatype)
-  if (!(datatype %in% "interval")) {
-    stop("Only the 'interval' datatype is currently supported.")
-  }
-  if (length(desc) != 1) {
-    stop("desc must have length == 1")
-  } else if (!is.character(desc)) {
-    stop("desc must be a character string")
-  }
-  if (!is.list(formalsmap)) {
-    stop("formalsmap must be a list")
-  } else if (length(formalsmap) > 0 &&
-             is.null(names(formalsmap))) {
-    stop("formalsmap must be a named list")
-  } else if (length(formalsmap) > 0 &&
-             is.na(FUN)) {
-    stop("formalsmap may not be given when FUN is NA.")
-  } else if (!all(nchar(names(formalsmap)) > 0)) {
-    stop("All formalsmap elements must be named")
-  }
-  # Ensure that the function exists
-  if (!is.na(FUN) &&
-      length(utils::getAnywhere(FUN)$objs) == 0) {
-    stop("The function named '", FUN, "' is not defined.  Please define the function before calling add.interval.col.")
-  }
-  if (!is.na(FUN) &&
-      length(formalsmap) > 0) {
-    # Ensure that the formalsmap parameters are all in the list of
-    # formal arguments to the function.
-    if (!all(names(formalsmap) %in% names(formals(utils::getAnywhere(FUN)$objs[[1]])))) {
-      stop("All names for the formalsmap list must be arguments to the function.")
+  #c("interval", "individual", "population"),  # Currently only interval datatype is supported
+  checkmate::assert_choice(x = datatype, choices = "interval")
+  
+  # Validate formalsmap
+  checkmate::assert_list(
+    x = formalsmap,
+    names = if (length(formalsmap) > 0) "named" else NULL
+  )
+  
+  # Validate formalsmap and function compatibility
+  if (length(formalsmap) > 0) {
+    # Ensure FUN exists
+    if (is.na(FUN)) {
+      rlang::abort(
+        message = "`formalsmap` may not be provided when `FUN` is NA",
+        class = "pknca_error_invalid_formalsmap"
+      )
     }
+    # Ensure formalsmap names are unique
+    checkmate::assert_character(x= names(formalsmap), min.chars = 1,
+                                any.missing = FALSE, unique = TRUE)
   }
+  
+  # Ensure that the function exists
+  if (!is.na(FUN)) {
+    # Ensure that the function exists
+    fun_obj <- utils::getAnywhere(FUN)
+    if (length(fun_obj$objs) == 0) {
+      rlang::abort(
+        message = sprintf(
+          "The function named '%s' is not defined. Please define it before calling add.interval.col().",
+          FUN
+        ),
+        class = "pknca_error_fun_not_found"
+      )    }
+    
+    # Validate formalsmap parameters match function formals
+    if (length(formalsmap) > 0) {
+      fun_formals <- names(formals(fun_obj$objs[[1]]))
+      invalid_formals <- setdiff(names(formalsmap), fun_formals)
+      if (length(invalid_formals) > 0) {
+        rlang::abort(
+          message = sprintf(
+            "All names in `formalsmap` must be arguments to the function '%s'. Invalid names: %s",
+            FUN,
+            paste(dQuote(invalid_formals), collapse = ", ")
+          ),
+          class = "pknca_error_invalid_formalsmap"
+        )
+      }
+    }
+    
+  }
+  
+
   current <- get("interval.cols", envir=.PKNCAEnv)
   current[[name]] <-
     list(
@@ -190,7 +203,7 @@ sort.interval.cols <- function() {
   myorder <- rep(NA, length(current))
   names(myorder) <- names(current)
   nextnum <- 1
-  while (any(is.na(myorder))) {
+  while (anyNA(myorder)) {
     for (nextorder in seq_along(myorder)[is.na(myorder)]) {
       if (length(current[[nextorder]]$depends) == 0) {
         # If it doesn't depend on anything then it can go next in order.
@@ -201,14 +214,20 @@ sort.interval.cols <- function() {
         deps <- unique(unlist(current[[nextorder]]$depends))
         missing_deps <- deps[!(deps %in% names(myorder))]
         if (length(missing_deps) > 0) {
-          stop(
-            "Invalid dependencies for interval column (please report this as a bug): ",
-            names(myorder)[nextorder],
-            " The following dependencies are missing: ",
-            paste(missing_deps, collapse=", ")
+          rlang::abort(
+            message = sprintf(
+              paste0(
+                "Invalid dependencies for interval column ",
+                "(please report this as a bug): %s ",
+                "The following dependencies are missing: %s"
+              ),
+              names(myorder)[nextorder],
+              paste(missing_deps, collapse = ", ")
+            ),
+            class = "pknca_error_invalid_dependency"
           )
         }
-        if (!any(is.na(myorder[deps]))) {
+        if (!anyNA(myorder[deps])) {
           myorder[nextorder] <- nextnum
           nextnum <- nextnum + 1
         }

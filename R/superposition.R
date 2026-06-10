@@ -80,7 +80,10 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   assert_conc_time(conc = conc, time = time)
   if (check.blq) {
     if (!(conc[1] %in% 0)) {
-      stop("The first concentration must be 0 (and not NA).  To change this set check.blq=FALSE.")
+      rlang::abort(
+        message = "The first concentration must be 0 (and not NA).  To change this set check.blq=FALSE.",
+        class = "pknca_error_superposition_blq"
+      )
     }
   }
   assert_number_between(dose.input, na.ok = FALSE, null.ok = TRUE, lower = 0)
@@ -89,11 +92,17 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   # dose.amount
   if (!missing(dose.amount)) {
     if (missing(dose.input)) {
-      stop("must give dose.input to give dose.amount")
+      rlang::abort(
+        message = "must give dose.input to give dose.amount",
+        class = "pknca_error_superposition_dose_amount_without_input"
+      )
     }
     assert_numeric_between(x = dose.amount, lower = 0, finite = TRUE)
     if (!(length(dose.amount) %in% c(1, length(dose.times))))
-      stop("dose.amount must either be a scalar or match the length of dose.times")
+      rlang::abort(
+        message = "dose.amount must either be a scalar or match the length of dose.times",
+        class = "pknca_error_superposition_dose_amount_length"
+      )
   }
   checkmate::assert_number(n.tau, lower = 1)
   if (is.finite(n.tau)) {
@@ -121,39 +130,45 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   # additional.times
   if (length(additional.times) > 0) {
     if (any(is.na(additional.times))) {
-      stop("No additional.times may be NA (to not include any additional.times, enter c() as the function argument)")
+      rlang::abort(
+        message = "No additional.times may be NA (to not include any additional.times, enter c() as the function argument)",
+        class = "pknca_error_superposition_additional_times_na"
+      )
     }
-    if (!is.numeric(additional.times) || is.factor(additional.times))
-      stop("additional.times must be a number")
-    if (any(additional.times < 0))
-      stop("All additional.times must be nonnegative")
-    if (any(additional.times > tau))
-      stop("All additional.times must be <= tau")
-  }
+   checkmate::assert_numeric(additional.times, lower = 0, upper = tau)  }
   # steady.state.tol
-  if (length(steady.state.tol) != 1)
-    stop("steady.state.tol must be a scalar")
-  if (!is.numeric(steady.state.tol) || is.factor(steady.state.tol) || is.na(steady.state.tol))
-    stop("steady.state.tol must be a number")
-  if (steady.state.tol <= 0 ||
-      steady.state.tol >= 1)
-    stop("steady.state.tol must be between 0 and 1, exclusive.")
-  if (steady.state.tol > 0.01)
-    warning("steady.state.tol is usually <= 0.01")
+  checkmate::assert_number(steady.state.tol, na.ok = FALSE)
+  if (steady.state.tol <= 0 || steady.state.tol >= 1)
+    rlang::abort(
+      message = "steady.state.tol must be between 0 and 1, exclusive.",
+      class = "pknca_error_superposition_steady_state_tol_range"
+    )
+  if (steady.state.tol > 0.01){
+    rlang::warn(
+      message = "steady.state.tol is usually <= 0.01",
+      class = "pknca_warning_superposition_steady_state_tol_large"
+    )
+  }
   # We get all or none of lambda.z, clast, and tlast
   has.lambda.z <- !missing(lambda.z)
   has.clast.pred <- !is.logical(clast.pred)
   has.tlast <- !missing(tlast)
   if (any(c(has.lambda.z, has.clast.pred, has.tlast)) &&
       !all(c(has.lambda.z, has.clast.pred, has.tlast)))
-    stop("Either give all or none of the values for these arguments: lambda.z, clast.pred, and tlast")
+    rlang::abort(
+      message = "Either give all or none of the values for these arguments: lambda.z, clast.pred, and tlast",
+      class = "pknca_error_superposition_lambdaz_clast_tlast_incomplete"
+    )
   # combine dose.input and dose.amount as applicable to scale the
   # outputs.
   if (!missing(dose.amount)) {
     dose.scaling <- dose.amount / dose.input
     if (length(dose.scaling) != length(dose.times)) {
       if (length(dose.scaling) != 1)
-        stop("bug in dose.amount, dose.times, and dose.input handling") # nocov
+        rlang::abort(
+          message = "bug in dose.amount, dose.times, and dose.input handling",
+          class = "pknca_internal_dose_scaling"
+        ) # nocov
       # it is a scalar and there is more than one dose
       dose.scaling <- rep(dose.scaling, length(dose.times))
     }
