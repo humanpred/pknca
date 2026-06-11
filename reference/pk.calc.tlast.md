@@ -23,7 +23,7 @@ pk.calc.tfirst(conc, time, check = TRUE)
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
+  [`assert_conc_time()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 ## Value
 
@@ -37,6 +37,6 @@ The time of the last observed concentration measurement
 ## See also
 
 Other NCA time parameters:
-[`pk.calc.tlag()`](http://humanpred.github.io/pknca/reference/pk.calc.tlag.md),
-[`pk.calc.tmax()`](http://humanpred.github.io/pknca/reference/pk.calc.tmax.md),
-[`pk.calc.tmin()`](http://humanpred.github.io/pknca/reference/pk.calc.tmin.md)
+[`pk.calc.tlag()`](https://humanpred.github.io/pknca/reference/pk.calc.tlag.md),
+[`pk.calc.tmax()`](https://humanpred.github.io/pknca/reference/pk.calc.tmax.md),
+[`pk.calc.tmin()`](https://humanpred.github.io/pknca/reference/pk.calc.tmin.md)

@@ -178,10 +178,10 @@ parameter names and the values should be one of the following:
 ## See also
 
 Other Interval specifications:
-[`check.interval.specification()`](http://humanpred.github.io/pknca/reference/check.interval.specification.md),
-[`choose.auc.intervals()`](http://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
-[`get.interval.cols()`](http://humanpred.github.io/pknca/reference/get.interval.cols.md),
-[`get.parameter.deps()`](http://humanpred.github.io/pknca/reference/get.parameter.deps.md)
+[`check.interval.specification()`](https://humanpred.github.io/pknca/reference/check.interval.specification.md),
+[`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
+[`get.interval.cols()`](https://humanpred.github.io/pknca/reference/get.interval.cols.md),
+[`get.parameter.deps()`](https://humanpred.github.io/pknca/reference/get.parameter.deps.md)
 
 ## Examples
 

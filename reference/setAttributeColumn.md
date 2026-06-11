@@ -57,4 +57,4 @@ The object with the attribute column added to the data.
 
 ## See also
 
-[`getAttributeColumn()`](http://humanpred.github.io/pknca/reference/getAttributeColumn.md)
+[`getAttributeColumn()`](https://humanpred.github.io/pknca/reference/getAttributeColumn.md)

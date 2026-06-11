@@ -34,7 +34,7 @@ clean.conc.blq(
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 - conc.blq:
 
@@ -44,12 +44,12 @@ clean.conc.blq(
 - conc.na:
 
   How to handle NA concentrations. (See
-  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md))
+  [`clean.conc.na()`](https://humanpred.github.io/pknca/reference/clean.conc.na.md))
 
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
+  [`assert_conc_time()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 ## Value
 
@@ -60,7 +60,7 @@ cleaned as requested relative to BLQ in the middle.
 
 `NA` concentrations (and their associated times) will be handled as
 described in
-[`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md)
+[`clean.conc.na()`](https://humanpred.github.io/pknca/reference/clean.conc.na.md)
 before working with the BLQ values. The method for handling NA
 concentrations can affect the output of which points are considered BLQ
 and which are considered "middle". Values are considered BLQ if they are
@@ -110,4 +110,4 @@ The valid settings for each are:
 ## See also
 
 Other Data cleaners:
-[`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md)
+[`clean.conc.na()`](https://humanpred.github.io/pknca/reference/clean.conc.na.md)

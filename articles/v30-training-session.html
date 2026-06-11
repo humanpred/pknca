@@ -57,6 +57,7 @@
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><a class="nav-link" href="https://humanpred.github.io/pknca-book/">User Guide</a></li>
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
@@ -598,7 +599,7 @@ for each group.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://purrr.tidyverse.org/" class="external-link">purrr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://humanpred.github.io/pknca/" class="external-link">PKNCA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://humanpred.github.io/pknca/">PKNCA</a></span><span class="op">)</span></span>
 <span><span class="co"># Concentration data setup</span></span>
 <span><span class="va">d_conc</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -1045,7 +1046,7 @@ differ: <code>PKNCAdose(~time|actarm, data=d_dose)</code>
 merge/join with the groups</li>
 <li>parameters to calculate (<code>TRUE</code> means to calculate it;
 <code>FALSE</code> means don’t). The full list of available parameters
-is in the <a href="http://humanpred.github.io/pknca/articles/Selection-of-Calculation-Intervals.html#parameters-available-for-calculation-in-an-interval-1">selection
+is in the <a href="http://humanpred.github.io/pknca/articles/Selection-of-Calculation-Intervals.html#parameters-available-for-calculation-in-an-interval-1" class="external-link">selection
 of calculation intervals vignette</a>.
 <ul>
 <li>You only have to specify the parameter you want, not all
@@ -1251,7 +1252,7 @@ whale and a beluga whale. (DOI: 10.1638/03-078)</p>
 <h3 id="steady-state-intramuscular-administration-1">Steady-state intramuscular administration<a class="anchor" aria-label="anchor" href="#steady-state-intramuscular-administration-1"></a>
 </h3>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://humanpred.github.io/pknca/" class="external-link">PKNCA</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://humanpred.github.io/pknca/">PKNCA</a></span><span class="op">)</span></span>
 <span><span class="co"># Data available from https://github.com/humanpred/pknca/tree/main/data-raw/whale</span></span>
 <span><span class="va">d_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"c:/tmp/whale_conc.csv"</span><span class="op">)</span></span>
 <span><span class="va">d_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"c:/tmp/whale_dose.csv"</span><span class="op">)</span></span>
@@ -1534,7 +1535,7 @@ doesn’t tell the interpolation/extrapolation method).</p>
 <p>PKNCA tries to be everything to everyone (in terms of parameters
 calculated), and it simultaneously tries to be precise. That yields many
 parameters.</p>
-<p>See the Selection of Calculation Intervals vignette in the <a href="http://humanpred.github.io/pknca/articles/Selection-of-Calculation-Intervals.html#parameters-available-for-calculation-in-an-interval-1">Parameters
+<p>See the Selection of Calculation Intervals vignette in the <a href="http://humanpred.github.io/pknca/articles/Selection-of-Calculation-Intervals.html#parameters-available-for-calculation-in-an-interval-1" class="external-link">Parameters
 Available for Calculation in an Interval section</a> for all available
 parameters.</p>
 </div>
@@ -1763,7 +1764,7 @@ function on the NCA results.</p>
 <h3 id="units-especially-clearance">Units (especially clearance)<a class="anchor" aria-label="anchor" href="#units-especially-clearance"></a>
 </h3>
 <p>PKNCA supports units with the <code><a href="../reference/pknca_units_table.html">pknca_units_table()</a></code>
-function. See the <a href="http://humanpred.github.io/pknca/articles/v07-unit-conversion.html">Unit
+function. See the <a href="http://humanpred.github.io/pknca/articles/v07-unit-conversion.html" class="external-link">Unit
 Assignment and Conversion with PKNCA</a> vignette for more
 information.</p>
 <p>When units are not specified, The most common place where that
@@ -1793,7 +1794,7 @@ bolus dosing need to use different AUC parameters such as
 <div class="section level3">
 <h3 id="combined-multi-subject-data-e-g--sparse-animal-sampling">Combined, multi-subject data (e.g. sparse animal sampling)<a class="anchor" aria-label="anchor" href="#combined-multi-subject-data-e-g--sparse-animal-sampling"></a>
 </h3>
-<p>Sparse NCA calculations are supported in PKNCA. See the <a href="http://humanpred.github.io/pknca/articles/v04-sparse.html">Sparse
+<p>Sparse NCA calculations are supported in PKNCA. See the <a href="http://humanpred.github.io/pknca/articles/v04-sparse.html" class="external-link">Sparse
 NCA Calculations</a> vignette for more information.</p>
 </div>
 </div>
@@ -1812,7 +1813,7 @@ time.</p>
 </h3>
 <p>PKNCA has an extensive testing and validation suite built-in. To run
 the testing and validation suite of tests with a full report generated,
-see the <a href="http://humanpred.github.io/pknca/articles/v60-PKNCA-validation.html">PKNCA
+see the <a href="http://humanpred.github.io/pknca/articles/v60-PKNCA-validation.html" class="external-link">PKNCA
 Validation</a> vignette.</p>
 </div>
 </div>

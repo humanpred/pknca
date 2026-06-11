@@ -32,12 +32,12 @@ pk.calc.time_above(conc, time, conc_above, ..., options = list(), check = TRUE)
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
+  [`assert_conc_time()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 ## Value
 

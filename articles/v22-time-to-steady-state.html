@@ -57,6 +57,7 @@
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><a class="nav-link" href="https://humanpred.github.io/pknca-book/">User Guide</a></li>
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
@@ -101,7 +102,7 @@ method is preferred.</p>
 <p>Illustrating time to steady-state, the example from the <a href="v20-superposition.html">superposition vignette</a> will be
 used.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://humanpred.github.io/pknca/" class="external-link">PKNCA</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://humanpred.github.io/pknca/">PKNCA</a></span><span class="op">)</span></span>
 <span><span class="va">theoph_corrected</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span><span class="op">)</span></span>
 <span><span class="va">theoph_corrected</span><span class="op">$</span><span class="va">conc</span><span class="op">[</span><span class="va">theoph_corrected</span><span class="op">$</span><span class="va">Time</span> <span class="op">==</span> <span class="fl">0</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
 <span><span class="va">conc_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">theoph_corrected</span>, <span class="va">conc</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span><span class="op">)</span></span>

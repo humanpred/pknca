@@ -37,7 +37,7 @@ pk.calc.aumciv(conc, time, c0, aumc, ..., options = list(), check = TRUE)
 - c0:
 
   The concentration at time 0, typically calculated using
-  [`pk.calc.c0()`](http://humanpred.github.io/pknca/reference/pk.calc.c0.md)
+  [`pk.calc.c0()`](https://humanpred.github.io/pknca/reference/pk.calc.c0.md)
 
 - auxc:
 
@@ -57,12 +57,12 @@ pk.calc.aumciv(conc, time, c0, aumc, ..., options = list(), check = TRUE)
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
+  [`assert_conc_time()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 - auc:
 
@@ -118,8 +118,8 @@ The calculation for back-extrapolation is `100*(1 - auc/auciv)`.
 ## See also
 
 Other AUC calculations:
-[`pk.calc.auxc()`](http://humanpred.github.io/pknca/reference/pk.calc.auxc.md),
-[`pk.calc.auxcint()`](http://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+[`pk.calc.auxc()`](https://humanpred.github.io/pknca/reference/pk.calc.auxc.md),
+[`pk.calc.auxcint()`](https://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
 
 Other AUMC calculations:
-[`pk.calc.auxcint()`](http://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+[`pk.calc.auxcint()`](https://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)

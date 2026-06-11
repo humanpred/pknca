@@ -82,8 +82,8 @@ Excluded results will not be included in the summary.
 
 ## See also
 
-[`PKNCA.set.summary()`](http://humanpred.github.io/pknca/reference/PKNCA.set.summary.md),
-[`print.summary_PKNCAresults()`](http://humanpred.github.io/pknca/reference/print.summary_PKNCAresults.md)
+[`PKNCA.set.summary()`](https://humanpred.github.io/pknca/reference/PKNCA.set.summary.md),
+[`print.summary_PKNCAresults()`](https://humanpred.github.io/pknca/reference/print.summary_PKNCAresults.md)
 
 ## Examples
 

@@ -92,13 +92,13 @@ intervals.
 - **Intervals:** auto-generated from dose times if omitted; pass a
   data.frame for manual specification
 - **Units:** auto-built via
-  [`pknca_units_table()`](http://humanpred.github.io/pknca/reference/pknca_units_table.md)
+  [`pknca_units_table()`](https://humanpred.github.io/pknca/reference/pknca_units_table.md)
   from unit columns on PKNCAconc/PKNCAdose if omitted; or supply a
   manual table
 - **Imputation:** `impute` parameter for data imputation methods (see
-  [`vignette("v08-data-imputation")`](http://humanpred.github.io/pknca/articles/v08-data-imputation.md))
+  [`vignette("v08-data-imputation")`](https://humanpred.github.io/pknca/articles/v08-data-imputation.md))
 - **Options:** `options` list for
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md)
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md)
   overrides
 
 ### Units System
@@ -109,15 +109,15 @@ Units flow from PKNCAconc (`concu`, `amountu`, `timeu`) and PKNCAdose
 - **Scalar or column-based:** unit args accept a string (e.g.,
   `"ng/mL"`) applied to all rows, or a column name for per-row
   stratification
-- **[`pknca_units_table()`](http://humanpred.github.io/pknca/reference/pknca_units_table.md)**
+- **[`pknca_units_table()`](https://humanpred.github.io/pknca/reference/pknca_units_table.md)**
   builds the full mapping from base units to derived units (AUC =
   `time*conc`, clearance = `dose/(time*conc)`, etc.)
 - **Preferred units:** `*_pref` args enable automatic conversion
   (requires the `units` package)
 - **Auto-build:**
-  [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md)
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
   calls
-  [`pknca_units_table()`](http://humanpred.github.io/pknca/reference/pknca_units_table.md)
+  [`pknca_units_table()`](https://humanpred.github.io/pknca/reference/pknca_units_table.md)
   automatically when no `units` argument is supplied
 
 Example with units:
@@ -148,18 +148,18 @@ dplyr verbs are supported on these classes: `filter`, `mutate`,
 ## Naming Conventions
 
 - **Functions:** dot notation –
-  [`pk.calc.cmax()`](http://humanpred.github.io/pknca/reference/pk.calc.cmax.md),
-  [`pk.calc.auc()`](http://humanpred.github.io/pknca/reference/pk.calc.auxc.md),
-  [`clean.conc.blq()`](http://humanpred.github.io/pknca/reference/clean.conc.blq.md),
-  [`business.geomean()`](http://humanpred.github.io/pknca/reference/business.mean.md)
+  [`pk.calc.cmax()`](https://humanpred.github.io/pknca/reference/pk.calc.cmax.md),
+  [`pk.calc.auc()`](https://humanpred.github.io/pknca/reference/pk.calc.auxc.md),
+  [`clean.conc.blq()`](https://humanpred.github.io/pknca/reference/clean.conc.blq.md),
+  [`business.geomean()`](https://humanpred.github.io/pknca/reference/business.mean.md)
 - **Validation:** `assert_*` with underscores –
-  [`assert_conc()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md),
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)
+  [`assert_conc()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md),
+  [`assert_conc_time()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md)
   (exception to dot convention)
 - **Class constructors:** PascalCase –
-  [`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md),
-  [`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md),
-  [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md)
+  [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md),
+  [`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md),
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
 - **File naming:**
   - `class-*.R` for class definitions
   - Some legacy files use numbered prefixes (`001-add.interval.col.R`)
@@ -184,9 +184,9 @@ dplyr verbs are supported on these classes: `filter`, `mutate`,
 - **Deprecation:** `lifecycle` package for managing deprecated functions
   (see `R/defunct.R`)
 - **Global options:** managed through
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md)
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md)
   /
-  [`PKNCA.choose.option()`](http://humanpred.github.io/pknca/reference/PKNCA.choose.option.md)
+  [`PKNCA.choose.option()`](https://humanpred.github.io/pknca/reference/PKNCA.choose.option.md)
   in `R/PKNCA.options.R`
 
 ## Testing Conventions
@@ -200,7 +200,7 @@ dplyr verbs are supported on these classes: `filter`, `mutate`,
   and `generate.dose(concdata)` in
   `tests/testthat/helper-generate_data.R`
 - **Global state:** save and restore
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md)
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md)
   when modifying options in tests
 - **Validation tests:** use `expect_error(..., regexp=)` and
   `expect_warning(..., regexp=)` for input validation

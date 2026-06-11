@@ -107,6 +107,6 @@ used directly from the data.
 ## See also
 
 Other PKNCA objects:
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md),
-[`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md),
-[`PKNCAresults()`](http://humanpred.github.io/pknca/reference/PKNCAresults.md)
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md),
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md),
+[`PKNCAresults()`](https://humanpred.github.io/pknca/reference/PKNCAresults.md)

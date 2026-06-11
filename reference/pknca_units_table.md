@@ -1,7 +1,7 @@
 # Create a unit assignment and conversion table
 
 This data.frame is typically used for the `units` argument for
-[`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md).
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md).
 If a unit is not given, then all of the units derived from that unit
 will be `NA`.
 
@@ -60,7 +60,7 @@ A unit conversion table with columns for "PPTESTCD" and "PPORRESU" if
 ## See also
 
 The `units` argument for
-[`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md)
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
 
 ## Examples
 

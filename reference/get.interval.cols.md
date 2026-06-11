@@ -15,14 +15,14 @@ contains the parameter definition.
 
 ## See also
 
-[`check.interval.specification()`](http://humanpred.github.io/pknca/reference/check.interval.specification.md)
+[`check.interval.specification()`](https://humanpred.github.io/pknca/reference/check.interval.specification.md)
 and the vignette "Selection of Calculation Intervals"
 
 Other Interval specifications:
-[`add.interval.col()`](http://humanpred.github.io/pknca/reference/add.interval.col.md),
-[`check.interval.specification()`](http://humanpred.github.io/pknca/reference/check.interval.specification.md),
-[`choose.auc.intervals()`](http://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
-[`get.parameter.deps()`](http://humanpred.github.io/pknca/reference/get.parameter.deps.md)
+[`add.interval.col()`](https://humanpred.github.io/pknca/reference/add.interval.col.md),
+[`check.interval.specification()`](https://humanpred.github.io/pknca/reference/check.interval.specification.md),
+[`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
+[`get.parameter.deps()`](https://humanpred.github.io/pknca/reference/get.parameter.deps.md)
 
 ## Examples
 

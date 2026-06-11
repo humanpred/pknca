@@ -29,4 +29,4 @@ ptr is `cmax/ctrough`.
 ## See also
 
 Other Multiple-dose PK parameters:
-[`pk.calc.deg.fluc()`](http://humanpred.github.io/pknca/reference/pk.calc.deg.fluc.md)
+[`pk.calc.deg.fluc()`](https://humanpred.github.io/pknca/reference/pk.calc.deg.fluc.md)

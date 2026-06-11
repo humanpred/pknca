@@ -33,7 +33,7 @@ calculated and the groupings to apply the intervals to.
 The vignette "Selection of Calculation Intervals"
 
 Other Interval specifications:
-[`add.interval.col()`](http://humanpred.github.io/pknca/reference/add.interval.col.md),
-[`choose.auc.intervals()`](http://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
-[`get.interval.cols()`](http://humanpred.github.io/pknca/reference/get.interval.cols.md),
-[`get.parameter.deps()`](http://humanpred.github.io/pknca/reference/get.parameter.deps.md)
+[`add.interval.col()`](https://humanpred.github.io/pknca/reference/add.interval.col.md),
+[`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
+[`get.interval.cols()`](https://humanpred.github.io/pknca/reference/get.interval.cols.md),
+[`get.parameter.deps()`](https://humanpred.github.io/pknca/reference/get.parameter.deps.md)

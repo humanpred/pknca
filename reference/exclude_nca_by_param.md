@@ -40,7 +40,7 @@ exclude_nca_by_param(
 ## Value
 
 A function that can be used with
-[`PKNCA::exclude`](http://humanpred.github.io/pknca/reference/exclude.md)
+[`PKNCA::exclude`](https://humanpred.github.io/pknca/reference/exclude.md)
 to mark through the 'exclude' column the rows in the PKNCA results based
 on the specified thresholds for a parameter.
 

@@ -25,4 +25,4 @@ print(x, ...)
 
 ## See also
 
-[`summary.PKNCAresults()`](http://humanpred.github.io/pknca/reference/summary.PKNCAresults.md)
+[`summary.PKNCAresults()`](https://humanpred.github.io/pknca/reference/summary.PKNCAresults.md)

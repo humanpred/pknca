@@ -1,7 +1,7 @@
 # Calculate the weight for sparse AUC calculation with the linear-trapezoidal rule
 
 The weight is used as the \\w_i\\ parameter in
-[`pk.calc.sparse_auc()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md)
+[`pk.calc.sparse_auc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md)
 
 ## Usage
 
@@ -14,7 +14,7 @@ sparse_auc_weight_linear(sparse_pk)
 - sparse_pk:
 
   A sparse_pk object from
-  [`as_sparse_pk()`](http://humanpred.github.io/pknca/reference/as_sparse_pk.md)
+  [`as_sparse_pk()`](https://humanpred.github.io/pknca/reference/as_sparse_pk.md)
 
 ## Value
 
@@ -44,7 +44,7 @@ Where:
 ## See also
 
 Other Sparse Methods:
-[`as_sparse_pk()`](http://humanpred.github.io/pknca/reference/as_sparse_pk.md),
-[`pk.calc.sparse_auc()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md),
-[`pk.calc.sparse_aumc()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.md),
-[`sparse_mean()`](http://humanpred.github.io/pknca/reference/sparse_mean.md)
+[`as_sparse_pk()`](https://humanpred.github.io/pknca/reference/as_sparse_pk.md),
+[`pk.calc.sparse_auc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md),
+[`pk.calc.sparse_aumc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.md),
+[`sparse_mean()`](https://humanpred.github.io/pknca/reference/sparse_mean.md)

@@ -84,7 +84,7 @@ exclude_nca_tmax_0()
 ## See also
 
 Other Result exclusions:
-[`exclude()`](http://humanpred.github.io/pknca/reference/exclude.md)
+[`exclude()`](https://humanpred.github.io/pknca/reference/exclude.md)
 
 ## Examples
 

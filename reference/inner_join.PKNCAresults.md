@@ -219,6 +219,6 @@ full_join(
 ## See also
 
 Other dplyr verbs:
-[`filter.PKNCAresults()`](http://humanpred.github.io/pknca/reference/filter.PKNCAresults.md),
-[`group_by.PKNCAresults()`](http://humanpred.github.io/pknca/reference/group_by.PKNCAresults.md),
-[`mutate.PKNCAresults()`](http://humanpred.github.io/pknca/reference/mutate.PKNCAresults.md)
+[`filter.PKNCAresults()`](https://humanpred.github.io/pknca/reference/filter.PKNCAresults.md),
+[`group_by.PKNCAresults()`](https://humanpred.github.io/pknca/reference/group_by.PKNCAresults.md),
+[`mutate.PKNCAresults()`](https://humanpred.github.io/pknca/reference/mutate.PKNCAresults.md)

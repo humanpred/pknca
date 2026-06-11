@@ -36,8 +36,8 @@ at 192 hours, and and the maximum concentration is at 169 hours,
 
 ## See also
 
-[`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md),
-[`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md),
-[`summary.PKNCAresults()`](http://humanpred.github.io/pknca/reference/summary.PKNCAresults.md),
-[`as.data.frame.PKNCAresults()`](http://humanpred.github.io/pknca/reference/as.data.frame.PKNCAresults.md),
-[`exclude()`](http://humanpred.github.io/pknca/reference/exclude.md)
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md),
+[`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md),
+[`summary.PKNCAresults()`](https://humanpred.github.io/pknca/reference/summary.PKNCAresults.md),
+[`as.data.frame.PKNCAresults()`](https://humanpred.github.io/pknca/reference/as.data.frame.PKNCAresults.md),
+[`exclude()`](https://humanpred.github.io/pknca/reference/exclude.md)

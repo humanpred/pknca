@@ -1,7 +1,7 @@
 # Negative log-likelihood for Tobit half-life regression
 
 Helper function used by
-[`fit_half_life_tobit()`](http://humanpred.github.io/pknca/reference/fit_half_life_tobit.md)
+[`fit_half_life_tobit()`](https://humanpred.github.io/pknca/reference/fit_half_life_tobit.md)
 via [`stats::optim()`](https://rdrr.io/r/stats/optim.html). For
 observations above the LLOQ, the normal density contributes to the
 likelihood. For censored (BLQ) observations, the normal CDF up to the
@@ -42,4 +42,4 @@ The negative sum of the log-likelihood (a scalar)
 
 ## See also
 
-[`fit_half_life_tobit()`](http://humanpred.github.io/pknca/reference/fit_half_life_tobit.md)
+[`fit_half_life_tobit()`](https://humanpred.github.io/pknca/reference/fit_half_life_tobit.md)

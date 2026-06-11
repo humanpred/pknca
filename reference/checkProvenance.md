@@ -21,4 +21,4 @@ provenance is not consistent, or `NA` if provenance is not present.
 
 ## See also
 
-[`addProvenance()`](http://humanpred.github.io/pknca/reference/addProvenance.md)
+[`addProvenance()`](https://humanpred.github.io/pknca/reference/addProvenance.md)

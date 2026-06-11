@@ -160,9 +160,9 @@ pk.calc.aumcint.inf.pred(
 
   The time of doses, route of administration, and duration of dose used
   with interpolation and extrapolation of concentration data (see
-  [`interp.extrap.conc.dose()`](http://humanpred.github.io/pknca/reference/interp.extrap.conc.md)).
+  [`interp.extrap.conc.dose()`](https://humanpred.github.io/pknca/reference/interp.extrap.conc.md)).
   If `NULL`,
-  [`interp.extrap.conc()`](http://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
+  [`interp.extrap.conc()`](https://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
   will be used instead.
 
 - auc.type:
@@ -173,7 +173,7 @@ pk.calc.aumcint.inf.pred(
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 - method:
 
@@ -188,12 +188,12 @@ pk.calc.aumcint.inf.pred(
 - conc.na:
 
   How to handle NA concentrations. (See
-  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md))
+  [`clean.conc.na()`](https://humanpred.github.io/pknca/reference/clean.conc.na.md))
 
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
+  [`assert_conc_time()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 - fun_linear, fun_log, fun_inf:
 
@@ -247,12 +247,12 @@ for the extrapolation.
 
 ## See also
 
-[`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md),
-[`interp.extrap.conc.dose()`](http://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
+[`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md),
+[`interp.extrap.conc.dose()`](https://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
 
 Other AUC calculations:
-[`pk.calc.auxc()`](http://humanpred.github.io/pknca/reference/pk.calc.auxc.md),
-[`pk.calc.auxciv()`](http://humanpred.github.io/pknca/reference/pk.calc.auxciv.md)
+[`pk.calc.auxc()`](https://humanpred.github.io/pknca/reference/pk.calc.auxc.md),
+[`pk.calc.auxciv()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.md)
 
 Other AUMC calculations:
-[`pk.calc.auxciv()`](http://humanpred.github.io/pknca/reference/pk.calc.auxciv.md)
+[`pk.calc.auxciv()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.md)

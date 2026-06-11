@@ -6,7 +6,7 @@ of the last points. According to Maganti (2008), the monoexponential
 method is preferred.
 
 TSS can be estimated using either method using the
-[`pk.tss()`](http://humanpred.github.io/pknca/reference/pk.tss.md)
+[`pk.tss()`](https://humanpred.github.io/pknca/reference/pk.tss.md)
 function in PKNCA.
 
 ## Example
@@ -14,7 +14,7 @@ function in PKNCA.
 ### Data setup
 
 Illustrating time to steady-state, the example from the [superposition
-vignette](http://humanpred.github.io/pknca/articles/v20-superposition.md)
+vignette](https://humanpred.github.io/pknca/articles/v20-superposition.md)
 will be used.
 
 ``` r
@@ -102,7 +102,7 @@ tss_mono
 
 The fraction of steady-state required for time to steady-state can be
 changed with the `tss.fraction` argument (see
-[`?pk.tss.monoexponential`](http://humanpred.github.io/pknca/reference/pk.tss.monoexponential.md)).
+[`?pk.tss.monoexponential`](https://humanpred.github.io/pknca/reference/pk.tss.monoexponential.md)).
 
 #### Stepwise Linear
 

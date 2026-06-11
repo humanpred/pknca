@@ -70,11 +70,11 @@ options (`vignette("Options-for-Controlling-PKNCA", package="PKNCA")`).
 
 ## See also
 
-[`PKNCA.options.describe()`](http://humanpred.github.io/pknca/reference/PKNCA.options.describe.md)
+[`PKNCA.options.describe()`](https://humanpred.github.io/pknca/reference/PKNCA.options.describe.md)
 
 Other PKNCA calculation and summary settings:
-[`PKNCA.choose.option()`](http://humanpred.github.io/pknca/reference/PKNCA.choose.option.md),
-[`PKNCA.set.summary()`](http://humanpred.github.io/pknca/reference/PKNCA.set.summary.md)
+[`PKNCA.choose.option()`](https://humanpred.github.io/pknca/reference/PKNCA.choose.option.md),
+[`PKNCA.set.summary()`](https://humanpred.github.io/pknca/reference/PKNCA.set.summary.md)
 
 ## Examples
 

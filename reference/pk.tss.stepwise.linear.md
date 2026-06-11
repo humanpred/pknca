@@ -22,7 +22,7 @@ pk.tss.stepwise.linear(
 - ...:
 
   See
-  [`pk.tss.data.prep()`](http://humanpred.github.io/pknca/reference/pk.tss.data.prep.md)
+  [`pk.tss.data.prep()`](https://humanpred.github.io/pknca/reference/pk.tss.data.prep.md)
 
 - min.points:
 
@@ -40,7 +40,7 @@ pk.tss.stepwise.linear(
 - check:
 
   See
-  [`pk.tss.data.prep()`](http://humanpred.github.io/pknca/reference/pk.tss.data.prep.md)
+  [`pk.tss.data.prep()`](https://humanpred.github.io/pknca/reference/pk.tss.data.prep.md)
 
 ## Value
 
@@ -62,5 +62,5 @@ Time to Steady State with Examples from Phase 1 Studies. AAPS Journal
 ## See also
 
 Other Time to steady-state calculations:
-[`pk.tss()`](http://humanpred.github.io/pknca/reference/pk.tss.md),
-[`pk.tss.monoexponential()`](http://humanpred.github.io/pknca/reference/pk.tss.monoexponential.md)
+[`pk.tss()`](https://humanpred.github.io/pknca/reference/pk.tss.md),
+[`pk.tss.monoexponential()`](https://humanpred.github.io/pknca/reference/pk.tss.monoexponential.md)

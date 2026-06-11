@@ -17,7 +17,7 @@ sparse_mean(
 - sparse_pk:
 
   A sparse_pk object from
-  [`as_sparse_pk()`](http://humanpred.github.io/pknca/reference/as_sparse_pk.md)
+  [`as_sparse_pk()`](https://humanpred.github.io/pknca/reference/as_sparse_pk.md)
 
 - sparse_mean_method:
 
@@ -42,7 +42,7 @@ each of those times.
 ## See also
 
 Other Sparse Methods:
-[`as_sparse_pk()`](http://humanpred.github.io/pknca/reference/as_sparse_pk.md),
-[`pk.calc.sparse_auc()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md),
-[`pk.calc.sparse_aumc()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.md),
-[`sparse_auc_weight_linear()`](http://humanpred.github.io/pknca/reference/sparse_auc_weight_linear.md)
+[`as_sparse_pk()`](https://humanpred.github.io/pknca/reference/as_sparse_pk.md),
+[`pk.calc.sparse_auc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md),
+[`pk.calc.sparse_aumc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.md),
+[`sparse_auc_weight_linear()`](https://humanpred.github.io/pknca/reference/sparse_auc_weight_linear.md)

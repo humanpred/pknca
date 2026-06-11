@@ -35,6 +35,6 @@ A PKNCAresults object with each of the above within.
 ## See also
 
 Other PKNCA objects:
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md),
-[`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md),
-[`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md)
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md),
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md),
+[`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md)

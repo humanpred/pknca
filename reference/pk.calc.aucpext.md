@@ -32,6 +32,6 @@ aucpext is `100*(1-auclast/aucinf)`.
 ## See also
 
 Other Half-life and elimination:
-[`adj.r.squared()`](http://humanpred.github.io/pknca/reference/adj.r.squared.md),
-[`pk.calc.half.life()`](http://humanpred.github.io/pknca/reference/pk.calc.half.life.md),
-[`pk.calc.thalf.eff()`](http://humanpred.github.io/pknca/reference/pk.calc.thalf.eff.md)
+[`adj.r.squared()`](https://humanpred.github.io/pknca/reference/adj.r.squared.md),
+[`pk.calc.half.life()`](https://humanpred.github.io/pknca/reference/pk.calc.half.life.md),
+[`pk.calc.thalf.eff()`](https://humanpred.github.io/pknca/reference/pk.calc.thalf.eff.md)

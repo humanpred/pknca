@@ -22,4 +22,4 @@ A list of column names for various formula parts
 ## See also
 
 Other Formula parsing:
-[`findOperator()`](http://humanpred.github.io/pknca/reference/findOperator.md)
+[`findOperator()`](https://humanpred.github.io/pknca/reference/findOperator.md)

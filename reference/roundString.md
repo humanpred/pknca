@@ -22,7 +22,7 @@ roundString(x, digits = 0, sci_range = Inf, sci_sep = "e", si_range)
 - sci_range:
 
   See help for
-  [`signifString()`](http://humanpred.github.io/pknca/reference/signifString.md)
+  [`signifString()`](https://humanpred.github.io/pknca/reference/signifString.md)
   (and you likely want to round with `signifString` if you want to use
   this argument)
 
@@ -47,4 +47,4 @@ returned as `"Inf"`, `"NA"`, and `NaN`.
 ## See also
 
 [`round()`](https://rdrr.io/r/base/Round.html),
-[`signifString()`](http://humanpred.github.io/pknca/reference/signifString.md)
+[`signifString()`](https://humanpred.github.io/pknca/reference/signifString.md)

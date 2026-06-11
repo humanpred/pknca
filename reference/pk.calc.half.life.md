@@ -87,7 +87,7 @@ pk.calc.half.life(
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 - min.hl.points:
 
@@ -104,14 +104,14 @@ pk.calc.half.life(
 
   The penalty exponent on the number of points for Tobit window
   selection. See
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md).
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md).
 
 - tobit_optim_control:
 
   A list of control parameters passed to
   [`stats::optim()`](https://rdrr.io/r/stats/optim.html) for the Tobit
   fit. See
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md).
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md).
 
 - conc.blq:
 
@@ -121,7 +121,7 @@ pk.calc.half.life(
 - conc.na:
 
   How to handle NA concentrations. (See
-  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md))
+  [`clean.conc.na()`](https://humanpred.github.io/pknca/reference/clean.conc.na.md))
 
 - first.tmax:
 
@@ -138,7 +138,7 @@ pk.calc.half.life(
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
+  [`assert_conc_time()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 ## Value
 
@@ -256,6 +256,6 @@ Press, 2000. 167-9.
 ## See also
 
 Other Half-life and elimination:
-[`adj.r.squared()`](http://humanpred.github.io/pknca/reference/adj.r.squared.md),
-[`pk.calc.aucpext()`](http://humanpred.github.io/pknca/reference/pk.calc.aucpext.md),
-[`pk.calc.thalf.eff()`](http://humanpred.github.io/pknca/reference/pk.calc.thalf.eff.md)
+[`adj.r.squared()`](https://humanpred.github.io/pknca/reference/adj.r.squared.md),
+[`pk.calc.aucpext()`](https://humanpred.github.io/pknca/reference/pk.calc.aucpext.md),
+[`pk.calc.thalf.eff()`](https://humanpred.github.io/pknca/reference/pk.calc.thalf.eff.md)

@@ -23,7 +23,7 @@ pk.tss.monoexponential(
 - ...:
 
   See
-  [`pk.tss.data.prep()`](http://humanpred.github.io/pknca/reference/pk.tss.data.prep.md)
+  [`pk.tss.data.prep()`](https://humanpred.github.io/pknca/reference/pk.tss.data.prep.md)
 
 - tss.fraction:
 
@@ -41,7 +41,7 @@ pk.tss.monoexponential(
 - check:
 
   See
-  [`pk.tss.data.prep()`](http://humanpred.github.io/pknca/reference/pk.tss.data.prep.md).
+  [`pk.tss.data.prep()`](https://humanpred.github.io/pknca/reference/pk.tss.data.prep.md).
 
 - verbose:
 
@@ -62,5 +62,5 @@ J 10, 141–147 (2008). https://doi.org/10.1208/s12248-008-9014-y
 ## See also
 
 Other Time to steady-state calculations:
-[`pk.tss()`](http://humanpred.github.io/pknca/reference/pk.tss.md),
-[`pk.tss.stepwise.linear()`](http://humanpred.github.io/pknca/reference/pk.tss.stepwise.linear.md)
+[`pk.tss()`](https://humanpred.github.io/pknca/reference/pk.tss.md),
+[`pk.tss.stepwise.linear()`](https://humanpred.github.io/pknca/reference/pk.tss.stepwise.linear.md)

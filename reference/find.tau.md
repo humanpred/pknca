@@ -22,7 +22,7 @@ find.tau(x, na.action = stats::na.omit, options = list(), tau.choices = NULL)
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 - tau.choices:
 
@@ -47,4 +47,4 @@ A scalar indicating the repeating interval with the most repetition.
 ## See also
 
 Other Interval determination:
-[`choose.auc.intervals()`](http://humanpred.github.io/pknca/reference/choose.auc.intervals.md)
+[`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md)

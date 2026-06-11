@@ -57,13 +57,13 @@ table.” - Hadley Wickham (<https://doi.org/10.18637/jss.v059.i10>)
 CDISC has NCA tidied, and PKNCA follows that model:
 
 - concentration-time is a dataset (PC domain;
-  [`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md)
+  [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
   object)
 - dose-time is a dataset (EX/EC domains;
-  [`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md)
+  [`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md)
   object)
 - NCA results are a dataset (PP domain;
-  [`pk.nca()`](http://humanpred.github.io/pknca/reference/pk.nca.md)
+  [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
   output)
 
 ### Dataset Basics: Minimum data
@@ -76,20 +76,20 @@ calculate.
 ### Dataset Basics: What columns are needed?
 
 Column names are provided by the input to
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md)
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
 and
-[`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md);
+[`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md);
 they are not hard-coded.
 
 Columns that can be used include:
 
-- [`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md):
+- [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md):
   concentration, time, groups; data exclusions; half-life inclusion and
   exclusion
-- [`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md):
+- [`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md):
   dose, time, groups; route, rate/duration of infusion; data exclusions
 - intervals given to
-  [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md):
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md):
   groups, start, end, and any NCA parameters to calculate
 
 ### Dataset Basics: Example data
@@ -183,24 +183,24 @@ o_result <- suppressMessages(pk.nca(o_data))
 
 ### What functions are the most used?
 
-- [`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md):
+- [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md):
   define a concentration-time `PKNCAconc` object
   - All information about concentration data are given: concentration,
     time
   - Optional information includes: grouping information (usually given),
     data to exclude, half-life inclusion and exclusion columns
-- [`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md):
+- [`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md):
   define a dose-time `PKNCAdose` object (optional)
   - dose amount and time are both optional
   - Optional information includes: rate or duration of infusion, data to
     exclude
-- [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md):
+- [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md):
   combine `PKNCAconc`, optionally `PKNCAdose`, and optionally
   `intervals` into a `PKNCAdata` object
   - the `PKNCAconc` object must be given; the `PKNCAdose` object is
     optional; interval definitions are usually given; calculation
     options may be given
-- [`pk.nca()`](http://humanpred.github.io/pknca/reference/pk.nca.md):
+- [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md):
   calculate the NCA parameters from a data object into a `PKNCAresult`
   object
 
@@ -636,9 +636,9 @@ indicate “no” or any other text to indicate “yes”.
 ### Exclude data points overall
 
 Use the `exclude` argument for
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md)
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
 or
-[`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md).
+[`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md).
 
 When you use `exclude`, this is how you give your data to PKNCA:
 
@@ -718,7 +718,7 @@ quality of the half-life fit is usually low in this scenario.
 ### λz control (manual exclusions and inclusions of data points)
 
 Use the `exclude_half.life` or `include_half.life` argument for
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md).
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md).
 The two arguments behave very differently in how points are selected for
 half-life.
 
@@ -891,7 +891,7 @@ But, parameters derived from half-life remain.
 ### Excluding results (The best way, 1/2)
 
 When you use the
-[`exclude()`](http://humanpred.github.io/pknca/reference/exclude.md)
+[`exclude()`](https://humanpred.github.io/pknca/reference/exclude.md)
 function, parameters that are dependent on an excluded parameter will be
 excluded.
 
@@ -1081,7 +1081,7 @@ pander::pander(as.data.frame(o_nca))
 ### Units (especially clearance)
 
 PKNCA supports units with the
-[`pknca_units_table()`](http://humanpred.github.io/pknca/reference/pknca_units_table.md)
+[`pknca_units_table()`](https://humanpred.github.io/pknca/reference/pknca_units_table.md)
 function. See the [Unit Assignment and Conversion with
 PKNCA](http://humanpred.github.io/pknca/articles/v07-unit-conversion.md)
 vignette for more information.

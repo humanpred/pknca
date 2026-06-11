@@ -2,7 +2,7 @@
 
 This function calculates the variance of the area under the first moment
 curve (AUMC) for sparse PK data. It follows the same methodology as
-[`var_sparse_auc()`](http://humanpred.github.io/pknca/reference/var_sparse_auc.md)
+[`var_sparse_auc()`](https://humanpred.github.io/pknca/reference/var_sparse_auc.md)
 but applies to the moment curve (time × concentration).
 
 ## Usage
@@ -16,7 +16,7 @@ var_sparse_aumc(sparse_pk)
 - sparse_pk:
 
   A sparse_pk object from
-  [`as_sparse_pk()`](http://humanpred.github.io/pknca/reference/as_sparse_pk.md)
+  [`as_sparse_pk()`](https://humanpred.github.io/pknca/reference/as_sparse_pk.md)
 
 ## Value
 
@@ -36,7 +36,7 @@ curve (time × concentration) rather than concentration alone.
 
 The degrees of freedom are calculated as described in equation 6 of the
 same paper, reusing the structure from
-[`var_sparse_auc()`](http://humanpred.github.io/pknca/reference/var_sparse_auc.md).
+[`var_sparse_auc()`](https://humanpred.github.io/pknca/reference/var_sparse_auc.md).
 
 ## References
 

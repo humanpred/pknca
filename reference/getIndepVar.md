@@ -26,5 +26,5 @@ The vector of the independent variable from the object.
 ## See also
 
 Other PKNCA object extractors:
-[`getDataName.PKNCAconc()`](http://humanpred.github.io/pknca/reference/getDataName.md),
-[`getDepVar()`](http://humanpred.github.io/pknca/reference/getDepVar.md)
+[`getDataName.PKNCAconc()`](https://humanpred.github.io/pknca/reference/getDataName.md),
+[`getDepVar()`](https://humanpred.github.io/pknca/reference/getDepVar.md)

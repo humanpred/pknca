@@ -14,7 +14,7 @@ interval, but no animal has the full profile.
 
 Sparse NCA is setup similarly to how normal, dense PK sampling is setup
 with PKNCA. The only difference are that you give the `sparse` option to
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md),
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md),
 and in your interval calculations, you will request the sparse variants
 of the parameters. As of the writing of this vignette, the only sparse
 parameter for calculation is `sparse_auclast`. Any of the non-sparse
@@ -76,7 +76,7 @@ of every subject that belongs to the same group. Knowing what defines a
 
 The groups are taken from the grouping variables on the right of the `|`
 in the
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md)
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
 formula, **with the subject column removed**. Every subject that shares
 the same combination of the remaining (non-subject) grouping variables
 contributes to a single pooled sparse concentration-time profile.

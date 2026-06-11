@@ -60,26 +60,26 @@ PKNCAdata(
   "impute" in the intervals or no imputation if that column does not
   exist, a comma-or space-separated list of names, or the name of a
   column in the `intervals` data.frame. See
-  [`vignette("v08-data-imputation", package="PKNCA")`](http://humanpred.github.io/pknca/articles/v08-data-imputation.md)
+  [`vignette("v08-data-imputation", package="PKNCA")`](https://humanpred.github.io/pknca/articles/v08-data-imputation.md)
   for more details.
 
 - intervals:
 
   A data frame with the AUC interval specifications as defined in
-  [`check.interval.specification()`](http://humanpred.github.io/pknca/reference/check.interval.specification.md).
+  [`check.interval.specification()`](https://humanpred.github.io/pknca/reference/check.interval.specification.md).
   If missing, this will be automatically chosen by
-  [`choose.auc.intervals()`](http://humanpred.github.io/pknca/reference/choose.auc.intervals.md).
+  [`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md).
   (see details)
 
 - units:
 
   A data.frame of unit assignments and conversions as created by
-  [`pknca_units_table()`](http://humanpred.github.io/pknca/reference/pknca_units_table.md)
+  [`pknca_units_table()`](https://humanpred.github.io/pknca/reference/pknca_units_table.md)
 
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 ## Value
 
@@ -94,11 +94,11 @@ given. At least one of `data.dose` and `intervals` must be given.
 
 ## See also
 
-[`choose.auc.intervals()`](http://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
-[`pk.nca()`](http://humanpred.github.io/pknca/reference/pk.nca.md),
-[`pknca_units_table()`](http://humanpred.github.io/pknca/reference/pknca_units_table.md)
+[`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md),
+[`pknca_units_table()`](https://humanpred.github.io/pknca/reference/pknca_units_table.md)
 
 Other PKNCA objects:
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md),
-[`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md),
-[`PKNCAresults()`](http://humanpred.github.io/pknca/reference/PKNCAresults.md)
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md),
+[`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md),
+[`PKNCAresults()`](https://humanpred.github.io/pknca/reference/PKNCAresults.md)

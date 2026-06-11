@@ -32,32 +32,32 @@ table.” - Hadley Wickham (<https://doi.org/10.18637/jss.v059.i10>)
 CDISC has NCA tidied, and PKNCA follows that model:
 
 - concentration-time is a dataset (PC domain;
-  [`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md)
+  [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
   object)
 - dose-time is a dataset (EX/EC domains;
-  [`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md)
+  [`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md)
   object)
 - NCA results are a dataset (PP domain;
-  [`pk.nca()`](http://humanpred.github.io/pknca/reference/pk.nca.md)
+  [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
   output)
 
 ### Dataset Basics: What columns are needed?
 
 Column names are provided by the input to
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md)
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
 and
-[`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md);
+[`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md);
 they are not hard-coded.
 
 Columns that can be used include:
 
-- [`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md):
+- [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md):
   concentration, time, groups; data exclusions; half-life inclusion and
   exclusion
-- [`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md):
+- [`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md):
   dose, time, groups; route, rate/duration of infusion; data exclusions
 - intervals given to
-  [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md):
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md):
   groups, start, end, and any NCA parameters to calculate
 
 ### Dataset Basics: Example interval data
@@ -82,24 +82,24 @@ each group.
 
 ### What functions are the most used?
 
-- [`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md):
+- [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md):
   define a concentration-time `PKNCAconc` object
   - All information about concentration data are given: concentration,
     time
   - Optional information includes: grouping information (usually given),
     data to exclude, half-life inclusion and exclusion columns
-- [`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md):
+- [`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md):
   define a dose-time `PKNCAdose` object (optional)
   - dose amount and time are both optional
   - Optional information includes: rate or duration of infusion, data to
     exclude
-- [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md):
+- [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md):
   combine `PKNCAconc`, optionally `PKNCAdose`, and optionally
   `intervals` into a `PKNCAdata` object
   - the `PKNCAconc` object must be given; the `PKNCAdose` object is
     optional; interval definitions are usually given; calculation
     options may be given
-- [`pk.nca()`](http://humanpred.github.io/pknca/reference/pk.nca.md):
+- [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md):
   calculate the NCA parameters from a data object into a `PKNCAresult`
   object
 

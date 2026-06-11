@@ -29,4 +29,4 @@ A data.frame with one row and columns named "r.squared",
 
 ## See also
 
-[`pk.calc.half.life()`](http://humanpred.github.io/pknca/reference/pk.calc.half.life.md)
+[`pk.calc.half.life()`](https://humanpred.github.io/pknca/reference/pk.calc.half.life.md)

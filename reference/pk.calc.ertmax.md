@@ -37,7 +37,7 @@ pk.calc.ertmax(
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 - check:
 
@@ -56,9 +56,9 @@ available
 ## See also
 
 Other Urine/Excretion parameters:
-[`pk.calc.ae()`](http://humanpred.github.io/pknca/reference/pk.calc.ae.md),
-[`pk.calc.clr()`](http://humanpred.github.io/pknca/reference/pk.calc.clr.md),
-[`pk.calc.ermax()`](http://humanpred.github.io/pknca/reference/pk.calc.ermax.md),
-[`pk.calc.ertlst()`](http://humanpred.github.io/pknca/reference/pk.calc.ertlst.md),
-[`pk.calc.fe()`](http://humanpred.github.io/pknca/reference/pk.calc.fe.md),
-[`pk.calc.volpk()`](http://humanpred.github.io/pknca/reference/pk.calc.volpk.md)
+[`pk.calc.ae()`](https://humanpred.github.io/pknca/reference/pk.calc.ae.md),
+[`pk.calc.clr()`](https://humanpred.github.io/pknca/reference/pk.calc.clr.md),
+[`pk.calc.ermax()`](https://humanpred.github.io/pknca/reference/pk.calc.ermax.md),
+[`pk.calc.ertlst()`](https://humanpred.github.io/pknca/reference/pk.calc.ertlst.md),
+[`pk.calc.fe()`](https://humanpred.github.io/pknca/reference/pk.calc.fe.md),
+[`pk.calc.volpk()`](https://humanpred.github.io/pknca/reference/pk.calc.volpk.md)

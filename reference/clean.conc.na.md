@@ -26,7 +26,7 @@ clean.conc.na(conc, time, ..., options = list(), conc.na = NULL, check = TRUE)
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 - conc.na:
 
@@ -35,7 +35,7 @@ clean.conc.na(conc, time, ..., options = list(), conc.na = NULL, check = TRUE)
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
+  [`assert_conc_time()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 ## Value
 
@@ -45,4 +45,4 @@ cleaned as requested relative to NA in the concentration.
 ## See also
 
 Other Data cleaners:
-[`clean.conc.blq()`](http://humanpred.github.io/pknca/reference/clean.conc.blq.md)
+[`clean.conc.blq()`](https://humanpred.github.io/pknca/reference/clean.conc.blq.md)

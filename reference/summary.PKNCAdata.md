@@ -19,4 +19,4 @@ summary(object, ...)
 - ...:
 
   arguments passed on to
-  [`print.PKNCAdata()`](http://humanpred.github.io/pknca/reference/print.PKNCAdata.md)
+  [`print.PKNCAdata()`](https://humanpred.github.io/pknca/reference/print.PKNCAdata.md)

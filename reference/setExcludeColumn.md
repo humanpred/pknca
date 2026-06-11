@@ -2,7 +2,7 @@
 
 This function adds the exclude column to an object. To change the
 exclude value, use the
-[`exclude()`](http://humanpred.github.io/pknca/reference/exclude.md)
+[`exclude()`](https://humanpred.github.io/pknca/reference/exclude.md)
 function.
 
 ## Usage

@@ -40,7 +40,7 @@ choose.auc.intervals(
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 - single.dose.aucs:
 
@@ -50,22 +50,22 @@ choose.auc.intervals(
 
 A data frame with columns for `start`, `end`, `auc.type`, and
 `half.life`. See
-[`check.interval.specification()`](http://humanpred.github.io/pknca/reference/check.interval.specification.md)
+[`check.interval.specification()`](https://humanpred.github.io/pknca/reference/check.interval.specification.md)
 for column definitions. The data frame may have zero rows if no
 intervals could be found.
 
 ## See also
 
-[`pk.calc.auc()`](http://humanpred.github.io/pknca/reference/pk.calc.auxc.md),
-[`pk.calc.aumc()`](http://humanpred.github.io/pknca/reference/pk.calc.auxc.md),
-[`pk.calc.half.life()`](http://humanpred.github.io/pknca/reference/pk.calc.half.life.md),
-[`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md)
+[`pk.calc.auc()`](https://humanpred.github.io/pknca/reference/pk.calc.auxc.md),
+[`pk.calc.aumc()`](https://humanpred.github.io/pknca/reference/pk.calc.auxc.md),
+[`pk.calc.half.life()`](https://humanpred.github.io/pknca/reference/pk.calc.half.life.md),
+[`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md)
 
 Other Interval specifications:
-[`add.interval.col()`](http://humanpred.github.io/pknca/reference/add.interval.col.md),
-[`check.interval.specification()`](http://humanpred.github.io/pknca/reference/check.interval.specification.md),
-[`get.interval.cols()`](http://humanpred.github.io/pknca/reference/get.interval.cols.md),
-[`get.parameter.deps()`](http://humanpred.github.io/pknca/reference/get.parameter.deps.md)
+[`add.interval.col()`](https://humanpred.github.io/pknca/reference/add.interval.col.md),
+[`check.interval.specification()`](https://humanpred.github.io/pknca/reference/check.interval.specification.md),
+[`get.interval.cols()`](https://humanpred.github.io/pknca/reference/get.interval.cols.md),
+[`get.parameter.deps()`](https://humanpred.github.io/pknca/reference/get.parameter.deps.md)
 
 Other Interval determination:
-[`find.tau()`](http://humanpred.github.io/pknca/reference/find.tau.md)
+[`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md)

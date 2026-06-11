@@ -37,7 +37,7 @@ choose_interval_method(conc, time, tlast, method, auc.type, options)
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 ## Value
 

@@ -31,7 +31,7 @@ pk.calc.tmin(conc, time, options = list(), first.tmin = NULL, check = TRUE)
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 - first.tmin:
 
@@ -42,7 +42,7 @@ pk.calc.tmin(conc, time, options = list(), first.tmin = NULL, check = TRUE)
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
+  [`assert_conc_time()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 ## Value
 
@@ -51,9 +51,9 @@ The time of the minimum concentration
 ## See also
 
 Other NCA time parameters:
-[`pk.calc.tlag()`](http://humanpred.github.io/pknca/reference/pk.calc.tlag.md),
-[`pk.calc.tlast()`](http://humanpred.github.io/pknca/reference/pk.calc.tlast.md),
-[`pk.calc.tmax()`](http://humanpred.github.io/pknca/reference/pk.calc.tmax.md)
+[`pk.calc.tlag()`](https://humanpred.github.io/pknca/reference/pk.calc.tlag.md),
+[`pk.calc.tlast()`](https://humanpred.github.io/pknca/reference/pk.calc.tlast.md),
+[`pk.calc.tmax()`](https://humanpred.github.io/pknca/reference/pk.calc.tmax.md)
 
 ## Examples
 

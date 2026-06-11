@@ -22,7 +22,7 @@ If none depend on `x`, then the result will be an empty vector.
 ## See also
 
 Other Interval specifications:
-[`add.interval.col()`](http://humanpred.github.io/pknca/reference/add.interval.col.md),
-[`check.interval.specification()`](http://humanpred.github.io/pknca/reference/check.interval.specification.md),
-[`choose.auc.intervals()`](http://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
-[`get.interval.cols()`](http://humanpred.github.io/pknca/reference/get.interval.cols.md)
+[`add.interval.col()`](https://humanpred.github.io/pknca/reference/add.interval.col.md),
+[`check.interval.specification()`](https://humanpred.github.io/pknca/reference/check.interval.specification.md),
+[`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
+[`get.interval.cols()`](https://humanpred.github.io/pknca/reference/get.interval.cols.md)

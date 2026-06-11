@@ -26,7 +26,7 @@ pk.calc.ceoi(conc, time, duration.dose = NA, check = TRUE)
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
+  [`assert_conc_time()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 ## Value
 
@@ -36,9 +36,9 @@ The concentration at the end of the infusion, `NA` if `duration.dose` is
 ## See also
 
 Other NCA parameters for concentrations during the intervals:
-[`pk.calc.c0()`](http://humanpred.github.io/pknca/reference/pk.calc.c0.md),
-[`pk.calc.cav()`](http://humanpred.github.io/pknca/reference/pk.calc.cav.md),
-[`pk.calc.clast.obs()`](http://humanpred.github.io/pknca/reference/pk.calc.clast.obs.md),
-[`pk.calc.cmax()`](http://humanpred.github.io/pknca/reference/pk.calc.cmax.md),
-[`pk.calc.count_conc()`](http://humanpred.github.io/pknca/reference/pk.calc.count_conc.md),
-[`pk.calc.ctrough()`](http://humanpred.github.io/pknca/reference/pk.calc.ctrough.md)
+[`pk.calc.c0()`](https://humanpred.github.io/pknca/reference/pk.calc.c0.md),
+[`pk.calc.cav()`](https://humanpred.github.io/pknca/reference/pk.calc.cav.md),
+[`pk.calc.clast.obs()`](https://humanpred.github.io/pknca/reference/pk.calc.clast.obs.md),
+[`pk.calc.cmax()`](https://humanpred.github.io/pknca/reference/pk.calc.cmax.md),
+[`pk.calc.count_conc()`](https://humanpred.github.io/pknca/reference/pk.calc.count_conc.md),
+[`pk.calc.ctrough()`](https://humanpred.github.io/pknca/reference/pk.calc.ctrough.md)

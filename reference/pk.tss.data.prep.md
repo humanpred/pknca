@@ -51,7 +51,7 @@ pk.tss.data.prep(
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 - conc.blq:
 
@@ -61,12 +61,12 @@ pk.tss.data.prep(
 - conc.na:
 
   How to handle NA concentrations. (See
-  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md))
+  [`clean.conc.na()`](https://humanpred.github.io/pknca/reference/clean.conc.na.md))
 
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
+  [`assert_conc_time()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 - ...:
 

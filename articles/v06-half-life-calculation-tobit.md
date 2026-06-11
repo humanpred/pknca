@@ -120,7 +120,7 @@ half-life estimate across a broad range of data.
 ### Basic usage: a single subject
 
 The `hl_method` argument to
-[`pk.calc.half.life()`](http://humanpred.github.io/pknca/reference/pk.calc.half.life.md)
+[`pk.calc.half.life()`](https://humanpred.github.io/pknca/reference/pk.calc.half.life.md)
 selects the estimation method. When using `"tobit"`, the `lloq` argument
 is required and must be either a scalar (one LLOQ applied to all
 observations) or a vector the same length as `conc`.
@@ -250,9 +250,9 @@ PKNCA.options(default = TRUE)
 ### Full NCA workflow with PKNCAdata
 
 When running a full NCA, provide the LLOQ through the `lloq` argument to
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md).
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md).
 It is then automatically passed to
-[`pk.calc.half.life()`](http://humanpred.github.io/pknca/reference/pk.calc.half.life.md)
+[`pk.calc.half.life()`](https://humanpred.github.io/pknca/reference/pk.calc.half.life.md)
 when the Tobit method is selected (here via the `hl_method` option).
 `lloq` may be a numeric scalar applied to all observations or the name
 of a column in the concentration data giving a per-observation LLOQ.

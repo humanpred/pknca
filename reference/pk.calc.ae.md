@@ -35,13 +35,13 @@ The units for the concentration and volume should match such that
 
 ## See also
 
-[`pk.calc.clr()`](http://humanpred.github.io/pknca/reference/pk.calc.clr.md),
-[`pk.calc.fe()`](http://humanpred.github.io/pknca/reference/pk.calc.fe.md)
+[`pk.calc.clr()`](https://humanpred.github.io/pknca/reference/pk.calc.clr.md),
+[`pk.calc.fe()`](https://humanpred.github.io/pknca/reference/pk.calc.fe.md)
 
 Other Urine/Excretion parameters:
-[`pk.calc.clr()`](http://humanpred.github.io/pknca/reference/pk.calc.clr.md),
-[`pk.calc.ermax()`](http://humanpred.github.io/pknca/reference/pk.calc.ermax.md),
-[`pk.calc.ertlst()`](http://humanpred.github.io/pknca/reference/pk.calc.ertlst.md),
-[`pk.calc.ertmax()`](http://humanpred.github.io/pknca/reference/pk.calc.ertmax.md),
-[`pk.calc.fe()`](http://humanpred.github.io/pknca/reference/pk.calc.fe.md),
-[`pk.calc.volpk()`](http://humanpred.github.io/pknca/reference/pk.calc.volpk.md)
+[`pk.calc.clr()`](https://humanpred.github.io/pknca/reference/pk.calc.clr.md),
+[`pk.calc.ermax()`](https://humanpred.github.io/pknca/reference/pk.calc.ermax.md),
+[`pk.calc.ertlst()`](https://humanpred.github.io/pknca/reference/pk.calc.ertlst.md),
+[`pk.calc.ertmax()`](https://humanpred.github.io/pknca/reference/pk.calc.ertmax.md),
+[`pk.calc.fe()`](https://humanpred.github.io/pknca/reference/pk.calc.fe.md),
+[`pk.calc.volpk()`](https://humanpred.github.io/pknca/reference/pk.calc.volpk.md)

@@ -10,7 +10,7 @@ calculation interval.
 
 The current list of imputation methods built into PKNCA can be found by
 looking at
-[`?PKNCA_impute_method`](http://humanpred.github.io/pknca/reference/PKNCA_impute_method.md):
+[`?PKNCA_impute_method`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md):
 
 ``` r
 
@@ -56,15 +56,15 @@ will be performed if the imputation method is requested as `NA` or `""`.
 - To select no imputation (the default), indicate the imputation by `NA`
   or `""`.
 - To set imputation on the full dataset, use the `impute` argument to
-  [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md)
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
   to specify the methods to use.
 - To set imputation by interval, use the `impute` argument to
-  [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md)
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
   to specify the column in the intervals dataset to use for imputation.
 - You cannot specify imputation for both the full dataset and by
   interval at the same time. And, if a column name in the dataset
   matches the `impute` argument to
-  [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md),
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md),
   that will be used.
 
 Imputation method functions are named
@@ -84,7 +84,7 @@ will be applied in order.
 
 If an imputation applies to the full dataset, it can be provided in the
 `impute` argument to
-[`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md):
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md):
 
 ``` r
 
@@ -109,7 +109,7 @@ summary(nca_obj)
 
 If an imputation applies to specific intervals, the column in the
 interval data.frame can be provided in the `impute` argument to
-[`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md):
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md):
 
 ``` r
 

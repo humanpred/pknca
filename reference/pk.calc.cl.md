@@ -43,5 +43,5 @@ Press, 2000. 86-7.
 ## See also
 
 Other Clearance and volume parameters:
-[`pk.calc.kel()`](http://humanpred.github.io/pknca/reference/pk.calc.kel.md),
-[`pk.calc.vz()`](http://humanpred.github.io/pknca/reference/pk.calc.vz.md)
+[`pk.calc.kel()`](https://humanpred.github.io/pknca/reference/pk.calc.kel.md),
+[`pk.calc.vz()`](https://humanpred.github.io/pknca/reference/pk.calc.vz.md)

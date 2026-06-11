@@ -61,4 +61,4 @@ The value of the various functions or NA if too many values are missing
 
 ## See also
 
-[`pk.business()`](http://humanpred.github.io/pknca/reference/pk.business.md)
+[`pk.business()`](https://humanpred.github.io/pknca/reference/pk.business.md)

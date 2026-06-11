@@ -41,5 +41,5 @@ vss is `cl*mrt`.
 ## See also
 
 Other Clearance and volume parameters:
-[`pk.calc.cl()`](http://humanpred.github.io/pknca/reference/pk.calc.cl.md),
-[`pk.calc.kel()`](http://humanpred.github.io/pknca/reference/pk.calc.kel.md)
+[`pk.calc.cl()`](https://humanpred.github.io/pknca/reference/pk.calc.cl.md),
+[`pk.calc.kel()`](https://humanpred.github.io/pknca/reference/pk.calc.kel.md)

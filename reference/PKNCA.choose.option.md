@@ -23,7 +23,7 @@ PKNCA.choose.option(name, value = NULL, options = list())
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 ## Value
 
@@ -33,5 +33,5 @@ there then from the current settings.
 ## See also
 
 Other PKNCA calculation and summary settings:
-[`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md),
-[`PKNCA.set.summary()`](http://humanpred.github.io/pknca/reference/PKNCA.set.summary.md)
+[`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md),
+[`PKNCA.set.summary()`](https://humanpred.github.io/pknca/reference/PKNCA.set.summary.md)

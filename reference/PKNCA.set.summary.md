@@ -21,7 +21,7 @@ PKNCA.set.summary(
 
   The parameter name or a vector of parameter names. It must have
   already been defined (see
-  [`add.interval.col()`](http://humanpred.github.io/pknca/reference/add.interval.col.md)).
+  [`add.interval.col()`](https://humanpred.github.io/pknca/reference/add.interval.col.md)).
 
 - description:
 
@@ -59,11 +59,11 @@ All current summary settings (invisibly)
 
 ## See also
 
-[`summary.PKNCAresults()`](http://humanpred.github.io/pknca/reference/summary.PKNCAresults.md)
+[`summary.PKNCAresults()`](https://humanpred.github.io/pknca/reference/summary.PKNCAresults.md)
 
 Other PKNCA calculation and summary settings:
-[`PKNCA.choose.option()`](http://humanpred.github.io/pknca/reference/PKNCA.choose.option.md),
-[`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md)
+[`PKNCA.choose.option()`](https://humanpred.github.io/pknca/reference/PKNCA.choose.option.md),
+[`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md)
 
 ## Examples
 

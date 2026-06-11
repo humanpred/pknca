@@ -27,6 +27,6 @@ The time associated with the first increasing concentration
 ## See also
 
 Other NCA time parameters:
-[`pk.calc.tlast()`](http://humanpred.github.io/pknca/reference/pk.calc.tlast.md),
-[`pk.calc.tmax()`](http://humanpred.github.io/pknca/reference/pk.calc.tmax.md),
-[`pk.calc.tmin()`](http://humanpred.github.io/pknca/reference/pk.calc.tmin.md)
+[`pk.calc.tlast()`](https://humanpred.github.io/pknca/reference/pk.calc.tlast.md),
+[`pk.calc.tmax()`](https://humanpred.github.io/pknca/reference/pk.calc.tmax.md),
+[`pk.calc.tmin()`](https://humanpred.github.io/pknca/reference/pk.calc.tmin.md)

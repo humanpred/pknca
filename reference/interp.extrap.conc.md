@@ -96,12 +96,12 @@ interp.extrap.conc.dose(
 
   The last observed concentration above the limit of quantification. If
   not given, `clast` is calculated from
-  [`pk.calc.clast.obs()`](http://humanpred.github.io/pknca/reference/pk.calc.clast.obs.md)
+  [`pk.calc.clast.obs()`](https://humanpred.github.io/pknca/reference/pk.calc.clast.obs.md)
 
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 - method:
 
@@ -130,12 +130,12 @@ interp.extrap.conc.dose(
 - conc.na:
 
   How to handle NA concentrations. (See
-  [`clean.conc.na()`](http://humanpred.github.io/pknca/reference/clean.conc.na.md))
+  [`clean.conc.na()`](https://humanpred.github.io/pknca/reference/clean.conc.na.md))
 
 - check:
 
   Run
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)?
+  [`assert_conc_time()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md)?
 
 - conc.origin:
 
@@ -202,7 +202,7 @@ An `NA` value for the `lambda.z` parameter will prevent extrapolation.
 of the concentration occurs at the time of dosing. If
 `route.dose == "intravascular"` and `duration.dose == 0` then
 extrapolation occurs for an IV bolus using
-[`pk.calc.c0()`](http://humanpred.github.io/pknca/reference/pk.calc.c0.md)
+[`pk.calc.c0()`](https://humanpred.github.io/pknca/reference/pk.calc.c0.md)
 with the data after dosing. Otherwise (either
 `route.dose == "extravascular"` or `duration.dose > 0`), extrapolation
 occurs using the concentrations before dosing and estimating the
@@ -226,6 +226,6 @@ dosing.
 
 ## See also
 
-[`pk.calc.clast.obs()`](http://humanpred.github.io/pknca/reference/pk.calc.clast.obs.md),
-[`pk.calc.half.life()`](http://humanpred.github.io/pknca/reference/pk.calc.half.life.md),
-[`pk.calc.c0()`](http://humanpred.github.io/pknca/reference/pk.calc.c0.md)
+[`pk.calc.clast.obs()`](https://humanpred.github.io/pknca/reference/pk.calc.clast.obs.md),
+[`pk.calc.half.life()`](https://humanpred.github.io/pknca/reference/pk.calc.half.life.md),
+[`pk.calc.c0()`](https://humanpred.github.io/pknca/reference/pk.calc.c0.md)

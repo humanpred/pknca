@@ -33,7 +33,7 @@ to the inner list.
 ## See also
 
 Other Sparse Methods:
-[`pk.calc.sparse_auc()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md),
-[`pk.calc.sparse_aumc()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.md),
-[`sparse_auc_weight_linear()`](http://humanpred.github.io/pknca/reference/sparse_auc_weight_linear.md),
-[`sparse_mean()`](http://humanpred.github.io/pknca/reference/sparse_mean.md)
+[`pk.calc.sparse_auc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md),
+[`pk.calc.sparse_aumc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.md),
+[`sparse_auc_weight_linear()`](https://humanpred.github.io/pknca/reference/sparse_auc_weight_linear.md),
+[`sparse_mean()`](https://humanpred.github.io/pknca/reference/sparse_mean.md)

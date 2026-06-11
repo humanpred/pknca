@@ -25,6 +25,6 @@ thalf.eff is `log(2)*mrt`.
 ## See also
 
 Other Half-life and elimination:
-[`adj.r.squared()`](http://humanpred.github.io/pknca/reference/adj.r.squared.md),
-[`pk.calc.aucpext()`](http://humanpred.github.io/pknca/reference/pk.calc.aucpext.md),
-[`pk.calc.half.life()`](http://humanpred.github.io/pknca/reference/pk.calc.half.life.md)
+[`adj.r.squared()`](https://humanpred.github.io/pknca/reference/adj.r.squared.md),
+[`pk.calc.aucpext()`](https://humanpred.github.io/pknca/reference/pk.calc.aucpext.md),
+[`pk.calc.half.life()`](https://humanpred.github.io/pknca/reference/pk.calc.half.life.md)

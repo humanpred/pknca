@@ -18,7 +18,7 @@ pk.tss.monoexponential.population(
 - data:
 
   a data frame as prepared by
-  [`pk.tss.data.prep()`](http://humanpred.github.io/pknca/reference/pk.tss.data.prep.md).
+  [`pk.tss.data.prep()`](https://humanpred.github.io/pknca/reference/pk.tss.data.prep.md).
   It must contain at least columns for `subject`, `time`, `conc`, and
   `tss.constant`.
 

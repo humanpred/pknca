@@ -32,4 +32,4 @@ unary operator, and NULL if the operator is not found.
 ## See also
 
 Other Formula parsing:
-[`parse_formula_to_cols()`](http://humanpred.github.io/pknca/reference/parse_formula_to_cols.md)
+[`parse_formula_to_cols()`](https://humanpred.github.io/pknca/reference/parse_formula_to_cols.md)

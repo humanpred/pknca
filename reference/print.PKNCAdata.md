@@ -18,6 +18,6 @@ print(x, ...)
 - ...:
 
   Arguments passed on to
-  [`print.PKNCAconc()`](http://humanpred.github.io/pknca/reference/print.PKNCAconc.md)
+  [`print.PKNCAconc()`](https://humanpred.github.io/pknca/reference/print.PKNCAconc.md)
   and
-  [`print.PKNCAdose()`](http://humanpred.github.io/pknca/reference/print.PKNCAconc.md)
+  [`print.PKNCAdose()`](https://humanpred.github.io/pknca/reference/print.PKNCAconc.md)

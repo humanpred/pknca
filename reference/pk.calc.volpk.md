@@ -21,9 +21,9 @@ The sum of urine volumes for the interval
 ## See also
 
 Other Urine/Excretion parameters:
-[`pk.calc.ae()`](http://humanpred.github.io/pknca/reference/pk.calc.ae.md),
-[`pk.calc.clr()`](http://humanpred.github.io/pknca/reference/pk.calc.clr.md),
-[`pk.calc.ermax()`](http://humanpred.github.io/pknca/reference/pk.calc.ermax.md),
-[`pk.calc.ertlst()`](http://humanpred.github.io/pknca/reference/pk.calc.ertlst.md),
-[`pk.calc.ertmax()`](http://humanpred.github.io/pknca/reference/pk.calc.ertmax.md),
-[`pk.calc.fe()`](http://humanpred.github.io/pknca/reference/pk.calc.fe.md)
+[`pk.calc.ae()`](https://humanpred.github.io/pknca/reference/pk.calc.ae.md),
+[`pk.calc.clr()`](https://humanpred.github.io/pknca/reference/pk.calc.clr.md),
+[`pk.calc.ermax()`](https://humanpred.github.io/pknca/reference/pk.calc.ermax.md),
+[`pk.calc.ertlst()`](https://humanpred.github.io/pknca/reference/pk.calc.ertlst.md),
+[`pk.calc.ertmax()`](https://humanpred.github.io/pknca/reference/pk.calc.ertmax.md),
+[`pk.calc.fe()`](https://humanpred.github.io/pknca/reference/pk.calc.fe.md)

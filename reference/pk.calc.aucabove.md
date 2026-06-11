@@ -31,7 +31,7 @@ pk.calc.aucabove(conc, time, conc_above = NA_real_, ..., options = list())
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 ## Value
 

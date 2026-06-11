@@ -38,5 +38,5 @@ method does not apply).
 ## See also
 
 Other PKNCA object extractors:
-[`getDepVar()`](http://humanpred.github.io/pknca/reference/getDepVar.md),
-[`getIndepVar()`](http://humanpred.github.io/pknca/reference/getIndepVar.md)
+[`getDepVar()`](https://humanpred.github.io/pknca/reference/getDepVar.md),
+[`getIndepVar()`](https://humanpred.github.io/pknca/reference/getIndepVar.md)

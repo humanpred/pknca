@@ -22,7 +22,7 @@ summarized results. (Please note that this and the other examples in
 this document are intended to show the typical workflow, but they are
 not intended to run directly. For an example to run directly, please see
 [the theophylline
-example](http://humanpred.github.io/pknca/articles/v02-example-theophylline.md).)
+example](https://humanpred.github.io/pknca/articles/v02-example-theophylline.md).)
 
 ``` r
 
@@ -641,7 +641,7 @@ To use [`update()`](https://rdrr.io/r/stats/update.html), give it your
 existing results and the new `PKNCAdata` object you want to use.
 
 Starting from the theophylline example in the [Quick
-Start](http://humanpred.github.io/pknca/articles/Quick%20Start) section
+Start](https://humanpred.github.io/pknca/articles/Quick%20Start) section
 above:
 
 ``` r

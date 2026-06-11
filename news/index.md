@@ -50,9 +50,9 @@ CRAN release: 2025-05-08
 
 ### New Features
 
-- [`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md)
+- [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
   and
-  [`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md)
+  [`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md)
   can now accept unit specifications as either column names or units to
   use ([\#336](https://github.com/humanpred/pknca/issues/336)).
 - PKNCA options can now use `tmax` as a reference for BLQ handling by
@@ -61,10 +61,10 @@ CRAN release: 2025-05-08
 - A new parameter `count_conc_measured` was added to enable quality
   checks, typically on AUC measurements. An associated exclusion
   function,
-  [`exclude_nca_count_conc_measured()`](http://humanpred.github.io/pknca/reference/exclude_nca.md)
+  [`exclude_nca_count_conc_measured()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
   was also added.
 - The
-  [`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md)
+  [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
   arguments of `include_half.life` and `exclude_half.life` now allow
   `NA` values. If all values are `NA`, then no inclusion or exclusion is
   applied (the interval is treated as-is, like the argument had not been
@@ -80,11 +80,11 @@ CRAN release: 2025-05-08
   the option `allow_partial_missing_units = TRUE`.
   ([\#398](https://github.com/humanpred/pknca/issues/398))
 - A new function
-  [`get_halflife_points()`](http://humanpred.github.io/pknca/reference/get_halflife_points.md)
+  [`get_halflife_points()`](https://humanpred.github.io/pknca/reference/get_halflife_points.md)
   lets users know which points were used for half-life calculation.
   ([\#387](https://github.com/humanpred/pknca/issues/387))
 - A new function
-  [`exclude_nca_min.hl.adj.r.squared()`](http://humanpred.github.io/pknca/reference/exclude_nca.md)
+  [`exclude_nca_min.hl.adj.r.squared()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
   to allow exclusion of half-life results based on a minimum adjusted
   r-squared threshold.
 
@@ -102,7 +102,7 @@ CRAN release: 2025-05-08
   versions of R
   ([\#304](https://github.com/humanpred/pknca/issues/304)).
 - Missing dosing times to
-  [`pk.calc.c0()`](http://humanpred.github.io/pknca/reference/pk.calc.c0.md)
+  [`pk.calc.c0()`](https://humanpred.github.io/pknca/reference/pk.calc.c0.md)
   will not cause an error
   ([\#344](https://github.com/humanpred/pknca/issues/344))
 - [`getGroups()`](https://rdrr.io/pkg/nlme/man/getGroups.html) includes
@@ -135,7 +135,7 @@ CRAN release: 2024-06-19
   could be fewer than the number of rows. Now the number of subjects is
   counted (fix [\#223](https://github.com/humanpred/pknca/issues/223)).
 - Extra column in the `intervals` argument to
-  [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md)
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
   will no longer cause an error (fix
   [\#238](https://github.com/humanpred/pknca/issues/238))
 - Many new `assert_*` functions were added to standardize input checking
@@ -156,7 +156,7 @@ CRAN release: 2024-06-19
   to the full concentration-time profile for the group with the
   `conc.group` and `time.group` arguments to the imputation functions.
   And,
-  [`PKNCA_impute_method_start_predose()`](http://humanpred.github.io/pknca/reference/PKNCA_impute_method.md)
+  [`PKNCA_impute_method_start_predose()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md)
   imputation performs more reasonably when the end of the interval is
   infinite.
 - A progress bar is now available via the `PKNCA.options(progress = )`
@@ -167,17 +167,17 @@ CRAN release: 2024-06-19
   from the intervals in the NCA results. Note that these are not
   included in the summary groups by default.
 - A new argument “filter_requested” for
-  [`as.data.frame.PKNCAresults()`](http://humanpred.github.io/pknca/reference/as.data.frame.PKNCAresults.md)
+  [`as.data.frame.PKNCAresults()`](https://humanpred.github.io/pknca/reference/as.data.frame.PKNCAresults.md)
   allows you to filter only to requested results from a PKNCAresults
   object.
-- [`pknca_units_table()`](http://humanpred.github.io/pknca/reference/pknca_units_table.md)
+- [`pknca_units_table()`](https://humanpred.github.io/pknca/reference/pknca_units_table.md)
   now has four new arguments to allow for simplified automatic
   conversion from source units to desired reporting units, `concu_pref`,
   `doseu_pref`, `amountu_pref`, and `timeu_pref`
   ([\#197](https://github.com/humanpred/pknca/issues/197))
 - Extraction of PKNCA objects from within other PKNCA objects is now
   supported by various `as_PKNCA*` functions like
-  [`as_PKNCAconc()`](http://humanpred.github.io/pknca/reference/as_PKNCAconc.md)
+  [`as_PKNCAconc()`](https://humanpred.github.io/pknca/reference/as_PKNCAconc.md)
   which can be used to extract the concentration data from within a
   PKNCAdata or PKNCAresults object
   ([\#278](https://github.com/humanpred/pknca/issues/278))
@@ -195,11 +195,11 @@ CRAN release: 2024-06-19
 ### Bugs fixed
 
 - `superpostion()` and the
-  [`interp.extrap.conc()`](http://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
+  [`interp.extrap.conc()`](https://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
   family of functions now respect the interpolation and extrapolation
   types requested rather than using default.
 - Concentration extrapolation with
-  [`extrapolate.conc()`](http://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
+  [`extrapolate.conc()`](https://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
   using the “AUCall” method now has decreasing instead of increasing
   concentrations
   ([\#249](https://github.com/humanpred/pknca/issues/249)).
@@ -211,31 +211,31 @@ CRAN release: 2024-06-19
 
 - The arguments `interp.method` and `extrap.method` have been replaced
   with `method` and `auc.type` in the
-  [`interp.extrap.conc()`](http://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
+  [`interp.extrap.conc()`](https://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
   family of functions for consistency with the rest of PKNCA (fix
   [\#244](https://github.com/humanpred/pknca/issues/244))
 - The AIC.list() function is no longer exported (it was never intended
   to be an external function).
 - The `depends` argument to
-  [`add.interval.col()`](http://humanpred.github.io/pknca/reference/add.interval.col.md)
+  [`add.interval.col()`](https://humanpred.github.io/pknca/reference/add.interval.col.md)
   must either be NULL or a character vector.
 - The names of the `fun.linear`, `fun.log`, and `fun.inf` arguments to
   `pk.calc.auxc` were changed to use underscores. (If you were using
   those directly, please reach out as they were intended to be internal
   arguments, and I would like to know your use case for changing them.)
-- [`check.conc.time()`](http://humanpred.github.io/pknca/reference/defunct.md)
+- [`check.conc.time()`](https://humanpred.github.io/pknca/reference/defunct.md)
   is defunct (it was never intended to be an external function). It has
   been replaced by
-  [`assert_conc()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md),
-  [`assert_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md)
+  [`assert_conc()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md),
+  [`assert_time()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md)
   and
-  [`assert_conc_time()`](http://humanpred.github.io/pknca/reference/assert_conc_time.md).
+  [`assert_conc_time()`](https://humanpred.github.io/pknca/reference/assert_conc_time.md).
 - The clast.obs parameter is now zero when all concentrations are zero
   (see [\#253](https://github.com/humanpred/pknca/issues/253) for part
   of the reason).
 - (This is not likely to be important for most users.) The `business...`
   functions
-  (e.g. [`business.geomean()`](http://humanpred.github.io/pknca/reference/business.mean.md))
+  (e.g. [`business.geomean()`](https://humanpred.github.io/pknca/reference/business.mean.md))
   now include an attribute in non-`NA` results with `n`, the number of
   values included in the statistic.
 
@@ -260,7 +260,7 @@ CRAN release: 2024-06-19
 CRAN release: 2023-04-29
 
 - A minor change to
-  [`pk.calc.aucpext()`](http://humanpred.github.io/pknca/reference/pk.calc.aucpext.md)
+  [`pk.calc.aucpext()`](https://humanpred.github.io/pknca/reference/pk.calc.aucpext.md)
   was made so that it now returns `NA_real_` instead of `NaN`.
 - A minor change was made so that AUC and amount excreted (ae)
   calculations will provide an exclusion reason the result is `NA`.
@@ -295,12 +295,12 @@ CRAN release: 2022-10-16
 
 - Initial support for unit assignment and conversion has been added. See
   the `units` argument to the
-  [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md)
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
   function and the function
-  [`pknca_units_table()`](http://humanpred.github.io/pknca/reference/pknca_units_table.md).
+  [`pknca_units_table()`](https://humanpred.github.io/pknca/reference/pknca_units_table.md).
 - Initial support for imputation has been added. See the `impute`
   argument to the
-  [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md)
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
   function and the Data Imputation vignette.
 - With the addition of units, several outputs now will differ, if units
   are used:
@@ -321,14 +321,14 @@ CRAN release: 2022-10-16
     `pretty_names=FALSE` when calling the
     [`summary()`](https://rdrr.io/r/base/summary.html) function.
 - New, IV AUC calculation methods have been added.
-- [`pk.calc.time_above()`](http://humanpred.github.io/pknca/reference/pk.calc.time_above.md)
+- [`pk.calc.time_above()`](https://humanpred.github.io/pknca/reference/pk.calc.time_above.md)
   now uses the default AUC calculation method for interpolation of time
   above. And, it can use ‘lin up/log down’ interpolation.
 - PKNCA can now calculate parameters that require extra information by
   adding the extra information to the intervals data.frame. For example,
   add `conc_above` as a column to the intervals to allow calculation of
   `time_above`. With this change, the “conc_above”
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md)
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md)
   value has been removed.
 - Added dplyr joins, filter, mutate, group_by, and ungroup to allow
   modification of PKNCA objects after creation. (Note that these
@@ -340,11 +340,11 @@ CRAN release: 2022-10-16
 - Some functions that were intended to be internal were removed:
   - All `getData()` functions were removed.
   - The
-    [`getDataName()`](http://humanpred.github.io/pknca/reference/getDataName.md)
+    [`getDataName()`](https://humanpred.github.io/pknca/reference/getDataName.md)
     function for PKNCAdata objects was removed.
-- [`interpolate.conc()`](http://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
+- [`interpolate.conc()`](https://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
   and
-  [`interp.extrap.conc()`](http://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
+  [`interp.extrap.conc()`](https://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
   now give more errors with missing (NA) input. This should not affect
   typical NCA (where NA values are dropped), but it may affect direct
   calls to the functions themselves.
@@ -405,7 +405,7 @@ CRAN release: 2020-04-12
 CRAN release: 2020-02-28
 
 - New feature: the
-  [`time_calc()`](http://humanpred.github.io/pknca/reference/time_calc.md)
+  [`time_calc()`](https://humanpred.github.io/pknca/reference/time_calc.md)
   function will help convert time values to be relative to events (such
   as calculating time after and before doses)
 - Fix issue summarizing results when “start” and “end” are dropped and
@@ -438,10 +438,10 @@ CRAN release: 2019-07-29
 - Breaking Change: `plot.PKNCAconc()` was moved to the pknca.reporting
   package (<https://github.com/humanpred/pknca.reporting>)
 - Breaking Change:
-  [`summary.PKNCAresults()`](http://humanpred.github.io/pknca/reference/summary.PKNCAresults.md)
+  [`summary.PKNCAresults()`](https://humanpred.github.io/pknca/reference/summary.PKNCAresults.md)
   now provides a caption including the summary method for each
   parameter. If you change summary functions using
-  [`PKNCA.set.summary()`](http://humanpred.github.io/pknca/reference/PKNCA.set.summary.md),
+  [`PKNCA.set.summary()`](https://humanpred.github.io/pknca/reference/PKNCA.set.summary.md),
   you must now use the `description` option to set the description of
   the summary.
 - Breaking Change: ptr now accurately uses ctrough instead of cmin (fix
@@ -453,7 +453,7 @@ CRAN release: 2019-07-29
   (default \< 3), an exclusion reason is added.
   ([\#102](https://github.com/humanpred/pknca/issues/102))
 - tibbles now work as the interval argument for
-  [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md)
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
   (fix [\#72](https://github.com/humanpred/pknca/issues/72))
 - Issue fixed with summarization of data that has exclusions. Exclusions
   are now correctly handled as missing instead of never calculated.
@@ -468,11 +468,11 @@ CRAN release: 2019-07-29
   [\#84](https://github.com/humanpred/pknca/issues/84)).
 - The “start” and “end” columns may now be dropped from the summary of
   `PKNCAresults` objects.
-- [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md)
+- [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
   is more restrictive on unknown arguments issuing an error when unknown
   arguments are present.
 - `intervals` argument to
-  [`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md)
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
   may now be a tibble (fixes
   [\#72](https://github.com/humanpred/pknca/issues/72)).
 - Documentation has been extensively updated (fixes

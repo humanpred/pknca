@@ -44,4 +44,4 @@ swing is `100*(cmax - cmin)/cmin`.
 ## See also
 
 Other Multiple-dose PK parameters:
-[`pk.calc.ptr()`](http://humanpred.github.io/pknca/reference/pk.calc.ptr.md)
+[`pk.calc.ptr()`](https://humanpred.github.io/pknca/reference/pk.calc.ptr.md)

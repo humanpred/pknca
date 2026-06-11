@@ -13,9 +13,9 @@ pk.tss(..., type = c("monoexponential", "stepwise.linear"), check = TRUE)
 - ...:
 
   Passed to
-  [`pk.tss.monoexponential()`](http://humanpred.github.io/pknca/reference/pk.tss.monoexponential.md)
+  [`pk.tss.monoexponential()`](https://humanpred.github.io/pknca/reference/pk.tss.monoexponential.md)
   or
-  [`pk.tss.stepwise.linear()`](http://humanpred.github.io/pknca/reference/pk.tss.stepwise.linear.md).
+  [`pk.tss.stepwise.linear()`](https://humanpred.github.io/pknca/reference/pk.tss.stepwise.linear.md).
 
 - type:
 
@@ -25,7 +25,7 @@ pk.tss(..., type = c("monoexponential", "stepwise.linear"), check = TRUE)
 - check:
 
   See
-  [`pk.tss.data.prep()`](http://humanpred.github.io/pknca/reference/pk.tss.data.prep.md)
+  [`pk.tss.data.prep()`](https://humanpred.github.io/pknca/reference/pk.tss.data.prep.md)
 
 ## Value
 
@@ -35,5 +35,5 @@ and/or `pk.tss.stepwise.linear`.
 ## See also
 
 Other Time to steady-state calculations:
-[`pk.tss.monoexponential()`](http://humanpred.github.io/pknca/reference/pk.tss.monoexponential.md),
-[`pk.tss.stepwise.linear()`](http://humanpred.github.io/pknca/reference/pk.tss.stepwise.linear.md)
+[`pk.tss.monoexponential()`](https://humanpred.github.io/pknca/reference/pk.tss.monoexponential.md),
+[`pk.tss.stepwise.linear()`](https://humanpred.github.io/pknca/reference/pk.tss.stepwise.linear.md)

@@ -27,4 +27,4 @@ The object with provenance as an added item
 
 ## See also
 
-[`checkProvenance()`](http://humanpred.github.io/pknca/reference/checkProvenance.md)
+[`checkProvenance()`](https://humanpred.github.io/pknca/reference/checkProvenance.md)

@@ -50,7 +50,7 @@ pk.calc.sparse_aumclast(conc, time, subject, ..., options = list())
 - options:
 
   List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](http://humanpred.github.io/pknca/reference/PKNCA.options.md))
+  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
 ## Value
 
@@ -81,7 +81,7 @@ Where:
 - \\w_i\\:
 
   is the weight applied to time i (same as for AUC, see
-  [`sparse_auc_weight_linear()`](http://humanpred.github.io/pknca/reference/sparse_auc_weight_linear.md))
+  [`sparse_auc_weight_linear()`](https://humanpred.github.io/pknca/reference/sparse_auc_weight_linear.md))
 
 - \\\overline{t_i C_i}\\:
 
@@ -94,7 +94,7 @@ Where:
 ## See also
 
 Other Sparse Methods:
-[`as_sparse_pk()`](http://humanpred.github.io/pknca/reference/as_sparse_pk.md),
-[`pk.calc.sparse_auc()`](http://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md),
-[`sparse_auc_weight_linear()`](http://humanpred.github.io/pknca/reference/sparse_auc_weight_linear.md),
-[`sparse_mean()`](http://humanpred.github.io/pknca/reference/sparse_mean.md)
+[`as_sparse_pk()`](https://humanpred.github.io/pknca/reference/as_sparse_pk.md),
+[`pk.calc.sparse_auc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md),
+[`sparse_auc_weight_linear()`](https://humanpred.github.io/pknca/reference/sparse_auc_weight_linear.md),
+[`sparse_mean()`](https://humanpred.github.io/pknca/reference/sparse_mean.md)

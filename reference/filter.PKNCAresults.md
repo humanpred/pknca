@@ -40,6 +40,6 @@ filter(.data, ..., .preserve = FALSE)
 ## See also
 
 Other dplyr verbs:
-[`group_by.PKNCAresults()`](http://humanpred.github.io/pknca/reference/group_by.PKNCAresults.md),
-[`inner_join.PKNCAresults()`](http://humanpred.github.io/pknca/reference/inner_join.PKNCAresults.md),
-[`mutate.PKNCAresults()`](http://humanpred.github.io/pknca/reference/mutate.PKNCAresults.md)
+[`group_by.PKNCAresults()`](https://humanpred.github.io/pknca/reference/group_by.PKNCAresults.md),
+[`inner_join.PKNCAresults()`](https://humanpred.github.io/pknca/reference/inner_join.PKNCAresults.md),
+[`mutate.PKNCAresults()`](https://humanpred.github.io/pknca/reference/mutate.PKNCAresults.md)

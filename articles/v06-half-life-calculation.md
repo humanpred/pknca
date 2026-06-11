@@ -122,7 +122,7 @@ stripping methods described above.
 To exclude specific points but otherwise use curve stripping, use the
 `exclude_half.life` option as the column name in the concentration
 dataset for
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md)
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
 as illustrated below.
 
 ``` r
@@ -179,7 +179,7 @@ performed.
 To exclude specific points but otherwise use curve stripping, use the
 `include_half.life` option as the column name in the concentration
 dataset for
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md)
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
 as illustrated below.
 
 ``` r

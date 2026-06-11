@@ -13,7 +13,7 @@ var_sparse_auc(sparse_pk)
 - sparse_pk:
 
   A sparse_pk object from
-  [`as_sparse_pk()`](http://humanpred.github.io/pknca/reference/as_sparse_pk.md)
+  [`as_sparse_pk()`](https://humanpred.github.io/pknca/reference/as_sparse_pk.md)
 
 ## Details
 

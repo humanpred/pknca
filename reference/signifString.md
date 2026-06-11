@@ -57,4 +57,4 @@ returned as `"Inf"`, `"NA"`, and `NaN`.
 ## See also
 
 [`signif()`](https://rdrr.io/r/base/Round.html),
-[`roundString()`](http://humanpred.github.io/pknca/reference/roundString.md)
+[`roundString()`](https://humanpred.github.io/pknca/reference/roundString.md)

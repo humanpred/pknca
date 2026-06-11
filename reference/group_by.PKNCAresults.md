@@ -72,6 +72,6 @@ ungroup(x, ...)
 ## See also
 
 Other dplyr verbs:
-[`filter.PKNCAresults()`](http://humanpred.github.io/pknca/reference/filter.PKNCAresults.md),
-[`inner_join.PKNCAresults()`](http://humanpred.github.io/pknca/reference/inner_join.PKNCAresults.md),
-[`mutate.PKNCAresults()`](http://humanpred.github.io/pknca/reference/mutate.PKNCAresults.md)
+[`filter.PKNCAresults()`](https://humanpred.github.io/pknca/reference/filter.PKNCAresults.md),
+[`inner_join.PKNCAresults()`](https://humanpred.github.io/pknca/reference/inner_join.PKNCAresults.md),
+[`mutate.PKNCAresults()`](https://humanpred.github.io/pknca/reference/mutate.PKNCAresults.md)

@@ -39,5 +39,5 @@ converge, and emits a warning.
 
 ## See also
 
-[`pk.calc.half.life()`](http://humanpred.github.io/pknca/reference/pk.calc.half.life.md),
-[`fit_half_life_tobit_LL()`](http://humanpred.github.io/pknca/reference/fit_half_life_tobit_LL.md)
+[`pk.calc.half.life()`](https://humanpred.github.io/pknca/reference/pk.calc.half.life.md),
+[`fit_half_life_tobit_LL()`](https://humanpred.github.io/pknca/reference/fit_half_life_tobit_LL.md)

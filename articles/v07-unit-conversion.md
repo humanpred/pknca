@@ -11,17 +11,17 @@ suppressPackageStartupMessages(
 
 PKNCA can assign and convert units for reporting. There are two ways to
 provide units to PKNCA: via the `units` argument to
-[`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md)
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
 or by specifying units with
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md)
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
 and/or
-[`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md).
+[`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md).
 If you provide the units argument to
-[`PKNCAdata()`](http://humanpred.github.io/pknca/reference/PKNCAdata.md),
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md),
 units given to
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md)
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
 or
-[`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md)
+[`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md)
 are ignored.
 
 ## Examples of each way to add units
@@ -30,13 +30,13 @@ are ignored.
 
 For more details on parts of this NCA calculation example unrelated to
 units, see the [theophylline example
-vignette](http://humanpred.github.io/pknca/articles/v02-example-theophylline.md).
+vignette](https://humanpred.github.io/pknca/articles/v02-example-theophylline.md).
 
 Provide the units for concentration (`concu`), time (`timeu`), and
 amount (`amountu`) to the
-[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md)
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
 function and for dose (`doseu`) to the
-[`PKNCAdose()`](http://humanpred.github.io/pknca/reference/PKNCAdose.md)
+[`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md)
 function.
 
 ``` r
@@ -118,7 +118,7 @@ summary(o_nca)
 
 For more details on parts of this NCA calculation example unrelated to
 units, see the [theophylline example
-vignette](http://humanpred.github.io/pknca/articles/v02-example-theophylline.md).
+vignette](https://humanpred.github.io/pknca/articles/v02-example-theophylline.md).
 
 ``` r
 
@@ -133,7 +133,7 @@ argument.
 
 Since no urine or other similar collection is performed, the `amountu`
 argument is omitted for
-[`pknca_units_table()`](http://humanpred.github.io/pknca/reference/pknca_units_table.md).
+[`pknca_units_table()`](https://humanpred.github.io/pknca/reference/pknca_units_table.md).
 
 ``` r
 
@@ -166,7 +166,7 @@ summary(o_nca)
 
 A unit assignment and conversion table can be generated as a data.frame
 to use with the
-[`pknca_units_table()`](http://humanpred.github.io/pknca/reference/pknca_units_table.md)
+[`pknca_units_table()`](https://humanpred.github.io/pknca/reference/pknca_units_table.md)
 function or manually.
 
 The simplest method each of the types of units for inputs and

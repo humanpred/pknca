@@ -200,7 +200,7 @@ single-dose in PKNCA.
 
 To assess multiple dose PK, the theophylline data will be extended from
 single to multiple doses using superposition (see the
-[superposition](http://humanpred.github.io/pknca/articles/v20-superposition.md)
+[superposition](https://humanpred.github.io/pknca/articles/v20-superposition.md)
 vignette for more information).
 
 ``` r
@@ -640,7 +640,7 @@ print(results_obj)
     ## attr(,"class")
     ## [1] "PKNCAresults" "list"        
     ## attr(,"provenance")
-    ## Provenance hash ee687a520af821aa354fef62aa53cba0 generated on 2026-06-11 01:08:57.656842 with R version 4.6.0 (2026-04-24).
+    ## Provenance hash ee687a520af821aa354fef62aa53cba0 generated on 2026-06-11 01:12:38.761585 with R version 4.6.0 (2026-04-24).
 
 ``` r
 

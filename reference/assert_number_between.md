@@ -24,7 +24,7 @@ assert_number_between(
 - ...:
 
   Passed to
-  [`assert_numeric_between()`](http://humanpred.github.io/pknca/reference/assert_numeric_between.md)
+  [`assert_numeric_between()`](https://humanpred.github.io/pknca/reference/assert_numeric_between.md)
 
 - na.ok:
 
