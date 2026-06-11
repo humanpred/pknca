@@ -24,6 +24,7 @@ pk.nca.interval(
   impute_method = NA_character_,
   include_half.life = NULL,
   exclude_half.life = NULL,
+  lloq = NULL,
   subject,
   sparse,
   interval,
@@ -75,6 +76,10 @@ half-life point selection will occur.}
 
 \item{exclude_half.life}{An optional boolean vector of the concentration
 measurements to exclude from the half-life calculation.}
+
+\item{lloq}{An optional scalar or vector (the same length as \code{conc}) with the
+lower limit of quantification passed to \code{\link[=pk.calc.half.life]{pk.calc.half.life()}} for the Tobit
+half-life method.}
 
 \item{subject}{Subject identifiers (used for sparse calculations)}
 

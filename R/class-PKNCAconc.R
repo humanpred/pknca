@@ -33,6 +33,12 @@
 #'   or to include for the half-life (using specifically those points and
 #'   bypassing automatic curve-stripping point selection).  See the "Half-Life
 #'   Calculation" vignette for more details on the use of these arguments.
+#' @param lloq (optional) The lower limit of quantification used by the Tobit
+#'   half-life method (`hl_method = "tobit"`).  Either the name of a column in
+#'   `data` giving the per-observation LLOQ or a numeric scalar applied to all
+#'   observations.  When provided, it is passed through to
+#'   [pk.calc.half.life()].  See the "Half-Life Calculation with Tobit
+#'   Regression" vignette for more details.
 #' @param sparse Are the concentration-time data sparse PK (commonly used in
 #'   small nonclinical species or with terminal or difficult sampling) or dense
 #'   PK (commonly used in clinical studies or larger nonclinical species)?
@@ -63,7 +69,7 @@ PKNCAconc.tbl_df <- function(data, ...) {
 #' @export
 PKNCAconc.data.frame <- function(data, formula, subject,
                                  time.nominal, exclude = NULL, duration, volume,
-                                 exclude_half.life, include_half.life, sparse = FALSE, ...,
+                                 exclude_half.life, include_half.life, lloq, sparse = FALSE, ...,
                                  concu = NULL, amountu = NULL, timeu = NULL,
                                  concu_pref = NULL, amountu_pref = NULL, timeu_pref = NULL) {
   # The data must have... data
@@ -179,6 +185,12 @@ PKNCAconc.data.frame <- function(data, formula, subject,
       setAttributeColumn(object=ret,
                          attr_name="include_half.life",
                          col_name=include_half.life)
+  }
+  if (!missing(lloq)) {
+    ret <- setAttributeColumn(object=ret, attr_name="lloq", col_or_value=lloq)
+    if (!is.numeric(getAttributeColumn(object=ret, attr_name="lloq")[[1]])) {
+      stop("lloq must be numeric")
+    }
   }
 
   # Unit handling
