@@ -763,6 +763,60 @@ test_that("pk.calc.half.life hl_method='tobit' global option is respected", {
   )
 })
 
+test_that("pk.nca() wires the PKNCAconc lloq through to the Tobit half-life", {
+  lloq <- 1.0
+  conc_true <- c(10, 5, 2.5, 1.25, 0.5, 0.2)
+  d_conc <- data.frame(
+    subject = 1L,
+    time = c(0, 1, 2, 3, 4, 5),
+    # Observations below the LLOQ are reported as zero
+    conc = ifelse(conc_true < lloq, 0, conc_true)
+  )
+  d_dose <- data.frame(subject = 1L, time = 0, dose = 100)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject, lloq = lloq)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  o_data <- PKNCAdata(
+    o_conc, o_dose,
+    intervals = data.frame(start = 0, end = Inf, half.life = TRUE),
+    options = list(hl_method = "tobit", allow.tmax.in.half.life = TRUE, min.hl.points = 3)
+  )
+  res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+  # The full-pipeline result must match a direct call with the same lloq
+  direct <- pk.calc.half.life(
+    conc = d_conc$conc, time = d_conc$time, lloq = lloq,
+    hl_method = "tobit", allow.tmax.in.half.life = TRUE, min.hl.points = 3
+  )
+  expect_equal(res$PPORRES[res$PPTESTCD == "half.life"], direct$half.life)
+  expect_equal(res$PPORRES[res$PPTESTCD == "lambda.z"], direct$lambda.z)
+  # BLQ points were retained in the fit (the purpose of the Tobit method)
+  expect_equal(res$PPORRES[res$PPTESTCD == "lambda.z.n.points_blq"], 2)
+})
+
+test_that("pk.nca() accepts a per-observation lloq column for the Tobit half-life", {
+  lloq <- 1.0
+  conc_true <- c(10, 5, 2.5, 1.25, 0.5, 0.2)
+  d_conc <- data.frame(
+    subject = 1L,
+    time = c(0, 1, 2, 3, 4, 5),
+    conc = ifelse(conc_true < lloq, 0, conc_true),
+    my_lloq = lloq
+  )
+  d_dose <- data.frame(subject = 1L, time = 0, dose = 100)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject, lloq = "my_lloq")
+  expect_equal(o_conc$columns$lloq, "my_lloq")
+  o_data <- PKNCAdata(
+    o_conc, PKNCAdose(d_dose, dose ~ time | subject),
+    intervals = data.frame(start = 0, end = Inf, half.life = TRUE),
+    options = list(hl_method = "tobit", allow.tmax.in.half.life = TRUE, min.hl.points = 3)
+  )
+  res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+  direct <- pk.calc.half.life(
+    conc = d_conc$conc, time = d_conc$time, lloq = lloq,
+    hl_method = "tobit", allow.tmax.in.half.life = TRUE, min.hl.points = 3
+  )
+  expect_equal(res$PPORRES[res$PPTESTCD == "half.life"], direct$half.life)
+})
+
 test_that("pk.calc.half.life log-linear result is unaffected by Tobit additions", {
   # Existing log-linear behaviour should be completely unchanged
   result <- pk.calc.half.life(
