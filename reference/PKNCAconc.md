@@ -24,6 +24,7 @@ PKNCAconc(
   volume,
   exclude_half.life,
   include_half.life,
+  lloq,
   sparse = FALSE,
   ...,
   concu = NULL,
@@ -99,6 +100,16 @@ PKNCAconc(
   for the half-life (using specifically those points and bypassing
   automatic curve-stripping point selection). See the "Half-Life
   Calculation" vignette for more details on the use of these arguments.
+
+- lloq:
+
+  (optional) The lower limit of quantification used by the Tobit
+  half-life method (`hl_method = "tobit"`). Either the name of a column
+  in `data` giving the per-observation LLOQ or a numeric scalar applied
+  to all observations. When provided, it is passed through to
+  [`pk.calc.half.life()`](http://humanpred.github.io/pknca/reference/pk.calc.half.life.md).
+  See the "Half-Life Calculation with Tobit Regression" vignette for
+  more details.
 
 - sparse:
 

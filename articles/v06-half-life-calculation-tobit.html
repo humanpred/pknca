@@ -332,22 +332,48 @@ set the global option. Calculations that do not explicitly set
 <div class="section level3">
 <h3 id="full-nca-workflow-with-pkncadata">Full NCA workflow with PKNCAdata<a class="anchor" aria-label="anchor" href="#full-nca-workflow-with-pkncadata"></a>
 </h3>
-<p>The <code>lloq</code> argument can be passed through the interval
-calculation via the <code>options</code> list when running a full
-NCA.</p>
+<p>When running a full NCA, provide the LLOQ through the
+<code>lloq</code> argument to <code><a href="../reference/PKNCAconc.html">PKNCAconc()</a></code>. It is then
+automatically passed to <code><a href="../reference/pk.calc.half.life.html">pk.calc.half.life()</a></code> when the Tobit
+method is selected (here via the <code>hl_method</code> option).
+<code>lloq</code> may be a numeric scalar applied to all observations or
+the name of a column in the concentration data giving a per-observation
+LLOQ.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Suppose d_conc is your concentration data frame with columns</span></span>
-<span><span class="co"># subject, time, conc, and your LLOQ is 1.0</span></span>
+<code class="sourceCode R"><span><span class="va">lloq</span> <span class="op">&lt;-</span> <span class="fl">1.0</span></span>
+<span><span class="va">conc_true</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">5</span>, <span class="fl">2.5</span>, <span class="fl">1.25</span>, <span class="fl">0.5</span>, <span class="fl">0.2</span><span class="op">)</span></span>
+<span><span class="va">d_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  subject <span class="op">=</span> <span class="fl">1L</span>,</span>
+<span>  time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">4</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>  <span class="co"># Observations below the LLOQ are reported as zero</span></span>
+<span>  conc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">conc_true</span> <span class="op">&lt;</span> <span class="va">lloq</span>, <span class="fl">0</span>, <span class="va">conc_true</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">d_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>subject <span class="op">=</span> <span class="fl">1L</span>, time <span class="op">=</span> <span class="fl">0</span>, dose <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">o_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc</span>, <span class="va">conc</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">subject</span><span class="op">)</span></span>
+<span><span class="va">o_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc</span>, <span class="va">conc</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">subject</span>, lloq <span class="op">=</span> <span class="va">lloq</span><span class="op">)</span></span>
 <span><span class="va">o_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span><span class="va">d_dose</span>, <span class="va">dose</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">subject</span><span class="op">)</span></span>
 <span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span></span>
 <span>  <span class="va">o_conc</span>, <span class="va">o_dose</span>,</span>
 <span>  intervals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fl">0</span>, end <span class="op">=</span> <span class="cn">Inf</span>, half.life <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>hl_method <span class="op">=</span> <span class="st">"tobit"</span><span class="op">)</span></span>
+<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>hl_method <span class="op">=</span> <span class="st">"tobit"</span>, allow.tmax.in.half.life <span class="op">=</span> <span class="cn">TRUE</span>, min.hl.points <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co"># Note: lloq must be provided per-subject in the concentration data or</span></span>
-<span><span class="co"># as a scalar in the options when using the Tobit method in pk.nca().</span></span></code></pre></div>
+<span><span class="va">o_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">o_result</span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PPTESTCD"</span>, <span class="st">"PPORRES"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 12 × 2</span></span></span>
+<span><span class="co">#&gt;    PPTESTCD               PPORRES</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> tmax                  0   <span style="color: #949494;"> </span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> tlast                 3   <span style="color: #949494;">e</span>+ 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> lambda.z              6.93<span style="color: #949494;">e</span><span style="color: #BB0000;">- 1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lambda.z.time.first   1   <span style="color: #949494;">e</span>+ 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lambda.z.time.last    5   <span style="color: #949494;">e</span>+ 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lambda.z.n.points     5   <span style="color: #949494;">e</span>+ 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lambda.z.n.points_blq 2   <span style="color: #949494;">e</span>+ 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> clast.pred            1.25<span style="color: #949494;">e</span>+ 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> half.life             1   <span style="color: #949494;">e</span>+ 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> span.ratio            2   <span style="color: #949494;">e</span>+ 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> tobit_residual        1.32<span style="color: #949494;">e</span><span style="color: #BB0000;">-16</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> adj_tobit_residual    6.60<span style="color: #949494;">e</span><span style="color: #BB0000;">-17</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="controlling-tobit-point-selection">Controlling Tobit point selection<a class="anchor" aria-label="anchor" href="#controlling-tobit-point-selection"></a>

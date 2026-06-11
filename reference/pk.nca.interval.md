@@ -29,6 +29,7 @@ pk.nca.interval(
   impute_method = NA_character_,
   include_half.life = NULL,
   exclude_half.life = NULL,
+  lloq = NULL,
   subject,
   sparse,
   interval,
@@ -110,6 +111,13 @@ pk.nca.interval(
 
   An optional boolean vector of the concentration measurements to
   exclude from the half-life calculation.
+
+- lloq:
+
+  An optional scalar or vector (the same length as `conc`) with the
+  lower limit of quantification passed to
+  [`pk.calc.half.life()`](http://humanpred.github.io/pknca/reference/pk.calc.half.life.md)
+  for the Tobit half-life method.
 
 - subject:
 

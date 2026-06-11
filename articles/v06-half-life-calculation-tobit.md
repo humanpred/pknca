@@ -249,23 +249,50 @@ PKNCA.options(default = TRUE)
 
 ### Full NCA workflow with PKNCAdata
 
-The `lloq` argument can be passed through the interval calculation via
-the `options` list when running a full NCA.
+When running a full NCA, provide the LLOQ through the `lloq` argument to
+[`PKNCAconc()`](http://humanpred.github.io/pknca/reference/PKNCAconc.md).
+It is then automatically passed to
+[`pk.calc.half.life()`](http://humanpred.github.io/pknca/reference/pk.calc.half.life.md)
+when the Tobit method is selected (here via the `hl_method` option).
+`lloq` may be a numeric scalar applied to all observations or the name
+of a column in the concentration data giving a per-observation LLOQ.
 
 ``` r
 
-# Suppose d_conc is your concentration data frame with columns
-# subject, time, conc, and your LLOQ is 1.0
+lloq <- 1.0
+conc_true <- c(10, 5, 2.5, 1.25, 0.5, 0.2)
+d_conc <- data.frame(
+  subject = 1L,
+  time = c(0, 1, 2, 3, 4, 5),
+  # Observations below the LLOQ are reported as zero
+  conc = ifelse(conc_true < lloq, 0, conc_true)
+)
+d_dose <- data.frame(subject = 1L, time = 0, dose = 100)
 
-o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+o_conc <- PKNCAconc(d_conc, conc ~ time | subject, lloq = lloq)
 o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
 o_data <- PKNCAdata(
   o_conc, o_dose,
   intervals = data.frame(start = 0, end = Inf, half.life = TRUE),
-  options = list(hl_method = "tobit")
+  options = list(hl_method = "tobit", allow.tmax.in.half.life = TRUE, min.hl.points = 3)
 )
-# Note: lloq must be provided per-subject in the concentration data or
-# as a scalar in the options when using the Tobit method in pk.nca().
+o_result <- pk.nca(o_data)
+as.data.frame(o_result)[, c("PPTESTCD", "PPORRES")]
+#> # A tibble: 12 × 2
+#>    PPTESTCD               PPORRES
+#>    <chr>                    <dbl>
+#>  1 tmax                  0       
+#>  2 tlast                 3   e+ 0
+#>  3 lambda.z              6.93e- 1
+#>  4 lambda.z.time.first   1   e+ 0
+#>  5 lambda.z.time.last    5   e+ 0
+#>  6 lambda.z.n.points     5   e+ 0
+#>  7 lambda.z.n.points_blq 2   e+ 0
+#>  8 clast.pred            1.25e+ 0
+#>  9 half.life             1   e+ 0
+#> 10 span.ratio            2   e+ 0
+#> 11 tobit_residual        1.32e-16
+#> 12 adj_tobit_residual    6.60e-17
 ```
 
 ### Controlling Tobit point selection

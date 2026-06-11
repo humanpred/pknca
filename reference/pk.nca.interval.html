@@ -90,6 +90,7 @@ and <code>time</code>.</p>
 <span>  impute_method <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  include_half.life <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  exclude_half.life <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  lloq <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">subject</span>,</span>
 <span>  <span class="va">sparse</span>,</span>
 <span>  <span class="va">interval</span>,</span>
@@ -174,6 +175,12 @@ half-life point selection will occur.</p></dd>
 <dt id="arg-exclude-half-life">exclude_half.life<a class="anchor" aria-label="anchor" href="#arg-exclude-half-life"></a></dt>
 <dd><p>An optional boolean vector of the concentration
 measurements to exclude from the half-life calculation.</p></dd>
+
+
+<dt id="arg-lloq">lloq<a class="anchor" aria-label="anchor" href="#arg-lloq"></a></dt>
+<dd><p>An optional scalar or vector (the same length as <code>conc</code>) with the
+lower limit of quantification passed to <code><a href="pk.calc.half.life.html">pk.calc.half.life()</a></code> for the Tobit
+half-life method.</p></dd>
 
 
 <dt id="arg-subject">subject<a class="anchor" aria-label="anchor" href="#arg-subject"></a></dt>

@@ -80,6 +80,7 @@
 <span>  <span class="va">volume</span>,</span>
 <span>  <span class="va">exclude_half.life</span>,</span>
 <span>  <span class="va">include_half.life</span>,</span>
+<span>  <span class="va">lloq</span>,</span>
 <span>  sparse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span>,</span>
 <span>  concu <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -154,6 +155,15 @@ name in the dataset of the points to exclude from the half-life calculation
 or to include for the half-life (using specifically those points and
 bypassing automatic curve-stripping point selection).  See the "Half-Life
 Calculation" vignette for more details on the use of these arguments.</p></dd>
+
+
+<dt id="arg-lloq">lloq<a class="anchor" aria-label="anchor" href="#arg-lloq"></a></dt>
+<dd><p>(optional) The lower limit of quantification used by the Tobit
+half-life method (<code>hl_method = "tobit"</code>).  Either the name of a column in
+<code>data</code> giving the per-observation LLOQ or a numeric scalar applied to all
+observations.  When provided, it is passed through to
+<code><a href="pk.calc.half.life.html">pk.calc.half.life()</a></code>.  See the "Half-Life Calculation with Tobit
+Regression" vignette for more details.</p></dd>
 
 
 <dt id="arg-sparse">sparse<a class="anchor" aria-label="anchor" href="#arg-sparse"></a></dt>
