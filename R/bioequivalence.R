@@ -502,6 +502,14 @@ be_expand_limits <- function(swR, regulator) {
   c(lower = exp(-reg$r_const * swr_eff) * 100, upper = exp(reg$r_const * swr_eff) * 100)
 }
 
+# Build a subject's treatment pattern (for example "TRTR"), ordering the
+# subject's rows by period.  `idx` are the subject's row indices into the
+# period (`per`) and treatment (`trt`) vectors.
+.be_subject_pattern <- function(idx, per, trt) {
+  idx <- idx[order(per[idx])]
+  paste(trt[idx], collapse = "")
+}
+
 #' Classify a bioequivalence crossover design
 #'
 #' `be_design()` inspects the treatment-by-period pattern of a crossover study
@@ -554,18 +562,10 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
   trt <- as.character(data[[treatment]])
   per <- data[[period]]
   # Per-subject treatment pattern, ordered by period -- the realized sequence.
-  per_order <- order(suppressWarnings(as.numeric(factor(per))))
-  patterns <- tapply(
-    seq_len(nrow(data)),
-    subj,
-    function(idx) {
-      idx <- idx[order(per[idx])]
-      paste(trt[idx], collapse = "")
-    }
-  )
+  patterns <- tapply(seq_len(nrow(data)), subj, .be_subject_pattern, per = per, trt = trt)
   # Per-subject replication counts of each formulation.
-  reps_ref_by_subj <- tapply(trt, subj, function(x) sum(x == reference_value))
-  reps_test_by_subj <- tapply(trt, subj, function(x) sum(x != reference_value & !is.na(x)))
+  reps_ref_by_subj <- tapply(trt == reference_value, subj, sum)
+  reps_test_by_subj <- tapply(!is.na(trt) & trt != reference_value, subj, sum)
 
   n_subjects <- length(unique(subj))
   n_periods <- length(unique(per))
@@ -600,7 +600,7 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
   # subject contributes the modal number of observations.
   subj_seq <-
     if (!is.na(sequence)) {
-      tapply(as.character(data[[sequence]]), subj, function(x) x[1])
+      tapply(as.character(data[[sequence]]), subj, `[`, 1)
     } else {
       patterns
     }
@@ -655,6 +655,33 @@ print.be_design <- function(x, ...) {
   feasible_names <- toupper(names(x$feasible))[x$feasible]
   cat(sprintf("  Feasible frameworks: %s\n", paste(feasible_names, collapse = ", ")))
   invisible(x)
+}
+
+# Empty within-formulation variance, used when a formulation is not replicated.
+.be_arm_var_na <- function() {
+  list(s2w = NA_real_, sw = NA_real_, df = NA_real_, cv = NA_real_)
+}
+
+# ANOVA within-formulation variance: lm(log(value) ~ subject + period) on a
+# single formulation's replicate rows.  The subject factor absorbs sequence, so
+# the residual mean square is the within-subject variance; this reproduces
+# replicateBE's CV.calc exactly.  `arm` carries the `.subject`, `.period`, and
+# `.logval` columns.
+.be_arm_var <- function(arm) {
+  if (nrow(arm) == 0 || max(table(arm$.subject)) < 2) {
+    return(.be_arm_var_na())
+  }
+  arm$.subject <- droplevels(arm$.subject)
+  arm$.period <- droplevels(arm$.period)
+  fit_formula <-
+    if (nlevels(arm$.period) > 1) .logval ~ .subject + .period else .logval ~ .subject
+  a <- stats::anova(stats::lm(fit_formula, data = arm))
+  s2w <- a["Residuals", "Mean Sq"]
+  df <- a["Residuals", "Df"]
+  if (is.na(df) || df < 1) {
+    return(.be_arm_var_na())
+  }
+  list(s2w = s2w, sw = sqrt(s2w), df = df, cv = sqrt(exp(s2w) - 1) * 100)
 }
 
 #' Within-subject variability for reference-scaled bioequivalence
@@ -721,37 +748,16 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
   }
   test_levels <- setdiff(unique(work$.trt), reference_value)
 
-  # ANOVA within-formulation variance: lm(log(value) ~ subject + period) on a
-  # single formulation's replicate rows.  The subject factor absorbs sequence,
-  # so the residual mean square is the within-subject variance; this reproduces
-  # replicateBE's CV.calc exactly.
-  arm_var_anova <- function(trt_value) {
-    arm <- work[work$.trt == trt_value, , drop = FALSE]
-    na_out <- list(s2w = NA_real_, sw = NA_real_, df = NA_real_, cv = NA_real_)
-    if (nrow(arm) == 0 || max(table(arm$.subject)) < 2) {
-      return(na_out)
-    }
-    arm$.subject <- droplevels(arm$.subject)
-    arm$.period <- droplevels(arm$.period)
-    fit_formula <-
-      if (nlevels(arm$.period) > 1) .logval ~ .subject + .period else .logval ~ .subject
-    a <- stats::anova(stats::lm(fit_formula, data = arm))
-    s2w <- a["Residuals", "Mean Sq"]
-    df <- a["Residuals", "Df"]
-    if (is.na(df) || df < 1) {
-      return(na_out)
-    }
-    list(s2w = s2w, sw = sqrt(s2w), df = df, cv = sqrt(exp(s2w) - 1) * 100)
-  }
-
-  ref_v <- arm_var_anova(reference_value)
+  # ANOVA within-formulation variance on each formulation's replicate rows
+  # (see .be_arm_var).
+  ref_v <- .be_arm_var(work[work$.trt == reference_value, , drop = FALSE])
   test_v <-
     if (length(test_levels) == 1) {
-      arm_var_anova(test_levels)
+      .be_arm_var(work[work$.trt == test_levels, , drop = FALSE])
     } else {
       # Multiple test formulations: swT (and the ratio) are not defined for a
       # single test arm; report reference variability only.
-      list(s2w = NA_real_, sw = NA_real_, df = NA_real_, cv = NA_real_)
+      .be_arm_var_na()
     }
 
   if (method == "B") {
@@ -840,17 +846,22 @@ print.be_within_var <- function(x, ...) {
 # Intra-subject contrasts (ISC) point estimate, the FDA reference-scaled
 # approach: within each subject form the mean log test minus mean log reference,
 # then average across subjects.  `work` carries `.subject`, `.trt`, `.logval`.
+# Within-subject contrast for one subject: mean log test minus mean log
+# reference, or NA if the subject lacks either formulation.  `s` carries the
+# `.trt` and `.logval` columns.
+.be_subject_ilat <- function(s, reference_value, test_level) {
+  t_val <- s$.logval[s$.trt == test_level]
+  r_val <- s$.logval[s$.trt == reference_value]
+  if (length(t_val) == 0 || length(r_val) == 0) {
+    NA_real_
+  } else {
+    mean(t_val) - mean(r_val)
+  }
+}
+
 .be_isc <- function(work, reference_value, test_level, alpha = 0.10) {
   byid <- split(work, work$.subject)
-  ilat <- vapply(
-    byid,
-    function(s) {
-      t_val <- s$.logval[s$.trt == test_level]
-      r_val <- s$.logval[s$.trt == reference_value]
-      if (length(t_val) == 0 || length(r_val) == 0) NA_real_ else mean(t_val) - mean(r_val)
-    },
-    numeric(1)
-  )
+  ilat <- vapply(byid, .be_subject_ilat, numeric(1), reference_value, test_level)
   ilat <- ilat[!is.na(ilat)]
   n <- length(ilat)
   if (n < 2) {
@@ -1357,18 +1368,17 @@ be_compare <- function(object, reference_col, reference_value,
   checkmate::assert_character(regulators, min.len = 1, any.missing = FALSE)
   results <- list()
   for (rg in regulators) {
-    res <- tryCatch(
+    res <- try(
       be_assess(
         object, reference_col = reference_col, reference_value = reference_value,
         endpoints = endpoints, regulator = rg, method = method, alpha = alpha,
         subject = subject, sequence = sequence, period = period, design = design
       ),
-      error = function(e) {
-        warning(sprintf("Skipping %s: %s", rg, conditionMessage(e)))
-        NULL
-      }
+      silent = TRUE
     )
-    if (!is.null(res)) {
+    if (inherits(res, "try-error")) {
+      warning(sprintf("Skipping %s: %s", rg, conditionMessage(attr(res, "condition"))))
+    } else {
       results[[rg]] <- as.data.frame(res)
     }
   }
@@ -1422,7 +1432,7 @@ summary.be_compare <- function(object, ...) {
   grid <- tapply(
     d$pass,
     list(paste(d$endpoint, d$test, sep = ":"), d$regulator),
-    FUN = function(z) z[1]
+    FUN = `[`, 1
   )
   grid <- as.data.frame.matrix(grid)
   grid <- cbind(endpoint = rownames(grid), grid)
