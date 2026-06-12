@@ -140,4 +140,3 @@ getGroups.PKNCAresults <- function(object,
 group_vars.PKNCAresults <- function(x) {
   c("start","end",group_vars.PKNCAconc(as_PKNCAconc(x))) 
 }
-#Updated the Start and end columns to appear first
