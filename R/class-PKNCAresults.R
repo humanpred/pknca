@@ -138,5 +138,5 @@ getGroups.PKNCAresults <- function(object,
 #'   from the PKNCAconc object within
 #' @exportS3Method dplyr::group_vars
 group_vars.PKNCAresults <- function(x) {
-  c(group_vars.PKNCAconc(as_PKNCAconc(x)),"start","end")
+  c("start","end",group_vars.PKNCAconc(as_PKNCAconc(x)))
 }
