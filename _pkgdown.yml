@@ -1,4 +1,12 @@
-url: http://humanpred.github.io/pknca/
+url: https://humanpred.github.io/pknca/
 template:
   bootstrap: 5
 
+navbar:
+  structure:
+    left:  [intro, reference, articles, tutorials, news]
+    right: [user_guide, search, github]
+  components:
+    user_guide:
+      text: User Guide
+      href: https://humanpred.github.io/pknca-book/

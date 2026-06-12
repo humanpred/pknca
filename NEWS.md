@@ -4,7 +4,29 @@ will continue until then.  These will be especially noticeable around
 the inclusion of IV NCA parameters and additional specifications of
 the dosing including dose amount and route.
 
-# PKNCA 0.12.2
+# New features
+
+* `PKNCAconc()` gains an `lloq` argument (a column name or a numeric scalar) that
+  is passed through to `pk.calc.half.life()`.  This wires the lower limit of
+  quantification through a full `pk.nca()` run so the Tobit half-life method
+  (`hl_method = "tobit"`, set via `PKNCAdata(options = list(hl_method = "tobit"))`)
+  works end-to-end instead of failing because no `lloq` was available.
+
+* Added sparse AUMC function and five sparse AUC parameters (cl.sparse.last, kel.sparse.last, mrt.ivint.last, vss.sparse.last, vz.sparse.last)
+
+* New IV dosing AUMC parameters with C0 back-extrapolation (`aumciv*`)
+
+* New interval AUMC parameters with interpolation/extrapolation support
+  (`aumcint*`), mirroring the existing `aucint` family (#152)
+
+* New derived PK parameters to complete coverage across all AUC variants
+  (#152):
+  * 11 clearance parameters (`cl.*`)
+  * 9 elimination rate constant parameters (`kel.*`)
+  * 6 mean residence time parameters (`mrt.*`)
+  * 3 IV mean residence time parameters (`mrt.iv.*`)
+  * 9 volume of distribution at steady state parameters (`vss.*`)
+  * 13 terminal volume of distribution parameters (`vz.*`)
 
 ## Bug Fixes
 
@@ -15,6 +37,10 @@ the dosing including dose amount and route.
 
 ## Improvements
 
+* The sparse NCA vignette now explains how subjects are grouped: sparse
+  parameters pool all subjects that share the same concentration grouping
+  variables with the subject column removed (#530).
+
 * `normalize.data.frame()` now validates that `norm_table` contains exactly one
   row when used with ungrouped data, giving a clear error message instead of
   silently producing incorrect results.
@@ -23,8 +49,6 @@ the dosing including dose amount and route.
   for grouped joins, preserving left-table row order. Missing group validation 
   ensures no rows are silently dropped.
 
-## New features
-* Added sparse AUMC function and five sparse AUC parameters (cl.sparse.last, kel.sparse.last, mrt.ivint.last, vss.sparse.last, vz.sparse.last)
 
 ## Breaking changes
 

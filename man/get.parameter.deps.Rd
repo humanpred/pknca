@@ -17,10 +17,10 @@ A character vector of parameter names that depend on the parameter
 Get all columns that depend on a parameter
 }
 \seealso{
-Other Interval specifications: 
-\code{\link{add.interval.col}()},
-\code{\link{check.interval.specification}()},
-\code{\link{choose.auc.intervals}()},
-\code{\link{get.interval.cols}()}
+Other Interval specifications:
+\code{\link[=add.interval.col]{add.interval.col()}},
+\code{\link[=check.interval.specification]{check.interval.specification()}},
+\code{\link[=choose.auc.intervals]{choose.auc.intervals()}},
+\code{\link[=get.interval.cols]{get.interval.cols()}}
 }
 \concept{Interval specifications}

@@ -21,7 +21,7 @@ Determine the peak-to-trough ratio
 ptr is \code{cmax/ctrough}.
 }
 \seealso{
-Other Multiple-dose PK parameters: 
-\code{\link{pk.calc.deg.fluc}()}
+Other Multiple-dose PK parameters:
+\code{\link[=pk.calc.deg.fluc]{pk.calc.deg.fluc()}}
 }
 \concept{Multiple-dose PK parameters}

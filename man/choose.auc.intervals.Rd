@@ -45,14 +45,14 @@ calculate the half life after the last dose.
 \code{\link[=pk.calc.auc]{pk.calc.auc()}}, \code{\link[=pk.calc.aumc]{pk.calc.aumc()}}, \code{\link[=pk.calc.half.life]{pk.calc.half.life()}},
 \code{\link[=PKNCA.options]{PKNCA.options()}}
 
-Other Interval specifications: 
-\code{\link{add.interval.col}()},
-\code{\link{check.interval.specification}()},
-\code{\link{get.interval.cols}()},
-\code{\link{get.parameter.deps}()}
+Other Interval specifications:
+\code{\link[=add.interval.col]{add.interval.col()}},
+\code{\link[=check.interval.specification]{check.interval.specification()}},
+\code{\link[=get.interval.cols]{get.interval.cols()}},
+\code{\link[=get.parameter.deps]{get.parameter.deps()}}
 
-Other Interval determination: 
-\code{\link{find.tau}()}
+Other Interval determination:
+\code{\link[=find.tau]{find.tau()}}
 }
 \concept{Interval determination}
 \concept{Interval specifications}
