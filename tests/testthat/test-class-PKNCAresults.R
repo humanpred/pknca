@@ -411,7 +411,7 @@ test_that("group_vars.PKNCAresult", {
   o_data_group <- PKNCAdata(o_conc_group, intervals = data.frame(start = 0, end = 1, cmax = TRUE))
   suppressMessages(o_nca_group <- pk.nca(o_data_group))
 
-  expect_equal(dplyr::group_vars(o_nca_group), c("start", "end", "Subject")) #Start and end columns updated to appear first.
+  expect_equal(dplyr::group_vars(o_nca_group), c("start", "end", "Subject")) #Updated the Start and end columns to appear first
 
   # Check that it works without groupings as expected [empty]
   o_conc_nongroup <- PKNCAconc(as.data.frame(datasets::Theoph)[datasets::Theoph$Subject == 1,], conc~Time)
