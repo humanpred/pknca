@@ -641,8 +641,7 @@ To use [`update()`](https://rdrr.io/r/stats/update.html), give it your
 existing results and the new `PKNCAdata` object you want to use.
 
 Starting from the theophylline example in the [Quick
-Start](https://humanpred.github.io/pknca/articles/Quick%20Start) section
-above:
+Start](#quick-start) section above:
 
 ``` r
 

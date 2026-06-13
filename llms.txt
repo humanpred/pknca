@@ -28,7 +28,7 @@ Denney W, Duvvuri S and Buckeridge C (2015). “Simple, Automatic
 Noncompartmental Analysis: The PKNCA R Package.” *Journal of
 Pharmacokinetics and Pharmacodynamics*, *42*(1), pp. 11-107,S65. ISSN
 1573-8744, doi: 10.1007/s10928-015-9432-2, \<URL:
-<https://humanpred.github.io/pknca/> \>.
+<https://pknca.humanpredictions.com/> \>.
 
 # Installation
 

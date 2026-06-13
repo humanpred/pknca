@@ -6,7 +6,7 @@ PKNCA has many options that control its function. These options have
 effects throughout the package. The options are controlled using either
 the `PKNCA.options` function or by passing the `options` argument to any
 of the functions with that as an argument. All options supported by the
-current version of PKNCA (0.12.2) are listed below with their
+current version of PKNCA (0.12.1.9000) are listed below with their
 descriptions.
 
 ## Options

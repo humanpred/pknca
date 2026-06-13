@@ -32,7 +32,7 @@ results: Tests were not run because tests are not installed.
 Sys.Date()
 ```
 
-    ## [1] "2026-06-11"
+    ## [1] "2026-06-13"
 
 ``` r
 
@@ -60,7 +60,7 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] dplyr_1.2.1    testthat_3.3.2 knitr_1.51     PKNCA_0.12.2  
+    ## [1] dplyr_1.2.1       testthat_3.3.2    knitr_1.51        PKNCA_0.12.1.9000
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] jsonlite_2.0.0    compiler_4.6.0    brio_1.1.5        tidyselect_1.2.1 

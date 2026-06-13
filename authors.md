@@ -22,7 +22,7 @@ Noncompartmental Analysis: The PKNCA R Package.” *Journal of
 Pharmacokinetics and Pharmacodynamics*, **42**(1), 11-107,S65. ISSN
 1573-8744.
 [doi:10.1007/s10928-015-9432-2](https://doi.org/10.1007/s10928-015-9432-2).
-R package version 0.12.2, <https://github.com/humanpred/pknca>.
+R package version 0.12.1.9000, <https://github.com/humanpred/pknca>.
 
     @Article{,
       title = {Simple, Automatic Noncompartmental Analysis: The PKNCA R Package},
@@ -35,5 +35,5 @@ R package version 0.12.2, <https://github.com/humanpred/pknca>.
       number = {1},
       issn = {1573-8744},
       url = {https://github.com/humanpred/pknca},
-      note = {R package version 0.12.2},
+      note = {R package version 0.12.1.9000},
     }

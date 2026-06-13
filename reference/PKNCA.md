@@ -15,7 +15,7 @@ data.frame then run the following code.
 
 Useful links:
 
-- <https://humanpred.github.io/pknca/>
+- <https://pknca.humanpredictions.com/>
 
 - <https://github.com/humanpred/pknca>
 
