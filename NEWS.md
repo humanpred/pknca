@@ -37,6 +37,13 @@ the dosing including dose amount and route.
 
 ## Improvements
 
+* Documentation for `include_half.life` and `exclude_half.life` now describes
+  the three-state (`TRUE`/`FALSE`/`NA`) per-point behavior, clarifies that a
+  column counts as "in use" whenever it is not entirely `NA` (so an all-`FALSE`
+  column still engages the method), and states that only one of the two may be
+  in use for the same interval. The half-life vignette gains the same note and
+  fixes a mislabeled "include" example.
+
 * The sparse NCA vignette now explains how subjects are grouped: sparse
   parameters pool all subjects that share the same concentration grouping
   variables with the subject column removed (#530).
