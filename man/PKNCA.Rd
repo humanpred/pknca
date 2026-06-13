@@ -39,7 +39,7 @@ as.data.frame(my.results)
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://humanpred.github.io/pknca/}
+  \item \url{https://pknca.humanpredictions.com/}
   \item \url{https://github.com/humanpred/pknca}
   \item Report bugs at \url{https://github.com/humanpred/pknca/issues}
 }
