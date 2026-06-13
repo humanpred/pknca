@@ -4,7 +4,7 @@ will continue until then.  These will be especially noticeable around
 the inclusion of IV NCA parameters and additional specifications of
 the dosing including dose amount and route.
 
-# New features
+# Development version
 
 * `PKNCAconc()` gains an `lloq` argument (a column name or a numeric scalar) that
   is passed through to `pk.calc.half.life()`.  This wires the lower limit of
