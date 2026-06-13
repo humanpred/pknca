@@ -168,14 +168,23 @@ bolus and nonzero for intravascular infusion)</p></dd>
 
 
 <dt id="arg-include-half-life">include_half.life<a class="anchor" aria-label="anchor" href="#arg-include-half-life"></a></dt>
-<dd><p>An optional boolean vector of the concentration
-measurements to include in the half-life calculation. If given, no
-half-life point selection will occur.</p></dd>
+<dd><p>An optional logical vector (one value per
+concentration measurement) naming the points to use for the half-life. If
+in use, automatic curve-stripping point selection is bypassed and exactly
+the <code>TRUE</code> points are used for the half-life regression. <code>TRUE</code> uses the
+point, <code>FALSE</code> does not, and <code>NA</code> is undefined; the vector is "in use" for
+the interval unless it is entirely <code>NA</code> (so an all-<code>FALSE</code> vector still
+counts as in use). At most one of <code>include_half.life</code> and
+<code>exclude_half.life</code> may be in use for the same interval.</p></dd>
 
 
 <dt id="arg-exclude-half-life">exclude_half.life<a class="anchor" aria-label="anchor" href="#arg-exclude-half-life"></a></dt>
-<dd><p>An optional boolean vector of the concentration
-measurements to exclude from the half-life calculation.</p></dd>
+<dd><p>An optional logical vector (one value per
+concentration measurement) naming points to drop before point selection.
+Automatic curve-stripping point selection is still performed (it is not
+bypassed) on the remaining, non-excluded points. <code>TRUE</code> excludes the point,
+<code>FALSE</code> does not, and <code>NA</code> is undefined; the "in use" rule is the same as
+for <code>include_half.life</code>.</p></dd>
 
 
 <dt id="arg-lloq">lloq<a class="anchor" aria-label="anchor" href="#arg-lloq"></a></dt>

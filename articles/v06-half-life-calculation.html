@@ -218,6 +218,14 @@ values are <code>NA</code>, then no inclusion or exclusion is applied
 (the interval is treated as-is, like the argument had not been given).
 If some values are <code>NA</code> for the interval, those are treated
 as <code>FALSE</code>.</p>
+<p>A column counts as in use for an interval whenever it contains any
+non-<code>NA</code> value, even if every value is <code>FALSE</code>.
+Only one of <code>exclude_half.life</code> and
+<code>include_half.life</code> may be in use for the same interval;
+supplying both raises the error “Cannot both include and exclude
+half-life points for the same interval”. For this reason, initialize
+these columns to <code>NA</code> (rather than <code>FALSE</code>) when
+the corresponding method is not being used.</p>
 <div class="section level3">
 <h3 id="exclusion-of-specific-points-with-curve-stripping">Exclusion of Specific Points with Curve Stripping<a class="anchor" aria-label="anchor" href="#exclusion-of-specific-points-with-curve-stripping"></a>
 </h3>
@@ -273,16 +281,16 @@ below.</p>
 <p>In other cases, the exact points to use for half-life calculation are
 known, and automatic point selection with curve stripping should not be
 performed.</p>
-<p>To exclude specific points but otherwise use curve stripping, use the
-<code>include_half.life</code> option as the column name in the
+<p>To use only specific points and bypass automatic curve stripping, use
+the <code>include_half.life</code> option as the column name in the
 concentration dataset for <code><a href="../reference/PKNCAconc.html">PKNCAconc()</a></code> as illustrated
 below.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data_conc</span><span class="op">$</span><span class="va">include_hl</span> <span class="op">&lt;-</span> <span class="va">data_conc</span><span class="op">$</span><span class="va">Time</span> <span class="op">&gt;</span> <span class="fl">3</span></span>
-<span><span class="co"># Confirm that we will be excluding exactly one point</span></span>
+<span><span class="co"># Confirm that we will be including exactly six points</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">data_conc</span><span class="op">$</span><span class="va">include_hl</span><span class="op">)</span> <span class="op">==</span> <span class="fl">6</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Drop one point</span></span>
+<span><span class="co"># Use only these points for the half-life</span></span>
 <span><span class="va">conc_obj_include6</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span></span>
 <span>    <span class="va">data_conc</span>,</span>

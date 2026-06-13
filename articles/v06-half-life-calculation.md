@@ -112,6 +112,14 @@ inclusion or exclusion is applied (the interval is treated as-is, like
 the argument had not been given). If some values are `NA` for the
 interval, those are treated as `FALSE`.
 
+A column counts as in use for an interval whenever it contains any
+non-`NA` value, even if every value is `FALSE`. Only one of
+`exclude_half.life` and `include_half.life` may be in use for the same
+interval; supplying both raises the error “Cannot both include and
+exclude half-life points for the same interval”. For this reason,
+initialize these columns to `NA` (rather than `FALSE`) when the
+corresponding method is not being used.
+
 ### Exclusion of Specific Points with Curve Stripping
 
 In some cases, specific points will be known outliers, or there may be
@@ -176,8 +184,8 @@ In other cases, the exact points to use for half-life calculation are
 known, and automatic point selection with curve stripping should not be
 performed.
 
-To exclude specific points but otherwise use curve stripping, use the
-`include_half.life` option as the column name in the concentration
+To use only specific points and bypass automatic curve stripping, use
+the `include_half.life` option as the column name in the concentration
 dataset for
 [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
 as illustrated below.
@@ -185,10 +193,10 @@ as illustrated below.
 ``` r
 
 data_conc$include_hl <- data_conc$Time > 3
-# Confirm that we will be excluding exactly one point
+# Confirm that we will be including exactly six points
 stopifnot(sum(data_conc$include_hl) == 6)
 
-# Drop one point
+# Use only these points for the half-life
 conc_obj_include6 <-
   PKNCAconc(
     data_conc,
