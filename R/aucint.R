@@ -175,6 +175,9 @@ pk.calc.auxcint <- function(conc, time,
       fun_log = fun_log,
       fun_inf = fun_inf
     )
+  # Add method details as an attribute
+  attr(ret, "method") <- paste0("AUC: ", method)
+
   ret
 }
 

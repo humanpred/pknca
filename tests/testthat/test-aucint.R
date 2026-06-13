@@ -469,11 +469,12 @@ test_that("aucint uses log extrapolation regardless of the interpolation method 
   # the second is more directly mathematical.
   expect_equal(
     aucinf_obs6_lin - aucinf_obs5_lin,
-    aucinf_obs6_log - aucinf_obs5_log
+    aucinf_obs6_log - aucinf_obs5_log,
+    ignore_attr = TRUE
   )
   expect_equal(
     aucinf_obs6_lin,
-    aucinf_obs5_lin + (6-5)*(clast-ctau_extrap)/log(clast/ctau_extrap)
+    structure(aucinf_obs5_lin + (6-5)*(clast-ctau_extrap)/log(clast/ctau_extrap), method="AUC: linear")
   )
 })
 
@@ -498,6 +499,37 @@ test_that("aucint.inf.pred returns NA when half-life is not estimable (#450)", {
   expect_equal(aucint_inf_pred, NA_real_)
 })
 
+test_that("pk.calc.aucint and wrappers: method attribute is set and propagated", {
+  aucint_params <- c("aucint", "aucint.last", "aucint.inf.obs", "aucint.inf.pred", "aucint.all")
+  auc_methods <- c("linear", "lin up/log down", "lin-log")
+  auc_args <- list(
+    conc = c(0,1,1),
+    time = 0:2,
+    interval = c(0,2),
+    lambda.z = 1,
+    clast.pred = 1,
+    clast.obs = 1,
+    start = 0,
+    end = 2
+  )
+
+  for (param in aucint_params) {
+    auc_fun <- get(paste0("pk.calc.", param))
+    args_fun <- auc_args[intersect(names(auc_args), names(formals(auc_fun)))]
+    # pk.calc.aucint accepts the interval via `...`, so it is not in formals();
+    # always supply it so the bare function receives a valid interval.
+    args_fun$interval <- auc_args$interval
+    for (method in auc_methods) {
+      args_fun$method <- method
+      v <- do.call(auc_fun, args_fun)
+      expect_equal(
+        attr(v, "method"),
+        paste0("AUC: ", method),
+        info = paste("pk.calc.param sets method attribute for", param, "with method", method)
+      )
+    }
+  }
+})
 # ============================================================================
 # AUMC Tests (parallel to AUC tests)
 # ============================================================================

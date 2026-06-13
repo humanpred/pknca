@@ -9,7 +9,7 @@ pk.calc.sparse_auc(
   conc,
   time,
   subject,
-  method = NULL,
+  method = "linear",
   auc.type = "AUClast",
   ...,
   options = list()

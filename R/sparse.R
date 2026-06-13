@@ -302,10 +302,19 @@ sparse_to_dense_pk <- function(sparse_pk) {
 #' @family Sparse Methods
 #' @export
 pk.calc.sparse_auc <- function(conc, time, subject,
-                               method=NULL,
+                               method="linear",
                                auc.type="AUClast",
                                ...,
                                options=list()) {
+  # Sparse AUC is only defined for linear interpolation.  `method` is kept as an
+  # argument so it is used consistently below (and so other methods could be
+  # enabled here in the future), but only "linear" is currently allowed.
+  if (!identical(method, "linear")) {
+    rlang::abort(
+      message = 'Sparse AUC calculation only supports `method = "linear"`.',
+      class = "pknca_sparse_method"
+    )
+  }
   sparse_pk <- as_sparse_pk(conc=conc, time=time, subject=subject)
   sparse_pk_wt <- sparse_auc_weight_linear(sparse_pk)
   sparse_pk_mean <- sparse_mean(sparse_pk=sparse_pk_wt, sparse_mean_method="arithmetic mean, <=50% BLQ")
@@ -314,15 +323,23 @@ pk.calc.sparse_auc <- function(conc, time, subject,
       conc=sparse_pk_attribute(sparse_pk_mean, "mean"),
       time=sparse_pk_attribute(sparse_pk_mean, "time"),
       auc.type=auc.type,
-      method="linear"
+      method=method
     )
+
   var_auc <- var_sparse_auc(sparse_pk_mean)
-  data.frame(
+  ret <- data.frame(
     sparse_auc=auc,
     # as.numeric() drops the "df" attribute
     sparse_auc_se=sqrt(as.numeric(var_auc)),
     sparse_auc_df=attr(var_auc, "df")
   )
+
+  # Add method details as an attribute
+  for (col in names(ret)) {
+    attr(ret[[col]], "method") <- c(paste0("AUC: ", method), "Sparse: arithmetic mean, <=50% BLQ")
+  }
+
+  ret
 }
 
 #' @describeIn pk.calc.sparse_auc Compute the AUClast for sparse PK
@@ -500,10 +517,17 @@ var_sparse_aumc <- function(sparse_pk) {
 #' @family Sparse Methods
 #' @export
 pk.calc.sparse_aumc <- function(conc, time, subject,
-                                method = NULL,
+                                method = "linear",
                                 auc.type = "AUClast",
                                 ...,
                                 options = list()) {
+  # Sparse AUMC is only defined for linear interpolation (see pk.calc.sparse_auc).
+  if (!identical(method, "linear")) {
+    rlang::abort(
+      message = 'Sparse AUMC calculation only supports `method = "linear"`.',
+      class = "pknca_sparse_method"
+    )
+  }
   # Create sparse_pk object from data
   sparse_pk <- as_sparse_pk(conc = conc, time = time, subject = subject)
   
@@ -523,7 +547,7 @@ pk.calc.sparse_aumc <- function(conc, time, subject,
       conc = sparse_pk_attribute(sparse_pk_mean, "mean"),
       time = sparse_pk_attribute(sparse_pk_mean, "time"),
       auc.type = auc.type,
-      method = "linear"
+      method = method
     )
   
   # Calculate variance on MOMENT data (this is where the fix matters)
