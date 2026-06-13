@@ -72,16 +72,16 @@ for concentration measurements in urine or feces.}
 used for urine or feces measurements.}
 
 \item{exclude_half.life, include_half.life}{A character scalar for the column
-name in the dataset of the points to exclude from the half-life calculation
-(still using normal curve-stripping selection rules for the other points)
-or to include for the half-life (using specifically those points and
-bypassing automatic curve-stripping point selection).  The column is logical
-with three meaningful states per point: \code{TRUE} acts on the point, \code{FALSE}
-does not, and \code{NA} is undefined.  A column is treated as "in use" for an
-interval unless it is entirely \code{NA}, so leave it \code{NA} (rather than \code{FALSE})
-where the mechanism should not apply.  Only one of \code{exclude_half.life} and
-\code{include_half.life} may be in use for a given interval.  See the "Half-Life
-Calculation" vignette for more details on the use of these arguments.}
+name in the dataset.  \code{exclude_half.life} names points to drop; automatic
+curve-stripping point selection is still performed on the remaining
+(non-excluded) points and is not bypassed.  \code{include_half.life} names the
+exact points to use, bypassing automatic curve-stripping point selection.
+Each value is \code{TRUE}, \code{FALSE}, or \code{NA} (undefined); a column is treated as
+"in use" for an interval unless it is entirely \code{NA}, so leave it \code{NA}
+(rather than \code{FALSE}) where the mechanism should not apply.  Only one of
+\code{exclude_half.life} and \code{include_half.life} may be in use for a given
+interval.  See the "Half-Life Calculation" vignette for more details on the
+use of these arguments.}
 
 \item{lloq}{(optional) The lower limit of quantification used by the Tobit
 half-life method (\code{hl_method = "tobit"}).  Either the name of a column in

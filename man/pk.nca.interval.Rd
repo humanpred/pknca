@@ -71,19 +71,20 @@ bolus and nonzero for intravascular infusion)}
 \item{impute_method}{The method to use for imputation as a character string}
 
 \item{include_half.life}{An optional logical vector (one value per
-concentration measurement) of points to include in the half-life
-calculation. If in use, automatic half-life point selection does not occur
-and exactly the \code{TRUE} points are used. \code{TRUE} includes a point, \code{FALSE}
-does not, and \code{NA} is undefined; the vector is "in use" for the interval
-unless it is entirely \code{NA} (so an all-\code{FALSE} vector still counts as in
-use). At most one of \code{include_half.life} and \code{exclude_half.life} may be in
-use for the same interval.}
+concentration measurement) naming the points to use for the half-life. If
+in use, automatic curve-stripping point selection is bypassed and exactly
+the \code{TRUE} points are used for the half-life regression. \code{TRUE} uses the
+point, \code{FALSE} does not, and \code{NA} is undefined; the vector is "in use" for
+the interval unless it is entirely \code{NA} (so an all-\code{FALSE} vector still
+counts as in use). At most one of \code{include_half.life} and
+\code{exclude_half.life} may be in use for the same interval.}
 
 \item{exclude_half.life}{An optional logical vector (one value per
-concentration measurement) of points to exclude from the half-life
-calculation; the remaining points use the usual curve-stripping selection.
-\code{TRUE}/\code{FALSE}/\code{NA} and the "in use" rule are interpreted as for
-\code{include_half.life}.}
+concentration measurement) naming points to drop before point selection.
+Automatic curve-stripping point selection is still performed (it is not
+bypassed) on the remaining, non-excluded points. \code{TRUE} excludes the point,
+\code{FALSE} does not, and \code{NA} is undefined; the "in use" rule is the same as
+for \code{include_half.life}.}
 
 \item{lloq}{An optional scalar or vector (the same length as \code{conc}) with the
 lower limit of quantification passed to \code{\link[=pk.calc.half.life]{pk.calc.half.life()}} for the Tobit
