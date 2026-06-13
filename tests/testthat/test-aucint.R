@@ -516,6 +516,9 @@ test_that("pk.calc.aucint and wrappers: method attribute is set and propagated",
   for (param in aucint_params) {
     auc_fun <- get(paste0("pk.calc.", param))
     args_fun <- auc_args[intersect(names(auc_args), names(formals(auc_fun)))]
+    # pk.calc.aucint accepts the interval via `...`, so it is not in formals();
+    # always supply it so the bare function receives a valid interval.
+    args_fun$interval <- auc_args$interval
     for (method in auc_methods) {
       args_fun$method <- method
       v <- do.call(auc_fun, args_fun)

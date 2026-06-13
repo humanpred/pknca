@@ -137,6 +137,8 @@ test_that("pk.calc.auciv: method attribute is set and propagated", {
       )
     }
   }
+})
+
 # ============================================================================
 # Wrapper Function Tests (pk.calc.auxciv)
 # ============================================================================
