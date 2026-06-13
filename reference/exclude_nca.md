@@ -103,23 +103,23 @@ my_result_excluded <- exclude(my_result,
                               FUN=exclude_nca_max.aucinf.pext())
 #> Loading required namespace: testthat
 as.data.frame(my_result_excluded)
-#> # A tibble: 16 × 6
-#>    subject start   end PPTESTCD            PPORRES exclude     
-#>      <dbl> <dbl> <dbl> <chr>                 <dbl> <chr>       
-#>  1       1     0   Inf auclast              3.47   NA          
-#>  2       1     0   Inf tmax                 0      NA          
-#>  3       1     0   Inf tlast                3      NA          
-#>  4       1     0   Inf clast.obs            1      NA          
-#>  5       1     0   Inf lambda.z             0.0953 NA          
-#>  6       1     0   Inf r.squared            1      NA          
-#>  7       1     0   Inf adj.r.squared        1      NA          
-#>  8       1     0   Inf lambda.z.corrxy     -1      NA          
-#>  9       1     0   Inf lambda.z.time.first  1      NA          
-#> 10       1     0   Inf lambda.z.time.last   3      NA          
-#> 11       1     0   Inf lambda.z.n.points    3      NA          
-#> 12       1     0   Inf clast.pred           1      NA          
-#> 13       1     0   Inf half.life            7.27   NA          
-#> 14       1     0   Inf span.ratio           0.275  NA          
-#> 15       1     0   Inf aucinf.obs          14.0    aucpext > 20
-#> 16       1     0   Inf aucpext.obs         75.1    aucpext > 20
+#> # A tibble: 16 × 7
+#>    subject start   end PPTESTCD            PPORRES PPANMETH              exclude
+#>      <dbl> <dbl> <dbl> <chr>                 <dbl> <chr>                 <chr>  
+#>  1       1     0   Inf auclast              3.47   "AUC: lin up/log dow… NA     
+#>  2       1     0   Inf tmax                 0      ""                    NA     
+#>  3       1     0   Inf tlast                3      ""                    NA     
+#>  4       1     0   Inf clast.obs            1      ""                    NA     
+#>  5       1     0   Inf lambda.z             0.0953 ""                    NA     
+#>  6       1     0   Inf r.squared            1      ""                    NA     
+#>  7       1     0   Inf adj.r.squared        1      ""                    NA     
+#>  8       1     0   Inf lambda.z.corrxy     -1      ""                    NA     
+#>  9       1     0   Inf lambda.z.time.first  1      ""                    NA     
+#> 10       1     0   Inf lambda.z.time.last   3      ""                    NA     
+#> 11       1     0   Inf lambda.z.n.points    3      ""                    NA     
+#> 12       1     0   Inf clast.pred           1      ""                    NA     
+#> 13       1     0   Inf half.life            7.27   ""                    NA     
+#> 14       1     0   Inf span.ratio           0.275  ""                    NA     
+#> 15       1     0   Inf aucinf.obs          14.0    "AUC: lin up/log dow… aucpex…
+#> 16       1     0   Inf aucpext.obs         75.1    ""                    aucpex…
 ```

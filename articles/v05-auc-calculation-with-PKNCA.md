@@ -69,25 +69,25 @@ results_obj <- pk.nca(data_obj)
 kable(as.data.frame(results_obj))
 ```
 
-| subject | start | end | PPTESTCD            |    PPORRES | exclude |
-|--------:|------:|----:|:--------------------|-----------:|:--------|
-|       1 |     0 |  24 | auclast             | 12.9965842 | NA      |
-|       1 |     0 |  24 | aucall              | 15.1965842 | NA      |
-|       1 |     0 |  24 | tmax                |  2.0000000 | NA      |
-|       1 |     0 |  24 | tlast               |  8.0000000 | NA      |
-|       1 |     0 |  24 | clast.obs           |  1.1000000 | NA      |
-|       1 |     0 |  24 | lambda.z            |  0.1075592 | NA      |
-|       1 |     0 |  24 | r.squared           |  0.7580245 | NA      |
-|       1 |     0 |  24 | adj.r.squared       |  0.6370368 | NA      |
-|       1 |     0 |  24 | lambda.z.corrxy     | -0.8706460 | NA      |
-|       1 |     0 |  24 | lambda.z.time.first |  3.0000000 | NA      |
-|       1 |     0 |  24 | lambda.z.time.last  |  8.0000000 | NA      |
-|       1 |     0 |  24 | lambda.z.n.points   |  4.0000000 | NA      |
-|       1 |     0 |  24 | clast.pred          |  1.0216136 | NA      |
-|       1 |     0 |  24 | half.life           |  6.4443313 | NA      |
-|       1 |     0 |  24 | span.ratio          |  0.7758757 | NA      |
-|       1 |     0 |  24 | aucinf.obs          | 23.2235095 | NA      |
-|       1 |     0 |  24 | aucinf.pred         | 22.4947355 | NA      |
+| subject | start | end | PPTESTCD            |    PPORRES | PPANMETH             | exclude |
+|--------:|------:|----:|:--------------------|-----------:|:---------------------|:--------|
+|       1 |     0 |  24 | auclast             | 12.9965842 | AUC: lin up/log down | NA      |
+|       1 |     0 |  24 | aucall              | 15.1965842 | AUC: lin up/log down | NA      |
+|       1 |     0 |  24 | tmax                |  2.0000000 |                      | NA      |
+|       1 |     0 |  24 | tlast               |  8.0000000 |                      | NA      |
+|       1 |     0 |  24 | clast.obs           |  1.1000000 |                      | NA      |
+|       1 |     0 |  24 | lambda.z            |  0.1075592 |                      | NA      |
+|       1 |     0 |  24 | r.squared           |  0.7580245 |                      | NA      |
+|       1 |     0 |  24 | adj.r.squared       |  0.6370368 |                      | NA      |
+|       1 |     0 |  24 | lambda.z.corrxy     | -0.8706460 |                      | NA      |
+|       1 |     0 |  24 | lambda.z.time.first |  3.0000000 |                      | NA      |
+|       1 |     0 |  24 | lambda.z.time.last  |  8.0000000 |                      | NA      |
+|       1 |     0 |  24 | lambda.z.n.points   |  4.0000000 |                      | NA      |
+|       1 |     0 |  24 | clast.pred          |  1.0216136 |                      | NA      |
+|       1 |     0 |  24 | half.life           |  6.4443313 |                      | NA      |
+|       1 |     0 |  24 | span.ratio          |  0.7758757 |                      | NA      |
+|       1 |     0 |  24 | aucinf.obs          | 23.2235095 | AUC: lin up/log down | NA      |
+|       1 |     0 |  24 | aucinf.pred         | 22.4947355 | AUC: lin up/log down | NA      |
 
 ## AUC to the Last Value Above the Limit of Quantification (AUC_(last))
 
@@ -286,9 +286,9 @@ results_obs_obj <- pk.nca(data_obs_obj)
 kable(as.data.frame(results_obs_obj))
 ```
 
-| subject | start | end | PPTESTCD | PPORRES | exclude |
-|--------:|------:|----:|:---------|--------:|:--------|
-|       1 |     0 |   2 | auclast  |       4 | NA      |
+| subject | start | end | PPTESTCD | PPORRES | PPANMETH             | exclude |
+|--------:|------:|----:|:---------|--------:|:---------------------|:--------|
+|       1 |     0 |   2 | auclast  |       4 | AUC: lin up/log down | NA      |
 
 When the starting and ending times are not observed within the data or
 when samples are below the limit of quantification, concentrations must
@@ -337,7 +337,7 @@ results_interp <- pk.nca(data_interp_obj)
 as.data.frame(results_interp)
 ```
 
-    ## # A tibble: 1 × 6
-    ##   subject start   end PPTESTCD PPORRES exclude
-    ##     <dbl> <dbl> <dbl> <chr>      <dbl> <chr>  
-    ## 1       1     0   1.5 auclast     2.56 NA
+    ## # A tibble: 1 × 7
+    ##   subject start   end PPTESTCD PPORRES PPANMETH             exclude
+    ##     <dbl> <dbl> <dbl> <chr>      <dbl> <chr>                <chr>  
+    ## 1       1     0   1.5 auclast     2.56 AUC: lin up/log down NA

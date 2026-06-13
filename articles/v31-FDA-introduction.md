@@ -235,11 +235,11 @@ pander::pander(head(
 ), split.tables = Inf)
 ```
 
-| start | end | PPTESTCD | PPORRES | exclude | PPORRESU |
-|:-----:|:---:|:--------:|:-------:|:-------:|:--------:|
-|   0   | 24  | auclast  |  92.37  |   NA    | hr\*mg/L |
-|   0   | Inf |   cmax   |  10.5   |   NA    |   mg/L   |
-|   0   | Inf |   tmax   |  1.12   |   NA    |    hr    |
+| start | end | PPTESTCD | PPORRES |       PPANMETH       | exclude | PPORRESU |
+|:-----:|:---:|:--------:|:-------:|:--------------------:|:-------:|:--------:|
+|   0   | 24  | auclast  |  92.37  | AUC: lin up/log down |   NA    | hr\*mg/L |
+|   0   | Inf |   cmax   |  10.5   |                      |   NA    |   mg/L   |
+|   0   | Inf |   tmax   |  1.12   |                      |   NA    |    hr    |
 
 ## PKNCA datasets
 

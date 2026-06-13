@@ -64,23 +64,23 @@ excluded_result <- PKNCA::exclude(
   FUN = exclude_nca_by_param("span.ratio", min_thr = 2)
 )
 as.data.frame(excluded_result)
-#> # A tibble: 16 × 6
-#>    subject start   end PPTESTCD            PPORRES exclude       
-#>      <dbl> <dbl> <dbl> <chr>                 <dbl> <chr>         
-#>  1       1     0    24 auclast              11.9   NA            
-#>  2       1     0   Inf cmax                  5     NA            
-#>  3       1     0   Inf tmax                  0     NA            
-#>  4       1     0   Inf tlast                 4     NA            
-#>  5       1     0   Inf clast.obs             1     NA            
-#>  6       1     0   Inf lambda.z              0.549 NA            
-#>  7       1     0   Inf r.squared             0.978 NA            
-#>  8       1     0   Inf adj.r.squared         0.955 NA            
-#>  9       1     0   Inf lambda.z.corrxy      -0.989 NA            
-#> 10       1     0   Inf lambda.z.time.first   2     NA            
-#> 11       1     0   Inf lambda.z.time.last    4     NA            
-#> 12       1     0   Inf lambda.z.n.points     3     NA            
-#> 13       1     0   Inf clast.pred            1.05  NA            
-#> 14       1     0   Inf half.life             1.26  NA            
-#> 15       1     0   Inf span.ratio            1.58  span.ratio < 2
-#> 16       1     0   Inf aucinf.obs           13.7   NA            
+#> # A tibble: 16 × 7
+#>    subject start   end PPTESTCD            PPORRES PPANMETH              exclude
+#>      <dbl> <dbl> <dbl> <chr>                 <dbl> <chr>                 <chr>  
+#>  1       1     0    24 auclast              11.9   "AUC: lin up/log dow… NA     
+#>  2       1     0   Inf cmax                  5     ""                    NA     
+#>  3       1     0   Inf tmax                  0     ""                    NA     
+#>  4       1     0   Inf tlast                 4     ""                    NA     
+#>  5       1     0   Inf clast.obs             1     ""                    NA     
+#>  6       1     0   Inf lambda.z              0.549 ""                    NA     
+#>  7       1     0   Inf r.squared             0.978 ""                    NA     
+#>  8       1     0   Inf adj.r.squared         0.955 ""                    NA     
+#>  9       1     0   Inf lambda.z.corrxy      -0.989 ""                    NA     
+#> 10       1     0   Inf lambda.z.time.first   2     ""                    NA     
+#> 11       1     0   Inf lambda.z.time.last    4     ""                    NA     
+#> 12       1     0   Inf lambda.z.n.points     3     ""                    NA     
+#> 13       1     0   Inf clast.pred            1.05  ""                    NA     
+#> 14       1     0   Inf half.life             1.26  ""                    NA     
+#> 15       1     0   Inf span.ratio            1.58  ""                    span.r…
+#> 16       1     0   Inf aucinf.obs           13.7   "AUC: lin up/log dow… NA     
 ```

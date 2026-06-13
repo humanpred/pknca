@@ -198,6 +198,10 @@ myconc <- c(0, 1, 2, 1, 0.5, 0.25, 0)
 mytime <- c(0, 1, 2, 3, 4,   5,    6)
 pk.calc.auc(myconc, mytime, interval=c(0, 6))
 #> [1] 4.524716
+#> attr(,"method")
+#> [1] "AUC: lin up/log down"
 pk.calc.auc(myconc, mytime, interval=c(0, Inf))
 #> [1] 4.524716
+#> attr(,"method")
+#> [1] "AUC: lin up/log down"
 ```

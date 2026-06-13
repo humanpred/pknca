@@ -88,21 +88,21 @@ result_obj <- pk.nca(data_obj)
 as.data.frame(result_obj)
 ```
 
-    ## # A tibble: 12 × 6
-    ##    Subject start   end PPTESTCD            PPORRES exclude
-    ##    <ord>   <dbl> <dbl> <chr>                 <dbl> <chr>  
-    ##  1 1           0   Inf tmax                 1.12   NA     
-    ##  2 1           0   Inf tlast               24.4    NA     
-    ##  3 1           0   Inf lambda.z             0.0485 NA     
-    ##  4 1           0   Inf r.squared            1.000  NA     
-    ##  5 1           0   Inf adj.r.squared        1.000  NA     
-    ##  6 1           0   Inf lambda.z.corrxy     -1.000  NA     
-    ##  7 1           0   Inf lambda.z.time.first  9.05   NA     
-    ##  8 1           0   Inf lambda.z.time.last  24.4    NA     
-    ##  9 1           0   Inf lambda.z.n.points    3      NA     
-    ## 10 1           0   Inf clast.pred           3.28   NA     
-    ## 11 1           0   Inf half.life           14.3    NA     
-    ## 12 1           0   Inf span.ratio           1.07   NA
+    ## # A tibble: 12 × 7
+    ##    Subject start   end PPTESTCD            PPORRES PPANMETH exclude
+    ##    <ord>   <dbl> <dbl> <chr>                 <dbl> <chr>    <chr>  
+    ##  1 1           0   Inf tmax                 1.12   ""       NA     
+    ##  2 1           0   Inf tlast               24.4    ""       NA     
+    ##  3 1           0   Inf lambda.z             0.0485 ""       NA     
+    ##  4 1           0   Inf r.squared            1.000  ""       NA     
+    ##  5 1           0   Inf adj.r.squared        1.000  ""       NA     
+    ##  6 1           0   Inf lambda.z.corrxy     -1.000  ""       NA     
+    ##  7 1           0   Inf lambda.z.time.first  9.05   ""       NA     
+    ##  8 1           0   Inf lambda.z.time.last  24.4    ""       NA     
+    ##  9 1           0   Inf lambda.z.n.points    3      ""       NA     
+    ## 10 1           0   Inf clast.pred           3.28   ""       NA     
+    ## 11 1           0   Inf half.life           14.3    ""       NA     
+    ## 12 1           0   Inf span.ratio           1.07   ""       NA
 
 ## Manual Point Selection
 
@@ -154,21 +154,21 @@ result_obj_exclude1 <- pk.nca(data_obj_exclude1)
 as.data.frame(result_obj_exclude1)
 ```
 
-    ## # A tibble: 12 × 6
-    ##    Subject start   end PPTESTCD            PPORRES exclude
-    ##    <ord>   <dbl> <dbl> <chr>                 <dbl> <chr>  
-    ##  1 1           0   Inf tmax                 1.12   NA     
-    ##  2 1           0   Inf tlast               24.4    NA     
-    ##  3 1           0   Inf lambda.z             0.0482 NA     
-    ##  4 1           0   Inf r.squared            1.000  NA     
-    ##  5 1           0   Inf adj.r.squared        0.999  NA     
-    ##  6 1           0   Inf lambda.z.corrxy     -1.000  NA     
-    ##  7 1           0   Inf lambda.z.time.first  5.1    NA     
-    ##  8 1           0   Inf lambda.z.time.last  24.4    NA     
-    ##  9 1           0   Inf lambda.z.n.points    4      NA     
-    ## 10 1           0   Inf clast.pred           3.28   NA     
-    ## 11 1           0   Inf half.life           14.4    NA     
-    ## 12 1           0   Inf span.ratio           1.34   NA
+    ## # A tibble: 12 × 7
+    ##    Subject start   end PPTESTCD            PPORRES PPANMETH exclude
+    ##    <ord>   <dbl> <dbl> <chr>                 <dbl> <chr>    <chr>  
+    ##  1 1           0   Inf tmax                 1.12   ""       NA     
+    ##  2 1           0   Inf tlast               24.4    ""       NA     
+    ##  3 1           0   Inf lambda.z             0.0482 ""       NA     
+    ##  4 1           0   Inf r.squared            1.000  ""       NA     
+    ##  5 1           0   Inf adj.r.squared        0.999  ""       NA     
+    ##  6 1           0   Inf lambda.z.corrxy     -1.000  ""       NA     
+    ##  7 1           0   Inf lambda.z.time.first  5.1    ""       NA     
+    ##  8 1           0   Inf lambda.z.time.last  24.4    ""       NA     
+    ##  9 1           0   Inf lambda.z.n.points    4      ""       NA     
+    ## 10 1           0   Inf clast.pred           3.28   ""       NA     
+    ## 11 1           0   Inf half.life           14.4    ""       NA     
+    ## 12 1           0   Inf span.ratio           1.34   ""       NA
 
 ### Specification of the Exact Points for Analysis
 
@@ -211,18 +211,18 @@ result_obj_include6 <- pk.nca(data_obj_include6)
 as.data.frame(result_obj_include6)
 ```
 
-    ## # A tibble: 12 × 6
-    ##    Subject start   end PPTESTCD            PPORRES exclude
-    ##    <ord>   <dbl> <dbl> <chr>                 <dbl> <chr>  
-    ##  1 1           0   Inf tmax                 1.12   NA     
-    ##  2 1           0   Inf tlast               24.4    NA     
-    ##  3 1           0   Inf lambda.z             0.0475 NA     
-    ##  4 1           0   Inf r.squared            0.999  NA     
-    ##  5 1           0   Inf adj.r.squared        0.998  NA     
-    ##  6 1           0   Inf lambda.z.corrxy     -0.999  NA     
-    ##  7 1           0   Inf lambda.z.time.first  3.82   NA     
-    ##  8 1           0   Inf lambda.z.time.last  24.4    NA     
-    ##  9 1           0   Inf lambda.z.n.points    6      NA     
-    ## 10 1           0   Inf clast.pred           3.30   NA     
-    ## 11 1           0   Inf half.life           14.6    NA     
-    ## 12 1           0   Inf span.ratio           1.41   NA
+    ## # A tibble: 12 × 7
+    ##    Subject start   end PPTESTCD            PPORRES PPANMETH              exclude
+    ##    <ord>   <dbl> <dbl> <chr>                 <dbl> <chr>                 <chr>  
+    ##  1 1           0   Inf tmax                 1.12   ""                    NA     
+    ##  2 1           0   Inf tlast               24.4    ""                    NA     
+    ##  3 1           0   Inf lambda.z             0.0475 "Lambda Z: Manual se… NA     
+    ##  4 1           0   Inf r.squared            0.999  "Lambda Z: Manual se… NA     
+    ##  5 1           0   Inf adj.r.squared        0.998  "Lambda Z: Manual se… NA     
+    ##  6 1           0   Inf lambda.z.corrxy     -0.999  "Lambda Z: Manual se… NA     
+    ##  7 1           0   Inf lambda.z.time.first  3.82   "Lambda Z: Manual se… NA     
+    ##  8 1           0   Inf lambda.z.time.last  24.4    "Lambda Z: Manual se… NA     
+    ##  9 1           0   Inf lambda.z.n.points    6      "Lambda Z: Manual se… NA     
+    ## 10 1           0   Inf clast.pred           3.30   "Lambda Z: Manual se… NA     
+    ## 11 1           0   Inf half.life           14.6    "Lambda Z: Manual se… NA     
+    ## 12 1           0   Inf span.ratio           1.41   "Lambda Z: Manual se… NA

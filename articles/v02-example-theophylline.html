@@ -7096,12 +7096,22 @@ PKNCAdata object.</p>
 <code class="sourceCode R"><span><span class="va">results_obj_automatic</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj_automatic</span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obj_automatic</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
+<colgroup>
+<col width="11%">
+<col width="8%">
+<col width="5%">
+<col width="14%">
+<col width="14%">
+<col width="31%">
+<col width="11%">
+</colgroup>
 <thead><tr class="header">
 <th align="left">Subject</th>
 <th align="right">start</th>
 <th align="right">end</th>
 <th align="left">PPTESTCD</th>
 <th align="right">PPORRES</th>
+<th align="left">PPANMETH</th>
 <th align="left">exclude</th>
 </tr></thead>
 <tbody>
@@ -7111,6 +7121,7 @@ PKNCAdata object.</p>
 <td align="right">24</td>
 <td align="left">auclast</td>
 <td align="right">92.365442</td>
+<td align="left">AUC: lin up/log down</td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -7119,6 +7130,7 @@ PKNCAdata object.</p>
 <td align="right">Inf</td>
 <td align="left">cmax</td>
 <td align="right">10.500000</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="odd">
@@ -7127,6 +7139,7 @@ PKNCAdata object.</p>
 <td align="right">Inf</td>
 <td align="left">tmax</td>
 <td align="right">1.120000</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -7135,6 +7148,7 @@ PKNCAdata object.</p>
 <td align="right">Inf</td>
 <td align="left">tlast</td>
 <td align="right">24.370000</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="odd">
@@ -7143,6 +7157,7 @@ PKNCAdata object.</p>
 <td align="right">Inf</td>
 <td align="left">clast.obs</td>
 <td align="right">3.280000</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -7151,6 +7166,7 @@ PKNCAdata object.</p>
 <td align="right">Inf</td>
 <td align="left">lambda.z</td>
 <td align="right">0.048457</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 </tbody>
@@ -7205,12 +7221,22 @@ PKNCAdata object.</p>
 <code class="sourceCode R"><span><span class="va">results_obj_manual</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj_manual</span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obj_manual</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
+<colgroup>
+<col width="11%">
+<col width="8%">
+<col width="5%">
+<col width="14%">
+<col width="16%">
+<col width="30%">
+<col width="11%">
+</colgroup>
 <thead><tr class="header">
 <th align="left">Subject</th>
 <th align="right">start</th>
 <th align="right">end</th>
 <th align="left">PPTESTCD</th>
 <th align="right">PPORRES</th>
+<th align="left">PPANMETH</th>
 <th align="left">exclude</th>
 </tr></thead>
 <tbody>
@@ -7220,6 +7246,7 @@ PKNCAdata object.</p>
 <td align="right">Inf</td>
 <td align="left">auclast</td>
 <td align="right">71.6970150</td>
+<td align="left">AUC: lin up/log down</td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -7228,6 +7255,7 @@ PKNCAdata object.</p>
 <td align="right">Inf</td>
 <td align="left">cmax</td>
 <td align="right">6.4400000</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="odd">
@@ -7236,6 +7264,7 @@ PKNCAdata object.</p>
 <td align="right">Inf</td>
 <td align="left">tmax</td>
 <td align="right">1.1500000</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -7244,6 +7273,7 @@ PKNCAdata object.</p>
 <td align="right">Inf</td>
 <td align="left">tlast</td>
 <td align="right">23.8500000</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="odd">
@@ -7252,6 +7282,7 @@ PKNCAdata object.</p>
 <td align="right">Inf</td>
 <td align="left">clast.obs</td>
 <td align="right">0.9200000</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -7260,6 +7291,7 @@ PKNCAdata object.</p>
 <td align="right">Inf</td>
 <td align="left">lambda.z</td>
 <td align="right">0.0877957</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 </tbody>
@@ -7491,19 +7523,19 @@ progress.</p>
 <code class="sourceCode R"><span><span class="va">results_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $result</span></span>
-<span><span class="co">## <span style="color: #949494;"># A tibble: 48 × 6</span></span></span>
-<span><span class="co">##    Subject start   end PPTESTCD PPORRES exclude</span></span>
-<span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;ord&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 1</span> 6           0    24 auclast    71.8  <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 2</span> 6           0    24 cmax        6.44 <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 3</span> 6         144   168 auclast    82.2  <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 4</span> 6         144   168 cmax        7.37 <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 5</span> 7           0    24 auclast    89.0  <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 6</span> 7           0    24 cmax        7.09 <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 7</span> 7         144   168 auclast   101.   <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 8</span> 7         144   168 cmax        8.07 <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 9</span> 8           0    24 auclast    86.7  <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">10</span> 8           0    24 cmax        7.56 <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #949494;"># A tibble: 48 × 7</span></span></span>
+<span><span class="co">##    Subject start   end PPTESTCD PPORRES PPANMETH               exclude</span></span>
+<span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;ord&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 1</span> 6           0    24 auclast    71.8  <span style="color: #949494;">"</span>AUC: lin up/log down<span style="color: #949494;">"</span> <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 2</span> 6           0    24 cmax        6.44 <span style="color: #949494;">""</span>                     <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 3</span> 6         144   168 auclast    82.2  <span style="color: #949494;">"</span>AUC: lin up/log down<span style="color: #949494;">"</span> <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 4</span> 6         144   168 cmax        7.37 <span style="color: #949494;">""</span>                     <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 5</span> 7           0    24 auclast    89.0  <span style="color: #949494;">"</span>AUC: lin up/log down<span style="color: #949494;">"</span> <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 6</span> 7           0    24 cmax        7.09 <span style="color: #949494;">""</span>                     <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span> 7         144   168 auclast   101.   <span style="color: #949494;">"</span>AUC: lin up/log down<span style="color: #949494;">"</span> <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 8</span> 7         144   168 cmax        8.07 <span style="color: #949494;">""</span>                     <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 9</span> 8           0    24 auclast    86.7  <span style="color: #949494;">"</span>AUC: lin up/log down<span style="color: #949494;">"</span> <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span> 8           0    24 cmax        7.56 <span style="color: #949494;">""</span>                     <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #949494;"># ℹ 38 more rows</span></span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $data</span></span>
@@ -7721,7 +7753,7 @@ progress.</p>
 <span><span class="co">## attr(,"class")</span></span>
 <span><span class="co">## [1] "PKNCAresults" "list"        </span></span>
 <span><span class="co">## attr(,"provenance")</span></span>
-<span><span class="co">## Provenance hash ee687a520af821aa354fef62aa53cba0 generated on 2026-06-13 21:06:57.738475 with R version 4.6.0 (2026-04-24).</span></span></code></pre>
+<span><span class="co">## Provenance hash 1010dd656fa2060bf5d457ba131dbe6d generated on 2026-06-13 21:28:34.081238 with R version 4.6.0 (2026-04-24).</span></span></code></pre>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N     auclast        cmax</span></span>

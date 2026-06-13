@@ -333,11 +333,11 @@ pander::pander(head(
 ))
 ```
 
-| start | end | PPTESTCD | PPORRES | exclude |
-|:-----:|:---:|:--------:|:-------:|:-------:|
-|   0   | 24  | auclast  |  92.37  |   NA    |
-|   0   | Inf |   cmax   |  10.5   |   NA    |
-|   0   | Inf |   tmax   |  1.12   |   NA    |
+| start | end | PPTESTCD | PPORRES |       PPANMETH       | exclude |
+|:-----:|:---:|:--------:|:-------:|:--------------------:|:-------:|
+|   0   | 24  | auclast  |  92.37  | AUC: lin up/log down |   NA    |
+|   0   | Inf |   cmax   |  10.5   |                      |   NA    |
+|   0   | Inf |   tmax   |  1.12   |                      |   NA    |
 
 ## PKNCA datasets
 
@@ -780,10 +780,10 @@ o_nca <- suppressMessages(pk.nca(o_data))
 as.data.frame(o_nca)
 ```
 
-    ## # A tibble: 1 × 5
-    ##   start   end PPTESTCD PPORRES exclude
-    ##   <dbl> <dbl> <chr>      <dbl> <chr>  
-    ## 1     0   Inf cmax         0.5 NA
+    ## # A tibble: 1 × 6
+    ##   start   end PPTESTCD PPORRES PPANMETH exclude
+    ##   <dbl> <dbl> <chr>      <dbl> <chr>    <chr>  
+    ## 1     0   Inf cmax         0.5 ""       NA
 
 ### PKNCA only calculates what is required, not every possible parameter (2 of 2)
 
@@ -809,23 +809,23 @@ o_nca <- suppressMessages(pk.nca(o_data))
 as.data.frame(o_nca)
 ```
 
-    ## # A tibble: 14 × 5
-    ##    start   end PPTESTCD            PPORRES exclude
-    ##    <dbl> <dbl> <chr>                 <dbl> <chr>  
-    ##  1     0   Inf tmax                 0      NA     
-    ##  2     0   Inf tlast                3      NA     
-    ##  3     0   Inf clast.obs            0.0625 NA     
-    ##  4     0   Inf lambda.z             0.693  NA     
-    ##  5     0   Inf r.squared            1      NA     
-    ##  6     0   Inf adj.r.squared        1      NA     
-    ##  7     0   Inf lambda.z.corrxy     -1      NA     
-    ##  8     0   Inf lambda.z.time.first  1      NA     
-    ##  9     0   Inf lambda.z.time.last   3      NA     
-    ## 10     0   Inf lambda.z.n.points    3      NA     
-    ## 11     0   Inf clast.pred           0.0625 NA     
-    ## 12     0   Inf half.life            1      NA     
-    ## 13     0   Inf span.ratio           2      NA     
-    ## 14     0   Inf aucinf.obs           0.721  NA
+    ## # A tibble: 14 × 6
+    ##    start   end PPTESTCD            PPORRES PPANMETH               exclude
+    ##    <dbl> <dbl> <chr>                 <dbl> <chr>                  <chr>  
+    ##  1     0   Inf tmax                 0      ""                     NA     
+    ##  2     0   Inf tlast                3      ""                     NA     
+    ##  3     0   Inf clast.obs            0.0625 ""                     NA     
+    ##  4     0   Inf lambda.z             0.693  ""                     NA     
+    ##  5     0   Inf r.squared            1      ""                     NA     
+    ##  6     0   Inf adj.r.squared        1      ""                     NA     
+    ##  7     0   Inf lambda.z.corrxy     -1      ""                     NA     
+    ##  8     0   Inf lambda.z.time.first  1      ""                     NA     
+    ##  9     0   Inf lambda.z.time.last   3      ""                     NA     
+    ## 10     0   Inf lambda.z.n.points    3      ""                     NA     
+    ## 11     0   Inf clast.pred           0.0625 ""                     NA     
+    ## 12     0   Inf half.life            1      ""                     NA     
+    ## 13     0   Inf span.ratio           2      ""                     NA     
+    ## 14     0   Inf aucinf.obs           0.721  "AUC: lin up/log down" NA
 
 ### How to select the correct parameters for calculations (aka, why are there 32 types of AUC in PKNCA?)
 
@@ -869,22 +869,22 @@ as.data.frame(o_nca) %>%
   filter(PPTESTCD != "half.life")
 ```
 
-    ## # A tibble: 13 × 5
-    ##    start   end PPTESTCD            PPORRES exclude
-    ##    <dbl> <dbl> <chr>                 <dbl> <chr>  
-    ##  1     0   Inf tmax                 0      NA     
-    ##  2     0   Inf tlast                3      NA     
-    ##  3     0   Inf clast.obs            0.0625 NA     
-    ##  4     0   Inf lambda.z             0.693  NA     
-    ##  5     0   Inf r.squared            1      NA     
-    ##  6     0   Inf adj.r.squared        1      NA     
-    ##  7     0   Inf lambda.z.corrxy     -1      NA     
-    ##  8     0   Inf lambda.z.time.first  1      NA     
-    ##  9     0   Inf lambda.z.time.last   3      NA     
-    ## 10     0   Inf lambda.z.n.points    3      NA     
-    ## 11     0   Inf clast.pred           0.0625 NA     
-    ## 12     0   Inf span.ratio           2      NA     
-    ## 13     0   Inf aucinf.obs           0.721  NA
+    ## # A tibble: 13 × 6
+    ##    start   end PPTESTCD            PPORRES PPANMETH               exclude
+    ##    <dbl> <dbl> <chr>                 <dbl> <chr>                  <chr>  
+    ##  1     0   Inf tmax                 0      ""                     NA     
+    ##  2     0   Inf tlast                3      ""                     NA     
+    ##  3     0   Inf clast.obs            0.0625 ""                     NA     
+    ##  4     0   Inf lambda.z             0.693  ""                     NA     
+    ##  5     0   Inf r.squared            1      ""                     NA     
+    ##  6     0   Inf adj.r.squared        1      ""                     NA     
+    ##  7     0   Inf lambda.z.corrxy     -1      ""                     NA     
+    ##  8     0   Inf lambda.z.time.first  1      ""                     NA     
+    ##  9     0   Inf lambda.z.time.last   3      ""                     NA     
+    ## 10     0   Inf lambda.z.n.points    3      ""                     NA     
+    ## 11     0   Inf clast.pred           0.0625 ""                     NA     
+    ## 12     0   Inf span.ratio           2      ""                     NA     
+    ## 13     0   Inf aucinf.obs           0.721  "AUC: lin up/log down" NA
 
 But, parameters derived from half-life remain.
 
@@ -909,23 +909,23 @@ o_nca_excluded <-
 as.data.frame(o_nca_excluded)
 ```
 
-    ## # A tibble: 14 × 5
-    ##    start   end PPTESTCD            PPORRES exclude       
-    ##    <dbl> <dbl> <chr>                 <dbl> <chr>         
-    ##  1     0   Inf tmax                 0      NA            
-    ##  2     0   Inf tlast                3      NA            
-    ##  3     0   Inf clast.obs            0.0625 NA            
-    ##  4     0   Inf lambda.z             0.693  span.ratio < 3
-    ##  5     0   Inf r.squared            1      span.ratio < 3
-    ##  6     0   Inf adj.r.squared        1      span.ratio < 3
-    ##  7     0   Inf lambda.z.corrxy     -1      span.ratio < 3
-    ##  8     0   Inf lambda.z.time.first  1      span.ratio < 3
-    ##  9     0   Inf lambda.z.time.last   3      span.ratio < 3
-    ## 10     0   Inf lambda.z.n.points    3      span.ratio < 3
-    ## 11     0   Inf clast.pred           0.0625 span.ratio < 3
-    ## 12     0   Inf half.life            1      span.ratio < 3
-    ## 13     0   Inf span.ratio           2      span.ratio < 3
-    ## 14     0   Inf aucinf.obs           0.721  span.ratio < 3
+    ## # A tibble: 14 × 6
+    ##    start   end PPTESTCD            PPORRES PPANMETH               exclude       
+    ##    <dbl> <dbl> <chr>                 <dbl> <chr>                  <chr>         
+    ##  1     0   Inf tmax                 0      ""                     NA            
+    ##  2     0   Inf tlast                3      ""                     NA            
+    ##  3     0   Inf clast.obs            0.0625 ""                     NA            
+    ##  4     0   Inf lambda.z             0.693  ""                     span.ratio < 3
+    ##  5     0   Inf r.squared            1      ""                     span.ratio < 3
+    ##  6     0   Inf adj.r.squared        1      ""                     span.ratio < 3
+    ##  7     0   Inf lambda.z.corrxy     -1      ""                     span.ratio < 3
+    ##  8     0   Inf lambda.z.time.first  1      ""                     span.ratio < 3
+    ##  9     0   Inf lambda.z.time.last   3      ""                     span.ratio < 3
+    ## 10     0   Inf lambda.z.n.points    3      ""                     span.ratio < 3
+    ## 11     0   Inf clast.pred           0.0625 ""                     span.ratio < 3
+    ## 12     0   Inf half.life            1      ""                     span.ratio < 3
+    ## 13     0   Inf span.ratio           2      ""                     span.ratio < 3
+    ## 14     0   Inf aucinf.obs           0.721  "AUC: lin up/log down" span.ratio < 3
 
 ### Excluding results (The best way, 2/2)
 

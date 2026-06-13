@@ -69,7 +69,7 @@ exclude(myconc,
         mask=c(TRUE, rep(FALSE, 6)))
 #> Formula for concentration:
 #>  conc ~ time | subject
-#> <environment: 0x55b8b0af1e80>
+#> <environment: 0x5574d556a778>
 #> Data are dense PK.
 #> With 1 subjects defined in the 'subject' column.
 #> Nominal time column is not specified.

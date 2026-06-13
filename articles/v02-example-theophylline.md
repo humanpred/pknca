@@ -150,14 +150,14 @@ results_obj_automatic <- pk.nca(data_obj_automatic)
 knitr::kable(head(as.data.frame(results_obj_automatic)))
 ```
 
-| Subject | start | end | PPTESTCD  |   PPORRES | exclude |
-|:--------|------:|----:|:----------|----------:|:--------|
-| 1       |     0 |  24 | auclast   | 92.365442 | NA      |
-| 1       |     0 | Inf | cmax      | 10.500000 | NA      |
-| 1       |     0 | Inf | tmax      |  1.120000 | NA      |
-| 1       |     0 | Inf | tlast     | 24.370000 | NA      |
-| 1       |     0 | Inf | clast.obs |  3.280000 | NA      |
-| 1       |     0 | Inf | lambda.z  |  0.048457 | NA      |
+| Subject | start | end | PPTESTCD  |   PPORRES | PPANMETH             | exclude |
+|:--------|------:|----:|:----------|----------:|:---------------------|:--------|
+| 1       |     0 |  24 | auclast   | 92.365442 | AUC: lin up/log down | NA      |
+| 1       |     0 | Inf | cmax      | 10.500000 |                      | NA      |
+| 1       |     0 | Inf | tmax      |  1.120000 |                      | NA      |
+| 1       |     0 | Inf | tlast     | 24.370000 |                      | NA      |
+| 1       |     0 | Inf | clast.obs |  3.280000 |                      | NA      |
+| 1       |     0 | Inf | lambda.z  |  0.048457 |                      | NA      |
 
 ``` r
 
@@ -175,14 +175,14 @@ results_obj_manual <- pk.nca(data_obj_manual)
 knitr::kable(head(as.data.frame(results_obj_manual)))
 ```
 
-| Subject | start | end | PPTESTCD  |    PPORRES | exclude |
-|:--------|------:|----:|:----------|-----------:|:--------|
-| 6       |     0 | Inf | auclast   | 71.6970150 | NA      |
-| 6       |     0 | Inf | cmax      |  6.4400000 | NA      |
-| 6       |     0 | Inf | tmax      |  1.1500000 | NA      |
-| 6       |     0 | Inf | tlast     | 23.8500000 | NA      |
-| 6       |     0 | Inf | clast.obs |  0.9200000 | NA      |
-| 6       |     0 | Inf | lambda.z  |  0.0877957 | NA      |
+| Subject | start | end | PPTESTCD  |    PPORRES | PPANMETH             | exclude |
+|:--------|------:|----:|:----------|-----------:|:---------------------|:--------|
+| 6       |     0 | Inf | auclast   | 71.6970150 | AUC: lin up/log down | NA      |
+| 6       |     0 | Inf | cmax      |  6.4400000 |                      | NA      |
+| 6       |     0 | Inf | tmax      |  1.1500000 |                      | NA      |
+| 6       |     0 | Inf | tlast     | 23.8500000 |                      | NA      |
+| 6       |     0 | Inf | clast.obs |  0.9200000 |                      | NA      |
+| 6       |     0 | Inf | lambda.z  |  0.0877957 |                      | NA      |
 
 ``` r
 
@@ -410,19 +410,19 @@ print(results_obj)
 ```
 
     ## $result
-    ## # A tibble: 48 × 6
-    ##    Subject start   end PPTESTCD PPORRES exclude
-    ##    <ord>   <dbl> <dbl> <chr>      <dbl> <chr>  
-    ##  1 6           0    24 auclast    71.8  NA     
-    ##  2 6           0    24 cmax        6.44 NA     
-    ##  3 6         144   168 auclast    82.2  NA     
-    ##  4 6         144   168 cmax        7.37 NA     
-    ##  5 7           0    24 auclast    89.0  NA     
-    ##  6 7           0    24 cmax        7.09 NA     
-    ##  7 7         144   168 auclast   101.   NA     
-    ##  8 7         144   168 cmax        8.07 NA     
-    ##  9 8           0    24 auclast    86.7  NA     
-    ## 10 8           0    24 cmax        7.56 NA     
+    ## # A tibble: 48 × 7
+    ##    Subject start   end PPTESTCD PPORRES PPANMETH               exclude
+    ##    <ord>   <dbl> <dbl> <chr>      <dbl> <chr>                  <chr>  
+    ##  1 6           0    24 auclast    71.8  "AUC: lin up/log down" NA     
+    ##  2 6           0    24 cmax        6.44 ""                     NA     
+    ##  3 6         144   168 auclast    82.2  "AUC: lin up/log down" NA     
+    ##  4 6         144   168 cmax        7.37 ""                     NA     
+    ##  5 7           0    24 auclast    89.0  "AUC: lin up/log down" NA     
+    ##  6 7           0    24 cmax        7.09 ""                     NA     
+    ##  7 7         144   168 auclast   101.   "AUC: lin up/log down" NA     
+    ##  8 7         144   168 cmax        8.07 ""                     NA     
+    ##  9 8           0    24 auclast    86.7  "AUC: lin up/log down" NA     
+    ## 10 8           0    24 cmax        7.56 ""                     NA     
     ## # ℹ 38 more rows
     ## 
     ## $data
@@ -640,7 +640,7 @@ print(results_obj)
     ## attr(,"class")
     ## [1] "PKNCAresults" "list"        
     ## attr(,"provenance")
-    ## Provenance hash ee687a520af821aa354fef62aa53cba0 generated on 2026-06-13 21:06:57.738475 with R version 4.6.0 (2026-04-24).
+    ## Provenance hash 1010dd656fa2060bf5d457ba131dbe6d generated on 2026-06-13 21:28:34.081238 with R version 4.6.0 (2026-04-24).
 
 ``` r
 

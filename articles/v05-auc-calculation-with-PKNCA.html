@@ -139,13 +139,23 @@ parameters.</p>
 <pre><code><span><span class="co">## No dose information provided, calculations requiring dose will return NA.</span></span></code></pre>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="10%">
+<col width="7%">
+<col width="5%">
+<col width="25%">
+<col width="14%">
+<col width="26%">
+<col width="10%">
+</colgroup>
 <thead><tr class="header">
 <th align="right">subject</th>
 <th align="right">start</th>
 <th align="right">end</th>
 <th align="left">PPTESTCD</th>
 <th align="right">PPORRES</th>
+<th align="left">PPANMETH</th>
 <th align="left">exclude</th>
 </tr></thead>
 <tbody>
@@ -155,6 +165,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">auclast</td>
 <td align="right">12.9965842</td>
+<td align="left">AUC: lin up/log down</td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -163,6 +174,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">aucall</td>
 <td align="right">15.1965842</td>
+<td align="left">AUC: lin up/log down</td>
 <td align="left">NA</td>
 </tr>
 <tr class="odd">
@@ -171,6 +183,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">tmax</td>
 <td align="right">2.0000000</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -179,6 +192,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">tlast</td>
 <td align="right">8.0000000</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="odd">
@@ -187,6 +201,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">clast.obs</td>
 <td align="right">1.1000000</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -195,6 +210,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">lambda.z</td>
 <td align="right">0.1075592</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="odd">
@@ -203,6 +219,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">r.squared</td>
 <td align="right">0.7580245</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -211,6 +228,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">adj.r.squared</td>
 <td align="right">0.6370368</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="odd">
@@ -219,6 +237,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">lambda.z.corrxy</td>
 <td align="right">-0.8706460</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -227,6 +246,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">lambda.z.time.first</td>
 <td align="right">3.0000000</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="odd">
@@ -235,6 +255,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">lambda.z.time.last</td>
 <td align="right">8.0000000</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -243,6 +264,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">lambda.z.n.points</td>
 <td align="right">4.0000000</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="odd">
@@ -251,6 +273,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">clast.pred</td>
 <td align="right">1.0216136</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -259,6 +282,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">half.life</td>
 <td align="right">6.4443313</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="odd">
@@ -267,6 +291,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">span.ratio</td>
 <td align="right">0.7758757</td>
+<td align="left"></td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -275,6 +300,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">aucinf.obs</td>
 <td align="right">23.2235095</td>
+<td align="left">AUC: lin up/log down</td>
 <td align="left">NA</td>
 </tr>
 <tr class="odd">
@@ -283,6 +309,7 @@ parameters.</p>
 <td align="right">24</td>
 <td align="left">aucinf.pred</td>
 <td align="right">22.4947355</td>
+<td align="left">AUC: lin up/log down</td>
 <td align="left">NA</td>
 </tr>
 </tbody>
@@ -468,6 +495,7 @@ as illustrated below.</p>
 <th align="right">end</th>
 <th align="left">PPTESTCD</th>
 <th align="right">PPORRES</th>
+<th align="left">PPANMETH</th>
 <th align="left">exclude</th>
 </tr></thead>
 <tbody><tr class="odd">
@@ -476,6 +504,7 @@ as illustrated below.</p>
 <td align="right">2</td>
 <td align="left">auclast</td>
 <td align="right">4</td>
+<td align="left">AUC: lin up/log down</td>
 <td align="left">NA</td>
 </tr></tbody>
 </table>
@@ -648,10 +677,10 @@ illustrated below.</p>
 <pre><code><span><span class="co">## No dose information provided, calculations requiring dose will return NA.</span></span></code></pre>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_interp</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 6</span></span></span>
-<span><span class="co">##   subject start   end PPTESTCD PPORRES exclude</span></span>
-<span><span class="co">##     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>       1     0   1.5 auclast     2.56 <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 7</span></span></span>
+<span><span class="co">##   subject start   end PPTESTCD PPORRES PPANMETH             exclude</span></span>
+<span><span class="co">##     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>       1     0   1.5 auclast     2.56 AUC: lin up/log down <span style="color: #BB0000;">NA</span></span></span></code></pre>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
