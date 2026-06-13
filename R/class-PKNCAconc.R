@@ -31,7 +31,12 @@
 #'   name in the dataset of the points to exclude from the half-life calculation
 #'   (still using normal curve-stripping selection rules for the other points)
 #'   or to include for the half-life (using specifically those points and
-#'   bypassing automatic curve-stripping point selection).  See the "Half-Life
+#'   bypassing automatic curve-stripping point selection).  The column is logical
+#'   with three meaningful states per point: `TRUE` acts on the point, `FALSE`
+#'   does not, and `NA` is undefined.  A column is treated as "in use" for an
+#'   interval unless it is entirely `NA`, so leave it `NA` (rather than `FALSE`)
+#'   where the mechanism should not apply.  Only one of `exclude_half.life` and
+#'   `include_half.life` may be in use for a given interval.  See the "Half-Life
 #'   Calculation" vignette for more details on the use of these arguments.
 #' @param lloq (optional) The lower limit of quantification used by the Tobit
 #'   half-life method (`hl_method = "tobit"`).  Either the name of a column in

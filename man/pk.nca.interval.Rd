@@ -70,12 +70,20 @@ bolus and nonzero for intravascular infusion)}
 
 \item{impute_method}{The method to use for imputation as a character string}
 
-\item{include_half.life}{An optional boolean vector of the concentration
-measurements to include in the half-life calculation. If given, no
-half-life point selection will occur.}
+\item{include_half.life}{An optional logical vector (one value per
+concentration measurement) of points to include in the half-life
+calculation. If in use, automatic half-life point selection does not occur
+and exactly the \code{TRUE} points are used. \code{TRUE} includes a point, \code{FALSE}
+does not, and \code{NA} is undefined; the vector is "in use" for the interval
+unless it is entirely \code{NA} (so an all-\code{FALSE} vector still counts as in
+use). At most one of \code{include_half.life} and \code{exclude_half.life} may be in
+use for the same interval.}
 
-\item{exclude_half.life}{An optional boolean vector of the concentration
-measurements to exclude from the half-life calculation.}
+\item{exclude_half.life}{An optional logical vector (one value per
+concentration measurement) of points to exclude from the half-life
+calculation; the remaining points use the usual curve-stripping selection.
+\code{TRUE}/\code{FALSE}/\code{NA} and the "in use" rule are interpreted as for
+\code{include_half.life}.}
 
 \item{lloq}{An optional scalar or vector (the same length as \code{conc}) with the
 lower limit of quantification passed to \code{\link[=pk.calc.half.life]{pk.calc.half.life()}} for the Tobit

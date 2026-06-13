@@ -351,11 +351,19 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
 #' @param impute_method The method to use for imputation as a character string
 #' @param interval One row of an interval definition (see
 #'   [check.interval.specification()] for how to define the interval.
-#' @param include_half.life An optional boolean vector of the concentration
-#'   measurements to include in the half-life calculation. If given, no
-#'   half-life point selection will occur.
-#' @param exclude_half.life An optional boolean vector of the concentration
-#'   measurements to exclude from the half-life calculation.
+#' @param include_half.life An optional logical vector (one value per
+#'   concentration measurement) of points to include in the half-life
+#'   calculation. If in use, automatic half-life point selection does not occur
+#'   and exactly the `TRUE` points are used. `TRUE` includes a point, `FALSE`
+#'   does not, and `NA` is undefined; the vector is "in use" for the interval
+#'   unless it is entirely `NA` (so an all-`FALSE` vector still counts as in
+#'   use). At most one of `include_half.life` and `exclude_half.life` may be in
+#'   use for the same interval.
+#' @param exclude_half.life An optional logical vector (one value per
+#'   concentration measurement) of points to exclude from the half-life
+#'   calculation; the remaining points use the usual curve-stripping selection.
+#'   `TRUE`/`FALSE`/`NA` and the "in use" rule are interpreted as for
+#'   `include_half.life`.
 #' @param lloq An optional scalar or vector (the same length as `conc`) with the
 #'   lower limit of quantification passed to [pk.calc.half.life()] for the Tobit
 #'   half-life method.

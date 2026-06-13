@@ -75,7 +75,12 @@ used for urine or feces measurements.}
 name in the dataset of the points to exclude from the half-life calculation
 (still using normal curve-stripping selection rules for the other points)
 or to include for the half-life (using specifically those points and
-bypassing automatic curve-stripping point selection).  See the "Half-Life
+bypassing automatic curve-stripping point selection).  The column is logical
+with three meaningful states per point: \code{TRUE} acts on the point, \code{FALSE}
+does not, and \code{NA} is undefined.  A column is treated as "in use" for an
+interval unless it is entirely \code{NA}, so leave it \code{NA} (rather than \code{FALSE})
+where the mechanism should not apply.  Only one of \code{exclude_half.life} and
+\code{include_half.life} may be in use for a given interval.  See the "Half-Life
 Calculation" vignette for more details on the use of these arguments.}
 
 \item{lloq}{(optional) The lower limit of quantification used by the Tobit
