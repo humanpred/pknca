@@ -76,7 +76,7 @@ To install the development version from GitHub, type the following commands:
     # Summarize the results
     summary(o_results)
 
-More help is available in the function help files. Be sure to look at the PKNCA.options function for choices on making PKNCA conform to your company’s business rules on calculation and summarization.
+More help is available in the function help files. Be sure to look at the PKNCA.options function for options to make PKNCA conform to your company’s business rules on calculation and summarization.
 
 # Feature requests
 

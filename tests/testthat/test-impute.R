@@ -243,3 +243,15 @@ test_that("PKNCA_impute_fun_list", {
                regexp = "The following imputation functions were not found: PKNCA_impute_method_character"
   )
 })
+
+test_that("PKNCA_impute_fun_list errors when imputation name resolves to a non-function", {
+  # utils::getAnywhere only searches namespaces and the search path, not local
+  # frames. Assign a non-function object to .GlobalEnv so getAnywhere finds it.
+  nm <- "PKNCA_impute_method_notafun_cov_test"
+  assign(nm, 42L, envir = .GlobalEnv)
+  on.exit(rm(list = nm, envir = .GlobalEnv), add = TRUE)
+  expect_error(
+    PKNCA_impute_fun_list("notafun_cov_test"),
+    regexp = "The following imputation functions were not found"
+  )
+})

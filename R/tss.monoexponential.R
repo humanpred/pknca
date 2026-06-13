@@ -38,14 +38,14 @@ pk.tss.monoexponential <- function(...,
                                    verbose=FALSE) {
   # Check inputs
   modeldata <- pk.tss.data.prep(..., check=check)
-  if (is.factor(tss.fraction) |
+  if (is.factor(tss.fraction) ||
       !is.numeric(tss.fraction))
     stop("tss.fraction must be a number")
   if (!length(tss.fraction) == 1) {
     warning("Only first value of tss.fraction is being used")
     tss.fraction <- tss.fraction[1]
   }
-  if (tss.fraction <= 0 | tss.fraction >= 1) {
+  if (tss.fraction <= 0 || tss.fraction >= 1) {
     stop("tss.fraction must be between 0 and 1, exclusive")
   } else if (tss.fraction < 0.8) {
     warning("tss.fraction is usually >= 0.8")
@@ -82,7 +82,7 @@ pk.tss.monoexponential <- function(...,
       NA
     }
   ret <-
-    if (!identical(NA, ret_population) & !identical(NA, ret_individual)) {
+    if (!identical(NA, ret_population) && !identical(NA, ret_individual)) {
       merge(ret_population, ret_individual)
     } else if (!identical(NA, ret_population)) {
       ret_population
@@ -234,7 +234,7 @@ pk.tss.monoexponential.population <- function(data,
     )
   if (verbose)
     print(all.model.summary)
-  if (all(is.na(all.model.summary$AIC)) |
+  if (all(is.na(all.model.summary$AIC)) ||
       length(all.model.summary) == 0) {
     warning("No population model for monoexponential Tss converged, no results given")
     ret <-
@@ -356,7 +356,7 @@ pk.tss.monoexponential.individual <- function(data,
           )
         )
     )
-  if ("subject" %in% names(data) &
+  if ("subject" %in% names(data) &&
       "individual" %in% output) {
     data_grouped <-
       if (all(c("treatment", "subject") %in% names(data))) {

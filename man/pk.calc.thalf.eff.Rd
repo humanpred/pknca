@@ -18,3 +18,10 @@ Calculate the effective half-life
 \details{
 thalf.eff is \code{log(2)*mrt}.
 }
+\seealso{
+Other Half-life and elimination:
+\code{\link[=adj.r.squared]{adj.r.squared()}},
+\code{\link[=pk.calc.aucpext]{pk.calc.aucpext()}},
+\code{\link[=pk.calc.half.life]{pk.calc.half.life()}}
+}
+\concept{Half-life and elimination}

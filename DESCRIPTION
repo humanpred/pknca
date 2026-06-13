@@ -9,7 +9,7 @@ Authors@R: c(
     person("Sridhar", "Duvvuri", role="ctb"))
 Imports:
     checkmate,
-    dplyr (>= 0.5.0),
+    dplyr (>= 1.1.0),
     digest,
     nlme,
     purrr,
@@ -23,6 +23,7 @@ Suggests:
     covr,
     cowplot,
     ggplot2,
+    ggtibble,
     knitr,
     labeling,
     pander,
@@ -39,8 +40,8 @@ URL: https://pknca.humanpredictions.com/,
 BugReports: https://github.com/humanpred/pknca/issues
 NeedsCompilation: no
 VignetteBuilder: knitr
-RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
+Config/roxygen2/version: 8.0.0

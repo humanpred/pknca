@@ -4,9 +4,60 @@ will continue until then.  These will be especially noticeable around
 the inclusion of IV NCA parameters and additional specifications of
 the dosing including dose amount and route.
 
-# PKNCA 0.12.2
+# New features
+
+* `PKNCAconc()` gains an `lloq` argument (a column name or a numeric scalar) that
+  is passed through to `pk.calc.half.life()`.  This wires the lower limit of
+  quantification through a full `pk.nca()` run so the Tobit half-life method
+  (`hl_method = "tobit"`, set via `PKNCAdata(options = list(hl_method = "tobit"))`)
+  works end-to-end instead of failing because no `lloq` was available.
+
+* Added sparse AUMC function and five sparse AUC parameters (cl.sparse.last, kel.sparse.last, mrt.ivint.last, vss.sparse.last, vz.sparse.last)
+
+* New IV dosing AUMC parameters with C0 back-extrapolation (`aumciv*`)
+
+* New interval AUMC parameters with interpolation/extrapolation support
+  (`aumcint*`), mirroring the existing `aucint` family (#152)
+
+* New derived PK parameters to complete coverage across all AUC variants
+  (#152):
+  * 11 clearance parameters (`cl.*`)
+  * 9 elimination rate constant parameters (`kel.*`)
+  * 6 mean residence time parameters (`mrt.*`)
+  * 3 IV mean residence time parameters (`mrt.iv.*`)
+  * 9 volume of distribution at steady state parameters (`vss.*`)
+  * 13 terminal volume of distribution parameters (`vz.*`)
+
+## Bug Fixes
+
+* `normalize.data.frame()` no longer triggers a dplyr deprecation warning
+  (`Using 'by = character()' to perform a cross join was deprecated in dplyr 1.1.0`)
+  when called with ungrouped data (i.e., no common group columns between `object`
+  and `norm_table`). `dplyr::cross_join()` is now used explicitly for this case.
+
+## Improvements
+
+* The sparse NCA vignette now explains how subjects are grouped: sparse
+  parameters pool all subjects that share the same concentration grouping
+  variables with the subject column removed (#530).
+
+* `normalize.data.frame()` now validates that `norm_table` contains exactly one
+  row when used with ungrouped data, giving a clear error message instead of
+  silently producing incorrect results.
+
+* `normalize.data.frame()` now uses `dplyr::inner_join()` instead of `merge()` 
+  for grouped joins, preserving left-table row order. Missing group validation 
+  ensures no rows are silently dropped.
+
 
 ## Breaking changes
+
+* `pknca_units_table()` called on a `PKNCAdata` object now raises an error if
+  unit columns within the same concentration group contain mixed values (e.g.,
+  two different `concu` strings for the same subject group).  Previously, `NA`
+  values in unit columns were silently ignored and multiple values caused a
+  different error message; now any intra-group inconsistency is detected and
+  reported with the offending group identifiers.
 
 * Both include and excluding half-life points may not be done for the same interval (#406)
 
@@ -14,9 +65,28 @@ the dosing including dose amount and route.
 
 * `get_halflife_points()` now correctly accounts for start time != 0 and sets
   times outside of any interval to `NA` (#470)
+* The `PKNCAconc` function won't give an error for a concentration-time check
+when the issue is due to an excluded point (#310)
+* The `PKNCAdose` function won't give an error for a missing-time check when the issue is due to an excluded point (#310)
 * `pk.nca` will calculate `fe` and `clr` even if their dependent parameters (e.g, `ae`) were not requested to be calculated in the intervals (#473)
 
 ## New features
+
+* `pknca_units_table()` is now an S3 generic with a `PKNCAdata` method.  When
+  called on a `PKNCAdata` object it automatically builds the unit conversion
+  table from any unit columns stored in the underlying `PKNCAconc` and
+  `PKNCAdose` objects, supporting per-analyte or per-specimen unit
+  stratification.  The table is also built automatically on `PKNCAdata()`
+  construction when no `units` argument is supplied.
+
+* `pk.calc.half.life()` now supports Tobit regression for half-life estimation via
+  `hl_method = "tobit"`.  Tobit regression treats BLQ observations as
+  left-censored rather than discarding them, which generally improves half-life
+  accuracy when some measurements are below the LLOQ.  The new `lloq` argument
+  (required for Tobit) accepts a scalar or per-observation vector.  New
+  PKNCA options: `hl_method` (default `"log-linear"`), `tobit_n_points_penalty`
+  (default 0), and `tobit_optim_control`.  New NCA output columns:
+  `tobit_residual`, `adj_tobit_residual`, and `lambda.z.n.points_blq`.
 
 * `pk.calc.half.life()` now returns also `lambda.z.corrxy`, the correlation between
   the time and the log-concentration of the lambda z points.

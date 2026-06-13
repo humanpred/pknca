@@ -757,37 +757,137 @@ test_that("do not give rbind error when interval columns have attributes (#381)"
   )
 })
 
-
 test_that("pk.nca can be run for each parameter independently (#473)", {
-
+  
+  # ── Dense data setup ──────────────────────────────────────────────────────
   d_conc <- Theoph[Theoph$Subject %in% "1", ]
   d_conc <- rbind(d_conc, mutate(d_conc, Time = Time + 25))
-  d_conc$volume <- 1
+  d_conc$volume   <- 1
   d_conc$duration <- 1
-  d_dose <- data.frame(Subject = "1", Time = c(0, 25), Dose = 5, duration = 1)
-
-  o_conc <- PKNCAconc(d_conc, formula = conc~Time|Subject, volume = "volume", duration = "duration")
-  o_dose <- PKNCAdose(d_dose, formula = Dose~Time|Subject, route = "intravascular", duration = "duration")
-
-  non_pknca_covered_params <- c(
-    "f", "time_above", "mrt.md.obs", "mrt.md.pred", "sparse_auclast", "sparse_auc_se", "sparse_auc_df",
-    "vss.md.obs", "vss.md.pred", "ceoi"
+  d_dose <- data.frame(
+    Subject  = "1",
+    Time     = c(0, 25),
+    Dose     = 5,
+    duration = 1
   )
-  all_params <- setdiff(names(get.interval.cols()), c("start", "end", non_pknca_covered_params))
-  intervals <- data.frame(start = c(0, 25), end = c(25, Inf))
-
-  for (param in all_params){
-    intervals_with_param <- intervals
+  o_conc_dense <- PKNCAconc(
+    d_conc,
+    formula  = conc~Time|Subject,
+    volume   = "volume",
+    duration = "duration"
+  )
+  o_dose_dense <- PKNCAdose(
+    d_dose,
+    formula  = Dose~Time|Subject,
+    route    = "intravascular",
+    duration = "duration"
+  )
+  
+  # ── Sparse data setup ─────────────────────────────────────────────────────
+  # Each subject measured at DIFFERENT time points
+  # → no shared times → off-diagonal covariance = 0
+  # → no warning fires → df calculable (NA only when n=1, silently)
+  d_sparse <- data.frame(
+    conc = c(
+      1.0, 3.0, 2.0, 0.5,    # Subject A
+      2.0, 2.5, 1.5, 0.8,    # Subject B
+      1.5, 3.5, 1.8, 0.6     # Subject C
+    ),
+    time = c(
+      0,  3,  7, 11,          # Subject A — unique times
+      1,  4,  8, 12,          # Subject B — unique times
+      2,  5,  9, 10           # Subject C — unique times
+    ),
+    Subject = c(rep("A", 4), rep("B", 4), rep("C", 4))
+  )
+  d_dose_sparse <- data.frame(
+    Subject  = c("A", "B", "C"),
+    time     = c(0, 0, 0),
+    Dose     = c(5, 5, 5),
+    duration = c(1, 1, 1)
+  )
+  
+  o_conc_sparse <- PKNCAconc(
+    d_sparse,
+    formula = conc~time|Subject,
+    sparse  = TRUE
+  )
+  o_dose_sparse <- PKNCAdose(
+    d_dose_sparse,
+    formula  = Dose~time|Subject,
+    route    = "extravascular",
+    duration = "duration"
+  )
+  
+  # ── Params that cannot be tested independently ────────────────────────────
+  # These require special data structures or multi-dose designs
+  # and are tested in dedicated tests elsewhere
+  non_pknca_covered_params <- c(
+    "f", "time_above",
+    "mrt.md.obs", "mrt.md.pred",
+    "vss.md.obs", "vss.md.pred",
+    "sparse_auc_se", "sparse_auc_df",
+    "sparse_aumc_se", "sparse_aumc_df",
+    "ceoi"
+  )
+  
+  all_params <- setdiff(
+    names(get.interval.cols()),
+    c("start", "end", non_pknca_covered_params)
+  )
+  
+  # ── Classify params as sparse or dense ───────────────────────────────────
+  all_interval_cols <- get.interval.cols()
+  sparse_params <- Filter(
+    function(p) isTRUE(all_interval_cols[[p]]$sparse),
+    all_params
+  )
+  dense_params <- setdiff(all_params, sparse_params)
+  
+  # ── Intervals ─────────────────────────────────────────────────────────────
+  intervals_dense  <- data.frame(start = c(0, 25), end = c(25, Inf))
+  
+  # sparse_auclast and sparse_aumclast must be TRUE so that
+  # dependent params (cl.sparse.last, mrt.sparse.last etc.)
+  # have their dependencies available in the pipeline
+  intervals_sparse <- data.frame(
+    start           = 0,
+    end             = 12,
+    sparse_auclast  = TRUE,
+    sparse_aumclast = TRUE
+  )
+  
+  # ── Test dense params with dense data ────────────────────────────────────
+  for (param in dense_params) {
+    intervals_with_param <- intervals_dense
     intervals_with_param[[param]] <- TRUE
-    o_data <- PKNCAdata(o_conc, o_dose, intervals = intervals_with_param)
-
-    expect_no_error(param_res <- pk.nca(o_data))
+    o_data <- PKNCAdata(o_conc_dense, o_dose_dense,
+                        intervals = intervals_with_param)
+    expect_no_error(
+      param_res <- pk.nca(o_data)
+    )
+    expect_false(
+      all(is.na(param_res$result$PPORRES)),
+      info = paste0("Parameter ", param, " can be calculated independently")
+    )
+  }
+  
+  # ── Test sparse params with sparse data ──────────────────────────────────
+  for (param in sparse_params) {
+    intervals_with_param <- intervals_sparse
+    intervals_with_param[[param]] <- TRUE
+    o_data <- PKNCAdata(o_conc_sparse, o_dose_sparse,
+                        intervals = intervals_with_param)
+    expect_no_error(
+      param_res <- pk.nca(o_data)
+    )
     expect_false(
       all(is.na(param_res$result$PPORRES)),
       info = paste0("Parameter ", param, " can be calculated independently")
     )
   }
 })
+
 
 test_that("Cannot include and exclude half-life points at the same time (#406)", {
   o_conc <- PKNCAconc(data = data.frame(conc = 1, time = 0, inex = TRUE), conc~time, include_half.life = "inex", exclude_half.life = "inex")
@@ -797,4 +897,52 @@ test_that("Cannot include and exclude half-life points at the same time (#406)",
     suppressMessages(pk.nca(o_data)),
     regexp = "Cannot both include and exclude half-life points for the same interval"
   )
+})
+
+test_that("pk.nca.interval covers route, volume.group, duration.conc.group, dose.group, duration.dose.group, route.group branches", {
+  # Lines 449, 457, 459, 461, 467, 469 in pk.calc.all.R are only reached when a
+  # registered NCA function has one of these names as a formal argument.
+  # Register a temporary test function that accepts all six, save and restore state.
+  fn_name <- "pknca_test_grp_args_cov_fn_"
+  assign(
+    fn_name,
+    function(conc, time, route, volume.group, duration.conc.group,
+             dose.group, duration.dose.group, route.group) {
+      sum(conc, na.rm = TRUE)
+    },
+    envir = .GlobalEnv
+  )
+  old_cols <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
+  old_sorted <- get0("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
+  on.exit({
+    assign("interval.cols", old_cols, envir = PKNCA:::.PKNCAEnv)
+    if (!is.null(old_sorted)) {
+      assign("interval.cols_sorted", old_sorted, envir = PKNCA:::.PKNCAEnv)
+    } else if (exists("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv, inherits = FALSE)) {
+      rm("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
+    }
+    rm(list = fn_name, envir = .GlobalEnv)
+  }, add = TRUE)
+
+  add.interval.col(
+    "pknca_test_grp_args_cov_col_",
+    FUN = fn_name,
+    unit_type = "conc",
+    pretty_name = "Test: group arg branches",
+    desc = "Coverage test for group argument branches in pk.nca.interval"
+  )
+
+  d <- as.data.frame(datasets::Theoph[datasets::Theoph$Subject == "1", ])
+  d$volume <- 1
+  d$duration <- 1
+  d_dose <- d[d$Time == 0, , drop = FALSE]
+
+  o_conc <- PKNCAconc(d, formula = conc~Time|Subject, volume = "volume", duration = "duration")
+  o_dose <- PKNCAdose(d_dose, formula = Dose~Time|Subject, route = "intravascular", duration = "duration")
+  o_data <- PKNCAdata(
+    o_conc, o_dose,
+    intervals = data.frame(start = 0, end = 24, pknca_test_grp_args_cov_col_ = TRUE)
+  )
+  result <- pk.nca(o_data)
+  expect_true("pknca_test_grp_args_cov_col_" %in% as.data.frame(result)$PPTESTCD)
 })

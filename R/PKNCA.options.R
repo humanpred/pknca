@@ -11,11 +11,11 @@
       return(0.0001)
     if (length(x) != 1)
       stop("adj.r.squared.factor must be a scalar")
-    if (is.factor(x) |
+    if (is.factor(x) ||
         !is.numeric(x))
       stop("adj.r.squared.factor must be numeric (and not a factor)")
     # Must be between 0 and 1, exclusive
-    if (x <= 0 | x >= 1)
+    if (x <= 0 || x >= 1)
       stop("adj.r.squared.factor must be between 0 and 1, exclusive")
     if (x > 0.01)
       warning("adj.r.squared.factor is usually <0.01")
@@ -30,10 +30,10 @@
       return(0.5)
     if (length(x) != 1)
       stop("max.missing must be a scalar")
-    if (is.factor(x) | !is.numeric(x))
+    if (is.factor(x) || !is.numeric(x))
       stop("max.missing must be numeric (and not a factor)")
     # Must be between 0 and 1, inclusive
-    if (x < 0 | x >= 1)
+    if (x < 0 || x >= 1)
       stop("max.missing must be between 0 and 1")
     if (x > 0.5)
       warning("max.missing is usually <= 0.5")
@@ -204,7 +204,7 @@
       if (is.na(x)) {
         stop("Could not convert allow.tmax.in.half.life to a logical value")
       } else {
-        warning("Converting allow.tmax.in.half.life to a logical value: ", ret)
+        warning("Converting allow.tmax.in.half.life to a logical value: ", x)
       }
     }
     x
@@ -286,7 +286,7 @@
       stop("min.hl.r.squared cannot be a factor")
     if (!is.numeric(x))
       stop("min.hl.r.squared must be a number")
-    if (x <= 0 | x >= 1)
+    if (x <= 0 || x >= 1)
       stop("min.hl.r.squared must be between 0 and 1, exclusive")
     if (x < 0.9)
       warning("min.hl.r.squared is usually >= 0.9")
@@ -314,7 +314,7 @@
       return(NA)
     if (is.factor(x))
       stop("tau.choices cannot be a factor")
-    if (length(x) > 1 & any(is.na(x)))
+    if (length(x) > 1 && any(is.na(x)))
       stop("tau.choices may not include NA and be a vector")
     if (!identical(x, NA))
       if (!is.numeric(x))
@@ -350,6 +350,55 @@
     }
     checkmate::assert_logical(x, any.missing = FALSE, len = 1)
     x
+  },
+
+  hl_method = function(x, default = FALSE, description = FALSE) {
+    choices <- c("log-linear", "tobit")
+    if (description)
+      return(paste(
+        "The method used to calculate the half-life and related parameters.",
+        "Options are:",
+        paste0('"', choices, '"', collapse = ", ")
+      ))
+    if (default)
+      return(choices[1])
+    if (length(x) != 1)
+      stop("hl_method must be a scalar")
+    if (!is.character(x))
+      stop("hl_method must be a character string")
+    x <- match.arg(x, choices)
+    x
+  },
+
+  tobit_n_points_penalty = function(x, default = FALSE, description = FALSE) {
+    if (description)
+      return(paste(
+        "The penalty exponent applied to the number of points when selecting the best",
+        "Tobit regression half-life fit.  The selection criterion is",
+        "tobit_residual * n_points ^ tobit_n_points_penalty, and the window",
+        "minimizing this criterion is selected.  A value of 0 (the default)",
+        "uses the raw Tobit residual with no point-count penalty."))
+    if (default)
+      return(0)
+    if (length(x) != 1)
+      stop("tobit_n_points_penalty must be a scalar")
+    if (is.factor(x) || !is.numeric(x))
+      stop("tobit_n_points_penalty must be numeric (and not a factor)")
+    if (x < 0)
+      stop("tobit_n_points_penalty must be >= 0")
+    x
+  },
+
+  tobit_optim_control = function(x, default = FALSE, description = FALSE) {
+    if (description)
+      return(paste(
+        "A list of control parameters passed to stats::optim() when fitting the",
+        "Tobit regression half-life.  See ?stats::optim for available options."))
+    if (default)
+      return(list())
+    if (!is.list(x))
+      stop("tobit_optim_control must be a list")
+    x
   }
 )
 
@@ -377,7 +426,7 @@
 #'   of the values when used in another function)
 #' @param name An option name to use with the `value`.
 #' @param value An option value (paired with the `name`) to set or check (if
-#'   `NULL`, ).
+#'   `NULL`, the current value of the option is returned).
 #' @returns If...
 #' \describe{
 #'   \item{no arguments are given}{returns the current options.}
@@ -398,7 +447,7 @@
 PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
   current <- get("options", envir=.PKNCAEnv)
   # If the options have not been initialized, initialize them and then proceed.
-  if (is.null(current) & !default) {
+  if (is.null(current) && !default) {
     PKNCA.options(default=TRUE)
     current <- get("options", envir=.PKNCAEnv)
   }
@@ -417,7 +466,7 @@ PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
       args <- append(args, name)
     }
   }
-  if (default & check)
+  if (default && check)
     stop("Cannot request both default and check")
   if (default) {
     if (length(args) > 0)
@@ -542,7 +591,7 @@ PKNCA.set.summary <- function(name, description, point, spread,
   } else {
     current <- get("summary", envir=.PKNCAEnv)
   }
-  if (missing(name) & missing(point) & missing(spread)) {
+  if (missing(name) && missing(point) && missing(spread)) {
     if (reset)
       assign("summary", current, envir=.PKNCAEnv)
     return(invisible(current))

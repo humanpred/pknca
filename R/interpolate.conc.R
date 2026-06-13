@@ -25,9 +25,7 @@
 #'   `conc.origin` is typically used to set predose values to zero (default),
 #'   set a predose concentration for endogenous compounds, or set predose
 #'   concentrations to `NA` if otherwise unknown.
-#' @param conc.blq How to handle BLQ values. (See [clean.conc.blq()] for usage
-#'   instructions.)
-#' @param conc.na How to handle NA concentrations.  (See [clean.conc.na()])
+#' @inheritParams clean.conc.blq
 #' @param route.dose What is the route of administration ("intravascular" or
 #'   "extravascular").  See the details for how this parameter is used.
 #' @param duration.dose What is the duration of administration? See the details
@@ -36,8 +34,6 @@
 #'   after (`TRUE`) the interpolated point?  See the details for how this
 #'   parameter is used.  It only has a meaningful effect at the instant of an IV
 #'   bolus dose.
-#' @param check Run [assert_conc_time()], [clean.conc.blq()], and
-#'   [clean.conc.na()]?
 #' @param ... Additional arguments passed to `interpolate.conc()` or
 #'   `extrapolate.conc()`.
 #' @returns The interpolated or extrapolated concentration value as a scalar
@@ -71,6 +67,7 @@
 #' from the data after dosing.
 #'
 #' @seealso [pk.calc.clast.obs()], [pk.calc.half.life()], [pk.calc.c0()]
+#' @family Concentration interpolation and extrapolation
 #' @export
 interp.extrap.conc <- function(conc, time, time.out,
                                lambda.z = NA,
@@ -191,7 +188,7 @@ interpolate.conc <- function(conc, time, time.out,
   } else if (all(data$conc == 0)) {
     ret <- 0
   } else if (time.out > tlast) {
-    stop("`interpolate.conc()` can only works through Tlast, please use `interp.extrap.conc()` to combine both interpolation and extrapolation.")
+    stop("`interpolate.conc()` only works through Tlast, please use `interp.extrap.conc()` to combine both interpolation and extrapolation.")
   } else if (time.out %in% data$time) {
     # See if there is an exact time match and return that if it
     # exists.

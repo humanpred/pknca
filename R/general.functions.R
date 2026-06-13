@@ -110,7 +110,7 @@ signifString <- function(x, ...)
 signifString.data.frame <- function(x, ...) {
   ret <- lapply(x,
                 function(y) {
-                  if (is.numeric(y) & !is.factor(y)) {
+                  if (is.numeric(y) && !is.factor(y)) {
                     signifString(x=y, ...)
                   } else {
                     y
@@ -154,7 +154,7 @@ signifString.default <- function(x, digits=6, sci_range=6, sci_sep="e", si_range
     # current value
     toplog <- log10(abs(xtmp))
     # When the order of magnitude is an exact log 10, move up one so
-    # that the math works for determing the lower log.
+    # that the math works for determining the lower log.
     mask.exact.log <- (toplog %% 1) %in% 0
     toplog[mask.exact.log] <- toplog[mask.exact.log] + 1
     toplog <- ceiling(toplog)

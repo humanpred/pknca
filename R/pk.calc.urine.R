@@ -2,6 +2,7 @@
 #'
 #' @param volume The volume (or mass) of the sample
 #' @return The sum of urine volumes for the interval
+#' @family Urine/Excretion parameters
 #' @export
 pk.calc.volpk <- function(volume) {
   if (length(volume) == 0) return(NA_real_)
@@ -31,6 +32,7 @@ PKNCA.set.summary(
 #' @details The units for the concentration and volume should match such that
 #'   `sum(conc*volume)` has units of mass or moles.
 #' @seealso [pk.calc.clr()], [pk.calc.fe()]
+#' @family Urine/Excretion parameters
 #' @export
 pk.calc.ae <- function(conc, volume, check=TRUE) {
   # Generate combined missing-data messages for conc/volume using helper
@@ -68,6 +70,7 @@ PKNCA.set.summary(
 #' @details The units for the `ae` and `auc` should match such that `ae/auc` has
 #'   units of volume/time.
 #' @seealso [pk.calc.ae()], [pk.calc.fe()]
+#' @family Urine/Excretion parameters
 #' @export
 pk.calc.clr <- function(ae, auc) {
   sum(ae)/auc
@@ -125,6 +128,7 @@ PKNCA.set.summary(
 #' @details   The units for `ae` and `dose` should be the same so that `ae/dose`
 #'   is a unitless fraction.
 #' @seealso [pk.calc.ae()], [pk.calc.clr()]
+#' @family Urine/Excretion parameters
 #' @export
 pk.calc.fe <- function(ae, dose) {
   sum(ae)/dose
@@ -151,6 +155,7 @@ PKNCA.set.summary(
 #' @param duration.conc The duration of the collection interval
 #' @param check Should the concentration and time data be checked?
 #' @return The midpoint collection time of the last measurable excretion rate, or NA/0 if not available
+#' @family Urine/Excretion parameters
 #' @export
 pk.calc.ertlst <- function(conc, volume, time, duration.conc, check = TRUE) {
 
@@ -199,6 +204,7 @@ PKNCA.set.summary(
 #' @param duration.conc The duration of the collection interval
 #' @param check Should the concentration data be checked?
 #' @return The maximum excretion rate, or NA if not available
+#' @family Urine/Excretion parameters
 #' @export
 pk.calc.ermax <- function(conc, volume, time, duration.conc, check = TRUE) {
 
@@ -244,10 +250,11 @@ PKNCA.set.summary(
 #' @param volume The volume (or mass) of the sample
 #' @param time The starting time of the collection interval
 #' @param duration.conc The duration of the collection interval
-#' @param options List of changes to the default PKNCA options (see \code{PKNCA.options()})
+#' @inheritParams PKNCA.choose.option
 #' @param check Should the concentration and time data be checked?
 #' @param first.tmax If TRUE, return the first time of maximum excretion rate; otherwise, return the last
 #' @return The midpoint collection time of the maximum excretion rate, or NA if not available
+#' @family Urine/Excretion parameters
 #' @export
 pk.calc.ertmax <- function(conc, volume, time, duration.conc, options = list(), check = TRUE, first.tmax = NULL) {
   first.tmax <- PKNCA.choose.option(name="first.tmax", value=first.tmax, options=options)

@@ -23,6 +23,7 @@ PKNCAconc(data, ...)
   volume,
   exclude_half.life,
   include_half.life,
+  lloq,
   sparse = FALSE,
   ...,
   concu = NULL,
@@ -77,6 +78,13 @@ or to include for the half-life (using specifically those points and
 bypassing automatic curve-stripping point selection).  See the "Half-Life
 Calculation" vignette for more details on the use of these arguments.}
 
+\item{lloq}{(optional) The lower limit of quantification used by the Tobit
+half-life method (\code{hl_method = "tobit"}).  Either the name of a column in
+\code{data} giving the per-observation LLOQ or a numeric scalar applied to all
+observations.  When provided, it is passed through to
+\code{\link[=pk.calc.half.life]{pk.calc.half.life()}}.  See the "Half-Life Calculation with Tobit
+Regression" vignette for more details.}
+
 \item{sparse}{Are the concentration-time data sparse PK (commonly used in
 small nonclinical species or with terminal or difficult sampling) or dense
 PK (commonly used in clinical studies or larger nonclinical species)?}
@@ -94,9 +102,9 @@ A PKNCAconc object that can be used for automated NCA.
 Create a PKNCAconc object
 }
 \seealso{
-Other PKNCA objects: 
-\code{\link{PKNCAdata}()},
-\code{\link{PKNCAdose}()},
-\code{\link{PKNCAresults}()}
+Other PKNCA objects:
+\code{\link[=PKNCAdata]{PKNCAdata()}},
+\code{\link[=PKNCAdose]{PKNCAdose()}},
+\code{\link[=PKNCAresults]{PKNCAresults()}}
 }
 \concept{PKNCA objects}

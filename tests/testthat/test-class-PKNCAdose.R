@@ -579,3 +579,13 @@ test_that("PKNCAdose units (#336)", {
     structure("doseu_x", unit_type = "column")
   )
 })
+
+test_that("PKNCAdose does not error for excluded, invalid times (#310)", {
+  # Missing time points that are excluded are not checked
+  tmp.dose <- data.frame(time = c(1, NA), dose = c(1, NA), exclude = c(NA, "foo"))
+  expect_no_error(PKNCAdose(tmp.dose, formula = dose~time, exclude = "exclude"))
+
+  # Exclude column can be not defined (NULL)
+  tmp.dose <- data.frame(time = c(1, 2), dose = c(1, 2))
+  expect_no_error(PKNCAdose(tmp.dose, formula = dose~time, exclude = NULL))
+})

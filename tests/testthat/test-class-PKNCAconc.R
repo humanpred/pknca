@@ -12,6 +12,16 @@ test_that("PKNCAconc expected errors", {
   )
 })
 
+test_that("PKNCAconc does not error for excluded, invalid times (#310)", {
+  # Missing time points that are excluded are not checked
+  tmp.conc <- data.frame(time = c(1, NA), conc = c(1, NA), exclude = c(NA, "foo"))
+  expect_no_error(PKNCAconc(conc~time, data = tmp.conc, exclude = "exclude"))
+
+  # Exclude column can be not defined (NULL)
+  tmp.conc <- data.frame(time = c(1, 2), conc = c(1, 2))
+  expect_no_error(PKNCAconc(conc~time, data = tmp.conc, exclude = NULL))
+})
+
 test_that("PKNCAconc", {
   tmp.conc <- generate.conc(nsub=5, ntreat=2, time.points=0:24)
   tmp.conc.analyte <- generate.conc(nsub=5, ntreat=2, time.points=0:24,
@@ -628,4 +638,33 @@ test_that("PKNCAconc units (#336)", {
     o_conc$columns$amountu,
     structure("amountu_x", unit_type = "column")
   )
+})
+
+test_that("PKNCAconc lloq argument is stored and validated (scalar and column)", {
+  tmp.conc <- generate.conc(nsub = 2, ntreat = 1, time.points = 0:6)
+
+  # A scalar value materialises an "lloq" column filled with that value
+  o_scalar <- PKNCAconc(tmp.conc, conc ~ time | ID, lloq = 0.5)
+  expect_equal(o_scalar$columns$lloq, "lloq")
+  expect_equal(o_scalar$data$lloq, rep(0.5, nrow(tmp.conc)))
+
+  # A column name is used directly
+  tmp.conc.col <- tmp.conc
+  tmp.conc.col$assay_lloq <- 0.25
+  o_col <- PKNCAconc(tmp.conc.col, conc ~ time | ID, lloq = "assay_lloq")
+  expect_equal(o_col$columns$lloq, "assay_lloq")
+  expect_equal(o_col$data$assay_lloq, rep(0.25, nrow(tmp.conc.col)))
+
+  # A non-numeric lloq column is rejected
+  tmp.conc.bad <- tmp.conc
+  tmp.conc.bad$bad_lloq <- "x"
+  expect_error(
+    PKNCAconc(tmp.conc.bad, conc ~ time | ID, lloq = "bad_lloq"),
+    regexp = "lloq must be numeric"
+  )
+
+  # Without lloq, no lloq column or attribute is added
+  o_none <- PKNCAconc(tmp.conc, conc ~ time | ID)
+  expect_null(o_none$columns$lloq)
+  expect_false("lloq" %in% names(o_none$data))
 })

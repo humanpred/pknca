@@ -20,40 +20,79 @@ normalize.PKNCAresults <- function(object, norm_table, parameters, suffix) {
 
 #' @export
 normalize.data.frame <- function(object, norm_table, parameters, suffix) {
+  
+  # Identify common columns for grouping
   common_colnames <- setdiff(
     intersect(names(object), names(norm_table)),
     c("unit", "normalization")
   )
-  not_common_groups <- dplyr::anti_join(norm_table, object, by = common_colnames)
-  if (nrow(not_common_groups) > 0) {
-    df_error_string <- paste(
-      paste(names(not_common_groups), collapse = "\t"),
-      paste(apply(not_common_groups, 1, paste, collapse = "\t"), collapse = "\n"),
-      sep = "\n"
-    )
-    stop(
-      "The normalization table contains groups not present in the data:\n",
-      df_error_string
-    )
-  }
-  if (any(duplicated(norm_table[, common_colnames, drop = FALSE]))) {
-    stop("The normalization table contains duplicate groups.")
-  }
-  df <- object[object$PPTESTCD %in% parameters, ]
-  df <- merge(df, norm_table, by = common_colnames)
-
-  df$PPORRES <- df$PPORRES / df$normalization
-  if ("PPORRESU" %in% names(df)) {
-    df$PPORRESU <- sprintf("%s/%s", pknca_units_add_paren(df$PPORRESU), pknca_units_add_paren(df$unit))
-  }
-  if ("PPSTRES" %in% names(df)) {
-    df$PPSTRES <- df$PPSTRES / df$normalization
-    if ("PPSTRESU" %in% names(df)) {
-      df$PPSTRESU <- sprintf("%s/%s", pknca_units_add_paren(df$PPSTRESU), pknca_units_add_paren(df$unit))
+  
+  # ---- Validate norm_table ----
+  if (length(common_colnames) > 0) {
+    
+    # Check for missing groups
+    missing_groups <- dplyr::anti_join(norm_table, object, by = common_colnames)
+    if (nrow(missing_groups) > 0) {
+      df_error_string <- paste(
+        paste(names(missing_groups), collapse = "\t"),
+        paste(apply(missing_groups, 1, paste, collapse = "\t"), collapse = "\n"),
+        sep = "\n"
+      )
+      stop(
+        "The normalization table contains groups not present in the data:\n",
+        df_error_string
+      )
+    }
+    
+    # Check for duplicate groups
+    if (any(duplicated(norm_table[, common_colnames, drop = FALSE]))) {
+      stop("The normalization table contains duplicate groups.")
+    }
+    
+  } else {
+    # Ungrouped case
+    if (nrow(norm_table) != 1) {
+      stop("Normalization table must be a single row for ungrouped data.")
     }
   }
+  
+  # ---- Filter relevant parameters (base R) ----
+  df <- object[object$PPTESTCD %in% parameters, , drop = FALSE]
+  
+  # ---- Join normalization values ----
+  if (length(common_colnames) == 0) {
+    # Cartesian join
+    df <- merge(df, norm_table, by = NULL)
+  } else {
+    df <- dplyr::inner_join(df, norm_table, by = common_colnames)
+  }
+  
+  # ---- Apply normalization (base R) ----
+  df$PPORRES <- df$PPORRES / df$normalization
   df$PPTESTCD <- paste0(df$PPTESTCD, suffix)
-  df[, colnames(object), drop = FALSE]
+  
+  if ("PPORRESU" %in% names(df)) {
+    df$PPORRESU <- sprintf(
+      "%s/%s",
+      pknca_units_add_paren(df$PPORRESU),
+      pknca_units_add_paren(df$unit)
+    )
+  }
+  
+  if ("PPSTRES" %in% names(df)) {
+    df$PPSTRES <- df$PPSTRES / df$normalization
+    
+    if ("PPSTRESU" %in% names(df)) {
+      df$PPSTRESU <- sprintf(
+        "%s/%s",
+        pknca_units_add_paren(df$PPSTRESU),
+        pknca_units_add_paren(df$unit)
+      )
+    }
+  }
+  
+  # ---- Return original column order ----
+  df[, names(object), drop = FALSE]
 }
 
 #' Internal function to normalize by a specified column

@@ -35,7 +35,7 @@ This is intended to find the interval over which x repeats by the rule
 \code{unique(mod(x, interval))} is minimized.
 }
 \seealso{
-Other Interval determination: 
-\code{\link{choose.auc.intervals}()}
+Other Interval determination:
+\code{\link[=choose.auc.intervals]{choose.auc.intervals()}}
 }
 \concept{Interval determination}

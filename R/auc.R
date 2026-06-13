@@ -1,4 +1,4 @@
-#' A compute the Area Under the (Moment) Curve
+#' Compute the Area Under the (Moment) Curve
 #'
 #' Compute the area under the curve (AUC) and the area under the moment curve
 #' (AUMC) for pharmacokinetic (PK) data.  AUC and AUMC are used for many
@@ -21,23 +21,18 @@
 #' @inheritParams choose_interval_method
 #' @inheritParams assert_lambdaz
 #' @inheritParams PKNCA.choose.option
+#' @inheritParams clean.conc.blq
 #' @param clast,clast.obs,clast.pred The last concentration above the limit of
 #'   quantification; this is used for AUCinf calculations.  If provided as
 #'   clast.obs (observed clast value, default), AUCinf is AUCinf,obs. If
 #'   provided as clast.pred, AUCinf is AUCinf,pred.
-#' @param conc.blq How to handle BLQ values in between the first and last above
-#'   LOQ concentrations. (See [clean.conc.blq()] for usage instructions.)
-#' @param conc.na How to handle missing concentration values.  (See
-#'   [clean.conc.na()] for usage instructions.)
-#' @param check Run [assert_conc_time()], [clean.conc.blq()], and
-#'   [clean.conc.na()]?
 #' @param fun_linear The function to use for integration of the linear part of
 #'   the curve (not required for AUC or AUMC functions)
 #' @param fun_log The function to use for integration of the logarithmic part of
 #'   the curve (if log integration is used; not required for AUC or AUMC
 #'   functions)
 #' @param fun_inf The function to use for extrapolation from the final
-#'   measurement to infinite time (not required for AUC or AUMC functions.
+#'   measurement to infinite time (not required for AUC or AUMC functions).
 #' @param ... For functions other than `pk.calc.auxc`, these values are passed
 #'   to `pk.calc.auxc`
 #' @returns A numeric value for the AU(M)C.
@@ -105,7 +100,7 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
   }
   auc.type <- match.arg(auc.type)
   interval <- assert_intervaltime_single(interval = interval)
-  if (auc.type %in% "AUCinf" & is.finite(interval[2])) {
+  if (auc.type %in% "AUCinf" && is.finite(interval[2])) {
     warning("Requesting AUCinf when the end of the interval is not Inf")
   }
 

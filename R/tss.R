@@ -8,9 +8,7 @@
 #'   to be on the same treatment)
 #' @param subject.dosing Subject number for dosing
 #' @param time.dosing Time of dosing
-#' @param conc.blq See [clean.conc.blq()]
-#' @param conc.na See [clean.conc.na()]
-#' @param check Run [assert_conc_time()]?
+#' @inheritParams clean.conc.blq
 #' @param \dots Discarded inputs to allow generic calls between tss methods.
 #' @returns a data frame with columns for `conc`entration, `time`, `subject`,
 #'   and `treatment`.
@@ -26,7 +24,7 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
     sorted_time <- missing(subject) & missing(treatment)
     assert_conc_time(conc = conc, time = time, sorted_time = sorted_time)
   }
-  if (!missing(subject.dosing) & missing(subject)) {
+  if (!missing(subject.dosing) && missing(subject)) {
     stop("Cannot give subject.dosing without subject")
   }
   if (any(is.na(time.dosing))) {
