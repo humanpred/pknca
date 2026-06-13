@@ -30,10 +30,10 @@ Where:
 }
 }
 \seealso{
-Other Sparse Methods: 
-\code{\link{as_sparse_pk}()},
-\code{\link{pk.calc.sparse_auc}()},
-\code{\link{pk.calc.sparse_aumc}()},
-\code{\link{sparse_mean}()}
+Other Sparse Methods:
+\code{\link[=as_sparse_pk]{as_sparse_pk()}},
+\code{\link[=pk.calc.sparse_auc]{pk.calc.sparse_auc()}},
+\code{\link[=pk.calc.sparse_aumc]{pk.calc.sparse_aumc()}},
+\code{\link[=sparse_mean]{sparse_mean()}}
 }
 \concept{Sparse Methods}

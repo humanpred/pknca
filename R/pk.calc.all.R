@@ -279,6 +279,9 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
         args$exclude_half.life <- conc_data_interval$exclude_half.life
         uses_exclude_hl <- !is.null(args$exclude_half.life) && !all(is.na(args$exclude_half.life))
       }
+      if ("lloq" %in% names(conc_data_interval)) {
+        args$lloq <- conc_data_interval$lloq
+      }
       if (uses_include_hl && uses_exclude_hl) {
         stop("Cannot both include and exclude half-life points for the same interval")
       }
@@ -353,6 +356,9 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
 #'   half-life point selection will occur.
 #' @param exclude_half.life An optional boolean vector of the concentration
 #'   measurements to exclude from the half-life calculation.
+#' @param lloq An optional scalar or vector (the same length as `conc`) with the
+#'   lower limit of quantification passed to [pk.calc.half.life()] for the Tobit
+#'   half-life method.
 #' @param subject Subject identifiers (used for sparse calculations)
 #' @param sparse Should only sparse calculations be performed (TRUE) or only
 #'   dense calculations (FALSE)?
@@ -367,7 +373,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
                             conc.group=NULL, time.group=NULL, volume.group=NULL, duration.conc.group=NULL,
                             dose.group=NULL, time.dose.group=NULL, duration.dose.group=NULL, route.group=NULL,
                             impute_method=NA_character_,
-                            include_half.life=NULL, exclude_half.life=NULL,
+                            include_half.life=NULL, exclude_half.life=NULL, lloq=NULL,
                             subject, sparse, interval, options=list()) {
   if (!is.data.frame(interval)) {
     stop("Please report a bug.  Interval must be a data.frame")
@@ -473,6 +479,8 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           call_args[[arg_formal]] <- route.group
         } else if (arg_mapped == "subject") {
           call_args[[arg_formal]] <- subject
+        } else if (arg_mapped == "lloq") {
+          call_args[[arg_formal]] <- lloq
         } else if (arg_mapped %in% c("start", "end")) {
           # Provide the start and end of the interval if they are requested
           call_args[[arg_formal]] <- interval[[arg_mapped]]
@@ -504,15 +512,21 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       if (n %in% "half.life") {
         uses_include_hl <- !is.null(include_half.life) && !all(is.na(include_half.life))
         uses_exclude_hl <- !is.null(exclude_half.life) && !all(is.na(exclude_half.life))
+        # Keep a per-observation lloq aligned with conc when points are manually
+        # included or excluded (a scalar lloq is broadcast by pk.calc.half.life).
+        lloq_is_vector <-
+          !is.null(call_args$lloq) && length(call_args$lloq) == length(call_args$conc)
         if (uses_include_hl) {
           include_tf <- include_half.life %in% TRUE
           call_args$conc <- call_args$conc[include_tf]
           call_args$time <- call_args$time[include_tf]
+          if (lloq_is_vector) call_args$lloq <- call_args$lloq[include_tf]
           call_args$manually.selected.points <- TRUE
         } else if (uses_exclude_hl) {
           exclude_tf <- exclude_half.life %in% TRUE
           call_args$conc <- call_args$conc[!exclude_tf]
           call_args$time <- call_args$time[!exclude_tf]
+          if (lloq_is_vector) call_args$lloq <- call_args$lloq[!exclude_tf]
         }
       }
       # Do the calculation

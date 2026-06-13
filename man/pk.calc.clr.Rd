@@ -26,12 +26,12 @@ units of volume/time.
 \seealso{
 \code{\link[=pk.calc.ae]{pk.calc.ae()}}, \code{\link[=pk.calc.fe]{pk.calc.fe()}}
 
-Other Urine/Excretion parameters: 
-\code{\link{pk.calc.ae}()},
-\code{\link{pk.calc.ermax}()},
-\code{\link{pk.calc.ertlst}()},
-\code{\link{pk.calc.ertmax}()},
-\code{\link{pk.calc.fe}()},
-\code{\link{pk.calc.volpk}()}
+Other Urine/Excretion parameters:
+\code{\link[=pk.calc.ae]{pk.calc.ae()}},
+\code{\link[=pk.calc.ermax]{pk.calc.ermax()}},
+\code{\link[=pk.calc.ertlst]{pk.calc.ertlst()}},
+\code{\link[=pk.calc.ertmax]{pk.calc.ertmax()}},
+\code{\link[=pk.calc.fe]{pk.calc.fe()}},
+\code{\link[=pk.calc.volpk]{pk.calc.volpk()}}
 }
 \concept{Urine/Excretion parameters}

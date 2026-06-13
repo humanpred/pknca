@@ -17,8 +17,8 @@ A list of column names for various formula parts
 Convert a formula representation to the columns for input data
 }
 \seealso{
-Other Formula parsing: 
-\code{\link{findOperator}()}
+Other Formula parsing:
+\code{\link[=findOperator]{findOperator()}}
 }
 \concept{Formula parsing}
 \keyword{Internal}

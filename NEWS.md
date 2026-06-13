@@ -6,6 +6,12 @@ the dosing including dose amount and route.
 
 # New features
 
+* `PKNCAconc()` gains an `lloq` argument (a column name or a numeric scalar) that
+  is passed through to `pk.calc.half.life()`.  This wires the lower limit of
+  quantification through a full `pk.nca()` run so the Tobit half-life method
+  (`hl_method = "tobit"`, set via `PKNCAdata(options = list(hl_method = "tobit"))`)
+  works end-to-end instead of failing because no `lloq` was available.
+
 * Added sparse AUMC function and five sparse AUC parameters (cl.sparse.last, kel.sparse.last, mrt.ivint.last, vss.sparse.last, vz.sparse.last)
 
 * New IV dosing AUMC parameters with C0 back-extrapolation (`aumciv*`)
@@ -30,6 +36,10 @@ the dosing including dose amount and route.
   and `norm_table`). `dplyr::cross_join()` is now used explicitly for this case.
 
 ## Improvements
+
+* The sparse NCA vignette now explains how subjects are grouped: sparse
+  parameters pool all subjects that share the same concentration grouping
+  variables with the subject column removed (#530).
 
 * `normalize.data.frame()` now validates that `norm_table` contains exactly one
   row when used with ungrouped data, giving a clear error message instead of
