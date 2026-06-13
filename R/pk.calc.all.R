@@ -326,6 +326,7 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
 #'
 #' @inheritParams assert_conc_time
 #' @inheritParams PKNCA.choose.option
+#' @inheritParams PKNCAconc
 #' @param conc.group All concentrations measured for the group
 #' @param time.group Time of all concentrations measured for the group
 #' @param volume,volume.group The volume (or mass) of the concentration
@@ -351,20 +352,6 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
 #' @param impute_method The method to use for imputation as a character string
 #' @param interval One row of an interval definition (see
 #'   [check.interval.specification()] for how to define the interval.
-#' @param include_half.life An optional logical vector (one value per
-#'   concentration measurement) naming the points to use for the half-life. If
-#'   in use, automatic curve-stripping point selection is bypassed and exactly
-#'   the `TRUE` points are used for the half-life regression. `TRUE` uses the
-#'   point, `FALSE` does not, and `NA` is undefined; the vector is "in use" for
-#'   the interval unless it is entirely `NA` (so an all-`FALSE` vector still
-#'   counts as in use). At most one of `include_half.life` and
-#'   `exclude_half.life` may be in use for the same interval.
-#' @param exclude_half.life An optional logical vector (one value per
-#'   concentration measurement) naming points to drop before point selection.
-#'   Automatic curve-stripping point selection is still performed (it is not
-#'   bypassed) on the remaining, non-excluded points. `TRUE` excludes the point,
-#'   `FALSE` does not, and `NA` is undefined; the "in use" rule is the same as
-#'   for `include_half.life`.
 #' @param lloq An optional scalar or vector (the same length as `conc`) with the
 #'   lower limit of quantification passed to [pk.calc.half.life()] for the Tobit
 #'   half-life method.

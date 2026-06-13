@@ -70,21 +70,19 @@ bolus and nonzero for intravascular infusion)}
 
 \item{impute_method}{The method to use for imputation as a character string}
 
-\item{include_half.life}{An optional logical vector (one value per
-concentration measurement) naming the points to use for the half-life. If
-in use, automatic curve-stripping point selection is bypassed and exactly
-the \code{TRUE} points are used for the half-life regression. \code{TRUE} uses the
-point, \code{FALSE} does not, and \code{NA} is undefined; the vector is "in use" for
-the interval unless it is entirely \code{NA} (so an all-\code{FALSE} vector still
-counts as in use). At most one of \code{include_half.life} and
-\code{exclude_half.life} may be in use for the same interval.}
-
-\item{exclude_half.life}{An optional logical vector (one value per
-concentration measurement) naming points to drop before point selection.
-Automatic curve-stripping point selection is still performed (it is not
-bypassed) on the remaining, non-excluded points. \code{TRUE} excludes the point,
-\code{FALSE} does not, and \code{NA} is undefined; the "in use" rule is the same as
-for \code{include_half.life}.}
+\item{exclude_half.life, include_half.life}{Manual half-life point selection,
+given as a logical value per concentration measurement (or, in
+\code{\link[=PKNCAconc]{PKNCAconc()}}, the name of such a column in the data).  \code{exclude_half.life}
+drops the flagged points; automatic curve-stripping point selection is
+still performed on the remaining (non-excluded) points and is not bypassed.
+\code{include_half.life} names the exact points to use, bypassing automatic
+curve-stripping point selection.  Each value is \code{TRUE}, \code{FALSE}, or \code{NA}
+(undefined); the column/vector is treated as "in use" for an interval
+unless it is entirely \code{NA} (so an all-\code{FALSE} column still counts as in
+use), so leave it \code{NA} (rather than \code{FALSE}) where the mechanism should not
+apply.  Only one of \code{exclude_half.life} and \code{include_half.life} may be in
+use for a given interval.  See the "Half-Life Calculation" vignette for
+more details on the use of these arguments.}
 
 \item{lloq}{An optional scalar or vector (the same length as \code{conc}) with the
 lower limit of quantification passed to \code{\link[=pk.calc.half.life]{pk.calc.half.life()}} for the Tobit
