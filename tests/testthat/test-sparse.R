@@ -81,6 +81,40 @@ test_that("sparse_auc and sparse_auclast method attribute", {
   expect_equal(attr(auclast$sparse_auclast, "method"),
                c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ"))
 })
+
+test_that("sparse AUC/AUMC only allow method = 'linear' (#469)", {
+  d_sparse <-
+    data.frame(
+      id = c(1L, 2L, 3L, 1L, 2L, 3L, 1L, 2L, 3L, 4L, 5L, 6L, 4L, 5L, 6L, 7L, 8L, 9L, 7L, 8L, 9L),
+      conc = c(0, 0, 0,  1.75, 2.2, 1.58, 4.63, 2.99, 1.52, 3.03, 1.98, 2.22, 3.34, 1.3, 1.22, 3.54, 2.84, 2.55, 0.3, 0.0421, 0.231),
+      time = c(0, 0, 0, 1, 1, 1, 6, 6, 6, 2, 2, 2, 10, 10, 10, 4, 4, 4, 24, 24, 24)
+    )
+  subject <- seq_len(nrow(d_sparse))
+  # The default ("linear") is accepted
+  expect_equal(
+    attr(pk.calc.sparse_auc(conc=d_sparse$conc, time=d_sparse$time, subject=subject)$sparse_auc, "method")[1],
+    "AUC: linear"
+  )
+  # Any non-linear method is a hard error for both AUC and AUMC, including the
+  # *last wrappers that forward `method` through `...`
+  expect_error(
+    pk.calc.sparse_auc(conc=d_sparse$conc, time=d_sparse$time, subject=subject, method="lin up/log down"),
+    class = "pknca_sparse_method"
+  )
+  expect_error(
+    pk.calc.sparse_auclast(conc=d_sparse$conc, time=d_sparse$time, subject=subject, method="lin-log"),
+    class = "pknca_sparse_method"
+  )
+  expect_error(
+    pk.calc.sparse_aumc(conc=d_sparse$conc, time=d_sparse$time, subject=subject, method="lin up/log down"),
+    class = "pknca_sparse_method"
+  )
+  expect_error(
+    pk.calc.sparse_aumclast(conc=d_sparse$conc, time=d_sparse$time, subject=subject, method="log"),
+    class = "pknca_sparse_method"
+  )
+})
+
 test_that("cov_holder clips covariance to Cauchy-Schwartz bound", {
   # Construct data where the Holder covariance formula exceeds sqrt(var1*var2).
   # Time 1: subjects 1 & 2, concentrations 0 & 10 → var = 50
