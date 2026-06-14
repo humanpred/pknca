@@ -521,3 +521,20 @@ test_that("be_assess attaches a methods caption", {
   expect_match(attr(fda, "caption"), "intra-subject contrasts")
   expect_match(attr(fda, "caption"), "Howe/Hyslop")
 })
+
+test_that("be_compare emits the units-missing warning only once", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"))
+  d$PPORRESU <- NULL # unit-less
+  n <- 0L
+  withCallingHandlers(
+    be_compare(d, "treatment", "R", "auclast", regulators = c("EMA", "HC", "GCC", "FDA")),
+    pknca_be_units_missing = function(w) {
+      n <<- n + 1L
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_identical(n, 1L)
+})

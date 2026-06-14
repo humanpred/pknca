@@ -1241,6 +1241,15 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
   }
 }
 
+# Classed warning emitted when the data carry no units (so the `units` column is
+# omitted).  The class lets be_compare() collapse the per-regulator repeats.
+.be_warn_units_missing <- function() {
+  rlang::warn(
+    "Units were not found in the data; omitting the `units` column. Supply units via a PKNCAresults object or `PPSTRESU`/`PPORRESU` columns.",
+    class = "pknca_be_units_missing"
+  )
+}
+
 #' Coordinate the bioequivalence calculation path
 #'
 #' `be_fit_models()` runs the single bioequivalence calculation path and returns
@@ -1288,7 +1297,7 @@ be_fit_models <- function(object, reference_col, reference_value,
   rownames(tbl) <- NULL
   # Omit the units column entirely (with a warning) when units are unavailable.
   if (all(is.na(tbl$units))) {
-    warning("Units were not found in the data; omitting the `units` column. Supply units via a PKNCAresults object or `PPSTRESU`/`PPORRESU` columns.")
+    .be_warn_units_missing()
     tbl$units <- NULL
   }
   attr(tbl, "caption") <- .be_caption(reg, model_type, alpha)
@@ -1536,20 +1545,31 @@ be_compare <- function(object, reference_col, reference_value,
                        subject = NULL, sequence = NULL, period = NULL, design = NULL) {
   checkmate::assert_character(regulators, min.len = 1, any.missing = FALSE)
   results <- list()
+  units_missing <- FALSE
   for (rg in regulators) {
-    res <- try(
-      be_assess(
-        object, reference_col = reference_col, reference_value = reference_value,
-        endpoints = endpoints, regulator = rg, model_type = model_type, alpha = alpha,
-        subject = subject, sequence = sequence, period = period, design = design
+    # Collapse the per-regulator "units missing" warning into one (below).
+    res <- withCallingHandlers(
+      try(
+        be_assess(
+          object, reference_col = reference_col, reference_value = reference_value,
+          endpoints = endpoints, regulator = rg, model_type = model_type, alpha = alpha,
+          subject = subject, sequence = sequence, period = period, design = design
+        ),
+        silent = TRUE
       ),
-      silent = TRUE
+      pknca_be_units_missing = function(w) {
+        units_missing <<- TRUE
+        invokeRestart("muffleWarning")
+      }
     )
     if (inherits(res, "try-error")) {
       warning(sprintf("Skipping %s: %s", rg, conditionMessage(attr(res, "condition"))))
     } else {
       results[[rg]] <- as.data.frame(res)
     }
+  }
+  if (units_missing) {
+    .be_warn_units_missing()
   }
   if (length(results) == 0) {
     stop("No regulatory framework could be assessed for this design.")
