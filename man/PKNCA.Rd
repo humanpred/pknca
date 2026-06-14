@@ -58,6 +58,7 @@ Authors:
 Other contributors:
 \itemize{
   \item Sridhar Duvvuri [contributor]
+  \item Natalie Sang \email{nataliesang143@gmail.com} [contributor]
 }
 
 }

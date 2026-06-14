@@ -1,0 +1,343 @@
+---
+title: "Bioequivalence Calculations"
+author: "Bill Denney"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Bioequivalence Calculations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(PKNCA)
+
+# The bioequivalence functions rely on packages that are Suggested (optional)
+# rather than required.  The analysis chunks below only run when they are
+# available.
+has_be_pkgs <-
+  requireNamespace("lme4", quietly = TRUE) &&
+  requireNamespace("lmerTest", quietly = TRUE) &&
+  requireNamespace("emmeans", quietly = TRUE)
+```
+
+After noncompartmental analysis (NCA) parameters such as the area under the
+curve (AUC) and maximum concentration (C~max~) have been calculated, average
+bioequivalence (BE) of a test formulation relative to a reference formulation is
+assessed with inferential statistics.  PKNCA provides a single function for the
+whole assessment:
+
+* **`be_assess()`** takes the results of `pk.nca()` (or a tidy data.frame), a
+  regulatory framework, and the reference formulation, and returns a table with
+  the geometric mean ratio (GMR), its confidence interval, the within-subject
+  variability, the (possibly scaled) acceptance limits or criterion, and the
+  pass/fail decision for each endpoint.
+* **`be_compare()`** runs the same study under several frameworks side by side.
+
+These consume the results of `pk.nca()` directly, so the same workflow that
+produces NCA parameters flows into the bioequivalence assessment.
+
+## How the calculation works
+
+`be_assess()` (and `be_compare()`) are thin verbs over a single calculation
+path, the coordinator `be_fit_models()`, which runs these stages in order:
+
+1. **`be_dataset()`** -- validate the data, resolve the value column, drop
+   excluded rows, detect the subject/sequence/period columns, and set the
+   reference as the first factor level.
+2. **`be_design()`** -- classify the design (parallel, 2x2x2 crossover, full or
+   partial replicate) and report which frameworks it can support.
+3. **`be_fit_model_single()`** -- fit the average-BE model (this is the only
+   place models are fit), dispatching on the model type to `be_fit_model_lmer()`,
+   `be_fit_model_nlme()`, or `be_fit_model_anova()`.
+4. **`be_extract_param()`** -- extract the geometric means, the GMR and its
+   confidence interval, and the within-formulation standard deviations.
+5. **`be_table()`** -- apply the regulatory limits or criterion and decide
+   pass/fail (using the constants from `be_regulator()`).
+
+The model type is selected automatically from the **design and the regulator**;
+pass `model_type` to `be_assess()` to override it.  A parallel study (one
+measurement per subject) is analyzed by a fixed-effects ANOVA, while a crossover
+or replicate study (repeated measures per subject) uses the mixed model.  The
+FDA reference-scaled family always uses intra-subject contrasts (`"isc"`)
+regardless of design.
+
+| Regulator | Design required | Auto `model_type` | Notes |
+|---|---|---|---|
+| `ABE` | any (test & reference) | `lmer` (crossover/replicate) / `anova` (parallel) | unscaled 80.00-125.00% |
+| `EMA` / `HC` / `GCC` | replicated reference | `lmer` | expanding limits (ABEL) |
+| `FDA` (RSABE) | replicated reference | `isc` | intra-subject contrasts + linearized bound |
+| `NTID` / `HVNTID` | full replicate (test & reference) | `isc` | adds a swT/swR ratio constraint |
+| *(override)* | full replicate | `nlme` | treatment-specific variances from one mixed model |
+
+The table also reports, on the measurement scale, the reference and test
+geometric means with their 90% confidence intervals (`gm_reference`/`gm_test`
+and their `_lower`/`_upper` bounds) and the endpoint `units` (taken from the
+`PKNCAresults` object; `NA` when not provided, and a column because they differ
+between C~max~ and AUC).
+
+## Optional packages
+
+The bioequivalence calculations use [`lme4`](https://cran.r-project.org/package=lme4),
+[`lmerTest`](https://cran.r-project.org/package=lmerTest), and
+[`emmeans`](https://cran.r-project.org/package=emmeans) to fit the mixed model
+and estimate least-squares means.  They are *Suggested* packages, so install them
+if they are not already present:
+
+```{r install, eval = FALSE}
+install.packages(c("lme4", "lmerTest", "emmeans"))
+```
+
+```{r no-pkgs, echo = FALSE, results = "asis", eval = !has_be_pkgs}
+cat("> **Note:** `lme4`, `lmerTest`, and/or `emmeans` are not installed, so the",
+    "analysis output below is not shown.  Install them to run this vignette.\n")
+```
+
+## Simulating a 2x2 crossover study
+
+A classic average-bioequivalence study uses a two-sequence, two-period crossover
+design: each subject receives both the test (T) and reference (R) formulations,
+in an order determined by their randomized sequence (RT or TR).  We simulate
+concentration-time data from a one-compartment model with first-order
+absorption, with between-subject variability on clearance and a small difference
+between formulations.
+
+```{r simulate}
+simulate_crossover <- function(nsub = 24, seed = 20251201) {
+  set.seed(seed)
+  times <- c(0, 0.25, 0.5, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24)
+  sequence <- rep(c("RT", "TR"), length.out = nsub)
+  subj_cl <- stats::rnorm(nsub, mean = log(5), sd = 0.25)
+  dose <- 100
+  v <- 50
+  ka <- 1.1
+  rows <- list()
+  for (i in seq_len(nsub)) {
+    forms <- if (sequence[i] == "RT") c("R", "T") else c("T", "R")
+    for (p in 1:2) {
+      form <- forms[p]
+      # The test formulation has slightly higher exposure (lower clearance)
+      cl <- exp(subj_cl[i] + ifelse(form == "T", -0.05, 0) + stats::rnorm(1, sd = 0.06))
+      ke <- cl / v
+      conc <- (dose * ka / (v * (ka - ke))) * (exp(-ke * times) - exp(-ka * times))
+      conc <- conc * exp(stats::rnorm(length(times), sd = 0.05))
+      conc[times == 0] <- 0
+      rows[[length(rows) + 1]] <-
+        data.frame(
+          subject = i, sequence = sequence[i], period = p, formulation = form,
+          time = times, conc = conc
+        )
+    }
+  }
+  do.call(rbind, rows)
+}
+
+conc_data <- simulate_crossover()
+head(conc_data)
+```
+
+## Noncompartmental analysis
+
+The crossover structure is described in the grouping formula.  The grouping
+variables are the sequence, period, and formulation, with the subject as the
+final grouping variable.
+
+```{r nca, message = FALSE, warning = FALSE}
+dose_data <- conc_data[conc_data$time == 0, c("subject", "sequence", "period", "formulation")]
+dose_data$dose <- 100
+dose_data$time <- 0
+
+o_conc <- PKNCAconc(conc_data, conc ~ time | sequence + period + formulation + subject)
+o_dose <- PKNCAdose(dose_data, dose ~ time | sequence + period + formulation + subject)
+
+intervals <-
+  data.frame(start = 0, end = Inf, cmax = TRUE, auclast = TRUE, aucinf.obs = TRUE)
+o_data <- PKNCAdata(o_conc, o_dose, intervals = intervals)
+
+o_results <- pk.nca(o_data)
+```
+
+The NCA parameters are available with `summary()` and `as.data.frame()` as usual:
+
+```{r nca-results}
+knitr::kable(head(as.data.frame(o_results)), digits = 2)
+```
+
+## Bioequivalence assessment
+
+`be_assess()` takes the `PKNCAresults` object, the column that identifies the
+formulation (`reference_col`), the value of that column that is the reference
+(`reference_value`), and the regulatory framework.  This 2x2 study is not
+replicated, so only average bioequivalence (`regulator = "ABE"`) is feasible.
+
+```{r be, eval = has_be_pkgs}
+be <- be_assess(
+  o_results,
+  endpoints = c("cmax", "auclast", "aucinf.obs"),
+  reference_col = "formulation",
+  reference_value = "R",
+  regulator = "ABE"
+)
+
+knitr::kable(as.data.frame(be), digits = 2)
+```
+
+## Interpreting the results
+
+For each endpoint and test formulation the table reports:
+
+* `units`: the measurement units of the endpoint (e.g. `ng/mL` for C~max~,
+  `hr*ng/mL` for AUC), taken from the `PKNCAresults` object,
+* `gm_reference`, `gm_test` (with `_lower`/`_upper` bounds): the reference and
+  test geometric means and their 90% confidence intervals, on the measurement
+  scale (in `units`),
+* `gmr_percent`: the geometric mean ratio (test / reference), as a percentage,
+* `ci_lower`, `ci_upper`: the bounds of the confidence interval for the GMR
+  (90% by default, controlled by `alpha`),
+* `cvwr_percent`, `swr`: the within-reference coefficient of variation and
+  standard deviation (used by the reference-scaling frameworks; `NA` for
+  unscaled ABE),
+* `limit_lower`, `limit_upper`: the acceptance limits, and `criterion` for the
+  FDA reference-scaled bound, and
+* `pass`: the regulatory decision.
+
+Two formulations are declared bioequivalent under ABE when the 90% confidence
+interval for the geometric mean ratio falls entirely within 80.00%-125.00% for
+the primary endpoints (commonly AUC and C~max~).
+
+For ABE the average-BE model fit for each endpoint is
+
+$$\log(\text{value}) = \text{sequence} + \text{period} + \text{formulation} + (1 \mid \text{subject})$$
+
+fit with `lmerTest::lmer()` so that Satterthwaite degrees of freedom are
+available, and the confidence interval is obtained by exponentiating the
+difference in least-squares means between the test and reference formulations.
+
+## Reference scaling and regulatory frameworks
+
+Highly variable drugs (within-subject coefficient of variation above 30%) are
+difficult to show bioequivalent against the fixed 80.00-125.00% limits, so
+regulators allow the limits to be *scaled* by the within-reference variability,
+estimated from a replicate design in which the reference is given more than
+once.  PKNCA implements the major frameworks through `be_assess()`:
+
+* **ABE** -- average bioequivalence, the unscaled 80.00-125.00% criterion.
+* **EMA**, **Health Canada (HC)**, and **GCC** -- average bioequivalence with
+  expanding limits (ABEL); the limits widen with the within-reference standard
+  deviation, with framework-specific caps.
+* **FDA RSABE** -- reference-scaled average bioequivalence using the linearized
+  Howe/Hyslop criterion.
+* **FDA NTID** and **HVNTID** -- the (highly variable) narrow therapeutic index
+  drug frameworks, which add a constraint on the ratio of within-subject
+  standard deviations.
+
+All regulatory constants are built into PKNCA (see `be_regulator()`); no
+external package is required.
+
+### A replicate-design study
+
+Reference scaling needs the reference replicated, so we simulate a four-period,
+two-sequence full replicate design (`TRTR`/`RTRT`) with high within-subject
+variability.
+
+```{r simulate-replicate}
+simulate_replicate <- function(nsub = 24, seed = 20251015, cv_wr = 0.45, cv_wt = 0.40) {
+  set.seed(seed)
+  seqs <- rep(c("TRTR", "RTRT"), length.out = nsub)
+  swR <- sqrt(log(cv_wr^2 + 1))
+  swT <- sqrt(log(cv_wt^2 + 1))
+  subj <- stats::rnorm(nsub, sd = 0.4)
+  rows <- list()
+  for (i in seq_len(nsub)) {
+    trt <- strsplit(seqs[i], "")[[1]]
+    for (p in seq_along(trt)) {
+      sw <- if (trt[p] == "R") swR else swT
+      eff <- if (trt[p] == "T") log(1.05) else 0
+      rows[[length(rows) + 1]] <- data.frame(
+        subject = i, sequence = seqs[i], period = p, treatment = trt[p],
+        PPTESTCD = "auclast",
+        PPORRES = exp(log(100) + eff + subj[i] + stats::rnorm(1, sd = sw))
+      )
+    }
+  }
+  do.call(rbind, rows)
+}
+
+rep_data <- simulate_replicate()
+```
+
+`be_assess()` takes the long data (or a `PKNCAresults` object), the column that
+identifies the formulation, the reference value, and the framework.  It returns
+one row per endpoint and test formulation with the geometric mean ratio, the
+confidence interval, the within-subject variability, the (possibly scaled)
+acceptance limits or criterion, and the pass/fail decision.
+
+```{r be-assess, eval = has_be_pkgs}
+ema <- be_assess(rep_data, reference_col = "treatment", reference_value = "R",
+                 endpoints = "auclast", regulator = "EMA")
+knitr::kable(as.data.frame(ema), digits = 3)
+```
+
+For this dataset the within-reference CV is about 50%, so the EMA limits expand
+from 80.00-125.00% toward their cap.  The FDA reference-scaled criterion instead
+reports the linearized bound (`criterion`), which passes when it is at most
+zero:
+
+```{r be-assess-fda, eval = has_be_pkgs}
+fda <- be_assess(rep_data, reference_col = "treatment", reference_value = "R",
+                 endpoints = "auclast", regulator = "FDA")
+knitr::kable(as.data.frame(fda)[, c("gmr_percent", "ci_lower", "ci_upper",
+                                    "cvwr_percent", "swr", "criterion", "pass")],
+             digits = 4)
+```
+
+### Comparing frameworks side by side
+
+`be_compare()` runs the same study under several frameworks at once; frameworks
+the design cannot support are skipped with a warning.
+
+```{r be-compare, eval = has_be_pkgs}
+cmp <- be_compare(rep_data, reference_col = "treatment", reference_value = "R",
+                  endpoints = "auclast",
+                  regulators = c("EMA", "HC", "GCC", "FDA", "NTID", "HVNTID"))
+summary(cmp)
+```
+
+The pass/fail decision can differ between frameworks for the same data.  The
+narrow therapeutic index frameworks are the strictest: **NTID** requires the
+reference-scaled bound, the conventional 90% confidence interval within
+80.00-125.00%, *and* the upper 90% bound of the within-subject standard-deviation
+ratio swT/swR at most 2.5; **HVNTID** (highly variable NTID) drops the
+reference-scaled bound but keeps the conventional interval and the swT/swR
+constraint.  These FDA criteria match those in `PowerTOST`'s `power.NTID()` /
+`power.HVNTID()`.
+
+> **Note on the geometric-mean intervals.** `gm_reference`/`gm_test` and their
+> bounds are the marginal least-squares-mean intervals, so they include
+> between-subject variability and are wider than the (within-subject) confidence
+> interval for the ratio in `ci_lower`/`ci_upper`.
+
+> **Planning vs. assessment.** PKNCA *assesses* a completed study.  Power and
+> sample-size *planning* for these designs is not in PKNCA; the
+> [`PowerTOST`](https://cran.r-project.org/package=PowerTOST) package covers that
+> complementary need.
+
+## Reporting checklist
+
+The assessment table supports common bioequivalence reporting requirements:
+
+1. **Framework and model**: the `regulator` and `model_type` columns record the
+   framework and the average-BE model used, and the table's `caption` attribute
+   gives a one-sentence methods statement (model, confidence-interval method,
+   within-subject variability, and the decision rule).
+2. **%GMR, confidence interval, within-subject CV, limits/criterion, and the
+   pass/fail decision**: one row per endpoint and test formulation in
+   `as.data.frame(be_assess(...))`.
+3. **Cross-regulator comparison**: `summary(be_compare(...))` gives an
+   endpoint-by-regulator pass/fail grid.
+4. **Individual data**: available from `as.data.frame(o_results)` for listings
+   and figures.

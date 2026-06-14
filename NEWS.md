@@ -56,7 +56,6 @@ the dosing including dose amount and route.
   for grouped joins, preserving left-table row order. Missing group validation 
   ensures no rows are silently dropped.
 
-
 ## Breaking changes
 
 * `pknca_units_table()` called on a `PKNCAdata` object now raises an error if
@@ -78,6 +77,21 @@ when the issue is due to an excluded point (#310)
 * `pk.nca` will calculate `fe` and `clr` even if their dependent parameters (e.g, `ae`) were not requested to be calculated in the intervals (#473)
 
 ## New features
+
+* Added bioequivalence (BE) assessment via a single calculation path.
+  `be_assess()` computes the full regulatory pass/fail decision for average
+  bioequivalence, the EMA/Health Canada/GCC expanding-limits (ABEL) frameworks,
+  and the FDA reference-scaled (RSABE), narrow therapeutic index (NTID), and
+  highly variable NTID (HVNTID) frameworks, with the model auto-selected from
+  the regulator and design; `be_compare()` assesses one dataset under several
+  frameworks at once.  These are coordinated by `be_fit_models()`, which runs
+  the pipeline `be_dataset()` -> `be_fit_model_single()` -> `be_extract_param()`
+  -> `be_table()`; the supporting functions `be_design()`, `be_within_var()`,
+  `be_regulator()`, and `be_expand_limits()` are also exported.  All regulatory
+  constants and criteria are internalized, so no additional packages are
+  required beyond `lme4`/`lmerTest`/`emmeans` (suggested) for the average-BE
+  model.  See the new `vignette("v50-bioequivalence")`.  Based on work by
+  @Sang-j111 (#490)
 
 * `pknca_units_table()` is now an S3 generic with a `PKNCAdata` method.  When
   called on a `PKNCAdata` object it automatically builds the unit conversion
