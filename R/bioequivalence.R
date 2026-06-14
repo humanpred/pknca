@@ -227,7 +227,8 @@ be_expand_limits <- function(swR, regulator) {
 #' @param reference_value The value of `treatment` that is the reference
 #'   formulation.
 #' @returns An object of class `be_design`: a list with elements `design` (one
-#'   of `"2x2x2"`, `"full_replicate"`, `"partial_replicate"`, `"other"`),
+#'   of `"parallel"`, `"2x2x2"`, `"full_replicate"`, `"partial_replicate"`,
+#'   `"other"`),
 #'   `n_sequences`, `n_periods`, `n_treatments`, `n_subjects`, `sequences`,
 #'   `treatments`, `reference`, `replicate_reference`, `replicate_test`,
 #'   `reps_reference`, `reps_test`, `balanced`, and `feasible` (a named logical
@@ -284,6 +285,12 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
   replicate_reference <- reps_reference >= 2
   replicate_test <- reps_test >= 2
 
+  # A parallel design has a single measurement per subject (no within-subject
+  # repeated measures); it is analyzed by a fixed-effects model, while any design
+  # with repeated measures (crossover or replicate) uses a mixed model.
+  obs_per_subj <- table(subj)
+  parallel <- max(as.numeric(obs_per_subj)) <= 1
+
   design <-
     if (n_treatments != 2) {
       "other"
@@ -291,6 +298,8 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
       "full_replicate"
     } else if (replicate_reference && !replicate_test) {
       "partial_replicate"
+    } else if (parallel) {
+      "parallel"
     } else if (n_periods == 2) {
       "2x2x2"
     } else {
@@ -306,7 +315,6 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
       patterns
     }
   seq_sizes <- table(subj_seq)
-  obs_per_subj <- table(subj)
   balanced <-
     length(unique(as.numeric(seq_sizes))) == 1 &&
     length(unique(as.numeric(obs_per_subj))) == 1
@@ -319,10 +327,11 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
     hvntid = replicate_reference && replicate_test
   )
 
-  # Model recommended by the design alone: a simple two-period crossover is
-  # classically analyzed by a fixed-effects ANOVA, while replicate designs use a
-  # mixed model.  The regulator can override this (see be_assess()).
-  recommended_model_type <- if (identical(design, "2x2x2")) "anova" else "lmer"
+  # Model recommended by the design alone: a parallel design (one measurement per
+  # subject) uses a fixed-effects ANOVA, while a design with within-subject
+  # repeated measures (crossover or replicate) uses the mixed model "lmer".  The
+  # regulator can override this (see be_assess()).
+  recommended_model_type <- if (parallel) "anova" else "lmer"
 
   structure(
     list(
@@ -886,15 +895,16 @@ print.be_dataset <- function(x, ...) {
 
 # Choose the model type from the regulator and the design when the user did not
 # request one.  The FDA reference-scaled family always uses the intra-subject-
-# contrast path ("anova"); otherwise the design decides (a simple 2x2x2
-# crossover uses a fixed-effects ANOVA, a replicate design uses the mixed model
-# "lmer").  The treatment-specific mixed model ("nlme") needs a full replicate.
+# contrast path ("isc"); otherwise the design decides: a parallel design (one
+# measurement per subject) uses a fixed-effects ANOVA, while a crossover or
+# replicate design uses the mixed model "lmer".  The treatment-specific mixed
+# model ("nlme") needs a full replicate.
 .be_resolve_model_type <- function(model_type, reg, design) {
   model_type <-
     if (!is.null(model_type)) {
-      match.arg(model_type, c("lmer", "nlme", "anova"))
+      match.arg(model_type, c("lmer", "nlme", "anova", "isc"))
     } else if (identical(reg$est_method, "isc")) {
-      "anova"
+      "isc"
     } else {
       design$recommended_model_type
     }
@@ -921,28 +931,31 @@ print.be_dataset <- function(x, ...) {
 #' `be_fit_model_single()` fits the average-BE model for a single endpoint and
 #' dispatches on `model_type` to `be_fit_model_lmer()`, `be_fit_model_nlme()`,
 #' or `be_fit_model_anova()`.  This is the only place model fitting happens.  For
-#' the `"lmer"` and `"anova"` types the within-formulation ANOVA variances are
-#' also fit here; for `"nlme"` they come from the single mixed model.
+#' the `"lmer"`, `"anova"`, and `"isc"` types the within-formulation ANOVA
+#' variances are also fit here; for `"nlme"` they come from the single mixed
+#' model.
 #'
 #' @param ds_ep The standardized single-endpoint data.frame from [be_dataset()]
 #'   (`be_dataset(...)$data` filtered to one endpoint).
-#' @param model_type One of `"lmer"`, `"nlme"`, or `"anova"`.
+#' @param model_type One of `"lmer"`, `"nlme"`, `"anova"`, or `"isc"` (the
+#'   intra-subject-contrast path, fit like `"anova"`).
 #' @param scaling Logical; whether reference scaling is needed (controls whether
 #'   the within-formulation variances are estimated).
 #' @returns An object of class `be_fit`: a list with `model_type`, the fitted
-#'   `model`, and (for lmer/anova) `ref_var`/`test_var` within-formulation ANOVA
-#'   variances.  The endpoint's measurement units are attached as a `units`
+#'   `model`, and (for lmer/anova/isc) `ref_var`/`test_var` within-formulation
+#'   ANOVA variances.  The endpoint's measurement units are attached as a `units`
 #'   attribute (`NULL` when not provided).
 #' @family Bioequivalence
 #' @export
-be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova"), scaling = TRUE) {
+be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova", "isc"), scaling = TRUE) {
   model_type <- match.arg(model_type)
   fit <-
     switch(
       model_type,
       lmer = be_fit_model_lmer(ds_ep, scaling = scaling),
       nlme = be_fit_model_nlme(ds_ep),
-      anova = be_fit_model_anova(ds_ep, scaling = scaling)
+      anova = ,
+      isc = be_fit_model_anova(ds_ep, scaling = scaling)
     )
   fit$model_type <- model_type
   # Units of the endpoint (from be_dataset); NULL when not provided.
@@ -1026,7 +1039,8 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
       fit$model_type,
       lmer = be_extract_param_lmer(fit, alpha),
       nlme = be_extract_param_nlme(fit, alpha),
-      anova = be_extract_param_anova(fit, ds_ep, alpha)
+      anova = ,
+      isc = be_extract_param_anova(fit, ds_ep, alpha)
     )
   # Within-formulation variances: from the ANOVA fits (lmer/anova) or the
   # varIdent model (nlme).
@@ -1333,7 +1347,8 @@ be_fit_models <- function(object, reference_col, reference_value,
       model_type,
       lmer = "a mixed-effects model (lmerTest::lmer, Satterthwaite degrees of freedom)",
       nlme = "a mixed-effects model with treatment-specific residual variances (nlme::lme)",
-      anova = "a fixed-effects ANOVA"
+      anova = ,
+      isc = "a fixed-effects ANOVA"
     )
   point <-
     if (identical(reg$est_method, "isc")) {
@@ -1383,14 +1398,16 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' decision.  It is a thin wrapper over [be_fit_models()] that adds the
 #' `be_assess` class and its print/summary methods.
 #'
-#' The model type is selected automatically from the regulator: the expanding-
-#' limits frameworks (ABE, EMA, HC, GCC) use the mixed model (`"lmer"`) for the
-#' geometric mean ratio and its confidence interval, while the FDA reference-
-#' scaled frameworks (FDA RSABE, NTID, HVNTID) use intra-subject contrasts (the
-#' `"anova"` path), as the guidances specify.  Pass `model_type` to override
-#' (`"lmer"`, `"anova"`, or `"nlme"`).  Within-subject variability uses the
-#' regulatory ANOVA estimator for `"lmer"`/`"anova"` and the treatment-specific
-#' mixed-model estimator for `"nlme"`.
+#' The model type is selected automatically from the design and the regulator.
+#' By design, a parallel study (one measurement per subject) uses a fixed-effects
+#' ANOVA (`"anova"`), while a crossover or replicate study (repeated measures per
+#' subject) uses the mixed model (`"lmer"`) for the geometric mean ratio and its
+#' confidence interval.  The FDA reference-scaled frameworks (FDA RSABE, NTID,
+#' HVNTID) always use intra-subject contrasts (`"isc"`), as the guidances
+#' specify, regardless of design.  Pass `model_type` to override (`"lmer"`,
+#' `"anova"`, `"isc"`, or `"nlme"`).  Within-subject variability uses the
+#' regulatory ANOVA estimator for the `"lmer"`/`"anova"`/`"isc"` paths and the
+#' treatment-specific mixed-model estimator for `"nlme"`.
 #'
 #' @param object A `PKNCAresults` object or a tidy long data.frame with a
 #'   `PPTESTCD` column of parameter names, a `PPORRES`/`PPSTRES` column of
@@ -1403,9 +1420,10 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' @param regulator The regulatory framework (see [be_regulator()]); one of
 #'   `"ABE"`, `"EMA"`, `"HC"`, `"GCC"`, `"FDA"`, `"NTID"`, or `"HVNTID"`.
 #' @param model_type The model for the average-BE point estimate, one of
-#'   `"lmer"` (mixed model), `"anova"` (fixed-effects/intra-subject contrasts),
-#'   or `"nlme"` (treatment-specific mixed model).  When `NULL` (default) it is
-#'   chosen from the regulator.
+#'   `"lmer"` (mixed model, for crossover/replicate designs), `"anova"`
+#'   (fixed-effects, for parallel designs), `"isc"` (intra-subject contrasts, the
+#'   FDA reference-scaled path), or `"nlme"` (treatment-specific mixed model).
+#'   When `NULL` (default) it is chosen from the design and regulator.
 #' @param alpha The significance level; the confidence interval has level
 #'   `1 - alpha` (default `0.10` gives the 90% interval).
 #' @param subject,sequence,period Column names for the subject, randomization

@@ -35,9 +35,10 @@ formulation.}
 \code{"ABE"}, \code{"EMA"}, \code{"HC"}, \code{"GCC"}, \code{"FDA"}, \code{"NTID"}, or \code{"HVNTID"}.}
 
 \item{model_type}{The model for the average-BE point estimate, one of
-\code{"lmer"} (mixed model), \code{"anova"} (fixed-effects/intra-subject contrasts),
-or \code{"nlme"} (treatment-specific mixed model).  When \code{NULL} (default) it is
-chosen from the regulator.}
+\code{"lmer"} (mixed model, for crossover/replicate designs), \code{"anova"}
+(fixed-effects, for parallel designs), \code{"isc"} (intra-subject contrasts, the
+FDA reference-scaled path), or \code{"nlme"} (treatment-specific mixed model).
+When \code{NULL} (default) it is chosen from the design and regulator.}
 
 \item{alpha}{The significance level; the confidence interval has level
 \code{1 - alpha} (default \code{0.10} gives the 90\% interval).}
@@ -73,14 +74,16 @@ decision.  It is a thin wrapper over \code{\link[=be_fit_models]{be_fit_models()
 \code{be_assess} class and its print/summary methods.
 }
 \details{
-The model type is selected automatically from the regulator: the expanding-
-limits frameworks (ABE, EMA, HC, GCC) use the mixed model (\code{"lmer"}) for the
-geometric mean ratio and its confidence interval, while the FDA reference-
-scaled frameworks (FDA RSABE, NTID, HVNTID) use intra-subject contrasts (the
-\code{"anova"} path), as the guidances specify.  Pass \code{model_type} to override
-(\code{"lmer"}, \code{"anova"}, or \code{"nlme"}).  Within-subject variability uses the
-regulatory ANOVA estimator for \code{"lmer"}/\code{"anova"} and the treatment-specific
-mixed-model estimator for \code{"nlme"}.
+The model type is selected automatically from the design and the regulator.
+By design, a parallel study (one measurement per subject) uses a fixed-effects
+ANOVA (\code{"anova"}), while a crossover or replicate study (repeated measures per
+subject) uses the mixed model (\code{"lmer"}) for the geometric mean ratio and its
+confidence interval.  The FDA reference-scaled frameworks (FDA RSABE, NTID,
+HVNTID) always use intra-subject contrasts (\code{"isc"}), as the guidances
+specify, regardless of design.  Pass \code{model_type} to override (\code{"lmer"},
+\code{"anova"}, \code{"isc"}, or \code{"nlme"}).  Within-subject variability uses the
+regulatory ANOVA estimator for the \code{"lmer"}/\code{"anova"}/\code{"isc"} paths and the
+treatment-specific mixed-model estimator for \code{"nlme"}.
 }
 \examples{
 \dontshow{if (requireNamespace("lme4", quietly = TRUE) && requireNamespace("lmerTest", quietly = TRUE) && requireNamespace("emmeans", quietly = TRUE)) withAutoprint(\{ # examplesIf}

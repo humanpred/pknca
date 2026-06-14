@@ -132,8 +132,9 @@ test_that("be_assess (ABE) returns the expected structure for a 2x2 crossover", 
   expect_identical(res$endpoint, "auclast")
   expect_identical(res$test, "T")
   expect_identical(res$regulator, "ABE")
-  # a simple 2x2 crossover is steered to the fixed-effects ANOVA by be_design
-  expect_identical(res$model_type, "anova")
+  # a 2x2 crossover has repeated measures per subject, so be_design steers it to
+  # the mixed model (lmer); the fixed-effects ANOVA is for parallel designs
+  expect_identical(res$model_type, "lmer")
   expect_true(res$ci_lower < res$gmr_percent && res$gmr_percent < res$ci_upper)
   expect_gt(res$gmr_percent, 85)
   expect_lt(res$gmr_percent, 117)

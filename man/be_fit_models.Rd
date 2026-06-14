@@ -35,9 +35,10 @@ formulation.}
 \code{"ABE"}, \code{"EMA"}, \code{"HC"}, \code{"GCC"}, \code{"FDA"}, \code{"NTID"}, or \code{"HVNTID"}.}
 
 \item{model_type}{The model for the average-BE point estimate, one of
-\code{"lmer"} (mixed model), \code{"anova"} (fixed-effects/intra-subject contrasts),
-or \code{"nlme"} (treatment-specific mixed model).  When \code{NULL} (default) it is
-chosen from the regulator.}
+\code{"lmer"} (mixed model, for crossover/replicate designs), \code{"anova"}
+(fixed-effects, for parallel designs), \code{"isc"} (intra-subject contrasts, the
+FDA reference-scaled path), or \code{"nlme"} (treatment-specific mixed model).
+When \code{NULL} (default) it is chosen from the design and regulator.}
 
 \item{alpha}{The significance level; the confidence interval has level
 \code{1 - alpha} (default \code{0.10} gives the 90\% interval).}

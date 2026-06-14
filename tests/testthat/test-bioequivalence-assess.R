@@ -463,23 +463,36 @@ test_that("model_type lmer and anova give the same GMR on a balanced design", {
 
 # Design-steered model selection, geometric means, and units ------------------
 
-test_that("be_design recommends and be_assess auto-selects the model by design", {
+test_that("be_design recommends the model from the design's repeated measures", {
+  # A parallel study has one measurement per subject -> fixed-effects ANOVA.
+  par <- be_design(
+    data.frame(
+      subject = 1:8, sequence = rep(c("R", "T"), each = 4),
+      period = 1L, treatment = rep(c("R", "T"), each = 4)
+    ),
+    "subject", "sequence", "period", "treatment", "R"
+  )
+  expect_identical(par$design, "parallel")
+  expect_identical(par$recommended_model_type, "anova")
+  # Crossover and replicate designs have repeated measures -> mixed model (lmer).
   full <- be_design(generate_be_replicate(24, 1, "full"), "subject", "sequence", "period", "treatment", "R")
   conv <- be_design(generate_be_replicate(16, 3, "2x2"), "subject", "sequence", "period", "treatment", "R")
   expect_identical(full$recommended_model_type, "lmer")
-  expect_identical(conv$recommended_model_type, "anova")
+  expect_identical(conv$design, "2x2x2")
+  expect_identical(conv$recommended_model_type, "lmer")
 })
 
-test_that("be_assess steers model_type by design but the FDA family stays anova", {
+test_that("be_assess auto-selects lmer for repeated measures and isc for the FDA family", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("lmerTest")
   skip_if_not_installed("emmeans")
   full <- be_replicate_long(generate_be_replicate(24, 20240501, "full"))
   conv <- be_replicate_long(generate_be_replicate(16, 9, "2x2", cv_wr = 0.3, cv_wt = 0.3))
+  # both the replicate and the 2x2 crossover have repeated measures -> lmer
   expect_identical(be_assess(full, "treatment", "R", "auclast", regulator = "ABE")$model_type, "lmer")
-  expect_identical(be_assess(conv, "treatment", "R", "auclast", regulator = "ABE")$model_type, "anova")
-  # FDA always uses the intra-subject-contrast (anova) path regardless of design
-  expect_identical(be_assess(full, "treatment", "R", "auclast", regulator = "FDA")$model_type, "anova")
+  expect_identical(be_assess(conv, "treatment", "R", "auclast", regulator = "ABE")$model_type, "lmer")
+  # FDA always uses the intra-subject-contrast (isc) path regardless of design
+  expect_identical(be_assess(full, "treatment", "R", "auclast", regulator = "FDA")$model_type, "isc")
 })
 
 test_that("model_type nlme requires a fully replicated design", {

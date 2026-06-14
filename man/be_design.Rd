@@ -19,7 +19,8 @@ formulation.}
 }
 \value{
 An object of class \code{be_design}: a list with elements \code{design} (one
-of \code{"2x2x2"}, \code{"full_replicate"}, \code{"partial_replicate"}, \code{"other"}),
+of \code{"parallel"}, \code{"2x2x2"}, \code{"full_replicate"}, \code{"partial_replicate"},
+\code{"other"}),
 \code{n_sequences}, \code{n_periods}, \code{n_treatments}, \code{n_subjects}, \code{sequences},
 \code{treatments}, \code{reference}, \code{replicate_reference}, \code{replicate_test},
 \code{reps_reference}, \code{reps_test}, \code{balanced}, and \code{feasible} (a named logical
