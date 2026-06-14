@@ -754,10 +754,19 @@ print.be_within_var <- function(x, ...) {
 #' modeling columns (`.subject`, `.sequence`, `.period`, `.trt`, `.logval`) used
 #' by the downstream fitters.
 #'
+#' The endpoint value is taken from the `PPSTRES` column when present, otherwise
+#' `PPORRES`.  The measurement units are read from the matching units column --
+#' `PPSTRESU` for `PPSTRES`, or `PPORRESU` for `PPORRES` -- which a `PKNCAresults`
+#' object provides automatically; a plain data.frame supplies units the same way
+#' by including the corresponding `PPSTRESU`/`PPORRESU` column.  When no units
+#' column is present, units are unavailable and the `units` column is omitted
+#' from the assessment table.
+#'
 #' @inheritParams be_assess
 #' @returns An object of class `be_dataset`: a list with `data` (the
-#'   standardized long frame), `columns` (the resolved column names),
-#'   `reference_value`, `test_levels`, and `endpoints` (those present).
+#'   standardized long frame, including a `.units` column), `columns` (the
+#'   resolved column names, including `units`), `reference_value`, `test_levels`,
+#'   and `endpoints` (those present).
 #' @family Bioequivalence
 #' @export
 be_dataset <- function(object, reference_col, reference_value,
@@ -1272,7 +1281,66 @@ be_fit_models <- function(object, reference_col, reference_value,
     p$endpoint <- ep
     params[[length(params) + 1]] <- p
   }
-  be_table(do.call(rbind, params), reg, alpha, design = design$design, model_type = model_type)
+  tbl <- be_table(do.call(rbind, params), reg, alpha, design = design$design, model_type = model_type)
+  # Order by endpoint (in the requested order) then by test formulation (in the
+  # reference-first treatment factor order).
+  tbl <- tbl[order(match(tbl$endpoint, ds$endpoints), match(tbl$test, levels(ds$data$.trt))), , drop = FALSE]
+  rownames(tbl) <- NULL
+  # Omit the units column entirely (with a warning) when units are unavailable.
+  if (all(is.na(tbl$units))) {
+    warning("Units were not found in the data; omitting the `units` column. Supply units via a PKNCAresults object or `PPSTRESU`/`PPORRESU` columns.")
+    tbl$units <- NULL
+  }
+  attr(tbl, "caption") <- .be_caption(reg, model_type, alpha)
+  tbl
+}
+
+# A methods caption documenting the model and the regulatory decision rule.
+.be_caption <- function(reg, model_type, alpha) {
+  ci <- sprintf("%g%% CI", 100 * (1 - alpha))
+  model_desc <-
+    switch(
+      model_type,
+      lmer = "a mixed-effects model (lmerTest::lmer, Satterthwaite degrees of freedom)",
+      nlme = "a mixed-effects model with treatment-specific residual variances (nlme::lme)",
+      anova = "a fixed-effects ANOVA"
+    )
+  point <-
+    if (identical(reg$est_method, "isc")) {
+      sprintf(
+        paste(
+          "Geometric means (with %s) are least-squares means from %s;",
+          "the geometric mean ratio and reference-scaling criterion use intra-subject contrasts."
+        ),
+        ci, model_desc
+      )
+    } else {
+      sprintf(
+        paste(
+          "Geometric means and the geometric mean ratio are least-squares means from %s;",
+          "the %s comes from exponentiated least-squares-mean differences (emmeans)."
+        ),
+        model_desc, ci
+      )
+    }
+  decision <-
+    switch(
+      reg$scaling,
+      none = "Bioequivalence requires the confidence interval within 80.00-125.00%.",
+      abel = "Acceptance limits are widened by the within-reference variability (ABEL) and capped per the regulator.",
+      rsabe = "Reference scaling uses the linearized (Howe/Hyslop) criterion with a one-sided 95% upper bound.",
+      ntid = "Narrow therapeutic index scaling requires the scaled bound, the conventional 90% CI within 80.00-125.00%, and the swT/swR ratio bound.",
+      hvntid = "Highly variable NTID scaling requires the scaled bound and the swT/swR ratio bound."
+    )
+  within <-
+    if (identical(reg$scaling, "none")) {
+      ""
+    } else if (identical(model_type, "nlme")) {
+      " Within-formulation variances are the treatment-specific residual variances from the mixed model."
+    } else {
+      " Within-formulation variances (swR, swT) are estimated by ANOVA on each formulation's replicates."
+    }
+  sprintf("%s bioequivalence assessment (%s). %s %s%s", reg$name, ci, point, decision, within)
 }
 
 #' Assess bioequivalence against a regulatory framework
@@ -1315,16 +1383,18 @@ be_fit_models <- function(object, reference_col, reference_value,
 #'   object or detected from common column names.  `sequence` may be absent.
 #' @param design An optional [be_design()] object; computed from the data when
 #'   `NULL`.
-#' @returns An object of class `be_assess` (a data.frame) with one row per
-#'   endpoint and test formulation and the columns `endpoint`, `test`, `n`,
-#'   `design`, `units` (the endpoint's measurement units, `NA` when not
-#'   provided), the reference and test geometric means with their 90% confidence
-#'   intervals on the measurement scale (`gm_reference`, `gm_reference_lower`,
-#'   `gm_reference_upper`, `gm_test`, `gm_test_lower`, `gm_test_upper`),
-#'   `gmr_percent`, `ci_lower`, `ci_upper`, `cvwr_percent`, `cvwt_percent`,
-#'   `swr`, `limit_lower`, `limit_upper`, `criterion`, `regulator`,
-#'   `model_type`, and `pass`.  `limit_*` are `NA` for the RSABE criterion and
-#'   `criterion` is `NA` for the limit-based frameworks.
+#' @returns An object of class `be_assess` (a data.frame), ordered by endpoint
+#'   (in the order requested) then by test formulation (reference-first), with
+#'   one row per endpoint and test formulation and the columns `endpoint`,
+#'   `test`, `n`, `design`, `units` (the endpoint's measurement units; the column
+#'   is omitted with a warning when units are not provided), the reference and
+#'   test geometric means with their 90% confidence intervals on the measurement
+#'   scale (`gm_reference`, `gm_reference_lower`, `gm_reference_upper`, `gm_test`,
+#'   `gm_test_lower`, `gm_test_upper`), `gmr_percent`, `ci_lower`, `ci_upper`,
+#'   `cvwr_percent`, `cvwt_percent`, `swr`, `limit_lower`, `limit_upper`,
+#'   `criterion`, `regulator`, `model_type`, and `pass`.  `limit_*` are `NA` for
+#'   the RSABE criterion and `criterion` is `NA` for the limit-based frameworks.
+#'   A `caption` attribute documents the model and the decision rule.
 #' @family Bioequivalence
 #' @seealso [be_compare()] to assess one dataset under several frameworks,
 #'   [be_within_var()], and [be_regulator()].
@@ -1399,6 +1469,9 @@ print.be_assess <- function(x, ...) {
   ))
   cat(sprintf("Design: %s\n\n", attr(x, "design")))
   print.data.frame(format(x), row.names = FALSE, ...)
+  if (!is.null(attr(x, "caption"))) {
+    cat(paste0("\nCaption: ", attr(x, "caption"), "\n"), fill = TRUE)
+  }
   invisible(x)
 }
 

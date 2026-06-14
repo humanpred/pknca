@@ -353,7 +353,8 @@ test_that("be_assess runs end-to-end from a PKNCAresults object", {
   dose <- conc[conc$time == 0, c("subject", "sequence", "period", "treatment")]
   dose$dose <- 100
   dose$time <- 0
-  o_conc <- PKNCAconc(conc, conc ~ time | sequence + period + treatment + subject)
+  o_conc <- PKNCAconc(conc, conc ~ time | sequence + period + treatment + subject,
+                      concu = "ng/mL", timeu = "h", amountu = "mg")
   o_dose <- PKNCAdose(dose, dose ~ time | sequence + period + treatment + subject)
   o_res <- suppressWarnings(suppressMessages(
     pk.nca(PKNCAdata(o_conc, o_dose, intervals = data.frame(start = 0, end = Inf, cmax = TRUE, auclast = TRUE)))
@@ -467,13 +468,56 @@ test_that("be_assess reports geometric means with measurement-scale 90% CIs", {
   expect_equal(res$gmr_percent, res$gm_test / res$gm_reference * 100, tolerance = 1e-6)
 })
 
-test_that("be_assess carries units as a per-endpoint column (NA when absent)", {
+test_that("be_assess omits the units column with a warning when units are absent", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("lmerTest")
   skip_if_not_installed("emmeans")
   d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"))
-  expect_true(is.na(be_assess(d, "treatment", "R", "auclast", regulator = "EMA")$units))
-  d$PPORRESU <- "ng/mL"
-  res <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA")
-  expect_identical(res$units, "ng/mL")
+  d$PPORRESU <- NULL # remove the units column
+  expect_warning(
+    res <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA"),
+    "omitting the .units. column"
+  )
+  expect_false("units" %in% names(res))
+})
+
+test_that("units flow from a data.frame via the PPORRESU/PPSTRESU column", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"), units = "ng/mL")
+  expect_identical(
+    be_assess(d, "treatment", "R", "auclast", regulator = "EMA")$units, "ng/mL"
+  )
+  # PPSTRES takes precedence over PPORRES, and so does its PPSTRESU column
+  d$PPSTRES <- d$PPORRES
+  d$PPSTRESU <- "ug/mL"
+  expect_identical(
+    be_assess(d, "treatment", "R", "auclast", regulator = "EMA")$units, "ug/mL"
+  )
+})
+
+test_that("be_assess output is sorted by endpoint (requested) then reference-first test", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  base <- generate_be_replicate(24, 20240501, "full")
+  d <- rbind(be_replicate_long(base, "cmax"), be_replicate_long(base, "auclast"))
+  res <- be_assess(d, "treatment", "R", c("cmax", "auclast"), regulator = "EMA")
+  expect_identical(res$endpoint, c("cmax", "auclast"))
+  # per-endpoint units differ
+  expect_identical(res$units, c("ng/mL", "h*ng/mL"))
+})
+
+test_that("be_assess attaches a methods caption", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"))
+  ema <- suppressWarnings(be_assess(d, "treatment", "R", "auclast", regulator = "EMA"))
+  expect_match(attr(ema, "caption"), "least-squares means")
+  expect_match(attr(ema, "caption"), "mixed-effects model")
+  fda <- suppressWarnings(be_assess(d, "treatment", "R", "auclast", regulator = "FDA"))
+  expect_match(attr(fda, "caption"), "intra-subject contrasts")
+  expect_match(attr(fda, "caption"), "Howe/Hyslop")
 })

@@ -315,7 +315,9 @@ requires the conventional 90% confidence interval to lie within 80.00-125.00%.
 The assessment table supports common bioequivalence reporting requirements:
 
 1. **Framework and model**: the `regulator` and `model_type` columns record the
-   framework and the average-BE model used.
+   framework and the average-BE model used, and the table's `caption` attribute
+   gives a one-sentence methods statement (model, confidence-interval method,
+   within-subject variability, and the decision rule).
 2. **%GMR, confidence interval, within-subject CV, limits/criterion, and the
    pass/fail decision**: one row per endpoint and test formulation in
    `as.data.frame(be_assess(...))`.

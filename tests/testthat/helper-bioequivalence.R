@@ -46,11 +46,12 @@ generate_be_replicate <- function(nsub = 24, seed = 20240501,
 }
 
 # Convert generate_be_replicate() output into the long PPTESTCD/PPORRES format
-# that be_assess() consumes.
-be_replicate_long <- function(d, endpoint = "auclast") {
+# that be_assess() consumes, with a per-endpoint units column (PPORRESU).
+be_replicate_long <- function(d, endpoint = "auclast", units = if (endpoint == "cmax") "ng/mL" else "h*ng/mL") {
   data.frame(
     subject = d$subject, sequence = d$sequence, period = d$period,
     treatment = d$treatment, PPTESTCD = endpoint, PPORRES = d$PK,
+    PPORRESU = units,
     stringsAsFactors = FALSE
   )
 }

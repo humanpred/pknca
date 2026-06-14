@@ -33,8 +33,9 @@ object or detected from common column names.  \code{sequence} may be absent.}
 }
 \value{
 An object of class \code{be_dataset}: a list with \code{data} (the
-standardized long frame), \code{columns} (the resolved column names),
-\code{reference_value}, \code{test_levels}, and \code{endpoints} (those present).
+standardized long frame, including a \code{.units} column), \code{columns} (the
+resolved column names, including \code{units}), \code{reference_value}, \code{test_levels},
+and \code{endpoints} (those present).
 }
 \description{
 \code{be_dataset()} prepares a noncompartmental result for bioequivalence
@@ -44,6 +45,15 @@ subject/sequence/period columns, validates the reference, and sets the
 reference formulation as the first factor level.  It standardizes the
 modeling columns (\code{.subject}, \code{.sequence}, \code{.period}, \code{.trt}, \code{.logval}) used
 by the downstream fitters.
+}
+\details{
+The endpoint value is taken from the \code{PPSTRES} column when present, otherwise
+\code{PPORRES}.  The measurement units are read from the matching units column --
+\code{PPSTRESU} for \code{PPSTRES}, or \code{PPORRESU} for \code{PPORRES} -- which a \code{PKNCAresults}
+object provides automatically; a plain data.frame supplies units the same way
+by including the corresponding \code{PPSTRESU}/\code{PPORRESU} column.  When no units
+column is present, units are unavailable and the \code{units} column is omitted
+from the assessment table.
 }
 \seealso{
 Other Bioequivalence:

@@ -13,6 +13,7 @@ make_be_df <- function(nsub = 24, seed = 123, test_effect = 0, endpoint = "aucla
     data.frame(
       subject = i, sequence = sequence[i], period = c(1, 2), form = forms,
       PPTESTCD = endpoint, PPORRES = exp(mu + stats::rnorm(2, sd = 0.1)),
+      PPORRESU = if (endpoint == "cmax") "ng/mL" else "h*ng/mL",
       stringsAsFactors = FALSE
     )
   }))
@@ -174,7 +175,8 @@ test_that("be_assess works end-to-end from a PKNCAresults object", {
   dose_data <- conc_data[conc_data$time == 0, c("subject", "sequence", "period", "form")]
   dose_data$dose <- 100
   dose_data$time <- 0
-  o_conc <- PKNCAconc(conc_data, conc ~ time | sequence + period + form + subject)
+  o_conc <- PKNCAconc(conc_data, conc ~ time | sequence + period + form + subject,
+                      concu = "ng/mL", timeu = "h", amountu = "mg")
   o_dose <- PKNCAdose(dose_data, dose ~ time | sequence + period + form + subject)
   o_data <- PKNCAdata(
     o_conc, o_dose,

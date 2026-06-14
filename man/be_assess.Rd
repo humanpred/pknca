@@ -50,16 +50,18 @@ object or detected from common column names.  \code{sequence} may be absent.}
 \code{NULL}.}
 }
 \value{
-An object of class \code{be_assess} (a data.frame) with one row per
-endpoint and test formulation and the columns \code{endpoint}, \code{test}, \code{n},
-\code{design}, \code{units} (the endpoint's measurement units, \code{NA} when not
-provided), the reference and test geometric means with their 90\% confidence
-intervals on the measurement scale (\code{gm_reference}, \code{gm_reference_lower},
-\code{gm_reference_upper}, \code{gm_test}, \code{gm_test_lower}, \code{gm_test_upper}),
-\code{gmr_percent}, \code{ci_lower}, \code{ci_upper}, \code{cvwr_percent}, \code{cvwt_percent},
-\code{swr}, \code{limit_lower}, \code{limit_upper}, \code{criterion}, \code{regulator},
-\code{model_type}, and \code{pass}.  \verb{limit_*} are \code{NA} for the RSABE criterion and
-\code{criterion} is \code{NA} for the limit-based frameworks.
+An object of class \code{be_assess} (a data.frame), ordered by endpoint
+(in the order requested) then by test formulation (reference-first), with
+one row per endpoint and test formulation and the columns \code{endpoint},
+\code{test}, \code{n}, \code{design}, \code{units} (the endpoint's measurement units; the column
+is omitted with a warning when units are not provided), the reference and
+test geometric means with their 90\% confidence intervals on the measurement
+scale (\code{gm_reference}, \code{gm_reference_lower}, \code{gm_reference_upper}, \code{gm_test},
+\code{gm_test_lower}, \code{gm_test_upper}), \code{gmr_percent}, \code{ci_lower}, \code{ci_upper},
+\code{cvwr_percent}, \code{cvwt_percent}, \code{swr}, \code{limit_lower}, \code{limit_upper},
+\code{criterion}, \code{regulator}, \code{model_type}, and \code{pass}.  \verb{limit_*} are \code{NA} for
+the RSABE criterion and \code{criterion} is \code{NA} for the limit-based frameworks.
+A \code{caption} attribute documents the model and the decision rule.
 }
 \description{
 \code{be_assess()} performs a complete bioequivalence (BE) assessment of one or
