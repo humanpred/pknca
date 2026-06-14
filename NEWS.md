@@ -61,23 +61,20 @@ when the issue is due to an excluded point (#310)
 
 ## New features
 
-* Added bioequivalence functions `fitbe_models()`, `fitbe_table()`, and
-  `fitbe_calculate()` for average-bioequivalence inferential statistics
-  (geometric mean ratio, 90% confidence interval, and intra-subject coefficient
-  of variation) computed from NCA results; see the new
-  `vignette("v50-bioequivalence")`.  The modeling packages `lme4`, `lmerTest`,
-  and `emmeans` are suggested rather than required.  Based on work by
-  @Sang-j111 (#490)
-* Added a regulatory bioequivalence assessment and reference-scaling layer:
-  `be_assess()` performs the full pass/fail decision for average
+* Added bioequivalence (BE) assessment via a single calculation path.
+  `be_assess()` computes the full regulatory pass/fail decision for average
   bioequivalence, the EMA/Health Canada/GCC expanding-limits (ABEL) frameworks,
   and the FDA reference-scaled (RSABE), narrow therapeutic index (NTID), and
-  highly variable NTID (HVNTID) frameworks.  Supporting functions `be_design()`
-  (design classification), `be_within_var()` (within-subject variability),
-  `be_regulator()` and `be_expand_limits()` (regulatory constants and scaled
-  limits), and `be_compare()` (assess one dataset under several frameworks) are
-  also exported.  All regulatory constants and criteria are internalized, so no
-  additional packages are required beyond those used for the average-BE model.
+  highly variable NTID (HVNTID) frameworks, with the model auto-selected from
+  the regulator and design; `be_compare()` assesses one dataset under several
+  frameworks at once.  These are coordinated by `be_fit_models()`, which runs
+  the pipeline `be_dataset()` -> `be_fit_model_single()` -> `be_extract_param()`
+  -> `be_table()`; the supporting functions `be_design()`, `be_within_var()`,
+  `be_regulator()`, and `be_expand_limits()` are also exported.  All regulatory
+  constants and criteria are internalized, so no additional packages are
+  required beyond `lme4`/`lmerTest`/`emmeans` (suggested) for the average-BE
+  model.  See the new `vignette("v50-bioequivalence")`.  Based on work by
+  @Sang-j111 (#490)
 
 * `pknca_units_table()` is now an S3 generic with a `PKNCAdata` method.  When
   called on a `PKNCAdata` object it automatically builds the unit conversion

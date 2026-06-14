@@ -11,7 +11,7 @@ be_within_var(
   period,
   treatment,
   reference_value,
-  method = c("A", "B"),
+  model_type = c("anova", "nlme"),
   alpha = 0.1
 )
 }
@@ -27,9 +27,9 @@ and treatment.}
 
 \item{reference_value}{The value of \code{treatment} that is the reference.}
 
-\item{method}{\code{"A"} (ANOVA, the default and the regulatory standard) or \code{"B"}
-(mixed model with treatment-specific residual variances; full replicate
-only).}
+\item{model_type}{\code{"anova"} (the default and the regulatory standard) or
+\code{"nlme"} (mixed model with treatment-specific residual variances; full
+replicate only).}
 
 \item{alpha}{The significance level for the \code{swT}/\code{swR} ratio confidence
 bound (default \code{0.10} gives the 90\% upper bound used for narrow therapeutic
@@ -39,22 +39,22 @@ index drugs).}
 An object of class \code{be_within_var}: a list with \code{swR}, \code{swT},
 \code{s2wR}, \code{s2wT}, \code{cvwr_percent}, \code{cvwt_percent}, \code{df_wR}, \code{df_wT},
 \code{sw_ratio} (= \code{swT}/\code{swR}), \code{sw_ratio_ci_upper} (the upper \code{1 - alpha}
-confidence bound of the ratio), \code{method}, and \code{alpha}.  \code{swT} and the ratio
-are \code{NA} when the test formulation is not replicated (for example a partial
-replicate design).
+confidence bound of the ratio), \code{model_type}, and \code{alpha}.  \code{swT} and the
+ratio are \code{NA} when the test formulation is not replicated (for example a
+partial replicate design).
 }
 \description{
 \code{be_within_var()} estimates the within-subject standard deviations of the
 log-transformed endpoint separately for the reference (\code{swR}) and test
 (\code{swT}) formulations, the quantities that reference-scaling frameworks need.
-The default \code{method = "A"} is an analysis of variance (ANOVA) of the
+The default \code{model_type = "anova"} is an analysis of variance (ANOVA) of the
 replicate observations within each formulation; this is the estimator used by
 both Method A and Method B of the EMA \code{replicateBE} reference implementation
 and by the FDA moment-based approach, and it works for full and partial
-replicate designs.  \code{method = "B"} instead fits a single mixed model with
-treatment-specific residual variances and requires a fully replicated design;
-it is provided as the alternative described in the FDA progesterone guidance
-and can differ slightly from \code{method = "A"}.
+replicate designs.  \code{model_type = "nlme"} instead fits a single mixed model
+with treatment-specific residual variances and requires a fully replicated
+design; it is provided as the alternative described in the FDA progesterone
+guidance and can differ slightly from \code{"anova"}.
 }
 \seealso{
 \code{\link[=be_assess]{be_assess()}}
@@ -62,11 +62,13 @@ and can differ slightly from \code{method = "A"}.
 Other Bioequivalence:
 \code{\link[=be_assess]{be_assess()}},
 \code{\link[=be_compare]{be_compare()}},
+\code{\link[=be_dataset]{be_dataset()}},
 \code{\link[=be_design]{be_design()}},
 \code{\link[=be_expand_limits]{be_expand_limits()}},
+\code{\link[=be_extract_param]{be_extract_param()}},
+\code{\link[=be_fit_model_single]{be_fit_model_single()}},
+\code{\link[=be_fit_models]{be_fit_models()}},
 \code{\link[=be_regulator]{be_regulator()}},
-\code{\link[=fitbe_calculate]{fitbe_calculate()}},
-\code{\link[=fitbe_models]{fitbe_models()}},
-\code{\link[=fitbe_table]{fitbe_table()}}
+\code{\link[=be_table]{be_table()}}
 }
 \concept{Bioequivalence}

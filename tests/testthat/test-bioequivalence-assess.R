@@ -115,7 +115,7 @@ test_that("be_design errors on an unknown reference value", {
 
 # be_within_var -------------------------------------------------------------
 
-test_that("be_within_var (method A) matches the ANOVA within-subject variances", {
+test_that("be_within_var (anova) matches the ANOVA within-subject variances", {
   # Pinned to the reference implementation's CV.calc on the high-variability
   # full replicate: swR = 0.446... here is dataset-specific.
   d <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
@@ -137,15 +137,15 @@ test_that("be_within_var returns NA test variability for a partial replicate", {
   expect_true(is.na(wv$swT))
   expect_true(is.na(wv$sw_ratio))
   expect_error(
-    be_within_var(dp, "PK", "subject", "period", "treatment", "R", method = "B"),
+    be_within_var(dp, "PK", "subject", "period", "treatment", "R", model_type = "nlme"),
     "fully replicated"
   )
 })
 
-test_that("be_within_var method B agrees with method A to within a few percent", {
+test_that("be_within_var nlme agrees with anova to within a few percent", {
   d <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
-  a <- be_within_var(d, "PK", "subject", "period", "treatment", "R", method = "A")
-  b <- be_within_var(d, "PK", "subject", "period", "treatment", "R", method = "B")
+  a <- be_within_var(d, "PK", "subject", "period", "treatment", "R", model_type = "anova")
+  b <- be_within_var(d, "PK", "subject", "period", "treatment", "R", model_type = "nlme")
   expect_equal(b$swR, a$swR, tolerance = 0.1)
   expect_equal(b$swT, a$swT, tolerance = 0.1)
 })
@@ -176,9 +176,9 @@ test_that(".be_rsabe_bound is monotone in the point estimate and flips once", {
 
 test_that("be_assess (EMA) reproduces the reference scaling decision", {
   d <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
-  # method = "A" uses base-R fixed effects (no modeling-package dependency) and
+  # model_type = "anova" uses base-R fixed effects (no modeling-package dependency) and
   # matches the reference implementation's Method A exactly.
-  res <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA", method = "A")
+  res <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA", model_type = "anova")
   expect_s3_class(res, "be_assess")
   expect_equal(res$gmr_percent, 88.359573, tolerance = 1e-5)
   expect_equal(c(res$ci_lower, res$ci_upper), c(75.617477, 103.248804), tolerance = 1e-4)
@@ -189,16 +189,16 @@ test_that("be_assess (EMA) reproduces the reference scaling decision", {
 
 test_that("be_assess applies HC, GCC, and ABE limits correctly", {
   d <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
-  hc <- be_assess(d, "treatment", "R", "auclast", regulator = "HC", method = "A")
+  hc <- be_assess(d, "treatment", "R", "auclast", regulator = "HC", model_type = "anova")
   expect_equal(c(hc$limit_lower, hc$limit_upper), c(69.13780, 144.63867), tolerance = 1e-4)
   expect_true(hc$pass)
 
-  gcc <- be_assess(d, "treatment", "R", "auclast", regulator = "GCC", method = "A")
+  gcc <- be_assess(d, "treatment", "R", "auclast", regulator = "GCC", model_type = "anova")
   expect_equal(c(gcc$limit_lower, gcc$limit_upper), c(75, 400 / 3), tolerance = 1e-6)
   expect_true(gcc$pass)
 
   # Unscaled ABE fails here because the conventional CI dips below 80%.
-  abe <- be_assess(d, "treatment", "R", "auclast", regulator = "ABE", method = "A")
+  abe <- be_assess(d, "treatment", "R", "auclast", regulator = "ABE", model_type = "anova")
   expect_equal(c(abe$limit_lower, abe$limit_upper), c(80, 125))
   expect_false(abe$pass)
   expect_true(is.na(abe$swr))
@@ -272,7 +272,7 @@ test_that("be_assess accepts the reported PE-constraint failure", {
   # GMR pushed above 125% so the point-estimate constraint fails even though the
   # widened limits are very wide.
   d <- be_replicate_long(generate_be_replicate(24, 11, "full", cv_wr = 0.5, cv_wt = 0.5, gmr = 1.35))
-  res <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA", method = "A")
+  res <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA", model_type = "anova")
   expect_gt(res$gmr_percent, 125)
   expect_false(res$pass)
 })
@@ -284,8 +284,8 @@ test_that("be_assess method B (mixed model) matches method A on a balanced desig
   skip_if_not_installed("lmerTest")
   skip_if_not_installed("emmeans")
   d <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
-  a <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA", method = "A")
-  b <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA", method = "B")
+  a <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA", model_type = "anova")
+  b <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA", model_type = "lmer")
   expect_equal(b$gmr_percent, a$gmr_percent, tolerance = 1e-6)
   expect_equal(b$ci_lower, a$ci_lower, tolerance = 1e-6)
   expect_equal(b$ci_upper, a$ci_upper, tolerance = 1e-6)
@@ -297,7 +297,7 @@ test_that("be_compare assesses one dataset under several frameworks", {
   d <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
   cmp <- be_compare(
     d, "treatment", "R", "auclast",
-    regulators = c("EMA", "HC", "GCC", "FDA", "NTID", "HVNTID"), method = "A"
+    regulators = c("EMA", "HC", "GCC", "FDA", "NTID", "HVNTID"), model_type = "anova"
   )
   expect_s3_class(cmp, "be_compare")
   expect_setequal(unique(cmp$regulator), c("EMA", "HC", "GCC", "FDA", "NTID", "HVNTID"))
@@ -314,7 +314,7 @@ test_that("be_compare assesses one dataset under several frameworks", {
 test_that("be_compare skips frameworks the design cannot support", {
   dp <- be_replicate_long(generate_be_replicate(30, 505, "partial", cv_wr = 0.40))
   expect_warning(
-    cmp <- be_compare(dp, "treatment", "R", "auclast", regulators = c("EMA", "FDA", "NTID"), method = "A"),
+    cmp <- be_compare(dp, "treatment", "R", "auclast", regulators = c("EMA", "FDA", "NTID"), model_type = "anova"),
     "Skipping NTID"
   )
   expect_setequal(unique(cmp$regulator), c("EMA", "FDA"))
@@ -362,4 +362,62 @@ test_that("be_assess runs end-to-end from a PKNCAresults object", {
   expect_setequal(res$endpoint, c("cmax", "auclast"))
   expect_true(all(is.finite(res$gmr_percent)))
   expect_true(all(res$ci_lower < res$ci_upper))
+})
+
+# Pipeline stage functions ---------------------------------------------------
+
+test_that("be_fit_model_single dispatches and bundles within-variances", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  ds <- be_dataset(be_replicate_long(generate_be_replicate(24, 20240501, "full")),
+                   "treatment", "R", "auclast")
+  ds_ep <- ds$data[ds$data$PPTESTCD == "auclast", ]
+  for (mt in c("lmer", "anova")) {
+    fit <- be_fit_model_single(ds_ep, mt, scaling = TRUE)
+    expect_s3_class(fit, "be_fit")
+    expect_identical(fit$model_type, mt)
+    expect_equal(fit$ref_var$sw, 0.485616493, tolerance = 1e-7) # ANOVA swR, shared
+  }
+})
+
+test_that("be_extract_param returns both the model and ISC point estimates", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  ds <- be_dataset(be_replicate_long(generate_be_replicate(24, 20240501, "full")),
+                   "treatment", "R", "auclast")
+  ds_ep <- ds$data[ds$data$PPTESTCD == "auclast", ]
+  p <- be_extract_param(be_fit_model_single(ds_ep, "lmer"), ds_ep, alpha = 0.10)
+  # lmer model contrast == replicateBE method.A on the balanced design
+  expect_equal(p$model_gmr_percent, 88.359573, tolerance = 1e-5)
+  expect_equal(c(p$model_ci_lower, p$model_ci_upper), c(75.617477, 103.248804), tolerance = 1e-4)
+  # ISC point estimate (wider, used by the FDA family)
+  expect_equal(p$isc_gmr_percent, 88.3595729, tolerance = 1e-5)
+  expect_equal(p$swr, 0.485616493, tolerance = 1e-7)
+})
+
+test_that("be_table applies the regulator decision to extracted parameters", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  ds <- be_dataset(be_replicate_long(generate_be_replicate(24, 20240501, "full")),
+                   "treatment", "R", "auclast")
+  ds_ep <- ds$data[ds$data$PPTESTCD == "auclast", ]
+  p <- be_extract_param(be_fit_model_single(ds_ep, "lmer"), ds_ep, alpha = 0.10)
+  p$endpoint <- "auclast"
+  tab <- be_table(p, "EMA", alpha = 0.10, design = "full_replicate", model_type = "lmer")
+  expect_equal(c(tab$limit_lower, tab$limit_upper), c(69.83678, 143.19102), tolerance = 1e-4)
+  expect_true(tab$pass)
+  expect_identical(tab$regulator, "EMA")
+})
+
+test_that("model_type lmer and anova give the same GMR on a balanced design", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"))
+  lmer_res <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA", model_type = "lmer")
+  anova_res <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA", model_type = "anova")
+  expect_equal(lmer_res$gmr_percent, anova_res$gmr_percent, tolerance = 1e-6)
+  expect_equal(lmer_res$ci_lower, anova_res$ci_lower, tolerance = 1e-6)
 })

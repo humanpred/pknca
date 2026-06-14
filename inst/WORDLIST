@@ -188,3 +188,7 @@ Hyslop
 linearized
 NTID
 RSABE
+anova
+ISC
+lmer
+varIdent

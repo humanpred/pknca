@@ -1,317 +1,14 @@
-#' Fit bioequivalence mixed-effects models for NCA endpoints
-#'
-#' `fitbe_models()` fits a linear mixed-effects model to the log-transformed
-#' value of each requested NCA endpoint, the standard analysis for average
-#' bioequivalence of a crossover study.  The reference formulation is set as the
-#' first factor level so that downstream contrasts estimate test-versus-reference
-#' ratios.
-#'
-#' The model fit for each endpoint is `log(value) ~ <fixed> + <random>` using
-#' [lmerTest::lmer()] so that Satterthwaite degrees of freedom are available.
-#' When `fixed` and `random` are not supplied, they are derived from the grouping
-#' structure of a `PKNCAresults` object: the subject column becomes the random
-#' intercept (`(1|subject)`) and the remaining grouping columns (always including
-#' `reference_col`) become the fixed effects.  Automatic derivation requires a
-#' `PKNCAresults` object; when a plain data.frame is supplied, `fixed` (and
-#' usually `random`) must be given.
-#'
-#' @param object A `PKNCAresults` object (preferred) or a data.frame in the long
-#'   format produced by calling `as.data.frame()` on a `PKNCAresults` object (a
-#'   `PPTESTCD` column of parameter names and a `PPORRES` or `PPSTRES` column of
-#'   values, alongside the grouping columns).
-#' @param endpoints Character vector of NCA parameters (matched against
-#'   `PPTESTCD`) to model.
-#' @param reference_col The name of the column identifying the
-#'   formulation/treatment.
-#' @param reference_value The value of `reference_col` that is the reference
-#'   formulation.
-#' @param fixed Optional fixed-effects right-hand side as a single string (for
-#'   example `"sequence + period + treatment"`).  When `NULL`, it is derived from
-#'   the grouping variables of a `PKNCAresults` object.
-#' @param random Optional random-effects specification as a single string (for
-#'   example `"(1|subject)"`).  When `NULL`, it is derived from the subject
-#'   column.
-#' @returns An object of class `fitbe_models`: a list with elements `models` (the
-#'   per-endpoint [lmerTest::lmer()] fits), `fixed` (a data.frame of fixed-effect
-#'   coefficients with Satterthwaite degrees of freedom), `variance` (a
-#'   data.frame of variance components from [lme4::VarCorr()]), and the
-#'   `reference_col`, `reference_value`, and `value_col` that were used.
-#' @family Bioequivalence
-#' @seealso [fitbe_table()] to summarize the fits and [fitbe_calculate()] for a
-#'   one-step wrapper.
-#' @export
-fitbe_models <- function(object,
-                         endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
-                         reference_col,
-                         reference_value,
-                         fixed = NULL,
-                         random = NULL) {
-  # Extract the long-format results and grouping metadata.  The subject and
-  # grouping columns can only be derived automatically from a PKNCAresults
-  # object; for a plain data.frame the user must describe the model.
-  subject_col <- NULL
-  group_cols <- NULL
-  if (inherits(object, "PKNCAresults")) {
-    assert_PKNCAresults(object)
-    data <- as.data.frame(as.data.frame(object, filter_excluded = TRUE))
-    subject_col <- as_PKNCAconc(object)$columns$subject
-    group_cols <- setdiff(names(getGroups(object)), c("start", "end"))
-  } else if (is.data.frame(object)) {
-    data <- as.data.frame(object)
-  } else {
-    stop("`object` must be a PKNCAresults object or a data.frame.")
-  }
-
-  # Cheap input validation first, so that argument errors do not depend on the
-  # suggested modeling packages being installed.
-  checkmate::assert_data_frame(data, min.rows = 1)
-  checkmate::assert_character(endpoints, min.len = 1, any.missing = FALSE)
-  checkmate::assert_subset("PPTESTCD", choices = names(data))
-  checkmate::assert_string(reference_col)
-  checkmate::assert_choice(reference_col, choices = names(data))
-  checkmate::assert_scalar(reference_value)
-  checkmate::assert_string(fixed, null.ok = TRUE)
-  checkmate::assert_string(random, null.ok = TRUE)
-  reference_value <- as.character(reference_value)
-  if (!(reference_value %in% as.character(data[[reference_col]]))) {
-    stop("Reference value, \"", reference_value, "\", not found in column, \"", reference_col, "\".")
-  }
-
-  # The value column is the standardized result when units are present,
-  # otherwise the original result.
-  value_col <-
-    if ("PPSTRES" %in% names(data)) {
-      "PPSTRES"
-    } else if ("PPORRES" %in% names(data)) {
-      "PPORRES"
-    } else {
-      stop("The data must contain a `PPORRES` or `PPSTRES` column of results.")
-    }
-
-  # Derive the random effect from the subject column when not supplied.
-  if (is.null(random)) {
-    if (is.null(subject_col) || is.na(subject_col)) {
-      possible_subjects <- c("USUBJID", "subject", "Subject", "ID", "id")
-      subject_col <- possible_subjects[possible_subjects %in% names(data)][1]
-    }
-    if (is.null(subject_col) || is.na(subject_col)) {
-      stop("Could not determine the subject column for the random effect; supply `random` (e.g. \"(1|subject)\").")
-    }
-    random <- sprintf("(1|%s)", subject_col)
-  }
-
-  # Derive the fixed effects from the grouping variables when not supplied,
-  # always retaining the formulation column so the treatment effect is
-  # estimable.
-  if (is.null(fixed)) {
-    if (is.null(group_cols)) {
-      stop("Could not determine the fixed effects automatically; supply `fixed` (e.g. \"sequence + period + treatment\").")
-    }
-    auto_fixed <- union(setdiff(group_cols, subject_col), reference_col)
-    fixed <- paste(auto_fixed, collapse = " + ")
-  }
-
-  if (!requireNamespace("lme4", quietly = TRUE) || !requireNamespace("lmerTest", quietly = TRUE)) {
-    stop("The 'lme4' and 'lmerTest' packages are required for bioequivalence model fitting; install them with install.packages(c(\"lme4\", \"lmerTest\")).")
-  }
-
-  model_formula <- stats::as.formula(sprintf("log(%s) ~ %s + %s", value_col, fixed, random))
-
-  models <- list()
-  fixed_effects <- list()
-  variance <- list()
-  for (ep in endpoints) {
-    data_ep <- data[!is.na(data$PPTESTCD) & data$PPTESTCD == ep, , drop = FALSE]
-    data_ep <- data_ep[!is.na(data_ep[[value_col]]), , drop = FALSE]
-    if (nrow(data_ep) == 0) {
-      warning("No data found for endpoint: ", ep)
-      next
-    }
-    if (!(reference_value %in% as.character(data_ep[[reference_col]]))) {
-      warning("Reference value not present for endpoint: ", ep, "; skipping.")
-      next
-    }
-    data_ep[[reference_col]] <-
-      stats::relevel(factor(as.character(data_ep[[reference_col]])), ref = reference_value)
-    mod <- lmerTest::lmer(model_formula, data = data_ep)
-    models[[ep]] <- mod
-
-    fe <- as.data.frame(stats::coef(summary(mod)))
-    fe$term <- rownames(fe)
-    fe$endpoint <- ep
-    rownames(fe) <- NULL
-    fixed_effects[[ep]] <- fe
-
-    vc <- as.data.frame(lme4::VarCorr(mod))
-    vc$endpoint <- ep
-    variance[[ep]] <- vc
-  }
-
-  if (length(models) == 0) {
-    stop("No endpoints could be fit; check `endpoints` against the `PPTESTCD` values in the data.")
-  }
-
-  structure(
-    list(
-      models = models,
-      fixed = do.call(rbind, fixed_effects),
-      variance = do.call(rbind, variance),
-      reference_col = reference_col,
-      reference_value = reference_value,
-      value_col = value_col
-    ),
-    class = "fitbe_models"
-  )
-}
-
-#' Summarize bioequivalence model fits
-#'
-#' `fitbe_table()` turns the model fits from [fitbe_models()] into a tidy
-#' bioequivalence summary: the geometric mean of each formulation, the geometric
-#' mean ratio (test/reference) as a percentage, its confidence interval, the
-#' Satterthwaite degrees of freedom, and the intra-subject coefficient of
-#' variation.  Confidence intervals are obtained by exponentiating the
-#' differences in least-squares means, the standard method for average
-#' bioequivalence.
-#'
-#' @param fit A `fitbe_models` object from [fitbe_models()].
-#' @param alpha The significance level; the confidence interval has confidence
-#'   level `1 - alpha` (the default `0.10` gives a 90% interval, as used for
-#'   average bioequivalence).
-#' @returns A data.frame with one row per endpoint and test formulation, with
-#'   columns `endpoint`, `test`, `reference`, `gm_test`, `gm_reference`,
-#'   `gmr_percent`, `ci_lower`, `ci_upper`, `df`, and `cv_intra_percent`.  A
-#'   `method` attribute records the CI method and the software versions used.
-#' @family Bioequivalence
-#' @export
-fitbe_table <- function(fit, alpha = 0.10) {
-  if (!inherits(fit, "fitbe_models")) {
-    stop("`fit` must be a `fitbe_models` object from `fitbe_models()`.")
-  }
-  assert_numeric_between(alpha, lower = 0, upper = 1)
-  if (!requireNamespace("emmeans", quietly = TRUE)) {
-    stop("The 'emmeans' package is required for bioequivalence tables; install it with install.packages(\"emmeans\").")
-  }
-  reference_col <- fit$reference_col
-  reference_value <- fit$reference_value
-
-  rows <- list()
-  for (ep in names(fit$models)) {
-    model <- fit$models[[ep]]
-    emm <- emmeans::emmeans(model, specs = reference_col, lmer.df = "satterthwaite")
-    gm <- as.data.frame(summary(emm, type = "response"))
-    gm_col <- if ("response" %in% names(gm)) "response" else "emmean"
-    ctr <- emmeans::contrast(emm, method = "revpairwise", adjust = "none")
-    ctr_summary <-
-      as.data.frame(summary(ctr, infer = c(TRUE, TRUE), level = 1 - alpha, type = "response"))
-    ratio_col <- if ("ratio" %in% names(ctr_summary)) "ratio" else "estimate"
-
-    resid_mask <- fit$variance$endpoint == ep & fit$variance$grp == "Residual"
-    resid_sd <- fit$variance$sdcor[resid_mask][1]
-    cv_intra <- sqrt(exp(resid_sd^2) - 1) * 100
-
-    gm_reference <- gm[[gm_col]][as.character(gm[[reference_col]]) == reference_value][1]
-    test_levels <- setdiff(as.character(gm[[reference_col]]), reference_value)
-    for (tl in test_levels) {
-      gm_test <- gm[[gm_col]][as.character(gm[[reference_col]]) == tl][1]
-      crow <-
-        if (length(test_levels) == 1) {
-          ctr_summary[1, , drop = FALSE]
-        } else {
-          ctr_summary[grepl(tl, ctr_summary$contrast, fixed = TRUE), , drop = FALSE][1, ]
-        }
-      rows[[length(rows) + 1]] <-
-        data.frame(
-          endpoint = ep,
-          test = tl,
-          reference = reference_value,
-          gm_test = gm_test,
-          gm_reference = gm_reference,
-          gmr_percent = crow[[ratio_col]] * 100,
-          ci_lower = crow$lower.CL * 100,
-          ci_upper = crow$upper.CL * 100,
-          df = crow$df,
-          cv_intra_percent = cv_intra,
-          stringsAsFactors = FALSE
-        )
-    }
-  }
-  out <- do.call(rbind, rows)
-  rownames(out) <- NULL
-  attr(out, "method") <-
-    sprintf(
-      "%g%% CI by exponentiated differences in least-squares means; lmerTest %s, lme4 %s, emmeans %s",
-      100 * (1 - alpha),
-      utils::packageVersion("lmerTest"),
-      utils::packageVersion("lme4"),
-      utils::packageVersion("emmeans")
-    )
-  out
-}
-
-#' Calculate bioequivalence statistics in one step
-#'
-#' `fitbe_calculate()` is a convenience wrapper that fits the bioequivalence
-#' models with [fitbe_models()] and summarizes them with [fitbe_table()].
-#'
-#' @inheritParams fitbe_models
-#' @param alpha The significance level passed to [fitbe_table()]; the confidence
-#'   interval has confidence level `1 - alpha`.
-#' @returns A list with elements `table` (the [fitbe_table()] data.frame) and
-#'   `fit` (the [fitbe_models()] object).
-#' @family Bioequivalence
-#' @examplesIf requireNamespace("lme4", quietly = TRUE) && requireNamespace("lmerTest", quietly = TRUE) && requireNamespace("emmeans", quietly = TRUE)
-#' # A small 2x2 crossover example in PKNCAresults long format
-#' set.seed(1)
-#' n <- 12
-#' sequence <- rep(c("RT", "TR"), length.out = n)
-#' subj_effect <- stats::rnorm(n, sd = 0.3)
-#' be_data <- do.call(rbind, lapply(seq_len(n), function(i) {
-#'   forms <- if (sequence[i] == "RT") c("R", "T") else c("T", "R")
-#'   mu <- log(100) + subj_effect[i] + ifelse(forms == "T", 0.05, 0)
-#'   data.frame(
-#'     subject = i, sequence = sequence[i], period = c(1, 2), form = forms,
-#'     PPTESTCD = "auclast", PPORRES = exp(mu + stats::rnorm(2, sd = 0.1)),
-#'     stringsAsFactors = FALSE
-#'   )
-#' }))
-#' fitbe_calculate(
-#'   be_data,
-#'   endpoints = "auclast",
-#'   reference_col = "form",
-#'   reference_value = "R",
-#'   fixed = "sequence + period + form",
-#'   random = "(1|subject)"
-#' )$table
-#' @export
-fitbe_calculate <- function(object,
-                            endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
-                            reference_col,
-                            reference_value,
-                            fixed = NULL,
-                            random = NULL,
-                            alpha = 0.10) {
-  fit <-
-    fitbe_models(
-      object = object,
-      endpoints = endpoints,
-      reference_col = reference_col,
-      reference_value = reference_value,
-      fixed = fixed,
-      random = random
-    )
-  table <- fitbe_table(fit, alpha = alpha)
-  list(table = table, fit = fit)
-}
-
-# Regulatory reference-scaling and decision layer -----------------------------
+# Bioequivalence assessment ---------------------------------------------------
 #
-# The functions below extend the average-bioequivalence (ABE) foundation above
-# with reference-scaling and a regulatory pass/fail decision for every major
-# framework: ABE, EMA average bioequivalence with expanding limits (ABEL),
-# Health Canada (HC), the Gulf Cooperation Council (GCC), and the FDA
-# reference-scaled average bioequivalence (RSABE) family (RSABE, narrow
-# therapeutic index drugs (NTID), and highly variable NTID (HVNTID)).
+# A single calculation path turns NCA results into a regulatory pass/fail table
+# for every major framework: average bioequivalence (ABE), EMA average
+# bioequivalence with expanding limits (ABEL), Health Canada (HC), the Gulf
+# Cooperation Council (GCC), and the FDA reference-scaled average bioequivalence
+# (RSABE) family (RSABE, narrow therapeutic index drugs (NTID), and highly
+# variable NTID (HVNTID)).
+#
+# The public verbs be_assess()/be_compare() call the coordinator be_fit_models(),
+# which runs: be_dataset -> be_fit_model_single -> be_extract_param -> be_table.
 #
 # Every regulatory constant and formula is internalized here with a citation to
 # the source guidance; PKNCA does not depend on PowerTOST or replicateBE.  The
@@ -689,14 +386,14 @@ print.be_design <- function(x, ...) {
 #' `be_within_var()` estimates the within-subject standard deviations of the
 #' log-transformed endpoint separately for the reference (`swR`) and test
 #' (`swT`) formulations, the quantities that reference-scaling frameworks need.
-#' The default `method = "A"` is an analysis of variance (ANOVA) of the
+#' The default `model_type = "anova"` is an analysis of variance (ANOVA) of the
 #' replicate observations within each formulation; this is the estimator used by
 #' both Method A and Method B of the EMA `replicateBE` reference implementation
 #' and by the FDA moment-based approach, and it works for full and partial
-#' replicate designs.  `method = "B"` instead fits a single mixed model with
-#' treatment-specific residual variances and requires a fully replicated design;
-#' it is provided as the alternative described in the FDA progesterone guidance
-#' and can differ slightly from `method = "A"`.
+#' replicate designs.  `model_type = "nlme"` instead fits a single mixed model
+#' with treatment-specific residual variances and requires a fully replicated
+#' design; it is provided as the alternative described in the FDA progesterone
+#' guidance and can differ slightly from `"anova"`.
 #'
 #' @param data A long data.frame with one row per observation for a *single*
 #'   endpoint (subject, period, treatment, and the endpoint value).
@@ -705,24 +402,24 @@ print.be_design <- function(x, ...) {
 #' @param subject,period,treatment Column names identifying the subject, period,
 #'   and treatment.
 #' @param reference_value The value of `treatment` that is the reference.
-#' @param method `"A"` (ANOVA, the default and the regulatory standard) or `"B"`
-#'   (mixed model with treatment-specific residual variances; full replicate
-#'   only).
+#' @param model_type `"anova"` (the default and the regulatory standard) or
+#'   `"nlme"` (mixed model with treatment-specific residual variances; full
+#'   replicate only).
 #' @param alpha The significance level for the `swT`/`swR` ratio confidence
 #'   bound (default `0.10` gives the 90% upper bound used for narrow therapeutic
 #'   index drugs).
 #' @returns An object of class `be_within_var`: a list with `swR`, `swT`,
 #'   `s2wR`, `s2wT`, `cvwr_percent`, `cvwt_percent`, `df_wR`, `df_wT`,
 #'   `sw_ratio` (= `swT`/`swR`), `sw_ratio_ci_upper` (the upper `1 - alpha`
-#'   confidence bound of the ratio), `method`, and `alpha`.  `swT` and the ratio
-#'   are `NA` when the test formulation is not replicated (for example a partial
-#'   replicate design).
+#'   confidence bound of the ratio), `model_type`, and `alpha`.  `swT` and the
+#'   ratio are `NA` when the test formulation is not replicated (for example a
+#'   partial replicate design).
 #' @family Bioequivalence
 #' @seealso [be_assess()]
 #' @export
 be_within_var <- function(data, value, subject, period, treatment, reference_value,
-                          method = c("A", "B"), alpha = 0.10) {
-  method <- match.arg(method)
+                          model_type = c("anova", "nlme"), alpha = 0.10) {
+  model_type <- match.arg(model_type)
   checkmate::assert_data_frame(data, min.rows = 1)
   checkmate::assert_string(value)
   checkmate::assert_string(subject)
@@ -760,12 +457,12 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
       .be_arm_var_na()
     }
 
-  if (method == "B") {
+  if (model_type == "nlme") {
     # Mixed model with treatment-specific residual variances (full replicate
     # only).  Variances come from the model; degrees of freedom are kept from
     # the ANOVA above (the design-based within-subject replication).
     if (is.na(ref_v$sw) || is.na(test_v$sw)) {
-      stop("Method B (mixed model) requires a fully replicated design with both formulations replicated; use method = \"A\".")
+      stop("model_type = \"nlme\" (mixed model) requires a fully replicated design with both formulations replicated; use model_type = \"anova\".")
     }
     mixed <- .be_within_var_mixed(work, reference_value, test_levels)
     ref_v$s2w <- mixed$s2wR
@@ -792,7 +489,7 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
       cvwr_percent = ref_v$cv, cvwt_percent = test_v$cv,
       df_wR = ref_v$df, df_wT = test_v$df,
       sw_ratio = sw_ratio, sw_ratio_ci_upper = sw_ratio_ci_upper,
-      method = method, alpha = alpha
+      model_type = model_type, alpha = alpha
     ),
     class = "be_within_var"
   )
@@ -821,7 +518,7 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
 
 #' @export
 print.be_within_var <- function(x, ...) {
-  cat(sprintf("Within-subject variability (method %s):\n", x$method))
+  cat(sprintf("Within-subject variability (model_type %s):\n", x$model_type))
   cat(sprintf("  Reference: swR = %.5f, CVwR = %.4g%% (df = %g)\n",
               x$swR, x$cvwr_percent, x$df_wR))
   if (!is.na(x$swT)) {
@@ -1009,52 +706,6 @@ print.be_within_var <- function(x, ...) {
   NA_character_
 }
 
-# Extract the long-format data and the subject/sequence/period/value columns
-# from a PKNCAresults object or a tidy data.frame, mirroring fitbe_models().
-.be_extract <- function(object, reference_col, subject, sequence, period) {
-  if (inherits(object, "PKNCAresults")) {
-    assert_PKNCAresults(object)
-    data <- as.data.frame(as.data.frame(object, filter_excluded = TRUE))
-    if (is.null(subject)) {
-      subject <- as_PKNCAconc(object)$columns$subject
-    }
-  } else if (is.data.frame(object)) {
-    data <- as.data.frame(object)
-  } else {
-    stop("`object` must be a PKNCAresults object or a data.frame.")
-  }
-  checkmate::assert_data_frame(data, min.rows = 1)
-  checkmate::assert_subset("PPTESTCD", choices = names(data))
-  checkmate::assert_choice(reference_col, choices = names(data))
-  value_col <-
-    if ("PPSTRES" %in% names(data)) {
-      "PPSTRES"
-    } else if ("PPORRES" %in% names(data)) {
-      "PPORRES"
-    } else {
-      stop("The data must contain a `PPORRES` or `PPSTRES` column of results.")
-    }
-  subject <- .be_find_col(subject, data, c("USUBJID", "subject", "Subject", "ID", "id"), "subject")
-  period <- .be_find_col(period, data, c("period", "Period", "PERIOD", "PER", "per"), "period")
-  sequence <-
-    .be_find_col(sequence, data, c("sequence", "Sequence", "SEQUENCE", "SEQ", "seq"), "sequence", required = FALSE)
-  list(
-    data = data, value_col = value_col,
-    subject = subject, sequence = sequence, period = period
-  )
-}
-
-# An empty within-variance result for the unscaled ABE framework.
-.be_empty_wv <- function(alpha) {
-  structure(
-    list(
-      swR = NA_real_, swT = NA_real_, s2wR = NA_real_, s2wT = NA_real_,
-      cvwr_percent = NA_real_, cvwt_percent = NA_real_, df_wR = NA_real_, df_wT = NA_real_,
-      sw_ratio = NA_real_, sw_ratio_ci_upper = NA_real_, method = NA_character_, alpha = alpha
-    ),
-    class = "be_within_var"
-  )
-}
 
 # Fixed-effects ANOVA average-BE estimate (Method A): subject as a fixed effect,
 # reproducing replicateBE::method.A's geometric mean ratio and CI.
@@ -1076,6 +727,436 @@ print.be_within_var <- function(x, ...) {
     pe_log = est, se = se, df = df, n = NA_integer_,
     gmr_percent = exp(est) * 100, ci_lower = ci[1], ci_upper = ci[2]
   )
+}
+
+# Single calculation pipeline -------------------------------------------------
+#
+# be_assess()/be_compare() are thin public verbs over be_fit_models(), the
+# coordinator, which runs one ordered path per endpoint:
+#   be_dataset -> be_fit_model_single (-> be_fit_model_<type>)
+#     -> be_extract_param (-> be_extract_param_<type>) -> be_table
+# All model fitting happens in be_fit_model_<type>; all regulator decisions
+# happen in be_table (which calls the unchanged .be_* deciders).
+
+#' Build and validate a bioequivalence dataset
+#'
+#' `be_dataset()` prepares a noncompartmental result for bioequivalence
+#' calculation: it accepts a `PKNCAresults` object or a tidy long data.frame,
+#' resolves the value column, drops excluded/invalid rows, detects the
+#' subject/sequence/period columns, validates the reference, and sets the
+#' reference formulation as the first factor level.  It standardizes the
+#' modeling columns (`.subject`, `.sequence`, `.period`, `.trt`, `.logval`) used
+#' by the downstream fitters.
+#'
+#' @inheritParams be_assess
+#' @returns An object of class `be_dataset`: a list with `data` (the
+#'   standardized long frame), `columns` (the resolved column names),
+#'   `reference_value`, `test_levels`, and `endpoints` (those present).
+#' @family Bioequivalence
+#' @export
+be_dataset <- function(object, reference_col, reference_value,
+                       endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
+                       subject = NULL, sequence = NULL, period = NULL) {
+  if (inherits(object, "PKNCAresults")) {
+    assert_PKNCAresults(object)
+    data <- as.data.frame(as.data.frame(object, filter_excluded = TRUE))
+    if (is.null(subject)) {
+      subject <- as_PKNCAconc(object)$columns$subject
+    }
+  } else if (is.data.frame(object)) {
+    data <- as.data.frame(object)
+  } else {
+    stop("`object` must be a PKNCAresults object or a data.frame.")
+  }
+  checkmate::assert_data_frame(data, min.rows = 1)
+  checkmate::assert_subset("PPTESTCD", choices = names(data))
+  checkmate::assert_string(reference_col)
+  checkmate::assert_choice(reference_col, choices = names(data))
+  checkmate::assert_character(endpoints, min.len = 1, any.missing = FALSE)
+  value_col <-
+    if ("PPSTRES" %in% names(data)) {
+      "PPSTRES"
+    } else if ("PPORRES" %in% names(data)) {
+      "PPORRES"
+    } else {
+      stop("The data must contain a `PPORRES` or `PPSTRES` column of results.")
+    }
+  subject <- .be_find_col(subject, data, c("USUBJID", "subject", "Subject", "ID", "id"), "subject")
+  period <- .be_find_col(period, data, c("period", "Period", "PERIOD", "PER", "per"), "period")
+  sequence <-
+    .be_find_col(sequence, data, c("sequence", "Sequence", "SEQUENCE", "SEQ", "seq"), "sequence", required = FALSE)
+  reference_value <- as.character(reference_value)
+  if (!(reference_value %in% as.character(data[[reference_col]]))) {
+    stop("Reference value, \"", reference_value, "\", not found in column, \"", reference_col, "\".")
+  }
+
+  data <- data[!is.na(data[[value_col]]) & data[[value_col]] > 0, , drop = FALSE]
+  data$.subject <- factor(as.character(data[[subject]]))
+  data$.sequence <-
+    if (!is.na(sequence)) factor(as.character(data[[sequence]])) else factor(rep(NA_character_, nrow(data)))
+  data$.period <- factor(as.character(data[[period]]))
+  data$.trt <- stats::relevel(factor(as.character(data[[reference_col]])), ref = reference_value)
+  data$.logval <- log(data[[value_col]])
+
+  present <- intersect(endpoints, unique(as.character(data$PPTESTCD)))
+  if (length(present) == 0) {
+    stop("None of the requested endpoints were found in the data.")
+  }
+  missing_eps <- setdiff(endpoints, present)
+  if (length(missing_eps) > 0) {
+    warning("Endpoints not found and skipped: ", paste(missing_eps, collapse = ", "))
+  }
+  structure(
+    list(
+      data = data,
+      columns = list(
+        subject = subject, sequence = sequence, period = period,
+        treatment = reference_col, value = value_col
+      ),
+      reference_value = reference_value,
+      test_levels = setdiff(levels(data$.trt), reference_value),
+      endpoints = present
+    ),
+    class = "be_dataset"
+  )
+}
+
+#' @export
+print.be_dataset <- function(x, ...) {
+  cat(sprintf(
+    "Bioequivalence dataset: %d row(s), reference \"%s\", %d test level(s)\n",
+    nrow(x$data), x$reference_value, length(x$test_levels)
+  ))
+  cat(sprintf("  Endpoints: %s\n", paste(x$endpoints, collapse = ", ")))
+  invisible(x)
+}
+
+# Choose the model type from the regulator's point-estimate method when the user
+# did not request one.  ABE/EMA/HC/GCC use the mixed model ("lmer"); the FDA
+# reference-scaled family uses the intra-subject-contrast path ("anova").
+.be_resolve_model_type <- function(model_type, reg) {
+  if (!is.null(model_type)) {
+    return(match.arg(model_type, c("lmer", "nlme", "anova")))
+  }
+  if (identical(reg$est_method, "isc")) "anova" else "lmer"
+}
+
+# Build the average-BE fixed-effects model formula from the standardized
+# columns, dropping the sequence term when it is absent or single-level.
+.be_model_formula <- function(ds_ep, random) {
+  terms <- character()
+  if (nlevels(droplevels(ds_ep$.sequence)) > 1) terms <- c(terms, ".sequence")
+  if (nlevels(droplevels(ds_ep$.period)) > 1) terms <- c(terms, ".period")
+  terms <- c(terms, ".trt")
+  rhs <- paste(terms, collapse = " + ")
+  if (random) rhs <- paste(rhs, "+ (1|.subject)")
+  stats::as.formula(paste(".logval ~", rhs))
+}
+
+#' Fit the bioequivalence model(s) for one endpoint
+#'
+#' `be_fit_model_single()` fits the average-BE model for a single endpoint and
+#' dispatches on `model_type` to `be_fit_model_lmer()`, `be_fit_model_nlme()`,
+#' or `be_fit_model_anova()`.  This is the only place model fitting happens.  For
+#' the `"lmer"` and `"anova"` types the within-formulation ANOVA variances are
+#' also fit here; for `"nlme"` they come from the single mixed model.
+#'
+#' @param ds_ep The standardized single-endpoint data.frame from [be_dataset()]
+#'   (`be_dataset(...)$data` filtered to one endpoint).
+#' @param model_type One of `"lmer"`, `"nlme"`, or `"anova"`.
+#' @param scaling Logical; whether reference scaling is needed (controls whether
+#'   the within-formulation variances are estimated).
+#' @returns An object of class `be_fit`: a list with `model_type`, the fitted
+#'   `model`, and (for lmer/anova) `ref_var`/`test_var` within-formulation ANOVA
+#'   variances.
+#' @family Bioequivalence
+#' @export
+be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova"), scaling = TRUE) {
+  model_type <- match.arg(model_type)
+  fit <-
+    switch(
+      model_type,
+      lmer = be_fit_model_lmer(ds_ep, scaling = scaling),
+      nlme = be_fit_model_nlme(ds_ep),
+      anova = be_fit_model_anova(ds_ep, scaling = scaling)
+    )
+  fit$model_type <- model_type
+  structure(fit, class = "be_fit")
+}
+
+# Within-formulation ANOVA variances for the reference and (single) test arm.
+.be_fit_within <- function(ds_ep, scaling) {
+  reference_value <- levels(ds_ep$.trt)[1]
+  test_levels <- setdiff(levels(ds_ep$.trt), reference_value)
+  if (!scaling) {
+    return(list(ref_var = .be_arm_var_na(), test_var = .be_arm_var_na()))
+  }
+  list(
+    ref_var = .be_arm_var(ds_ep[ds_ep$.trt == reference_value, , drop = FALSE]),
+    test_var =
+      if (length(test_levels) == 1) {
+        .be_arm_var(ds_ep[ds_ep$.trt == test_levels, , drop = FALSE])
+      } else {
+        .be_arm_var_na()
+      }
+  )
+}
+
+#' @rdname be_fit_model_single
+#' @export
+be_fit_model_lmer <- function(ds_ep, scaling = TRUE) {
+  if (!requireNamespace("lme4", quietly = TRUE) || !requireNamespace("lmerTest", quietly = TRUE)) {
+    stop("The 'lme4' and 'lmerTest' packages are required for model_type = \"lmer\"; install them with install.packages(c(\"lme4\", \"lmerTest\")).")
+  }
+  model <- lmerTest::lmer(.be_model_formula(ds_ep, random = TRUE), data = ds_ep)
+  c(list(model = model), .be_fit_within(ds_ep, scaling))
+}
+
+#' @rdname be_fit_model_single
+#' @export
+be_fit_model_anova <- function(ds_ep, scaling = TRUE) {
+  model <- stats::lm(.be_model_formula(ds_ep, random = FALSE), data = ds_ep)
+  c(list(model = model), .be_fit_within(ds_ep, scaling))
+}
+
+#' @rdname be_fit_model_single
+#' @export
+be_fit_model_nlme <- function(ds_ep) {
+  reference_value <- levels(ds_ep$.trt)[1]
+  test_levels <- setdiff(levels(ds_ep$.trt), reference_value)
+  if (length(test_levels) != 1) {
+    stop("model_type = \"nlme\" supports a single test formulation; use \"anova\" or \"lmer\".")
+  }
+  model <-
+    nlme::lme(
+      .be_model_formula(ds_ep, random = FALSE),
+      random = ~ 1 | .subject,
+      weights = nlme::varIdent(form = ~ 1 | .trt),
+      data = ds_ep,
+      control = nlme::lmeControl(opt = "optim", returnObject = TRUE)
+    )
+  list(model = model, ref_var = NULL, test_var = NULL)
+}
+
+#' Extract bioequivalence parameters from a fitted model
+#'
+#' `be_extract_param()` turns a [be_fit_model_single()] fit into the parameters
+#' the regulatory decision needs.  It always computes the intra-subject-contrast
+#' (ISC) point estimate, then dispatches on the model type to extract the
+#' model-based geometric means, the geometric mean ratio and its confidence
+#' interval, and the within-formulation standard deviations.
+#'
+#' @param fit A `be_fit` object from [be_fit_model_single()].
+#' @param ds_ep The standardized single-endpoint data.frame from [be_dataset()].
+#' @param alpha The significance level; the confidence interval has level
+#'   `1 - alpha`.
+#' @returns A data.frame with one row per test formulation, carrying the model
+#'   and ISC point estimates/intervals, geometric means, and within-formulation
+#'   variances.
+#' @family Bioequivalence
+#' @export
+be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
+  reference_value <- levels(ds_ep$.trt)[1]
+  test_levels <- setdiff(levels(ds_ep$.trt), reference_value)
+  model_part <-
+    switch(
+      fit$model_type,
+      lmer = be_extract_param_lmer(fit, alpha),
+      nlme = be_extract_param_nlme(fit, alpha),
+      anova = be_extract_param_anova(fit, ds_ep, alpha)
+    )
+  # Within-formulation variances: from the ANOVA fits (lmer/anova) or the
+  # varIdent model (nlme).
+  wv <- model_part$within
+  rows <- list()
+  for (tl in test_levels) {
+    isc <- .be_isc(ds_ep, reference_value, tl, alpha)
+    m <- model_part$contrasts[[tl]]
+    n_tl <- length(unique(ds_ep$.subject[ds_ep$.trt %in% c(reference_value, tl)]))
+    rows[[length(rows) + 1]] <-
+      data.frame(
+        test = tl, n = n_tl,
+        gm_reference = model_part$gm_reference, gm_test = m$gm_test,
+        model_gmr_percent = m$gmr_percent, model_ci_lower = m$ci_lower,
+        model_ci_upper = m$ci_upper, model_df = m$df,
+        isc_pe_log = isc$pe_log, isc_se = isc$se, isc_df = isc$df,
+        isc_gmr_percent = isc$gmr_percent, isc_ci_lower = isc$ci_lower, isc_ci_upper = isc$ci_upper,
+        swr = wv$ref_var$sw, swt = wv$test_var$sw,
+        cvwr_percent = wv$ref_var$cv, cvwt_percent = wv$test_var$cv,
+        df_wr = wv$ref_var$df, df_wt = wv$test_var$df,
+        stringsAsFactors = FALSE
+      )
+  }
+  out <- do.call(rbind, rows)
+  out$sw_ratio <-
+    ifelse(!is.na(out$swt) & !is.na(out$swr) & out$swr > 0, out$swt / out$swr, NA_real_)
+  out$sw_ratio_ci_upper <-
+    ifelse(
+      !is.na(out$sw_ratio) & !is.na(out$df_wt) & !is.na(out$df_wr),
+      out$sw_ratio / sqrt(stats::qf(1 - alpha / 2, out$df_wt, out$df_wr, lower.tail = FALSE)),
+      NA_real_
+    )
+  out
+}
+
+# Shared emmeans extraction for the lmer and nlme model types.  Returns the
+# reference geometric mean and, per test level, the test geometric mean and the
+# geometric mean ratio with its confidence interval.
+.be_emmeans_part <- function(model, reference_value, test_levels, alpha, lmer_df = NULL, ref_var, test_var) {
+  emm_args <- list(object = model, specs = ".trt")
+  if (!is.null(lmer_df)) emm_args$lmer.df <- lmer_df
+  emm <- do.call(emmeans::emmeans, emm_args)
+  gm <- as.data.frame(summary(emm))
+  ctr <- emmeans::contrast(emm, method = "revpairwise", adjust = "none")
+  cs <- as.data.frame(summary(ctr, infer = c(TRUE, TRUE), level = 1 - alpha))
+  gm_ref <- exp(gm$emmean[as.character(gm$.trt) == reference_value][1])
+  contrasts <- list()
+  for (tl in test_levels) {
+    gm_test <- exp(gm$emmean[as.character(gm$.trt) == tl][1])
+    crow <-
+      if (length(test_levels) == 1) {
+        cs[1, , drop = FALSE]
+      } else {
+        cs[grepl(tl, cs$contrast, fixed = TRUE), , drop = FALSE][1, ]
+      }
+    contrasts[[tl]] <- list(
+      gm_test = gm_test,
+      gmr_percent = exp(crow$estimate) * 100,
+      ci_lower = exp(crow$lower.CL) * 100,
+      ci_upper = exp(crow$upper.CL) * 100,
+      df = crow$df
+    )
+  }
+  list(
+    gm_reference = gm_ref, contrasts = contrasts,
+    within = list(ref_var = ref_var, test_var = test_var)
+  )
+}
+
+#' @rdname be_extract_param
+#' @export
+be_extract_param_lmer <- function(fit, alpha = 0.10) {
+  if (!requireNamespace("emmeans", quietly = TRUE)) {
+    stop("The 'emmeans' package is required to extract bioequivalence parameters; install it with install.packages(\"emmeans\").")
+  }
+  reference_value <- levels(fit$model@frame$.trt)[1]
+  test_levels <- setdiff(levels(fit$model@frame$.trt), reference_value)
+  .be_emmeans_part(fit$model, reference_value, test_levels, alpha,
+                   lmer_df = "satterthwaite", ref_var = fit$ref_var, test_var = fit$test_var)
+}
+
+#' @rdname be_extract_param
+#' @export
+be_extract_param_nlme <- function(fit, alpha = 0.10) {
+  if (!requireNamespace("emmeans", quietly = TRUE)) {
+    stop("The 'emmeans' package is required to extract bioequivalence parameters; install it with install.packages(\"emmeans\").")
+  }
+  dat <- fit$model$data
+  reference_value <- levels(dat$.trt)[1]
+  test_levels <- setdiff(levels(dat$.trt), reference_value)
+  # Treatment-specific within-subject SDs from the varIdent structure.
+  sigma <- fit$model$sigma
+  mult <- stats::coef(fit$model$modelStruct$varStruct, unconstrained = FALSE, allCoef = TRUE)
+  arm_var <- function(level) {
+    s2 <- (sigma * mult[[level]])^2
+    list(sw = sqrt(s2), s2w = s2, cv = sqrt(exp(s2) - 1) * 100, df = NA_real_)
+  }
+  ref_var <- arm_var(reference_value)
+  test_var <- if (length(test_levels) == 1) arm_var(test_levels) else .be_arm_var_na()
+  .be_emmeans_part(fit$model, reference_value, test_levels, alpha,
+                   ref_var = ref_var, test_var = test_var)
+}
+
+#' @rdname be_extract_param
+#' @export
+be_extract_param_anova <- function(fit, ds_ep, alpha = 0.10) {
+  reference_value <- levels(ds_ep$.trt)[1]
+  test_levels <- setdiff(levels(ds_ep$.trt), reference_value)
+  # Geometric means from the fixed-effects model (descriptive).
+  gm_ref <- NA_real_
+  contrasts <- list()
+  if (requireNamespace("emmeans", quietly = TRUE)) {
+    emm <- emmeans::emmeans(fit$model, specs = ".trt")
+    gm <- as.data.frame(summary(emm))
+    gm_ref <- exp(gm$emmean[as.character(gm$.trt) == reference_value][1])
+  }
+  for (tl in test_levels) {
+    est <- .be_anova_est(ds_ep, reference_value, tl, alpha)
+    gm_test <-
+      if (requireNamespace("emmeans", quietly = TRUE)) {
+        emm <- emmeans::emmeans(fit$model, specs = ".trt")
+        gm <- as.data.frame(summary(emm))
+        exp(gm$emmean[as.character(gm$.trt) == tl][1])
+      } else {
+        NA_real_
+      }
+    contrasts[[tl]] <- list(
+      gm_test = gm_test, gmr_percent = est$gmr_percent,
+      ci_lower = est$ci_lower, ci_upper = est$ci_upper, df = est$df
+    )
+  }
+  list(
+    gm_reference = gm_ref, contrasts = contrasts,
+    within = list(ref_var = fit$ref_var, test_var = fit$test_var)
+  )
+}
+
+#' Build the regulatory bioequivalence table
+#'
+#' `be_table()` takes the parameters from [be_extract_param()] and a regulatory
+#' framework and produces the final per-endpoint pass/fail table.  It selects the
+#' regulator-appropriate statistic (the model contrast for the expanding-limits
+#' frameworks, intra-subject contrasts for the FDA family) and calls the
+#' per-framework decision functions; it is the only place regulator decisions
+#' are made.
+#'
+#' @param params A data.frame of parameters from [be_extract_param()] (with an
+#'   `endpoint` column added per endpoint).
+#' @param regulator A regulator name or a `be_regulator` object.
+#' @param alpha The significance level.
+#' @param design The design label (character) for the `design` column.
+#' @param model_type The model type label for the `model_type` column.
+#' @returns A data.frame with one row per endpoint and test formulation and the
+#'   pass/fail decision columns.
+#' @family Bioequivalence
+#' @export
+be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, model_type = NA_character_) {
+  reg <- if (inherits(regulator, "be_regulator")) regulator else be_regulator(regulator)
+  rows <- list()
+  for (i in seq_len(nrow(params))) {
+    p <- params[i, , drop = FALSE]
+    wv <- list(
+      swR = p$swr, swT = p$swt, s2wR = p$swr^2, s2wT = p$swt^2,
+      cvwr_percent = p$cvwr_percent, cvwt_percent = p$cvwt_percent,
+      df_wR = p$df_wr, df_wT = p$df_wt,
+      sw_ratio = p$sw_ratio, sw_ratio_ci_upper = p$sw_ratio_ci_upper
+    )
+    est <-
+      if (identical(reg$est_method, "isc")) {
+        list(
+          pe_log = p$isc_pe_log, se = p$isc_se, df = p$isc_df, n = p$n,
+          gmr_percent = p$isc_gmr_percent, ci_lower = p$isc_ci_lower, ci_upper = p$isc_ci_upper
+        )
+      } else {
+        list(
+          pe_log = log(p$model_gmr_percent / 100), se = NA_real_, df = p$model_df, n = p$n,
+          gmr_percent = p$model_gmr_percent, ci_lower = p$model_ci_lower, ci_upper = p$model_ci_upper
+        )
+      }
+    dec <- .be_decide(est, wv, reg, alpha)
+    rows[[length(rows) + 1]] <-
+      data.frame(
+        endpoint = p$endpoint, test = p$test, n = p$n, design = design,
+        gmr_percent = est$gmr_percent, ci_lower = est$ci_lower, ci_upper = est$ci_upper,
+        cvwr_percent = p$cvwr_percent, cvwt_percent = p$cvwt_percent, swr = p$swr,
+        limit_lower = dec$limit_lower, limit_upper = dec$limit_upper, criterion = dec$criterion,
+        regulator = reg$name, model_type = model_type, pass = dec$pass,
+        stringsAsFactors = FALSE
+      )
+  }
+  out <- do.call(rbind, rows)
+  rownames(out) <- NULL
+  out
 }
 
 # Confirm the design supports the chosen framework.
@@ -1100,6 +1181,49 @@ print.be_within_var <- function(x, ...) {
   }
 }
 
+#' Coordinate the bioequivalence calculation path
+#'
+#' `be_fit_models()` runs the single bioequivalence calculation path and returns
+#' the regulatory pass/fail table.  It coordinates the stages in order:
+#' [be_dataset()] to prepare the data, [be_design()] to classify the design and
+#' choose the model, [be_fit_model_single()] to fit, [be_extract_param()] to
+#' extract the parameters, and [be_table()] to apply the regulatory decision.
+#' [be_assess()] and [be_compare()] are thin verbs over it.
+#'
+#' @inheritParams be_assess
+#' @returns A data.frame with one row per endpoint and test formulation (the
+#'   columns described in [be_assess()]).
+#' @family Bioequivalence
+#' @export
+be_fit_models <- function(object, reference_col, reference_value,
+                          endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
+                          regulator = "FDA", model_type = NULL, alpha = 0.10,
+                          subject = NULL, sequence = NULL, period = NULL, design = NULL) {
+  assert_numeric_between(alpha, lower = 0, upper = 1)
+  reg <- be_regulator(regulator)
+  ds <- be_dataset(object, reference_col, reference_value, endpoints, subject, sequence, period)
+  if (is.null(design)) {
+    design <- be_design(
+      ds$data, ds$columns$subject, ds$columns$sequence, ds$columns$period,
+      ds$columns$treatment, ds$reference_value
+    )
+  } else if (!inherits(design, "be_design")) {
+    stop("`design` must be a `be_design` object from `be_design()`.")
+  }
+  .be_check_feasible(reg, design)
+  model_type <- .be_resolve_model_type(model_type, reg)
+
+  params <- list()
+  for (ep in ds$endpoints) {
+    ds_ep <- ds$data[!is.na(ds$data$PPTESTCD) & ds$data$PPTESTCD == ep, , drop = FALSE]
+    fit <- be_fit_model_single(ds_ep, model_type, scaling = reg$scaling != "none")
+    p <- be_extract_param(fit, ds_ep, alpha)
+    p$endpoint <- ep
+    params[[length(params) + 1]] <- p
+  }
+  be_table(do.call(rbind, params), reg, alpha, design = design$design, model_type = model_type)
+}
+
 #' Assess bioequivalence against a regulatory framework
 #'
 #' `be_assess()` performs a complete bioequivalence (BE) assessment of one or
@@ -1107,29 +1231,34 @@ print.be_within_var <- function(x, ...) {
 #' reference scaling and the pass/fail decision.  It accepts the results of
 #' [pk.nca()] directly (a `PKNCAresults` object) or a tidy long data.frame, so
 #' the same workflow that produces NCA parameters flows into the regulatory
-#' decision.
+#' decision.  It is a thin wrapper over [be_fit_models()] that adds the
+#' `be_assess` class and its print/summary methods.
 #'
-#' For average bioequivalence and the expanding-limits frameworks (EMA, HC,
-#' GCC) the geometric mean ratio and its confidence interval come from the
-#' average-BE model (see [fitbe_models()]); the `method` argument selects the
-#' fixed-effects ANOVA (`"A"`) or the mixed model (`"B"`).  For the FDA
-#' reference-scaled frameworks (FDA RSABE, NTID, HVNTID) the point estimate and
-#' the linearized criterion are computed from intra-subject contrasts, as the
-#' guidances specify.  Within-subject variability is always estimated by the
-#' regulatory ANOVA method (see [be_within_var()]).
+#' The model type is selected automatically from the regulator: the expanding-
+#' limits frameworks (ABE, EMA, HC, GCC) use the mixed model (`"lmer"`) for the
+#' geometric mean ratio and its confidence interval, while the FDA reference-
+#' scaled frameworks (FDA RSABE, NTID, HVNTID) use intra-subject contrasts (the
+#' `"anova"` path), as the guidances specify.  Pass `model_type` to override
+#' (`"lmer"`, `"anova"`, or `"nlme"`).  Within-subject variability uses the
+#' regulatory ANOVA estimator for `"lmer"`/`"anova"` and the treatment-specific
+#' mixed-model estimator for `"nlme"`.
 #'
-#' @inheritParams be_within_var
 #' @param object A `PKNCAresults` object or a tidy long data.frame with a
 #'   `PPTESTCD` column of parameter names, a `PPORRES`/`PPSTRES` column of
 #'   values, and subject/sequence/period/treatment columns.
 #' @param reference_col The column identifying the formulation/treatment.
+#' @param reference_value The value of `reference_col` that is the reference
+#'   formulation.
 #' @param endpoints Character vector of NCA parameters (matched against
 #'   `PPTESTCD`) to assess.
 #' @param regulator The regulatory framework (see [be_regulator()]); one of
 #'   `"ABE"`, `"EMA"`, `"HC"`, `"GCC"`, `"FDA"`, `"NTID"`, or `"HVNTID"`.
-#' @param method `"A"` (fixed-effects ANOVA, the `replicateBE` Method A
-#'   convention) or `"B"` (mixed model, the default) for the average-BE
-#'   geometric mean ratio and confidence interval.
+#' @param model_type The model for the average-BE point estimate, one of
+#'   `"lmer"` (mixed model), `"anova"` (fixed-effects/intra-subject contrasts),
+#'   or `"nlme"` (treatment-specific mixed model).  When `NULL` (default) it is
+#'   chosen from the regulator.
+#' @param alpha The significance level; the confidence interval has level
+#'   `1 - alpha` (default `0.10` gives the 90% interval).
 #' @param subject,sequence,period Column names for the subject, randomization
 #'   sequence, and period.  When `NULL` they are taken from the `PKNCAresults`
 #'   object or detected from common column names.  `sequence` may be absent.
@@ -1139,7 +1268,7 @@ print.be_within_var <- function(x, ...) {
 #'   endpoint and test formulation and the columns `endpoint`, `test`, `n`,
 #'   `design`, `gmr_percent`, `ci_lower`, `ci_upper`, `cvwr_percent`,
 #'   `cvwt_percent`, `swr`, `limit_lower`, `limit_upper`, `criterion`,
-#'   `regulator`, `method`, and `pass`.  `limit_*` are `NA` for the RSABE
+#'   `regulator`, `model_type`, and `pass`.  `limit_*` are `NA` for the RSABE
 #'   criterion and `criterion` is `NA` for the limit-based frameworks.
 #' @family Bioequivalence
 #' @seealso [be_compare()] to assess one dataset under several frameworks,
@@ -1165,113 +1294,24 @@ print.be_within_var <- function(x, ...) {
 #' @export
 be_assess <- function(object, reference_col, reference_value,
                       endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
-                      regulator = "FDA", method = c("B", "A"), alpha = 0.10,
+                      regulator = "FDA", model_type = NULL, alpha = 0.10,
                       subject = NULL, sequence = NULL, period = NULL, design = NULL) {
-  method <- match.arg(method)
-  checkmate::assert_string(reference_col)
-  checkmate::assert_character(endpoints, min.len = 1, any.missing = FALSE)
-  assert_numeric_between(alpha, lower = 0, upper = 1)
-  reg <- be_regulator(regulator)
-
-  ext <- .be_extract(object, reference_col, subject, sequence, period)
-  data <- ext$data
-  value_col <- ext$value_col
-  subject <- ext$subject
-  sequence <- ext$sequence
-  period <- ext$period
-
-  reference_value <- as.character(reference_value)
-  if (!(reference_value %in% as.character(data[[reference_col]]))) {
-    stop("Reference value, \"", reference_value, "\", not found in column, \"", reference_col, "\".")
-  }
-
-  if (is.null(design)) {
-    design <- be_design(data, subject, sequence, period, reference_col, reference_value)
-  } else if (!inherits(design, "be_design")) {
-    stop("`design` must be a `be_design` object from `be_design()`.")
-  }
-  .be_check_feasible(reg, design)
-
-  present <- intersect(endpoints, unique(as.character(data$PPTESTCD)))
-  if (length(present) == 0) {
-    stop("None of the requested endpoints were found in the data.")
-  }
-  missing_eps <- setdiff(endpoints, present)
-  if (length(missing_eps) > 0) {
-    warning("Endpoints not found and skipped: ", paste(missing_eps, collapse = ", "))
-  }
-
-  # Average-BE point estimates via the mixed model (Method B), fit once for all
-  # endpoints, when the framework uses the ANOVA/mixed point estimate.
-  fitbe_tbl <- NULL
-  if (reg$est_method == "anova" && method == "B") {
-    fixed <- paste(c(sequence, period, reference_col), collapse = " + ")
-    random <- sprintf("(1|%s)", subject)
-    fitbe_tbl <-
-      fitbe_calculate(
-        data, endpoints = present, reference_col = reference_col,
-        reference_value = reference_value, fixed = fixed, random = random, alpha = alpha
-      )$table
-  }
-
-  rows <- list()
-  for (ep in present) {
-    data_ep <- data[!is.na(data$PPTESTCD) & data$PPTESTCD == ep, , drop = FALSE]
-    data_ep <- data_ep[!is.na(data_ep[[value_col]]) & data_ep[[value_col]] > 0, , drop = FALSE]
-    work <- data.frame(
-      .subject = factor(as.character(data_ep[[subject]])),
-      .period = factor(as.character(data_ep[[period]])),
-      .trt = as.character(data_ep[[reference_col]]),
-      .logval = log(data_ep[[value_col]]),
-      stringsAsFactors = FALSE
-    )
-    test_levels <- setdiff(unique(work$.trt), reference_value)
-    wv <-
-      if (reg$scaling != "none") {
-        be_within_var(data_ep, value_col, subject, period, reference_col, reference_value, alpha = alpha)
-      } else {
-        .be_empty_wv(alpha)
-      }
-
-    for (tl in test_levels) {
-      est <-
-        if (reg$est_method == "isc") {
-          .be_isc(work, reference_value, tl, alpha)
-        } else if (method == "B") {
-          fr <- fitbe_tbl[fitbe_tbl$endpoint == ep & fitbe_tbl$test == tl, , drop = FALSE]
-          list(
-            pe_log = log(fr$gmr_percent / 100), se = NA_real_, df = fr$df, n = NA_integer_,
-            gmr_percent = fr$gmr_percent, ci_lower = fr$ci_lower, ci_upper = fr$ci_upper
-          )
-        } else {
-          .be_anova_est(work, reference_value, tl, alpha)
-        }
-      dec <- .be_decide(est, wv, reg, alpha)
-      n_ep <- length(unique(work$.subject[work$.trt %in% c(reference_value, tl)]))
-      rows[[length(rows) + 1]] <-
-        data.frame(
-          endpoint = ep, test = tl, n = n_ep, design = design$design,
-          gmr_percent = est$gmr_percent, ci_lower = est$ci_lower, ci_upper = est$ci_upper,
-          cvwr_percent = wv$cvwr_percent, cvwt_percent = wv$cvwt_percent, swr = wv$swR,
-          limit_lower = dec$limit_lower, limit_upper = dec$limit_upper, criterion = dec$criterion,
-          regulator = reg$name, method = method, pass = dec$pass,
-          stringsAsFactors = FALSE
-        )
-    }
-  }
-
-  out <- do.call(rbind, rows)
-  rownames(out) <- NULL
+  out <- be_fit_models(
+    object, reference_col = reference_col, reference_value = reference_value,
+    endpoints = endpoints, regulator = regulator, model_type = model_type, alpha = alpha,
+    subject = subject, sequence = sequence, period = period, design = design
+  )
   structure(
     out,
     class = c("be_assess", "data.frame"),
-    regulator = reg$name, method = method, design = design$design, alpha = alpha
+    regulator = out$regulator[1], model_type = out$model_type[1],
+    design = out$design[1], alpha = alpha
   )
 }
 
 #' @export
 as.data.frame.be_assess <- function(x, ...) {
-  for (a in c("regulator", "method", "design", "alpha")) {
+  for (a in c("regulator", "model_type", "design", "alpha")) {
     attr(x, a) <- NULL
   }
   class(x) <- "data.frame"
@@ -1297,8 +1337,8 @@ format.be_assess <- function(x, digits = 2, ...) {
 #' @export
 print.be_assess <- function(x, ...) {
   cat(sprintf(
-    "Bioequivalence assessment: %s (method %s, %g%% CI)\n",
-    attr(x, "regulator"), attr(x, "method"), (1 - attr(x, "alpha")) * 100
+    "Bioequivalence assessment: %s (model_type %s, %g%% CI)\n",
+    attr(x, "regulator"), attr(x, "model_type"), (1 - attr(x, "alpha")) * 100
   ))
   cat(sprintf("Design: %s\n\n", attr(x, "design")))
   print.data.frame(format(x), row.names = FALSE, ...)
@@ -1314,8 +1354,8 @@ summary.be_assess <- function(object, ...) {
   out$ci_lower <- round(out$ci_lower, 2)
   out$ci_upper <- round(out$ci_upper, 2)
   caption <- sprintf(
-    "%s assessment (method %s, %g%% CI); pass = bioequivalent.",
-    attr(object, "regulator"), attr(object, "method"), (1 - attr(object, "alpha")) * 100
+    "%s assessment (model_type %s, %g%% CI); pass = bioequivalent.",
+    attr(object, "regulator"), attr(object, "model_type"), (1 - attr(object, "alpha")) * 100
   )
   structure(out, class = c("summary_be_assess", "data.frame"), caption = caption)
 }
@@ -1362,16 +1402,15 @@ print.summary_be_assess <- function(x, ...) {
 be_compare <- function(object, reference_col, reference_value,
                        endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
                        regulators = c("FDA", "EMA", "HC", "GCC"),
-                       method = c("B", "A"), alpha = 0.10,
+                       model_type = NULL, alpha = 0.10,
                        subject = NULL, sequence = NULL, period = NULL, design = NULL) {
-  method <- match.arg(method)
   checkmate::assert_character(regulators, min.len = 1, any.missing = FALSE)
   results <- list()
   for (rg in regulators) {
     res <- try(
       be_assess(
         object, reference_col = reference_col, reference_value = reference_value,
-        endpoints = endpoints, regulator = rg, method = method, alpha = alpha,
+        endpoints = endpoints, regulator = rg, model_type = model_type, alpha = alpha,
         subject = subject, sequence = sequence, period = period, design = design
       ),
       silent = TRUE

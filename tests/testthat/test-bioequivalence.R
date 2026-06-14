@@ -1,4 +1,8 @@
-# Deterministic long-format BE data mimicking as.data.frame(PKNCAresults)
+# Bioequivalence pipeline: be_dataset validation and the average-BE end-to-end
+# path (be_fit_models/be_assess).  Regulatory reference-scaling pins live in
+# test-bioequivalence-assess.R.
+
+# Deterministic 2x2 crossover long data (ABE only, reference not replicated).
 make_be_df <- function(nsub = 24, seed = 123, test_effect = 0, endpoint = "auclast") {
   set.seed(seed)
   sequence <- rep(c("RT", "TR"), length.out = nsub)
@@ -7,12 +11,8 @@ make_be_df <- function(nsub = 24, seed = 123, test_effect = 0, endpoint = "aucla
     forms <- if (sequence[i] == "RT") c("R", "T") else c("T", "R")
     mu <- log(100) + subj_effect[i] + ifelse(forms == "T", test_effect, 0)
     data.frame(
-      subject = i,
-      sequence = sequence[i],
-      period = c(1, 2),
-      form = forms,
-      PPTESTCD = endpoint,
-      PPORRES = exp(mu + stats::rnorm(2, sd = 0.1)),
+      subject = i, sequence = sequence[i], period = c(1, 2), form = forms,
+      PPTESTCD = endpoint, PPORRES = exp(mu + stats::rnorm(2, sd = 0.1)),
       stringsAsFactors = FALSE
     )
   }))
@@ -47,180 +47,125 @@ simulate_be_conc <- function(nsub = 8, seed = 42) {
   do.call(rbind, rows)
 }
 
-# Validation (does not require the modeling packages) ------------------------
+# be_dataset validation (no modeling packages required) ----------------------
 
-test_that("fitbe_models rejects non-data input", {
+test_that("be_dataset rejects non-data input", {
   expect_error(
-    fitbe_models(1:10, reference_col = "form", reference_value = "R"),
+    be_dataset(1:10, reference_col = "form", reference_value = "R"),
     "must be a PKNCAresults object or a data.frame"
   )
 })
 
-test_that("fitbe_models requires a PPTESTCD column", {
+test_that("be_dataset requires a PPTESTCD column", {
   d <- data.frame(form = c("R", "T"), PPORRES = c(1, 2))
+  expect_error(be_dataset(d, reference_col = "form", reference_value = "R"), "PPTESTCD")
+})
+
+test_that("be_dataset requires reference_col to be a column", {
   expect_error(
-    fitbe_models(d, reference_col = "form", reference_value = "R",
-                 fixed = "form", random = "(1|form)"),
-    "PPTESTCD"
+    be_dataset(make_be_df(), reference_col = "not_a_col", reference_value = "R"),
+    "not_a_col"
   )
 })
 
-test_that("fitbe_models requires reference_col to be a column", {
-  d <- make_be_df()
+test_that("be_dataset errors when reference_value is absent", {
   expect_error(
-    fitbe_models(d, reference_col = "not_a_col", reference_value = "R",
-                 fixed = "form", random = "(1|subject)"),
-    "reference_col"
-  )
-})
-
-test_that("fitbe_models errors when reference_value is absent", {
-  d <- make_be_df()
-  expect_error(
-    fitbe_models(d, reference_col = "form", reference_value = "Z",
-                 fixed = "form", random = "(1|subject)"),
+    be_dataset(make_be_df(), reference_col = "form", reference_value = "Z"),
     'Reference value, "Z", not found'
   )
 })
 
-test_that("fitbe_models needs a result column", {
+test_that("be_dataset needs a result column", {
   d <- make_be_df()
   d$PPORRES <- NULL
   expect_error(
-    fitbe_models(d, reference_col = "form", reference_value = "R",
-                 fixed = "form", random = "(1|subject)"),
+    be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast"),
     "PPORRES.*PPSTRES"
   )
 })
 
-test_that("fitbe_models requires explicit fixed effects for a data.frame", {
-  d <- make_be_df()
-  expect_error(
-    fitbe_models(d, reference_col = "form", reference_value = "R",
-                 random = "(1|subject)"),
-    "Could not determine the fixed effects"
-  )
-})
-
-test_that("fitbe_models errors when the subject column cannot be found", {
+test_that("be_dataset errors when the subject column cannot be found", {
   d <- make_be_df()
   names(d)[names(d) == "subject"] <- "patient"
   expect_error(
-    fitbe_models(d, reference_col = "form", reference_value = "R",
-                 fixed = "form"),
+    be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast"),
     "Could not determine the subject column"
   )
 })
 
-test_that("fitbe_table validates its inputs without modeling packages", {
-  expect_error(fitbe_table(list()), "fitbe_models")
-  fake <- structure(list(models = list()), class = "fitbe_models")
-  expect_error(fitbe_table(fake, alpha = 1.5))
-  expect_error(fitbe_table(fake, alpha = -0.1))
+test_that("be_dataset standardizes columns and relevels the reference first", {
+  ds <- be_dataset(make_be_df(), reference_col = "form", reference_value = "R", endpoints = "auclast")
+  expect_s3_class(ds, "be_dataset")
+  expect_identical(levels(ds$data$.trt)[1], "R")
+  expect_identical(ds$reference_value, "R")
+  expect_identical(ds$test_levels, "T")
+  expect_identical(ds$endpoints, "auclast")
+  expect_true(all(c(".subject", ".period", ".trt", ".logval") %in% names(ds$data)))
 })
 
-# Model fitting and summary (require the modeling packages) ------------------
-
-test_that("fitbe_models returns the expected structure", {
-  skip_if_not_installed("lme4")
-  skip_if_not_installed("lmerTest")
-  d <- make_be_df()
-  fit <- fitbe_models(
-    d, endpoints = "auclast", reference_col = "form", reference_value = "R",
-    fixed = "sequence + period + form", random = "(1|subject)"
-  )
-  expect_s3_class(fit, "fitbe_models")
-  expect_named(fit$models, "auclast")
-  expect_true(all(c("term", "endpoint") %in% names(fit$fixed)))
-  expect_true("Residual" %in% fit$variance$grp)
-  expect_identical(fit$reference_value, "R")
-  expect_identical(fit$value_col, "PPORRES")
-})
-
-test_that("fitbe_models warns about and skips a missing endpoint", {
-  skip_if_not_installed("lme4")
-  skip_if_not_installed("lmerTest")
-  d <- make_be_df(endpoint = "auclast")
-  expect_warning(
-    fit <- fitbe_models(
-      d, endpoints = c("auclast", "cmax"), reference_col = "form",
-      reference_value = "R", fixed = "form", random = "(1|subject)"
-    ),
-    "No data found for endpoint: cmax"
-  )
-  expect_named(fit$models, "auclast")
-})
-
-test_that("fitbe_models prefers PPSTRES over PPORRES", {
-  skip_if_not_installed("lme4")
-  skip_if_not_installed("lmerTest")
+test_that("be_dataset prefers PPSTRES over PPORRES", {
   d <- make_be_df()
   d$PPSTRES <- d$PPORRES
-  fit <- fitbe_models(
-    d, endpoints = "auclast", reference_col = "form", reference_value = "R",
-    fixed = "form", random = "(1|subject)"
-  )
-  expect_identical(fit$value_col, "PPSTRES")
+  ds <- be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast")
+  expect_identical(ds$columns$value, "PPSTRES")
 })
 
-test_that("fitbe_table produces a tidy bioequivalence summary", {
+test_that("be_dataset warns about and skips a missing endpoint", {
+  expect_warning(
+    ds <- be_dataset(make_be_df(), reference_col = "form", reference_value = "R",
+                     endpoints = c("auclast", "cmax")),
+    "not found and skipped: cmax"
+  )
+  expect_identical(ds$endpoints, "auclast")
+})
+
+# Average-BE end-to-end (requires the modeling packages) ---------------------
+
+test_that("be_assess (ABE) returns the expected structure for a 2x2 crossover", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("lmerTest")
   skip_if_not_installed("emmeans")
-  d <- make_be_df(test_effect = 0)
-  fit <- fitbe_models(
-    d, endpoints = "auclast", reference_col = "form", reference_value = "R",
-    fixed = "sequence + period + form", random = "(1|subject)"
-  )
-  tab <- fitbe_table(fit)
-  expect_equal(
-    names(tab),
-    c("endpoint", "test", "reference", "gm_test", "gm_reference",
-      "gmr_percent", "ci_lower", "ci_upper", "df", "cv_intra_percent")
-  )
-  expect_identical(tab$endpoint, "auclast")
-  expect_identical(tab$test, "T")
-  expect_identical(tab$reference, "R")
-  # truly-equivalent data: GMR near 100% with the CI bracketing the point estimate
-  expect_true(tab$ci_lower < tab$gmr_percent)
-  expect_true(tab$gmr_percent < tab$ci_upper)
-  expect_gt(tab$gmr_percent, 85)
-  expect_lt(tab$gmr_percent, 117)
-  expect_gt(tab$df, 0)
-  expect_gt(tab$cv_intra_percent, 0)
-  expect_match(attr(tab, "method"), "least-squares means")
+  res <- be_assess(make_be_df(test_effect = 0), reference_col = "form", reference_value = "R",
+                   endpoints = "auclast", regulator = "ABE")
+  expect_s3_class(res, "be_assess")
+  expect_identical(res$endpoint, "auclast")
+  expect_identical(res$test, "T")
+  expect_identical(res$regulator, "ABE")
+  expect_identical(res$model_type, "lmer")
+  expect_true(res$ci_lower < res$gmr_percent && res$gmr_percent < res$ci_upper)
+  expect_gt(res$gmr_percent, 85)
+  expect_lt(res$gmr_percent, 117)
+  expect_true(is.na(res$swr))
 })
 
-test_that("fitbe_table confidence interval widens with smaller alpha", {
+test_that("be_fit_models is the engine and matches be_assess values", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("lmerTest")
   skip_if_not_installed("emmeans")
-  fit <- fitbe_models(
-    make_be_df(), endpoints = "auclast", reference_col = "form",
-    reference_value = "R", fixed = "sequence + period + form",
-    random = "(1|subject)"
-  )
-  ci90 <- fitbe_table(fit, alpha = 0.10)
-  ci95 <- fitbe_table(fit, alpha = 0.05)
+  d <- make_be_df()
+  tbl <- be_fit_models(d, reference_col = "form", reference_value = "R",
+                       endpoints = "auclast", regulator = "ABE")
+  expect_s3_class(tbl, "data.frame")
+  expect_false(inherits(tbl, "be_assess"))
+  res <- be_assess(d, reference_col = "form", reference_value = "R",
+                   endpoints = "auclast", regulator = "ABE")
+  expect_equal(as.data.frame(res), tbl)
+})
+
+test_that("be_assess confidence interval widens with smaller alpha", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  d <- make_be_df()
+  ci90 <- be_assess(d, reference_col = "form", reference_value = "R",
+                    endpoints = "auclast", regulator = "ABE", alpha = 0.10)
+  ci95 <- be_assess(d, reference_col = "form", reference_value = "R",
+                    endpoints = "auclast", regulator = "ABE", alpha = 0.05)
   expect_lt(ci95$ci_lower, ci90$ci_lower)
   expect_gt(ci95$ci_upper, ci90$ci_upper)
 })
 
-test_that("fitbe_calculate wraps fitting and summarising", {
-  skip_if_not_installed("lme4")
-  skip_if_not_installed("lmerTest")
-  skip_if_not_installed("emmeans")
-  res <- fitbe_calculate(
-    make_be_df(), endpoints = "auclast", reference_col = "form",
-    reference_value = "R", fixed = "sequence + period + form",
-    random = "(1|subject)"
-  )
-  expect_named(res, c("table", "fit"))
-  expect_s3_class(res$fit, "fitbe_models")
-  expect_s3_class(res$table, "data.frame")
-})
-
-test_that("fitbe_calculate works end-to-end from a PKNCAresults object", {
+test_that("be_assess works end-to-end from a PKNCAresults object", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("lmerTest")
   skip_if_not_installed("emmeans")
@@ -236,13 +181,12 @@ test_that("fitbe_calculate works end-to-end from a PKNCAresults object", {
   )
   o_res <- suppressWarnings(pk.nca(o_data))
 
-  # small simulated samples can give benign singular fits; quiet those messages
-  res <- suppressMessages(fitbe_calculate(
-    o_res, endpoints = c("cmax", "auclast"),
-    reference_col = "form", reference_value = "R"
+  res <- suppressMessages(be_assess(
+    o_res, reference_col = "form", reference_value = "R",
+    endpoints = c("cmax", "auclast"), regulator = "ABE"
   ))
-  expect_setequal(res$table$endpoint, c("cmax", "auclast"))
-  expect_true(all(is.finite(res$table$gmr_percent)))
-  expect_true(all(res$table$gmr_percent > 0))
-  expect_true(all(res$table$ci_lower < res$table$ci_upper))
+  expect_setequal(res$endpoint, c("cmax", "auclast"))
+  expect_true(all(is.finite(res$gmr_percent)))
+  expect_true(all(res$gmr_percent > 0))
+  expect_true(all(res$ci_lower < res$ci_upper))
 })

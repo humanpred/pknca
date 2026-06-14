@@ -28,21 +28,47 @@ has_be_pkgs <-
 After noncompartmental analysis (NCA) parameters such as the area under the
 curve (AUC) and maximum concentration (C~max~) have been calculated, average
 bioequivalence (BE) of a test formulation relative to a reference formulation is
-assessed with inferential statistics.  PKNCA provides three functions for this
-step:
+assessed with inferential statistics.  PKNCA provides a single function for the
+whole assessment:
 
-* `fitbe_models()` fits a linear mixed-effects model to the log-transformed value
-  of each NCA endpoint,
-* `fitbe_table()` summarizes those fits into the geometric mean ratio (GMR), its
-  confidence interval, and the intra-subject coefficient of variation, and
-* `fitbe_calculate()` runs both in a single step.
+* **`be_assess()`** takes the results of `pk.nca()` (or a tidy data.frame), a
+  regulatory framework, and the reference formulation, and returns a table with
+  the geometric mean ratio (GMR), its confidence interval, the within-subject
+  variability, the (possibly scaled) acceptance limits or criterion, and the
+  pass/fail decision for each endpoint.
+* **`be_compare()`** runs the same study under several frameworks side by side.
 
-These functions consume the results of `pk.nca()` directly, so the same workflow
-that produces NCA parameters flows into the bioequivalence assessment.  For
-reference-scaled assessments and regulatory pass/fail decisions (EMA, Health
-Canada, GCC, and the FDA RSABE/NTID frameworks), see
-[Reference scaling and regulatory frameworks](#reference-scaling-and-regulatory-frameworks)
-below and `be_assess()`.
+These consume the results of `pk.nca()` directly, so the same workflow that
+produces NCA parameters flows into the bioequivalence assessment.
+
+## How the calculation works
+
+`be_assess()` (and `be_compare()`) are thin verbs over a single calculation
+path, the coordinator `be_fit_models()`, which runs these stages in order:
+
+1. **`be_dataset()`** -- validate the data, resolve the value column, drop
+   excluded rows, detect the subject/sequence/period columns, and set the
+   reference as the first factor level.
+2. **`be_design()`** -- classify the crossover design (2x2x2, full or partial
+   replicate) and report which frameworks it can support.
+3. **`be_fit_model_single()`** -- fit the average-BE model (this is the only
+   place models are fit), dispatching on the model type to `be_fit_model_lmer()`,
+   `be_fit_model_nlme()`, or `be_fit_model_anova()`.
+4. **`be_extract_param()`** -- extract the geometric means, the GMR and its
+   confidence interval, and the within-formulation standard deviations.
+5. **`be_table()`** -- apply the regulatory limits or criterion and decide
+   pass/fail (using the constants from `be_regulator()`).
+
+The model type is selected automatically from the regulator and design; pass
+`model_type` to `be_assess()` to override it:
+
+| Regulator | Design required | Auto `model_type` | Notes |
+|---|---|---|---|
+| `ABE` | any (test & reference) | `lmer` | unscaled 80.00-125.00% |
+| `EMA` / `HC` / `GCC` | replicated reference | `lmer` | expanding limits (ABEL) |
+| `FDA` (RSABE) | replicated reference | `anova` | intra-subject contrasts + linearized bound |
+| `NTID` / `HVNTID` | full replicate (test & reference) | `anova` | adds a swT/swR ratio constraint |
+| *(override)* | as above | `nlme` | treatment-specific variances from one mixed model |
 
 ## Optional packages
 
@@ -133,47 +159,42 @@ knitr::kable(head(as.data.frame(o_results)), digits = 2)
 
 ## Bioequivalence assessment
 
-`fitbe_calculate()` takes the `PKNCAresults` object, the column that identifies
-the formulation (`reference_col`), and the value of that column that is the
-reference (`reference_value`).  When the fixed and random effects are not
-specified, they are derived from the grouping structure: the subject becomes the
-random intercept and the remaining grouping variables (sequence, period, and
-formulation) become the fixed effects.
+`be_assess()` takes the `PKNCAresults` object, the column that identifies the
+formulation (`reference_col`), the value of that column that is the reference
+(`reference_value`), and the regulatory framework.  This 2x2 study is not
+replicated, so only average bioequivalence (`regulator = "ABE"`) is feasible.
 
 ```{r be, eval = has_be_pkgs}
-be <- fitbe_calculate(
+be <- be_assess(
   o_results,
   endpoints = c("cmax", "auclast", "aucinf.obs"),
   reference_col = "formulation",
-  reference_value = "R"
+  reference_value = "R",
+  regulator = "ABE"
 )
 
-knitr::kable(be$table, digits = 2)
-```
-
-```{r be-method, eval = has_be_pkgs}
-attr(be$table, "method")
+knitr::kable(as.data.frame(be), digits = 2)
 ```
 
 ## Interpreting the results
 
-For each endpoint the table reports:
+For each endpoint and test formulation the table reports:
 
-* `gm_test`, `gm_reference`: the geometric mean of the test and reference
-  formulations (least-squares means back-transformed from the log scale),
-* `gmr_percent`: the geometric mean ratio (test / reference), expressed as a
-  percentage,
+* `gmr_percent`: the geometric mean ratio (test / reference), as a percentage,
 * `ci_lower`, `ci_upper`: the bounds of the confidence interval for the GMR
   (90% by default, controlled by `alpha`),
-* `df`: the Satterthwaite degrees of freedom, and
-* `cv_intra_percent`: the intra-subject coefficient of variation, derived from
-  the residual standard deviation as `sqrt(exp(s^2) - 1) * 100`.
+* `cvwr_percent`, `swr`: the within-reference coefficient of variation and
+  standard deviation (used by the reference-scaling frameworks; `NA` for
+  unscaled ABE),
+* `limit_lower`, `limit_upper`: the acceptance limits, and `criterion` for the
+  FDA reference-scaled bound, and
+* `pass`: the regulatory decision.
 
-Two formulations are typically declared bioequivalent when the 90% confidence
+Two formulations are declared bioequivalent under ABE when the 90% confidence
 interval for the geometric mean ratio falls entirely within 80.00%-125.00% for
 the primary endpoints (commonly AUC and C~max~).
 
-The model fit for each endpoint is
+For ABE the average-BE model fit for each endpoint is
 
 $$\log(\text{value}) = \text{sequence} + \text{period} + \text{formulation} + (1 \mid \text{subject})$$
 
@@ -277,12 +298,14 @@ requires the conventional 90% confidence interval to lie within 80.00-125.00%.
 
 ## Reporting checklist
 
-The summary supports common bioequivalence reporting requirements:
+The assessment table supports common bioequivalence reporting requirements:
 
-1. **Software and method**: recorded in the `method` attribute of the table
-   (mixed-effects ANOVA via `lmerTest`/`lme4`, confidence interval by
-   exponentiated differences in least-squares means via `emmeans`).
-2. **Geometric means, %GMR, confidence interval, degrees of freedom, and
-   intra-subject CV**: one row per endpoint in `be$table`.
-3. **Individual data**: available from `as.data.frame(o_results)` for listings
+1. **Framework and model**: the `regulator` and `model_type` columns record the
+   framework and the average-BE model used.
+2. **%GMR, confidence interval, within-subject CV, limits/criterion, and the
+   pass/fail decision**: one row per endpoint and test formulation in
+   `as.data.frame(be_assess(...))`.
+3. **Cross-regulator comparison**: `summary(be_compare(...))` gives an
+   endpoint-by-regulator pass/fail grid.
+4. **Individual data**: available from `as.data.frame(o_results)` for listings
    and figures.

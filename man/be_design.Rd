@@ -48,11 +48,13 @@ be_design(d, "subject", "sequence", "period", "treatment", reference_value = "R"
 Other Bioequivalence:
 \code{\link[=be_assess]{be_assess()}},
 \code{\link[=be_compare]{be_compare()}},
+\code{\link[=be_dataset]{be_dataset()}},
 \code{\link[=be_expand_limits]{be_expand_limits()}},
+\code{\link[=be_extract_param]{be_extract_param()}},
+\code{\link[=be_fit_model_single]{be_fit_model_single()}},
+\code{\link[=be_fit_models]{be_fit_models()}},
 \code{\link[=be_regulator]{be_regulator()}},
-\code{\link[=be_within_var]{be_within_var()}},
-\code{\link[=fitbe_calculate]{fitbe_calculate()}},
-\code{\link[=fitbe_models]{fitbe_models()}},
-\code{\link[=fitbe_table]{fitbe_table()}}
+\code{\link[=be_table]{be_table()}},
+\code{\link[=be_within_var]{be_within_var()}}
 }
 \concept{Bioequivalence}

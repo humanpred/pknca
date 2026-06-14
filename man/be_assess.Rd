@@ -10,7 +10,7 @@ be_assess(
   reference_value,
   endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
   regulator = "FDA",
-  method = c("B", "A"),
+  model_type = NULL,
   alpha = 0.1,
   subject = NULL,
   sequence = NULL,
@@ -25,7 +25,8 @@ values, and subject/sequence/period/treatment columns.}
 
 \item{reference_col}{The column identifying the formulation/treatment.}
 
-\item{reference_value}{The value of \code{treatment} that is the reference.}
+\item{reference_value}{The value of \code{reference_col} that is the reference
+formulation.}
 
 \item{endpoints}{Character vector of NCA parameters (matched against
 \code{PPTESTCD}) to assess.}
@@ -33,13 +34,13 @@ values, and subject/sequence/period/treatment columns.}
 \item{regulator}{The regulatory framework (see \code{\link[=be_regulator]{be_regulator()}}); one of
 \code{"ABE"}, \code{"EMA"}, \code{"HC"}, \code{"GCC"}, \code{"FDA"}, \code{"NTID"}, or \code{"HVNTID"}.}
 
-\item{method}{\code{"A"} (fixed-effects ANOVA, the \code{replicateBE} Method A
-convention) or \code{"B"} (mixed model, the default) for the average-BE
-geometric mean ratio and confidence interval.}
+\item{model_type}{The model for the average-BE point estimate, one of
+\code{"lmer"} (mixed model), \code{"anova"} (fixed-effects/intra-subject contrasts),
+or \code{"nlme"} (treatment-specific mixed model).  When \code{NULL} (default) it is
+chosen from the regulator.}
 
-\item{alpha}{The significance level for the \code{swT}/\code{swR} ratio confidence
-bound (default \code{0.10} gives the 90\% upper bound used for narrow therapeutic
-index drugs).}
+\item{alpha}{The significance level; the confidence interval has level
+\code{1 - alpha} (default \code{0.10} gives the 90\% interval).}
 
 \item{subject, sequence, period}{Column names for the subject, randomization
 sequence, and period.  When \code{NULL} they are taken from the \code{PKNCAresults}
@@ -53,7 +54,7 @@ An object of class \code{be_assess} (a data.frame) with one row per
 endpoint and test formulation and the columns \code{endpoint}, \code{test}, \code{n},
 \code{design}, \code{gmr_percent}, \code{ci_lower}, \code{ci_upper}, \code{cvwr_percent},
 \code{cvwt_percent}, \code{swr}, \code{limit_lower}, \code{limit_upper}, \code{criterion},
-\code{regulator}, \code{method}, and \code{pass}.  \verb{limit_*} are \code{NA} for the RSABE
+\code{regulator}, \code{model_type}, and \code{pass}.  \verb{limit_*} are \code{NA} for the RSABE
 criterion and \code{criterion} is \code{NA} for the limit-based frameworks.
 }
 \description{
@@ -62,17 +63,18 @@ more noncompartmental endpoints against a regulatory framework, including
 reference scaling and the pass/fail decision.  It accepts the results of
 \code{\link[=pk.nca]{pk.nca()}} directly (a \code{PKNCAresults} object) or a tidy long data.frame, so
 the same workflow that produces NCA parameters flows into the regulatory
-decision.
+decision.  It is a thin wrapper over \code{\link[=be_fit_models]{be_fit_models()}} that adds the
+\code{be_assess} class and its print/summary methods.
 }
 \details{
-For average bioequivalence and the expanding-limits frameworks (EMA, HC,
-GCC) the geometric mean ratio and its confidence interval come from the
-average-BE model (see \code{\link[=fitbe_models]{fitbe_models()}}); the \code{method} argument selects the
-fixed-effects ANOVA (\code{"A"}) or the mixed model (\code{"B"}).  For the FDA
-reference-scaled frameworks (FDA RSABE, NTID, HVNTID) the point estimate and
-the linearized criterion are computed from intra-subject contrasts, as the
-guidances specify.  Within-subject variability is always estimated by the
-regulatory ANOVA method (see \code{\link[=be_within_var]{be_within_var()}}).
+The model type is selected automatically from the regulator: the expanding-
+limits frameworks (ABE, EMA, HC, GCC) use the mixed model (\code{"lmer"}) for the
+geometric mean ratio and its confidence interval, while the FDA reference-
+scaled frameworks (FDA RSABE, NTID, HVNTID) use intra-subject contrasts (the
+\code{"anova"} path), as the guidances specify.  Pass \code{model_type} to override
+(\code{"lmer"}, \code{"anova"}, or \code{"nlme"}).  Within-subject variability uses the
+regulatory ANOVA estimator for \code{"lmer"}/\code{"anova"} and the treatment-specific
+mixed-model estimator for \code{"nlme"}.
 }
 \examples{
 \dontshow{if (requireNamespace("lme4", quietly = TRUE) && requireNamespace("lmerTest", quietly = TRUE) && requireNamespace("emmeans", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -101,12 +103,14 @@ be_assess(d, reference_col = "treatment", reference_value = "R",
 
 Other Bioequivalence:
 \code{\link[=be_compare]{be_compare()}},
+\code{\link[=be_dataset]{be_dataset()}},
 \code{\link[=be_design]{be_design()}},
 \code{\link[=be_expand_limits]{be_expand_limits()}},
+\code{\link[=be_extract_param]{be_extract_param()}},
+\code{\link[=be_fit_model_single]{be_fit_model_single()}},
+\code{\link[=be_fit_models]{be_fit_models()}},
 \code{\link[=be_regulator]{be_regulator()}},
-\code{\link[=be_within_var]{be_within_var()}},
-\code{\link[=fitbe_calculate]{fitbe_calculate()}},
-\code{\link[=fitbe_models]{fitbe_models()}},
-\code{\link[=fitbe_table]{fitbe_table()}}
+\code{\link[=be_table]{be_table()}},
+\code{\link[=be_within_var]{be_within_var()}}
 }
 \concept{Bioequivalence}
