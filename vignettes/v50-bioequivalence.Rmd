@@ -59,16 +59,25 @@ path, the coordinator `be_fit_models()`, which runs these stages in order:
 5. **`be_table()`** -- apply the regulatory limits or criterion and decide
    pass/fail (using the constants from `be_regulator()`).
 
-The model type is selected automatically from the regulator and design; pass
-`model_type` to `be_assess()` to override it:
+The model type is selected automatically from the **regulator and the design**;
+pass `model_type` to `be_assess()` to override it.  The FDA reference-scaled
+family always uses intra-subject contrasts (`"anova"`); otherwise `be_design()`
+decides -- a simple 2x2 crossover is analyzed by a fixed-effects ANOVA, while a
+replicate design uses the mixed model.
 
 | Regulator | Design required | Auto `model_type` | Notes |
 |---|---|---|---|
-| `ABE` | any (test & reference) | `lmer` | unscaled 80.00-125.00% |
+| `ABE` | any (test & reference) | `anova` (2x2) / `lmer` (replicate) | unscaled 80.00-125.00% |
 | `EMA` / `HC` / `GCC` | replicated reference | `lmer` | expanding limits (ABEL) |
 | `FDA` (RSABE) | replicated reference | `anova` | intra-subject contrasts + linearized bound |
 | `NTID` / `HVNTID` | full replicate (test & reference) | `anova` | adds a swT/swR ratio constraint |
-| *(override)* | as above | `nlme` | treatment-specific variances from one mixed model |
+| *(override)* | full replicate | `nlme` | treatment-specific variances from one mixed model |
+
+The table also reports, on the measurement scale, the reference and test
+geometric means with their 90% confidence intervals (`gm_reference`/`gm_test`
+and their `_lower`/`_upper` bounds) and the endpoint `units` (taken from the
+`PKNCAresults` object; `NA` when not provided, and a column because they differ
+between C~max~ and AUC).
 
 ## Optional packages
 
@@ -180,6 +189,11 @@ knitr::kable(as.data.frame(be), digits = 2)
 
 For each endpoint and test formulation the table reports:
 
+* `units`: the measurement units of the endpoint (e.g. `ng/mL` for C~max~,
+  `hr*ng/mL` for AUC), taken from the `PKNCAresults` object,
+* `gm_reference`, `gm_test` (with `_lower`/`_upper` bounds): the reference and
+  test geometric means and their 90% confidence intervals, on the measurement
+  scale (in `units`),
 * `gmr_percent`: the geometric mean ratio (test / reference), as a percentage,
 * `ci_lower`, `ci_upper`: the bounds of the confidence interval for the GMR
   (90% by default, controlled by `alpha`),

@@ -315,6 +315,11 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
     hvntid = replicate_reference && replicate_test
   )
 
+  # Model recommended by the design alone: a simple two-period crossover is
+  # classically analyzed by a fixed-effects ANOVA, while replicate designs use a
+  # mixed model.  The regulator can override this (see be_assess()).
+  recommended_model_type <- if (identical(design, "2x2x2")) "anova" else "lmer"
+
   structure(
     list(
       design = design,
@@ -330,7 +335,8 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
       reps_reference = reps_reference,
       reps_test = reps_test,
       balanced = balanced,
-      feasible = feasible
+      feasible = feasible,
+      recommended_model_type = recommended_model_type
     ),
     class = "be_design"
   )
@@ -781,6 +787,16 @@ be_dataset <- function(object, reference_col, reference_value,
     } else {
       stop("The data must contain a `PPORRES` or `PPSTRES` column of results.")
     }
+  # Units column matching the value column (PKNCAresults provides PPSTRESU /
+  # PPORRESU).  May be absent, in which case units are unavailable.
+  unit_col <-
+    if (value_col == "PPSTRES" && "PPSTRESU" %in% names(data)) {
+      "PPSTRESU"
+    } else if (value_col == "PPORRES" && "PPORRESU" %in% names(data)) {
+      "PPORRESU"
+    } else {
+      NA_character_
+    }
   subject <- .be_find_col(subject, data, c("USUBJID", "subject", "Subject", "ID", "id"), "subject")
   period <- .be_find_col(period, data, c("period", "Period", "PERIOD", "PER", "per"), "period")
   sequence <-
@@ -797,6 +813,7 @@ be_dataset <- function(object, reference_col, reference_value,
   data$.period <- factor(as.character(data[[period]]))
   data$.trt <- stats::relevel(factor(as.character(data[[reference_col]])), ref = reference_value)
   data$.logval <- log(data[[value_col]])
+  data$.units <- if (!is.na(unit_col)) as.character(data[[unit_col]]) else NA_character_
 
   present <- intersect(endpoints, unique(as.character(data$PPTESTCD)))
   if (length(present) == 0) {
@@ -811,7 +828,7 @@ be_dataset <- function(object, reference_col, reference_value,
       data = data,
       columns = list(
         subject = subject, sequence = sequence, period = period,
-        treatment = reference_col, value = value_col
+        treatment = reference_col, value = value_col, units = unit_col
       ),
       reference_value = reference_value,
       test_levels = setdiff(levels(data$.trt), reference_value),
@@ -831,14 +848,24 @@ print.be_dataset <- function(x, ...) {
   invisible(x)
 }
 
-# Choose the model type from the regulator's point-estimate method when the user
-# did not request one.  ABE/EMA/HC/GCC use the mixed model ("lmer"); the FDA
-# reference-scaled family uses the intra-subject-contrast path ("anova").
-.be_resolve_model_type <- function(model_type, reg) {
-  if (!is.null(model_type)) {
-    return(match.arg(model_type, c("lmer", "nlme", "anova")))
+# Choose the model type from the regulator and the design when the user did not
+# request one.  The FDA reference-scaled family always uses the intra-subject-
+# contrast path ("anova"); otherwise the design decides (a simple 2x2x2
+# crossover uses a fixed-effects ANOVA, a replicate design uses the mixed model
+# "lmer").  The treatment-specific mixed model ("nlme") needs a full replicate.
+.be_resolve_model_type <- function(model_type, reg, design) {
+  model_type <-
+    if (!is.null(model_type)) {
+      match.arg(model_type, c("lmer", "nlme", "anova"))
+    } else if (identical(reg$est_method, "isc")) {
+      "anova"
+    } else {
+      design$recommended_model_type
+    }
+  if (identical(model_type, "nlme") && !(design$replicate_reference && design$replicate_test)) {
+    stop("model_type = \"nlme\" requires a fully replicated design (both formulations replicated).")
   }
-  if (identical(reg$est_method, "isc")) "anova" else "lmer"
+  model_type
 }
 
 # Build the average-BE fixed-effects model formula from the standardized
@@ -868,7 +895,8 @@ print.be_dataset <- function(x, ...) {
 #'   the within-formulation variances are estimated).
 #' @returns An object of class `be_fit`: a list with `model_type`, the fitted
 #'   `model`, and (for lmer/anova) `ref_var`/`test_var` within-formulation ANOVA
-#'   variances.
+#'   variances.  The endpoint's measurement units are attached as a `units`
+#'   attribute (`NULL` when not provided).
 #' @family Bioequivalence
 #' @export
 be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova"), scaling = TRUE) {
@@ -881,7 +909,9 @@ be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova"), 
       anova = be_fit_model_anova(ds_ep, scaling = scaling)
     )
   fit$model_type <- model_type
-  structure(fit, class = "be_fit")
+  # Units of the endpoint (from be_dataset); NULL when not provided.
+  units <- unique(ds_ep$.units)
+  structure(fit, class = "be_fit", units = if (length(units) == 1 && !is.na(units)) units else NULL)
 }
 
 # Within-formulation ANOVA variances for the reference and (single) test arm.
@@ -968,6 +998,8 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
   # Within-formulation variances: from the ANOVA fits (lmer/anova) or the
   # varIdent model (nlme).
   wv <- model_part$within
+  units <- attr(fit, "units")
+  if (is.null(units)) units <- NA_character_
   rows <- list()
   for (tl in test_levels) {
     isc <- .be_isc(ds_ep, reference_value, tl, alpha)
@@ -975,8 +1007,11 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
     n_tl <- length(unique(ds_ep$.subject[ds_ep$.trt %in% c(reference_value, tl)]))
     rows[[length(rows) + 1]] <-
       data.frame(
-        test = tl, n = n_tl,
-        gm_reference = model_part$gm_reference, gm_test = m$gm_test,
+        test = tl, n = n_tl, units = units,
+        gm_reference = model_part$gm_reference,
+        gm_reference_lower = model_part$gm_reference_lower,
+        gm_reference_upper = model_part$gm_reference_upper,
+        gm_test = m$gm_test, gm_test_lower = m$gm_test_lower, gm_test_upper = m$gm_test_upper,
         model_gmr_percent = m$gmr_percent, model_ci_lower = m$ci_lower,
         model_ci_upper = m$ci_upper, model_df = m$df,
         isc_pe_log = isc$pe_log, isc_se = isc$se, isc_df = isc$df,
@@ -999,20 +1034,35 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
   out
 }
 
+# Per-formulation geometric means with their (1 - alpha) confidence intervals on
+# the measurement scale, from an emmeans object (least-squares means
+# exponentiated).  Returns a list keyed by treatment level.
+.be_arm_gm_from_emm <- function(emm, alpha) {
+  s <- as.data.frame(summary(emm, infer = c(TRUE, FALSE), level = 1 - alpha))
+  out <- list()
+  for (i in seq_len(nrow(s))) {
+    out[[as.character(s$.trt[i])]] <- list(
+      gm = exp(s$emmean[i]), lower = exp(s$lower.CL[i]), upper = exp(s$upper.CL[i])
+    )
+  }
+  out
+}
+
 # Shared emmeans extraction for the lmer and nlme model types.  Returns the
-# reference geometric mean and, per test level, the test geometric mean and the
-# geometric mean ratio with its confidence interval.
+# reference geometric mean (with confidence interval) and, per test level, the
+# test geometric mean (with confidence interval) and the geometric mean ratio
+# with its confidence interval.
 .be_emmeans_part <- function(model, reference_value, test_levels, alpha, lmer_df = NULL, ref_var, test_var) {
   emm_args <- list(object = model, specs = ".trt")
   if (!is.null(lmer_df)) emm_args$lmer.df <- lmer_df
   emm <- do.call(emmeans::emmeans, emm_args)
-  gm <- as.data.frame(summary(emm))
+  arm <- .be_arm_gm_from_emm(emm, alpha)
   ctr <- emmeans::contrast(emm, method = "revpairwise", adjust = "none")
   cs <- as.data.frame(summary(ctr, infer = c(TRUE, TRUE), level = 1 - alpha))
-  gm_ref <- exp(gm$emmean[as.character(gm$.trt) == reference_value][1])
+  ref <- arm[[reference_value]]
   contrasts <- list()
   for (tl in test_levels) {
-    gm_test <- exp(gm$emmean[as.character(gm$.trt) == tl][1])
+    t_arm <- arm[[tl]]
     crow <-
       if (length(test_levels) == 1) {
         cs[1, , drop = FALSE]
@@ -1020,7 +1070,7 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
         cs[grepl(tl, cs$contrast, fixed = TRUE), , drop = FALSE][1, ]
       }
     contrasts[[tl]] <- list(
-      gm_test = gm_test,
+      gm_test = t_arm$gm, gm_test_lower = t_arm$lower, gm_test_upper = t_arm$upper,
       gmr_percent = exp(crow$estimate) * 100,
       ci_lower = exp(crow$lower.CL) * 100,
       ci_upper = exp(crow$upper.CL) * 100,
@@ -1028,7 +1078,8 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
     )
   }
   list(
-    gm_reference = gm_ref, contrasts = contrasts,
+    gm_reference = ref$gm, gm_reference_lower = ref$lower, gm_reference_upper = ref$upper,
+    contrasts = contrasts,
     within = list(ref_var = ref_var, test_var = test_var)
   )
 }
@@ -1072,31 +1123,28 @@ be_extract_param_nlme <- function(fit, alpha = 0.10) {
 be_extract_param_anova <- function(fit, ds_ep, alpha = 0.10) {
   reference_value <- levels(ds_ep$.trt)[1]
   test_levels <- setdiff(levels(ds_ep$.trt), reference_value)
-  # Geometric means from the fixed-effects model (descriptive).
-  gm_ref <- NA_real_
+  # Geometric means (with confidence intervals) from the fixed-effects model;
+  # the geometric mean ratio and CI come from the intra-subject ANOVA contrast.
+  arm <-
+    if (requireNamespace("emmeans", quietly = TRUE)) {
+      .be_arm_gm_from_emm(emmeans::emmeans(fit$model, specs = ".trt"), alpha)
+    } else {
+      list()
+    }
+  na_arm <- list(gm = NA_real_, lower = NA_real_, upper = NA_real_)
+  ref <- if (is.null(arm[[reference_value]])) na_arm else arm[[reference_value]]
   contrasts <- list()
-  if (requireNamespace("emmeans", quietly = TRUE)) {
-    emm <- emmeans::emmeans(fit$model, specs = ".trt")
-    gm <- as.data.frame(summary(emm))
-    gm_ref <- exp(gm$emmean[as.character(gm$.trt) == reference_value][1])
-  }
   for (tl in test_levels) {
     est <- .be_anova_est(ds_ep, reference_value, tl, alpha)
-    gm_test <-
-      if (requireNamespace("emmeans", quietly = TRUE)) {
-        emm <- emmeans::emmeans(fit$model, specs = ".trt")
-        gm <- as.data.frame(summary(emm))
-        exp(gm$emmean[as.character(gm$.trt) == tl][1])
-      } else {
-        NA_real_
-      }
+    t_arm <- if (is.null(arm[[tl]])) na_arm else arm[[tl]]
     contrasts[[tl]] <- list(
-      gm_test = gm_test, gmr_percent = est$gmr_percent,
-      ci_lower = est$ci_lower, ci_upper = est$ci_upper, df = est$df
+      gm_test = t_arm$gm, gm_test_lower = t_arm$lower, gm_test_upper = t_arm$upper,
+      gmr_percent = est$gmr_percent, ci_lower = est$ci_lower, ci_upper = est$ci_upper, df = est$df
     )
   }
   list(
-    gm_reference = gm_ref, contrasts = contrasts,
+    gm_reference = ref$gm, gm_reference_lower = ref$lower, gm_reference_upper = ref$upper,
+    contrasts = contrasts,
     within = list(ref_var = fit$ref_var, test_var = fit$test_var)
   )
 }
@@ -1146,7 +1194,10 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
     dec <- .be_decide(est, wv, reg, alpha)
     rows[[length(rows) + 1]] <-
       data.frame(
-        endpoint = p$endpoint, test = p$test, n = p$n, design = design,
+        endpoint = p$endpoint, test = p$test, n = p$n, design = design, units = p$units,
+        gm_reference = p$gm_reference, gm_reference_lower = p$gm_reference_lower,
+        gm_reference_upper = p$gm_reference_upper,
+        gm_test = p$gm_test, gm_test_lower = p$gm_test_lower, gm_test_upper = p$gm_test_upper,
         gmr_percent = est$gmr_percent, ci_lower = est$ci_lower, ci_upper = est$ci_upper,
         cvwr_percent = p$cvwr_percent, cvwt_percent = p$cvwt_percent, swr = p$swr,
         limit_lower = dec$limit_lower, limit_upper = dec$limit_upper, criterion = dec$criterion,
@@ -1211,7 +1262,7 @@ be_fit_models <- function(object, reference_col, reference_value,
     stop("`design` must be a `be_design` object from `be_design()`.")
   }
   .be_check_feasible(reg, design)
-  model_type <- .be_resolve_model_type(model_type, reg)
+  model_type <- .be_resolve_model_type(model_type, reg, design)
 
   params <- list()
   for (ep in ds$endpoints) {
@@ -1266,10 +1317,14 @@ be_fit_models <- function(object, reference_col, reference_value,
 #'   `NULL`.
 #' @returns An object of class `be_assess` (a data.frame) with one row per
 #'   endpoint and test formulation and the columns `endpoint`, `test`, `n`,
-#'   `design`, `gmr_percent`, `ci_lower`, `ci_upper`, `cvwr_percent`,
-#'   `cvwt_percent`, `swr`, `limit_lower`, `limit_upper`, `criterion`,
-#'   `regulator`, `model_type`, and `pass`.  `limit_*` are `NA` for the RSABE
-#'   criterion and `criterion` is `NA` for the limit-based frameworks.
+#'   `design`, `units` (the endpoint's measurement units, `NA` when not
+#'   provided), the reference and test geometric means with their 90% confidence
+#'   intervals on the measurement scale (`gm_reference`, `gm_reference_lower`,
+#'   `gm_reference_upper`, `gm_test`, `gm_test_lower`, `gm_test_upper`),
+#'   `gmr_percent`, `ci_lower`, `ci_upper`, `cvwr_percent`, `cvwt_percent`,
+#'   `swr`, `limit_lower`, `limit_upper`, `criterion`, `regulator`,
+#'   `model_type`, and `pass`.  `limit_*` are `NA` for the RSABE criterion and
+#'   `criterion` is `NA` for the limit-based frameworks.
 #' @family Bioequivalence
 #' @seealso [be_compare()] to assess one dataset under several frameworks,
 #'   [be_within_var()], and [be_regulator()].
@@ -1322,6 +1377,8 @@ as.data.frame.be_assess <- function(x, ...) {
 format.be_assess <- function(x, digits = 2, ...) {
   d <- as.data.frame(x)
   round_cols <- c(
+    "gm_reference", "gm_reference_lower", "gm_reference_upper",
+    "gm_test", "gm_test_lower", "gm_test_upper",
     "gmr_percent", "ci_lower", "ci_upper", "cvwr_percent", "cvwt_percent",
     "swr", "limit_lower", "limit_upper"
   )

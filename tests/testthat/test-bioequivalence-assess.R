@@ -421,3 +421,59 @@ test_that("model_type lmer and anova give the same GMR on a balanced design", {
   expect_equal(lmer_res$gmr_percent, anova_res$gmr_percent, tolerance = 1e-6)
   expect_equal(lmer_res$ci_lower, anova_res$ci_lower, tolerance = 1e-6)
 })
+
+# Design-steered model selection, geometric means, and units ------------------
+
+test_that("be_design recommends and be_assess auto-selects the model by design", {
+  full <- be_design(generate_be_replicate(24, 1, "full"), "subject", "sequence", "period", "treatment", "R")
+  conv <- be_design(generate_be_replicate(16, 3, "2x2"), "subject", "sequence", "period", "treatment", "R")
+  expect_identical(full$recommended_model_type, "lmer")
+  expect_identical(conv$recommended_model_type, "anova")
+})
+
+test_that("be_assess steers model_type by design but the FDA family stays anova", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  full <- be_replicate_long(generate_be_replicate(24, 20240501, "full"))
+  conv <- be_replicate_long(generate_be_replicate(16, 9, "2x2", cv_wr = 0.3, cv_wt = 0.3))
+  expect_identical(be_assess(full, "treatment", "R", "auclast", regulator = "ABE")$model_type, "lmer")
+  expect_identical(be_assess(conv, "treatment", "R", "auclast", regulator = "ABE")$model_type, "anova")
+  # FDA always uses the intra-subject-contrast (anova) path regardless of design
+  expect_identical(be_assess(full, "treatment", "R", "auclast", regulator = "FDA")$model_type, "anova")
+})
+
+test_that("model_type nlme requires a fully replicated design", {
+  dp <- be_replicate_long(generate_be_replicate(30, 505, "partial", cv_wr = 0.40))
+  expect_error(
+    be_assess(dp, "treatment", "R", "auclast", regulator = "FDA", model_type = "nlme"),
+    "fully replicated"
+  )
+})
+
+test_that("be_assess reports geometric means with measurement-scale 90% CIs", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"))
+  res <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA")
+  for (col in c("gm_reference", "gm_reference_lower", "gm_reference_upper",
+                "gm_test", "gm_test_lower", "gm_test_upper")) {
+    expect_true(col %in% names(res))
+  }
+  expect_true(res$gm_reference_lower < res$gm_reference && res$gm_reference < res$gm_reference_upper)
+  expect_true(res$gm_test_lower < res$gm_test && res$gm_test < res$gm_test_upper)
+  # the geometric mean ratio equals gm_test / gm_reference
+  expect_equal(res$gmr_percent, res$gm_test / res$gm_reference * 100, tolerance = 1e-6)
+})
+
+test_that("be_assess carries units as a per-endpoint column (NA when absent)", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"))
+  expect_true(is.na(be_assess(d, "treatment", "R", "auclast", regulator = "EMA")$units))
+  d$PPORRESU <- "ng/mL"
+  res <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA")
+  expect_identical(res$units, "ng/mL")
+})

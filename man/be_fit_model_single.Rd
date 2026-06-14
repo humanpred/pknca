@@ -31,7 +31,8 @@ the within-formulation variances are estimated).}
 \value{
 An object of class \code{be_fit}: a list with \code{model_type}, the fitted
 \code{model}, and (for lmer/anova) \code{ref_var}/\code{test_var} within-formulation ANOVA
-variances.
+variances.  The endpoint's measurement units are attached as a \code{units}
+attribute (\code{NULL} when not provided).
 }
 \description{
 \code{be_fit_model_single()} fits the average-BE model for a single endpoint and
