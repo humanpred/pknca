@@ -27,17 +27,19 @@
 #'   used for urine or feces measurements.
 #' @param duration (optional) The duration of collection as is typically used
 #'   for concentration measurements in urine or feces.
-#' @param exclude_half.life,include_half.life A character scalar for the column
-#'   name in the dataset.  `exclude_half.life` names points to drop; automatic
-#'   curve-stripping point selection is still performed on the remaining
-#'   (non-excluded) points and is not bypassed.  `include_half.life` names the
-#'   exact points to use, bypassing automatic curve-stripping point selection.
-#'   Each value is `TRUE`, `FALSE`, or `NA` (undefined); a column is treated as
-#'   "in use" for an interval unless it is entirely `NA`, so leave it `NA`
-#'   (rather than `FALSE`) where the mechanism should not apply.  Only one of
-#'   `exclude_half.life` and `include_half.life` may be in use for a given
-#'   interval.  See the "Half-Life Calculation" vignette for more details on the
-#'   use of these arguments.
+#' @param exclude_half.life,include_half.life Manual half-life point selection,
+#'   given as a logical value per concentration measurement (or, in
+#'   [PKNCAconc()], the name of such a column in the data).  `exclude_half.life`
+#'   drops the flagged points; automatic curve-stripping point selection is
+#'   still performed on the remaining (non-excluded) points and is not bypassed.
+#'   `include_half.life` names the exact points to use, bypassing automatic
+#'   curve-stripping point selection.  Each value is `TRUE`, `FALSE`, or `NA`
+#'   (undefined); the column/vector is treated as "in use" for an interval
+#'   unless it is entirely `NA` (so an all-`FALSE` column still counts as in
+#'   use), so leave it `NA` (rather than `FALSE`) where the mechanism should not
+#'   apply.  Only one of `exclude_half.life` and `include_half.life` may be in
+#'   use for a given interval.  See the "Half-Life Calculation" vignette for
+#'   more details on the use of these arguments.
 #' @param lloq (optional) The lower limit of quantification used by the Tobit
 #'   half-life method (`hl_method = "tobit"`).  Either the name of a column in
 #'   `data` giving the per-observation LLOQ or a numeric scalar applied to all
