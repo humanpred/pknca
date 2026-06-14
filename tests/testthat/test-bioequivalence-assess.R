@@ -34,9 +34,13 @@ test_that("be_regulator returns the documented constants for every framework", {
 test_that("be_regulator scaling constants match their regulatory definitions", {
   # FDA RSABE: r_const = log(1.25) / sigma_w0 with sigma_w0 = 0.25.
   expect_equal(be_regulator("FDA")$r_const, log(1.25) / 0.25)
-  # NTID / HVNTID: r_const = -log(0.9) / 0.1.
+  # NTID: r_const = -log(0.9) / 0.1; HVNTID is unscaled (no r_const).
   expect_equal(be_regulator("NTID")$r_const, -log(0.9) / 0.1)
-  expect_equal(be_regulator("HVNTID")$r_const, -log(0.9) / 0.1)
+  expect_true(is.na(be_regulator("HVNTID")$r_const))
+  # swT/swR ratio cap applies to the narrow therapeutic index frameworks only.
+  expect_equal(be_regulator("NTID")$sw_ratio_cap, 2.5)
+  expect_equal(be_regulator("HVNTID")$sw_ratio_cap, 2.5)
+  expect_true(is.na(be_regulator("EMA")$sw_ratio_cap))
   # EMA constant 0.76 ~ log(1.25) / sqrt(log(1 + 0.30^2)), rounded by the EMA.
   expect_equal(round(log(1.25) / sqrt(log(1 + 0.30^2)), 2), 0.76)
 })
@@ -163,13 +167,40 @@ test_that(".be_isc reproduces the intra-subject contrast point estimate", {
 })
 
 test_that(".be_rsabe_bound is monotone in the point estimate and flips once", {
+  # Signature: (pe_log, se, df_pe, s2wR, dfRR, r_const).
   # Larger |point estimate| should only ever worsen (increase) the bound.
-  b_small <- .be_rsabe_bound(log(1.00), 0.05, 0.09, 30, log(1.25) / 0.25)
-  b_large <- .be_rsabe_bound(log(1.20), 0.05, 0.09, 30, log(1.25) / 0.25)
+  b_small <- .be_rsabe_bound(log(1.00), 0.05, 30, 0.09, 30, log(1.25) / 0.25)
+  b_large <- .be_rsabe_bound(log(1.20), 0.05, 30, 0.09, 30, log(1.25) / 0.25)
   expect_lt(b_small, b_large)
   # A tiny within-reference variance (s2wR -> 0) makes scaling impossible to pass
   # for a non-unity ratio.
-  expect_gt(.be_rsabe_bound(log(1.20), 0.05, 1e-6, 30, log(1.25) / 0.25), 0)
+  expect_gt(.be_rsabe_bound(log(1.20), 0.05, 30, 1e-6, 30, log(1.25) / 0.25), 0)
+})
+
+test_that(".be_rsabe_bound matches the PowerTOST RSABE/NTID criterion formula", {
+  # Cross-check the linearized bound against an independent recomputation of the
+  # same Howe/Hyslop criterion used by PowerTOST's power.RSABE / power.NTID:
+  #   hw = qt(0.95, df_pe) * se; Em = pe^2 - se^2; Es = r^2 * s2wR
+  #   Cm = max((pe-hw)^2, (pe+hw)^2); Cs = Es * dfRR / qchisq(0.95, dfRR)
+  #   bound = Em - Es + sqrt((Cm-Em)^2 + (Cs-Es)^2)
+  pt_bound <- function(pe, se, df_pe, s2wR, dfRR, r) {
+    hw <- stats::qt(0.95, df_pe) * se
+    Em <- pe^2 - se^2
+    Es <- r^2 * s2wR
+    Cm <- max((pe - hw)^2, (pe + hw)^2)
+    Cs <- Es * dfRR / stats::qchisq(0.95, dfRR)
+    Em - Es + sqrt((Cm - Em)^2 + (Cs - Es)^2)
+  }
+  for (args in list(
+    list(pe = log(1.05), se = 0.10, df_pe = 23, s2wR = 0.236, dfRR = 22, r = log(1.25) / 0.25),
+    list(pe = log(0.92), se = 0.06, df_pe = 35, s2wR = 0.09, dfRR = 34, r = -log(0.9) / 0.1)
+  )) {
+    expect_equal(
+      do.call(.be_rsabe_bound, unname(args[c("pe", "se", "df_pe", "s2wR", "dfRR", "r")])),
+      do.call(pt_bound, args),
+      tolerance = 1e-10
+    )
+  }
 })
 
 # be_assess: expanding-limits frameworks (no oracle dependency) --------------
@@ -210,7 +241,8 @@ test_that("be_assess (FDA RSABE) computes the linearized criterion", {
   d <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
   res <- be_assess(d, "treatment", "R", "auclast", regulator = "FDA")
   expect_equal(res$gmr_percent, 88.3595729, tolerance = 1e-5)
-  expect_equal(res$criterion, -0.012265464, tolerance = 1e-6)
+  # Linearized Howe/Hyslop bound; equals the PowerTOST power.RSABE criterion.
+  expect_equal(res$criterion, -0.073963079, tolerance = 1e-6)
   expect_true(is.na(res$limit_lower))
   expect_true(res$pass)
 })
@@ -229,7 +261,7 @@ test_that("be_assess (NTID) enforces all three gates", {
   # below 80% so NTID fails.
   d_hi <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
   ntid_hi <- be_assess(d_hi, "treatment", "R", "auclast", regulator = "NTID")
-  expect_equal(ntid_hi$criterion, -0.034465877, tolerance = 1e-6)
+  expect_equal(ntid_hi$criterion, -0.130502036, tolerance = 1e-6)
   expect_false(ntid_hi$pass)
 
   # Low variability with a tight CI: all three gates pass.
@@ -238,11 +270,15 @@ test_that("be_assess (NTID) enforces all three gates", {
   expect_true(ntid_lo$pass)
 })
 
-test_that("be_assess (HVNTID) uses the scaled bound and ratio constraint", {
-  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
-  res <- be_assess(d, "treatment", "R", "auclast", regulator = "HVNTID")
-  expect_equal(res$criterion, -0.034465877, tolerance = 1e-6)
-  expect_true(res$pass)
+test_that("be_assess (HVNTID) is unscaled: conventional CI plus the ratio bound", {
+  # HVNTID has no reference-scaled bound (criterion is NA); it needs the
+  # conventional 90% CI within 80-125% and swT/swR upper bound <= 2.5.
+  d_hi <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
+  hv_hi <- be_assess(d_hi, "treatment", "R", "auclast", regulator = "HVNTID")
+  expect_true(is.na(hv_hi$criterion))
+  expect_false(hv_hi$pass) # conventional CI dips below 80%
+  d_lo <- be_replicate_long(generate_be_replicate(24, 2024, "full", cv_wr = 0.12, cv_wt = 0.12, gmr = 1.02))
+  expect_true(be_assess(d_lo, "treatment", "R", "auclast", regulator = "HVNTID")$pass)
 })
 
 test_that("be_assess errors when the design cannot support the framework", {
@@ -301,10 +337,12 @@ test_that("be_compare assesses one dataset under several frameworks", {
   )
   expect_s3_class(cmp, "be_compare")
   expect_setequal(unique(cmp$regulator), c("EMA", "HC", "GCC", "FDA", "NTID", "HVNTID"))
-  # The same data: EMA/HC/GCC/FDA/HVNTID pass, NTID fails (conventional CI).
+  # The same data: EMA/HC/GCC (widened limits) and FDA (reference scaling) pass;
+  # NTID and HVNTID fail because the conventional 90% CI dips below 80%.
   passes <- stats::setNames(cmp$pass, cmp$regulator)
-  expect_true(all(passes[c("EMA", "HC", "GCC", "FDA", "HVNTID")]))
+  expect_true(all(passes[c("EMA", "HC", "GCC", "FDA")]))
   expect_false(passes[["NTID"]])
+  expect_false(passes[["HVNTID"]])
 
   grid <- summary(cmp)
   expect_s3_class(grid, "summary_be_compare")
@@ -537,4 +575,33 @@ test_that("be_compare emits the units-missing warning only once", {
     }
   )
   expect_identical(n, 1L)
+})
+
+# Friendlier defaults and the non-log-normal guard ---------------------------
+
+test_that("be_assess defaults to ABE so a simple 2x2 works out of the box", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  expect_identical(formals(be_assess)$regulator, "ABE")
+  d <- be_replicate_long(generate_be_replicate(16, 9, "2x2", cv_wr = 0.3, cv_wt = 0.3))
+  res <- be_assess(d, "treatment", "R", "auclast") # no regulator argument
+  expect_identical(res$regulator, "ABE")
+})
+
+test_that("be_compare includes ABE so a 2x2 degrades gracefully", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  d <- be_replicate_long(generate_be_replicate(16, 9, "2x2", cv_wr = 0.3, cv_wt = 0.3))
+  cmp <- suppressWarnings(be_compare(d, "treatment", "R", "auclast"))
+  expect_identical(unique(cmp$regulator), "ABE")
+})
+
+test_that("be_dataset warns for non-log-normal endpoints (e.g. Tmax)", {
+  d <- be_replicate_long(generate_be_replicate(16, 9, "2x2"), "tmax")
+  expect_warning(
+    be_dataset(d, "treatment", "R", "tmax"),
+    "not log-normal"
+  )
 })

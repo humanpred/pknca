@@ -9,7 +9,7 @@ be_fit_models(
   reference_col,
   reference_value,
   endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
-  regulator = "FDA",
+  regulator = "ABE",
   model_type = NULL,
   alpha = 0.1,
   subject = NULL,

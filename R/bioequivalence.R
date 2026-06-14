@@ -106,10 +106,11 @@ be_regulator <- function(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVN
         scaling = "ntid", cvswitch = NA_real_, r_const = -log(0.9) / 0.1,
         cvcap = Inf, switch_swr = NA_real_, est_method = "isc"
       ),
-      # FDA highly variable NTID: RSABE-style scaling with the NTID constant.
+      # FDA highly variable NTID: unscaled (conventional limits) plus the
+      # swT/swR ratio constraint; reference scaling does not apply.
       HVNTID = list(
-        scaling = "hvntid", cvswitch = 0.30, r_const = -log(0.9) / 0.1,
-        cvcap = Inf, switch_swr = 0.294, est_method = "isc"
+        scaling = "hvntid", cvswitch = NA_real_, r_const = NA_real_,
+        cvcap = Inf, switch_swr = NA_real_, est_method = "isc"
       )
     )
   structure(
@@ -118,13 +119,16 @@ be_regulator <- function(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVN
       reg,
       list(
         pe_constr = TRUE,
+        # Upper-confidence-bound cap on the swT/swR ratio (narrow therapeutic
+        # index frameworks only).
+        sw_ratio_cap = if (name %in% c("NTID", "HVNTID")) 2.5 else NA_real_,
         switch_basis = switch(
           reg$scaling,
           none = NA_character_,
           abel = "cvwr",
           rsabe = "swr",
           ntid = "always",
-          hvntid = "swr"
+          hvntid = "always"
         )
       )
     ),
@@ -581,14 +585,17 @@ print.be_within_var <- function(x, ...) {
 }
 
 # Linearized (Howe/Hyslop) reference-scaled criterion.  The one-sided 95% upper
-# bound of (point-estimate^2 - theta * s2wR) must be <= 0.  This uses the FDA's
-# one-sided alpha = 0.05 regardless of the user's confidence-interval alpha.
-.be_rsabe_bound <- function(pe_log, se, s2wR, dfRR, r_const, alpha = 0.05) {
-  hw <- stats::qt(1 - alpha, dfRR) * se
+# confidence bound of (point-estimate^2 - theta * s2wR) must be <= 0.  This uses
+# the FDA's one-sided alpha = 0.05 regardless of the user's confidence-interval
+# alpha.  The half-width uses the point-estimate degrees of freedom (`df_pe`),
+# and the within-reference variance bound uses `dfRR`.  Matches the criterion in
+# PowerTOST's RSABE/NTID power functions.
+.be_rsabe_bound <- function(pe_log, se, df_pe, s2wR, dfRR, r_const, alpha = 0.05) {
+  hw <- stats::qt(1 - alpha, df_pe) * se
   Em <- pe_log^2 - se^2
   Es <- r_const^2 * s2wR
   Cm <- (abs(pe_log) + hw)^2
-  Cs <- Es * dfRR / stats::qchisq(alpha, dfRR)
+  Cs <- Es * dfRR / stats::qchisq(1 - alpha, dfRR)
   Em - Es + sqrt((Cm - Em)^2 + (Cs - Es)^2)
 }
 
@@ -633,7 +640,7 @@ print.be_within_var <- function(x, ...) {
       pass = isTRUE(est$ci_lower >= 80 && est$ci_upper <= 125 && pe_ok)
     )
   } else {
-    bound <- .be_rsabe_bound(est$pe_log, est$se, wv$s2wR, wv$df_wR, reg$r_const)
+    bound <- .be_rsabe_bound(est$pe_log, est$se, est$df, wv$s2wR, wv$df_wR, reg$r_const)
     list(
       limit_lower = NA_real_, limit_upper = NA_real_, criterion = bound,
       pass = isTRUE(bound <= 0 && pe_ok)
@@ -643,38 +650,38 @@ print.be_within_var <- function(x, ...) {
 
 # FDA narrow therapeutic index drugs (NTID): the scaled criterion must pass, the
 # conventional 90% CI must lie within 80-125%, and the upper 90% confidence
-# bound of swT/swR must be at most 2.5.
+# bound of swT/swR must be at most the regulator's ratio cap (2.5).  Matches
+# PowerTOST's power.NTID (BEscABE & BEABE & BEsratio).
 .be_ntid <- function(est, wv, reg, alpha) {
   if (is.na(wv$swT)) {
     stop("NTID assessment requires a fully replicated design (both formulations replicated).")
   }
-  bound <- .be_rsabe_bound(est$pe_log, est$se, wv$s2wR, wv$df_wR, reg$r_const)
+  bound <- .be_rsabe_bound(est$pe_log, est$se, est$df, wv$s2wR, wv$df_wR, reg$r_const)
   list(
     limit_lower = 80, limit_upper = 125, criterion = bound,
     pass = isTRUE(
       bound <= 0 &&
         est$ci_lower >= 80 && est$ci_upper <= 125 &&
-        !is.na(wv$sw_ratio_ci_upper) && wv$sw_ratio_ci_upper <= 2.5 &&
+        !is.na(wv$sw_ratio_ci_upper) && wv$sw_ratio_ci_upper <= reg$sw_ratio_cap &&
         .be_pe_ok(reg, est$gmr_percent)
     )
   )
 }
 
-# FDA highly variable narrow therapeutic index drugs (HVNTID): the scaled
-# criterion plus the swT/swR ratio constraint and the point-estimate constraint
-# (no separate unscaled-CI gate, reflecting the high variability).  The HVNTID
-# decision wording is the least settled of the frameworks; this implements the
-# RSABE-style scaled bound with the NTID constant.
+# FDA highly variable narrow therapeutic index drugs (HVNTID): unscaled --
+# the conventional 90% CI must lie within 80-125% and the upper 90% confidence
+# bound of swT/swR must be at most the regulator's ratio cap (2.5).  There is no
+# reference-scaled bound (reference scaling does not apply to highly variable
+# NTIDs).  Matches PowerTOST's power.HVNTID (BEABE & BEsratio).
 .be_hvntid <- function(est, wv, reg, alpha) {
   if (is.na(wv$swT)) {
     stop("HVNTID assessment requires a fully replicated design (both formulations replicated).")
   }
-  bound <- .be_rsabe_bound(est$pe_log, est$se, wv$s2wR, wv$df_wR, reg$r_const)
   list(
-    limit_lower = NA_real_, limit_upper = NA_real_, criterion = bound,
+    limit_lower = 80, limit_upper = 125, criterion = NA_real_,
     pass = isTRUE(
-      bound <= 0 &&
-        !is.na(wv$sw_ratio_ci_upper) && wv$sw_ratio_ci_upper <= 2.5 &&
+      est$ci_lower >= 80 && est$ci_upper <= 125 &&
+        !is.na(wv$sw_ratio_ci_upper) && wv$sw_ratio_ci_upper <= reg$sw_ratio_cap &&
         .be_pe_ok(reg, est$gmr_percent)
     )
   )
@@ -743,6 +750,14 @@ print.be_within_var <- function(x, ...) {
 #     -> be_extract_param (-> be_extract_param_<type>) -> be_table
 # All model fitting happens in be_fit_model_<type>; all regulator decisions
 # happen in be_table (which calls the unchanged .be_* deciders).
+
+# NCA parameters that are not log-normal exposure metrics, for which the
+# log-transformed average-BE model is inappropriate (be_dataset() warns).
+.be_nonlognormal_params <- c(
+  "tmax", "tlst", "tlag", "tmin", "tlast", "tfirst", "tmax.last",
+  "half.life", "lambda.z", "lambda.z.n.points", "lambda.z.time.first",
+  "span.ratio", "r.squared", "adj.r.squared"
+)
 
 #' Build and validate a bioequivalence dataset
 #'
@@ -831,6 +846,18 @@ be_dataset <- function(object, reference_col, reference_value,
   missing_eps <- setdiff(endpoints, present)
   if (length(missing_eps) > 0) {
     warning("Endpoints not found and skipped: ", paste(missing_eps, collapse = ", "))
+  }
+  # Bioequivalence assumes log-normal exposure metrics (Cmax, AUC).  Warn for
+  # time/rate parameters where the log-normal model is inappropriate (Tmax, for
+  # example, uses non-parametric methods).
+  flagged <- present[tolower(present) %in% .be_nonlognormal_params]
+  if (length(flagged) > 0) {
+    warning(
+      "Endpoint(s) ", paste(flagged, collapse = ", "), " are not log-normal ",
+      "exposure metrics; bioequivalence here log-transforms the value and is ",
+      "appropriate for Cmax/AUC. Time or rate parameters (e.g. Tmax, half-life) ",
+      "require different methods (non-parametric or Fieller)."
+    )
   }
   structure(
     list(
@@ -941,8 +968,7 @@ be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova"), 
   )
 }
 
-#' @rdname be_fit_model_single
-#' @export
+# Internal fitter dispatched by be_fit_model_single().
 be_fit_model_lmer <- function(ds_ep, scaling = TRUE) {
   if (!requireNamespace("lme4", quietly = TRUE) || !requireNamespace("lmerTest", quietly = TRUE)) {
     stop("The 'lme4' and 'lmerTest' packages are required for model_type = \"lmer\"; install them with install.packages(c(\"lme4\", \"lmerTest\")).")
@@ -951,15 +977,13 @@ be_fit_model_lmer <- function(ds_ep, scaling = TRUE) {
   c(list(model = model), .be_fit_within(ds_ep, scaling))
 }
 
-#' @rdname be_fit_model_single
-#' @export
+# Internal fitter dispatched by be_fit_model_single().
 be_fit_model_anova <- function(ds_ep, scaling = TRUE) {
   model <- stats::lm(.be_model_formula(ds_ep, random = FALSE), data = ds_ep)
   c(list(model = model), .be_fit_within(ds_ep, scaling))
 }
 
-#' @rdname be_fit_model_single
-#' @export
+# Internal fitter dispatched by be_fit_model_single().
 be_fit_model_nlme <- function(ds_ep) {
   reference_value <- levels(ds_ep$.trt)[1]
   test_levels <- setdiff(levels(ds_ep$.trt), reference_value)
@@ -1093,8 +1117,7 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
   )
 }
 
-#' @rdname be_extract_param
-#' @export
+# Internal extractor dispatched by be_extract_param().
 be_extract_param_lmer <- function(fit, alpha = 0.10) {
   if (!requireNamespace("emmeans", quietly = TRUE)) {
     stop("The 'emmeans' package is required to extract bioequivalence parameters; install it with install.packages(\"emmeans\").")
@@ -1105,8 +1128,7 @@ be_extract_param_lmer <- function(fit, alpha = 0.10) {
                    lmer_df = "satterthwaite", ref_var = fit$ref_var, test_var = fit$test_var)
 }
 
-#' @rdname be_extract_param
-#' @export
+# Internal extractor dispatched by be_extract_param().
 be_extract_param_nlme <- function(fit, alpha = 0.10) {
   if (!requireNamespace("emmeans", quietly = TRUE)) {
     stop("The 'emmeans' package is required to extract bioequivalence parameters; install it with install.packages(\"emmeans\").")
@@ -1127,8 +1149,7 @@ be_extract_param_nlme <- function(fit, alpha = 0.10) {
                    ref_var = ref_var, test_var = test_var)
 }
 
-#' @rdname be_extract_param
-#' @export
+# Internal extractor dispatched by be_extract_param().
 be_extract_param_anova <- function(fit, ds_ep, alpha = 0.10) {
   reference_value <- levels(ds_ep$.trt)[1]
   test_levels <- setdiff(levels(ds_ep$.trt), reference_value)
@@ -1266,7 +1287,7 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
 #' @export
 be_fit_models <- function(object, reference_col, reference_value,
                           endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
-                          regulator = "FDA", model_type = NULL, alpha = 0.10,
+                          regulator = "ABE", model_type = NULL, alpha = 0.10,
                           subject = NULL, sequence = NULL, period = NULL, design = NULL) {
   assert_numeric_between(alpha, lower = 0, upper = 1)
   reg <- be_regulator(regulator)
@@ -1428,7 +1449,7 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' @export
 be_assess <- function(object, reference_col, reference_value,
                       endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
-                      regulator = "FDA", model_type = NULL, alpha = 0.10,
+                      regulator = "ABE", model_type = NULL, alpha = 0.10,
                       subject = NULL, sequence = NULL, period = NULL, design = NULL) {
   out <- be_fit_models(
     object, reference_col = reference_col, reference_value = reference_value,
@@ -1540,7 +1561,7 @@ print.summary_be_assess <- function(x, ...) {
 #' @export
 be_compare <- function(object, reference_col, reference_value,
                        endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
-                       regulators = c("FDA", "EMA", "HC", "GCC"),
+                       regulators = c("ABE", "EMA", "HC", "GCC", "FDA"),
                        model_type = NULL, alpha = 0.10,
                        subject = NULL, sequence = NULL, period = NULL, design = NULL) {
   checkmate::assert_character(regulators, min.len = 1, any.missing = FALSE)

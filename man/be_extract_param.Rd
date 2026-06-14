@@ -2,18 +2,9 @@
 % Please edit documentation in R/bioequivalence.R
 \name{be_extract_param}
 \alias{be_extract_param}
-\alias{be_extract_param_lmer}
-\alias{be_extract_param_nlme}
-\alias{be_extract_param_anova}
 \title{Extract bioequivalence parameters from a fitted model}
 \usage{
 be_extract_param(fit, ds_ep, alpha = 0.1)
-
-be_extract_param_lmer(fit, alpha = 0.1)
-
-be_extract_param_nlme(fit, alpha = 0.1)
-
-be_extract_param_anova(fit, ds_ep, alpha = 0.1)
 }
 \arguments{
 \item{fit}{A \code{be_fit} object from \code{\link[=be_fit_model_single]{be_fit_model_single()}}.}

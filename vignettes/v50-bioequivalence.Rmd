@@ -306,9 +306,24 @@ cmp <- be_compare(rep_data, reference_col = "treatment", reference_value = "R",
 summary(cmp)
 ```
 
-The pass/fail decision can differ between frameworks for the same data: the
-narrow therapeutic index criterion is the strictest because it additionally
-requires the conventional 90% confidence interval to lie within 80.00-125.00%.
+The pass/fail decision can differ between frameworks for the same data.  The
+narrow therapeutic index frameworks are the strictest: **NTID** requires the
+reference-scaled bound, the conventional 90% confidence interval within
+80.00-125.00%, *and* the upper 90% bound of the within-subject standard-deviation
+ratio swT/swR at most 2.5; **HVNTID** (highly variable NTID) drops the
+reference-scaled bound but keeps the conventional interval and the swT/swR
+constraint.  These FDA criteria match those in `PowerTOST`'s `power.NTID()` /
+`power.HVNTID()`.
+
+> **Note on the geometric-mean intervals.** `gm_reference`/`gm_test` and their
+> bounds are the marginal least-squares-mean intervals, so they include
+> between-subject variability and are wider than the (within-subject) confidence
+> interval for the ratio in `ci_lower`/`ci_upper`.
+
+> **Planning vs. assessment.** PKNCA *assesses* a completed study.  Power and
+> sample-size *planning* for these designs is not in PKNCA; the
+> [`PowerTOST`](https://cran.r-project.org/package=PowerTOST) package covers that
+> complementary need.
 
 ## Reporting checklist
 

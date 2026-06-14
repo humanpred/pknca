@@ -2,9 +2,6 @@
 % Please edit documentation in R/bioequivalence.R
 \name{be_fit_model_single}
 \alias{be_fit_model_single}
-\alias{be_fit_model_lmer}
-\alias{be_fit_model_anova}
-\alias{be_fit_model_nlme}
 \title{Fit the bioequivalence model(s) for one endpoint}
 \usage{
 be_fit_model_single(
@@ -12,12 +9,6 @@ be_fit_model_single(
   model_type = c("lmer", "nlme", "anova"),
   scaling = TRUE
 )
-
-be_fit_model_lmer(ds_ep, scaling = TRUE)
-
-be_fit_model_anova(ds_ep, scaling = TRUE)
-
-be_fit_model_nlme(ds_ep)
 }
 \arguments{
 \item{ds_ep}{The standardized single-endpoint data.frame from \code{\link[=be_dataset]{be_dataset()}}

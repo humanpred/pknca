@@ -9,7 +9,7 @@ be_compare(
   reference_col,
   reference_value,
   endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
-  regulators = c("FDA", "EMA", "HC", "GCC"),
+  regulators = c("ABE", "EMA", "HC", "GCC", "FDA"),
   model_type = NULL,
   alpha = 0.1,
   subject = NULL,
