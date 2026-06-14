@@ -167,24 +167,20 @@ bolus and nonzero for intravascular infusion)</p></dd>
 <dd><p>The method to use for imputation as a character string</p></dd>
 
 
-<dt id="arg-include-half-life">include_half.life<a class="anchor" aria-label="anchor" href="#arg-include-half-life"></a></dt>
-<dd><p>An optional logical vector (one value per
-concentration measurement) naming the points to use for the half-life. If
-in use, automatic curve-stripping point selection is bypassed and exactly
-the <code>TRUE</code> points are used for the half-life regression. <code>TRUE</code> uses the
-point, <code>FALSE</code> does not, and <code>NA</code> is undefined; the vector is "in use" for
-the interval unless it is entirely <code>NA</code> (so an all-<code>FALSE</code> vector still
-counts as in use). At most one of <code>include_half.life</code> and
-<code>exclude_half.life</code> may be in use for the same interval.</p></dd>
-
-
-<dt id="arg-exclude-half-life">exclude_half.life<a class="anchor" aria-label="anchor" href="#arg-exclude-half-life"></a></dt>
-<dd><p>An optional logical vector (one value per
-concentration measurement) naming points to drop before point selection.
-Automatic curve-stripping point selection is still performed (it is not
-bypassed) on the remaining, non-excluded points. <code>TRUE</code> excludes the point,
-<code>FALSE</code> does not, and <code>NA</code> is undefined; the "in use" rule is the same as
-for <code>include_half.life</code>.</p></dd>
+<dt id="arg-exclude-half-life-include-half-life">exclude_half.life, include_half.life<a class="anchor" aria-label="anchor" href="#arg-exclude-half-life-include-half-life"></a></dt>
+<dd><p>Manual half-life point selection,
+given as a logical value per concentration measurement (or, in
+<code><a href="PKNCAconc.html">PKNCAconc()</a></code>, the name of such a column in the data).  <code>exclude_half.life</code>
+drops the flagged points; automatic curve-stripping point selection is
+still performed on the remaining (non-excluded) points and is not bypassed.
+<code>include_half.life</code> names the exact points to use, bypassing automatic
+curve-stripping point selection.  Each value is <code>TRUE</code>, <code>FALSE</code>, or <code>NA</code>
+(undefined); the column/vector is treated as "in use" for an interval
+unless it is entirely <code>NA</code> (so an all-<code>FALSE</code> column still counts as in
+use), so leave it <code>NA</code> (rather than <code>FALSE</code>) where the mechanism should not
+apply.  Only one of <code>exclude_half.life</code> and <code>include_half.life</code> may be in
+use for a given interval.  See the "Half-Life Calculation" vignette for
+more details on the use of these arguments.</p></dd>
 
 
 <dt id="arg-lloq">lloq<a class="anchor" aria-label="anchor" href="#arg-lloq"></a></dt>
