@@ -40,9 +40,9 @@ conc_data <- Theoph[Theoph$Subject == 1,]
 pk.calc.tmax(conc = conc_data$conc, time = conc_data$Time)
 }
 \seealso{
-Other NCA time parameters: 
-\code{\link{pk.calc.tlag}()},
-\code{\link{pk.calc.tlast}()},
-\code{\link{pk.calc.tmin}()}
+Other NCA time parameters:
+\code{\link[=pk.calc.tlag]{pk.calc.tlag()}},
+\code{\link[=pk.calc.tlast]{pk.calc.tlast()}},
+\code{\link[=pk.calc.tmin]{pk.calc.tmin()}}
 }
 \concept{NCA time parameters}

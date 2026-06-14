@@ -81,14 +81,14 @@ be_compare(d, reference_col = "treatment", reference_value = "R",
 \seealso{
 \code{\link[=be_assess]{be_assess()}}
 
-Other Bioequivalence: 
-\code{\link{be_assess}()},
-\code{\link{be_design}()},
-\code{\link{be_expand_limits}()},
-\code{\link{be_regulator}()},
-\code{\link{be_within_var}()},
-\code{\link{fitbe_calculate}()},
-\code{\link{fitbe_models}()},
-\code{\link{fitbe_table}()}
+Other Bioequivalence:
+\code{\link[=be_assess]{be_assess()}},
+\code{\link[=be_design]{be_design()}},
+\code{\link[=be_expand_limits]{be_expand_limits()}},
+\code{\link[=be_regulator]{be_regulator()}},
+\code{\link[=be_within_var]{be_within_var()}},
+\code{\link[=fitbe_calculate]{fitbe_calculate()}},
+\code{\link[=fitbe_models]{fitbe_models()}},
+\code{\link[=fitbe_table]{fitbe_table()}}
 }
 \concept{Bioequivalence}

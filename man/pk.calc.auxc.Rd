@@ -170,8 +170,8 @@ Press, 2000.  164-7.
 \seealso{
 \code{\link[=clean.conc.blq]{clean.conc.blq()}}
 
-Other AUC calculations: 
-\code{\link{pk.calc.auxcint}()},
-\code{\link{pk.calc.auxciv}()}
+Other AUC calculations:
+\code{\link[=pk.calc.auxcint]{pk.calc.auxcint()}},
+\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}}
 }
 \concept{AUC calculations}

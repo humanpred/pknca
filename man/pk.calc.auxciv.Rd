@@ -87,12 +87,12 @@ administration
 
 }}
 \seealso{
-Other AUC calculations: 
-\code{\link{pk.calc.auxc}()},
-\code{\link{pk.calc.auxcint}()}
+Other AUC calculations:
+\code{\link[=pk.calc.auxc]{pk.calc.auxc()}},
+\code{\link[=pk.calc.auxcint]{pk.calc.auxcint()}}
 
-Other AUMC calculations: 
-\code{\link{pk.calc.auxcint}()}
+Other AUMC calculations:
+\code{\link[=pk.calc.auxcint]{pk.calc.auxcint()}}
 }
 \concept{AUC calculations}
 \concept{AUMC calculations}

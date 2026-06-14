@@ -30,7 +30,7 @@ NA concentrations (and their associated times) will be removed then the BLQ
 values in the middle
 }
 \seealso{
-Other Data cleaners: 
-\code{\link{clean.conc.blq}()}
+Other Data cleaners:
+\code{\link[=clean.conc.blq]{clean.conc.blq()}}
 }
 \concept{Data cleaners}

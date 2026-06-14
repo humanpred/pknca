@@ -86,9 +86,9 @@ formula, both the dose amount and time are used directly from the
 data.
 }
 \seealso{
-Other PKNCA objects: 
-\code{\link{PKNCAconc}()},
-\code{\link{PKNCAdata}()},
-\code{\link{PKNCAresults}()}
+Other PKNCA objects:
+\code{\link[=PKNCAconc]{PKNCAconc()}},
+\code{\link[=PKNCAdata]{PKNCAdata()}},
+\code{\link[=PKNCAresults]{PKNCAresults()}}
 }
 \concept{PKNCA objects}

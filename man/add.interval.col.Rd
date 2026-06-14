@@ -107,10 +107,10 @@ add.interval.col("cmax.dn",
 }
 }
 \seealso{
-Other Interval specifications: 
-\code{\link{check.interval.specification}()},
-\code{\link{choose.auc.intervals}()},
-\code{\link{get.interval.cols}()},
-\code{\link{get.parameter.deps}()}
+Other Interval specifications:
+\code{\link[=check.interval.specification]{check.interval.specification()}},
+\code{\link[=choose.auc.intervals]{choose.auc.intervals()}},
+\code{\link[=get.interval.cols]{get.interval.cols()}},
+\code{\link[=get.parameter.deps]{get.parameter.deps()}}
 }
 \concept{Interval specifications}
