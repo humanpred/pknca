@@ -114,7 +114,9 @@ test_that("add.interval.col", {
       sparse=FALSE,
       formalsmap=list(),
       depends=NULL,
-      datatype="interval"
+      datatype="interval",
+      pptestcd_cdisc="a",
+      pptest_cdisc="test addition"
     ),
     info="interval column assignment works with FUN=NA"
   )
@@ -132,7 +134,9 @@ test_that("add.interval.col", {
       sparse=FALSE,
       formalsmap=list(),
       depends=NULL,
-      datatype="interval"
+      datatype="interval",
+      pptestcd_cdisc="a",
+      pptest_cdisc="test addition"
     ),
     info="interval column assignment works with FUN=a character string"
   )
@@ -150,7 +154,9 @@ test_that("add.interval.col", {
       sparse=FALSE,
       formalsmap=list(x="values"),
       depends=NULL,
-      datatype="interval"
+      datatype="interval",
+      pptestcd_cdisc="a",
+      pptest_cdisc="test addition"
     ),
     info="interval column assignment works with FUN=NA"
   )
@@ -174,6 +180,33 @@ test_that("fake parameters", {
     regexp="Invalid dependencies for interval column (please report this as a bug): fake_parameter The following dependencies are missing: does_not_exist",
     fixed=TRUE
   )
+})
+
+test_that("add.interval.col rejects invalid pptestcd_cdisc types", {
+  expect_error(
+    add.interval.col(name="a", FUN="mean", unit_type="conc", pretty_name="a",
+                     desc="test", pptestcd_cdisc=123),
+    regexp="pptestcd_cdisc must be a character string or a list"
+  )
+})
+
+test_that("add.interval.col rejects invalid pptest_cdisc types", {
+  expect_error(
+    add.interval.col(name="a", FUN="mean", unit_type="conc", pretty_name="a",
+                     desc="test", pptest_cdisc=123),
+    regexp="pptest_cdisc must be a character string or a list"
+  )
+})
+
+test_that("add.interval.col accepts list for pptestcd_cdisc", {
+  add.interval.col(name="a", FUN="mean", unit_type="conc", pretty_name="a",
+                   desc="test",
+                   pptestcd_cdisc=list(route=list(extravascular="EV", intravascular="IV")),
+                   pptest_cdisc="test desc")
+  result <- get("interval.cols", envir=PKNCA:::.PKNCAEnv)[["a"]]
+  expect_true(is.list(result$pptestcd_cdisc))
+  expect_equal(result$pptestcd_cdisc$route$extravascular, "EV")
+  expect_equal(result$pptestcd_cdisc$route$intravascular, "IV")
 })
 
 # Reset the original state

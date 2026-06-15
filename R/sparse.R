@@ -369,7 +369,9 @@ add.interval.col(
   values=c(FALSE, TRUE),
   unit_type="auc",
   pretty_name="Sparse AUClast",
-  desc="For sparse PK sampling, the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification"
+  desc="For sparse PK sampling, the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
+  pptestcd_cdisc="SPARSEAL",
+  pptest_cdisc="Sparse AUClast"
 )
 
 add.interval.col(
@@ -379,7 +381,9 @@ add.interval.col(
   unit_type="auc",
   pretty_name="Sparse AUClast standard error",
   desc="For sparse PK sampling, the standard error of the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
-  depends="sparse_auclast"
+  depends="sparse_auclast",
+  pptestcd_cdisc="SPARSEAS",
+  pptest_cdisc="Sparse AUClast standard error"
 )
 
 add.interval.col(
@@ -389,7 +393,9 @@ add.interval.col(
   unit_type="count",
   pretty_name="Sparse AUClast degrees of freedom",
   desc="For sparse PK sampling, the standard error degrees of freedom of the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
-  depends="sparse_auclast"
+  depends="sparse_auclast",
+  pptestcd_cdisc="SPARSEAD",
+  pptest_cdisc="Sparse AUClast degrees of freedom"
 )
 
 #' Is a PKNCA object used for sparse PK?

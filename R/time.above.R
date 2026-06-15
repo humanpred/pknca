@@ -89,7 +89,9 @@ add.interval.col("time_above",
                  values=c(FALSE, TRUE),
                  unit_type="time",
                  pretty_name="Time above Concentration",
-                 desc="Time above a given concentration")
+                 desc="Time above a given concentration",
+                 pptestcd_cdisc="TAT",
+                 pptest_cdisc="Time Above Threshold")
 PKNCA.set.summary(
   name="time_above",
   description="arithmetic mean and standard deviation",

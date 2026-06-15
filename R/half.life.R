@@ -628,7 +628,9 @@ add.interval.col("half.life",
                  unit_type="time",
                  pretty_name="Half-life",
                  desc="The (terminal) half-life",
-                 depends=c("tmax", "tlast"))
+                 depends=c("tmax", "tlast"),
+                 pptestcd_cdisc="LAMZHL",
+                 pptest_cdisc="Half-Life Lambda z")
 PKNCA.set.summary(
   name="half.life",
   description="arithmetic mean and standard deviation",
@@ -641,7 +643,9 @@ add.interval.col("r.squared",
                  unit_type="unitless",
                  pretty_name="$r^2$",
                  desc="The r^2 value of the half-life calculation",
-                 depends="half.life")
+                 depends="half.life",
+                 pptestcd_cdisc="R2",
+                 pptest_cdisc="R Squared")
 PKNCA.set.summary(
   name="r.squared",
   description="arithmetic mean and standard deviation",
@@ -654,7 +658,9 @@ add.interval.col("adj.r.squared",
                  unit_type="unitless",
                  pretty_name="$r^2_{adj}$",
                  desc="The adjusted r^2 value of the half-life calculation",
-                 depends="half.life")
+                 depends="half.life",
+                 pptestcd_cdisc="R2ADJ",
+                 pptest_cdisc="R Squared Adjusted")
 PKNCA.set.summary(
   name="adj.r.squared",
   description="arithmetic mean and standard deviation",
@@ -667,7 +673,9 @@ add.interval.col("lambda.z.corrxy",
                  unit_type="unitless",
                  pretty_name="Correlation (time, log-conc)",
                  desc="Correlation between time and log-concentration for lambda.z points",
-                 depends="half.life")
+                 depends="half.life",
+                 pptestcd_cdisc="CORRXY",
+                 pptest_cdisc="Correlation Between TimeX and Log ConcY")
 PKNCA.set.summary(
   name="lambda.z.corrxy",
   description="arithmetic mean and standard deviation",
@@ -680,7 +688,9 @@ add.interval.col("lambda.z",
                  unit_type="inverse_time",
                  pretty_name="$\\lambda_z$",
                  desc="The elimination rate of the terminal half-life",
-                 depends="half.life")
+                 depends="half.life",
+                 pptestcd_cdisc="LAMZ",
+                 pptest_cdisc="Lambda z")
 PKNCA.set.summary(
   name="lambda.z",
   description="geometric mean and geometric coefficient of variation",
@@ -693,7 +703,9 @@ add.interval.col("lambda.z.time.first",
                  unit_type="time",
                  pretty_name="First time for $\\lambda_z$",
                  desc="The first time point used for the calculation of half-life",
-                 depends="half.life")
+                 depends="half.life",
+                 pptestcd_cdisc="LAMZLL",
+                 pptest_cdisc="Lambda z Lower Limit")
 PKNCA.set.summary(
   name="lambda.z.time.first",
   description="median and range",
@@ -706,7 +718,9 @@ add.interval.col("lambda.z.time.last",
                  unit_type="time",
                  pretty_name="Last time for $\\lambda_z$",
                  desc="The last time point used for the calculation of half-life",
-                 depends="half.life")
+                 depends="half.life",
+                 pptestcd_cdisc="LAMZUL",
+                 pptest_cdisc="Lambda z Upper Limit")
 PKNCA.set.summary(
   name="lambda.z.time.last",
   description="median and range",
@@ -719,7 +733,9 @@ add.interval.col("lambda.z.n.points",
                  unit_type="count",
                  pretty_name="Number of points used for lambda_z",
                  desc="The number of points used for the calculation of half-life",
-                 depends="half.life")
+                 depends="half.life",
+                 pptestcd_cdisc="LAMZNPT",
+                 pptest_cdisc="Number of Points for Lambda z")
 PKNCA.set.summary(
   name="lambda.z.n.points",
   description="median and range",
@@ -732,7 +748,9 @@ add.interval.col("clast.pred",
                  unit_type="conc",
                  pretty_name="Clast,pred",
                  desc="The concentration at Tlast as predicted by the half-life",
-                 depends="half.life")
+                 depends="half.life",
+                 pptestcd_cdisc="CLSTP",
+                 pptest_cdisc="Clast pred")
 PKNCA.set.summary(
   name="clast.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -745,7 +763,9 @@ add.interval.col("span.ratio",
                  unit_type="fraction",
                  pretty_name="Span ratio",
                  desc="The ratio of the half-life to the duration used for half-life calculation",
-                 depends="half.life")
+                 depends="half.life",
+                 pptestcd_cdisc="LAMZSPN",
+                 pptest_cdisc="Lambda z Span")
 PKNCA.set.summary(
   name="span.ratio",
   description="geometric mean and geometric coefficient of variation",

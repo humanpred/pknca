@@ -77,7 +77,9 @@ add.interval.col(
   depends = c("auclast", "c0"),
   desc = "The AUClast calculated with back-extrapolation for intravenous dosing using extrapolated C0",
   sparse = FALSE,
-  formalsmap = list(auc="auclast")
+  formalsmap = list(auc="auclast"),
+  pptestcd_cdisc="AUCIVLST",
+  pptest_cdisc="AUClast (IV dosing)"
 )
 
 add.interval.col(
@@ -88,7 +90,9 @@ add.interval.col(
   depends = c("aucall", "c0"),
   desc = "The AUCall calculated with back-extrapolation for intravenous dosing using extrapolated C0",
   sparse = FALSE,
-  formalsmap = list(auc="aucall")
+  formalsmap = list(auc="aucall"),
+  pptestcd_cdisc="AUCIVA",
+  pptest_cdisc="AUCall (IV dosing)"
 )
 
 add.interval.col(
@@ -99,7 +103,9 @@ add.interval.col(
   depends = c("aucint.last", "c0"),
   desc = "The AUCint,last calculated with back-extrapolation for intravenous dosing using extrapolated C0",
   sparse = FALSE,
-  formalsmap = list(auc="aucint.last")
+  formalsmap = list(auc="aucint.last"),
+  pptestcd_cdisc="AUCIVILT",
+  pptest_cdisc="AUCint,last (IV dosing)"
 )
 
 add.interval.col(
@@ -110,7 +116,9 @@ add.interval.col(
   depends = c("aucint.all", "c0"),
   desc = "The AUCint,all calculated with back-extrapolation for intravenous dosing using extrapolated C0",
   sparse = FALSE,
-  formalsmap = list(auc="aucint.all")
+  formalsmap = list(auc="aucint.all"),
+  pptestcd_cdisc="AUCIVINA",
+  pptest_cdisc="AUCint,all (IV dosing)"
 )
 
 add.interval.col(
@@ -121,7 +129,9 @@ add.interval.col(
   depends = c("aucinf.obs", "c0"),
   desc = "The AUCinf,obs calculated with back-extrapolation for intravenous dosing using extrapolated C0",
   sparse = FALSE,
-  formalsmap = list(auc="aucinf.obs")
+  formalsmap = list(auc="aucinf.obs"),
+  pptestcd_cdisc="AUCIVIS",
+  pptest_cdisc="AUCinf,obs (IV dosing)"
 )
 
 add.interval.col(
@@ -132,7 +142,9 @@ add.interval.col(
   depends = c("aucinf.pred", "c0"),
   desc = "The AUCinf,pred calculated with back-extrapolation for intravenous dosing using extrapolated C0",
   sparse = FALSE,
-  formalsmap = list(auc="aucinf.pred")
+  formalsmap = list(auc="aucinf.pred"),
+  pptestcd_cdisc="AUCIVIP",
+  pptest_cdisc="AUCinf,pred (IV dosing)"
 )
 
 
@@ -156,7 +168,9 @@ add.interval.col(
   depends = c("auclast", "aucivlast"),
   desc = "The back-extrapolation percent for intravenous dosing based on AUClast",
   sparse = FALSE,
-  formalsmap = list(auc="auclast", auciv="aucivlast")
+  formalsmap = list(auc="auclast", auciv="aucivlast"),
+  pptestcd_cdisc="AUCIVPLT",
+  pptest_cdisc="AUCbext (based on AUClast)"
 )
 
 add.interval.col(
@@ -167,7 +181,9 @@ add.interval.col(
   depends = c("aucall", "aucivall"),
   desc = "The back-extrapolation percent for intravenous dosing based on AUCall",
   sparse = FALSE,
-  formalsmap = list(auc="aucall", auciv="aucivall")
+  formalsmap = list(auc="aucall", auciv="aucivall"),
+  pptestcd_cdisc="AUCIVPEA",
+  pptest_cdisc="AUCbext (based on AUCall)"
 )
 
 add.interval.col(
@@ -178,7 +194,9 @@ add.interval.col(
   depends = c("aucint.last", "aucivint.last"),
   desc = "The back-extrapolation percent for intravenous dosing based on AUCint,last",
   sparse = FALSE,
-  formalsmap = list(auc="aucint.last", auciv="aucivint.last")
+  formalsmap = list(auc="aucint.last", auciv="aucivint.last"),
+  pptestcd_cdisc="AUCIVPIL",
+  pptest_cdisc="AUCbext (based on AUCint,last)"
 )
 
 add.interval.col(
@@ -189,7 +207,9 @@ add.interval.col(
   depends = c("aucint.all", "aucivint.all"),
   desc = "The back-extrapolation percent for intravenous dosing based on AUCint,all",
   sparse = FALSE,
-  formalsmap = list(auc="aucint.all", auciv="aucivint.all")
+  formalsmap = list(auc="aucint.all", auciv="aucivint.all"),
+  pptestcd_cdisc="AUCIVPIA",
+  pptest_cdisc="AUCbext (based on AUCint,all)"
 )
 
 add.interval.col(
@@ -200,7 +220,9 @@ add.interval.col(
   depends = c("aucinf.obs", "aucivinf.obs"),
   desc = "The back-extrapolation percent for intravenous dosing based on AUCinf,obs",
   sparse = FALSE,
-  formalsmap = list(auc="aucinf.obs", auciv="aucivinf.obs")
+  formalsmap = list(auc="aucinf.obs", auciv="aucivinf.obs"),
+  pptestcd_cdisc="AUCIVPEI",
+  pptest_cdisc="AUCbext (based on AUCinf,obs)"
 )
 
 add.interval.col(
@@ -211,7 +233,9 @@ add.interval.col(
   depends = c("aucinf.pred", "aucivinf.pred"),
   desc = "The back-extrapolation percent for intravenous dosing based on AUCinf,pred",
   sparse = FALSE,
-  formalsmap = list(auc="aucinf.pred", auciv="aucivinf.pred")
+  formalsmap = list(auc="aucinf.pred", auciv="aucivinf.pred"),
+  pptestcd_cdisc="AUCIVPEP",
+  pptest_cdisc="AUCbext (based on AUCinf,pred)"
 )
 
 
