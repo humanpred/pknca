@@ -31,9 +31,9 @@ is recalculated based on the resulting data, otherwise the grouping is kept as i
 dplyr filtering for PKNCA
 }
 \seealso{
-Other dplyr verbs: 
-\code{\link{group_by.PKNCAresults}()},
-\code{\link{inner_join.PKNCAresults}()},
-\code{\link{mutate.PKNCAresults}()}
+Other dplyr verbs:
+\code{\link[=group_by.PKNCAresults]{group_by.PKNCAresults()}},
+\code{\link[=inner_join.PKNCAresults]{inner_join.PKNCAresults()}},
+\code{\link[=mutate.PKNCAresults]{mutate.PKNCAresults()}}
 }
 \concept{dplyr verbs}

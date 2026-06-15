@@ -271,6 +271,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     }
 
     if (manually.selected.points) {
+      attr(ret, "method") <- "Lambda Z: Manual selection"
       if (nrow(data) > 0) {
         fit <- fit_half_life(data=data, tlast=ret$tlast)
         ret[, ret_replacements] <- fit[, ret_replacements]
@@ -360,6 +361,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     n_above_lloq <- sum(!dfK_all$mask_blq)
 
     if (manually.selected.points) {
+      attr(ret, "method") <- "Lambda Z: Manual selection"
       # Use data_tobit as-is (all non-NA points, no tmax filter applied again)
       if (nrow(data_tobit) > 0) {
         fit <- fit_half_life_tobit(

@@ -57,8 +57,8 @@ PKNCA.set.summary(
 \seealso{
 \code{\link[=summary.PKNCAresults]{summary.PKNCAresults()}}
 
-Other PKNCA calculation and summary settings: 
-\code{\link{PKNCA.choose.option}()},
-\code{\link{PKNCA.options}()}
+Other PKNCA calculation and summary settings:
+\code{\link[=PKNCA.choose.option]{PKNCA.choose.option()}},
+\code{\link[=PKNCA.options]{PKNCA.options()}}
 }
 \concept{PKNCA calculation and summary settings}

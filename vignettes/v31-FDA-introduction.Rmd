@@ -1,0 +1,499 @@
+---
+title: "PKNCA – an R package for noncompartmental analysis of pharmacokinetic data"
+author: "William Denney"
+date: "17 April 2026"
+output:
+  ioslides_presentation:
+    widescreen: true
+vignette: >
+  %\VignetteIndexEntry{FDA introduction to PKNCA}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(PKNCA)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(purrr)
+breaks_hours <- function(n=5, Q=c(1, 6, 4, 12, 2, 24, 168), ...) {
+  n_default <- n
+  Q_default <- Q
+  function(x, n = n_default, Q=Q_default) {
+    x <- x[is.finite(x)]
+    if (length(x) == 0) {
+      return(numeric())
+    }
+    rng <- range(x)
+    labeling::extended(rng[1], rng[2], m=n, Q=Q, ...)
+  }
+}
+
+scale_x_hours <- function(..., breaks=breaks_hours()) {
+  ggplot2::scale_x_continuous(..., breaks=breaks)
+}
+```
+
+<style>
+.forceBreak { -webkit-column-break-after: always; break-after: column; }
+
+<!-- from https://stackoverflow.com/questions/1909648/stacking-divs-on-top-of-each-other -->
+.container {
+  width: 300px;
+  height: 300px;
+  margin: 0 auto;
+  background-color: yellow;
+  /* important part */
+  display: grid;
+  place-items: center;
+  grid-template-areas: "inner-div";
+}
+
+.inner {
+  /* important part */
+  grid-area: inner-div;
+}
+
+.bigStrikethroughOuter {
+  <!-- text-decoration: line-through; -->
+  font-size: 8em;
+  text-align: center;
+  color: red;
+  background:
+  linear-gradient(to top left,
+    transparent 0%,
+    transparent calc(50% - 0.05em),
+    red calc(50% - 0.05em),
+    red 50%,
+    red calc(50% + 0.05em),
+    transparent calc(50% + 0.05em),
+    transparent 100%),
+  linear-gradient(to top right,
+    transparent 0%,
+    transparent calc(50% - 0.05em),
+    red calc(50% - 0.05em),
+    red 50%,
+    red calc(50% + 0.05em),
+    transparent calc(50% + 0.05em),
+    transparent 100%);
+}
+
+.bigStrikethroughInner {
+  color: blue;
+  font-size: 8em;
+}
+
+.autoImageWidth {
+  width: auto !important; /*override the width below*/
+  max-width: 100%;
+  float: left;
+  clear: both;
+  text-align: center;
+}
+
+<!-- imessages -->
+
+.imessage {
+  font-family: helvetica;
+  display: flex ;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chat {
+  width: 300px;
+  border: solid 1px #EEE;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.messages {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+.message {
+  border-radius: 20px;
+  padding: 8px 15px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  display: inline-block;
+}
+
+.yours {
+  align-items: flex-start;
+}
+
+.yours .message {
+  margin-right: 25%;
+  background-color: #eee;
+  position: relative;
+}
+
+.yours .message.last:before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  bottom: 0;
+  left: -7px;
+  height: 20px;
+  width: 20px;
+  background: #eee;
+  border-bottom-right-radius: 15px;
+}
+.yours .message.last:after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  left: -10px;
+  width: 10px;
+  height: 20px;
+  background: white;
+  border-bottom-right-radius: 10px;
+}
+
+.mine {
+  align-items: flex-end;
+}
+
+.mine .message {
+  color: white;
+  margin-left: 25%;
+  background: linear-gradient(to bottom, #00D0EA 0%, #0085D1 100%);
+  background-attachment: fixed;
+  position: relative;
+}
+
+.mine .message.last:before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  bottom: 0;
+  right: -8px;
+  height: 20px;
+  width: 20px;
+  background: linear-gradient(to bottom, #00D0EA 0%, #0085D1 100%);
+  background-attachment: fixed;
+  border-bottom-left-radius: 15px;
+}
+
+.mine .message.last:after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  right: -10px;
+  width: 10px;
+  height: 20px;
+  background: white;
+  border-bottom-left-radius: 10px;
+}
+
+</style>
+
+# PKNCA – an R package for noncompartmental analysis of pharmacokinetic data
+
+## Introduction to PKNCA {.build .smaller}
+
+PKNCA is a tool for calculating noncompartmental analysis (NCA) results for pharmacokinetic (PK) data.
+
+... but, you already knew that or you wouldn't be here.
+
+PKNCA has several foci:
+
+* be regulatory-ready
+    * it has approximately 100% test coverage.
+* be reproducible
+    * it has a focus on being scriptable.
+* get the right answer or none at all
+    * it will try to know what you want,
+    * but all decisions can be overridden, and
+    * if there is a question that may cause an error or an unanticipated result, either no result will output or an error will be raised.
+
+# Dataset Basics
+
+## NCA Data are Not Tidy ***as a Single Dataset***
+
+"Tidy datasets... have a specific structure: each variable is a column, each observation is a row, and each type of observational unit is a table." - Hadley Wickham (https://doi.org/10.18637/jss.v059.i10)
+
+CDISC has NCA tidied, and PKNCA follows that model:
+
+* concentration-time is a dataset (PC domain; `PKNCAconc()` object)
+* dose-time is a dataset (EX/EC domains; `PKNCAdose()` object)
+* NCA results are a dataset (PP domain; `pk.nca()` output)
+
+## Dataset Basics: What columns are needed?
+
+Column names are provided by the input to `PKNCAconc()` and `PKNCAdose()`; they are not hard-coded.
+
+Columns that can be used include:
+
+* `PKNCAconc()`: concentration, time, groups; data exclusions; half-life inclusion and exclusion
+* `PKNCAdose()`: dose, time, groups; route, rate/duration of infusion; data exclusions
+* intervals given to `PKNCAdata()`: groups, start, end, and any NCA parameters to calculate
+
+## Dataset Basics:  Example interval data
+
+```{r, echo=TRUE}
+d_interval_1 <-
+  data.frame(
+    start=0, end=8,
+    cmax=TRUE, tmax=TRUE, auclast=TRUE
+  )
+```
+
+```{r}
+pander::pander(d_interval_1, split.tables = Inf)
+```
+
+Groups are not required, if you want the same intervals calculated for each group.
+
+# PKNCA Functions
+
+## What functions are the most used?
+
+* `PKNCAconc()`: define a concentration-time `PKNCAconc` object
+    * All information about concentration data are given:  concentration, time
+    * Optional information includes: grouping information (usually given), data to exclude, half-life inclusion and exclusion columns
+* `PKNCAdose()`: define a dose-time `PKNCAdose` object (optional)
+    * dose amount and time are both optional
+    * Optional information includes: rate or duration of infusion, data to exclude
+* `PKNCAdata()`: combine `PKNCAconc`, optionally `PKNCAdose`, and optionally `intervals` into a `PKNCAdata` object
+    * the `PKNCAconc` object must be given; the `PKNCAdose` object is optional; interval definitions are usually given; calculation options may be given
+* `pk.nca()`: calculate the NCA parameters from a data object into a `PKNCAresult` object
+
+## How do I do a simple calculation? all steps
+
+We will break this down in subsequent slides.
+
+```{r echo=TRUE}
+# Concentration data setup
+d_conc <-
+  datasets::Theoph |>
+  filter(Subject %in% 1)
+o_conc <- PKNCAconc(conc~Time, data=d_conc, timeu = "hr", concu = "mg/L")
+# Dose data setup
+d_dose <-
+  datasets::Theoph |>
+  filter(Subject %in% 1) |>
+  filter(Time == 0)
+o_dose <- PKNCAdose(Dose~Time, data=d_dose, doseu = "mg")
+# Combine concentration and dose
+o_data <- PKNCAdata(o_conc, o_dose)
+# Calculate the results
+o_result <- pk.nca(o_data)
+```
+
+## How do I do a simple calculation? Concentration data {.smaller}
+
+```{r echo=TRUE}
+# Load your dataset as a data.frame
+d_conc <-
+  datasets::Theoph |>
+  filter(Subject %in% 1)
+# Take a look at the data
+pander::pander(head(d_conc, 2))
+# Define the PKNCAconc object indicating the concentration and time columns, the
+# dataset, and any other options. Optionally include units.
+o_conc <- PKNCAconc(conc~Time, data=d_conc, timeu = "hr", concu = "mg/L")
+```
+
+## How do I do a simple calculation? Dose data {.smaller}
+
+```{r echo=TRUE}
+# Load your dataset as a data.frame
+d_dose <-
+  datasets::Theoph |>
+  filter(Subject %in% 1) |>
+  filter(Time == 0)
+# Take a look at the data
+pander::pander(d_dose)
+# Define the PKNCAdose object indicating the dose amount and time columns, the
+# dataset, and any other options. Optionally include units.
+o_dose <- PKNCAdose(Dose~Time, data=d_dose, doseu = "mg")
+```
+
+## How do I do a simple calculation? Calculate results {.smaller}
+
+```{r echo=TRUE}
+# Combine the PKNCAconc and PKNCAdose objects.  You can add interval
+# specifications and calculation options here.
+o_data <- PKNCAdata(o_conc, o_dose)
+# Calculate the results
+o_result <- pk.nca(o_data)
+```
+
+## How do I do a simple calculation?  Get results
+
+To calculate summary statistics, use `summary()`; to extract all individual-level results, use `as.data.frame()`.
+
+The `"caption"` attribute of the summary describes how the summary statistics were calculated for each parameter.  (Hint: `pander::pander()` knows how to use that to put the caption on a table in a report.)
+
+The individual results contain the columns for start time, end time, grouping variables (none in this example), parameter names, values, and if the value should be excluded.
+
+## How do I do a simple calculation?  Get summary results {.smaller}
+
+All results (summary or individual) can be output either in a Quarto/Rmarkdown report or another file for reporting.
+
+```{r echo=TRUE}
+# Look at summarized results
+pander::pander(summary(o_result), split.tables = Inf)
+```
+
+## How do I do a simple calculation?  Get individual results {.smaller}
+
+Use `as.data.frame()` to get the individual NCA parameter results.
+
+```{r echo=TRUE}
+# Look at individual results
+pander::pander(head(
+  as.data.frame(o_result),
+  n=3
+), split.tables = Inf)
+```
+
+# PKNCA datasets
+
+## How does PKNCA think about data?
+
+Three types of data are inputs for calculation in PKNCA:
+
+* concentration-time (`PKNCAconc`),
+* dose-time (`PKNCAdose`), and
+* intervals.
+
+`PKNCAconc` and `PKNCAdose` objects can optionally have groups.  The groups in a `PKNCAdose` object must be the same or fewer than the groups in `PKNCAconc` object (for example, all subjects in a treatment arm may receive the same dose).
+
+## What is an "interval" and how is it different than a "group"? {.columns-2 .smaller}
+
+```{r interval-vs-groups-setup, echo=FALSE}
+last_dose_time <- 24
+dose_interval <- 8
+dose_times <- seq(0, last_dose_time-dose_interval, by=dose_interval)
+d_conc_superposition <-
+  superposition(
+    o_conc,
+    dose.times=dose_times,
+    tau=last_dose_time,
+    check.blq=FALSE,
+    n.tau=1
+  )
+```
+
+A **group** separates one full concentration-time profile for a subject that you may ever want to consider at the same time.  Usually, it groups by study, treatment, analyte, and subject (other groups can be useful depending on the study design).
+
+An **interval** selects a time range within a **group**.
+
+One time can be in zero or more intervals, but only zero or one group.  Intervals can be adjacent (0-12 and 12-24) or overlap (0-12 and 0-24).  In other words, one sample may be used in more than one interval, but one sample will never be used in more than one group.
+
+**Legend:**  The group contains all points on the figure.  Shaded regions indicate intervals.  Arrows indicate points shared between intervals within the group.
+
+<p class="forceBreak"></p>
+
+```{r fig.width=4, fig.height=4}
+d_intervals <-
+  tibble(
+    start=dose_times,
+    end=dose_times + dose_interval
+  ) |>
+  mutate(
+    name=sprintf("Interval %g", row_number()),
+    height=max(d_conc_superposition$conc)*1.03,
+    width=dose_interval,
+    x=(start+end)/2,
+    y=height/2
+  )
+d_interval_arrows <-
+  d_conc_superposition |>
+  filter(time != 0 & time %in% dose_times) |>
+  mutate(
+    name1=sprintf("Interval %g", row_number()),
+    name2=sprintf("Interval %g", row_number() + 1),
+  )
+ggplot(d_conc_superposition, aes(x=time, y=conc)) +
+  geom_tile(
+    data=d_intervals,
+    aes(x=x, y=y, width=width, height=height, colour=name, fill=name),
+    alpha=0.2,
+    inherit.aes=FALSE,
+    show.legend=FALSE
+  ) +
+  geom_segment(
+    data=d_interval_arrows,
+    aes(x=time - 0.8, xend=time - 0.1, y=conc-2.1, yend=conc - 0.1, colour=name2),
+    arrow=arrow(length=unit(0.1, "inches")),
+    inherit.aes=FALSE,
+    show.legend=FALSE
+  ) +
+  geom_segment(
+    data=d_interval_arrows,
+    aes(x=time + 0.8, xend=time + 0.1, y=conc-2.1, yend=conc - 0.1, colour=name1),
+    arrow=arrow(length=unit(0.1, "inches")),
+    inherit.aes=FALSE,
+    show.legend=FALSE
+  ) +
+  geom_line() +
+  geom_point() +
+  scale_x_hours() +
+  labs(
+    title=sprintf("Dosing Q%gH", dose_interval)
+  )
+```
+
+# Reporting
+
+## Best practices for Data -> PKNCA -> knitr/Quarto {.smaller}
+
+`summary()` makes summary tables using of NCA results; `pander::pander()` creates a table with a caption. `as.data.frame()` with the NCA results makes a listing.
+
+```{r echo=TRUE}
+pander::pander(summary(o_result), split.tables = Inf)
+```
+
+```{r echo=TRUE, eval=FALSE}
+pander::pander(as.data.frame(o_result), split.tables = Inf)
+```
+
+## Graphics are intentionally not part of PKNCA, but there are some tricks that can help... {.columns-2 .smaller}
+
+Generate all individual profiles using the groups that you defined using the `ggtibble` package.
+
+```{r fig.width=4, fig.height=4, echo=TRUE}
+library(ggtibble)
+o_conc <-
+  PKNCAconc(
+    conc~Time|Subject,
+    data=datasets::Theoph
+  )
+pk_figs <-
+  ggtibble(
+    as.data.frame(o_conc),
+    aes(x = Time, y = conc),
+    outercols = group_vars(o_conc),
+    caption = "PK over time for subject {Subject}"
+  ) +
+  geom_line() +
+  geom_point()
+# knit_print(pk_figs)
+knit_print(pk_figs[1,])
+```
+
+## Validation of PKNCA
+
+PKNCA has an extensive testing and validation suite built-in.  To run the
+testing and validation suite of tests with a full report generated, see the
+[PKNCA Validation](http://humanpred.github.io/pknca/articles/v60-PKNCA-validation.html)
+vignette.
+
+## More information
+
+The PKNCA GitHub page (https://github.com/humanpred/pknca) and the vignettes linked from there have examples and details.
+
+To ask questions or get help, the discussion and issues sections of the GitHub website are available to get help from the community or from me.
+
+Thank you to all of the people who have used, contributed to, published with, and asked questions about PKNCA over the last >10 years!

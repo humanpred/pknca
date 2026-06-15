@@ -54,9 +54,9 @@ test_that("pk.calc.auxc", {
 
 test_that("pk.calc.auc: Linear AUC when the conc at the end of the interval is above LOQ", {
   # lambda.z is unused
-  tests <- list(AUCinf=as.numeric(NA),
-                AUClast=1.5,
-                AUCall=1.5)
+  tests <- list(AUCinf=structure(as.numeric(NA), method="AUC: linear"),
+                AUClast=structure(1.5, method="AUC: linear"),
+                AUCall=structure(1.5, method="AUC: linear"))
   for (t in names(tests)) {
     # Note: using this structure ensures that there will not be
     # excessive warnings during testing.
@@ -78,9 +78,9 @@ test_that("pk.calc.auc: Linear AUC when the conc at the end of the interval is a
 test_that("pk.calc.auc: Linear AUC when the conc at the end of the interval is BLQ, lambda.z missing", {
   # lambda.z is used to extrapolate to the end of the interval.
   # Since lambda.z is NA, the result is NA.
-  tests <- list(AUCinf=as.numeric(NA),
-                AUClast=0.5,
-                AUCall=1)
+  tests <- list(AUCinf=structure(as.numeric(NA), method="AUC: linear"),
+                AUClast=structure(0.5, method="AUC: linear"),
+                AUCall=structure(1, method="AUC: linear"))
   for (t in names(tests)) {
     # Note: using this structure ensures that there will not be
     # excessive warnings during testing.
@@ -101,9 +101,9 @@ test_that("pk.calc.auc: Linear AUC when the conc at the end of the interval is B
 
 test_that("pk.calc.auc: Linear AUC when the conc at the end of the interval is BLQ, lambda.z given", {
   # The same when lambda.z is given
-  tests <- list(AUCinf=1.5,
-                AUClast=0.5,
-                AUCall=1)
+  tests <- list(AUCinf=structure(1.5, method="AUC: linear"),
+                AUClast=structure(0.5, method="AUC: linear"),
+                AUCall=structure(1, method="AUC: linear"))
   for (t in names(tests)) {
     # Note: using this structure ensures that there will not be
     # excessive warnings during testing.
@@ -123,9 +123,9 @@ test_that("pk.calc.auc: Linear AUC when the conc at the end of the interval is B
 })
 
 test_that("pk.calc.auc: Linear AUC when when there are multiple BLQ values at the end, lambda.z given", {
-  tests <- list(AUCinf=1.5,
-                AUClast=0.5,
-                AUCall=1)
+  tests <- list(AUCinf=structure(1.5, method="AUC: linear"),
+                AUClast=structure(0.5, method="AUC: linear"),
+                AUCall=structure(1, method="AUC: linear"))
   for (t in names(tests)) {
     # Note: using this structure ensures that there will not be
     # excessive warnings during testing.
@@ -148,13 +148,13 @@ test_that("pk.calc.auc: Confirm that center BLQ points are dropped, kept, or imp
   # Do this with both "linear" and "lin up/log down"
   tests <- list(
     "linear"=list(
-      AUCinf=1+1+0.5+1.5+1.5+1,
-      AUClast=1+1+0.5+1.5+1.5,
-      AUCall=1+1+0.5+1.5+1.5),
+      AUCinf=structure(1+1+0.5+1.5+1.5+1, method="AUC: linear"),
+      AUClast=structure(1+1+0.5+1.5+1.5, method="AUC: linear"),
+      AUCall=structure(1+1+0.5+1.5+1.5, method="AUC: linear")),
     "lin up/log down"=list(
-      AUCinf=1+1+0.5+1.5+1/log(2)+1,
-      AUClast=1+1+0.5+1.5+1/log(2),
-      AUCall=1+1+0.5+1.5+1/log(2)))
+      AUCinf=structure(1+1+0.5+1.5+1/log(2)+1, method="AUC: lin up/log down"),
+      AUClast=structure(1+1+0.5+1.5+1/log(2), method="AUC: lin up/log down"),
+      AUCall=structure(1+1+0.5+1.5+1/log(2), method="AUC: lin up/log down")))
   for (t in names(tests)) {
     for (n in names(tests[[t]])) {
       # Note: using this structure ensures that there will not be
@@ -180,13 +180,13 @@ test_that("pk.calc.auc: Confirm BLQ in the middle or end are calculated correctl
   # AUCall looks different when there are BLQs at the end
   tests <- list(
     "linear"=list(
-      AUCinf=1+1+0.5+1.5+1.5+1,
-      AUClast=1+1+0.5+1.5+1.5,
-      AUCall=1+1+0.5+1.5+1.5+0.5),
+      AUCinf=structure(1+1+0.5+1.5+1.5+1, method="AUC: linear"),
+      AUClast=structure(1+1+0.5+1.5+1.5, method="AUC: linear"),
+      AUCall=structure(1+1+0.5+1.5+1.5+0.5, method="AUC: linear")),
     "lin up/log down"=list(
-      AUCinf=1+1+0.5+1.5+1/log(2)+1,
-      AUClast=1+1+0.5+1.5+1/log(2),
-      AUCall=1+1+0.5+1.5+1/log(2)+0.5))
+      AUCinf=structure(1+1+0.5+1.5+1/log(2)+1, method="AUC: lin up/log down"),
+      AUClast=structure(1+1+0.5+1.5+1/log(2), method="AUC: lin up/log down"),
+      AUCall=structure(1+1+0.5+1.5+1/log(2)+0.5, method="AUC: lin up/log down")))
   for (t in names(tests)) {
     for (n in names(tests[[t]])) {
       # Note: using this structure ensures that there will not be
@@ -212,13 +212,13 @@ test_that("pk.calc.auc: Confirm BLQ in the middle or end are calculated correctl
   # starting times differing, so not tested here.)
   tests <- list(
     "linear"=list(
-      AUCinf=1+3+1.5+1.5+1,
-      AUClast=1+3+1.5+1.5,
-      AUCall=1+3+1.5+1.5+0.5),
+      AUCinf=structure(1+3+1.5+1.5+1, method="AUC: linear"),
+      AUClast=structure(1+3+1.5+1.5, method="AUC: linear"),
+      AUCall=structure(1+3+1.5+1.5+0.5, method="AUC: linear")),
     "lin up/log down"=list(
-      AUCinf=1+2/log(2)+1.5+1/log(2)+1,
-      AUClast=1+2/log(2)+1.5+1/log(2),
-      AUCall=1+2/log(2)+1.5+1/log(2)+0.5))
+      AUCinf=structure(1+2/log(2)+1.5+1/log(2)+1, method="AUC: lin up/log down"),
+      AUClast=structure(1+2/log(2)+1.5+1/log(2), method="AUC: lin up/log down"),
+      AUCall=structure(1+2/log(2)+1.5+1/log(2)+0.5, method="AUC: lin up/log down")))
   for (t in names(tests)) {
     for (n in names(tests[[t]])) {
       # Note: using this structure ensures that there will not be
@@ -248,13 +248,13 @@ test_that("pk.calc.auc: Confirm BLQ in the middle or end are calculated correctl
 test_that("pk.calc.auc: When AUCinf is requested with NA for lambda.z, the result is NA", {
   tests <- list(
     "linear"=list(
-      AUCinf=as.numeric(NA),
-      AUClast=1+3+1.5+1.5,
-      AUCall=1+3+1.5+1.5+0.5),
+      AUCinf=structure(as.numeric(NA), method="AUC: linear"),
+      AUClast=structure(1+3+1.5+1.5, method="AUC: linear"),
+      AUCall=structure(1+3+1.5+1.5+0.5, method="AUC: linear")),
     "lin up/log down"=list(
-      AUCinf=as.numeric(NA),
-      AUClast=1+2/log(2)+1.5+1/log(2),
-      AUCall=1+2/log(2)+1.5+1/log(2)+0.5))
+      AUCinf=structure(as.numeric(NA), method="AUC: lin up/log down"),
+      AUClast=structure(1+2/log(2)+1.5+1/log(2), method="AUC: lin up/log down"),
+      AUCall=structure(1+2/log(2)+1.5+1/log(2)+0.5, method="AUC: lin up/log down")))
   for (t in names(tests)) {
     for (n in names(tests[[t]])) {
       # Note: using this structure ensures that there will not be
@@ -288,13 +288,13 @@ test_that("pk.calc.auc: Test NA at the end", {
   # Test NA at the end
   tests <- list(
     "linear"=list(
-      AUCinf=as.numeric(NA),
-      AUClast=1+3+1.5+1.5,
-      AUCall=1+3+1.5+1.5+1),
+      AUCinf=structure(as.numeric(NA), method="AUC: linear"),
+      AUClast=structure(1+3+1.5+1.5, method="AUC: linear"),
+      AUCall=structure(1+3+1.5+1.5+1, method="AUC: linear")),
     "lin up/log down"=list(
-      AUCinf=as.numeric(NA),
-      AUClast=1+2/log(2)+1.5+1/log(2),
-      AUCall=1+2/log(2)+1.5+1/log(2)+1))
+      AUCinf=structure(as.numeric(NA), method="AUC: lin up/log down"),
+      AUClast=structure(1+2/log(2)+1.5+1/log(2), method="AUC: lin up/log down"),
+      AUCall=structure(1+2/log(2)+1.5+1/log(2)+1, method="AUC: lin up/log down")))
   for (t in names(tests))
     for (n in names(tests[[t]])) {
       # Note: using this structure ensures that there will not be
@@ -323,13 +323,13 @@ test_that("pk.calc.auc: Test NA at the end", {
 test_that("pk.calc.auc: interpolation of times within the time interval", {
   tests <- list(
     "linear"=list(
-      AUCinf=1+3+1.5+1.5+1,
-      AUClast=1+3+1.5+1.5,
-      AUCall=1+3+1.5+1.5+0.75),
+      AUCinf=structure(1+3+1.5+1.5+1, method="AUC: linear"),
+      AUClast=structure(1+3+1.5+1.5, method="AUC: linear"),
+      AUCall=structure(1+3+1.5+1.5+0.75, method="AUC: linear")),
     "lin up/log down"=list(
-      AUCinf=1+2/log(2)+1.5+1/log(2)+1,
-      AUClast=1+2/log(2)+1.5+1/log(2),
-      AUCall=1+2/log(2)+1.5+1/log(2)+0.5/log(2)))
+      AUCinf=structure(1+2/log(2)+1.5+1/log(2)+1, method="AUC: lin up/log down"),
+      AUClast=structure(1+2/log(2)+1.5+1/log(2), method="AUC: lin up/log down"),
+      AUCall=structure(1+2/log(2)+1.5+1/log(2)+0.5/log(2), method="AUC: lin up/log down")))
   for (t in names(tests)) {
     for (n in names(tests[[t]])) {
       # Note: using this structure ensures that there will not be
@@ -394,11 +394,9 @@ test_that("pk.calc.auc: warning with beginning of interval before the beginning 
                           method=t),
         class="pknca_warn_auc_before_first"
       )
-      expect_equal(
-        v1,
-        tests[[t]][[n]],
-        info=paste(t, n)
-      )
+      expect_equal(v1,
+                   tests[[t]][[n]],
+                   info=paste(t, n))
     }
   }
 })
@@ -544,7 +542,7 @@ test_that("pk.calc.auc.inf.obs returns NA when lambda.z is NA", {
       interval = c(0, Inf),
       method = "linear"
     ),
-    NA_real_
+    structure(NA_real_, method = "AUC: linear")
   )
 })
 
@@ -577,14 +575,14 @@ test_that("pk.calc.aumc", {
       time=0:3,
       interval=c(0, 3),
       method="linear"),
-    3.75)
+    structure(3.75, method="AUC: linear"))
   expect_equal(
     pk.calc.aumc(
       conc=c(0, 1, 1, 0.5),
       time=0:3,
       interval=c(0, 3),
       method="lin up/log down"),
-    2-0.5/log(0.5)+0.5/(log(0.5)^2))
+    structure(2-0.5/log(0.5)+0.5/(log(0.5)^2), method="AUC: lin up/log down"))
   expect_equal(
     pk.calc.aumc(
       conc=c(0, 1, 1, 0.5),
@@ -593,7 +591,7 @@ test_that("pk.calc.aumc", {
       auc.type="AUCinf",
       lambda.z=1,
       method="lin up/log down"),
-    2 - 0.5/log(0.5) + 0.5/(log(0.5)^2) + 1.5 + 0.5)
+    structure(2 - 0.5/log(0.5) + 0.5/(log(0.5)^2) + 1.5 + 0.5, method="AUC: lin up/log down"))
 })
 
 
@@ -741,4 +739,35 @@ test_that("AUC with a single concentration measured should return NA (fix #176)"
       exclude="AUC cannot be calculated with only one measured concentration"
     )
   )
+})
+
+test_that("pk.calc.auc and wrappers: method attribute is set and propagated", {
+
+  auc_params <- c(
+    "auc", "auc.last", "auc.inf.obs", "auc.inf.pred", "auc.all",
+    "aumc.last", "aumc.inf.obs", "aumc.inf.pred", "aumc.all"
+  )
+  auc_methods <- c("linear", "lin up/log down", "lin-log")
+  auc_args <- list(
+    conc=c(0,1,1),
+    time=0:2,
+    interval=c(0,2),
+    lambda.z=1,
+    clast.pred = 1,
+    clast.obs = 1
+  )
+
+  for (param in auc_params) {
+    auc_fun <- get(paste0("pk.calc.", param))
+    args_fun <- auc_args[intersect(names(auc_args), names(formals(auc_fun)))]
+    for (method in auc_methods) {
+      args_fun$method <- method
+      v <- do.call(auc_fun, args_fun)
+      expect_equal(
+        attr(v, "method"),
+        paste0("AUC: ", method),
+        info=paste("pk.calc.param sets method attribute for", param, "with method", method)
+      )
+    }
+  }
 })

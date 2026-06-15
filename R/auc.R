@@ -179,6 +179,8 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
         fun_linear = fun_linear, fun_log = fun_log, fun_inf = fun_inf
       )
   }
+  # Add method details as an attribute
+  attr(ret, "method") <- paste0("AUC: ", method)
   ret
 }
 

@@ -4,7 +4,29 @@ will continue until then.  These will be especially noticeable around
 the inclusion of IV NCA parameters and additional specifications of
 the dosing including dose amount and route.
 
-# PKNCA 0.12.2
+# Development version
+
+* `PKNCAconc()` gains an `lloq` argument (a column name or a numeric scalar) that
+  is passed through to `pk.calc.half.life()`.  This wires the lower limit of
+  quantification through a full `pk.nca()` run so the Tobit half-life method
+  (`hl_method = "tobit"`, set via `PKNCAdata(options = list(hl_method = "tobit"))`)
+  works end-to-end instead of failing because no `lloq` was available.
+
+* Added sparse AUMC function and five sparse AUC parameters (cl.sparse.last, kel.sparse.last, mrt.ivint.last, vss.sparse.last, vz.sparse.last)
+
+* New IV dosing AUMC parameters with C0 back-extrapolation (`aumciv*`)
+
+* New interval AUMC parameters with interpolation/extrapolation support
+  (`aumcint*`), mirroring the existing `aucint` family (#152)
+
+* New derived PK parameters to complete coverage across all AUC variants
+  (#152):
+  * 11 clearance parameters (`cl.*`)
+  * 9 elimination rate constant parameters (`kel.*`)
+  * 6 mean residence time parameters (`mrt.*`)
+  * 3 IV mean residence time parameters (`mrt.iv.*`)
+  * 9 volume of distribution at steady state parameters (`vss.*`)
+  * 13 terminal volume of distribution parameters (`vz.*`)
 
 ## Features added
 
@@ -29,6 +51,17 @@ the dosing including dose amount and route.
 
 ## Improvements
 
+* Documentation for `include_half.life` and `exclude_half.life` now describes
+  the three-state (`TRUE`/`FALSE`/`NA`) per-point behavior, clarifies that a
+  column counts as "in use" whenever it is not entirely `NA` (so an all-`FALSE`
+  column still engages the method), and states that only one of the two may be
+  in use for the same interval. The half-life vignette gains the same note and
+  fixes a mislabeled "include" example.
+
+* The sparse NCA vignette now explains how subjects are grouped: sparse
+  parameters pool all subjects that share the same concentration grouping
+  variables with the subject column removed (#530).
+
 * `normalize.data.frame()` now validates that `norm_table` contains exactly one
   row when used with ungrouped data, giving a clear error message instead of
   silently producing incorrect results.
@@ -36,6 +69,7 @@ the dosing including dose amount and route.
 * `normalize.data.frame()` now uses `dplyr::inner_join()` instead of `merge()` 
   for grouped joins, preserving left-table row order. Missing group validation 
   ensures no rows are silently dropped.
+
 
 ## Breaking changes
 
@@ -52,6 +86,9 @@ the dosing including dose amount and route.
 
 * `get_halflife_points()` now correctly accounts for start time != 0 and sets
   times outside of any interval to `NA` (#470)
+* The `PKNCAconc` function won't give an error for a concentration-time check
+when the issue is due to an excluded point (#310)
+* The `PKNCAdose` function won't give an error for a missing-time check when the issue is due to an excluded point (#310)
 * `pk.nca` will calculate `fe` and `clr` even if their dependent parameters (e.g, `ae`) were not requested to be calculated in the intervals (#473)
 
 ## New features
@@ -81,6 +118,7 @@ the dosing including dose amount and route.
   `clr.pred.dn` (#433)
 * `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
   `summary()` (#477)
+* `pk.nca` output now includes a `PPANMETH` column describing the analysis methods used for each parameter regarding imputations, AUC and half.life calculations (#457)
 * Added new `tmin` parameter
 * New post-processing functions to normalize PKNCA result parameters based on any column in PKNCAconc data.frame (`normalize_by_col()`) or by using a custom normalization table (`normalize()`)
 * New excretion rate parameters: `ermax`  (Maximum excretion rate), `ertmax` (Midpoint time of maximum excretion rate) and `ertlst` (Time of last excretion rate measurement) (#433)

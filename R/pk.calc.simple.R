@@ -47,12 +47,6 @@ add.interval.col("cmax",
                  depends=NULL,
                  pptestcd_cdisc="CMAX",
                  pptest_cdisc="Max Conc")
-PKNCA.set.summary(
-  name="cmax",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 #' @describeIn pk.calc.cmax Determine the minimum observed PK
 #'   concentration
@@ -81,12 +75,6 @@ add.interval.col("cmin",
                  depends=NULL,
                  pptestcd_cdisc="CMIN",
                  pptest_cdisc="Min Conc")
-PKNCA.set.summary(
-  name="cmin",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 #' Determine time of maximum observed PK concentration
 #'
@@ -142,12 +130,6 @@ add.interval.col("tmax",
                  depends=NULL,
                  pptestcd_cdisc="TMAX",
                  pptest_cdisc="Time of CMAX")
-PKNCA.set.summary(
-  name="tmax",
-  description="median and range",
-  point=business.median,
-  spread=business.range
-)
 
 #' Determine time of minimum observed PK concentration
 #'
@@ -203,12 +185,7 @@ add.interval.col("tmin",
                  depends=NULL,
                  pptestcd_cdisc="TMIN",
                  pptest_cdisc="Time of CMIN Observation")
-PKNCA.set.summary(
-  name="tmin",
-  description="median and range",
-  point=business.median,
-  spread=business.range
-)
+
 
 #' Determine time of last observed concentration above the limit of
 #' quantification.
@@ -240,12 +217,6 @@ add.interval.col("tlast",
                  depends=NULL,
                  pptestcd_cdisc="TLST",
                  pptest_cdisc="Time of Last Nonzero Conc")
-PKNCA.set.summary(
-  name="tlast",
-  description="median and range",
-  point=business.median,
-  spread=business.range
-)
 
 #' @describeIn pk.calc.tlast Determine the first concentration above
 #'   the limit of quantification.
@@ -270,12 +241,6 @@ add.interval.col("tfirst",
                  depends=NULL,
                  pptestcd_cdisc="TFIRST",
                  pptest_cdisc="Time of First Nonzero Conc")
-PKNCA.set.summary(
-  name="tfirst",
-  description="median and range",
-  point=business.median,
-  spread=business.range
-)
 
 #' Determine the last observed concentration above the limit of quantification
 #' (LOQ).
@@ -317,12 +282,6 @@ add.interval.col("clast.obs",
                  depends=NULL,
                  pptestcd_cdisc="CLST",
                  pptest_cdisc="Last Nonzero Conc")
-PKNCA.set.summary(
-  name="clast.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 #' Calculate the effective half-life
 #'
@@ -346,12 +305,7 @@ add.interval.col("thalf.eff.obs",
                  depends="mrt.obs",
                  pptestcd_cdisc="EFFOHL",
                  pptest_cdisc="Effective Half-Life Obs")
-PKNCA.set.summary(
-  name="thalf.eff.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("thalf.eff.pred",
                  FUN="pk.calc.thalf.eff",
                  values=c(FALSE, TRUE),
@@ -362,12 +316,7 @@ add.interval.col("thalf.eff.pred",
                  depends="mrt.pred",
                  pptestcd_cdisc="EFFPHL",
                  pptest_cdisc="Effective Half-Life Pred")
-PKNCA.set.summary(
-  name="thalf.eff.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("thalf.eff.last",
                  FUN="pk.calc.thalf.eff",
                  values=c(FALSE, TRUE),
@@ -378,12 +327,7 @@ add.interval.col("thalf.eff.last",
                  depends="mrt.last",
                  pptestcd_cdisc="EFFHL",
                  pptest_cdisc="Effective Half-Life (based on AUClast)")
-PKNCA.set.summary(
-  name="thalf.eff.last",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("thalf.eff.iv.obs",
                  FUN="pk.calc.thalf.eff",
                  values=c(FALSE, TRUE),
@@ -394,12 +338,7 @@ add.interval.col("thalf.eff.iv.obs",
                  depends="mrt.iv.obs",
                  pptestcd_cdisc="EFFIVOHL",
                  pptest_cdisc="Effective Half-Life (for IV dosing, based on MRT Obs)")
-PKNCA.set.summary(
-  name="thalf.eff.iv.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("thalf.eff.iv.pred",
                  FUN="pk.calc.thalf.eff",
                  values=c(FALSE, TRUE),
@@ -410,12 +349,7 @@ add.interval.col("thalf.eff.iv.pred",
                  depends="mrt.iv.pred",
                  pptestcd_cdisc="EFFIVPHL",
                  pptest_cdisc="Effective Half-Life (for IV dosing, based on MRT Pred)")
-PKNCA.set.summary(
-  name="thalf.eff.iv.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("thalf.eff.iv.last",
                  FUN="pk.calc.thalf.eff",
                  values=c(FALSE, TRUE),
@@ -426,12 +360,7 @@ add.interval.col("thalf.eff.iv.last",
                  depends="mrt.iv.last",
                  pptestcd_cdisc="EFFIVLHL",
                  pptest_cdisc="Effective Half-Life (for IV dosing, based on AUClast)")
-PKNCA.set.summary(
-  name="thalf.eff.iv.last",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 
 #' Calculate the AUC percent extrapolated
 #'
@@ -492,12 +421,7 @@ add.interval.col("aucpext.obs",
                  depends=c("auclast", "aucinf.obs"),
                  pptestcd_cdisc="AUCPEO",
                  pptest_cdisc="AUC %Extrapolation Obs")
-PKNCA.set.summary(
-  name="aucpext.obs",
-  description="arithmetic mean and standard deviation",
-  point=business.mean,
-  spread=business.sd
-)
+
 add.interval.col("aucpext.pred",
                  FUN="pk.calc.aucpext",
                  values=c(FALSE, TRUE),
@@ -508,12 +432,7 @@ add.interval.col("aucpext.pred",
                  depends=c("auclast", "aucinf.pred"),
                  pptestcd_cdisc="AUCPEP",
                  pptest_cdisc="AUC %Extrapolation Pred")
-PKNCA.set.summary(
-  name="aucpext.pred",
-  description="arithmetic mean and standard deviation",
-  point=business.mean,
-  spread=business.sd
-)
+
 
 #' Calculate the elimination rate (Kel)
 #'
@@ -537,12 +456,7 @@ add.interval.col("kel.obs",
                  depends="mrt.obs",
                  pptestcd_cdisc="KELOS",
                  pptest_cdisc="Kel (based on AUCinf,obs)")
-PKNCA.set.summary(
-  name="kel.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("kel.pred",
                  FUN="pk.calc.kel",
                  values=c(FALSE, TRUE),
@@ -553,12 +467,7 @@ add.interval.col("kel.pred",
                  depends="mrt.pred",
                  pptestcd_cdisc="KELP",
                  pptest_cdisc="Kel (based on AUCinf,pred)")
-PKNCA.set.summary(
-  name="kel.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("kel.last",
                  FUN="pk.calc.kel",
                  values=c(FALSE, TRUE),
@@ -569,12 +478,7 @@ add.interval.col("kel.last",
                  depends="mrt.last",
                  pptestcd_cdisc="KELLST",
                  pptest_cdisc="Kel (based on AUClast)")
-PKNCA.set.summary(
-  name="kel.last",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("kel.iv.obs",
                  FUN="pk.calc.kel",
                  values=c(FALSE, TRUE),
@@ -585,12 +489,7 @@ add.interval.col("kel.iv.obs",
                  depends="mrt.iv.obs",
                  pptestcd_cdisc="KELIVOS",
                  pptest_cdisc="Kel (for IV dosing, based on AUCinf,obs)")
-PKNCA.set.summary(
-  name="kel.iv.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("kel.iv.pred",
                  FUN="pk.calc.kel",
                  values=c(FALSE, TRUE),
@@ -601,12 +500,7 @@ add.interval.col("kel.iv.pred",
                  depends="mrt.iv.pred",
                  pptestcd_cdisc="KELIVP",
                  pptest_cdisc="Kel (for IV dosing, based on AUCinf,pred)")
-PKNCA.set.summary(
-  name="kel.iv.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("kel.iv.last",
                  FUN="pk.calc.kel",
                  values=c(FALSE, TRUE),
@@ -617,12 +511,98 @@ add.interval.col("kel.iv.last",
                  depends="mrt.iv.last",
                  pptestcd_cdisc="KELIVLT",
                  pptest_cdisc="Kel (for IV dosing, based on AUClast)")
-PKNCA.set.summary(
-  name="kel.iv.last",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
+add.interval.col("kel.all",
+                 FUN = "pk.calc.kel",
+                 values = c(FALSE, TRUE),
+                 unit_type = "inverse_time",
+                 pretty_name = "Kel (based on AUCall)",
+                 desc = "Elimination rate (as calculated from the MRTall)",
+                 formalsmap = list(mrt = "mrt.all"),
+                 depends = "mrt.all")
+
+add.interval.col("kel.int.all",
+                 FUN = "pk.calc.kel",
+                 values = c(FALSE, TRUE),
+                 unit_type = "inverse_time",
+                 pretty_name = "Kel (based on AUCint.all)",
+                 desc = "Elimination rate (as calculated from the MRTint.all)",
+                 formalsmap = list(mrt = "mrt.int.all"),
+                 depends = "mrt.int.all")
+
+add.interval.col("kel.int.inf.obs",
+                 FUN = "pk.calc.kel",
+                 values = c(FALSE, TRUE),
+                 unit_type = "inverse_time",
+                 pretty_name = "Kel (based on AUCint.inf.obs)",
+                 desc = "Elimination rate (as calculated from the MRTint.inf.obs)",
+                 formalsmap = list(mrt = "mrt.int.inf.obs"),
+                 depends = "mrt.int.inf.obs")
+
+add.interval.col("kel.int.inf.pred",
+                 FUN = "pk.calc.kel",
+                 values = c(FALSE, TRUE),
+                 unit_type = "inverse_time",
+                 pretty_name = "Kel (based on AUCint.inf.pred)",
+                 desc = "Elimination rate (as calculated from the MRTint.inf.pred)",
+                 formalsmap = list(mrt = "mrt.int.inf.pred"),
+                 depends = "mrt.int.inf.pred")
+
+add.interval.col("kel.int.last",
+                 FUN = "pk.calc.kel",
+                 values = c(FALSE, TRUE),
+                 unit_type = "inverse_time",
+                 pretty_name = "Kel (based on AUCint.last)",
+                 desc = "Elimination rate (as calculated from the MRTint.last)",
+                 formalsmap = list(mrt = "mrt.int.last"),
+                 depends = "mrt.int.last")
+
+add.interval.col("kel.iv.all",
+                 FUN = "pk.calc.kel",
+                 values = c(FALSE, TRUE),
+                 unit_type = "inverse_time",
+                 pretty_name = "Kel (for IV dosing,  based on AUCall)",
+                 desc = "Elimination rate (as calculated from the MRTiv.all))",
+                 formalsmap = list(mrt = "mrt.iv.all"),
+                 depends = "mrt.iv.all")
+
+add.interval.col("kel.ivint.all",
+                 FUN = "pk.calc.kel",
+                 values = c(FALSE, TRUE),
+                 unit_type = "inverse_time",
+                 pretty_name = "Kel (IV dose interval, based on AUCint.all)",
+                 desc = "Elimination rate (as calculated from the MRTivint.all)",
+                 formalsmap = list(mrt = "mrt.ivint.all"),
+                 depends = "mrt.ivint.all")
+
+add.interval.col("kel.ivint.last",
+                 FUN = "pk.calc.kel",
+                 values = c(FALSE, TRUE),
+                 unit_type = "inverse_time",
+                 pretty_name = "Kel (IV dose interval, based on AUCint.last)",
+                 desc = "Elimination rate (as calculated from the MRTivint.last)",
+                 formalsmap = list(mrt = "mrt.ivint.last"),
+                 depends = "mrt.ivint.last")
+
+add.interval.col("kel.sparse.last",
+                 FUN = "pk.calc.kel",
+                 values = c(FALSE, TRUE),
+                 unit_type = "inverse_time",
+                 pretty_name = "Kel (for sparse data, based on AUClast)",
+                 desc = "Elimination rate (as calculated from the MRTsparse.last)",
+                 sparse = TRUE,
+                 formalsmap = list(mrt = "mrt.sparse.last"),
+                 depends = "mrt.sparse.last")
+
+add.interval.col("kel.sparse.last",
+                 FUN = "pk.calc.kel",
+                 values = c(FALSE, TRUE),
+                 unit_type = "inverse_time",
+                 pretty_name = "Kel (for sparse data, based on AUClast)",
+                 desc = "Elimination rate (as calculated from the MRTsparse.last)",
+                 sparse = TRUE,
+                 formalsmap = list(mrt = "mrt.sparse.last"),
+                 depends = "mrt.sparse.last")
 
 #' Calculate the (observed oral) clearance
 #'
@@ -666,12 +646,7 @@ add.interval.col("cl.last",
                  depends="auclast",
                  pptestcd_cdisc=list(route=list(extravascular="CLF/FLST", intravascular="CLLST")),
                  pptest_cdisc=list(route=list(extravascular="CL by F (based on AUClast)", intravascular="CL (based on AUClast)")))
-PKNCA.set.summary(
-  name="cl.last",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("cl.all",
                  FUN="pk.calc.cl",
                  values=c(FALSE, TRUE),
@@ -682,12 +657,7 @@ add.interval.col("cl.all",
                  depends="aucall",
                  pptestcd_cdisc=list(route=list(extravascular="CLF/FALL", intravascular="CLALL")),
                  pptest_cdisc=list(route=list(extravascular="CL by F (based on AUCall)", intravascular="CL (based on AUCall)")))
-PKNCA.set.summary(
-  name="cl.all",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("cl.obs",
                  FUN="pk.calc.cl",
                  values=c(FALSE, TRUE),
@@ -698,12 +668,7 @@ add.interval.col("cl.obs",
                  depends="aucinf.obs",
                  pptestcd_cdisc=list(route=list(extravascular="CLF/FO", intravascular="CLO")),
                  pptest_cdisc=list(route=list(extravascular="Total CL Obs by F", intravascular="Total CL Obs")))
-PKNCA.set.summary(
-  name="cl.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("cl.pred",
                  FUN="pk.calc.cl",
                  values=c(FALSE, TRUE),
@@ -714,12 +679,116 @@ add.interval.col("cl.pred",
                  depends="aucinf.pred",
                  pptestcd_cdisc=list(route=list(extravascular="CLF/FP", intravascular="CLP")),
                  pptest_cdisc=list(route=list(extravascular="Total CL Pred by F", intravascular="Total CL Pred")))
-PKNCA.set.summary(
-  name="cl.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
+add.interval.col("cl.int.all",
+                 FUN = "pk.calc.cl",
+                 values = c(FALSE, TRUE),
+                 unit_type = "clearance",
+                 pretty_name = "CL (based on AUCint.all)",
+                 desc = "Clearance or observed oral clearance calculated with AUCint.all",
+                 formalsmap = list(auc = "aucint.all"),
+                 depends = "aucint.all")
+
+add.interval.col("cl.int.inf.obs",
+                 FUN = "pk.calc.cl",
+                 values = c(FALSE, TRUE),
+                 unit_type = "clearance",
+                 pretty_name = "CL (based on AUCint.inf.obs)",
+                 desc = "Clearance or observed oral clearance calculated with AUCint.inf.obs",
+                 formalsmap = list(auc = "aucint.inf.obs"),
+                 depends = "aucint.inf.obs")
+
+add.interval.col("cl.int.inf.pred",
+                 FUN = "pk.calc.cl",
+                 values = c(FALSE, TRUE),
+                 unit_type = "clearance",
+                 pretty_name = "CL (based on AUCint.inf.pred)",
+                 desc = "Clearance or observed oral clearance calculated with AUCint.inf.pred",
+                 formalsmap = list(auc = "aucint.inf.pred"),
+                 depends = "aucint.inf.pred")
+
+add.interval.col("cl.int.last",
+                 FUN = "pk.calc.cl",
+                 values = c(FALSE, TRUE),
+                 unit_type = "clearance",
+                 pretty_name = "CL (based on AUCint.last)",
+                 desc = "Clearance or observed oral clearance calculated with AUCint.last",
+                 formalsmap = list(auc = "aucint.last"),
+                 depends = "aucint.last")
+
+add.interval.col("cl.iv.all",
+                 FUN = "pk.calc.cl",
+                 values = c(FALSE, TRUE),
+                 unit_type = "clearance",
+                 pretty_name = "CL (for IV dosing,  based on AUCall)",
+                 desc = "Clearance for intravenous dosing calculated with AUCall",
+                 formalsmap = list(auc = "aucivall"),
+                 depends = "aucivall")
+
+add.interval.col("cl.iv.last",
+                 FUN = "pk.calc.cl",
+                 values = c(FALSE, TRUE),
+                 unit_type = "clearance",
+                 pretty_name = "CL (for IV dosing,  based on AUClast)",
+                 desc = "Clearance for intravenous dosing calculated with AUClast",
+                 formalsmap = list(auc = "aucivlast"),
+                 depends = "aucivlast")
+
+add.interval.col("cl.iv.obs",
+                 FUN = "pk.calc.cl",
+                 values = c(FALSE, TRUE),
+                 unit_type = "clearance",
+                 pretty_name = "CL (for IV dosing,  based on AUCinf,obs)",
+                 desc = "Clearance for intravenous dosing calculated with AUCinf,obs",
+                 formalsmap = list(auc = "aucivinf.obs"),
+                 depends = "aucivinf.obs")
+
+add.interval.col("cl.iv.pred",
+                 FUN = "pk.calc.cl",
+                 values = c(FALSE, TRUE),
+                 unit_type = "clearance",
+                 pretty_name = "CL (for IV dosing,  based on AUCinf,pred)",
+                 desc = "Clearance for intravenous dosing calculated with AUCinf,pred",
+                 formalsmap = list(auc = "aucivinf.pred"),
+                 depends = "aucivinf.pred")
+
+add.interval.col("cl.ivint.all",
+                 FUN = "pk.calc.cl",
+                 values = c(FALSE, TRUE),
+                 unit_type = "clearance",
+                 pretty_name = "CL (IV dose interval, based on AUCint.all)",
+                 desc = "Clearance for intravenous dosing calculated with interval AUCint.all",
+                 formalsmap = list(auc = "aucivint.all"),
+                 depends = "aucivint.all")
+
+add.interval.col("cl.ivint.last",
+                 FUN = "pk.calc.cl",
+                 values = c(FALSE, TRUE),
+                 unit_type = "clearance",
+                 pretty_name = "CL (IV dose interval, based on AUCint.last)",
+                 desc = "Clearance for intravenous dosing calculated with interval AUCint.last",
+                 formalsmap = list(auc = "aucivint.last"),
+                 depends = "aucivint.last")
+
+add.interval.col("cl.sparse.last",
+                 FUN = "pk.calc.cl",
+                 values = c(FALSE, TRUE),
+                 unit_type = "clearance",
+                 pretty_name = "CL (for sparse data, based on AUClast)",
+                 desc = "Clearance from sparse sampling calculated with population AUClast",
+                 sparse = TRUE,
+                 formalsmap = list(auc = "sparse_auclast"),
+                 depends = "sparse_auclast")
+
+add.interval.col("cl.sparse.last",
+                 FUN = "pk.calc.cl",
+                 values = c(FALSE, TRUE),
+                 unit_type = "clearance",
+                 pretty_name = "CL (for sparse data, based on AUClast)",
+                 desc = "Clearance from sparse sampling calculated with population AUClast",
+                 sparse = TRUE,
+                 formalsmap = list(auc = "sparse_auclast"),
+                 depends = "sparse_auclast")
 
 #' Calculate the absolute (or relative) bioavailability
 #'
@@ -752,12 +821,7 @@ add.interval.col("f",
                  depends=NULL,
                  pptestcd_cdisc="FAB",
                  pptest_cdisc="Absolute Bioavailability")
-PKNCA.set.summary(
-  name="f",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 
 #' Calculate the mean residence time (MRT) for single-dose data or linear
 #' multiple-dose data.
@@ -786,12 +850,7 @@ add.interval.col("mrt.obs",
                  depends=c("aucinf.obs", "aumcinf.obs"),
                  pptestcd_cdisc=list(route=list(extravascular="MRTEVFO", intravascular="MRTICFO")),
                  pptest_cdisc=list(route=list(extravascular="MRT Extravasc Infinity Obs", intravascular="MRT IV Cont Inf Infinity Obs")))
-PKNCA.set.summary(
-  name="mrt.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("mrt.pred",
                  FUN="pk.calc.mrt",
                  values=c(FALSE, TRUE),
@@ -802,12 +861,7 @@ add.interval.col("mrt.pred",
                  depends=c("aucinf.pred", "aumcinf.pred"),
                  pptestcd_cdisc=list(route=list(extravascular="MRTEVFP", intravascular="MRTICFP")),
                  pptest_cdisc=list(route=list(extravascular="MRT Extravasc Infinity Pred", intravascular="MRT IV Cont Inf Infinity Pred")))
-PKNCA.set.summary(
-  name="mrt.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("mrt.last",
                  FUN="pk.calc.mrt",
                  values=c(FALSE, TRUE),
@@ -818,12 +872,71 @@ add.interval.col("mrt.last",
                  depends=c("auclast", "aumclast"),
                  pptestcd_cdisc=list(route=list(extravascular="MRTEVLST", intravascular="MRTICLST")),
                  pptest_cdisc=list(route=list(extravascular="MRT Extravasc to Last Nonzero Conc", intravascular="MRT IV Cont Inf to Last Nonzero Conc")))
-PKNCA.set.summary(
-  name="mrt.last",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
+add.interval.col("mrt.all",
+                 FUN = "pk.calc.mrt",
+                 values = c(FALSE, TRUE),
+                 unit_type = "time",
+                 pretty_name = "MRT (based on AUCall)",
+                 desc = "Mean residence time calculated with AUCall/AUMCall",
+                 formalsmap = list(auc = "aucall", aumc = "aumcall"),
+                 depends = c("aucall", "aumcall"))
+
+add.interval.col("mrt.int.all",
+                 FUN = "pk.calc.mrt",
+                 values = c(FALSE, TRUE),
+                 unit_type = "time",
+                 pretty_name = "MRT (based on AUCint.all)",
+                 desc = "Mean residence time over interval calculated with AUCint.all/AUMCint.all",
+                 formalsmap = list(auc = "aucint.all", aumc = "aumcint.all"),
+                 depends = c("aucint.all", "aumcint.all"))
+
+add.interval.col("mrt.int.inf.obs",
+                 FUN = "pk.calc.mrt",
+                 values = c(FALSE, TRUE),
+                 unit_type = "time",
+                 pretty_name = "MRT (based on AUCint.inf.obs)",
+                 desc = "Mean residence time over interval calculated with AUCint.inf.obs/AUMCint.inf.obs",
+                 formalsmap = list(auc = "aucint.inf.obs", aumc = "aumcint.inf.obs"),
+                 depends = c("aucint.inf.obs", "aumcint.inf.obs"))
+
+add.interval.col("mrt.int.inf.pred",
+                 FUN = "pk.calc.mrt",
+                 values = c(FALSE, TRUE),
+                 unit_type = "time",
+                 pretty_name = "MRT (based on AUCint.inf.pred)",
+                 desc = "Mean residence time over interval calculated with AUCint.inf.pred/AUMCint.inf.pred",
+                 formalsmap = list(auc = "aucint.inf.pred", aumc = "aumcint.inf.pred"),
+                 depends = c("aucint.inf.pred", "aumcint.inf.pred"))
+
+add.interval.col("mrt.int.last",
+                 FUN = "pk.calc.mrt",
+                 values = c(FALSE, TRUE),
+                 unit_type = "time",
+                 pretty_name = "MRT (based on AUCint.last)",
+                 desc = "Mean residence time over interval calculated with AUCint.last/AUMCint.last",
+                 formalsmap = list(auc = "aucint.last", aumc = "aumcint.last"),
+                 depends = c("aucint.last", "aumcint.last"))
+
+add.interval.col("mrt.sparse.last",
+                 FUN = "pk.calc.mrt",
+                 values = c(FALSE, TRUE),
+                 unit_type = "time",
+                 pretty_name = "MRT (for sparse data, based on AUClast)",
+                 desc = "Mean residence time from sparse sampling",
+                 sparse = TRUE,
+                 formalsmap = list(auc = "sparse_auclast", aumc = "sparse_aumclast"),
+                 depends = c("sparse_auclast", "sparse_aumclast"))
+
+add.interval.col("mrt.sparse.last",
+                 FUN = "pk.calc.mrt",
+                 values = c(FALSE, TRUE),
+                 unit_type = "time",
+                 pretty_name = "MRT (for sparse data, based on AUClast)",
+                 desc = "Mean residence time from sparse sampling",
+                 sparse = TRUE,
+                 formalsmap = list(auc = "sparse_auclast", aumc = "sparse_aumclast"),
+                 depends = c("sparse_auclast", "sparse_aumclast"))
 
 #' @describeIn pk.calc.mrt MRT for an IV infusion
 #' @export
@@ -835,6 +948,7 @@ pk.calc.mrt.iv <- function(auc, aumc, duration.dose) {
   }
   ret
 }
+
 # Add the columns to the interval specification
 add.interval.col("mrt.iv.obs",
                  FUN="pk.calc.mrt.iv",
@@ -846,12 +960,7 @@ add.interval.col("mrt.iv.obs",
                  depends=c("aucinf.obs", "aumcinf.obs"),
                  pptestcd_cdisc="MRTIBIFO",
                  pptest_cdisc="MRT Intravasc Infinity Obs")
-PKNCA.set.summary(
-  name="mrt.iv.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("mrt.iv.pred",
                  FUN="pk.calc.mrt.iv",
                  values=c(FALSE, TRUE),
@@ -862,12 +971,7 @@ add.interval.col("mrt.iv.pred",
                  depends=c("aucinf.pred", "aumcinf.pred"),
                  pptestcd_cdisc="MRTIBIFP",
                  pptest_cdisc="MRT Intravasc Infinity Pred")
-PKNCA.set.summary(
-  name="mrt.iv.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("mrt.iv.last",
                  FUN="pk.calc.mrt.iv",
                  values=c(FALSE, TRUE),
@@ -878,12 +982,34 @@ add.interval.col("mrt.iv.last",
                  depends=c("auclast", "aumclast"),
                  pptestcd_cdisc="MRTIBLST",
                  pptest_cdisc="MRT Intravasc to Last Nonzero Conc")
-PKNCA.set.summary(
-  name="mrt.iv.last",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
+add.interval.col("mrt.iv.all",
+                 FUN = "pk.calc.mrt.iv",
+                 values = c(FALSE, TRUE),
+                 unit_type = "time",
+                 pretty_name = "MRT (for IV dosing, based on AUCall)",
+                 desc = "Mean residence time for IV dosing calculated with AUCall/AUMCall",
+                 formalsmap = list(auc = "aucivall", aumc = "aumcivall"),
+                 depends = c("aucivall", "aumcivall"))
+
+add.interval.col("mrt.ivint.all",
+                 FUN = "pk.calc.mrt.iv",
+                 values = c(FALSE, TRUE),
+                 unit_type = "time",
+                 pretty_name = "MRT (IV dose interval, based on AUCint.all)",
+                 desc = "Mean residence time for IV interval calculated with AUCint.all/AUMCint.all",
+                 formalsmap = list(auc = "aucivint.all", aumc = "aumcivint.all"),
+                 depends = c("aucivint.all", "aumcivint.all"))
+
+add.interval.col("mrt.ivint.last",
+                 FUN = "pk.calc.mrt.iv",
+                 values = c(FALSE, TRUE),
+                 unit_type = "time",
+                 pretty_name = "MRT (IV dose interval, based on AUCint.last)",
+                 desc = "Mean residence time for IV interval calculated with AUCint.last/AUMCint.last",
+                 formalsmap = list(auc = "aucivint.last", aumc = "aumcivint.last"),
+                 depends = c("aucivint.last", "aumcivint.last"))
+
 
 #' @describeIn pk.calc.mrt MRT for multiple-dose data with nonlinear kinetics
 #'
@@ -906,6 +1032,7 @@ pk.calc.mrt.md <- function(auctau, aumctau, aucinf, tau) {
   }
   ret
 }
+
 add.interval.col("mrt.md.obs",
                  FUN="pk.calc.mrt.md",
                  values=c(FALSE, TRUE),
@@ -916,12 +1043,7 @@ add.interval.col("mrt.md.obs",
                  depends=c("auclast", "aumclast", "aucinf.obs"),
                  pptestcd_cdisc="MRTMDO",
                  pptest_cdisc="MRT (for multiple dosing, based on AUCinf,obs)")
-PKNCA.set.summary(
-  name="mrt.md.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("mrt.md.pred",
                  FUN="pk.calc.mrt.md",
                  values=c(FALSE, TRUE),
@@ -932,12 +1054,7 @@ add.interval.col("mrt.md.pred",
                  depends=c("auclast", "aumclast", "aucinf.pred"),
                  pptestcd_cdisc="MRTMDP",
                  pptest_cdisc="MRT (for multiple dosing, based on AUCinf,pred)")
-PKNCA.set.summary(
-  name="mrt.md.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 
 #' Calculate the terminal volume of distribution (Vz)
 #'
@@ -957,6 +1074,7 @@ pk.calc.vz <- function(cl, lambda.z) {
     stop("'cl' and 'lambda.z' must be the same length")
   cl/lambda.z
 }
+
 # Add the columns to the interval specification
 add.interval.col("vz.obs",
                  FUN="pk.calc.vz",
@@ -968,12 +1086,7 @@ add.interval.col("vz.obs",
                  depends=c("cl.obs", "lambda.z"),
                  pptestcd_cdisc=list(route=list(extravascular="VZF/FO", intravascular="VZO")),
                  pptest_cdisc=list(route=list(extravascular="Vz by F Obs", intravascular="Vz Obs")))
-PKNCA.set.summary(
-  name="vz.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("vz.pred",
                  FUN="pk.calc.vz",
                  values=c(FALSE, TRUE),
@@ -984,11 +1097,136 @@ add.interval.col("vz.pred",
                  depends=c("cl.pred", "lambda.z"),
                  pptestcd_cdisc=list(route=list(extravascular="VZF/FP", intravascular="VZP")),
                  pptest_cdisc=list(route=list(extravascular="Vz by F Pred", intravascular="Vz Pred")))
-PKNCA.set.summary(
-  name="vz.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
+
+add.interval.col("vz.all",
+                 FUN = "pk.calc.vz",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vz (based on AUCall)",
+                 desc = "Terminal volume of distribution calculated with AUCall-based CL",
+                 formalsmap = list(cl = "cl.all"),
+                 depends = c("cl.all", "lambda.z"))
+
+add.interval.col("vz.int.all",
+                 FUN = "pk.calc.vz",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vz (based on AUCint.all)",
+                 desc = "Terminal volume of distribution using interval AUCint.all",
+                 formalsmap = list(cl = "cl.int.all"),
+                 depends = c("cl.int.all", "lambda.z"))
+
+add.interval.col("vz.int.inf.obs",
+                 FUN = "pk.calc.vz",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vz (based on AUCint.inf.obs)",
+                 desc = "Terminal volume of distribution using interval AUCint.inf.obs",
+                 formalsmap = list(cl = "cl.int.inf.obs"),
+                 depends = c("cl.int.inf.obs", "lambda.z"))
+
+add.interval.col("vz.int.inf.pred",
+                 FUN = "pk.calc.vz",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vz (based on AUCint.inf.pred)",
+                 desc = "Terminal volume of distribution using interval AUCint.inf.pred",
+                 formalsmap = list(cl = "cl.int.inf.pred"),
+                 depends = c("cl.int.inf.pred", "lambda.z"))
+
+add.interval.col("vz.int.last",
+                 FUN = "pk.calc.vz",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vz (based on AUCint.last)",
+                 desc = "Terminal volume of distribution using interval AUCint.last",
+                 formalsmap = list(cl = "cl.int.last"),
+                 depends = c("cl.int.last", "lambda.z"))
+
+add.interval.col("vz.iv.all",
+                 FUN = "pk.calc.vz",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vz (for IV dosing,  based on AUCall)",
+                 desc = "Terminal volume of distribution for IV dosing using AUCall",
+                 formalsmap = list(cl = "cl.iv.all"),
+                 depends = c("cl.iv.all", "lambda.z"))
+
+add.interval.col("vz.iv.last",
+                 FUN = "pk.calc.vz",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vz (for IV dosing,  based on AUClast)",
+                 desc = "Terminal volume of distribution for IV dosing using AUClast",
+                 formalsmap = list(cl = "cl.iv.last"),
+                 depends = c("cl.iv.last", "lambda.z"))
+
+add.interval.col("vz.iv.obs",
+                 FUN = "pk.calc.vz",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vz (for IV dosing,  based on AUCinf,obs)",
+                 desc = "Terminal volume of distribution for IV dosing using observed AUCinf",
+                 formalsmap = list(cl = "cl.iv.obs"),
+                 depends = c("cl.iv.obs", "lambda.z"))
+
+add.interval.col("vz.iv.pred",
+                 FUN = "pk.calc.vz",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vz (for IV dosing,  based on AUCinf,pred)",
+                 desc = "Terminal volume of distribution for IV dosing using predicted AUCinf",
+                 formalsmap = list(cl = "cl.iv.pred"),
+                 depends = c("cl.iv.pred", "lambda.z"))
+
+add.interval.col("vz.ivint.all",
+                 FUN = "pk.calc.vz",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vz (IV dose interval, based on AUCint.all)",
+                 desc = "Terminal volume of distribution for IV interval using AUCint.all",
+                 formalsmap = list(cl = "cl.ivint.all"),
+                 depends = c("cl.ivint.all", "lambda.z"))
+
+add.interval.col("vz.ivint.last",
+                 FUN = "pk.calc.vz",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vz (IV dose interval, based on AUCint.last)",
+                 desc = "Terminal volume of distribution for IV interval using AUCint.last",
+                 formalsmap = list(cl = "cl.ivint.last"),
+                 depends = c("cl.ivint.last", "lambda.z"))
+
+add.interval.col("vz.last",
+                 FUN = "pk.calc.vz",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vz (based on AUClast)",
+                 desc = "Terminal volume of distribution calculated with AUClast-based CL",
+                 formalsmap = list(cl = "cl.last"),
+                 depends = c("cl.last", "lambda.z"))
+
+add.interval.col("vz.sparse.last",
+                 FUN         = "pk.calc.vz",
+                 values      = c(FALSE, TRUE),
+                 unit_type   = "volume",
+                 pretty_name = "Vz (for sparse data, based on AUClast)",
+                 desc        = "Terminal volume of distribution from sparse sampling",
+                 sparse      = TRUE,
+                 formalsmap  = list(cl = "cl.sparse.last", lambda.z = "kel.sparse.last"),
+                 depends     = c("cl.sparse.last", "kel.sparse.last"))
+
+
+add.interval.col(
+  "vz.sparse.last",
+  FUN         = "pk.calc.vz",
+  values      = c(FALSE, TRUE),
+  unit_type   = "volume",
+  pretty_name = "Vz (for sparse data, based on AUClast)",
+  desc        = "Terminal volume of distribution from sparse sampling",
+  sparse      = TRUE,
+  formalsmap  = list(cl = "cl.sparse.last", lambda.z = "kel.sparse.last"),
+  depends     = c("cl.sparse.last", "kel.sparse.last")
 )
 
 #' @describeIn pk.calc.vz Steady-state volume of distribution (Vss)
@@ -1011,12 +1249,6 @@ add.interval.col("vss.obs",
                  depends=c("cl.obs", "mrt.obs"),
                  pptestcd_cdisc=list(route=list(extravascular="VSSF/FO", intravascular="VSSO")),
                  pptest_cdisc=list(route=list(extravascular="Vss by F Obs", intravascular="Vol Dist Steady State Obs")))
-PKNCA.set.summary(
-  name="vss.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 add.interval.col("vss.pred",
                  FUN="pk.calc.vss",
@@ -1028,12 +1260,7 @@ add.interval.col("vss.pred",
                  depends=c("cl.pred", "mrt.pred"),
                  pptestcd_cdisc=list(route=list(extravascular="VSSF/FP", intravascular="VSSP")),
                  pptest_cdisc=list(route=list(extravascular="Vss by F Pred", intravascular="Vol Dist Steady State Pred")))
-PKNCA.set.summary(
-  name="vss.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("vss.last",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
@@ -1044,12 +1271,7 @@ add.interval.col("vss.last",
                  depends=c("cl.last", "mrt.last"),
                  pptestcd_cdisc=list(route=list(extravascular="VSSF/FLST", intravascular="VSSLST")),
                  pptest_cdisc=list(route=list(extravascular="Vss by F (based on AUClast)", intravascular="Vss (based on AUClast)")))
-PKNCA.set.summary(
-  name="vss.last",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("vss.iv.obs",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
@@ -1060,12 +1282,7 @@ add.interval.col("vss.iv.obs",
                  depends=c("cl.obs", "mrt.iv.obs"),
                  pptestcd_cdisc="VSSIVO",
                  pptest_cdisc="Vss (for IV dosing, based on AUCinf,obs)")
-PKNCA.set.summary(
-  name="vss.iv.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("vss.iv.pred",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
@@ -1076,12 +1293,7 @@ add.interval.col("vss.iv.pred",
                  depends=c("cl.pred", "mrt.iv.pred"),
                  pptestcd_cdisc="VSSIVP",
                  pptest_cdisc="Vss (for IV dosing, based on AUCinf,pred)")
-PKNCA.set.summary(
-  name="vss.iv.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("vss.iv.last",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
@@ -1092,12 +1304,7 @@ add.interval.col("vss.iv.last",
                  depends=c("cl.last", "mrt.iv.last"),
                  pptestcd_cdisc="VSSIVLST",
                  pptest_cdisc="Vss (for IV dosing, based on AUClast)")
-PKNCA.set.summary(
-  name="vss.iv.last",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("vss.md.obs",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
@@ -1108,12 +1315,7 @@ add.interval.col("vss.md.obs",
                  depends=c("cl.last", "mrt.md.obs"),
                  pptestcd_cdisc="VSSMDO",
                  pptest_cdisc="Vss (for multiple-dose, based on AUCinf,obs)")
-PKNCA.set.summary(
-  name="vss.md.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("vss.md.pred",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
@@ -1124,12 +1326,98 @@ add.interval.col("vss.md.pred",
                  depends=c("cl.last", "mrt.md.pred"),
                  pptestcd_cdisc="VSSMDP",
                  pptest_cdisc="Vss (for multiple-dose, based on AUCinf,pred)")
-PKNCA.set.summary(
-  name="vss.md.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
+add.interval.col("vss.all",
+                 FUN = "pk.calc.vss",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vss (based on AUCall)",
+                 desc = "Steady-state volume of distribution calculated with AUCall-based CL and MRT",
+                 formalsmap = list(cl = "cl.all", mrt = "mrt.all"),
+                 depends = c("cl.all", "mrt.all"))
+
+add.interval.col("vss.int.all",
+                 FUN = "pk.calc.vss",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vss (based on AUCint.all)",
+                 desc = "Steady-state volume of distribution using interval AUCint.all",
+                 formalsmap = list(cl = "cl.int.all", mrt = "mrt.int.all"),
+                 depends = c("cl.int.all", "mrt.int.all"))
+
+add.interval.col("vss.int.inf.obs",
+                 FUN = "pk.calc.vss",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vss (based on AUCint.inf.obs)",
+                 desc = "Steady-state volume of distribution using interval AUCint.inf.obs",
+                 formalsmap = list(cl = "cl.int.inf.obs", mrt = "mrt.int.inf.obs"),
+                 depends = c("cl.int.inf.obs", "mrt.int.inf.obs"))
+
+add.interval.col("vss.int.inf.pred",
+                 FUN = "pk.calc.vss",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vss (based on AUCint.inf.pred)",
+                 desc = "Steady-state volume of distribution using interval AUCint.inf.pred",
+                 formalsmap = list(cl = "cl.int.inf.pred", mrt = "mrt.int.inf.pred"),
+                 depends = c("cl.int.inf.pred", "mrt.int.inf.pred"))
+
+add.interval.col("vss.int.last",
+                 FUN = "pk.calc.vss",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vss (based on AUCint.last)",
+                 desc = "Steady-state volume of distribution using interval AUCint.last",
+                 formalsmap = list(cl = "cl.int.last", mrt = "mrt.int.last"),
+                 depends = c("cl.int.last", "mrt.int.last"))
+
+add.interval.col("vss.iv.all",
+                 FUN = "pk.calc.vss",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vss (for IV dosing,  based on AUCall)",
+                 desc = "Steady-state volume of distribution for IV dosing using AUCall",
+                 formalsmap = list(cl = "cl.iv.all", mrt = "mrt.iv.all"),
+                 depends = c("cl.iv.all", "mrt.iv.all"))
+
+add.interval.col("vss.ivint.all",
+                 FUN = "pk.calc.vss",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vss (IV dose interval, based on AUCint.all)",
+                 desc = "Steady-state volume of distribution for IV interval using AUCint.all",
+                 formalsmap = list(cl = "cl.ivint.all", mrt = "mrt.ivint.all"),
+                 depends = c("cl.ivint.all", "mrt.ivint.all"))
+
+add.interval.col("vss.ivint.last",
+                 FUN = "pk.calc.vss",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vss (IV dose interval, based on AUCint.last)",
+                 desc = "Steady-state volume of distribution for IV interval using AUCint.last",
+                 formalsmap = list(cl = "cl.ivint.last", mrt = "mrt.ivint.last"),
+                 depends = c("cl.ivint.last", "mrt.ivint.last"))
+
+add.interval.col("vss.sparse.last",
+                 FUN = "pk.calc.vss",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vss (for sparse data, based on AUClast)",
+                 desc = "Steady-state volume of distribution from sparse sampling",
+                 sparse = TRUE,
+                 formalsmap = list(cl = "cl.sparse.last", mrt = "mrt.sparse.last"),
+                 depends = c("cl.sparse.last", "mrt.sparse.last"))
+
+add.interval.col("vss.sparse.last",
+                 FUN = "pk.calc.vss",
+                 values = c(FALSE, TRUE),
+                 unit_type = "volume",
+                 pretty_name = "Vss (for sparse data, based on AUClast)",
+                 desc = "Steady-state volume of distribution from sparse sampling",
+                 sparse = TRUE,
+                 formalsmap = list(cl = "cl.sparse.last", mrt = "mrt.sparse.last"),
+                 depends = c("cl.sparse.last", "mrt.sparse.last"))
 
 #' Calculate the average concentration during an interval.
 #'
@@ -1156,10 +1444,10 @@ add.interval.col(
   pretty_name = "Cav",
   desc = "The average concentration during an interval (calculated with AUClast)",
   depends = "auclast",
-  formalsmap = list(auc = "auclast"),
+  formalsmap = list(auc = "auclast")
+  ,
   pptestcd_cdisc="CAVG",
-  pptest_cdisc="Average Conc"
-)
+  pptest_cdisc="Average Conc")
 add.interval.col(
   "cav.int.last",
   FUN = "pk.calc.cav",
@@ -1169,9 +1457,9 @@ add.interval.col(
   desc = "The average concentration during an interval (calculated with AUCint.last)",
   depends = "aucint.last",
   formalsmap = list(auc = "aucint.last"),
+  ,
   pptestcd_cdisc="CAVGINT",
-  pptest_cdisc="Average Conc from T1 to T2"
-)
+  pptest_cdisc="Average Conc from T1 to T2")
 add.interval.col(
   "cav.int.all",
   FUN = "pk.calc.cav",
@@ -1181,9 +1469,9 @@ add.interval.col(
   desc = "The average concentration during an interval (calculated with AUCint.all)",
   depends = "aucint.all",
   formalsmap = list(auc = "aucint.all"),
+  ,
   pptestcd_cdisc="CAVGINA",
-  pptest_cdisc="Cavg All"
-)
+  pptest_cdisc="Cavg All")
 add.interval.col(
   "cav.int.inf.obs",
   FUN = "pk.calc.cav",
@@ -1193,9 +1481,9 @@ add.interval.col(
   desc = "The average concentration during an interval (calculated with AUCint.inf.obs)",
   depends = "aucint.inf.obs",
   formalsmap = list(auc = "aucint.inf.obs"),
+  ,
   pptestcd_cdisc="CAVGINO",
-  pptest_cdisc="Cavg Infinity Obs"
-)
+  pptest_cdisc="Cavg Infinity Obs")
 add.interval.col(
   "cav.int.inf.pred",
   FUN = "pk.calc.cav",
@@ -1205,16 +1493,10 @@ add.interval.col(
   desc = "The average concentration during an interval (calculated with AUCint.inf.pred)",
   depends = "aucint.inf.pred",
   formalsmap = list(auc = "aucint.inf.pred"),
+  ,
   pptestcd_cdisc="CAVGINP",
-  pptest_cdisc="Cavg Infinity Pred"
-)
+  pptest_cdisc="Cavg Infinity Pred")
 
-PKNCA.set.summary(
-  name = c("cav", "cav.int.last", "cav.int.all", "cav.int.inf.obs", "cav.int.inf.pred"),
-  description = "geometric mean and geometric coefficient of variation",
-  point = business.geomean,
-  spread = business.geocv
-)
 
 #' Determine the trough (end of interval) concentration
 #'
@@ -1245,12 +1527,7 @@ add.interval.col("ctrough",
                  depends=NULL,
                  pptestcd_cdisc="CTROUGH",
                  pptest_cdisc="Conc Trough")
-PKNCA.set.summary(
-  name="ctrough",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 
 #' @describeIn pk.calc.ctrough Concentration at the beginning of the interval
 #'
@@ -1278,12 +1555,7 @@ add.interval.col("cstart",
                  depends=NULL,
                  pptestcd_cdisc="CSTART",
                  pptest_cdisc="Cstart")
-PKNCA.set.summary(
-  name="cstart",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 
 #' Determine the peak-to-trough ratio
 #'
@@ -1308,12 +1580,7 @@ add.interval.col("ptr",
                  depends=c("cmax", "ctrough"),
                  pptestcd_cdisc="PTROUGHR",
                  pptest_cdisc="Peak Trough Ratio")
-PKNCA.set.summary(
-  name="ptr",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 
 #' Determine the observed lag time (time before the first
 #' concentration above the limit of quantification or above the first
@@ -1341,12 +1608,7 @@ add.interval.col("tlag",
                  depends=NULL,
                  pptestcd_cdisc="TLAG",
                  pptest_cdisc="Time to First Nonzero Conc")
-PKNCA.set.summary(
-  name="tlag",
-  description="median and range",
-  point=business.median,
-  spread=business.range
-)
+
 
 #' Determine the degree of fluctuation
 #'
@@ -1374,12 +1636,7 @@ add.interval.col("deg.fluc",
                  depends=c("cmax", "cmin", "cav"),
                  pptestcd_cdisc="DEGFLUC",
                  pptest_cdisc="Degree of fluctuation")
-PKNCA.set.summary(
-  name="deg.fluc",
-  description="arithmetic mean and standard deviation",
-  point=business.mean,
-  spread=business.sd
-)
+
 
 #' @describeIn pk.calc.deg.fluc PK swing
 #'
@@ -1403,12 +1660,7 @@ add.interval.col("swing",
                  depends=c("cmax", "cmin"),
                  pptestcd_cdisc="SWING",
                  pptest_cdisc="Swing")
-PKNCA.set.summary(
-  name="swing",
-  description="arithmetic mean and standard deviation",
-  point=business.mean,
-  spread=business.sd
-)
+
 
 #' Determine the concentration at the end of infusion
 #'
@@ -1440,12 +1692,7 @@ add.interval.col("ceoi",
                  depends=NULL,
                  pptestcd_cdisc="CEOI",
                  pptest_cdisc="Ceoi")
-PKNCA.set.summary(
-  name="ceoi",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 
 #' Calculate the AUC above a given concentration
 #'
@@ -1476,16 +1723,11 @@ add.interval.col(
   pretty_name="AUC,above",
   desc="The area under the concentration time the beginning of the interval to the last concentration above the limit of quantification plus the triangle from that last concentration to 0 at the first concentration below the limit of quantification, with a concentration subtracted from all concentrations and values below zero after subtraction set to zero",
   depends="cstart",
-  formalsmap = list(conc_above = "cstart"),
+  formalsmap = list(conc_above = "cstart")
+  ,
   pptestcd_cdisc="AUCABVPA",
-  pptest_cdisc="AUC above predose"
-)
-PKNCA.set.summary(
-  name="aucabove.predose.all",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+  pptest_cdisc="AUC above predose")
+
 add.interval.col(
   "aucabove.trough.all",
   FUN="pk.calc.aucabove",
@@ -1493,16 +1735,11 @@ add.interval.col(
   pretty_name="AUC,above",
   desc="The area under the concentration time the beginning of the interval to the last concentration above the limit of quantification plus the triangle from that last concentration to 0 at the first concentration below the limit of quantification, with a concentration subtracted from all concentrations and values below zero after subtraction set to zero",
   depends="ctrough",
-  formalsmap = list(conc_above = "ctrough"),
+  formalsmap = list(conc_above = "ctrough")
+  ,
   pptestcd_cdisc="AUCABVTA",
-  pptest_cdisc="AUC above trough"
-)
-PKNCA.set.summary(
-  name="aucabove.trough.all",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+  pptest_cdisc="AUC above trough")
+
 
 #' Count the number of concentration measurements in an interval
 #'
@@ -1530,10 +1767,10 @@ add.interval.col(
   unit_type = "count",
   pretty_name = "Concentration count",
   desc = "Number of non-missing concentrations for an interval",
-  depends = NULL,
+  depends = NULL
+  ,
   pptestcd_cdisc="CNTCONC",
-  pptest_cdisc="Concentration count"
-)
+  pptest_cdisc="Concentration count")
 
 #' @describeIn pk.calc.count_conc Count the number of concentration measurements
 #'   that are not missing, above, or below the limit of quantification in an
@@ -1558,12 +1795,7 @@ add.interval.col(
   desc="Number of measured and non BLQ/ALQ concentrations for an interval",
   depends=NULL
 )
-PKNCA.set.summary(
-  name=c("count_conc", "count_conc_measured"),
-  description="median and range",
-  point=business.median,
-  spread=business.range
-)
+
 
 #' Extract the dose used for calculations
 #'
@@ -1579,13 +1811,156 @@ add.interval.col(
   values=c(FALSE, TRUE),
   unit_type="dose",
   pretty_name="Total dose",
-  desc="Total dose administered during an interval",
+  desc="Total dose administered during an interval"
+  ,
   pptestcd_cdisc="TDOSE",
-  pptest_cdisc="Total dose administered"
-)
+  pptest_cdisc="Total dose administered")
+
+# =============================================================================
+# SET SUMMARY STATISTICS
+# =============================================================================
+#===============================================================================
+# CONCENTRATION PARAMETERS - count: 13
+# Ordered: base → trough/start → average → interval → special
+#===============================================================================
 PKNCA.set.summary(
-  name="totdose",
-  description="median and range",
-  point=business.median,
-  spread=business.range
+  name = c(
+    # Base concentrations  - count: 3
+    "cmax", "cmin", "clast.obs",
+    
+    # Trough and start  - count: 3
+    "ctrough", "cstart", "ceoi",
+    
+    # Average concentrations  - count: 5
+    "cav", "cav.int.all", "cav.int.last", "cav.int.inf.obs", "cav.int.inf.pred",
+    
+    # Special AUC above  - count: 2
+    "aucabove.predose.all", "aucabove.trough.all"
+  ),
+  description = "geometric mean and geometric coefficient of variation",
+  point = business.geomean,
+  spread = business.geocv
+)
+
+#===============================================================================
+# TIME PARAMETERS - count: 5
+# Ordered: chronological
+#===============================================================================
+PKNCA.set.summary(
+  name = c(
+    "tfirst", "tlag", "tmin", "tmax", "tlast"
+  ),
+  description = "median and range",
+  point = business.median,
+  spread = business.range
+)
+
+#===============================================================================
+# PERCENTAGE / FLUCTUATION PARAMETERS   - count: 4
+#===============================================================================
+PKNCA.set.summary(
+  name = c(
+    "aucpext.obs", "aucpext.pred",
+    "deg.fluc", "swing"
+  ),
+  description = "arithmetic mean and standard deviation",
+  point = business.mean,
+  spread = business.sd
+)
+
+#===============================================================================
+# RATIO PARAMETERS   - count: 2
+#===============================================================================
+PKNCA.set.summary(
+  name = c(
+    "ptr", "f"
+  ),
+  description = "geometric mean and geometric coefficient of variation",
+  point = business.geomean,
+  spread = business.geocv
+)
+
+#===============================================================================
+# EFFECTIVE HALF-LIFE   - count: 6
+# Ordered: base → IV
+#===============================================================================
+PKNCA.set.summary(
+  name = c(
+    "thalf.eff.obs", "thalf.eff.pred", "thalf.eff.last",
+    "thalf.eff.iv.obs", "thalf.eff.iv.pred", "thalf.eff.iv.last"
+  ),
+  description = "geometric mean and geometric coefficient of variation",
+  point = business.geomean,
+  spread = business.geocv
+)
+
+#===============================================================================
+# COUNT PARAMETERS   - count: 3
+#===============================================================================
+PKNCA.set.summary(
+  name = c(
+    "count_conc", "count_conc_measured", "totdose"
+  ),
+  description = "median and range",
+  point = business.median,
+  spread = business.range
+)
+
+#===============================================================================
+# BASIC PK PARAMETERS (CL, KEL, MRT, VZ, VSS) - count: 79
+# Ordered: base → int → inf → iv → ivint → sparse → md (if applicable)
+#===============================================================================
+PKNCA.set.summary(
+  name = c(
+    
+    # Clearance (CL) - count: 15
+    "cl.obs", "cl.pred", "cl.last", "cl.all",
+    "cl.int.all", "cl.int.last", "cl.int.inf.obs", "cl.int.inf.pred",
+    "cl.iv.obs", "cl.iv.pred", "cl.iv.last", "cl.iv.all",
+    "cl.ivint.all", "cl.ivint.last",
+    "cl.sparse.last",
+    
+    # Elimination rate constant (KEL) - count: 15
+    "kel.obs", "kel.pred", "kel.last", "kel.all",
+    "kel.int.all", "kel.int.last", "kel.int.inf.obs", "kel.int.inf.pred",
+    "kel.iv.obs", "kel.iv.pred", "kel.iv.last", "kel.iv.all",
+    "kel.ivint.all", "kel.ivint.last",
+    "kel.sparse.last",
+    
+    # Mean residence time (MRT) - count: 17
+    "mrt.obs", "mrt.pred", "mrt.last", "mrt.all",
+    "mrt.int.all", "mrt.int.last", "mrt.int.inf.obs", "mrt.int.inf.pred",
+    "mrt.iv.obs", "mrt.iv.pred", "mrt.iv.last", "mrt.iv.all",
+    "mrt.ivint.all", "mrt.ivint.last",
+    "mrt.sparse.last",
+    "mrt.md.obs", "mrt.md.pred",
+    
+    # Volume of distribution at steady state (VSS) - count: 17
+    "vss.obs", "vss.pred", "vss.last", "vss.all",
+    "vss.int.all", "vss.int.last", "vss.int.inf.obs", "vss.int.inf.pred",
+    "vss.iv.obs", "vss.iv.pred", "vss.iv.last", "vss.iv.all",
+    "vss.ivint.all", "vss.ivint.last",
+    "vss.sparse.last",
+    "vss.md.obs", "vss.md.pred",
+    
+    # Volume of distribution (VZ) - count: 15
+    "vz.obs", "vz.pred", "vz.last", "vz.all",
+    "vz.int.all", "vz.int.last", "vz.int.inf.obs", "vz.int.inf.pred",
+    "vz.iv.obs", "vz.iv.pred", "vz.iv.last", "vz.iv.all",
+    "vz.ivint.all", "vz.ivint.last",
+    "vz.sparse.last"
+  ),
+  description = "geometric mean and geometric coefficient of variation",
+  point = business.geomean,
+  spread = business.geocv
+)
+
+PKNCA.set.summary(
+  name = c(
+    "cl.sparse.last",   "kel.sparse.last",  "mrt.sparse.last",  "vss.sparse.last",
+    "vz.sparse.last"
+  ),
+  description = "geometric mean and geometric coefficient of variation",
+  point = business.geomean,
+  spread = business.geocv
 )

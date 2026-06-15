@@ -22,9 +22,9 @@ concentration above the limit of quantification or above the first
 concentration in the interval)
 }
 \seealso{
-Other NCA time parameters: 
-\code{\link{pk.calc.tlast}()},
-\code{\link{pk.calc.tmax}()},
-\code{\link{pk.calc.tmin}()}
+Other NCA time parameters:
+\code{\link[=pk.calc.tlast]{pk.calc.tlast()}},
+\code{\link[=pk.calc.tmax]{pk.calc.tmax()}},
+\code{\link[=pk.calc.tmin]{pk.calc.tmin()}}
 }
 \concept{NCA time parameters}
