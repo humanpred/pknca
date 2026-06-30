@@ -33,6 +33,30 @@ test_that("sparse_auc", {
   expect_equal(sparse_serial$sparse_auc_df, structure(auclast_df_serial, method=c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")))
 })
 
+test_that("as_sparse_pk drops NA concentrations (#563)", {
+  sparse_pk <- as_sparse_pk(
+    conc    = c(0, 0, 5, 7, 3, NA),
+    time    = c(0, 0, 4, 4, 24, 24),
+    subject = c(1, 2, 3, 4, 5, 6)
+  )
+  # The NA row (subject 6, time 24) should be dropped
+  expect_length(sparse_pk, 3)  # 3 unique times: 0, 4, 24
+  expect_equal(sparse_pk[[3]]$conc, 3)
+  expect_equal(sparse_pk[[3]]$subject, 5)
+})
+
+test_that("sparse_auc tolerates NA concentrations (#563)", {
+  result <- pk.calc.sparse_auc(
+    conc    = c(0, 0, 5, 7, 3, NA),
+    time    = c(0, 0, 4, 4, 24, 24),
+    subject = 1:6
+  )
+  expect_false(is.na(result$sparse_auc))
+  # Mean profile: time 0 = 0, time 4 = 6, time 24 = 3
+  # AUC linear: 0.5*(0+6)*4 + 0.5*(6+3)*20 = 12 + 90 = 102
+  expect_equal(as.numeric(result$sparse_auc), 102)
+})
+
 test_that("sparse_auclast expected errors", {
   expect_error(
     pk.calc.sparse_auclast(auc.type = "foo"),
