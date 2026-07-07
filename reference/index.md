@@ -573,9 +573,6 @@
   : Round a value to a defined number of significant digits printing out
   trailing zeros, if applicable.
 
-- [`sort(`*`<interval.cols>`*`)`](https://humanpred.github.io/pknca/reference/sort.interval.cols.md)
-  : Sort the interval columns by dependencies.
-
 - [`sparse_auc_weight_linear()`](https://humanpred.github.io/pknca/reference/sparse_auc_weight_linear.md)
   : Calculate the weight for sparse AUC calculation with the
   linear-trapezoidal rule

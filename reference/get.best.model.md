@@ -16,7 +16,7 @@ get.best.model(object, ...)
 
 - ...:
 
-  Parameters passed to AIC.list
+  Passed to [`AIC()`](https://rdrr.io/r/stats/AIC.html)
 
 ## Value
 
