@@ -56,6 +56,12 @@ get.interval.cols()
 #> $start$datatype
 #> [1] "interval"
 #> 
+#> $start$pptestcd_cdisc
+#> [1] "start"
+#> 
+#> $start$pptest_cdisc
+#> [1] "Starting time of the interval"
+#> 
 #> 
 #> $end
 #> $end$FUN
@@ -84,6 +90,12 @@ get.interval.cols()
 #> 
 #> $end$datatype
 #> [1] "interval"
+#> 
+#> $end$pptestcd_cdisc
+#> [1] "end"
+#> 
+#> $end$pptest_cdisc
+#> [1] "Ending time of the interval (potentially infinity)"
 #> 
 #> 
 #> $auclast
@@ -114,6 +126,12 @@ get.interval.cols()
 #> $auclast$datatype
 #> [1] "interval"
 #> 
+#> $auclast$pptestcd_cdisc
+#> [1] "AUCLST"
+#> 
+#> $auclast$pptest_cdisc
+#> [1] "AUC to Last Nonzero Conc"
+#> 
 #> 
 #> $aucall
 #> $aucall$FUN
@@ -142,6 +160,12 @@ get.interval.cols()
 #> 
 #> $aucall$datatype
 #> [1] "interval"
+#> 
+#> $aucall$pptestcd_cdisc
+#> [1] "AUCALL"
+#> 
+#> $aucall$pptest_cdisc
+#> [1] "AUC All"
 #> 
 #> 
 #> $aumclast
@@ -172,6 +196,12 @@ get.interval.cols()
 #> $aumclast$datatype
 #> [1] "interval"
 #> 
+#> $aumclast$pptestcd_cdisc
+#> [1] "AUMCLST"
+#> 
+#> $aumclast$pptest_cdisc
+#> [1] "AUMC to Last Nonzero Conc"
+#> 
 #> 
 #> $aumcall
 #> $aumcall$FUN
@@ -200,6 +230,12 @@ get.interval.cols()
 #> 
 #> $aumcall$datatype
 #> [1] "interval"
+#> 
+#> $aumcall$pptestcd_cdisc
+#> [1] "AUMCALL"
+#> 
+#> $aumcall$pptest_cdisc
+#> [1] "AUMC All"
 #> 
 #> 
 #> $aucint.last
@@ -238,6 +274,12 @@ get.interval.cols()
 #> $aucint.last$datatype
 #> [1] "interval"
 #> 
+#> $aucint.last$pptestcd_cdisc
+#> [1] "AUCINT"
+#> 
+#> $aucint.last$pptest_cdisc
+#> [1] "AUC from T1 to T2"
+#> 
 #> 
 #> $aucint.last.dose
 #> $aucint.last.dose$FUN
@@ -274,6 +316,12 @@ get.interval.cols()
 #> 
 #> $aucint.last.dose$datatype
 #> [1] "interval"
+#> 
+#> $aucint.last.dose$pptestcd_cdisc
+#> [1] "AUCINTD"
+#> 
+#> $aucint.last.dose$pptest_cdisc
+#> [1] "AUC from T1 to T2 Normalized by Dose"
 #> 
 #> 
 #> $aucint.all
@@ -312,6 +360,12 @@ get.interval.cols()
 #> $aucint.all$datatype
 #> [1] "interval"
 #> 
+#> $aucint.all$pptestcd_cdisc
+#> [1] "AUCINTA"
+#> 
+#> $aucint.all$pptest_cdisc
+#> [1] "AUCint (based on AUCall extrapolation)"
+#> 
 #> 
 #> $aucint.all.dose
 #> $aucint.all.dose$FUN
@@ -348,6 +402,12 @@ get.interval.cols()
 #> 
 #> $aucint.all.dose$datatype
 #> [1] "interval"
+#> 
+#> $aucint.all.dose$pptestcd_cdisc
+#> [1] "AUCINTAD"
+#> 
+#> $aucint.all.dose$pptest_cdisc
+#> [1] "AUCint (based on AUCall extrapolation, dose-aware)"
 #> 
 #> 
 #> $aumcint.last
@@ -386,6 +446,12 @@ get.interval.cols()
 #> $aumcint.last$datatype
 #> [1] "interval"
 #> 
+#> $aumcint.last$pptestcd_cdisc
+#> [1] "aumcint.last"
+#> 
+#> $aumcint.last$pptest_cdisc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)"
+#> 
 #> 
 #> $aumcint.last.dose
 #> $aumcint.last.dose$FUN
@@ -422,6 +488,12 @@ get.interval.cols()
 #> 
 #> $aumcint.last.dose$datatype
 #> [1] "interval"
+#> 
+#> $aumcint.last.dose$pptestcd_cdisc
+#> [1] "aumcint.last.dose"
+#> 
+#> $aumcint.last.dose$pptest_cdisc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations"
 #> 
 #> 
 #> $aumcint.all
@@ -460,6 +532,12 @@ get.interval.cols()
 #> $aumcint.all$datatype
 #> [1] "interval"
 #> 
+#> $aumcint.all$pptestcd_cdisc
+#> [1] "aumcint.all"
+#> 
+#> $aumcint.all$pptest_cdisc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)"
+#> 
 #> 
 #> $aumcint.all.dose
 #> $aumcint.all.dose$FUN
@@ -497,6 +575,12 @@ get.interval.cols()
 #> $aumcint.all.dose$datatype
 #> [1] "interval"
 #> 
+#> $aumcint.all.dose$pptestcd_cdisc
+#> [1] "aumcint.all.dose"
+#> 
+#> $aumcint.all.dose$pptest_cdisc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations"
+#> 
 #> 
 #> $c0
 #> $c0$FUN
@@ -525,6 +609,12 @@ get.interval.cols()
 #> 
 #> $c0$datatype
 #> [1] "interval"
+#> 
+#> $c0$pptestcd_cdisc
+#> [1] "C0"
+#> 
+#> $c0$pptest_cdisc
+#> [1] "Initial Conc"
 #> 
 #> 
 #> $cmax
@@ -555,6 +645,12 @@ get.interval.cols()
 #> $cmax$datatype
 #> [1] "interval"
 #> 
+#> $cmax$pptestcd_cdisc
+#> [1] "CMAX"
+#> 
+#> $cmax$pptest_cdisc
+#> [1] "Max Conc"
+#> 
 #> 
 #> $cmin
 #> $cmin$FUN
@@ -583,6 +679,12 @@ get.interval.cols()
 #> 
 #> $cmin$datatype
 #> [1] "interval"
+#> 
+#> $cmin$pptestcd_cdisc
+#> [1] "CMIN"
+#> 
+#> $cmin$pptest_cdisc
+#> [1] "Min Conc"
 #> 
 #> 
 #> $tmax
@@ -613,6 +715,12 @@ get.interval.cols()
 #> $tmax$datatype
 #> [1] "interval"
 #> 
+#> $tmax$pptestcd_cdisc
+#> [1] "TMAX"
+#> 
+#> $tmax$pptest_cdisc
+#> [1] "Time of CMAX"
+#> 
 #> 
 #> $tmin
 #> $tmin$FUN
@@ -641,6 +749,12 @@ get.interval.cols()
 #> 
 #> $tmin$datatype
 #> [1] "interval"
+#> 
+#> $tmin$pptestcd_cdisc
+#> [1] "TMIN"
+#> 
+#> $tmin$pptest_cdisc
+#> [1] "Time of CMIN Observation"
 #> 
 #> 
 #> $tlast
@@ -671,6 +785,12 @@ get.interval.cols()
 #> $tlast$datatype
 #> [1] "interval"
 #> 
+#> $tlast$pptestcd_cdisc
+#> [1] "TLST"
+#> 
+#> $tlast$pptest_cdisc
+#> [1] "Time of Last Nonzero Conc"
+#> 
 #> 
 #> $tfirst
 #> $tfirst$FUN
@@ -700,6 +820,12 @@ get.interval.cols()
 #> $tfirst$datatype
 #> [1] "interval"
 #> 
+#> $tfirst$pptestcd_cdisc
+#> [1] "TFIRST"
+#> 
+#> $tfirst$pptest_cdisc
+#> [1] "Time of First Nonzero Conc"
+#> 
 #> 
 #> $clast.obs
 #> $clast.obs$FUN
@@ -728,6 +854,12 @@ get.interval.cols()
 #> 
 #> $clast.obs$datatype
 #> [1] "interval"
+#> 
+#> $clast.obs$pptestcd_cdisc
+#> [1] "CLST"
+#> 
+#> $clast.obs$pptest_cdisc
+#> [1] "Last Nonzero Conc"
 #> 
 #> 
 #> $cl.last
@@ -760,6 +892,26 @@ get.interval.cols()
 #> $cl.last$datatype
 #> [1] "interval"
 #> 
+#> $cl.last$pptestcd_cdisc
+#> $cl.last$pptestcd_cdisc$route
+#> $cl.last$pptestcd_cdisc$route$extravascular
+#> [1] "CLF/FLST"
+#> 
+#> $cl.last$pptestcd_cdisc$route$intravascular
+#> [1] "CLLST"
+#> 
+#> 
+#> 
+#> $cl.last$pptest_cdisc
+#> $cl.last$pptest_cdisc$route
+#> $cl.last$pptest_cdisc$route$extravascular
+#> [1] "CL by F (based on AUClast)"
+#> 
+#> $cl.last$pptest_cdisc$route$intravascular
+#> [1] "CL (based on AUClast)"
+#> 
+#> 
+#> 
 #> 
 #> $cl.all
 #> $cl.all$FUN
@@ -790,6 +942,26 @@ get.interval.cols()
 #> 
 #> $cl.all$datatype
 #> [1] "interval"
+#> 
+#> $cl.all$pptestcd_cdisc
+#> $cl.all$pptestcd_cdisc$route
+#> $cl.all$pptestcd_cdisc$route$extravascular
+#> [1] "CLF/FALL"
+#> 
+#> $cl.all$pptestcd_cdisc$route$intravascular
+#> [1] "CLALL"
+#> 
+#> 
+#> 
+#> $cl.all$pptest_cdisc
+#> $cl.all$pptest_cdisc$route
+#> $cl.all$pptest_cdisc$route$extravascular
+#> [1] "CL by F (based on AUCall)"
+#> 
+#> $cl.all$pptest_cdisc$route$intravascular
+#> [1] "CL (based on AUCall)"
+#> 
+#> 
 #> 
 #> 
 #> $cl.int.all
@@ -822,6 +994,12 @@ get.interval.cols()
 #> $cl.int.all$datatype
 #> [1] "interval"
 #> 
+#> $cl.int.all$pptestcd_cdisc
+#> [1] "cl.int.all"
+#> 
+#> $cl.int.all$pptest_cdisc
+#> [1] "Clearance or observed oral clearance calculated with AUCint.all"
+#> 
 #> 
 #> $cl.int.last
 #> $cl.int.last$FUN
@@ -853,6 +1031,12 @@ get.interval.cols()
 #> $cl.int.last$datatype
 #> [1] "interval"
 #> 
+#> $cl.int.last$pptestcd_cdisc
+#> [1] "cl.int.last"
+#> 
+#> $cl.int.last$pptest_cdisc
+#> [1] "Clearance or observed oral clearance calculated with AUCint.last"
+#> 
 #> 
 #> $f
 #> $f$FUN
@@ -881,6 +1065,12 @@ get.interval.cols()
 #> 
 #> $f$datatype
 #> [1] "interval"
+#> 
+#> $f$pptestcd_cdisc
+#> [1] "FAB"
+#> 
+#> $f$pptest_cdisc
+#> [1] "Absolute Bioavailability"
 #> 
 #> 
 #> $mrt.last
@@ -916,6 +1106,26 @@ get.interval.cols()
 #> $mrt.last$datatype
 #> [1] "interval"
 #> 
+#> $mrt.last$pptestcd_cdisc
+#> $mrt.last$pptestcd_cdisc$route
+#> $mrt.last$pptestcd_cdisc$route$extravascular
+#> [1] "MRTEVLST"
+#> 
+#> $mrt.last$pptestcd_cdisc$route$intravascular
+#> [1] "MRTICLST"
+#> 
+#> 
+#> 
+#> $mrt.last$pptest_cdisc
+#> $mrt.last$pptest_cdisc$route
+#> $mrt.last$pptest_cdisc$route$extravascular
+#> [1] "MRT Extravasc to Last Nonzero Conc"
+#> 
+#> $mrt.last$pptest_cdisc$route$intravascular
+#> [1] "MRT IV Cont Inf to Last Nonzero Conc"
+#> 
+#> 
+#> 
 #> 
 #> $mrt.all
 #> $mrt.all$FUN
@@ -949,6 +1159,12 @@ get.interval.cols()
 #> 
 #> $mrt.all$datatype
 #> [1] "interval"
+#> 
+#> $mrt.all$pptestcd_cdisc
+#> [1] "mrt.all"
+#> 
+#> $mrt.all$pptest_cdisc
+#> [1] "Mean residence time calculated with AUCall/AUMCall"
 #> 
 #> 
 #> $mrt.int.all
@@ -984,6 +1200,12 @@ get.interval.cols()
 #> $mrt.int.all$datatype
 #> [1] "interval"
 #> 
+#> $mrt.int.all$pptestcd_cdisc
+#> [1] "mrt.int.all"
+#> 
+#> $mrt.int.all$pptest_cdisc
+#> [1] "Mean residence time over interval calculated with AUCint.all/AUMCint.all"
+#> 
 #> 
 #> $mrt.int.last
 #> $mrt.int.last$FUN
@@ -1017,6 +1239,12 @@ get.interval.cols()
 #> 
 #> $mrt.int.last$datatype
 #> [1] "interval"
+#> 
+#> $mrt.int.last$pptestcd_cdisc
+#> [1] "mrt.int.last"
+#> 
+#> $mrt.int.last$pptest_cdisc
+#> [1] "Mean residence time over interval calculated with AUCint.last/AUMCint.last"
 #> 
 #> 
 #> $mrt.iv.last
@@ -1052,6 +1280,12 @@ get.interval.cols()
 #> $mrt.iv.last$datatype
 #> [1] "interval"
 #> 
+#> $mrt.iv.last$pptestcd_cdisc
+#> [1] "MRTIBLST"
+#> 
+#> $mrt.iv.last$pptest_cdisc
+#> [1] "MRT Intravasc to Last Nonzero Conc"
+#> 
 #> 
 #> $vss.last
 #> $vss.last$FUN
@@ -1085,6 +1319,26 @@ get.interval.cols()
 #> 
 #> $vss.last$datatype
 #> [1] "interval"
+#> 
+#> $vss.last$pptestcd_cdisc
+#> $vss.last$pptestcd_cdisc$route
+#> $vss.last$pptestcd_cdisc$route$extravascular
+#> [1] "VSSF/FLST"
+#> 
+#> $vss.last$pptestcd_cdisc$route$intravascular
+#> [1] "VSSLST"
+#> 
+#> 
+#> 
+#> $vss.last$pptest_cdisc
+#> $vss.last$pptest_cdisc$route
+#> $vss.last$pptest_cdisc$route$extravascular
+#> [1] "Vss by F (based on AUClast)"
+#> 
+#> $vss.last$pptest_cdisc$route$intravascular
+#> [1] "Vss (based on AUClast)"
+#> 
+#> 
 #> 
 #> 
 #> $vss.iv.last
@@ -1120,6 +1374,12 @@ get.interval.cols()
 #> $vss.iv.last$datatype
 #> [1] "interval"
 #> 
+#> $vss.iv.last$pptestcd_cdisc
+#> [1] "VSSIVLST"
+#> 
+#> $vss.iv.last$pptest_cdisc
+#> [1] "Vss (for IV dosing, based on AUClast)"
+#> 
 #> 
 #> $vss.all
 #> $vss.all$FUN
@@ -1153,6 +1413,12 @@ get.interval.cols()
 #> 
 #> $vss.all$datatype
 #> [1] "interval"
+#> 
+#> $vss.all$pptestcd_cdisc
+#> [1] "vss.all"
+#> 
+#> $vss.all$pptest_cdisc
+#> [1] "Steady-state volume of distribution calculated with AUCall-based CL and MRT"
 #> 
 #> 
 #> $vss.int.all
@@ -1188,6 +1454,12 @@ get.interval.cols()
 #> $vss.int.all$datatype
 #> [1] "interval"
 #> 
+#> $vss.int.all$pptestcd_cdisc
+#> [1] "vss.int.all"
+#> 
+#> $vss.int.all$pptest_cdisc
+#> [1] "Steady-state volume of distribution using interval AUCint.all"
+#> 
 #> 
 #> $vss.int.last
 #> $vss.int.last$FUN
@@ -1222,6 +1494,12 @@ get.interval.cols()
 #> $vss.int.last$datatype
 #> [1] "interval"
 #> 
+#> $vss.int.last$pptestcd_cdisc
+#> [1] "vss.int.last"
+#> 
+#> $vss.int.last$pptest_cdisc
+#> [1] "Steady-state volume of distribution using interval AUCint.last"
+#> 
 #> 
 #> $cav
 #> $cav$FUN
@@ -1252,6 +1530,12 @@ get.interval.cols()
 #> 
 #> $cav$datatype
 #> [1] "interval"
+#> 
+#> $cav$pptestcd_cdisc
+#> [1] "CAVG"
+#> 
+#> $cav$pptest_cdisc
+#> [1] "Average Conc"
 #> 
 #> 
 #> $cav.int.last
@@ -1284,6 +1568,12 @@ get.interval.cols()
 #> $cav.int.last$datatype
 #> [1] "interval"
 #> 
+#> $cav.int.last$pptestcd_cdisc
+#> [1] "CAVGINT"
+#> 
+#> $cav.int.last$pptest_cdisc
+#> [1] "Average Conc from T1 to T2"
+#> 
 #> 
 #> $cav.int.all
 #> $cav.int.all$FUN
@@ -1315,6 +1605,12 @@ get.interval.cols()
 #> $cav.int.all$datatype
 #> [1] "interval"
 #> 
+#> $cav.int.all$pptestcd_cdisc
+#> [1] "CAVGINA"
+#> 
+#> $cav.int.all$pptest_cdisc
+#> [1] "Cavg All"
+#> 
 #> 
 #> $ctrough
 #> $ctrough$FUN
@@ -1343,6 +1639,12 @@ get.interval.cols()
 #> 
 #> $ctrough$datatype
 #> [1] "interval"
+#> 
+#> $ctrough$pptestcd_cdisc
+#> [1] "CTROUGH"
+#> 
+#> $ctrough$pptest_cdisc
+#> [1] "Conc Trough"
 #> 
 #> 
 #> $cstart
@@ -1373,6 +1675,12 @@ get.interval.cols()
 #> $cstart$datatype
 #> [1] "interval"
 #> 
+#> $cstart$pptestcd_cdisc
+#> [1] "CSTART"
+#> 
+#> $cstart$pptest_cdisc
+#> [1] "Cstart"
+#> 
 #> 
 #> $ptr
 #> $ptr$FUN
@@ -1401,6 +1709,12 @@ get.interval.cols()
 #> 
 #> $ptr$datatype
 #> [1] "interval"
+#> 
+#> $ptr$pptestcd_cdisc
+#> [1] "PTROUGHR"
+#> 
+#> $ptr$pptest_cdisc
+#> [1] "Peak Trough Ratio"
 #> 
 #> 
 #> $tlag
@@ -1431,6 +1745,12 @@ get.interval.cols()
 #> $tlag$datatype
 #> [1] "interval"
 #> 
+#> $tlag$pptestcd_cdisc
+#> [1] "TLAG"
+#> 
+#> $tlag$pptest_cdisc
+#> [1] "Time to First Nonzero Conc"
+#> 
 #> 
 #> $deg.fluc
 #> $deg.fluc$FUN
@@ -1459,6 +1779,12 @@ get.interval.cols()
 #> 
 #> $deg.fluc$datatype
 #> [1] "interval"
+#> 
+#> $deg.fluc$pptestcd_cdisc
+#> [1] "DEGFLUC"
+#> 
+#> $deg.fluc$pptest_cdisc
+#> [1] "Degree of fluctuation"
 #> 
 #> 
 #> $swing
@@ -1489,6 +1815,12 @@ get.interval.cols()
 #> $swing$datatype
 #> [1] "interval"
 #> 
+#> $swing$pptestcd_cdisc
+#> [1] "SWING"
+#> 
+#> $swing$pptest_cdisc
+#> [1] "Swing"
+#> 
 #> 
 #> $ceoi
 #> $ceoi$FUN
@@ -1517,6 +1849,12 @@ get.interval.cols()
 #> 
 #> $ceoi$datatype
 #> [1] "interval"
+#> 
+#> $ceoi$pptestcd_cdisc
+#> [1] "CEOI"
+#> 
+#> $ceoi$pptest_cdisc
+#> [1] "Ceoi"
 #> 
 #> 
 #> $aucabove.predose.all
@@ -1549,6 +1887,12 @@ get.interval.cols()
 #> $aucabove.predose.all$datatype
 #> [1] "interval"
 #> 
+#> $aucabove.predose.all$pptestcd_cdisc
+#> [1] "AUCABVPA"
+#> 
+#> $aucabove.predose.all$pptest_cdisc
+#> [1] "AUC above predose"
+#> 
 #> 
 #> $aucabove.trough.all
 #> $aucabove.trough.all$FUN
@@ -1580,6 +1924,12 @@ get.interval.cols()
 #> $aucabove.trough.all$datatype
 #> [1] "interval"
 #> 
+#> $aucabove.trough.all$pptestcd_cdisc
+#> [1] "AUCABVTA"
+#> 
+#> $aucabove.trough.all$pptest_cdisc
+#> [1] "AUC above trough"
+#> 
 #> 
 #> $count_conc
 #> $count_conc$FUN
@@ -1608,6 +1958,12 @@ get.interval.cols()
 #> 
 #> $count_conc$datatype
 #> [1] "interval"
+#> 
+#> $count_conc$pptestcd_cdisc
+#> [1] "CNTCONC"
+#> 
+#> $count_conc$pptest_cdisc
+#> [1] "Concentration count"
 #> 
 #> 
 #> $count_conc_measured
@@ -1638,6 +1994,12 @@ get.interval.cols()
 #> $count_conc_measured$datatype
 #> [1] "interval"
 #> 
+#> $count_conc_measured$pptestcd_cdisc
+#> [1] "count_conc_measured"
+#> 
+#> $count_conc_measured$pptest_cdisc
+#> [1] "Number of measured and non BLQ/ALQ concentrations for an interval"
+#> 
 #> 
 #> $totdose
 #> $totdose$FUN
@@ -1666,6 +2028,12 @@ get.interval.cols()
 #> 
 #> $totdose$datatype
 #> [1] "interval"
+#> 
+#> $totdose$pptestcd_cdisc
+#> [1] "TDOSE"
+#> 
+#> $totdose$pptest_cdisc
+#> [1] "Total dose administered"
 #> 
 #> 
 #> $volpk
@@ -1696,6 +2064,12 @@ get.interval.cols()
 #> $volpk$datatype
 #> [1] "interval"
 #> 
+#> $volpk$pptestcd_cdisc
+#> [1] "VOLPK"
+#> 
+#> $volpk$pptest_cdisc
+#> [1] "Volume of PK sample"
+#> 
 #> 
 #> $ae
 #> $ae$FUN
@@ -1724,6 +2098,12 @@ get.interval.cols()
 #> 
 #> $ae$datatype
 #> [1] "interval"
+#> 
+#> $ae$pptestcd_cdisc
+#> [1] "RCAMINT"
+#> 
+#> $ae$pptest_cdisc
+#> [1] "Amt Rec from T1 to T2"
 #> 
 #> 
 #> $clr.last
@@ -1756,6 +2136,12 @@ get.interval.cols()
 #> $clr.last$datatype
 #> [1] "interval"
 #> 
+#> $clr.last$pptestcd_cdisc
+#> [1] "RENALCL"
+#> 
+#> $clr.last$pptest_cdisc
+#> [1] "Renal CL"
+#> 
 #> 
 #> $clr.obs
 #> $clr.obs$FUN
@@ -1786,6 +2172,12 @@ get.interval.cols()
 #> 
 #> $clr.obs$datatype
 #> [1] "interval"
+#> 
+#> $clr.obs$pptestcd_cdisc
+#> [1] "RENALCL"
+#> 
+#> $clr.obs$pptest_cdisc
+#> [1] "Renal CL"
 #> 
 #> 
 #> $clr.pred
@@ -1818,6 +2210,12 @@ get.interval.cols()
 #> $clr.pred$datatype
 #> [1] "interval"
 #> 
+#> $clr.pred$pptestcd_cdisc
+#> [1] "RENALCL"
+#> 
+#> $clr.pred$pptest_cdisc
+#> [1] "Renal CL"
+#> 
 #> 
 #> $fe
 #> $fe$FUN
@@ -1846,6 +2244,12 @@ get.interval.cols()
 #> 
 #> $fe$datatype
 #> [1] "interval"
+#> 
+#> $fe$pptestcd_cdisc
+#> [1] "FREXINT"
+#> 
+#> $fe$pptest_cdisc
+#> [1] "Fract Excr from T1 to T2"
 #> 
 #> 
 #> $ertlst
@@ -1876,6 +2280,12 @@ get.interval.cols()
 #> $ertlst$datatype
 #> [1] "interval"
 #> 
+#> $ertlst$pptestcd_cdisc
+#> [1] "ERTLST"
+#> 
+#> $ertlst$pptest_cdisc
+#> [1] "Time of Last Excretion Rate"
+#> 
 #> 
 #> $ermax
 #> $ermax$FUN
@@ -1904,6 +2314,12 @@ get.interval.cols()
 #> 
 #> $ermax$datatype
 #> [1] "interval"
+#> 
+#> $ermax$pptestcd_cdisc
+#> [1] "ERMAX"
+#> 
+#> $ermax$pptest_cdisc
+#> [1] "Max Excretion Rate"
 #> 
 #> 
 #> $ertmax
@@ -1934,6 +2350,12 @@ get.interval.cols()
 #> $ertmax$datatype
 #> [1] "interval"
 #> 
+#> $ertmax$pptestcd_cdisc
+#> [1] "ERTMAX"
+#> 
+#> $ertmax$pptest_cdisc
+#> [1] "Midpoint of Interval of Maximum ER"
+#> 
 #> 
 #> $sparse_auclast
 #> $sparse_auclast$FUN
@@ -1962,6 +2384,12 @@ get.interval.cols()
 #> 
 #> $sparse_auclast$datatype
 #> [1] "interval"
+#> 
+#> $sparse_auclast$pptestcd_cdisc
+#> [1] "SPARSEAL"
+#> 
+#> $sparse_auclast$pptest_cdisc
+#> [1] "Sparse AUClast"
 #> 
 #> 
 #> $sparse_auc_se
@@ -1992,6 +2420,12 @@ get.interval.cols()
 #> $sparse_auc_se$datatype
 #> [1] "interval"
 #> 
+#> $sparse_auc_se$pptestcd_cdisc
+#> [1] "SPARSEAS"
+#> 
+#> $sparse_auc_se$pptest_cdisc
+#> [1] "Sparse AUClast standard error"
+#> 
 #> 
 #> $sparse_auc_df
 #> $sparse_auc_df$FUN
@@ -2020,6 +2454,12 @@ get.interval.cols()
 #> 
 #> $sparse_auc_df$datatype
 #> [1] "interval"
+#> 
+#> $sparse_auc_df$pptestcd_cdisc
+#> [1] "SPARSEAD"
+#> 
+#> $sparse_auc_df$pptest_cdisc
+#> [1] "Sparse AUClast degrees of freedom"
 #> 
 #> 
 #> $sparse_aumclast
@@ -2050,6 +2490,12 @@ get.interval.cols()
 #> $sparse_aumclast$datatype
 #> [1] "interval"
 #> 
+#> $sparse_aumclast$pptestcd_cdisc
+#> [1] "sparse_aumclast"
+#> 
+#> $sparse_aumclast$pptest_cdisc
+#> [1] "For sparse PK sampling, the area under the moment curve from the beginning of the interval to the last concentration above the limit of quantification"
+#> 
 #> 
 #> $sparse_aumc_se
 #> $sparse_aumc_se$FUN
@@ -2078,6 +2524,12 @@ get.interval.cols()
 #> 
 #> $sparse_aumc_se$datatype
 #> [1] "interval"
+#> 
+#> $sparse_aumc_se$pptestcd_cdisc
+#> [1] "sparse_aumc_se"
+#> 
+#> $sparse_aumc_se$pptest_cdisc
+#> [1] "For sparse PK sampling, the standard error of the area under the moment curve"
 #> 
 #> 
 #> $sparse_aumc_df
@@ -2108,6 +2560,12 @@ get.interval.cols()
 #> $sparse_aumc_df$datatype
 #> [1] "interval"
 #> 
+#> $sparse_aumc_df$pptestcd_cdisc
+#> [1] "sparse_aumc_df"
+#> 
+#> $sparse_aumc_df$pptest_cdisc
+#> [1] "For sparse PK sampling, the degrees of freedom for the AUMC variance estimate"
+#> 
 #> 
 #> $time_above
 #> $time_above$FUN
@@ -2136,6 +2594,12 @@ get.interval.cols()
 #> 
 #> $time_above$datatype
 #> [1] "interval"
+#> 
+#> $time_above$pptestcd_cdisc
+#> [1] "TAT"
+#> 
+#> $time_above$pptest_cdisc
+#> [1] "Time Above Threshold"
 #> 
 #> 
 #> $aucivlast
@@ -2168,6 +2632,12 @@ get.interval.cols()
 #> $aucivlast$datatype
 #> [1] "interval"
 #> 
+#> $aucivlast$pptestcd_cdisc
+#> [1] "AUCIVLST"
+#> 
+#> $aucivlast$pptest_cdisc
+#> [1] "AUClast (IV dosing)"
+#> 
 #> 
 #> $aucivall
 #> $aucivall$FUN
@@ -2198,6 +2668,12 @@ get.interval.cols()
 #> 
 #> $aucivall$datatype
 #> [1] "interval"
+#> 
+#> $aucivall$pptestcd_cdisc
+#> [1] "AUCIVA"
+#> 
+#> $aucivall$pptest_cdisc
+#> [1] "AUCall (IV dosing)"
 #> 
 #> 
 #> $aucivint.last
@@ -2230,6 +2706,12 @@ get.interval.cols()
 #> $aucivint.last$datatype
 #> [1] "interval"
 #> 
+#> $aucivint.last$pptestcd_cdisc
+#> [1] "AUCIVILT"
+#> 
+#> $aucivint.last$pptest_cdisc
+#> [1] "AUCint,last (IV dosing)"
+#> 
 #> 
 #> $aucivint.all
 #> $aucivint.all$FUN
@@ -2260,6 +2742,12 @@ get.interval.cols()
 #> 
 #> $aucivint.all$datatype
 #> [1] "interval"
+#> 
+#> $aucivint.all$pptestcd_cdisc
+#> [1] "AUCIVINA"
+#> 
+#> $aucivint.all$pptest_cdisc
+#> [1] "AUCint,all (IV dosing)"
 #> 
 #> 
 #> $aucivpbextlast
@@ -2295,6 +2783,12 @@ get.interval.cols()
 #> $aucivpbextlast$datatype
 #> [1] "interval"
 #> 
+#> $aucivpbextlast$pptestcd_cdisc
+#> [1] "AUCIVPLT"
+#> 
+#> $aucivpbextlast$pptest_cdisc
+#> [1] "AUCbext (based on AUClast)"
+#> 
 #> 
 #> $aucivpbextall
 #> $aucivpbextall$FUN
@@ -2328,6 +2822,12 @@ get.interval.cols()
 #> 
 #> $aucivpbextall$datatype
 #> [1] "interval"
+#> 
+#> $aucivpbextall$pptestcd_cdisc
+#> [1] "AUCIVPEA"
+#> 
+#> $aucivpbextall$pptest_cdisc
+#> [1] "AUCbext (based on AUCall)"
 #> 
 #> 
 #> $aucivpbextint.last
@@ -2363,6 +2863,12 @@ get.interval.cols()
 #> $aucivpbextint.last$datatype
 #> [1] "interval"
 #> 
+#> $aucivpbextint.last$pptestcd_cdisc
+#> [1] "AUCIVPIL"
+#> 
+#> $aucivpbextint.last$pptest_cdisc
+#> [1] "AUCbext (based on AUCint,last)"
+#> 
 #> 
 #> $aucivpbextint.all
 #> $aucivpbextint.all$FUN
@@ -2397,6 +2903,12 @@ get.interval.cols()
 #> $aucivpbextint.all$datatype
 #> [1] "interval"
 #> 
+#> $aucivpbextint.all$pptestcd_cdisc
+#> [1] "AUCIVPIA"
+#> 
+#> $aucivpbextint.all$pptest_cdisc
+#> [1] "AUCbext (based on AUCint,all)"
+#> 
 #> 
 #> $aumcivlast
 #> $aumcivlast$FUN
@@ -2427,6 +2939,12 @@ get.interval.cols()
 #> 
 #> $aumcivlast$datatype
 #> [1] "interval"
+#> 
+#> $aumcivlast$pptestcd_cdisc
+#> [1] "aumcivlast"
+#> 
+#> $aumcivlast$pptest_cdisc
+#> [1] "The AUMClast calculated with back-extrapolation for intravenous dosing using extrapolated C0"
 #> 
 #> 
 #> $aumcivall
@@ -2459,6 +2977,12 @@ get.interval.cols()
 #> $aumcivall$datatype
 #> [1] "interval"
 #> 
+#> $aumcivall$pptestcd_cdisc
+#> [1] "aumcivall"
+#> 
+#> $aumcivall$pptest_cdisc
+#> [1] "The AUMCall calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> 
 #> 
 #> $aumcivint.last
 #> $aumcivint.last$FUN
@@ -2489,6 +3013,12 @@ get.interval.cols()
 #> 
 #> $aumcivint.last$datatype
 #> [1] "interval"
+#> 
+#> $aumcivint.last$pptestcd_cdisc
+#> [1] "aumcivint.last"
+#> 
+#> $aumcivint.last$pptest_cdisc
+#> [1] "The AUMCint,last calculated with back-extrapolation for intravenous dosing using extrapolated C0"
 #> 
 #> 
 #> $aumcivint.all
@@ -2521,6 +3051,12 @@ get.interval.cols()
 #> $aumcivint.all$datatype
 #> [1] "interval"
 #> 
+#> $aumcivint.all$pptestcd_cdisc
+#> [1] "aumcivint.all"
+#> 
+#> $aumcivint.all$pptest_cdisc
+#> [1] "The AUMCint,all calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> 
 #> 
 #> $half.life
 #> $half.life$FUN
@@ -2549,6 +3085,12 @@ get.interval.cols()
 #> 
 #> $half.life$datatype
 #> [1] "interval"
+#> 
+#> $half.life$pptestcd_cdisc
+#> [1] "LAMZHL"
+#> 
+#> $half.life$pptest_cdisc
+#> [1] "Half-Life Lambda z"
 #> 
 #> 
 #> $r.squared
@@ -2579,6 +3121,12 @@ get.interval.cols()
 #> $r.squared$datatype
 #> [1] "interval"
 #> 
+#> $r.squared$pptestcd_cdisc
+#> [1] "R2"
+#> 
+#> $r.squared$pptest_cdisc
+#> [1] "R Squared"
+#> 
 #> 
 #> $adj.r.squared
 #> $adj.r.squared$FUN
@@ -2607,6 +3155,12 @@ get.interval.cols()
 #> 
 #> $adj.r.squared$datatype
 #> [1] "interval"
+#> 
+#> $adj.r.squared$pptestcd_cdisc
+#> [1] "R2ADJ"
+#> 
+#> $adj.r.squared$pptest_cdisc
+#> [1] "R Squared Adjusted"
 #> 
 #> 
 #> $lambda.z.corrxy
@@ -2637,6 +3191,12 @@ get.interval.cols()
 #> $lambda.z.corrxy$datatype
 #> [1] "interval"
 #> 
+#> $lambda.z.corrxy$pptestcd_cdisc
+#> [1] "CORRXY"
+#> 
+#> $lambda.z.corrxy$pptest_cdisc
+#> [1] "Correlation Between TimeX and Log ConcY"
+#> 
 #> 
 #> $lambda.z
 #> $lambda.z$FUN
@@ -2665,6 +3225,12 @@ get.interval.cols()
 #> 
 #> $lambda.z$datatype
 #> [1] "interval"
+#> 
+#> $lambda.z$pptestcd_cdisc
+#> [1] "LAMZ"
+#> 
+#> $lambda.z$pptest_cdisc
+#> [1] "Lambda z"
 #> 
 #> 
 #> $lambda.z.time.first
@@ -2695,6 +3261,12 @@ get.interval.cols()
 #> $lambda.z.time.first$datatype
 #> [1] "interval"
 #> 
+#> $lambda.z.time.first$pptestcd_cdisc
+#> [1] "LAMZLL"
+#> 
+#> $lambda.z.time.first$pptest_cdisc
+#> [1] "Lambda z Lower Limit"
+#> 
 #> 
 #> $lambda.z.time.last
 #> $lambda.z.time.last$FUN
@@ -2723,6 +3295,12 @@ get.interval.cols()
 #> 
 #> $lambda.z.time.last$datatype
 #> [1] "interval"
+#> 
+#> $lambda.z.time.last$pptestcd_cdisc
+#> [1] "LAMZUL"
+#> 
+#> $lambda.z.time.last$pptest_cdisc
+#> [1] "Lambda z Upper Limit"
 #> 
 #> 
 #> $lambda.z.n.points
@@ -2753,6 +3331,12 @@ get.interval.cols()
 #> $lambda.z.n.points$datatype
 #> [1] "interval"
 #> 
+#> $lambda.z.n.points$pptestcd_cdisc
+#> [1] "LAMZNPT"
+#> 
+#> $lambda.z.n.points$pptest_cdisc
+#> [1] "Number of Points for Lambda z"
+#> 
 #> 
 #> $clast.pred
 #> $clast.pred$FUN
@@ -2781,6 +3365,12 @@ get.interval.cols()
 #> 
 #> $clast.pred$datatype
 #> [1] "interval"
+#> 
+#> $clast.pred$pptestcd_cdisc
+#> [1] "CLSTP"
+#> 
+#> $clast.pred$pptest_cdisc
+#> [1] "Clast pred"
 #> 
 #> 
 #> $span.ratio
@@ -2811,6 +3401,12 @@ get.interval.cols()
 #> $span.ratio$datatype
 #> [1] "interval"
 #> 
+#> $span.ratio$pptestcd_cdisc
+#> [1] "LAMZSPN"
+#> 
+#> $span.ratio$pptest_cdisc
+#> [1] "Lambda z Span"
+#> 
 #> 
 #> $tobit_residual
 #> $tobit_residual$FUN
@@ -2839,6 +3435,12 @@ get.interval.cols()
 #> 
 #> $tobit_residual$datatype
 #> [1] "interval"
+#> 
+#> $tobit_residual$pptestcd_cdisc
+#> [1] "tobit_residual"
+#> 
+#> $tobit_residual$pptest_cdisc
+#> [1] "The estimated residual standard deviation (on the log-concentration scale) from the Tobit half-life fit"
 #> 
 #> 
 #> $adj_tobit_residual
@@ -2869,6 +3471,12 @@ get.interval.cols()
 #> $adj_tobit_residual$datatype
 #> [1] "interval"
 #> 
+#> $adj_tobit_residual$pptestcd_cdisc
+#> [1] "adj_tobit_residual"
+#> 
+#> $adj_tobit_residual$pptest_cdisc
+#> [1] "The adjusted Tobit residual standard deviation (analogous to adjusted r-squared; penalizes smaller windows)"
+#> 
 #> 
 #> $lambda.z.n.points_blq
 #> $lambda.z.n.points_blq$FUN
@@ -2897,6 +3505,12 @@ get.interval.cols()
 #> 
 #> $lambda.z.n.points_blq$datatype
 #> [1] "interval"
+#> 
+#> $lambda.z.n.points_blq$pptestcd_cdisc
+#> [1] "lambda.z.n.points_blq"
+#> 
+#> $lambda.z.n.points_blq$pptest_cdisc
+#> [1] "The number of BLQ points included in the Tobit half-life calculation"
 #> 
 #> 
 #> $thalf.eff.last
@@ -2929,6 +3543,12 @@ get.interval.cols()
 #> $thalf.eff.last$datatype
 #> [1] "interval"
 #> 
+#> $thalf.eff.last$pptestcd_cdisc
+#> [1] "EFFHL"
+#> 
+#> $thalf.eff.last$pptest_cdisc
+#> [1] "Effective Half-Life (based on AUClast)"
+#> 
 #> 
 #> $thalf.eff.iv.last
 #> $thalf.eff.iv.last$FUN
@@ -2959,6 +3579,12 @@ get.interval.cols()
 #> 
 #> $thalf.eff.iv.last$datatype
 #> [1] "interval"
+#> 
+#> $thalf.eff.iv.last$pptestcd_cdisc
+#> [1] "EFFIVLHL"
+#> 
+#> $thalf.eff.iv.last$pptest_cdisc
+#> [1] "Effective Half-Life (for IV dosing, based on AUClast)"
 #> 
 #> 
 #> $kel.last
@@ -2991,6 +3617,12 @@ get.interval.cols()
 #> $kel.last$datatype
 #> [1] "interval"
 #> 
+#> $kel.last$pptestcd_cdisc
+#> [1] "KELLST"
+#> 
+#> $kel.last$pptest_cdisc
+#> [1] "Kel (based on AUClast)"
+#> 
 #> 
 #> $kel.iv.last
 #> $kel.iv.last$FUN
@@ -3021,6 +3653,12 @@ get.interval.cols()
 #> 
 #> $kel.iv.last$datatype
 #> [1] "interval"
+#> 
+#> $kel.iv.last$pptestcd_cdisc
+#> [1] "KELIVLT"
+#> 
+#> $kel.iv.last$pptest_cdisc
+#> [1] "Kel (for IV dosing, based on AUClast)"
 #> 
 #> 
 #> $kel.all
@@ -3053,6 +3691,12 @@ get.interval.cols()
 #> $kel.all$datatype
 #> [1] "interval"
 #> 
+#> $kel.all$pptestcd_cdisc
+#> [1] "kel.all"
+#> 
+#> $kel.all$pptest_cdisc
+#> [1] "Elimination rate (as calculated from the MRTall)"
+#> 
 #> 
 #> $kel.int.all
 #> $kel.int.all$FUN
@@ -3083,6 +3727,12 @@ get.interval.cols()
 #> 
 #> $kel.int.all$datatype
 #> [1] "interval"
+#> 
+#> $kel.int.all$pptestcd_cdisc
+#> [1] "kel.int.all"
+#> 
+#> $kel.int.all$pptest_cdisc
+#> [1] "Elimination rate (as calculated from the MRTint.all)"
 #> 
 #> 
 #> $kel.int.last
@@ -3115,6 +3765,12 @@ get.interval.cols()
 #> $kel.int.last$datatype
 #> [1] "interval"
 #> 
+#> $kel.int.last$pptestcd_cdisc
+#> [1] "kel.int.last"
+#> 
+#> $kel.int.last$pptest_cdisc
+#> [1] "Elimination rate (as calculated from the MRTint.last)"
+#> 
 #> 
 #> $cl.iv.all
 #> $cl.iv.all$FUN
@@ -3145,6 +3801,12 @@ get.interval.cols()
 #> 
 #> $cl.iv.all$datatype
 #> [1] "interval"
+#> 
+#> $cl.iv.all$pptestcd_cdisc
+#> [1] "cl.iv.all"
+#> 
+#> $cl.iv.all$pptest_cdisc
+#> [1] "Clearance for intravenous dosing calculated with AUCall"
 #> 
 #> 
 #> $cl.iv.last
@@ -3177,6 +3839,12 @@ get.interval.cols()
 #> $cl.iv.last$datatype
 #> [1] "interval"
 #> 
+#> $cl.iv.last$pptestcd_cdisc
+#> [1] "cl.iv.last"
+#> 
+#> $cl.iv.last$pptest_cdisc
+#> [1] "Clearance for intravenous dosing calculated with AUClast"
+#> 
 #> 
 #> $cl.ivint.all
 #> $cl.ivint.all$FUN
@@ -3207,6 +3875,12 @@ get.interval.cols()
 #> 
 #> $cl.ivint.all$datatype
 #> [1] "interval"
+#> 
+#> $cl.ivint.all$pptestcd_cdisc
+#> [1] "cl.ivint.all"
+#> 
+#> $cl.ivint.all$pptest_cdisc
+#> [1] "Clearance for intravenous dosing calculated with interval AUCint.all"
 #> 
 #> 
 #> $cl.ivint.last
@@ -3239,6 +3913,12 @@ get.interval.cols()
 #> $cl.ivint.last$datatype
 #> [1] "interval"
 #> 
+#> $cl.ivint.last$pptestcd_cdisc
+#> [1] "cl.ivint.last"
+#> 
+#> $cl.ivint.last$pptest_cdisc
+#> [1] "Clearance for intravenous dosing calculated with interval AUCint.last"
+#> 
 #> 
 #> $cl.sparse.last
 #> $cl.sparse.last$FUN
@@ -3269,6 +3949,12 @@ get.interval.cols()
 #> 
 #> $cl.sparse.last$datatype
 #> [1] "interval"
+#> 
+#> $cl.sparse.last$pptestcd_cdisc
+#> [1] "cl.sparse.last"
+#> 
+#> $cl.sparse.last$pptest_cdisc
+#> [1] "Clearance from sparse sampling calculated with population AUClast"
 #> 
 #> 
 #> $mrt.sparse.last
@@ -3304,6 +3990,12 @@ get.interval.cols()
 #> $mrt.sparse.last$datatype
 #> [1] "interval"
 #> 
+#> $mrt.sparse.last$pptestcd_cdisc
+#> [1] "mrt.sparse.last"
+#> 
+#> $mrt.sparse.last$pptest_cdisc
+#> [1] "Mean residence time from sparse sampling"
+#> 
 #> 
 #> $mrt.iv.all
 #> $mrt.iv.all$FUN
@@ -3337,6 +4029,12 @@ get.interval.cols()
 #> 
 #> $mrt.iv.all$datatype
 #> [1] "interval"
+#> 
+#> $mrt.iv.all$pptestcd_cdisc
+#> [1] "mrt.iv.all"
+#> 
+#> $mrt.iv.all$pptest_cdisc
+#> [1] "Mean residence time for IV dosing calculated with AUCall/AUMCall"
 #> 
 #> 
 #> $mrt.ivint.all
@@ -3372,6 +4070,12 @@ get.interval.cols()
 #> $mrt.ivint.all$datatype
 #> [1] "interval"
 #> 
+#> $mrt.ivint.all$pptestcd_cdisc
+#> [1] "mrt.ivint.all"
+#> 
+#> $mrt.ivint.all$pptest_cdisc
+#> [1] "Mean residence time for IV interval calculated with AUCint.all/AUMCint.all"
+#> 
 #> 
 #> $mrt.ivint.last
 #> $mrt.ivint.last$FUN
@@ -3406,6 +4110,12 @@ get.interval.cols()
 #> $mrt.ivint.last$datatype
 #> [1] "interval"
 #> 
+#> $mrt.ivint.last$pptestcd_cdisc
+#> [1] "mrt.ivint.last"
+#> 
+#> $mrt.ivint.last$pptest_cdisc
+#> [1] "Mean residence time for IV interval calculated with AUCint.last/AUMCint.last"
+#> 
 #> 
 #> $vz.all
 #> $vz.all$FUN
@@ -3436,6 +4146,12 @@ get.interval.cols()
 #> 
 #> $vz.all$datatype
 #> [1] "interval"
+#> 
+#> $vz.all$pptestcd_cdisc
+#> [1] "vz.all"
+#> 
+#> $vz.all$pptest_cdisc
+#> [1] "Terminal volume of distribution calculated with AUCall-based CL"
 #> 
 #> 
 #> $vz.int.all
@@ -3468,6 +4184,12 @@ get.interval.cols()
 #> $vz.int.all$datatype
 #> [1] "interval"
 #> 
+#> $vz.int.all$pptestcd_cdisc
+#> [1] "vz.int.all"
+#> 
+#> $vz.int.all$pptest_cdisc
+#> [1] "Terminal volume of distribution using interval AUCint.all"
+#> 
 #> 
 #> $vz.int.last
 #> $vz.int.last$FUN
@@ -3498,6 +4220,12 @@ get.interval.cols()
 #> 
 #> $vz.int.last$datatype
 #> [1] "interval"
+#> 
+#> $vz.int.last$pptestcd_cdisc
+#> [1] "vz.int.last"
+#> 
+#> $vz.int.last$pptest_cdisc
+#> [1] "Terminal volume of distribution using interval AUCint.last"
 #> 
 #> 
 #> $vz.iv.all
@@ -3530,6 +4258,12 @@ get.interval.cols()
 #> $vz.iv.all$datatype
 #> [1] "interval"
 #> 
+#> $vz.iv.all$pptestcd_cdisc
+#> [1] "vz.iv.all"
+#> 
+#> $vz.iv.all$pptest_cdisc
+#> [1] "Terminal volume of distribution for IV dosing using AUCall"
+#> 
 #> 
 #> $vz.iv.last
 #> $vz.iv.last$FUN
@@ -3560,6 +4294,12 @@ get.interval.cols()
 #> 
 #> $vz.iv.last$datatype
 #> [1] "interval"
+#> 
+#> $vz.iv.last$pptestcd_cdisc
+#> [1] "vz.iv.last"
+#> 
+#> $vz.iv.last$pptest_cdisc
+#> [1] "Terminal volume of distribution for IV dosing using AUClast"
 #> 
 #> 
 #> $vz.ivint.all
@@ -3592,6 +4332,12 @@ get.interval.cols()
 #> $vz.ivint.all$datatype
 #> [1] "interval"
 #> 
+#> $vz.ivint.all$pptestcd_cdisc
+#> [1] "vz.ivint.all"
+#> 
+#> $vz.ivint.all$pptest_cdisc
+#> [1] "Terminal volume of distribution for IV interval using AUCint.all"
+#> 
 #> 
 #> $vz.ivint.last
 #> $vz.ivint.last$FUN
@@ -3623,6 +4369,12 @@ get.interval.cols()
 #> $vz.ivint.last$datatype
 #> [1] "interval"
 #> 
+#> $vz.ivint.last$pptestcd_cdisc
+#> [1] "vz.ivint.last"
+#> 
+#> $vz.ivint.last$pptest_cdisc
+#> [1] "Terminal volume of distribution for IV interval using AUCint.last"
+#> 
 #> 
 #> $vz.last
 #> $vz.last$FUN
@@ -3653,6 +4405,12 @@ get.interval.cols()
 #> 
 #> $vz.last$datatype
 #> [1] "interval"
+#> 
+#> $vz.last$pptestcd_cdisc
+#> [1] "vz.last"
+#> 
+#> $vz.last$pptest_cdisc
+#> [1] "Terminal volume of distribution calculated with AUClast-based CL"
 #> 
 #> 
 #> $vss.iv.all
@@ -3688,6 +4446,12 @@ get.interval.cols()
 #> $vss.iv.all$datatype
 #> [1] "interval"
 #> 
+#> $vss.iv.all$pptestcd_cdisc
+#> [1] "vss.iv.all"
+#> 
+#> $vss.iv.all$pptest_cdisc
+#> [1] "Steady-state volume of distribution for IV dosing using AUCall"
+#> 
 #> 
 #> $vss.ivint.all
 #> $vss.ivint.all$FUN
@@ -3721,6 +4485,12 @@ get.interval.cols()
 #> 
 #> $vss.ivint.all$datatype
 #> [1] "interval"
+#> 
+#> $vss.ivint.all$pptestcd_cdisc
+#> [1] "vss.ivint.all"
+#> 
+#> $vss.ivint.all$pptest_cdisc
+#> [1] "Steady-state volume of distribution for IV interval using AUCint.all"
 #> 
 #> 
 #> $vss.ivint.last
@@ -3756,6 +4526,12 @@ get.interval.cols()
 #> $vss.ivint.last$datatype
 #> [1] "interval"
 #> 
+#> $vss.ivint.last$pptestcd_cdisc
+#> [1] "vss.ivint.last"
+#> 
+#> $vss.ivint.last$pptest_cdisc
+#> [1] "Steady-state volume of distribution for IV interval using AUCint.last"
+#> 
 #> 
 #> $vss.sparse.last
 #> $vss.sparse.last$FUN
@@ -3790,6 +4566,12 @@ get.interval.cols()
 #> $vss.sparse.last$datatype
 #> [1] "interval"
 #> 
+#> $vss.sparse.last$pptestcd_cdisc
+#> [1] "vss.sparse.last"
+#> 
+#> $vss.sparse.last$pptest_cdisc
+#> [1] "Steady-state volume of distribution from sparse sampling"
+#> 
 #> 
 #> $aucinf.obs
 #> $aucinf.obs$FUN
@@ -3818,6 +4600,12 @@ get.interval.cols()
 #> 
 #> $aucinf.obs$datatype
 #> [1] "interval"
+#> 
+#> $aucinf.obs$pptestcd_cdisc
+#> [1] "AUCIFO"
+#> 
+#> $aucinf.obs$pptest_cdisc
+#> [1] "AUC Infinity Obs"
 #> 
 #> 
 #> $aucinf.pred
@@ -3848,6 +4636,12 @@ get.interval.cols()
 #> $aucinf.pred$datatype
 #> [1] "interval"
 #> 
+#> $aucinf.pred$pptestcd_cdisc
+#> [1] "AUCIFP"
+#> 
+#> $aucinf.pred$pptest_cdisc
+#> [1] "AUC Infinity Pred"
+#> 
 #> 
 #> $aumcinf.obs
 #> $aumcinf.obs$FUN
@@ -3877,6 +4671,12 @@ get.interval.cols()
 #> $aumcinf.obs$datatype
 #> [1] "interval"
 #> 
+#> $aumcinf.obs$pptestcd_cdisc
+#> [1] "AUMCIFO"
+#> 
+#> $aumcinf.obs$pptest_cdisc
+#> [1] "AUMC Infinity Obs"
+#> 
 #> 
 #> $aumcinf.pred
 #> $aumcinf.pred$FUN
@@ -3905,6 +4705,12 @@ get.interval.cols()
 #> 
 #> $aumcinf.pred$datatype
 #> [1] "interval"
+#> 
+#> $aumcinf.pred$pptestcd_cdisc
+#> [1] "AUMCIFP"
+#> 
+#> $aumcinf.pred$pptest_cdisc
+#> [1] "AUMC Infinity Pred"
 #> 
 #> 
 #> $aucint.inf.obs
@@ -3943,6 +4749,12 @@ get.interval.cols()
 #> $aucint.inf.obs$datatype
 #> [1] "interval"
 #> 
+#> $aucint.inf.obs$pptestcd_cdisc
+#> [1] "AUCINTIS"
+#> 
+#> $aucint.inf.obs$pptest_cdisc
+#> [1] "AUCint (based on AUCinf,obs extrapolation)"
+#> 
 #> 
 #> $aucint.inf.obs.dose
 #> $aucint.inf.obs.dose$FUN
@@ -3979,6 +4791,12 @@ get.interval.cols()
 #> 
 #> $aucint.inf.obs.dose$datatype
 #> [1] "interval"
+#> 
+#> $aucint.inf.obs.dose$pptestcd_cdisc
+#> [1] "AUCINTID"
+#> 
+#> $aucint.inf.obs.dose$pptest_cdisc
+#> [1] "AUCint (based on AUCinf,obs extrapolation, dose-aware)"
 #> 
 #> 
 #> $aucint.inf.pred
@@ -4017,6 +4835,12 @@ get.interval.cols()
 #> $aucint.inf.pred$datatype
 #> [1] "interval"
 #> 
+#> $aucint.inf.pred$pptestcd_cdisc
+#> [1] "AUCINTIP"
+#> 
+#> $aucint.inf.pred$pptest_cdisc
+#> [1] "AUCint (based on AUCinf,pred extrapolation)"
+#> 
 #> 
 #> $aucint.inf.pred.dose
 #> $aucint.inf.pred.dose$FUN
@@ -4053,6 +4877,12 @@ get.interval.cols()
 #> 
 #> $aucint.inf.pred.dose$datatype
 #> [1] "interval"
+#> 
+#> $aucint.inf.pred.dose$pptestcd_cdisc
+#> [1] "AUCINTPD"
+#> 
+#> $aucint.inf.pred.dose$pptest_cdisc
+#> [1] "AUCint (based on AUCinf,pred extrapolation, dose-aware)"
 #> 
 #> 
 #> $aumcint.inf.obs
@@ -4091,6 +4921,12 @@ get.interval.cols()
 #> $aumcint.inf.obs$datatype
 #> [1] "interval"
 #> 
+#> $aumcint.inf.obs$pptestcd_cdisc
+#> [1] "aumcint.inf.obs"
+#> 
+#> $aumcint.inf.obs$pptest_cdisc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)"
+#> 
 #> 
 #> $aumcint.inf.obs.dose
 #> $aumcint.inf.obs.dose$FUN
@@ -4127,6 +4963,12 @@ get.interval.cols()
 #> 
 #> $aumcint.inf.obs.dose$datatype
 #> [1] "interval"
+#> 
+#> $aumcint.inf.obs.dose$pptestcd_cdisc
+#> [1] "aumcint.inf.obs.dose"
+#> 
+#> $aumcint.inf.obs.dose$pptest_cdisc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations"
 #> 
 #> 
 #> $aumcint.inf.pred
@@ -4165,6 +5007,12 @@ get.interval.cols()
 #> $aumcint.inf.pred$datatype
 #> [1] "interval"
 #> 
+#> $aumcint.inf.pred$pptestcd_cdisc
+#> [1] "aumcint.inf.pred"
+#> 
+#> $aumcint.inf.pred$pptest_cdisc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)"
+#> 
 #> 
 #> $aumcint.inf.pred.dose
 #> $aumcint.inf.pred.dose$FUN
@@ -4202,6 +5050,12 @@ get.interval.cols()
 #> $aumcint.inf.pred.dose$datatype
 #> [1] "interval"
 #> 
+#> $aumcint.inf.pred.dose$pptestcd_cdisc
+#> [1] "aumcint.inf.pred.dose"
+#> 
+#> $aumcint.inf.pred.dose$pptest_cdisc
+#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations"
+#> 
 #> 
 #> $aucivinf.obs
 #> $aucivinf.obs$FUN
@@ -4233,6 +5087,12 @@ get.interval.cols()
 #> $aucivinf.obs$datatype
 #> [1] "interval"
 #> 
+#> $aucivinf.obs$pptestcd_cdisc
+#> [1] "AUCIVIS"
+#> 
+#> $aucivinf.obs$pptest_cdisc
+#> [1] "AUCinf,obs (IV dosing)"
+#> 
 #> 
 #> $aucivinf.pred
 #> $aucivinf.pred$FUN
@@ -4263,6 +5123,12 @@ get.interval.cols()
 #> 
 #> $aucivinf.pred$datatype
 #> [1] "interval"
+#> 
+#> $aucivinf.pred$pptestcd_cdisc
+#> [1] "AUCIVIP"
+#> 
+#> $aucivinf.pred$pptest_cdisc
+#> [1] "AUCinf,pred (IV dosing)"
 #> 
 #> 
 #> $aucivpbextinf.obs
@@ -4298,6 +5164,12 @@ get.interval.cols()
 #> $aucivpbextinf.obs$datatype
 #> [1] "interval"
 #> 
+#> $aucivpbextinf.obs$pptestcd_cdisc
+#> [1] "AUCIVPEI"
+#> 
+#> $aucivpbextinf.obs$pptest_cdisc
+#> [1] "AUCbext (based on AUCinf,obs)"
+#> 
 #> 
 #> $aucivpbextinf.pred
 #> $aucivpbextinf.pred$FUN
@@ -4332,6 +5204,12 @@ get.interval.cols()
 #> $aucivpbextinf.pred$datatype
 #> [1] "interval"
 #> 
+#> $aucivpbextinf.pred$pptestcd_cdisc
+#> [1] "AUCIVPEP"
+#> 
+#> $aucivpbextinf.pred$pptest_cdisc
+#> [1] "AUCbext (based on AUCinf,pred)"
+#> 
 #> 
 #> $aumcivinf.obs
 #> $aumcivinf.obs$FUN
@@ -4362,6 +5240,12 @@ get.interval.cols()
 #> 
 #> $aumcivinf.obs$datatype
 #> [1] "interval"
+#> 
+#> $aumcivinf.obs$pptestcd_cdisc
+#> [1] "aumcivinf.obs"
+#> 
+#> $aumcivinf.obs$pptest_cdisc
+#> [1] "The AUMCinf,obs calculated with back-extrapolation for intravenous dosing using extrapolated C0"
 #> 
 #> 
 #> $aumcivinf.pred
@@ -4394,6 +5278,12 @@ get.interval.cols()
 #> $aumcivinf.pred$datatype
 #> [1] "interval"
 #> 
+#> $aumcivinf.pred$pptestcd_cdisc
+#> [1] "aumcivinf.pred"
+#> 
+#> $aumcivinf.pred$pptest_cdisc
+#> [1] "The AUMCinf,pred calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> 
 #> 
 #> $aucpext.obs
 #> $aucpext.obs$FUN
@@ -4424,6 +5314,12 @@ get.interval.cols()
 #> 
 #> $aucpext.obs$datatype
 #> [1] "interval"
+#> 
+#> $aucpext.obs$pptestcd_cdisc
+#> [1] "AUCPEO"
+#> 
+#> $aucpext.obs$pptest_cdisc
+#> [1] "AUC %Extrapolation Obs"
 #> 
 #> 
 #> $aucpext.pred
@@ -4456,6 +5352,12 @@ get.interval.cols()
 #> $aucpext.pred$datatype
 #> [1] "interval"
 #> 
+#> $aucpext.pred$pptestcd_cdisc
+#> [1] "AUCPEP"
+#> 
+#> $aucpext.pred$pptest_cdisc
+#> [1] "AUC %Extrapolation Pred"
+#> 
 #> 
 #> $kel.iv.all
 #> $kel.iv.all$FUN
@@ -4486,6 +5388,12 @@ get.interval.cols()
 #> 
 #> $kel.iv.all$datatype
 #> [1] "interval"
+#> 
+#> $kel.iv.all$pptestcd_cdisc
+#> [1] "kel.iv.all"
+#> 
+#> $kel.iv.all$pptest_cdisc
+#> [1] "Elimination rate (as calculated from the MRTiv.all))"
 #> 
 #> 
 #> $kel.ivint.all
@@ -4518,6 +5426,12 @@ get.interval.cols()
 #> $kel.ivint.all$datatype
 #> [1] "interval"
 #> 
+#> $kel.ivint.all$pptestcd_cdisc
+#> [1] "kel.ivint.all"
+#> 
+#> $kel.ivint.all$pptest_cdisc
+#> [1] "Elimination rate (as calculated from the MRTivint.all)"
+#> 
 #> 
 #> $kel.ivint.last
 #> $kel.ivint.last$FUN
@@ -4548,6 +5462,12 @@ get.interval.cols()
 #> 
 #> $kel.ivint.last$datatype
 #> [1] "interval"
+#> 
+#> $kel.ivint.last$pptestcd_cdisc
+#> [1] "kel.ivint.last"
+#> 
+#> $kel.ivint.last$pptest_cdisc
+#> [1] "Elimination rate (as calculated from the MRTivint.last)"
 #> 
 #> 
 #> $kel.sparse.last
@@ -4580,6 +5500,12 @@ get.interval.cols()
 #> $kel.sparse.last$datatype
 #> [1] "interval"
 #> 
+#> $kel.sparse.last$pptestcd_cdisc
+#> [1] "kel.sparse.last"
+#> 
+#> $kel.sparse.last$pptest_cdisc
+#> [1] "Elimination rate (as calculated from the MRTsparse.last)"
+#> 
 #> 
 #> $cl.obs
 #> $cl.obs$FUN
@@ -4610,6 +5536,26 @@ get.interval.cols()
 #> 
 #> $cl.obs$datatype
 #> [1] "interval"
+#> 
+#> $cl.obs$pptestcd_cdisc
+#> $cl.obs$pptestcd_cdisc$route
+#> $cl.obs$pptestcd_cdisc$route$extravascular
+#> [1] "CLF/FO"
+#> 
+#> $cl.obs$pptestcd_cdisc$route$intravascular
+#> [1] "CLO"
+#> 
+#> 
+#> 
+#> $cl.obs$pptest_cdisc
+#> $cl.obs$pptest_cdisc$route
+#> $cl.obs$pptest_cdisc$route$extravascular
+#> [1] "Total CL Obs by F"
+#> 
+#> $cl.obs$pptest_cdisc$route$intravascular
+#> [1] "Total CL Obs"
+#> 
+#> 
 #> 
 #> 
 #> $cl.pred
@@ -4642,6 +5588,26 @@ get.interval.cols()
 #> $cl.pred$datatype
 #> [1] "interval"
 #> 
+#> $cl.pred$pptestcd_cdisc
+#> $cl.pred$pptestcd_cdisc$route
+#> $cl.pred$pptestcd_cdisc$route$extravascular
+#> [1] "CLF/FP"
+#> 
+#> $cl.pred$pptestcd_cdisc$route$intravascular
+#> [1] "CLP"
+#> 
+#> 
+#> 
+#> $cl.pred$pptest_cdisc
+#> $cl.pred$pptest_cdisc$route
+#> $cl.pred$pptest_cdisc$route$extravascular
+#> [1] "Total CL Pred by F"
+#> 
+#> $cl.pred$pptest_cdisc$route$intravascular
+#> [1] "Total CL Pred"
+#> 
+#> 
+#> 
 #> 
 #> $cl.int.inf.obs
 #> $cl.int.inf.obs$FUN
@@ -4672,6 +5638,12 @@ get.interval.cols()
 #> 
 #> $cl.int.inf.obs$datatype
 #> [1] "interval"
+#> 
+#> $cl.int.inf.obs$pptestcd_cdisc
+#> [1] "cl.int.inf.obs"
+#> 
+#> $cl.int.inf.obs$pptest_cdisc
+#> [1] "Clearance or observed oral clearance calculated with AUCint.inf.obs"
 #> 
 #> 
 #> $cl.int.inf.pred
@@ -4704,6 +5676,12 @@ get.interval.cols()
 #> $cl.int.inf.pred$datatype
 #> [1] "interval"
 #> 
+#> $cl.int.inf.pred$pptestcd_cdisc
+#> [1] "cl.int.inf.pred"
+#> 
+#> $cl.int.inf.pred$pptest_cdisc
+#> [1] "Clearance or observed oral clearance calculated with AUCint.inf.pred"
+#> 
 #> 
 #> $cl.iv.obs
 #> $cl.iv.obs$FUN
@@ -4735,6 +5713,12 @@ get.interval.cols()
 #> $cl.iv.obs$datatype
 #> [1] "interval"
 #> 
+#> $cl.iv.obs$pptestcd_cdisc
+#> [1] "cl.iv.obs"
+#> 
+#> $cl.iv.obs$pptest_cdisc
+#> [1] "Clearance for intravenous dosing calculated with AUCinf,obs"
+#> 
 #> 
 #> $cl.iv.pred
 #> $cl.iv.pred$FUN
@@ -4765,6 +5749,12 @@ get.interval.cols()
 #> 
 #> $cl.iv.pred$datatype
 #> [1] "interval"
+#> 
+#> $cl.iv.pred$pptestcd_cdisc
+#> [1] "cl.iv.pred"
+#> 
+#> $cl.iv.pred$pptest_cdisc
+#> [1] "Clearance for intravenous dosing calculated with AUCinf,pred"
 #> 
 #> 
 #> $mrt.obs
@@ -4800,6 +5790,26 @@ get.interval.cols()
 #> $mrt.obs$datatype
 #> [1] "interval"
 #> 
+#> $mrt.obs$pptestcd_cdisc
+#> $mrt.obs$pptestcd_cdisc$route
+#> $mrt.obs$pptestcd_cdisc$route$extravascular
+#> [1] "MRTEVFO"
+#> 
+#> $mrt.obs$pptestcd_cdisc$route$intravascular
+#> [1] "MRTICFO"
+#> 
+#> 
+#> 
+#> $mrt.obs$pptest_cdisc
+#> $mrt.obs$pptest_cdisc$route
+#> $mrt.obs$pptest_cdisc$route$extravascular
+#> [1] "MRT Extravasc Infinity Obs"
+#> 
+#> $mrt.obs$pptest_cdisc$route$intravascular
+#> [1] "MRT IV Cont Inf Infinity Obs"
+#> 
+#> 
+#> 
 #> 
 #> $mrt.pred
 #> $mrt.pred$FUN
@@ -4833,6 +5843,26 @@ get.interval.cols()
 #> 
 #> $mrt.pred$datatype
 #> [1] "interval"
+#> 
+#> $mrt.pred$pptestcd_cdisc
+#> $mrt.pred$pptestcd_cdisc$route
+#> $mrt.pred$pptestcd_cdisc$route$extravascular
+#> [1] "MRTEVFP"
+#> 
+#> $mrt.pred$pptestcd_cdisc$route$intravascular
+#> [1] "MRTICFP"
+#> 
+#> 
+#> 
+#> $mrt.pred$pptest_cdisc
+#> $mrt.pred$pptest_cdisc$route
+#> $mrt.pred$pptest_cdisc$route$extravascular
+#> [1] "MRT Extravasc Infinity Pred"
+#> 
+#> $mrt.pred$pptest_cdisc$route$intravascular
+#> [1] "MRT IV Cont Inf Infinity Pred"
+#> 
+#> 
 #> 
 #> 
 #> $mrt.int.inf.obs
@@ -4868,6 +5898,12 @@ get.interval.cols()
 #> $mrt.int.inf.obs$datatype
 #> [1] "interval"
 #> 
+#> $mrt.int.inf.obs$pptestcd_cdisc
+#> [1] "mrt.int.inf.obs"
+#> 
+#> $mrt.int.inf.obs$pptest_cdisc
+#> [1] "Mean residence time over interval calculated with AUCint.inf.obs/AUMCint.inf.obs"
+#> 
 #> 
 #> $mrt.int.inf.pred
 #> $mrt.int.inf.pred$FUN
@@ -4901,6 +5937,12 @@ get.interval.cols()
 #> 
 #> $mrt.int.inf.pred$datatype
 #> [1] "interval"
+#> 
+#> $mrt.int.inf.pred$pptestcd_cdisc
+#> [1] "mrt.int.inf.pred"
+#> 
+#> $mrt.int.inf.pred$pptest_cdisc
+#> [1] "Mean residence time over interval calculated with AUCint.inf.pred/AUMCint.inf.pred"
 #> 
 #> 
 #> $mrt.iv.obs
@@ -4936,6 +5978,12 @@ get.interval.cols()
 #> $mrt.iv.obs$datatype
 #> [1] "interval"
 #> 
+#> $mrt.iv.obs$pptestcd_cdisc
+#> [1] "MRTIBIFO"
+#> 
+#> $mrt.iv.obs$pptest_cdisc
+#> [1] "MRT Intravasc Infinity Obs"
+#> 
 #> 
 #> $mrt.iv.pred
 #> $mrt.iv.pred$FUN
@@ -4969,6 +6017,12 @@ get.interval.cols()
 #> 
 #> $mrt.iv.pred$datatype
 #> [1] "interval"
+#> 
+#> $mrt.iv.pred$pptestcd_cdisc
+#> [1] "MRTIBIFP"
+#> 
+#> $mrt.iv.pred$pptest_cdisc
+#> [1] "MRT Intravasc Infinity Pred"
 #> 
 #> 
 #> $mrt.md.obs
@@ -5007,6 +6061,12 @@ get.interval.cols()
 #> $mrt.md.obs$datatype
 #> [1] "interval"
 #> 
+#> $mrt.md.obs$pptestcd_cdisc
+#> [1] "MRTMDO"
+#> 
+#> $mrt.md.obs$pptest_cdisc
+#> [1] "MRT (for multiple dosing, based on AUCinf,obs)"
+#> 
 #> 
 #> $mrt.md.pred
 #> $mrt.md.pred$FUN
@@ -5044,6 +6104,12 @@ get.interval.cols()
 #> $mrt.md.pred$datatype
 #> [1] "interval"
 #> 
+#> $mrt.md.pred$pptestcd_cdisc
+#> [1] "MRTMDP"
+#> 
+#> $mrt.md.pred$pptest_cdisc
+#> [1] "MRT (for multiple dosing, based on AUCinf,pred)"
+#> 
 #> 
 #> $vz.obs
 #> $vz.obs$FUN
@@ -5074,6 +6140,26 @@ get.interval.cols()
 #> 
 #> $vz.obs$datatype
 #> [1] "interval"
+#> 
+#> $vz.obs$pptestcd_cdisc
+#> $vz.obs$pptestcd_cdisc$route
+#> $vz.obs$pptestcd_cdisc$route$extravascular
+#> [1] "VZF/FO"
+#> 
+#> $vz.obs$pptestcd_cdisc$route$intravascular
+#> [1] "VZO"
+#> 
+#> 
+#> 
+#> $vz.obs$pptest_cdisc
+#> $vz.obs$pptest_cdisc$route
+#> $vz.obs$pptest_cdisc$route$extravascular
+#> [1] "Vz by F Obs"
+#> 
+#> $vz.obs$pptest_cdisc$route$intravascular
+#> [1] "Vz Obs"
+#> 
+#> 
 #> 
 #> 
 #> $vz.pred
@@ -5106,6 +6192,26 @@ get.interval.cols()
 #> $vz.pred$datatype
 #> [1] "interval"
 #> 
+#> $vz.pred$pptestcd_cdisc
+#> $vz.pred$pptestcd_cdisc$route
+#> $vz.pred$pptestcd_cdisc$route$extravascular
+#> [1] "VZF/FP"
+#> 
+#> $vz.pred$pptestcd_cdisc$route$intravascular
+#> [1] "VZP"
+#> 
+#> 
+#> 
+#> $vz.pred$pptest_cdisc
+#> $vz.pred$pptest_cdisc$route
+#> $vz.pred$pptest_cdisc$route$extravascular
+#> [1] "Vz by F Pred"
+#> 
+#> $vz.pred$pptest_cdisc$route$intravascular
+#> [1] "Vz Pred"
+#> 
+#> 
+#> 
 #> 
 #> $vz.int.inf.obs
 #> $vz.int.inf.obs$FUN
@@ -5136,6 +6242,12 @@ get.interval.cols()
 #> 
 #> $vz.int.inf.obs$datatype
 #> [1] "interval"
+#> 
+#> $vz.int.inf.obs$pptestcd_cdisc
+#> [1] "vz.int.inf.obs"
+#> 
+#> $vz.int.inf.obs$pptest_cdisc
+#> [1] "Terminal volume of distribution using interval AUCint.inf.obs"
 #> 
 #> 
 #> $vz.int.inf.pred
@@ -5168,6 +6280,12 @@ get.interval.cols()
 #> $vz.int.inf.pred$datatype
 #> [1] "interval"
 #> 
+#> $vz.int.inf.pred$pptestcd_cdisc
+#> [1] "vz.int.inf.pred"
+#> 
+#> $vz.int.inf.pred$pptest_cdisc
+#> [1] "Terminal volume of distribution using interval AUCint.inf.pred"
+#> 
 #> 
 #> $vz.iv.obs
 #> $vz.iv.obs$FUN
@@ -5199,6 +6317,12 @@ get.interval.cols()
 #> $vz.iv.obs$datatype
 #> [1] "interval"
 #> 
+#> $vz.iv.obs$pptestcd_cdisc
+#> [1] "vz.iv.obs"
+#> 
+#> $vz.iv.obs$pptest_cdisc
+#> [1] "Terminal volume of distribution for IV dosing using observed AUCinf"
+#> 
 #> 
 #> $vz.iv.pred
 #> $vz.iv.pred$FUN
@@ -5229,6 +6353,12 @@ get.interval.cols()
 #> 
 #> $vz.iv.pred$datatype
 #> [1] "interval"
+#> 
+#> $vz.iv.pred$pptestcd_cdisc
+#> [1] "vz.iv.pred"
+#> 
+#> $vz.iv.pred$pptest_cdisc
+#> [1] "Terminal volume of distribution for IV dosing using predicted AUCinf"
 #> 
 #> 
 #> $vz.sparse.last
@@ -5264,6 +6394,12 @@ get.interval.cols()
 #> $vz.sparse.last$datatype
 #> [1] "interval"
 #> 
+#> $vz.sparse.last$pptestcd_cdisc
+#> [1] "vz.sparse.last"
+#> 
+#> $vz.sparse.last$pptest_cdisc
+#> [1] "Terminal volume of distribution from sparse sampling"
+#> 
 #> 
 #> $vss.obs
 #> $vss.obs$FUN
@@ -5297,6 +6433,26 @@ get.interval.cols()
 #> 
 #> $vss.obs$datatype
 #> [1] "interval"
+#> 
+#> $vss.obs$pptestcd_cdisc
+#> $vss.obs$pptestcd_cdisc$route
+#> $vss.obs$pptestcd_cdisc$route$extravascular
+#> [1] "VSSF/FO"
+#> 
+#> $vss.obs$pptestcd_cdisc$route$intravascular
+#> [1] "VSSO"
+#> 
+#> 
+#> 
+#> $vss.obs$pptest_cdisc
+#> $vss.obs$pptest_cdisc$route
+#> $vss.obs$pptest_cdisc$route$extravascular
+#> [1] "Vss by F Obs"
+#> 
+#> $vss.obs$pptest_cdisc$route$intravascular
+#> [1] "Vol Dist Steady State Obs"
+#> 
+#> 
 #> 
 #> 
 #> $vss.pred
@@ -5332,6 +6488,26 @@ get.interval.cols()
 #> $vss.pred$datatype
 #> [1] "interval"
 #> 
+#> $vss.pred$pptestcd_cdisc
+#> $vss.pred$pptestcd_cdisc$route
+#> $vss.pred$pptestcd_cdisc$route$extravascular
+#> [1] "VSSF/FP"
+#> 
+#> $vss.pred$pptestcd_cdisc$route$intravascular
+#> [1] "VSSP"
+#> 
+#> 
+#> 
+#> $vss.pred$pptest_cdisc
+#> $vss.pred$pptest_cdisc$route
+#> $vss.pred$pptest_cdisc$route$extravascular
+#> [1] "Vss by F Pred"
+#> 
+#> $vss.pred$pptest_cdisc$route$intravascular
+#> [1] "Vol Dist Steady State Pred"
+#> 
+#> 
+#> 
 #> 
 #> $vss.iv.obs
 #> $vss.iv.obs$FUN
@@ -5365,6 +6541,12 @@ get.interval.cols()
 #> 
 #> $vss.iv.obs$datatype
 #> [1] "interval"
+#> 
+#> $vss.iv.obs$pptestcd_cdisc
+#> [1] "VSSIVO"
+#> 
+#> $vss.iv.obs$pptest_cdisc
+#> [1] "Vss (for IV dosing, based on AUCinf,obs)"
 #> 
 #> 
 #> $vss.iv.pred
@@ -5400,6 +6582,12 @@ get.interval.cols()
 #> $vss.iv.pred$datatype
 #> [1] "interval"
 #> 
+#> $vss.iv.pred$pptestcd_cdisc
+#> [1] "VSSIVP"
+#> 
+#> $vss.iv.pred$pptest_cdisc
+#> [1] "Vss (for IV dosing, based on AUCinf,pred)"
+#> 
 #> 
 #> $vss.md.obs
 #> $vss.md.obs$FUN
@@ -5433,6 +6621,12 @@ get.interval.cols()
 #> 
 #> $vss.md.obs$datatype
 #> [1] "interval"
+#> 
+#> $vss.md.obs$pptestcd_cdisc
+#> [1] "VSSMDO"
+#> 
+#> $vss.md.obs$pptest_cdisc
+#> [1] "Vss (for multiple-dose, based on AUCinf,obs)"
 #> 
 #> 
 #> $vss.md.pred
@@ -5468,6 +6662,12 @@ get.interval.cols()
 #> $vss.md.pred$datatype
 #> [1] "interval"
 #> 
+#> $vss.md.pred$pptestcd_cdisc
+#> [1] "VSSMDP"
+#> 
+#> $vss.md.pred$pptest_cdisc
+#> [1] "Vss (for multiple-dose, based on AUCinf,pred)"
+#> 
 #> 
 #> $vss.int.inf.obs
 #> $vss.int.inf.obs$FUN
@@ -5501,6 +6701,12 @@ get.interval.cols()
 #> 
 #> $vss.int.inf.obs$datatype
 #> [1] "interval"
+#> 
+#> $vss.int.inf.obs$pptestcd_cdisc
+#> [1] "vss.int.inf.obs"
+#> 
+#> $vss.int.inf.obs$pptest_cdisc
+#> [1] "Steady-state volume of distribution using interval AUCint.inf.obs"
 #> 
 #> 
 #> $vss.int.inf.pred
@@ -5536,6 +6742,12 @@ get.interval.cols()
 #> $vss.int.inf.pred$datatype
 #> [1] "interval"
 #> 
+#> $vss.int.inf.pred$pptestcd_cdisc
+#> [1] "vss.int.inf.pred"
+#> 
+#> $vss.int.inf.pred$pptest_cdisc
+#> [1] "Steady-state volume of distribution using interval AUCint.inf.pred"
+#> 
 #> 
 #> $cav.int.inf.obs
 #> $cav.int.inf.obs$FUN
@@ -5566,6 +6778,12 @@ get.interval.cols()
 #> 
 #> $cav.int.inf.obs$datatype
 #> [1] "interval"
+#> 
+#> $cav.int.inf.obs$pptestcd_cdisc
+#> [1] "CAVGINO"
+#> 
+#> $cav.int.inf.obs$pptest_cdisc
+#> [1] "Cavg Infinity Obs"
 #> 
 #> 
 #> $cav.int.inf.pred
@@ -5598,6 +6816,12 @@ get.interval.cols()
 #> $cav.int.inf.pred$datatype
 #> [1] "interval"
 #> 
+#> $cav.int.inf.pred$pptestcd_cdisc
+#> [1] "CAVGINP"
+#> 
+#> $cav.int.inf.pred$pptest_cdisc
+#> [1] "Cavg Infinity Pred"
+#> 
 #> 
 #> $thalf.eff.obs
 #> $thalf.eff.obs$FUN
@@ -5628,6 +6852,12 @@ get.interval.cols()
 #> 
 #> $thalf.eff.obs$datatype
 #> [1] "interval"
+#> 
+#> $thalf.eff.obs$pptestcd_cdisc
+#> [1] "EFFOHL"
+#> 
+#> $thalf.eff.obs$pptest_cdisc
+#> [1] "Effective Half-Life Obs"
 #> 
 #> 
 #> $thalf.eff.pred
@@ -5660,6 +6890,12 @@ get.interval.cols()
 #> $thalf.eff.pred$datatype
 #> [1] "interval"
 #> 
+#> $thalf.eff.pred$pptestcd_cdisc
+#> [1] "EFFPHL"
+#> 
+#> $thalf.eff.pred$pptest_cdisc
+#> [1] "Effective Half-Life Pred"
+#> 
 #> 
 #> $thalf.eff.iv.obs
 #> $thalf.eff.iv.obs$FUN
@@ -5690,6 +6926,12 @@ get.interval.cols()
 #> 
 #> $thalf.eff.iv.obs$datatype
 #> [1] "interval"
+#> 
+#> $thalf.eff.iv.obs$pptestcd_cdisc
+#> [1] "EFFIVOHL"
+#> 
+#> $thalf.eff.iv.obs$pptest_cdisc
+#> [1] "Effective Half-Life (for IV dosing, based on MRT Obs)"
 #> 
 #> 
 #> $thalf.eff.iv.pred
@@ -5722,6 +6964,12 @@ get.interval.cols()
 #> $thalf.eff.iv.pred$datatype
 #> [1] "interval"
 #> 
+#> $thalf.eff.iv.pred$pptestcd_cdisc
+#> [1] "EFFIVPHL"
+#> 
+#> $thalf.eff.iv.pred$pptest_cdisc
+#> [1] "Effective Half-Life (for IV dosing, based on MRT Pred)"
+#> 
 #> 
 #> $kel.obs
 #> $kel.obs$FUN
@@ -5752,6 +7000,12 @@ get.interval.cols()
 #> 
 #> $kel.obs$datatype
 #> [1] "interval"
+#> 
+#> $kel.obs$pptestcd_cdisc
+#> [1] "KELOS"
+#> 
+#> $kel.obs$pptest_cdisc
+#> [1] "Kel (based on AUCinf,obs)"
 #> 
 #> 
 #> $kel.pred
@@ -5784,6 +7038,12 @@ get.interval.cols()
 #> $kel.pred$datatype
 #> [1] "interval"
 #> 
+#> $kel.pred$pptestcd_cdisc
+#> [1] "KELP"
+#> 
+#> $kel.pred$pptest_cdisc
+#> [1] "Kel (based on AUCinf,pred)"
+#> 
 #> 
 #> $kel.iv.obs
 #> $kel.iv.obs$FUN
@@ -5814,6 +7074,12 @@ get.interval.cols()
 #> 
 #> $kel.iv.obs$datatype
 #> [1] "interval"
+#> 
+#> $kel.iv.obs$pptestcd_cdisc
+#> [1] "KELIVOS"
+#> 
+#> $kel.iv.obs$pptest_cdisc
+#> [1] "Kel (for IV dosing, based on AUCinf,obs)"
 #> 
 #> 
 #> $kel.iv.pred
@@ -5846,6 +7112,12 @@ get.interval.cols()
 #> $kel.iv.pred$datatype
 #> [1] "interval"
 #> 
+#> $kel.iv.pred$pptestcd_cdisc
+#> [1] "KELIVP"
+#> 
+#> $kel.iv.pred$pptest_cdisc
+#> [1] "Kel (for IV dosing, based on AUCinf,pred)"
+#> 
 #> 
 #> $kel.int.inf.obs
 #> $kel.int.inf.obs$FUN
@@ -5876,6 +7148,12 @@ get.interval.cols()
 #> 
 #> $kel.int.inf.obs$datatype
 #> [1] "interval"
+#> 
+#> $kel.int.inf.obs$pptestcd_cdisc
+#> [1] "kel.int.inf.obs"
+#> 
+#> $kel.int.inf.obs$pptest_cdisc
+#> [1] "Elimination rate (as calculated from the MRTint.inf.obs)"
 #> 
 #> 
 #> $kel.int.inf.pred
@@ -5908,6 +7186,12 @@ get.interval.cols()
 #> $kel.int.inf.pred$datatype
 #> [1] "interval"
 #> 
+#> $kel.int.inf.pred$pptestcd_cdisc
+#> [1] "kel.int.inf.pred"
+#> 
+#> $kel.int.inf.pred$pptest_cdisc
+#> [1] "Elimination rate (as calculated from the MRTint.inf.pred)"
+#> 
 #> 
 #> $auclast.dn
 #> $auclast.dn$FUN
@@ -5938,6 +7222,12 @@ get.interval.cols()
 #> 
 #> $auclast.dn$datatype
 #> [1] "interval"
+#> 
+#> $auclast.dn$pptestcd_cdisc
+#> [1] "AUCLSTD"
+#> 
+#> $auclast.dn$pptest_cdisc
+#> [1] "AUC to Last Nonzero Conc by Dose"
 #> 
 #> 
 #> $aucall.dn
@@ -5970,6 +7260,12 @@ get.interval.cols()
 #> $aucall.dn$datatype
 #> [1] "interval"
 #> 
+#> $aucall.dn$pptestcd_cdisc
+#> [1] "AUCALLD"
+#> 
+#> $aucall.dn$pptest_cdisc
+#> [1] "AUC All by Dose"
+#> 
 #> 
 #> $aucinf.obs.dn
 #> $aucinf.obs.dn$FUN
@@ -6000,6 +7296,12 @@ get.interval.cols()
 #> 
 #> $aucinf.obs.dn$datatype
 #> [1] "interval"
+#> 
+#> $aucinf.obs.dn$pptestcd_cdisc
+#> [1] "AUCIFOD"
+#> 
+#> $aucinf.obs.dn$pptest_cdisc
+#> [1] "AUC Infinity Obs by Dose"
 #> 
 #> 
 #> $aucinf.pred.dn
@@ -6032,6 +7334,12 @@ get.interval.cols()
 #> $aucinf.pred.dn$datatype
 #> [1] "interval"
 #> 
+#> $aucinf.pred.dn$pptestcd_cdisc
+#> [1] "AUCIFPD"
+#> 
+#> $aucinf.pred.dn$pptest_cdisc
+#> [1] "AUC Infinity Pred by Dose"
+#> 
 #> 
 #> $aumclast.dn
 #> $aumclast.dn$FUN
@@ -6062,6 +7370,12 @@ get.interval.cols()
 #> 
 #> $aumclast.dn$datatype
 #> [1] "interval"
+#> 
+#> $aumclast.dn$pptestcd_cdisc
+#> [1] "AUMCLSTD"
+#> 
+#> $aumclast.dn$pptest_cdisc
+#> [1] "AUMC to Last Nonzero Conc by Dose"
 #> 
 #> 
 #> $aumcall.dn
@@ -6094,6 +7408,12 @@ get.interval.cols()
 #> $aumcall.dn$datatype
 #> [1] "interval"
 #> 
+#> $aumcall.dn$pptestcd_cdisc
+#> [1] "AUMCALLD"
+#> 
+#> $aumcall.dn$pptest_cdisc
+#> [1] "AUMC All by Dose"
+#> 
 #> 
 #> $aumcinf.obs.dn
 #> $aumcinf.obs.dn$FUN
@@ -6124,6 +7444,12 @@ get.interval.cols()
 #> 
 #> $aumcinf.obs.dn$datatype
 #> [1] "interval"
+#> 
+#> $aumcinf.obs.dn$pptestcd_cdisc
+#> [1] "AUMCIFOD"
+#> 
+#> $aumcinf.obs.dn$pptest_cdisc
+#> [1] "AUMC Infinity Obs by Dose"
 #> 
 #> 
 #> $aumcinf.pred.dn
@@ -6156,6 +7482,12 @@ get.interval.cols()
 #> $aumcinf.pred.dn$datatype
 #> [1] "interval"
 #> 
+#> $aumcinf.pred.dn$pptestcd_cdisc
+#> [1] "AUMCIFPD"
+#> 
+#> $aumcinf.pred.dn$pptest_cdisc
+#> [1] "AUMC Infinity Pred by Dose"
+#> 
 #> 
 #> $cmax.dn
 #> $cmax.dn$FUN
@@ -6186,6 +7518,12 @@ get.interval.cols()
 #> 
 #> $cmax.dn$datatype
 #> [1] "interval"
+#> 
+#> $cmax.dn$pptestcd_cdisc
+#> [1] "CMAXD"
+#> 
+#> $cmax.dn$pptest_cdisc
+#> [1] "Max Conc by Dose"
 #> 
 #> 
 #> $cmin.dn
@@ -6218,6 +7556,12 @@ get.interval.cols()
 #> $cmin.dn$datatype
 #> [1] "interval"
 #> 
+#> $cmin.dn$pptestcd_cdisc
+#> [1] "CMIND"
+#> 
+#> $cmin.dn$pptest_cdisc
+#> [1] "Min Conc by Dose"
+#> 
 #> 
 #> $clast.obs.dn
 #> $clast.obs.dn$FUN
@@ -6248,6 +7592,12 @@ get.interval.cols()
 #> 
 #> $clast.obs.dn$datatype
 #> [1] "interval"
+#> 
+#> $clast.obs.dn$pptestcd_cdisc
+#> [1] "CLSTD"
+#> 
+#> $clast.obs.dn$pptest_cdisc
+#> [1] "Last Nonzero Conc by Dose"
 #> 
 #> 
 #> $clast.pred.dn
@@ -6280,6 +7630,12 @@ get.interval.cols()
 #> $clast.pred.dn$datatype
 #> [1] "interval"
 #> 
+#> $clast.pred.dn$pptestcd_cdisc
+#> [1] "CLSTPD"
+#> 
+#> $clast.pred.dn$pptest_cdisc
+#> [1] "Clast pred by Dose"
+#> 
 #> 
 #> $cav.dn
 #> $cav.dn$FUN
@@ -6310,6 +7666,12 @@ get.interval.cols()
 #> 
 #> $cav.dn$datatype
 #> [1] "interval"
+#> 
+#> $cav.dn$pptestcd_cdisc
+#> [1] "CAVGD"
+#> 
+#> $cav.dn$pptest_cdisc
+#> [1] "Average Conc by Dose"
 #> 
 #> 
 #> $ctrough.dn
@@ -6342,6 +7704,12 @@ get.interval.cols()
 #> $ctrough.dn$datatype
 #> [1] "interval"
 #> 
+#> $ctrough.dn$pptestcd_cdisc
+#> [1] "CTROUGHD"
+#> 
+#> $ctrough.dn$pptest_cdisc
+#> [1] "Conc Trough by Dose"
+#> 
 #> 
 #> $clr.last.dn
 #> $clr.last.dn$FUN
@@ -6372,6 +7740,12 @@ get.interval.cols()
 #> 
 #> $clr.last.dn$datatype
 #> [1] "interval"
+#> 
+#> $clr.last.dn$pptestcd_cdisc
+#> [1] "RENALCLD"
+#> 
+#> $clr.last.dn$pptest_cdisc
+#> [1] "Renal CL by Dose"
 #> 
 #> 
 #> $clr.obs.dn
@@ -6404,6 +7778,12 @@ get.interval.cols()
 #> $clr.obs.dn$datatype
 #> [1] "interval"
 #> 
+#> $clr.obs.dn$pptestcd_cdisc
+#> [1] "RENALCLD"
+#> 
+#> $clr.obs.dn$pptest_cdisc
+#> [1] "Renal CL by Dose"
+#> 
 #> 
 #> $clr.pred.dn
 #> $clr.pred.dn$FUN
@@ -6434,6 +7814,12 @@ get.interval.cols()
 #> 
 #> $clr.pred.dn$datatype
 #> [1] "interval"
+#> 
+#> $clr.pred.dn$pptestcd_cdisc
+#> [1] "RENALCLD"
+#> 
+#> $clr.pred.dn$pptest_cdisc
+#> [1] "Renal CL by Dose"
 #> 
 #> 
 ```

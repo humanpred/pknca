@@ -69,7 +69,7 @@ data.frame.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  <span class="va">...</span>,</span>
-<span>  out_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"long"</span>, <span class="st">"wide"</span><span class="op">)</span>,</span>
+<span>  out_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"long"</span>, <span class="st">"wide"</span>, <span class="st">"cdisc"</span><span class="op">)</span>,</span>
 <span>  filter_requested <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  filter_excluded <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  out.format <span class="op">=</span> <span class="fu">deprecated</span><span class="op">(</span><span class="op">)</span></span>
@@ -89,7 +89,11 @@ data.frame.</p>
 
 
 <dt id="arg-out-format">out_format<a class="anchor" aria-label="anchor" href="#arg-out-format"></a></dt>
-<dd><p>Should the output be 'long' (default) or 'wide'?</p></dd>
+<dd><p>Should the output be 'long' (default), 'wide', or 'cdisc'?
+When 'cdisc', the PPTESTCD column is translated to CDISC standard codes
+and a PPTEST column with the CDISC test name is added.  Route-dependent
+parameters (e.g. CL, VZ, MRT) are resolved using the route information
+from the dose data.</p></dd>
 
 
 <dt id="arg-filter-requested">filter_requested<a class="anchor" aria-label="anchor" href="#arg-filter-requested"></a></dt>

@@ -15,7 +15,9 @@ add.interval.col(
   desc = "",
   sparse = FALSE,
   formalsmap = list(),
-  datatype = c("interval", "individual", "population")
+  datatype = c("interval", "individual", "population"),
+  pptestcd_cdisc = NULL,
+  pptest_cdisc = NULL
 )
 ```
 
@@ -66,6 +68,20 @@ add.interval.col(
 - datatype:
 
   The type of data used for the calculation
+
+- pptestcd_cdisc:
+
+  The CDISC PPTESTCD code for this parameter. Can be a character string
+  for simple mappings, or a named list for route-dependent mappings
+  (e.g.,
+  `list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))`).
+  Defaults to `name` if not provided.
+
+- pptest_cdisc:
+
+  The CDISC PPTEST name for this parameter. Can be a character string or
+  a named list (same structure as `pptestcd_cdisc`). Defaults to `desc`
+  if not provided.
 
 ## Value
 

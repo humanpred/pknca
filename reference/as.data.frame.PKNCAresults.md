@@ -10,7 +10,7 @@ data.frame.
 as.data.frame(
   x,
   ...,
-  out_format = c("long", "wide"),
+  out_format = c("long", "wide", "cdisc"),
   filter_requested = FALSE,
   filter_excluded = FALSE,
   out.format = deprecated()
@@ -30,7 +30,11 @@ as.data.frame(
 
 - out_format:
 
-  Should the output be 'long' (default) or 'wide'?
+  Should the output be 'long' (default), 'wide', or 'cdisc'? When
+  'cdisc', the PPTESTCD column is translated to CDISC standard codes and
+  a PPTEST column with the CDISC test name is added. Route-dependent
+  parameters (e.g. CL, VZ, MRT) are resolved using the route information
+  from the dose data.
 
 - filter_requested:
 
