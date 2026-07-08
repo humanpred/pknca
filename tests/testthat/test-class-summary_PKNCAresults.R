@@ -307,6 +307,28 @@ test_that("print.summary_PKNCAresults works", {
   )
 })
 
+test_that("print.summary_PKNCAresults supports caption_prefix", {
+  tmpconc <- generate.conc(2, 1, 0:24)
+  tmpdose <- generate.dose(tmpconc)
+  myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
+  mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
+  mydata <- PKNCAdata(myconc, mydose)
+  myresult <- pk.nca(mydata)
+  
+  expect_output(
+    print(summary(myresult, caption_prefix = "Summary:")),
+    paste(
+      " start end treatment N     auclast         cmax              tmax   half.life.*",
+      "     0  24     Trt 1 2 13.8 \\[2.51\\]            .                 .           ..*",
+      "     0 Inf     Trt 1 2           . 0.970 \\[4.29\\] 3.00 \\[2.00, 4.00\\] 14.2 \\[2.79\\].*",
+      "",
+      "Caption: Summary: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation",
+      sep = "\n"
+    )
+  )
+})
+
+
 test_that("summary pretty_name control", {
   tmpconc <- generate.conc(2, 1, 0:24)
   tmpdose <- generate.dose(tmpconc)
