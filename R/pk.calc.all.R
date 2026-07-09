@@ -196,6 +196,12 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
     # No intervals; potentially placebo data
     return(rlang::warning_cnd(class="pknca_no_intervals", message="No intervals for data"))
   }
+  # Sort the group-level concentration data in time order.  The interval-level
+  # data are sorted below (per interval), but the group-level data are passed
+  # as-is to parameters that use `conc.group`/`time.group` (e.g. aucint*), and
+  # several of those (via interp.extrap.conc()) require time-sorted input.  See
+  # https://github.com/humanpred/pknca/issues/568.
+  data_conc <- data_conc[order(data_conc$time), , drop=FALSE]
   # Hoist the debug check: options is already the fully-merged options object
   # (merged at the top of pk.nca()), so there is no need to re-query
   # PKNCA.options() from the environment on every iteration.

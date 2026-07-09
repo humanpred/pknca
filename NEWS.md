@@ -6,6 +6,11 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
+  Group-level concentration data are now sorted by time before calculation, so
+  parameters that use the full group (e.g. `aucint.all` and the other `aucint*`
+  parameters) work when the input rows are not in time order (#568).
+
 * Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).
 
