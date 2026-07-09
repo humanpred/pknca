@@ -32,7 +32,7 @@ results: Tests were not run because tests are not installed.
 Sys.Date()
 ```
 
-    ## [1] "2026-07-07"
+    ## [1] "2026-07-09"
 
 ``` r
 
@@ -69,7 +69,7 @@ sessionInfo()
     ## [13] generics_0.1.4    tibble_3.3.1      desc_1.4.3        units_1.0-1      
     ## [17] bslib_0.11.0      pillar_1.11.1     rlang_1.3.0       cachem_1.1.0     
     ## [21] xfun_0.59         fs_2.1.0          sass_0.4.10       otel_0.2.0       
-    ## [25] cli_3.6.6         pkgdown_2.2.0     magrittr_2.0.5    digest_0.6.39    
+    ## [25] cli_3.6.6         pkgdown_2.2.1     magrittr_2.0.5    digest_0.6.39    
     ## [29] grid_4.6.1        lifecycle_1.0.5   nlme_3.1-169      vctrs_0.7.3      
     ## [33] evaluate_1.0.5    glue_1.8.1        ragg_1.5.2        rmarkdown_2.31   
     ## [37] tools_4.6.1       pkgconfig_2.0.3   htmltools_0.5.9
