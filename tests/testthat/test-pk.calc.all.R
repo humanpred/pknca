@@ -1050,3 +1050,49 @@ test_that("pk.nca.interval covers route, volume.group, duration.conc.group, dose
   result <- pk.nca(o_data)
   expect_true("pknca_test_grp_args_cov_col_" %in% as.data.frame(result)$PPTESTCD)
 })
+
+test_that("pk.nca sorts group data by time so unsorted input works (#568)", {
+  conc_data <-
+    data.frame(
+      MRRLT = c(16, -0.8, 3, 6, 8, 12, 20, 25),
+      AVAL = c(120, 260, 340, 300, 210, 150, 110, 90)
+    )
+  conc_sorted <- conc_data[order(conc_data$MRRLT), ]
+  dose_data <- data.frame(EXDOSE = 1)
+
+  run_nca <- function(cdat) {
+    o_conc <- PKNCAconc(cdat, AVAL ~ MRRLT)
+    o_dose <- PKNCAdose(dose_data, EXDOSE ~ .)
+    intervals <-
+      data.frame(
+        start = 0, end = 24,
+        aucint.all = TRUE, aucint.last = TRUE, aucint.inf.obs = TRUE,
+        cmax = TRUE, half.life = TRUE
+      )
+    o_data <-
+      PKNCAdata(
+        o_conc, o_dose, intervals = intervals,
+        options = list(auc.method = "linear")
+      )
+    as.data.frame(suppressWarnings(pk.nca(o_data)))
+  }
+
+  # Previously errored with "Assertion on 'time' failed: Must be sorted."
+  res_unsorted <- expect_no_error(run_nca(conc_data))
+  res_sorted <- run_nca(conc_sorted)
+
+  # aucint* parameters (which use the group-level time/conc) are calculable and
+  # identical regardless of the input ordering.
+  expect_equal(
+    res_unsorted$PPORRES[res_unsorted$PPTESTCD == "aucint.all"],
+    4523.263157894737
+  )
+  # Every parameter matches the pre-sorted calculation.
+  merged <-
+    merge(
+      res_unsorted[, c("PPTESTCD", "PPORRES")],
+      res_sorted[, c("PPTESTCD", "PPORRES")],
+      by = "PPTESTCD", suffixes = c(".uns", ".srt")
+    )
+  expect_equal(merged$PPORRES.uns, merged$PPORRES.srt)
+})
