@@ -6,6 +6,11 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
+  Group-level concentration data are now sorted by time before calculation, so
+  parameters that use the full group (e.g. `aucint.all` and the other `aucint*`
+  parameters) work when the input rows are not in time order (#568).
+
 * Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).
 
@@ -32,6 +37,26 @@ the dosing including dose amount and route.
   * 9 volume of distribution at steady state parameters (`vss.*`)
   * 13 terminal volume of distribution parameters (`vz.*`)
 
+## Features added
+
+* `add.interval.col()` gains `pptestcd_cdisc` and `pptest_cdisc` arguments for
+  CDISC standard parameter code and name mappings.  Route-dependent parameters
+  (CL, VZ, MRT, VSS) accept a nested list to distinguish intravascular and
+  extravascular CDISC codes (#403)
+* `as.data.frame.PKNCAresults()` gains `out_format = "cdisc"` to translate
+  PPTESTCD to CDISC standard codes and add a PPTEST column.  Route-dependent
+  translations are resolved from the dose data (#403)
+* When `out_format = "cdisc"` and any parameter has "INT" in its PPTESTCD,
+  PPSTINT and PPENINT columns are added with ISO 8601 durations relative to
+  the last dose time.  The time unit is taken from `timeu_pref` or `timeu`
+  (#403)
+
+## Bug Fixes
+
+* `normalize.data.frame()` no longer triggers a dplyr deprecation warning
+  (`Using 'by = character()' to perform a cross join was deprecated in dplyr 1.1.0`)
+  when called with ungrouped data (i.e., no common group columns between `object`
+  and `norm_table`). `dplyr::cross_join()` is now used explicitly for this case.
 
 ## Improvements
 

@@ -454,3 +454,278 @@ test_that("as.data.frame.PKNCAresults can filter to remove excluded parameters",
   expect_equal(nrow(as.data.frame(o_result)), 24)
   expect_equal(nrow(as.data.frame(o_result, filter_excluded = TRUE)), 14)
 })
+
+# CDISC output format tests ----
+
+test_that("as.data.frame.PKNCAresults with out_format='cdisc' adds PPTESTCD and PPTEST", {
+  d_conc <- data.frame(
+    subject = rep(1, 4),
+    time = 0:3,
+    conc = c(0, 1, 0.5, 0.25)
+  )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  d_dose <- data.frame(subject = 1, time = 0, dose = 10)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(
+    start = 0, end = 3, cmax = TRUE, auclast = TRUE, tmax = TRUE
+  ))
+  suppressMessages(o_nca <- pk.nca(o_data))
+
+  result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
+
+  expect_true("PPTESTCD" %in% names(result_cdisc))
+  expect_true("PPTEST" %in% names(result_cdisc))
+  expect_true("CMAX" %in% result_cdisc$PPTESTCD)
+  expect_true("AUCLST" %in% result_cdisc$PPTESTCD)
+  expect_true("TMAX" %in% result_cdisc$PPTESTCD)
+  # PPTEST should be placed right after PPTESTCD
+  pptestcd_pos <- which(names(result_cdisc) == "PPTESTCD")
+  pptest_pos <- which(names(result_cdisc) == "PPTEST")
+  expect_equal(pptest_pos, pptestcd_pos + 1)
+  # Check PPTEST values
+  cmax_row <- result_cdisc[result_cdisc$PPTESTCD == "CMAX", ]
+  expect_equal(cmax_row$PPTEST, "Max Conc")
+})
+
+test_that("as.data.frame.PKNCAresults with out_format='cdisc' resolves route-dependent params", {
+  d_conc <- data.frame(
+    subject = rep(1, 5),
+    time = 0:4,
+    conc = c(0, 2, 1, 0.5, 0.25)
+  )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  d_dose <- data.frame(subject = 1, time = 0, dose = 10)
+
+  # Extravascular
+  o_dose_ev <- PKNCAdose(d_dose, dose ~ time | subject, route = "extravascular")
+  o_data_ev <- PKNCAdata(o_conc, o_dose_ev, intervals = data.frame(
+    start = 0, end = Inf, cl.obs = TRUE, aucinf.obs = TRUE, half.life = TRUE
+  ))
+  suppressMessages(suppressWarnings(o_nca_ev <- pk.nca(o_data_ev)))
+  result_ev <- as.data.frame(o_nca_ev, out_format = "cdisc")
+  expect_true("CLF/FO" %in% result_ev$PPTESTCD)
+  expect_false("CLO" %in% result_ev$PPTESTCD)
+
+  # Intravascular
+  o_dose_iv <- PKNCAdose(d_dose, dose ~ time | subject, route = "intravascular")
+  o_data_iv <- PKNCAdata(o_conc, o_dose_iv, intervals = data.frame(
+    start = 0, end = Inf, cl.obs = TRUE, aucinf.obs = TRUE, half.life = TRUE
+  ))
+  suppressMessages(suppressWarnings(o_nca_iv <- pk.nca(o_data_iv)))
+  result_iv <- as.data.frame(o_nca_iv, out_format = "cdisc")
+  expect_true("CLO" %in% result_iv$PPTESTCD)
+  expect_false("CLF/FO" %in% result_iv$PPTESTCD)
+})
+
+test_that("as.data.frame.PKNCAresults with out_format='cdisc' does not add PPSTINT/PPENINT without INT params", {
+  d_conc <- data.frame(
+    subject = rep(1, 4),
+    time = 0:3,
+    conc = c(0, 1, 0.5, 0.25)
+  )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  d_dose <- data.frame(subject = 1, time = 0, dose = 10)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(
+    start = 0, end = 3, cmax = TRUE
+  ))
+  suppressMessages(o_nca <- pk.nca(o_data))
+
+  result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
+  expect_false("PPSTINT" %in% names(result_cdisc))
+  expect_false("PPENINT" %in% names(result_cdisc))
+})
+
+test_that("as.data.frame.PKNCAresults with out_format='cdisc' adds PPSTINT/PPENINT for INT params", {
+  d_conc <- data.frame(
+    subject = rep(1, 5),
+    time = 0:4,
+    conc = c(0, 2, 1, 0.5, 0.25)
+  )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject, timeu = "hr")
+  d_dose <- data.frame(subject = 1, time = 0, dose = 10)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(
+    start = 0, end = 4, cmax = TRUE, aucint.last = TRUE
+  ), options = list(allow_partial_missing_units = TRUE))
+  expect_warning(
+    suppressMessages(o_nca <- pk.nca(o_data)),
+    regexp = "Units are provided for some"
+  )
+
+  result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
+
+  # PPSTINT and PPENINT columns should exist
+  expect_true("PPSTINT" %in% names(result_cdisc))
+  expect_true("PPENINT" %in% names(result_cdisc))
+
+  # INT rows should have values, non-INT rows should be NA
+  int_rows <- grepl("INT", result_cdisc$PPTESTCD, fixed = TRUE)
+  expect_true(any(int_rows), info = "At least one INT parameter should be present")
+  expect_true(all(!is.na(result_cdisc$PPSTINT[int_rows])))
+  expect_true(all(!is.na(result_cdisc$PPENINT[int_rows])))
+  expect_true(all(is.na(result_cdisc$PPSTINT[!int_rows])))
+  expect_true(all(is.na(result_cdisc$PPENINT[!int_rows])))
+
+  # Values should be ISO 8601 durations relative to dose time (0)
+  # start=0, dose_time=0 -> PT0H; end=4, dose_time=0 -> PT4H
+  int_result <- result_cdisc[int_rows, ]
+  expect_equal(int_result$PPSTINT[1], "PT0H")
+  expect_equal(int_result$PPENINT[1], "PT4H")
+})
+
+test_that("PPSTINT/PPENINT uses timeu_pref when available", {
+  d_conc <- data.frame(
+    subject = rep(1, 5),
+    time = 0:4,
+    conc = c(0, 2, 1, 0.5, 0.25)
+  )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject, timeu = "hr", timeu_pref = "min")
+  d_dose <- data.frame(subject = 1, time = 0, dose = 10)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(
+    start = 0, end = 4, aucint.last = TRUE
+  ), options = list(allow_partial_missing_units = TRUE))
+  expect_warning(
+    suppressMessages(o_nca <- pk.nca(o_data)),
+    regexp = "Units are provided for some"
+  )
+
+  result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
+  int_rows <- grepl("INT", result_cdisc$PPTESTCD, fixed = TRUE)
+  # timeu_pref is "min", so durations should use M designator
+  expect_equal(result_cdisc$PPSTINT[int_rows][1], "PT0M")
+  expect_equal(result_cdisc$PPENINT[int_rows][1], "PT4M")
+})
+
+test_that("PPSTINT/PPENINT computes relative to last dose time", {
+  d_conc <- data.frame(
+    subject = rep(1, 10),
+    time = 0:9,
+    conc = c(0, 2, 1, 0.5, 0.25, 0, 3, 1.5, 0.75, 0.3)
+  )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject, timeu = "hr")
+  # Two doses: at time 0 and time 5
+  d_dose <- data.frame(subject = c(1, 1), time = c(0, 5), dose = c(10, 10))
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(
+    start = c(0, 5), end = c(5, 9), aucint.last = TRUE
+  ), options = list(allow_partial_missing_units = TRUE))
+  expect_warning(
+    suppressMessages(o_nca <- pk.nca(o_data)),
+    regexp = "Units are provided for some"
+  )
+
+  result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
+  int_rows <- grepl("INT", result_cdisc$PPTESTCD, fixed = TRUE)
+  int_result <- result_cdisc[int_rows, ]
+
+  # First interval: start=0, end=5, last_dose=0 -> PT0H, PT5H
+  row1 <- int_result[int_result$start == 0, ]
+  expect_equal(row1$PPSTINT[1], "PT0H")
+  expect_equal(row1$PPENINT[1], "PT5H")
+
+  # Second interval: start=5, end=9, last_dose=5 -> PT0H, PT4H
+  row2 <- int_result[int_result$start == 5, ]
+  expect_equal(row2$PPSTINT[1], "PT0H")
+  expect_equal(row2$PPENINT[1], "PT4H")
+})
+
+test_that("PPSTINT/PPENINT uses day designator for day units", {
+  d_conc <- data.frame(
+    subject = rep(1, 4),
+    time = c(0, 1, 2, 3),
+    conc = c(0, 2, 1, 0.5)
+  )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject, timeu = "day")
+  d_dose <- data.frame(subject = 1, time = 0, dose = 10)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(
+    start = 0, end = 3, aucint.last = TRUE
+  ), options = list(allow_partial_missing_units = TRUE))
+  expect_warning(
+    suppressMessages(o_nca <- pk.nca(o_data)),
+    regexp = "Units are provided for some"
+  )
+
+  result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
+  int_rows <- grepl("INT", result_cdisc$PPTESTCD, fixed = TRUE)
+  expect_equal(result_cdisc$PPSTINT[int_rows][1], "P0D")
+  expect_equal(result_cdisc$PPENINT[int_rows][1], "P3D")
+})
+
+test_that("format_iso8601_duration handles edge cases", {
+  expect_equal(PKNCA:::format_iso8601_duration(0, "hr"), "PT0H")
+  expect_equal(PKNCA:::format_iso8601_duration(24, "hr"), "PT24H")
+  expect_equal(PKNCA:::format_iso8601_duration(1.5, "hr"), "PT1.5H")
+  expect_equal(PKNCA:::format_iso8601_duration(30, "min"), "PT30M")
+  expect_equal(PKNCA:::format_iso8601_duration(3600, "s"), "PT3600S")
+  expect_equal(PKNCA:::format_iso8601_duration(7, "day"), "P7D")
+  expect_true(is.na(PKNCA:::format_iso8601_duration(NA, "hr")))
+  expect_true(is.na(PKNCA:::format_iso8601_duration(Inf, "hr")))
+})
+
+test_that("as.data.frame.PKNCAresults default format does not include PPSTINT/PPENINT", {
+  d_conc <- data.frame(
+    subject = rep(1, 5),
+    time = 0:4,
+    conc = c(0, 2, 1, 0.5, 0.25)
+  )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject, timeu = "hr")
+  d_dose <- data.frame(subject = 1, time = 0, dose = 10)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(
+    start = 0, end = 4, aucint.last = TRUE
+  ), options = list(allow_partial_missing_units = TRUE))
+  expect_warning(
+    suppressMessages(o_nca <- pk.nca(o_data)),
+    regexp = "Units are provided for some"
+  )
+
+  # Default (long) format should not have PPSTINT/PPENINT
+  result_long <- as.data.frame(o_nca)
+  expect_false("PPSTINT" %in% names(result_long))
+  expect_false("PPENINT" %in% names(result_long))
+})
+
+test_that("pknca_cdisc_get_route falls back to extravascular when no dose data", {
+  d_conc <- data.frame(subject = rep(1, 4), time = 0:3, conc = c(0, 1, 0.5, 0.25))
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 3, cmax = TRUE))
+  suppressMessages(o_nca <- pk.nca(o_data))
+
+  result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
+  expect_true("PPTESTCD" %in% names(result_cdisc))
+  expect_true("CMAX" %in% result_cdisc$PPTESTCD)
+})
+
+test_that("resolve_cdisc_value falls back to first route when route not matched", {
+  # Route-dependent list with unknown route should fall back to first element
+  val <- list(route = list(extravascular = "EV_CODE", intravascular = "IV_CODE"))
+  expect_equal(PKNCA:::resolve_cdisc_value(val, "unknown_route"), "EV_CODE")
+  # Non-list, non-character fallback
+  expect_equal(PKNCA:::resolve_cdisc_value(42, "extravascular"), "42")
+})
+
+test_that("format_iso8601_duration falls back to hours for unknown unit", {
+  expect_equal(PKNCA:::format_iso8601_duration(5, "fortnights"), "PT5H")
+  expect_equal(PKNCA:::format_iso8601_duration(10, NA), "PT10H")
+})
+
+test_that("pknca_cdisc_get_timeu returns NA when no conc data", {
+  # Minimal PKNCAresults with no conc object
+  minimal <- PKNCAresults(data.frame(a = 1), data = list())
+  expect_true(is.na(PKNCA:::pknca_cdisc_get_timeu(minimal)))
+})
+
+test_that("pknca_cdisc_get_last_dose_time returns NA when no dose data", {
+  d_conc <- data.frame(subject = rep(1, 4), time = 0:3, conc = c(0, 1, 0.5, 0.25))
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 3, cmax = TRUE))
+  suppressMessages(o_nca <- pk.nca(o_data))
+
+  ret <- as.data.frame(o_nca)
+  result <- PKNCA:::pknca_cdisc_get_last_dose_time(ret, o_nca)
+  expect_true(all(is.na(result)))
+})
+

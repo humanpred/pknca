@@ -135,7 +135,9 @@ add.interval.col("c0",
                  unit_type="conc",
                  pretty_name="C0",
                  desc="Initial concentration after an IV bolus",
-                 depends=NULL)
+                 depends=NULL,
+                 pptestcd_cdisc="C0",
+                 pptest_cdisc="Initial Conc")
 PKNCA.set.summary(
   name="c0",
   description="geometric mean and geometric coefficient of variation",

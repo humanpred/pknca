@@ -13,7 +13,9 @@ add.interval.col("volpk",
                  values=c(FALSE, TRUE),
                  unit_type="volume",
                  pretty_name="Total Urine Volume",
-                 desc="The sum of urine volumes for the interval")
+                 desc="The sum of urine volumes for the interval",
+                 pptestcd_cdisc="VOLPK",
+                 pptest_cdisc="Volume of PK sample")
 PKNCA.set.summary(
   name="volpk",
   description="geometric mean and geometric coefficient of variation",
@@ -52,7 +54,9 @@ add.interval.col("ae",
                  values=c(FALSE, TRUE),
                  unit_type="amount",
                  pretty_name="Amount excreted",
-                 desc="The amount excreted (typically into urine or feces)")
+                 desc="The amount excreted (typically into urine or feces)",
+                 pptestcd_cdisc="RCAMINT",
+                 pptest_cdisc="Amt Rec from T1 to T2")
 PKNCA.set.summary(
   name="ae",
   description="geometric mean and geometric coefficient of variation",
@@ -82,7 +86,9 @@ add.interval.col("clr.last",
                  pretty_name="Renal clearance (from AUClast)",
                  formalsmap=list(auc="auclast"),
                  depends="ae",
-                 desc="The renal clearance calculated using AUClast")
+                 desc="The renal clearance calculated using AUClast",
+                 pptestcd_cdisc="RENALCL",
+                 pptest_cdisc="Renal CL")
 PKNCA.set.summary(
   name="clr.last",
   description="geometric mean and geometric coefficient of variation",
@@ -96,7 +102,9 @@ add.interval.col("clr.obs",
                  pretty_name="Renal clearance (from AUCinf,obs)",
                  formalsmap=list(auc="aucinf.obs"),
                  depends="ae",
-                 desc="The renal clearance calculated using AUCinf,obs")
+                 desc="The renal clearance calculated using AUCinf,obs",
+                 pptestcd_cdisc="RENALCL",
+                 pptest_cdisc="Renal CL")
 PKNCA.set.summary(
   name="clr.obs",
   description="geometric mean and geometric coefficient of variation",
@@ -110,7 +118,9 @@ add.interval.col("clr.pred",
                  pretty_name="Renal clearance (from AUCinf,pred)",
                  formalsmap=list(auc="aucinf.pred"),
                  depends="ae",
-                 desc="The renal clearance calculated using AUCinf,pred")
+                 desc="The renal clearance calculated using AUCinf,pred",
+                 pptestcd_cdisc="RENALCL",
+                 pptest_cdisc="Renal CL")
 PKNCA.set.summary(
   name="clr.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -139,7 +149,9 @@ add.interval.col("fe",
                  pretty_name="Fraction excreted",
                  values=c(FALSE, TRUE),
                  depends="ae",
-                 desc="The fraction of the dose excreted")
+                 desc="The fraction of the dose excreted",
+                 pptestcd_cdisc="FREXINT",
+                 pptest_cdisc="Fract Excr from T1 to T2")
 PKNCA.set.summary(
   name="fe",
   description="geometric mean and geometric coefficient of variation",
@@ -187,7 +199,9 @@ add.interval.col("ertlst",
                  FUN="pk.calc.ertlst",
                  unit_type="time",
                  pretty_name="Tlast excretion rate",
-                 desc="The midpoint collection time of the last measurable excretion rate (typically in urine or feces)")
+                 desc="The midpoint collection time of the last measurable excretion rate (typically in urine or feces)",
+                 pptestcd_cdisc="ERTLST",
+                 pptest_cdisc="Time of Last Excretion Rate")
 
 PKNCA.set.summary(
   name="ertlst",
@@ -235,7 +249,9 @@ add.interval.col("ermax",
                  FUN="pk.calc.ermax",
                  unit_type="amount_time",
                  pretty_name="Maximum excretion rate",
-                 desc="The maximum excretion rate (typically in urine or feces)")
+                 desc="The maximum excretion rate (typically in urine or feces)",
+                 pptestcd_cdisc="ERMAX",
+                 pptest_cdisc="Max Excretion Rate")
 
 PKNCA.set.summary(
   name="ermax",
@@ -290,7 +306,9 @@ add.interval.col("ertmax",
                  FUN="pk.calc.ertmax",
                  unit_type="time",
                  pretty_name="Tmax excretion rate",
-                 desc="The midpoint collection time of the maximum excretion rate (typically in urine or feces)")
+                 desc="The midpoint collection time of the maximum excretion rate (typically in urine or feces)",
+                 pptestcd_cdisc="ERTMAX",
+                 pptest_cdisc="Midpoint of Interval of Maximum ER")
 
 PKNCA.set.summary(
   name="ertmax",

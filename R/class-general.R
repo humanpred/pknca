@@ -65,6 +65,7 @@ getDataName <- function(object) {
 }
 
 #' @describeIn getDataName If no data name exists, returns NULL.
+#' @export
 getDataName.default <- function(object) {
   NULL
 }

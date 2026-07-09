@@ -17,6 +17,19 @@ local({
               "clr.last", "clr.obs", "clr.pred")) {
     current_unit_type <- get.interval.cols()[[n]]$unit_type
     current_pretty_name <- get.interval.cols()[[n]]$pretty_name
+    current_pptestcd_cdisc <- get.interval.cols()[[n]]$pptestcd_cdisc
+    current_pptest_cdisc <- get.interval.cols()[[n]]$pptest_cdisc
+    # Derive dose-normalized CDISC codes from the base parameter
+    dn_pptestcd <- if (is.character(current_pptestcd_cdisc)) {
+      paste0(current_pptestcd_cdisc, "D")
+    } else {
+      current_pptestcd_cdisc
+    }
+    dn_pptest <- if (is.character(current_pptest_cdisc)) {
+      paste(current_pptest_cdisc, "by Dose")
+    } else {
+      current_pptest_cdisc
+    }
     # Add the column to the interval specification
     add.interval.col(
       name=paste(n, "dn", sep="."),
@@ -26,7 +39,9 @@ local({
       pretty_name=paste(current_pretty_name, "(dose-normalized)"),
       desc=paste("Dose normalized", n),
       formalsmap=list(parameter=n),
-      depends=c(n)
+      depends=c(n),
+      pptestcd_cdisc=dn_pptestcd,
+      pptest_cdisc=dn_pptest
     )
     PKNCA.set.summary(
       name=paste(n, "dn", sep="."),
