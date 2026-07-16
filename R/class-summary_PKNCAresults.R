@@ -22,6 +22,7 @@
 #' @param drop.group,summarize.n.per.group,not.requested.string,not.calculated.string
 #' Deprecated use `drop_group`, `not_requested`, `not_calculated`, or
 #' `summarize_n`, instead
+#' @param caption_prefix Prefix to prepend to the generated table caption.
 #' @returns A data frame of NCA parameter results summarized according to the
 #'   summarization settings.
 #' @seealso [PKNCA.set.summary()], [print.summary_PKNCAresults()]
