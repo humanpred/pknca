@@ -101,7 +101,6 @@ when the issue is due to an excluded point (#310)
 * `pk.nca` will calculate `fe` and `clr` even if their dependent parameters (e.g, `ae`) were not requested to be calculated in the intervals (#473)
 * sparse calculations won't abort with `pk.nca` when the data contains missing (NA) concentrations. It will silently drop them.
 
-
 ## New features
 
 * `pknca_units_table()` is now an S3 generic with a `PKNCAdata` method.  When
