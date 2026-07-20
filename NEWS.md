@@ -99,10 +99,6 @@ the dosing including dose amount and route.
 when the issue is due to an excluded point (#310)
 * The `PKNCAdose` function won't give an error for a missing-time check when the issue is due to an excluded point (#310)
 * `pk.nca` will calculate `fe` and `clr` even if their dependent parameters (e.g, `ae`) were not requested to be calculated in the intervals (#473)
-* `normalize.data.frame()` no longer triggers a dplyr deprecation warning
-  (`Using 'by = character()' to perform a cross join was deprecated in dplyr 1.1.0`)
-  when called with ungrouped data (i.e., no common group columns between `object`
-  and `norm_table`). `dplyr::cross_join()` is now used explicitly for this case.
 * sparse calculations won't abort with `pk.nca` when the data contains missing (NA) concentrations. It will silently drop them.
 
 
