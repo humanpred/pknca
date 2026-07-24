@@ -6,6 +6,13 @@ the dosing including dose amount and route.
 
 # Development version
 
+* New `conc.include.end` option (default `TRUE`) controls whether a
+  concentration measured exactly at the end of an interval is included in that
+  interval's calculations.  Set it to `FALSE` (e.g.
+  `PKNCAdata(options = list(conc.include.end = FALSE))`) to treat intervals as
+  half-open on the right (`[start, end)`) so a point at `time == end` (such as an
+  imputed C0 for the next dose) is excluded.  The default preserves existing
+  behavior.
 * Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
   Group-level concentration data are now sorted by time before calculation, so
   parameters that use the full group (e.g. `aucint.all` and the other `aucint*`
