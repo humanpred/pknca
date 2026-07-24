@@ -210,8 +210,14 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
   for (i in seq_len(nrow(data_intervals))) {
     current_interval <- data_intervals[i, , drop=FALSE]
     has_calc_sparse_dense <- any_sparse_dense_in_interval(current_interval, sparse=sparse)
-    # Choose only times between the start and end.
-    conc_data_interval <- filter_interval(data_conc, start=data_intervals$start[i], end=data_intervals$end[i])
+    # Choose only times between the start and end
+    # conc.include.end option allows excluding end point intervals
+    conc_data_interval <- filter_interval(
+      data_conc,
+      start=data_intervals$start[i],
+      end=data_intervals$end[i],
+      include_end=options$conc.include.end
+    )
     # Sort the data in time order
     conc_data_interval <- conc_data_interval[order(conc_data_interval$time),]
     NA_data_dose_ <- data.frame(dose=NA_real_, time=NA_real_, duration=NA_real_, route=NA_real_)

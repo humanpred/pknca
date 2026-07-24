@@ -1096,3 +1096,81 @@ test_that("pk.nca sorts group data by time so unsorted input works (#568)", {
     )
   expect_equal(merged$PPORRES.uns, merged$PPORRES.srt)
 })
+
+
+test_that("filter_interval include_end controls the right boundary", {
+  d <- data.frame(time = c(0, 12, 24), conc = c(10, 5, 1))
+  # Closed interval (default): the point at time == end is kept
+  incl <- PKNCA:::filter_interval(d, start = 0, end = 24)
+  expect_equal(incl$time, c(0, 12, 24),
+               info = "include_end=TRUE keeps the point at time == end")
+  # Half-open interval: the point at time == end is dropped
+  excl <- PKNCA:::filter_interval(d, start = 0, end = 24, include_end = FALSE)
+  expect_equal(excl$time, c(0, 12),
+               info = "include_end=FALSE drops the point at time == end")
+})
+
+test_that("conc.include.end option controls interval end point in pk.nca", {
+  # Single subject, one profile.  A spurious high value sits exactly at the
+  # interval end (mimicking an imputed C0 for a subsequent dose).  With the
+  # default (closed interval) it inflates auclast; with conc.include.end=FALSE
+  # it is excluded and auclast returns to the value from the clean profile.
+  clean <- data.frame(
+    ID = 1,
+    time = c(0, 1, 2, 4, 8, 12, 24),
+    conc = c(10, 8, 6.5, 4, 2, 1, 0.5)
+  )
+  spiked <- clean
+  spiked$conc[spiked$time == 24] <- 100  # boundary point becomes a large spike
+  
+  dose <- data.frame(ID = 1, time = 0, dose = 100)
+  intervals <- data.frame(start = 0, end = 24, auclast = TRUE)
+  
+  make_result <- function(conc_df, include_end) {
+    o_conc <- PKNCAconc(conc_df, formula = conc~time|ID)
+    o_dose <- PKNCAdose(dose, formula = dose~time|ID, route = "intravascular")
+    o_data <- PKNCAdata(
+      o_conc, o_dose, intervals = intervals,
+      options = list(conc.include.end = include_end)
+    )
+    res <- as.data.frame(pk.nca(o_data))
+    res$PPORRES[res$PPTESTCD == "auclast"]
+  }
+  
+  auclast_clean <- make_result(clean, TRUE)
+  auclast_spiked_incl <- make_result(spiked, TRUE)
+  auclast_spiked_excl <- make_result(spiked, FALSE)
+  
+  expect_gt(auclast_spiked_incl, auclast_clean * 2)
+  expect_equal(
+    auclast_spiked_excl,
+    make_result(clean[clean$time < 24, , drop = FALSE], TRUE),
+    info = "Excluding the end point matches integrating without that point"
+  )
+})
+
+test_that("conc.include.end default preserves existing (closed interval) results", {
+  tmpconc <- generate.conc(2, 1, 0:24)
+  tmpdose <- generate.dose(tmpconc)
+  myconc <- PKNCAconc(tmpconc, formula=conc~time|treatment+ID)
+  mydose <- PKNCAdose(tmpdose, formula=dose~time|treatment+ID)
+  base_result <- pk.nca(PKNCAdata(myconc, mydose))
+  opt_result <-
+    pk.nca(PKNCAdata(myconc, mydose, options = list(conc.include.end = TRUE)))
+  expect_equal(base_result$result, opt_result$result,
+               info = "conc.include.end=TRUE is identical to the default behavior")
+})
+
+test_that("conc.include.end option validation", {
+  expect_true(PKNCA.options(name = "conc.include.end", value = TRUE, check = TRUE))
+  expect_false(PKNCA.options(name = "conc.include.end", value = FALSE, check = TRUE))
+  expect_error(
+    PKNCA.options(name = "conc.include.end", value = c(TRUE, FALSE), check = TRUE),
+    regexp = "conc.include.end must be a scalar"
+  )
+  expect_error(
+    PKNCA.options(name = "conc.include.end", value = NA, check = TRUE),
+    regexp = "conc.include.end may not be NA"
+  )
+})
+

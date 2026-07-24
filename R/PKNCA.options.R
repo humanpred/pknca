@@ -209,7 +209,31 @@
     }
     x
   },
-
+  conc.include.end=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return(paste(
+        "Should a concentration measured exactly at the end of an interval",
+        "be included in that interval's calculations?  If 'TRUE' (the",
+        "default), intervals are closed on the right ('[start, end]').  If",
+        "'FALSE', intervals are half-open on the right ('[start, end)') so a",
+        "point at 'time == end' (for example an imputed C0 for the next dose)",
+        "is excluded."))
+    if (default)
+      return(TRUE)
+    if (length(x) != 1)
+      stop("conc.include.end must be a scalar")
+    if (is.na(x))
+      stop("conc.include.end may not be NA")
+    if (!is.logical(x)) {
+      x <- as.logical(x)
+      if (is.na(x)) {
+        stop("Could not convert conc.include.end to a logical value")
+      } else {
+        warning("Converting conc.include.end to a logical value: ", x)
+      }
+    }
+    x
+  },
   keep_interval_cols = function(x, default = FALSE, description = FALSE) {
     if (description)
       return("What additional columns from the intervals should be kept in the results?")
