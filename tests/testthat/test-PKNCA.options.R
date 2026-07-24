@@ -68,7 +68,7 @@ test_that("PKNCA.options", {
       first.tmax = TRUE,
       first.tmin = TRUE,
       allow.tmax.in.half.life = FALSE,
-      conc.includde.end = TRUE,
+      conc.include.end = TRUE,
       keep_interval_cols = NULL,
       min.hl.points = 3,
       min.span.ratio = 2,
