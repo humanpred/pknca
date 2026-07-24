@@ -92,6 +92,56 @@ test_that("PKNCA_impute_method_start_cmin", {
 
 })
 
+test_that("PKNCA_impute_method_end_conc_drop", {
+  # A concentration exactly at the end is dropped
+  expect_equal(
+    PKNCA_impute_method_end_conc_drop(conc = c(10, 5, 1), time = c(0, 12, 24), end = 24),
+    data.frame(conc = c(10, 5), time = c(0, 12)),
+    ignore_attr = TRUE
+  )
+  # No modification when nothing sits exactly at the end
+  expect_equal(
+    PKNCA_impute_method_end_conc_drop(conc = c(10, 5, 1), time = c(0, 12, 23), end = 24),
+    data.frame(conc = c(10, 5, 1), time = c(0, 12, 23))
+  )
+  # Only the end point is dropped, earlier points are untouched
+  expect_equal(
+    PKNCA_impute_method_end_conc_drop(conc = c(10, 8, 6, 100), time = c(0, 1, 2, 24), end = 24),
+    data.frame(conc = c(10, 8, 6), time = c(0, 1, 2)),
+    ignore_attr = TRUE
+  )
+  # Works through the impute column of pk.nca: the boundary point (a foreign
+  # spike mimicking the next dose's C0) is removed for that interval only.
+  clean <- data.frame(
+    ID = 1,
+    time = c(0, 1, 2, 4, 8, 12, 24),
+    conc = c(10, 8, 6.5, 4, 2, 1, 0.5)
+  )
+  spiked <- clean
+  spiked$conc[spiked$time == 24] <- 100
+  dose <- data.frame(ID = 1, time = 0, dose = 100)
+  
+  make_tmax <- function(conc_df, impute) {
+    o_conc <- PKNCAconc(conc_df, formula = conc~time|ID)
+    o_dose <- PKNCAdose(dose, formula = dose~time|ID, route = "intravascular")
+    intervals <- data.frame(start = 0, end = 24, tmax = TRUE)
+    if (!is.null(impute)) intervals$impute <- impute
+    o_data <- PKNCAdata(o_conc, o_dose, intervals = intervals)
+    res <- as.data.frame(pk.nca(o_data))
+    res$PPORRES[res$PPTESTCD == "tmax"]
+  }
+  
+  # Without imputation the boundary spike wins tmax (== end)
+  expect_equal(make_tmax(spiked, NULL), 24)
+  # With the drop imputation the spike is removed and tmax returns to 0
+  expect_equal(make_tmax(spiked, "end_conc_drop"), 0)
+  # Applying the imputation to clean data (no boundary point) is a no-op
+  expect_equal(
+    make_tmax(clean, "end_conc_drop"),
+    make_tmax(clean, NULL)
+  )
+})
+
 test_that("PKNCA_impute_fun_list", {
   expect_equal(
     PKNCA_impute_fun_list(NA_character_),
