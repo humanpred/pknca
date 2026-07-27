@@ -144,7 +144,7 @@ integration}
 \item{clast, clast.obs, clast.pred}{The last concentration above the limit of
 quantification; this is used for AUCinf calculations. If provided as
 \code{clast.obs} (observed clast value, default), AUCinf is AUCinf,obs. If
-provided as \code{clast.pred}, AUCinf is AUCinf,pred.#'}
+provided as \code{clast.pred}, AUCinf is AUCinf,pred.}
 
 \item{lambda.z}{The elimination rate (in units of inverse time) for
 extrapolation}
@@ -223,12 +223,12 @@ AUMCinf.pred
 \seealso{
 \code{\link[=PKNCA.options]{PKNCA.options()}}, \code{\link[=interp.extrap.conc.dose]{interp.extrap.conc.dose()}}
 
-Other AUC calculations: 
-\code{\link{pk.calc.auxc}()},
-\code{\link{pk.calc.auxciv}()}
+Other AUC calculations:
+\code{\link[=pk.calc.auxc]{pk.calc.auxc()}},
+\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}}
 
-Other AUMC calculations: 
-\code{\link{pk.calc.auxciv}()}
+Other AUMC calculations:
+\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}}
 }
 \concept{AUC calculations}
 \concept{AUMC calculations}

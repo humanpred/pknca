@@ -246,7 +246,8 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
     rlang::abort(
       message = "Both duration and rate cannot be given at the same time",
       class = "pknca_error_duration_and_rate"
-    )    # TODO: A consistency check could be done, but that would get into
+    )   
+    # TODO: A consistency check could be done, but that would get into
     # requiring near-equal checks for floating point error.
   } else if (!missing(duration)) {
     object <- setAttributeColumn(object=object, attr_name="duration", col_or_value=duration)

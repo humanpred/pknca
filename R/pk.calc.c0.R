@@ -25,8 +25,8 @@ pk.calc.c0 <- function(conc, time, time.dose=0,
   if (check) {
     assert_conc_time(conc = conc, time = time)
   }
-checkmate::assert_number(time.dose, na.ok = TRUE, finite = FALSE)  
-if (is.na(time.dose)) {
+  checkmate::assert_number(time.dose, na.ok = TRUE, finite = FALSE)  
+  if (is.na(time.dose)) {
     rlang::warn(
       message = "time.dose is NA",
       class = "pknca_warning_timedose_na"
@@ -137,7 +137,9 @@ add.interval.col("c0",
                  unit_type="conc",
                  pretty_name="C0",
                  desc="Initial concentration after an IV bolus",
-                 depends=NULL)
+                 depends=NULL,
+                 pptestcd_cdisc="C0",
+                 pptest_cdisc="Initial Conc")
 PKNCA.set.summary(
   name="c0",
   description="geometric mean and geometric coefficient of variation",

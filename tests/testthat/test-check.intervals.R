@@ -61,13 +61,13 @@ test_that("check.interval.specification", {
   )
 
   # Confirm specific column values required
-  d7 <- data.frame(start=as.numeric(NA), end=1)
+  d7 <- data.frame(start=NA_real_, end=1)
   expect_error(
     check.interval.specification(d7),
     regexp="Interval specification may not have NA for the starting time",
     info="Interval specification may not have NA for the starting time"
   )
-  d8 <- data.frame(start=0, end=as.numeric(NA))
+  d8 <- data.frame(start=0, end = NA_real_)
   expect_error(
     check.interval.specification(d8),
     regexp="Interval specification may not have NA for the end time",

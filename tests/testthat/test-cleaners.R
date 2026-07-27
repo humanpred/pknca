@@ -5,7 +5,7 @@ test_that("clean.conc.na", {
 
   # It drops NA values if requested (even if they are the only value)
   expect_warning(v1 <-
-    clean.conc.na(conc=as.numeric(NA), time=1, conc.na="drop"))
+    clean.conc.na(conc = NA_real_, time=1, conc.na="drop"))
   expect_equal(v1,
                data.frame(conc=numeric(), time=numeric()))
   expect_warning(v2 <-
@@ -21,7 +21,7 @@ test_that("clean.conc.na", {
 
   # It also works with a number as the conc.na value
   expect_warning(v3 <-
-    clean.conc.na(conc=as.numeric(NA), time=1, conc.na=5))
+    clean.conc.na(conc = NA_real_, time = 1, conc.na = 5))
   expect_equal(v3,
                data.frame(conc=5, time=1))
   expect_warning(v4 <-

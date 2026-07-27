@@ -26,9 +26,9 @@ This function should not be run directly.  The object is created for
 summarization.
 }
 \seealso{
-Other PKNCA objects: 
-\code{\link{PKNCAconc}()},
-\code{\link{PKNCAdata}()},
-\code{\link{PKNCAdose}()}
+Other PKNCA objects:
+\code{\link[=PKNCAconc]{PKNCAconc()}},
+\code{\link[=PKNCAdata]{PKNCAdata()}},
+\code{\link[=PKNCAdose]{PKNCAdose()}}
 }
 \concept{PKNCA objects}

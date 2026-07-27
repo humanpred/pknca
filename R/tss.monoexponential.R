@@ -51,7 +51,8 @@ pk.tss.monoexponential <- function(...,
     rlang::abort(
       message = "tss.fraction must be between 0 and 1, exclusive",
       class = "pknca_error_tss_fraction_range"
-    )  } else if (tss.fraction < 0.8) {
+    )  
+  } else if (tss.fraction < 0.8) {
     rlang::warn(
       message = "tss.fraction is usually >= 0.8",
       class = "pknca_warning_tss_fraction_small"
@@ -99,11 +100,8 @@ pk.tss.monoexponential <- function(...,
       ret_individual
     } else {
       rlang::abort(
-        message = paste(
-          "Error in selection of return values for pk.tss.monoexponential.",
-          "This is likely a bug."
-        ),
-        class = "pknca_error_tss_return_selection"
+        message = "Error in selection of return values for pk.tss.monoexponential. This is likely a bug.",
+        class = "pknca_error_internal_tss_return_selection"
       ) # nocov
     }
   ret
@@ -385,12 +383,9 @@ pk.tss.monoexponential.individual <- function(data,
       } else if ("subject" %in% names(data)) {
         dplyr::grouped_df(data, vars="subject")
       } else {
-        rlang::abort(
-          message = paste(
-            "Please report a bug. Subject must be specified",
-            "to have subject-level fitting"
-          ),
-          class = "pknca_error_tss_no_subject_for_individual"
+        rlang::abort( # nocov
+          message = "Please report a bug. Subject must be specified to have subject-level fitting",
+          class = "pknca_error_internal_tss_no_subject_for_individual"
         ) # nocov
       }
     ret_sub <-

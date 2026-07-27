@@ -36,7 +36,7 @@ swing is \code{100*(cmax - cmin)/cmin}.
 
 }}
 \seealso{
-Other Multiple-dose PK parameters: 
-\code{\link{pk.calc.ptr}()}
+Other Multiple-dose PK parameters:
+\code{\link[=pk.calc.ptr]{pk.calc.ptr()}}
 }
 \concept{Multiple-dose PK parameters}

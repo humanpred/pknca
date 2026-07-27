@@ -68,6 +68,7 @@ getDataName <- function(object) {
 }
 
 #' @describeIn getDataName If no data name exists, returns NULL.
+#' @export
 getDataName.default <- function(object) {
   NULL
 }
@@ -98,7 +99,8 @@ setAttributeColumn <- function(object, attr_name, col_or_value, col_name, defaul
     rlang::abort(
       message = "attr_name must be a character scalar.",
       class = "pknca_error_invalid_attr_name"
-    )  }
+    )  
+  }
   if (!missing(col_or_value) &&
       any(!c(missing(col_name), missing(default_value)))) {
     rlang::abort(
@@ -120,14 +122,15 @@ setAttributeColumn <- function(object, attr_name, col_or_value, col_name, defaul
     if (attr_name %in% names(object[[dataname]])) {
       rlang::inform(
         message = paste0("Found column named ", attr_name, ", using it for the attribute of the same name."),
-        class = paste0("pknca_foundcolumn_", attr_name)
+        class = paste0("pknca_message_foundcolumn_", attr_name)
       )
     }
   } else if (!is.character(col_name) || (length(col_name) != 1)) {
     rlang::abort(
       message = "col_name must be a character scalar.",
       class = "pknca_error_invalid_col_name"
-    )  }
+    )  
+  }
   # Set the default value
   if (missing(default_value)) {
     if (col_name %in% names(object[[dataname]])) {
@@ -273,7 +276,7 @@ pknca_set_units <- function(object, units_orig = list(), units_pref = list()) {
     } else {
       rlang::abort(
         message = paste("Please report a bug. Unit setting for", col_units),
-        class = "pknca_error_unit_setting_bug"
+        class = "pknca_error_internal_unit_setting_bug"
       ) # nocov
     }
   }
@@ -294,7 +297,7 @@ pknca_set_units <- function(object, units_orig = list(), units_pref = list()) {
     } else {
       rlang::abort(
         message = paste("Please report a bug. Preferred unit setting for", pref_units),
-        class = "pknca_error_pref_unit_setting_bug"
+        class = "pknca_error_internal_pref_unit_setting_bug"
       ) # nocov
     }
   }

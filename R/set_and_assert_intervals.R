@@ -33,7 +33,7 @@ set_intervals <- function(data, intervals) {
 #'   
 #' @export
 assert_intervals <- function(intervals, data) {
-  checkmate::assert_data_frame(intervals, .var.name = "intervals")
+  checkmate::assert_data_frame(intervals)
   checkmate::assert_class(data, classes = "PKNCAdata", .var.name = "data")
 
   allowed_columns <-
@@ -51,8 +51,8 @@ assert_intervals <- function(intervals, data) {
   
   if (length(invalid_columns) > 0) {
     rlang::abort(
-      message = paste0(
-        "The following columns in 'intervals' are not allowed: ",
+      message = sprintf(
+        "The following columns in 'intervals' are not allowed: %s",
         paste(invalid_columns, collapse = ", ")
       ),
       class = "pknca_error_invalid_interval_columns"

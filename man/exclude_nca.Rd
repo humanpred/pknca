@@ -83,7 +83,7 @@ my_result_excluded <- exclude(my_result,
 as.data.frame(my_result_excluded)
 }
 \seealso{
-Other Result exclusions: 
-\code{\link{exclude}()}
+Other Result exclusions:
+\code{\link[=exclude]{exclude()}}
 }
 \concept{Result exclusions}

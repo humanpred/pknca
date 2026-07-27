@@ -9,7 +9,9 @@ get_impute_method(intervals, impute)
 \arguments{
 \item{intervals}{the data.frame of intervals}
 
-\item{impute}{the imputation definition}
+\item{impute}{the imputation definition -- either the name of a column in
+\code{intervals} (character scalar) or \code{NA} to look for a generic \code{"impute"}
+column. Must be an atomic scalar; a list (even of length 1) is rejected.}
 }
 \value{
 The imputation function vector

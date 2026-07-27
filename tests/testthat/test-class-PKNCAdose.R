@@ -12,7 +12,12 @@ test_that("PKNCAdose", {
   tmp.dose.study <- generate.dose(tmp.conc.study)
   tmp.dose.analyte.study <- generate.dose(tmp.conc.analyte.study)
 
-
+  # Data exists
+  expect_error(PKNCAdose(data.frame()),
+               regexp="Must have at least 1 rows",
+               info="PKNCAconc requires data"
+  )
+  
   # Variables present
   expect_error(PKNCAdose(tmp.dose, formula=dosea~time|treatment+ID),
                regexp="The left side formula must be a variable in the data, empty, or '.'.",
@@ -456,7 +461,7 @@ test_that("setDuration", {
       mydose,
       info="No changes with no arguments"
     ),
-    class = "pknca_foundcolumn_duration"
+    class = "pknca_message_foundcolumn_duration"
   )
   expect_error(setDuration(mydose, duration="foo", rate="bar"),
                regexp="Both duration and rate cannot be given at the same time",
@@ -466,8 +471,10 @@ test_that("setDuration", {
     setDuration(mydose, duration="foobar"),
     regexp="duration must be numeric without missing (NA) or infinite values, and all values must be >= 0",
     fixed=TRUE,
-    info="Cannot give both duration as non-numeric"),
-    class = "pknca_foundcolumn_duration"
+    info="Cannot give both duration as non-numeric",
+    class = "pknca_error_invalid_duration"),
+    class = "pknca_message_foundcolumn_duration"
+    
   )
 
   duration_example <- suppressMessages(setDuration(mydose, rate=2))

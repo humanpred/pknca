@@ -4,25 +4,90 @@ assign("options", NULL, envir=.PKNCAEnv)
 assign("summary", list(), envir=.PKNCAEnv)
 assign("interval.cols", list(), envir=.PKNCAEnv)
 
+# Validate a CDISC pptestcd/pptest argument: must be a character string, or a
+# named list with a "route" element containing a named list of
+# route-specific values (e.g. list(route = list(extravascular = ...))).
+# Not exported -- internal helper shared by add.interval.col().
+#' @param x The CDISC argument value to validate.
+#' @param arg_name The argument name used in error messages.
+#'
+#' @keywords internal
+#' @noRd
+validate_cdisc_arg <- function(x, arg_name) {
+  if (is.character(x)) {
+    if (length(x) != 1 || is.na(x)) {
+      rlang::abort(
+        message = sprintf(
+          "`%s`, when a character string, must be length 1 and non-missing",
+          arg_name
+        ),
+        class = sprintf("pknca_error_%s_character_invalid", arg_name)
+      )
+    }
+  } else if (is.list(x)) {
+    if (length(x) != 1 ||
+        !identical(names(x), "route") ||
+        !is.list(x$route) ||
+        is.null(names(x$route)) ||
+        any(names(x$route) == "") ||
+        anyNA(names(x$route))) {
+      rlang::abort(
+        message = sprintf(
+          paste0(
+            "`%s`, when a list, must have exactly one named element, \"route\", ",
+            "whose value is itself a named list mapping route to value."
+          ),
+          arg_name
+        ),
+        class = sprintf("pknca_error_%s_route_mapping_invalid", arg_name)
+      )
+    }
+  } else {
+    rlang::abort(
+      message = sprintf(
+        "`%s` must be a character string or a list",
+        arg_name
+      ),
+      class = sprintf("pknca_error_%s_invalid_type", arg_name)
+    )
+  }
+}
+
 #' Add columns for calculations within PKNCA intervals
 #'
-#' @param name The column name as a character string
+#' @param name The column name as a non-empty character string (length 1,
+#'   may not be `NA` or `""`).
 #' @param FUN The function to run (as a character string) or `NA` if the
 #'   parameter is automatically calculated when calculating another parameter.
-#' @param values Valid values for the column
+#' @param values Valid values for the column: either a function used to
+#'   coerce/validate values (e.g. `as.numeric`) or a vector of allowed values
+#'   (e.g. `c(FALSE, TRUE)`).
+#' @param unit_type The type of units to use for assigning and converting
+#'   units. Must be one of the pre-defined unit types (see Details). This
+#'   argument is required and has no default; omitting it raises an error.
+#' @param pretty_name The name of the parameter to use for printing in summary
+#'   tables with units.  (If an analysis does not include units, then the normal
+#'   name is used.)
 #' @param depends Character vector of columns that must be run before this
 #'   column.
 #' @param desc A human-readable description of the parameter (<=40 characters to
 #'   comply with SDTM)
 #' @param sparse Is the calculation for sparse PK?
-#' @param unit_type The type of units to use for assigning and converting units.
-#' @param pretty_name The name of the parameter to use for printing in summary
-#'   tables with units.  (If an analysis does not include units, then the normal
-#'   name is used.)
 #' @param formalsmap A named list mapping parameter names in the function call
 #'   to NCA parameter names.  See the details for information on use of
 #'   `formalsmap`.
-#' @param datatype The type of data used for the calculation
+#' @param datatype The data type used for the calculation. The default is
+#'   `"interval"`, which is currently the only supported value. The
+#'   `"individual"` and `"population"` data types are reserved for future
+#'   use and will currently raise an error if selected.
+#' @param pptestcd_cdisc The CDISC PPTESTCD code for this parameter.  Can be a
+#'   character string for simple mappings, or a named list for route-dependent
+#'   mappings with a `route` element whose value is itself a named list keyed
+#'   by route (e.g. `list(route = list(extravascular = "CLF/FO", intravascular
+#'   = "CLO"))`).  Defaults to `name` if not provided.
+#' @param pptest_cdisc The CDISC PPTEST name for this parameter.  Can be a
+#'   character string or a named list (same structure as `pptestcd_cdisc`).
+#'   Defaults to `desc` if not provided.
 #' @returns NULL (Calling this function has a side effect of changing the
 #'   available intervals for calculations)
 #'
@@ -89,8 +154,10 @@ add.interval.col <- function(name,
                              sparse=FALSE,
                              formalsmap=list(),
                              datatype=c("interval",
-                               "individual",
-                               "population")) {
+                                        "individual",
+                                        "population"),
+                             pptestcd_cdisc=NULL,
+                             pptest_cdisc=NULL) {
   # Check inputs
   checkmate::assert_character(x = name, len = 1, min.chars = 1, any.missing = FALSE)
   checkmate::assert_character(x = FUN, len = 1, any.missing = TRUE) # allows NA
@@ -98,6 +165,28 @@ add.interval.col <- function(name,
   checkmate::assert_character(x = pretty_name, len = 1, min.chars = 1, any.missing=FALSE)
   checkmate::assert_character(x = desc, len = 1, any.missing=FALSE)
   checkmate::assert_character(x = depends, null.ok = TRUE)  
+  
+  # desc should comply with the 40-character SDTM limit, but this is a soft
+  # limit -- warn rather than block the column from being added.
+  if (nchar(desc) > 40) {
+    rlang::warn(
+      message = sprintf(
+        "`desc` should be 40 characters or fewer to comply with SDTM (got %d characters): %s",
+        nchar(desc), desc
+      ),
+      class = "pknca_warning_desc_too_long"
+    )
+  }
+  
+  # `values` must be either a function (used to validate/coerce) or a vector
+  # of allowed values -- both are acceptable, so just ensure it was supplied
+  # and is one of those two forms.
+  if (!is.function(values) && !is.vector(values)) {
+    rlang::abort(
+      message = "`values` must be a function or a vector of allowed values",
+      class = "pknca_error_values_invalid"
+    )
+  }
   
   unit_type <-
     match.arg(
@@ -115,15 +204,14 @@ add.interval.col <- function(name,
       )
     )
   
-  # Validate datatype
+  # Validate datatype (only "interval" is currently supported)
   datatype <- match.arg(datatype)
-  #c("interval", "individual", "population"),  # Currently only interval datatype is supported
   checkmate::assert_choice(x = datatype, choices = "interval")
   
   # Validate formalsmap
   checkmate::assert_list(
     x = formalsmap,
-    names = if (length(formalsmap) > 0) "named" else NULL
+    names = if (length(formalsmap) > 0) "unique" else NULL
   )
   
   # Validate formalsmap and function compatibility
@@ -132,12 +220,11 @@ add.interval.col <- function(name,
     if (is.na(FUN)) {
       rlang::abort(
         message = "`formalsmap` may not be provided when `FUN` is NA",
-        class = "pknca_error_invalid_formalsmap"
+        class = "pknca_error_formalsmap_with_na_fun"
       )
     }
     # Ensure formalsmap names are unique
-    checkmate::assert_character(x= names(formalsmap), min.chars = 1,
-                                any.missing = FALSE, unique = TRUE)
+    checkmate::assert_character(x = names(formalsmap), min.chars = 1, any.missing = FALSE)
   }
   
   # Ensure that the function exists
@@ -151,7 +238,8 @@ add.interval.col <- function(name,
           FUN
         ),
         class = "pknca_error_fun_not_found"
-      )    }
+      ) 
+    }
     
     # Validate formalsmap parameters match function formals
     if (length(formalsmap) > 0) {
@@ -164,13 +252,24 @@ add.interval.col <- function(name,
             FUN,
             paste(dQuote(invalid_formals), collapse = ", ")
           ),
-          class = "pknca_error_invalid_formalsmap"
+          class = "pknca_error_formalsmap_invalid_names"
         )
       }
     }
     
   }
   
+  # Default CDISC mappings to name/desc when not provided
+  if (is.null(pptestcd_cdisc)) {
+    pptestcd_cdisc <- name
+  }
+  if (is.null(pptest_cdisc)) {
+    pptest_cdisc <- desc
+  }
+  # Validate CDISC arguments: must be a character string or a named list
+  # with a "route" element containing named sub-elements
+  validate_cdisc_arg(pptestcd_cdisc, "pptestcd_cdisc")
+  validate_cdisc_arg(pptest_cdisc, "pptest_cdisc")
 
   current <- get("interval.cols", envir=.PKNCAEnv)
   current[[name]] <-
@@ -183,15 +282,17 @@ add.interval.col <- function(name,
       sparse=sparse,
       formalsmap=formalsmap,
       depends=depends,
-      datatype=datatype
+      datatype=datatype,
+      pptestcd_cdisc=pptestcd_cdisc,
+      pptest_cdisc=pptest_cdisc
     )
   assign("interval.cols", current, envir=.PKNCAEnv)
 }
 
-#' Sort the interval columns by dependencies.
-#'
-#' Columns are always to the right of columns that they depend on.
-sort.interval.cols <- function() {
+# Sort the interval columns by dependencies.
+#
+# Columns are always to the right of columns that they depend on.
+sort_interval_cols <- function() {
   current <- get("interval.cols", envir=.PKNCAEnv)
   # Only sort if necessary
   sort_order <- get0("interval.cols_sorted", envir=.PKNCAEnv)
@@ -251,7 +352,7 @@ sort.interval.cols <- function() {
 #' @family Interval specifications
 #' @export
 get.interval.cols <- function() {
-  sort.interval.cols()
+  sort_interval_cols()
   get("interval.cols", envir=.PKNCAEnv)
 }
 

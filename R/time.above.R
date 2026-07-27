@@ -33,7 +33,7 @@ pk.calc.time_above <- function(conc, time,
       class = "pknca_error_time_above_missing_time"
     )
   }
-  checkmate::assert_number(conc_above, na.ok = FALSE, .var.name = "conc_above")
+  checkmate::assert_number(conc_above, na.ok = FALSE)
   if (check) {
     assert_conc_time(conc = conc, time = time)
   }
@@ -93,7 +93,9 @@ add.interval.col("time_above",
                  values=c(FALSE, TRUE),
                  unit_type="time",
                  pretty_name="Time above Concentration",
-                 desc="Time above a given concentration")
+                 desc="Time above a given concentration",
+                 pptestcd_cdisc="TAT",
+                 pptest_cdisc="Time Above Threshold")
 PKNCA.set.summary(
   name="time_above",
   description="arithmetic mean and standard deviation",

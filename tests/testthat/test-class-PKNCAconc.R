@@ -63,6 +63,14 @@ test_that("PKNCAconc", {
   # Subject assignment
   expect_equal(PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte),
                PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject="ID"))
+  expect_error(
+    PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject=5),
+    regexp="Must be of type 'string'"
+  )
+  expect_error(
+    PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject=c("", "foo")),
+    regexp="Must have length 1"
+  )
   expect_error(PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject="foo"),
                regexp="The subject parameter must map to a name in the data")
 
@@ -634,4 +642,33 @@ test_that("PKNCAconc units (#336)", {
     o_conc$columns$amountu,
     structure("amountu_x", unit_type = "column")
   )
+})
+
+test_that("PKNCAconc lloq argument is stored and validated (scalar and column)", {
+  tmp.conc <- generate.conc(nsub = 2, ntreat = 1, time.points = 0:6)
+
+  # A scalar value materialises an "lloq" column filled with that value
+  o_scalar <- PKNCAconc(tmp.conc, conc ~ time | ID, lloq = 0.5)
+  expect_equal(o_scalar$columns$lloq, "lloq")
+  expect_equal(o_scalar$data$lloq, rep(0.5, nrow(tmp.conc)))
+
+  # A column name is used directly
+  tmp.conc.col <- tmp.conc
+  tmp.conc.col$assay_lloq <- 0.25
+  o_col <- PKNCAconc(tmp.conc.col, conc ~ time | ID, lloq = "assay_lloq")
+  expect_equal(o_col$columns$lloq, "assay_lloq")
+  expect_equal(o_col$data$assay_lloq, rep(0.25, nrow(tmp.conc.col)))
+
+  # A non-numeric lloq column is rejected
+  tmp.conc.bad <- tmp.conc
+  tmp.conc.bad$bad_lloq <- "x"
+  expect_error(
+    PKNCAconc(tmp.conc.bad, conc ~ time | ID, lloq = "bad_lloq"),
+    regexp = "Must be of type 'numeric'"
+  )
+
+  # Without lloq, no lloq column or attribute is added
+  o_none <- PKNCAconc(tmp.conc, conc ~ time | ID)
+  expect_null(o_none$columns$lloq)
+  expect_false("lloq" %in% names(o_none$data))
 })

@@ -9,7 +9,7 @@
         "data points to be preferred in the calculation of half-life."))
     if (default)
       return(0.0001)
-    checkmate::assert_number(x, .var.name = "adj.r.squared.factor")    # Must be between 0 and 1, exclusive
+    checkmate::assert_number(x, .var.name = "adj.r.squared.factor")
     if (x <= 0 || x >= 1) {
       rlang::abort(
         message = "adj.r.squared.factor must be between 0 and 1, exclusive",
@@ -32,14 +32,13 @@
         "calculate summary statistics with the business.* functions."))
     if (default)
       return(0.5)
-    checkmate::assert_number(x, .var.name = "max.missing")    # Must be between 0 and 1, inclusive
+    checkmate::assert_number(x, .var.name = "max.missing")
     if (x < 0 || x >= 1) {
       rlang::abort(
         message = "max.missing must be between 0 and 1",
         class = "pknca_error_max.missing_out_of_bounds"
       )
     }
-    #checkmate::assert_number(x, lower = 0, upper = 1, .var.name = "max.missing")
     if (x > 0.5) {
       rlang::warn(
         message = "max.missing is usually <= 0.5",
@@ -537,11 +536,13 @@ PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
       args <- append(args, name)
     }
   }
- if (default && check)
+  if (default && check){
     rlang::abort(
       message = "Cannot request both default and check",
       class = "pknca_error_default_and_check"
-    )  
+    )
+  }
+  
   if (default) {
     if (length(args) > 0)
       rlang::abort(

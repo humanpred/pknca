@@ -64,8 +64,8 @@ check.interval.specification <- function(x) {
         if (!all(x[[n]] %in% interval_cols[[n]]$values)){
           invalid_vals <- unique(setdiff(x[[n]], interval_cols[[n]]$values))
           rlang::abort(
-            message = paste0(
-              sprintf("Invalid value(s) in column %s:", n),
+            message = sprintf(
+              "Invalid value(s) in column %s:%s", n,
               paste(invalid_vals, collapse = ", ")
             ),
             class = "pknca_error_interval_invalid_value"
@@ -90,7 +90,6 @@ check.interval.specification <- function(x) {
   }
   # Now check specific columns
   # start and end
-  #checkmate::assertNumeric(x$start, any.missing = FALSE)
   if (anyNA(x$start)) {
     rlang::abort(
       message = "Interval specification may not have NA for the starting time",
@@ -115,8 +114,7 @@ check.interval.specification <- function(x) {
       class = "pknca_error_interval_start_gte_end"
     )
   }
-  # Confirm that something is being calculated for each interval (and warn if
-  # not)
+  # Confirm that something is being calculated for each interval (and warn if not)
   mask_calculated <- rep(FALSE, nrow(x))
   for (n in setdiff(names(interval_cols), c("start", "end"))) {
     mask_calculated <-
@@ -125,8 +123,8 @@ check.interval.specification <- function(x) {
   }
   if (any(!mask_calculated)) {
     rlang::warn(
-      message = paste0(
-        "Nothing to be calculated in interval specification number(s): ",
+      message = sprintf(
+        "Nothing to be calculated in interval specification number(s): %s",
         paste(seq_len(nrow(x))[!mask_calculated], collapse = ", ")
       ),
       class = "pknca_warning_interval_nothing_calculated"

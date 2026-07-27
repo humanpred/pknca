@@ -1,7 +1,9 @@
 #' Get the impute function from either the intervals column or from the method
 #'
 #' @param intervals the data.frame of intervals
-#' @param impute the imputation definition
+#' @param impute the imputation definition -- either the name of a column in
+#'   `intervals` (character scalar) or `NA` to look for a generic `"impute"`
+#'   column. Must be an atomic scalar; a list (even of length 1) is rejected.
 #' @return The imputation function vector
 get_impute_method <- function(intervals, impute) {
   checkmate::assert_scalar(impute, na.ok = TRUE)
@@ -125,8 +127,8 @@ PKNCA_impute_fun_list <- function(x) {
   }
   if (length(bad_fun) > 0) {
     rlang::abort(
-      message = paste0(
-        "The following imputation functions were not found: ",
+      message = sprintf(
+        "The following imputation functions were not found: %s",
         paste(bad_fun, collapse = ", ")
       ),
       class = "pknca_error_impute_funs_not_found"

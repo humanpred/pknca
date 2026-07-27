@@ -233,8 +233,11 @@ exclude_nca_by_param <- function(
 
     if (length(idx_param) > 1){
       rlang::abort(
-        message = paste("Should not see more than one", parameter, "(please report this as a bug)"),
-        class = "pknca_error_duplicate_parameter"
+        message = sprintf(
+          "Should not see more than one %s (please report this as a bug)",
+          parameter
+        ),
+        class = "pknca_error_internal_duplicate_parameter"
       )
     }
 

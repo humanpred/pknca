@@ -30,9 +30,9 @@ the limit of quantification.
 
 }}
 \seealso{
-Other NCA time parameters: 
-\code{\link{pk.calc.tlag}()},
-\code{\link{pk.calc.tmax}()},
-\code{\link{pk.calc.tmin}()}
+Other NCA time parameters:
+\code{\link[=pk.calc.tlag]{pk.calc.tlag()}},
+\code{\link[=pk.calc.tmax]{pk.calc.tmax()}},
+\code{\link[=pk.calc.tmin]{pk.calc.tmin()}}
 }
 \concept{NCA time parameters}

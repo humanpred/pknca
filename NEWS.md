@@ -4,9 +4,52 @@ will continue until then.  These will be especially noticeable around
 the inclusion of IV NCA parameters and additional specifications of
 the dosing including dose amount and route.
 
-# New features
+# Development version
 
-* Added sparse AUMC function and five sparse AUC parameters (cl.sparse.last, kel.sparse.last, mrt.ivint.last, vss.sparse.last, vz.sparse.last)
+* Migrated input validation across the package from base R checks
+  (`stopifnot()`, `is.character()`, `is.numeric()`, etc.) to `checkmate`
+  assertions, and standardized error/warning signaling on classed
+  `rlang::abort()`/`rlang::warn()` conditions (e.g. `pknca_error_*`,
+  `pknca_warning_*`) instead of unclassed base `stop()`/`warning()`. This
+  makes failure modes catchable by class rather than by matching message
+  text. As a side effect, some validations became stricter (rejecting
+  previously-accepted edge cases like non-finite numbers); see
+  the entries below for specifics.
+
+* Fixed a regression in `pk_nca_result_to_df()` where warnings raised during
+  interval calculations (e.g. `pknca_warning_no_intervals`,
+  `pknca_warning_no_conc_data`) were passed to `rlang::warn()` as the raw
+  condition object instead of its message text, and lost their original
+  class in the process. This caused `pk.nca()` to error (`message must be a
+  character vector`) instead of warning, and would have broken any code
+  catching a specific warning subclass. The condition's message is now
+  extracted via `conditionMessage()`, and its original class is preserved
+  alongside the new `pknca_warning_parameter_calculation` class.
+
+* `pk.calc.aucabove()` now requires `conc_above` to be finite. Previously,
+  `Inf` or `-Inf` were silently accepted and produced a degenerate result
+  (AUC of 0 for all profiles, since `conc - Inf` is always `-Inf`). Passing
+  a non-finite `conc_above` now raises an error instead.
+  
+* `get_impute_method()` now requires `impute` to be an atomic scalar (via
+  `checkmate::assert_scalar()`). Previously, a bare `length(impute) == 1`
+  check meant a length-1 list (e.g. `list("start_conc0")`) could pass through,
+  relying on `%in%`'s implicit list coercion downstream instead of failing
+  clearly. Passing a list now raises an error instead.
+
+# Development version
+
+* Business functions (used for calculations of means, etc.) now return NA_real_
+  for empty inputs rather than giving an error (#559).
+
+* `PKNCAconc()` gains an `lloq` argument (a column name or a numeric scalar) that
+  is passed through to `pk.calc.half.life()`.  This wires the lower limit of
+  quantification through a full `pk.nca()` run so the Tobit half-life method
+  (`hl_method = "tobit"`, set via `PKNCAdata(options = list(hl_method = "tobit"))`)
+  works end-to-end instead of failing because no `lloq` was available.
+
+* Added sparse AUMC function and five sparse AUC parameters (cl.sparse.last,
+  kel.sparse.last, mrt.ivint.last, vss.sparse.last, vz.sparse.last)
 
 * New IV dosing AUMC parameters with C0 back-extrapolation (`aumciv*`)
 
@@ -22,17 +65,19 @@ the dosing including dose amount and route.
   * 9 volume of distribution at steady state parameters (`vss.*`)
   * 13 terminal volume of distribution parameters (`vz.*`)
 
-## Improvements
+## Features added
 
-* Replaced all `stop()` and `warning()` calls with `rlang::abort()` and
-  `rlang::warn()` respectively, providing structured error and warning classes
-  for programmatic handling (e.g. `tryCatch(..., pknca_error_* = ...)` and
-  `withCallingHandlers(..., pknca_warning_* = ...)`).
-* Replaced manual scalar, type, and range checks with `checkmate` assertions
-  (`assert_number()`, `assert_numeric()`, `assert_string()`, `assert_class()`,
-  etc.) for cleaner and more consistent input validation across all functions.
-
-## Bug Fixes
+* `add.interval.col()` gains `pptestcd_cdisc` and `pptest_cdisc` arguments for
+  CDISC standard parameter code and name mappings.  Route-dependent parameters
+  (CL, VZ, MRT, VSS) accept a nested list to distinguish intravascular and
+  extravascular CDISC codes (#403)
+* `as.data.frame.PKNCAresults()` gains `out_format = "cdisc"` to translate
+  PPTESTCD to CDISC standard codes and add a PPTEST column.  Route-dependent
+  translations are resolved from the dose data (#403)
+* When `out_format = "cdisc"` and any parameter has "INT" in its PPTESTCD,
+  PPSTINT and PPENINT columns are added with ISO 8601 durations relative to
+  the last dose time.  The time unit is taken from `timeu_pref` or `timeu`
+  (#403)## Bug Fixes
 
 * `normalize.data.frame()` no longer triggers a dplyr deprecation warning
   (`Using 'by = character()' to perform a cross join was deprecated in dplyr 1.1.0`)
@@ -41,12 +86,23 @@ the dosing including dose amount and route.
 
 ## Improvements
 
+* Documentation for `include_half.life` and `exclude_half.life` now describes
+  the three-state (`TRUE`/`FALSE`/`NA`) per-point behavior, clarifies that a
+  column counts as "in use" whenever it is not entirely `NA` (so an all-`FALSE`
+  column still engages the method), and states that only one of the two may be
+  in use for the same interval. The half-life vignette gains the same note and
+  fixes a mislabeled "include" example.
+
+* The sparse NCA vignette now explains how subjects are grouped: sparse
+  parameters pool all subjects that share the same concentration grouping
+  variables with the subject column removed (#530).
+
 * `normalize.data.frame()` now validates that `norm_table` contains exactly one
   row when used with ungrouped data, giving a clear error message instead of
   silently producing incorrect results.
 
-* `normalize.data.frame()` now uses `dplyr::inner_join()` instead of `merge()` 
-  for grouped joins, preserving left-table row order. Missing group validation 
+* `normalize.data.frame()` now uses `dplyr::inner_join()` instead of `merge()`
+  for grouped joins, preserving left-table row order. Missing group validation
   ensures no rows are silently dropped.
 
 
@@ -97,6 +153,7 @@ when the issue is due to an excluded point (#310)
   `clr.pred.dn` (#433)
 * `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
   `summary()` (#477)
+* `pk.nca` output now includes a `PPANMETH` column describing the analysis methods used for each parameter regarding imputations, AUC and half.life calculations (#457)
 * Added new `tmin` parameter
 * New post-processing functions to normalize PKNCA result parameters based on any column in PKNCAconc data.frame (`normalize_by_col()`) or by using a custom normalization table (`normalize()`)
 * New excretion rate parameters: `ermax`  (Maximum excretion rate), `ertmax` (Midpoint time of maximum excretion rate) and `ertlst` (Time of last excretion rate measurement) (#433)

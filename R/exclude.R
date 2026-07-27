@@ -76,14 +76,19 @@ exclude.default <- function(object, reason, mask, FUN) {
     rlang::abort(
       message = "Either mask or FUN must be given (but not both).",
       class = "pknca_error_mask_or_fun"
-    )  }
+    )
+  }
   if (!(length(reason) %in% c(1, nrow(object[[dataname]])))) {
     rlang::abort(
       message = "reason must be a scalar or have the same length as the data.",
       class = "pknca_error_reason_length"
     )
+  } else if (!is.character(reason)) {
+    rlang::abort(
+      message = "reason must be a character vector.",
+      class = "pknca_error_reason_type"
+    )
   }
-  checkmate::assert_character(reason)
   
   if (!("exclude" %in% names(object$columns))) {
     rlang::abort(
@@ -92,7 +97,10 @@ exclude.default <- function(object, reason, mask, FUN) {
     )
   } else if (!(object$columns$exclude %in% names(object[[dataname]]))) {
     rlang::abort(
-      message = paste0("exclude column must exist in object[['", dataname, "']]."),
+      message = sprintf(
+        "exclude column must exist in object[['%s']].",
+        dataname
+      ),
       class = "pknca_error_exclude_col_missing"
     )
   }

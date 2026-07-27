@@ -23,6 +23,7 @@ PKNCAconc(data, ...)
   volume,
   exclude_half.life,
   include_half.life,
+  lloq,
   sparse = FALSE,
   ...,
   concu = NULL,
@@ -70,12 +71,26 @@ for concentration measurements in urine or feces.}
 \item{volume}{(optional) The volume (or mass) of collection as is typically
 used for urine or feces measurements.}
 
-\item{exclude_half.life, include_half.life}{A character scalar for the column
-name in the dataset of the points to exclude from the half-life calculation
-(still using normal curve-stripping selection rules for the other points)
-or to include for the half-life (using specifically those points and
-bypassing automatic curve-stripping point selection).  See the "Half-Life
-Calculation" vignette for more details on the use of these arguments.}
+\item{exclude_half.life, include_half.life}{Manual half-life point selection,
+given as a logical value per concentration measurement (or, in
+\code{\link[=PKNCAconc]{PKNCAconc()}}, the name of such a column in the data).  \code{exclude_half.life}
+drops the flagged points; automatic curve-stripping point selection is
+still performed on the remaining (non-excluded) points and is not bypassed.
+\code{include_half.life} names the exact points to use, bypassing automatic
+curve-stripping point selection.  Each value is \code{TRUE}, \code{FALSE}, or \code{NA}
+(undefined); the column/vector is treated as "in use" for an interval
+unless it is entirely \code{NA} (so an all-\code{FALSE} column still counts as in
+use), so leave it \code{NA} (rather than \code{FALSE}) where the mechanism should not
+apply.  Only one of \code{exclude_half.life} and \code{include_half.life} may be in
+use for a given interval.  See the "Half-Life Calculation" vignette for
+more details on the use of these arguments.}
+
+\item{lloq}{(optional) The lower limit of quantification used by the Tobit
+half-life method (\code{hl_method = "tobit"}).  Either the name of a column in
+\code{data} giving the per-observation LLOQ or a numeric scalar applied to all
+observations.  When provided, it is passed through to
+\code{\link[=pk.calc.half.life]{pk.calc.half.life()}}.  See the "Half-Life Calculation with Tobit
+Regression" vignette for more details.}
 
 \item{sparse}{Are the concentration-time data sparse PK (commonly used in
 small nonclinical species or with terminal or difficult sampling) or dense
@@ -94,9 +109,9 @@ A PKNCAconc object that can be used for automated NCA.
 Create a PKNCAconc object
 }
 \seealso{
-Other PKNCA objects: 
-\code{\link{PKNCAdata}()},
-\code{\link{PKNCAdose}()},
-\code{\link{PKNCAresults}()}
+Other PKNCA objects:
+\code{\link[=PKNCAdata]{PKNCAdata()}},
+\code{\link[=PKNCAdose]{PKNCAdose()}},
+\code{\link[=PKNCAresults]{PKNCAresults()}}
 }
 \concept{PKNCA objects}

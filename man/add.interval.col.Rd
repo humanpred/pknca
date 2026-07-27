@@ -14,18 +14,25 @@ add.interval.col(
   desc = "",
   sparse = FALSE,
   formalsmap = list(),
-  datatype = c("interval", "individual", "population")
+  datatype = c("interval", "individual", "population"),
+  pptestcd_cdisc = NULL,
+  pptest_cdisc = NULL
 )
 }
 \arguments{
-\item{name}{The column name as a character string}
+\item{name}{The column name as a non-empty character string (length 1,
+may not be \code{NA} or \code{""}).}
 
 \item{FUN}{The function to run (as a character string) or \code{NA} if the
 parameter is automatically calculated when calculating another parameter.}
 
-\item{values}{Valid values for the column}
+\item{values}{Valid values for the column: either a function used to
+coerce/validate values (e.g. \code{as.numeric}) or a vector of allowed values
+(e.g. \code{c(FALSE, TRUE)}).}
 
-\item{unit_type}{The type of units to use for assigning and converting units.}
+\item{unit_type}{The type of units to use for assigning and converting
+units. Must be one of the pre-defined unit types (see Details). This
+argument is required and has no default; omitting it raises an error.}
 
 \item{pretty_name}{The name of the parameter to use for printing in summary
 tables with units.  (If an analysis does not include units, then the normal
@@ -43,7 +50,19 @@ comply with SDTM)}
 to NCA parameter names.  See the details for information on use of
 \code{formalsmap}.}
 
-\item{datatype}{The type of data used for the calculation}
+\item{datatype}{The data type used for the calculation. The default is
+\code{"interval"}, which is currently the only supported value. The
+\code{"individual"} and \code{"population"} data types are reserved for future
+use and will currently raise an error if selected.}
+
+\item{pptestcd_cdisc}{The CDISC PPTESTCD code for this parameter.  Can be a
+character string for simple mappings, or a named list for route-dependent
+mappings with a \code{route} element whose value is itself a named list keyed
+by route (e.g. \code{list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))}).  Defaults to \code{name} if not provided.}
+
+\item{pptest_cdisc}{The CDISC PPTEST name for this parameter.  Can be a
+character string or a named list (same structure as \code{pptestcd_cdisc}).
+Defaults to \code{desc} if not provided.}
 }
 \value{
 NULL (Calling this function has a side effect of changing the
@@ -107,10 +126,10 @@ add.interval.col("cmax.dn",
 }
 }
 \seealso{
-Other Interval specifications: 
-\code{\link{check.interval.specification}()},
-\code{\link{choose.auc.intervals}()},
-\code{\link{get.interval.cols}()},
-\code{\link{get.parameter.deps}()}
+Other Interval specifications:
+\code{\link[=check.interval.specification]{check.interval.specification()}},
+\code{\link[=choose.auc.intervals]{choose.auc.intervals()}},
+\code{\link[=get.interval.cols]{get.interval.cols()}},
+\code{\link[=get.parameter.deps]{get.parameter.deps()}}
 }
 \concept{Interval specifications}

@@ -127,11 +127,11 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
   extra_cols <- setdiff(ret$PPTESTCD, names(get.interval.cols()))
   if (length(extra_cols) > 0) {
     rlang::abort(
-      message = paste(
-        "Please report a bug. Unknown NCA parameters have units defined:",
+      message = sprintf(
+        "Please report a bug. Unknown NCA parameters have units defined: %s",
         paste(extra_cols, collapse = ", ")
       ),
-      class = "pknca_internal_unknown_nca_units"
+      class = "pknca_error_internal_unknown_nca_units"
     ) # nocov
   }
 
@@ -170,9 +170,9 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
     unexpected_conversions <- setdiff(conversions$PPORRESU, ret$PPORRESU)
     if (length(unexpected_conversions) > 0) {
       rlang::warn(
-        message = paste0(
-          "The following unit conversions were supplied but do not match any units to convert: ",
-          paste0("'", unexpected_conversions, "'", collapse=", ")
+        message = sprintf(
+          "The following unit conversions were supplied but do not match any units to convert: %s",
+          paste0("'", unexpected_conversions, "'", collapse = ", ")
         ),
         class = "pknca_warning_units_unexpected_conversions"
       )
@@ -269,9 +269,8 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
       }
     )
     rlang::abort(
-      message = paste0(
-        "Units should be uniform at least across concentration groups. ",
-        "Review the units for the next group(s):\n",
+      message = sprintf(
+        "Units should be uniform at least across concentration groups. Review the units for the next group(s):\n%s",
         paste(mismatching_units_groups_msg, collapse = "\n")
       ),
       class = "pknca_error_units_nonuniform_groups"
@@ -372,7 +371,10 @@ useless <- function(x) {
     return(TRUE)
   } else if (length(x) > 1) {
     rlang::abort(
-      message = paste0("Only one unit may be provided at a time: ", paste(x, collapse = ", ")),
+      message = sprintf(
+        "Only one unit may be provided at a time: %s",
+        paste(x, collapse = ", ")
+      ),
       class = "pknca_error_units_multiple_provided"
     )
   }
@@ -576,7 +578,7 @@ pknca_units_table_conc_time_amount_dose <- function(concu, timeu, amountu, doseu
 #' @returns A character vector of parameters with a given unit type
 #' @keywords Internal
 pknca_find_units_param <- function(unit_type) {
-  checkmate::assert_string(unit_type, .var.name = "unit_type")
+  checkmate::assert_string(unit_type)
   all_intervals <- get.interval.cols()
   ret <- character()
   for (nm in names(all_intervals)) {
@@ -586,7 +588,10 @@ pknca_find_units_param <- function(unit_type) {
   }
   if (length(ret) == 0) {
     rlang::abort(
-      message = paste0("No parameters found for unit_type=", unit_type),
+      message = sprintf(
+        "No parameters found for unit_type=%s",
+        unit_type
+      ),
       class = "pknca_error_units_no_params_for_type"
     )
   }
@@ -633,7 +638,10 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
         )
       } else {
         rlang::abort(
-          message = paste0(msg_missing, "\nThis error can be converted to a warning using `PKNCA.options(allow_partial_missing_units = TRUE)`"),
+          message = sprintf(
+            "%s\nThis error can be converted to a warning using `PKNCA.options(allow_partial_missing_units = TRUE)`",
+            msg_missing
+          ),
           class = "pknca_error_units_partial_missing"
         )
       }

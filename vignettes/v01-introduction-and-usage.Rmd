@@ -408,7 +408,7 @@ minimum-required number of calculations for the data that are changed.
 To use `update()`, give it your existing results and the new `PKNCAdata` object
 you want to use.
 
-Starting from the theophylline example in the [Quick Start](Quick Start) section above:
+Starting from the theophylline example in the [Quick Start](#quick-start) section above:
 
 ```{r update-example-setup}
 d_conc <- as.data.frame(datasets::Theoph)

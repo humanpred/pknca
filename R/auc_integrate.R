@@ -94,7 +94,7 @@ choose_interval_method <- function(conc, time, tlast, method, auc.type, options)
   if (missing(tlast)) {
     tlast <- pk.calc.tlast(conc, time, check=FALSE)
   } else {
-    checkmate::assert_number(tlast)#, finite = TRUE)
+    checkmate::assert_number(tlast)
   }
 
   ret <- rep(NA_character_, length(conc))
@@ -117,13 +117,17 @@ choose_interval_method <- function(conc, time, tlast, method, auc.type, options)
   # return above, since tlast is NA when all concentrations are zero.
   idx_tlast <- which(time == tlast)
   if (length(idx_tlast) != 1) {
-    stop(
-      "tlast (", tlast, ") must occur exactly once in time; ",
-      if (length(idx_tlast) == 0) {
-        "tlast was not found in time (possible floating point issue)"
-      } else {
-        "tlast was found multiple times"
-      }
+    rlang::abort(
+      message = sprintf(
+        "tlast (%s) must occur exactly once in time; %s",
+        tlast,
+        if (length(idx_tlast) == 0) {
+          "tlast was not found in time (possible floating point issue)"
+        } else {
+          "tlast was found multiple times"
+        }
+      ),
+      class = "pknca_error_tlast_not_unique"
     )
   }
 
@@ -152,7 +156,7 @@ choose_interval_method <- function(conc, time, tlast, method, auc.type, options)
         "Unknown integration method, please report a bug: %s",
         method
       ),
-      class = "pknca_error_unknown_integration_method"
+      class = "pknca_error_internal_unknown_integration_method"
     ) # nocov
   }
   ret[c(mask_zero, FALSE)] <- "zero"
@@ -212,7 +216,7 @@ auc_integrate <- function(conc, time, clast, tlast, lambda.z, interval_method, f
         "Invalid interval_method_extrap, please report a bug: %s",
         interval_method_extrap
       ),
-      class = "pknca_error_invalid_interval_method_extrap"
+      class = "pknca_error_internal_invalid_interval_method_extrap"
     ) # nocov
   }
   ret <- sum(ret)

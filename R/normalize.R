@@ -39,8 +39,8 @@ normalize.data.frame <- function(object, norm_table, parameters, suffix) {
         sep = "\n"
       )
       rlang::abort(
-        message = paste0(
-          "The normalization table contains groups not present in the data:\n",
+        message = sprintf(
+          "The normalization table contains groups not present in the data:\n%s",
           df_error_string
         ),
         class = "pknca_error_norm_table_missing_groups"
@@ -118,7 +118,10 @@ normalize_by_col <- function(object, col, unit, parameters, suffix){
   obj_conc_cols <- names(as.data.frame(as_PKNCAconc(object)))
   if (!col %in% obj_conc_cols) {
     rlang::abort(
-      message = paste("Column", col, "not found in the PKNCAconc of the PKNCAresults object"),
+      message = sprintf(
+        "Column %s not found in the PKNCAconc of the PKNCAresults object",
+        col
+      ),
       class = "pknca_error_norm_col_not_found"
     )
   }

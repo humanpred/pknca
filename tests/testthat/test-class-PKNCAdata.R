@@ -39,6 +39,14 @@ test_that("PKNCAdata", {
                info="Concentration and dose data can be created on the fly")
 
   # Input checking
+  expect_error(
+    PKNCAdata(obj.conc, obj.dose, options="a"),
+    regexp="Must be of type 'list'"
+  )
+  expect_error(
+    PKNCAdata(obj.conc, obj.dose, options=list(1)),
+    regexp="Must have names"
+  )
   expect_error(PKNCAdata(obj.conc, obj.dose, options=list(foo=1)),
                regexp="Invalid setting for PKNCA.*foo",
                info="Option names")
@@ -73,22 +81,22 @@ test_that("PKNCAdata", {
   obj.dose <- PKNCAdose(tmp.dose, formula=dose~time|treatment+ID)
   expect_warning(expect_warning(
     PKNCAdata(obj.conc, obj.dose),
-    class = "pknca_no_intervals_generated"),
-    class = "pknca_no_intervals_generated",
-    info="Missing concentration data with dose data gives a warning."
+    class = "pknca_warning_no_intervals_generated"),
+    class = "pknca_warning_no_intervals_generated",
+    info="No intervals generated due to no concentration data."
   )
 
   expect_warning(expect_warning(expect_warning(
     PKNCAdata(obj.conc, obj.dose, formula.conc=a~b),
-    class = "pknca_dataconc_formulaconc"),
-    class = "pknca_no_intervals_generated"),
-    class = "pknca_no_intervals_generated"
+    class = "pknca_warning_dataconc_formulaconc"),
+    class = "pknca_warning_no_intervals_generated"),
+    class = "pknca_warning_no_intervals_generated"
   )
   expect_warning(expect_warning(expect_warning(
     PKNCAdata(obj.conc, obj.dose, formula.dose=a~b),
-    class = "pknca_dataconc_formuladose"),
-    class = "pknca_no_intervals_generated"),
-    class = "pknca_no_intervals_generated"
+    class = "pknca_warning_dataconc_formuladose"),
+    class = "pknca_warning_no_intervals_generated"),
+    class = "pknca_warning_no_intervals_generated"
   )
 })
 

@@ -68,7 +68,7 @@ The valid settings for each are:
 }
 }
 \seealso{
-Other Data cleaners: 
-\code{\link{clean.conc.na}()}
+Other Data cleaners:
+\code{\link[=clean.conc.na]{clean.conc.na()}}
 }
 \concept{Data cleaners}

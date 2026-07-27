@@ -293,7 +293,7 @@ get_summary_PKNCAresults_count_N <- function(data, result_group, subject_col, su
     if (anyNA(ret$N)) {
       rlang::abort(
         message = "Please report a bug. If N is requested, but it is not provided, then it should be set to not calculated.", # nocov
-        class = "pknca_error_n_is_na"
+        class = "pknca_error_internal_n_is_na"
       ) # nocov
     }
   } else {
@@ -452,9 +452,9 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
     units <- unique(current_data[[unit_col]])
     if (length(units) > 1) {
       rlang::abort(
-        message = paste0(
-          "Multiple units cannot be summarized together.  For ",
-          parameter, ", trying to combine: ",
+        message = sprintf(
+          "Multiple units cannot be summarized together. For %s, trying to combine: %s",
+          parameter,
           paste(units, collapse = ", ")
         ),
         class = "pknca_error_multiple_units"
@@ -466,7 +466,10 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
     N <- length(unique(current_data[[subject_col]]))
     if (any(duplicated(current_data[[subject_col]]))) {
       rlang::warn(
-        message = paste("Some subjects may have more than one result for", parameter),
+        message = sprintf(
+          "Some subjects may have more than one result for %s",
+          parameter
+        ),
         class = "pknca_warning_duplicate_subjects"
       )
     }
@@ -478,10 +481,10 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
   current_summary_instructions <- PKNCA.set.summary()[[parameter]]
   if (is.null(current_summary_instructions)) {
     rlang::abort(
-      message = paste0(
-        "No summary function is set for parameter ", parameter,
-        ".  Please set it with PKNCA.set.summary and report this as a bug in PKNCA."
-      ), # nocov
+      message = sprintf(
+        "No summary function is set for parameter %s. Please set it with PKNCA.set.summary and report this as a bug in PKNCA.",
+        parameter
+      ),
       class = "pknca_error_no_summary_function"
     ) # nocov
   }
@@ -603,7 +606,10 @@ roundingSummarize <- function(x, name) {
   summary_instructions <- PKNCA.set.summary()
   if (!(name %in% names(summary_instructions))) {
     rlang::abort(
-      message = paste(name, "is not in the summarization instructions from PKNCA.set.summary"),
+      message = sprintf(
+        "%s is not in the summarization instructions from PKNCA.set.summary",
+        name
+      ),
       class = "pknca_error_missing_summary_instructions"
     )
   }
@@ -613,8 +619,11 @@ roundingSummarize <- function(x, name) {
   } else if (is.list(roundingInstructions)) {
     if (length(roundingInstructions) != 1) {
       rlang::abort(
-        message = paste0("Cannot interpret rounding instructions for ", name, " (please report this as a bug)"), # nocov
-        class = "pknca_error_rounding_instructions"
+        message = sprintf(
+          "Cannot interpret rounding instructions for %s (please report this as a bug)",
+          name
+        ), # nocov
+        class = "pknca_error_internal_rounding_instructions"
       )
     }
     if ("signif" == names(roundingInstructions)) {
@@ -623,8 +632,11 @@ roundingSummarize <- function(x, name) {
       ret <- roundString(x, roundingInstructions$round)
     } else {
       rlang::abort(
-        message = paste("Invalid rounding instruction list name for", name, "(please report this as a bug)"), # nocov
-        class = "pknca_error_invalid_rounding_name"
+        message = sprintf(
+          "Invalid rounding instruction list name for %s (please report this as a bug)",
+          name
+        ), # nocov
+        class = "pknca_error_internal_invalid_rounding_name"
       )
     }
   }

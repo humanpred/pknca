@@ -106,7 +106,8 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
     rlang::warn(
       message = "Requesting AUCinf when the end of the interval is not Inf",
       class = "pknca_warning_aucinf_finite_interval"
-    )  }
+    )  
+  }
 
   # Subset the data to the range of interest ####
   interval_start <- interval[1]
@@ -118,7 +119,7 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
         "Requesting an AUC range starting (%g) before the first measurement (%g) is not allowed",
         interval_start, min(data$time)
       )
-    rlang::warn(message = warn_message, class = "pknca_warn_auc_before_first")
+    rlang::warn(message = warn_message, class = "pknca_warning_auc_before_first")
     return(structure(NA_real_, exclude=warn_message))
   } else if (interval_start > max(data$time)) {
     # Give this as a warning, but allow it to continue
@@ -192,6 +193,8 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
         fun_linear = fun_linear, fun_log = fun_log, fun_inf = fun_inf
       )
   }
+  # Add method details as an attribute
+  attr(ret, "method") <- paste0("AUC: ", method)
   ret
 }
 
@@ -215,11 +218,8 @@ pk.calc.auc <- function(conc, time, ..., options=list()) {
 pk.calc.auc.last <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
     rlang::abort(
-      message = paste(
-        "auc.type cannot be changed when calling pk.calc.auc.last,",
-        "please use pk.calc.auc"
-      ),
-      class = "pknca_error_auc_type_override"
+      message = "auc.type cannot be changed when calling pk.calc.auc.last, please use pk.calc.auc",
+      class = "pknca_error_auc_last_type_override"
     )
   pk.calc.auc(conc=conc, time=time, ...,
               options=options,
@@ -232,11 +232,8 @@ pk.calc.auc.last <- function(conc, time, ..., options=list()) {
 pk.calc.auc.inf <- function(conc, time, ..., options=list(), lambda.z) {
   if ("auc.type" %in% names(list(...)))
     rlang::abort(
-      message = paste(
-        "auc.type cannot be changed when calling pk.calc.auc.inf,",
-        "please use pk.calc.auc"
-      ),
-      class = "pknca_error_auc_type_override"
+      message = "auc.type cannot be changed when calling pk.calc.auc.inf, please use pk.calc.auc",
+      class = "pknca_error_auc_inf_type_override"
     )
   pk.calc.auc(conc=conc, time=time, ...,
               options=options,
@@ -267,11 +264,8 @@ pk.calc.auc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
 pk.calc.auc.all <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
     rlang::abort(
-      message = paste(
-        "auc.type cannot be changed when calling pk.calc.auc.all,",
-        "please use pk.calc.auc"
-      ),
-      class = "pknca_error_auc_type_override"
+      message = "auc.type cannot be changed when calling pk.calc.auc.all, please use pk.calc.auc",
+      class = "pknca_error_auc_all_type_override"
     )
   pk.calc.auc(conc=conc, time=time, ..., options=options,
               auc.type="AUCall",
@@ -294,11 +288,8 @@ pk.calc.aumc <- function(conc, time, ..., options=list()) {
 pk.calc.aumc.last <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
     rlang::abort(
-      message = paste(
-        "auc.type cannot be changed when calling pk.calc.aumc.last,",
-        "please use pk.calc.aumc"
-      ),
-      class = "pknca_error_aumc_type_override"
+      message = "auc.type cannot be changed when calling pk.calc.aumc.last, please use pk.calc.aumc",
+      class = "pknca_error_aumc_last_type_override"
     )
   pk.calc.aumc(conc=conc, time=time, ..., options=options,
                auc.type="AUClast",
@@ -311,11 +302,8 @@ pk.calc.aumc.inf <- function(conc, time, ..., options=list(),
                              lambda.z) {
   if ("auc.type" %in% names(list(...))) {
     rlang::abort(
-      message = paste(
-        "auc.type cannot be changed when calling pk.calc.aumc.inf,",
-        "please use pk.calc.aumc"
-      ),
-      class = "pknca_error_aumc_type_override"
+      message = "auc.type cannot be changed when calling pk.calc.aumc.inf, please use pk.calc.aumc",
+      class = "pknca_error_aumc_inf_type_override"
     )
   }
   pk.calc.aumc(conc=conc, time=time, ..., options=options,
@@ -344,11 +332,8 @@ pk.calc.aumc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
 pk.calc.aumc.all <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
     rlang::abort(
-      message = paste(
-        "auc.type cannot be changed when calling pk.calc.aumc.all,",
-        "please use pk.calc.aumc"
-      ),
-      class = "pknca_error_aumc_type_override"
+      message = "auc.type cannot be changed when calling pk.calc.aumc.all, please use pk.calc.aumc",
+      class = "pknca_error_aumc_all_type_override"
     )
   pk.calc.aumc(conc=conc, time=time, ..., options=options,
                auc.type="AUCall",
@@ -362,7 +347,9 @@ add.interval.col("aucinf.obs",
                  unit_type="auc",
                  pretty_name="AUCinf,obs",
                  desc="The area under the concentration time curve from the beginning of the interval to infinity with extrapolation to infinity from the observed Clast",
-                 depends=c("lambda.z", "clast.obs"))
+                 depends=c("lambda.z", "clast.obs"),
+                 pptestcd_cdisc="AUCIFO",
+                 pptest_cdisc="AUC Infinity Obs")
 
 add.interval.col("aucinf.pred",
                  FUN="pk.calc.auc.inf.pred",
@@ -370,22 +357,27 @@ add.interval.col("aucinf.pred",
                  unit_type="auc",
                  pretty_name="AUCinf,pred",
                  desc="The area under the concentration time curve from the beginning of the interval to infinity with extrapolation to infinity from the predicted Clast",
-                 depends=c("lambda.z", "clast.pred"))
+                 depends=c("lambda.z", "clast.pred"),
+                 pptestcd_cdisc="AUCIFP",
+                 pptest_cdisc="AUC Infinity Pred")
 
 add.interval.col("auclast",
                  FUN="pk.calc.auc.last",
                  values=c(FALSE, TRUE),
                  unit_type="auc",
                  pretty_name="AUClast",
-                 desc="The area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification")
+                 desc="The area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
+                 pptestcd_cdisc="AUCLST",
+                 pptest_cdisc="AUC to Last Nonzero Conc")
 
 add.interval.col("aucall",
                  FUN="pk.calc.auc.all",
                  values=c(FALSE, TRUE),
                  unit_type="auc",
                  pretty_name="AUCall",
-                 desc="The area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification plus the triangle from that last concentration to 0 at the first concentration below the limit of quantification"
-)
+                 desc="The area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification plus the triangle from that last concentration to 0 at the first concentration below the limit of quantification",
+                 pptestcd_cdisc="AUCALL",
+                 pptest_cdisc="AUC All")
 
 add.interval.col("aumcinf.obs",
                  FUN="pk.calc.aumc.inf.obs",
@@ -393,7 +385,9 @@ add.interval.col("aumcinf.obs",
                  unit_type="aumc",
                  pretty_name="AUMC,inf,obs",
                  desc="The area under the concentration time moment curve from the beginning of the interval to infinity with extrapolation to infinity from the observed Clast",
-                 depends=c("lambda.z", "clast.obs"))
+                 depends=c("lambda.z", "clast.obs"),
+                 pptestcd_cdisc="AUMCIFO",
+                 pptest_cdisc="AUMC Infinity Obs")
 
 add.interval.col("aumcinf.pred",
                  FUN="pk.calc.aumc.inf.pred",
@@ -401,21 +395,27 @@ add.interval.col("aumcinf.pred",
                  unit_type="aumc",
                  pretty_name="AUMC,inf,pred",
                  desc="The area under the concentration time moment curve from the beginning of the interval to infinity with extrapolation to infinity from the predicted Clast",
-                 depends=c("lambda.z", "clast.pred"))
+                 depends=c("lambda.z", "clast.pred"),
+                 pptestcd_cdisc="AUMCIFP",
+                 pptest_cdisc="AUMC Infinity Pred")
 
 add.interval.col("aumclast",
                  FUN="pk.calc.aumc.last",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMC,last",
-                 desc="The area under the concentration time moment curve from the beginning of the interval to the last concentration above the limit of quantification")
+                 desc="The area under the concentration time moment curve from the beginning of the interval to the last concentration above the limit of quantification",
+                 pptestcd_cdisc="AUMCLST",
+                 pptest_cdisc="AUMC to Last Nonzero Conc")
 
 add.interval.col("aumcall",
                  FUN="pk.calc.aumc.all",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMC,all",
-                 desc="The area under the concentration time moment curve from the beginning of the interval to the last concentration above the limit of quantification plus the moment of the triangle from that last concentration to 0 at the first concentration below the limit of quantification")
+                 desc="The area under the concentration time moment curve from the beginning of the interval to the last concentration above the limit of quantification plus the moment of the triangle from that last concentration to 0 at the first concentration below the limit of quantification",
+                 pptestcd_cdisc="AUMCALL",
+                 pptest_cdisc="AUMC All")
 
 PKNCA.set.summary(
   name=

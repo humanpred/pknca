@@ -43,7 +43,7 @@ as_sparse_pk <- function(conc, time, subject) {
 #' @keywords Internal
 sparse_pk_attribute <- function(sparse_pk, ...) {
   args <- list(...)
-  checkmate::assert_list(args, len = 1, .var.name = "args")
+  checkmate::assert_list(args, len = 1)
   if (is.null(names(args))) {
     vapply(X=sparse_pk, FUN="[[", args[[1]], FUN.VALUE = 1)
   } else {
@@ -133,7 +133,10 @@ sparse_mean <- function(sparse_pk, sparse_mean_method=c("arithmetic mean, <=50% 
     # do nothing
   } else {
     rlang::abort(
-      message = paste("Invalid sparse_mean_method:", sparse_mean_method),
+      message = sprintf(
+        "Invalid sparse_mean_method: %s",
+        sparse_mean_method
+      ),
       class = "pknca_error_invalid_sparse_mean_method"
     )
   }
@@ -189,7 +192,7 @@ var_sparse_auc <- function(sparse_pk) {
   if (sum(covariance[lower.tri(covariance)] != 0) > 0) {
     rlang::warn(
       message = "Cannot yet calculate sparse degrees of freedom for multiple samples per subject",
-      class = "pknca_sparse_df_multi"
+      class = "pknca_warning_sparse_df_multi"
     )
     df <- NA_real_
   } 
@@ -310,10 +313,19 @@ sparse_to_dense_pk <- function(sparse_pk) {
 #' @family Sparse Methods
 #' @export
 pk.calc.sparse_auc <- function(conc, time, subject,
-                               method=NULL,
+                               method="linear",
                                auc.type="AUClast",
                                ...,
                                options=list()) {
+  # Sparse AUC is only defined for linear interpolation.  `method` is kept as an
+  # argument so it is used consistently below (and so other methods could be
+  # enabled here in the future), but only "linear" is currently allowed.
+  if (!identical(method, "linear")) {
+    rlang::abort(
+      message = 'Sparse AUC calculation only supports `method = "linear"`.',
+      class = "pknca_error_sparse_auc_method"
+    )
+  }
   sparse_pk <- as_sparse_pk(conc=conc, time=time, subject=subject)
   sparse_pk_wt <- sparse_auc_weight_linear(sparse_pk)
   sparse_pk_mean <- sparse_mean(sparse_pk=sparse_pk_wt, sparse_mean_method="arithmetic mean, <=50% BLQ")
@@ -322,15 +334,23 @@ pk.calc.sparse_auc <- function(conc, time, subject,
       conc=sparse_pk_attribute(sparse_pk_mean, "mean"),
       time=sparse_pk_attribute(sparse_pk_mean, "time"),
       auc.type=auc.type,
-      method="linear"
+      method=method
     )
+
   var_auc <- var_sparse_auc(sparse_pk_mean)
-  data.frame(
+  ret <- data.frame(
     sparse_auc=auc,
     # as.numeric() drops the "df" attribute
     sparse_auc_se=sqrt(as.numeric(var_auc)),
     sparse_auc_df=attr(var_auc, "df")
   )
+
+  # Add method details as an attribute
+  for (col in names(ret)) {
+    attr(ret[[col]], "method") <- c(paste0("AUC: ", method), "Sparse: arithmetic mean, <=50% BLQ")
+  }
+
+  ret
 }
 
 #' @describeIn pk.calc.sparse_auc Compute the AUClast for sparse PK
@@ -339,7 +359,7 @@ pk.calc.sparse_auclast <- function(conc, time, subject, ..., options=list()) {
   if ("auc.type" %in% names(list(...))) {
     rlang::abort(
       message = "auc.type cannot be changed when calling pk.calc.sparse_auclast, please use pk.calc.sparse_auc",
-      class = "pknca_sparse_auclast_change_auclast"
+      class = "pknca_error_sparse_auclast_change_auclast"
     )
   }
   ret <-
@@ -360,7 +380,9 @@ add.interval.col(
   values=c(FALSE, TRUE),
   unit_type="auc",
   pretty_name="Sparse AUClast",
-  desc="For sparse PK sampling, the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification"
+  desc="For sparse PK sampling, the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
+  pptestcd_cdisc="SPARSEAL",
+  pptest_cdisc="Sparse AUClast"
 )
 
 add.interval.col(
@@ -370,7 +392,9 @@ add.interval.col(
   unit_type="auc",
   pretty_name="Sparse AUClast standard error",
   desc="For sparse PK sampling, the standard error of the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
-  depends="sparse_auclast"
+  depends="sparse_auclast",
+  pptestcd_cdisc="SPARSEAS",
+  pptest_cdisc="Sparse AUClast standard error"
 )
 
 add.interval.col(
@@ -380,7 +404,9 @@ add.interval.col(
   unit_type="count",
   pretty_name="Sparse AUClast degrees of freedom",
   desc="For sparse PK sampling, the standard error degrees of freedom of the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
-  depends="sparse_auclast"
+  depends="sparse_auclast",
+  pptestcd_cdisc="SPARSEAD",
+  pptest_cdisc="Sparse AUClast degrees of freedom"
 )
 
 #' Is a PKNCA object used for sparse PK?
@@ -473,7 +499,7 @@ var_sparse_aumc <- function(sparse_pk) {
   if (sum(covariance[lower.tri(covariance)] != 0) > 0) {
     rlang::warn(
       message = "Cannot yet calculate sparse degrees of freedom for multiple samples per subject",
-      class = "pknca_sparse_df_multi"
+      class = "pknca_warning_sparse_df_multi"
     )
     df <- NA_real_
   }
@@ -508,10 +534,17 @@ var_sparse_aumc <- function(sparse_pk) {
 #' @family Sparse Methods
 #' @export
 pk.calc.sparse_aumc <- function(conc, time, subject,
-                                method = NULL,
+                                method = "linear",
                                 auc.type = "AUClast",
                                 ...,
                                 options = list()) {
+  # Sparse AUMC is only defined for linear interpolation (see pk.calc.sparse_auc).
+  if (!identical(method, "linear")) {
+    rlang::abort(
+      message = 'Sparse AUMC calculation only supports `method = "linear"`.',
+      class = "pknca_error_sparse_aumc_method"
+    )
+  }
   # Create sparse_pk object from data
   sparse_pk <- as_sparse_pk(conc = conc, time = time, subject = subject)
   
@@ -531,7 +564,7 @@ pk.calc.sparse_aumc <- function(conc, time, subject,
       conc = sparse_pk_attribute(sparse_pk_mean, "mean"),
       time = sparse_pk_attribute(sparse_pk_mean, "time"),
       auc.type = auc.type,
-      method = "linear"
+      method = method
     )
   
   # Calculate variance on MOMENT data (this is where the fix matters)
@@ -551,7 +584,7 @@ pk.calc.sparse_aumclast <- function(conc, time, subject, ..., options = list()) 
   if ("auc.type" %in% names(list(...))) {
     rlang::abort(
       message = "auc.type cannot be changed when calling pk.calc.sparse_aumclast, please use pk.calc.sparse_aumc",
-      class = "pknca_sparse_aumclast_change_auc_type"
+      class = "pknca_error_sparse_aumclast_change_auc_type"
     )
   }
   ret <- pk.calc.sparse_aumc(

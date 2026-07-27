@@ -34,8 +34,8 @@ vss is \code{cl*mrt}.
 
 }}
 \seealso{
-Other Clearance and volume parameters: 
-\code{\link{pk.calc.cl}()},
-\code{\link{pk.calc.kel}()}
+Other Clearance and volume parameters:
+\code{\link[=pk.calc.cl]{pk.calc.cl()}},
+\code{\link[=pk.calc.kel]{pk.calc.kel()}}
 }
 \concept{Clearance and volume parameters}

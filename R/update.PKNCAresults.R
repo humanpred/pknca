@@ -32,10 +32,7 @@ update.PKNCAresults <- function(object, data, ...) {
   }
   if (!identical(strip_source_data(as_PKNCAdata(object)), strip_source_data(data))) {
     rlang::warn(
-      message = paste(
-        "Full recalculation: changes detected in data",
-        "other than source concentration or dose data"
-      ),
+      message = "Full recalculation: changes detected in data other than source concentration or dose data",
       class = "pknca_warning_full_recalculation"
     )
     return(pk.nca(data))

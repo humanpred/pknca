@@ -30,20 +30,12 @@ Determine the trough (end of interval) concentration
 
 }}
 \seealso{
-Other NCA parameters for concentrations during the intervals: 
-\code{\link{pk.calc.c0}()},
-\code{\link{pk.calc.cav}()},
-\code{\link{pk.calc.ceoi}()},
-\code{\link{pk.calc.clast.obs}()},
-\code{\link{pk.calc.cmax}()},
-\code{\link{pk.calc.count_conc}()}
-
-Other NCA parameters for concentrations during the intervals: 
-\code{\link{pk.calc.c0}()},
-\code{\link{pk.calc.cav}()},
-\code{\link{pk.calc.ceoi}()},
-\code{\link{pk.calc.clast.obs}()},
-\code{\link{pk.calc.cmax}()},
-\code{\link{pk.calc.count_conc}()}
+Other NCA parameters for concentrations during the intervals:
+\code{\link[=pk.calc.c0]{pk.calc.c0()}},
+\code{\link[=pk.calc.cav]{pk.calc.cav()}},
+\code{\link[=pk.calc.ceoi]{pk.calc.ceoi()}},
+\code{\link[=pk.calc.clast.obs]{pk.calc.clast.obs()}},
+\code{\link[=pk.calc.cmax]{pk.calc.cmax()}},
+\code{\link[=pk.calc.count_conc]{pk.calc.count_conc()}}
 }
 \concept{NCA parameters for concentrations during the intervals}

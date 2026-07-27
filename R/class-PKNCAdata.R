@@ -67,7 +67,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
     if (!missing(formula.conc)) {
       rlang::warn(
         message = "data.conc was given as a PKNCAconc object.  Ignoring formula.conc",
-        class = "pknca_dataconc_formulaconc"
+        class = "pknca_warning_dataconc_formulaconc"
       )
     }
     ret$conc <- data.conc
@@ -83,14 +83,17 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
     if (!missing(formula.dose))
       rlang::warn(
         message = "data.dose was given as a PKNCAdose object.  Ignoring formula.dose",
-        class = "pknca_dataconc_formuladose"
+        class = "pknca_warning_dataconc_formuladose"
       )
     ret$dose <- data.dose
   } else {
     ret$dose <- PKNCAdose(data.dose, formula.dose)
   }
   # Check the options
-  checkmate::assert_list(options)
+  checkmate::assert_list(
+    x = options,
+    names = if (length(options) > 0) "named" else NULL
+  )
   
   if (length(options) > 0) {
     checkmate::assert_named(options)
@@ -110,7 +113,8 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
     rlang::abort(
       message = "If data.dose is not given, intervals must be given",
       class = "pknca_error_missing_intervals"
-    )  } else if (missing(intervals)) {
+    )  
+  } else if (missing(intervals)) {
     # Generate the intervals for each grouping of concentration and
     # dosing.
     if (length(ret$dose$columns$time) == 0) {
@@ -154,14 +158,20 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
           n_conc_dose$data_intervals[[idx]] <- generated_intervals
         } else {
           rlang::warn(
-            message = paste0(warning_prefix, "No intervals generated likely due to limited concentration data"),
+            message = sprintf(
+              "%sNo intervals generated likely due to limited concentration data",
+              warning_prefix
+            ),
             class = "pknca_warning_no_intervals_limited_data"
           )
         }
       } else {
         rlang::warn(
-          message = paste(warning_prefix, "No intervals generated due to no concentration data"),
-          class = "pknca_no_intervals_generated"
+          message = sprintf(
+            "%sNo intervals generated due to no concentration data",
+            warning_prefix
+          ),
+          class = "pknca_warning_no_intervals_generated"
         )
       }
     }

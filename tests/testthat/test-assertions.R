@@ -157,6 +157,18 @@ test_that("assert_unit_col", {
     structure("B", unit_type = "column")
   )
   expect_error(
+    assert_unit_col(unit = 1:2),
+    regexp = "Must be of type 'character'"
+  )
+  expect_error(
+    assert_unit_col(unit = 1),
+    regexp = "Must be of type 'character'"
+  )
+  expect_error(
+    assert_unit_col(unit = "D", data = "A"),
+    regexp = "Must be of type 'data.frame'"
+  )
+  expect_error(
     assert_unit_col(unit = "D", data = d),
     regexp = "`unit` (D) must be a column name in the data",
     fixed = TRUE
@@ -171,6 +183,14 @@ test_that("assert_unit_col", {
 test_that("assert_unit_value", {
   expect_equal(assert_unit_value("A"), structure("A", unit_type = "value"))
   expect_null(assert_unit_value(NULL))
+  expect_error(
+    assert_unit_value(c("A", "B")),
+    regexp = "Must have length 1"
+  )
+  expect_error(
+    assert_unit_value(1),
+    regexp = "Must be of type 'character'"
+  )
 })
 
 test_that("assert_unit", {
@@ -184,5 +204,9 @@ test_that("assert_unit", {
   expect_equal(
     assert_unit(unit = "C", data = d),
     structure("C", unit_type = "value")
+  )
+  expect_error(
+    assert_unit(unit = 1, data = d),
+    regexp = "Must be of type 'character'"
   )
 })

@@ -28,7 +28,8 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
     rlang::abort(
       message = "Cannot give subject.dosing without subject",
       class = "pknca_error_tss_subject_dosing_without_subject"
-    )  }
+    )  
+  }
   if (anyNA(time.dosing)) {
     rlang::abort(
       message = "time.dosing may not contain any NA values",
@@ -128,11 +129,8 @@ pk.tss <- function(...,
       ret <- ret_monoexponential
     } else {
       rlang::abort(
-        message = paste(
-          "Bug in pk.tss where ret is set to non-NA too early.",
-          "Please report the bug with a reproducible example."
-        ),
-        class = "pknca_internal_pk_tss_ret_non_na"
+        message = "Bug in pk.tss where ret is set to non-NA too early. Please report the bug with a reproducible example.",
+        class = "pknca_error_internal_pk_tss_ret_non_na"
       ) # nocov
     }
     # Set check to FALSE if it has already been checked (so that it

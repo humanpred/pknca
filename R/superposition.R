@@ -135,7 +135,8 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
         class = "pknca_error_superposition_additional_times_na"
       )
     }
-   checkmate::assert_numeric(additional.times, lower = 0, upper = tau)  }
+    checkmate::assert_numeric(additional.times, lower = 0, upper = tau)  
+  }
   # steady.state.tol
   checkmate::assert_number(steady.state.tol, na.ok = FALSE)
   if (steady.state.tol <= 0 || steady.state.tol >= 1)
@@ -167,7 +168,7 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
       if (length(dose.scaling) != 1)
         rlang::abort(
           message = "bug in dose.amount, dose.times, and dose.input handling",
-          class = "pknca_internal_dose_scaling"
+          class = "pknca_error_internal_dose_scaling"
         ) # nocov
       # it is a scalar and there is more than one dose
       dose.scaling <- rep(dose.scaling, length(dose.times))

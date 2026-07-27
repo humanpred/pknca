@@ -119,7 +119,7 @@ interp.extrap.conc <- function(conc, time, time.out,
       if (is.na(tlast)) {
         rlang::abort(
           message = "Please report a bug:  tlast is NA; cannot interpolate/extrapolate", # nocov
-          class = "pknca_error_tlast_na"
+          class = "pknca_error_internal_tlast_na"
         ) # nocov
       } else if (is.na(time.out[i])) {
         rlang::warn(
@@ -237,7 +237,7 @@ interpolate.conc <- function(conc, time, time.out,
       } else {
         rlang::abort(
           message = "Please report a bug: invalid interp_method", # nocov
-          class = "pknca_error_invalid_interp_method"
+          class = "pknca_error_internal_invalid_interp_method"
         )
       }
   }
@@ -447,12 +447,11 @@ interp.extrap.conc.dose <- function(conc, time,
   if (any(mask_unknown <- data_all$event %in% "unknown")) {
     # All events should be accounted for already
     rlang::abort( # nocov
-      message = paste0( # nocov
-        "Unknown event in interp.extrap.conc.dose at time(s): ", # nocov
-        paste(unique(data_all$time[mask_unknown]), collapse = ", "), # nocov
-        " (Please report this as a bug)" # nocov
+      message = sprintf( # nocov
+        "Unknown event in interp.extrap.conc.dose at time(s): %s (Please report this as a bug)", # nocov
+        paste(unique(data_all$time[mask_unknown]), collapse = ", ") # nocov
       ), # nocov
-      class = "pknca_error_unknown_event" # nocov
+      class = "pknca_error_internal_unknown_event" # nocov
     ) # nocov
   }
   # Remove "output_only" from event_before and event_after
@@ -499,8 +498,8 @@ interp.extrap.conc.dose <- function(conc, time,
   if (any(mask_no_method <- is.na(data_all$method))) {
     # This should never happen, all eventualities should be covered
     rlang::abort( # nocov
-      message = paste0( # nocov
-        "No method for imputing concentration at time(s): ", # nocov
+      message = sprintf( # nocov
+        "No method for imputing concentration at time(s): %s", # nocov
         paste(unique(data_all$time[mask_no_method]), collapse = ", ") # nocov
       ), # nocov
       class = "pknca_error_no_interp_method" # nocov
@@ -539,7 +538,7 @@ iecd_impossible_value <- function(data_all, current_idx, ...) {
       data_all$event[current_idx], # nocov
       data_all$event_after[current_idx] # nocov
     ), # nocov
-    class = "pknca_error_impossible_event_combination" # nocov
+    class = "pknca_error_internal_impossible_event_combination" # nocov
   ) # nocov
 }
 
