@@ -35,11 +35,7 @@ the dosing including dose amount and route.
   `checkmate::assert_scalar()`). Previously, a bare `length(impute) == 1`
   check meant a length-1 list (e.g. `list("start_conc0")`) could pass through,
   relying on `%in%`'s implicit list coercion downstream instead of failing
-  clearly. Passing a list now raises an error instead.
-
-# Development version
-
-* Business functions (used for calculations of means, etc.) now return NA_real_
+  clearly. Passing a list now raises an error instead.* Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).
 
 * `PKNCAconc()` gains an `lloq` argument (a column name or a numeric scalar) that
