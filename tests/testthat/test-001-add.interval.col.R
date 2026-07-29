@@ -89,17 +89,7 @@ test_that("add.interval.col", {
     ),
     regexp = "Must have length 1"
   )
-  
-  # desc must comply with the 40-character SDTM limit
-  expect_warning(
-    add.interval.col(
-      name = "a", FUN = NA, unit_type = "conc",
-      pretty_name = "a", datatype = "interval",
-      desc = strrep("x", 41)
-    ),
-    class = "pknca_warning_desc_too_long"
-  )
-  
+
   # depends
   expect_error(
     add.interval.col(name = "a", FUN = NA, depends = 1, unit_type = "conc", pretty_name = "a", datatype = "interval", desc = "a"),

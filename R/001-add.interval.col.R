@@ -166,18 +166,6 @@ add.interval.col <- function(name,
   checkmate::assert_character(x = desc, len = 1, any.missing=FALSE)
   checkmate::assert_character(x = depends, null.ok = TRUE)  
   
-  # desc should comply with the 40-character SDTM limit, but this is a soft
-  # limit -- warn rather than block the column from being added.
-  if (nchar(desc) > 40) {
-    rlang::warn(
-      message = sprintf(
-        "`desc` should be 40 characters or fewer to comply with SDTM (got %d characters): %s",
-        nchar(desc), desc
-      ),
-      class = "pknca_warning_desc_too_long"
-    )
-  }
-  
   # `values` must be either a function (used to validate/coerce) or a vector
   # of allowed values -- both are acceptable, so just ensure it was supplied
   # and is one of those two forms.
