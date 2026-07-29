@@ -74,6 +74,7 @@ the dosing including dose amount and route.
   for grouped joins, preserving left-table row order. Missing group validation
   ensures no rows are silently dropped.
 
+* `PKNCAresults()` now includes `start` and `end` in `group_vars`
 
 ## Breaking changes
 
