@@ -18,7 +18,7 @@ assert_number_between(
 
 - x:
 
-  \[`any`\]  
+  \[any\]  
   Object to check.
 
 - ...:

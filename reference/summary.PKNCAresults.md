@@ -18,7 +18,8 @@ summary(
   summarize.n.per.group = deprecated(),
   not.requested.string = deprecated(),
   not.calculated.string = deprecated(),
-  pretty_names = NULL
+  pretty_names = NULL,
+  caption_prefix = NULL
 )
 ```
 
@@ -70,6 +71,10 @@ summary(
   Should pretty names (easier to understand in a report) be used? `TRUE`
   is yes, `FALSE` is no, and `NULL` is yes if units are used and no if
   units are not used.
+
+- caption_prefix:
+
+  Prefix to prepend to the generated table caption.
 
 ## Value
 

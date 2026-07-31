@@ -22,7 +22,7 @@ assert_numeric_between(
 
 - x:
 
-  \[`any`\]  
+  \[any\]  
   Object to check.
 
 - any.missing:
