@@ -26,6 +26,7 @@
 - [`PKNCA_impute_method_start_conc0()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md)
   [`PKNCA_impute_method_start_cmin()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md)
   [`PKNCA_impute_method_start_predose()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md)
+  [`PKNCA_impute_method_end_conc_drop()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md)
   : Methods for imputation of data with PKNCA
 
 - [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)

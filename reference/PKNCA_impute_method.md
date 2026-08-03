@@ -20,6 +20,8 @@ PKNCA_impute_method_start_predose(
   max_shift = NA_real_,
   options = list()
 )
+
+PKNCA_impute_method_end_conc_drop(conc, time, end, ..., options = list())
 ```
 
 ## Arguments
@@ -82,3 +84,8 @@ one column named time with the times.
 - `PKNCA_impute_method_start_predose()`: Shift a predose concentration
   to become the time zero concentration (only if a time zero
   concentration does not exist)
+
+- `PKNCA_impute_method_end_conc_drop()`: Drop a concentration measured
+  exactly at the end of the interval, if one is present (usually used
+  with multiple-dose data when a point at the interval boundary belongs
+  to the next dose, e.g. an imputed C0)

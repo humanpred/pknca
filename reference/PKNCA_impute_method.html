@@ -76,7 +76,9 @@
 <span>  <span class="va">...</span>,</span>
 <span>  max_shift <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
 <span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">PKNCA_impute_method_end_conc_drop</span><span class="op">(</span><span class="va">conc</span>, <span class="va">time</span>, <span class="va">end</span>, <span class="va">...</span>, options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -138,6 +140,10 @@ with single-dose data)</p></li>
 the interval at the start time (usually used with multiple-dose data)</p></li>
 <li><p><code>PKNCA_impute_method_start_predose()</code>: Shift a predose concentration to become the
 time zero concentration (only if a time zero concentration does not exist)</p></li>
+<li><p><code>PKNCA_impute_method_end_conc_drop()</code>: Drop a concentration measured exactly at the
+end of the interval, if one is present (usually used with multiple-dose data
+when a point at the interval boundary belongs to the next dose, e.g. an
+imputed C0)</p></li>
 </ul></div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

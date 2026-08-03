@@ -23,6 +23,7 @@ library(PKNCA)
 cat(paste(
   "*", ls("package:PKNCA", pattern = "^PKNCA_impute_method")
 ), sep = "\n")
+#> * PKNCA_impute_method_end_conc_drop
 #> * PKNCA_impute_method_start_cmin
 #> * PKNCA_impute_method_start_conc0
 #> * PKNCA_impute_method_start_predose
