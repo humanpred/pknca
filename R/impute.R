@@ -93,6 +93,20 @@ PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group
   ret
 }
 
+#' @describeIn PKNCA_impute_method Drop a concentration measured exactly at the
+#'   end of the interval, if one is present (usually used with multiple-dose data
+#'   when a point at the interval boundary belongs to the next dose, e.g. an
+#'   imputed C0)
+#' @export
+PKNCA_impute_method_end_conc_drop <- function(conc, time, end, ..., options = list()) {
+  ret <- data.frame(conc = conc, time = time)
+  mask_end <- time %in% end
+  if (any(mask_end)) {
+    ret <- ret[!mask_end, , drop = FALSE]
+  }
+  ret
+}
+
 #' Separate out a vector of PKNCA imputation methods into a list of functions
 #'
 #' An error will be raised if the functions are not found.

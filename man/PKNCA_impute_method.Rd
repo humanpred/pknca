@@ -5,6 +5,7 @@
 \alias{PKNCA_impute_method_start_conc0}
 \alias{PKNCA_impute_method_start_cmin}
 \alias{PKNCA_impute_method_start_predose}
+\alias{PKNCA_impute_method_end_conc_drop}
 \title{Methods for imputation of data with PKNCA}
 \usage{
 PKNCA_impute_method_start_conc0(conc, time, start = 0, ..., options = list())
@@ -22,6 +23,8 @@ PKNCA_impute_method_start_predose(
   max_shift = NA_real_,
   options = list()
 )
+
+PKNCA_impute_method_end_conc_drop(conc, time, end, ..., options = list())
 }
 \arguments{
 \item{conc}{Measured concentrations}
@@ -64,5 +67,10 @@ the interval at the start time (usually used with multiple-dose data)
 
 \item \code{PKNCA_impute_method_start_predose()}: Shift a predose concentration to become the
 time zero concentration (only if a time zero concentration does not exist)
+
+\item \code{PKNCA_impute_method_end_conc_drop()}: Drop a concentration measured exactly at the
+end of the interval, if one is present (usually used with multiple-dose data
+when a point at the interval boundary belongs to the next dose, e.g. an
+imputed C0)
 
 }}
