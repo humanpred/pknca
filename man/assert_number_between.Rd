@@ -13,7 +13,7 @@ assert_number_between(
 )
 }
 \arguments{
-\item{x}{[any]\cr
+\item{x}{[\code{any}]\cr
 Object to check.}
 
 \item{...}{Passed to \code{assert_numeric_between()}}
