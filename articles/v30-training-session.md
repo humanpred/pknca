@@ -787,8 +787,8 @@ as.data.frame(o_nca)
 
 ### PKNCA only calculates what is required, not every possible parameter (2 of 2)
 
-If you need AUC₀₋, PKNCA will calculate other required parameters behind
-the scenes.
+If you need AUC_(0-$`\infty`$), PKNCA will calculate other required
+parameters behind the scenes.
 
 ``` r
 

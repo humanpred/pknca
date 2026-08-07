@@ -174,7 +174,7 @@ $`\infty`$, the observed or half-life predicted concentration at `tlast`
 (`clast.obs` and `clast.pred`).
 
 The two figures below illustrate the integration with
-AUC_(0-$`\infty`$,obs) and AUC~0-$`\infty`$,pred\$. The difference
+AUC_(0-$`\infty`$,obs) and AUC_(0-$`\infty`$,pred). The difference
 between the two figures is most evident at time=8 where there is a
 discontinuity in integration at `tlast` due to using `clast.pred` after
 that point and `clast.obs` before that point. (To illustrate the
