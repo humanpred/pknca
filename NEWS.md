@@ -189,6 +189,8 @@ when the issue is due to an excluded point (#310)
 * `group_vars()` methods were added for `PKNCAdata` and `PKNCAresults` objects.
 * If intervals have attributes on the columns, there will no longer be an error
   during parameter calculation, and the attributes are preserved (#381)
+* New functions are available to simplify the modification of intervals: 
+  `intervals_add_impute()`, `intervals_remove_impute()` (#384)
 * When adding units, if some but not all units are provided, then an error will
   be raised. This error can be converted to a warning using the option
   `allow_partial_missing_units = TRUE`. (#398)
