@@ -525,6 +525,58 @@ test_that("half-life has a exclude message when it cannot be calculated for flat
   )
 })
 
+test_that("half-life has an exclude message when no window survives selection (#583)", {
+  # The rising tail (2, 2.2, 2.42) fits perfectly with lambda.z < 0 and anchors
+  # the adjusted r-squared tolerance, so no window with lambda.z > 0 survives
+  # selection and the half-life is unreportable.
+  result <- pk.calc.half.life(conc = c(0, 20, 10, 5, 2, 2.2, 2.42), time = 0:6)
+  expect_equal(result$half.life, NA_real_)
+  expect_equal(result$lambda.z, NA_real_)
+  expect_equal(
+    attr(result, "exclude"),
+    "No valid terminal phase: no window with lambda.z > 0 within the adjusted r-squared tolerance of the best fit"
+  )
+})
+
+test_that("the no-surviving-window exclude reason lands in the pk.nca() exclude column (#583)", {
+  d_conc <- data.frame(conc = c(0, 20, 10, 5, 2, 2.2, 2.42), time = 0:6, subject = 1)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  res <- as.data.frame(o_nca)
+  expect_equal(res$PPORRES[res$PPTESTCD %in% "half.life"], NA_real_)
+  expect_equal(
+    res$exclude[res$PPTESTCD %in% "half.life"],
+    "No valid terminal phase: no window with lambda.z > 0 within the adjusted r-squared tolerance of the best fit"
+  )
+
+  # A normal successful fit carries no exclusion reason
+  d_theoph <- as.data.frame(datasets::Theoph[datasets::Theoph$Subject %in% 1, ])
+  o_conc_norm <- PKNCAconc(d_theoph, conc ~ Time | Subject)
+  o_data_norm <- PKNCAdata(o_conc_norm, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca_norm <- suppressMessages(pk.nca(o_data_norm))
+  res_norm <- as.data.frame(o_nca_norm)
+  expect_equal(res_norm$PPORRES[res_norm$PPTESTCD %in% "half.life"], 14.30438, tolerance = 0.0001)
+  expect_equal(res_norm$exclude[res_norm$PPTESTCD %in% "half.life"], NA_character_)
+})
+
+test_that("tobit half-life has an exclude message when no window has lambda.z > 0 (#583)", {
+  # Concentrations rise after tmax, so every Tobit window fits lambda.z < 0
+  result <- pk.calc.half.life(
+    conc = c(10, 1, 1.12, 1.19, 1.33, 1.44),
+    time = 0:5,
+    lloq = 0.5,
+    hl_method = "tobit",
+    allow.tmax.in.half.life = FALSE,
+    min.hl.points = 3
+  )
+  expect_equal(result$half.life, NA_real_)
+  expect_equal(
+    attr(result, "exclude"),
+    "No valid terminal phase: no Tobit window with lambda.z > 0"
+  )
+})
+
 # ---- Tobit half-life tests ----
 
 test_that("fit_half_life_tobit_LL returns correct negative log-likelihood", {

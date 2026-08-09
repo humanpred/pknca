@@ -6,6 +6,17 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Breaking change: The `exclude_half.life` and `include_half.life` columns must
+  now be logical (`TRUE`/`FALSE`/`NA`).  A non-logical column (e.g. character
+  `"yes"`) previously was accepted silently and excluded or included nothing; it
+  is now an error (#583).
+
+* Bug fix: `pk.calc.half.life()` now attaches an exclusion reason ("No valid
+  terminal phase...") when no candidate window survives point selection (for
+  example, when a well-fitting window with `lambda.z <= 0` anchors the adjusted
+  r-squared tolerance), instead of returning `NA` with no reason.  The reason
+  appears in the `exclude` column of `pk.nca()` results (#583).
+
 * Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
   Group-level concentration data are now sorted by time before calculation, so
   parameters that use the full group (e.g. `aucint.all` and the other `aucint*`

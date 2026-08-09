@@ -37,7 +37,8 @@
 #'   (undefined); the column/vector is treated as "in use" for an interval
 #'   unless it is entirely `NA` (so an all-`FALSE` column still counts as in
 #'   use), so leave it `NA` (rather than `FALSE`) where the mechanism should not
-#'   apply.  Only one of `exclude_half.life` and `include_half.life` may be in
+#'   apply.  A non-logical column (e.g. character `"yes"`) is an error.  Only
+#'   one of `exclude_half.life` and `include_half.life` may be in
 #'   use for a given interval.  See the "Half-Life Calculation" vignette for
 #'   more details on the use of these arguments.
 #' @param lloq (optional) The lower limit of quantification used by the Tobit
@@ -186,12 +187,26 @@ PKNCAconc.data.frame <- function(data, formula, subject,
       setAttributeColumn(object=ret,
                          attr_name="exclude_half.life",
                          col_name=exclude_half.life)
+    if (!is.logical(getAttributeColumn(ret, attr_name="exclude_half.life")[[1]])) {
+      stop(
+        "The exclude_half.life column ('", exclude_half.life,
+        "') must be a logical (TRUE/FALSE/NA) column, not ",
+        class(getAttributeColumn(ret, attr_name="exclude_half.life")[[1]])[1]
+      )
+    }
   }
   if (!missing(include_half.life)) {
     ret <-
       setAttributeColumn(object=ret,
                          attr_name="include_half.life",
                          col_name=include_half.life)
+    if (!is.logical(getAttributeColumn(ret, attr_name="include_half.life")[[1]])) {
+      stop(
+        "The include_half.life column ('", include_half.life,
+        "') must be a logical (TRUE/FALSE/NA) column, not ",
+        class(getAttributeColumn(ret, attr_name="include_half.life")[[1]])[1]
+      )
+    }
   }
   if (!missing(lloq)) {
     ret <- setAttributeColumn(object=ret, attr_name="lloq", col_or_value=lloq)

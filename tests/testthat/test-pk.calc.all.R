@@ -396,6 +396,36 @@ test_that("include_half.life and exclude_half.life work with NAs treated as miss
   expect_equal(d_nca_false$PPORRES[d_nca_false$PPTESTCD %in% "half.life"], 1.512942, tolerance = 0.00001)
 })
 
+test_that("non-logical half-life point columns fail loud at calculation time (#583)", {
+  # PKNCAconc() validates at construction; a column modified afterward would
+  # otherwise silently exclude/include nothing during pk.nca().
+  d_conc <-
+    data.frame(
+      conc = c(1, 0.5, 0.25, 0.125, 0.06),
+      time = 0:4,
+      excl = c(NA, NA, NA, TRUE, NA),
+      incl = c(NA, TRUE, TRUE, TRUE, NA),
+      subject = 1
+    )
+  o_conc_excl <- PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl")
+  o_data_excl <- PKNCAdata(o_conc_excl, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_data_excl$conc$data$excl <- ifelse(is.na(d_conc$excl), NA_character_, "yes")
+  expect_error(
+    suppressMessages(pk.nca(o_data_excl)),
+    regexp = "The exclude_half.life column must be a logical (TRUE/FALSE/NA) column, not character",
+    fixed = TRUE
+  )
+
+  o_conc_incl <- PKNCAconc(d_conc, conc ~ time | subject, include_half.life = "incl")
+  o_data_incl <- PKNCAdata(o_conc_incl, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_data_incl$conc$data$incl <- ifelse(is.na(d_conc$incl), NA_character_, "yes")
+  expect_error(
+    suppressMessages(pk.nca(o_data_incl)),
+    regexp = "The include_half.life column must be a logical (TRUE/FALSE/NA) column, not character",
+    fixed = TRUE
+  )
+})
+
 test_that("No interval requested (e.g. for placebo)", {
   tmpconc <- generate.conc(2, 1, 0:24)
   tmpdose <- generate.dose(tmpconc)

@@ -334,6 +334,12 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       }
       if (any(mask_best)) {
         ret[, ret_replacements] <- half_lives_for_selection[mask_best, ret_replacements]
+      } else {
+        # No window survives selection, e.g. when a well-fitting window with
+        # lambda.z <= 0 anchors the adjusted r-squared tolerance so that no
+        # window with lambda.z > 0 is within the tolerance.
+        attr(ret, "exclude") <-
+          "No valid terminal phase: no window with lambda.z > 0 within the adjusted r-squared tolerance of the best fit"
       }
     } else {
       attr(ret, "exclude") <-
@@ -418,6 +424,10 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           common_cols <- intersect(ret_replacements, names(all_tobit))
           ret[, common_cols] <- all_tobit[mask_best, common_cols]
         }
+      } else {
+        # No window with a positive elimination rate (or no converged fit)
+        attr(ret, "exclude") <-
+          "No valid terminal phase: no Tobit window with lambda.z > 0"
       }
     } else {
       attr(ret, "exclude") <-
