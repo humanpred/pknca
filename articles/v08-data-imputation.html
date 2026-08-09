@@ -79,7 +79,7 @@
                         <h4 data-toc-skip class="author">Bill
 Denney</h4>
             
-            <h4 data-toc-skip class="date">2026-08-07</h4>
+            <h4 data-toc-skip class="date">2026-08-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/humanpred/pknca/blob/main/vignettes/v08-data-imputation.Rmd" class="external-link"><code>vignettes/v08-data-imputation.Rmd</code></a></small>
       <div class="d-none name"><code>v08-data-imputation.Rmd</code></div>
@@ -109,6 +109,30 @@ by looking at <code><a href="../reference/PKNCA_impute_method.html">?PKNCA_imput
 <span><span class="co">#&gt; * PKNCA_impute_method_start_cmin</span></span>
 <span><span class="co">#&gt; * PKNCA_impute_method_start_conc0</span></span>
 <span><span class="co">#&gt; * PKNCA_impute_method_start_predose</span></span></code></pre></div>
+<p>In brief, the built-in methods work as follows:</p>
+<ul>
+<li>
+<code>start_conc0</code> sets the concentration at the interval
+start time to 0. If an observation exists at the start time, its value
+is replaced with 0; otherwise, a new row is added (usually used with
+single-dose data).</li>
+<li>
+<code>start_predose</code> shifts the most recent observation before
+the interval start to the interval start time. It applies only when no
+start-time observation exists, only when a pre-start observation exists,
+and only when the shift is no more than <code>max_shift</code> (by
+default, 5% of the interval duration or, for intervals with an infinite
+end, 5% of the time from the interval start to the last sample).</li>
+<li>
+<code>start_cmin</code> adds the minimum concentration within the
+interval at the interval start time when no start-time observation
+exists (usually used with multiple-dose data).</li>
+</ul>
+<p>The development version of PKNCA also adds
+<code>PKNCA_impute_method_end_conc_drop</code> (used as
+<code>"end_conc_drop"</code>), which drops a concentration observed
+exactly at the interval end – such as a predose sample for the next dose
+– from that interval’s calculation.</p>
 <div class="section level2">
 <h2 id="how-does-imputation-occur">How does imputation occur?<a class="anchor" aria-label="anchor" href="#how-does-imputation-occur"></a>
 </h2>
@@ -159,7 +183,15 @@ the function name. So for the example above, use
 or space separating them. For example, to first move a predose
 concentration up to the time of dosing and then set time 0 to
 concentration 0, use <code>"start_predose,start_conc0"</code>, and the
-two methods will be applied in order.</p>
+two methods will be applied in order, each to the output of the previous
+method. Note that because <code>start_conc0</code> sets the start-time
+concentration to 0 even when a start-time value already exists, the
+<code>"start_predose,start_conc0"</code> chain produces the same results
+as <code>"start_conc0"</code> alone: the concentration that
+<code>start_predose</code> shifts to the start time is then overwritten
+with 0. To use the predose concentration when one exists and 0
+otherwise, write a custom imputation method (see the “Advanced” section
+below).</p>
 </div>
 <div class="section level2">
 <h2 id="imputation-for-the-full-dataset">Imputation for the full dataset<a class="anchor" aria-label="anchor" href="#imputation-for-the-full-dataset"></a>

@@ -7,8 +7,7 @@ To run the tests, the package must be installed with its tests:
 - To install from CRAN:
   - `install.packages(pkgs="PKNCA", INSTALL_opts="--install-tests", type="source")`
 - To install from GitHub:
-  - [`library(devtools)`](https://devtools.r-lib.org/)
-  - `install_github("humanpred/pknca", INSTALL_opts="--install-tests")`
+  - `remotes::install_github("humanpred/pknca", INSTALL_opts="--install-tests")`
 
 Testing and validation that results match in a local environment
 compared to the original environment is an important part of
@@ -32,7 +31,7 @@ results: Tests were not run because tests are not installed.
 Sys.Date()
 ```
 
-    ## [1] "2026-08-07"
+    ## [1] "2026-08-09"
 
 ``` r
 

@@ -16,10 +16,11 @@ Sparse NCA is setup similarly to how normal, dense PK sampling is setup
 with PKNCA. The only difference are that you give the `sparse` option to
 [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md),
 and in your interval calculations, you will request the sparse variants
-of the parameters. As of the writing of this vignette, the only sparse
-parameter for calculation is `sparse_auclast`. Any of the non-sparse
-parameters will be calculated based on the mean profile of the animals
-in a group.
+of the parameters. The sparse parameters for calculation are
+`sparse_auclast` and `sparse_aumclast` (each with an accompanying
+standard error and degrees of freedom) along with parameters derived
+from them (described below). Any of the non-sparse parameters will be
+calculated based on the mean profile of the animals in a group.
 
 The example below uses data extracted from Holder D. J., Hsuan F., Dixit
 R. and Soper K. (1999). A method for estimating and testing area under
@@ -195,3 +196,101 @@ as.data.frame(o_nca)
     ## 16     0    24 sparse_auclast       39.5   ""                     NA            
     ## 17     0    24 sparse_auc_se         7.31  ""                     NA            
     ## 18     0    24 sparse_auc_df        NA     ""                     NA
+
+## Sparse AUMC and Derived Parameters
+
+In addition to `sparse_auclast` (with its standard error,
+`sparse_auc_se`, and degrees of freedom, `sparse_auc_df`), the area
+under the first moment curve is available as `sparse_aumclast` (with
+`sparse_aumc_se` and `sparse_aumc_df`). Five parameters derived from the
+sparse AUC and AUMC are also available:
+
+- `mrt.sparse.last`: Mean residence time
+  (`sparse_aumclast`/`sparse_auclast`)
+- `cl.sparse.last`: Clearance (dose/`sparse_auclast`)
+- `kel.sparse.last`: Elimination rate (1/`mrt.sparse.last`)
+- `vss.sparse.last`: Steady-state volume of distribution
+  (`cl.sparse.last`\*`mrt.sparse.last`)
+- `vz.sparse.last`: Terminal volume of distribution
+  (`cl.sparse.last`/`kel.sparse.last`)
+
+The example below calculates all of them from the same data with
+intravenous dose information added. Note that because `kel.sparse.last`
+is calculated as 1/MRT rather than from a terminal log-linear
+($`\lambda_z`$) fit, `vz.sparse.last` is numerically equal to
+`vss.sparse.last`.
+
+``` r
+
+d_dose <- data.frame(id=unique(d_sparse$id), dose=100, time=0)
+o_dose <- PKNCAdose(d_dose, dose~time|id, route="intravascular")
+d_intervals_derived <-
+  data.frame(
+    start=0,
+    end=24,
+    sparse_auclast=TRUE,
+    sparse_aumclast=TRUE,
+    mrt.sparse.last=TRUE,
+    cl.sparse.last=TRUE,
+    kel.sparse.last=TRUE,
+    vss.sparse.last=TRUE,
+    vz.sparse.last=TRUE
+  )
+o_data_derived <- PKNCAdata(o_conc_sparse, o_dose, intervals=d_intervals_derived)
+o_nca_derived <- pk.nca(o_data_derived)
+```
+
+    ## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples per subject
+    ## Cannot yet calculate sparse degrees of freedom for multiple samples per subject
+
+``` r
+
+as.data.frame(o_nca_derived)
+```
+
+    ## # A tibble: 11 × 6
+    ##    start   end PPTESTCD        PPORRES PPANMETH exclude
+    ##    <dbl> <dbl> <chr>             <dbl> <chr>    <chr>  
+    ##  1     0    24 sparse_auclast   39.5   ""       NA     
+    ##  2     0    24 sparse_auc_se     7.31  ""       NA     
+    ##  3     0    24 sparse_auc_df    NA     ""       NA     
+    ##  4     0    24 sparse_aumclast 296.    ""       NA     
+    ##  5     0    24 sparse_aumc_se   66.9   ""       NA     
+    ##  6     0    24 sparse_aumc_df   NA     ""       NA     
+    ##  7     0    24 cl.sparse.last    2.53  ""       NA     
+    ##  8     0    24 mrt.sparse.last   7.49  ""       NA     
+    ##  9     0    24 vss.sparse.last  19.0   ""       NA     
+    ## 10     0    24 kel.sparse.last   0.134 ""       NA     
+    ## 11     0    24 vz.sparse.last   19.0   ""       NA
+
+## Notes on Sparse Calculation Behavior
+
+### Degrees of freedom with multiple samples per subject
+
+The degrees of freedom (`sparse_auc_df` and `sparse_aumc_df`) can only
+be calculated when each subject contributes a single sample to the
+profile (as in a serial sacrifice design). When any subject contributes
+more than one sample, as in the example data here, PKNCA warns that it
+“Cannot yet calculate sparse degrees of freedom for multiple samples per
+subject”, and the degrees of freedom are `NA`. That warning is the
+source of the warnings in the results above. The point estimates and
+standard errors are still calculated.
+
+### More than half of the measurements below the limit of quantification
+
+When calculating the mean concentration at a time point (see
+[`sparse_mean()`](https://humanpred.github.io/pknca/reference/sparse_mean.md)),
+if strictly more than 50% of the measurements at that time point are
+below the limit of quantification (BLQ), the mean for that time point is
+set to zero. At exactly 50% BLQ, the mean is calculated normally
+(including the BLQ values as zero).
+
+### Only the linear trapezoidal method is supported
+
+Sparse AUC and AUMC are only defined with the linear trapezoidal method
+in PKNCA. Calling
+[`pk.calc.sparse_auc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md)
+with any other `method` is an error, and sparse calculations within
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+always use the linear method (the `auc.method` option does not apply to
+them).

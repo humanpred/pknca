@@ -107,13 +107,46 @@ follows:</p>
 <ul>
 <li>
 <strong>Event Before</strong>: The type of event before the time of
-the requested output may be one of the following</li>
+the requested output. It may be any of the event types listed below
+other than <code>output_only</code>.</li>
 <li>
 <strong>Event At</strong>: The equivalent to “Event Before” but for
-the event occurring at the requested output time.</li>
+the event occurring at the requested output time. It may be any of the
+event types listed below other than <code>none</code>.</li>
 <li>
 <strong>Event After</strong>: The equivalent to “Event Before” but
-for the next event occurring after the requested output time.</li>
+for the next event occurring after the requested output time. It may be
+any of the event types listed below other than
+<code>output_only</code>.</li>
+</ul>
+<p>The event types are generated from the same choices used by the
+algorithm (so this list stays current with the code):</p>
+<ul>
+<li>
+<code>conc_dose_iv_bolus_after</code>: The instant just after an
+intravascular bolus dose that also has a concentration measurement at
+the dose time</li>
+<li>
+<code>conc_dose</code>: A concentration measurement and a dose at
+the same time; the concentration is interpreted as occurring just before
+the dose</li>
+<li>
+<code>dose_iv_bolus_after</code>: The instant just after an
+intravascular bolus dose (concentrations change instantaneously across
+the bolus)</li>
+<li>
+<code>dose</code>: A dose administration (without a concentration
+measurement at the same time); for an intravascular bolus dose, this is
+the instant just before the dose</li>
+<li>
+<code>conc</code>: A concentration measurement (without a dose at
+the same time)</li>
+<li>
+<code>output_only</code>: A requested output time where no
+concentration was measured and no dose was given</li>
+<li>
+<code>none</code>: No event (nothing occurs before the first event
+or after the last event)</li>
 </ul>
 <div class="section level3">
 <h3 id="observed-concentration">Observed concentration<a class="anchor" aria-label="anchor" href="#observed-concentration"></a>

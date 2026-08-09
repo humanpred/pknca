@@ -68,6 +68,19 @@ summary(o_nca)
 #> Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects
 ```
 
+When units are provided through
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
+and
+[`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md)
+like this,
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
+builds the units table automatically during construction by calling
+[`pknca_units_table()`](https://humanpred.github.io/pknca/reference/pknca_units_table.md)
+on the `PKNCAdata` object. You can also call
+[`pknca_units_table()`](https://humanpred.github.io/pknca/reference/pknca_units_table.md)
+on a `PKNCAdata` object yourself to build or inspect that units table
+directly.
+
 It is also possible to specify the units without them coming from
 columns in the data.
 
@@ -169,7 +182,7 @@ to use with the
 [`pknca_units_table()`](https://humanpred.github.io/pknca/reference/pknca_units_table.md)
 function or manually.
 
-The simplest method each of the types of units for inputs and
+The simplest method takes each of the types of units for inputs and
 automatically generates the units for each NCA parameter.
 
 ``` r
@@ -249,6 +262,50 @@ d_units_clean_manual[d_units_clean_manual$PPTESTCD %in% c("cmax", "tmax", "aucla
 #> 78          ng/mL     cmax   nmol/L      8.130081e+00
 #> 132      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
 #> 192 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
+```
+
+## What happens when units are missing for some parameters?
+
+A hand-made or hand-edited units table may not have a row for every
+parameter that an analysis requests. By default,
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+raises an error when units are provided for some but not all requested
+parameters so that results are not unintentionally reported without
+units. Setting the `allow_partial_missing_units` option to `TRUE`
+converts that error to a warning naming the parameters without units,
+and those parameters are reported without units. The option can be set
+for a single analysis with the `options` argument to
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
+(as below) or globally with
+`PKNCA.options(allow_partial_missing_units = TRUE)`.
+
+``` r
+
+o_conc <- PKNCAconc(as.data.frame(datasets::Theoph), conc~Time|Subject)
+d_dose <- datasets::Theoph[datasets::Theoph$Time == 0, c("Dose", "Time", "Subject")]
+o_dose <- PKNCAdose(d_dose, Dose~Time|Subject)
+d_units_full <- pknca_units_table(concu="mg/L", doseu="mg/kg", timeu="hr")
+# Drop the tmax row to simulate an incomplete units table
+d_units_partial <- d_units_full[!d_units_full$PPTESTCD %in% "tmax", ]
+o_data_partial <-
+  PKNCAdata(
+    o_conc, o_dose,
+    units=d_units_partial,
+    options=list(allow_partial_missing_units=TRUE)
+  )
+o_nca_partial <- pk.nca(o_data_partial)
+#> Warning in pknca_unit_conversion(result = result, units = data$units,
+#> allow_partial_missing_units = data$options$allow_partial_missing_units): Units
+#> are provided for some but not all parameters; missing for: tmax
+summary(o_nca_partial)
+#>  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)
+#>               0           24 12       74.6 [24.3]           .
+#>               0          Inf 12                 . 8.65 [17.0]
+#>                Tmax Half-life (hr) AUCinf,obs (hr*mg/L)
+#>                   .              .                    .
+#>  1.14 [0.630, 3.55]    8.18 [2.12]           115 [28.4]
+#> 
+#> Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects
 ```
 
 ## How do I add different unit conversions for different analytes?

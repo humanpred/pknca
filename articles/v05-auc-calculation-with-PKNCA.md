@@ -264,80 +264,44 @@ ggplot(my_conc[!is.na(my_conc$conc),],
 Partial AUCs integrate part of the area within a time range of interest.
 Partial AUCs are often of interest to assess bioequivalence with more
 detail than AUC_(0-$`\infty`$) or AUC_(0-last) may indicate. Within
-PKNCA, partial AUCs are treated like AUC_(last) with start and end times
-separately selected. (In a future version of PKNCA, they will be more
-simply calculated using an AUC_(interval).)
+PKNCA, partial AUCs are calculated with the interval AUC (`aucint`)
+family of parameters: `aucint.last`, `aucint.all`, `aucint.inf.obs`, and
+`aucint.inf.pred` integrate over the full interval from `start` to `end`
+while handling the region after `tlast` the same way as `auclast`,
+`aucall`, `aucinf.obs`, and `aucinf.pred`, respectively. (The `.dose`
+variants of each, such as `aucint.last.dose`, additionally interpolate
+concentrations at dose times within the interval.)
 
-When the starting and ending times are observed within the data, partial
-AUCs can be calculated using the parameter `auclast` as illustrated
-below.
+Request an `aucint` parameter like any other interval parameter with the
+`start` and `end` of the interval defining the range of integration.
+When the interval boundaries do not match observed time points,
+concentrations at the boundaries are automatically interpolated (or
+extrapolated, according to the method of the specific parameter), so no
+manual data preparation is required. In the example below, the
+concentration at the end time of 1.5 is not in the observed data, and it
+is interpolated automatically during the calculation.
 
 ``` r
 
-# Interpolation not required
-data_obs_obj <- PKNCAdata(conc_obj, intervals=data.frame(start=0, end=2, auclast=TRUE))
-results_obs_obj <- pk.nca(data_obs_obj)
+data_aucint_obj <-
+  PKNCAdata(conc_obj,
+            intervals=data.frame(start=0, end=c(2, 1.5), aucint.last=TRUE))
+results_aucint_obj <- pk.nca(data_aucint_obj)
 ```
 
     ## No dose information provided, calculations requiring dose will return NA.
 
 ``` r
 
-kable(as.data.frame(results_obs_obj))
+kable(as.data.frame(results_aucint_obj))
 ```
 
-| subject | start | end | PPTESTCD | PPORRES | PPANMETH             | exclude |
-|--------:|------:|----:|:---------|--------:|:---------------------|:--------|
-|       1 |     0 |   2 | auclast  |       4 | AUC: lin up/log down | NA      |
+| subject | start | end | PPTESTCD    | PPORRES | PPANMETH             | exclude |
+|--------:|------:|----:|:------------|--------:|:---------------------|:--------|
+|       1 |     0 | 2.0 | aucint.last |  4.0000 | AUC: lin up/log down | NA      |
+|       1 |     0 | 1.5 | aucint.last |  2.5625 | AUC: lin up/log down | NA      |
 
-When the starting and ending times are not observed within the data or
-when samples are below the limit of quantification, concentrations must
-be interpolated and added to the dataset before calculation as
-illustrated below.
-
-``` r
-
-# Interpolation required
-my_conc_interp <-
-  arrange(
-    bind_rows(
-      my_conc,
-      data.frame(conc=interp.extrap.conc(conc=my_conc$conc, time=my_conc$time, time.out=1.5),
-                 time=1.5,
-                 subject=1)),
-    time)
-kable(my_conc_interp)
-```
-
-| conc | time | subject | BLQ | measured | include_auclast | include_aucall | conc_aucinf.obs | conc_aucinf.pred |
-|---:|---:|---:|:---|:---|:---|:---|---:|---:|
-| 0.00 | 0.0 | 1 | TRUE | TRUE | TRUE | TRUE | 0.0000000 | 0.0000000 |
-| 2.50 | 1.0 | 1 | FALSE | TRUE | TRUE | TRUE | 2.5000000 | 2.5000000 |
-| 2.75 | 1.5 | 1 | NA | NA | NA | NA | NA | NA |
-| 3.00 | 2.0 | 1 | FALSE | TRUE | TRUE | TRUE | 3.0000000 | 3.0000000 |
-| 2.00 | 3.0 | 1 | FALSE | TRUE | TRUE | TRUE | 2.0000000 | 2.0000000 |
-| 1.50 | 4.0 | 1 | FALSE | TRUE | TRUE | TRUE | 1.5000000 | 1.5000000 |
-| 1.20 | 5.0 | 1 | FALSE | TRUE | TRUE | TRUE | 1.2000000 | 1.2000000 |
-| 1.10 | 8.0 | 1 | FALSE | TRUE | TRUE | TRUE | 1.1000000 | 1.0216136 |
-| 0.00 | 12.0 | 1 | TRUE | TRUE | FALSE | TRUE | 0.7153906 | 0.6644116 |
-| 0.00 | 24.0 | 1 | TRUE | TRUE | FALSE | FALSE | 0.1967862 | 0.1827632 |
-| NA | 36.0 | 1 | NA | FALSE | FALSE | FALSE | 0.0541310 | 0.0502736 |
-
-``` r
-
-conc_interp_obj <- PKNCAconc(my_conc_interp, conc~time|subject)
-data_interp_obj <- PKNCAdata(conc_interp_obj, intervals=data.frame(start=0, end=1.5, auclast=TRUE))
-results_interp <- pk.nca(data_interp_obj)
-```
-
-    ## No dose information provided, calculations requiring dose will return NA.
-
-``` r
-
-as.data.frame(results_interp)
-```
-
-    ## # A tibble: 1 × 7
-    ##   subject start   end PPTESTCD PPORRES PPANMETH             exclude
-    ##     <dbl> <dbl> <dbl> <chr>      <dbl> <chr>                <chr>  
-    ## 1       1     0   1.5 auclast     2.56 AUC: lin up/log down NA
+The area under the first moment curve (AUMC) has matching interval
+parameters (`aumcint.last`, `aumcint.all`, and the other `aumcint*`
+parameters), as do the intravenous C₀ back-extrapolated AUMC parameters
+(`aumciv*`), in the development version of PKNCA.

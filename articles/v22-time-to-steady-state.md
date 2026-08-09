@@ -1,9 +1,9 @@
 # Noncompartmental evaluation of time to steady-state
 
 Time to steady-state (TSS) can be estimated with PKNCA using either a
-monoexponential increase toward an asymptote or by a linear regression
-of the last points. According to Maganti (2008), the monoexponential
-method is preferred.
+monoexponential increase toward an asymptote or by stepwise tests of the
+slope of a linear regression. According to Maganti (2008), the
+monoexponential method is preferred.
 
 TSS can be estimated using either method using the
 [`pk.tss()`](https://humanpred.github.io/pknca/reference/pk.tss.md)
@@ -106,10 +106,15 @@ changed with the `tss.fraction` argument (see
 
 #### Stepwise Linear
 
-The stepwise linear method estimates if the slope of the predose
-concentrations is statistically significant starting from the last
-measurement and moving backward in time. It has bias in that more
-individuals will move the time to steady-state to a late time point.
+The stepwise linear method tests if the slope of the predose
+concentrations over time is statistically significant, beginning with a
+window that includes all of the dosing time points. The start of the
+window then moves forward in time, dropping the earliest remaining time
+point at each step, and every window extends to the last measurement.
+The time to steady-state is the start of the first (earliest) window
+whose slope is no longer statistically significant. It has bias in that
+more individuals will move the time to steady-state to a late time
+point.
 
 ``` r
 

@@ -2,7 +2,7 @@
 
 PKNCA provides functions to complete noncompartmental analysis (NCA) for
 pharmacokinetic (PK) data. Its intent is to provide a complete R-based
-solution-enabling data provenance for NCA. This will include the
+solution enabling data provenance for NCA. This will include the
 tracking of data cleaning, enabling of calculations, exporting of
 results, and general reporting. The library is designed to give a
 reasonable answer without user intervention (load, calculate, and
@@ -16,12 +16,15 @@ library will be discussed in a separate vignette.
 
 ## Quick Start
 
-The simplest analysis requires concentration and dosing data at a
-minimum. Given this, it then takes five function calls to provide
-summarized results. (Please note that this and the other examples in
-this document are intended to show the typical workflow, but they are
-not intended to run directly. For an example to run directly, please see
-[the theophylline
+The simplest analysis requires concentration data at a minimum; adding
+dosing data enables automatic interval determination and dose-dependent
+parameters (without dosing data, `intervals` must be provided to
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)).
+Given concentration and dosing data, it then takes five function calls
+to provide summarized results. (This example runs as-is; a few later
+examples in this document– the grouping and manual-interval sketches–
+only illustrate the workflow without running. For another complete
+example, please see [the theophylline
 example](https://humanpred.github.io/pknca/articles/v02-example-theophylline.md).)
 
 ``` r
@@ -84,6 +87,12 @@ summary(o_nca)
     ## 
     ## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects
 
+Note that
+[`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md)
+also accepts a `route` argument (`"extravascular"` or
+`"intravascular"`); when it is not given, extravascular administration
+is assumed.
+
 ## Data Handling
 
 After loading data, it must be in the right form. The minimum
@@ -92,7 +101,28 @@ requirements are that concentration, dose, and time must all be numeric
 they can be any mode.
 
 Values below the limit of quantification are coded as zeros (`0`), and
-missing values are coded as `NA`.
+missing values are coded as `NA`. If the limit of quantification itself
+is available, it can be given with the `lloq` argument to
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
+(a value or a column name), and it is carried through to the
+censored-likelihood (Tobit) half-life method (`hl_method = "tobit"`);
+see the [Tobit half-life
+vignette](https://humanpred.github.io/pknca/articles/v06-half-life-calculation-tobit.md)
+for details.
+
+Units may be assigned when creating the input objects with the unit
+arguments to
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
+and
+[`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md)
+(`concu`, `timeu`, `amountu`, `doseu`, and their `*_pref` counterparts
+for automatic conversion). When units are given, a units table is
+automatically created during
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
+construction so that calculated parameters carry their units. See the
+[unit assignment and conversion
+vignette](https://humanpred.github.io/pknca/articles/v07-unit-conversion.md)
+for details.
 
 ## Options: Make PKNCA Work Your Way
 
@@ -415,7 +445,7 @@ d_dose_both <- d_conc_both[d_conc_both$Time == 0 & d_conc_both$Analyte %in% "Par
 
 ## Create a concentration object specifying the concentration, time,
 ## study, and subject columns.  (Note that any number of grouping
-## levels is supporting; you are not restricted to this list.)
+## levels is supported; you are not restricted to this list.)
 o_conc <- PKNCAconc(d_conc_both, conc~Time|Study+Subject/Analyte)
 ## Create a dosing object specifying the dose, time, study, and
 ## subject columns.  (Note that the grouping factors should be a
@@ -593,7 +623,7 @@ o_data$intervals <- intervals_manual
 ### Keeping a column from intervals
 
 When computing NCA using actual times, grouping by start and end time in
-summaries (see layer) is less helpful because everyone could have
+summaries (see later) is less helpful because everyone could have
 different start and end times. So, you may keep the interval columns
 using the option `"keep_interval_cols"` as follows (where “dosetype”
 must be a column name in the intervals):
@@ -606,7 +636,11 @@ o_data <- PKNCAdata(o_conc, o_dose, options = list(keep_interval_cols = "dosetyp
 ## Summarizing results
 
 When NCA has been calculated, you can summarize the results with the
-[`summary()`](https://rdrr.io/r/base/summary.html) function.
+[`summary()`](https://rdrr.io/r/base/summary.html) function, and the
+row-level (individual) results are available with
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) (which
+can also generate CDISC PP-style output with
+`as.data.frame(o_nca, out_format = "cdisc")`).
 
 ``` r
 
@@ -617,7 +651,7 @@ By default, it will count the number of unique subjects (`N`) in the
 summary, and when the number of subjects differs from the number of
 measurements included in a summary (`n`), it will summarize `n` for the
 given parameters. Note that counting of “n” includes all non-missing
-values that were not excluded from summarization; this will included all
+values that were not excluded from summarization; this will include all
 zeros that are e.g. excluded from geometric statistics.
 
 Edge cases like two unique subjects where one has an excluded value and
@@ -636,6 +670,9 @@ point selection, for instance– you can use
 object (`o_nca` in the example above). Using
 [`update()`](https://rdrr.io/r/stats/update.html) will recalculate the
 minimum-required number of calculations for the data that are changed.
+Only changes to the concentration or dose data are recalculated
+selectively; any other change (for example, to the intervals or options)
+triggers a full recalculation with a warning.
 
 To use [`update()`](https://rdrr.io/r/stats/update.html), give it your
 existing results and the new `PKNCAdata` object you want to use.
@@ -703,6 +740,12 @@ summary(o_nca_update)
     ##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]
     ## 
     ## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects
+
+The per-subject “No concentration data” warnings above occur because
+[`update()`](https://rdrr.io/r/stats/update.html) filters the
+concentration data to only the changed subjects while keeping all dose
+rows, so the unchanged subjects have doses but no concentrations during
+the partial recalculation.
 
 Now, assume that instead of calculating `auclast` from time 0 to 24, we
 want to calculate `aucint.inf.obs`. We can change the intervals to

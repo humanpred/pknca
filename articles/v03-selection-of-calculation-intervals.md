@@ -57,7 +57,8 @@ knitr::kable(intervals_manual)
 
 ``` r
 
-PKNCAdata(d_conc, intervals=intervals_manual)
+d_conc_multi_obj <- PKNCAconc(d_conc_multi, conc~time|treatment+ID)
+PKNCAdata(d_conc_multi_obj, intervals=intervals_manual)
 ```
 
     ## Formula for concentration:
@@ -67,13 +68,13 @@ PKNCAdata(d_conc, intervals=intervals_manual)
     ## Nominal time column is not specified.
     ## 
     ## First 6 rows of concentration data:
-    ##    study treatment ID time      conc   analyte exclude volume duration
-    ##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    <NA>     NA        0
+    ##  treatment ID      conc time exclude volume duration
+    ##      Trt 1  1 0.0000000    0    <NA>     NA        0
+    ##      Trt 1  1 0.6140526    1    <NA>     NA        0
+    ##      Trt 1  1 0.8100022    2    <NA>     NA        0
+    ##      Trt 1  1 0.8425422    4    <NA>     NA        0
+    ##      Trt 1  1 0.7771994    6    <NA>     NA        0
+    ##      Trt 1  1 0.7052469    8    <NA>     NA        0
     ## No dosing information.
     ## 
     ## With 1 rows of interval specifications.
@@ -127,7 +128,12 @@ knitr::kable(intervals_manual)
 
 Intervals are defined by `data.frame`s with one row per interval, zero
 or more columns to match the groups from the `PKNCAdata` object, and one
-or more NCA parameters to calculate.
+or more NCA parameters to calculate. An interval may also have an
+`impute` column specifying the data imputation method(s) to apply to the
+interval before calculation (see the Data Imputation vignette for
+details). Any other columns named in the `keep_interval_cols` PKNCA
+option are passed through from the intervals to the corresponding rows
+of the results.
 
 Selection of points within an interval occurs by choosing any point at
 or after the `start` and at or before the `end`.
@@ -251,7 +257,8 @@ knitr::kable(intervals_manual)
 
 ``` r
 
-my.data <- PKNCAdata(d_conc, intervals=intervals_manual)
+d_conc_multi_obj <- PKNCAconc(d_conc_multi, conc~time|treatment+ID)
+my.data <- PKNCAdata(d_conc_multi_obj, intervals=intervals_manual)
 ```
 
 ## Overlapping Intervals and Different Calculations by Interval
@@ -333,18 +340,31 @@ intravenous infusions and urine or fecal sample collections. Inform
 PKNCA of durations with the `duration` argument to the `PKNCAdose` and
 `PKNCAconc` functions.
 
-Durations data are selected based on both the beginning and ending of
-the duration existing within the interval.
+Duration data are selected for an interval by the event time, which is
+the time of the start of the duration (for example, the start of a urine
+collection). Like any other data point, a duration record is selected
+when its start time is at or after the interval `start` and at or before
+the interval `end`; the end of the duration is not considered. A
+collection that starts within the interval and ends after the interval
+`end` is therefore selected, and it contributes its full amount to
+calculations within the interval (the amount is not pro-rated to the
+portion of the duration inside the interval). For the simplest
+interpretation of results, align collection start and end times with the
+interval boundaries.
 
-    ## Warning: Removed 4 rows containing missing values or values outside the scale range
-    ## (`geom_segment()`).
+The figures below show which durations are selected for two intervals.
+The vertical arrows indicate the interval `start` and `end`, and each
+horizontal segment is a duration (for example, a urine collection) with
+tick marks at the collection boundaries. In the first figure, the
+interval is from 0 to 24, and all four durations are selected, including
+the duration from 24 to 48 because its start time is exactly at the
+interval `end`. In the second figure, the interval is from 0 to 16: the
+duration from 12 to 24 is selected because its start time is within the
+interval, even though the collection extends past the interval `end`
+(and its full amount contributes to the interval), while the duration
+from 24 to 48 is not selected.
 
-![](v03-selection-of-calculation-intervals_files/figure-html/interval_yes_no-1.png)
-
-    ## Warning: Removed 4 rows containing missing values or values outside the scale range
-    ## (`geom_segment()`).
-
-![](v03-selection-of-calculation-intervals_files/figure-html/interval_yes_no-2.png)
+![](v03-selection-of-calculation-intervals_files/figure-html/interval_yes_no-1.png)![](v03-selection-of-calculation-intervals_files/figure-html/interval_yes_no-2.png)
 
 ## Parameters Available for Calculation in an Interval
 
@@ -453,7 +473,6 @@ information about the parameter, see the documentation for the function.
 | ctrough | conc | The trough (end of interval) concentration | pk.calc.ctrough |
 | ctrough.dn | conc_dosenorm | Dose normalized ctrough | pk.calc.dn |
 | deg.fluc | % | Degree of fluctuation | pk.calc.deg.fluc |
-| end | time | Ending time of the interval (potentially infinity) | (none) |
 | ermax | amount_time | The maximum excretion rate (typically in urine or feces) | pk.calc.ermax |
 | ertlst | time | The midpoint collection time of the last measurable excretion rate (typically in urine or feces) | pk.calc.ertlst |
 | ertmax | time | The midpoint collection time of the maximum excretion rate (typically in urine or feces) | pk.calc.ertmax |
@@ -507,7 +526,6 @@ information about the parameter, see the documentation for the function.
 | sparse_aumc_df | count | For sparse PK sampling, the degrees of freedom for the AUMC variance estimate | See the parameter name sparse_aumclast |
 | sparse_aumc_se | aumc | For sparse PK sampling, the standard error of the area under the moment curve | See the parameter name sparse_aumclast |
 | sparse_aumclast | aumc | For sparse PK sampling, the area under the moment curve from the beginning of the interval to the last concentration above the limit of quantification | pk.calc.sparse_aumclast |
-| start | time | Starting time of the interval | (none) |
 | swing | % | Swing relative to Cmin | pk.calc.swing |
 | tfirst | time | Time of the first concentration above the limit of quantification | pk.calc.tfirst |
 | thalf.eff.iv.last | time | The effective half-life (as determined from the intravenous MRTlast) | pk.calc.thalf.eff |

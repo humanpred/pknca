@@ -100,7 +100,7 @@ each group.
     optional; interval definitions are usually given; calculation
     options may be given
 - [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md):
-  calculate the NCA parameters from a data object into a `PKNCAresult`
+  calculate the NCA parameters from a data object into a `PKNCAresults`
   object
 
 ### How do I do a simple calculation? all steps

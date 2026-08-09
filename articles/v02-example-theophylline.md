@@ -22,7 +22,12 @@ knitr::kable(head(datasets::Theoph))
 
 The columns that we will be interested in for our analysis are conc,
 Time, and Subject in the concentration data set and Dose, Time, and
-Subject for the dosing data set.
+Subject for the dosing data set. Note that `Dose` in the theophylline
+dataset is in mg/kg rather than mg; the parameters calculated below do
+not use the dose amount, but dose-dependent parameters (for example,
+clearance, volume of distribution, or dose-normalized parameters) would
+first require converting the dose to mg by multiplying by the subject’s
+body weight (`Wt`).
 
 ``` r
 
@@ -63,7 +68,7 @@ dose_obj <- PKNCAdose(d_dose, Dose~Time|Subject)
 
 After loading the data, they must be combined to prepare for parameter
 calculation. Intervals for calculation will automatically be selected
-based on the `single.dose.aucs setting` in `PKNCA.options`
+based on the `single.dose.aucs` setting in `PKNCA.options`
 
 ``` r
 
@@ -114,7 +119,7 @@ and the parameters requested. The manual specification can also include
 any grouping factors from the concentration data set. Column order of
 the intervals is not important. When intervals are manually specified,
 they are expanded to the full interval set when added to a PKNCAdata
-object (in other words, a column is created for each parameter. Also,
+object (in other words, a column is created for each parameter). Also,
 PKNCA automatically calculates parameters required for the NCA, so while
 lambda.z is required for calculating AUC_(0-$`\infty`$), you do not have
 to specify it in the parameters requested.
@@ -205,10 +210,10 @@ vignette for more information).
 
 ``` r
 
-d_conc <- PKNCAconc(as.data.frame(Theoph), conc~Time|Subject)
+conc_obj <- PKNCAconc(as.data.frame(datasets::Theoph), conc~Time|Subject)
 conc_obj_multi <-
   PKNCAconc(
-    superposition(d_conc,
+    superposition(conc_obj,
                   tau=168,
                   dose.times=seq(0, 144, by=24),
                   n.tau=1,
@@ -640,7 +645,7 @@ print(results_obj)
     ## attr(,"class")
     ## [1] "PKNCAresults" "list"        
     ## attr(,"provenance")
-    ## Provenance hash 1010dd656fa2060bf5d457ba131dbe6d generated on 2026-08-07 20:24:23.978962 with R version 4.6.1 (2026-06-24).
+    ## Provenance hash 1010dd656fa2060bf5d457ba131dbe6d generated on 2026-08-09 15:16:48.589864 with R version 4.6.1 (2026-06-24).
 
 ``` r
 

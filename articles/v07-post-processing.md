@@ -51,16 +51,41 @@ function.
 
 Several exclusion functions are built into PKNCA. The built-in functions
 will exclude all results that either apply to the current value or are
-dependencies of the current value. For example, $`AUC_\infty`$ depends
-on $`\lambda_z`$, and excluding based on span ratio will exclude all
-parameters that depend on $`\lambda_z`$, including $`AUC_\infty`$.
+dependents of the current value (parameters that depend on it). For
+example, $`AUC_\infty`$ depends on $`\lambda_z`$, and excluding based on
+span ratio will exclude all parameters that depend on $`\lambda_z`$,
+including $`AUC_\infty`$.
 
 To see the built-in functions, type
 [`?exclude_nca`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
-at the R command line and review that help page. To use them, provide
-the function to the `FUN` argument of
+and
+[`?exclude_nca_by_param`](https://humanpred.github.io/pknca/reference/exclude_nca_by_param.md)
+at the R command line and review those help pages. The built-in rules
+exclude based on a low span ratio
+([`exclude_nca_span.ratio()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)),
+a high percent AUC extrapolated
+([`exclude_nca_max.aucinf.pext()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)),
+too few measured concentrations for AUC calculation
+([`exclude_nca_count_conc_measured()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)),
+a low half-life r-squared or adjusted r-squared
+([`exclude_nca_min.hl.r.squared()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
+and
+[`exclude_nca_min.hl.adj.r.squared()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)),
+and an implausibly early $`T_{max}`$
+([`exclude_nca_tmax_early()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
+and
+[`exclude_nca_tmax_0()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)).
+They are built on the more general
+[`exclude_nca_by_param()`](https://humanpred.github.io/pknca/reference/exclude_nca_by_param.md),
+which excludes results when a single parameter is below a minimum
+threshold and/or above a maximum threshold, and which can also be used
+directly for any parameter. To use them, provide the function to the
+`FUN` argument of
 [`exclude()`](https://humanpred.github.io/pknca/reference/exclude.md) as
-illustrated below.
+illustrated below. When an exclusion function returns its own reason
+text (as the built-in functions do), that text is used as the reason for
+exclusion, overriding the `reason` argument to
+[`exclude()`](https://humanpred.github.io/pknca/reference/exclude.md).
 
 ``` r
 
@@ -380,7 +405,7 @@ are calculated for each parameter are set with
 [`PKNCA.set.summary()`](https://humanpred.github.io/pknca/reference/PKNCA.set.summary.md),
 and they are described in the caption. When a parameter is not requested
 for a given interval, it is illustrated with a period (`.`), by default
-(customizable with the `not.requested.string` argument to
+(customizable with the `not_requested` argument to
 [`summary()`](https://rdrr.io/r/base/summary.html)). When a parameter is
 required to calculate another parameter, but it is not specifically
 requested, it will not be shown in the summary.
@@ -483,3 +508,38 @@ as.data.frame(results_excl_span) %>%
     ## 18       2     0   Inf cmax                  8.33   ""                   NA     
     ## 19       2     0   Inf tmax                  1.92   ""                   NA     
     ## 20       2     0   Inf tlast                24.3    ""                   NA
+
+### Concentrations Used for Half-Life Estimation
+
+To find which concentration measurements were used for the half-life
+($`\lambda_z`$) estimation, use
+[`get_halflife_points()`](https://humanpred.github.io/pknca/reference/get_halflife_points.md).
+It returns a logical vector with one value per row of the concentration
+data: `TRUE` if the point was used in the half-life fit, `FALSE` if it
+was not used but a half-life was calculated for the interval, and `NA`
+if no half-life was calculated for the interval (or if the row is
+excluded from all calculations). It accepts either a PKNCAresults or a
+PKNCAdata object (with a PKNCAdata object, the half-life is calculated
+first), and the intervals do not need to start at time 0.
+
+``` r
+
+d_conc_hl <- d_conc
+d_conc_hl$hl_used <- get_halflife_points(results_obj)
+# The points used for the half-life fit are the later time points
+d_conc_hl %>%
+  filter(Subject == 1)
+```
+
+    ##    Subject   Wt Dose  Time  conc hl_used
+    ## 1        1 79.6 4.02  0.00  0.74   FALSE
+    ## 2        1 79.6 4.02  0.25  2.84   FALSE
+    ## 3        1 79.6 4.02  0.57  6.57   FALSE
+    ## 4        1 79.6 4.02  1.12 10.50   FALSE
+    ## 5        1 79.6 4.02  2.02  9.66   FALSE
+    ## 6        1 79.6 4.02  3.82  8.58   FALSE
+    ## 7        1 79.6 4.02  5.10  8.36   FALSE
+    ## 8        1 79.6 4.02  7.03  7.47   FALSE
+    ## 9        1 79.6 4.02  9.05  6.89    TRUE
+    ## 10       1 79.6 4.02 12.12  5.94    TRUE
+    ## 11       1 79.6 4.02 24.37  3.28    TRUE

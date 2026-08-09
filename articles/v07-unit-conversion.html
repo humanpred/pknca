@@ -133,6 +133,13 @@ have units.</p>
 <span><span class="co">#&gt;  1.14 [0.630, 3.55]    8.18 [2.12]           115 [28.4]</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
+<p>When units are provided through <code><a href="../reference/PKNCAconc.html">PKNCAconc()</a></code> and
+<code><a href="../reference/PKNCAdose.html">PKNCAdose()</a></code> like this, <code><a href="../reference/PKNCAdata.html">PKNCAdata()</a></code> builds the
+units table automatically during construction by calling
+<code><a href="../reference/pknca_units_table.html">pknca_units_table()</a></code> on the <code>PKNCAdata</code> object.
+You can also call <code><a href="../reference/pknca_units_table.html">pknca_units_table()</a></code> on a
+<code>PKNCAdata</code> object yourself to build or inspect that units
+table directly.</p>
 <p>It is also possible to specify the units without them coming from
 columns in the data.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -220,7 +227,7 @@ the <code>PKNCAdata</code> object. You will add the units with the
 <p>A unit assignment and conversion table can be generated as a
 data.frame to use with the <code><a href="../reference/pknca_units_table.html">pknca_units_table()</a></code> function or
 manually.</p>
-<p>The simplest method each of the types of units for inputs and
+<p>The simplest method takes each of the types of units for inputs and
 automatically generates the units for each NCA parameter.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_units_auto</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pknca_units_table.html">pknca_units_table</a></span><span class="op">(</span>concu<span class="op">=</span><span class="st">"ng/mL"</span>, doseu<span class="op">=</span><span class="st">"mg"</span>, amountu<span class="op">=</span><span class="st">"mg"</span>, timeu<span class="op">=</span><span class="st">"hr"</span><span class="op">)</span></span>
@@ -290,6 +297,46 @@ not specify that conversion; all conversions must be specified.</p>
 <span><span class="co">#&gt; 192 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="what-happens-when-units-are-missing-for-some-parameters">What happens when units are missing for some parameters?<a class="anchor" aria-label="anchor" href="#what-happens-when-units-are-missing-for-some-parameters"></a>
+</h2>
+<p>A hand-made or hand-edited units table may not have a row for every
+parameter that an analysis requests. By default, <code><a href="../reference/pk.nca.html">pk.nca()</a></code>
+raises an error when units are provided for some but not all requested
+parameters so that results are not unintentionally reported without
+units. Setting the <code>allow_partial_missing_units</code> option to
+<code>TRUE</code> converts that error to a warning naming the parameters
+without units, and those parameters are reported without units. The
+option can be set for a single analysis with the <code>options</code>
+argument to <code><a href="../reference/PKNCAdata.html">PKNCAdata()</a></code> (as below) or globally with
+<code>PKNCA.options(allow_partial_missing_units = TRUE)</code>.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">o_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span><span class="op">)</span>, <span class="va">conc</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span><span class="op">)</span></span>
+<span><span class="va">d_dose</span> <span class="op">&lt;-</span> <span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span><span class="op">[</span><span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span><span class="op">$</span><span class="va">Time</span> <span class="op">==</span> <span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Dose"</span>, <span class="st">"Time"</span>, <span class="st">"Subject"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">o_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span><span class="va">d_dose</span>, <span class="va">Dose</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span><span class="op">)</span></span>
+<span><span class="va">d_units_full</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pknca_units_table.html">pknca_units_table</a></span><span class="op">(</span>concu<span class="op">=</span><span class="st">"mg/L"</span>, doseu<span class="op">=</span><span class="st">"mg/kg"</span>, timeu<span class="op">=</span><span class="st">"hr"</span><span class="op">)</span></span>
+<span><span class="co"># Drop the tmax row to simulate an incomplete units table</span></span>
+<span><span class="va">d_units_partial</span> <span class="op">&lt;-</span> <span class="va">d_units_full</span><span class="op">[</span><span class="op">!</span><span class="va">d_units_full</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"tmax"</span>, <span class="op">]</span></span>
+<span><span class="va">o_data_partial</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span></span>
+<span>    <span class="va">o_conc</span>, <span class="va">o_dose</span>,</span>
+<span>    units<span class="op">=</span><span class="va">d_units_partial</span>,</span>
+<span>    options<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>allow_partial_missing_units<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">o_nca_partial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_partial</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in pknca_unit_conversion(result = result, units = data$units,</span></span>
+<span><span class="co">#&gt; allow_partial_missing_units = data$options$allow_partial_missing_units): Units</span></span>
+<span><span class="co">#&gt; are provided for some but not all parameters; missing for: tmax</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca_partial</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)</span></span>
+<span><span class="co">#&gt;               0           24 12       74.6 [24.3]           .</span></span>
+<span><span class="co">#&gt;               0          Inf 12                 . 8.65 [17.0]</span></span>
+<span><span class="co">#&gt;                Tmax Half-life (hr) AUCinf,obs (hr*mg/L)</span></span>
+<span><span class="co">#&gt;                   .              .                    .</span></span>
+<span><span class="co">#&gt;  1.14 [0.630, 3.55]    8.18 [2.12]           115 [28.4]</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="how-do-i-add-different-unit-conversions-for-different-analytes">How do I add different unit conversions for different analytes?<a class="anchor" aria-label="anchor" href="#how-do-i-add-different-unit-conversions-for-different-analytes"></a>
 </h2>
 <p>Sometimes, when multiple analytes are used and, for example, molar
@@ -300,7 +347,7 @@ to the units specification.</p>
 <p>Start by setting up a concentration dataset with two analytes. Since
 the dosing doesn’t have an “Analyte” column, it will be matched to all
 concentration measures for the subject.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_conc_theoph</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span><span class="op">)</span></span>
 <span><span class="va">d_conc_theoph</span><span class="op">$</span><span class="va">Analyte</span> <span class="op">&lt;-</span> <span class="st">"Theophylline"</span></span>
 <span><span class="co"># Approximately 6% of theophylline is metabolized to caffeine</span></span>
@@ -315,7 +362,7 @@ concentration measures for the subject.</p>
 <span>                                  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Dose"</span>, <span class="st">"Time"</span>, <span class="st">"Subject"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <p>Setup the units with an “Analyte” column to separate the units
 used.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_units_theoph</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="../reference/pknca_units_table.html">pknca_units_table</a></span><span class="op">(</span></span>
 <span>    concu<span class="op">=</span><span class="st">"mg/L"</span>, doseu<span class="op">=</span><span class="st">"mg/kg"</span>, timeu<span class="op">=</span><span class="st">"hr"</span>,</span>
@@ -343,7 +390,7 @@ used.</p>
 <span><span class="va">d_units</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">d_units_theoph</span>, <span class="va">d_units_caffeine</span><span class="op">)</span></span></code></pre></div>
 <p>Now, calculate adding the different units per analyte to the data
 object.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">o_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc</span>, <span class="va">conc</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span><span class="op">/</span><span class="va">Analyte</span><span class="op">)</span></span>
 <span><span class="va">o_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span><span class="va">d_dose</span>, <span class="va">Dose</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span><span class="op">)</span></span>
 <span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span>, units<span class="op">=</span><span class="va">d_units</span><span class="op">)</span></span>

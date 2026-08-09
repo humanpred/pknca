@@ -79,7 +79,7 @@
                         <h4 data-toc-skip class="author">Bill
 Denney</h4>
             
-            <h4 data-toc-skip class="date">2026-08-07</h4>
+            <h4 data-toc-skip class="date">2026-08-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/humanpred/pknca/blob/main/vignettes/v22-time-to-steady-state.Rmd" class="external-link"><code>vignettes/v22-time-to-steady-state.Rmd</code></a></small>
       <div class="d-none name"><code>v22-time-to-steady-state.Rmd</code></div>
@@ -88,9 +88,9 @@ Denney</h4>
     
     
 <p>Time to steady-state (TSS) can be estimated with PKNCA using either a
-monoexponential increase toward an asymptote or by a linear regression
-of the last points. According to Maganti (2008), the monoexponential
-method is preferred.</p>
+monoexponential increase toward an asymptote or by stepwise tests of the
+slope of a linear regression. According to Maganti (2008), the
+monoexponential method is preferred.</p>
 <p>TSS can be estimated using either method using the
 <code><a href="../reference/pk.tss.html">pk.tss()</a></code> function in PKNCA.</p>
 <div class="section level2">
@@ -183,10 +183,15 @@ changed with the <code>tss.fraction</code> argument (see
 <div class="section level4">
 <h4 id="stepwise-linear">Stepwise Linear<a class="anchor" aria-label="anchor" href="#stepwise-linear"></a>
 </h4>
-<p>The stepwise linear method estimates if the slope of the predose
-concentrations is statistically significant starting from the last
-measurement and moving backward in time. It has bias in that more
-individuals will move the time to steady-state to a late time point.</p>
+<p>The stepwise linear method tests if the slope of the predose
+concentrations over time is statistically significant, beginning with a
+window that includes all of the dosing time points. The start of the
+window then moves forward in time, dropping the earliest remaining time
+point at each step, and every window extends to the last measurement.
+The time to steady-state is the start of the first (earliest) window
+whose slope is no longer statistically significant. It has bias in that
+more individuals will move the time to steady-state to a late time
+point.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tss_step</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="../reference/pk.tss.stepwise.linear.html">pk.tss.stepwise.linear</a></span><span class="op">(</span></span>

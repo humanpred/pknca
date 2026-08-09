@@ -201,7 +201,7 @@ o_result <- suppressMessages(pk.nca(o_data))
     optional; interval definitions are usually given; calculation
     options may be given
 - [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md):
-  calculate the NCA parameters from a data object into a `PKNCAresult`
+  calculate the NCA parameters from a data object into a `PKNCAresults`
   object
 
 ### How do I do a simple calculation? all steps
@@ -630,8 +630,13 @@ Data may be included/excluded in two ways:
   other analyses
 
 For both ways of including/excluding data, it is defined by a column in
-the input data. The column is either `NA` or an empty string (`""`) to
-indicate “no” or any other text to indicate “yes”.
+the input data:
+
+- The overall `exclude` column is text: `NA` or an empty string (`""`)
+  keeps the row, and any other text excludes it (the text is the reason
+  for exclusion).
+- The half-life `exclude_half.life` and `include_half.life` columns are
+  logical: `TRUE` marks the point, and `FALSE` or `NA` does not.
 
 ### Exclude data points overall
 
@@ -707,6 +712,10 @@ New phone. Who dis?
 - Require λz`> 0`.
 - If more than one fit is available at this point, select the one with
   the most points included.
+
+Only points after the last dose administration are considered (since
+PKNCA 0.12.1), and a censored-likelihood (Tobit) estimation method is
+available with `hl_method = "tobit"` (development version).
 
 Note: WinNonlin first requires λz`> 0` then selects for adjusted r².
 Therefore, WinNonlin will occasionally provide a half-life when PKNCA
@@ -844,9 +853,9 @@ for all available parameters.
 ### When are intervals (partly) ignored?
 
 Very few parameters reach outside of the `start` and `end` of an
-interval for additional information about what is being calculated. As
-of the writing of these training materials (PKNCA version 0.9.5), the
-only parameters that look outside are the `aucint` class of parameters.
+interval for additional information about what is being calculated. The
+only parameters that look outside are the `aucint` and `aumcint` classes
+of parameters.
 
 AUC_(int) may look after the end of the interval to calculate the
 concentration at `end`.
@@ -1012,8 +1021,8 @@ d_multidose <-
   superposition(
     conc=d_prep$conc,
     time=d_prep$Time,
-    tau=96, # 48 hours
-    n.tau=1, # One tau interval (0 to 48 hours)
+    tau=96, # 96 hours
+    n.tau=1, # One tau interval (0 to 96 hours)
     dose.times=dose_times
   )
 pk.tss.monoexponential(

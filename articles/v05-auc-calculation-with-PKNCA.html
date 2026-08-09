@@ -475,20 +475,42 @@ interest. Partial AUCs are often of interest to assess bioequivalence
 with more detail than
 AUC<sub>0-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>∞</mi><annotation encoding="application/x-tex">\infty</annotation></semantics></math></sub>
 or AUC<sub>0-last</sub> may indicate. Within PKNCA, partial AUCs are
-treated like AUC<sub>last</sub> with start and end times separately
-selected. (In a future version of PKNCA, they will be more simply
-calculated using an AUC<sub>interval</sub>.)</p>
-<p>When the starting and ending times are observed within the data,
-partial AUCs can be calculated using the parameter <code>auclast</code>
-as illustrated below.</p>
+calculated with the interval AUC (<code>aucint</code>) family of
+parameters: <code>aucint.last</code>, <code>aucint.all</code>,
+<code>aucint.inf.obs</code>, and <code>aucint.inf.pred</code> integrate
+over the full interval from <code>start</code> to <code>end</code> while
+handling the region after <code>tlast</code> the same way as
+<code>auclast</code>, <code>aucall</code>, <code>aucinf.obs</code>, and
+<code>aucinf.pred</code>, respectively. (The <code>.dose</code> variants
+of each, such as <code>aucint.last.dose</code>, additionally interpolate
+concentrations at dose times within the interval.)</p>
+<p>Request an <code>aucint</code> parameter like any other interval
+parameter with the <code>start</code> and <code>end</code> of the
+interval defining the range of integration. When the interval boundaries
+do not match observed time points, concentrations at the boundaries are
+automatically interpolated (or extrapolated, according to the method of
+the specific parameter), so no manual data preparation is required. In
+the example below, the concentration at the end time of 1.5 is not in
+the observed data, and it is interpolated automatically during the
+calculation.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Interpolation not required</span></span>
-<span><span class="va">data_obs_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">conc_obj</span>, intervals<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>start<span class="op">=</span><span class="fl">0</span>, end<span class="op">=</span><span class="fl">2</span>, auclast<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">results_obs_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obs_obj</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">data_aucint_obj</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">conc_obj</span>,</span>
+<span>            intervals<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>start<span class="op">=</span><span class="fl">0</span>, end<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1.5</span><span class="op">)</span>, aucint.last<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">results_aucint_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_aucint_obj</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## No dose information provided, calculations requiring dose will return NA.</span></span></code></pre>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obs_obj</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_aucint_obj</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
+<colgroup>
+<col width="11%">
+<col width="8%">
+<col width="5%">
+<col width="17%">
+<col width="11%">
+<col width="31%">
+<col width="11%">
+</colgroup>
 <thead><tr class="header">
 <th align="right">subject</th>
 <th align="right">start</th>
@@ -498,189 +520,32 @@ as illustrated below.</p>
 <th align="left">PPANMETH</th>
 <th align="left">exclude</th>
 </tr></thead>
-<tbody><tr class="odd">
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">2</td>
-<td align="left">auclast</td>
-<td align="right">4</td>
-<td align="left">AUC: lin up/log down</td>
-<td align="left">NA</td>
-</tr></tbody>
-</table>
-<p>When the starting and ending times are not observed within the data
-or when samples are below the limit of quantification, concentrations
-must be interpolated and added to the dataset before calculation as
-illustrated below.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Interpolation required</span></span>
-<span><span class="va">my_conc_interp</span> <span class="op">&lt;-</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
-<span>      <span class="va">my_conc</span>,</span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>conc<span class="op">=</span><span class="fu"><a href="../reference/interp.extrap.conc.html">interp.extrap.conc</a></span><span class="op">(</span>conc<span class="op">=</span><span class="va">my_conc</span><span class="op">$</span><span class="va">conc</span>, time<span class="op">=</span><span class="va">my_conc</span><span class="op">$</span><span class="va">time</span>, time.out<span class="op">=</span><span class="fl">1.5</span><span class="op">)</span>,</span>
-<span>                 time<span class="op">=</span><span class="fl">1.5</span>,</span>
-<span>                 subject<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    <span class="va">time</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">my_conc_interp</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="5%">
-<col width="5%">
-<col width="8%">
-<col width="6%">
-<col width="9%">
-<col width="16%">
-<col width="15%">
-<col width="16%">
-<col width="17%">
-</colgroup>
-<thead><tr class="header">
-<th align="right">conc</th>
-<th align="right">time</th>
-<th align="right">subject</th>
-<th align="left">BLQ</th>
-<th align="left">measured</th>
-<th align="left">include_auclast</th>
-<th align="left">include_aucall</th>
-<th align="right">conc_aucinf.obs</th>
-<th align="right">conc_aucinf.pred</th>
-</tr></thead>
 <tbody>
 <tr class="odd">
-<td align="right">0.00</td>
-<td align="right">0.0</td>
 <td align="right">1</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="right">0.0000000</td>
-<td align="right">0.0000000</td>
-</tr>
-<tr class="even">
-<td align="right">2.50</td>
-<td align="right">1.0</td>
-<td align="right">1</td>
-<td align="left">FALSE</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="right">2.5000000</td>
-<td align="right">2.5000000</td>
-</tr>
-<tr class="odd">
-<td align="right">2.75</td>
-<td align="right">1.5</td>
-<td align="right">1</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="right">3.00</td>
+<td align="right">0</td>
 <td align="right">2.0</td>
-<td align="right">1</td>
-<td align="left">FALSE</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="right">3.0000000</td>
-<td align="right">3.0000000</td>
-</tr>
-<tr class="odd">
-<td align="right">2.00</td>
-<td align="right">3.0</td>
-<td align="right">1</td>
-<td align="left">FALSE</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="right">2.0000000</td>
-<td align="right">2.0000000</td>
-</tr>
-<tr class="even">
-<td align="right">1.50</td>
-<td align="right">4.0</td>
-<td align="right">1</td>
-<td align="left">FALSE</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="right">1.5000000</td>
-<td align="right">1.5000000</td>
-</tr>
-<tr class="odd">
-<td align="right">1.20</td>
-<td align="right">5.0</td>
-<td align="right">1</td>
-<td align="left">FALSE</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="right">1.2000000</td>
-<td align="right">1.2000000</td>
-</tr>
-<tr class="even">
-<td align="right">1.10</td>
-<td align="right">8.0</td>
-<td align="right">1</td>
-<td align="left">FALSE</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="right">1.1000000</td>
-<td align="right">1.0216136</td>
-</tr>
-<tr class="odd">
-<td align="right">0.00</td>
-<td align="right">12.0</td>
-<td align="right">1</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="left">FALSE</td>
-<td align="left">TRUE</td>
-<td align="right">0.7153906</td>
-<td align="right">0.6644116</td>
-</tr>
-<tr class="even">
-<td align="right">0.00</td>
-<td align="right">24.0</td>
-<td align="right">1</td>
-<td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="right">0.1967862</td>
-<td align="right">0.1827632</td>
-</tr>
-<tr class="odd">
-<td align="right">NA</td>
-<td align="right">36.0</td>
-<td align="right">1</td>
+<td align="left">aucint.last</td>
+<td align="right">4.0000</td>
+<td align="left">AUC: lin up/log down</td>
 <td align="left">NA</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="right">0.0541310</td>
-<td align="right">0.0502736</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1.5</td>
+<td align="left">aucint.last</td>
+<td align="right">2.5625</td>
+<td align="left">AUC: lin up/log down</td>
+<td align="left">NA</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">conc_interp_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">my_conc_interp</span>, <span class="va">conc</span><span class="op">~</span><span class="va">time</span><span class="op">|</span><span class="va">subject</span><span class="op">)</span></span>
-<span><span class="va">data_interp_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">conc_interp_obj</span>, intervals<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>start<span class="op">=</span><span class="fl">0</span>, end<span class="op">=</span><span class="fl">1.5</span>, auclast<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">results_interp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_interp_obj</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## No dose information provided, calculations requiring dose will return NA.</span></span></code></pre>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_interp</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 7</span></span></span>
-<span><span class="co">##   subject start   end PPTESTCD PPORRES PPANMETH             exclude</span></span>
-<span><span class="co">##     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>       1     0   1.5 auclast     2.56 AUC: lin up/log down <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<p>The area under the first moment curve (AUMC) has matching interval
+parameters (<code>aumcint.last</code>, <code>aumcint.all</code>, and the
+other <code>aumcint*</code> parameters), as do the intravenous
+C<sub>0</sub> back-extrapolated AUMC parameters (<code>aumciv*</code>),
+in the development version of PKNCA.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

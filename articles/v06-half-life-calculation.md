@@ -6,7 +6,10 @@ Half-life is calculated by fitting the natural logarithm of
 concentration by time. The default calculation method is curve stripping
 (described in more detail below). Manual half-life points with no
 automated half-life selection can be performed, or specific points can
-be excluded while still performing curve stripping.
+be excluded while still performing curve stripping. Half-life may also
+be estimated with Tobit regression, which includes concentrations below
+the lower limit of quantification as left-censored values; see the
+“Half-life calculation with Tobit regression” vignette for that method.
 
 ## Curve Stripping Method
 

@@ -207,7 +207,9 @@ data.</p>
 </tbody>
 </table>
 <p>For this example, we will assume that these were errors, correct them
-to zero, and recalculate.</p>
+to zero, and recalculate. (When a nonzero first concentration is real
+and expected, the check can be disabled with
+<code>check.blq=FALSE</code>.)</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Correct nonzero concentrations at time 0 to be BLQ.</span></span>
 <span><span class="va">theoph_corrected</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span><span class="op">)</span></span>
@@ -484,6 +486,19 @@ interval).</p>
 <p>With this more complex dosing interval, the number of time points
 estimated increases. The next section describes the selection of time
 points.</p>
+</div>
+<div class="section level3">
+<h3 id="simulate-a-different-dose-amount">Simulate a Different Dose Amount<a class="anchor" aria-label="anchor" href="#simulate-a-different-dose-amount"></a>
+</h3>
+<p>Because superposition assumes linear (dose-proportional)
+pharmacokinetics, a different dose amount can be simulated by scaling
+the concentrations. To do that, give the dose amount that generated the
+observed data as <code>dose.input</code> and the dose amount to simulate
+as <code>dose.amount</code>; each concentration is multiplied by
+<code>dose.amount/dose.input</code>. The scaling is applied per
+administration, so with multiple doses per interval,
+<code>dose.amount</code> may be either a single value for all doses or a
+vector matching the length of <code>dose.times</code>.</p>
 <div class="section level4">
 <h4 id="show-the-curve-to-steady-state">Show the Curve to Steady-State<a class="anchor" aria-label="anchor" href="#show-the-curve-to-steady-state"></a>
 </h4>
@@ -550,8 +565,10 @@ calculating the AUC. By default, interpolation uses the
 <code>PKNCA.options</code> selection for <code>"auc.method"</code> and
 extrapolation follows the curve of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>i</mi><mi>n</mi><mi>f</mi></mrow></msub></mrow><annotation encoding="application/x-tex">AUC_{inf}</annotation></semantics></math>.
-These can be modified with the <code>interp.method</code> and
-<code>extrap.method</code> arguments.</p>
+These can be modified with the <code>method</code> argument
+(<code>NULL</code> by default, which uses
+<code>PKNCA.options("auc.method")</code>) and the <code>auc.type</code>
+argument (<code>"AUCinf"</code> by default).</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

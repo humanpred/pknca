@@ -36,7 +36,7 @@ from negative infinity to the limit of quantification.
 
 ### Automatic point selection
 
-### Automatic point selection with semi-log regression
+#### Automatic point selection with semi-log regression
 
 With semi-log regression, the typical method used to automatically
 select concentrations for inclusion in the half-life estimate is to:
@@ -60,14 +60,14 @@ order for selection of 4.1 and 4.2 above. So, if the best adjusted
 r-squared is for an increasing slope but there is another adjusted
 r-squared with a decreasing slope, Phoenix will report the half-life.
 
-### Automatic point selection with Tobit regression
+#### Automatic point selection with Tobit regression
 
 With Tobit regression, the method is generally similar to the semi-log
 regression with two changes. The first change is that concentrations
-below the LLOQ are retained in the estimate. The second change is that
-the adjusted r-squared is not possible to calculate when including
-points below the LLOQ, so the minimum standard deviation estimate is
-used.
+below the LLOQ are retained in the estimate as left-censored values. The
+second change is that the adjusted r-squared is not possible to
+calculate when including points below the LLOQ, so the residual standard
+deviation of the Tobit fit is minimized instead.
 
 The selection method below results in effectively the same estimates for
 half-life when all points are above the LLOQ and improved estimates for
@@ -77,14 +77,31 @@ investigate optimization of this method.
 The steps for Tobit regression are:
 
 1.  Omit all concentrations that are missing.
-2.  Estimate the half-life for each set of points from the first
-    concentration measure after T_(max) to the third measure before
-    T_(last) while including all points below the LLOQ after T_(last).
+2.  Estimate the half-life for each candidate set of points. Each
+    candidate set starts at one of the concentration measures after
+    T_(max) and extends through the last measurement. Concentrations
+    below the LLOQ anywhere within the set are retained and treated as
+    left-censored, and a set is only fit if it includes at least
+    `min.hl.points` concentrations above the LLOQ (concentrations below
+    the LLOQ do not count toward the minimum). Each fit is estimated by
+    maximum likelihood with
+    [`stats::optim()`](https://rdrr.io/r/stats/optim.html); the
+    `tobit_optim_control` option passes control parameters to the
+    optimizer.
 3.  Select the best half-life with the following criteria, in order:
-    1.  The estimated standard deviation of the slope is minimized.
-    2.  The $`\lambda_z`$ value (slope for the half-life line) must be
-        positive; in other words, the half-life slope must be
-        decreasing.
+    1.  Sets of points where the $`\lambda_z`$ value (slope for the
+        half-life line) is not positive are removed from consideration;
+        in other words, the half-life slope must be decreasing.
+    2.  Among the remaining sets, select the set minimizing
+        `tobit_residual * n_points ^ tobit_n_points_penalty`, where
+        `tobit_residual` is the residual standard deviation of the Tobit
+        fit on the log-concentration scale and `n_points` is the number
+        of points in the set. The `tobit_n_points_penalty` option
+        (default 0) sets the penalty on the number of points; with the
+        default of 0, the set with the smallest Tobit residual is
+        selected.
+    3.  If more than one set ties on the selection criterion, select the
+        set with the most points included.
 
 ## Comparison of Tobit and semi-log regression
 

@@ -118,10 +118,9 @@ from negative infinity to the limit of quantification.</p>
 <div class="section level3">
 <h3 id="automatic-point-selection">Automatic point selection<a class="anchor" aria-label="anchor" href="#automatic-point-selection"></a>
 </h3>
-</div>
-<div class="section level3">
-<h3 id="automatic-point-selection-with-semi-log-regression">Automatic point selection with semi-log regression<a class="anchor" aria-label="anchor" href="#automatic-point-selection-with-semi-log-regression"></a>
-</h3>
+<div class="section level4">
+<h4 id="automatic-point-selection-with-semi-log-regression">Automatic point selection with semi-log regression<a class="anchor" aria-label="anchor" href="#automatic-point-selection-with-semi-log-regression"></a>
+</h4>
 <p>With semi-log regression, the typical method used to automatically
 select concentrations for inclusion in the half-life estimate is to:</p>
 <ol style="list-style-type: decimal">
@@ -149,15 +148,16 @@ r-squared is for an increasing slope but there is another adjusted
 r-squared with a decreasing slope, Phoenix will report the
 half-life.</p>
 </div>
-<div class="section level3">
-<h3 id="automatic-point-selection-with-tobit-regression">Automatic point selection with Tobit regression<a class="anchor" aria-label="anchor" href="#automatic-point-selection-with-tobit-regression"></a>
-</h3>
+<div class="section level4">
+<h4 id="automatic-point-selection-with-tobit-regression">Automatic point selection with Tobit regression<a class="anchor" aria-label="anchor" href="#automatic-point-selection-with-tobit-regression"></a>
+</h4>
 <p>With Tobit regression, the method is generally similar to the
 semi-log regression with two changes. The first change is that
-concentrations below the LLOQ are retained in the estimate. The second
-change is that the adjusted r-squared is not possible to calculate when
-including points below the LLOQ, so the minimum standard deviation
-estimate is used.</p>
+concentrations below the LLOQ are retained in the estimate as
+left-censored values. The second change is that the adjusted r-squared
+is not possible to calculate when including points below the LLOQ, so
+the residual standard deviation of the Tobit fit is minimized
+instead.</p>
 <p>The selection method below results in effectively the same estimates
 for half-life when all points are above the LLOQ and improved estimates
 for half-life when some points are below the LLOQ. Future research may
@@ -165,20 +165,36 @@ investigate optimization of this method.</p>
 <p>The steps for Tobit regression are:</p>
 <ol style="list-style-type: decimal">
 <li>Omit all concentrations that are missing.</li>
-<li>Estimate the half-life for each set of points from the first
-concentration measure after T<sub>max</sub> to the third measure before
-T<sub>last</sub> while including all points below the LLOQ after
-T<sub>last</sub>.</li>
+<li>Estimate the half-life for each candidate set of points. Each
+candidate set starts at one of the concentration measures after
+T<sub>max</sub> and extends through the last measurement. Concentrations
+below the LLOQ anywhere within the set are retained and treated as
+left-censored, and a set is only fit if it includes at least
+<code>min.hl.points</code> concentrations above the LLOQ (concentrations
+below the LLOQ do not count toward the minimum). Each fit is estimated
+by maximum likelihood with <code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim()</a></code>; the
+<code>tobit_optim_control</code> option passes control parameters to the
+optimizer.</li>
 <li>Select the best half-life with the following criteria, in order:
 <ol style="list-style-type: decimal">
-<li>The estimated standard deviation of the slope is minimized.</li>
-<li>The
+<li>Sets of points where the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
-value (slope for the half-life line) must be positive; in other words,
-the half-life slope must be decreasing.</li>
+value (slope for the half-life line) is not positive are removed from
+consideration; in other words, the half-life slope must be
+decreasing.</li>
+<li>Among the remaining sets, select the set minimizing
+<code>tobit_residual * n_points ^ tobit_n_points_penalty</code>, where
+<code>tobit_residual</code> is the residual standard deviation of the
+Tobit fit on the log-concentration scale and <code>n_points</code> is
+the number of points in the set. The <code>tobit_n_points_penalty</code>
+option (default 0) sets the penalty on the number of points; with the
+default of 0, the set with the smallest Tobit residual is selected.</li>
+<li>If more than one set ties on the selection criterion, select the set
+with the most points included.</li>
 </ol>
 </li>
 </ol>
+</div>
 </div>
 </div>
 <div class="section level2">

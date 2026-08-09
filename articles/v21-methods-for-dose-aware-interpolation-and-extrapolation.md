@@ -18,11 +18,32 @@ scenarios the method is applied to in the list.
 For each of the summary tables below, the column headers are as follows:
 
 - **Event Before**: The type of event before the time of the requested
-  output may be one of the following
+  output. It may be any of the event types listed below other than
+  `output_only`.
 - **Event At**: The equivalent to “Event Before” but for the event
-  occurring at the requested output time.
+  occurring at the requested output time. It may be any of the event
+  types listed below other than `none`.
 - **Event After**: The equivalent to “Event Before” but for the next
-  event occurring after the requested output time.
+  event occurring after the requested output time. It may be any of the
+  event types listed below other than `output_only`.
+
+The event types are generated from the same choices used by the
+algorithm (so this list stays current with the code):
+
+- `conc_dose_iv_bolus_after`: The instant just after an intravascular
+  bolus dose that also has a concentration measurement at the dose time
+- `conc_dose`: A concentration measurement and a dose at the same time;
+  the concentration is interpreted as occurring just before the dose
+- `dose_iv_bolus_after`: The instant just after an intravascular bolus
+  dose (concentrations change instantaneously across the bolus)
+- `dose`: A dose administration (without a concentration measurement at
+  the same time); for an intravascular bolus dose, this is the instant
+  just before the dose
+- `conc`: A concentration measurement (without a dose at the same time)
+- `output_only`: A requested output time where no concentration was
+  measured and no dose was given
+- `none`: No event (nothing occurs before the first event or after the
+  last event)
 
 ### Observed concentration
 

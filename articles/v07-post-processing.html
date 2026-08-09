@@ -137,7 +137,8 @@ function.</p>
 </h4>
 <p>Several exclusion functions are built into PKNCA. The built-in
 functions will exclude all results that either apply to the current
-value or are dependencies of the current value. For example,
+value or are dependents of the current value (parameters that depend on
+it). For example,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mi>∞</mi></msub></mrow><annotation encoding="application/x-tex">AUC_\infty</annotation></semantics></math>
 depends on
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>,
@@ -146,10 +147,28 @@ depend on
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>,
 including
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mi>∞</mi></msub></mrow><annotation encoding="application/x-tex">AUC_\infty</annotation></semantics></math>.</p>
-<p>To see the built-in functions, type <code><a href="../reference/exclude_nca.html">?exclude_nca</a></code> at the
-R command line and review that help page. To use them, provide the
-function to the <code>FUN</code> argument of <code><a href="../reference/exclude.html">exclude()</a></code> as
-illustrated below.</p>
+<p>To see the built-in functions, type <code><a href="../reference/exclude_nca.html">?exclude_nca</a></code> and
+<code><a href="../reference/exclude_nca_by_param.html">?exclude_nca_by_param</a></code> at the R command line and review
+those help pages. The built-in rules exclude based on a low span ratio
+(<code><a href="../reference/exclude_nca.html">exclude_nca_span.ratio()</a></code>), a high percent AUC extrapolated
+(<code><a href="../reference/exclude_nca.html">exclude_nca_max.aucinf.pext()</a></code>), too few measured
+concentrations for AUC calculation
+(<code><a href="../reference/exclude_nca.html">exclude_nca_count_conc_measured()</a></code>), a low half-life
+r-squared or adjusted r-squared
+(<code><a href="../reference/exclude_nca.html">exclude_nca_min.hl.r.squared()</a></code> and
+<code><a href="../reference/exclude_nca.html">exclude_nca_min.hl.adj.r.squared()</a></code>), and an implausibly
+early
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">T_{max}</annotation></semantics></math>
+(<code><a href="../reference/exclude_nca.html">exclude_nca_tmax_early()</a></code> and
+<code><a href="../reference/exclude_nca.html">exclude_nca_tmax_0()</a></code>). They are built on the more general
+<code><a href="../reference/exclude_nca_by_param.html">exclude_nca_by_param()</a></code>, which excludes results when a
+single parameter is below a minimum threshold and/or above a maximum
+threshold, and which can also be used directly for any parameter. To use
+them, provide the function to the <code>FUN</code> argument of
+<code><a href="../reference/exclude.html">exclude()</a></code> as illustrated below. When an exclusion function
+returns its own reason text (as the built-in functions do), that text is
+used as the reason for exclusion, overriding the <code>reason</code>
+argument to <code><a href="../reference/exclude.html">exclude()</a></code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">results_excl_span</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exclude.html">exclude</a></span><span class="op">(</span><span class="va">results_obj</span>, FUN<span class="op">=</span><span class="fu"><a href="../reference/exclude_nca.html">exclude_nca_span.ratio</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Loading required namespace: testthat</span></span></code></pre>
@@ -441,10 +460,9 @@ statistics are calculated for each parameter are set with
 <code><a href="../reference/PKNCA.set.summary.html">PKNCA.set.summary()</a></code>, and they are described in the caption.
 When a parameter is not requested for a given interval, it is
 illustrated with a period (<code>.</code>), by default (customizable
-with the <code>not.requested.string</code> argument to
-<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>). When a parameter is required to calculate
-another parameter, but it is not specifically requested, it will not be
-shown in the summary.</p>
+with the <code>not_requested</code> argument to <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>).
+When a parameter is required to calculate another parameter, but it is
+not specifically requested, it will not be shown in the summary.</p>
 <p>The summary will have one column for each grouping variable other
 than the subject grouping variable; one column each for the start and
 end time; and one column per parameter calculated.</p>
@@ -527,6 +545,39 @@ differ).</p>
 <span><span class="co">## <span style="color: #BCBCBC;">18</span>       2     0   <span style="color: #BB0000;">Inf</span> cmax                  8.33   <span style="color: #949494;">""</span>                   <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">19</span>       2     0   <span style="color: #BB0000;">Inf</span> tmax                  1.92   <span style="color: #949494;">""</span>                   <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">20</span>       2     0   <span style="color: #BB0000;">Inf</span> tlast                24.3    <span style="color: #949494;">""</span>                   <span style="color: #BB0000;">NA</span></span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="concentrations-used-for-half-life-estimation">Concentrations Used for Half-Life Estimation<a class="anchor" aria-label="anchor" href="#concentrations-used-for-half-life-estimation"></a>
+</h3>
+<p>To find which concentration measurements were used for the half-life
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>)
+estimation, use <code><a href="../reference/get_halflife_points.html">get_halflife_points()</a></code>. It returns a logical
+vector with one value per row of the concentration data:
+<code>TRUE</code> if the point was used in the half-life fit,
+<code>FALSE</code> if it was not used but a half-life was calculated for
+the interval, and <code>NA</code> if no half-life was calculated for the
+interval (or if the row is excluded from all calculations). It accepts
+either a PKNCAresults or a PKNCAdata object (with a PKNCAdata object,
+the half-life is calculated first), and the intervals do not need to
+start at time 0.</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">d_conc_hl</span> <span class="op">&lt;-</span> <span class="va">d_conc</span></span>
+<span><span class="va">d_conc_hl</span><span class="op">$</span><span class="va">hl_used</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_halflife_points.html">get_halflife_points</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span>
+<span><span class="co"># The points used for the half-life fit are the later time points</span></span>
+<span><span class="va">d_conc_hl</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##    Subject   Wt Dose  Time  conc hl_used</span></span>
+<span><span class="co">## 1        1 79.6 4.02  0.00  0.74   FALSE</span></span>
+<span><span class="co">## 2        1 79.6 4.02  0.25  2.84   FALSE</span></span>
+<span><span class="co">## 3        1 79.6 4.02  0.57  6.57   FALSE</span></span>
+<span><span class="co">## 4        1 79.6 4.02  1.12 10.50   FALSE</span></span>
+<span><span class="co">## 5        1 79.6 4.02  2.02  9.66   FALSE</span></span>
+<span><span class="co">## 6        1 79.6 4.02  3.82  8.58   FALSE</span></span>
+<span><span class="co">## 7        1 79.6 4.02  5.10  8.36   FALSE</span></span>
+<span><span class="co">## 8        1 79.6 4.02  7.03  7.47   FALSE</span></span>
+<span><span class="co">## 9        1 79.6 4.02  9.05  6.89    TRUE</span></span>
+<span><span class="co">## 10       1 79.6 4.02 12.12  5.94    TRUE</span></span>
+<span><span class="co">## 11       1 79.6 4.02 24.37  3.28    TRUE</span></span></code></pre>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

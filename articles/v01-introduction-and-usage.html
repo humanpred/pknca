@@ -88,7 +88,7 @@ Denney</h4>
     
 <p>PKNCA provides functions to complete noncompartmental analysis (NCA)
 for pharmacokinetic (PK) data. Its intent is to provide a complete
-R-based solution-enabling data provenance for NCA. This will include the
+R-based solution enabling data provenance for NCA. This will include the
 tracking of data cleaning, enabling of calculations, exporting of
 results, and general reporting. The library is designed to give a
 reasonable answer without user intervention (load, calculate, and
@@ -101,13 +101,14 @@ library will be discussed in a separate vignette.</p>
 <div class="section level2">
 <h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<p>The simplest analysis requires concentration and dosing data at a
-minimum. Given this, it then takes five function calls to provide
-summarized results. (Please note that this and the other examples in
-this document are intended to show the typical workflow, but they are
-not intended to run directly. For an example to run directly, please see
-<a href="v02-example-theophylline.html">the theophylline
-example</a>.)</p>
+<p>The simplest analysis requires concentration data at a minimum;
+adding dosing data enables automatic interval determination and
+dose-dependent parameters (without dosing data, <code>intervals</code>
+must be provided to <code><a href="../reference/PKNCAdata.html">PKNCAdata()</a></code>). Given concentration and
+dosing data, it then takes five function calls to provide summarized
+results. (This example runs as-is; a few later examples in this
+document– the grouping and manual-interval sketches– only illustrate the
+workflow without running. For another complete example, please see <a href="v02-example-theophylline.html">the theophylline example</a>.)</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pknca.humanpredictions.com/" class="external-link">PKNCA</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
@@ -158,6 +159,9 @@ example</a>.)</p>
 <span><span class="co">##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
+<p>Note that <code><a href="../reference/PKNCAdose.html">PKNCAdose()</a></code> also accepts a <code>route</code>
+argument (<code>"extravascular"</code> or <code>"intravascular"</code>);
+when it is not given, extravascular administration is assumed.</p>
 </div>
 <div class="section level2">
 <h2 id="data-handling">Data Handling<a class="anchor" aria-label="anchor" href="#data-handling"></a>
@@ -167,7 +171,20 @@ requirements are that concentration, dose, and time must all be numeric
 (and not factors). Grouping variables have no specific requirements;
 they can be any mode.</p>
 <p>Values below the limit of quantification are coded as zeros
-(<code>0</code>), and missing values are coded as <code>NA</code>.</p>
+(<code>0</code>), and missing values are coded as <code>NA</code>. If
+the limit of quantification itself is available, it can be given with
+the <code>lloq</code> argument to <code><a href="../reference/PKNCAconc.html">PKNCAconc()</a></code> (a value or a
+column name), and it is carried through to the censored-likelihood
+(Tobit) half-life method (<code>hl_method = "tobit"</code>); see the <a href="v06-half-life-calculation-tobit.html">Tobit half-life vignette</a>
+for details.</p>
+<p>Units may be assigned when creating the input objects with the unit
+arguments to <code><a href="../reference/PKNCAconc.html">PKNCAconc()</a></code> and <code><a href="../reference/PKNCAdose.html">PKNCAdose()</a></code>
+(<code>concu</code>, <code>timeu</code>, <code>amountu</code>,
+<code>doseu</code>, and their <code>*_pref</code> counterparts for
+automatic conversion). When units are given, a units table is
+automatically created during <code><a href="../reference/PKNCAdata.html">PKNCAdata()</a></code> construction so
+that calculated parameters carry their units. See the <a href="v07-unit-conversion.html">unit assignment and conversion
+vignette</a> for details.</p>
 </div>
 <div class="section level2">
 <h2 id="options-make-pknca-work-your-way">Options: Make PKNCA Work Your Way<a class="anchor" aria-label="anchor" href="#options-make-pknca-work-your-way"></a>
@@ -468,7 +485,7 @@ etc., but not by subject).</p>
 <span></span>
 <span><span class="co">## Create a concentration object specifying the concentration, time,</span></span>
 <span><span class="co">## study, and subject columns.  (Note that any number of grouping</span></span>
-<span><span class="co">## levels is supporting; you are not restricted to this list.)</span></span>
+<span><span class="co">## levels is supported; you are not restricted to this list.)</span></span>
 <span><span class="va">o_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc_both</span>, <span class="va">conc</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Study</span><span class="op">+</span><span class="va">Subject</span><span class="op">/</span><span class="va">Analyte</span><span class="op">)</span></span>
 <span><span class="co">## Create a dosing object specifying the dose, time, study, and</span></span>
 <span><span class="co">## subject columns.  (Note that the grouping factors should be a</span></span>
@@ -1442,7 +1459,7 @@ intervals, modify them, and put them back.</p>
 <h3 id="keeping-a-column-from-intervals">Keeping a column from intervals<a class="anchor" aria-label="anchor" href="#keeping-a-column-from-intervals"></a>
 </h3>
 <p>When computing NCA using actual times, grouping by start and end time
-in summaries (see layer) is less helpful because everyone could have
+in summaries (see later) is less helpful because everyone could have
 different start and end times. So, you may keep the interval columns
 using the option <code>"keep_interval_cols"</code> as follows (where
 “dosetype” must be a column name in the intervals):</p>
@@ -1454,7 +1471,10 @@ using the option <code>"keep_interval_cols"</code> as follows (where
 <h2 id="summarizing-results">Summarizing results<a class="anchor" aria-label="anchor" href="#summarizing-results"></a>
 </h2>
 <p>When NCA has been calculated, you can summarize the results with the
-<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> function.</p>
+<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> function, and the row-level (individual) results
+are available with <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> (which can also generate
+CDISC PP-style output with
+<code>as.data.frame(o_nca, out_format = "cdisc")</code>).</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span></code></pre></div>
 <p>By default, it will count the number of unique subjects
@@ -1462,7 +1482,7 @@ using the option <code>"keep_interval_cols"</code> as follows (where
 from the number of measurements included in a summary (<code>n</code>),
 it will summarize <code>n</code> for the given parameters. Note that
 counting of “n” includes all non-missing values that were not excluded
-from summarization; this will included all zeros that are e.g. excluded
+from summarization; this will include all zeros that are e.g. excluded
 from geometric statistics.</p>
 <p>Edge cases like two unique subjects where one has an excluded value
 and one has duplicated values (<code>N = 2</code> and <code>n = 2</code>
@@ -1480,8 +1500,10 @@ analysis.</p>
 point selection, for instance– you can use <code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update()</a></code> on a
 <code>PKNCAresults</code> object (<code>o_nca</code> in the example
 above). Using <code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update()</a></code> will recalculate the
-minimum-required number of calculations for the data that are
-changed.</p>
+minimum-required number of calculations for the data that are changed.
+Only changes to the concentration or dose data are recalculated
+selectively; any other change (for example, to the intervals or options)
+triggers a full recalculation with a warning.</p>
 <p>To use <code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update()</a></code>, give it your existing results and the
 new <code>PKNCAdata</code> object you want to use.</p>
 <p>Starting from the theophylline example in the <a href="#quick-start">Quick Start</a> section above:</p>
@@ -1525,6 +1547,10 @@ for the changed participants.</p>
 <span><span class="co">##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
+<p>The per-subject “No concentration data” warnings above occur because
+<code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update()</a></code> filters the concentration data to only the changed
+subjects while keeping all dose rows, so the unchanged subjects have
+doses but no concentrations during the partial recalculation.</p>
 <p>Now, assume that instead of calculating <code>auclast</code> from
 time 0 to 24, we want to calculate <code>aucint.inf.obs</code>. We can
 change the intervals to create a new <code>PKNCAdata</code> object:</p>

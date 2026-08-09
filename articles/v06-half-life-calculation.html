@@ -93,7 +93,11 @@ Denney</h4>
 concentration by time. The default calculation method is curve stripping
 (described in more detail below). Manual half-life points with no
 automated half-life selection can be performed, or specific points can
-be excluded while still performing curve stripping.</p>
+be excluded while still performing curve stripping. Half-life may also
+be estimated with Tobit regression, which includes concentrations below
+the lower limit of quantification as left-censored values; see the
+“Half-life calculation with Tobit regression” vignette for that
+method.</p>
 </div>
 <div class="section level2">
 <h2 id="curve-stripping-method">Curve Stripping Method<a class="anchor" aria-label="anchor" href="#curve-stripping-method"></a>

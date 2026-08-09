@@ -66,7 +66,8 @@ knitr::kable(subset(datasets::Theoph, Time == 0 & conc > 0),
 Nonzero predose measurements {.table}
 
 For this example, we will assume that these were errors, correct them to
-zero, and recalculate.
+zero, and recalculate. (When a nonzero first concentration is real and
+expected, the check can be disabled with `check.blq=FALSE`.)
 
 ``` r
 
@@ -185,6 +186,17 @@ With this more complex dosing interval, the number of time points
 estimated increases. The next section describes the selection of time
 points.
 
+### Simulate a Different Dose Amount
+
+Because superposition assumes linear (dose-proportional)
+pharmacokinetics, a different dose amount can be simulated by scaling
+the concentrations. To do that, give the dose amount that generated the
+observed data as `dose.input` and the dose amount to simulate as
+`dose.amount`; each concentration is multiplied by
+`dose.amount/dose.input`. The scaling is applied per administration, so
+with multiple doses per interval, `dose.amount` may be either a single
+value for all doses or a vector matching the length of `dose.times`.
+
 #### Show the Curve to Steady-State
 
 To determine the concentration curve to get to steady-state, you can
@@ -266,5 +278,6 @@ sum(complex_interval_steady_state$Subject == 1)
 The interpolation and extrapolation methods align with those used for
 calculating the AUC. By default, interpolation uses the `PKNCA.options`
 selection for `"auc.method"` and extrapolation follows the curve of
-$`AUC_{inf}`$. These can be modified with the `interp.method` and
-`extrap.method` arguments.
+$`AUC_{inf}`$. These can be modified with the `method` argument (`NULL`
+by default, which uses `PKNCA.options("auc.method")`) and the `auc.type`
+argument (`"AUCinf"` by default).

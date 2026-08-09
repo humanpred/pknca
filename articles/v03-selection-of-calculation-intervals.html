@@ -141,7 +141,8 @@ The group is all points in the figure, and the interval for the last day
 </tr></tbody>
 </table>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">d_conc</span>, intervals<span class="op">=</span><span class="va">intervals_manual</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">d_conc_multi_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc_multi</span>, <span class="va">conc</span><span class="op">~</span><span class="va">time</span><span class="op">|</span><span class="va">treatment</span><span class="op">+</span><span class="va">ID</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">d_conc_multi_obj</span>, intervals<span class="op">=</span><span class="va">intervals_manual</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Formula for concentration:</span></span>
 <span><span class="co">##  conc ~ time | treatment + ID</span></span>
 <span><span class="co">## Data are dense PK.</span></span>
@@ -149,13 +150,13 @@ The group is all points in the figure, and the interval for the last day
 <span><span class="co">## Nominal time column is not specified.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## First 6 rows of concentration data:</span></span>
-<span><span class="co">##    study treatment ID time      conc   analyte exclude volume duration</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    &lt;NA&gt;     NA        0</span></span>
+<span><span class="co">##  treatment ID      conc time exclude volume duration</span></span>
+<span><span class="co">##      Trt 1  1 0.0000000    0    &lt;NA&gt;     NA        0</span></span>
+<span><span class="co">##      Trt 1  1 0.6140526    1    &lt;NA&gt;     NA        0</span></span>
+<span><span class="co">##      Trt 1  1 0.8100022    2    &lt;NA&gt;     NA        0</span></span>
+<span><span class="co">##      Trt 1  1 0.8425422    4    &lt;NA&gt;     NA        0</span></span>
+<span><span class="co">##      Trt 1  1 0.7771994    6    &lt;NA&gt;     NA        0</span></span>
+<span><span class="co">##      Trt 1  1 0.7052469    8    &lt;NA&gt;     NA        0</span></span>
 <span><span class="co">## No dosing information.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## With 1 rows of interval specifications.</span></span>
@@ -235,7 +236,12 @@ Multiple”, the intervals could be defined as below.</p>
 <p>Intervals are defined by <code>data.frame</code>s with one row per
 interval, zero or more columns to match the groups from the
 <code>PKNCAdata</code> object, and one or more NCA parameters to
-calculate.</p>
+calculate. An interval may also have an <code>impute</code> column
+specifying the data imputation method(s) to apply to the interval before
+calculation (see the Data Imputation vignette for details). Any other
+columns named in the <code>keep_interval_cols</code> PKNCA option are
+passed through from the intervals to the corresponding rows of the
+results.</p>
 <p>Selection of points within an interval occurs by choosing any point
 at or after the <code>start</code> and at or before the
 <code>end</code>.</p>
@@ -352,7 +358,8 @@ first and second rows of the intervals, respectively.</p>
 </tbody>
 </table>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">my.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">d_conc</span>, intervals<span class="op">=</span><span class="va">intervals_manual</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">d_conc_multi_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc_multi</span>, <span class="va">conc</span><span class="op">~</span><span class="va">time</span><span class="op">|</span><span class="va">treatment</span><span class="op">+</span><span class="va">ID</span><span class="op">)</span></span>
+<span><span class="va">my.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">d_conc_multi_obj</span>, intervals<span class="op">=</span><span class="va">intervals_manual</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -440,14 +447,30 @@ associated with them. Two typical examples of duration data in NCA are
 intravenous infusions and urine or fecal sample collections. Inform
 PKNCA of durations with the <code>duration</code> argument to the
 <code>PKNCAdose</code> and <code>PKNCAconc</code> functions.</p>
-<p>Durations data are selected based on both the beginning and ending of
-the duration existing within the interval.</p>
-<pre><code><span><span class="co">## Warning: Removed 4 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">## (`geom_segment()`).</span></span></code></pre>
-<p><img src="v03-selection-of-calculation-intervals_files/figure-html/interval_yes_no-1.png" class="r-plt" alt="" width="576"></p>
-<pre><code><span><span class="co">## Warning: Removed 4 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">## (`geom_segment()`).</span></span></code></pre>
-<p><img src="v03-selection-of-calculation-intervals_files/figure-html/interval_yes_no-2.png" class="r-plt" alt="" width="576"></p>
+<p>Duration data are selected for an interval by the event time, which
+is the time of the start of the duration (for example, the start of a
+urine collection). Like any other data point, a duration record is
+selected when its start time is at or after the interval
+<code>start</code> and at or before the interval <code>end</code>; the
+end of the duration is not considered. A collection that starts within
+the interval and ends after the interval <code>end</code> is therefore
+selected, and it contributes its full amount to calculations within the
+interval (the amount is not pro-rated to the portion of the duration
+inside the interval). For the simplest interpretation of results, align
+collection start and end times with the interval boundaries.</p>
+<p>The figures below show which durations are selected for two
+intervals. The vertical arrows indicate the interval <code>start</code>
+and <code>end</code>, and each horizontal segment is a duration (for
+example, a urine collection) with tick marks at the collection
+boundaries. In the first figure, the interval is from 0 to 24, and all
+four durations are selected, including the duration from 24 to 48
+because its start time is exactly at the interval <code>end</code>. In
+the second figure, the interval is from 0 to 16: the duration from 12 to
+24 is selected because its start time is within the interval, even
+though the collection extends past the interval <code>end</code> (and
+its full amount contributes to the interval), while the duration from 24
+to 48 is not selected.</p>
+<p><img src="v03-selection-of-calculation-intervals_files/figure-html/interval_yes_no-1.png" class="r-plt" alt="" width="576"><img src="v03-selection-of-calculation-intervals_files/figure-html/interval_yes_no-2.png" class="r-plt" alt="" width="576"></p>
 </div>
 <div class="section level2">
 <h2 id="parameters-available-for-calculation-in-an-interval">Parameters Available for Calculation in an Interval<a class="anchor" aria-label="anchor" href="#parameters-available-for-calculation-in-an-interval"></a>
@@ -1182,332 +1205,326 @@ an interval</td>
 <td align="left">pk.calc.deg.fluc</td>
 </tr>
 <tr class="odd">
-<td align="left">end</td>
-<td align="left">time</td>
-<td align="left">Ending time of the interval (potentially infinity)</td>
-<td align="left">(none)</td>
-</tr>
-<tr class="even">
 <td align="left">ermax</td>
 <td align="left">amount_time</td>
 <td align="left">The maximum excretion rate (typically in urine or
 feces)</td>
 <td align="left">pk.calc.ermax</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">ertlst</td>
 <td align="left">time</td>
 <td align="left">The midpoint collection time of the last measurable
 excretion rate (typically in urine or feces)</td>
 <td align="left">pk.calc.ertlst</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">ertmax</td>
 <td align="left">time</td>
 <td align="left">The midpoint collection time of the maximum excretion
 rate (typically in urine or feces)</td>
 <td align="left">pk.calc.ertmax</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">f</td>
 <td align="left">fraction</td>
 <td align="left">Bioavailability or relative bioavailability</td>
 <td align="left">pk.calc.f</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">fe</td>
 <td align="left">amount_dose</td>
 <td align="left">The fraction of the dose excreted</td>
 <td align="left">pk.calc.fe</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">half.life</td>
 <td align="left">time</td>
 <td align="left">The (terminal) half-life</td>
 <td align="left">pk.calc.half.life</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">kel.all</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the MRTall)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">kel.int.all</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the
 MRTint.all)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">kel.int.inf.obs</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the
 MRTint.inf.obs)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">kel.int.inf.pred</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the
 MRTint.inf.pred)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">kel.int.last</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the
 MRTint.last)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">kel.iv.all</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the
 MRTiv.all))</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">kel.iv.last</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the intravenous
 MRTlast)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">kel.iv.obs</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the intravenous
 MRTobs)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">kel.iv.pred</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the intravenous
 MRTpred)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">kel.ivint.all</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the
 MRTivint.all)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">kel.ivint.last</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the
 MRTivint.last)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">kel.last</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the MRT using
 AUClast)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">kel.obs</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the MRT with
 observed Clast)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">kel.pred</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the MRT with
 predicted Clast)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">kel.sparse.last</td>
 <td align="left">inverse_time</td>
 <td align="left">Elimination rate (as calculated from the
 MRTsparse.last)</td>
 <td align="left">pk.calc.kel</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">lambda.z</td>
 <td align="left">inverse_time</td>
 <td align="left">The elimination rate of the terminal half-life</td>
 <td align="left">See the parameter name half.life</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">lambda.z.corrxy</td>
 <td align="left">unitless</td>
 <td align="left">Correlation between time and log-concentration for
 lambda.z points</td>
 <td align="left">See the parameter name half.life</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">lambda.z.n.points</td>
 <td align="left">count</td>
 <td align="left">The number of points used for the calculation of
 half-life</td>
 <td align="left">See the parameter name half.life</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">lambda.z.n.points_blq</td>
 <td align="left">count</td>
 <td align="left">The number of BLQ points included in the Tobit
 half-life calculation</td>
 <td align="left">See the parameter name half.life</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">lambda.z.time.first</td>
 <td align="left">time</td>
 <td align="left">The first time point used for the calculation of
 half-life</td>
 <td align="left">See the parameter name half.life</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">lambda.z.time.last</td>
 <td align="left">time</td>
 <td align="left">The last time point used for the calculation of
 half-life</td>
 <td align="left">See the parameter name half.life</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">mrt.all</td>
 <td align="left">time</td>
 <td align="left">Mean residence time calculated with AUCall/AUMCall</td>
 <td align="left">pk.calc.mrt</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">mrt.int.all</td>
 <td align="left">time</td>
 <td align="left">Mean residence time over interval calculated with
 AUCint.all/AUMCint.all</td>
 <td align="left">pk.calc.mrt</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">mrt.int.inf.obs</td>
 <td align="left">time</td>
 <td align="left">Mean residence time over interval calculated with
 AUCint.inf.obs/AUMCint.inf.obs</td>
 <td align="left">pk.calc.mrt</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">mrt.int.inf.pred</td>
 <td align="left">time</td>
 <td align="left">Mean residence time over interval calculated with
 AUCint.inf.pred/AUMCint.inf.pred</td>
 <td align="left">pk.calc.mrt</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">mrt.int.last</td>
 <td align="left">time</td>
 <td align="left">Mean residence time over interval calculated with
 AUCint.last/AUMCint.last</td>
 <td align="left">pk.calc.mrt</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">mrt.iv.all</td>
 <td align="left">time</td>
 <td align="left">Mean residence time for IV dosing calculated with
 AUCall/AUMCall</td>
 <td align="left">pk.calc.mrt.iv</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">mrt.iv.last</td>
 <td align="left">time</td>
 <td align="left">The mean residence time to the last observed
 concentration above the LOQ correcting for dosing duration</td>
 <td align="left">pk.calc.mrt.iv</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">mrt.iv.obs</td>
 <td align="left">time</td>
 <td align="left">The mean residence time to infinity using observed
 Clast correcting for dosing duration</td>
 <td align="left">pk.calc.mrt.iv</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">mrt.iv.pred</td>
 <td align="left">time</td>
 <td align="left">The mean residence time to infinity using predicted
 Clast correcting for dosing duration</td>
 <td align="left">pk.calc.mrt.iv</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">mrt.ivint.all</td>
 <td align="left">time</td>
 <td align="left">Mean residence time for IV interval calculated with
 AUCint.all/AUMCint.all</td>
 <td align="left">pk.calc.mrt.iv</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">mrt.ivint.last</td>
 <td align="left">time</td>
 <td align="left">Mean residence time for IV interval calculated with
 AUCint.last/AUMCint.last</td>
 <td align="left">pk.calc.mrt.iv</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">mrt.last</td>
 <td align="left">time</td>
 <td align="left">The mean residence time to the last observed
 concentration above the LOQ</td>
 <td align="left">pk.calc.mrt</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">mrt.md.obs</td>
 <td align="left">time</td>
 <td align="left">The mean residence time with multiple dosing and
 nonlinear kinetics using observed Clast</td>
 <td align="left">pk.calc.mrt.md</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">mrt.md.pred</td>
 <td align="left">time</td>
 <td align="left">The mean residence time with multiple dosing and
 nonlinear kinetics using predicted Clast</td>
 <td align="left">pk.calc.mrt.md</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">mrt.obs</td>
 <td align="left">time</td>
 <td align="left">The mean residence time to infinity using observed
 Clast</td>
 <td align="left">pk.calc.mrt</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">mrt.pred</td>
 <td align="left">time</td>
 <td align="left">The mean residence time to infinity using predicted
 Clast</td>
 <td align="left">pk.calc.mrt</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">mrt.sparse.last</td>
 <td align="left">time</td>
 <td align="left">Mean residence time from sparse sampling</td>
 <td align="left">pk.calc.mrt</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">ptr</td>
 <td align="left">fraction</td>
 <td align="left">Peak-to-Trough ratio (fraction)</td>
 <td align="left">pk.calc.ptr</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">r.squared</td>
 <td align="left">unitless</td>
 <td align="left">The r^2 value of the half-life calculation</td>
 <td align="left">See the parameter name half.life</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">span.ratio</td>
 <td align="left">fraction</td>
 <td align="left">The ratio of the half-life to the duration used for
 half-life calculation</td>
 <td align="left">See the parameter name half.life</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">sparse_auc_df</td>
 <td align="left">count</td>
 <td align="left">For sparse PK sampling, the standard error degrees of
@@ -1516,7 +1533,7 @@ beginning of the interval to the last concentration above the limit of
 quantification</td>
 <td align="left">See the parameter name sparse_auclast</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">sparse_auc_se</td>
 <td align="left">auc</td>
 <td align="left">For sparse PK sampling, the standard error of the area
@@ -1524,7 +1541,7 @@ under the concentration time curve from the beginning of the interval to
 the last concentration above the limit of quantification</td>
 <td align="left">See the parameter name sparse_auclast</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">sparse_auclast</td>
 <td align="left">auc</td>
 <td align="left">For sparse PK sampling, the area under the
@@ -1532,33 +1549,27 @@ concentration time curve from the beginning of the interval to the last
 concentration above the limit of quantification</td>
 <td align="left">pk.calc.sparse_auclast</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">sparse_aumc_df</td>
 <td align="left">count</td>
 <td align="left">For sparse PK sampling, the degrees of freedom for the
 AUMC variance estimate</td>
 <td align="left">See the parameter name sparse_aumclast</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">sparse_aumc_se</td>
 <td align="left">aumc</td>
 <td align="left">For sparse PK sampling, the standard error of the area
 under the moment curve</td>
 <td align="left">See the parameter name sparse_aumclast</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">sparse_aumclast</td>
 <td align="left">aumc</td>
 <td align="left">For sparse PK sampling, the area under the moment curve
 from the beginning of the interval to the last concentration above the
 limit of quantification</td>
 <td align="left">pk.calc.sparse_aumclast</td>
-</tr>
-<tr class="odd">
-<td align="left">start</td>
-<td align="left">time</td>
-<td align="left">Starting time of the interval</td>
-<td align="left">(none)</td>
 </tr>
 <tr class="even">
 <td align="left">swing</td>
