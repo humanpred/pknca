@@ -59,8 +59,9 @@ Methods for imputation of data with PKNCA
 \section{Functions}{
 \itemize{
 \item \code{PKNCA_impute_method_start_conc0()}: Add a new concentration of 0 at the start
-time, even if a nonzero concentration exists at that time (usually used
-with single-dose data)
+time, only if no observation exists at the start time; an existing
+start-time concentration is left unchanged (usually used with single-dose
+data)
 
 \item \code{PKNCA_impute_method_start_cmin()}: Add a new concentration of the minimum during
 the interval at the start time (usually used with multiple-dose data)
