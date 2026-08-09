@@ -141,7 +141,13 @@ concentrations to exclude.</p></dd>
 
 <dt id="arg-duration">duration<a class="anchor" aria-label="anchor" href="#arg-duration"></a></dt>
 <dd><p>(optional) The duration of collection as is typically used
-for concentration measurements in urine or feces.</p></dd>
+for concentration measurements in urine or feces.  The <code>time</code> of a
+measurement is the start of the collection, and only the <code>time</code> is used
+when selecting data for a calculation interval; the duration is not
+considered.  A collection starting within an interval and ending after the
+interval <code>end</code> contributes its full amount to that interval, so for the
+simplest interpretation of results, align collection start and end times
+with interval boundaries.</p></dd>
 
 
 <dt id="arg-volume">volume<a class="anchor" aria-label="anchor" href="#arg-volume"></a></dt>

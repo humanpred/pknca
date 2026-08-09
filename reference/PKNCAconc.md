@@ -85,7 +85,13 @@ PKNCAconc(
 - duration:
 
   (optional) The duration of collection as is typically used for
-  concentration measurements in urine or feces.
+  concentration measurements in urine or feces. The `time` of a
+  measurement is the start of the collection, and only the `time` is
+  used when selecting data for a calculation interval; the duration is
+  not considered. A collection starting within an interval and ending
+  after the interval `end` contributes its full amount to that interval,
+  so for the simplest interpretation of results, align collection start
+  and end times with interval boundaries.
 
 - volume:
 

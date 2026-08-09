@@ -177,6 +177,9 @@
   [`filter(`*`<PKNCAdose>`*`)`](https://humanpred.github.io/pknca/reference/filter.PKNCAresults.md)
   : dplyr filtering for PKNCA
 
+- [`filter_interval()`](https://humanpred.github.io/pknca/reference/filter_interval.md)
+  : Subset data to the rows used for calculations within an interval
+
 - [`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md)
   : Find the repeating interval within a vector of doses
 

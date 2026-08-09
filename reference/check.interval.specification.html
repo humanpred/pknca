@@ -93,6 +93,15 @@ specification.</p>
     <p><code>start</code> and <code>end</code> time must always be given as columns, and the <code>start</code> must
 be before the <code>end</code>.  Other columns define the parameters to be calculated
 and the groupings to apply the intervals to.</p>
+<p>Data are selected for calculation within an interval by the time of the
+measurement or dose: a row is included when its time is at or after <code>start</code>
+and at or before <code>end</code> (a dose exactly at <code>end</code> is not included in the
+interval).  For duration data (for example, urine collections or intravenous
+infusions), the time is the start of the collection or administration, and
+the duration is not considered during selection: a collection that starts
+within the interval and ends after <code>end</code> is included and contributes its
+full amount to the interval.  For the simplest interpretation of results,
+align collection start and end times with interval boundaries.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
