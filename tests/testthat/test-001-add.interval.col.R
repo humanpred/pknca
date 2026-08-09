@@ -1,6 +1,22 @@
 # Save the original state
 original_state <- get("interval.cols", envir=PKNCA:::.PKNCAEnv)
 
+test_that("sparse-derived parameters are each registered exactly once", {
+  cols <- get.interval.cols()
+  sparse_derived <-
+    c("cl.sparse.last", "kel.sparse.last", "mrt.sparse.last",
+      "vss.sparse.last", "vz.sparse.last")
+  for (param in sparse_derived) {
+    expect_equal(sum(names(cols) == param), 1L, info=param)
+    expect_true(cols[[param]]$sparse, info=param)
+  }
+  # No parameter name may appear twice in the registry
+  expect_equal(anyDuplicated(names(cols)), 0L)
+  # Pin the registry size so that a lost or accumulating registration is
+  # caught; update the value when a parameter is added or removed.
+  expect_length(cols, 203)
+})
+
 test_that("add.interval.col", {
   # Invalid inputs fail
   expect_error(

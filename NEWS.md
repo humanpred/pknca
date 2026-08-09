@@ -20,8 +20,12 @@ the dosing including dose amount and route.
   (`hl_method = "tobit"`, set via `PKNCAdata(options = list(hl_method = "tobit"))`)
   works end-to-end instead of failing because no `lloq` was available.
 
-* Added sparse AUMC function and five sparse AUC parameters (cl.sparse.last,
-  kel.sparse.last, mrt.ivint.last, vss.sparse.last, vz.sparse.last)
+* Added sparse AUMC function and five sparse-derived parameters (cl.sparse.last,
+  kel.sparse.last, mrt.sparse.last, vss.sparse.last, vz.sparse.last)
+
+* New imputation method `PKNCA_impute_method_end_conc_drop()` drops a
+  concentration observed exactly at the end of the interval from that interval
+  (e.g. a predose sample from the next dose measured at the interval boundary)
 
 * New IV dosing AUMC parameters with C0 back-extrapolation (`aumciv*`)
 

@@ -176,11 +176,11 @@ setRoute <- function(object, ...) {
 #' @export
 setRoute.PKNCAdose <- function(object, route, ...) {
   if (missing(route)) {
+    # The route silently defaults to extravascular by design.
     object <-
       setAttributeColumn(object=object,
                          attr_name="route",
-                         default_value="extravascular",
-                         message_if_default="Assuming route of administration is extravascular")
+                         default_value="extravascular")
   } else {
     object <-
       setAttributeColumn(object=object,

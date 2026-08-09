@@ -95,7 +95,7 @@ normalize.data.frame <- function(object, norm_table, parameters, suffix) {
   df[, names(object), drop = FALSE]
 }
 
-#' Internal function to normalize by a specified column
+#' Normalize PKNCA results by a column of the concentration data
 #' @param object A PKNCAresults object
 #' @param col The column name from PKNCAconc to use for the normalization groups
 #' @param unit The unit of the previous column for normalization. Can be a column name in PKNCAconc or a single value.
