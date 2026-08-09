@@ -9,7 +9,10 @@ the dosing including dose amount and route.
 * Breaking change: The `exclude_half.life` and `include_half.life` columns must
   now be logical (`TRUE`/`FALSE`/`NA`).  A non-logical column (e.g. character
   `"yes"`) previously was accepted silently and excluded or included nothing; it
-  is now an error (#583).
+  is now an error.  Likewise, an `exclude_half.life` or `include_half.life`
+  column name that does not exist in the data previously created an all-`NA`
+  column silently (so a typo deactivated the point selection); it is now an
+  error naming the missing column (#583).
 
 * Bug fix: `pk.calc.half.life()` now attaches an exclusion reason ("No valid
   terminal phase...") when no candidate window survives point selection (for

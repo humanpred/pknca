@@ -81,7 +81,8 @@ curve-stripping point selection.  Each value is \code{TRUE}, \code{FALSE}, or \c
 (undefined); the column/vector is treated as "in use" for an interval
 unless it is entirely \code{NA} (so an all-\code{FALSE} column still counts as in
 use), so leave it \code{NA} (rather than \code{FALSE}) where the mechanism should not
-apply.  A non-logical column (e.g. character \code{"yes"}) is an error.  Only
+apply.  A non-logical column (e.g. character \code{"yes"}) or a column name that
+is not in the data is an error.  Only
 one of \code{exclude_half.life} and \code{include_half.life} may be in
 use for a given interval.  See the "Half-Life Calculation" vignette for
 more details on the use of these arguments.}

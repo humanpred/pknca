@@ -37,7 +37,8 @@
 #'   (undefined); the column/vector is treated as "in use" for an interval
 #'   unless it is entirely `NA` (so an all-`FALSE` column still counts as in
 #'   use), so leave it `NA` (rather than `FALSE`) where the mechanism should not
-#'   apply.  A non-logical column (e.g. character `"yes"`) is an error.  Only
+#'   apply.  A non-logical column (e.g. character `"yes"`) or a column name that
+#'   is not in the data is an error.  Only
 #'   one of `exclude_half.life` and `include_half.life` may be in
 #'   use for a given interval.  See the "Half-Life Calculation" vignette for
 #'   more details on the use of these arguments.
@@ -186,7 +187,11 @@ PKNCAconc.data.frame <- function(data, formula, subject,
     ret <-
       setAttributeColumn(object=ret,
                          attr_name="exclude_half.life",
-                         col_name=exclude_half.life)
+                         col_name=exclude_half.life,
+                         stop_if_default=paste0(
+                           "The exclude_half.life column ('", exclude_half.life,
+                           "') does not exist in the data"
+                         ))
     if (!is.logical(getAttributeColumn(ret, attr_name="exclude_half.life")[[1]])) {
       stop(
         "The exclude_half.life column ('", exclude_half.life,
@@ -199,7 +204,11 @@ PKNCAconc.data.frame <- function(data, formula, subject,
     ret <-
       setAttributeColumn(object=ret,
                          attr_name="include_half.life",
-                         col_name=include_half.life)
+                         col_name=include_half.life,
+                         stop_if_default=paste0(
+                           "The include_half.life column ('", include_half.life,
+                           "') does not exist in the data"
+                         ))
     if (!is.logical(getAttributeColumn(ret, attr_name="include_half.life")[[1]])) {
       stop(
         "The include_half.life column ('", include_half.life,

@@ -707,3 +707,29 @@ test_that("exclude_half.life and include_half.life columns must be logical (#583
   expect_s3_class(o_incl, "PKNCAconc")
   expect_equal(o_incl$columns$include_half.life, "incl_lgl")
 })
+
+test_that("exclude_half.life and include_half.life column names must exist in the data (#583)", {
+  d_conc <-
+    data.frame(
+      conc = c(1, 0.5, 0.25, 0.125),
+      time = 0:3,
+      excl_lgl = c(NA, NA, TRUE, NA),
+      subject = 1
+    )
+  # A column name not in the data previously created an all-NA logical column
+  # silently (treated as "not in use", so a typo deactivated the selection); it
+  # is now an error naming the missing column.
+  expect_error(
+    PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_typo"),
+    regexp = "The exclude_half.life column ('excl_typo') does not exist in the data",
+    fixed = TRUE
+  )
+  expect_error(
+    PKNCAconc(d_conc, conc ~ time | subject, include_half.life = "incl_typo"),
+    regexp = "The include_half.life column ('incl_typo') does not exist in the data",
+    fixed = TRUE
+  )
+  # An existing logical column is unaffected by the existence check
+  o_excl <- PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_lgl")
+  expect_equal(o_excl$columns$exclude_half.life, "excl_lgl")
+})
