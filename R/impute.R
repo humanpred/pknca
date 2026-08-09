@@ -23,9 +23,16 @@ get_impute_method <- function(intervals, impute) {
 #'   and one column named time with the times.
 NULL
 
-#' @describeIn PKNCA_impute_method Add a new concentration of 0 at the start
-#'   time, even if a nonzero concentration exists at that time (usually used
-#'   with single-dose data)
+#' @describeIn PKNCA_impute_method Set the concentration at the start time to
+#'   0, even if a nonzero concentration exists at that time (usually used with
+#'   single-dose data).  Forcing the start concentration to zero is
+#'   intentional:  an existing start-time value is replaced with 0, including
+#'   a nonzero predose measurement shifted to the start time by
+#'   `start_predose`, so the imputation chain `"start_predose,start_conc0"`
+#'   gives the same result as `"start_conc0"` alone.  To carry a predose
+#'   measurement to the start time, use `start_predose` without
+#'   `start_conc0`.  When no observation exists at the start time, a new row
+#'   with a concentration of 0 is added.
 #' @inheritParams pk.calc.auxc
 #' @inheritParams assert_intervaltime_single
 #' @param ... ignored
