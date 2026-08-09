@@ -24,9 +24,8 @@ get_impute_method <- function(intervals, impute) {
 NULL
 
 #' @describeIn PKNCA_impute_method Add a new concentration of 0 at the start
-#'   time, only if no observation exists at the start time; an existing
-#'   start-time concentration is left unchanged (usually used with single-dose
-#'   data)
+#'   time, even if a nonzero concentration exists at that time (usually used
+#'   with single-dose data)
 #' @inheritParams pk.calc.auxc
 #' @inheritParams assert_intervaltime_single
 #' @param ... ignored
@@ -34,7 +33,9 @@ NULL
 PKNCA_impute_method_start_conc0 <- function(conc, time, start=0, ..., options = list()) {
   ret <- data.frame(conc = conc, time = time)
   mask_start <- time %in% start
-  if (!any(mask_start)) {
+  if (any(mask_start)) {
+    ret$conc[mask_start] <- 0
+  } else {
     ret <- rbind(ret, data.frame(time = start, conc = 0))
     ret <- ret[order(ret$time), ]
   }

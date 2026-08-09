@@ -36,9 +36,9 @@ cat(paste(
 
 In brief, the built-in methods work as follows:
 
-* `start_conc0` adds a concentration of 0 at the interval start time when no
-  observation exists at the start time.  An existing start-time observation
-  (even a nonzero one) is left unchanged (usually used with single-dose data).
+* `start_conc0` sets the concentration at the interval start time to 0.  If an
+  observation exists at the start time, its value is replaced with 0;
+  otherwise, a new row is added (usually used with single-dose data).
 * `start_predose` shifts the most recent observation before the interval start
   to the interval start time.  It applies only when no start-time observation
   exists, only when a pre-start observation exists, and only when the shift is
@@ -96,12 +96,15 @@ above, use `"start_conc0"`.
 
 To specify more than one, give all the methods in order with a comma or space
 separating them.  For example, to first move a predose concentration up to the
-time of dosing and then set the start-time concentration to 0 when no
-observation is at the start time, use `"start_predose,start_conc0"`, and the
-two methods will be applied in order, each to the output of the previous
-method.  Because each method only adds a start-time concentration when none
-exists, the chain means:  use the predose value when one can be shifted to the
-start time, otherwise add a concentration of 0.
+time of dosing and then set time 0 to concentration 0, use
+`"start_predose,start_conc0"`, and the two methods will be applied in order,
+each to the output of the previous method.  Note that because `start_conc0`
+sets the start-time concentration to 0 even when a start-time value already
+exists, the `"start_predose,start_conc0"` chain produces the same results as
+`"start_conc0"` alone:  the concentration that `start_predose` shifts to the
+start time is then overwritten with 0.  To use the predose concentration when
+one exists and 0 otherwise, write a custom imputation method (see the
+"Advanced" section below).
 
 ## Imputation for the full dataset
 

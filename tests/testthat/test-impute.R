@@ -1,18 +1,8 @@
 test_that("PKNCA_impute_method_start_conc0", {
-  # An existing nonzero concentration at the start time is left untouched (#578)
+  # Time 0 is replaced
   expect_equal(
     PKNCA_impute_method_start_conc0(conc = 1:3, time = 0:2),
-    data.frame(conc = 1:3, time = 0:2)
-  )
-  # An existing zero concentration at the start time is left untouched
-  expect_equal(
-    PKNCA_impute_method_start_conc0(conc = c(0, 2:3), time = 0:2),
     data.frame(conc = c(0, 2:3), time = 0:2)
-  )
-  # An existing concentration at a nonzero start time is left untouched
-  expect_equal(
-    PKNCA_impute_method_start_conc0(conc = 1:3, time = 0:2, start = 1),
-    data.frame(conc = 1:3, time = 0:2)
   )
   # Time 0 is added
   expect_equal(
@@ -25,72 +15,6 @@ test_that("PKNCA_impute_method_start_conc0", {
     PKNCA_impute_method_start_conc0(conc = 1:3, time = c(-1, 1:2)),
     data.frame(conc = c(1, 0, 2:3), time = -1:2),
     ignore_attr = TRUE
-  )
-})
-
-test_that("start_predose,start_conc0 chain keeps the shifted predose value (#578)", {
-  # A predose sample within max_shift (5% of the 0-24 interval, so within 1.2)
-  d_conc <-
-    data.frame(
-      subject = 1,
-      time = c(-0.5, 1, 2, 4, 8, 12, 24),
-      conc = c(2, 5, 4, 3, 2.5, 2, 1)
-    )
-  o_conc <- PKNCAconc(d_conc, conc~time|subject)
-  d_intervals <- data.frame(start = 0, end = 24, auclast = TRUE)
-  get_auclast <- function(impute) {
-    o_data <- suppressMessages(PKNCAdata(o_conc, intervals = d_intervals, impute = impute))
-    d_res <- as.data.frame(suppressMessages(pk.nca(o_data)))
-    d_res$PPORRES[d_res$PPTESTCD == "auclast"]
-  }
-  auclast_chain <- get_auclast("start_predose,start_conc0")
-  auclast_conc0 <- get_auclast("start_conc0")
-  auclast_predose <- get_auclast("start_predose")
-  # The chain equals the predose-shifted result, because start_conc0 no longer
-  # overwrites the concentration that start_predose moved to the start time
-  expect_equal(auclast_chain, auclast_predose)
-  expect_equal(
-    auclast_chain,
-    as.numeric(pk.calc.auc.last(
-      conc = c(2, 5, 4, 3, 2.5, 2, 1),
-      time = c(0, 1, 2, 4, 8, 12, 24)
-    ))
-  )
-  # And the chain differs from start_conc0 alone (which starts from conc 0)
-  expect_equal(
-    auclast_conc0,
-    as.numeric(pk.calc.auc.last(
-      conc = c(0, 5, 4, 3, 2.5, 2, 1),
-      time = c(0, 1, 2, 4, 8, 12, 24)
-    ))
-  )
-  expect_true(auclast_chain != auclast_conc0)
-})
-
-test_that("start_predose,start_conc0 chain adds 0 when there is no predose sample (#578)", {
-  d_conc <-
-    data.frame(
-      subject = 1,
-      time = c(1, 2, 4, 8, 12, 24),
-      conc = c(5, 4, 3, 2.5, 2, 1)
-    )
-  o_conc <- PKNCAconc(d_conc, conc~time|subject)
-  d_intervals <- data.frame(start = 0, end = 24, auclast = TRUE)
-  get_auclast <- function(impute) {
-    o_data <- suppressMessages(PKNCAdata(o_conc, intervals = d_intervals, impute = impute))
-    d_res <- as.data.frame(suppressMessages(pk.nca(o_data)))
-    d_res$PPORRES[d_res$PPTESTCD == "auclast"]
-  }
-  auclast_chain <- get_auclast("start_predose,start_conc0")
-  auclast_conc0 <- get_auclast("start_conc0")
-  # start_predose has nothing to shift, so start_conc0 adds the zero
-  expect_equal(auclast_chain, auclast_conc0)
-  expect_equal(
-    auclast_chain,
-    as.numeric(pk.calc.auc.last(
-      conc = c(0, 5, 4, 3, 2.5, 2, 1),
-      time = c(0, 1, 2, 4, 8, 12, 24)
-    ))
   )
 })
 

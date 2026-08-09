@@ -6,15 +6,6 @@ the dosing including dose amount and route.
 
 # Development version
 
-* Breaking/behavior change: `PKNCA_impute_method_start_conc0()` (imputation
-  method `"start_conc0"`) no longer overwrites an existing start-of-interval
-  concentration with 0; it now adds a concentration of 0 only when no
-  observation exists at the interval start time, matching the behavior of
-  `"start_predose"` and `"start_cmin"`.  As a result, the imputation chain
-  `"start_predose,start_conc0"` now keeps a shifted predose concentration
-  when one exists and adds 0 otherwise, instead of always resulting in a
-  start concentration of 0 (#578).
-
 * Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
   Group-level concentration data are now sorted by time before calculation, so
   parameters that use the full group (e.g. `aucint.all` and the other `aucint*`
