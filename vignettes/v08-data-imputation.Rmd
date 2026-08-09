@@ -34,6 +34,26 @@ cat(paste(
 ), sep = "\n")
 ```
 
+In brief, the built-in methods work as follows:
+
+* `start_conc0` sets the concentration at the interval start time to 0.  If an
+  observation exists at the start time, its value is replaced with 0;
+  otherwise, a new row is added (usually used with single-dose data).
+* `start_predose` shifts the most recent observation before the interval start
+  to the interval start time.  It applies only when no start-time observation
+  exists, only when a pre-start observation exists, and only when the shift is
+  no more than `max_shift` (by default, 5% of the interval duration or, for
+  intervals with an infinite end, 5% of the time from the interval start to the
+  last sample).
+* `start_cmin` adds the minimum concentration within the interval at the
+  interval start time when no start-time observation exists (usually used with
+  multiple-dose data).
+
+The development version of PKNCA also adds `PKNCA_impute_method_end_conc_drop`
+(used as `"end_conc_drop"`), which drops a concentration observed exactly at
+the interval end -- such as a predose sample for the next dose -- from that
+interval's calculation.
+
 ## How does imputation occur?
 
 (You can skip this section if you don't desire the details of the methods of
@@ -77,7 +97,14 @@ above, use `"start_conc0"`.
 To specify more than one, give all the methods in order with a comma or space
 separating them.  For example, to first move a predose concentration up to the
 time of dosing and then set time 0 to concentration 0, use
-`"start_predose,start_conc0"`, and the two methods will be applied in order.
+`"start_predose,start_conc0"`, and the two methods will be applied in order,
+each to the output of the previous method.  Note that because `start_conc0`
+sets the start-time concentration to 0 even when a start-time value already
+exists, the `"start_predose,start_conc0"` chain produces the same results as
+`"start_conc0"` alone:  the concentration that `start_predose` shifts to the
+start time is then overwritten with 0.  To use the predose concentration when
+one exists and 0 otherwise, write a custom imputation method (see the
+"Advanced" section below).
 
 ## Imputation for the full dataset
 

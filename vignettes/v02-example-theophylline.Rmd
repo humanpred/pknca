@@ -25,7 +25,7 @@ Examples simplify understanding.  Below is an example of how to use the theophyl
 knitr::kable(head(datasets::Theoph))
 ```
 
-The columns that we will be interested in for our analysis are conc, Time, and Subject in the concentration data set and Dose, Time, and Subject for the dosing data set.
+The columns that we will be interested in for our analysis are conc, Time, and Subject in the concentration data set and Dose, Time, and Subject for the dosing data set.  Note that `Dose` in the theophylline dataset is in mg/kg rather than mg; the parameters calculated below do not use the dose amount, but dose-dependent parameters (for example, clearance, volume of distribution, or dose-normalized parameters) would first require converting the dose to mg by multiplying by the subject's body weight (`Wt`).
 
 ```{r setupconcdose}
 ## By default it is groupedData; convert it to a data frame for use
@@ -42,7 +42,7 @@ dose_obj <- PKNCAdose(d_dose, Dose~Time|Subject)
 
 # Merge the Concentration and Dose
 
-After loading the data, they must be combined to prepare for parameter calculation.  Intervals for calculation will automatically be selected based on the `single.dose.aucs setting` in `PKNCA.options`
+After loading the data, they must be combined to prepare for parameter calculation.  Intervals for calculation will automatically be selected based on the `single.dose.aucs` setting in `PKNCA.options`
 
 ```{r autointervals}
 data_obj_automatic <- PKNCAdata(conc_obj, dose_obj)
@@ -50,7 +50,7 @@ knitr::kable(PKNCA.options("single.dose.aucs"))
 knitr::kable(data_obj_automatic$intervals)
 ```
 
-Intervals for calculation can also be specified manually.  Manual specification requires at least columns for `start` time, `end` time, and the parameters requested.  The manual specification can also include any grouping factors from the concentration data set.  Column order of the intervals is not important.  When intervals are manually specified, they are expanded to the full interval set when added to a PKNCAdata object (in other words, a column is created for each parameter.  Also, PKNCA automatically calculates parameters required for the NCA, so while lambda.z is required for calculating AUC~0-$\infty$~, you do not have to specify it in the parameters requested.
+Intervals for calculation can also be specified manually.  Manual specification requires at least columns for `start` time, `end` time, and the parameters requested.  The manual specification can also include any grouping factors from the concentration data set.  Column order of the intervals is not important.  When intervals are manually specified, they are expanded to the full interval set when added to a PKNCAdata object (in other words, a column is created for each parameter).  Also, PKNCA automatically calculates parameters required for the NCA, so while lambda.z is required for calculating AUC~0-$\infty$~, you do not have to specify it in the parameters requested.
 
 ```{r manualintervals}
 intervals_manual <- data.frame(start=0,
@@ -99,10 +99,10 @@ Assessing multiple dose pharmacokinetics is conceptually the same as single-dose
 To assess multiple dose PK, the theophylline data will be extended from single to multiple doses using superposition (see the [superposition](v20-superposition.html) vignette for more information).
 
 ```{r superposition}
-d_conc <- PKNCAconc(as.data.frame(Theoph), conc~Time|Subject)
+conc_obj <- PKNCAconc(as.data.frame(datasets::Theoph), conc~Time|Subject)
 conc_obj_multi <-
   PKNCAconc(
-    superposition(d_conc,
+    superposition(conc_obj,
                   tau=168,
                   dose.times=seq(0, 144, by=24),
                   n.tau=1,
