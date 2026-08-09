@@ -6,6 +6,14 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: `update()` on a `PKNCAresults` object now works when group columns
+  are factors whose levels differ between the old and new data (for example,
+  ordered factors like `datasets::Theoph$Subject` after re-leveling); group
+  columns are matched by value while keeping their classes and levels in the
+  results.  `update()` also no longer warns "No concentration data" for every
+  unchanged group, because the intervals are now filtered to the changed groups
+  along with the concentration and dose data (#581).
+
 * Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
   Group-level concentration data are now sorted by time before calculation, so
   parameters that use the full group (e.g. `aucint.all` and the other `aucint*`

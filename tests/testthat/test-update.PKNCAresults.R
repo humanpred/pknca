@@ -65,9 +65,152 @@ test_that("update() keeps concentration data", {
   d_conc_setzero$conc[d_conc$Time == 0] <- 0
   o_conc_update <- PKNCAconc(d_conc_setzero, conc~Time|Subject)
   o_data_update <- PKNCAdata(o_conc_update, o_dose)
-  o_nca_update <- suppressWarnings(update(o_nca, o_data_update))
+  # No warnings: unchanged subjects are not recalculated and must not warn
+  # about missing concentration data (issue 581)
+  expect_no_warning(o_nca_update <- update(o_nca, o_data_update))
   expect_equal(
     o_nca_update$data$conc,
     o_conc_update
   )
+})
+
+# Sort results for row-order-insensitive comparison
+sort_update_results <- function(d) {
+  d <- as.data.frame(d)
+  d$Subject <- as.character(d$Subject)
+  d <- d[order(d$Subject, d$start, d$end, d$PPTESTCD), , drop = FALSE]
+  rownames(d) <- NULL
+  d
+}
+
+test_that("update() with ordered-factor groups recalculates only changed subjects without warnings (issue 581)", {
+  # datasets::Theoph$Subject is an ordered factor
+  d_conc <- as.data.frame(datasets::Theoph)
+  d_dose <- d_conc[d_conc$Time == 0, ]
+  o_conc <- PKNCAconc(d_conc, conc~Time|Subject)
+  o_dose <- PKNCAdose(d_dose, Dose~Time|Subject)
+  o_data <- PKNCAdata(o_conc, o_dose)
+  o_nca <- pk.nca(o_data)
+
+  # Modify a single concentration value for one subject
+  d_conc_new <- as.data.frame(datasets::Theoph)
+  idx_change <- which(d_conc_new$Subject == "1")[3]
+  d_conc_new$conc[idx_change] <- d_conc_new$conc[idx_change] * 2
+  o_conc_new <- PKNCAconc(d_conc_new, conc~Time|Subject)
+  o_data_new <- PKNCAdata(o_conc_new, o_dose)
+
+  # Error-free and warning-free (previously either an ordered-factor join
+  # error or one "No concentration data" warning per unchanged subject)
+  expect_no_warning(o_nca_update <- update(o_nca, data = o_data_new))
+
+  # The updated result equals a full recalculation on the modified data
+  o_nca_full <- pk.nca(o_data_new)
+  expect_identical(
+    sort_update_results(as.data.frame(o_nca_update)),
+    sort_update_results(as.data.frame(o_nca_full))
+  )
+  # And the modification really changed the results (the comparison above is
+  # not vacuously comparing to the original results)
+  expect_false(
+    identical(
+      sort_update_results(as.data.frame(o_nca)),
+      sort_update_results(as.data.frame(o_nca_full))
+    )
+  )
+
+  # The ordered factor keeps its class and levels in the returned results
+  df_update <- as.data.frame(o_nca_update)
+  expect_true(is.ordered(df_update$Subject))
+  expect_identical(levels(df_update$Subject), levels(d_conc$Subject))
+
+  # Unchanged subjects are byte-identical to the original results
+  df_orig <- as.data.frame(o_nca)
+  unchanged_update <- as.data.frame(df_update[df_update$Subject != "1", , drop = FALSE])
+  unchanged_orig <- as.data.frame(df_orig[df_orig$Subject != "1", , drop = FALSE])
+  rownames(unchanged_update) <- NULL
+  rownames(unchanged_orig) <- NULL
+  expect_identical(unchanged_update, unchanged_orig)
+})
+
+test_that("update() with character groups recalculates only changed subjects without warnings (issue 581)", {
+  d_conc <- as.data.frame(datasets::Theoph)
+  d_conc$Subject <- as.character(d_conc$Subject)
+  d_dose <- d_conc[d_conc$Time == 0, ]
+  o_conc <- PKNCAconc(d_conc, conc~Time|Subject)
+  o_dose <- PKNCAdose(d_dose, Dose~Time|Subject)
+  o_data <- PKNCAdata(o_conc, o_dose)
+  o_nca <- pk.nca(o_data)
+
+  d_conc_new <- d_conc
+  idx_change <- which(d_conc_new$Subject == "1")[3]
+  d_conc_new$conc[idx_change] <- d_conc_new$conc[idx_change] * 2
+  o_conc_new <- PKNCAconc(d_conc_new, conc~Time|Subject)
+  o_data_new <- PKNCAdata(o_conc_new, o_dose)
+
+  expect_no_warning(o_nca_update <- update(o_nca, data = o_data_new))
+  o_nca_full <- pk.nca(o_data_new)
+  expect_identical(
+    sort_update_results(as.data.frame(o_nca_update)),
+    sort_update_results(as.data.frame(o_nca_full))
+  )
+})
+
+test_that("update() joins ordered-factor groups by value when levels differ (issue 581)", {
+  d_conc <- as.data.frame(datasets::Theoph)
+  d_dose <- d_conc[d_conc$Time == 0, ]
+  o_conc <- PKNCAconc(d_conc, conc~Time|Subject)
+  o_dose <- PKNCAdose(d_dose, Dose~Time|Subject)
+  manual_int <- data.frame(start = 0, end = 24, auclast = TRUE)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = manual_int)
+  o_nca <- pk.nca(o_data)
+
+  # The new data have the same subjects, but the ordered factor is re-leveled
+  # (numerically sorted instead of the original Theoph level order)
+  relevel_sorted <- function(d) {
+    d$Subject <- factor(as.character(d$Subject), levels = as.character(1:12), ordered = TRUE)
+    d
+  }
+  d_conc_new <- relevel_sorted(d_conc)
+  idx_change <- which(d_conc_new$Subject == "1")[3]
+  d_conc_new$conc[idx_change] <- d_conc_new$conc[idx_change] * 2
+  d_dose_new <- relevel_sorted(d_dose)
+  o_data_new <-
+    PKNCAdata(
+      PKNCAconc(d_conc_new, conc~Time|Subject),
+      PKNCAdose(d_dose_new, Dose~Time|Subject),
+      intervals = manual_int
+    )
+
+  # Previously errored with "Can't join `x$Subject` with `y$Subject` due to
+  # incompatible types" because the ordered-factor levels differ
+  expect_no_warning(o_nca_update <- update(o_nca, data = o_data_new))
+  o_nca_full <- pk.nca(o_data_new)
+  expect_identical(
+    sort_update_results(as.data.frame(o_nca_update)),
+    sort_update_results(as.data.frame(o_nca_full))
+  )
+  # The results keep an ordered factor with a full set of levels
+  df_update <- as.data.frame(o_nca_update)
+  expect_true(is.ordered(df_update$Subject))
+  expect_setequal(levels(df_update$Subject), levels(d_conc$Subject))
+})
+
+test_that("update() without changes in any group keeps the results as-is (issue 581)", {
+  d_conc <- as.data.frame(datasets::Theoph)
+  d_dose <- d_conc[d_conc$Time == 0, ]
+  o_conc <- PKNCAconc(d_conc, conc~Time|Subject)
+  o_dose <- PKNCAdose(d_dose, Dose~Time|Subject)
+  manual_int <- data.frame(start = 0, end = 24, auclast = TRUE)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = manual_int)
+  o_nca <- pk.nca(o_data)
+
+  # Reorder the subject blocks without changing any subject's data
+  d_conc_new <- d_conc[order(as.integer(d_conc$Subject)), ]
+  o_data_new <- PKNCAdata(PKNCAconc(d_conc_new, conc~Time|Subject), o_dose, intervals = manual_int)
+  expect_message(
+    o_nca_update <- update(o_nca, data = o_data_new),
+    regexp = "No changes detected within any group"
+  )
+  expect_identical(o_nca_update$result, o_nca$result)
+  expect_identical(o_nca_update$data$conc$data, o_data_new$conc$data)
 })

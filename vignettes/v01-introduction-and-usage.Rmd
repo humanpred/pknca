@@ -453,10 +453,8 @@ o_nca_update <- update(o_nca, o_data_update)
 summary(o_nca_update)
 ```
 
-The per-subject "No concentration data" warnings above occur because `update()`
-filters the concentration data to only the changed subjects while keeping all
-dose rows, so the unchanged subjects have doses but no concentrations during
-the partial recalculation.
+Only the participants whose concentration data changed are recalculated;
+results for all other participants are carried over unchanged.
 
 Now, assume that instead of calculating `auclast` from time 0 to 24, we want to
 calculate `aucint.inf.obs`. We can change the intervals to create a new
