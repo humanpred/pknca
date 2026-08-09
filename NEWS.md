@@ -6,6 +6,14 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: `superposition()` no longer loops forever when steady-state is
+  requested (the default `n.tau=Inf`) and concentrations are extrapolated as
+  zero after `tlast` (for example, `auc.type="AUClast"` when `tlast < tau`).
+  Steady-state is now assessed on the concentrations that can become nonzero,
+  a warning is given when zero concentrations remain in the steady-state
+  profile, and an informative error (instead of an infinite loop) is raised if
+  steady-state cannot be reached within 10000 dosing intervals (#580).
+
 * Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
   Group-level concentration data are now sorted by time before calculation, so
   parameters that use the full group (e.g. `aucint.all` and the other `aucint*`

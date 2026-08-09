@@ -93,6 +93,12 @@ Compute noncompartmental superposition for repeated dosing
 The returned superposition times will include all of the following
 times: 0 (zero), \code{dose.times}, \verb{time modulo tau} (shifting \code{time} for each
 dose time as well), \code{additional.times}, and \code{tau}.
+
+When concentrations are extrapolated as zero after \code{tlast} (for example,
+\code{auc.type = "AUClast"} when \code{tlast < tau}), some concentrations in the
+profile can never become nonzero.  Steady-state (\code{n.tau = Inf}) is then
+assessed on the nonzero concentrations, and a warning is given that zero
+concentrations remain in the steady-state profile.
 }
 \seealso{
 \code{\link[=interp.extrap.conc]{interp.extrap.conc()}}

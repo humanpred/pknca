@@ -512,3 +512,100 @@ test_that("PKNCAconc superposition", {
     )
   )
 })
+
+test_that("superposition reaches steady-state despite structural zero concentrations (issue 580)", {
+  # Theoph subjects 6 and 10 have tlast < tau=24, so with auc.type="AUClast"
+  # the concentrations after tlast extrapolate as exactly zero and stay zero at
+  # steady-state.  This formerly looped forever with n.tau=Inf because the
+  # zero-concentration guard reset the steady-state tolerance every interval.
+  d_theoph_6 <- datasets::Theoph[datasets::Theoph$Subject == 6, ]
+  expect_warning(
+    v_ss <-
+      superposition(
+        conc=d_theoph_6$conc, time=d_theoph_6$Time, tau=24, auc.type="AUClast"
+      ),
+    regexp='Zero concentrations remain in the steady-state superposition profile.  They come from concentrations extrapolated as zero after tlast (23.85) with auc.type="AUClast".',
+    fixed=TRUE
+  )
+  # No accumulation is possible because every concentration one or more
+  # dosing intervals after dosing is zero, so the steady-state profile is
+  # exactly the single-dose profile with structural zeros at times 0 and tau.
+  expect_identical(
+    v_ss,
+    data.frame(conc=c(d_theoph_6$conc, 0), time=c(d_theoph_6$Time, 24))
+  )
+  # A finite n.tau with the same input gave the same concentrations before the
+  # fix (all added dosing intervals contribute zero); that is preserved, and
+  # partial accumulation with a finite n.tau does not warn.
+  expect_silent(
+    v_1 <-
+      superposition(
+        conc=d_theoph_6$conc, time=d_theoph_6$Time, tau=24, n.tau=1, auc.type="AUClast"
+      )
+  )
+  expect_identical(v_ss, v_1)
+
+  # The default auc.type="AUCinf" on the same subject is unaffected by the fix:
+  # all concentrations become positive and steady-state is reached silently
+  # (values are pinned from before the fix).
+  expect_silent(
+    v_aucinf <- superposition(conc=d_theoph_6$conc, time=d_theoph_6$Time, tau=24)
+  )
+  expect_equal(
+    v_aucinf,
+    data.frame(
+      conc=c(1.03361737415698, 2.29940375348928, 4.06230162309106,
+             7.37435349523853, 7.18488330467035, 6.28550707796221,
+             5.60636744789876, 4.57905606419521, 3.92005369868033,
+             3.13726988893256, 1.04734393070531, 1.03364150451656),
+      time=c(0, 0.27, 0.58, 1.15, 2.03, 3.57, 5, 7, 9.22, 12.1, 23.85, 24)
+    )
+  )
+
+  # AUClast with tlast > tau converges without a warning: the time-zero
+  # concentration is zero after the first dosing interval, becomes nonzero on
+  # the second, and no zeros remain at steady-state.
+  d_theoph_1 <- datasets::Theoph[datasets::Theoph$Subject == 1, ]
+  expect_silent(
+    v_s1 <-
+      superposition(
+        conc=d_theoph_1$conc, time=d_theoph_1$Time, tau=24, auc.type="AUClast",
+        check.blq=FALSE
+      )
+  )
+  expect_true(all(v_s1$conc > 0))
+
+  # The PKNCAconc method (the form reported in issue 580) returns with one
+  # warning per affected subject (check.blq=FALSE because subject 10 has a
+  # nonzero concentration at time 0)
+  d_theoph_6_10 <-
+    datasets::Theoph[datasets::Theoph$Subject %in% c(6, 10), ]
+  conc_obj <- PKNCAconc(conc~Time|Subject, data=d_theoph_6_10)
+  w_obj <-
+    capture_warnings(
+      v_obj <- superposition(conc_obj, tau=24, auc.type="AUClast", check.blq=FALSE)
+    )
+  expect_length(w_obj, 2)
+  expect_match(
+    w_obj,
+    regexp="Zero concentrations remain in the steady-state superposition profile",
+    fixed=TRUE,
+    all=TRUE
+  )
+  expect_true(all(is.finite(v_obj$conc)))
+})
+
+test_that("superposition errors instead of hanging when steady-state cannot be reached", {
+  # A negligible lambda.z makes each added dosing interval contribute ~clast,
+  # so the relative change shrinks only like 1/n.tau and steady.state.tol=1e-8
+  # cannot be reached within the iteration cap.
+  expect_error(
+    superposition(
+      conc=c(0, 1, 0.5), time=0:2, tau=1,
+      lambda.z=1e-8, clast.pred=0.5, tlast=2,
+      steady.state.tol=1e-8
+    ),
+    regexp="Superposition did not reach steady-state within 10000 dosing intervals",
+    fixed=TRUE
+  )
+})
