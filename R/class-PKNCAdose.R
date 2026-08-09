@@ -213,9 +213,8 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
     dose <- object$columns$dose
   }
   if (missing(duration) && missing(rate)) {
-    object <- setAttributeColumn(object=object, attr_name="duration", default_value=0,
-                                 message_if_default="Assuming instant dosing (duration=0)")
-
+    # The duration silently defaults to 0 (instant dosing) by design.
+    object <- setAttributeColumn(object=object, attr_name="duration", default_value=0)
   } else if (!missing(duration) && !missing(rate)) {
     stop("Both duration and rate cannot be given at the same time")
     # TODO: A consistency check could be done, but that would get into
