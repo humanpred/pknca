@@ -4,9 +4,12 @@
   adj.r.squared.factor=function(x, default=FALSE, description=FALSE) {
     if (description)
       return(paste(
-        "The adjusted r^2 for the calculation of lambda.z has this factor",
-        "times the number of data points added to it.  It allows for more",
-        "data points to be preferred in the calculation of half-life."))
+        "During the calculation of lambda.z, all candidate regressions",
+        "with an adjusted r^2 within adj.r.squared.factor of the best",
+        "adjusted r^2 are considered acceptable, and the acceptable",
+        "regression using the most data points is selected.  It allows",
+        "for more data points to be preferred in the calculation of",
+        "half-life."))
     if (default)
       return(0.0001)
     if (length(x) != 1)

@@ -996,3 +996,11 @@ test_that("pk.calc.half.life tobit manually.selected.points sets exclude for neg
     "Negative half-life estimated with manually-selected points"
   )
 })
+
+test_that("span.ratio description is the time span divided by the half-life, not the inverse (#582)", {
+  expect_match(
+    get.interval.cols()[["span.ratio"]]$desc,
+    "lambda z regression time span to the half-life",
+    fixed=TRUE
+  )
+})

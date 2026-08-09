@@ -762,7 +762,7 @@ add.interval.col("span.ratio",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
                  pretty_name="Span ratio",
-                 desc="The ratio of the half-life to the duration used for half-life calculation",
+                 desc="The ratio of the lambda z regression time span to the half-life",
                  depends="half.life",
                  pptestcd_cdisc="LAMZSPN",
                  pptest_cdisc="Lambda z Span")

@@ -6,6 +6,15 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Documentation fix: three runtime description strings that contradicted the
+  implementation were corrected: the `adj.r.squared.factor` option description
+  (it is a tolerance below the best adjusted r-squared, not an additive
+  per-point bonus), the `span.ratio` parameter description (the regression time
+  span divided by the half-life, not the inverse), and the descriptions of
+  `aucint.inf.obs`, `aucint.inf.pred`, and their `.dose` variants (they
+  extrapolate using the half-life and the observed/predicted Clast rather than
+  the AUClast/AUCall rules) (#582).
+
 * Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
   Group-level concentration data are now sorted by time before calculation, so
   parameters that use the full group (e.g. `aucint.all` and the other `aucint*`

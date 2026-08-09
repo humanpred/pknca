@@ -467,6 +467,12 @@ test_that("PKNCA.options.describe", {
                info="Option descriptions are provided accurately.")
 })
 
+test_that("adj.r.squared.factor description matches the within-tolerance selection in the code (#582)", {
+  desc <- PKNCA:::PKNCA.options.describe("adj.r.squared.factor")
+  expect_match(desc, "within adj.r.squared.factor of the best adjusted r^2", fixed=TRUE)
+  expect_match(desc, "regression using the most data points is selected", fixed=TRUE)
+})
+
 test_that("PKNCA.options fails when setting defaults and another option simultaneously", {
   expect_error(
     PKNCA.options(default=TRUE, tau.choices=24),

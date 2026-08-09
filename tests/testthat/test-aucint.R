@@ -738,3 +738,27 @@ test_that("Integration functions are passed correctly through wrapper", {
   expect_true(is.numeric(auc_result) && auc_result > 0)
   expect_true(is.numeric(aumc_result) && aumc_result > 0)
 })
+
+test_that("aucint.inf descriptions state AUCinf extrapolation, not the AUClast/AUCall rules (#582)", {
+  cols <- get.interval.cols()
+  expect_match(
+    cols[["aucint.inf.obs"]]$desc,
+    "using the half-life and the observed Clast (matching AUCinf,obs)",
+    fixed=TRUE
+  )
+  expect_match(
+    cols[["aucint.inf.obs.dose"]]$desc,
+    "using the half-life and the observed Clast (matching AUCinf,obs) with dose-aware interpolation/extrapolation of concentrations",
+    fixed=TRUE
+  )
+  expect_match(
+    cols[["aucint.inf.pred"]]$desc,
+    "using the half-life and the predicted Clast (matching AUCinf,pred)",
+    fixed=TRUE
+  )
+  expect_match(
+    cols[["aucint.inf.pred.dose"]]$desc,
+    "using the half-life and the predicted Clast (matching AUCinf,pred) with dose-aware interpolation/extrapolation of concentrations",
+    fixed=TRUE
+  )
+})
