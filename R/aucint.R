@@ -443,7 +443,7 @@ add.interval.col("aumcint.inf.obs",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMCint (based on AUMCinf,obs extrapolation)",
-                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)",
+                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity using the half-life and the observed Clast (matching AUMCinf,obs)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
                  depends=c("lambda.z", "clast.obs"))
 
@@ -453,7 +453,7 @@ add.interval.col("aumcint.inf.obs.dose",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMCint (based on AUMCinf,obs extrapolation, dose-aware)",
-                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations",
+                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity using the half-life and the observed Clast (matching AUMCinf,obs) with dose-aware interpolation/extrapolation of concentrations",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
                  depends=c("lambda.z", "clast.obs"))
 
@@ -463,7 +463,7 @@ add.interval.col("aumcint.inf.pred",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMCint (based on AUMCinf,pred extrapolation)",
-                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)",
+                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity using the half-life and the predicted Clast (matching AUMCinf,pred)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
                  depends=c("lambda.z", "clast.pred"))
 
@@ -473,7 +473,7 @@ add.interval.col("aumcint.inf.pred.dose",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMCint (based on AUMCinf,pred extrapolation, dose-aware)",
-                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations",
+                 desc="The area under the moment curve in the interval extrapolating from Tlast to infinity using the half-life and the predicted Clast (matching AUMCinf,pred) with dose-aware interpolation/extrapolation of concentrations",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
                  depends=c("lambda.z", "clast.pred"))
 

@@ -762,3 +762,27 @@ test_that("aucint.inf descriptions state AUCinf extrapolation, not the AUClast/A
     fixed=TRUE
   )
 })
+
+test_that("aumcint.inf descriptions state AUMCinf extrapolation, not the AUMClast/AUMCall rules (#582)", {
+  cols <- get.interval.cols()
+  expect_match(
+    cols[["aumcint.inf.obs"]]$desc,
+    "using the half-life and the observed Clast (matching AUMCinf,obs)",
+    fixed=TRUE
+  )
+  expect_match(
+    cols[["aumcint.inf.obs.dose"]]$desc,
+    "using the half-life and the observed Clast (matching AUMCinf,obs) with dose-aware interpolation/extrapolation of concentrations",
+    fixed=TRUE
+  )
+  expect_match(
+    cols[["aumcint.inf.pred"]]$desc,
+    "using the half-life and the predicted Clast (matching AUMCinf,pred)",
+    fixed=TRUE
+  )
+  expect_match(
+    cols[["aumcint.inf.pred.dose"]]$desc,
+    "using the half-life and the predicted Clast (matching AUMCinf,pred) with dose-aware interpolation/extrapolation of concentrations",
+    fixed=TRUE
+  )
+})
