@@ -10,6 +10,17 @@
 #' the interval.  For example, if an interval starts at 168 hours, ends at 192
 #' hours, and and the maximum concentration is at 169 hours, `tmax=169-168=1`.
 #'
+#' Data are selected for each interval by the measurement or dose time: rows
+#' with a time at or after the interval `start` and at or before the interval
+#' `end` are included (a dose exactly at the interval `end` is not included in
+#' the interval).  For duration data (for example, urine collections or
+#' intravenous infusions), the time is the start of the collection or
+#' administration, and the duration is not considered during selection: a
+#' collection that starts within the interval and ends after the interval `end`
+#' contributes its full amount to the interval.  For the simplest
+#' interpretation of results, align collection start and end times with
+#' interval boundaries.
+#'
 #' @param data A PKNCAdata object
 #' @param verbose Indicate, by `message()`, the current state of calculation.
 #' @returns A `PKNCAresults` object.
@@ -134,6 +145,25 @@ pk_nca_result_to_df <- function(group_info, result) {
   results
 }
 
+#' Subset data to the rows used for calculations within an interval
+#'
+#' Rows are selected by their `time` falling within the interval: `start <=
+#' time` and `time <= end` (or `time < end` when `include_end=FALSE`).  For
+#' duration data (for example, urine collections or intravenous infusions),
+#' `time` is the start of the collection or administration, and the `duration`
+#' column is not consulted during selection: a record whose duration starts
+#' within the interval and ends after the interval `end` is selected and
+#' contributes its full amount to calculations within the interval.  For the
+#' simplest interpretation of results, align collection start and end times
+#' with interval boundaries.
+#'
+#' @param data A data.frame with a column named `time` (and, for duration data,
+#'   a column named `duration`, which is ignored during selection)
+#' @param start,end The beginning and end times of the interval
+#' @param include_na Should rows with an `NA` `time` be kept?
+#' @param include_end Should a row with `time == end` be kept?
+#' @returns The rows of `data` selected for the interval
+#' @keywords Internal
 filter_interval <- function(data, start, end, include_na=FALSE, include_end=TRUE) {
   mask_na <- include_na & is.na(data$time)
   mask_keep_start <- start <= data$time

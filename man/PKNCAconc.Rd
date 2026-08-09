@@ -66,7 +66,13 @@ values of \code{NA} or \code{""} for concentrations to include and non-empty tex
 concentrations to exclude.}
 
 \item{duration}{(optional) The duration of collection as is typically used
-for concentration measurements in urine or feces.}
+for concentration measurements in urine or feces.  The \code{time} of a
+measurement is the start of the collection, and only the \code{time} is used
+when selecting data for a calculation interval; the duration is not
+considered.  A collection starting within an interval and ending after the
+interval \code{end} contributes its full amount to that interval, so for the
+simplest interpretation of results, align collection start and end times
+with interval boundaries.}
 
 \item{volume}{(optional) The volume (or mass) of collection as is typically
 used for urine or feces measurements.}
