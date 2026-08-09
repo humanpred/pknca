@@ -9,6 +9,16 @@
 #' be before the `end`.  Other columns define the parameters to be calculated
 #' and the groupings to apply the intervals to.
 #'
+#' Data are selected for calculation within an interval by the time of the
+#' measurement or dose: a row is included when its time is at or after `start`
+#' and at or before `end` (a dose exactly at `end` is not included in the
+#' interval).  For duration data (for example, urine collections or intravenous
+#' infusions), the time is the start of the collection or administration, and
+#' the duration is not considered during selection: a collection that starts
+#' within the interval and ends after `end` is included and contributes its
+#' full amount to the interval.  For the simplest interpretation of results,
+#' align collection start and end times with interval boundaries.
+#'
 #' @param x The data frame specifying what to calculate during each time
 #'   interval
 #' @returns x The potentially updated data frame with the interval calculation

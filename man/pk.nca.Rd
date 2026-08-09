@@ -25,6 +25,17 @@ set either in \code{PKNCAdata} or with the current default options in
 When performing calculations, all time results are relative to the start of
 the interval.  For example, if an interval starts at 168 hours, ends at 192
 hours, and and the maximum concentration is at 169 hours, \code{tmax=169-168=1}.
+
+Data are selected for each interval by the measurement or dose time: rows
+with a time at or after the interval \code{start} and at or before the interval
+\code{end} are included (a dose exactly at the interval \code{end} is not included in
+the interval).  For duration data (for example, urine collections or
+intravenous infusions), the time is the start of the collection or
+administration, and the duration is not considered during selection: a
+collection that starts within the interval and ends after the interval \code{end}
+contributes its full amount to the interval.  For the simplest
+interpretation of results, align collection start and end times with
+interval boundaries.
 }
 \seealso{
 \code{\link[=PKNCAdata]{PKNCAdata()}}, \code{\link[=PKNCA.options]{PKNCA.options()}}, \code{\link[=summary.PKNCAresults]{summary.PKNCAresults()}},
