@@ -27,7 +27,7 @@ are:
 \details{
 \describe{
 \item{"arithmetic mean"}{Arithmetic mean (ignoring number of BLQ samples)}
-\item{"arithmetic mean, <=50\% BLQ"}{If >= 50\% of the measurements are BLQ, zero.  Otherwise, the arithmetic mean of all samples (including the BLQ as zero).}
+\item{"arithmetic mean, <=50\% BLQ"}{If strictly more than 50\% of the measurements are BLQ, zero.  Otherwise (including exactly 50\% BLQ), the arithmetic mean of all samples (including the BLQ as zero).}
 }
 }
 \seealso{

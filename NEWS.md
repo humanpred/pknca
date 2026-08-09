@@ -6,6 +6,14 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: `pk.calc.sparse_auc()` and `pk.calc.sparse_aumc()` now use their
+  `options` argument when integrating the mean concentration-time profile, so
+  per-run options (e.g. `PKNCAdata(options = list(conc.blq = "keep"))`) affect
+  sparse AUC and AUMC calculations the same way global `PKNCA.options()`
+  settings always did.  The documentation for `sparse_mean()` now correctly
+  states that a timepoint mean is zeroed when strictly more than 50% of the
+  measurements are BLQ (#579).
+
 * Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
   Group-level concentration data are now sorted by time before calculation, so
   parameters that use the full group (e.g. `aucint.all` and the other `aucint*`
