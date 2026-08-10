@@ -96,17 +96,19 @@ part of the function name. So for the example above, use
 `"start_conc0"`.
 
 To specify more than one, give all the methods in order with a comma or
-space separating them. For example, to first move a predose
-concentration up to the time of dosing and then set time 0 to
-concentration 0, use `"start_predose,start_conc0"`, and the two methods
-will be applied in order, each to the output of the previous method.
-Note that because `start_conc0` sets the start-time concentration to 0
-even when a start-time value already exists, the
+space separating them (for example, `"start_predose,start_conc0"`), and
+the methods will be applied in order, each to the output of the previous
+method. Note that because `start_conc0` sets the start-time
+concentration to 0 even when a start-time value already exists, the
 `"start_predose,start_conc0"` chain produces the same results as
 `"start_conc0"` alone: the concentration that `start_predose` shifts to
-the start time is then overwritten with 0. To use the predose
-concentration when one exists and 0 otherwise, write a custom imputation
-method (see the “Advanced” section below).
+the start time is then overwritten with 0. This overwriting is by
+design; the intent of `start_conc0` is to force the start concentration
+to zero, and that can remove a nonzero predose concentration, too. To
+carry a predose concentration to the start time, use `"start_predose"`
+alone; to force the start concentration to zero, use `"start_conc0"`;
+and to use the predose concentration when one exists and 0 otherwise,
+write a custom imputation method (see the “Advanced” section below).
 
 ## Imputation for the full dataset
 

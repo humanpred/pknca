@@ -180,18 +180,22 @@ imputation method to use, give the <code>[method name]</code> part of
 the function name. So for the example above, use
 <code>"start_conc0"</code>.</p>
 <p>To specify more than one, give all the methods in order with a comma
-or space separating them. For example, to first move a predose
-concentration up to the time of dosing and then set time 0 to
-concentration 0, use <code>"start_predose,start_conc0"</code>, and the
-two methods will be applied in order, each to the output of the previous
-method. Note that because <code>start_conc0</code> sets the start-time
-concentration to 0 even when a start-time value already exists, the
+or space separating them (for example,
+<code>"start_predose,start_conc0"</code>), and the methods will be
+applied in order, each to the output of the previous method. Note that
+because <code>start_conc0</code> sets the start-time concentration to 0
+even when a start-time value already exists, the
 <code>"start_predose,start_conc0"</code> chain produces the same results
 as <code>"start_conc0"</code> alone: the concentration that
 <code>start_predose</code> shifts to the start time is then overwritten
-with 0. To use the predose concentration when one exists and 0
-otherwise, write a custom imputation method (see the “Advanced” section
-below).</p>
+with 0. This overwriting is by design; the intent of
+<code>start_conc0</code> is to force the start concentration to zero,
+and that can remove a nonzero predose concentration, too. To carry a
+predose concentration to the start time, use
+<code>"start_predose"</code> alone; to force the start concentration to
+zero, use <code>"start_conc0"</code>; and to use the predose
+concentration when one exists and 0 otherwise, write a custom imputation
+method (see the “Advanced” section below).</p>
 </div>
 <div class="section level2">
 <h2 id="imputation-for-the-full-dataset">Imputation for the full dataset<a class="anchor" aria-label="anchor" href="#imputation-for-the-full-dataset"></a>

@@ -133,9 +133,16 @@ and one column named time with the times.</p>
     <div class="section level2">
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
 
-<ul><li><p><code>PKNCA_impute_method_start_conc0()</code>: Add a new concentration of 0 at the start
-time, even if a nonzero concentration exists at that time (usually used
-with single-dose data)</p></li>
+<ul><li><p><code>PKNCA_impute_method_start_conc0()</code>: Set the concentration at the start time to
+0, even if a nonzero concentration exists at that time (usually used with
+single-dose data).  Forcing the start concentration to zero is
+intentional:  an existing start-time value is replaced with 0, including
+a nonzero predose measurement shifted to the start time by
+<code>start_predose</code>, so the imputation chain <code>"start_predose,start_conc0"</code>
+gives the same result as <code>"start_conc0"</code> alone.  To carry a predose
+measurement to the start time, use <code>start_predose</code> without
+<code>start_conc0</code>.  When no observation exists at the start time, a new row
+with a concentration of 0 is added.</p></li>
 <li><p><code>PKNCA_impute_method_start_cmin()</code>: Add a new concentration of the minimum during
 the interval at the start time (usually used with multiple-dose data)</p></li>
 <li><p><code>PKNCA_impute_method_start_predose()</code>: Shift a predose concentration to become the
