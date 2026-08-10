@@ -6,12 +6,6 @@ the dosing including dose amount and route.
 
 # Development version
 
-* Documentation clarification: data selection for a calculation interval uses
-  only the measurement or dose time (for duration data such as urine
-  collections, the collection start time); the duration is not considered, so a
-  collection that starts within an interval and ends after the interval end
-  contributes its full amount to the interval (#577).
-
 * Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
   Group-level concentration data are now sorted by time before calculation, so
   parameters that use the full group (e.g. `aucint.all` and the other `aucint*`
