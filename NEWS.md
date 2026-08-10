@@ -142,12 +142,6 @@ when the issue is due to an excluded point (#310)
 * Remove dead code: unused internal functions, commented-out code, unused
   variable, stale comment, and unused `pmxTools` Suggests dependency
 
-* Remove dead `message_if_default` wiring from `setRoute.PKNCAdose()` and
-  `setDuration.PKNCAdose()`: the messages could never fire because a
-  `default_value` is always supplied.  The route silently defaults to
-  extravascular and the duration to 0 (instant dosing) by design; no behavior
-  change (#584)
-
 # PKNCA 0.12.1
 
 ## Minor changes (unlikely to affect PKNCA use)
