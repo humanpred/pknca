@@ -264,9 +264,9 @@ test_that("moment means are calculated correctly", {
 
 
 # ============================================================================
-# Per-run options forwarding (#579)
+# Per-run options forwarding
 # ============================================================================
-# Shared setup for the #579 tests: serial sparse design with 3 animals per
+# Shared setup: serial sparse design with 3 animals per
 # timepoint.  At t=2, 2 of 3 measurements are BLQ (strictly more than 50%), so
 # sparse_mean zeroes that timepoint and the mean profile is
 # (0,0), (1,3), (2,0), (3,2).  The default conc.blq (middle = "drop") drops the
@@ -279,7 +279,7 @@ d_sparse_579 <-
     time = c(0, 0, 0,   1, 1, 1,   2, 2, 2,     3, 3, 3)
   )
 
-test_that("pk.calc.sparse_auc and pk.calc.sparse_aumc use their options argument for the mean-profile integration (#579)", {
+test_that("pk.calc.sparse_auc and pk.calc.sparse_aumc use their options argument for the mean-profile integration", {
   r_default <-
     pk.calc.sparse_auclast(
       conc = d_sparse_579$conc, time = d_sparse_579$time, subject = d_sparse_579$id
@@ -311,7 +311,7 @@ test_that("pk.calc.sparse_auc and pk.calc.sparse_aumc use their options argument
   expect_equal(as.numeric(ra_keep$sparse_aumclast), 6)
 })
 
-test_that("per-PKNCAdata options affect sparse_auclast and match the global-option route (#579)", {
+test_that("per-PKNCAdata options affect sparse_auclast and match the global-option route", {
   o_conc <- PKNCAconc(d_sparse_579, conc ~ time | id, sparse = TRUE)
   d_intervals <- data.frame(start = 0, end = 3, sparse_auclast = TRUE)
   o_data_default <- PKNCAdata(o_conc, intervals = d_intervals)
@@ -327,7 +327,7 @@ test_that("per-PKNCAdata options affect sparse_auclast and match the global-opti
     4
   )
 
-  # The global-option route still works and now matches the per-run route
+  # The global-option route matches the per-run route
   old_conc.blq <- PKNCA.options("conc.blq")
   on.exit(PKNCA.options(conc.blq = old_conc.blq))
   PKNCA.options(conc.blq = "keep")
