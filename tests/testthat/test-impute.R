@@ -18,6 +18,58 @@ test_that("PKNCA_impute_method_start_conc0", {
   )
 })
 
+test_that("start_conc0 intentionally replaces an existing start concentration with 0 (#578)", {
+  # A nonzero concentration at the start time is forced to 0
+  expect_equal(
+    PKNCA_impute_method_start_conc0(conc = c(5, 2, 3), time = 0:2),
+    data.frame(conc = c(0, 2, 3), time = 0:2)
+  )
+  # The replacement also occurs at a nonzero start time
+  expect_equal(
+    PKNCA_impute_method_start_conc0(conc = 1:3, time = 0:2, start = 1),
+    data.frame(conc = c(1, 0, 3), time = 0:2)
+  )
+})
+
+test_that("start_predose,start_conc0 collapses to start_conc0 by design (#578)", {
+  # A predose sample within max_shift (5% of the 0-24 interval, so within 1.2)
+  d_conc <-
+    data.frame(
+      subject = 1,
+      time = c(-0.5, 1, 2, 4, 8, 12, 24),
+      conc = c(2, 5, 4, 3, 2.5, 2, 1)
+    )
+  o_conc <- PKNCAconc(d_conc, conc~time|subject)
+  d_intervals <- data.frame(start = 0, end = 24, auclast = TRUE)
+  get_auclast <- function(impute) {
+    o_data <- suppressMessages(PKNCAdata(o_conc, intervals = d_intervals, impute = impute))
+    d_res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+    d_res$PPORRES[d_res$PPTESTCD == "auclast"]
+  }
+  auclast_chain <- get_auclast("start_predose,start_conc0")
+  auclast_conc0 <- get_auclast("start_conc0")
+  auclast_predose <- get_auclast("start_predose")
+  # start_conc0 replaces the concentration that start_predose shifted to the
+  # start time, so the chain gives the same result as start_conc0 alone
+  expect_equal(auclast_chain, auclast_conc0)
+  expect_equal(
+    auclast_chain,
+    as.numeric(pk.calc.auc.last(
+      conc = c(0, 5, 4, 3, 2.5, 2, 1),
+      time = c(0, 1, 2, 4, 8, 12, 24)
+    ))
+  )
+  # start_predose alone carries the predose concentration to the start time
+  expect_equal(
+    auclast_predose,
+    as.numeric(pk.calc.auc.last(
+      conc = c(2, 5, 4, 3, 2.5, 2, 1),
+      time = c(0, 1, 2, 4, 8, 12, 24)
+    ))
+  )
+  expect_true(auclast_predose != auclast_conc0)
+})
+
 test_that("PKNCA_impute_method_start_predose", {
   # No modification if no predose samples
   expect_equal(
