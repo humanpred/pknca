@@ -6,11 +6,6 @@ the dosing including dose amount and route.
 
 # Development version
 
-* `start_conc0` documentation clarified: the imputation method intentionally
-  forces the interval-start concentration to zero, replacing any existing
-  start-time value, including a nonzero predose concentration shifted to the
-  start time by `start_predose` (#578)
-
 * Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
   Group-level concentration data are now sorted by time before calculation, so
   parameters that use the full group (e.g. `aucint.all` and the other `aucint*`
