@@ -40,6 +40,8 @@ Other contributors:
 
 - Sridhar Duvvuri \[contributor\]
 
+- Natalie Sang <nataliesang143@gmail.com> \[contributor\]
+
 ## Examples
 
 ``` r

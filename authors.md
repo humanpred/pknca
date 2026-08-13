@@ -12,6 +12,8 @@
 
 - **Sridhar Duvvuri**. Contributor.
 
+- **Natalie Sang**. Contributor.
+
 ## Citation
 
 Source:

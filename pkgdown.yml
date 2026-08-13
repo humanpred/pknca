@@ -19,9 +19,10 @@ articles:
   v30-training-session: v30-training-session.html
   v31-FDA-introduction: v31-FDA-introduction.html
   v40-options-for-controlling-PKNCA: v40-options-for-controlling-PKNCA.html
+  v50-bioequivalence: v50-bioequivalence.html
   v60-PKNCA-validation: v60-PKNCA-validation.html
   v80-writing-parameter-functions: v80-writing-parameter-functions.html
-last_built: 2026-08-13T21:21Z
+last_built: 2026-08-13T22:07Z
 urls:
   reference: https://humanpred.github.io/pknca/reference
   article: https://humanpred.github.io/pknca/articles

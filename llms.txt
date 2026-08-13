@@ -198,6 +198,39 @@ and bug reports.
 - [`auc_integrate()`](https://humanpred.github.io/pknca/reference/auc_integrate.md)
   : Support function for AUC integration
 
+- [`be_assess()`](https://humanpred.github.io/pknca/reference/be_assess.md)
+  : Assess bioequivalence against a regulatory framework
+
+- [`be_compare()`](https://humanpred.github.io/pknca/reference/be_compare.md)
+  : Compare a bioequivalence dataset across regulatory frameworks
+
+- [`be_dataset()`](https://humanpred.github.io/pknca/reference/be_dataset.md)
+  : Build and validate a bioequivalence dataset
+
+- [`be_design()`](https://humanpred.github.io/pknca/reference/be_design.md)
+  : Classify a bioequivalence crossover design
+
+- [`be_expand_limits()`](https://humanpred.github.io/pknca/reference/be_expand_limits.md)
+  : Reference-scaled acceptance limits for bioequivalence
+
+- [`be_extract_param()`](https://humanpred.github.io/pknca/reference/be_extract_param.md)
+  : Extract bioequivalence parameters from a fitted model
+
+- [`be_fit_model_single()`](https://humanpred.github.io/pknca/reference/be_fit_model_single.md)
+  : Fit the bioequivalence model(s) for one endpoint
+
+- [`be_fit_models()`](https://humanpred.github.io/pknca/reference/be_fit_models.md)
+  : Coordinate the bioequivalence calculation path
+
+- [`be_regulator()`](https://humanpred.github.io/pknca/reference/be_regulator.md)
+  : Regulatory framework constants for bioequivalence assessment
+
+- [`be_table()`](https://humanpred.github.io/pknca/reference/be_table.md)
+  : Build the regulatory bioequivalence table
+
+- [`be_within_var()`](https://humanpred.github.io/pknca/reference/be_within_var.md)
+  : Within-subject variability for reference-scaled bioequivalence
+
 - [`business.mean()`](https://humanpred.github.io/pknca/reference/business.mean.md)
   [`business.sd()`](https://humanpred.github.io/pknca/reference/business.mean.md)
   [`business.cv()`](https://humanpred.github.io/pknca/reference/business.mean.md)
@@ -739,6 +772,8 @@ and bug reports.
   data](https://humanpred.github.io/pknca/articles/v31-FDA-introduction.md):
 - [Options for Controlling
   PKNCA](https://humanpred.github.io/pknca/articles/v40-options-for-controlling-PKNCA.md):
+- [Bioequivalence
+  Calculations](https://humanpred.github.io/pknca/articles/v50-bioequivalence.md):
 - [PKNCA
   Validation](https://humanpred.github.io/pknca/articles/v60-PKNCA-validation.md):
 - [Writing PKNCA Parameter

@@ -23,6 +23,7 @@
 <url><loc>https://humanpred.github.io/pknca/articles/v30-training-session.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/articles/v31-FDA-introduction.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/articles/v40-options-for-controlling-PKNCA.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/articles/v50-bioequivalence.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/articles/v60-PKNCA-validation.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/articles/v80-writing-parameter-functions.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/authors.html</loc></url>
@@ -57,6 +58,17 @@
 <url><loc>https://humanpred.github.io/pknca/reference/assert_numeric_between.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/assert_unit.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/auc_integrate.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/be_assess.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/be_compare.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/be_dataset.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/be_design.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/be_expand_limits.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/be_extract_param.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/be_fit_model_single.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/be_fit_models.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/be_regulator.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/be_table.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/be_within_var.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/business.mean.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/check.conversion.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/check.interval.specification.html</loc></url>

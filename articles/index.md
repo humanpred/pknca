@@ -35,6 +35,8 @@
   data](https://humanpred.github.io/pknca/articles/v31-FDA-introduction.md):
 - [Options for Controlling
   PKNCA](https://humanpred.github.io/pknca/articles/v40-options-for-controlling-PKNCA.md):
+- [Bioequivalence
+  Calculations](https://humanpred.github.io/pknca/articles/v50-bioequivalence.md):
 - [PKNCA
   Validation](https://humanpred.github.io/pknca/articles/v60-PKNCA-validation.md):
 - [Writing PKNCA Parameter
