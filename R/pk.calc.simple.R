@@ -594,16 +594,6 @@ add.interval.col("kel.sparse.last",
                  formalsmap = list(mrt = "mrt.sparse.last"),
                  depends = "mrt.sparse.last")
 
-add.interval.col("kel.sparse.last",
-                 FUN = "pk.calc.kel",
-                 values = c(FALSE, TRUE),
-                 unit_type = "inverse_time",
-                 pretty_name = "Kel (for sparse data, based on AUClast)",
-                 desc = "Elimination rate (as calculated from the MRTsparse.last)",
-                 sparse = TRUE,
-                 formalsmap = list(mrt = "mrt.sparse.last"),
-                 depends = "mrt.sparse.last")
-
 #' Calculate the (observed oral) clearance
 #'
 #' @details cl is `dose/auc`.
@@ -780,15 +770,6 @@ add.interval.col("cl.sparse.last",
                  formalsmap = list(auc = "sparse_auclast"),
                  depends = "sparse_auclast")
 
-add.interval.col("cl.sparse.last",
-                 FUN = "pk.calc.cl",
-                 values = c(FALSE, TRUE),
-                 unit_type = "clearance",
-                 pretty_name = "CL (for sparse data, based on AUClast)",
-                 desc = "Clearance from sparse sampling calculated with population AUClast",
-                 sparse = TRUE,
-                 formalsmap = list(auc = "sparse_auclast"),
-                 depends = "sparse_auclast")
 
 #' Calculate the absolute (or relative) bioavailability
 #'
@@ -928,15 +909,6 @@ add.interval.col("mrt.sparse.last",
                  formalsmap = list(auc = "sparse_auclast", aumc = "sparse_aumclast"),
                  depends = c("sparse_auclast", "sparse_aumclast"))
 
-add.interval.col("mrt.sparse.last",
-                 FUN = "pk.calc.mrt",
-                 values = c(FALSE, TRUE),
-                 unit_type = "time",
-                 pretty_name = "MRT (for sparse data, based on AUClast)",
-                 desc = "Mean residence time from sparse sampling",
-                 sparse = TRUE,
-                 formalsmap = list(auc = "sparse_auclast", aumc = "sparse_aumclast"),
-                 depends = c("sparse_auclast", "sparse_aumclast"))
 
 #' @describeIn pk.calc.mrt MRT for an IV infusion
 #' @export
@@ -1217,18 +1189,6 @@ add.interval.col("vz.sparse.last",
                  depends     = c("cl.sparse.last", "kel.sparse.last"))
 
 
-add.interval.col(
-  "vz.sparse.last",
-  FUN         = "pk.calc.vz",
-  values      = c(FALSE, TRUE),
-  unit_type   = "volume",
-  pretty_name = "Vz (for sparse data, based on AUClast)",
-  desc        = "Terminal volume of distribution from sparse sampling",
-  sparse      = TRUE,
-  formalsmap  = list(cl = "cl.sparse.last", lambda.z = "kel.sparse.last"),
-  depends     = c("cl.sparse.last", "kel.sparse.last")
-)
-
 #' @describeIn pk.calc.vz Steady-state volume of distribution (Vss)
 #'
 #' @details vss is `cl*mrt`.
@@ -1409,15 +1369,6 @@ add.interval.col("vss.sparse.last",
                  formalsmap = list(cl = "cl.sparse.last", mrt = "mrt.sparse.last"),
                  depends = c("cl.sparse.last", "mrt.sparse.last"))
 
-add.interval.col("vss.sparse.last",
-                 FUN = "pk.calc.vss",
-                 values = c(FALSE, TRUE),
-                 unit_type = "volume",
-                 pretty_name = "Vss (for sparse data, based on AUClast)",
-                 desc = "Steady-state volume of distribution from sparse sampling",
-                 sparse = TRUE,
-                 formalsmap = list(cl = "cl.sparse.last", mrt = "mrt.sparse.last"),
-                 depends = c("cl.sparse.last", "mrt.sparse.last"))
 
 #' Calculate the average concentration during an interval.
 #'
