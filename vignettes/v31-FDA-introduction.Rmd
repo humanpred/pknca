@@ -265,7 +265,7 @@ Groups are not required, if you want the same intervals calculated for each grou
     * Optional information includes: rate or duration of infusion, data to exclude
 * `PKNCAdata()`: combine `PKNCAconc`, optionally `PKNCAdose`, and optionally `intervals` into a `PKNCAdata` object
     * the `PKNCAconc` object must be given; the `PKNCAdose` object is optional; interval definitions are usually given; calculation options may be given
-* `pk.nca()`: calculate the NCA parameters from a data object into a `PKNCAresult` object
+* `pk.nca()`: calculate the NCA parameters from a data object into a `PKNCAresults` object
 
 ## How do I do a simple calculation? all steps
 

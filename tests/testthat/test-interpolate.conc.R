@@ -629,7 +629,7 @@ test_that("extrapolate.conc", {
       lambda.z=NA,
       auc.type="AUCinf"
     ),
-    as.numeric(NA)
+    NA_real_
   )
 
   # Extrapolating with all NA is NA.
@@ -1058,4 +1058,3 @@ test_that("interp.extrap.conc.dose", {
     info="Outputs are in the same order as inputs (reverse sorted time.out)"
   )
 })
-

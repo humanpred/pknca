@@ -22,6 +22,7 @@
 #' @param drop.group,summarize.n.per.group,not.requested.string,not.calculated.string
 #' Deprecated use `drop_group`, `not_requested`, `not_calculated`, or
 #' `summarize_n`, instead
+#' @param caption_prefix Prefix to prepend to the generated table caption.
 #' @returns A data frame of NCA parameter results summarized according to the
 #'   summarization settings.
 #' @seealso [PKNCA.set.summary()], [print.summary_PKNCAresults()]
@@ -63,7 +64,8 @@ summary.PKNCAresults <- function(object, ...,
                                  summarize.n.per.group = deprecated(),
                                  not.requested.string = deprecated(),
                                  not.calculated.string = deprecated(),
-                                 pretty_names = NULL) {
+                                 pretty_names = NULL,
+                                 caption_prefix = NULL) {
   # Process inputs ####
 
   ## Deprecated inputs ####
@@ -183,7 +185,8 @@ summary.PKNCAresults <- function(object, ...,
       param_names = names(result_values),
       pretty_names = pretty_names,
       footnote_N = "N" %in% names(ret),
-      footnote_n = attr(ret, "footnote_n", exact = TRUE)
+      footnote_n = attr(ret, "footnote_n", exact = TRUE),
+      caption_prefix = caption_prefix
     )
   attr(ret, "footnote_n") <- NULL
   ret_pretty <- rename_summary_PKNCAresults(data = ret, unit_list = unit_list, pretty_names = pretty_names)
@@ -294,7 +297,7 @@ get_summary_PKNCAresults_count_N <- function(data, result_group, subject_col, su
 }
 
 # Provide a clean caption for summarized parameters
-get_summary_PKNCAresults_caption <- function(param_names, pretty_names, footnote_N, footnote_n) {
+get_summary_PKNCAresults_caption <- function(param_names, pretty_names, footnote_N, footnote_n, caption_prefix) {
   # Extract the summarization descriptions for the caption
   summary_descriptions <-
     unlist(
@@ -333,7 +336,13 @@ get_summary_PKNCAresults_caption <- function(param_names, pretty_names, footnote
   if (footnote_n) {
     ret <- c(ret, "n: number of measurements included in summary")
   }
-  paste(ret, collapse = "; ")
+  current_caption <- paste(ret, collapse = "; ")
+  
+  if (is.null(caption_prefix)) {
+    current_caption
+  } else {
+    paste(caption_prefix, current_caption)
+  }
 }
 
 #' Clean up the exclusions in the object

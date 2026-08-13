@@ -30,8 +30,10 @@ pk.business <- function(FUN,
     # to use PKNCA.Options("max.missing")
     max.missing <- PKNCA.options("max.missing")
     mask.missing <- is.na(x) | (zero.missing & (x %in% 0))
+    if (length(x) == 0)
+      return(NA_real_)
     if (sum(mask.missing)/length(x) > max.missing)
-      return(NA)
+      return(NA_real_)
     ret <- FUN(x[!mask.missing], ...)
     attr(ret, "n") <- sum(!mask.missing)
     ret
@@ -52,7 +54,7 @@ geomean <- function(x, na.rm=FALSE) {
   if (na.rm)
     x <- stats::na.omit(x)
   if (any(is.na(x))) {
-    as.numeric(NA)
+    NA_real_
   } else if (any(x == 0)) {
     0
   } else if (any(x < 0)) {

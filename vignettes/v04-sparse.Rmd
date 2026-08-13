@@ -15,7 +15,7 @@ Sparse noncompartmental analysis (NCA) is performed when multiple individuals co
 
 ## Sparse NCA Setup
 
-Sparse NCA is setup similarly to how normal, dense PK sampling is setup with PKNCA.  The only difference are that you give the `sparse` option to `PKNCAconc()`, and in your interval calculations, you will request the sparse variants of the parameters.  As of the writing of this vignette, the only sparse parameter for calculation is `sparse_auclast`.  Any of the non-sparse parameters will be calculated based on the mean profile of the animals in a group.
+Sparse NCA is setup similarly to how normal, dense PK sampling is setup with PKNCA.  The only difference are that you give the `sparse` option to `PKNCAconc()`, and in your interval calculations, you will request the sparse variants of the parameters.  The sparse parameters for calculation are `sparse_auclast` and `sparse_aumclast` (each with an accompanying standard error and degrees of freedom) along with parameters derived from them (described below).  Any of the non-sparse parameters will be calculated based on the mean profile of the animals in a group.
 
 The example below uses data extracted from Holder D. J., Hsuan F., Dixit R. and Soper K. (1999). A method for estimating and testing area under the curve in serial sacrifice, batch, and complete data designs. Journal of Biopharmaceutical Statistics, 9(3):451-464.
 
@@ -47,6 +47,27 @@ Sparse NCA requires that subject numbers (or animal numbers) are given, even if 
 ```{r eval=FALSE}
 d_sparse$id <- 1:nrow(d_sparse)
 ```
+
+## How Subjects Are Grouped for Sparse Calculations
+
+With dense (normal) PK, every subject has a full concentration-time profile, so NCA parameters are calculated one subject at a time.  Sparse parameters are different: they are calculated from the *pooled* samples of every subject that belongs to the same group.  Knowing what defines a "group" is therefore important.
+
+The groups are taken from the grouping variables on the right of the `|` in the `PKNCAconc()` formula, **with the subject column removed**.  Every subject that shares the same combination of the remaining (non-subject) grouping variables contributes to a single pooled sparse concentration-time profile.
+
+In the simple example above, the formula is `conc~time|id`.  Here `id` is the subject, and removing it leaves no other grouping variables, so all of the data form a single sparse group.
+
+The behavior is easier to see with more grouping variables.  Suppose the concentration and dose objects are created with the formulas below (illustrative code; not run here):
+
+```{r eval=FALSE}
+o_conc_sparse <- PKNCAconc(d_conc, conc~time|matrix+drug+usubjid/analyte, sparse=TRUE)
+o_dose_sparse <- PKNCAdose(d_dose, dose~time|drug+usubjid)
+```
+
+`usubjid` is the subject because, by default, the subject is the last grouping variable before any `/` (or the last grouping variable when there is no `/`).  After dropping the subject, the grouping variables that remain are `matrix`, `drug`, and `analyte`.  Sparse parameters are therefore calculated by combining all subjects within each unique combination of `matrix`, `drug`, and `analyte`.
+
+In other words, with that formula PKNCA does **not** keep each `usubjid` separate, and it does **not** group by `matrix`, `drug`, or `analyte` alone.  It pools subjects using the full set of non-subject grouping variables together (`matrix` + `drug` + `analyte`).
+
+Because subjects are pooled within a group, all subjects in a group must share the same dosing.  If subjects in the same group have different dosing information (for example, different dose amounts or dose times), PKNCA stops with an error identifying the inconsistent group.
 
 # Calculate!
 
@@ -80,3 +101,49 @@ or individual results are available through the `as.data.frame()` function:
 ```{r}
 as.data.frame(o_nca)
 ```
+
+# Sparse AUMC and Derived Parameters
+
+In addition to `sparse_auclast` (with its standard error, `sparse_auc_se`, and degrees of freedom, `sparse_auc_df`), the area under the first moment curve is available as `sparse_aumclast` (with `sparse_aumc_se` and `sparse_aumc_df`).  Five parameters derived from the sparse AUC and AUMC are also available:
+
+* `mrt.sparse.last`: Mean residence time (`sparse_aumclast`/`sparse_auclast`)
+* `cl.sparse.last`: Clearance (dose/`sparse_auclast`)
+* `kel.sparse.last`: Elimination rate (1/`mrt.sparse.last`)
+* `vss.sparse.last`: Steady-state volume of distribution (`cl.sparse.last`*`mrt.sparse.last`)
+* `vz.sparse.last`: Terminal volume of distribution (`cl.sparse.last`/`kel.sparse.last`)
+
+The example below calculates all of them from the same data with intravenous dose information added.  Note that because `kel.sparse.last` is calculated as 1/MRT rather than from a terminal log-linear ($\lambda_z$) fit, `vz.sparse.last` is numerically equal to `vss.sparse.last`.
+
+```{r sparse-derived}
+d_dose <- data.frame(id=unique(d_sparse$id), dose=100, time=0)
+o_dose <- PKNCAdose(d_dose, dose~time|id, route="intravascular")
+d_intervals_derived <-
+  data.frame(
+    start=0,
+    end=24,
+    sparse_auclast=TRUE,
+    sparse_aumclast=TRUE,
+    mrt.sparse.last=TRUE,
+    cl.sparse.last=TRUE,
+    kel.sparse.last=TRUE,
+    vss.sparse.last=TRUE,
+    vz.sparse.last=TRUE
+  )
+o_data_derived <- PKNCAdata(o_conc_sparse, o_dose, intervals=d_intervals_derived)
+o_nca_derived <- pk.nca(o_data_derived)
+as.data.frame(o_nca_derived)
+```
+
+# Notes on Sparse Calculation Behavior
+
+## Degrees of freedom with multiple samples per subject
+
+The degrees of freedom (`sparse_auc_df` and `sparse_aumc_df`) can only be calculated when each subject contributes a single sample to the profile (as in a serial sacrifice design).  When any subject contributes more than one sample, as in the example data here, PKNCA warns that it "Cannot yet calculate sparse degrees of freedom for multiple samples per subject", and the degrees of freedom are `NA`.  That warning is the source of the warnings in the results above.  The point estimates and standard errors are still calculated.
+
+## More than half of the measurements below the limit of quantification
+
+When calculating the mean concentration at a time point (see `sparse_mean()`), if strictly more than 50% of the measurements at that time point are below the limit of quantification (BLQ), the mean for that time point is set to zero.  At exactly 50% BLQ, the mean is calculated normally (including the BLQ values as zero).
+
+## Only the linear trapezoidal method is supported
+
+Sparse AUC and AUMC are only defined with the linear trapezoidal method in PKNCA.  Calling `pk.calc.sparse_auc()` with any other `method` is an error, and sparse calculations within `pk.nca()` always use the linear method (the `auc.method` option does not apply to them).

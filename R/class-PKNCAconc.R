@@ -26,13 +26,32 @@
 #' @param volume (optional) The volume (or mass) of collection as is typically
 #'   used for urine or feces measurements.
 #' @param duration (optional) The duration of collection as is typically used
-#'   for concentration measurements in urine or feces.
-#' @param exclude_half.life,include_half.life A character scalar for the column
-#'   name in the dataset of the points to exclude from the half-life calculation
-#'   (still using normal curve-stripping selection rules for the other points)
-#'   or to include for the half-life (using specifically those points and
-#'   bypassing automatic curve-stripping point selection).  See the "Half-Life
-#'   Calculation" vignette for more details on the use of these arguments.
+#'   for concentration measurements in urine or feces.  The `time` of a
+#'   measurement is the start of the collection, and only the `time` is used
+#'   when selecting data for a calculation interval; the duration is not
+#'   considered.  A collection starting within an interval and ending after the
+#'   interval `end` contributes its full amount to that interval, so for the
+#'   simplest interpretation of results, align collection start and end times
+#'   with interval boundaries.
+#' @param exclude_half.life,include_half.life Manual half-life point selection,
+#'   given as a logical value per concentration measurement (or, in
+#'   [PKNCAconc()], the name of such a column in the data).  `exclude_half.life`
+#'   drops the flagged points; automatic curve-stripping point selection is
+#'   still performed on the remaining (non-excluded) points and is not bypassed.
+#'   `include_half.life` names the exact points to use, bypassing automatic
+#'   curve-stripping point selection.  Each value is `TRUE`, `FALSE`, or `NA`
+#'   (undefined); the column/vector is treated as "in use" for an interval
+#'   unless it is entirely `NA` (so an all-`FALSE` column still counts as in
+#'   use), so leave it `NA` (rather than `FALSE`) where the mechanism should not
+#'   apply.  Only one of `exclude_half.life` and `include_half.life` may be in
+#'   use for a given interval.  See the "Half-Life Calculation" vignette for
+#'   more details on the use of these arguments.
+#' @param lloq (optional) The lower limit of quantification used by the Tobit
+#'   half-life method (`hl_method = "tobit"`).  Either the name of a column in
+#'   `data` giving the per-observation LLOQ or a numeric scalar applied to all
+#'   observations.  When provided, it is passed through to
+#'   [pk.calc.half.life()].  See the "Half-Life Calculation with Tobit
+#'   Regression" vignette for more details.
 #' @param sparse Are the concentration-time data sparse PK (commonly used in
 #'   small nonclinical species or with terminal or difficult sampling) or dense
 #'   PK (commonly used in clinical studies or larger nonclinical species)?
@@ -63,7 +82,7 @@ PKNCAconc.tbl_df <- function(data, ...) {
 #' @export
 PKNCAconc.data.frame <- function(data, formula, subject,
                                  time.nominal, exclude = NULL, duration, volume,
-                                 exclude_half.life, include_half.life, sparse = FALSE, ...,
+                                 exclude_half.life, include_half.life, lloq, sparse = FALSE, ...,
                                  concu = NULL, amountu = NULL, timeu = NULL,
                                  concu_pref = NULL, amountu_pref = NULL, timeu_pref = NULL) {
   # The data must have... data
@@ -179,6 +198,12 @@ PKNCAconc.data.frame <- function(data, formula, subject,
       setAttributeColumn(object=ret,
                          attr_name="include_half.life",
                          col_name=include_half.life)
+  }
+  if (!missing(lloq)) {
+    ret <- setAttributeColumn(object=ret, attr_name="lloq", col_or_value=lloq)
+    if (!is.numeric(getAttributeColumn(object=ret, attr_name="lloq")[[1]])) {
+      stop("lloq must be numeric")
+    }
   }
 
   # Unit handling
