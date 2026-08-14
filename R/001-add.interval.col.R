@@ -15,22 +15,20 @@ assign("interval.cols", list(), envir=.PKNCAEnv)
 #' @noRd
 validate_cdisc_arg <- function(x, arg_name) {
   if (is.character(x)) {
-    if (length(x) != 1 || is.na(x)) {
+    if (!checkmate::test_string(x, na.ok = FALSE)) {
       rlang::abort(
         message = sprintf(
           "`%s`, when a character string, must be length 1 and non-missing",
           arg_name
         ),
-        class = sprintf("pknca_error_%s_character_invalid", arg_name)
+        class = "pknca_error_cdisc_character_invalid"
       )
     }
   } else if (is.list(x)) {
-    if (length(x) != 1 ||
-        !identical(names(x), "route") ||
+    # `identical(names(x), "route")` also confirms that x has length 1
+    if (!identical(names(x), "route") ||
         !is.list(x$route) ||
-        is.null(names(x$route)) ||
-        any(names(x$route) == "") ||
-        anyNA(names(x$route))) {
+        !checkmate::test_names(names(x$route), type = "named")) {
       rlang::abort(
         message = sprintf(
           paste0(
@@ -39,7 +37,7 @@ validate_cdisc_arg <- function(x, arg_name) {
           ),
           arg_name
         ),
-        class = sprintf("pknca_error_%s_route_mapping_invalid", arg_name)
+        class = "pknca_error_cdisc_route_mapping_invalid"
       )
     }
   } else {
@@ -48,7 +46,7 @@ validate_cdisc_arg <- function(x, arg_name) {
         "`%s` must be a character string or a list",
         arg_name
       ),
-      class = sprintf("pknca_error_%s_invalid_type", arg_name)
+      class = "pknca_error_cdisc_invalid_type"
     )
   }
 }

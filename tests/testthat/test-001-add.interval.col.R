@@ -230,7 +230,7 @@ test_that("add.interval.col rejects pptestcd_cdisc types", {
       pretty_name = "a", desc = "test",
       pptestcd_cdisc = 123
     ),
-    class = "pknca_error_pptestcd_cdisc_invalid_type"
+    class = "pknca_error_cdisc_invalid_type"
   )
   
   # invalid character values
@@ -240,7 +240,7 @@ test_that("add.interval.col rejects pptestcd_cdisc types", {
       pretty_name = "a", desc = "test",
       pptestcd_cdisc = c("PCMAX", "PCMIN")
     ),
-    class = "pknca_error_pptestcd_cdisc_character_invalid"
+    class = "pknca_error_cdisc_character_invalid"
   )
   
   expect_error(
@@ -249,7 +249,7 @@ test_that("add.interval.col rejects pptestcd_cdisc types", {
       pretty_name = "a", desc = "test",
       pptestcd_cdisc = NA_character_
     ),
-    class = "pknca_error_pptestcd_cdisc_character_invalid"
+    class = "pknca_error_cdisc_character_invalid"
   )
   
   # invalid route mappings
@@ -259,7 +259,7 @@ test_that("add.interval.col rejects pptestcd_cdisc types", {
       pretty_name = "a", desc = "test",
       pptestcd_cdisc = list(foo = "PCMAX")
     ),
-    class = "pknca_error_pptestcd_cdisc_route_mapping_invalid"
+    class = "pknca_error_cdisc_route_mapping_invalid"
   )
   
   expect_error(
@@ -268,7 +268,7 @@ test_that("add.interval.col rejects pptestcd_cdisc types", {
       pretty_name = "a", desc = "test",
       pptestcd_cdisc = list(route = "PCMAX")
     ),
-    class = "pknca_error_pptestcd_cdisc_route_mapping_invalid"
+    class = "pknca_error_cdisc_route_mapping_invalid"
   )
 })
 
@@ -282,7 +282,7 @@ test_that("add.interval.col rejects pptest_cdisc types", {
       pretty_name = "a", desc = "test",
       pptest_cdisc = 123
     ),
-    class = "pknca_error_pptest_cdisc_invalid_type"
+    class = "pknca_error_cdisc_invalid_type"
   )
   
   # invalid character values
@@ -292,7 +292,7 @@ test_that("add.interval.col rejects pptest_cdisc types", {
       pretty_name = "a", desc = "test",
       pptest_cdisc = c("PCMAX", "PCMIN")
     ),
-    class = "pknca_error_pptest_cdisc_character_invalid"
+    class = "pknca_error_cdisc_character_invalid"
   )
   
   expect_error(
@@ -301,7 +301,7 @@ test_that("add.interval.col rejects pptest_cdisc types", {
       pretty_name = "a", desc = "test",
       pptest_cdisc = NA_character_
     ),
-    class = "pknca_error_pptest_cdisc_character_invalid"
+    class = "pknca_error_cdisc_character_invalid"
   )
   
   # invalid route mappings
@@ -311,7 +311,7 @@ test_that("add.interval.col rejects pptest_cdisc types", {
       pretty_name = "a", desc = "test",
       pptest_cdisc = list(foo = "PCMAX")
     ),
-    class = "pknca_error_pptest_cdisc_route_mapping_invalid"
+    class = "pknca_error_cdisc_route_mapping_invalid"
   )
   
   expect_error(
@@ -320,7 +320,7 @@ test_that("add.interval.col rejects pptest_cdisc types", {
       pretty_name = "a", desc = "test",
       pptest_cdisc = list(route = "PCMAX")
     ),
-    class = "pknca_error_pptest_cdisc_route_mapping_invalid"
+    class = "pknca_error_cdisc_route_mapping_invalid"
   )
 })
 

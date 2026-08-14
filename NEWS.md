@@ -32,6 +32,14 @@ the dosing including dose amount and route.
   relying on `%in%`'s implicit list coercion downstream instead of failing
   clearly. Passing a list now raises an error instead.
 
+* `add.interval.col()` now validates the structure of `pptestcd_cdisc` and
+  `pptest_cdisc` rather than only checking that they are a character string or
+  a list.  A character value must be length 1 and non-missing, and a list must
+  have exactly one element named `route` whose value is a named list.  Values
+  that were previously accepted and would have produced incorrect CDISC output
+  (for example a multi-element character vector, or a list named something
+  other than `route`) now raise an error.
+
 * Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).
 
