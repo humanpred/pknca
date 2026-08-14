@@ -151,13 +151,15 @@ choose_interval_method <- function(conc, time, tlast, method, auc.type, options)
     ret[c(mask_linear, FALSE)] <- "linear"
     ret[c(mask_log, FALSE)] <- "log"
   } else {
+    # nocov start
     rlang::abort(
       message = sprintf(
         "Unknown integration method, please report a bug: %s",
         method
       ),
       class = "pknca_error_internal_unknown_integration_method"
-    ) # nocov
+    )
+    # nocov end
   }
   ret[c(mask_zero, FALSE)] <- "zero"
   # What happens after tlast?
@@ -211,13 +213,15 @@ auc_integrate <- function(conc, time, clast, tlast, lambda.z, interval_method, f
     # or clast,pred is passed in.
     ret[length(ret)+1] <- fun_inf(clast, tlast, lambda.z)
   } else if (interval_method_extrap != "zero") {
+    # nocov start
     rlang::abort(
       message = sprintf(
         "Invalid interval_method_extrap, please report a bug: %s",
         interval_method_extrap
       ),
       class = "pknca_error_internal_invalid_interval_method_extrap"
-    ) # nocov
+    )
+    # nocov end
   }
   ret <- sum(ret)
   ret

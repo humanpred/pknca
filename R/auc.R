@@ -179,10 +179,12 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
     # All concentrations are BLQ (note that this has to be checked
     # after full subsetting and interpolation to ensure that it is
     # still true)
+    # nocov start
     rlang::abort(
       message = "Unknown error with NA tlast but non-BLQ concentrations",
       class = "pknca_error_internal_tlast"
-    ) # nocov
+    )
+    # nocov end
   } else {
     interval_method <- choose_interval_method(conc = data$conc, time = data$time, tlast = tlast, method = method, auc.type = auc.type, options = options)
     ret <-

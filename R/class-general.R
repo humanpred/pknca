@@ -274,10 +274,12 @@ pknca_set_units <- function(object, units_orig = list(), units_pref = list()) {
     } else if (current_unit_type %in% "value") {
       object$units[[col_units]] <- all_units$orig[[col_units]]
     } else {
+      # nocov start
       rlang::abort(
         message = paste("Please report a bug. Unit setting for", col_units),
         class = "pknca_error_internal_unit_setting_bug"
-      ) # nocov
+      )
+      # nocov end
     }
   }
   for (pref_units in names(all_units$pref)) {
@@ -295,10 +297,12 @@ pknca_set_units <- function(object, units_orig = list(), units_pref = list()) {
       }
       object$units[[pref_units]] <- all_units$pref[[pref_units]]
     } else {
+      # nocov start
       rlang::abort(
         message = paste("Please report a bug. Preferred unit setting for", pref_units),
         class = "pknca_error_internal_pref_unit_setting_bug"
-      ) # nocov
+      )
+      # nocov end
     }
   }
 

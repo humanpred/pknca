@@ -25,10 +25,12 @@ findOperator <- function(x, op, side) {
     if (identical(x[[1]], op)) {
       # We found the operator
       if (length(x) == 1) {
+        # nocov start
         rlang::abort(
-          message = "call or formula with length 1 found after finding the operator, unknown how to proceed", # nocov
+          message = "call or formula with length 1 found after finding the operator, unknown how to proceed",
           class = "pknca_error_formula_length1_after_op"
-        ) # nocov
+        )
+        # nocov end
       } else if (length(x) == 2) {
         # Unary operators have a right hand side only
         if (side == "left") {
@@ -38,10 +40,12 @@ findOperator <- function(x, op, side) {
         } else if (side == "both") {
           return(x)
         }
+        # nocov start
         rlang::abort(
-          message = "Unknown side with a found unary operator", # nocov
+          message = "Unknown side with a found unary operator",
           class = "pknca_error_unknown_side_unary"
         )
+        # nocov end
       } else if (length(x) == 3) {
         # Binary operator
         if (side == "left") {
@@ -51,10 +55,12 @@ findOperator <- function(x, op, side) {
         } else if (side == "both") {
           return(x)
         }
+        # nocov start
         rlang::abort(
-          message = "Unknown side with a found binary operator", # nocov
+          message = "Unknown side with a found binary operator",
           class = "pknca_error_unknown_side_binary"
         )
+        # nocov end
       }
     } else {
       # Go down the left then right side of the tree

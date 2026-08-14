@@ -126,13 +126,15 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
 
   extra_cols <- setdiff(ret$PPTESTCD, names(get.interval.cols()))
   if (length(extra_cols) > 0) {
+    # nocov start
     rlang::abort(
       message = sprintf(
         "Please report a bug. Unknown NCA parameters have units defined: %s",
         paste(extra_cols, collapse = ", ")
       ),
       class = "pknca_error_internal_unknown_nca_units"
-    ) # nocov
+    )
+    # nocov end
   }
 
   # Apply conversion factors
@@ -150,10 +152,12 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
         class = "pknca_error_units_conversions_extra_cols"
       )
     if (any(is.na(conversions$conversion_factor)) && !requireNamespace("units", quietly=TRUE)) {
+      # nocov start
       rlang::abort(
         message = "The units package is required for automatic unit conversion",
         class = "pknca_error_missing_units_package"
-      ) # nocov
+      )
+      # nocov end
     }
     for (idx in which(is.na(conversions$conversion_factor))) {
       conversions$conversion_factor[idx] <-

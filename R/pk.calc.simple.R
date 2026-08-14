@@ -1517,10 +1517,12 @@ pk.calc.ctrough <- function(conc, time, end) {
   } else {
     # This should be impossible as assert_conc_time should catch
     # duplicates.
+    # nocov start
     rlang::abort(
       message = "More than one time matches the starting time.  Please report this as a bug with a reproducible example.",
       class = "pknca_error_multiple_start_times"
-    ) # nocov
+    )
+    # nocov end
   }
 }
 add.interval.col("ctrough",
@@ -1548,10 +1550,12 @@ pk.calc.cstart <- function(conc, time, start) {
   } else {
     # This should be impossible as assert_conc_time should catch
     # duplicates.
+    # nocov start
     rlang::abort(
       message = "More than one time matches the starting time.  Please report this as a bug with a reproducible example.",
       class = "pknca_error_multiple_start_times"
-    ) # nocov
+    )
+    # nocov end
   }
 }
 add.interval.col("cstart",

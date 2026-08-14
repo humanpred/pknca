@@ -198,7 +198,8 @@ signifString.default <- function(x, digits=6, sci_range=6, sci_sep="e", si_range
 #' @return Either `zero_length` or `FUN(...)`
 #' @noRd
 zero_len_summary <- function(FUN) {
-  function(..., na.rm=FALSE, zero_length=NA) { #nocov
+  # nocov start
+  function(..., na.rm=FALSE, zero_length=NA) {
     x <- c(...)
     if (na.rm) {
       x <- stats::na.omit(x)
@@ -208,7 +209,8 @@ zero_len_summary <- function(FUN) {
     } else {
       FUN(x)
     }
-  } #nocov
+  }
+  # nocov end
 }
 
 #' @describeIn zero_len_summary Find the maximum value with a different value if

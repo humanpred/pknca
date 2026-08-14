@@ -291,10 +291,12 @@ get_summary_PKNCAresults_count_N <- function(data, result_group, subject_col, su
 
     ret$N <- as.character(ret$N)
     if (anyNA(ret$N)) {
+      # nocov start
       rlang::abort(
-        message = "Please report a bug. If N is requested, but it is not provided, then it should be set to not calculated.", # nocov
+        message = "Please report a bug. If N is requested, but it is not provided, then it should be set to not calculated.",
         class = "pknca_error_internal_n_is_na"
-      ) # nocov
+      )
+      # nocov end
     }
   } else {
     ret <- result_group
@@ -392,11 +394,13 @@ summarize_PKNCAresults_group <- function(data, current_group, subject_col, resul
   current_data <- dplyr::inner_join(data, current_group, by = intersect(names(data), names(current_group)))
   if (nrow(current_data) == 0) {
     # I don't think that a user can get here
+    # nocov start
     rlang::warn(
-      message = "No results to summarize for result row, please report a bug", # nocov
+      message = "No results to summarize for result row, please report a bug",
       class = "pknca_warning_no_results_to_summarize"
-    ) # nocov
-    return(ret) # nocov
+    )
+    return(ret)
+    # nocov end
   }
   current_interval <- dplyr::inner_join(intervals, current_group, by = intersect(names(intervals), names(current_group)))
   current_param_prep <-
@@ -480,13 +484,15 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
 
   current_summary_instructions <- PKNCA.set.summary()[[parameter]]
   if (is.null(current_summary_instructions)) {
+    # nocov start
     rlang::abort(
       message = sprintf(
         "No summary function is set for parameter %s. Please set it with PKNCA.set.summary and report this as a bug in PKNCA.",
         parameter
       ),
       class = "pknca_error_no_summary_function"
-    ) # nocov
+    )
+    # nocov end
   }
 
   point <- current_summary_instructions$point(current_data[[number_col]])
@@ -618,26 +624,30 @@ roundingSummarize <- function(x, name) {
     ret <- roundingInstructions(x)
   } else if (is.list(roundingInstructions)) {
     if (length(roundingInstructions) != 1) {
+      # nocov start
       rlang::abort(
         message = sprintf(
           "Cannot interpret rounding instructions for %s (please report this as a bug)",
           name
-        ), # nocov
+        ),
         class = "pknca_error_internal_rounding_instructions"
       )
+      # nocov end
     }
     if ("signif" == names(roundingInstructions)) {
       ret <- signifString(x, roundingInstructions$signif)
     } else if ("round" == names(roundingInstructions)) {
       ret <- roundString(x, roundingInstructions$round)
     } else {
+      # nocov start
       rlang::abort(
         message = sprintf(
           "Invalid rounding instruction list name for %s (please report this as a bug)",
           name
-        ), # nocov
+        ),
         class = "pknca_error_internal_invalid_rounding_name"
       )
+      # nocov end
     }
   }
   if (!is.character(ret)) {

@@ -342,15 +342,17 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
           tryCatch(
             do.call(pk.nca.interval, args),
             error = function(e) {
-              rlang::abort( # nocov
-                message = sprintf( # nocov
+              # nocov start
+              rlang::abort(
+                message = sprintf(
                   "Please report a bug.\n%s: %s",
                   error_preamble,
                   e$message
-                ), # nocov
-                class = "pknca_error_interval_calculation", # nocov
-                parent = e # nocov
-              ) # nocov
+                ),
+                class = "pknca_error_interval_calculation",
+                parent = e
+              )
+              # nocov end
             }
           )
       }
@@ -461,10 +463,12 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   all_intervals <- get.interval.cols()
   # Set the dose to NA if its length is zero
   if (length(dose) == 0) {
+    # nocov start
     rlang::abort(
-      message = "Please report a bug. Length of dose should not be zero.", # nocov
+      message = "Please report a bug. Length of dose should not be zero.",
       class = "pknca_error_internal_dose_length_zero"
-    ) # nocov
+    )
+    # nocov end
   }
   # Make sure that we calculate all of the dependencies.  Do this in
   # reverse order for dependencies of dependencies.
