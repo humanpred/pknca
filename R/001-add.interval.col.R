@@ -139,11 +139,9 @@ add.interval.col <- function(name,
   if (!(datatype %in% "interval")) {
     stop("Only the 'interval' datatype is currently supported.")
   }
-  if (length(desc) != 1) {
-    stop("desc must have length == 1")
-  } else if (!is.character(desc)) {
-    stop("desc must be a character string")
-  }
+  checkmate::assert_character(x = desc, len = 1, any.missing=FALSE, max.chars = 40)
+  
+  
   if (!is.list(formalsmap)) {
     stop("formalsmap must be a list")
   } else if (length(formalsmap) > 0 &&

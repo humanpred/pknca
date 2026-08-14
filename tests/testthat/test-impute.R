@@ -18,6 +18,58 @@ test_that("PKNCA_impute_method_start_conc0", {
   )
 })
 
+test_that("start_conc0 intentionally replaces an existing start concentration with 0 (#578)", {
+  # A nonzero concentration at the start time is forced to 0
+  expect_equal(
+    PKNCA_impute_method_start_conc0(conc = c(5, 2, 3), time = 0:2),
+    data.frame(conc = c(0, 2, 3), time = 0:2)
+  )
+  # The replacement also occurs at a nonzero start time
+  expect_equal(
+    PKNCA_impute_method_start_conc0(conc = 1:3, time = 0:2, start = 1),
+    data.frame(conc = c(1, 0, 3), time = 0:2)
+  )
+})
+
+test_that("start_predose,start_conc0 collapses to start_conc0 by design (#578)", {
+  # A predose sample within max_shift (5% of the 0-24 interval, so within 1.2)
+  d_conc <-
+    data.frame(
+      subject = 1,
+      time = c(-0.5, 1, 2, 4, 8, 12, 24),
+      conc = c(2, 5, 4, 3, 2.5, 2, 1)
+    )
+  o_conc <- PKNCAconc(d_conc, conc~time|subject)
+  d_intervals <- data.frame(start = 0, end = 24, auclast = TRUE)
+  get_auclast <- function(impute) {
+    o_data <- suppressMessages(PKNCAdata(o_conc, intervals = d_intervals, impute = impute))
+    d_res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+    d_res$PPORRES[d_res$PPTESTCD == "auclast"]
+  }
+  auclast_chain <- get_auclast("start_predose,start_conc0")
+  auclast_conc0 <- get_auclast("start_conc0")
+  auclast_predose <- get_auclast("start_predose")
+  # start_conc0 replaces the concentration that start_predose shifted to the
+  # start time, so the chain gives the same result as start_conc0 alone
+  expect_equal(auclast_chain, auclast_conc0)
+  expect_equal(
+    auclast_chain,
+    as.numeric(pk.calc.auc.last(
+      conc = c(0, 5, 4, 3, 2.5, 2, 1),
+      time = c(0, 1, 2, 4, 8, 12, 24)
+    ))
+  )
+  # start_predose alone carries the predose concentration to the start time
+  expect_equal(
+    auclast_predose,
+    as.numeric(pk.calc.auc.last(
+      conc = c(2, 5, 4, 3, 2.5, 2, 1),
+      time = c(0, 1, 2, 4, 8, 12, 24)
+    ))
+  )
+  expect_true(auclast_predose != auclast_conc0)
+})
+
 test_that("PKNCA_impute_method_start_predose", {
   # No modification if no predose samples
   expect_equal(
@@ -90,6 +142,56 @@ test_that("PKNCA_impute_method_start_cmin", {
     ignore_attr = TRUE
   )
 
+})
+
+test_that("PKNCA_impute_method_end_conc_drop", {
+  # A concentration exactly at the end is dropped
+  expect_equal(
+    PKNCA_impute_method_end_conc_drop(conc = c(10, 5, 1), time = c(0, 12, 24), end = 24),
+    data.frame(conc = c(10, 5), time = c(0, 12)),
+    ignore_attr = TRUE
+  )
+  # No modification when nothing sits exactly at the end
+  expect_equal(
+    PKNCA_impute_method_end_conc_drop(conc = c(10, 5, 1), time = c(0, 12, 23), end = 24),
+    data.frame(conc = c(10, 5, 1), time = c(0, 12, 23))
+  )
+  # Only the end point is dropped, earlier points are untouched
+  expect_equal(
+    PKNCA_impute_method_end_conc_drop(conc = c(10, 8, 6, 100), time = c(0, 1, 2, 24), end = 24),
+    data.frame(conc = c(10, 8, 6), time = c(0, 1, 2)),
+    ignore_attr = TRUE
+  )
+  # Works through the impute column of pk.nca: the boundary point (a foreign
+  # spike mimicking the next dose's C0) is removed for that interval only.
+  clean <- data.frame(
+    ID = 1,
+    time = c(0, 1, 2, 4, 8, 12, 24),
+    conc = c(10, 8, 6.5, 4, 2, 1, 0.5)
+  )
+  spiked <- clean
+  spiked$conc[spiked$time == 24] <- 100
+  dose <- data.frame(ID = 1, time = 0, dose = 100)
+  
+  make_tmax <- function(conc_df, impute) {
+    o_conc <- PKNCAconc(conc_df, formula = conc~time|ID)
+    o_dose <- PKNCAdose(dose, formula = dose~time|ID, route = "intravascular")
+    intervals <- data.frame(start = 0, end = 24, tmax = TRUE)
+    if (!is.null(impute)) intervals$impute <- impute
+    o_data <- PKNCAdata(o_conc, o_dose, intervals = intervals)
+    res <- as.data.frame(pk.nca(o_data))
+    res$PPORRES[res$PPTESTCD == "tmax"]
+  }
+  
+  # Without imputation the boundary spike wins tmax (== end)
+  expect_equal(make_tmax(spiked, NULL), 24)
+  # With the drop imputation the spike is removed and tmax returns to 0
+  expect_equal(make_tmax(spiked, "end_conc_drop"), 0)
+  # Applying the imputation to clean data (no boundary point) is a no-op
+  expect_equal(
+    make_tmax(clean, "end_conc_drop"),
+    make_tmax(clean, NULL)
+  )
 })
 
 test_that("PKNCA_impute_fun_list", {

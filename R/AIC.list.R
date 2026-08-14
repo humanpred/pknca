@@ -8,6 +8,7 @@
 #' @returns a data frame with row names matching the names of the list `x` and
 #'   columns for degrees of freedom (`df`) and `AIC`.  If `assess.best` is true,
 #'   then there will be another column `isBest`.
+#' @exportS3Method
 #' @noRd
 AIC.list <- function(object, ..., assess.best=TRUE) {
   allAICs <-

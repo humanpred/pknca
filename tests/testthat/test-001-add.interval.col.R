@@ -54,16 +54,54 @@ test_that("add.interval.col", {
     info="interval column datatype must be 'interval'"
   )
 
-  expect_error(
-    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc=1:2),
-    regexp="desc must have length == 1",
-    info="interval column description must be a scalar"
+  ## validates desc
+  # ---- Valid boundary: exactly 40 characters ----
+  expect_no_error(
+    add.interval.col(
+      name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval",
+      desc = paste(rep("a", 40), collapse = "") )
   )
+  
+  # ---- Invalid boundary: 41 characters ----
   expect_error(
-    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc=1),
-    regexp="desc must be a character string",
-    info="interval column description must be a character scalar"
+    add.interval.col(
+      name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval",
+      desc = paste(rep("a", 41), collapse = "")
+    )
   )
+  
+  # ---- NA ----
+  expect_error(
+    add.interval.col(
+      name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval",
+      desc = NA_character_
+    )
+  )
+  
+  # ---- Zero-length character ----
+  expect_error(
+    add.interval.col(
+      name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval",
+      desc = character(0)
+    )
+  )
+  
+  # ---- Length > 1 ----
+  expect_error(
+    add.interval.col(
+      name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval",
+      desc = c("a", "b")
+    )
+  )
+  
+  # ---- Wrong type (numeric, not character) ----
+  expect_error(
+    add.interval.col(
+      name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval",
+      desc = 123
+    )
+  )
+  
   expect_error(
     add.interval.col(name="a", FUN=NA, depends = 1, unit_type="conc", pretty_name="a", datatype="interval", desc=1),
     regexp="'depends' must be NULL or a character vector",

@@ -1743,8 +1743,8 @@ add.interval.col(
   FUN="pk.calc.count_conc_measured",
   values=c(FALSE, TRUE),
   unit_type="count",
-  pretty_name="Count of measured, non-BLQ conc",
-  desc="Number of measured and non BLQ/ALQ concentrations for an interval",
+  pretty_name="Measured concentration count",
+  desc="Count of measured, non-BLQ conc",
   depends=NULL
 )
 

@@ -6,6 +6,9 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Parameter descriptions in `add.interval.col()` are now limited to 40
+  characters to comply with SDTM requirements.
+
 * Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
   Group-level concentration data are now sorted by time before calculation, so
   parameters that use the full group (e.g. `aucint.all` and the other `aucint*`
@@ -79,6 +82,7 @@ the dosing including dose amount and route.
   for grouped joins, preserving left-table row order. Missing group validation
   ensures no rows are silently dropped.
 
+* `PKNCAresults()` now includes `start` and `end` in `group_vars`
 
 ## Breaking changes
 
@@ -99,8 +103,24 @@ the dosing including dose amount and route.
 when the issue is due to an excluded point (#310)
 * The `PKNCAdose` function won't give an error for a missing-time check when the issue is due to an excluded point (#310)
 * `pk.nca` will calculate `fe` and `clr` even if their dependent parameters (e.g, `ae`) were not requested to be calculated in the intervals (#473)
+* sparse calculations won't abort with `pk.nca` when the data contains missing (NA) concentrations. It will silently drop them.
 
 ## New features
+
+* Added bioequivalence (BE) assessment via a single calculation path.
+  `be_assess()` computes the full regulatory pass/fail decision for average
+  bioequivalence, the EMA/Health Canada/GCC expanding-limits (ABEL) frameworks,
+  and the FDA reference-scaled (RSABE), narrow therapeutic index (NTID), and
+  highly variable NTID (HVNTID) frameworks, with the model auto-selected from
+  the regulator and design; `be_compare()` assesses one dataset under several
+  frameworks at once.  These are coordinated by `be_fit_models()`, which runs
+  the pipeline `be_dataset()` -> `be_fit_model_single()` -> `be_extract_param()`
+  -> `be_table()`; the supporting functions `be_design()`, `be_within_var()`,
+  `be_regulator()`, and `be_expand_limits()` are also exported.  All regulatory
+  constants and criteria are internalized, so no additional packages are
+  required beyond `lme4`/`lmerTest`/`emmeans` (suggested) for the average-BE
+  model.  See the new `vignette("v50-bioequivalence")`.  Based on work by
+  @Sang-j111 (#490)
 
 * `pknca_units_table()` is now an S3 generic with a `PKNCAdata` method.  When
   called on a `PKNCAdata` object it automatically builds the unit conversion

@@ -1033,7 +1033,7 @@ test_that("pk.nca.interval covers route, volume.group, duration.conc.group, dose
     FUN = fn_name,
     unit_type = "conc",
     pretty_name = "Test: group arg branches",
-    desc = "Coverage test for group argument branches in pk.nca.interval"
+    desc = "Coverage test for group arg branches"
   )
 
   d <- as.data.frame(datasets::Theoph[datasets::Theoph$Subject == "1", ])
