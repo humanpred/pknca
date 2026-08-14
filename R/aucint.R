@@ -82,11 +82,13 @@ pk.calc.auxcint <- function(conc, time,
       # clast.pred is NA likely because the half-life was not calculable
       return(structure(NA_real_, exclude = "clast.pred is NA because the half-life is NA"))
     } else if (is.na(clast)) {
+      # nocov start
       rlang::abort(
         message = "Please report a bug. clast is NA and the half-life is not NA",
         class = "pknca_error_internal_clast_na"
-      ) # nocov
-    } else if (clast != clast_obs && interval[2] > tlast) {      
+      )
+      # nocov end
+    } else if (clast != clast_obs && interval[2] > tlast) {
       # If using clast.pred, we need to doubly calculate at tlast.
       conc_clast <- clast
       time_clast <- tlast
@@ -190,11 +192,13 @@ pk.calc.auxcint <- function(conc, time,
 #' @describeIn pk.calc.auxcint Calculate AUC over an interval
 #' @export
 pk.calc.aucint <- function(conc, time, ..., options=list()) {
-  pk.calc.auxcint(conc = conc, time = time, ...,
-                  options = options,
-                  fun_linear = aucintegrate_linear,
-                  fun_log = aucintegrate_log,
-                  fun_inf = aucintegrate_inf)
+  pk.calc.auxcint(
+    conc = conc, time = time, ...,
+    options = options,
+    fun_linear = aucintegrate_linear,
+    fun_log = aucintegrate_log,
+    fun_inf = aucintegrate_inf
+  )
 }
 
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
@@ -335,14 +339,17 @@ add.interval.col("aucint.inf.pred.dose",
                  pptestcd_cdisc="AUCINTPD",
                  pptest_cdisc="AUCint (based on AUCinf,pred extrapolation, dose-aware)")
 
+
 #' @describeIn pk.calc.auxcint Calculate AUMC over an interval
 #' @export
 pk.calc.aumcint <- function(conc, time, ..., options=list()) {
-  pk.calc.auxcint(conc = conc, time = time, ...,
-                  options = options,
-                  fun_linear = aumcintegrate_linear,
-                  fun_log = aumcintegrate_log,
-                  fun_inf = aumcintegrate_inf)
+  pk.calc.auxcint(
+    conc = conc, time = time, ...,
+    options = options,
+    fun_linear = aumcintegrate_linear,
+    fun_log = aumcintegrate_log,
+    fun_inf = aumcintegrate_inf
+  )
 }
 
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
@@ -490,7 +497,7 @@ PKNCA.set.summary(
     # AUMC related
     "aumcint.last", "aumcint.last.dose", "aumcint.all",  "aumcint.all.dose",
     "aumcint.inf.obs", "aumcint.inf.obs.dose", "aumcint.inf.pred", "aumcint.inf.pred.dose"
-  ),
+  ), 
   description="geometric mean and geometric coefficient of variation",
   point=business.geomean,
   spread=business.geocv

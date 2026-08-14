@@ -6,6 +6,11 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
+  Group-level concentration data are now sorted by time before calculation, so
+  parameters that use the full group (e.g. `aucint.all` and the other `aucint*`
+  parameters) work when the input rows are not in time order (#568).
+
 * Migrated input validation across the package from base R checks
   (`stopifnot()`, `is.character()`, `is.numeric()`, etc.) to `checkmate`
   assertions, and standardized error/warning signaling on classed
@@ -16,16 +21,6 @@ the dosing including dose amount and route.
   previously-accepted edge cases like non-finite numbers); see
   the entries below for specifics.
 
-* Fixed a regression in `pk_nca_result_to_df()` where warnings raised during
-  interval calculations (e.g. `pknca_warning_no_intervals`,
-  `pknca_warning_no_conc_data`) were passed to `rlang::warn()` as the raw
-  condition object instead of its message text, and lost their original
-  class in the process. This caused `pk.nca()` to error (`message must be a
-  character vector`) instead of warning, and would have broken any code
-  catching a specific warning subclass. The condition's message is now
-  extracted via `conditionMessage()`, and its original class is preserved
-  alongside the new `pknca_warning_parameter_calculation` class.
-
 * `pk.calc.aucabove()` now requires `conc_above` to be finite. Previously,
   `Inf` or `-Inf` were silently accepted and produced a degenerate result
   (AUC of 0 for all profiles, since `conc - Inf` is always `-Inf`). Passing
@@ -35,7 +30,9 @@ the dosing including dose amount and route.
   `checkmate::assert_scalar()`). Previously, a bare `length(impute) == 1`
   check meant a length-1 list (e.g. `list("start_conc0")`) could pass through,
   relying on `%in%`'s implicit list coercion downstream instead of failing
-  clearly. Passing a list now raises an error instead.* Business functions (used for calculations of means, etc.) now return NA_real_
+  clearly. Passing a list now raises an error instead.
+
+* Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).
 
 * `PKNCAconc()` gains an `lloq` argument (a column name or a numeric scalar) that
@@ -73,7 +70,9 @@ the dosing including dose amount and route.
 * When `out_format = "cdisc"` and any parameter has "INT" in its PPTESTCD,
   PPSTINT and PPENINT columns are added with ISO 8601 durations relative to
   the last dose time.  The time unit is taken from `timeu_pref` or `timeu`
-  (#403)## Bug Fixes
+  (#403)
+
+## Bug Fixes
 
 * `normalize.data.frame()` no longer triggers a dplyr deprecation warning
   (`Using 'by = character()' to perform a cross join was deprecated in dplyr 1.1.0`)
@@ -103,6 +102,16 @@ the dosing including dose amount and route.
 
 
 ## Breaking changes
+
+* The pre-existing `pknca_*` condition classes were renamed to carry an explicit
+  `error`/`warning`/`message` element, so code that catches them by class must be
+  updated.  For example, `pknca_conc_none` is now `pknca_warning_no_concentration`,
+  `pknca_no_intervals` is now `pknca_warning_no_intervals`, and
+  `pknca_all_warnings_no_results` is now `pknca_warning_no_results`.  One change
+  goes beyond renaming: the two classes `pknca_sparse_auclast_change_auclast` and
+  `pknca_sparse_aumclast_change_auc_type` were merged into the single class
+  `pknca_error_auc_last_type_override`, so they can no longer be caught
+  separately.
 
 * `pknca_units_table()` called on a `PKNCAdata` object now raises an error if
   unit columns within the same concentration group contain mixed values (e.g.,
