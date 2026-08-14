@@ -277,5 +277,5 @@ add.interval.col(
   values = as.numeric,
   unit_type="time",
   pretty_name="Interval End",
-  desc = "Ending time of the interval (potentially infinity)"
+  desc = "End time of interval (may be Inf)"
 )

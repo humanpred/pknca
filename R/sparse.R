@@ -369,7 +369,7 @@ add.interval.col(
   values=c(FALSE, TRUE),
   unit_type="auc",
   pretty_name="Sparse AUClast",
-  desc="For sparse PK sampling, the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
+  desc="Sparse AUC to last conc above LOQ",
   pptestcd_cdisc="SPARSEAL",
   pptest_cdisc="Sparse AUClast"
 )
@@ -380,7 +380,7 @@ add.interval.col(
   values=c(FALSE, TRUE),
   unit_type="auc",
   pretty_name="Sparse AUClast standard error",
-  desc="For sparse PK sampling, the standard error of the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
+  desc="SE of sparse AUC to last conc above LOQ",
   depends="sparse_auclast",
   pptestcd_cdisc="SPARSEAS",
   pptest_cdisc="Sparse AUClast standard error"
@@ -392,7 +392,7 @@ add.interval.col(
   values=c(FALSE, TRUE),
   unit_type="count",
   pretty_name="Sparse AUClast degrees of freedom",
-  desc="For sparse PK sampling, the standard error degrees of freedom of the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
+  desc="DF for sparse AUC to last conc above LOQ",
   depends="sparse_auclast",
   pptestcd_cdisc="SPARSEAD",
   pptest_cdisc="Sparse AUClast degrees of freedom"
@@ -593,7 +593,7 @@ add.interval.col(
   values = c(FALSE, TRUE),
   unit_type = "aumc",
   pretty_name = "Sparse AUMClast",
-  desc = "For sparse PK sampling, the area under the moment curve from the beginning of the interval to the last concentration above the limit of quantification",
+  desc = "Sparse AUMC to last conc above LOQ",
   depends     = "sparse_auclast"
 )
 
@@ -603,7 +603,7 @@ add.interval.col(
   values = c(FALSE, TRUE),
   unit_type = "aumc",
   pretty_name = "Sparse AUMC standard error",
-  desc = "For sparse PK sampling, the standard error of the area under the moment curve",
+  desc = "SE of sparse AUMC to last conc above LOQ",
   depends = "sparse_aumclast"
 )
 
@@ -613,7 +613,7 @@ add.interval.col(
   values = c(FALSE, TRUE),
   unit_type = "count",
   pretty_name = "Sparse AUMC degrees of freedom",
-  desc = "For sparse PK sampling, the degrees of freedom for the AUMC variance estimate",
+  desc = "variance DF for sparse AUMC to Tlast",
   depends = "sparse_aumclast"
 )
 
