@@ -156,10 +156,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     tobit_optim_control <-
       PKNCA.choose.option(name="tobit_optim_control", value=tobit_optim_control, options=options)
     if (is.null(lloq)) {
-      rlang::abort(
-        message = "lloq must be provided when hl_method is 'tobit'",
-        class = "pknca_error_lloq_required_tobit"
-      )
+      rlang::abort("lloq must be provided when hl_method is 'tobit'", class = "pknca_error_lloq_required_tobit")
     }
   }
 
@@ -283,7 +280,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
         }
       } else {
         rlang::warn(
-          message = "No data to manually fit for half-life (all concentrations may be 0 or excluded)",
+          "No data to manually fit for half-life (all concentrations may be 0 or excluded)",
           class = "pknca_warning_no_halflife_data"
         )
         ret <- structure(
@@ -322,10 +319,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       mask_best <-
         half_lives_for_selection$lambda.z > 0 &
         if (min.hl.points == 2 && nrow(half_lives_for_selection) == 2) {
-          rlang::warn(
-            message = "2 points used for half-life calculation",
-            class = "pknca_warning_halflife_2points"
-          )
+          rlang::warn("2 points used for half-life calculation", class = "pknca_warning_halflife_2points")
           TRUE
         } else {
           half_lives_for_selection$adj.r.squared >
@@ -348,7 +342,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           min.hl.points, nrow(dfK)
         )
       rlang::warn(
-        message = attr(ret, "exclude"),
+        attr(ret, "exclude"),
         class = "pknca_warning_halflife_too_few_points"
       )
     }
@@ -383,8 +377,8 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
         }
       } else {
         rlang::warn(
-          message = "No data to manually fit for half-life (all concentrations may be 0 or excluded)",
-          class = "pknca_warning_no_halflife_data"
+          "No data to manually fit for half-life (all concentrations may be 0 or excluded)",
+          class = "pknca_warning_no_halflife_data_tobit"
         )
         ret <- structure(
           ret,
@@ -435,8 +429,8 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           min.hl.points, n_above_lloq
         )
       rlang::warn(
-        message = attr(ret, "exclude"),
-        class = "pknca_warning_halflife_too_few_points"
+        attr(ret, "exclude"),
+        class = "pknca_warning_halflife_too_few_points_tobit"
       )
     }
   }
@@ -556,7 +550,7 @@ fit_half_life_tobit <- function(data, tlast, optim_control = list()) {
   # Guard: need at least 2 above-LLOQ points for initial parameter estimation
   if (length(above_lloq_log_conc) < 2) {
     rlang::warn(
-      message = "Too few above-LLOQ points for Tobit half-life initial parameter estimation",
+      "Too few above-LLOQ points for Tobit half-life initial parameter estimation",
       class = "pknca_warning_tobit_too_few_points"
     )
     return(na_ret)
@@ -565,7 +559,7 @@ fit_half_life_tobit <- function(data, tlast, optim_control = list()) {
   sd_above <- stats::sd(above_lloq_log_conc)
   if (!is.finite(sd_above) || sd_above == 0) {
     rlang::warn(
-      message = "No variability in above-LLOQ concentrations for Tobit half-life fit",
+      "No variability in above-LLOQ concentrations for Tobit half-life fit",
       class = "pknca_warning_tobit_no_variability"
     )
     return(na_ret)
@@ -595,9 +589,7 @@ fit_half_life_tobit <- function(data, tlast, optim_control = list()) {
   # code 0 = converged; any other code = failure
   if (fit$convergence != 0) {
     rlang::warn(
-      message = paste0(
-        "Tobit half-life optimization did not converge (code ", fit$convergence, ")"
-      ),
+      sprintf("Tobit half-life optimization did not converge (code %s)", fit$convergence),
       class = "pknca_warning_tobit_no_convergence"
     )
     return(na_ret)
@@ -873,7 +865,7 @@ get_halflife_points.PKNCAresults <- function(object) {
       )
     if (any(!is.na(ret[ret_current$rowid]))) {
       rlang::abort(
-        message = sprintf(
+        sprintf(
           "More than one half-life calculation was attempted on the following rows: %s",
           paste(ret_current$rowid, collapse = ", ")
         ),

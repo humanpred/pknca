@@ -157,8 +157,7 @@ test_that("add.interval.col", {
       datatype="interval",
       pptestcd_cdisc="a",
       pptest_cdisc="test addition"
-    ),
-    info="interval column assignment works with FUN=NA"
+    )
   )
   expect_equal(
     {
@@ -177,8 +176,7 @@ test_that("add.interval.col", {
       datatype="interval",
       pptestcd_cdisc="a",
       pptest_cdisc="test addition"
-    ),
-    info="interval column assignment works with FUN=a character string"
+    )
   )
   expect_equal(
     {
@@ -197,8 +195,7 @@ test_that("add.interval.col", {
       datatype="interval",
       pptestcd_cdisc="a",
       pptest_cdisc="test addition"
-    ),
-    info="interval column assignment works with FUN=NA"
+    )
   )
 })
 

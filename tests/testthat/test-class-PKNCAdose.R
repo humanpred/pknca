@@ -472,7 +472,7 @@ test_that("setDuration", {
     regexp="duration must be numeric without missing (NA) or infinite values, and all values must be >= 0",
     fixed=TRUE,
     info="Cannot give both duration as non-numeric",
-    class = "pknca_error_invalid_duration"),
+    class = "pknca_error_dose_invalid_duration"),
     class = "pknca_message_foundcolumn_duration"
     
   )

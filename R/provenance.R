@@ -24,7 +24,7 @@ addProvenance <- function(object, replace=FALSE) {
       digest::digest(as.character(object), serialize=FALSE)
   } else {
     rlang::abort(
-      message = "object already has provenance and the option to replace it was not selected.",
+      "object already has provenance and the option to replace it was not selected.",
       class = "pknca_error_provenance_already_exists"
     )
   }

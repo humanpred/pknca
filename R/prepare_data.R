@@ -16,7 +16,7 @@ full_join_PKNCAconc_PKNCAdose <- function(o_conc, o_dose, extra_cols_conc = char
   checkmate::assert_class(o_conc, "PKNCAconc")
   if (identical(o_dose, NA)) {
     rlang::inform(
-      message = "No dose information provided, calculations requiring dose will return NA.",
+      "No dose information provided, calculations requiring dose will return NA.",
       class = "pknca_message_missing_dose"
     )
     n_dose <- tibble::tibble(data_dose=list(NA))
@@ -211,7 +211,7 @@ prepare_PKNCAdose <- function(.dat, sparse, subject_col) {
             "Not all subjects have the same dosing information."
           }
         rlang::abort(
-          message = sprintf(
+          sprintf(
             "With sparse PK, all subjects in a group must have the same dosing information.\n%s",
             msg_error
           ),
@@ -288,7 +288,7 @@ check_reserved_column_names <- function(x) {
         "and retry."
       )
     rlang::abort(
-      message = msg,
+      msg,
       class = "pknca_error_reserved_column_names"
     )
   }
@@ -315,7 +315,7 @@ standardize_column_names <- function(x, cols, group_cols=NULL, insert_if_missing
     mask_overlap_colnames <- group_cols %in% names(cols)
     if (any(mask_overlap_colvalues)) {
       rlang::abort(
-        message = sprintf(
+        sprintf(
           "group_cols must not overlap with other column names. Change the name of the following groups: %s",
           paste(group_cols[mask_overlap_colvalues], collapse = ", ")
         ),
@@ -324,7 +324,7 @@ standardize_column_names <- function(x, cols, group_cols=NULL, insert_if_missing
     }
     if (any(mask_overlap_colnames)) {
       rlang::abort(
-        message = sprintf(
+        sprintf(
           "group_cols must not overlap with standardized column names. Change the name of the following groups: %s",
           paste(group_cols[mask_overlap_colnames], collapse = ", ")
         ),
@@ -356,15 +356,9 @@ restore_group_col_names <- function(x, group_cols=NULL) {
   }
   new_group_cols <- paste0("group", seq_along(group_cols))
   if (!all(new_group_cols %in% names(x)))
-    rlang::abort(
-      message = "missing intermediate group_cols names",
-      class = "pknca_error_missing_group_cols"
-    )
+    rlang::abort("missing intermediate group_cols names", class = "pknca_error_missing_group_cols")
   if (!all(names(x)[names(x) %in% new_group_cols] == new_group_cols))
-    rlang::abort(
-      message = "Intermediate group_cols are out of order",
-      class = "pknca_error_group_cols_order"
-    )
+    rlang::abort("Intermediate group_cols are out of order", class = "pknca_error_group_cols_order")
   names(x)[names(x) %in% new_group_cols] <- group_cols
   x
 }

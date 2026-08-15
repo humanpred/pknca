@@ -24,15 +24,12 @@ update.PKNCAresults <- function(object, data, ...) {
     data$options <- PKNCA.options()
   }
   if (identical(as_PKNCAdata(object), data)) {
-    rlang::inform(
-      message = "No changes detected in data",
-      class = "pknca_message_no_changes"
-    )
+    rlang::inform("No changes detected in data", class = "pknca_message_no_changes")
     return(object)
   }
   if (!identical(strip_source_data(as_PKNCAdata(object)), strip_source_data(data))) {
     rlang::warn(
-      message = "Full recalculation: changes detected in data other than source concentration or dose data",
+      "Full recalculation: changes detected in data other than source concentration or dose data",
       class = "pknca_warning_full_recalculation"
     )
     return(pk.nca(data))
@@ -75,10 +72,7 @@ strip_source_data <- function(data) {
 #' @noRd
 find_changed_group <- function(old, new) {
   if (!all(class(old) == class(new)))
-    rlang::abort(
-      message = "old and new must be the same class",
-      class = "pknca_error_find_changed_group_class_mismatch"
-    )
+    rlang::abort("old and new must be the same class", class = "pknca_error_find_changed_group_class_mismatch")
   if (inherits(old, "PKNCAdata")) {
     # Find subjects that changed (for PKNCAdata by going into conc and dose)
     list(

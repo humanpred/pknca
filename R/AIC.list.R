@@ -27,7 +27,7 @@ AIC.list <- function(object, ..., assess.best=TRUE) {
           } else {
             # nocov start
             rlang::abort(
-              message = "Unknown way to get a data.frame without indentation set. This is likely a bug.",
+              "Unknown way to get a data.frame without indentation set. This is likely a bug.",
               class = "pknca_error_internal_unknown_dataframe_indentation"
             )
             # nocov end

@@ -20,12 +20,9 @@ pk.nca <- function(data, verbose=FALSE) {
   assert_PKNCAdata(data)
   results <- data.frame()
   if (nrow(data$intervals) > 0) {
-    if (verbose){
-      rlang::inform(
-        message = "Setting up options",
-        class = "pknca_message_setup_options"
-      )
-    } 
+    if (verbose) {
+      rlang::inform("Setting up options", class = "pknca_message_setup_options")
+    }
     # Merge the options into the default options.
     tmp_options <- PKNCA.options()
     tmp_options[names(data$options)] <- data$options
@@ -38,11 +35,8 @@ pk.nca <- function(data, verbose=FALSE) {
         drop=FALSE
       ]
     # Calculate the results
-    if (verbose){
-      rlang::inform(
-        message = "Starting dense PK NCA calculations.",
-        class = "pknca_message_dense_pk_start"
-      )
+    if (verbose) {
+      rlang::inform("Starting dense PK NCA calculations.", class = "pknca_message_dense_pk_start")
     }
     results_dense <-
       purrr::pmap(
@@ -58,19 +52,13 @@ pk.nca <- function(data, verbose=FALSE) {
         sparse = FALSE,
         .progress = data$options$progress
       )
-    if (verbose){
-      rlang::inform(
-        message = "Combining completed dense PK calculation results.",
-        class = "pknca_message_dense_pk_combine"
-      )
+    if (verbose) {
+      rlang::inform("Combining completed dense PK calculation results.", class = "pknca_message_dense_pk_combine")
     }
     results <- pk_nca_result_to_df(group_info, results_dense)
     if (is_sparse_pk(data)) {
-      if (verbose){
-        rlang::inform(
-          message = "Starting sparse PK NCA calculations.",
-          class = "pknca_message_sparse_pk_start"
-        )
+      if (verbose) {
+        rlang::inform("Starting sparse PK NCA calculations.", class = "pknca_message_sparse_pk_start")
       }
       results_sparse <-
         purrr::pmap(
@@ -85,11 +73,8 @@ pk.nca <- function(data, verbose=FALSE) {
           verbose=verbose,
           sparse=TRUE
         )
-      if (verbose){
-        rlang::inform(
-          message = "Combining completed sparse PK calculation results.",
-          class = "pknca_message_sparse_pk_combine"
-        )
+      if (verbose) {
+        rlang::inform("Combining completed sparse PK calculation results.", class = "pknca_message_sparse_pk_combine")
       }
       results <-
         dplyr::bind_rows(
@@ -139,9 +124,9 @@ pk_nca_result_to_df <- function(group_info, result) {
       X=seq_along(warning_preamble),
       FUN=function(idx) {
         warning_prep <- ret_warnings$data_result[[idx]]
-        warning_prep$message <- paste(warning_preamble[idx], warning_prep$message, sep=": ")
+        warning_prep$message <- sprintf("%s: %s", warning_preamble[idx], warning_prep$message)
         rlang::warn(
-          message = conditionMessage(warning_prep),
+          warning_prep$message,
           class = c("pknca_warning_parameter_calculation", class(warning_prep))
         )
       }
@@ -150,10 +135,7 @@ pk_nca_result_to_df <- function(group_info, result) {
   ret_nowarning <- ret[!mask_warning, ]
   # Generate the outputs
   if (nrow(ret_nowarning) == 0) {
-    rlang::warn(
-      message = "All results generated warnings or errors; no results generated",
-      class = "pknca_warning_no_results"
-    )
+    rlang::warn("All results generated warnings or errors; no results generated", class = "pknca_warning_no_results")
     results <- data.frame()
   } else {
     results <- tidyr::unnest(ret_nowarning, cols="data_result")
@@ -272,13 +254,13 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
       )
     if (nrow(conc_data_interval) == 0) {
       rlang::warn(
-        message = sprintf("%s: No data for interval", error_preamble),
+        sprintf("%s: No data for interval", error_preamble),
         class = "pknca_warning_no_data_for_interval"
       )
     } else if (!has_calc_sparse_dense) {
-      if (verbose){
+      if (verbose) {
         rlang::inform(
-          message = sprintf(
+          sprintf(
             "No %s calculations requested for an interval",
             if (sparse) "sparse" else "dense"
           ),
@@ -329,10 +311,10 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
       }
       if (uses_include_hl && uses_exclude_hl) {
         rlang::abort(
-          message = "Cannot both include and exclude half-life points for the same interval",
+          "Cannot both include and exclude half-life points for the same interval",
           class = "pknca_error_include_exclude_halflife"
-        )  
-      }     
+        )
+      }
       # Try the calculation
       if (use_debug) {
         # debugging mode does not need coverage
@@ -344,7 +326,7 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
             error = function(e) {
               # nocov start
               rlang::abort(
-                message = sprintf(
+                sprintf(
                   "Please report a bug.\n%s: %s",
                   error_preamble,
                   e$message
@@ -430,11 +412,11 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
                             subject, sparse, interval, options=list()) {
   if (!checkmate::test_data_frame(interval, nrows = 1)) {
     rlang::abort(
-      message = "Please report a bug.  Interval must be a one-row data.frame",
+      "Please report a bug.  Interval must be a one-row data.frame",
       class = "pknca_error_internal_interval_not_one_row_df"
     )
   }
- 
+
   if (!all(is.na(impute_method))) {
     impute_funs <- PKNCA_impute_fun_list(impute_method)
     stopifnot(length(impute_funs) == 1)
@@ -465,7 +447,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   if (length(dose) == 0) {
     # nocov start
     rlang::abort(
-      message = "Please report a bug. Length of dose should not be zero.",
+      "Please report a bug. Length of dose should not be zero.",
       class = "pknca_error_internal_dose_length_zero"
     )
     # nocov end
@@ -561,7 +543,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
                 sprintf("'%s' mapped to '%s'", arg_formal, arg_mapped)
               }
             rlang::abort(
-              message = sprintf(
+              sprintf(
                 "Cannot find argument %s for NCA function '%s'",
                 arg_text, all_intervals[[n]]$FUN
               ), # nocov end

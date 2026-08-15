@@ -708,7 +708,7 @@ test_that("pk.calc.half.life hl_method='tobit' warns with too few above-LLOQ poi
       allow.tmax.in.half.life = TRUE,
       min.hl.points = 3
     ),
-    class = "pknca_warning_halflife_too_few_points"
+    class = "pknca_warning_halflife_too_few_points_tobit"
   )
   expect_true(is.na(result$lambda.z))
 })
@@ -862,11 +862,11 @@ test_that("pk.calc.half.life tobit uses allow.tmax.in.half.life=FALSE", {
   time <- 0:3
   lloq <- 0.1
   # FALSE (strict >): keep time > 1 → only conc=1 at time 2 is above-LLOQ
-  # → 1 point < min.hl.points=2 → pknca_warning_halflife_too_few_points warning
+  # → 1 point < min.hl.points=2 → pknca_warning_halflife_too_few_points_tobit warning
   expect_warning(
     pk.calc.half.life(conc, time, lloq = lloq, hl_method = "tobit",
                       allow.tmax.in.half.life = FALSE, min.hl.points = 2),
-    class = "pknca_warning_halflife_too_few_points"
+    class = "pknca_warning_halflife_too_few_points_tobit"
   )
   # TRUE (>=): keep time >= 1 → conc=2 and conc=1 both above-LLOQ
   # → 2 points meets min.hl.points=2 → fitting succeeds

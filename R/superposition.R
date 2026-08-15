@@ -81,7 +81,7 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   if (check.blq) {
     if (!(conc[1] %in% 0)) {
       rlang::abort(
-        message = "The first concentration must be 0 (and not NA).  To change this set check.blq=FALSE.",
+        "The first concentration must be 0 (and not NA).  To change this set check.blq=FALSE.",
         class = "pknca_error_superposition_blq"
       )
     }
@@ -93,14 +93,14 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   if (!missing(dose.amount)) {
     if (missing(dose.input)) {
       rlang::abort(
-        message = "must give dose.input to give dose.amount",
+        "must give dose.input to give dose.amount",
         class = "pknca_error_superposition_dose_amount_without_input"
       )
     }
     assert_numeric_between(x = dose.amount, lower = 0, finite = TRUE)
     if (!(length(dose.amount) %in% c(1, length(dose.times))))
       rlang::abort(
-        message = "dose.amount must either be a scalar or match the length of dose.times",
+        "dose.amount must either be a scalar or match the length of dose.times",
         class = "pknca_error_superposition_dose_amount_length"
       )
   }
@@ -131,24 +131,21 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   if (length(additional.times) > 0) {
     if (any(is.na(additional.times))) {
       rlang::abort(
-        message = "No additional.times may be NA (to not include any additional.times, enter c() as the function argument)",
+        "No additional.times may be NA (to not include any additional.times, enter c() as the function argument)",
         class = "pknca_error_superposition_additional_times_na"
       )
     }
-    checkmate::assert_numeric(additional.times, lower = 0, upper = tau)  
+    checkmate::assert_numeric(additional.times, lower = 0, upper = tau)
   }
   # steady.state.tol
   checkmate::assert_number(steady.state.tol, na.ok = FALSE)
   if (steady.state.tol <= 0 || steady.state.tol >= 1)
     rlang::abort(
-      message = "steady.state.tol must be between 0 and 1, exclusive.",
+      "steady.state.tol must be between 0 and 1, exclusive.",
       class = "pknca_error_superposition_steady_state_tol_range"
     )
-  if (steady.state.tol > 0.01){
-    rlang::warn(
-      message = "steady.state.tol is usually <= 0.01",
-      class = "pknca_warning_superposition_steady_state_tol_large"
-    )
+  if (steady.state.tol > 0.01) {
+    rlang::warn("steady.state.tol is usually <= 0.01", class = "pknca_warning_superposition_steady_state_tol_large")
   }
   # We get all or none of lambda.z, clast, and tlast
   has.lambda.z <- !missing(lambda.z)
@@ -157,7 +154,7 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   if (any(c(has.lambda.z, has.clast.pred, has.tlast)) &&
       !all(c(has.lambda.z, has.clast.pred, has.tlast)))
     rlang::abort(
-      message = "Either give all or none of the values for these arguments: lambda.z, clast.pred, and tlast",
+      "Either give all or none of the values for these arguments: lambda.z, clast.pred, and tlast",
       class = "pknca_error_superposition_lambdaz_clast_tlast_incomplete"
     )
   # combine dose.input and dose.amount as applicable to scale the
@@ -168,7 +165,7 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
       if (length(dose.scaling) != 1)
         # nocov start
         rlang::abort(
-          message = "bug in dose.amount, dose.times, and dose.input handling",
+          "bug in dose.amount, dose.times, and dose.input handling",
           class = "pknca_error_internal_dose_scaling"
         )
         # nocov end

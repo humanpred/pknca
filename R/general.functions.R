@@ -13,7 +13,7 @@ check.conversion <- function(x, FUN, ...) {
     # FIXME: It would be nice to have it give the function name as
     # part of the error
     rlang::abort(
-      message = sprintf("%g new NA value(s) created during conversion", new.na),
+      sprintf("%g new NA value(s) created during conversion", new.na),
       class = "pknca_error_new_na_conversion"
     )
   ret
@@ -81,10 +81,7 @@ roundString <- function(x, digits=0, sci_range=Inf, sci_sep="e", si_range) {
   } else if (length(x) == length(digits)) {
     mapply(roundString, x, digits=digits, sci_range=sci_range, sci_sep=sci_sep)
   } else {
-    rlang::abort(
-      message = "digits must either be a scalar or the same length as x",
-      class = "pknca_error_digits_length"
-    )
+    rlang::abort("digits must either be a scalar or the same length as x", class = "pknca_error_digits_length")
   }
 }
 
@@ -132,10 +129,7 @@ signifString.data.frame <- function(x, ...) {
 #' @export
 signifString.default <- function(x, digits=6, sci_range=6, sci_sep="e", si_range, ...) {
   if (length(list(...))) {
-    rlang::abort(
-      message = "Additional, unsupported arguments were passed",
-      class = "pknca_error_unsupported_args"
-    )
+    rlang::abort("Additional, unsupported arguments were passed", class = "pknca_error_unsupported_args")
   }
   if (!missing(si_range)) {
     .Deprecated(new="roundString with the sci_range argument",

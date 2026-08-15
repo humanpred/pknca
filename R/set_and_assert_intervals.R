@@ -51,7 +51,7 @@ assert_intervals <- function(intervals, data) {
   
   if (length(invalid_columns) > 0) {
     rlang::abort(
-      message = sprintf(
+      sprintf(
         "The following columns in 'intervals' are not allowed: %s",
         paste(invalid_columns, collapse = ", ")
       ),

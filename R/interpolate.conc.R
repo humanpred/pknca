@@ -103,10 +103,7 @@ interp.extrap.conc <- function(conc, time, time.out,
     data <- data.frame(conc, time)
   }
   if (length(time.out) < 1) {
-    rlang::abort(
-      message = "time.out must be a vector with at least one element",
-      class = "pknca_error_timeout_empty"
-    )
+    rlang::abort("time.out must be a vector with at least one element", class = "pknca_error_timeout_empty")
   }
   if (all(data$conc %in% 0)) {
     # tlast would be NA in this case, but if everything input is zero, then all
@@ -119,15 +116,12 @@ interp.extrap.conc <- function(conc, time, time.out,
       if (is.na(tlast)) {
         # nocov start
         rlang::abort(
-          message = "Please report a bug:  tlast is NA; cannot interpolate/extrapolate",
+          "Please report a bug:  tlast is NA; cannot interpolate/extrapolate",
           class = "pknca_error_internal_tlast_na"
         )
         # nocov end
       } else if (is.na(time.out[i])) {
-        rlang::warn(
-          message = "An interpolation/extrapolation time is NA",
-          class = "pknca_warning_timeout_na"
-        )
+        rlang::warn("An interpolation/extrapolation time is NA", class = "pknca_warning_timeout_na")
       } else if (time.out[i] <= tlast) {
         ret[i] <-
           interpolate.conc(
@@ -190,7 +184,7 @@ interpolate.conc <- function(conc, time, time.out,
   checkmate::assert_number(x=time.out, na.ok=FALSE)
   if (time.out > max(data$time)) {
     rlang::abort(
-      message = "`interpolate.conc()` does not extrapolate, use `interp.extrap.conc()`",
+      "`interpolate.conc()` does not extrapolate, use `interp.extrap.conc()`",
       class = "pknca_error_interpolate_beyond_maxtime"
     )
   }
@@ -203,9 +197,9 @@ interpolate.conc <- function(conc, time, time.out,
     ret <- 0
   } else if (time.out > tlast) {
     rlang::abort(
-      message = "`interpolate.conc()` only works through Tlast, please use `interp.extrap.conc()` to combine both interpolation and extrapolation.",
+      "`interpolate.conc()` only works through Tlast, please use `interp.extrap.conc()` to combine both interpolation and extrapolation.",
       class = "pknca_error_interpolate_beyond_tlast"
-    )  
+    )
     } else if (time.out %in% data$time) {
     # See if there is an exact time match and return that if it
     # exists.
@@ -237,12 +231,7 @@ interpolate.conc <- function(conc, time, time.out,
       } else if (interp_method == "zero") {
         0
       } else {
-        # nocov start
-        rlang::abort(
-          message = "Please report a bug: invalid interp_method",
-          class = "pknca_error_internal_invalid_interp_method"
-        )
-        # nocov end
+        rlang::abort("Please report a bug: invalid interp_method", class = "pknca_error_internal_invalid_interp_method")  # nocov
       }
   }
   ret
@@ -277,22 +266,16 @@ extrapolate.conc <- function(conc, time, time.out,
   }
   auc.type <- tolower(auc.type)
   if (!(auc.type %in% c("aucinf", "aucall", "auclast")))
-    rlang::abort(
-      message = "`auc.type` must be one of 'AUCinf', 'AUClast', or 'AUCall'",
-      class = "pknca_error_invalid_auc_type"
-    )
+    rlang::abort("`auc.type` must be one of 'AUCinf', 'AUClast', or 'AUCall'", class = "pknca_error_invalid_auc_type")
   if (length(time.out) != 1)
-    rlang::abort(
-      message = "Only one time.out value may be estimated at once.",
-      class = "pknca_error_timeout_length"
-    )
+    rlang::abort("Only one time.out value may be estimated at once.", class = "pknca_error_timeout_length")
   tlast <- pk.calc.tlast(conc=data$conc, time=data$time, check=FALSE)
   if (is.na(tlast)) {
     # If there are no observed concentrations, return NA
     ret <- NA
   } else if (time.out <= tlast) {
     rlang::abort(
-      message = "extrapolate.conc can only work beyond Tlast, please use interp.extrap.conc to combine both interpolation and extrapolation.",
+      "extrapolate.conc can only work beyond Tlast, please use interp.extrap.conc to combine both interpolation and extrapolation.",
       class = "pknca_error_extrapolate_before_tlast"
     )
   } else {
@@ -335,7 +318,7 @@ extrapolate.conc <- function(conc, time, time.out,
     } else {
       # nocov start
       rlang::abort(
-        message = "Invalid auc.type caught too late (seeing this error indicates a software bug)",
+        "Invalid auc.type caught too late (seeing this error indicates a software bug)",
         class = "pknca_error_invalid_auc_type_late"
       )
       # nocov end
@@ -385,25 +368,22 @@ interp.extrap.conc.dose <- function(conc, time,
   }
   if (!(all(route.dose %in% c("extravascular", "intravascular")))) {
     rlang::abort(
-      message = "route.dose must be either 'extravascular' or 'intravascular'",
+      "route.dose must be either 'extravascular' or 'intravascular'",
       class = "pknca_error_invalid_route_dose"
     )
   }
   if (!(length(route.dose) %in% c(1, length(time.dose)))) {
     rlang::abort(
-      message = "route.dose must either be a scalar or the same length as time.dose",
+      "route.dose must either be a scalar or the same length as time.dose",
       class = "pknca_error_route_dose_length"
     )
   }
   if (!all(is.na(duration.dose) | (is.numeric(duration.dose) & !is.factor(duration.dose)))) {
-    rlang::abort(
-      message = "duration.dose must be NA or a number.",
-      class = "pknca_error_invalid_duration_dose"
-    )
+    rlang::abort("duration.dose must be NA or a number.", class = "pknca_error_invalid_duration_dose")
   }
   if (!(length(duration.dose) %in% c(1, length(time.dose)))) {
     rlang::abort(
-      message = "duration.dose must either be a scalar or the same length as time.dose",
+      "duration.dose must either be a scalar or the same length as time.dose",
       class = "pknca_error_duration_dose_length"
     )
   }
@@ -454,7 +434,7 @@ interp.extrap.conc.dose <- function(conc, time,
     # All events should be accounted for already
     # nocov start
     rlang::abort(
-      message = sprintf(
+      sprintf(
         "Unknown event in interp.extrap.conc.dose at time(s): %s (Please report this as a bug)",
         paste(unique(data_all$time[mask_unknown]), collapse = ", ")
       ),
@@ -482,7 +462,7 @@ interp.extrap.conc.dose <- function(conc, time,
     if (any(mask)) {
       if ("warning" %in% names(interp.extrap.conc.dose.select[[nm]])) {
         rlang::warn(
-          message = sprintf(
+          sprintf(
             "%s: %d data points",
             interp.extrap.conc.dose.select[[nm]]$warning,
             sum(mask)
@@ -507,7 +487,7 @@ interp.extrap.conc.dose <- function(conc, time,
     # This should never happen, all eventualities should be covered
     # nocov start
     rlang::abort(
-      message = sprintf(
+      sprintf(
         "No method for imputing concentration at time(s): %s",
         paste(unique(data_all$time[mask_no_method]), collapse = ", ")
       ),
@@ -543,7 +523,7 @@ iecd_impossible_select <- function(x) {
 iecd_impossible_value <- function(data_all, current_idx, ...) {
   # nocov start
   rlang::abort(
-    message = sprintf(
+    sprintf(
       "Impossible combination requested for interp.extrap.conc.dose (please report this as a bug).  event_before: %s, event: %s, event_after: %s",
       data_all$event_before[current_idx],
       data_all$event[current_idx],

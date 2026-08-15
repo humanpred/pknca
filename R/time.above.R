@@ -22,16 +22,10 @@ pk.calc.time_above <- function(conc, time,
   arglist <- list(...)
   method <- PKNCA.choose.option(name="auc.method", value=arglist$method, options=options)
   if (missing(conc)) {
-    rlang::abort(
-      message = "conc must be given",
-      class = "pknca_error_time_above_missing_conc"
-    )
+    rlang::abort("conc must be given", class = "pknca_error_time_above_missing_conc")
   }
   if (missing(time)) {
-    rlang::abort(
-      message = "time must be given",
-      class = "pknca_error_time_above_missing_time"
-    )
+    rlang::abort("time must be given", class = "pknca_error_time_above_missing_time")
   }
   checkmate::assert_number(conc_above, na.ok = FALSE)
   if (check) {

@@ -81,17 +81,14 @@ PKNCAconc.data.frame <- function(data, formula, subject,
                                  concu_pref = NULL, amountu_pref = NULL, timeu_pref = NULL) {
   # The data must have... data
   if (nrow(data) == 0) {
-    rlang::abort(
-      message = "data must have at least one row.",
-      class = "pknca_error_data_no_rows"
-    )
+    rlang::abort("data must have at least one row.", class = "pknca_error_data_no_rows")
   }
   # Verify that all the variables in the formula are columns in the data.
   missing_vars <- setdiff(all.vars(formula), names(data))
   if (length(missing_vars) > 0) {
     rlang::abort(
-      message = paste(
-        "All of the variables in the formula must be in the data.  Missing:",
+      sprintf(
+        "All of the variables in the formula must be in the data.  Missing: %s",
         paste(missing_vars, collapse = ", ")
       ),
       class = "pknca_error_formula_missing_vars"
@@ -117,15 +114,12 @@ PKNCAconc.data.frame <- function(data, formula, subject,
       groups = parsed_form_groups
     )
   if (length(parsed_form$concentration) != 1) {
-    rlang::abort(
-      message = "The left hand side of the formula must have exactly one variable",
-      class = "pknca_error_formula_lhs"
-    )
+    rlang::abort("The left hand side of the formula must have exactly one variable", class = "pknca_error_conc_formula_lhs")
   }
   if (length(parsed_form$time) != 1) {
     rlang::abort(
-      message = "The right hand side of the formula (excluding groups) must have exactly one variable",
-      class = "pknca_error_formula_rhs"
+      "The right hand side of the formula (excluding groups) must have exactly one variable",
+      class = "pknca_error_conc_formula_rhs"
     )
   }
 
@@ -137,10 +131,7 @@ PKNCAconc.data.frame <- function(data, formula, subject,
     # character string.
     checkmate::assert_string(subject, null.ok = FALSE)
     if (!(subject %in% names(data)))
-        rlang::abort(
-          message = "The subject parameter must map to a name in the data",
-          class = "pknca_error_subject_not_in_data"
-        )
+        rlang::abort("The subject parameter must map to a name in the data", class = "pknca_error_subject_not_in_data")
   }
   parsed_form$subject <- subject
   if (sparse) {
@@ -182,10 +173,7 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   } else {
     ret <- setAttributeColumn(ret, attr_name="volume", col_or_value=volume)
     if (!is.numeric(getAttributeColumn(ret, attr_name="volume")[[1]])) {
-      rlang::abort(
-        message = "Volume must be numeric",
-        class = "pknca_error_volume_not_numeric"
-      )
+      rlang::abort("Volume must be numeric", class = "pknca_error_volume_not_numeric")
     }
   }
   if (missing(duration)) {
@@ -285,13 +273,13 @@ getGroups.PKNCAconc <- function(object, form=stats::formula(object), level,
   if (!missing(level))
     if (is.factor(level) || is.character(level)) {
       level <- as.character(level)
-      if (any(!(level %in% grpnames))){
+      if (any(!(level %in% grpnames))) {
         rlang::abort(
-          message = sprintf(
+          sprintf(
             "Not all levels are listed in the group names. Missing levels are: %s",
             paste(setdiff(level, grpnames), collapse = ", ")
           ),
-          class = "pknca_error_missing_group_levels"
+          class = "pknca_error_conc_missing_group_levels"
         )
       }
       grpnames <- level
@@ -348,8 +336,8 @@ setDuration.PKNCAconc <- function(object, duration, ...) {
     # It passes the test
   } else {
     rlang::abort(
-      message = "duration must be numeric without missing (NA) or infinite values, and all values must be >= 0",
-      class = "pknca_error_invalid_duration"
+      "duration must be numeric without missing (NA) or infinite values, and all values must be >= 0",
+      class = "pknca_error_conc_invalid_duration"
     )
   }
   object

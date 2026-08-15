@@ -114,7 +114,7 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
       mask_pref <- conversions_pref$PPORRESU %in% conversions$PPORRESU[idx]
       if (!any(mask_pref)) {
         rlang::abort(
-          message = "Cannot find PPORRESU match between conversions and preferred unit conversions.  Check PPORRESU values in 'conversions' argument.",
+          "Cannot find PPORRESU match between conversions and preferred unit conversions.  Check PPORRESU values in 'conversions' argument.",
           class = "pknca_error_units_pporresu_no_match"
         )
       }
@@ -128,7 +128,7 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
   if (length(extra_cols) > 0) {
     # nocov start
     rlang::abort(
-      message = sprintf(
+      sprintf(
         "Please report a bug. Unknown NCA parameters have units defined: %s",
         paste(extra_cols, collapse = ", ")
       ),
@@ -141,20 +141,20 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
   if (nrow(conversions) > 0) {
     if (any(duplicated(conversions$PPORRESU)))
       rlang::abort(
-        message = "conversions$PPORRESU must not have duplicated values",
+        "conversions$PPORRESU must not have duplicated values",
         class = "pknca_error_units_pporresu_duplicated"
       )
     # PPSTRESU may be duplicated because some differing original units may
     # converge (e.g. cmax.dn and vss)
     if (length(setdiff(names(conversions), c("PPORRESU", "PPSTRESU", "conversion_factor"))) != 0)
       rlang::abort(
-        message = "conversions must only have columns named 'PPORRESU', 'PPSTRESU', and 'conversion_factor'",
+        "conversions must only have columns named 'PPORRESU', 'PPSTRESU', and 'conversion_factor'",
         class = "pknca_error_units_conversions_extra_cols"
       )
     if (any(is.na(conversions$conversion_factor)) && !requireNamespace("units", quietly=TRUE)) {
       # nocov start
       rlang::abort(
-        message = "The units package is required for automatic unit conversion",
+        "The units package is required for automatic unit conversion",
         class = "pknca_error_missing_units_package"
       )
       # nocov end
@@ -174,7 +174,7 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
     unexpected_conversions <- setdiff(conversions$PPORRESU, ret$PPORRESU)
     if (length(unexpected_conversions) > 0) {
       rlang::warn(
-        message = sprintf(
+        sprintf(
           "The following unit conversions were supplied but do not match any units to convert: %s",
           paste0("'", unexpected_conversions, "'", collapse = ", ")
         ),
@@ -273,7 +273,7 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
       }
     )
     rlang::abort(
-      message = sprintf(
+      sprintf(
         "Units should be uniform at least across concentration groups. Review the units for the next group(s):\n%s",
         paste(mismatching_units_groups_msg, collapse = "\n")
       ),
@@ -375,7 +375,7 @@ useless <- function(x) {
     return(TRUE)
   } else if (length(x) > 1) {
     rlang::abort(
-      message = sprintf(
+      sprintf(
         "Only one unit may be provided at a time: %s",
         paste(x, collapse = ", ")
       ),
@@ -592,7 +592,7 @@ pknca_find_units_param <- function(unit_type) {
   }
   if (length(ret) == 0) {
     rlang::abort(
-      message = sprintf(
+      sprintf(
         "No parameters found for unit_type=%s",
         unit_type
       ),
@@ -637,12 +637,12 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
         )
       if (allow_partial_missing_units) {
         rlang::warn(
-          message = msg_missing,
+          msg_missing,
           class = "pknca_warning_units_partial_missing"
         )
       } else {
         rlang::abort(
-          message = sprintf(
+          sprintf(
             "%s\nThis error can be converted to a warning using `PKNCA.options(allow_partial_missing_units = TRUE)`",
             msg_missing
           ),

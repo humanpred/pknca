@@ -17,7 +17,7 @@ validate_cdisc_arg <- function(x, arg_name) {
   if (is.character(x)) {
     if (!checkmate::test_string(x, na.ok = FALSE)) {
       rlang::abort(
-        message = sprintf(
+        sprintf(
           "`%s`, when a character string, must be length 1 and non-missing",
           arg_name
         ),
@@ -30,11 +30,8 @@ validate_cdisc_arg <- function(x, arg_name) {
         !is.list(x$route) ||
         !checkmate::test_names(names(x$route), type = "named")) {
       rlang::abort(
-        message = sprintf(
-          paste0(
-            "`%s`, when a list, must have exactly one named element, \"route\", ",
-            "whose value is itself a named list mapping route to value."
-          ),
+        sprintf(
+          "`%s`, when a list, must have exactly one named element, \"route\", whose value is itself a named list mapping route to value.",
           arg_name
         ),
         class = "pknca_error_cdisc_route_mapping_invalid"
@@ -42,7 +39,7 @@ validate_cdisc_arg <- function(x, arg_name) {
     }
   } else {
     rlang::abort(
-      message = sprintf(
+      sprintf(
         "`%s` must be a character string or a list",
         arg_name
       ),
@@ -162,18 +159,15 @@ add.interval.col <- function(name,
   checkmate::assert_logical(x = sparse, len = 1, any.missing=FALSE)
   checkmate::assert_character(x = pretty_name, len = 1, min.chars = 1, any.missing=FALSE)
   checkmate::assert_character(x = desc, len = 1, any.missing=FALSE)
-  checkmate::assert_character(x = depends, null.ok = TRUE)  
-  
+  checkmate::assert_character(x = depends, null.ok = TRUE)
+
   # `values` must be either a function (used to validate/coerce) or a vector
   # of allowed values -- both are acceptable, so just ensure it was supplied
   # and is one of those two forms.
   if (!is.function(values) && !is.vector(values)) {
-    rlang::abort(
-      message = "`values` must be a function or a vector of allowed values",
-      class = "pknca_error_values_invalid"
-    )
+    rlang::abort("`values` must be a function or a vector of allowed values", class = "pknca_error_values_invalid")
   }
-  
+
   unit_type <-
     match.arg(
       unit_type,
@@ -189,51 +183,45 @@ add.interval.col <- function(name,
         "clearance", "renal_clearance", "renal_clearance_dosenorm"
       )
     )
-  
+
   # Validate datatype (only "interval" is currently supported)
   datatype <- match.arg(datatype)
   checkmate::assert_choice(x = datatype, choices = "interval")
-  
+
   # Validate formalsmap
-  checkmate::assert_list(
-    x = formalsmap,
-    names = if (length(formalsmap) > 0) "unique" else NULL
-  )
-  
+  checkmate::assert_list(x = formalsmap, names = "unique")
+
   # Validate formalsmap and function compatibility
   if (length(formalsmap) > 0) {
     # Ensure FUN exists
     if (is.na(FUN)) {
-      rlang::abort(
-        message = "`formalsmap` may not be provided when `FUN` is NA",
-        class = "pknca_error_formalsmap_with_na_fun"
-      )
+      rlang::abort("`formalsmap` may not be provided when `FUN` is NA", class = "pknca_error_formalsmap_with_na_fun")
     }
     # Ensure formalsmap names are unique
     checkmate::assert_character(x = names(formalsmap), min.chars = 1, any.missing = FALSE)
   }
-  
+
   # Ensure that the function exists
   if (!is.na(FUN)) {
     # Ensure that the function exists
     fun_obj <- utils::getAnywhere(FUN)
     if (length(fun_obj$objs) == 0) {
       rlang::abort(
-        message = sprintf(
+        sprintf(
           "The function named '%s' is not defined. Please define it before calling add.interval.col().",
           FUN
         ),
         class = "pknca_error_fun_not_found"
-      ) 
+      )
     }
-    
+
     # Validate formalsmap parameters match function formals
     if (length(formalsmap) > 0) {
       fun_formals <- names(formals(fun_obj$objs[[1]]))
       invalid_formals <- setdiff(names(formalsmap), fun_formals)
       if (length(invalid_formals) > 0) {
         rlang::abort(
-          message = sprintf(
+          sprintf(
             "All names in `formalsmap` must be arguments to the function '%s'. Invalid names: %s",
             FUN,
             paste(dQuote(invalid_formals), collapse = ", ")
@@ -242,9 +230,9 @@ add.interval.col <- function(name,
         )
       }
     }
-    
+
   }
-  
+
   # Default CDISC mappings to name/desc when not provided
   if (is.null(pptestcd_cdisc)) {
     pptestcd_cdisc <- name
@@ -302,12 +290,8 @@ sort_interval_cols <- function() {
         missing_deps <- deps[!(deps %in% names(myorder))]
         if (length(missing_deps) > 0) {
           rlang::abort(
-            message = sprintf(
-              paste0(
-                "Invalid dependencies for interval column ",
-                "(please report this as a bug): %s ",
-                "The following dependencies are missing: %s"
-              ),
+            sprintf(
+              "Invalid dependencies for interval column (please report this as a bug): %s The following dependencies are missing: %s",
               names(myorder)[nextorder],
               paste(missing_deps, collapse = ", ")
             ),

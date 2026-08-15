@@ -63,7 +63,7 @@ as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'c
   }
   # nocov end
   out_format <- match.arg(out_format)
-  
+
   if (filter_requested) {
     intervals_long <-
       tidyr::pivot_longer(
@@ -80,7 +80,7 @@ as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'c
         by = intersect(names(ret), names(intervals_long_filtered))
       )
   }
-  
+
   if (out_format %in% 'cdisc') {
     ret <- pknca_cdisc_translate(ret, x)
   } else if (out_format %in% 'wide') {
@@ -382,11 +382,11 @@ getGroups.PKNCAresults <- function(object,
       level <- as.character(level)
       if (any(!(level %in% grpnames))) {
         rlang::abort(
-          message = sprintf(
+          sprintf(
             "Not all levels are listed in the group names. Missing levels are: %s",
             paste(setdiff(level, grpnames), collapse = ", ")
           ),
-          class = "pknca_error_missing_group_levels"
+          class = "pknca_error_results_missing_group_levels"
         )
       }
       grpnames <- level

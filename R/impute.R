@@ -127,7 +127,7 @@ PKNCA_impute_fun_list <- function(x) {
   }
   if (length(bad_fun) > 0) {
     rlang::abort(
-      message = sprintf(
+      sprintf(
         "The following imputation functions were not found: %s",
         paste(bad_fun, collapse = ", ")
       ),

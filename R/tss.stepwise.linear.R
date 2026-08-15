@@ -28,38 +28,30 @@ pk.tss.stepwise.linear <- function(...,
   # Check inputs
   modeldata <- pk.tss.data.prep(..., check=check)
   if (!length(min.points) == 1) {
-    rlang::warn(
-      message = "Only first value of min.points is used",
-      class = "pknca_warning_min_points_length"
-    )
+    rlang::warn("Only first value of min.points is used", class = "pknca_warning_min_points_length")
     min.points <- min.points[1]
   }
-  
+
   checkmate::assert_number(min.points, lower = 3)
-  
+
   if (!length(level) == 1) {
-    rlang::warn(
-      message = "Only first value of level is being used",
-      class = "pknca_warning_tss_level_multiple"
-    )
+    rlang::warn("Only first value of level is being used", class = "pknca_warning_tss_level_multiple")
     level <- level[1]
   }
-  
+
   checkmate::assert_numeric(level, any.missing = FALSE)
-  
-  if (level <= 0 || level >= 1){
-    rlang::abort(
-      message = "level must be between 0 and 1, exclusive",
-      class = "pknca_error_tss_level_range"
-    )  }
-  
+
+  if (level <= 0 || level >= 1) {
+    rlang::abort("level must be between 0 and 1, exclusive", class = "pknca_error_tss_level_range")
+  }
+
   # Confirm that we may have sufficient data to complete the
   # modeling.  Because of the variety of methods used for estimating
   # time to steady-state, assurance that we have enough data is more
   # simply determined by model convergence.
   if (length(unique(modeldata$time)) < min.points) {
     rlang::warn(
-      message = "After removing non-dosing time points, insufficient data remains for tss calculation",
+      "After removing non-dosing time points, insufficient data remains for tss calculation",
       class = "pknca_warning_tss_insufficient_data"
     )
     return(NA)
@@ -76,7 +68,7 @@ pk.tss.stepwise.linear <- function(...,
          (length(remaining.time) >= min.points)) {
     if (verbose) {
       rlang::inform(
-        message = paste("Trying", min(remaining.time, na.rm = TRUE)),
+        sprintf("Trying %s", min(remaining.time, na.rm = TRUE)),
         class = "pknca_message_tss_trying_time"
       )
     }
@@ -104,7 +96,7 @@ pk.tss.stepwise.linear <- function(...,
         }
       if (verbose) {
         rlang::inform(
-          message = sprintf(
+          sprintf(
             "Current interval %g [%g, %g]",
             current.interval[2],
             current.interval[1],

@@ -86,8 +86,7 @@ extrapolate_conc_lambdaz <- function(clast, lambda.z, tlast, time_out) {
 choose_interval_method <- function(conc, time, tlast, method, auc.type, options) {
   # Input checking
   checkmate::assert_numeric(conc, any.missing = FALSE)
-  checkmate::assert_numeric(time, any.missing = FALSE)
-  checkmate::assert_numeric(conc, len = length(time))
+  checkmate::assert_numeric(time, any.missing = FALSE, len = length(conc))
   assert_aucmethod(method)
   checkmate::assert_choice(auc.type, choices = c("AUCinf", "AUClast", "AUCall"))
 
@@ -117,16 +116,14 @@ choose_interval_method <- function(conc, time, tlast, method, auc.type, options)
   # return above, since tlast is NA when all concentrations are zero.
   idx_tlast <- which(time == tlast)
   if (length(idx_tlast) != 1) {
+    tlast_detail <-
+      if (length(idx_tlast) == 0) {
+        "tlast was not found in time (possible floating point issue)"
+      } else {
+        "tlast was found multiple times"
+      }
     rlang::abort(
-      message = sprintf(
-        "tlast (%s) must occur exactly once in time; %s",
-        tlast,
-        if (length(idx_tlast) == 0) {
-          "tlast was not found in time (possible floating point issue)"
-        } else {
-          "tlast was found multiple times"
-        }
-      ),
+      sprintf("tlast (%s) must occur exactly once in time; %s", tlast, tlast_detail),
       class = "pknca_error_tlast_not_unique"
     )
   }
@@ -153,7 +150,7 @@ choose_interval_method <- function(conc, time, tlast, method, auc.type, options)
   } else {
     # nocov start
     rlang::abort(
-      message = sprintf(
+      sprintf(
         "Unknown integration method, please report a bug: %s",
         method
       ),
@@ -215,7 +212,7 @@ auc_integrate <- function(conc, time, clast, tlast, lambda.z, interval_method, f
   } else if (interval_method_extrap != "zero") {
     # nocov start
     rlang::abort(
-      message = sprintf(
+      sprintf(
         "Invalid interval_method_extrap, please report a bug: %s",
         interval_method_extrap
       ),

@@ -31,20 +31,14 @@ choose.auc.intervals <- function(time.conc, time.dosing,
                                  single.dose.aucs=NULL) {
   # Check inputs
   single.dose.aucs <- PKNCA.choose.option(name="single.dose.aucs", value=single.dose.aucs, options=options)
-  if (anyNA(time.conc)){
-    rlang::abort(
-      message = "time.conc may not have any NA values",
-      class = "pknca_error_timeconc_na"
-    )
+  if (anyNA(time.conc)) {
+    rlang::abort("time.conc may not have any NA values", class = "pknca_error_timeconc_na")
   }
-    
-  if (anyNA(time.dosing)){
-    rlang::abort(
-      message = "time.dosing may not have any NA values",
-      class = "pknca_error_timedosing_na"
-    )
+
+  if (anyNA(time.dosing)) {
+    rlang::abort("time.dosing may not have any NA values", class = "pknca_error_timedosing_na")
   }
-    
+
   if (length(unique(time.dosing)) == 1) {
     # If it is single-dose data, use the time of dosing and then offset it by
     # the dosing time (allowing the case where dosing time is not 0).

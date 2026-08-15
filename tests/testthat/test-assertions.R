@@ -170,13 +170,12 @@ test_that("assert_unit_col", {
   )
   expect_error(
     assert_unit_col(unit = "D", data = d),
-    regexp = "`unit` (D) must be a column name in the data",
+    regexp = "Names must include the elements {'D'}",
     fixed = TRUE
   )
   expect_error(
     assert_unit_col(unit = "A", data = d),
-    regexp = "`unit` (A) must contain character data",
-    fixed = TRUE
+    regexp = "Must be of type 'character'"
   )
 })
 

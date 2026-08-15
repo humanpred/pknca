@@ -220,10 +220,7 @@ exclude_nca_by_param <- function(
   checkmate::expect_number(max_thr, finite = TRUE, null.ok = TRUE)
 
   if (isTRUE(min_thr > max_thr)) {
-    rlang::abort(
-      message = "if both defined min_thr must be less than max_thr",
-      class = "pknca_error_min_thr_gt_max_thr"
-    )
+    rlang::abort("if both defined min_thr must be less than max_thr", class = "pknca_error_min_thr_gt_max_thr")
   }
 
   function(x, ...) {
@@ -231,9 +228,9 @@ exclude_nca_by_param <- function(
     idx_param <- which(x$PPTESTCD == parameter)
     idx_aff_params <- which(x$PPTESTCD %in% affected_parameters)
 
-    if (length(idx_param) > 1){
+    if (length(idx_param) > 1) {
       rlang::abort(
-        message = sprintf(
+        sprintf(
           "Should not see more than one %s (please report this as a bug)",
           parameter
         ),

@@ -47,11 +47,11 @@ sparse_pk_attribute <- function(sparse_pk, ...) {
   if (is.null(names(args))) {
     vapply(X=sparse_pk, FUN="[[", args[[1]], FUN.VALUE = 1)
   } else {
-    if (length(args[[1]]) != length(sparse_pk)){
+    if (length(args[[1]]) != length(sparse_pk)) {
       rlang::abort(
-        message = "The length of the argument must match the length of sparse_pk",
+        "The length of the argument must match the length of sparse_pk",
         class = "pknca_error_sparse_pk_attribute_length"
-      ) 
+      )
     }
     for (idx in seq_along(sparse_pk)) {
       sparse_pk[[idx]][names(args)[1]] <- args[[1]][idx]
@@ -133,7 +133,7 @@ sparse_mean <- function(sparse_pk, sparse_mean_method=c("arithmetic mean, <=50% 
     # do nothing
   } else {
     rlang::abort(
-      message = sprintf(
+      sprintf(
         "Invalid sparse_mean_method: %s",
         sparse_mean_method
       ),
@@ -191,7 +191,7 @@ var_sparse_auc <- function(sparse_pk) {
     sum(weights^4 * diag(covariance)^2/(n^2*(n-1)))
   if (sum(covariance[lower.tri(covariance)] != 0) > 0) {
     rlang::warn(
-      message = "Cannot yet calculate sparse degrees of freedom for multiple samples per subject",
+      "Cannot yet calculate sparse degrees of freedom for multiple samples per subject",
       class = "pknca_warning_sparse_df_multi"
     )
     df <- NA_real_
@@ -322,7 +322,7 @@ pk.calc.sparse_auc <- function(conc, time, subject,
   # enabled here in the future), but only "linear" is currently allowed.
   if (!identical(method, "linear")) {
     rlang::abort(
-      message = 'Sparse AUC calculation only supports `method = "linear"`.',
+      'Sparse AUC calculation only supports `method = "linear"`.',
       class = "pknca_error_sparse_auc_method"
     )
   }
@@ -358,7 +358,7 @@ pk.calc.sparse_auc <- function(conc, time, subject,
 pk.calc.sparse_auclast <- function(conc, time, subject, ..., options=list()) {
   if ("auc.type" %in% names(list(...))) {
     rlang::abort(
-      message = "auc.type cannot be changed when calling pk.calc.sparse_auclast, please use pk.calc.sparse_auc",
+      "auc.type cannot be changed when calling pk.calc.sparse_auclast, please use pk.calc.sparse_auc",
       class = "pknca_error_sparse_auclast_change_auclast"
     )
   }
@@ -498,8 +498,8 @@ var_sparse_aumc <- function(sparse_pk) {
   
   if (sum(covariance[lower.tri(covariance)] != 0) > 0) {
     rlang::warn(
-      message = "Cannot yet calculate sparse degrees of freedom for multiple samples per subject",
-      class = "pknca_warning_sparse_df_multi"
+      "Cannot yet calculate sparse degrees of freedom for multiple samples per subject",
+      class = "pknca_warning_sparse_aumc_df_multi"
     )
     df <- NA_real_
   }
@@ -541,7 +541,7 @@ pk.calc.sparse_aumc <- function(conc, time, subject,
   # Sparse AUMC is only defined for linear interpolation (see pk.calc.sparse_auc).
   if (!identical(method, "linear")) {
     rlang::abort(
-      message = 'Sparse AUMC calculation only supports `method = "linear"`.',
+      'Sparse AUMC calculation only supports `method = "linear"`.',
       class = "pknca_error_sparse_aumc_method"
     )
   }
@@ -583,7 +583,7 @@ pk.calc.sparse_aumc <- function(conc, time, subject,
 pk.calc.sparse_aumclast <- function(conc, time, subject, ..., options = list()) {
   if ("auc.type" %in% names(list(...))) {
     rlang::abort(
-      message = "auc.type cannot be changed when calling pk.calc.sparse_aumclast, please use pk.calc.sparse_aumc",
+      "auc.type cannot be changed when calling pk.calc.sparse_aumclast, please use pk.calc.sparse_aumc",
       class = "pknca_error_sparse_aumclast_change_auc_type"
     )
   }

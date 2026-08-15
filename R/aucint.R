@@ -84,7 +84,7 @@ pk.calc.auxcint <- function(conc, time,
     } else if (is.na(clast)) {
       # nocov start
       rlang::abort(
-        message = "Please report a bug. clast is NA and the half-life is not NA",
+        "Please report a bug. clast is NA and the half-life is not NA",
         class = "pknca_error_internal_clast_na"
       )
       # nocov end
@@ -148,7 +148,7 @@ pk.calc.auxcint <- function(conc, time,
                 paste(missing_times, collapse=", "))
         }
       rlang::warn(
-        message = warning_message,
+        warning_message,
         class = "pknca_warning_missing_interpolated_concentrations"
       )
       return(NA_real_)

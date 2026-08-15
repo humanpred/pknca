@@ -25,18 +25,12 @@ pk.calc.c0 <- function(conc, time, time.dose=0,
   if (check) {
     assert_conc_time(conc = conc, time = time)
   }
-  checkmate::assert_number(time.dose, na.ok = TRUE, finite = FALSE)  
+  checkmate::assert_number(time.dose, na.ok = TRUE, finite = FALSE)
   if (is.na(time.dose)) {
-    rlang::warn(
-      message = "time.dose is NA",
-      class = "pknca_warning_timedose_na"
-    )
+    rlang::warn("time.dose is NA", class = "pknca_warning_timedose_na")
     return(structure(NA_real_, exclude = "dose time is missing"))
   } else if (time.dose > max(time)) {
-    rlang::warn(
-      message = "time.dose is after all available data",
-      class = "pknca_warning_timedose_after_data"
-    )
+    rlang::warn("time.dose is after all available data", class = "pknca_warning_timedose_after_data")
     return(structure(NA_real_, exclude = "dose time is after all available concentration data"))
   }
   method <- match.arg(method, several.ok=TRUE)

@@ -70,7 +70,7 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
   if (!missing(time.nominal)) {
     if (!(time.nominal %in% names(data))) {
       rlang::abort(
-        message = "time.nominal, if given, must be a column name in the input data.",
+        "time.nominal, if given, must be a column name in the input data.",
         class = "pknca_error_timenominal_not_in_data"
       )
     }
@@ -78,10 +78,7 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
   # Verify that all the variables in the formula are columns in the data.
   parsed_form_raw <- parse_formula_to_cols(form = formula)
   if (length(parsed_form_raw$groups_left_of_slash) > 0) {
-    rlang::abort(
-      message = "formula for PKNCAdose may not include a slash",
-      class = "pknca_error_formula_slash"
-    )
+    rlang::abort("formula for PKNCAdose may not include a slash", class = "pknca_error_formula_slash")
   }
   parsed_form_groups <-
     if (length(parsed_form_raw$groups) > 0) {
@@ -103,35 +100,29 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
     )
   # Check for variable existence and length
   if (!(length(parsed_form$dose) %in% c(0, 1))) {
-    rlang::abort(
-      message = "The left side of the formula must have zero or one variable",
-      class = "pknca_error_formula_lhs"
-    )
+    rlang::abort("The left side of the formula must have zero or one variable", class = "pknca_error_dose_formula_lhs")
   } else if (length(parsed_form$dose) == 1 &&
              !(parsed_form$dose %in% names(data))) {
     # the "." is handled in parse_formula_to_cols
     rlang::abort(
-      message = "The left side formula must be a variable in the data, empty, or '.'.",
+      "The left side formula must be a variable in the data, empty, or '.'.",
       class = "pknca_error_formula_lhs_not_in_data"
     )
   }
   if (!(length(parsed_form$time) %in% c(0, 1))) {
     rlang::abort(
-      message = "The right side of the formula (excluding groups) must have exactly one variable",
-      class = "pknca_error_formula_rhs"
+      "The right side of the formula (excluding groups) must have exactly one variable",
+      class = "pknca_error_dose_formula_rhs"
     )
   } else if (length(parsed_form$time) == 1 &&
              !(parsed_form$time %in% names(data))) {
     rlang::abort(
-      message = "The right side formula must be a variable in the data or '.'.",
+      "The right side formula must be a variable in the data or '.'.",
       class = "pknca_error_formula_rhs_not_in_data"
     )
   }
   if (!all(unlist(parsed_form$groups) %in% names(data))) {
-    rlang::abort(
-      message = "All of the variables in the groups must be in the data",
-      class = "pknca_error_groups_not_in_data"
-    )
+    rlang::abort("All of the variables in the groups must be in the data", class = "pknca_error_groups_not_in_data")
   }
   ret <-
     list(
@@ -153,7 +144,7 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
   mask.indep <- is.na(getIndepVar.PKNCAdose(ret)) & !is_excluded
   if (any(mask.indep) && !all(is.na(getIndepVar.PKNCAdose(ret)[!is_excluded]))) {
     rlang::abort(
-      message = "Some but not all values are missing for the independent variable, please see the help for PKNCAdose for how to specify the formula and confirm that your data has dose times for all doses.",
+      "Some but not all values are missing for the independent variable, please see the help for PKNCAdose for how to specify the formula and confirm that your data has dose times for all doses.",
       class = "pknca_error_partial_missing_indepvar"
     )
   }
@@ -213,7 +204,7 @@ setRoute.PKNCAdose <- function(object, route, ...) {
   if (!all(tolower(getAttributeColumn(object=object, attr_name="route")[[1]]) %in%
            c("extravascular", "intravascular"))) {
     rlang::abort(
-      message = "route must have values of either 'extravascular' or 'intravascular'.  Please set to one of those values and retry.",
+      "route must have values of either 'extravascular' or 'intravascular'.  Please set to one of those values and retry.",
       class = "pknca_error_invalid_route"
     )
   }
@@ -243,10 +234,7 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
                                  message_if_default="Assuming instant dosing (duration=0)")
 
   } else if (!missing(duration) && !missing(rate)) {
-    rlang::abort(
-      message = "Both duration and rate cannot be given at the same time",
-      class = "pknca_error_duration_and_rate"
-    )   
+    rlang::abort("Both duration and rate cannot be given at the same time", class = "pknca_error_duration_and_rate")
     # TODO: A consistency check could be done, but that would get into
     # requiring near-equal checks for floating point error.
   } else if (!missing(duration)) {
@@ -265,8 +253,8 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
     # It passes
   } else {
     rlang::abort(
-      message = "duration must be numeric without missing (NA) or infinite values, and all values must be >= 0",
-      class = "pknca_error_invalid_duration"
+      "duration must be numeric without missing (NA) or infinite values, and all values must be >= 0",
+      class = "pknca_error_dose_invalid_duration"
     )
   }
   object

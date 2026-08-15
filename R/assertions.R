@@ -9,33 +9,27 @@
 #' @keywords Internal
 assert_intervaltime_single <- function(interval = NULL, start = NULL, end = NULL) {
   if (is.null(interval) && is.null(start) && is.null(end)) {
-    rlang::abort(
-      message = "One of `interval` or `start` and `end` must be given",
-      class = "pknca_error_missing_interval"
-    )  
+    rlang::abort("One of `interval` or `start` and `end` must be given", class = "pknca_error_missing_interval")
   }
-  
+
   if (xor(is.null(start), is.null(end))) {
-    rlang::abort(
-      message = "Both `start` and `end` or neither must be given",
-      class = "pknca_error_partial_interval"
-    )
+    rlang::abort("Both `start` and `end` or neither must be given", class = "pknca_error_partial_interval")
   }
   if (!is.null(interval)) {
     checkmate::assert_numeric(x = interval, sorted = TRUE, unique = TRUE, any.missing = FALSE, len = 2)
     checkmate::assert_number(x = interval[1], na.ok = FALSE, finite = TRUE)
   }
-  
+
   if (!is.null(start)) {
     # Check start and end
     checkmate::assert_number(start, na.ok = FALSE, finite = TRUE, null.ok = FALSE)
     checkmate::assert_number(end, na.ok = FALSE, finite = FALSE, lower = start, null.ok = FALSE)
-    
+
     if (is.null(interval)) {
       interval <- c(start, end)
     } else if (start != interval[1]) {
       rlang::abort(
-        message = sprintf(
+        sprintf(
           "`start` must be the same as the first value in the interval if both are given: %s!=%s",
           start,
           interval[1]
@@ -44,7 +38,7 @@ assert_intervaltime_single <- function(interval = NULL, start = NULL, end = NULL
       )
     } else if (end != interval[2]) {
       rlang::abort(
-        message = sprintf(
+        sprintf(
           "`end` must be the same as the second value in the interval if both are given: %s!=%s",
           end,
           interval[2]
@@ -53,7 +47,7 @@ assert_intervaltime_single <- function(interval = NULL, start = NULL, end = NULL
       )
     }
   }
-  
+
   interval
 }
 
@@ -65,23 +59,14 @@ assert_intervaltime_single <- function(interval = NULL, start = NULL, end = NULL
 #' @rdname assert_conc_time
 assert_conc <- function(conc, any_missing_conc = TRUE) {
   if (length(conc) == 0) {
-    rlang::warn(
-      message = "No concentration data given",
-      class = "pknca_warning_no_concentration"
-    )
+    rlang::warn("No concentration data given", class = "pknca_warning_no_concentration")
   } else {
     checkmate::assert_numeric(conc, finite = TRUE, any.missing = any_missing_conc)
     if (all(is.na(conc))) {
-      rlang::warn(
-        message = "All concentration data are missing",
-        class = "pknca_warning_all_concentration_missing"
-      )
+      rlang::warn("All concentration data are missing", class = "pknca_warning_all_concentration_missing")
     } else if (any(!is.na(conc) & as.numeric(conc) < 0)) {
       # as.numeric(conc) is required for compatibility with units
-      rlang::warn(
-        message = "Negative concentrations found",
-        class = "pknca_warning_negative_concentration"
-      )
+      rlang::warn("Negative concentrations found", class = "pknca_warning_negative_concentration")
     }
   }
   conc
@@ -95,10 +80,7 @@ assert_conc <- function(conc, any_missing_conc = TRUE) {
 #' @rdname assert_conc_time
 assert_time <- function(time, sorted_time = TRUE) {
   if (length(time) == 0) {
-    rlang::warn(
-      message = "No time data given",
-      class = "pknca_warning_no_time"
-    )
+    rlang::warn("No time data given", class = "pknca_warning_no_time")
   } else {
     checkmate::assert_numeric(time, any.missing = FALSE, sorted = sorted_time, unique = sorted_time)
   }
@@ -164,7 +146,7 @@ assert_numeric_between <- function(x, any.missing = FALSE, null.ok = FALSE, lowe
     }
     if (length(msg) > 0) {
       rlang::abort(
-        message = paste(msg, collapse = "\n"),
+        paste(msg, collapse = "\n"),
         class = "pknca_error_numeric_between"
       )
     }
@@ -228,16 +210,10 @@ assert_aucmethod <- function(method = c("lin up/log down", "linear", "lin-log"))
 #' @returns The object
 assert_PKNCAdata <- function(object) {
   if (!inherits(object, "PKNCAdata")) {
-    rlang::abort(
-      message = "Must be a PKNCAdata object",
-      class = "pknca_error_not_PKNCAdata"
-    )
+    rlang::abort("Must be a PKNCAdata object", class = "pknca_error_not_PKNCAdata")
   }
   if (nrow(object$intervals) == 0) {
-    rlang::warn(
-      message = "No intervals given; no calculations will be done.",
-      class = "pknca_warning_no_intervals"
-    )
+    rlang::warn("No intervals given; no calculations will be done.", class = "pknca_warning_no_intervals")
   }
   object
 }
@@ -247,10 +223,7 @@ assert_PKNCAdata <- function(object) {
 #' @export
 assert_PKNCAresults <- function(object) {
   if (!inherits(object, "PKNCAresults")) {
-    rlang::abort(
-      message = "Must be a PKNCAresults object",
-      class = "pknca_error_not_pkncaresults"
-    )
+    rlang::abort("Must be a PKNCAresults object", class = "pknca_error_not_pkncaresults")
   }
   object
 }
@@ -260,10 +233,7 @@ assert_PKNCAresults <- function(object) {
 #' @export
 assert_PKNCAconc <- function(object) {
   if (!inherits(object, "PKNCAconc")) {
-    rlang::abort(
-      message = "Must be a PKNCAconc object",
-      class = "pknca_error_not_concdata"
-    )
+    rlang::abort("Must be a PKNCAconc object", class = "pknca_error_not_concdata")
   }
   object
 }
@@ -273,10 +243,7 @@ assert_PKNCAconc <- function(object) {
 #' @export
 assert_PKNCAdose <- function(object) {
   if (!inherits(object, "PKNCAdose")) {
-    rlang::abort(
-      message = "Must be a PKNCAdose object",
-      class = "pknca_error_not_dosedata"
-    )
+    rlang::abort("Must be a PKNCAdose object", class = "pknca_error_not_dosedata")
   }
   object
 }
@@ -286,20 +253,8 @@ assert_PKNCAdose <- function(object) {
 assert_unit_col <- function(unit, data) {
   checkmate::assert_character(unit, len = 1)
   checkmate::assert_data_frame(data)
-  
-  if (!(unit %in% names(data))) {
-    rlang::abort(
-      message = sprintf("`unit` (%s) must be a column name in the data", unit),
-      class = "pknca_error_invalid_unit_column"
-    )
-  }
-  
-  if (!is.character(data[[unit]])) {
-    rlang::abort(
-      message = sprintf("`unit` (%s) must contain character data", unit),
-      class = "pknca_error_invalid_unit_data"
-    )
-  }
+  checkmate::assert_names(names(data), must.include = unit)
+  checkmate::assert_character(data[[unit]])
   structure(unit, unit_type = "column")
 }
 
@@ -311,7 +266,7 @@ assert_unit_value <- function(unit) {
   if (is.null(unit)) {
     return(unit)
   }
-  
+
   checkmate::assert_character(unit, len = 1)
 
   structure(unit, unit_type = "value")
@@ -335,7 +290,7 @@ assert_unit <- function(unit, data) {
     # Re-raise the unit_col error. That is better than unit_value since it is
     # stricter.
     rlang::abort(
-      message = unit_col,
+      unit_col,
       class = "pknca_error_invalid_unit"
     )
   }

@@ -30,12 +30,7 @@ clean.conc.na <- function(conc, time, ...,
   } else {
     # This case should already have been captured by the PKNCA.options
     # call above.
-    # nocov start
-    rlang::abort(
-      message = "Unknown how to handle conc.na",
-      class = "pknca_error_unknown_conc_na"
-    )
-    # nocov end
+    rlang::abort("Unknown how to handle conc.na", class = "pknca_error_unknown_conc_na")  # nocov
   }
   ret
 }
@@ -139,7 +134,7 @@ clean.conc.blq <- function(conc, time,
       } else {
         # nocov start
         rlang::abort(
-          message = "There is a bug in cleaning the conc.blq with position names",
+          "There is a bug in cleaning the conc.blq with position names",
           class = "pknca_error_conc_blq_position_bug"
         )
         # nocov end
@@ -158,7 +153,7 @@ clean.conc.blq <- function(conc, time,
         # call above.
         # nocov start
         rlang::abort(
-          message = sprintf(
+          sprintf(
             "Unknown how to handle conc.blq rule %s",
             as.character(this_rule)
           ),
