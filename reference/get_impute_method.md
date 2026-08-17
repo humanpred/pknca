@@ -17,7 +17,9 @@ get_impute_method(intervals, impute)
 
 - impute:
 
-  the imputation definition
+  the imputation definition – either the name of a column in `intervals`
+  (character scalar) or `NA` to look for a generic `"impute"` column.
+  Must be an atomic scalar; a list (even of length 1) is rejected.
 
 ## Value
 

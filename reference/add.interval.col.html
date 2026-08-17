@@ -84,7 +84,8 @@
 
 
 <dl><dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
-<dd><p>The column name as a character string</p></dd>
+<dd><p>The column name as a non-empty character string (length 1,
+may not be <code>NA</code> or <code>""</code>).</p></dd>
 
 
 <dt id="arg-fun">FUN<a class="anchor" aria-label="anchor" href="#arg-fun"></a></dt>
@@ -93,11 +94,15 @@ parameter is automatically calculated when calculating another parameter.</p></d
 
 
 <dt id="arg-values">values<a class="anchor" aria-label="anchor" href="#arg-values"></a></dt>
-<dd><p>Valid values for the column</p></dd>
+<dd><p>Valid values for the column: either a function used to
+coerce/validate values (e.g. <code>as.numeric</code>) or a vector of allowed values
+(e.g. <code>c(FALSE, TRUE)</code>).</p></dd>
 
 
 <dt id="arg-unit-type">unit_type<a class="anchor" aria-label="anchor" href="#arg-unit-type"></a></dt>
-<dd><p>The type of units to use for assigning and converting units.</p></dd>
+<dd><p>The type of units to use for assigning and converting
+units. Must be one of the pre-defined unit types (see Details). This
+argument is required and has no default; omitting it raises an error.</p></dd>
 
 
 <dt id="arg-pretty-name">pretty_name<a class="anchor" aria-label="anchor" href="#arg-pretty-name"></a></dt>
@@ -127,13 +132,17 @@ to NCA parameter names.  See the details for information on use of
 
 
 <dt id="arg-datatype">datatype<a class="anchor" aria-label="anchor" href="#arg-datatype"></a></dt>
-<dd><p>The type of data used for the calculation</p></dd>
+<dd><p>The data type used for the calculation. The default is
+<code>"interval"</code>, which is currently the only supported value. The
+<code>"individual"</code> and <code>"population"</code> data types are reserved for future
+use and will currently raise an error if selected.</p></dd>
 
 
 <dt id="arg-pptestcd-cdisc">pptestcd_cdisc<a class="anchor" aria-label="anchor" href="#arg-pptestcd-cdisc"></a></dt>
 <dd><p>The CDISC PPTESTCD code for this parameter.  Can be a
 character string for simple mappings, or a named list for route-dependent
-mappings (e.g., <code>list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))</code>).  Defaults to <code>name</code> if not provided.</p></dd>
+mappings with a <code>route</code> element whose value is itself a named list keyed
+by route (e.g. <code>list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))</code>).  Defaults to <code>name</code> if not provided.</p></dd>
 
 
 <dt id="arg-pptest-cdisc">pptest_cdisc<a class="anchor" aria-label="anchor" href="#arg-pptest-cdisc"></a></dt>

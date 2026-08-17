@@ -324,9 +324,7 @@ argument to <code><a href="../reference/PKNCAdata.html">PKNCAdata()</a></code> (
 <span>    options<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>allow_partial_missing_units<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">o_nca_partial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_partial</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in pknca_unit_conversion(result = result, units = data$units,</span></span>
-<span><span class="co">#&gt; allow_partial_missing_units = data$options$allow_partial_missing_units): Units</span></span>
-<span><span class="co">#&gt; are provided for some but not all parameters; missing for: tmax</span></span>
+<span><span class="co">#&gt; Warning: Units are provided for some but not all parameters; missing for: tmax</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca_partial</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)</span></span>
 <span><span class="co">#&gt;               0           24 12       74.6 [24.3]           .</span></span>

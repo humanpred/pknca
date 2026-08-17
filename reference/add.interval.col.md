@@ -25,7 +25,8 @@ add.interval.col(
 
 - name:
 
-  The column name as a character string
+  The column name as a non-empty character string (length 1, may not be
+  `NA` or `""`).
 
 - FUN:
 
@@ -34,11 +35,15 @@ add.interval.col(
 
 - values:
 
-  Valid values for the column
+  Valid values for the column: either a function used to coerce/validate
+  values (e.g. `as.numeric`) or a vector of allowed values (e.g.
+  `c(FALSE, TRUE)`).
 
 - unit_type:
 
-  The type of units to use for assigning and converting units.
+  The type of units to use for assigning and converting units. Must be
+  one of the pre-defined unit types (see Details). This argument is
+  required and has no default; omitting it raises an error.
 
 - pretty_name:
 
@@ -67,13 +72,17 @@ add.interval.col(
 
 - datatype:
 
-  The type of data used for the calculation
+  The data type used for the calculation. The default is `"interval"`,
+  which is currently the only supported value. The `"individual"` and
+  `"population"` data types are reserved for future use and will
+  currently raise an error if selected.
 
 - pptestcd_cdisc:
 
   The CDISC PPTESTCD code for this parameter. Can be a character string
-  for simple mappings, or a named list for route-dependent mappings
-  (e.g.,
+  for simple mappings, or a named list for route-dependent mappings with
+  a `route` element whose value is itself a named list keyed by route
+  (e.g.
   `list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))`).
   Defaults to `name` if not provided.
 

@@ -21,7 +21,8 @@ pk.calc.aucabove(conc, time, conc_above = NA_real_, ..., options = list())
 
 - conc_above:
 
-  The concentration to be above
+  The concentration threshold to calculate AUC above. Must be finite
+  (`Inf`/`-Inf` are not allowed); if `NA`, no AUC is calculated.
 
 - ...:
 

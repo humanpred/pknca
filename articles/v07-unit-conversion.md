@@ -294,9 +294,7 @@ o_data_partial <-
     options=list(allow_partial_missing_units=TRUE)
   )
 o_nca_partial <- pk.nca(o_data_partial)
-#> Warning in pknca_unit_conversion(result = result, units = data$units,
-#> allow_partial_missing_units = data$options$allow_partial_missing_units): Units
-#> are provided for some but not all parameters; missing for: tmax
+#> Warning: Units are provided for some but not all parameters; missing for: tmax
 summary(o_nca_partial)
 #>  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)
 #>               0           24 12       74.6 [24.3]           .

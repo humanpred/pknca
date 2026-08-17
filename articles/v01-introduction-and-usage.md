@@ -766,8 +766,8 @@ Then, we can update the `PKNCAresults`:
 o_nca_update <- update(o_nca, o_data_update)
 ```
 
-    ## Warning in update.PKNCAresults(o_nca, o_data_update): Full recalculation:
-    ## changes detected in data other than source concentration or dose data
+    ## Warning: Full recalculation: changes detected in data other than source
+    ## concentration or dose data
 
 ``` r
 

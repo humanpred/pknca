@@ -240,8 +240,11 @@ o_data_derived <- PKNCAdata(o_conc_sparse, o_dose, intervals=d_intervals_derived
 o_nca_derived <- pk.nca(o_data_derived)
 ```
 
-    ## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples per subject
-    ## Cannot yet calculate sparse degrees of freedom for multiple samples per subject
+    ## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples
+    ## per subject
+
+    ## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples
+    ## per subject
 
 ``` r
 

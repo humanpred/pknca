@@ -1504,9 +1504,8 @@ summary(o_nca, drop.group=c("Subject", "end"))
     ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
     ## generated.
 
-    ## Warning in get_summary_PKNCAresults_drop_group(object = object, drop_group =
-    ## drop_group): drop.group including start or end may result in incorrect
-    ## groupings (such as inaccurate comparison of intervals).  Drop these with care.
+    ## Warning: drop.group including start or end may result in incorrect groupings
+    ## (such as inaccurate comparison of intervals).  Drop these with care.
 
     ##  start Study_Part  N aucinf.obs
     ##      0     Single 12 120 [29.5]

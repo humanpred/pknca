@@ -80,7 +80,7 @@
                         <h4 data-toc-skip class="author">Bill
 Denney</h4>
             
-            <h4 data-toc-skip class="date">2026-08-13</h4>
+            <h4 data-toc-skip class="date">2026-08-17</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/humanpred/pknca/blob/main/vignettes/v04-sparse.Rmd" class="external-link"><code>vignettes/v04-sparse.Rmd</code></a></small>
       <div class="d-none name"><code>v04-sparse.Rmd</code></div>
@@ -306,9 +306,11 @@ fit, <code>vz.sparse.last</code> is numerically equal to
 <span>  <span class="op">)</span></span>
 <span><span class="va">o_data_derived</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc_sparse</span>, <span class="va">o_dose</span>, intervals<span class="op">=</span><span class="va">d_intervals_derived</span><span class="op">)</span></span>
 <span><span class="va">o_nca_derived</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_derived</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples per subject</span></span>
-<span><span class="co">## Cannot yet calculate sparse degrees of freedom for multiple samples per subject</span></span></code></pre>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples</span></span>
+<span><span class="co">## per subject</span></span></code></pre>
+<pre><code><span><span class="co">## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples</span></span>
+<span><span class="co">## per subject</span></span></code></pre>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">o_nca_derived</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 11 × 6</span></span></span>
 <span><span class="co">##    start   end PPTESTCD        PPORRES PPANMETH exclude</span></span>

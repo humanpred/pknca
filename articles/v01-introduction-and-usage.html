@@ -1563,8 +1563,8 @@ change the intervals to create a new <code>PKNCAdata</code> object:</p>
 <p>Then, we can update the <code>PKNCAresults</code>:</p>
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">o_nca_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">o_nca</span>, <span class="va">o_data_update</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Warning in update.PKNCAresults(o_nca, o_data_update): Full recalculation:</span></span>
-<span><span class="co">## changes detected in data other than source concentration or dose data</span></span></code></pre>
+<pre><code><span><span class="co">## Warning: Full recalculation: changes detected in data other than source</span></span>
+<span><span class="co">## concentration or dose data</span></span></code></pre>
 <div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca_update</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N        cmax               tmax   half.life aucinf.obs</span></span>
