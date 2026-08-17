@@ -61,8 +61,8 @@ test_that("pk.calc.tmax", {
   # No data give a warning and NA
   expect_warning(expect_warning(
     v1 <- pk.calc.tmax(numeric(), numeric()),
-    class = "pknca_conc_none"),
-    class = "pknca_time_none"
+    class = "pknca_warning_no_concentration"),
+    class = "pknca_warning_no_time"
   )
   expect_equal(v1, NA)
 
@@ -91,8 +91,8 @@ test_that("pk.calc.tmin", {
   # No data give a warning and NA
   expect_warning(expect_warning(
     v1 <- pk.calc.tmin(numeric(), numeric()),
-    class = "pknca_conc_none"),
-    class = "pknca_time_none"
+    class = "pknca_warning_no_concentration"),
+    class = "pknca_warning_no_time"
   )
   expect_equal(v1, NA)
 
@@ -109,7 +109,7 @@ test_that("pk.calc.tmin", {
   # All NA concentrations give NA
   expect_warning(
     expect_equal(pk.calc.tmin(c(NA, NA), c(0, 1), first.tmin=TRUE), NA),
-    class = "pknca_conc_all_missing"
+    class = "pknca_warning_all_concentration_missing"
   )
 
   # It calculates tmin correctly based on the first.tmin option
@@ -186,7 +186,7 @@ test_that("pk.calc.clast.obs", {
   t1 <- c(0, 1, 2, 3)
   expect_warning(
     v1 <- pk.calc.clast.obs(c1, t1),
-    class = "pknca_conc_all_missing"
+    class = "pknca_warning_all_concentration_missing"
   )
   expect_equal(v1, NA_real_)
 
@@ -286,8 +286,8 @@ test_that("pk.calc.aucpext", {
   expect_equal(v1, -100)
   expect_warning(expect_warning(
     v2 <- pk.calc.aucpext(auclast=0, aucinf=0),
-    class = "pknca_aucpext_aucinf_le_auclast"),
-    class = "pknca_aucpext_aucinf_auclast_positive"
+    class = "pknca_warning_aucpext_aucinf_le_auclast"),
+    class = "pknca_warning_aucpext_aucinf_auclast_positive"
   )
   expect_equal(v2, NA_real_,
                info="aucinf<=0 gives NA_real_ (not infinity)")
@@ -527,5 +527,20 @@ test_that("pk.calc.cstart", {
   expect_error(
     pk.calc.cstart(1:5, c(0, 0:3), 0),
     regexp = "Assertion on 'time' failed: Contains duplicated values, position 2."
+  )
+})
+
+test_that("pk.calc.aucabove rejects non-finite conc_above", {
+  # This is a deliberate tightening from the previous stopifnot()-based check,
+  # which allowed conc_above = Inf (silently yielding AUC = 0 for all
+  # profiles, since conc - Inf is always -Inf). Pinned here so it isn't
+  # accidentally reverted.
+  expect_error(
+    pk.calc.aucabove(conc = c(1, 2, 3), time = c(0, 1, 2), conc_above = Inf),
+    regexp = "finite"
+  )
+  expect_error(
+    pk.calc.aucabove(conc = c(1, 2, 3), time = c(0, 1, 2), conc_above = -Inf),
+    regexp = "finite"
   )
 })

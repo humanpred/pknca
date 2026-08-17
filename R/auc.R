@@ -98,10 +98,15 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
     # All the data were missing or 0 before excluding points
     return(structure(0, exclude="DO NOT EXCLUDE"))
   }
+
   auc.type <- match.arg(auc.type)
   interval <- assert_intervaltime_single(interval = interval)
+
   if (auc.type %in% "AUCinf" && is.finite(interval[2])) {
-    warning("Requesting AUCinf when the end of the interval is not Inf")
+    rlang::warn(
+      "Requesting AUCinf when the end of the interval is not Inf",
+      class = "pknca_warning_aucinf_finite_interval"
+    )
   }
 
   # Subset the data to the range of interest ####
@@ -114,12 +119,18 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
         "Requesting an AUC range starting (%g) before the first measurement (%g) is not allowed",
         interval_start, min(data$time)
       )
-    rlang::warn(message = warn_message, class = "pknca_warn_auc_before_first")
+    rlang::warn(message = warn_message, class = "pknca_warning_auc_before_first")
     return(structure(NA_real_, exclude=warn_message))
   } else if (interval_start > max(data$time)) {
     # Give this as a warning, but allow it to continue
-    warning(sprintf("AUC start time (%g) is after the maximum observed time (%g)",
-                    interval_start, max(data$time)))
+    rlang::warn(
+      sprintf(
+        "AUC start time (%g) is after the maximum observed time (%g)",
+        interval_start,
+        max(data$time)
+      ),
+      class = "pknca_warning_auc_after_max_time"
+    )
   }
   # Ensure that we have clean concentration and time data.  This means that we
   # need to make sure that we have our starting point. Interpolation ensures
@@ -168,7 +179,7 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
     # All concentrations are BLQ (note that this has to be checked
     # after full subsetting and interpolation to ensure that it is
     # still true)
-    stop("Unknown error with NA tlast but non-BLQ concentrations") # nocov
+    rlang::abort("Unknown error with NA tlast but non-BLQ concentrations", class = "pknca_error_internal_tlast")  # nocov
   } else {
     interval_method <- choose_interval_method(conc = data$conc, time = data$time, tlast = tlast, method = method, auc.type = auc.type, options = options)
     ret <-
@@ -203,7 +214,10 @@ pk.calc.auc <- function(conc, time, ..., options=list()) {
 #' @export
 pk.calc.auc.last <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.auc.last, please use pk.calc.auc")
+    rlang::abort(
+      "auc.type cannot be changed when calling pk.calc.auc.last, please use pk.calc.auc",
+      class = "pknca_error_auc_last_type_override"
+    )
   pk.calc.auc(conc=conc, time=time, ...,
               options=options,
               auc.type="AUClast",
@@ -214,7 +228,10 @@ pk.calc.auc.last <- function(conc, time, ..., options=list()) {
 #' @export
 pk.calc.auc.inf <- function(conc, time, ..., options=list(), lambda.z) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.auc.inf, please use pk.calc.auc")
+    rlang::abort(
+      "auc.type cannot be changed when calling pk.calc.auc.inf, please use pk.calc.auc",
+      class = "pknca_error_auc_inf_type_override"
+    )
   pk.calc.auc(conc=conc, time=time, ...,
               options=options,
               auc.type="AUCinf",
@@ -243,7 +260,10 @@ pk.calc.auc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
 #' @export
 pk.calc.auc.all <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.auc.all, please use pk.calc.auc")
+    rlang::abort(
+      "auc.type cannot be changed when calling pk.calc.auc.all, please use pk.calc.auc",
+      class = "pknca_error_auc_all_type_override"
+    )
   pk.calc.auc(conc=conc, time=time, ..., options=options,
               auc.type="AUCall",
               lambda.z=NA)
@@ -264,7 +284,10 @@ pk.calc.aumc <- function(conc, time, ..., options=list()) {
 #' @export
 pk.calc.aumc.last <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.aumc.last, please use pk.calc.aumc")
+    rlang::abort(
+      "auc.type cannot be changed when calling pk.calc.aumc.last, please use pk.calc.aumc",
+      class = "pknca_error_aumc_last_type_override"
+    )
   pk.calc.aumc(conc=conc, time=time, ..., options=options,
                auc.type="AUClast",
                lambda.z=NA)
@@ -275,7 +298,10 @@ pk.calc.aumc.last <- function(conc, time, ..., options=list()) {
 pk.calc.aumc.inf <- function(conc, time, ..., options=list(),
                              lambda.z) {
   if ("auc.type" %in% names(list(...))) {
-    stop("auc.type cannot be changed when calling pk.calc.aumc.inf, please use pk.calc.aumc")
+    rlang::abort(
+      "auc.type cannot be changed when calling pk.calc.aumc.inf, please use pk.calc.aumc",
+      class = "pknca_error_aumc_inf_type_override"
+    )
   }
   pk.calc.aumc(conc=conc, time=time, ..., options=options,
                auc.type="AUCinf",
@@ -302,7 +328,10 @@ pk.calc.aumc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
 #' @export
 pk.calc.aumc.all <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.aumc.all, please use pk.calc.aumc")
+    rlang::abort(
+      "auc.type cannot be changed when calling pk.calc.aumc.all, please use pk.calc.aumc",
+      class = "pknca_error_aumc_all_type_override"
+    )
   pk.calc.aumc(conc=conc, time=time, ..., options=options,
                auc.type="AUCall",
                lambda.z=NA)
@@ -345,8 +374,7 @@ add.interval.col("aucall",
                  pretty_name="AUCall",
                  desc="The area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification plus the triangle from that last concentration to 0 at the first concentration below the limit of quantification",
                  pptestcd_cdisc="AUCALL",
-                 pptest_cdisc="AUC All"
-)
+                 pptest_cdisc="AUC All")
 
 add.interval.col("aumcinf.obs",
                  FUN="pk.calc.aumc.inf.obs",

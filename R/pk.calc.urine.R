@@ -16,12 +16,6 @@ add.interval.col("volpk",
                  desc="The sum of urine volumes for the interval",
                  pptestcd_cdisc="VOLPK",
                  pptest_cdisc="Volume of PK sample")
-PKNCA.set.summary(
-  name="volpk",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 #' Calculate amount excreted (typically in urine or feces)
 #'
@@ -57,12 +51,6 @@ add.interval.col("ae",
                  desc="The amount excreted (typically into urine or feces)",
                  pptestcd_cdisc="RCAMINT",
                  pptest_cdisc="Amt Rec from T1 to T2")
-PKNCA.set.summary(
-  name="ae",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 #' Calculate renal clearance
 #'
@@ -89,12 +77,7 @@ add.interval.col("clr.last",
                  desc="The renal clearance calculated using AUClast",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL")
-PKNCA.set.summary(
-  name="clr.last",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("clr.obs",
                  FUN="pk.calc.clr",
                  values=c(FALSE, TRUE),
@@ -105,12 +88,7 @@ add.interval.col("clr.obs",
                  desc="The renal clearance calculated using AUCinf,obs",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL")
-PKNCA.set.summary(
-  name="clr.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("clr.pred",
                  FUN="pk.calc.clr",
                  values=c(FALSE, TRUE),
@@ -121,12 +99,7 @@ add.interval.col("clr.pred",
                  desc="The renal clearance calculated using AUCinf,pred",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL")
-PKNCA.set.summary(
-  name="clr.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 
 #' Calculate fraction excreted (typically in urine or feces)
 #'
@@ -152,12 +125,6 @@ add.interval.col("fe",
                  desc="The fraction of the dose excreted",
                  pptestcd_cdisc="FREXINT",
                  pptest_cdisc="Fract Excr from T1 to T2")
-PKNCA.set.summary(
-  name="fe",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 #' Calculate the midpoint collection time of the last measurable excretion rate
 #'
@@ -203,12 +170,6 @@ add.interval.col("ertlst",
                  pptestcd_cdisc="ERTLST",
                  pptest_cdisc="Time of Last Excretion Rate")
 
-PKNCA.set.summary(
-  name="ertlst",
-  description="median and range",
-  point=business.median,
-  spread=business.range
-)
 
 #' Calculate the maximum excretion rate
 #'
@@ -253,12 +214,6 @@ add.interval.col("ermax",
                  pptestcd_cdisc="ERMAX",
                  pptest_cdisc="Max Excretion Rate")
 
-PKNCA.set.summary(
-  name="ermax",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 #' Calculate the midpoint collection time of the maximum excretion rate
 #'
@@ -311,12 +266,18 @@ add.interval.col("ertmax",
                  pptest_cdisc="Midpoint of Interval of Maximum ER")
 
 PKNCA.set.summary(
-  name="ertmax",
-  description="median and range",
-  point=business.median,
-  spread=business.range
+  name = c("volpk", "ae", "clr.last", "clr.obs", "clr.pred", "fe", "ermax"),
+  description = "geometric mean and geometric coefficient of variation",
+  point = business.geomean,
+  spread = business.geocv
 )
 
+PKNCA.set.summary(
+  name = c("ertlst", "ertmax"),
+  description = "median and range",
+  point = business.median,
+  spread = business.range
+)
 
 
 # Helper to generate missing-data checking messages for paired vectors

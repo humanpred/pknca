@@ -11,6 +11,35 @@ the dosing including dose amount and route.
   parameters that use the full group (e.g. `aucint.all` and the other `aucint*`
   parameters) work when the input rows are not in time order (#568).
 
+* Migrated input validation across the package from base R checks
+  (`stopifnot()`, `is.character()`, `is.numeric()`, etc.) to `checkmate`
+  assertions, and standardized error/warning signaling on classed
+  `rlang::abort()`/`rlang::warn()` conditions (e.g. `pknca_error_*`,
+  `pknca_warning_*`) instead of unclassed base `stop()`/`warning()`. This
+  makes failure modes catchable by class rather than by matching message
+  text. As a side effect, some validations became stricter (rejecting
+  previously-accepted edge cases like non-finite numbers); see
+  the entries below for specifics.
+
+* `pk.calc.aucabove()` now requires `conc_above` to be finite. Previously,
+  `Inf` or `-Inf` were silently accepted and produced a degenerate result
+  (AUC of 0 for all profiles, since `conc - Inf` is always `-Inf`). Passing
+  a non-finite `conc_above` now raises an error instead.
+  
+* `get_impute_method()` now requires `impute` to be an atomic scalar (via
+  `checkmate::assert_scalar()`). Previously, a bare `length(impute) == 1`
+  check meant a length-1 list (e.g. `list("start_conc0")`) could pass through,
+  relying on `%in%`'s implicit list coercion downstream instead of failing
+  clearly. Passing a list now raises an error instead.
+
+* `add.interval.col()` now validates the structure of `pptestcd_cdisc` and
+  `pptest_cdisc` rather than only checking that they are a character string or
+  a list.  A character value must be length 1 and non-missing, and a list must
+  have exactly one element named `route` whose value is a named list.  Values
+  that were previously accepted and would have produced incorrect CDISC output
+  (for example a multi-element character vector, or a list named something
+  other than `route`) now raise an error.
+
 * Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).
 
@@ -82,6 +111,16 @@ the dosing including dose amount and route.
 * `PKNCAresults()` now includes `start` and `end` in `group_vars`
 
 ## Breaking changes
+
+* The pre-existing `pknca_*` condition classes were renamed to carry an explicit
+  `error`/`warning`/`message` element, so code that catches them by class must be
+  updated.  For example, `pknca_conc_none` is now `pknca_warning_no_concentration`,
+  `pknca_no_intervals` is now `pknca_warning_no_intervals`, and
+  `pknca_all_warnings_no_results` is now `pknca_warning_no_results`.  One change
+  goes beyond renaming: the two classes `pknca_sparse_auclast_change_auclast` and
+  `pknca_sparse_aumclast_change_auc_type` were merged into the single class
+  `pknca_error_auc_last_type_override`, so they can no longer be caught
+  separately.
 
 * `pknca_units_table()` called on a `PKNCAdata` object now raises an error if
   unit columns within the same concentration group contain mixed values (e.g.,

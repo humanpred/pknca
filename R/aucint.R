@@ -82,7 +82,7 @@ pk.calc.auxcint <- function(conc, time,
       # clast.pred is NA likely because the half-life was not calculable
       return(structure(NA_real_, exclude = "clast.pred is NA because the half-life is NA"))
     } else if (is.na(clast)) {
-      stop("Please report a bug. clast is NA and the half-life is not NA") # nocov
+      rlang::abort("Please report a bug. clast is NA and the half-life is not NA", class = "pknca_error_internal_clast_na")  # nocov
     } else if (clast != clast_obs && interval[2] > tlast) {
       # If using clast.pred, we need to doubly calculate at tlast.
       conc_clast <- clast
@@ -142,7 +142,7 @@ pk.calc.auxcint <- function(conc, time,
                 "Time points with missing data are: ",
                 paste(missing_times, collapse=", "))
         }
-      warning(warning_message)
+      rlang::warn(warning_message, class = "pknca_warning_missing_interpolated_concentrations")
       return(NA_real_)
     }
   } else {

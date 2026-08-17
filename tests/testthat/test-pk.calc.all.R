@@ -211,11 +211,13 @@ test_that("pk.nca warnings", {
 test_that("pk.nca.interval errors", {
   expect_error(
     pk.nca.interval(interval="A"),
-    regexp="Interval must be a data.frame"
+    regexp="Please report a bug.  Interval must be a one-row data.frame",
+    class = "pknca_error_internal_interval_not_one_row_df"
   )
   expect_error(
     pk.nca.interval(interval=data.frame()),
-    regexp="Interval must be a one-row data.frame"
+    regexp="Please report a bug.  Interval must be a one-row data.frame",
+    class = "pknca_error_internal_interval_not_one_row_df"
   )
 })
 
@@ -412,10 +414,10 @@ test_that("No interval requested (e.g. for placebo)", {
     )
   expect_warning(expect_warning(expect_warning(expect_warning(
     myresult <- pk.nca(mydata),
-    class = "pknca_no_intervals"),
-    class = "pknca_no_intervals"),
-    class = "pknca_no_conc_data"),
-    class = "pknca_all_warnings_no_results"
+    class = "pknca_warning_no_intervals"),
+    class = "pknca_warning_no_intervals"),
+    class = "pknca_warning_no_conc_data"),
+    class = "pknca_warning_no_results"
   )
   expect_equal(
     nrow(as.data.frame(myresult)),
@@ -568,8 +570,8 @@ test_that("calculate with sparse data", {
   suppressMessages(
     expect_warning(expect_warning(
       o_nca <- pk.nca(o_data_sparse),
-      class = "pknca_sparse_df_multi"),
-      class = "pknca_halflife_too_few_points"
+      class = "pknca_warning_sparse_df_multi"),
+      class = "pknca_warning_halflife_too_few_points"
     )
   )
   df_result <- as.data.frame(o_nca)
@@ -592,8 +594,8 @@ test_that("calculate with sparse data", {
   suppressMessages(
     expect_warning(expect_warning(
       o_nca_sparse_mixed <- pk.nca(o_data_sparse_mixed),
-      class = "pknca_sparse_df_multi"),
-      class = "pknca_sparse_df_multi"
+      class = "pknca_warning_sparse_df_multi"),
+      class = "pknca_warning_sparse_df_multi"
     )
   )
   df_result_sparse_mixed <- as.data.frame(o_nca_sparse_mixed)
@@ -603,8 +605,8 @@ test_that("calculate with sparse data", {
     expect_message(
       expect_warning(expect_warning(
         o_nca_sparse_mixed <- pk.nca(o_data_sparse_mixed, verbose=TRUE),
-        class = "pknca_sparse_df_multi"),
-        class = "pknca_sparse_df_multi"
+        class = "pknca_warning_sparse_df_multi"),
+        class = "pknca_warning_sparse_df_multi"
       ),
       regexp="No sparse calculations requested for an interval"
     )
@@ -632,10 +634,10 @@ test_that("calculate with sparse data", {
   suppressMessages(
     expect_warning(expect_warning(expect_warning(expect_warning(
       o_nca_sparse_multi_trt <- pk.nca(o_data_sparse_multi_trt),
-      class = "pknca_sparse_df_multi"),
-      class = "pknca_sparse_df_multi"),
-      class = "pknca_sparse_df_multi"),
-      class = "pknca_sparse_df_multi"
+      class = "pknca_warning_sparse_df_multi"),
+      class = "pknca_warning_sparse_df_multi"),
+      class = "pknca_warning_sparse_df_multi"),
+      class = "pknca_warning_sparse_df_multi"
     )
   )
   expect_equal(nrow(as.data.frame(o_nca_sparse_multi_trt)), 16)

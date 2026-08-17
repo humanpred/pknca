@@ -380,9 +380,15 @@ getGroups.PKNCAresults <- function(object,
   if (!missing(level))
     if (is.factor(level) || is.character(level)) {
       level <- as.character(level)
-      if (any(!(level %in% grpnames)))
-        stop("Not all levels are listed in the group names.  Missing levels are: ",
-             paste(setdiff(level, grpnames), collapse=", "))
+      if (any(!(level %in% grpnames))) {
+        rlang::abort(
+          sprintf(
+            "Not all levels are listed in the group names. Missing levels are: %s",
+            paste(setdiff(level, grpnames), collapse = ", ")
+          ),
+          class = "pknca_error_results_missing_group_levels"
+        )
+      }
       grpnames <- level
     } else if (is.numeric(level)) {
       if (length(level) == 1) {

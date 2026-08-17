@@ -156,7 +156,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     tobit_optim_control <-
       PKNCA.choose.option(name="tobit_optim_control", value=tobit_optim_control, options=options)
     if (is.null(lloq)) {
-      stop("lloq must be provided when hl_method is 'tobit'")
+      rlang::abort("lloq must be provided when hl_method is 'tobit'", class = "pknca_error_lloq_required_tobit")
     }
   }
 
@@ -279,7 +279,10 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           attr(ret, "exclude") <- "Negative half-life estimated with manually-selected points"
         }
       } else {
-        warning("No data to manually fit for half-life (all concentrations may be 0 or excluded)")
+        rlang::warn(
+          "No data to manually fit for half-life (all concentrations may be 0 or excluded)",
+          class = "pknca_warning_no_halflife_data"
+        )
         ret <- structure(
           ret,
           exclude = "No data to manually fit for half-life (all concentrations may be 0 or excluded)"
@@ -316,10 +319,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       mask_best <-
         half_lives_for_selection$lambda.z > 0 &
         if (min.hl.points == 2 && nrow(half_lives_for_selection) == 2) {
-          rlang::warn(
-            message = "2 points used for half-life calculation",
-            class = "pknca_halflife_2points"
-          )
+          rlang::warn("2 points used for half-life calculation", class = "pknca_warning_halflife_2points")
           TRUE
         } else {
           half_lives_for_selection$adj.r.squared >
@@ -341,10 +341,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           "Too few points for half-life calculation (min.hl.points=%g with only %g points)",
           min.hl.points, nrow(dfK)
         )
-      rlang::warn(
-        message = attr(ret, "exclude"),
-        class = "pknca_halflife_too_few_points"
-      )
+      rlang::warn(attr(ret, "exclude"), class = "pknca_warning_halflife_too_few_points")
     }
 
   # ---- Tobit method ----
@@ -376,7 +373,10 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           attr(ret, "exclude") <- "Negative half-life estimated with manually-selected points"
         }
       } else {
-        warning("No data to manually fit for half-life (all concentrations may be 0 or excluded)")
+        rlang::warn(
+          "No data to manually fit for half-life (all concentrations may be 0 or excluded)",
+          class = "pknca_warning_no_halflife_data_tobit"
+        )
         ret <- structure(
           ret,
           exclude = "No data to manually fit for half-life (all concentrations may be 0 or excluded)"
@@ -425,10 +425,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           "Too few above-LLOQ points for Tobit half-life (min.hl.points=%g with only %g above-LLOQ points)",
           min.hl.points, n_above_lloq
         )
-      rlang::warn(
-        message = attr(ret, "exclude"),
-        class = "pknca_halflife_too_few_points"
-      )
+      rlang::warn(attr(ret, "exclude"), class = "pknca_warning_halflife_too_few_points_tobit")
     }
   }
 
@@ -547,8 +544,8 @@ fit_half_life_tobit <- function(data, tlast, optim_control = list()) {
   # Guard: need at least 2 above-LLOQ points for initial parameter estimation
   if (length(above_lloq_log_conc) < 2) {
     rlang::warn(
-      message = "Too few above-LLOQ points for Tobit half-life initial parameter estimation",
-      class = "pknca_tobit_too_few_points"
+      "Too few above-LLOQ points for Tobit half-life initial parameter estimation",
+      class = "pknca_warning_tobit_too_few_points"
     )
     return(na_ret)
   }
@@ -556,8 +553,8 @@ fit_half_life_tobit <- function(data, tlast, optim_control = list()) {
   sd_above <- stats::sd(above_lloq_log_conc)
   if (!is.finite(sd_above) || sd_above == 0) {
     rlang::warn(
-      message = "No variability in above-LLOQ concentrations for Tobit half-life fit",
-      class = "pknca_tobit_no_variability"
+      "No variability in above-LLOQ concentrations for Tobit half-life fit",
+      class = "pknca_warning_tobit_no_variability"
     )
     return(na_ret)
   }
@@ -586,10 +583,8 @@ fit_half_life_tobit <- function(data, tlast, optim_control = list()) {
   # code 0 = converged; any other code = failure
   if (fit$convergence != 0) {
     rlang::warn(
-      message = paste0(
-        "Tobit half-life optimization did not converge (code ", fit$convergence, ")"
-      ),
-      class = "pknca_tobit_no_convergence"
+      sprintf("Tobit half-life optimization did not converge (code %s)", fit$convergence),
+      class = "pknca_warning_tobit_no_convergence"
     )
     return(na_ret)
   }
@@ -863,9 +858,12 @@ get_halflife_points.PKNCAresults <- function(object) {
         rowid_col = rowid_col
       )
     if (any(!is.na(ret[ret_current$rowid]))) {
-      stop(
-        "More than one half-life calculation was attempted on the following rows: ",
-        paste(ret_current$rowid, collapse = ", ")
+      rlang::abort(
+        sprintf(
+          "More than one half-life calculation was attempted on the following rows: %s",
+          paste(ret_current$rowid, collapse = ", ")
+        ),
+        class = "pknca_error_duplicate_halflife_rows"
       )
     }
     ret[ret_current$rowid] <- ret_current$hl_used
