@@ -287,10 +287,7 @@ check_reserved_column_names <- function(x) {
         ngettext(length(overlap), msg1="name", msg2="names"),
         "and retry."
       )
-    rlang::abort(
-      msg,
-      class = "pknca_error_reserved_column_names"
-    )
+    rlang::abort(msg, class = "pknca_error_reserved_column_names")
   }
 }
 

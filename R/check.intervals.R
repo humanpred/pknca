@@ -47,12 +47,7 @@ check.interval.specification <- function(x) {
       } else {
         # It would probably take malicious code to get here (altering
         # the intervals without using add.interval.col
-        # nocov start
-        rlang::abort(
-          sprintf("Cannot assign default value for interval column %s", n),
-          class = "pknca_error_interval_default_value"
-        )
-        # nocov end
+        rlang::abort(sprintf("Cannot assign default value for interval column %s", n), class = "pknca_error_interval_default_value")  # nocov
       }
     } else {
       # Confirm the edits of the given columns
@@ -77,12 +72,7 @@ check.interval.specification <- function(x) {
         }
         interval_cols[[n]]$values(x[[n]])
       } else {
-        # nocov start
-        rlang::abort(
-          sprintf("Invalid 'values' for column specification %s (please report this as a bug).", n),
-          class = "pknca_error_interval_invalid_col_spec"
-        )
-        # nocov end
+        rlang::abort(sprintf("Invalid 'values' for column specification %s (please report this as a bug).", n), class = "pknca_error_interval_invalid_col_spec")  # nocov
       }
     }
   }
@@ -141,12 +131,7 @@ get.parameter.deps_helper_funmap <- function(x, all_intervals) {
       # It would probably take malicious code to get here (an
       # example of malicious code could be altering the
       # intervals without using add.interval.col)
-      # nocov start
-      rlang::abort(
-        "Invalid interval definition with no function and multiple dependencies.",
-        class = "pknca_error_interval_invalid_def"
-      )
-      # nocov end
+      rlang::abort("Invalid interval definition with no function and multiple dependencies.", class = "pknca_error_interval_invalid_def")  # nocov
     }
   } else {
     retfun <- x$FUN

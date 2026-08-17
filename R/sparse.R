@@ -321,10 +321,7 @@ pk.calc.sparse_auc <- function(conc, time, subject,
   # argument so it is used consistently below (and so other methods could be
   # enabled here in the future), but only "linear" is currently allowed.
   if (!identical(method, "linear")) {
-    rlang::abort(
-      'Sparse AUC calculation only supports `method = "linear"`.',
-      class = "pknca_error_sparse_auc_method"
-    )
+    rlang::abort('Sparse AUC calculation only supports `method = "linear"`.', class = "pknca_error_sparse_auc_method")
   }
   sparse_pk <- as_sparse_pk(conc=conc, time=time, subject=subject)
   sparse_pk_wt <- sparse_auc_weight_linear(sparse_pk)
@@ -540,10 +537,7 @@ pk.calc.sparse_aumc <- function(conc, time, subject,
                                 options = list()) {
   # Sparse AUMC is only defined for linear interpolation (see pk.calc.sparse_auc).
   if (!identical(method, "linear")) {
-    rlang::abort(
-      'Sparse AUMC calculation only supports `method = "linear"`.',
-      class = "pknca_error_sparse_aumc_method"
-    )
+    rlang::abort('Sparse AUMC calculation only supports `method = "linear"`.', class = "pknca_error_sparse_aumc_method")
   }
   # Create sparse_pk object from data
   sparse_pk <- as_sparse_pk(conc = conc, time = time, subject = subject)

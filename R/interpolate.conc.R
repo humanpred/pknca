@@ -114,12 +114,7 @@ interp.extrap.conc <- function(conc, time, time.out,
     ret <- rep(NA, length(time.out))
     for (i in seq_len(length(time.out)))
       if (is.na(tlast)) {
-        # nocov start
-        rlang::abort(
-          "Please report a bug:  tlast is NA; cannot interpolate/extrapolate",
-          class = "pknca_error_internal_tlast_na"
-        )
-        # nocov end
+        rlang::abort("Please report a bug:  tlast is NA; cannot interpolate/extrapolate", class = "pknca_error_internal_tlast_na")  # nocov
       } else if (is.na(time.out[i])) {
         rlang::warn("An interpolation/extrapolation time is NA", class = "pknca_warning_timeout_na")
       } else if (time.out[i] <= tlast) {
@@ -316,12 +311,7 @@ extrapolate.conc <- function(conc, time, time.out,
           )
       }
     } else {
-      # nocov start
-      rlang::abort(
-        "Invalid auc.type caught too late (seeing this error indicates a software bug)",
-        class = "pknca_error_invalid_auc_type_late"
-      )
-      # nocov end
+      rlang::abort("Invalid auc.type caught too late (seeing this error indicates a software bug)", class = "pknca_error_invalid_auc_type_late")  # nocov
     }
   }
   ret

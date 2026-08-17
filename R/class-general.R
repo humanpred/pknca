@@ -133,20 +133,11 @@ setAttributeColumn <- function(object, attr_name, col_or_value, col_name, defaul
       default_value <- NA
       # React to using the default value, if requested
       if (!missing(stop_if_default)) {
-        rlang::abort(
-          stop_if_default,
-          class = "pknca_error_used_default_value"
-        )
+        rlang::abort(stop_if_default, class = "pknca_error_used_default_value")
       } else if (!missing(warn_if_default)) {
-        rlang::warn(
-          warn_if_default,
-          class = "pknca_warning_used_default_value"
-        )
+        rlang::warn(warn_if_default, class = "pknca_warning_used_default_value")
       } else if (!missing(message_if_default)) {
-        rlang::inform(
-          message_if_default,
-          class = "pknca_message_used_default_value"
-        )
+        rlang::inform(message_if_default, class = "pknca_message_used_default_value")
       }
     }
   }
@@ -183,10 +174,7 @@ getAttributeColumn <- function(object, attr_name, warn_missing=c("attr", "column
   dataname <- getDataName(object)
   if (is.null(columns)) {
     if ("attr" %in% warn_missing)
-      rlang::warn(
-        sprintf("%s is not set.", attr_name),
-        class = "pknca_warning_attr_not_set"
-      )
+      rlang::warn(sprintf("%s is not set.", attr_name), class = "pknca_warning_attr_not_set")
     NULL
   } else if (length(missing_cols <- setdiff(columns, names(object[[dataname]])))) {
     if ("column" %in% warn_missing)
@@ -265,12 +253,7 @@ pknca_set_units <- function(object, units_orig = list(), units_pref = list()) {
     } else if (current_unit_type %in% "value") {
       object$units[[col_units]] <- all_units$orig[[col_units]]
     } else {
-      # nocov start
-      rlang::abort(
-        sprintf("Please report a bug. Unit setting for %s", col_units),
-        class = "pknca_error_internal_unit_setting_bug"
-      )
-      # nocov end
+      rlang::abort(sprintf("Please report a bug. Unit setting for %s", col_units), class = "pknca_error_internal_unit_setting_bug")  # nocov
     }
   }
   for (pref_units in names(all_units$pref)) {
@@ -288,12 +271,7 @@ pknca_set_units <- function(object, units_orig = list(), units_pref = list()) {
       }
       object$units[[pref_units]] <- all_units$pref[[pref_units]]
     } else {
-      # nocov start
-      rlang::abort(
-        sprintf("Please report a bug. Preferred unit setting for %s", pref_units),
-        class = "pknca_error_internal_pref_unit_setting_bug"
-      )
-      # nocov end
+      rlang::abort(sprintf("Please report a bug. Preferred unit setting for %s", pref_units), class = "pknca_error_internal_pref_unit_setting_bug")  # nocov
     }
   }
 

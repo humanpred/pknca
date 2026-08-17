@@ -90,12 +90,7 @@ pk.tss.monoexponential <- function(...,
     } else if (!identical(NA, ret_individual)) {
       ret_individual
     } else {
-      # nocov start
-      rlang::abort(
-        "Error in selection of return values for pk.tss.monoexponential. This is likely a bug.",
-        class = "pknca_error_internal_tss_return_selection"
-      )
-      # nocov end
+      rlang::abort("Error in selection of return values for pk.tss.monoexponential. This is likely a bug.", class = "pknca_error_internal_tss_return_selection")  # nocov
     }
   ret
 }
@@ -376,12 +371,7 @@ pk.tss.monoexponential.individual <- function(data,
       } else if ("subject" %in% names(data)) {
         dplyr::grouped_df(data, vars="subject")
       } else {
-        # nocov start
-        rlang::abort(
-          "Please report a bug. Subject must be specified to have subject-level fitting",
-          class = "pknca_error_internal_tss_no_subject_for_individual"
-        )
-        # nocov end
+        rlang::abort("Please report a bug. Subject must be specified to have subject-level fitting", class = "pknca_error_internal_tss_no_subject_for_individual")  # nocov
       }
     ret_sub <-
       dplyr::summarize(

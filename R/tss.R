@@ -122,12 +122,7 @@ pk.tss <- function(...,
     if (identical(NA, ret)) {
       ret <- ret_monoexponential
     } else {
-      # nocov start
-      rlang::abort(
-        "Bug in pk.tss where ret is set to non-NA too early. Please report the bug with a reproducible example.",
-        class = "pknca_error_internal_pk_tss_ret_non_na"
-      )
-      # nocov end
+      rlang::abort("Bug in pk.tss where ret is set to non-NA too early. Please report the bug with a reproducible example.", class = "pknca_error_internal_pk_tss_ret_non_na")  # nocov
     }
     # Set check to FALSE if it has already been checked (so that it
     # doesn't happen again in stepwise.linear)

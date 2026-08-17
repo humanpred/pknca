@@ -152,12 +152,7 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
         class = "pknca_error_units_conversions_extra_cols"
       )
     if (any(is.na(conversions$conversion_factor)) && !requireNamespace("units", quietly=TRUE)) {
-      # nocov start
-      rlang::abort(
-        "The units package is required for automatic unit conversion",
-        class = "pknca_error_missing_units_package"
-      )
-      # nocov end
+      rlang::abort("The units package is required for automatic unit conversion", class = "pknca_error_missing_units_package")  # nocov
     }
     for (idx in which(is.na(conversions$conversion_factor))) {
       conversions$conversion_factor[idx] <-
@@ -636,10 +631,7 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
           paste(sort(unique(ret$PPTESTCD[mask_missing_units])), collapse = ", ")
         )
       if (allow_partial_missing_units) {
-        rlang::warn(
-          msg_missing,
-          class = "pknca_warning_units_partial_missing"
-        )
+        rlang::warn(msg_missing, class = "pknca_warning_units_partial_missing")
       } else {
         rlang::abort(
           sprintf(

@@ -493,10 +493,7 @@ PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
     }
     n <- names(args)
     if (!(n %in% names(.PKNCA.option.check))) {
-      rlang::abort(
-        sprintf("Invalid setting for PKNCA: %s", n),
-        class = "pknca_error_invalid_option_check"
-      )
+      rlang::abort(sprintf("Invalid setting for PKNCA: %s", n), class = "pknca_error_invalid_option_check")
     }
     # Verify the option, and return the sanitized version
     return(.PKNCA.option.check[[n]](args[[n]]))
@@ -528,10 +525,7 @@ PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
       # Verify values are viable and then set them.
       for (n in names(args)) {
         if (!(n %in% names(.PKNCA.option.check))) {
-          rlang::abort(
-            sprintf("Invalid setting for PKNCA: %s", n),
-            class = "pknca_error_invalid_option_set"
-          )
+          rlang::abort(sprintf("Invalid setting for PKNCA: %s", n), class = "pknca_error_invalid_option_set")
         }
         # Verify and set the option value
         current[[n]] <- .PKNCA.option.check[[n]](args[[n]])

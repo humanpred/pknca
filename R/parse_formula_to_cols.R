@@ -25,12 +25,7 @@ findOperator <- function(x, op, side) {
     if (identical(x[[1]], op)) {
       # We found the operator
       if (length(x) == 1) {
-        # nocov start
-        rlang::abort(
-          "call or formula with length 1 found after finding the operator, unknown how to proceed",
-          class = "pknca_error_formula_length1_after_op"
-        )
-        # nocov end
+        rlang::abort("call or formula with length 1 found after finding the operator, unknown how to proceed", class = "pknca_error_formula_length1_after_op")  # nocov
       } else if (length(x) == 2) {
         # Unary operators have a right hand side only
         if (side == "left") {

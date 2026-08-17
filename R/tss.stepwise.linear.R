@@ -67,10 +67,7 @@ pk.tss.stepwise.linear <- function(...,
   while (is.na(ret) &
          (length(remaining.time) >= min.points)) {
     if (verbose) {
-      rlang::inform(
-        sprintf("Trying %s", min(remaining.time, na.rm = TRUE)),
-        class = "pknca_message_tss_trying_time"
-      )
+      rlang::inform(sprintf("Trying %s", min(remaining.time, na.rm = TRUE)), class = "pknca_message_tss_trying_time")
     }
     try({
       # Try to make the model

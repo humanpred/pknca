@@ -163,12 +163,7 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
     dose.scaling <- dose.amount / dose.input
     if (length(dose.scaling) != length(dose.times)) {
       if (length(dose.scaling) != 1)
-        # nocov start
-        rlang::abort(
-          "bug in dose.amount, dose.times, and dose.input handling",
-          class = "pknca_error_internal_dose_scaling"
-        )
-        # nocov end
+        rlang::abort("bug in dose.amount, dose.times, and dose.input handling", class = "pknca_error_internal_dose_scaling")  # nocov
       # it is a scalar and there is more than one dose
       dose.scaling <- rep(dose.scaling, length(dose.times))
     }

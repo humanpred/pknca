@@ -125,10 +125,7 @@ pk_nca_result_to_df <- function(group_info, result) {
       FUN=function(idx) {
         warning_prep <- ret_warnings$data_result[[idx]]
         warning_prep$message <- sprintf("%s: %s", warning_preamble[idx], warning_prep$message)
-        rlang::warn(
-          warning_prep$message,
-          class = c("pknca_warning_parameter_calculation", class(warning_prep))
-        )
+        rlang::warn(warning_prep$message, class = c("pknca_warning_parameter_calculation", class(warning_prep)))
       }
     ))
   }
@@ -253,10 +250,7 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
           sep="=", collapse=", ")
       )
     if (nrow(conc_data_interval) == 0) {
-      rlang::warn(
-        sprintf("%s: No data for interval", error_preamble),
-        class = "pknca_warning_no_data_for_interval"
-      )
+      rlang::warn(sprintf("%s: No data for interval", error_preamble), class = "pknca_warning_no_data_for_interval")
     } else if (!has_calc_sparse_dense) {
       if (verbose) {
         rlang::inform(
@@ -324,17 +318,7 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
           tryCatch(
             do.call(pk.nca.interval, args),
             error = function(e) {
-              # nocov start
-              rlang::abort(
-                sprintf(
-                  "Please report a bug.\n%s: %s",
-                  error_preamble,
-                  e$message
-                ),
-                class = "pknca_error_interval_calculation",
-                parent = e
-              )
-              # nocov end
+              rlang::abort(sprintf("Please report a bug.\n%s: %s", error_preamble, e$message), class = "pknca_error_interval_calculation", parent = e)  # nocov
             }
           )
       }
@@ -445,12 +429,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   all_intervals <- get.interval.cols()
   # Set the dose to NA if its length is zero
   if (length(dose) == 0) {
-    # nocov start
-    rlang::abort(
-      "Please report a bug. Length of dose should not be zero.",
-      class = "pknca_error_internal_dose_length_zero"
-    )
-    # nocov end
+    rlang::abort("Please report a bug. Length of dose should not be zero.", class = "pknca_error_internal_dose_length_zero")  # nocov
   }
   # Make sure that we calculate all of the dependencies.  Do this in
   # reverse order for dependencies of dependencies.

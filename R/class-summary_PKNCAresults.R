@@ -291,12 +291,7 @@ get_summary_PKNCAresults_count_N <- function(data, result_group, subject_col, su
 
     ret$N <- as.character(ret$N)
     if (anyNA(ret$N)) {
-      # nocov start
-      rlang::abort(
-        "Please report a bug. If N is requested, but it is not provided, then it should be set to not calculated.",
-        class = "pknca_error_internal_n_is_na"
-      )
-      # nocov end
+      rlang::abort("Please report a bug. If N is requested, but it is not provided, then it should be set to not calculated.", class = "pknca_error_internal_n_is_na")  # nocov
     }
   } else {
     ret <- result_group
@@ -624,30 +619,14 @@ roundingSummarize <- function(x, name) {
     ret <- roundingInstructions(x)
   } else if (is.list(roundingInstructions)) {
     if (length(roundingInstructions) != 1) {
-      # nocov start
-      rlang::abort(
-        sprintf(
-          "Cannot interpret rounding instructions for %s (please report this as a bug)",
-          name
-        ),
-        class = "pknca_error_internal_rounding_instructions"
-      )
-      # nocov end
+      rlang::abort(sprintf("Cannot interpret rounding instructions for %s (please report this as a bug)", name), class = "pknca_error_internal_rounding_instructions")  # nocov
     }
     if ("signif" == names(roundingInstructions)) {
       ret <- signifString(x, roundingInstructions$signif)
     } else if ("round" == names(roundingInstructions)) {
       ret <- roundString(x, roundingInstructions$round)
     } else {
-      # nocov start
-      rlang::abort(
-        sprintf(
-          "Invalid rounding instruction list name for %s (please report this as a bug)",
-          name
-        ),
-        class = "pknca_error_internal_invalid_rounding_name"
-      )
-      # nocov end
+      rlang::abort(sprintf("Invalid rounding instruction list name for %s (please report this as a bug)", name), class = "pknca_error_internal_invalid_rounding_name")  # nocov
     }
   }
   if (!is.character(ret)) {

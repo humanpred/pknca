@@ -341,10 +341,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           "Too few points for half-life calculation (min.hl.points=%g with only %g points)",
           min.hl.points, nrow(dfK)
         )
-      rlang::warn(
-        attr(ret, "exclude"),
-        class = "pknca_warning_halflife_too_few_points"
-      )
+      rlang::warn(attr(ret, "exclude"), class = "pknca_warning_halflife_too_few_points")
     }
 
   # ---- Tobit method ----
@@ -428,10 +425,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           "Too few above-LLOQ points for Tobit half-life (min.hl.points=%g with only %g above-LLOQ points)",
           min.hl.points, n_above_lloq
         )
-      rlang::warn(
-        attr(ret, "exclude"),
-        class = "pknca_warning_halflife_too_few_points_tobit"
-      )
+      rlang::warn(attr(ret, "exclude"), class = "pknca_warning_halflife_too_few_points_tobit")
     }
   }
 

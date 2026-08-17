@@ -145,10 +145,7 @@ assert_numeric_between <- function(x, any.missing = FALSE, null.ok = FALSE, lowe
         )
     }
     if (length(msg) > 0) {
-      rlang::abort(
-        paste(msg, collapse = "\n"),
-        class = "pknca_error_numeric_between"
-      )
+      rlang::abort(paste(msg, collapse = "\n"), class = "pknca_error_numeric_between")
     }
   }
   x
@@ -289,9 +286,6 @@ assert_unit <- function(unit, data) {
   } else {
     # Re-raise the unit_col error. That is better than unit_value since it is
     # stricter.
-    rlang::abort(
-      unit_col,
-      class = "pknca_error_invalid_unit"
-    )
+    rlang::abort(unit_col, class = "pknca_error_invalid_unit")
   }
 }
