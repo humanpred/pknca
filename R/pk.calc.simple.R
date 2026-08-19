@@ -9,10 +9,7 @@
 #' @export
 adj.r.squared <- function(r.sq, n) {
   if (n <= 2) {
-    rlang::warn(
-      message = "n must be > 2 for adj.r.squared",
-      class = "pknca_adjr2_2points"
-    )
+    rlang::warn("n must be > 2 for adj.r.squared", class = "pknca_warning_adjr2_2points")
     structure(NA_real_, exclude="n must be > 2")
   } else {
     1-(1-r.sq)*(n-1)/(n-2)
@@ -381,7 +378,10 @@ pk.calc.aucpext <- function(auclast, aucinf) {
     # no length checking needs to occur
   } else if ((!scalar_auclast && !scalar_aucinf) &&
              length(auclast) != length(aucinf)) {
-    stop("auclast and aucinf must either be a scalar or the same length.")
+    rlang::abort(
+      "auclast and aucinf must either be a scalar or the same length.",
+      class = "pknca_error_auclast_aucinf_length"
+    )
   }
   ret <- rep(NA_real_, max(c(length(auclast), length(aucinf))))
   mask_na <-
@@ -397,13 +397,13 @@ pk.calc.aucpext <- function(auclast, aucinf) {
   mask_calc <- !mask_na & !(aucinf %in% 0)
   if (any(mask_greater))
     rlang::warn(
-      message = "aucpext is typically only calculated when aucinf is greater than auclast.",
-      class = "pknca_aucpext_aucinf_le_auclast"
+      "aucpext is typically only calculated when aucinf is greater than auclast.",
+      class = "pknca_warning_aucpext_aucinf_le_auclast"
     )
   if (any(mask_negative))
     rlang::warn(
-      message = "aucpext is typically only calculated when both aucinf and auclast are positive.",
-      class = "pknca_aucpext_aucinf_auclast_positive"
+      "aucpext is typically only calculated when both aucinf and auclast are positive.",
+      class = "pknca_warning_aucpext_aucinf_auclast_positive"
     )
   ret[mask_calc] <-
     100*(1-auclast[mask_calc]/aucinf[mask_calc])
@@ -1044,7 +1044,7 @@ pk.calc.vz <- function(cl, lambda.z) {
   # likely errors here).
   if (!(length(cl) %in% c(1, length(lambda.z))) ||
       !(length(lambda.z) %in% c(1, length(cl))))
-    stop("'cl' and 'lambda.z' must be the same length")
+    rlang::abort("'cl' and 'lambda.z' must be the same length", class = "pknca_error_cl_lambdaz_length")
   cl/lambda.z
 }
 
@@ -1396,10 +1396,10 @@ add.interval.col(
   pretty_name = "Cav",
   desc = "Avg conc in interval (AUClast)",
   depends = "auclast",
-  formalsmap = list(auc = "auclast")
-  ,
+  formalsmap = list(auc = "auclast"),
   pptestcd_cdisc="CAVG",
   pptest_cdisc="Average Conc")
+
 add.interval.col(
   "cav.int.last",
   FUN = "pk.calc.cav",
@@ -1409,7 +1409,6 @@ add.interval.col(
   desc = "Avg conc in interval (AUCint.last)",
   depends = "aucint.last",
   formalsmap = list(auc = "aucint.last"),
-  ,
   pptestcd_cdisc="CAVGINT",
   pptest_cdisc="Average Conc from T1 to T2")
 add.interval.col(
@@ -1421,7 +1420,6 @@ add.interval.col(
   desc = "Avg conc in interval (AUCint.all)",
   depends = "aucint.all",
   formalsmap = list(auc = "aucint.all"),
-  ,
   pptestcd_cdisc="CAVGINA",
   pptest_cdisc="Cavg All")
 add.interval.col(
@@ -1433,7 +1431,6 @@ add.interval.col(
   desc = "Avg conc in interval (AUCint.inf.obs)",
   depends = "aucint.inf.obs",
   formalsmap = list(auc = "aucint.inf.obs"),
-  ,
   pptestcd_cdisc="CAVGINO",
   pptest_cdisc="Cavg Infinity Obs")
 add.interval.col(
@@ -1445,7 +1442,6 @@ add.interval.col(
   desc = "Avg conc in interval (AUCint.inf.pred)",
   depends = "aucint.inf.pred",
   formalsmap = list(auc = "aucint.inf.pred"),
-  ,
   pptestcd_cdisc="CAVGINP",
   pptest_cdisc="Cavg Infinity Pred")
 
@@ -1467,7 +1463,7 @@ pk.calc.ctrough <- function(conc, time, end) {
   } else {
     # This should be impossible as assert_conc_time should catch
     # duplicates.
-    stop("More than one time matches the starting time.  Please report this as a bug with a reproducible example.") # nocov
+    rlang::abort("More than one time matches the starting time.  Please report this as a bug with a reproducible example.", class = "pknca_error_ctrough_multiple_start_times")  # nocov
   }
 }
 add.interval.col("ctrough",
@@ -1495,7 +1491,7 @@ pk.calc.cstart <- function(conc, time, start) {
   } else {
     # This should be impossible as assert_conc_time should catch
     # duplicates.
-    stop("More than one time matches the starting time.  Please report this as a bug with a reproducible example.") # nocov
+    rlang::abort("More than one time matches the starting time.  Please report this as a bug with a reproducible example.", class = "pknca_error_cstart_multiple_start_times")  # nocov
   }
 }
 add.interval.col("cstart",
@@ -1651,11 +1647,13 @@ add.interval.col("ceoi",
 #' Concentrations below the given concentration (`conc_above`) will be set
 #' to zero.
 #' @inheritParams pk.calc.time_above
+#' @param conc_above The concentration threshold to calculate AUC above.
+#'   Must be finite (`Inf`/`-Inf` are not allowed); if `NA`, no AUC is
+#'   calculated.
 #' @returns The AUC of the concentration above the limit
 #' @export
 pk.calc.aucabove <- function(conc, time, conc_above = NA_real_, ..., options=list()) {
-  stopifnot(length(conc_above) == 1)
-  stopifnot(is.numeric(conc_above))
+  checkmate::assert_number(conc_above, na.ok = TRUE, finite = TRUE)
   if (is.na(conc_above)) {
     ret <- structure(NA_real_, exclude = "Missing concentration to be above")
   } else {
@@ -1675,8 +1673,7 @@ add.interval.col(
   pretty_name="AUC,above",
   desc="AUC above predose, floor at 0",
   depends="cstart",
-  formalsmap = list(conc_above = "cstart")
-  ,
+  formalsmap = list(conc_above = "cstart"),
   pptestcd_cdisc="AUCABVPA",
   pptest_cdisc="AUC above predose")
 
@@ -1687,8 +1684,7 @@ add.interval.col(
   pretty_name="AUC,above",
   desc="AUC above trough, floor at 0",
   depends="ctrough",
-  formalsmap = list(conc_above = "ctrough")
-  ,
+  formalsmap = list(conc_above = "ctrough"),
   pptestcd_cdisc="AUCABVTA",
   pptest_cdisc="AUC above trough")
 
@@ -1719,8 +1715,7 @@ add.interval.col(
   unit_type = "count",
   pretty_name = "Concentration count",
   desc = "Count of non-missing conc",
-  depends = NULL
-  ,
+  depends = NULL,
   pptestcd_cdisc="CNTCONC",
   pptest_cdisc="Concentration count")
 
@@ -1763,8 +1758,7 @@ add.interval.col(
   values=c(FALSE, TRUE),
   unit_type="dose",
   pretty_name="Total dose",
-  desc="Total dose given in interval"
-  ,
+  desc="Total dose given in interval",  
   pptestcd_cdisc="TDOSE",
   pptest_cdisc="Total dose administered")
 

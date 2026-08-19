@@ -139,12 +139,12 @@ test_that("standardize_column_names", {
   # group_cols overlap with cols values fails
   expect_error(
     standardize_column_names(data.frame(a=1, b=2), cols=list(c="a", d="b"), group_cols="b"),
-    regexp="group_cols must not overlap with other column names.  Change the name of the following groups: b"
+    regexp="group_cols must not overlap with other column names. Change the name of the following groups: b"
   )
   # group_cols overlap with cols names fails
   expect_error(
     standardize_column_names(data.frame(a=1, b=2), cols=list(c="a", d="b"), group_cols="c"),
-    regexp="group_cols must not overlap with standardized column names.  Change the name of the following groups: c"
+    regexp="group_cols must not overlap with standardized column names. Change the name of the following groups: c"
   )
   # group_cols works
   expect_equal(

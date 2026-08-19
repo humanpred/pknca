@@ -357,3 +357,28 @@ test_that("PKNCA_impute_fun_list errors when imputation name resolves to a non-f
     regexp = "The following imputation functions were not found"
   )
 })
+
+test_that("get_impute_method", {
+  ivals <- data.frame(start = 0, end = 24, impute = "start_conc0")
+  
+  # impute names a column in intervals directly
+  expect_equal(
+    get_impute_method(intervals = data.frame(start = 0, end = 24, myimpute = "start_conc0"), impute = "myimpute"),
+    "start_conc0"
+  )
+  # impute is NA and a generic "impute" column exists
+  expect_equal(
+    get_impute_method(intervals = ivals, impute = NA),
+    "start_conc0"
+  )
+  # impute is NA and no "impute" column exists -- returns NA itself
+  expect_equal(
+    get_impute_method(intervals = data.frame(start = 0, end = 24), impute = NA_character_),
+    NA_character_
+  )
+  
+  # the checkmate::assert_scalar() tightening 
+  expect_error(
+    get_impute_method(intervals = ivals, impute = list("start_conc0"))
+  )
+})

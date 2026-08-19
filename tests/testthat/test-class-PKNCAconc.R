@@ -63,10 +63,14 @@ test_that("PKNCAconc", {
   # Subject assignment
   expect_equal(PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte),
                PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject="ID"))
-  expect_error(PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject=5),
-               regexp="subject must be a character string")
-  expect_error(PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject=c("", "foo")),
-               regexp="subject must be a scalar")
+  expect_error(
+    PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject=5),
+    regexp="Must be of type 'string'"
+  )
+  expect_error(
+    PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject=c("", "foo")),
+    regexp="Must have length 1"
+  )
   expect_error(PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject="foo"),
                regexp="The subject parameter must map to a name in the data")
 
@@ -660,7 +664,7 @@ test_that("PKNCAconc lloq argument is stored and validated (scalar and column)",
   tmp.conc.bad$bad_lloq <- "x"
   expect_error(
     PKNCAconc(tmp.conc.bad, conc ~ time | ID, lloq = "bad_lloq"),
-    regexp = "lloq must be numeric"
+    regexp = "Must be of type 'numeric'"
   )
 
   # Without lloq, no lloq column or attribute is added

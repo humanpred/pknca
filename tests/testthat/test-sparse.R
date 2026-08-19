@@ -60,7 +60,7 @@ test_that("sparse_auc tolerates NA concentrations (#563)", {
 test_that("sparse_auclast expected errors", {
   expect_error(
     pk.calc.sparse_auclast(auc.type = "foo"),
-    class = "pknca_sparse_auclast_change_auclast"
+    class = "pknca_error_sparse_auclast_change_auclast"
   )
 })
 
@@ -123,19 +123,19 @@ test_that("sparse AUC/AUMC only allow method = 'linear' (#469)", {
   # *last wrappers that forward `method` through `...`
   expect_error(
     pk.calc.sparse_auc(conc=d_sparse$conc, time=d_sparse$time, subject=subject, method="lin up/log down"),
-    class = "pknca_sparse_method"
+    class = "pknca_error_sparse_auc_method"
   )
   expect_error(
     pk.calc.sparse_auclast(conc=d_sparse$conc, time=d_sparse$time, subject=subject, method="lin-log"),
-    class = "pknca_sparse_method"
+    class = "pknca_error_sparse_auc_method"
   )
   expect_error(
     pk.calc.sparse_aumc(conc=d_sparse$conc, time=d_sparse$time, subject=subject, method="lin up/log down"),
-    class = "pknca_sparse_method"
+    class = "pknca_error_sparse_aumc_method"
   )
   expect_error(
     pk.calc.sparse_aumclast(conc=d_sparse$conc, time=d_sparse$time, subject=subject, method="log"),
-    class = "pknca_sparse_method"
+    class = "pknca_error_sparse_aumc_method"
   )
 })
 
@@ -231,7 +231,7 @@ test_that("sparse_aumclast works correctly", {
 test_that("sparse_aumclast expected errors", {
   expect_error(
     pk.calc.sparse_aumclast(auc.type = "foo"),
-    class = "pknca_sparse_aumclast_change_auc_type"
+    class = "pknca_error_sparse_aumclast_change_auc_type"
   )
 })
 

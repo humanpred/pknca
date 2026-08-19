@@ -5,13 +5,18 @@ test_that("pk.calc.auxc", {
     pk.calc.auxc(conc=1:2, time=0:1, interval=2:1, method="linear"),
     regexp="Assertion on 'interval' failed: Must be sorted."
   )
-  expect_warning(pk.calc.auxc(conc=1:2, time=2:3, interval=c(1, 3),
-                              method="linear"),
-                 regexp="Requesting an AUC range starting \\(1\\) before the first measurement \\(2\\) is not allowed",
-                 info="AUC should start at or after the first measurement and should be before the last measurement")
-  expect_warning(v1 <- pk.calc.auxc(conc=1:2, time=2:3, interval=c(1, 3),
-                                    method="linear"),
-                 info="Starting before the beginning time returns NA (not an error)")
+  expect_warning(
+    pk.calc.auxc(conc=1:2, time=2:3, interval=c(1, 3),
+                 method="linear"),
+    regexp="Requesting an AUC range starting \\(1\\) before the first measurement \\(2\\) is not allowed",
+    info="AUC should start at or after the first measurement and should be before the last measurement"
+  )
+  expect_warning(
+    v1 <- pk.calc.auxc(
+      conc=1:2, time=2:3, interval=c(1, 3),
+      method="linear"),
+    info="Starting before the beginning time returns NA (not an error)"
+  )
   expect_equal(
     v1,
     structure(NA_real_, exclude = 'Requesting an AUC range starting (1) before the first measurement (2) is not allowed'),
@@ -47,9 +52,11 @@ test_that("pk.calc.auxc", {
     info="Mixed zeros and NA is still zero."
   )
   # Invalid integration method
-  expect_error(pk.calc.auxc(conc=c(NA, 0, NA), time=2:4, interval=c(1, 3),
-                            method="foo"),
-               info="Invalid integration methods are caught.")
+  expect_error(
+    pk.calc.auxc(conc=c(NA, 0, NA), time=2:4, interval=c(1, 3),
+                 method="foo"),
+    info="Invalid integration methods are caught."
+  )
 })
 
 test_that("pk.calc.auc: Linear AUC when the conc at the end of the interval is above LOQ", {
@@ -392,7 +399,7 @@ test_that("pk.calc.auc: warning with beginning of interval before the beginning 
                             middle="drop",
                             last="keep"),
                           method=t),
-        class="pknca_warn_auc_before_first"
+        class="pknca_warning_auc_before_first"
       )
       expect_equal(v1,
                    tests[[t]][[n]],
@@ -443,7 +450,7 @@ test_that("pk.calc.auc: warning with beginning of interval before the beginning 
                             middle="drop",
                             last="keep"),
                           method=t),
-        class = "pknca_warn_auc_before_first"
+        class = "pknca_warning_auc_before_first"
       )
       expect_equal(v1,
                    tests[[t]][[n]],
