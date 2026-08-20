@@ -37,8 +37,7 @@ update.PKNCAresults <- function(object, data, ...) {
   # detect changed groups
   groups_changed <- find_changed_group(old = as_PKNCAdata(object), new = data)
   if ((nrow(groups_changed$conc) + nrow(groups_changed$dose)) == 0) {
-    # The data differ (e.g. group order), but no group's data changed, so the
-    # results are unchanged.
+    # The data differ (e.g. group order) but no group's data did.
     message("No changes detected within any group; keeping existing results")
     ret <- object
     ret$data <- data
@@ -47,10 +46,9 @@ update.PKNCAresults <- function(object, data, ...) {
   conc_changed <- filter_changed(as.data.frame(as_PKNCAconc(data)), changed = groups_changed)
   dose_changed <- filter_changed(as.data.frame(as_PKNCAdose(data)), changed = groups_changed)
   intervals_changed <- filter_changed(data$intervals, changed = groups_changed)
-  # insert the changed data into the old data as new data!  The intervals are
-  # filtered to the changed groups, too, so that unchanged groups are not
-  # calculated and do not warn about their (intentionally) missing
-  # concentration data.
+  # insert the changed data into the old data as new data!  Intervals are
+  # filtered too, so unchanged groups are neither recalculated nor warned
+  # about for their missing concentration data.
   data_new <- data
   data_new$conc$data <- conc_changed
   data_new$dose$data <- dose_changed
@@ -67,13 +65,11 @@ update.PKNCAresults <- function(object, data, ...) {
   addProvenance(ret, replace = TRUE)
 }
 
-#' Convert factor join-key columns to character so that joins match by value
+#' Convert factor join-key columns to character so joins match by value
 #'
-#' Factor group columns can differ in their levels between the old and new data
-#' (e.g. ordered factors after re-leveling or dropping levels), and dplyr joins
-#' error on factors with mismatched levels rather than matching by value.  The
-#' coerced data are only used for matching; the data returned to the user keep
-#' their original classes and factor levels.
+#' dplyr joins error on factors whose levels differ instead of matching by
+#' value.  Only the matching uses the coerced copy, so the data returned to
+#' the user keep their classes and levels.
 #'
 #' @param data A data.frame
 #' @param cols Column names to coerce when they are factors
@@ -92,7 +88,7 @@ coerce_factor_join_keys <- function(data, cols) {
 #'
 #' @param x,y Data.frames to anti-join
 #' @param by Column names to join by
-#' @returns The rows of `x` (unmodified, in their original order) that have no
+#' @returns The rows of `x`, unmodified and in their original order, with no
 #'   match in `y`
 #' @noRd
 anti_join_by_value <- function(x, y, by) {
@@ -131,8 +127,7 @@ find_changed_group <- function(old, new) {
     )
   } else {
     # Find subjects that changed (for PKNCAconc or PKNCAdose).  Group columns
-    # are matched by value (factors as character) so that factor level
-    # differences between the old and new data do not prevent joining.
+    # match by value so differing factor levels do not prevent joining.
     group_col <- unlist(old$columns$groups, use.names = FALSE)
     d_nest_old <-
       tidyr::nest(
@@ -177,9 +172,8 @@ filter_changed_inner_join <- function(data, changed) {
     # Return all the data if there is not an intersection in column names
     data
   } else {
-    # Match by value (factors as character) so that factor level differences do
-    # not prevent joining.  The result is only used for row selection, so the
-    # coercion does not affect the data returned by filter_changed().
+    # Match by value so differing factor levels do not prevent joining; the
+    # result is only used to select rows.
     dplyr::inner_join(
       coerce_factor_join_keys(data, cols = by_cols),
       coerce_factor_join_keys(changed, cols = by_cols),

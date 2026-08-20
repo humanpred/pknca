@@ -65,8 +65,8 @@ test_that("update() keeps concentration data", {
   d_conc_setzero$conc[d_conc$Time == 0] <- 0
   o_conc_update <- PKNCAconc(d_conc_setzero, conc~Time|Subject)
   o_data_update <- PKNCAdata(o_conc_update, o_dose)
-  # No warnings: unchanged subjects are not recalculated and must not warn
-  # about missing concentration data (issue 581)
+  # Unchanged subjects are not recalculated, so they raise no
+  # missing-concentration warning (issue 581)
   expect_no_warning(o_nca_update <- update(o_nca, o_data_update))
   expect_equal(
     o_nca_update$data$conc,
@@ -92,15 +92,14 @@ test_that("update() with ordered-factor groups recalculates only changed subject
   o_data <- PKNCAdata(o_conc, o_dose)
   o_nca <- pk.nca(o_data)
 
-  # Modify a single concentration value for one subject
   d_conc_new <- as.data.frame(datasets::Theoph)
   idx_change <- which(d_conc_new$Subject == "1")[3]
   d_conc_new$conc[idx_change] <- d_conc_new$conc[idx_change] * 2
   o_conc_new <- PKNCAconc(d_conc_new, conc~Time|Subject)
   o_data_new <- PKNCAdata(o_conc_new, o_dose)
 
-  # Error-free and warning-free (previously either an ordered-factor join
-  # error or one "No concentration data" warning per unchanged subject)
+  # Ordered-factor groups join without error, and unchanged subjects do not
+  # warn about missing concentration data
   expect_no_warning(o_nca_update <- update(o_nca, data = o_data_new))
 
   # The updated result equals a full recalculation on the modified data
@@ -109,8 +108,7 @@ test_that("update() with ordered-factor groups recalculates only changed subject
     sort_update_results(as.data.frame(o_nca_update)),
     sort_update_results(as.data.frame(o_nca_full))
   )
-  # And the modification really changed the results (the comparison above is
-  # not vacuously comparing to the original results)
+  # Guard against the comparison above being vacuous
   expect_false(
     identical(
       sort_update_results(as.data.frame(o_nca)),
@@ -164,8 +162,7 @@ test_that("update() joins ordered-factor groups by value when levels differ (iss
   o_data <- PKNCAdata(o_conc, o_dose, intervals = manual_int)
   o_nca <- pk.nca(o_data)
 
-  # The new data have the same subjects, but the ordered factor is re-leveled
-  # (numerically sorted instead of the original Theoph level order)
+  # Same subjects, but the ordered factor is re-leveled to numeric order
   relevel_sorted <- function(d) {
     d$Subject <- factor(as.character(d$Subject), levels = as.character(1:12), ordered = TRUE)
     d
@@ -181,8 +178,8 @@ test_that("update() joins ordered-factor groups by value when levels differ (iss
       intervals = manual_int
     )
 
-  # Previously errored with "Can't join `x$Subject` with `y$Subject` due to
-  # incompatible types" because the ordered-factor levels differ
+  # Ordered-factor levels differing between the two objects must not block
+  # the join
   expect_no_warning(o_nca_update <- update(o_nca, data = o_data_new))
   o_nca_full <- pk.nca(o_data_new)
   expect_identical(
