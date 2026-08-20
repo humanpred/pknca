@@ -77,7 +77,7 @@ get.interval.cols()
 #> [1] "Interval End"
 #> 
 #> $end$desc
-#> [1] "Ending time of the interval (potentially infinity)"
+#> [1] "End time of interval (may be Inf)"
 #> 
 #> $end$sparse
 #> [1] FALSE
@@ -95,7 +95,7 @@ get.interval.cols()
 #> [1] "end"
 #> 
 #> $end$pptest_cdisc
-#> [1] "Ending time of the interval (potentially infinity)"
+#> [1] "End time of interval (may be Inf)"
 #> 
 #> 
 #> $auclast
@@ -112,7 +112,7 @@ get.interval.cols()
 #> [1] "AUClast"
 #> 
 #> $auclast$desc
-#> [1] "The area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification"
+#> [1] "AUC start to last conc above LOQ"
 #> 
 #> $auclast$sparse
 #> [1] FALSE
@@ -147,7 +147,7 @@ get.interval.cols()
 #> [1] "AUCall"
 #> 
 #> $aucall$desc
-#> [1] "The area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification plus the triangle from that last concentration to 0 at the first concentration below the limit of quantification"
+#> [1] "AUClast plus triangle, 0 at BLQ"
 #> 
 #> $aucall$sparse
 #> [1] FALSE
@@ -182,7 +182,7 @@ get.interval.cols()
 #> [1] "AUMC,last"
 #> 
 #> $aumclast$desc
-#> [1] "The area under the concentration time moment curve from the beginning of the interval to the last concentration above the limit of quantification"
+#> [1] "AUMC start to last conc above LOQ"
 #> 
 #> $aumclast$sparse
 #> [1] FALSE
@@ -217,7 +217,7 @@ get.interval.cols()
 #> [1] "AUMC,all"
 #> 
 #> $aumcall$desc
-#> [1] "The area under the concentration time moment curve from the beginning of the interval to the last concentration above the limit of quantification plus the moment of the triangle from that last concentration to 0 at the first concentration below the limit of quantification"
+#> [1] "AUMClast plus triangle moment, 0 at BLQ"
 #> 
 #> $aumcall$sparse
 #> [1] FALSE
@@ -252,7 +252,7 @@ get.interval.cols()
 #> [1] "AUCint (based on AUClast extrapolation)"
 #> 
 #> $aucint.last$desc
-#> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast)"
+#> [1] "AUC from T1 to T2 (zero extrap)"
 #> 
 #> $aucint.last$sparse
 #> [1] FALSE
@@ -295,7 +295,7 @@ get.interval.cols()
 #> [1] "AUCint (based on AUClast extrapolation, dose-aware)"
 #> 
 #> $aucint.last.dose$desc
-#> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast) with dose-aware interpolation/extrapolation of concentrations"
+#> [1] "AUCdn T1 to T2 (zero extrap)"
 #> 
 #> $aucint.last.dose$sparse
 #> [1] FALSE
@@ -338,7 +338,7 @@ get.interval.cols()
 #> [1] "AUCint (based on AUCall extrapolation)"
 #> 
 #> $aucint.all$desc
-#> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall)"
+#> [1] "AUC from T1 to T2 (AUCall extrap)"
 #> 
 #> $aucint.all$sparse
 #> [1] FALSE
@@ -381,7 +381,7 @@ get.interval.cols()
 #> [1] "AUCint (based on AUCall extrapolation, dose-aware)"
 #> 
 #> $aucint.all.dose$desc
-#> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall) with dose-aware interpolation/extrapolation of concentrations"
+#> [1] "AUCdn T1 to T2 (AUCall extrap)"
 #> 
 #> $aucint.all.dose$sparse
 #> [1] FALSE
@@ -424,7 +424,7 @@ get.interval.cols()
 #> [1] "AUMCint (based on AUMClast extrapolation)"
 #> 
 #> $aumcint.last$desc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)"
+#> [1] "AUMC from T1 to T2 (zero extrap)"
 #> 
 #> $aumcint.last$sparse
 #> [1] FALSE
@@ -450,7 +450,7 @@ get.interval.cols()
 #> [1] "aumcint.last"
 #> 
 #> $aumcint.last$pptest_cdisc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)"
+#> [1] "AUMC from T1 to T2 (zero extrap)"
 #> 
 #> 
 #> $aumcint.last.dose
@@ -467,7 +467,7 @@ get.interval.cols()
 #> [1] "AUMCint (based on AUMClast extrapolation, dose-aware)"
 #> 
 #> $aumcint.last.dose$desc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations"
+#> [1] "AUMCdn T1 to T2 (zero extrap)"
 #> 
 #> $aumcint.last.dose$sparse
 #> [1] FALSE
@@ -493,7 +493,7 @@ get.interval.cols()
 #> [1] "aumcint.last.dose"
 #> 
 #> $aumcint.last.dose$pptest_cdisc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations"
+#> [1] "AUMCdn T1 to T2 (zero extrap)"
 #> 
 #> 
 #> $aumcint.all
@@ -510,7 +510,7 @@ get.interval.cols()
 #> [1] "AUMCint (based on AUMCall extrapolation)"
 #> 
 #> $aumcint.all$desc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)"
+#> [1] "AUMC from T1 to T2 (AUMCall extrap)"
 #> 
 #> $aumcint.all$sparse
 #> [1] FALSE
@@ -536,7 +536,7 @@ get.interval.cols()
 #> [1] "aumcint.all"
 #> 
 #> $aumcint.all$pptest_cdisc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)"
+#> [1] "AUMC from T1 to T2 (AUMCall extrap)"
 #> 
 #> 
 #> $aumcint.all.dose
@@ -553,7 +553,7 @@ get.interval.cols()
 #> [1] "AUMCint (based on AUMCall extrapolation, dose-aware)"
 #> 
 #> $aumcint.all.dose$desc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations"
+#> [1] "AUMCdn T1 to T2 (AUMCall extrap)"
 #> 
 #> $aumcint.all.dose$sparse
 #> [1] FALSE
@@ -579,7 +579,7 @@ get.interval.cols()
 #> [1] "aumcint.all.dose"
 #> 
 #> $aumcint.all.dose$pptest_cdisc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations"
+#> [1] "AUMCdn T1 to T2 (AUMCall extrap)"
 #> 
 #> 
 #> $c0
@@ -596,7 +596,7 @@ get.interval.cols()
 #> [1] "C0"
 #> 
 #> $c0$desc
-#> [1] "Initial concentration after an IV bolus"
+#> [1] "Initial conc after IV bolus"
 #> 
 #> $c0$sparse
 #> [1] FALSE
@@ -701,7 +701,7 @@ get.interval.cols()
 #> [1] "Tmax"
 #> 
 #> $tmax$desc
-#> [1] "Time of the maximum observed concentration"
+#> [1] "Time of maximum observed conc"
 #> 
 #> $tmax$sparse
 #> [1] FALSE
@@ -736,7 +736,7 @@ get.interval.cols()
 #> [1] "Tmin"
 #> 
 #> $tmin$desc
-#> [1] "Time of the minimum observed concentration"
+#> [1] "Time of minimum observed conc"
 #> 
 #> $tmin$sparse
 #> [1] FALSE
@@ -771,7 +771,7 @@ get.interval.cols()
 #> [1] "Tlast"
 #> 
 #> $tlast$desc
-#> [1] "Time of the last concentration observed above the limit of quantification"
+#> [1] "Time of last conc above LOQ"
 #> 
 #> $tlast$sparse
 #> [1] FALSE
@@ -806,7 +806,7 @@ get.interval.cols()
 #> [1] "Tfirst"
 #> 
 #> $tfirst$desc
-#> [1] "Time of the first concentration above the limit of quantification"
+#> [1] "Time of first conc above LOQ"
 #> 
 #> $tfirst$sparse
 #> [1] FALSE
@@ -841,7 +841,7 @@ get.interval.cols()
 #> [1] "Clast"
 #> 
 #> $clast.obs$desc
-#> [1] "The last concentration observed above the limit of quantification"
+#> [1] "Last conc observed above LOQ"
 #> 
 #> $clast.obs$sparse
 #> [1] FALSE
@@ -876,7 +876,7 @@ get.interval.cols()
 #> [1] "CL (based on AUClast)"
 #> 
 #> $cl.last$desc
-#> [1] "Clearance or observed oral clearance calculated to Clast"
+#> [1] "Clearance, AUClast"
 #> 
 #> $cl.last$sparse
 #> [1] FALSE
@@ -927,7 +927,7 @@ get.interval.cols()
 #> [1] "CL (based on AUCall)"
 #> 
 #> $cl.all$desc
-#> [1] "Clearance or observed oral clearance calculated with AUCall"
+#> [1] "Clearance, AUCall"
 #> 
 #> $cl.all$sparse
 #> [1] FALSE
@@ -978,7 +978,7 @@ get.interval.cols()
 #> [1] "CL (based on AUCint.all)"
 #> 
 #> $cl.int.all$desc
-#> [1] "Clearance or observed oral clearance calculated with AUCint.all"
+#> [1] "Clearance, AUCint.all"
 #> 
 #> $cl.int.all$sparse
 #> [1] FALSE
@@ -998,7 +998,7 @@ get.interval.cols()
 #> [1] "cl.int.all"
 #> 
 #> $cl.int.all$pptest_cdisc
-#> [1] "Clearance or observed oral clearance calculated with AUCint.all"
+#> [1] "Clearance, AUCint.all"
 #> 
 #> 
 #> $cl.int.last
@@ -1015,7 +1015,7 @@ get.interval.cols()
 #> [1] "CL (based on AUCint.last)"
 #> 
 #> $cl.int.last$desc
-#> [1] "Clearance or observed oral clearance calculated with AUCint.last"
+#> [1] "Clearance, AUCint.last"
 #> 
 #> $cl.int.last$sparse
 #> [1] FALSE
@@ -1035,7 +1035,7 @@ get.interval.cols()
 #> [1] "cl.int.last"
 #> 
 #> $cl.int.last$pptest_cdisc
-#> [1] "Clearance or observed oral clearance calculated with AUCint.last"
+#> [1] "Clearance, AUCint.last"
 #> 
 #> 
 #> $f
@@ -1052,7 +1052,7 @@ get.interval.cols()
 #> [1] "Bioavailability"
 #> 
 #> $f$desc
-#> [1] "Bioavailability or relative bioavailability"
+#> [1] "Bioavailability (absolute or relative)"
 #> 
 #> $f$sparse
 #> [1] FALSE
@@ -1087,7 +1087,7 @@ get.interval.cols()
 #> [1] "MRT (based on AUClast)"
 #> 
 #> $mrt.last$desc
-#> [1] "The mean residence time to the last observed concentration above the LOQ"
+#> [1] "MRT, AUClast/AUMClast"
 #> 
 #> $mrt.last$sparse
 #> [1] FALSE
@@ -1141,7 +1141,7 @@ get.interval.cols()
 #> [1] "MRT (based on AUCall)"
 #> 
 #> $mrt.all$desc
-#> [1] "Mean residence time calculated with AUCall/AUMCall"
+#> [1] "MRT, AUCall/AUMCall"
 #> 
 #> $mrt.all$sparse
 #> [1] FALSE
@@ -1164,7 +1164,7 @@ get.interval.cols()
 #> [1] "mrt.all"
 #> 
 #> $mrt.all$pptest_cdisc
-#> [1] "Mean residence time calculated with AUCall/AUMCall"
+#> [1] "MRT, AUCall/AUMCall"
 #> 
 #> 
 #> $mrt.int.all
@@ -1181,7 +1181,7 @@ get.interval.cols()
 #> [1] "MRT (based on AUCint.all)"
 #> 
 #> $mrt.int.all$desc
-#> [1] "Mean residence time over interval calculated with AUCint.all/AUMCint.all"
+#> [1] "MRT, interval AUCall/AUMCall"
 #> 
 #> $mrt.int.all$sparse
 #> [1] FALSE
@@ -1204,7 +1204,7 @@ get.interval.cols()
 #> [1] "mrt.int.all"
 #> 
 #> $mrt.int.all$pptest_cdisc
-#> [1] "Mean residence time over interval calculated with AUCint.all/AUMCint.all"
+#> [1] "MRT, interval AUCall/AUMCall"
 #> 
 #> 
 #> $mrt.int.last
@@ -1221,7 +1221,7 @@ get.interval.cols()
 #> [1] "MRT (based on AUCint.last)"
 #> 
 #> $mrt.int.last$desc
-#> [1] "Mean residence time over interval calculated with AUCint.last/AUMCint.last"
+#> [1] "MRT, interval AUClast/AUMClast"
 #> 
 #> $mrt.int.last$sparse
 #> [1] FALSE
@@ -1244,7 +1244,7 @@ get.interval.cols()
 #> [1] "mrt.int.last"
 #> 
 #> $mrt.int.last$pptest_cdisc
-#> [1] "Mean residence time over interval calculated with AUCint.last/AUMCint.last"
+#> [1] "MRT, interval AUClast/AUMClast"
 #> 
 #> 
 #> $mrt.iv.last
@@ -1261,7 +1261,7 @@ get.interval.cols()
 #> [1] "MRT (for IV dosing, based on AUClast)"
 #> 
 #> $mrt.iv.last$desc
-#> [1] "The mean residence time to the last observed concentration above the LOQ correcting for dosing duration"
+#> [1] "IV MRT, AUClast/AUMClast"
 #> 
 #> $mrt.iv.last$sparse
 #> [1] FALSE
@@ -1301,7 +1301,7 @@ get.interval.cols()
 #> [1] "Vss (based on AUClast)"
 #> 
 #> $vss.last$desc
-#> [1] "The steady-state volume of distribution calculating through Tlast"
+#> [1] "Vss, calc'd through Tlast"
 #> 
 #> $vss.last$sparse
 #> [1] FALSE
@@ -1355,7 +1355,7 @@ get.interval.cols()
 #> [1] "Vss (for IV dosing, based on AUClast)"
 #> 
 #> $vss.iv.last$desc
-#> [1] "The steady-state volume of distribution with intravenous infusion calculating through Tlast"
+#> [1] "IV Vss, calc from AUClast"
 #> 
 #> $vss.iv.last$sparse
 #> [1] FALSE
@@ -1395,7 +1395,7 @@ get.interval.cols()
 #> [1] "Vss (based on AUCall)"
 #> 
 #> $vss.all$desc
-#> [1] "Steady-state volume of distribution calculated with AUCall-based CL and MRT"
+#> [1] "Vss, calc from AUCall"
 #> 
 #> $vss.all$sparse
 #> [1] FALSE
@@ -1418,7 +1418,7 @@ get.interval.cols()
 #> [1] "vss.all"
 #> 
 #> $vss.all$pptest_cdisc
-#> [1] "Steady-state volume of distribution calculated with AUCall-based CL and MRT"
+#> [1] "Vss, calc from AUCall"
 #> 
 #> 
 #> $vss.int.all
@@ -1435,7 +1435,7 @@ get.interval.cols()
 #> [1] "Vss (based on AUCint.all)"
 #> 
 #> $vss.int.all$desc
-#> [1] "Steady-state volume of distribution using interval AUCint.all"
+#> [1] "Vss, calc from interval AUCint.all"
 #> 
 #> $vss.int.all$sparse
 #> [1] FALSE
@@ -1458,7 +1458,7 @@ get.interval.cols()
 #> [1] "vss.int.all"
 #> 
 #> $vss.int.all$pptest_cdisc
-#> [1] "Steady-state volume of distribution using interval AUCint.all"
+#> [1] "Vss, calc from interval AUCint.all"
 #> 
 #> 
 #> $vss.int.last
@@ -1475,7 +1475,7 @@ get.interval.cols()
 #> [1] "Vss (based on AUCint.last)"
 #> 
 #> $vss.int.last$desc
-#> [1] "Steady-state volume of distribution using interval AUCint.last"
+#> [1] "Vss, calc from interval AUCint.last"
 #> 
 #> $vss.int.last$sparse
 #> [1] FALSE
@@ -1498,7 +1498,7 @@ get.interval.cols()
 #> [1] "vss.int.last"
 #> 
 #> $vss.int.last$pptest_cdisc
-#> [1] "Steady-state volume of distribution using interval AUCint.last"
+#> [1] "Vss, calc from interval AUCint.last"
 #> 
 #> 
 #> $cav
@@ -1515,7 +1515,7 @@ get.interval.cols()
 #> [1] "Cav"
 #> 
 #> $cav$desc
-#> [1] "The average concentration during an interval (calculated with AUClast)"
+#> [1] "Avg conc in interval (AUClast)"
 #> 
 #> $cav$sparse
 #> [1] FALSE
@@ -1552,7 +1552,7 @@ get.interval.cols()
 #> [1] "Cav"
 #> 
 #> $cav.int.last$desc
-#> [1] "The average concentration during an interval (calculated with AUCint.last)"
+#> [1] "Avg conc in interval (AUCint.last)"
 #> 
 #> $cav.int.last$sparse
 #> [1] FALSE
@@ -1589,7 +1589,7 @@ get.interval.cols()
 #> [1] "Cav"
 #> 
 #> $cav.int.all$desc
-#> [1] "The average concentration during an interval (calculated with AUCint.all)"
+#> [1] "Avg conc in interval (AUCint.all)"
 #> 
 #> $cav.int.all$sparse
 #> [1] FALSE
@@ -1626,7 +1626,7 @@ get.interval.cols()
 #> [1] "Ctrough"
 #> 
 #> $ctrough$desc
-#> [1] "The trough (end of interval) concentration"
+#> [1] "Trough (end of interval) conc"
 #> 
 #> $ctrough$sparse
 #> [1] FALSE
@@ -1696,7 +1696,7 @@ get.interval.cols()
 #> [1] "Peak-to-trough ratio"
 #> 
 #> $ptr$desc
-#> [1] "Peak-to-Trough ratio (fraction)"
+#> [1] "Peak-to-trough ratio"
 #> 
 #> $ptr$sparse
 #> [1] FALSE
@@ -1871,7 +1871,7 @@ get.interval.cols()
 #> [1] "AUC,above"
 #> 
 #> $aucabove.predose.all$desc
-#> [1] "The area under the concentration time the beginning of the interval to the last concentration above the limit of quantification plus the triangle from that last concentration to 0 at the first concentration below the limit of quantification, with a concentration subtracted from all concentrations and values below zero after subtraction set to zero"
+#> [1] "AUC above predose, floor at 0"
 #> 
 #> $aucabove.predose.all$sparse
 #> [1] FALSE
@@ -1908,7 +1908,7 @@ get.interval.cols()
 #> [1] "AUC,above"
 #> 
 #> $aucabove.trough.all$desc
-#> [1] "The area under the concentration time the beginning of the interval to the last concentration above the limit of quantification plus the triangle from that last concentration to 0 at the first concentration below the limit of quantification, with a concentration subtracted from all concentrations and values below zero after subtraction set to zero"
+#> [1] "AUC above trough, floor at 0"
 #> 
 #> $aucabove.trough.all$sparse
 #> [1] FALSE
@@ -1945,7 +1945,7 @@ get.interval.cols()
 #> [1] "Concentration count"
 #> 
 #> $count_conc$desc
-#> [1] "Number of non-missing concentrations for an interval"
+#> [1] "Count of non-missing conc"
 #> 
 #> $count_conc$sparse
 #> [1] FALSE
@@ -1980,7 +1980,7 @@ get.interval.cols()
 #> [1] "Measured concentration count"
 #> 
 #> $count_conc_measured$desc
-#> [1] "Number of measured and non BLQ/ALQ concentrations for an interval"
+#> [1] "Count of measured, non-BLQ conc"
 #> 
 #> $count_conc_measured$sparse
 #> [1] FALSE
@@ -1998,7 +1998,7 @@ get.interval.cols()
 #> [1] "count_conc_measured"
 #> 
 #> $count_conc_measured$pptest_cdisc
-#> [1] "Number of measured and non BLQ/ALQ concentrations for an interval"
+#> [1] "Count of measured, non-BLQ conc"
 #> 
 #> 
 #> $totdose
@@ -2015,7 +2015,7 @@ get.interval.cols()
 #> [1] "Total dose"
 #> 
 #> $totdose$desc
-#> [1] "Total dose administered during an interval"
+#> [1] "Total dose given in interval"
 #> 
 #> $totdose$sparse
 #> [1] FALSE
@@ -2050,7 +2050,7 @@ get.interval.cols()
 #> [1] "Total Urine Volume"
 #> 
 #> $volpk$desc
-#> [1] "The sum of urine volumes for the interval"
+#> [1] "Sum of urine volumes for interval"
 #> 
 #> $volpk$sparse
 #> [1] FALSE
@@ -2085,7 +2085,7 @@ get.interval.cols()
 #> [1] "Amount excreted"
 #> 
 #> $ae$desc
-#> [1] "The amount excreted (typically into urine or feces)"
+#> [1] "Amount excreted (urine/feces)"
 #> 
 #> $ae$sparse
 #> [1] FALSE
@@ -2120,7 +2120,7 @@ get.interval.cols()
 #> [1] "Renal clearance (from AUClast)"
 #> 
 #> $clr.last$desc
-#> [1] "The renal clearance calculated using AUClast"
+#> [1] "Renal clearance, AUClast"
 #> 
 #> $clr.last$sparse
 #> [1] FALSE
@@ -2157,7 +2157,7 @@ get.interval.cols()
 #> [1] "Renal clearance (from AUCinf,obs)"
 #> 
 #> $clr.obs$desc
-#> [1] "The renal clearance calculated using AUCinf,obs"
+#> [1] "Renal clearance, AUCinf,obs"
 #> 
 #> $clr.obs$sparse
 #> [1] FALSE
@@ -2194,7 +2194,7 @@ get.interval.cols()
 #> [1] "Renal clearance (from AUCinf,pred)"
 #> 
 #> $clr.pred$desc
-#> [1] "The renal clearance calculated using AUCinf,pred"
+#> [1] "Renal clearance, AUCinf,pred"
 #> 
 #> $clr.pred$sparse
 #> [1] FALSE
@@ -2231,7 +2231,7 @@ get.interval.cols()
 #> [1] "Fraction excreted"
 #> 
 #> $fe$desc
-#> [1] "The fraction of the dose excreted"
+#> [1] "Fraction of dose excreted"
 #> 
 #> $fe$sparse
 #> [1] FALSE
@@ -2266,7 +2266,7 @@ get.interval.cols()
 #> [1] "Tlast excretion rate"
 #> 
 #> $ertlst$desc
-#> [1] "The midpoint collection time of the last measurable excretion rate (typically in urine or feces)"
+#> [1] "Midpoint time of last excr rate"
 #> 
 #> $ertlst$sparse
 #> [1] FALSE
@@ -2301,7 +2301,7 @@ get.interval.cols()
 #> [1] "Maximum excretion rate"
 #> 
 #> $ermax$desc
-#> [1] "The maximum excretion rate (typically in urine or feces)"
+#> [1] "Maximum excretion rate"
 #> 
 #> $ermax$sparse
 #> [1] FALSE
@@ -2336,7 +2336,7 @@ get.interval.cols()
 #> [1] "Tmax excretion rate"
 #> 
 #> $ertmax$desc
-#> [1] "The midpoint collection time of the maximum excretion rate (typically in urine or feces)"
+#> [1] "Midpoint time of max excr rate"
 #> 
 #> $ertmax$sparse
 #> [1] FALSE
@@ -2371,7 +2371,7 @@ get.interval.cols()
 #> [1] "Sparse AUClast"
 #> 
 #> $sparse_auclast$desc
-#> [1] "For sparse PK sampling, the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification"
+#> [1] "Sparse AUC to last conc above LOQ"
 #> 
 #> $sparse_auclast$sparse
 #> [1] TRUE
@@ -2406,7 +2406,7 @@ get.interval.cols()
 #> [1] "Sparse AUClast standard error"
 #> 
 #> $sparse_auc_se$desc
-#> [1] "For sparse PK sampling, the standard error of the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification"
+#> [1] "SE of sparse AUC to last conc above LOQ"
 #> 
 #> $sparse_auc_se$sparse
 #> [1] FALSE
@@ -2441,7 +2441,7 @@ get.interval.cols()
 #> [1] "Sparse AUClast degrees of freedom"
 #> 
 #> $sparse_auc_df$desc
-#> [1] "For sparse PK sampling, the standard error degrees of freedom of the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification"
+#> [1] "DF for sparse AUC to last conc above LOQ"
 #> 
 #> $sparse_auc_df$sparse
 #> [1] FALSE
@@ -2476,7 +2476,7 @@ get.interval.cols()
 #> [1] "Sparse AUMClast"
 #> 
 #> $sparse_aumclast$desc
-#> [1] "For sparse PK sampling, the area under the moment curve from the beginning of the interval to the last concentration above the limit of quantification"
+#> [1] "Sparse AUMC to last conc above LOQ"
 #> 
 #> $sparse_aumclast$sparse
 #> [1] TRUE
@@ -2494,7 +2494,7 @@ get.interval.cols()
 #> [1] "sparse_aumclast"
 #> 
 #> $sparse_aumclast$pptest_cdisc
-#> [1] "For sparse PK sampling, the area under the moment curve from the beginning of the interval to the last concentration above the limit of quantification"
+#> [1] "Sparse AUMC to last conc above LOQ"
 #> 
 #> 
 #> $sparse_aumc_se
@@ -2511,7 +2511,7 @@ get.interval.cols()
 #> [1] "Sparse AUMC standard error"
 #> 
 #> $sparse_aumc_se$desc
-#> [1] "For sparse PK sampling, the standard error of the area under the moment curve"
+#> [1] "SE of sparse AUMC to last conc above LOQ"
 #> 
 #> $sparse_aumc_se$sparse
 #> [1] FALSE
@@ -2529,7 +2529,7 @@ get.interval.cols()
 #> [1] "sparse_aumc_se"
 #> 
 #> $sparse_aumc_se$pptest_cdisc
-#> [1] "For sparse PK sampling, the standard error of the area under the moment curve"
+#> [1] "SE of sparse AUMC to last conc above LOQ"
 #> 
 #> 
 #> $sparse_aumc_df
@@ -2546,7 +2546,7 @@ get.interval.cols()
 #> [1] "Sparse AUMC degrees of freedom"
 #> 
 #> $sparse_aumc_df$desc
-#> [1] "For sparse PK sampling, the degrees of freedom for the AUMC variance estimate"
+#> [1] "variance DF for sparse AUMC to Tlast"
 #> 
 #> $sparse_aumc_df$sparse
 #> [1] FALSE
@@ -2564,7 +2564,7 @@ get.interval.cols()
 #> [1] "sparse_aumc_df"
 #> 
 #> $sparse_aumc_df$pptest_cdisc
-#> [1] "For sparse PK sampling, the degrees of freedom for the AUMC variance estimate"
+#> [1] "variance DF for sparse AUMC to Tlast"
 #> 
 #> 
 #> $time_above
@@ -2616,7 +2616,7 @@ get.interval.cols()
 #> [1] "AUClast (IV dosing)"
 #> 
 #> $aucivlast$desc
-#> [1] "The AUClast calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUClast, IV back-extrap C0"
 #> 
 #> $aucivlast$sparse
 #> [1] FALSE
@@ -2653,7 +2653,7 @@ get.interval.cols()
 #> [1] "AUCall (IV dosing)"
 #> 
 #> $aucivall$desc
-#> [1] "The AUCall calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUCall, IV back-extrap C0"
 #> 
 #> $aucivall$sparse
 #> [1] FALSE
@@ -2690,7 +2690,7 @@ get.interval.cols()
 #> [1] "AUCint,last (IV dosing)"
 #> 
 #> $aucivint.last$desc
-#> [1] "The AUCint,last calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUCint.last, IV back-extrap C0"
 #> 
 #> $aucivint.last$sparse
 #> [1] FALSE
@@ -2727,7 +2727,7 @@ get.interval.cols()
 #> [1] "AUCint,all (IV dosing)"
 #> 
 #> $aucivint.all$desc
-#> [1] "The AUCint,all calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUCint.all, IV back-extrap C0"
 #> 
 #> $aucivint.all$sparse
 #> [1] FALSE
@@ -2764,7 +2764,7 @@ get.interval.cols()
 #> [1] "AUCbext (based on AUClast)"
 #> 
 #> $aucivpbextlast$desc
-#> [1] "The back-extrapolation percent for intravenous dosing based on AUClast"
+#> [1] "Back-extrap %, IV, AUClast"
 #> 
 #> $aucivpbextlast$sparse
 #> [1] FALSE
@@ -2804,7 +2804,7 @@ get.interval.cols()
 #> [1] "AUCbext (based on AUCall)"
 #> 
 #> $aucivpbextall$desc
-#> [1] "The back-extrapolation percent for intravenous dosing based on AUCall"
+#> [1] "Back-extrap %, IV, AUCall"
 #> 
 #> $aucivpbextall$sparse
 #> [1] FALSE
@@ -2844,7 +2844,7 @@ get.interval.cols()
 #> [1] "AUCbext (based on AUCint,last)"
 #> 
 #> $aucivpbextint.last$desc
-#> [1] "The back-extrapolation percent for intravenous dosing based on AUCint,last"
+#> [1] "Back-extrap %, IV, AUCint.last"
 #> 
 #> $aucivpbextint.last$sparse
 #> [1] FALSE
@@ -2884,7 +2884,7 @@ get.interval.cols()
 #> [1] "AUCbext (based on AUCint,all)"
 #> 
 #> $aucivpbextint.all$desc
-#> [1] "The back-extrapolation percent for intravenous dosing based on AUCint,all"
+#> [1] "Back-extrap %, IV, AUCint.all"
 #> 
 #> $aucivpbextint.all$sparse
 #> [1] FALSE
@@ -2924,7 +2924,7 @@ get.interval.cols()
 #> [1] "AUMClast (IV dosing)"
 #> 
 #> $aumcivlast$desc
-#> [1] "The AUMClast calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUMClast, IV back-extrap C0"
 #> 
 #> $aumcivlast$sparse
 #> [1] FALSE
@@ -2944,7 +2944,7 @@ get.interval.cols()
 #> [1] "aumcivlast"
 #> 
 #> $aumcivlast$pptest_cdisc
-#> [1] "The AUMClast calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUMClast, IV back-extrap C0"
 #> 
 #> 
 #> $aumcivall
@@ -2961,7 +2961,7 @@ get.interval.cols()
 #> [1] "AUMCall (IV dosing)"
 #> 
 #> $aumcivall$desc
-#> [1] "The AUMCall calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUMCall, IV back-extrap C0"
 #> 
 #> $aumcivall$sparse
 #> [1] FALSE
@@ -2981,7 +2981,7 @@ get.interval.cols()
 #> [1] "aumcivall"
 #> 
 #> $aumcivall$pptest_cdisc
-#> [1] "The AUMCall calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUMCall, IV back-extrap C0"
 #> 
 #> 
 #> $aumcivint.last
@@ -2998,7 +2998,7 @@ get.interval.cols()
 #> [1] "AUMCint,last (IV dosing)"
 #> 
 #> $aumcivint.last$desc
-#> [1] "The AUMCint,last calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUMCint.last, IV back-extrap C0"
 #> 
 #> $aumcivint.last$sparse
 #> [1] FALSE
@@ -3018,7 +3018,7 @@ get.interval.cols()
 #> [1] "aumcivint.last"
 #> 
 #> $aumcivint.last$pptest_cdisc
-#> [1] "The AUMCint,last calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUMCint.last, IV back-extrap C0"
 #> 
 #> 
 #> $aumcivint.all
@@ -3035,7 +3035,7 @@ get.interval.cols()
 #> [1] "AUMCint,all (IV dosing)"
 #> 
 #> $aumcivint.all$desc
-#> [1] "The AUMCint,all calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUMCint.all, IV back-extrap C0"
 #> 
 #> $aumcivint.all$sparse
 #> [1] FALSE
@@ -3055,7 +3055,7 @@ get.interval.cols()
 #> [1] "aumcivint.all"
 #> 
 #> $aumcivint.all$pptest_cdisc
-#> [1] "The AUMCint,all calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUMCint.all, IV back-extrap C0"
 #> 
 #> 
 #> $half.life
@@ -3107,7 +3107,7 @@ get.interval.cols()
 #> [1] "$r^2$"
 #> 
 #> $r.squared$desc
-#> [1] "The r^2 value of the half-life calculation"
+#> [1] "R-squared of half-life fit"
 #> 
 #> $r.squared$sparse
 #> [1] FALSE
@@ -3142,7 +3142,7 @@ get.interval.cols()
 #> [1] "$r^2_{adj}$"
 #> 
 #> $adj.r.squared$desc
-#> [1] "The adjusted r^2 value of the half-life calculation"
+#> [1] "Adjusted R-sq of half-life fit"
 #> 
 #> $adj.r.squared$sparse
 #> [1] FALSE
@@ -3177,7 +3177,7 @@ get.interval.cols()
 #> [1] "Correlation (time, log-conc)"
 #> 
 #> $lambda.z.corrxy$desc
-#> [1] "Correlation between time and log-concentration for lambda.z points"
+#> [1] "Corr(time,log-conc) for lambda.z"
 #> 
 #> $lambda.z.corrxy$sparse
 #> [1] FALSE
@@ -3212,7 +3212,7 @@ get.interval.cols()
 #> [1] "$\\lambda_z$"
 #> 
 #> $lambda.z$desc
-#> [1] "The elimination rate of the terminal half-life"
+#> [1] "Terminal elim rate (lambda.z)"
 #> 
 #> $lambda.z$sparse
 #> [1] FALSE
@@ -3247,7 +3247,7 @@ get.interval.cols()
 #> [1] "First time for $\\lambda_z$"
 #> 
 #> $lambda.z.time.first$desc
-#> [1] "The first time point used for the calculation of half-life"
+#> [1] "First time point for lambda.z"
 #> 
 #> $lambda.z.time.first$sparse
 #> [1] FALSE
@@ -3282,7 +3282,7 @@ get.interval.cols()
 #> [1] "Last time for $\\lambda_z$"
 #> 
 #> $lambda.z.time.last$desc
-#> [1] "The last time point used for the calculation of half-life"
+#> [1] "Last time point for lambda.z"
 #> 
 #> $lambda.z.time.last$sparse
 #> [1] FALSE
@@ -3317,7 +3317,7 @@ get.interval.cols()
 #> [1] "Number of points used for lambda_z"
 #> 
 #> $lambda.z.n.points$desc
-#> [1] "The number of points used for the calculation of half-life"
+#> [1] "Number of points used, lambda.z"
 #> 
 #> $lambda.z.n.points$sparse
 #> [1] FALSE
@@ -3352,7 +3352,7 @@ get.interval.cols()
 #> [1] "Clast,pred"
 #> 
 #> $clast.pred$desc
-#> [1] "The concentration at Tlast as predicted by the half-life"
+#> [1] "Predicted Clast from half-life"
 #> 
 #> $clast.pred$sparse
 #> [1] FALSE
@@ -3387,7 +3387,7 @@ get.interval.cols()
 #> [1] "Span ratio"
 #> 
 #> $span.ratio$desc
-#> [1] "The ratio of the half-life to the duration used for half-life calculation"
+#> [1] "Half-life to calculation duration ratio"
 #> 
 #> $span.ratio$sparse
 #> [1] FALSE
@@ -3422,7 +3422,7 @@ get.interval.cols()
 #> [1] "Tobit residual SD"
 #> 
 #> $tobit_residual$desc
-#> [1] "The estimated residual standard deviation (on the log-concentration scale) from the Tobit half-life fit"
+#> [1] "Tobit fit residual SD, log-conc"
 #> 
 #> $tobit_residual$sparse
 #> [1] FALSE
@@ -3440,7 +3440,7 @@ get.interval.cols()
 #> [1] "tobit_residual"
 #> 
 #> $tobit_residual$pptest_cdisc
-#> [1] "The estimated residual standard deviation (on the log-concentration scale) from the Tobit half-life fit"
+#> [1] "Tobit fit residual SD, log-conc"
 #> 
 #> 
 #> $adj_tobit_residual
@@ -3457,7 +3457,7 @@ get.interval.cols()
 #> [1] "Adjusted Tobit residual SD"
 #> 
 #> $adj_tobit_residual$desc
-#> [1] "The adjusted Tobit residual standard deviation (analogous to adjusted r-squared; penalizes smaller windows)"
+#> [1] "Adjusted Tobit residual SD"
 #> 
 #> $adj_tobit_residual$sparse
 #> [1] FALSE
@@ -3475,7 +3475,7 @@ get.interval.cols()
 #> [1] "adj_tobit_residual"
 #> 
 #> $adj_tobit_residual$pptest_cdisc
-#> [1] "The adjusted Tobit residual standard deviation (analogous to adjusted r-squared; penalizes smaller windows)"
+#> [1] "Adjusted Tobit residual SD"
 #> 
 #> 
 #> $lambda.z.n.points_blq
@@ -3492,7 +3492,7 @@ get.interval.cols()
 #> [1] "Number of BLQ points for lambda_z (Tobit)"
 #> 
 #> $lambda.z.n.points_blq$desc
-#> [1] "The number of BLQ points included in the Tobit half-life calculation"
+#> [1] "BLQ points in Tobit lambda.z"
 #> 
 #> $lambda.z.n.points_blq$sparse
 #> [1] FALSE
@@ -3510,7 +3510,7 @@ get.interval.cols()
 #> [1] "lambda.z.n.points_blq"
 #> 
 #> $lambda.z.n.points_blq$pptest_cdisc
-#> [1] "The number of BLQ points included in the Tobit half-life calculation"
+#> [1] "BLQ points in Tobit lambda.z"
 #> 
 #> 
 #> $thalf.eff.last
@@ -3527,7 +3527,7 @@ get.interval.cols()
 #> [1] "Effective half-life (based on MRT,last)"
 #> 
 #> $thalf.eff.last$desc
-#> [1] "The effective half-life (as determined from the MRTlast)"
+#> [1] "Effective half-life, MRTlast"
 #> 
 #> $thalf.eff.last$sparse
 #> [1] FALSE
@@ -3564,7 +3564,7 @@ get.interval.cols()
 #> [1] "Effective half-life (for IV dosing, based on MRTlast)"
 #> 
 #> $thalf.eff.iv.last$desc
-#> [1] "The effective half-life (as determined from the intravenous MRTlast)"
+#> [1] "Effective half-life, IV MRTlast"
 #> 
 #> $thalf.eff.iv.last$sparse
 #> [1] FALSE
@@ -3601,7 +3601,7 @@ get.interval.cols()
 #> [1] "Kel (based on AUClast)"
 #> 
 #> $kel.last$desc
-#> [1] "Elimination rate (as calculated from the MRT using AUClast)"
+#> [1] "Elim rate, MRT via AUClast"
 #> 
 #> $kel.last$sparse
 #> [1] FALSE
@@ -3638,7 +3638,7 @@ get.interval.cols()
 #> [1] "Kel (for IV dosing, based on AUClast)"
 #> 
 #> $kel.iv.last$desc
-#> [1] "Elimination rate (as calculated from the intravenous MRTlast)"
+#> [1] "Elim rate, IV MRTlast"
 #> 
 #> $kel.iv.last$sparse
 #> [1] FALSE
@@ -3675,7 +3675,7 @@ get.interval.cols()
 #> [1] "Kel (based on AUCall)"
 #> 
 #> $kel.all$desc
-#> [1] "Elimination rate (as calculated from the MRTall)"
+#> [1] "Elim rate, MRTall"
 #> 
 #> $kel.all$sparse
 #> [1] FALSE
@@ -3695,7 +3695,7 @@ get.interval.cols()
 #> [1] "kel.all"
 #> 
 #> $kel.all$pptest_cdisc
-#> [1] "Elimination rate (as calculated from the MRTall)"
+#> [1] "Elim rate, MRTall"
 #> 
 #> 
 #> $kel.int.all
@@ -3712,7 +3712,7 @@ get.interval.cols()
 #> [1] "Kel (based on AUCint.all)"
 #> 
 #> $kel.int.all$desc
-#> [1] "Elimination rate (as calculated from the MRTint.all)"
+#> [1] "Elim rate, MRTint.all"
 #> 
 #> $kel.int.all$sparse
 #> [1] FALSE
@@ -3732,7 +3732,7 @@ get.interval.cols()
 #> [1] "kel.int.all"
 #> 
 #> $kel.int.all$pptest_cdisc
-#> [1] "Elimination rate (as calculated from the MRTint.all)"
+#> [1] "Elim rate, MRTint.all"
 #> 
 #> 
 #> $kel.int.last
@@ -3749,7 +3749,7 @@ get.interval.cols()
 #> [1] "Kel (based on AUCint.last)"
 #> 
 #> $kel.int.last$desc
-#> [1] "Elimination rate (as calculated from the MRTint.last)"
+#> [1] "Elim rate, MRTint.last"
 #> 
 #> $kel.int.last$sparse
 #> [1] FALSE
@@ -3769,7 +3769,7 @@ get.interval.cols()
 #> [1] "kel.int.last"
 #> 
 #> $kel.int.last$pptest_cdisc
-#> [1] "Elimination rate (as calculated from the MRTint.last)"
+#> [1] "Elim rate, MRTint.last"
 #> 
 #> 
 #> $cl.iv.all
@@ -3786,7 +3786,7 @@ get.interval.cols()
 #> [1] "CL (for IV dosing,  based on AUCall)"
 #> 
 #> $cl.iv.all$desc
-#> [1] "Clearance for intravenous dosing calculated with AUCall"
+#> [1] "IV clearance, AUCall"
 #> 
 #> $cl.iv.all$sparse
 #> [1] FALSE
@@ -3806,7 +3806,7 @@ get.interval.cols()
 #> [1] "cl.iv.all"
 #> 
 #> $cl.iv.all$pptest_cdisc
-#> [1] "Clearance for intravenous dosing calculated with AUCall"
+#> [1] "IV clearance, AUCall"
 #> 
 #> 
 #> $cl.iv.last
@@ -3823,7 +3823,7 @@ get.interval.cols()
 #> [1] "CL (for IV dosing,  based on AUClast)"
 #> 
 #> $cl.iv.last$desc
-#> [1] "Clearance for intravenous dosing calculated with AUClast"
+#> [1] "IV clearance, AUClast"
 #> 
 #> $cl.iv.last$sparse
 #> [1] FALSE
@@ -3843,7 +3843,7 @@ get.interval.cols()
 #> [1] "cl.iv.last"
 #> 
 #> $cl.iv.last$pptest_cdisc
-#> [1] "Clearance for intravenous dosing calculated with AUClast"
+#> [1] "IV clearance, AUClast"
 #> 
 #> 
 #> $cl.ivint.all
@@ -3860,7 +3860,7 @@ get.interval.cols()
 #> [1] "CL (IV dose interval, based on AUCint.all)"
 #> 
 #> $cl.ivint.all$desc
-#> [1] "Clearance for intravenous dosing calculated with interval AUCint.all"
+#> [1] "IV clearance, AUCint.all"
 #> 
 #> $cl.ivint.all$sparse
 #> [1] FALSE
@@ -3880,7 +3880,7 @@ get.interval.cols()
 #> [1] "cl.ivint.all"
 #> 
 #> $cl.ivint.all$pptest_cdisc
-#> [1] "Clearance for intravenous dosing calculated with interval AUCint.all"
+#> [1] "IV clearance, AUCint.all"
 #> 
 #> 
 #> $cl.ivint.last
@@ -3897,7 +3897,7 @@ get.interval.cols()
 #> [1] "CL (IV dose interval, based on AUCint.last)"
 #> 
 #> $cl.ivint.last$desc
-#> [1] "Clearance for intravenous dosing calculated with interval AUCint.last"
+#> [1] "IV clearance, AUCint.last"
 #> 
 #> $cl.ivint.last$sparse
 #> [1] FALSE
@@ -3917,7 +3917,7 @@ get.interval.cols()
 #> [1] "cl.ivint.last"
 #> 
 #> $cl.ivint.last$pptest_cdisc
-#> [1] "Clearance for intravenous dosing calculated with interval AUCint.last"
+#> [1] "IV clearance, AUCint.last"
 #> 
 #> 
 #> $cl.sparse.last
@@ -3934,7 +3934,7 @@ get.interval.cols()
 #> [1] "CL (for sparse data, based on AUClast)"
 #> 
 #> $cl.sparse.last$desc
-#> [1] "Clearance from sparse sampling calculated with population AUClast"
+#> [1] "Clearance, sparse AUClast"
 #> 
 #> $cl.sparse.last$sparse
 #> [1] TRUE
@@ -3954,7 +3954,7 @@ get.interval.cols()
 #> [1] "cl.sparse.last"
 #> 
 #> $cl.sparse.last$pptest_cdisc
-#> [1] "Clearance from sparse sampling calculated with population AUClast"
+#> [1] "Clearance, sparse AUClast"
 #> 
 #> 
 #> $mrt.sparse.last
@@ -3971,7 +3971,7 @@ get.interval.cols()
 #> [1] "MRT (for sparse data, based on AUClast)"
 #> 
 #> $mrt.sparse.last$desc
-#> [1] "Mean residence time from sparse sampling"
+#> [1] "MRT, sparse AUClast/AUMClast"
 #> 
 #> $mrt.sparse.last$sparse
 #> [1] TRUE
@@ -3994,7 +3994,7 @@ get.interval.cols()
 #> [1] "mrt.sparse.last"
 #> 
 #> $mrt.sparse.last$pptest_cdisc
-#> [1] "Mean residence time from sparse sampling"
+#> [1] "MRT, sparse AUClast/AUMClast"
 #> 
 #> 
 #> $mrt.iv.all
@@ -4011,7 +4011,7 @@ get.interval.cols()
 #> [1] "MRT (for IV dosing, based on AUCall)"
 #> 
 #> $mrt.iv.all$desc
-#> [1] "Mean residence time for IV dosing calculated with AUCall/AUMCall"
+#> [1] "IV MRT, AUCall/AUMCall"
 #> 
 #> $mrt.iv.all$sparse
 #> [1] FALSE
@@ -4034,7 +4034,7 @@ get.interval.cols()
 #> [1] "mrt.iv.all"
 #> 
 #> $mrt.iv.all$pptest_cdisc
-#> [1] "Mean residence time for IV dosing calculated with AUCall/AUMCall"
+#> [1] "IV MRT, AUCall/AUMCall"
 #> 
 #> 
 #> $mrt.ivint.all
@@ -4051,7 +4051,7 @@ get.interval.cols()
 #> [1] "MRT (IV dose interval, based on AUCint.all)"
 #> 
 #> $mrt.ivint.all$desc
-#> [1] "Mean residence time for IV interval calculated with AUCint.all/AUMCint.all"
+#> [1] "IV MRT, interval AUC/AUMCall"
 #> 
 #> $mrt.ivint.all$sparse
 #> [1] FALSE
@@ -4074,7 +4074,7 @@ get.interval.cols()
 #> [1] "mrt.ivint.all"
 #> 
 #> $mrt.ivint.all$pptest_cdisc
-#> [1] "Mean residence time for IV interval calculated with AUCint.all/AUMCint.all"
+#> [1] "IV MRT, interval AUC/AUMCall"
 #> 
 #> 
 #> $mrt.ivint.last
@@ -4091,7 +4091,7 @@ get.interval.cols()
 #> [1] "MRT (IV dose interval, based on AUCint.last)"
 #> 
 #> $mrt.ivint.last$desc
-#> [1] "Mean residence time for IV interval calculated with AUCint.last/AUMCint.last"
+#> [1] "IV MRT, interval AUC/AUMClast"
 #> 
 #> $mrt.ivint.last$sparse
 #> [1] FALSE
@@ -4114,7 +4114,7 @@ get.interval.cols()
 #> [1] "mrt.ivint.last"
 #> 
 #> $mrt.ivint.last$pptest_cdisc
-#> [1] "Mean residence time for IV interval calculated with AUCint.last/AUMCint.last"
+#> [1] "IV MRT, interval AUC/AUMClast"
 #> 
 #> 
 #> $vz.all
@@ -4131,7 +4131,7 @@ get.interval.cols()
 #> [1] "Vz (based on AUCall)"
 #> 
 #> $vz.all$desc
-#> [1] "Terminal volume of distribution calculated with AUCall-based CL"
+#> [1] "Vz, AUCall-based CL"
 #> 
 #> $vz.all$sparse
 #> [1] FALSE
@@ -4151,7 +4151,7 @@ get.interval.cols()
 #> [1] "vz.all"
 #> 
 #> $vz.all$pptest_cdisc
-#> [1] "Terminal volume of distribution calculated with AUCall-based CL"
+#> [1] "Vz, AUCall-based CL"
 #> 
 #> 
 #> $vz.int.all
@@ -4168,7 +4168,7 @@ get.interval.cols()
 #> [1] "Vz (based on AUCint.all)"
 #> 
 #> $vz.int.all$desc
-#> [1] "Terminal volume of distribution using interval AUCint.all"
+#> [1] "Vz, interval AUCint.all"
 #> 
 #> $vz.int.all$sparse
 #> [1] FALSE
@@ -4188,7 +4188,7 @@ get.interval.cols()
 #> [1] "vz.int.all"
 #> 
 #> $vz.int.all$pptest_cdisc
-#> [1] "Terminal volume of distribution using interval AUCint.all"
+#> [1] "Vz, interval AUCint.all"
 #> 
 #> 
 #> $vz.int.last
@@ -4205,7 +4205,7 @@ get.interval.cols()
 #> [1] "Vz (based on AUCint.last)"
 #> 
 #> $vz.int.last$desc
-#> [1] "Terminal volume of distribution using interval AUCint.last"
+#> [1] "Vz, interval AUCint.last"
 #> 
 #> $vz.int.last$sparse
 #> [1] FALSE
@@ -4225,7 +4225,7 @@ get.interval.cols()
 #> [1] "vz.int.last"
 #> 
 #> $vz.int.last$pptest_cdisc
-#> [1] "Terminal volume of distribution using interval AUCint.last"
+#> [1] "Vz, interval AUCint.last"
 #> 
 #> 
 #> $vz.iv.all
@@ -4242,7 +4242,7 @@ get.interval.cols()
 #> [1] "Vz (for IV dosing,  based on AUCall)"
 #> 
 #> $vz.iv.all$desc
-#> [1] "Terminal volume of distribution for IV dosing using AUCall"
+#> [1] "IV Vz, AUCall"
 #> 
 #> $vz.iv.all$sparse
 #> [1] FALSE
@@ -4262,7 +4262,7 @@ get.interval.cols()
 #> [1] "vz.iv.all"
 #> 
 #> $vz.iv.all$pptest_cdisc
-#> [1] "Terminal volume of distribution for IV dosing using AUCall"
+#> [1] "IV Vz, AUCall"
 #> 
 #> 
 #> $vz.iv.last
@@ -4279,7 +4279,7 @@ get.interval.cols()
 #> [1] "Vz (for IV dosing,  based on AUClast)"
 #> 
 #> $vz.iv.last$desc
-#> [1] "Terminal volume of distribution for IV dosing using AUClast"
+#> [1] "IV Vz, AUClast"
 #> 
 #> $vz.iv.last$sparse
 #> [1] FALSE
@@ -4299,7 +4299,7 @@ get.interval.cols()
 #> [1] "vz.iv.last"
 #> 
 #> $vz.iv.last$pptest_cdisc
-#> [1] "Terminal volume of distribution for IV dosing using AUClast"
+#> [1] "IV Vz, AUClast"
 #> 
 #> 
 #> $vz.ivint.all
@@ -4316,7 +4316,7 @@ get.interval.cols()
 #> [1] "Vz (IV dose interval, based on AUCint.all)"
 #> 
 #> $vz.ivint.all$desc
-#> [1] "Terminal volume of distribution for IV interval using AUCint.all"
+#> [1] "IV Vz, interval AUCint.all"
 #> 
 #> $vz.ivint.all$sparse
 #> [1] FALSE
@@ -4336,7 +4336,7 @@ get.interval.cols()
 #> [1] "vz.ivint.all"
 #> 
 #> $vz.ivint.all$pptest_cdisc
-#> [1] "Terminal volume of distribution for IV interval using AUCint.all"
+#> [1] "IV Vz, interval AUCint.all"
 #> 
 #> 
 #> $vz.ivint.last
@@ -4353,7 +4353,7 @@ get.interval.cols()
 #> [1] "Vz (IV dose interval, based on AUCint.last)"
 #> 
 #> $vz.ivint.last$desc
-#> [1] "Terminal volume of distribution for IV interval using AUCint.last"
+#> [1] "IV Vz, interval AUCint.last"
 #> 
 #> $vz.ivint.last$sparse
 #> [1] FALSE
@@ -4373,7 +4373,7 @@ get.interval.cols()
 #> [1] "vz.ivint.last"
 #> 
 #> $vz.ivint.last$pptest_cdisc
-#> [1] "Terminal volume of distribution for IV interval using AUCint.last"
+#> [1] "IV Vz, interval AUCint.last"
 #> 
 #> 
 #> $vz.last
@@ -4390,7 +4390,7 @@ get.interval.cols()
 #> [1] "Vz (based on AUClast)"
 #> 
 #> $vz.last$desc
-#> [1] "Terminal volume of distribution calculated with AUClast-based CL"
+#> [1] "Vz, AUClast-based CL"
 #> 
 #> $vz.last$sparse
 #> [1] FALSE
@@ -4410,7 +4410,7 @@ get.interval.cols()
 #> [1] "vz.last"
 #> 
 #> $vz.last$pptest_cdisc
-#> [1] "Terminal volume of distribution calculated with AUClast-based CL"
+#> [1] "Vz, AUClast-based CL"
 #> 
 #> 
 #> $vss.iv.all
@@ -4427,7 +4427,7 @@ get.interval.cols()
 #> [1] "Vss (for IV dosing,  based on AUCall)"
 #> 
 #> $vss.iv.all$desc
-#> [1] "Steady-state volume of distribution for IV dosing using AUCall"
+#> [1] "IV Vss, calc from AUCall"
 #> 
 #> $vss.iv.all$sparse
 #> [1] FALSE
@@ -4450,7 +4450,7 @@ get.interval.cols()
 #> [1] "vss.iv.all"
 #> 
 #> $vss.iv.all$pptest_cdisc
-#> [1] "Steady-state volume of distribution for IV dosing using AUCall"
+#> [1] "IV Vss, calc from AUCall"
 #> 
 #> 
 #> $vss.ivint.all
@@ -4467,7 +4467,7 @@ get.interval.cols()
 #> [1] "Vss (IV dose interval, based on AUCint.all)"
 #> 
 #> $vss.ivint.all$desc
-#> [1] "Steady-state volume of distribution for IV interval using AUCint.all"
+#> [1] "IV Vss, calc from interval AUCint.all"
 #> 
 #> $vss.ivint.all$sparse
 #> [1] FALSE
@@ -4490,7 +4490,7 @@ get.interval.cols()
 #> [1] "vss.ivint.all"
 #> 
 #> $vss.ivint.all$pptest_cdisc
-#> [1] "Steady-state volume of distribution for IV interval using AUCint.all"
+#> [1] "IV Vss, calc from interval AUCint.all"
 #> 
 #> 
 #> $vss.ivint.last
@@ -4507,7 +4507,7 @@ get.interval.cols()
 #> [1] "Vss (IV dose interval, based on AUCint.last)"
 #> 
 #> $vss.ivint.last$desc
-#> [1] "Steady-state volume of distribution for IV interval using AUCint.last"
+#> [1] "IV Vss, calc from interval AUCint.last"
 #> 
 #> $vss.ivint.last$sparse
 #> [1] FALSE
@@ -4530,7 +4530,7 @@ get.interval.cols()
 #> [1] "vss.ivint.last"
 #> 
 #> $vss.ivint.last$pptest_cdisc
-#> [1] "Steady-state volume of distribution for IV interval using AUCint.last"
+#> [1] "IV Vss, calc from interval AUCint.last"
 #> 
 #> 
 #> $vss.sparse.last
@@ -4547,7 +4547,7 @@ get.interval.cols()
 #> [1] "Vss (for sparse data, based on AUClast)"
 #> 
 #> $vss.sparse.last$desc
-#> [1] "Steady-state volume of distribution from sparse sampling"
+#> [1] "Vss, calc from sparse AUClast"
 #> 
 #> $vss.sparse.last$sparse
 #> [1] TRUE
@@ -4570,7 +4570,7 @@ get.interval.cols()
 #> [1] "vss.sparse.last"
 #> 
 #> $vss.sparse.last$pptest_cdisc
-#> [1] "Steady-state volume of distribution from sparse sampling"
+#> [1] "Vss, calc from sparse AUClast"
 #> 
 #> 
 #> $aucinf.obs
@@ -4587,7 +4587,7 @@ get.interval.cols()
 #> [1] "AUCinf,obs"
 #> 
 #> $aucinf.obs$desc
-#> [1] "The area under the concentration time curve from the beginning of the interval to infinity with extrapolation to infinity from the observed Clast"
+#> [1] "AUC start to inf, obs Clast extrap"
 #> 
 #> $aucinf.obs$sparse
 #> [1] FALSE
@@ -4622,7 +4622,7 @@ get.interval.cols()
 #> [1] "AUCinf,pred"
 #> 
 #> $aucinf.pred$desc
-#> [1] "The area under the concentration time curve from the beginning of the interval to infinity with extrapolation to infinity from the predicted Clast"
+#> [1] "AUC start to inf, pred Clast extrap"
 #> 
 #> $aucinf.pred$sparse
 #> [1] FALSE
@@ -4657,7 +4657,7 @@ get.interval.cols()
 #> [1] "AUMC,inf,obs"
 #> 
 #> $aumcinf.obs$desc
-#> [1] "The area under the concentration time moment curve from the beginning of the interval to infinity with extrapolation to infinity from the observed Clast"
+#> [1] "AUMC start to inf, obs Clast extrap"
 #> 
 #> $aumcinf.obs$sparse
 #> [1] FALSE
@@ -4692,7 +4692,7 @@ get.interval.cols()
 #> [1] "AUMC,inf,pred"
 #> 
 #> $aumcinf.pred$desc
-#> [1] "The area under the concentration time moment curve from the beginning of the interval to infinity with extrapolation to infinity from the predicted Clast"
+#> [1] "AUMC start to inf, pred Clast extrap"
 #> 
 #> $aumcinf.pred$sparse
 #> [1] FALSE
@@ -4727,7 +4727,7 @@ get.interval.cols()
 #> [1] "AUCint (based on AUCinf,obs extrapolation)"
 #> 
 #> $aucint.inf.obs$desc
-#> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast)"
+#> [1] "AUC from T1 to T2 (AUCinf,obs extrap)"
 #> 
 #> $aucint.inf.obs$sparse
 #> [1] FALSE
@@ -4770,7 +4770,7 @@ get.interval.cols()
 #> [1] "AUCint (based on AUCinf,obs extrapolation, dose-aware)"
 #> 
 #> $aucint.inf.obs.dose$desc
-#> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast) with dose-aware interpolation/extrapolation of concentrations"
+#> [1] "AUCdn T1 to T2 (AUCinf,obs extrap)"
 #> 
 #> $aucint.inf.obs.dose$sparse
 #> [1] FALSE
@@ -4813,7 +4813,7 @@ get.interval.cols()
 #> [1] "AUCint (based on AUCinf,pred extrapolation)"
 #> 
 #> $aucint.inf.pred$desc
-#> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall)"
+#> [1] "AUC from T1 to T2 (AUCinf,pred extrap)"
 #> 
 #> $aucint.inf.pred$sparse
 #> [1] FALSE
@@ -4856,7 +4856,7 @@ get.interval.cols()
 #> [1] "AUCint (based on AUCinf,pred extrapolation, dose-aware)"
 #> 
 #> $aucint.inf.pred.dose$desc
-#> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall) with dose-aware interpolation/extrapolation of concentrations"
+#> [1] "AUCdn T1 to T2 (AUCinf,pred extrap)"
 #> 
 #> $aucint.inf.pred.dose$sparse
 #> [1] FALSE
@@ -4899,7 +4899,7 @@ get.interval.cols()
 #> [1] "AUMCint (based on AUMCinf,obs extrapolation)"
 #> 
 #> $aumcint.inf.obs$desc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)"
+#> [1] "AUMC from T1 to T2 (AUMCinf,obs extrap)"
 #> 
 #> $aumcint.inf.obs$sparse
 #> [1] FALSE
@@ -4925,7 +4925,7 @@ get.interval.cols()
 #> [1] "aumcint.inf.obs"
 #> 
 #> $aumcint.inf.obs$pptest_cdisc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)"
+#> [1] "AUMC from T1 to T2 (AUMCinf,obs extrap)"
 #> 
 #> 
 #> $aumcint.inf.obs.dose
@@ -4942,7 +4942,7 @@ get.interval.cols()
 #> [1] "AUMCint (based on AUMCinf,obs extrapolation, dose-aware)"
 #> 
 #> $aumcint.inf.obs.dose$desc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations"
+#> [1] "AUMCdn T1 to T2 (AUMCinf,obs extrap)"
 #> 
 #> $aumcint.inf.obs.dose$sparse
 #> [1] FALSE
@@ -4968,7 +4968,7 @@ get.interval.cols()
 #> [1] "aumcint.inf.obs.dose"
 #> 
 #> $aumcint.inf.obs.dose$pptest_cdisc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations"
+#> [1] "AUMCdn T1 to T2 (AUMCinf,obs extrap)"
 #> 
 #> 
 #> $aumcint.inf.pred
@@ -4985,7 +4985,7 @@ get.interval.cols()
 #> [1] "AUMCint (based on AUMCinf,pred extrapolation)"
 #> 
 #> $aumcint.inf.pred$desc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)"
+#> [1] "AUMC from T1 to T2 (AUMCinf,pred extrap)"
 #> 
 #> $aumcint.inf.pred$sparse
 #> [1] FALSE
@@ -5011,7 +5011,7 @@ get.interval.cols()
 #> [1] "aumcint.inf.pred"
 #> 
 #> $aumcint.inf.pred$pptest_cdisc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)"
+#> [1] "AUMC from T1 to T2 (AUMCinf,pred extrap)"
 #> 
 #> 
 #> $aumcint.inf.pred.dose
@@ -5028,7 +5028,7 @@ get.interval.cols()
 #> [1] "AUMCint (based on AUMCinf,pred extrapolation, dose-aware)"
 #> 
 #> $aumcint.inf.pred.dose$desc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations"
+#> [1] "AUMCdn T1 to T2 (AUMCinf,pred extrap)"
 #> 
 #> $aumcint.inf.pred.dose$sparse
 #> [1] FALSE
@@ -5054,7 +5054,7 @@ get.interval.cols()
 #> [1] "aumcint.inf.pred.dose"
 #> 
 #> $aumcint.inf.pred.dose$pptest_cdisc
-#> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations"
+#> [1] "AUMCdn T1 to T2 (AUMCinf,pred extrap)"
 #> 
 #> 
 #> $aucivinf.obs
@@ -5071,7 +5071,7 @@ get.interval.cols()
 #> [1] "AUCinf,obs (IV dosing)"
 #> 
 #> $aucivinf.obs$desc
-#> [1] "The AUCinf,obs calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUCinf.obs, IV back-extrap C0"
 #> 
 #> $aucivinf.obs$sparse
 #> [1] FALSE
@@ -5108,7 +5108,7 @@ get.interval.cols()
 #> [1] "AUCinf,pred (IV dosing)"
 #> 
 #> $aucivinf.pred$desc
-#> [1] "The AUCinf,pred calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUCinf.pred, IV back-extrap C0"
 #> 
 #> $aucivinf.pred$sparse
 #> [1] FALSE
@@ -5145,7 +5145,7 @@ get.interval.cols()
 #> [1] "AUCbext (based on AUCinf,obs)"
 #> 
 #> $aucivpbextinf.obs$desc
-#> [1] "The back-extrapolation percent for intravenous dosing based on AUCinf,obs"
+#> [1] "Back-extrap %, IV, AUCinf.obs"
 #> 
 #> $aucivpbextinf.obs$sparse
 #> [1] FALSE
@@ -5185,7 +5185,7 @@ get.interval.cols()
 #> [1] "AUCbext (based on AUCinf,pred)"
 #> 
 #> $aucivpbextinf.pred$desc
-#> [1] "The back-extrapolation percent for intravenous dosing based on AUCinf,pred"
+#> [1] "Back-extrap %, IV, AUCinf.pred"
 #> 
 #> $aucivpbextinf.pred$sparse
 #> [1] FALSE
@@ -5225,7 +5225,7 @@ get.interval.cols()
 #> [1] "AUMCinf,obs (IV dosing)"
 #> 
 #> $aumcivinf.obs$desc
-#> [1] "The AUMCinf,obs calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUMCinf.obs, IV back-extrap C0"
 #> 
 #> $aumcivinf.obs$sparse
 #> [1] FALSE
@@ -5245,7 +5245,7 @@ get.interval.cols()
 #> [1] "aumcivinf.obs"
 #> 
 #> $aumcivinf.obs$pptest_cdisc
-#> [1] "The AUMCinf,obs calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUMCinf.obs, IV back-extrap C0"
 #> 
 #> 
 #> $aumcivinf.pred
@@ -5262,7 +5262,7 @@ get.interval.cols()
 #> [1] "AUMCinf,pred (IV dosing)"
 #> 
 #> $aumcivinf.pred$desc
-#> [1] "The AUMCinf,pred calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUMCinf.pred, IV back-extrap C0"
 #> 
 #> $aumcivinf.pred$sparse
 #> [1] FALSE
@@ -5282,7 +5282,7 @@ get.interval.cols()
 #> [1] "aumcivinf.pred"
 #> 
 #> $aumcivinf.pred$pptest_cdisc
-#> [1] "The AUMCinf,pred calculated with back-extrapolation for intravenous dosing using extrapolated C0"
+#> [1] "AUMCinf.pred, IV back-extrap C0"
 #> 
 #> 
 #> $aucpext.obs
@@ -5299,7 +5299,7 @@ get.interval.cols()
 #> [1] "AUCpext (based on AUCinf,obs)"
 #> 
 #> $aucpext.obs$desc
-#> [1] "Percent of the AUCinf that is extrapolated after Tlast calculated from the observed Clast"
+#> [1] "% AUCinf extrap after Tlast, obs"
 #> 
 #> $aucpext.obs$sparse
 #> [1] FALSE
@@ -5336,7 +5336,7 @@ get.interval.cols()
 #> [1] "AUCpext (based on AUCinf,pred)"
 #> 
 #> $aucpext.pred$desc
-#> [1] "Percent of the AUCinf that is extrapolated after Tlast calculated from the predicted Clast"
+#> [1] "% AUCinf extrap after Tlast, pred"
 #> 
 #> $aucpext.pred$sparse
 #> [1] FALSE
@@ -5373,7 +5373,7 @@ get.interval.cols()
 #> [1] "Kel (for IV dosing,  based on AUCall)"
 #> 
 #> $kel.iv.all$desc
-#> [1] "Elimination rate (as calculated from the MRTiv.all))"
+#> [1] "Elim rate, IV MRTall"
 #> 
 #> $kel.iv.all$sparse
 #> [1] FALSE
@@ -5393,7 +5393,7 @@ get.interval.cols()
 #> [1] "kel.iv.all"
 #> 
 #> $kel.iv.all$pptest_cdisc
-#> [1] "Elimination rate (as calculated from the MRTiv.all))"
+#> [1] "Elim rate, IV MRTall"
 #> 
 #> 
 #> $kel.ivint.all
@@ -5410,7 +5410,7 @@ get.interval.cols()
 #> [1] "Kel (IV dose interval, based on AUCint.all)"
 #> 
 #> $kel.ivint.all$desc
-#> [1] "Elimination rate (as calculated from the MRTivint.all)"
+#> [1] "Elim rate, IV MRTint.all"
 #> 
 #> $kel.ivint.all$sparse
 #> [1] FALSE
@@ -5430,7 +5430,7 @@ get.interval.cols()
 #> [1] "kel.ivint.all"
 #> 
 #> $kel.ivint.all$pptest_cdisc
-#> [1] "Elimination rate (as calculated from the MRTivint.all)"
+#> [1] "Elim rate, IV MRTint.all"
 #> 
 #> 
 #> $kel.ivint.last
@@ -5447,7 +5447,7 @@ get.interval.cols()
 #> [1] "Kel (IV dose interval, based on AUCint.last)"
 #> 
 #> $kel.ivint.last$desc
-#> [1] "Elimination rate (as calculated from the MRTivint.last)"
+#> [1] "Elim rate, IV MRTint.last"
 #> 
 #> $kel.ivint.last$sparse
 #> [1] FALSE
@@ -5467,7 +5467,7 @@ get.interval.cols()
 #> [1] "kel.ivint.last"
 #> 
 #> $kel.ivint.last$pptest_cdisc
-#> [1] "Elimination rate (as calculated from the MRTivint.last)"
+#> [1] "Elim rate, IV MRTint.last"
 #> 
 #> 
 #> $kel.sparse.last
@@ -5484,7 +5484,7 @@ get.interval.cols()
 #> [1] "Kel (for sparse data, based on AUClast)"
 #> 
 #> $kel.sparse.last$desc
-#> [1] "Elimination rate (as calculated from the MRTsparse.last)"
+#> [1] "Elim rate, sparse MRTlast"
 #> 
 #> $kel.sparse.last$sparse
 #> [1] TRUE
@@ -5504,7 +5504,7 @@ get.interval.cols()
 #> [1] "kel.sparse.last"
 #> 
 #> $kel.sparse.last$pptest_cdisc
-#> [1] "Elimination rate (as calculated from the MRTsparse.last)"
+#> [1] "Elim rate, sparse MRTlast"
 #> 
 #> 
 #> $cl.obs
@@ -5521,7 +5521,7 @@ get.interval.cols()
 #> [1] "CL (based on AUCinf,obs)"
 #> 
 #> $cl.obs$desc
-#> [1] "Clearance or observed oral clearance calculated with observed Clast"
+#> [1] "Clearance, observed Clast"
 #> 
 #> $cl.obs$sparse
 #> [1] FALSE
@@ -5572,7 +5572,7 @@ get.interval.cols()
 #> [1] "CL (based on AUCinf,pred)"
 #> 
 #> $cl.pred$desc
-#> [1] "Clearance or observed oral clearance calculated with predicted Clast"
+#> [1] "Clearance, predicted Clast"
 #> 
 #> $cl.pred$sparse
 #> [1] FALSE
@@ -5623,7 +5623,7 @@ get.interval.cols()
 #> [1] "CL (based on AUCint.inf.obs)"
 #> 
 #> $cl.int.inf.obs$desc
-#> [1] "Clearance or observed oral clearance calculated with AUCint.inf.obs"
+#> [1] "Clearance, AUCint.inf.obs"
 #> 
 #> $cl.int.inf.obs$sparse
 #> [1] FALSE
@@ -5643,7 +5643,7 @@ get.interval.cols()
 #> [1] "cl.int.inf.obs"
 #> 
 #> $cl.int.inf.obs$pptest_cdisc
-#> [1] "Clearance or observed oral clearance calculated with AUCint.inf.obs"
+#> [1] "Clearance, AUCint.inf.obs"
 #> 
 #> 
 #> $cl.int.inf.pred
@@ -5660,7 +5660,7 @@ get.interval.cols()
 #> [1] "CL (based on AUCint.inf.pred)"
 #> 
 #> $cl.int.inf.pred$desc
-#> [1] "Clearance or observed oral clearance calculated with AUCint.inf.pred"
+#> [1] "Clearance, AUCint.inf.pred"
 #> 
 #> $cl.int.inf.pred$sparse
 #> [1] FALSE
@@ -5680,7 +5680,7 @@ get.interval.cols()
 #> [1] "cl.int.inf.pred"
 #> 
 #> $cl.int.inf.pred$pptest_cdisc
-#> [1] "Clearance or observed oral clearance calculated with AUCint.inf.pred"
+#> [1] "Clearance, AUCint.inf.pred"
 #> 
 #> 
 #> $cl.iv.obs
@@ -5697,7 +5697,7 @@ get.interval.cols()
 #> [1] "CL (for IV dosing,  based on AUCinf,obs)"
 #> 
 #> $cl.iv.obs$desc
-#> [1] "Clearance for intravenous dosing calculated with AUCinf,obs"
+#> [1] "IV clearance, AUCinf.obs"
 #> 
 #> $cl.iv.obs$sparse
 #> [1] FALSE
@@ -5717,7 +5717,7 @@ get.interval.cols()
 #> [1] "cl.iv.obs"
 #> 
 #> $cl.iv.obs$pptest_cdisc
-#> [1] "Clearance for intravenous dosing calculated with AUCinf,obs"
+#> [1] "IV clearance, AUCinf.obs"
 #> 
 #> 
 #> $cl.iv.pred
@@ -5734,7 +5734,7 @@ get.interval.cols()
 #> [1] "CL (for IV dosing,  based on AUCinf,pred)"
 #> 
 #> $cl.iv.pred$desc
-#> [1] "Clearance for intravenous dosing calculated with AUCinf,pred"
+#> [1] "IV clearance, AUCinf.pred"
 #> 
 #> $cl.iv.pred$sparse
 #> [1] FALSE
@@ -5754,7 +5754,7 @@ get.interval.cols()
 #> [1] "cl.iv.pred"
 #> 
 #> $cl.iv.pred$pptest_cdisc
-#> [1] "Clearance for intravenous dosing calculated with AUCinf,pred"
+#> [1] "IV clearance, AUCinf.pred"
 #> 
 #> 
 #> $mrt.obs
@@ -5771,7 +5771,7 @@ get.interval.cols()
 #> [1] "MRT (based on AUCinf,obs)"
 #> 
 #> $mrt.obs$desc
-#> [1] "The mean residence time to infinity using observed Clast"
+#> [1] "MRT to inf, observed Clast"
 #> 
 #> $mrt.obs$sparse
 #> [1] FALSE
@@ -5825,7 +5825,7 @@ get.interval.cols()
 #> [1] "MRT (based on AUCinf,pred)"
 #> 
 #> $mrt.pred$desc
-#> [1] "The mean residence time to infinity using predicted Clast"
+#> [1] "MRT to inf, predicted Clast"
 #> 
 #> $mrt.pred$sparse
 #> [1] FALSE
@@ -5879,7 +5879,7 @@ get.interval.cols()
 #> [1] "MRT (based on AUCint.inf.obs)"
 #> 
 #> $mrt.int.inf.obs$desc
-#> [1] "Mean residence time over interval calculated with AUCint.inf.obs/AUMCint.inf.obs"
+#> [1] "MRT, interval AUC/AUMCinf obs"
 #> 
 #> $mrt.int.inf.obs$sparse
 #> [1] FALSE
@@ -5902,7 +5902,7 @@ get.interval.cols()
 #> [1] "mrt.int.inf.obs"
 #> 
 #> $mrt.int.inf.obs$pptest_cdisc
-#> [1] "Mean residence time over interval calculated with AUCint.inf.obs/AUMCint.inf.obs"
+#> [1] "MRT, interval AUC/AUMCinf obs"
 #> 
 #> 
 #> $mrt.int.inf.pred
@@ -5919,7 +5919,7 @@ get.interval.cols()
 #> [1] "MRT (based on AUCint.inf.pred)"
 #> 
 #> $mrt.int.inf.pred$desc
-#> [1] "Mean residence time over interval calculated with AUCint.inf.pred/AUMCint.inf.pred"
+#> [1] "MRT, interval AUC/AUMCinf pred"
 #> 
 #> $mrt.int.inf.pred$sparse
 #> [1] FALSE
@@ -5942,7 +5942,7 @@ get.interval.cols()
 #> [1] "mrt.int.inf.pred"
 #> 
 #> $mrt.int.inf.pred$pptest_cdisc
-#> [1] "Mean residence time over interval calculated with AUCint.inf.pred/AUMCint.inf.pred"
+#> [1] "MRT, interval AUC/AUMCinf pred"
 #> 
 #> 
 #> $mrt.iv.obs
@@ -5959,7 +5959,7 @@ get.interval.cols()
 #> [1] "MRT (for IV dosing, based on AUCinf,obs)"
 #> 
 #> $mrt.iv.obs$desc
-#> [1] "The mean residence time to infinity using observed Clast correcting for dosing duration"
+#> [1] "IV MRT, AUCinf.obs/AUMCinf.obs"
 #> 
 #> $mrt.iv.obs$sparse
 #> [1] FALSE
@@ -5999,7 +5999,7 @@ get.interval.cols()
 #> [1] "MRT (for IV dosing, based on AUCinf,pred)"
 #> 
 #> $mrt.iv.pred$desc
-#> [1] "The mean residence time to infinity using predicted Clast correcting for dosing duration"
+#> [1] "IV MRT, AUCinf.pred/AUMCinf.pred"
 #> 
 #> $mrt.iv.pred$sparse
 #> [1] FALSE
@@ -6039,7 +6039,7 @@ get.interval.cols()
 #> [1] "MRT (for multiple dosing, based on AUCinf,obs)"
 #> 
 #> $mrt.md.obs$desc
-#> [1] "The mean residence time with multiple dosing and nonlinear kinetics using observed Clast"
+#> [1] "MRT, multi-dose AUCinf.obs/AUMCinf.obs"
 #> 
 #> $mrt.md.obs$sparse
 #> [1] FALSE
@@ -6082,7 +6082,7 @@ get.interval.cols()
 #> [1] "MRT (for multiple dosing, based on AUCinf,pred)"
 #> 
 #> $mrt.md.pred$desc
-#> [1] "The mean residence time with multiple dosing and nonlinear kinetics using predicted Clast"
+#> [1] "MRT, multi-dose AUCinf.pred/AUMCinf.pred"
 #> 
 #> $mrt.md.pred$sparse
 #> [1] FALSE
@@ -6125,7 +6125,7 @@ get.interval.cols()
 #> [1] "Vz (based on AUCinf,obs)"
 #> 
 #> $vz.obs$desc
-#> [1] "The terminal volume of distribution using observed Clast"
+#> [1] "Vz, observed Clast"
 #> 
 #> $vz.obs$sparse
 #> [1] FALSE
@@ -6176,7 +6176,7 @@ get.interval.cols()
 #> [1] "Vz (based on AUCinf,pred)"
 #> 
 #> $vz.pred$desc
-#> [1] "The terminal volume of distribution using predicted Clast"
+#> [1] "Vz, predicted Clast"
 #> 
 #> $vz.pred$sparse
 #> [1] FALSE
@@ -6227,7 +6227,7 @@ get.interval.cols()
 #> [1] "Vz (based on AUCint.inf.obs)"
 #> 
 #> $vz.int.inf.obs$desc
-#> [1] "Terminal volume of distribution using interval AUCint.inf.obs"
+#> [1] "Vz, interval AUCint.inf.obs"
 #> 
 #> $vz.int.inf.obs$sparse
 #> [1] FALSE
@@ -6247,7 +6247,7 @@ get.interval.cols()
 #> [1] "vz.int.inf.obs"
 #> 
 #> $vz.int.inf.obs$pptest_cdisc
-#> [1] "Terminal volume of distribution using interval AUCint.inf.obs"
+#> [1] "Vz, interval AUCint.inf.obs"
 #> 
 #> 
 #> $vz.int.inf.pred
@@ -6264,7 +6264,7 @@ get.interval.cols()
 #> [1] "Vz (based on AUCint.inf.pred)"
 #> 
 #> $vz.int.inf.pred$desc
-#> [1] "Terminal volume of distribution using interval AUCint.inf.pred"
+#> [1] "Vz, interval AUCint.inf.pred"
 #> 
 #> $vz.int.inf.pred$sparse
 #> [1] FALSE
@@ -6284,7 +6284,7 @@ get.interval.cols()
 #> [1] "vz.int.inf.pred"
 #> 
 #> $vz.int.inf.pred$pptest_cdisc
-#> [1] "Terminal volume of distribution using interval AUCint.inf.pred"
+#> [1] "Vz, interval AUCint.inf.pred"
 #> 
 #> 
 #> $vz.iv.obs
@@ -6301,7 +6301,7 @@ get.interval.cols()
 #> [1] "Vz (for IV dosing,  based on AUCinf,obs)"
 #> 
 #> $vz.iv.obs$desc
-#> [1] "Terminal volume of distribution for IV dosing using observed AUCinf"
+#> [1] "IV Vz, observed AUCinf"
 #> 
 #> $vz.iv.obs$sparse
 #> [1] FALSE
@@ -6321,7 +6321,7 @@ get.interval.cols()
 #> [1] "vz.iv.obs"
 #> 
 #> $vz.iv.obs$pptest_cdisc
-#> [1] "Terminal volume of distribution for IV dosing using observed AUCinf"
+#> [1] "IV Vz, observed AUCinf"
 #> 
 #> 
 #> $vz.iv.pred
@@ -6338,7 +6338,7 @@ get.interval.cols()
 #> [1] "Vz (for IV dosing,  based on AUCinf,pred)"
 #> 
 #> $vz.iv.pred$desc
-#> [1] "Terminal volume of distribution for IV dosing using predicted AUCinf"
+#> [1] "IV Vz, predicted AUCinf"
 #> 
 #> $vz.iv.pred$sparse
 #> [1] FALSE
@@ -6358,7 +6358,7 @@ get.interval.cols()
 #> [1] "vz.iv.pred"
 #> 
 #> $vz.iv.pred$pptest_cdisc
-#> [1] "Terminal volume of distribution for IV dosing using predicted AUCinf"
+#> [1] "IV Vz, predicted AUCinf"
 #> 
 #> 
 #> $vz.sparse.last
@@ -6375,7 +6375,7 @@ get.interval.cols()
 #> [1] "Vz (for sparse data, based on AUClast)"
 #> 
 #> $vz.sparse.last$desc
-#> [1] "Terminal volume of distribution from sparse sampling"
+#> [1] "Vz from sparse sampling"
 #> 
 #> $vz.sparse.last$sparse
 #> [1] TRUE
@@ -6398,7 +6398,7 @@ get.interval.cols()
 #> [1] "vz.sparse.last"
 #> 
 #> $vz.sparse.last$pptest_cdisc
-#> [1] "Terminal volume of distribution from sparse sampling"
+#> [1] "Vz from sparse sampling"
 #> 
 #> 
 #> $vss.obs
@@ -6415,7 +6415,7 @@ get.interval.cols()
 #> [1] "Vss (based on AUCinf,obs)"
 #> 
 #> $vss.obs$desc
-#> [1] "The steady-state volume of distribution using observed Clast"
+#> [1] "Vss, observed Clast"
 #> 
 #> $vss.obs$sparse
 #> [1] FALSE
@@ -6469,7 +6469,7 @@ get.interval.cols()
 #> [1] "Vss (based on AUCinf,pred)"
 #> 
 #> $vss.pred$desc
-#> [1] "The steady-state volume of distribution using predicted Clast"
+#> [1] "Vss, predicted Clast"
 #> 
 #> $vss.pred$sparse
 #> [1] FALSE
@@ -6523,7 +6523,7 @@ get.interval.cols()
 #> [1] "Vss (for IV dosing, based on AUCinf,obs)"
 #> 
 #> $vss.iv.obs$desc
-#> [1] "The steady-state volume of distribution with intravenous infusion using observed Clast"
+#> [1] "IV Vss, observed Clast"
 #> 
 #> $vss.iv.obs$sparse
 #> [1] FALSE
@@ -6563,7 +6563,7 @@ get.interval.cols()
 #> [1] "Vss (for IV dosing, based on AUCinf,pred)"
 #> 
 #> $vss.iv.pred$desc
-#> [1] "The steady-state volume of distribution with intravenous infusion using predicted Clast"
+#> [1] "IV Vss, predicted Clast"
 #> 
 #> $vss.iv.pred$sparse
 #> [1] FALSE
@@ -6603,7 +6603,7 @@ get.interval.cols()
 #> [1] "Vss (for multiple-dose, based on Clast,obs)"
 #> 
 #> $vss.md.obs$desc
-#> [1] "The steady-state volume of distribution for nonlinear multiple-dose data using observed Clast"
+#> [1] "Vss, multi-dose, obs"
 #> 
 #> $vss.md.obs$sparse
 #> [1] FALSE
@@ -6643,7 +6643,7 @@ get.interval.cols()
 #> [1] "Vss (for multiple-dose, based on Clast,pred)"
 #> 
 #> $vss.md.pred$desc
-#> [1] "The steady-state volume of distribution for nonlinear multiple-dose data using predicted Clast"
+#> [1] "Vss, multi-dose, pred"
 #> 
 #> $vss.md.pred$sparse
 #> [1] FALSE
@@ -6683,7 +6683,7 @@ get.interval.cols()
 #> [1] "Vss (based on AUCint.inf.obs)"
 #> 
 #> $vss.int.inf.obs$desc
-#> [1] "Steady-state volume of distribution using interval AUCint.inf.obs"
+#> [1] "Vss, calc from interval AUCint.inf.obs"
 #> 
 #> $vss.int.inf.obs$sparse
 #> [1] FALSE
@@ -6706,7 +6706,7 @@ get.interval.cols()
 #> [1] "vss.int.inf.obs"
 #> 
 #> $vss.int.inf.obs$pptest_cdisc
-#> [1] "Steady-state volume of distribution using interval AUCint.inf.obs"
+#> [1] "Vss, calc from interval AUCint.inf.obs"
 #> 
 #> 
 #> $vss.int.inf.pred
@@ -6723,7 +6723,7 @@ get.interval.cols()
 #> [1] "Vss (based on AUCint.inf.pred)"
 #> 
 #> $vss.int.inf.pred$desc
-#> [1] "Steady-state volume of distribution using interval AUCint.inf.pred"
+#> [1] "Vss, calc from interval AUCint.inf.pred"
 #> 
 #> $vss.int.inf.pred$sparse
 #> [1] FALSE
@@ -6746,7 +6746,7 @@ get.interval.cols()
 #> [1] "vss.int.inf.pred"
 #> 
 #> $vss.int.inf.pred$pptest_cdisc
-#> [1] "Steady-state volume of distribution using interval AUCint.inf.pred"
+#> [1] "Vss, calc from interval AUCint.inf.pred"
 #> 
 #> 
 #> $cav.int.inf.obs
@@ -6763,7 +6763,7 @@ get.interval.cols()
 #> [1] "Cav"
 #> 
 #> $cav.int.inf.obs$desc
-#> [1] "The average concentration during an interval (calculated with AUCint.inf.obs)"
+#> [1] "Avg conc in interval (AUCint.inf.obs)"
 #> 
 #> $cav.int.inf.obs$sparse
 #> [1] FALSE
@@ -6800,7 +6800,7 @@ get.interval.cols()
 #> [1] "Cav"
 #> 
 #> $cav.int.inf.pred$desc
-#> [1] "The average concentration during an interval (calculated with AUCint.inf.pred)"
+#> [1] "Avg conc in interval (AUCint.inf.pred)"
 #> 
 #> $cav.int.inf.pred$sparse
 #> [1] FALSE
@@ -6837,7 +6837,7 @@ get.interval.cols()
 #> [1] "Effective half-life (based on MRT,obs)"
 #> 
 #> $thalf.eff.obs$desc
-#> [1] "The effective half-life (as determined from the MRTobs)"
+#> [1] "Effective half-life, MRTobs"
 #> 
 #> $thalf.eff.obs$sparse
 #> [1] FALSE
@@ -6874,7 +6874,7 @@ get.interval.cols()
 #> [1] "Effective half-life (based on MRT,pred)"
 #> 
 #> $thalf.eff.pred$desc
-#> [1] "The effective half-life (as determined from the MRTpred)"
+#> [1] "Effective half-life, MRTpred"
 #> 
 #> $thalf.eff.pred$sparse
 #> [1] FALSE
@@ -6911,7 +6911,7 @@ get.interval.cols()
 #> [1] "Effective half-life (for IV dosing, based on MRT,obs)"
 #> 
 #> $thalf.eff.iv.obs$desc
-#> [1] "The effective half-life (as determined from the intravenous MRTobs)"
+#> [1] "Effective half-life, IV MRTobs"
 #> 
 #> $thalf.eff.iv.obs$sparse
 #> [1] FALSE
@@ -6948,7 +6948,7 @@ get.interval.cols()
 #> [1] "Effective half-life (for IV dosing, based on MRT,pred)"
 #> 
 #> $thalf.eff.iv.pred$desc
-#> [1] "The effective half-life (as determined from the intravenous MRTpred)"
+#> [1] "Effective half-life, IV MRTpred"
 #> 
 #> $thalf.eff.iv.pred$sparse
 #> [1] FALSE
@@ -6985,7 +6985,7 @@ get.interval.cols()
 #> [1] "Kel (based on AUCinf,obs)"
 #> 
 #> $kel.obs$desc
-#> [1] "Elimination rate (as calculated from the MRT with observed Clast)"
+#> [1] "Elim rate, MRT w/ obs Clast"
 #> 
 #> $kel.obs$sparse
 #> [1] FALSE
@@ -7022,7 +7022,7 @@ get.interval.cols()
 #> [1] "Kel (based on AUCinf,pred)"
 #> 
 #> $kel.pred$desc
-#> [1] "Elimination rate (as calculated from the MRT with predicted Clast)"
+#> [1] "Elim rate, MRT w/ pred Clast"
 #> 
 #> $kel.pred$sparse
 #> [1] FALSE
@@ -7059,7 +7059,7 @@ get.interval.cols()
 #> [1] "Kel (for IV dosing, based on AUCinf,obs)"
 #> 
 #> $kel.iv.obs$desc
-#> [1] "Elimination rate (as calculated from the intravenous MRTobs)"
+#> [1] "Elim rate, IV MRTobs"
 #> 
 #> $kel.iv.obs$sparse
 #> [1] FALSE
@@ -7096,7 +7096,7 @@ get.interval.cols()
 #> [1] "Kel (for IV dosing, based on AUCinf,pred)"
 #> 
 #> $kel.iv.pred$desc
-#> [1] "Elimination rate (as calculated from the intravenous MRTpred)"
+#> [1] "Elim rate, IV MRTpred"
 #> 
 #> $kel.iv.pred$sparse
 #> [1] FALSE
@@ -7133,7 +7133,7 @@ get.interval.cols()
 #> [1] "Kel (based on AUCint.inf.obs)"
 #> 
 #> $kel.int.inf.obs$desc
-#> [1] "Elimination rate (as calculated from the MRTint.inf.obs)"
+#> [1] "Elim rate, MRTint.inf.obs"
 #> 
 #> $kel.int.inf.obs$sparse
 #> [1] FALSE
@@ -7153,7 +7153,7 @@ get.interval.cols()
 #> [1] "kel.int.inf.obs"
 #> 
 #> $kel.int.inf.obs$pptest_cdisc
-#> [1] "Elimination rate (as calculated from the MRTint.inf.obs)"
+#> [1] "Elim rate, MRTint.inf.obs"
 #> 
 #> 
 #> $kel.int.inf.pred
@@ -7170,7 +7170,7 @@ get.interval.cols()
 #> [1] "Kel (based on AUCint.inf.pred)"
 #> 
 #> $kel.int.inf.pred$desc
-#> [1] "Elimination rate (as calculated from the MRTint.inf.pred)"
+#> [1] "Elim rate, MRTint.inf.pred"
 #> 
 #> $kel.int.inf.pred$sparse
 #> [1] FALSE
@@ -7190,7 +7190,7 @@ get.interval.cols()
 #> [1] "kel.int.inf.pred"
 #> 
 #> $kel.int.inf.pred$pptest_cdisc
-#> [1] "Elimination rate (as calculated from the MRTint.inf.pred)"
+#> [1] "Elim rate, MRTint.inf.pred"
 #> 
 #> 
 #> $auclast.dn

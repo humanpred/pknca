@@ -134,7 +134,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Interval End"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $end$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ending time of the interval (potentially infinity)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "End time of interval (may be Inf)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $end$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -152,7 +152,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "end"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $end$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ending time of the interval (potentially infinity)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "End time of interval (may be Inf)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast</span>
@@ -169,7 +169,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC start to last conc above LOQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -204,7 +204,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucall$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification plus the triangle from that last concentration to 0 at the first concentration below the limit of quantification"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUClast plus triangle, 0 at BLQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucall$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -239,7 +239,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC,last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time moment curve from the beginning of the interval to the last concentration above the limit of quantification"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC start to last conc above LOQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -274,7 +274,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC,all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time moment curve from the beginning of the interval to the last concentration above the limit of quantification plus the moment of the triangle from that last concentration to 0 at the first concentration below the limit of quantification"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMClast plus triangle moment, 0 at BLQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -309,7 +309,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUClast extrapolation)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC from T1 to T2 (zero extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -352,7 +352,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUClast extrapolation, dose-aware)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast) with dose-aware interpolation/extrapolation of concentrations"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCdn T1 to T2 (zero extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -395,7 +395,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUCall extrapolation)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC from T1 to T2 (AUCall extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -438,7 +438,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUCall extrapolation, dose-aware)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall) with dose-aware interpolation/extrapolation of concentrations"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCdn T1 to T2 (AUCall extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -481,7 +481,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (based on AUMClast extrapolation)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC from T1 to T2 (zero extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -507,7 +507,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC from T1 to T2 (zero extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose</span>
@@ -524,7 +524,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (based on AUMClast extrapolation, dose-aware)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCdn T1 to T2 (zero extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -550,7 +550,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.last.dose"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCdn T1 to T2 (zero extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all</span>
@@ -567,7 +567,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (based on AUMCall extrapolation)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC from T1 to T2 (AUMCall extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -593,7 +593,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC from T1 to T2 (AUMCall extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose</span>
@@ -610,7 +610,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (based on AUMCall extrapolation, dose-aware)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCdn T1 to T2 (AUMCall extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -636,7 +636,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.all.dose"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCdn T1 to T2 (AUMCall extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $c0</span>
@@ -653,7 +653,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $c0$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Initial concentration after an IV bolus"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Initial conc after IV bolus"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $c0$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -758,7 +758,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Tmax"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tmax$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time of the maximum observed concentration"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time of maximum observed conc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tmax$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -793,7 +793,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Tmin"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tmin$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time of the minimum observed concentration"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time of minimum observed conc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tmin$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -828,7 +828,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Tlast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tlast$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time of the last concentration observed above the limit of quantification"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time of last conc above LOQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tlast$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -863,7 +863,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Tfirst"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tfirst$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time of the first concentration above the limit of quantification"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time of first conc above LOQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tfirst$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -898,7 +898,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The last concentration observed above the limit of quantification"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Last conc observed above LOQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -933,7 +933,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance or observed oral clearance calculated to Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -984,7 +984,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance or observed oral clearance calculated with AUCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1035,7 +1035,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint.all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance or observed oral clearance calculated with AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1055,7 +1055,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.int.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance or observed oral clearance calculated with AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last</span>
@@ -1072,7 +1072,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint.last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance or observed oral clearance calculated with AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1092,7 +1092,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.int.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance or observed oral clearance calculated with AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f</span>
@@ -1109,7 +1109,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability or relative bioavailability"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (absolute or relative)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1144,7 +1144,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The mean residence time to the last observed concentration above the LOQ"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, AUClast/AUMClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1198,7 +1198,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time calculated with AUCall/AUMCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, AUCall/AUMCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1221,7 +1221,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time calculated with AUCall/AUMCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, AUCall/AUMCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.all</span>
@@ -1238,7 +1238,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint.all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time over interval calculated with AUCint.all/AUMCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUCall/AUMCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1261,7 +1261,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.int.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time over interval calculated with AUCint.all/AUMCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUCall/AUMCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.last</span>
@@ -1278,7 +1278,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint.last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time over interval calculated with AUCint.last/AUMCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUClast/AUMClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1301,7 +1301,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.int.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time over interval calculated with AUCint.last/AUMCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUClast/AUMClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.last</span>
@@ -1318,7 +1318,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for IV dosing, based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The mean residence time to the last observed concentration above the LOQ correcting for dosing duration"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, AUClast/AUMClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1358,7 +1358,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The steady-state volume of distribution calculating through Tlast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc'd through Tlast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1412,7 +1412,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for IV dosing, based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The steady-state volume of distribution with intravenous infusion calculating through Tlast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1452,7 +1452,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution calculated with AUCall-based CL and MRT"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from AUCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1475,7 +1475,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution calculated with AUCall-based CL and MRT"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from AUCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all</span>
@@ -1492,7 +1492,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint.all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution using interval AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1515,7 +1515,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.int.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution using interval AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last</span>
@@ -1532,7 +1532,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint.last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution using interval AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1555,7 +1555,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.int.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution using interval AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav</span>
@@ -1572,7 +1572,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cav"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The average concentration during an interval (calculated with AUClast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Avg conc in interval (AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1609,7 +1609,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cav"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The average concentration during an interval (calculated with AUCint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Avg conc in interval (AUCint.last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1646,7 +1646,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cav"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The average concentration during an interval (calculated with AUCint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Avg conc in interval (AUCint.all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1683,7 +1683,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ctrough"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The trough (end of interval) concentration"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trough (end of interval) conc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1753,7 +1753,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Peak-to-trough ratio"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ptr$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Peak-to-Trough ratio (fraction)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Peak-to-trough ratio"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ptr$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1928,7 +1928,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC,above"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.predose.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time the beginning of the interval to the last concentration above the limit of quantification plus the triangle from that last concentration to 0 at the first concentration below the limit of quantification, with a concentration subtracted from all concentrations and values below zero after subtraction set to zero"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC above predose, floor at 0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.predose.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1965,7 +1965,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC,above"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.trough.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time the beginning of the interval to the last concentration above the limit of quantification plus the triangle from that last concentration to 0 at the first concentration below the limit of quantification, with a concentration subtracted from all concentrations and values below zero after subtraction set to zero"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC above trough, floor at 0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.trough.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2002,7 +2002,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Concentration count"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $count_conc$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of non-missing concentrations for an interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Count of non-missing conc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $count_conc$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2037,7 +2037,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Measured concentration count"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $count_conc_measured$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of measured and non BLQ/ALQ concentrations for an interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Count of measured, non-BLQ conc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $count_conc_measured$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2055,7 +2055,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count_conc_measured"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $count_conc_measured$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of measured and non BLQ/ALQ concentrations for an interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Count of measured, non-BLQ conc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $totdose</span>
@@ -2072,7 +2072,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Total dose"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $totdose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Total dose administered during an interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Total dose given in interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $totdose$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2107,7 +2107,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Total Urine Volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $volpk$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The sum of urine volumes for the interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sum of urine volumes for interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $volpk$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2142,7 +2142,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Amount excreted"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ae$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The amount excreted (typically into urine or feces)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Amount excreted (urine/feces)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ae$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2177,7 +2177,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (from AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The renal clearance calculated using AUClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance, AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2214,7 +2214,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (from AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The renal clearance calculated using AUCinf,obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance, AUCinf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2251,7 +2251,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (from AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The renal clearance calculated using AUCinf,pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance, AUCinf,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2288,7 +2288,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Fraction excreted"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $fe$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The fraction of the dose excreted"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Fraction of dose excreted"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $fe$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2323,7 +2323,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Tlast excretion rate"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ertlst$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The midpoint collection time of the last measurable excretion rate (typically in urine or feces)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Midpoint time of last excr rate"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ertlst$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2358,7 +2358,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Maximum excretion rate"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ermax$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The maximum excretion rate (typically in urine or feces)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Maximum excretion rate"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ermax$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2393,7 +2393,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Tmax excretion rate"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ertmax$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The midpoint collection time of the maximum excretion rate (typically in urine or feces)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Midpoint time of max excr rate"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ertmax$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2428,7 +2428,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auclast$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "For sparse PK sampling, the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUC to last conc above LOQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auclast$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
@@ -2463,7 +2463,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUClast standard error"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auc_se$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "For sparse PK sampling, the standard error of the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of sparse AUC to last conc above LOQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auc_se$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2498,7 +2498,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUClast degrees of freedom"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auc_df$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "For sparse PK sampling, the standard error degrees of freedom of the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DF for sparse AUC to last conc above LOQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auc_df$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2533,7 +2533,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumclast$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "For sparse PK sampling, the area under the moment curve from the beginning of the interval to the last concentration above the limit of quantification"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMC to last conc above LOQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumclast$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
@@ -2551,7 +2551,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "sparse_aumclast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumclast$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "For sparse PK sampling, the area under the moment curve from the beginning of the interval to the last concentration above the limit of quantification"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMC to last conc above LOQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_se</span>
@@ -2568,7 +2568,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMC standard error"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_se$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "For sparse PK sampling, the standard error of the area under the moment curve"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of sparse AUMC to last conc above LOQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_se$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2586,7 +2586,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "sparse_aumc_se"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_se$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "For sparse PK sampling, the standard error of the area under the moment curve"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of sparse AUMC to last conc above LOQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_df</span>
@@ -2603,7 +2603,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMC degrees of freedom"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_df$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "For sparse PK sampling, the degrees of freedom for the AUMC variance estimate"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "variance DF for sparse AUMC to Tlast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_df$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2621,7 +2621,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "sparse_aumc_df"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_df$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "For sparse PK sampling, the degrees of freedom for the AUMC variance estimate"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "variance DF for sparse AUMC to Tlast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $time_above</span>
@@ -2673,7 +2673,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUClast (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUClast calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUClast, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2710,7 +2710,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCall (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUCall calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCall, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2747,7 +2747,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint,last (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUCint,last calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint.last, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2784,7 +2784,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint,all (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUCint,all calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint.all, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2821,7 +2821,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCbext (based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextlast$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The back-extrapolation percent for intravenous dosing based on AUClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Back-extrap %, IV, AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextlast$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2861,7 +2861,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCbext (based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextall$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The back-extrapolation percent for intravenous dosing based on AUCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Back-extrap %, IV, AUCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextall$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2901,7 +2901,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCbext (based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The back-extrapolation percent for intravenous dosing based on AUCint,last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Back-extrap %, IV, AUCint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2941,7 +2941,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCbext (based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The back-extrapolation percent for intravenous dosing based on AUCint,all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Back-extrap %, IV, AUCint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -2981,7 +2981,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMClast (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUMClast calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMClast, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3001,7 +3001,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivlast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUMClast calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMClast, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall</span>
@@ -3018,7 +3018,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCall (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUMCall calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCall, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3038,7 +3038,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUMCall calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCall, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last</span>
@@ -3055,7 +3055,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint,last (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUMCint,last calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint.last, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3075,7 +3075,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUMCint,last calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint.last, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.all</span>
@@ -3092,7 +3092,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint,all (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUMCint,all calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint.all, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3112,7 +3112,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUMCint,all calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint.all, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $half.life</span>
@@ -3164,7 +3164,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$r^2$"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $r.squared$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The r^2 value of the half-life calculation"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "R-squared of half-life fit"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $r.squared$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3199,7 +3199,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$r^2_{adj}$"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $adj.r.squared$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The adjusted r^2 value of the half-life calculation"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Adjusted R-sq of half-life fit"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $adj.r.squared$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3234,7 +3234,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Correlation (time, log-conc)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.corrxy$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Correlation between time and log-concentration for lambda.z points"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Corr(time,log-conc) for lambda.z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.corrxy$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3269,7 +3269,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$\\lambda_z$"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The elimination rate of the terminal half-life"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal elim rate (lambda.z)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3304,7 +3304,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "First time for $\\lambda_z$"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.time.first$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The first time point used for the calculation of half-life"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "First time point for lambda.z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.time.first$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3339,7 +3339,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Last time for $\\lambda_z$"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.time.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The last time point used for the calculation of half-life"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Last time point for lambda.z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.time.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3374,7 +3374,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of points used for lambda_z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The number of points used for the calculation of half-life"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of points used, lambda.z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3409,7 +3409,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clast,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The concentration at Tlast as predicted by the half-life"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Predicted Clast from half-life"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3444,7 +3444,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Span ratio"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $span.ratio$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The ratio of the half-life to the duration used for half-life calculation"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Half-life to calculation duration ratio"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $span.ratio$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3479,7 +3479,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Tobit residual SD"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tobit_residual$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The estimated residual standard deviation (on the log-concentration scale) from the Tobit half-life fit"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Tobit fit residual SD, log-conc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tobit_residual$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3497,7 +3497,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "tobit_residual"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tobit_residual$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The estimated residual standard deviation (on the log-concentration scale) from the Tobit half-life fit"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Tobit fit residual SD, log-conc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $adj_tobit_residual</span>
@@ -3514,7 +3514,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Adjusted Tobit residual SD"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $adj_tobit_residual$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The adjusted Tobit residual standard deviation (analogous to adjusted r-squared; penalizes smaller windows)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Adjusted Tobit residual SD"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $adj_tobit_residual$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3532,7 +3532,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "adj_tobit_residual"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $adj_tobit_residual$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The adjusted Tobit residual standard deviation (analogous to adjusted r-squared; penalizes smaller windows)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Adjusted Tobit residual SD"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points_blq</span>
@@ -3549,7 +3549,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of BLQ points for lambda_z (Tobit)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points_blq$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The number of BLQ points included in the Tobit half-life calculation"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "BLQ points in Tobit lambda.z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points_blq$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3567,7 +3567,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "lambda.z.n.points_blq"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points_blq$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The number of BLQ points included in the Tobit half-life calculation"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "BLQ points in Tobit lambda.z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.last</span>
@@ -3584,7 +3584,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life (based on MRT,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The effective half-life (as determined from the MRTlast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life, MRTlast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3621,7 +3621,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life (for IV dosing, based on MRTlast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The effective half-life (as determined from the intravenous MRTlast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life, IV MRTlast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3658,7 +3658,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRT using AUClast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRT via AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3695,7 +3695,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (for IV dosing, based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the intravenous MRTlast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTlast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3732,7 +3732,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTall)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3752,7 +3752,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTall)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all</span>
@@ -3769,7 +3769,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint.all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3789,7 +3789,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.int.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last</span>
@@ -3806,7 +3806,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint.last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3826,7 +3826,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.int.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.all</span>
@@ -3843,7 +3843,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing,  based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance for intravenous dosing calculated with AUCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3863,7 +3863,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.iv.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance for intravenous dosing calculated with AUCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.last</span>
@@ -3880,7 +3880,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing,  based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance for intravenous dosing calculated with AUClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3900,7 +3900,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.iv.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance for intravenous dosing calculated with AUClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all</span>
@@ -3917,7 +3917,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (IV dose interval, based on AUCint.all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance for intravenous dosing calculated with interval AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3937,7 +3937,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.ivint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance for intravenous dosing calculated with interval AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last</span>
@@ -3954,7 +3954,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (IV dose interval, based on AUCint.last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance for intravenous dosing calculated with interval AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3974,7 +3974,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.ivint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance for intravenous dosing calculated with interval AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.sparse.last</span>
@@ -3991,7 +3991,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for sparse data, based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.sparse.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance from sparse sampling calculated with population AUClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, sparse AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.sparse.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
@@ -4011,7 +4011,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.sparse.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.sparse.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance from sparse sampling calculated with population AUClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, sparse AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.sparse.last</span>
@@ -4028,7 +4028,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for sparse data, based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.sparse.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time from sparse sampling"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, sparse AUClast/AUMClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.sparse.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
@@ -4051,7 +4051,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.sparse.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.sparse.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time from sparse sampling"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, sparse AUClast/AUMClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.all</span>
@@ -4068,7 +4068,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for IV dosing, based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time for IV dosing calculated with AUCall/AUMCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, AUCall/AUMCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4091,7 +4091,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.iv.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time for IV dosing calculated with AUCall/AUMCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, AUCall/AUMCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all</span>
@@ -4108,7 +4108,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (IV dose interval, based on AUCint.all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time for IV interval calculated with AUCint.all/AUMCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, interval AUC/AUMCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4131,7 +4131,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.ivint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time for IV interval calculated with AUCint.all/AUMCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, interval AUC/AUMCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last</span>
@@ -4148,7 +4148,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (IV dose interval, based on AUCint.last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time for IV interval calculated with AUCint.last/AUMCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, interval AUC/AUMClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4171,7 +4171,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.ivint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time for IV interval calculated with AUCint.last/AUMCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, interval AUC/AUMClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.all</span>
@@ -4188,7 +4188,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution calculated with AUCall-based CL"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, AUCall-based CL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4208,7 +4208,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution calculated with AUCall-based CL"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, AUCall-based CL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all</span>
@@ -4225,7 +4225,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint.all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution using interval AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4245,7 +4245,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.int.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution using interval AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last</span>
@@ -4262,7 +4262,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint.last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution using interval AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4282,7 +4282,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.int.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution using interval AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.all</span>
@@ -4299,7 +4299,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing,  based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution for IV dosing using AUCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, AUCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4319,7 +4319,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.iv.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution for IV dosing using AUCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, AUCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.last</span>
@@ -4336,7 +4336,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing,  based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution for IV dosing using AUClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4356,7 +4356,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.iv.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution for IV dosing using AUClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all</span>
@@ -4373,7 +4373,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (IV dose interval, based on AUCint.all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution for IV interval using AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, interval AUCint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4393,7 +4393,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.ivint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution for IV interval using AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, interval AUCint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last</span>
@@ -4410,7 +4410,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (IV dose interval, based on AUCint.last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution for IV interval using AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, interval AUCint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4430,7 +4430,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.ivint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution for IV interval using AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, interval AUCint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.last</span>
@@ -4447,7 +4447,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution calculated with AUClast-based CL"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, AUClast-based CL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4467,7 +4467,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution calculated with AUClast-based CL"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, AUClast-based CL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.all</span>
@@ -4484,7 +4484,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for IV dosing,  based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution for IV dosing using AUCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from AUCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4507,7 +4507,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.iv.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution for IV dosing using AUCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from AUCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all</span>
@@ -4524,7 +4524,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (IV dose interval, based on AUCint.all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution for IV interval using AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from interval AUCint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4547,7 +4547,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.ivint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution for IV interval using AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from interval AUCint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last</span>
@@ -4564,7 +4564,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (IV dose interval, based on AUCint.last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution for IV interval using AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from interval AUCint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4587,7 +4587,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.ivint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution for IV interval using AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from interval AUCint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.sparse.last</span>
@@ -4604,7 +4604,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for sparse data, based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.sparse.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution from sparse sampling"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from sparse AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.sparse.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
@@ -4627,7 +4627,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.sparse.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.sparse.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution from sparse sampling"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from sparse AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs</span>
@@ -4644,7 +4644,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time curve from the beginning of the interval to infinity with extrapolation to infinity from the observed Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC start to inf, obs Clast extrap"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4679,7 +4679,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time curve from the beginning of the interval to infinity with extrapolation to infinity from the predicted Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC start to inf, pred Clast extrap"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4714,7 +4714,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC,inf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time moment curve from the beginning of the interval to infinity with extrapolation to infinity from the observed Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC start to inf, obs Clast extrap"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4749,7 +4749,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC,inf,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time moment curve from the beginning of the interval to infinity with extrapolation to infinity from the predicted Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC start to inf, pred Clast extrap"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4784,7 +4784,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUCinf,obs extrapolation)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC from T1 to T2 (AUCinf,obs extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4827,7 +4827,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUCinf,obs extrapolation, dose-aware)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with zeros (matching AUClast) with dose-aware interpolation/extrapolation of concentrations"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCdn T1 to T2 (AUCinf,obs extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4870,7 +4870,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUCinf,pred extrapolation)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC from T1 to T2 (AUCinf,pred extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4913,7 +4913,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUCinf,pred extrapolation, dose-aware)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the concentration time curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUCall) with dose-aware interpolation/extrapolation of concentrations"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCdn T1 to T2 (AUCinf,pred extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4956,7 +4956,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (based on AUMCinf,obs extrapolation)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC from T1 to T2 (AUMCinf,obs extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -4982,7 +4982,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC from T1 to T2 (AUMCinf,obs extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose</span>
@@ -4999,7 +4999,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (based on AUMCinf,obs extrapolation, dose-aware)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCdn T1 to T2 (AUMCinf,obs extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5025,7 +5025,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.inf.obs.dose"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with zeros (matching AUMClast) with dose-aware interpolation/extrapolation of concentrations"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCdn T1 to T2 (AUMCinf,obs extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred</span>
@@ -5042,7 +5042,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (based on AUMCinf,pred extrapolation)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC from T1 to T2 (AUMCinf,pred extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5068,7 +5068,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.inf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC from T1 to T2 (AUMCinf,pred extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose</span>
@@ -5085,7 +5085,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (based on AUMCinf,pred extrapolation, dose-aware)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCdn T1 to T2 (AUMCinf,pred extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5111,7 +5111,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.inf.pred.dose"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The area under the moment curve in the interval extrapolating from Tlast to infinity with the triangle from Tlast to the next point and zero thereafter (matching AUMCall) with dose-aware interpolation/extrapolation of concentrations"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCdn T1 to T2 (AUMCinf,pred extrap)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs</span>
@@ -5128,7 +5128,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf,obs (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUCinf,obs calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf.obs, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5165,7 +5165,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf,pred (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUCinf,pred calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf.pred, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5202,7 +5202,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCbext (based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The back-extrapolation percent for intravenous dosing based on AUCinf,obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Back-extrap %, IV, AUCinf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5242,7 +5242,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCbext (based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The back-extrapolation percent for intravenous dosing based on AUCinf,pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Back-extrap %, IV, AUCinf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5282,7 +5282,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,obs (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUMCinf,obs calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf.obs, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5302,7 +5302,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivinf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUMCinf,obs calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf.obs, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.pred</span>
@@ -5319,7 +5319,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,pred (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUMCinf,pred calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf.pred, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5339,7 +5339,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivinf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The AUMCinf,pred calculated with back-extrapolation for intravenous dosing using extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf.pred, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucpext.obs</span>
@@ -5356,7 +5356,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCpext (based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucpext.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Percent of the AUCinf that is extrapolated after Tlast calculated from the observed Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "% AUCinf extrap after Tlast, obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucpext.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5393,7 +5393,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCpext (based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucpext.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Percent of the AUCinf that is extrapolated after Tlast calculated from the predicted Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "% AUCinf extrap after Tlast, pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucpext.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5430,7 +5430,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (for IV dosing,  based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTiv.all))"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5450,7 +5450,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.iv.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTiv.all))"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all</span>
@@ -5467,7 +5467,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (IV dose interval, based on AUCint.all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTivint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5487,7 +5487,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.ivint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTivint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTint.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last</span>
@@ -5504,7 +5504,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (IV dose interval, based on AUCint.last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTivint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5524,7 +5524,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.ivint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTivint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTint.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.sparse.last</span>
@@ -5541,7 +5541,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (for sparse data, based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.sparse.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTsparse.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, sparse MRTlast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.sparse.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
@@ -5561,7 +5561,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.sparse.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.sparse.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTsparse.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, sparse MRTlast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.obs</span>
@@ -5578,7 +5578,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance or observed oral clearance calculated with observed Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, observed Clast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5629,7 +5629,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance or observed oral clearance calculated with predicted Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, predicted Clast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5680,7 +5680,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint.inf.obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance or observed oral clearance calculated with AUCint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5700,7 +5700,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.int.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance or observed oral clearance calculated with AUCint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred</span>
@@ -5717,7 +5717,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint.inf.pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance or observed oral clearance calculated with AUCint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.inf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5737,7 +5737,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.int.inf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance or observed oral clearance calculated with AUCint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.inf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs</span>
@@ -5754,7 +5754,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing,  based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance for intravenous dosing calculated with AUCinf,obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCinf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5774,7 +5774,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.iv.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance for intravenous dosing calculated with AUCinf,obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCinf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred</span>
@@ -5791,7 +5791,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing,  based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance for intravenous dosing calculated with AUCinf,pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCinf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5811,7 +5811,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.iv.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance for intravenous dosing calculated with AUCinf,pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCinf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.obs</span>
@@ -5828,7 +5828,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The mean residence time to infinity using observed Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT to inf, observed Clast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5882,7 +5882,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The mean residence time to infinity using predicted Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT to inf, predicted Clast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5936,7 +5936,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint.inf.obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time over interval calculated with AUCint.inf.obs/AUMCint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUC/AUMCinf obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5959,7 +5959,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.int.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time over interval calculated with AUCint.inf.obs/AUMCint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUC/AUMCinf obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred</span>
@@ -5976,7 +5976,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint.inf.pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time over interval calculated with AUCint.inf.pred/AUMCint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUC/AUMCinf pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5999,7 +5999,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.int.inf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean residence time over interval calculated with AUCint.inf.pred/AUMCint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUC/AUMCinf pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.obs</span>
@@ -6016,7 +6016,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for IV dosing, based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The mean residence time to infinity using observed Clast correcting for dosing duration"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, AUCinf.obs/AUMCinf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6056,7 +6056,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for IV dosing, based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The mean residence time to infinity using predicted Clast correcting for dosing duration"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, AUCinf.pred/AUMCinf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6096,7 +6096,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for multiple dosing, based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The mean residence time with multiple dosing and nonlinear kinetics using observed Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, multi-dose AUCinf.obs/AUMCinf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6139,7 +6139,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for multiple dosing, based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The mean residence time with multiple dosing and nonlinear kinetics using predicted Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, multi-dose AUCinf.pred/AUMCinf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6182,7 +6182,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The terminal volume of distribution using observed Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, observed Clast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6233,7 +6233,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The terminal volume of distribution using predicted Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, predicted Clast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6284,7 +6284,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint.inf.obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution using interval AUCint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6304,7 +6304,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.int.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution using interval AUCint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred</span>
@@ -6321,7 +6321,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint.inf.pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution using interval AUCint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.inf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6341,7 +6341,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.int.inf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution using interval AUCint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.inf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.obs</span>
@@ -6358,7 +6358,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing,  based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution for IV dosing using observed AUCinf"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, observed AUCinf"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6378,7 +6378,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.iv.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution for IV dosing using observed AUCinf"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, observed AUCinf"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.pred</span>
@@ -6395,7 +6395,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing,  based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution for IV dosing using predicted AUCinf"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, predicted AUCinf"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6415,7 +6415,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.iv.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution for IV dosing using predicted AUCinf"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, predicted AUCinf"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.sparse.last</span>
@@ -6432,7 +6432,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for sparse data, based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.sparse.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution from sparse sampling"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz from sparse sampling"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.sparse.last$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
@@ -6455,7 +6455,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.sparse.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.sparse.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Terminal volume of distribution from sparse sampling"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz from sparse sampling"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.obs</span>
@@ -6472,7 +6472,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The steady-state volume of distribution using observed Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, observed Clast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6526,7 +6526,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The steady-state volume of distribution using predicted Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, predicted Clast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6580,7 +6580,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for IV dosing, based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The steady-state volume of distribution with intravenous infusion using observed Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, observed Clast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6620,7 +6620,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for IV dosing, based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The steady-state volume of distribution with intravenous infusion using predicted Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, predicted Clast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6660,7 +6660,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for multiple-dose, based on Clast,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The steady-state volume of distribution for nonlinear multiple-dose data using observed Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, multi-dose, obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6700,7 +6700,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for multiple-dose, based on Clast,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The steady-state volume of distribution for nonlinear multiple-dose data using predicted Clast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, multi-dose, pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6740,7 +6740,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint.inf.obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution using interval AUCint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6763,7 +6763,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.int.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution using interval AUCint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred</span>
@@ -6780,7 +6780,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint.inf.pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution using interval AUCint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.inf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6803,7 +6803,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.int.inf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Steady-state volume of distribution using interval AUCint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.inf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.obs</span>
@@ -6820,7 +6820,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cav"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The average concentration during an interval (calculated with AUCint.inf.obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Avg conc in interval (AUCint.inf.obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6857,7 +6857,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cav"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The average concentration during an interval (calculated with AUCint.inf.pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Avg conc in interval (AUCint.inf.pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6894,7 +6894,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life (based on MRT,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The effective half-life (as determined from the MRTobs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life, MRTobs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6931,7 +6931,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life (based on MRT,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The effective half-life (as determined from the MRTpred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life, MRTpred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6968,7 +6968,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life (for IV dosing, based on MRT,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The effective half-life (as determined from the intravenous MRTobs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life, IV MRTobs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -7005,7 +7005,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life (for IV dosing, based on MRT,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The effective half-life (as determined from the intravenous MRTpred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life, IV MRTpred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -7042,7 +7042,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRT with observed Clast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRT w/ obs Clast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -7079,7 +7079,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRT with predicted Clast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRT w/ pred Clast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -7116,7 +7116,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (for IV dosing, based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the intravenous MRTobs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTobs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -7153,7 +7153,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (for IV dosing, based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the intravenous MRTpred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTpred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -7190,7 +7190,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint.inf.obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTint.inf.obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -7210,7 +7210,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.int.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTint.inf.obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred</span>
@@ -7227,7 +7227,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint.inf.pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTint.inf.pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.inf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -7247,7 +7247,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.int.inf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elimination rate (as calculated from the MRTint.inf.pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.inf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn</span>
