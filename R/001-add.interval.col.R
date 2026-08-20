@@ -158,7 +158,7 @@ add.interval.col <- function(name,
   checkmate::assert_character(x = FUN, len = 1, any.missing = TRUE) # allows NA
   checkmate::assert_logical(x = sparse, len = 1, any.missing=FALSE)
   checkmate::assert_character(x = pretty_name, len = 1, min.chars = 1, any.missing=FALSE)
-  checkmate::assert_character(x = desc, len = 1, any.missing=FALSE)
+  checkmate::assert_character(x = desc, len = 1, any.missing=FALSE, max.chars = 40)
   checkmate::assert_character(x = depends, null.ok = TRUE)
 
   # `values` must be either a function (used to validate/coerce) or a vector
@@ -200,7 +200,7 @@ add.interval.col <- function(name,
     # Ensure formalsmap names are unique
     checkmate::assert_character(x = names(formalsmap), min.chars = 1, any.missing = FALSE)
   }
-
+  
   # Ensure that the function exists
   if (!is.na(FUN)) {
     # Ensure that the function exists
@@ -341,5 +341,5 @@ add.interval.col(
   values = as.numeric,
   unit_type="time",
   pretty_name="Interval End",
-  desc = "Ending time of the interval (potentially infinity)"
+  desc = "End time of interval (may be Inf)"
 )

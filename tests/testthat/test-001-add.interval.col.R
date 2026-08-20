@@ -66,30 +66,49 @@ test_that("add.interval.col", {
   )
   
   # description
-  expect_error(
-    add.interval.col(name = "a", FUN = NA, unit_type = "conc", pretty_name = "a", datatype = "interval", desc = 1:2),
-    regexp = "Must be of type 'character'"
-  )
-  expect_error(
-    add.interval.col(name = "a", FUN = NA, unit_type = "conc", pretty_name = "a", datatype = "interval", desc = 1),
-    regexp = "Must be of type 'character'"
-  )
-  expect_error(
+  ## validates desc
+  # ---- Valid boundary: exactly 40 characters ----
+  expect_no_error(
     add.interval.col(
-      name = "a", FUN = NA, unit_type = "conc",
-      pretty_name = "a", datatype = "interval", desc = NA_character_
-    ),
-    regexp = "Contains missing values"
+      name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = paste(rep("a", 40), collapse = "") )
   )
+  
+  # ---- Invalid boundary: 41 characters ----
   expect_error(
-    add.interval.col(
-      name = "a", FUN = NA, unit_type = "conc",
-      pretty_name = "a", datatype = "interval",
-      desc = c("a", "b")
-    ),
+    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = paste(rep("a", 41), collapse = "") )
+  )
+  
+  # ---- NA ----
+  expect_error(
+    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = NA_character_  )  
+  )
+  
+  # ---- Zero-length character ----
+  expect_error(
+    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = character(0) )
+  )
+  
+  # ---- Length > 1 ----
+  expect_error(
+    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = c("a", "b") )
+  )
+  
+  # ---- Wrong type (numeric, not character) ----
+  expect_error(
+    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = 123 )
+  )
+  
+  expect_error(
+    add.interval.col(name="a", FUN=NA, depends = 1, unit_type="conc", pretty_name="a", datatype="interval", desc=1),
+    regexp="Must be of type 'character'",
+    info="depends column must be a NULL or a character string"
+  )
+  
+  expect_error(
+    add.interval.col(name = "a", FUN = NA, unit_type = "conc", pretty_name = "a", datatype = "interval", desc = c("a", "b")),
     regexp = "Must have length 1"
   )
-
+  
   # depends
   expect_error(
     add.interval.col(name = "a", FUN = NA, depends = 1, unit_type = "conc", pretty_name = "a", datatype = "interval", desc = "a"),
@@ -98,19 +117,11 @@ test_that("add.interval.col", {
   
   # values
   expect_error(
-    add.interval.col(
-      name = "a", FUN = NA, unit_type = "conc",
-      pretty_name = "a", datatype = "interval", desc = "a",
-      values = NULL
-    ),
+    add.interval.col(name = "a", FUN = NA, unit_type = "conc", pretty_name = "a", datatype = "interval", desc = "a", values = NULL),
     class = "pknca_error_values_invalid"
   )
   expect_error(
-    add.interval.col(
-      name = "a", FUN = NA, unit_type = "conc",
-      pretty_name = "a", datatype = "interval", desc = "a",
-      values = quote(x)
-    ),
+    add.interval.col(name = "a", FUN = NA, unit_type = "conc", pretty_name = "a", datatype = "interval", desc = "a", values = quote(x) ),
     class = "pknca_error_values_invalid"
   )
   

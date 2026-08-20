@@ -6,6 +6,9 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Parameter descriptions in `add.interval.col()` are now limited to 40
+  characters to comply with SDTM requirements.
+
 * Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
   Group-level concentration data are now sorted by time before calculation, so
   parameters that use the full group (e.g. `aucint.all` and the other `aucint*`

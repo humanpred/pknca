@@ -130,7 +130,7 @@ add.interval.col("c0",
                  values=c(FALSE, TRUE),
                  unit_type="conc",
                  pretty_name="C0",
-                 desc="Initial concentration after an IV bolus",
+                 desc="Initial conc after IV bolus",
                  depends=NULL,
                  pptestcd_cdisc="C0",
                  pptest_cdisc="Initial Conc")
