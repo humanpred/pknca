@@ -644,7 +644,7 @@ test_that("extrapolate.conc", {
       ),
       NA
     ),
-    class = "pknca_conc_all_missing"
+    class = "pknca_warning_all_concentration_missing"
   )
 
   # Ensure that extrapolation beyond the last point works if the last point is 0

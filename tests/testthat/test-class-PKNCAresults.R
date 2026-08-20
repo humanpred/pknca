@@ -377,7 +377,7 @@ test_that("units work for calculations and summaries with one set of units acros
   o_result_units_manipulated$result$PPSTRESU[o_result_units_manipulated$result$PPTESTCD %in% "auclast"][1] <- "foo"
   expect_error(
     summary(o_result_units_manipulated),
-    regexp="Multiple units cannot be summarized together.  For auclast, trying to combine: foo, hr*ng/mL",
+    regexp="Multiple units cannot be summarized together. For auclast, trying to combine: foo, hr*ng/mL",
     fixed=TRUE
   )
 })
@@ -400,7 +400,7 @@ test_that("getGroups.PKNCAresults", {
   )
   expect_error(
     getGroups(o_result, level="foo"),
-    regexp="Not all levels are listed in the group names.  Missing levels are: foo"
+    regexp="Not all levels are listed in the group names. Missing levels are: foo"
   )
   expect_equal(
     getGroups(o_result, level=2),

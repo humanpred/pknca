@@ -53,7 +53,7 @@ pk.business <- function(FUN,
 geomean <- function(x, na.rm=FALSE) {
   if (na.rm)
     x <- stats::na.omit(x)
-  if (any(is.na(x))) {
+  if (anyNA(x)) {
     NA_real_
   } else if (any(x == 0)) {
     0

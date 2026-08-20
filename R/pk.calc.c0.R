@@ -25,22 +25,18 @@ pk.calc.c0 <- function(conc, time, time.dose=0,
   if (check) {
     assert_conc_time(conc = conc, time = time)
   }
-  if (length(time.dose) != 1) {
-    stop("time.dose must be a scalar")
-  } else if (!is.numeric(time.dose) || is.factor(time.dose)) {
-    stop("time.dose must be a number")
-  }
+  checkmate::assert_number(time.dose, na.ok = TRUE, finite = FALSE)
   if (is.na(time.dose)) {
-    warning("time.dose is NA")
+    rlang::warn("time.dose is NA", class = "pknca_warning_timedose_na")
     return(structure(NA_real_, exclude = "dose time is missing"))
   } else if (time.dose > max(time)) {
-    warning("time.dose is after all available data")
+    rlang::warn("time.dose is after all available data", class = "pknca_warning_timedose_after_data")
     return(structure(NA_real_, exclude = "dose time is after all available concentration data"))
   }
   method <- match.arg(method, several.ok=TRUE)
   # Find the value
   ret <- NA
-  while (is.na(ret) &
+  while (is.na(ret) &&
          length(method) > 0) {
     current.method <- method[1]
     method <- method[-1]
@@ -134,7 +130,7 @@ add.interval.col("c0",
                  values=c(FALSE, TRUE),
                  unit_type="conc",
                  pretty_name="C0",
-                 desc="Initial concentration after an IV bolus",
+                 desc="Initial conc after IV bolus",
                  depends=NULL,
                  pptestcd_cdisc="C0",
                  pptest_cdisc="Initial Conc")

@@ -13,15 +13,9 @@ add.interval.col("volpk",
                  values=c(FALSE, TRUE),
                  unit_type="volume",
                  pretty_name="Total Urine Volume",
-                 desc="The sum of urine volumes for the interval",
+                 desc="Sum of urine volumes for interval",
                  pptestcd_cdisc="VOLPK",
                  pptest_cdisc="Volume of PK sample")
-PKNCA.set.summary(
-  name="volpk",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 #' Calculate amount excreted (typically in urine or feces)
 #'
@@ -54,15 +48,9 @@ add.interval.col("ae",
                  values=c(FALSE, TRUE),
                  unit_type="amount",
                  pretty_name="Amount excreted",
-                 desc="The amount excreted (typically into urine or feces)",
+                 desc="Amount excreted (urine/feces)",
                  pptestcd_cdisc="RCAMINT",
                  pptest_cdisc="Amt Rec from T1 to T2")
-PKNCA.set.summary(
-  name="ae",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 #' Calculate renal clearance
 #'
@@ -86,15 +74,10 @@ add.interval.col("clr.last",
                  pretty_name="Renal clearance (from AUClast)",
                  formalsmap=list(auc="auclast"),
                  depends="ae",
-                 desc="The renal clearance calculated using AUClast",
+                 desc="Renal clearance, AUClast",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL")
-PKNCA.set.summary(
-  name="clr.last",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("clr.obs",
                  FUN="pk.calc.clr",
                  values=c(FALSE, TRUE),
@@ -102,15 +85,10 @@ add.interval.col("clr.obs",
                  pretty_name="Renal clearance (from AUCinf,obs)",
                  formalsmap=list(auc="aucinf.obs"),
                  depends="ae",
-                 desc="The renal clearance calculated using AUCinf,obs",
+                 desc="Renal clearance, AUCinf,obs",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL")
-PKNCA.set.summary(
-  name="clr.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 add.interval.col("clr.pred",
                  FUN="pk.calc.clr",
                  values=c(FALSE, TRUE),
@@ -118,15 +96,10 @@ add.interval.col("clr.pred",
                  pretty_name="Renal clearance (from AUCinf,pred)",
                  formalsmap=list(auc="aucinf.pred"),
                  depends="ae",
-                 desc="The renal clearance calculated using AUCinf,pred",
+                 desc="Renal clearance, AUCinf,pred",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL")
-PKNCA.set.summary(
-  name="clr.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+
 
 #' Calculate fraction excreted (typically in urine or feces)
 #'
@@ -149,15 +122,9 @@ add.interval.col("fe",
                  pretty_name="Fraction excreted",
                  values=c(FALSE, TRUE),
                  depends="ae",
-                 desc="The fraction of the dose excreted",
+                 desc="Fraction of dose excreted",
                  pptestcd_cdisc="FREXINT",
                  pptest_cdisc="Fract Excr from T1 to T2")
-PKNCA.set.summary(
-  name="fe",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 #' Calculate the midpoint collection time of the last measurable excretion rate
 #'
@@ -199,16 +166,10 @@ add.interval.col("ertlst",
                  FUN="pk.calc.ertlst",
                  unit_type="time",
                  pretty_name="Tlast excretion rate",
-                 desc="The midpoint collection time of the last measurable excretion rate (typically in urine or feces)",
+                 desc="Midpoint time of last excr rate",
                  pptestcd_cdisc="ERTLST",
                  pptest_cdisc="Time of Last Excretion Rate")
 
-PKNCA.set.summary(
-  name="ertlst",
-  description="median and range",
-  point=business.median,
-  spread=business.range
-)
 
 #' Calculate the maximum excretion rate
 #'
@@ -249,16 +210,10 @@ add.interval.col("ermax",
                  FUN="pk.calc.ermax",
                  unit_type="amount_time",
                  pretty_name="Maximum excretion rate",
-                 desc="The maximum excretion rate (typically in urine or feces)",
+                 desc="Maximum excretion rate",
                  pptestcd_cdisc="ERMAX",
                  pptest_cdisc="Max Excretion Rate")
 
-PKNCA.set.summary(
-  name="ermax",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
 
 #' Calculate the midpoint collection time of the maximum excretion rate
 #'
@@ -306,17 +261,23 @@ add.interval.col("ertmax",
                  FUN="pk.calc.ertmax",
                  unit_type="time",
                  pretty_name="Tmax excretion rate",
-                 desc="The midpoint collection time of the maximum excretion rate (typically in urine or feces)",
+                 desc="Midpoint time of max excr rate",
                  pptestcd_cdisc="ERTMAX",
                  pptest_cdisc="Midpoint of Interval of Maximum ER")
 
 PKNCA.set.summary(
-  name="ertmax",
-  description="median and range",
-  point=business.median,
-  spread=business.range
+  name = c("volpk", "ae", "clr.last", "clr.obs", "clr.pred", "fe", "ermax"),
+  description = "geometric mean and geometric coefficient of variation",
+  point = business.geomean,
+  spread = business.geocv
 )
 
+PKNCA.set.summary(
+  name = c("ertlst", "ertmax"),
+  description = "median and range",
+  point = business.median,
+  spread = business.range
+)
 
 
 # Helper to generate missing-data checking messages for paired vectors

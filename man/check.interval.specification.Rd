@@ -24,6 +24,16 @@ parameters which are not requested may be calculated if it is required for
 \code{start} and \code{end} time must always be given as columns, and the \code{start} must
 be before the \code{end}.  Other columns define the parameters to be calculated
 and the groupings to apply the intervals to.
+
+Data are selected for calculation within an interval by the time of the
+measurement or dose: a row is included when its time is at or after \code{start}
+and at or before \code{end} (a dose exactly at \code{end} is not included in the
+interval).  For duration data (for example, urine collections or intravenous
+infusions), the time is the start of the collection or administration, and
+the duration is not considered during selection: a collection that starts
+within the interval and ends after \code{end} is included and contributes its
+full amount to the interval.  For the simplest interpretation of results,
+align collection start and end times with interval boundaries.
 }
 \seealso{
 The vignette "Selection of Calculation Intervals"
