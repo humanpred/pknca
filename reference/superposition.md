@@ -129,6 +129,12 @@ The returned superposition times will include all of the following
 times: 0 (zero), `dose.times`, `time modulo tau` (shifting `time` for
 each dose time as well), `additional.times`, and `tau`.
 
+When concentrations are extrapolated as zero after `tlast` (for example,
+`auc.type = "AUClast"` when `tlast < tau`), some concentrations in the
+profile can never become nonzero. Steady-state (`n.tau = Inf`) is then
+assessed on the nonzero concentrations, and a warning is given that zero
+concentrations remain in the steady-state profile.
+
 ## See also
 
 [`interp.extrap.conc()`](https://humanpred.github.io/pknca/reference/interp.extrap.conc.md)

@@ -44,6 +44,9 @@ steady_state <- superposition(conc_obj, tau=24)
     ## Warning in parallel::mclapply(X = seq_len(nrow(nested_data)), FUN =
     ## function(idx) {: all scheduled cores encountered errors in user code
 
+    ## Error in `FUN()`:
+    ## ! subscript out of bounds
+
 The error noting that the first concentration must be zero is due to the
 fact that superposition usually occurs with single-dose data. If the
 first concentration is nonzero, the data are not likely to be

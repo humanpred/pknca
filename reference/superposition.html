@@ -189,6 +189,11 @@ achieved (between 0 and 1, exclusive).</p></dd>
     <p>The returned superposition times will include all of the following
 times: 0 (zero), <code>dose.times</code>, <code>time modulo tau</code> (shifting <code>time</code> for each
 dose time as well), <code>additional.times</code>, and <code>tau</code>.</p>
+<p>When concentrations are extrapolated as zero after <code>tlast</code> (for example,
+<code>auc.type = "AUClast"</code> when <code>tlast &lt; tau</code>), some concentrations in the
+profile can never become nonzero.  Steady-state (<code>n.tau = Inf</code>) is then
+assessed on the nonzero concentrations, and a warning is given that zero
+concentrations remain in the steady-state profile.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
