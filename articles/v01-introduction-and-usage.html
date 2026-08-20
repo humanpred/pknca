@@ -1531,41 +1531,30 @@ for the changed participants.</p>
 <span><span class="va">d_conc_setzero</span><span class="op">$</span><span class="va">conc</span><span class="op">[</span><span class="va">d_conc</span><span class="op">$</span><span class="va">Time</span> <span class="op">==</span> <span class="fl">0</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
 <span><span class="va">o_conc_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc_setzero</span>, <span class="va">conc</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span><span class="op">)</span></span>
 <span><span class="va">o_data_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc_update</span>, <span class="va">o_dose</span><span class="op">)</span></span>
-<span><span class="va">o_nca_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">o_nca</span>, <span class="va">o_data_update</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Warning: Subject=2: No concentration data</span></span></code></pre>
-<pre><code><span><span class="co">## Warning: Subject=3: No concentration data</span></span></code></pre>
-<pre><code><span><span class="co">## Warning: Subject=4: No concentration data</span></span></code></pre>
-<pre><code><span><span class="co">## Warning: Subject=5: No concentration data</span></span></code></pre>
-<pre><code><span><span class="co">## Warning: Subject=6: No concentration data</span></span></code></pre>
-<pre><code><span><span class="co">## Warning: Subject=8: No concentration data</span></span></code></pre>
-<pre><code><span><span class="co">## Warning: Subject=9: No concentration data</span></span></code></pre>
-<pre><code><span><span class="co">## Warning: Subject=11: No concentration data</span></span></code></pre>
-<pre><code><span><span class="co">## Warning: Subject=12: No concentration data</span></span></code></pre>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca_update</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">o_nca_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">o_nca</span>, <span class="va">o_data_update</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca_update</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax   half.life aucinf.obs</span></span>
 <span><span class="co">##      0  24 12 74.6 [24.2]           .                  .           .          .</span></span>
 <span><span class="co">##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
-<p>The per-subject “No concentration data” warnings above occur because
-<code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update()</a></code> filters the concentration data to only the changed
-subjects while keeping all dose rows, so the unchanged subjects have
-doses but no concentrations during the partial recalculation.</p>
+<p>Only the participants whose concentration data changed are
+recalculated; results for all other participants are carried over
+unchanged.</p>
 <p>Now, assume that instead of calculating <code>auclast</code> from
 time 0 to 24, we want to calculate <code>aucint.inf.obs</code>. We can
 change the intervals to create a new <code>PKNCAdata</code> object:</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_intervals</span> <span class="op">&lt;-</span> <span class="va">o_data</span><span class="op">$</span><span class="va">intervals</span></span>
 <span><span class="va">d_intervals</span><span class="op">$</span><span class="va">aucint.inf.obs</span> <span class="op">&lt;-</span> <span class="va">d_intervals</span><span class="op">$</span><span class="va">auclast</span></span>
 <span><span class="va">d_intervals</span><span class="op">$</span><span class="va">auclast</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span></span>
 <span><span class="va">o_data_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span>, intervals <span class="op">=</span> <span class="va">d_intervals</span><span class="op">)</span></span></code></pre></div>
 <p>Then, we can update the <code>PKNCAresults</code>:</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">o_nca_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">o_nca</span>, <span class="va">o_data_update</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Warning: Full recalculation: changes detected in data other than source</span></span>
 <span><span class="co">## concentration or dose data</span></span></code></pre>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca_update</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N        cmax               tmax   half.life aucinf.obs</span></span>
 <span><span class="co">##      0  24 12           .                  .           .          .</span></span>

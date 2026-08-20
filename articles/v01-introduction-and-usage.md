@@ -710,28 +710,6 @@ d_conc_setzero$conc[d_conc$Time == 0] <- 0
 o_conc_update <- PKNCAconc(d_conc_setzero, conc~Time|Subject)
 o_data_update <- PKNCAdata(o_conc_update, o_dose)
 o_nca_update <- update(o_nca, o_data_update)
-```
-
-    ## Warning: Subject=2: No concentration data
-
-    ## Warning: Subject=3: No concentration data
-
-    ## Warning: Subject=4: No concentration data
-
-    ## Warning: Subject=5: No concentration data
-
-    ## Warning: Subject=6: No concentration data
-
-    ## Warning: Subject=8: No concentration data
-
-    ## Warning: Subject=9: No concentration data
-
-    ## Warning: Subject=11: No concentration data
-
-    ## Warning: Subject=12: No concentration data
-
-``` r
-
 summary(o_nca_update)
 ```
 
@@ -741,11 +719,8 @@ summary(o_nca_update)
     ## 
     ## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects
 
-The per-subject “No concentration data” warnings above occur because
-[`update()`](https://rdrr.io/r/stats/update.html) filters the
-concentration data to only the changed subjects while keeping all dose
-rows, so the unchanged subjects have doses but no concentrations during
-the partial recalculation.
+Only the participants whose concentration data changed are recalculated;
+results for all other participants are carried over unchanged.
 
 Now, assume that instead of calculating `auclast` from time 0 to 24, we
 want to calculate `aucint.inf.obs`. We can change the intervals to
