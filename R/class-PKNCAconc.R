@@ -204,13 +204,6 @@ PKNCAconc.data.frame <- function(data, formula, subject,
                            "The exclude_half.life column ('", exclude_half.life,
                            "') does not exist in the data"
                          ))
-    if (!is.logical(getAttributeColumn(ret, attr_name="exclude_half.life")[[1]])) {
-      stop(
-        "The exclude_half.life column ('", exclude_half.life,
-        "') must be a logical (TRUE/FALSE/NA) column, not ",
-        class(getAttributeColumn(ret, attr_name="exclude_half.life")[[1]])[1]
-      )
-    }
   }
   if (!missing(include_half.life)) {
     ret <-
@@ -221,13 +214,6 @@ PKNCAconc.data.frame <- function(data, formula, subject,
                            "The include_half.life column ('", include_half.life,
                            "') does not exist in the data"
                          ))
-    if (!is.logical(getAttributeColumn(ret, attr_name="include_half.life")[[1]])) {
-      stop(
-        "The include_half.life column ('", include_half.life,
-        "') must be a logical (TRUE/FALSE/NA) column, not ",
-        class(getAttributeColumn(ret, attr_name="include_half.life")[[1]])[1]
-      )
-    }
   }
   if (!missing(lloq)) {
     ret <- setAttributeColumn(object=ret, attr_name="lloq", col_or_value=lloq)
@@ -243,7 +229,7 @@ PKNCAconc.data.frame <- function(data, formula, subject,
       units_orig = list(concu = concu, amountu = amountu, timeu = timeu),
       units_pref = list(concu_pref = concu_pref, amountu_pref = amountu_pref, timeu_pref = timeu_pref)
     )
-  ret
+  assert_PKNCAconc(ret)
 }
 
 #' Extract the formula from a PKNCAconc object.

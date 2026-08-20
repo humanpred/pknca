@@ -322,25 +322,11 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
       }
       uses_include_hl <- FALSE
       if ("include_half.life" %in% names(conc_data_interval)) {
-        # PKNCAconc() validates at construction; catch a column replaced
-        # afterward, which would otherwise select nothing.
-        if (!is.logical(conc_data_interval$include_half.life)) {
-          stop(
-            "The include_half.life column must be a logical (TRUE/FALSE/NA) column, not ",
-            class(conc_data_interval$include_half.life)[1]
-          )
-        }
         args$include_half.life <- conc_data_interval$include_half.life
         uses_include_hl <- !is.null(args$include_half.life) && !all(is.na(args$include_half.life))
       }
       uses_exclude_hl <- FALSE
       if ("exclude_half.life" %in% names(conc_data_interval)) {
-        if (!is.logical(conc_data_interval$exclude_half.life)) {
-          stop(
-            "The exclude_half.life column must be a logical (TRUE/FALSE/NA) column, not ",
-            class(conc_data_interval$exclude_half.life)[1]
-          )
-        }
         args$exclude_half.life <- conc_data_interval$exclude_half.life
         uses_exclude_hl <- !is.null(args$exclude_half.life) && !all(is.na(args$exclude_half.life))
       }

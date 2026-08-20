@@ -414,7 +414,7 @@ test_that("non-logical half-life point columns fail loud at calculation time (#5
   o_data_excl$conc$data$excl <- ifelse(is.na(d_conc$excl), NA_character_, "yes")
   expect_error(
     suppressMessages(pk.nca(o_data_excl)),
-    regexp = "The exclude_half.life column must be a logical (TRUE/FALSE/NA) column, not character",
+    regexp = "The exclude_half.life column ('excl') must be a logical (TRUE/FALSE/NA) column, not character",
     fixed = TRUE
   )
 
@@ -423,7 +423,7 @@ test_that("non-logical half-life point columns fail loud at calculation time (#5
   o_data_incl$conc$data$incl <- ifelse(is.na(d_conc$incl), NA_character_, "yes")
   expect_error(
     suppressMessages(pk.nca(o_data_incl)),
-    regexp = "The include_half.life column must be a logical (TRUE/FALSE/NA) column, not character",
+    regexp = "The include_half.life column ('incl') must be a logical (TRUE/FALSE/NA) column, not character",
     fixed = TRUE
   )
 })
