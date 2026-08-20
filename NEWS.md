@@ -6,6 +6,14 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: `update()` on a `PKNCAresults` object now works when group columns
+  are factors whose levels differ between the old and new data (for example,
+  ordered factors like `datasets::Theoph$Subject` after re-leveling); group
+  columns are matched by value while keeping their classes and levels in the
+  results.  `update()` also no longer warns "No concentration data" for every
+  unchanged group, because the intervals are now filtered to the changed groups
+  along with the concentration and dose data (#581).
+
 * Bug fix: `superposition()` no longer loops forever when steady-state is
   requested (the default `n.tau=Inf`) and concentrations are extrapolated as
   zero after `tlast` (for example, `auc.type="AUClast"` when `tlast < tau`).
