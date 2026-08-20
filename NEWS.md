@@ -14,6 +14,16 @@ the dosing including dose amount and route.
   profile, and an informative error (instead of an infinite loop) is raised if
   steady-state cannot be reached within 10000 dosing intervals (#580).
 
+* Corrected registry description strings that did not match the
+  implementation (#582).  `adj.r.squared.factor` is described as selecting
+  the regression with the most points among those within the tolerance of
+  the best adjusted r^2, rather than as a factor added per data point.
+  `span.ratio` is described as the lambda z time span divided by the
+  half-life; the previous text stated the inverse.  The eight dose-aware
+  `aucint*`/`aumcint*` parameters ending in `.dose` no longer describe
+  themselves as `AUCdn`/`AUMCdn`, which is this package's abbreviation for
+  dose normalization (`auclast.dn` and similar).
+
 * Bug fix: `pk.calc.sparse_auc()` and `pk.calc.sparse_aumc()` now use their
   `options` argument when integrating the mean concentration-time profile, so
   per-run options (e.g. `PKNCAdata(options = list(conc.blq = "keep"))`) affect
