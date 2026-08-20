@@ -36,8 +36,8 @@ each of those times.
 
 - "arithmetic mean, \<=50% BLQ":
 
-  If \>= 50% of the measurements are BLQ, zero. Otherwise, the
-  arithmetic mean of all samples (including the BLQ as zero).
+  If \>50% of the measurements are BLQ, zero. Otherwise, the arithmetic
+  mean of all samples (including the BLQ as zero).
 
 ## See also
 
