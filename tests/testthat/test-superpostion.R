@@ -612,25 +612,56 @@ test_that("superposition errors instead of hanging when steady-state cannot be r
   )
 })
 
-test_that("superposition warnings survive the parallel worker (issue 580)", {
+test_that("superposition warns about structural zeros for a single profile (issue 580)", {
   # superposition.PKNCAconc() runs each subject through parallel::mclapply(),
-  # which forks everywhere except Windows.  A warning raised in a forked worker
-  # never reaches the parent, so the worker returns its messages instead.  This
-  # exercises that hand-off directly, which the PKNCAconc test above cannot do
-  # on Windows because there mclapply() falls back to lapply().
+  # which forks everywhere except Windows, and a warning raised in a forked
+  # worker never reaches the parent; the method collects them with
+  # purrr::quietly() and re-emits them.  The PKNCAconc test above cannot show
+  # that on Windows, where mclapply() falls back to lapply(), so pin the
+  # underlying warning here where it is raised.
   d_theoph_6 <- datasets::Theoph[datasets::Theoph$Subject == 6, ]
-  captured <-
-    superposition_capture_warnings(
-      conc=d_theoph_6$conc, time=d_theoph_6$Time,
-      tau=24, auc.type="AUClast", check.blq=FALSE
-    )
-  expect_length(captured$messages, 1)
-  expect_match(
-    captured$messages,
+  expect_warning(
+    v_6 <-
+      superposition(
+        conc=d_theoph_6$conc, time=d_theoph_6$Time,
+        tau=24, auc.type="AUClast", check.blq=FALSE
+      ),
     regexp="Zero concentrations remain in the steady-state superposition profile",
     fixed=TRUE
   )
-  # The result is returned alongside the messages, not replaced by them.
-  expect_s3_class(captured$result, "data.frame")
-  expect_equal(nrow(captured$result), 12)
+  expect_equal(nrow(v_6), 12)
+  expect_true(all(is.finite(v_6$conc)))
+})
+
+test_that("superposition.PKNCAconc re-emits everything its workers produce (issue 580)", {
+  # parallel::mclapply() forks everywhere except Windows, and conditions raised
+  # in a forked worker never reach the parent.  purrr::quietly() collects the
+  # warnings, messages, and printed output so the method can re-emit them.
+  # Mock the calculation so all three are produced regardless of the data.
+  d_theoph_6_10 <-
+    datasets::Theoph[datasets::Theoph$Subject %in% c(6, 10), ]
+  conc_obj <- PKNCAconc(conc~Time|Subject, data=d_theoph_6_10)
+  local_mocked_bindings(
+    superposition.numeric=function(conc, time, ...) {
+      warning("mocked warning")
+      message("mocked message")
+      cat("mocked output", fill=TRUE)
+      data.frame(conc=c(1, 2), time=c(0, 1))
+    }
+  )
+  printed <- NULL
+  warned <-
+    capture_warnings(
+      messaged <-
+        capture_messages(
+          # Assign the result so capture.output() does not also see it printed.
+          printed <- capture.output(v_obj <- superposition(conc_obj, tau=24))
+        )
+    )
+  # One of each per subject, and messages are not given an extra blank line.
+  expect_length(warned, 2)
+  expect_equal(unique(warned), "mocked warning")
+  expect_length(messaged, 2)
+  expect_equal(unique(trimws(messaged)), "mocked message")
+  expect_equal(unique(printed), "mocked output")
 })

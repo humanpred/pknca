@@ -50,39 +50,39 @@ superposition <- function(conc, ...) {
 
 #' @rdname superposition
 #' @export
-# parallel::mclapply() forks on every platform except Windows, and a warning
-# raised inside a forked worker never reaches the parent.  Return the messages
-# with the result so the caller can re-emit them.
-superposition_capture_warnings <- function(conc, time, ...) {
-  messages <- character(0)
-  result <-
-    withCallingHandlers(
-      superposition.numeric(conc=conc, time=time, ...),
-      warning=function(w) {
-        messages <<- c(messages, conditionMessage(w))
-        invokeRestart("muffleWarning")
-      }
-    )
-  list(result=result, messages=messages)
-}
-
 superposition.PKNCAconc <- function(conc, ...) {
   # Split the data by grouping and extract just the concentration and
   # time columns
   nested_data <- prepare_PKNCAconc(conc)
+  # parallel::mclapply() forks on every platform except Windows, and a
+  # condition raised in a forked worker never reaches the parent, so collect
+  # each worker's conditions with the result and re-emit them below.
+  # purrr::quietly() also captures messages and printed output, so those are
+  # re-emitted as well; otherwise adding a message() to the calculation later
+  # would silently discard it on every platform.
+  quiet_superposition <- purrr::quietly(superposition.numeric)
   tmp_results <-
     parallel::mclapply(
       X=seq_len(nrow(nested_data)),
       FUN=function(idx) {
-        superposition_capture_warnings(
+        quiet_superposition(
           conc=nested_data$data_conc[[idx]]$conc,
           time=nested_data$data_conc[[idx]]$time,
           ...
         )
       }
     )
+  for (current_warning in unlist(lapply(tmp_results, FUN="[[", "warnings"))) {
+    warning(current_warning, call.=FALSE)
+  }
+  # `messages` keep their trailing newline; `output` has it stripped.
   for (current_message in unlist(lapply(tmp_results, FUN="[[", "messages"))) {
-    warning(current_message, call.=FALSE)
+    message(current_message, appendLF=FALSE)
+  }
+  current_output <- unlist(lapply(tmp_results, FUN="[[", "output"))
+  current_output <- current_output[nzchar(current_output)]
+  if (length(current_output) > 0) {
+    writeLines(current_output)
   }
   # Replace the concentration data with the new results
   nested_data$data_conc <- lapply(tmp_results, FUN="[[", "result")
