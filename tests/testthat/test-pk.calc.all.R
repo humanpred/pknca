@@ -399,8 +399,8 @@ test_that("include_half.life and exclude_half.life work with NAs treated as miss
 })
 
 test_that("non-logical half-life point columns fail loud at calculation time (#583)", {
-  # PKNCAconc() validates at construction; a column modified afterward would
-  # otherwise silently exclude/include nothing during pk.nca().
+  # PKNCAconc() validates at construction, so replace the column afterward to
+  # reach the check in pk.nca()
   d_conc <-
     data.frame(
       conc = c(1, 0.5, 0.25, 0.125, 0.06),

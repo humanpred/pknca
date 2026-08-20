@@ -525,20 +525,19 @@ test_that("half-life has a exclude message when it cannot be calculated for flat
   )
 })
 
-test_that("half-life has an exclude message when no window survives selection (#583)", {
+test_that("half-life has an exclude message when no span survives selection (#583)", {
   # The rising tail (2, 2.2, 2.42) fits perfectly with lambda.z < 0 and anchors
-  # the adjusted r-squared tolerance, so no window with lambda.z > 0 survives
-  # selection and the half-life is unreportable.
+  # the adjusted r-squared tolerance, so no span with lambda.z > 0 survives.
   result <- pk.calc.half.life(conc = c(0, 20, 10, 5, 2, 2.2, 2.42), time = 0:6)
   expect_equal(result$half.life, NA_real_)
   expect_equal(result$lambda.z, NA_real_)
   expect_equal(
     attr(result, "exclude"),
-    "No valid terminal phase: no window with lambda.z > 0 within the adjusted r-squared tolerance of the best fit"
+    "No valid terminal phase: no span with lambda.z > 0 within the adjusted r-squared tolerance of the best fit"
   )
 })
 
-test_that("the no-surviving-window exclude reason lands in the pk.nca() exclude column (#583)", {
+test_that("the no-surviving-span exclude reason lands in the pk.nca() exclude column (#583)", {
   d_conc <- data.frame(conc = c(0, 20, 10, 5, 2, 2.2, 2.42), time = 0:6, subject = 1)
   o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
@@ -547,7 +546,7 @@ test_that("the no-surviving-window exclude reason lands in the pk.nca() exclude 
   expect_equal(res$PPORRES[res$PPTESTCD %in% "half.life"], NA_real_)
   expect_equal(
     res$exclude[res$PPTESTCD %in% "half.life"],
-    "No valid terminal phase: no window with lambda.z > 0 within the adjusted r-squared tolerance of the best fit"
+    "No valid terminal phase: no span with lambda.z > 0 within the adjusted r-squared tolerance of the best fit"
   )
 
   # A normal successful fit carries no exclusion reason
@@ -560,8 +559,8 @@ test_that("the no-surviving-window exclude reason lands in the pk.nca() exclude 
   expect_equal(res_norm$exclude[res_norm$PPTESTCD %in% "half.life"], NA_character_)
 })
 
-test_that("tobit half-life has an exclude message when no window has lambda.z > 0 (#583)", {
-  # Concentrations rise after tmax, so every Tobit window fits lambda.z < 0
+test_that("tobit half-life has an exclude message when no span has lambda.z > 0 (#583)", {
+  # Concentrations rise after tmax, so every Tobit span fits lambda.z < 0
   result <- pk.calc.half.life(
     conc = c(10, 1, 1.12, 1.19, 1.33, 1.44),
     time = 0:5,
@@ -573,7 +572,7 @@ test_that("tobit half-life has an exclude message when no window has lambda.z > 
   expect_equal(result$half.life, NA_real_)
   expect_equal(
     attr(result, "exclude"),
-    "No valid terminal phase: no Tobit window with lambda.z > 0"
+    "No valid terminal phase: no Tobit span with lambda.z > 0"
   )
 })
 

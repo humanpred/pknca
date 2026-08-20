@@ -43,11 +43,11 @@
 #'   (undefined); the column/vector is treated as "in use" for an interval
 #'   unless it is entirely `NA` (so an all-`FALSE` column still counts as in
 #'   use), so leave it `NA` (rather than `FALSE`) where the mechanism should not
-#'   apply.  A non-logical column (e.g. character `"yes"`) or a column name that
-#'   is not in the data is an error.  Only
-#'   one of `exclude_half.life` and `include_half.life` may be in
-#'   use for a given interval.  See the "Half-Life Calculation" vignette for
-#'   more details on the use of these arguments.
+#'   apply.  The column must be logical and must exist in the data; anything
+#'   else is an error.  Only one of `exclude_half.life` and
+#'   `include_half.life` may be in use for a given interval.  See the
+#'   "Half-Life Calculation" vignette for more details on the use of these
+#'   arguments.
 #' @param lloq (optional) The lower limit of quantification used by the Tobit
 #'   half-life method (`hl_method = "tobit"`).  Either the name of a column in
 #'   `data` giving the per-observation LLOQ or a numeric scalar applied to all

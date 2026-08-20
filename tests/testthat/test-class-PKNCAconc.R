@@ -685,8 +685,7 @@ test_that("exclude_half.life and include_half.life columns must be logical (#583
       incl_lgl = c(FALSE, TRUE, TRUE, TRUE),
       subject = 1
     )
-  # Character columns (e.g. "yes") were previously accepted silently and
-  # excluded/included nothing; they are now an error naming the column.
+  # A non-logical column is an error that names the column
   expect_error(
     PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_chr"),
     regexp = "The exclude_half.life column ('excl_chr') must be a logical (TRUE/FALSE/NA) column, not character",
@@ -720,9 +719,8 @@ test_that("exclude_half.life and include_half.life column names must exist in th
       excl_lgl = c(NA, NA, TRUE, NA),
       subject = 1
     )
-  # A column name not in the data previously created an all-NA logical column
-  # silently (treated as "not in use", so a typo deactivated the selection); it
-  # is now an error naming the missing column.
+  # A column name not in the data is an error that names the missing column,
+  # so a typo cannot quietly deactivate the selection
   expect_error(
     PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_typo"),
     regexp = "The exclude_half.life column ('excl_typo') does not exist in the data",

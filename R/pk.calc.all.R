@@ -322,8 +322,8 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
       }
       uses_include_hl <- FALSE
       if ("include_half.life" %in% names(conc_data_interval)) {
-        # Guards against the column being modified after PKNCAconc() validation;
-        # a non-logical column would silently select nothing.
+        # PKNCAconc() validates at construction; catch a column replaced
+        # afterward, which would otherwise select nothing.
         if (!is.logical(conc_data_interval$include_half.life)) {
           stop(
             "The include_half.life column must be a logical (TRUE/FALSE/NA) column, not ",
