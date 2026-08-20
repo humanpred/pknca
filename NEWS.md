@@ -6,6 +6,19 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: `superposition()` no longer loops forever when steady-state is
+  requested (the default `n.tau=Inf`) and concentrations are extrapolated as
+  zero after `tlast` (for example, `auc.type="AUClast"` when `tlast < tau`).
+  Steady-state is now assessed on the concentrations that can become nonzero,
+  a warning is given when zero concentrations remain in the steady-state
+  profile, and an informative error (instead of an infinite loop) is raised if
+  steady-state cannot be reached within 10000 dosing intervals (#580).
+  Warnings, messages, and printed output from `superposition()` on a
+  `PKNCAconc` object are now raised by the parent process.  Each subject runs
+  through `parallel::mclapply()`, which forks on every platform except
+  Windows, and a condition raised in a forked worker never reaches the
+  caller, so the new warning was previously invisible except on Windows.
+
 * Corrected registry description strings that did not match the
   implementation (#582).  `adj.r.squared.factor` is described as selecting
   the regression with the most points among those within the tolerance of

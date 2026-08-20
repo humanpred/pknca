@@ -35,6 +35,12 @@
 #' times: 0 (zero), `dose.times`, `time modulo tau` (shifting `time` for each
 #' dose time as well), `additional.times`, and `tau`.
 #'
+#' When concentrations are extrapolated as zero after `tlast` (for example,
+#' `auc.type = "AUClast"` when `tlast < tau`), some concentrations in the
+#' profile can never become nonzero.  Steady-state (`n.tau = Inf`) is then
+#' assessed on the nonzero concentrations, and a warning is given that zero
+#' concentrations remain in the steady-state profile.
+#'
 #' @seealso [interp.extrap.conc()]
 #' @family Superposition
 #' @export
@@ -48,19 +54,38 @@ superposition.PKNCAconc <- function(conc, ...) {
   # Split the data by grouping and extract just the concentration and
   # time columns
   nested_data <- prepare_PKNCAconc(conc)
+  # parallel::mclapply() forks on every platform except Windows, and a
+  # condition raised in a forked worker never reaches the parent, so collect
+  # each worker's conditions with the result and re-emit them below.
+  # purrr::quietly() also captures messages and printed output, so those are
+  # re-emitted as well; otherwise adding a message() to the calculation later
+  # would silently discard it on every platform.
+  quiet_superposition <- purrr::quietly(superposition.numeric)
   tmp_results <-
     parallel::mclapply(
       X=seq_len(nrow(nested_data)),
       FUN=function(idx) {
-        superposition.numeric(
+        quiet_superposition(
           conc=nested_data$data_conc[[idx]]$conc,
           time=nested_data$data_conc[[idx]]$time,
           ...
         )
       }
     )
+  for (current_warning in unlist(lapply(tmp_results, FUN="[[", "warnings"))) {
+    warning(current_warning, call.=FALSE)
+  }
+  # `messages` keep their trailing newline; `output` has it stripped.
+  for (current_message in unlist(lapply(tmp_results, FUN="[[", "messages"))) {
+    message(current_message, appendLF=FALSE)
+  }
+  current_output <- unlist(lapply(tmp_results, FUN="[[", "output"))
+  current_output <- current_output[nzchar(current_output)]
+  if (length(current_output) > 0) {
+    writeLines(current_output)
+  }
   # Replace the concentration data with the new results
-  nested_data$data_conc <- tmp_results
+  nested_data$data_conc <- lapply(tmp_results, FUN="[[", "result")
   tidyr::unnest(nested_data, cols="data_conc")
 }
 
@@ -212,10 +237,22 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
     # Do the math! (Finally)
     current.tol <- steady.state.tol + 1
     tau.count <- 0
+    # Generous backstop so that a case that cannot reach steady-state errors
+    # instead of looping forever (normal convergence takes far fewer
+    # intervals; the default steady.state.tol needs at most ~1000 even for
+    # negligible accumulation decay).
+    max.tau.count <- 10000L
     # Stop either for reaching steady-state or for reaching the requested number of doses
     while (tau.count < n.tau &
            !is.na(current.tol) &
            current.tol >= steady.state.tol) {
+      if (is.infinite(n.tau) && tau.count >= max.tau.count) {
+        stop(
+          "Superposition did not reach steady-state within ", max.tau.count,
+          " dosing intervals (steady.state.tol=", steady.state.tol,
+          ").  Check the lambda.z, tau, and steady.state.tol inputs, or use a finite n.tau."
+        )
+      }
       prev.conc <- ret$conc
       # Perform the dosing for a single dosing interval.
       for (i in seq_along(dose.times)) {
@@ -238,13 +275,28 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
           )
       }
       tau.count <- tau.count + 1
-      if (any(ret$conc %in% 0)) {
-        # prevent division by 0.  Since not all concentrations are 0,
-        # all values will eventually be nonzero.
-        current.tol <- steady.state.tol + 1
-      } else {
+      zero.conc <- ret$conc %in% 0
+      if (!any(zero.conc)) {
         current.tol <- max(1-(prev.conc/ret$conc))
+      } else if ((tau*(tau.count - 1) - max(dose.times)) > tlast) {
+        # The dosing interval just added drew all of its concentrations from
+        # times after tlast, where extrapolation may be zero (e.g. with
+        # auc.type="AUClast").  A concentration that is still zero can
+        # therefore never become nonzero (a structural zero), so assess
+        # steady-state on the nonzero concentrations only.
+        current.tol <- max(1-(prev.conc[!zero.conc]/ret$conc[!zero.conc]))
+      } else {
+        # A zero concentration may still become nonzero from a later dosing
+        # interval; prevent division by 0 and do not yet assess steady-state.
+        current.tol <- steady.state.tol + 1
       }
+    }
+    if (!is.na(current.tol) && current.tol < steady.state.tol && any(ret$conc %in% 0)) {
+      warning(
+        "Zero concentrations remain in the steady-state superposition profile.  ",
+        "They come from concentrations extrapolated as zero after tlast (",
+        signif(tlast, 6), ") with auc.type=", dQuote(auc.type, q = FALSE), "."
+      )
     }
   }
   ret
