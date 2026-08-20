@@ -284,45 +284,47 @@ test_that("superposition inputs", {
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              additional.times=c(2, NA)),
                regexp="No additional.times may be NA \\(to not include any additional.times, enter c\\(\\) as the function argument\\)")
+
   # additional.times nonnumeric
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              additional.times="1"),
-               regexp="additional.times must be a number")
+               regexp="Must be of type 'numeric'")
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              additional.times=factor("1")),
-               regexp="additional.times must be a number")
+               regexp="Must be of type 'numeric'")
   # additional times < 0
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              additional.times=-1),
-               regexp="All additional.times must be nonnegative")
+               regexp="Element 1 is not >= 0")
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              additional.times=c(-1, 0)),
-               regexp="All additional.times must be nonnegative")
+               regexp="Element 1 is not >= 0")
   # Additional times > tau
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              additional.times=25),
-               regexp="All additional.times must be <= tau")
+               regexp="Element 1 is not <= 24")
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              additional.times=c(0, 25)),
-               regexp="All additional.times must be <= tau")
-
+               regexp="Element 2 is not <= 24")
+  
   # steady.state.tol scalar
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              steady.state.tol=c(1, 2)),
-               regexp="steady.state.tol must be a scalar")
+               regexp="Must have length 1")
   # steady.state.tol numeric
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              steady.state.tol="1"),
-               regexp="steady.state.tol must be a number")
+               regexp="Must be of type 'number'")
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              steady.state.tol="1"),
-               regexp="steady.state.tol must be a number")
+               regexp="Must be of type 'number'")
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              steady.state.tol=factor("1")),
-               regexp="steady.state.tol must be a number")
+               regexp="Must be of type 'number'")
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              steady.state.tol=NA),
-               regexp="steady.state.tol must be a number")
+               regexp="May not be NA")
+
   # steady.state.tol range
   expect_error(superposition(conc=c(0, 2), time=c(0, 1), tau=24,
                              steady.state.tol=0),
@@ -511,4 +513,155 @@ test_that("PKNCAconc superposition", {
       time=rep(0:3, 2)
     )
   )
+})
+
+test_that("superposition reaches steady-state despite structural zero concentrations (issue 580)", {
+  # Theoph subjects 6 and 10 have tlast < tau=24, so with auc.type="AUClast"
+  # the concentrations after tlast extrapolate as exactly zero and stay zero at
+  # steady-state.  This formerly looped forever with n.tau=Inf because the
+  # zero-concentration guard reset the steady-state tolerance every interval.
+  d_theoph_6 <- datasets::Theoph[datasets::Theoph$Subject == 6, ]
+  expect_warning(
+    v_ss <-
+      superposition(
+        conc=d_theoph_6$conc, time=d_theoph_6$Time, tau=24, auc.type="AUClast"
+      ),
+    regexp='Zero concentrations remain in the steady-state superposition profile.  They come from concentrations extrapolated as zero after tlast (23.85) with auc.type="AUClast".',
+    fixed=TRUE
+  )
+  # No accumulation is possible because every concentration one or more
+  # dosing intervals after dosing is zero, so the steady-state profile is
+  # exactly the single-dose profile with structural zeros at times 0 and tau.
+  expect_identical(
+    v_ss,
+    data.frame(conc=c(d_theoph_6$conc, 0), time=c(d_theoph_6$Time, 24))
+  )
+  # A finite n.tau with the same input gave the same concentrations before the
+  # fix (all added dosing intervals contribute zero); that is preserved, and
+  # partial accumulation with a finite n.tau does not warn.
+  expect_silent(
+    v_1 <-
+      superposition(
+        conc=d_theoph_6$conc, time=d_theoph_6$Time, tau=24, n.tau=1, auc.type="AUClast"
+      )
+  )
+  expect_identical(v_ss, v_1)
+
+  # The default auc.type="AUCinf" on the same subject is unaffected by the fix:
+  # all concentrations become positive and steady-state is reached silently
+  # (values are pinned from before the fix).
+  expect_silent(
+    v_aucinf <- superposition(conc=d_theoph_6$conc, time=d_theoph_6$Time, tau=24)
+  )
+  expect_equal(
+    v_aucinf,
+    data.frame(
+      conc=c(1.03361737415698, 2.29940375348928, 4.06230162309106,
+             7.37435349523853, 7.18488330467035, 6.28550707796221,
+             5.60636744789876, 4.57905606419521, 3.92005369868033,
+             3.13726988893256, 1.04734393070531, 1.03364150451656),
+      time=c(0, 0.27, 0.58, 1.15, 2.03, 3.57, 5, 7, 9.22, 12.1, 23.85, 24)
+    )
+  )
+
+  # AUClast with tlast > tau converges without a warning: the time-zero
+  # concentration is zero after the first dosing interval, becomes nonzero on
+  # the second, and no zeros remain at steady-state.
+  d_theoph_1 <- datasets::Theoph[datasets::Theoph$Subject == 1, ]
+  expect_silent(
+    v_s1 <-
+      superposition(
+        conc=d_theoph_1$conc, time=d_theoph_1$Time, tau=24, auc.type="AUClast",
+        check.blq=FALSE
+      )
+  )
+  expect_true(all(v_s1$conc > 0))
+
+  # The PKNCAconc method (the form reported in issue 580) returns with one
+  # warning per affected subject (check.blq=FALSE because subject 10 has a
+  # nonzero concentration at time 0)
+  d_theoph_6_10 <-
+    datasets::Theoph[datasets::Theoph$Subject %in% c(6, 10), ]
+  conc_obj <- PKNCAconc(conc~Time|Subject, data=d_theoph_6_10)
+  w_obj <-
+    capture_warnings(
+      v_obj <- superposition(conc_obj, tau=24, auc.type="AUClast", check.blq=FALSE)
+    )
+  expect_length(w_obj, 2)
+  expect_match(
+    w_obj,
+    regexp="Zero concentrations remain in the steady-state superposition profile",
+    fixed=TRUE,
+    all=TRUE
+  )
+  expect_true(all(is.finite(v_obj$conc)))
+})
+
+test_that("superposition errors instead of hanging when steady-state cannot be reached", {
+  # A negligible lambda.z makes each added dosing interval contribute ~clast,
+  # so the relative change shrinks only like 1/n.tau and steady.state.tol=1e-8
+  # cannot be reached within the iteration cap.
+  expect_error(
+    superposition(
+      conc=c(0, 1, 0.5), time=0:2, tau=1,
+      lambda.z=1e-8, clast.pred=0.5, tlast=2,
+      steady.state.tol=1e-8
+    ),
+    regexp="Superposition did not reach steady-state within 10000 dosing intervals",
+    fixed=TRUE
+  )
+})
+
+test_that("superposition warns about structural zeros for a single profile (issue 580)", {
+  # superposition.PKNCAconc() runs each subject through parallel::mclapply(),
+  # which forks everywhere except Windows, and a warning raised in a forked
+  # worker never reaches the parent; the method collects them with
+  # purrr::quietly() and re-emits them.  The PKNCAconc test above cannot show
+  # that on Windows, where mclapply() falls back to lapply(), so pin the
+  # underlying warning here where it is raised.
+  d_theoph_6 <- datasets::Theoph[datasets::Theoph$Subject == 6, ]
+  expect_warning(
+    v_6 <-
+      superposition(
+        conc=d_theoph_6$conc, time=d_theoph_6$Time,
+        tau=24, auc.type="AUClast", check.blq=FALSE
+      ),
+    regexp="Zero concentrations remain in the steady-state superposition profile",
+    fixed=TRUE
+  )
+  expect_equal(nrow(v_6), 12)
+  expect_true(all(is.finite(v_6$conc)))
+})
+
+test_that("superposition.PKNCAconc re-emits everything its workers produce (issue 580)", {
+  # parallel::mclapply() forks everywhere except Windows, and conditions raised
+  # in a forked worker never reach the parent.  purrr::quietly() collects the
+  # warnings, messages, and printed output so the method can re-emit them.
+  # Mock the calculation so all three are produced regardless of the data.
+  d_theoph_6_10 <-
+    datasets::Theoph[datasets::Theoph$Subject %in% c(6, 10), ]
+  conc_obj <- PKNCAconc(conc~Time|Subject, data=d_theoph_6_10)
+  local_mocked_bindings(
+    superposition.numeric=function(conc, time, ...) {
+      warning("mocked warning")
+      message("mocked message")
+      cat("mocked output", fill=TRUE)
+      data.frame(conc=c(1, 2), time=c(0, 1))
+    }
+  )
+  printed <- NULL
+  warned <-
+    capture_warnings(
+      messaged <-
+        capture_messages(
+          # Assign the result so capture.output() does not also see it printed.
+          printed <- capture.output(v_obj <- superposition(conc_obj, tau=24))
+        )
+    )
+  # One of each per subject, and messages are not given an extra blank line.
+  expect_length(warned, 2)
+  expect_equal(unique(warned), "mocked warning")
+  expect_length(messaged, 2)
+  expect_equal(unique(trimws(messaged)), "mocked message")
+  expect_equal(unique(printed), "mocked output")
 })

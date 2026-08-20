@@ -26,7 +26,13 @@
 #' @param volume (optional) The volume (or mass) of collection as is typically
 #'   used for urine or feces measurements.
 #' @param duration (optional) The duration of collection as is typically used
-#'   for concentration measurements in urine or feces.
+#'   for concentration measurements in urine or feces.  The `time` of a
+#'   measurement is the start of the collection, and only the `time` is used
+#'   when selecting data for a calculation interval; the duration is not
+#'   considered.  A collection starting within an interval and ending after the
+#'   interval `end` contributes its full amount to that interval, so for the
+#'   simplest interpretation of results, align collection start and end times
+#'   with interval boundaries.
 #' @param exclude_half.life,include_half.life Manual half-life point selection,
 #'   given as a logical value per concentration measurement (or, in
 #'   [PKNCAconc()], the name of such a column in the data).  `exclude_half.life`
@@ -83,12 +89,18 @@ PKNCAconc.data.frame <- function(data, formula, subject,
                                  concu_pref = NULL, amountu_pref = NULL, timeu_pref = NULL) {
   # The data must have... data
   if (nrow(data) == 0) {
-    stop("data must have at least one row.")
+    rlang::abort("data must have at least one row.", class = "pknca_error_data_no_rows")
   }
   # Verify that all the variables in the formula are columns in the data.
   missing_vars <- setdiff(all.vars(formula), names(data))
   if (length(missing_vars) > 0) {
-    stop("All of the variables in the formula must be in the data.  Missing: ", paste(missing_vars))
+    rlang::abort(
+      sprintf(
+        "All of the variables in the formula must be in the data.  Missing: %s",
+        paste(missing_vars, collapse = ", ")
+      ),
+      class = "pknca_error_formula_missing_vars"
+    )
   }
   parsed_form_raw <- parse_formula_to_cols(form = formula)
   parsed_form_groups <-
@@ -110,10 +122,13 @@ PKNCAconc.data.frame <- function(data, formula, subject,
       groups = parsed_form_groups
     )
   if (length(parsed_form$concentration) != 1) {
-    stop("The left hand side of the formula must have exactly one variable")
+    rlang::abort("The left hand side of the formula must have exactly one variable", class = "pknca_error_conc_formula_lhs")
   }
   if (length(parsed_form$time) != 1) {
-    stop("The right hand side of the formula (excluding groups) must have exactly one variable")
+    rlang::abort(
+      "The right hand side of the formula (excluding groups) must have exactly one variable",
+      class = "pknca_error_conc_formula_rhs"
+    )
   }
 
   # Assign the subject
@@ -122,12 +137,9 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   } else {
     # Ensure that the subject is part of the data definition and a scalar
     # character string.
-    if (!is.character(subject))
-      stop("subject must be a character string")
-    if (!(length(subject) == 1))
-      stop("subject must be a scalar")
+    checkmate::assert_string(subject, null.ok = FALSE)
     if (!(subject %in% names(data)))
-      stop("The subject parameter must map to a name in the data")
+        rlang::abort("The subject parameter must map to a name in the data", class = "pknca_error_subject_not_in_data")
   }
   parsed_form$subject <- subject
   if (sparse) {
@@ -169,7 +181,7 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   } else {
     ret <- setAttributeColumn(ret, attr_name="volume", col_or_value=volume)
     if (!is.numeric(getAttributeColumn(ret, attr_name="volume")[[1]])) {
-      stop("Volume must be numeric")
+      rlang::abort("Volume must be numeric", class = "pknca_error_volume_not_numeric")
     }
   }
   if (missing(duration)) {
@@ -219,9 +231,9 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   }
   if (!missing(lloq)) {
     ret <- setAttributeColumn(object=ret, attr_name="lloq", col_or_value=lloq)
-    if (!is.numeric(getAttributeColumn(object=ret, attr_name="lloq")[[1]])) {
-      stop("lloq must be numeric")
-    }
+    checkmate::assertNumeric(
+      getAttributeColumn(object = ret, attr_name = "lloq")[[1]]
+    )
   }
 
   # Unit handling
@@ -291,9 +303,15 @@ getGroups.PKNCAconc <- function(object, form=stats::formula(object), level,
   if (!missing(level))
     if (is.factor(level) || is.character(level)) {
       level <- as.character(level)
-      if (any(!(level %in% grpnames)))
-        stop("Not all levels are listed in the group names.  Missing levels are: ",
-             paste(setdiff(level, grpnames), collapse=", "))
+      if (any(!(level %in% grpnames))) {
+        rlang::abort(
+          sprintf(
+            "Not all levels are listed in the group names. Missing levels are: %s",
+            paste(setdiff(level, grpnames), collapse = ", ")
+          ),
+          class = "pknca_error_conc_missing_group_levels"
+        )
+      }
       grpnames <- level
     } else if (is.numeric(level)) {
       if (length(level) == 1 &&
@@ -342,12 +360,15 @@ setDuration.PKNCAconc <- function(object, duration, ...) {
   }
   duration.val <- getAttributeColumn(object=object, attr_name="duration")[[1]]
   if (is.numeric(duration.val) &&
-      !any(is.na(duration.val)) &&
+      !anyNA(duration.val) &&
       !any(is.infinite(duration.val)) &&
       all(duration.val >= 0)) {
     # It passes the test
   } else {
-    stop("duration must be numeric without missing (NA) or infinite values, and all values must be >= 0")
+    rlang::abort(
+      "duration must be numeric without missing (NA) or infinite values, and all values must be >= 0",
+      class = "pknca_error_conc_invalid_duration"
+    )
   }
   object
 }

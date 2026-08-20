@@ -10,6 +10,17 @@
 #' the interval.  For example, if an interval starts at 168 hours, ends at 192
 #' hours, and and the maximum concentration is at 169 hours, `tmax=169-168=1`.
 #'
+#' Data are selected for each interval by the measurement or dose time: rows
+#' with a time at or after the interval `start` and at or before the interval
+#' `end` are included (a dose exactly at the interval `end` is not included in
+#' the interval).  For duration data (for example, urine collections or
+#' intravenous infusions), the time is the start of the collection or
+#' administration, and the duration is not considered during selection: a
+#' collection that starts within the interval and ends after the interval `end`
+#' contributes its full amount to the interval.  For the simplest
+#' interpretation of results, align collection start and end times with
+#' interval boundaries.
+#'
 #' @param data A PKNCAdata object
 #' @param verbose Indicate, by `message()`, the current state of calculation.
 #' @returns A `PKNCAresults` object.
@@ -20,7 +31,9 @@ pk.nca <- function(data, verbose=FALSE) {
   assert_PKNCAdata(data)
   results <- data.frame()
   if (nrow(data$intervals) > 0) {
-    if (verbose) message("Setting up options")
+    if (verbose) {
+      rlang::inform("Setting up options", class = "pknca_message_setup_options")
+    }
     # Merge the options into the default options.
     tmp_options <- PKNCA.options()
     tmp_options[names(data$options)] <- data$options
@@ -33,7 +46,9 @@ pk.nca <- function(data, verbose=FALSE) {
         drop=FALSE
       ]
     # Calculate the results
-    if (verbose) message("Starting dense PK NCA calculations.")
+    if (verbose) {
+      rlang::inform("Starting dense PK NCA calculations.", class = "pknca_message_dense_pk_start")
+    }
     results_dense <-
       purrr::pmap(
         .l = list(
@@ -48,10 +63,14 @@ pk.nca <- function(data, verbose=FALSE) {
         sparse = FALSE,
         .progress = data$options$progress
       )
-    if (verbose) message("Combining completed dense PK calculation results.")
+    if (verbose) {
+      rlang::inform("Combining completed dense PK calculation results.", class = "pknca_message_dense_pk_combine")
+    }
     results <- pk_nca_result_to_df(group_info, results_dense)
     if (is_sparse_pk(data)) {
-      if (verbose) message("Starting sparse PK NCA calculations.")
+      if (verbose) {
+        rlang::inform("Starting sparse PK NCA calculations.", class = "pknca_message_sparse_pk_start")
+      }
       results_sparse <-
         purrr::pmap(
           .l=list(
@@ -65,7 +84,9 @@ pk.nca <- function(data, verbose=FALSE) {
           verbose=verbose,
           sparse=TRUE
         )
-      if (verbose) message("Combining completed sparse PK calculation results.")
+      if (verbose) {
+        rlang::inform("Combining completed sparse PK calculation results.", class = "pknca_message_sparse_pk_combine")
+      }
       results <-
         dplyr::bind_rows(
           results,
@@ -114,18 +135,15 @@ pk_nca_result_to_df <- function(group_info, result) {
       X=seq_along(warning_preamble),
       FUN=function(idx) {
         warning_prep <- ret_warnings$data_result[[idx]]
-        warning_prep$message <- paste(warning_preamble[idx], warning_prep$message, sep=": ")
-        warning(warning_prep)
+        warning_prep$message <- sprintf("%s: %s", warning_preamble[idx], warning_prep$message)
+        rlang::warn(warning_prep$message, class = c("pknca_warning_parameter_calculation", class(warning_prep)))
       }
     ))
   }
   ret_nowarning <- ret[!mask_warning, ]
   # Generate the outputs
   if (nrow(ret_nowarning) == 0) {
-    rlang::warn(
-      message = "All results generated warnings or errors; no results generated",
-      class = "pknca_all_warnings_no_results"
-    )
+    rlang::warn("All results generated warnings or errors; no results generated", class = "pknca_warning_no_results")
     results <- data.frame()
   } else {
     results <- tidyr::unnest(ret_nowarning, cols="data_result")
@@ -134,6 +152,25 @@ pk_nca_result_to_df <- function(group_info, result) {
   results
 }
 
+#' Subset data to the rows used for calculations within an interval
+#'
+#' Rows are selected by their `time` falling within the interval: `start <=
+#' time` and `time <= end` (or `time < end` when `include_end=FALSE`).  For
+#' duration data (for example, urine collections or intravenous infusions),
+#' `time` is the start of the collection or administration, and the `duration`
+#' column is not consulted during selection: a record whose duration starts
+#' within the interval and ends after the interval `end` is selected and
+#' contributes its full amount to calculations within the interval.  For the
+#' simplest interpretation of results, align collection start and end times
+#' with interval boundaries.
+#'
+#' @param data A data.frame with a column named `time` (and, for duration data,
+#'   a column named `duration`, which is ignored during selection)
+#' @param start,end The beginning and end times of the interval
+#' @param include_na Should rows with an `NA` `time` be kept?
+#' @param include_end Should a row with `time == end` be kept?
+#' @returns The rows of `data` selected for the interval
+#' @keywords Internal
 filter_interval <- function(data, start, end, include_na=FALSE, include_end=TRUE) {
   mask_na <- include_na & is.na(data$time)
   mask_keep_start <- start <= data$time
@@ -191,10 +228,10 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
                              options, impute, verbose=FALSE) {
   if (is.null(data_conc) || (nrow(data_conc) == 0)) {
     # No concentration data; potentially placebo data
-    return(rlang::warning_cnd(class="pknca_no_conc_data", message="No concentration data"))
+    return(rlang::warning_cnd(class="pknca_warning_no_conc_data", message="No concentration data"))
   } else if (is.null(data_intervals) || (nrow(data_intervals) == 0)) {
     # No intervals; potentially placebo data
-    return(rlang::warning_cnd(class="pknca_no_intervals", message="No intervals for data"))
+    return(rlang::warning_cnd(class="pknca_warning_no_intervals", message="No intervals for data"))
   }
   # Sort the group-level concentration data in time order.  The interval-level
   # data are sorted below (per interval), but the group-level data are passed
@@ -243,9 +280,17 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
           sep="=", collapse=", ")
       )
     if (nrow(conc_data_interval) == 0) {
-      warning(paste(error_preamble, "No data for interval", sep=": "))
+      rlang::warn(sprintf("%s: No data for interval", error_preamble), class = "pknca_warning_no_data_for_interval")
     } else if (!has_calc_sparse_dense) {
-      if (verbose) message("No ", ifelse(sparse, "sparse", "dense"), " calculations requested for an interval")
+      if (verbose) {
+        rlang::inform(
+          sprintf(
+            "No %s calculations requested for an interval",
+            if (sparse) "sparse" else "dense"
+          ),
+          class = "pknca_message_no_interval_calculations"
+        )
+      }
     } else {
       impute_method <- get_impute_method(intervals = current_interval, impute = impute)
       args <- list(
@@ -303,7 +348,10 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
         args$lloq <- conc_data_interval$lloq
       }
       if (uses_include_hl && uses_exclude_hl) {
-        stop("Cannot both include and exclude half-life points for the same interval")
+        rlang::abort(
+          "Cannot both include and exclude half-life points for the same interval",
+          class = "pknca_error_include_exclude_halflife"
+        )
       }
       # Try the calculation
       if (use_debug) {
@@ -313,9 +361,8 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
         calculated_interval <-
           tryCatch(
             do.call(pk.nca.interval, args),
-            error=function(e) {
-              e$message <- paste("Please report a bug.\n", error_preamble, e$message, sep=": ") # nocov
-              stop(e) # nocov
+            error = function(e) {
+              rlang::abort(sprintf("Please report a bug.\n%s: %s", error_preamble, e$message), class = "pknca_error_interval_calculation", parent = e)  # nocov
             }
           )
       }
@@ -391,12 +438,13 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
                             impute_method=NA_character_,
                             include_half.life=NULL, exclude_half.life=NULL, lloq=NULL,
                             subject, sparse, interval, options=list()) {
-  if (!is.data.frame(interval)) {
-    stop("Please report a bug.  Interval must be a data.frame")
+  if (!checkmate::test_data_frame(interval, nrows = 1)) {
+    rlang::abort(
+      "Please report a bug.  Interval must be a one-row data.frame",
+      class = "pknca_error_internal_interval_not_one_row_df"
+    )
   }
-  if (nrow(interval) != 1) {
-    stop("Please report a bug.  Interval must be a one-row data.frame")
-  }
+
   if (!all(is.na(impute_method))) {
     impute_funs <- PKNCA_impute_fun_list(impute_method)
     stopifnot(length(impute_funs) == 1)
@@ -425,7 +473,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   all_intervals <- get.interval.cols()
   # Set the dose to NA if its length is zero
   if (length(dose) == 0) {
-    stop("Please report a bug. Length of dose should not be zero.") # nocov
+    rlang::abort("Please report a bug. Length of dose should not be zero.", class = "pknca_error_internal_dose_length_zero")  # nocov
   }
   # Make sure that we calculate all of the dependencies.  Do this in
   # reverse order for dependencies of dependencies.
@@ -517,10 +565,13 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
               } else {
                 sprintf("'%s' mapped to '%s'", arg_formal, arg_mapped)
               }
-            stop(sprintf(
-              "Cannot find argument %s for NCA function '%s'",
-              arg_text, all_intervals[[n]]$FUN)
-            ) # nocov end
+            rlang::abort(
+              sprintf(
+                "Cannot find argument %s for NCA function '%s'",
+                arg_text, all_intervals[[n]]$FUN
+              ), # nocov end
+              class = "pknca_error_missing_nca_argument"
+            )
           }
         }
       }
