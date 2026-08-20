@@ -103,7 +103,7 @@ sparse_auc_weight_linear <- function(sparse_pk) {
 #'
 #' \describe{
 #'   \item{"arithmetic mean"}{Arithmetic mean (ignoring number of BLQ samples)}
-#'   \item{"arithmetic mean, <=50% BLQ"}{If >= 50% of the measurements are BLQ, zero.  Otherwise, the arithmetic mean of all samples (including the BLQ as zero).}
+#'   \item{"arithmetic mean, <=50% BLQ"}{If >50% of the measurements are BLQ, zero.  Otherwise, the arithmetic mean of all samples (including the BLQ as zero).}
 #' }
 #'
 #' @inheritParams sparse_pk_attribute
@@ -338,7 +338,8 @@ pk.calc.sparse_auc <- function(conc, time, subject,
       conc=sparse_pk_attribute(sparse_pk_mean, "mean"),
       time=sparse_pk_attribute(sparse_pk_mean, "time"),
       auc.type=auc.type,
-      method=method
+      method=method,
+      options=options
     )
 
   var_auc <- var_sparse_auc(sparse_pk_mean)
@@ -565,7 +566,8 @@ pk.calc.sparse_aumc <- function(conc, time, subject,
       conc = sparse_pk_attribute(sparse_pk_mean, "mean"),
       time = sparse_pk_attribute(sparse_pk_mean, "time"),
       auc.type = auc.type,
-      method = method
+      method = method,
+      options = options
     )
   
   # Calculate variance on MOMENT data (this is where the fix matters)

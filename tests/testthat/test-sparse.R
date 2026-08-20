@@ -288,6 +288,96 @@ test_that("moment means are calculated correctly", {
 
 
 # ============================================================================
+# Per-run options forwarding
+# ============================================================================
+# Shared setup: serial sparse design with 3 animals per
+# timepoint.  At t=2, 2 of 3 measurements are BLQ (strictly more than 50%), so
+# sparse_mean zeroes that timepoint and the mean profile is
+# (0,0), (1,3), (2,0), (3,2).  The default conc.blq (middle = "drop") drops the
+# middle zero before integration (AUClast = 6.5); conc.blq = "keep" keeps it
+# (AUClast = 4).
+d_sparse_579 <-
+  data.frame(
+    id = 1:12,
+    conc = c(0, 0, 0,   2, 3, 4,   0, 0, 1.5,   1, 2, 3),
+    time = c(0, 0, 0,   1, 1, 1,   2, 2, 2,     3, 3, 3)
+  )
+
+test_that("pk.calc.sparse_auc and pk.calc.sparse_aumc use their options argument for the mean-profile integration", {
+  r_default <-
+    pk.calc.sparse_auclast(
+      conc = d_sparse_579$conc, time = d_sparse_579$time, subject = d_sparse_579$id
+    )
+  r_keep <-
+    pk.calc.sparse_auclast(
+      conc = d_sparse_579$conc, time = d_sparse_579$time, subject = d_sparse_579$id,
+      options = list(conc.blq = "keep")
+    )
+  expect_equal(as.numeric(r_default$sparse_auclast), 6.5)
+  expect_equal(as.numeric(r_keep$sparse_auclast), 4)
+  # The sparse AUC variance is calculated from the individual measurements and
+  # weights, not the cleaned mean profile, so it is unaffected by conc.blq
+  expect_equal(as.numeric(r_default$sparse_auc_se), as.numeric(r_keep$sparse_auc_se))
+
+  # The same forwarding applies to the sparse AUMC.  Moment profile:
+  # t*C = (0,0), (1,3), (2,0), (3,6); default drops the middle zero
+  # concentration (AUMClast = 10.5); conc.blq = "keep" keeps it (AUMClast = 6).
+  ra_default <-
+    pk.calc.sparse_aumclast(
+      conc = d_sparse_579$conc, time = d_sparse_579$time, subject = d_sparse_579$id
+    )
+  ra_keep <-
+    pk.calc.sparse_aumclast(
+      conc = d_sparse_579$conc, time = d_sparse_579$time, subject = d_sparse_579$id,
+      options = list(conc.blq = "keep")
+    )
+  expect_equal(as.numeric(ra_default$sparse_aumclast), 10.5)
+  expect_equal(as.numeric(ra_keep$sparse_aumclast), 6)
+})
+
+test_that("per-PKNCAdata options affect sparse_auclast and match the global-option route", {
+  o_conc <- PKNCAconc(d_sparse_579, conc ~ time | id, sparse = TRUE)
+  d_intervals <- data.frame(start = 0, end = 3, sparse_auclast = TRUE)
+  o_data_default <- PKNCAdata(o_conc, intervals = d_intervals)
+  o_data_keep <- PKNCAdata(o_conc, intervals = d_intervals, options = list(conc.blq = "keep"))
+  res_default <- as.data.frame(suppressMessages(pk.nca(o_data_default, verbose = FALSE)))
+  res_keep <- as.data.frame(suppressMessages(pk.nca(o_data_keep, verbose = FALSE)))
+  expect_equal(
+    res_default$PPORRES[res_default$PPTESTCD %in% "sparse_auclast"],
+    6.5
+  )
+  expect_equal(
+    res_keep$PPORRES[res_keep$PPTESTCD %in% "sparse_auclast"],
+    4
+  )
+
+  # The global-option route matches the per-run route
+  old_conc.blq <- PKNCA.options("conc.blq")
+  on.exit(PKNCA.options(conc.blq = old_conc.blq))
+  PKNCA.options(conc.blq = "keep")
+  res_global <- as.data.frame(suppressMessages(pk.nca(o_data_default, verbose = FALSE)))
+  expect_equal(
+    res_global$PPORRES[res_global$PPTESTCD %in% "sparse_auclast"],
+    4
+  )
+})
+
+test_that("sparse_mean does not zero a timepoint with exactly 50% BLQ", {
+  # Exactly 50% BLQ: the arithmetic mean is used (BLQ values count as zero)
+  sparse_pk_half <- as_sparse_pk(conc = c(0, 0, 2, 4), time = rep(1, 4), subject = 1:4)
+  expect_equal(
+    sparse_pk_attribute(sparse_mean(sparse_pk_half), "mean"),
+    1.5
+  )
+  # Strictly more than 50% BLQ: the mean is zeroed
+  sparse_pk_most <- as_sparse_pk(conc = c(0, 0, 0, 4), time = rep(1, 4), subject = 1:4)
+  expect_equal(
+    sparse_pk_attribute(sparse_mean(sparse_pk_most), "mean"),
+    0
+  )
+})
+
+# ============================================================================
 # Integration Tests
 # ============================================================================
 test_that("sparse AUC and AUMC integrate correctly with PKNCA workflow", {
