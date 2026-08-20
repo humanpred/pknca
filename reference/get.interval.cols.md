@@ -295,7 +295,7 @@ get.interval.cols()
 #> [1] "AUCint (based on AUClast extrapolation, dose-aware)"
 #> 
 #> $aucint.last.dose$desc
-#> [1] "AUCdn T1 to T2 (zero extrap)"
+#> [1] "AUC T1 to T2, dose-aware (zero extrap)"
 #> 
 #> $aucint.last.dose$sparse
 #> [1] FALSE
@@ -381,7 +381,7 @@ get.interval.cols()
 #> [1] "AUCint (based on AUCall extrapolation, dose-aware)"
 #> 
 #> $aucint.all.dose$desc
-#> [1] "AUCdn T1 to T2 (AUCall extrap)"
+#> [1] "AUC T1 to T2, dose-aware (AUCall)"
 #> 
 #> $aucint.all.dose$sparse
 #> [1] FALSE
@@ -467,7 +467,7 @@ get.interval.cols()
 #> [1] "AUMCint (based on AUMClast extrapolation, dose-aware)"
 #> 
 #> $aumcint.last.dose$desc
-#> [1] "AUMCdn T1 to T2 (zero extrap)"
+#> [1] "AUMC T1 to T2, dose-aware (zero extrap)"
 #> 
 #> $aumcint.last.dose$sparse
 #> [1] FALSE
@@ -493,7 +493,7 @@ get.interval.cols()
 #> [1] "aumcint.last.dose"
 #> 
 #> $aumcint.last.dose$pptest_cdisc
-#> [1] "AUMCdn T1 to T2 (zero extrap)"
+#> [1] "AUMC T1 to T2, dose-aware (zero extrap)"
 #> 
 #> 
 #> $aumcint.all
@@ -553,7 +553,7 @@ get.interval.cols()
 #> [1] "AUMCint (based on AUMCall extrapolation, dose-aware)"
 #> 
 #> $aumcint.all.dose$desc
-#> [1] "AUMCdn T1 to T2 (AUMCall extrap)"
+#> [1] "AUMC T1 to T2, dose-aware (AUMCall)"
 #> 
 #> $aumcint.all.dose$sparse
 #> [1] FALSE
@@ -579,7 +579,7 @@ get.interval.cols()
 #> [1] "aumcint.all.dose"
 #> 
 #> $aumcint.all.dose$pptest_cdisc
-#> [1] "AUMCdn T1 to T2 (AUMCall extrap)"
+#> [1] "AUMC T1 to T2, dose-aware (AUMCall)"
 #> 
 #> 
 #> $c0
@@ -3387,7 +3387,7 @@ get.interval.cols()
 #> [1] "Span ratio"
 #> 
 #> $span.ratio$desc
-#> [1] "Half-life to calculation duration ratio"
+#> [1] "Lambda z time span to half-life ratio"
 #> 
 #> $span.ratio$sparse
 #> [1] FALSE
@@ -4770,7 +4770,7 @@ get.interval.cols()
 #> [1] "AUCint (based on AUCinf,obs extrapolation, dose-aware)"
 #> 
 #> $aucint.inf.obs.dose$desc
-#> [1] "AUCdn T1 to T2 (AUCinf,obs extrap)"
+#> [1] "AUC T1 to T2, dose-aware (AUCinf,obs)"
 #> 
 #> $aucint.inf.obs.dose$sparse
 #> [1] FALSE
@@ -4856,7 +4856,7 @@ get.interval.cols()
 #> [1] "AUCint (based on AUCinf,pred extrapolation, dose-aware)"
 #> 
 #> $aucint.inf.pred.dose$desc
-#> [1] "AUCdn T1 to T2 (AUCinf,pred extrap)"
+#> [1] "AUC T1 to T2, dose-aware (AUCinf,pred)"
 #> 
 #> $aucint.inf.pred.dose$sparse
 #> [1] FALSE
@@ -4942,7 +4942,7 @@ get.interval.cols()
 #> [1] "AUMCint (based on AUMCinf,obs extrapolation, dose-aware)"
 #> 
 #> $aumcint.inf.obs.dose$desc
-#> [1] "AUMCdn T1 to T2 (AUMCinf,obs extrap)"
+#> [1] "AUMC T1 to T2, dose-aware (AUMCinf,obs)"
 #> 
 #> $aumcint.inf.obs.dose$sparse
 #> [1] FALSE
@@ -4968,7 +4968,7 @@ get.interval.cols()
 #> [1] "aumcint.inf.obs.dose"
 #> 
 #> $aumcint.inf.obs.dose$pptest_cdisc
-#> [1] "AUMCdn T1 to T2 (AUMCinf,obs extrap)"
+#> [1] "AUMC T1 to T2, dose-aware (AUMCinf,obs)"
 #> 
 #> 
 #> $aumcint.inf.pred
@@ -5028,7 +5028,7 @@ get.interval.cols()
 #> [1] "AUMCint (based on AUMCinf,pred extrapolation, dose-aware)"
 #> 
 #> $aumcint.inf.pred.dose$desc
-#> [1] "AUMCdn T1 to T2 (AUMCinf,pred extrap)"
+#> [1] "AUMC T1 to T2, dose-aware (AUMCinf,pred)"
 #> 
 #> $aumcint.inf.pred.dose$sparse
 #> [1] FALSE
@@ -5054,7 +5054,7 @@ get.interval.cols()
 #> [1] "aumcint.inf.pred.dose"
 #> 
 #> $aumcint.inf.pred.dose$pptest_cdisc
-#> [1] "AUMCdn T1 to T2 (AUMCinf,pred extrap)"
+#> [1] "AUMC T1 to T2, dose-aware (AUMCinf,pred)"
 #> 
 #> 
 #> $aucivinf.obs

@@ -385,13 +385,13 @@ information about the parameter, see the documentation for the function.
 | aucinf.pred | auc | AUC start to inf, pred Clast extrap | pk.calc.auc.inf.pred |
 | aucinf.pred.dn | auc_dosenorm | Dose normalized aucinf.pred | pk.calc.dn |
 | aucint.all | auc | AUC from T1 to T2 (AUCall extrap) | pk.calc.aucint.all |
-| aucint.all.dose | auc | AUCdn T1 to T2 (AUCall extrap) | pk.calc.aucint.all |
+| aucint.all.dose | auc | AUC T1 to T2, dose-aware (AUCall) | pk.calc.aucint.all |
 | aucint.inf.obs | auc | AUC from T1 to T2 (AUCinf,obs extrap) | pk.calc.aucint.inf.obs |
-| aucint.inf.obs.dose | auc | AUCdn T1 to T2 (AUCinf,obs extrap) | pk.calc.aucint.inf.obs |
+| aucint.inf.obs.dose | auc | AUC T1 to T2, dose-aware (AUCinf,obs) | pk.calc.aucint.inf.obs |
 | aucint.inf.pred | auc | AUC from T1 to T2 (AUCinf,pred extrap) | pk.calc.aucint.inf.pred |
-| aucint.inf.pred.dose | auc | AUCdn T1 to T2 (AUCinf,pred extrap) | pk.calc.aucint.inf.pred |
+| aucint.inf.pred.dose | auc | AUC T1 to T2, dose-aware (AUCinf,pred) | pk.calc.aucint.inf.pred |
 | aucint.last | auc | AUC from T1 to T2 (zero extrap) | pk.calc.aucint.last |
-| aucint.last.dose | auc | AUCdn T1 to T2 (zero extrap) | pk.calc.aucint.last |
+| aucint.last.dose | auc | AUC T1 to T2, dose-aware (zero extrap) | pk.calc.aucint.last |
 | aucivall | auc | AUCall, IV back-extrap C0 | pk.calc.auciv |
 | aucivinf.obs | auc | AUCinf.obs, IV back-extrap C0 | pk.calc.auciv |
 | aucivinf.pred | auc | AUCinf.pred, IV back-extrap C0 | pk.calc.auciv |
@@ -415,13 +415,13 @@ information about the parameter, see the documentation for the function.
 | aumcinf.pred | aumc | AUMC start to inf, pred Clast extrap | pk.calc.aumc.inf.pred |
 | aumcinf.pred.dn | aumc_dosenorm | Dose normalized aumcinf.pred | pk.calc.dn |
 | aumcint.all | aumc | AUMC from T1 to T2 (AUMCall extrap) | pk.calc.aumcint.all |
-| aumcint.all.dose | aumc | AUMCdn T1 to T2 (AUMCall extrap) | pk.calc.aumcint.all |
+| aumcint.all.dose | aumc | AUMC T1 to T2, dose-aware (AUMCall) | pk.calc.aumcint.all |
 | aumcint.inf.obs | aumc | AUMC from T1 to T2 (AUMCinf,obs extrap) | pk.calc.aumcint.inf.obs |
-| aumcint.inf.obs.dose | aumc | AUMCdn T1 to T2 (AUMCinf,obs extrap) | pk.calc.aumcint.inf.obs |
+| aumcint.inf.obs.dose | aumc | AUMC T1 to T2, dose-aware (AUMCinf,obs) | pk.calc.aumcint.inf.obs |
 | aumcint.inf.pred | aumc | AUMC from T1 to T2 (AUMCinf,pred extrap) | pk.calc.aumcint.inf.pred |
-| aumcint.inf.pred.dose | aumc | AUMCdn T1 to T2 (AUMCinf,pred extrap) | pk.calc.aumcint.inf.pred |
+| aumcint.inf.pred.dose | aumc | AUMC T1 to T2, dose-aware (AUMCinf,pred) | pk.calc.aumcint.inf.pred |
 | aumcint.last | aumc | AUMC from T1 to T2 (zero extrap) | pk.calc.aumcint.last |
-| aumcint.last.dose | aumc | AUMCdn T1 to T2 (zero extrap) | pk.calc.aumcint.last |
+| aumcint.last.dose | aumc | AUMC T1 to T2, dose-aware (zero extrap) | pk.calc.aumcint.last |
 | aumcivall | aumc | AUMCall, IV back-extrap C0 | pk.calc.aumciv |
 | aumcivinf.obs | aumc | AUMCinf.obs, IV back-extrap C0 | pk.calc.aumciv |
 | aumcivinf.pred | aumc | AUMCinf.pred, IV back-extrap C0 | pk.calc.aumciv |
@@ -519,7 +519,7 @@ information about the parameter, see the documentation for the function.
 | mrt.sparse.last | time | MRT, sparse AUClast/AUMClast | pk.calc.mrt |
 | ptr | fraction | Peak-to-trough ratio | pk.calc.ptr |
 | r.squared | unitless | R-squared of half-life fit | See the parameter name half.life |
-| span.ratio | fraction | Half-life to calculation duration ratio | See the parameter name half.life |
+| span.ratio | fraction | Lambda z time span to half-life ratio | See the parameter name half.life |
 | sparse_auc_df | count | DF for sparse AUC to last conc above LOQ | See the parameter name sparse_auclast |
 | sparse_auc_se | auc | SE of sparse AUC to last conc above LOQ | See the parameter name sparse_auclast |
 | sparse_auclast | auc | Sparse AUC to last conc above LOQ | pk.calc.sparse_auclast |

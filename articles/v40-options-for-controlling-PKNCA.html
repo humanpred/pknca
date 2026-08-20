@@ -103,9 +103,11 @@ argument. All options supported by the current version of PKNCA
 <div class="section level3">
 <h3 id="adj-r-squared-factor">adj.r.squared.factor<a class="anchor" aria-label="anchor" href="#adj-r-squared-factor"></a>
 </h3>
-<p>The adjusted r^2 for the calculation of lambda.z has this factor
-times the number of data points added to it. It allows for more data
-points to be preferred in the calculation of half-life.</p>
+<p>During the calculation of lambda.z, all candidate regressions with an
+adjusted r^2 within adj.r.squared.factor of the best adjusted r^2 are
+considered acceptable, and the acceptable regression using the most data
+points is selected. It allows for more data points to be preferred in
+the calculation of half-life.</p>
 <p>The default value is: 1e-04</p>
 </div>
 <div class="section level3">
