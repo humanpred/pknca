@@ -38,21 +38,30 @@ normalize.data.frame <- function(object, norm_table, parameters, suffix) {
         paste(apply(missing_groups, 1, paste, collapse = "\t"), collapse = "\n"),
         sep = "\n"
       )
-      stop(
-        "The normalization table contains groups not present in the data:\n",
-        df_error_string
+      rlang::abort(
+        sprintf(
+          "The normalization table contains groups not present in the data:\n%s",
+          df_error_string
+        ),
+        class = "pknca_error_norm_table_missing_groups"
       )
     }
     
     # Check for duplicate groups
     if (any(duplicated(norm_table[, common_colnames, drop = FALSE]))) {
-      stop("The normalization table contains duplicate groups.")
+      rlang::abort(
+        "The normalization table contains duplicate groups.",
+        class = "pknca_error_norm_table_duplicate_groups"
+      )
     }
     
   } else {
     # Ungrouped case
     if (nrow(norm_table) != 1) {
-      stop("Normalization table must be a single row for ungrouped data.")
+      rlang::abort(
+        "Normalization table must be a single row for ungrouped data.",
+        class = "pknca_error_norm_table_not_single_row"
+      )
     }
   }
   
@@ -105,12 +114,16 @@ normalize.data.frame <- function(object, norm_table, parameters, suffix) {
 #' @return A data.frame with normalized parameters
 #' @export
 normalize_by_col <- function(object, col, unit, parameters, suffix){
-  if (!inherits(object, "PKNCAresults")) {
-    stop("The object must be a PKNCAresults object")
-  }
+  assert_PKNCAresults(object)
   obj_conc_cols <- names(as.data.frame(as_PKNCAconc(object)))
   if (!col %in% obj_conc_cols) {
-    stop("Column ", col, " not found in the PKNCAconc of the PKNCAresults object")
+    rlang::abort(
+      sprintf(
+        "Column %s not found in the PKNCAconc of the PKNCAresults object",
+        col
+      ),
+      class = "pknca_error_norm_col_not_found"
+    )
   }
   conc_groups <- dplyr::group_vars(object$data$conc)
   if (unit %in% obj_conc_cols) {
@@ -124,7 +137,10 @@ normalize_by_col <- function(object, col, unit, parameters, suffix){
   }
   # Check there are no duplicate groups with different normalization values
   if (any(duplicated(norm_table[, conc_groups, drop = FALSE]))) {
-    stop("There is at least one concentration group with multiple normalization values")
+    rlang::abort(
+      "There is at least one concentration group with multiple normalization values",
+      class = "pknca_error_norm_multiple_values"
+    )
   }
   normalize(object, norm_table, parameters, suffix)
 }

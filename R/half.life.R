@@ -156,7 +156,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     tobit_optim_control <-
       PKNCA.choose.option(name="tobit_optim_control", value=tobit_optim_control, options=options)
     if (is.null(lloq)) {
-      stop("lloq must be provided when hl_method is 'tobit'")
+      rlang::abort("lloq must be provided when hl_method is 'tobit'", class = "pknca_error_lloq_required_tobit")
     }
   }
 
@@ -279,7 +279,10 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           attr(ret, "exclude") <- "Negative half-life estimated with manually-selected points"
         }
       } else {
-        warning("No data to manually fit for half-life (all concentrations may be 0 or excluded)")
+        rlang::warn(
+          "No data to manually fit for half-life (all concentrations may be 0 or excluded)",
+          class = "pknca_warning_no_halflife_data"
+        )
         ret <- structure(
           ret,
           exclude = "No data to manually fit for half-life (all concentrations may be 0 or excluded)"
@@ -316,10 +319,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       mask_best <-
         half_lives_for_selection$lambda.z > 0 &
         if (min.hl.points == 2 && nrow(half_lives_for_selection) == 2) {
-          rlang::warn(
-            message = "2 points used for half-life calculation",
-            class = "pknca_halflife_2points"
-          )
+          rlang::warn("2 points used for half-life calculation", class = "pknca_warning_halflife_2points")
           TRUE
         } else {
           half_lives_for_selection$adj.r.squared >
@@ -341,10 +341,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           "Too few points for half-life calculation (min.hl.points=%g with only %g points)",
           min.hl.points, nrow(dfK)
         )
-      rlang::warn(
-        message = attr(ret, "exclude"),
-        class = "pknca_halflife_too_few_points"
-      )
+      rlang::warn(attr(ret, "exclude"), class = "pknca_warning_halflife_too_few_points")
     }
 
   # ---- Tobit method ----
@@ -376,7 +373,10 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           attr(ret, "exclude") <- "Negative half-life estimated with manually-selected points"
         }
       } else {
-        warning("No data to manually fit for half-life (all concentrations may be 0 or excluded)")
+        rlang::warn(
+          "No data to manually fit for half-life (all concentrations may be 0 or excluded)",
+          class = "pknca_warning_no_halflife_data_tobit"
+        )
         ret <- structure(
           ret,
           exclude = "No data to manually fit for half-life (all concentrations may be 0 or excluded)"
@@ -425,10 +425,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           "Too few above-LLOQ points for Tobit half-life (min.hl.points=%g with only %g above-LLOQ points)",
           min.hl.points, n_above_lloq
         )
-      rlang::warn(
-        message = attr(ret, "exclude"),
-        class = "pknca_halflife_too_few_points"
-      )
+      rlang::warn(attr(ret, "exclude"), class = "pknca_warning_halflife_too_few_points_tobit")
     }
   }
 
@@ -547,8 +544,8 @@ fit_half_life_tobit <- function(data, tlast, optim_control = list()) {
   # Guard: need at least 2 above-LLOQ points for initial parameter estimation
   if (length(above_lloq_log_conc) < 2) {
     rlang::warn(
-      message = "Too few above-LLOQ points for Tobit half-life initial parameter estimation",
-      class = "pknca_tobit_too_few_points"
+      "Too few above-LLOQ points for Tobit half-life initial parameter estimation",
+      class = "pknca_warning_tobit_too_few_points"
     )
     return(na_ret)
   }
@@ -556,8 +553,8 @@ fit_half_life_tobit <- function(data, tlast, optim_control = list()) {
   sd_above <- stats::sd(above_lloq_log_conc)
   if (!is.finite(sd_above) || sd_above == 0) {
     rlang::warn(
-      message = "No variability in above-LLOQ concentrations for Tobit half-life fit",
-      class = "pknca_tobit_no_variability"
+      "No variability in above-LLOQ concentrations for Tobit half-life fit",
+      class = "pknca_warning_tobit_no_variability"
     )
     return(na_ret)
   }
@@ -586,10 +583,8 @@ fit_half_life_tobit <- function(data, tlast, optim_control = list()) {
   # code 0 = converged; any other code = failure
   if (fit$convergence != 0) {
     rlang::warn(
-      message = paste0(
-        "Tobit half-life optimization did not converge (code ", fit$convergence, ")"
-      ),
-      class = "pknca_tobit_no_convergence"
+      sprintf("Tobit half-life optimization did not converge (code %s)", fit$convergence),
+      class = "pknca_warning_tobit_no_convergence"
     )
     return(na_ret)
   }
@@ -642,7 +637,7 @@ add.interval.col("r.squared",
                  values=c(FALSE, TRUE),
                  unit_type="unitless",
                  pretty_name="$r^2$",
-                 desc="The r^2 value of the half-life calculation",
+                 desc="R-squared of half-life fit",
                  depends="half.life",
                  pptestcd_cdisc="R2",
                  pptest_cdisc="R Squared")
@@ -657,7 +652,7 @@ add.interval.col("adj.r.squared",
                  values=c(FALSE, TRUE),
                  unit_type="unitless",
                  pretty_name="$r^2_{adj}$",
-                 desc="The adjusted r^2 value of the half-life calculation",
+                 desc="Adjusted R-sq of half-life fit",
                  depends="half.life",
                  pptestcd_cdisc="R2ADJ",
                  pptest_cdisc="R Squared Adjusted")
@@ -672,7 +667,7 @@ add.interval.col("lambda.z.corrxy",
                  values=c(FALSE, TRUE),
                  unit_type="unitless",
                  pretty_name="Correlation (time, log-conc)",
-                 desc="Correlation between time and log-concentration for lambda.z points",
+                 desc="Corr(time,log-conc) for lambda.z",
                  depends="half.life",
                  pptestcd_cdisc="CORRXY",
                  pptest_cdisc="Correlation Between TimeX and Log ConcY")
@@ -687,7 +682,7 @@ add.interval.col("lambda.z",
                  values=c(FALSE, TRUE),
                  unit_type="inverse_time",
                  pretty_name="$\\lambda_z$",
-                 desc="The elimination rate of the terminal half-life",
+                 desc="Terminal elim rate (lambda.z)",
                  depends="half.life",
                  pptestcd_cdisc="LAMZ",
                  pptest_cdisc="Lambda z")
@@ -702,7 +697,7 @@ add.interval.col("lambda.z.time.first",
                  values=c(FALSE, TRUE),
                  unit_type="time",
                  pretty_name="First time for $\\lambda_z$",
-                 desc="The first time point used for the calculation of half-life",
+                 desc="First time point for lambda.z",
                  depends="half.life",
                  pptestcd_cdisc="LAMZLL",
                  pptest_cdisc="Lambda z Lower Limit")
@@ -717,7 +712,7 @@ add.interval.col("lambda.z.time.last",
                  values=c(FALSE, TRUE),
                  unit_type="time",
                  pretty_name="Last time for $\\lambda_z$",
-                 desc="The last time point used for the calculation of half-life",
+                 desc="Last time point for lambda.z",
                  depends="half.life",
                  pptestcd_cdisc="LAMZUL",
                  pptest_cdisc="Lambda z Upper Limit")
@@ -732,7 +727,7 @@ add.interval.col("lambda.z.n.points",
                  values=c(FALSE, TRUE),
                  unit_type="count",
                  pretty_name="Number of points used for lambda_z",
-                 desc="The number of points used for the calculation of half-life",
+                 desc="Number of points used, lambda.z",
                  depends="half.life",
                  pptestcd_cdisc="LAMZNPT",
                  pptest_cdisc="Number of Points for Lambda z")
@@ -747,7 +742,7 @@ add.interval.col("clast.pred",
                  values=c(FALSE, TRUE),
                  unit_type="conc",
                  pretty_name="Clast,pred",
-                 desc="The concentration at Tlast as predicted by the half-life",
+                 desc="Predicted Clast from half-life",
                  depends="half.life",
                  pptestcd_cdisc="CLSTP",
                  pptest_cdisc="Clast pred")
@@ -762,7 +757,7 @@ add.interval.col("span.ratio",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
                  pretty_name="Span ratio",
-                 desc="The ratio of the half-life to the duration used for half-life calculation",
+                 desc="Half-life to calculation duration ratio",
                  depends="half.life",
                  pptestcd_cdisc="LAMZSPN",
                  pptest_cdisc="Lambda z Span")
@@ -777,7 +772,7 @@ add.interval.col("tobit_residual",
                  values=c(FALSE, TRUE),
                  unit_type="unitless",
                  pretty_name="Tobit residual SD",
-                 desc="The estimated residual standard deviation (on the log-concentration scale) from the Tobit half-life fit",
+                 desc="Tobit fit residual SD, log-conc",
                  depends="half.life")
 PKNCA.set.summary(
   name="tobit_residual",
@@ -790,7 +785,7 @@ add.interval.col("adj_tobit_residual",
                  values=c(FALSE, TRUE),
                  unit_type="unitless",
                  pretty_name="Adjusted Tobit residual SD",
-                 desc="The adjusted Tobit residual standard deviation (analogous to adjusted r-squared; penalizes smaller windows)",
+                 desc="Adjusted Tobit residual SD",
                  depends="half.life")
 PKNCA.set.summary(
   name="adj_tobit_residual",
@@ -803,7 +798,7 @@ add.interval.col("lambda.z.n.points_blq",
                  values=c(FALSE, TRUE),
                  unit_type="count",
                  pretty_name="Number of BLQ points for lambda_z (Tobit)",
-                 desc="The number of BLQ points included in the Tobit half-life calculation",
+                 desc="BLQ points in Tobit lambda.z",
                  depends="half.life")
 PKNCA.set.summary(
   name="lambda.z.n.points_blq",
@@ -863,9 +858,12 @@ get_halflife_points.PKNCAresults <- function(object) {
         rowid_col = rowid_col
       )
     if (any(!is.na(ret[ret_current$rowid]))) {
-      stop(
-        "More than one half-life calculation was attempted on the following rows: ",
-        paste(ret_current$rowid, collapse = ", ")
+      rlang::abort(
+        sprintf(
+          "More than one half-life calculation was attempted on the following rows: %s",
+          paste(ret_current$rowid, collapse = ", ")
+        ),
+        class = "pknca_error_duplicate_halflife_rows"
       )
     }
     ret[ret_current$rowid] <- ret_current$hl_used
