@@ -611,3 +611,26 @@ test_that("superposition errors instead of hanging when steady-state cannot be r
     fixed=TRUE
   )
 })
+
+test_that("superposition warnings survive the parallel worker (issue 580)", {
+  # superposition.PKNCAconc() runs each subject through parallel::mclapply(),
+  # which forks everywhere except Windows.  A warning raised in a forked worker
+  # never reaches the parent, so the worker returns its messages instead.  This
+  # exercises that hand-off directly, which the PKNCAconc test above cannot do
+  # on Windows because there mclapply() falls back to lapply().
+  d_theoph_6 <- datasets::Theoph[datasets::Theoph$Subject == 6, ]
+  captured <-
+    superposition_capture_warnings(
+      conc=d_theoph_6$conc, time=d_theoph_6$Time,
+      tau=24, auc.type="AUClast", check.blq=FALSE
+    )
+  expect_length(captured$messages, 1)
+  expect_match(
+    captured$messages,
+    regexp="Zero concentrations remain in the steady-state superposition profile",
+    fixed=TRUE
+  )
+  # The result is returned alongside the messages, not replaced by them.
+  expect_s3_class(captured$result, "data.frame")
+  expect_equal(nrow(captured$result), 12)
+})

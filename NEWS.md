@@ -13,6 +13,10 @@ the dosing including dose amount and route.
   a warning is given when zero concentrations remain in the steady-state
   profile, and an informative error (instead of an infinite loop) is raised if
   steady-state cannot be reached within 10000 dosing intervals (#580).
+  The warning is raised by the parent process: `superposition()` on a
+  `PKNCAconc` object runs each subject through `parallel::mclapply()`, which
+  forks on every platform except Windows, and a warning raised in a forked
+  worker never reaches the caller.
 
 * Corrected registry description strings that did not match the
   implementation (#582).  `adj.r.squared.factor` is described as selecting
