@@ -481,3 +481,9 @@ test_that("PKNCA.options fails when setting defaults and another option simultan
   )
 })
 
+
+test_that("adj.r.squared.factor description matches the selection rule in the code (#582)", {
+  desc <- PKNCA.options.describe("adj.r.squared.factor")
+  expect_match(desc, "within adj.r.squared.factor of the best", fixed = TRUE)
+  expect_match(desc, "regression using the most data points is selected", fixed = TRUE)
+})

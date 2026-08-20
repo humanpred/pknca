@@ -996,3 +996,8 @@ test_that("pk.calc.half.life tobit manually.selected.points sets exclude for neg
     "Negative half-life estimated with manually-selected points"
   )
 })
+
+test_that("span.ratio is described as span over half-life, not the inverse (#582)", {
+  # ret$span.ratio <- (max(data$time) - min(data$time))/ret$half.life
+  expect_equal(get.interval.cols()[["span.ratio"]]$desc, "Lambda z time span to half-life ratio")
+})
