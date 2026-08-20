@@ -35,6 +35,12 @@
 #' times: 0 (zero), `dose.times`, `time modulo tau` (shifting `time` for each
 #' dose time as well), `additional.times`, and `tau`.
 #'
+#' When concentrations are extrapolated as zero after `tlast` (for example,
+#' `auc.type = "AUClast"` when `tlast < tau`), some concentrations in the
+#' profile can never become nonzero.  Steady-state (`n.tau = Inf`) is then
+#' assessed on the nonzero concentrations, and a warning is given that zero
+#' concentrations remain in the steady-state profile.
+#'
 #' @seealso [interp.extrap.conc()]
 #' @family Superposition
 #' @export
@@ -48,19 +54,38 @@ superposition.PKNCAconc <- function(conc, ...) {
   # Split the data by grouping and extract just the concentration and
   # time columns
   nested_data <- prepare_PKNCAconc(conc)
+  # parallel::mclapply() forks on every platform except Windows, and a
+  # condition raised in a forked worker never reaches the parent, so collect
+  # each worker's conditions with the result and re-emit them below.
+  # purrr::quietly() also captures messages and printed output, so those are
+  # re-emitted as well; otherwise adding a message() to the calculation later
+  # would silently discard it on every platform.
+  quiet_superposition <- purrr::quietly(superposition.numeric)
   tmp_results <-
     parallel::mclapply(
       X=seq_len(nrow(nested_data)),
       FUN=function(idx) {
-        superposition.numeric(
+        quiet_superposition(
           conc=nested_data$data_conc[[idx]]$conc,
           time=nested_data$data_conc[[idx]]$time,
           ...
         )
       }
     )
+  for (current_warning in unlist(lapply(tmp_results, FUN="[[", "warnings"))) {
+    warning(current_warning, call.=FALSE)
+  }
+  # `messages` keep their trailing newline; `output` has it stripped.
+  for (current_message in unlist(lapply(tmp_results, FUN="[[", "messages"))) {
+    message(current_message, appendLF=FALSE)
+  }
+  current_output <- unlist(lapply(tmp_results, FUN="[[", "output"))
+  current_output <- current_output[nzchar(current_output)]
+  if (length(current_output) > 0) {
+    writeLines(current_output)
+  }
   # Replace the concentration data with the new results
-  nested_data$data_conc <- tmp_results
+  nested_data$data_conc <- lapply(tmp_results, FUN="[[", "result")
   tidyr::unnest(nested_data, cols="data_conc")
 }
 
@@ -80,7 +105,10 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   assert_conc_time(conc = conc, time = time)
   if (check.blq) {
     if (!(conc[1] %in% 0)) {
-      stop("The first concentration must be 0 (and not NA).  To change this set check.blq=FALSE.")
+      rlang::abort(
+        "The first concentration must be 0 (and not NA).  To change this set check.blq=FALSE.",
+        class = "pknca_error_superposition_blq"
+      )
     }
   }
   assert_number_between(dose.input, na.ok = FALSE, null.ok = TRUE, lower = 0)
@@ -89,11 +117,17 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   # dose.amount
   if (!missing(dose.amount)) {
     if (missing(dose.input)) {
-      stop("must give dose.input to give dose.amount")
+      rlang::abort(
+        "must give dose.input to give dose.amount",
+        class = "pknca_error_superposition_dose_amount_without_input"
+      )
     }
     assert_numeric_between(x = dose.amount, lower = 0, finite = TRUE)
     if (!(length(dose.amount) %in% c(1, length(dose.times))))
-      stop("dose.amount must either be a scalar or match the length of dose.times")
+      rlang::abort(
+        "dose.amount must either be a scalar or match the length of dose.times",
+        class = "pknca_error_superposition_dose_amount_length"
+      )
   }
   checkmate::assert_number(n.tau, lower = 1)
   if (is.finite(n.tau)) {
@@ -121,39 +155,40 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   # additional.times
   if (length(additional.times) > 0) {
     if (any(is.na(additional.times))) {
-      stop("No additional.times may be NA (to not include any additional.times, enter c() as the function argument)")
+      rlang::abort(
+        "No additional.times may be NA (to not include any additional.times, enter c() as the function argument)",
+        class = "pknca_error_superposition_additional_times_na"
+      )
     }
-    if (!is.numeric(additional.times) || is.factor(additional.times))
-      stop("additional.times must be a number")
-    if (any(additional.times < 0))
-      stop("All additional.times must be nonnegative")
-    if (any(additional.times > tau))
-      stop("All additional.times must be <= tau")
+    checkmate::assert_numeric(additional.times, lower = 0, upper = tau)
   }
   # steady.state.tol
-  if (length(steady.state.tol) != 1)
-    stop("steady.state.tol must be a scalar")
-  if (!is.numeric(steady.state.tol) || is.factor(steady.state.tol) || is.na(steady.state.tol))
-    stop("steady.state.tol must be a number")
-  if (steady.state.tol <= 0 ||
-      steady.state.tol >= 1)
-    stop("steady.state.tol must be between 0 and 1, exclusive.")
-  if (steady.state.tol > 0.01)
-    warning("steady.state.tol is usually <= 0.01")
+  checkmate::assert_number(steady.state.tol, na.ok = FALSE)
+  if (steady.state.tol <= 0 || steady.state.tol >= 1)
+    rlang::abort(
+      "steady.state.tol must be between 0 and 1, exclusive.",
+      class = "pknca_error_superposition_steady_state_tol_range"
+    )
+  if (steady.state.tol > 0.01) {
+    rlang::warn("steady.state.tol is usually <= 0.01", class = "pknca_warning_superposition_steady_state_tol_large")
+  }
   # We get all or none of lambda.z, clast, and tlast
   has.lambda.z <- !missing(lambda.z)
   has.clast.pred <- !is.logical(clast.pred)
   has.tlast <- !missing(tlast)
   if (any(c(has.lambda.z, has.clast.pred, has.tlast)) &&
       !all(c(has.lambda.z, has.clast.pred, has.tlast)))
-    stop("Either give all or none of the values for these arguments: lambda.z, clast.pred, and tlast")
+    rlang::abort(
+      "Either give all or none of the values for these arguments: lambda.z, clast.pred, and tlast",
+      class = "pknca_error_superposition_lambdaz_clast_tlast_incomplete"
+    )
   # combine dose.input and dose.amount as applicable to scale the
   # outputs.
   if (!missing(dose.amount)) {
     dose.scaling <- dose.amount / dose.input
     if (length(dose.scaling) != length(dose.times)) {
       if (length(dose.scaling) != 1)
-        stop("bug in dose.amount, dose.times, and dose.input handling") # nocov
+        rlang::abort("bug in dose.amount, dose.times, and dose.input handling", class = "pknca_error_internal_dose_scaling")  # nocov
       # it is a scalar and there is more than one dose
       dose.scaling <- rep(dose.scaling, length(dose.times))
     }
@@ -202,10 +237,22 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
     # Do the math! (Finally)
     current.tol <- steady.state.tol + 1
     tau.count <- 0
+    # Generous backstop so that a case that cannot reach steady-state errors
+    # instead of looping forever (normal convergence takes far fewer
+    # intervals; the default steady.state.tol needs at most ~1000 even for
+    # negligible accumulation decay).
+    max.tau.count <- 10000L
     # Stop either for reaching steady-state or for reaching the requested number of doses
     while (tau.count < n.tau &
            !is.na(current.tol) &
            current.tol >= steady.state.tol) {
+      if (is.infinite(n.tau) && tau.count >= max.tau.count) {
+        stop(
+          "Superposition did not reach steady-state within ", max.tau.count,
+          " dosing intervals (steady.state.tol=", steady.state.tol,
+          ").  Check the lambda.z, tau, and steady.state.tol inputs, or use a finite n.tau."
+        )
+      }
       prev.conc <- ret$conc
       # Perform the dosing for a single dosing interval.
       for (i in seq_along(dose.times)) {
@@ -228,13 +275,28 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
           )
       }
       tau.count <- tau.count + 1
-      if (any(ret$conc %in% 0)) {
-        # prevent division by 0.  Since not all concentrations are 0,
-        # all values will eventually be nonzero.
-        current.tol <- steady.state.tol + 1
-      } else {
+      zero.conc <- ret$conc %in% 0
+      if (!any(zero.conc)) {
         current.tol <- max(1-(prev.conc/ret$conc))
+      } else if ((tau*(tau.count - 1) - max(dose.times)) > tlast) {
+        # The dosing interval just added drew all of its concentrations from
+        # times after tlast, where extrapolation may be zero (e.g. with
+        # auc.type="AUClast").  A concentration that is still zero can
+        # therefore never become nonzero (a structural zero), so assess
+        # steady-state on the nonzero concentrations only.
+        current.tol <- max(1-(prev.conc[!zero.conc]/ret$conc[!zero.conc]))
+      } else {
+        # A zero concentration may still become nonzero from a later dosing
+        # interval; prevent division by 0 and do not yet assess steady-state.
+        current.tol <- steady.state.tol + 1
       }
+    }
+    if (!is.na(current.tol) && current.tol < steady.state.tol && any(ret$conc %in% 0)) {
+      warning(
+        "Zero concentrations remain in the steady-state superposition profile.  ",
+        "They come from concentrations extrapolated as zero after tlast (",
+        signif(tlast, 6), ") with auc.type=", dQuote(auc.type, q = FALSE), "."
+      )
     }
   }
   ret

@@ -33,10 +33,34 @@ test_that("sparse_auc", {
   expect_equal(sparse_serial$sparse_auc_df, structure(auclast_df_serial, method=c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")))
 })
 
+test_that("as_sparse_pk drops NA concentrations (#563)", {
+  sparse_pk <- as_sparse_pk(
+    conc    = c(0, 0, 5, 7, 3, NA),
+    time    = c(0, 0, 4, 4, 24, 24),
+    subject = c(1, 2, 3, 4, 5, 6)
+  )
+  # The NA row (subject 6, time 24) should be dropped
+  expect_length(sparse_pk, 3)  # 3 unique times: 0, 4, 24
+  expect_equal(sparse_pk[[3]]$conc, 3)
+  expect_equal(sparse_pk[[3]]$subject, 5)
+})
+
+test_that("sparse_auc tolerates NA concentrations (#563)", {
+  result <- pk.calc.sparse_auc(
+    conc    = c(0, 0, 5, 7, 3, NA),
+    time    = c(0, 0, 4, 4, 24, 24),
+    subject = 1:6
+  )
+  expect_false(is.na(result$sparse_auc))
+  # Mean profile: time 0 = 0, time 4 = 6, time 24 = 3
+  # AUC linear: 0.5*(0+6)*4 + 0.5*(6+3)*20 = 12 + 90 = 102
+  expect_equal(as.numeric(result$sparse_auc), 102)
+})
+
 test_that("sparse_auclast expected errors", {
   expect_error(
     pk.calc.sparse_auclast(auc.type = "foo"),
-    class = "pknca_sparse_auclast_change_auclast"
+    class = "pknca_error_sparse_auclast_change_auclast"
   )
 })
 
@@ -99,19 +123,19 @@ test_that("sparse AUC/AUMC only allow method = 'linear' (#469)", {
   # *last wrappers that forward `method` through `...`
   expect_error(
     pk.calc.sparse_auc(conc=d_sparse$conc, time=d_sparse$time, subject=subject, method="lin up/log down"),
-    class = "pknca_sparse_method"
+    class = "pknca_error_sparse_auc_method"
   )
   expect_error(
     pk.calc.sparse_auclast(conc=d_sparse$conc, time=d_sparse$time, subject=subject, method="lin-log"),
-    class = "pknca_sparse_method"
+    class = "pknca_error_sparse_auc_method"
   )
   expect_error(
     pk.calc.sparse_aumc(conc=d_sparse$conc, time=d_sparse$time, subject=subject, method="lin up/log down"),
-    class = "pknca_sparse_method"
+    class = "pknca_error_sparse_aumc_method"
   )
   expect_error(
     pk.calc.sparse_aumclast(conc=d_sparse$conc, time=d_sparse$time, subject=subject, method="log"),
-    class = "pknca_sparse_method"
+    class = "pknca_error_sparse_aumc_method"
   )
 })
 
@@ -207,7 +231,7 @@ test_that("sparse_aumclast works correctly", {
 test_that("sparse_aumclast expected errors", {
   expect_error(
     pk.calc.sparse_aumclast(auc.type = "foo"),
-    class = "pknca_sparse_aumclast_change_auc_type"
+    class = "pknca_error_sparse_aumclast_change_auc_type"
   )
 })
 
@@ -262,6 +286,96 @@ test_that("moment means are calculated correctly", {
   expect_false(conc_sparse_pk_mean[[2]]$mean == moment_sparse_pk_mean[[2]]$mean)
 })
 
+
+# ============================================================================
+# Per-run options forwarding
+# ============================================================================
+# Shared setup: serial sparse design with 3 animals per
+# timepoint.  At t=2, 2 of 3 measurements are BLQ (strictly more than 50%), so
+# sparse_mean zeroes that timepoint and the mean profile is
+# (0,0), (1,3), (2,0), (3,2).  The default conc.blq (middle = "drop") drops the
+# middle zero before integration (AUClast = 6.5); conc.blq = "keep" keeps it
+# (AUClast = 4).
+d_sparse_579 <-
+  data.frame(
+    id = 1:12,
+    conc = c(0, 0, 0,   2, 3, 4,   0, 0, 1.5,   1, 2, 3),
+    time = c(0, 0, 0,   1, 1, 1,   2, 2, 2,     3, 3, 3)
+  )
+
+test_that("pk.calc.sparse_auc and pk.calc.sparse_aumc use their options argument for the mean-profile integration", {
+  r_default <-
+    pk.calc.sparse_auclast(
+      conc = d_sparse_579$conc, time = d_sparse_579$time, subject = d_sparse_579$id
+    )
+  r_keep <-
+    pk.calc.sparse_auclast(
+      conc = d_sparse_579$conc, time = d_sparse_579$time, subject = d_sparse_579$id,
+      options = list(conc.blq = "keep")
+    )
+  expect_equal(as.numeric(r_default$sparse_auclast), 6.5)
+  expect_equal(as.numeric(r_keep$sparse_auclast), 4)
+  # The sparse AUC variance is calculated from the individual measurements and
+  # weights, not the cleaned mean profile, so it is unaffected by conc.blq
+  expect_equal(as.numeric(r_default$sparse_auc_se), as.numeric(r_keep$sparse_auc_se))
+
+  # The same forwarding applies to the sparse AUMC.  Moment profile:
+  # t*C = (0,0), (1,3), (2,0), (3,6); default drops the middle zero
+  # concentration (AUMClast = 10.5); conc.blq = "keep" keeps it (AUMClast = 6).
+  ra_default <-
+    pk.calc.sparse_aumclast(
+      conc = d_sparse_579$conc, time = d_sparse_579$time, subject = d_sparse_579$id
+    )
+  ra_keep <-
+    pk.calc.sparse_aumclast(
+      conc = d_sparse_579$conc, time = d_sparse_579$time, subject = d_sparse_579$id,
+      options = list(conc.blq = "keep")
+    )
+  expect_equal(as.numeric(ra_default$sparse_aumclast), 10.5)
+  expect_equal(as.numeric(ra_keep$sparse_aumclast), 6)
+})
+
+test_that("per-PKNCAdata options affect sparse_auclast and match the global-option route", {
+  o_conc <- PKNCAconc(d_sparse_579, conc ~ time | id, sparse = TRUE)
+  d_intervals <- data.frame(start = 0, end = 3, sparse_auclast = TRUE)
+  o_data_default <- PKNCAdata(o_conc, intervals = d_intervals)
+  o_data_keep <- PKNCAdata(o_conc, intervals = d_intervals, options = list(conc.blq = "keep"))
+  res_default <- as.data.frame(suppressMessages(pk.nca(o_data_default, verbose = FALSE)))
+  res_keep <- as.data.frame(suppressMessages(pk.nca(o_data_keep, verbose = FALSE)))
+  expect_equal(
+    res_default$PPORRES[res_default$PPTESTCD %in% "sparse_auclast"],
+    6.5
+  )
+  expect_equal(
+    res_keep$PPORRES[res_keep$PPTESTCD %in% "sparse_auclast"],
+    4
+  )
+
+  # The global-option route matches the per-run route
+  old_conc.blq <- PKNCA.options("conc.blq")
+  on.exit(PKNCA.options(conc.blq = old_conc.blq))
+  PKNCA.options(conc.blq = "keep")
+  res_global <- as.data.frame(suppressMessages(pk.nca(o_data_default, verbose = FALSE)))
+  expect_equal(
+    res_global$PPORRES[res_global$PPTESTCD %in% "sparse_auclast"],
+    4
+  )
+})
+
+test_that("sparse_mean does not zero a timepoint with exactly 50% BLQ", {
+  # Exactly 50% BLQ: the arithmetic mean is used (BLQ values count as zero)
+  sparse_pk_half <- as_sparse_pk(conc = c(0, 0, 2, 4), time = rep(1, 4), subject = 1:4)
+  expect_equal(
+    sparse_pk_attribute(sparse_mean(sparse_pk_half), "mean"),
+    1.5
+  )
+  # Strictly more than 50% BLQ: the mean is zeroed
+  sparse_pk_most <- as_sparse_pk(conc = c(0, 0, 0, 4), time = rep(1, 4), subject = 1:4)
+  expect_equal(
+    sparse_pk_attribute(sparse_mean(sparse_pk_most), "mean"),
+    0
+  )
+})
 
 # ============================================================================
 # Integration Tests

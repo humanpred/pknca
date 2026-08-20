@@ -219,16 +219,24 @@ exclude_nca_by_param <- function(
   checkmate::expect_number(min_thr, finite = TRUE, null.ok = TRUE)
   checkmate::expect_number(max_thr, finite = TRUE, null.ok = TRUE)
 
-  if (isTRUE(min_thr > max_thr))
-    stop("if both defined min_thr must be less than max_thr")
+  if (isTRUE(min_thr > max_thr)) {
+    rlang::abort("if both defined min_thr must be less than max_thr", class = "pknca_error_min_thr_gt_max_thr")
+  }
 
   function(x, ...) {
     ret <- rep(NA_character_, nrow(x))
     idx_param <- which(x$PPTESTCD == parameter)
     idx_aff_params <- which(x$PPTESTCD %in% affected_parameters)
 
-    if (length(idx_param) > 1)
-      stop("Should not see more than one ", parameter, " (please report this as a bug)")
+    if (length(idx_param) > 1) {
+      rlang::abort(
+        sprintf(
+          "Should not see more than one %s (please report this as a bug)",
+          parameter
+        ),
+        class = "pknca_error_internal_duplicate_parameter"
+      )
+    }
 
     if (length(idx_param) == 1 && !is.na(x$PPORRES[idx_param]) && length(idx_aff_params) > 0) {
       current_value <- x$PPORRES[idx_param]

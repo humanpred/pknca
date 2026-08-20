@@ -226,8 +226,8 @@ test_that("two-point half-life succeeds (fix #114)", {
         tlast=1
       )
     ),
-    class = "pknca_halflife_2points"),
-    class = "pknca_adjr2_2points"
+    class = "pknca_warning_halflife_2points"),
+    class = "pknca_warning_adjr2_2points"
   )
 })
 
@@ -588,7 +588,7 @@ test_that("fit_half_life_tobit returns NA with warning on too few above-LLOQ poi
   )
   expect_warning(
     result <- PKNCA:::fit_half_life_tobit(data, tlast = 2),
-    class = "pknca_tobit_too_few_points"
+    class = "pknca_warning_tobit_too_few_points"
   )
   expect_true(is.na(result$lambda.z))
   expect_true(is.na(result$half.life))
@@ -603,7 +603,7 @@ test_that("fit_half_life_tobit returns NA with warning on no variability", {
   )
   expect_warning(
     result <- PKNCA:::fit_half_life_tobit(data, tlast = 2),
-    class = "pknca_tobit_no_variability"
+    class = "pknca_warning_tobit_no_variability"
   )
   expect_true(is.na(result$lambda.z))
 })
@@ -708,7 +708,7 @@ test_that("pk.calc.half.life hl_method='tobit' warns with too few above-LLOQ poi
       allow.tmax.in.half.life = TRUE,
       min.hl.points = 3
     ),
-    class = "pknca_halflife_too_few_points"
+    class = "pknca_warning_halflife_too_few_points_tobit"
   )
   expect_true(is.na(result$lambda.z))
 })
@@ -862,11 +862,11 @@ test_that("pk.calc.half.life tobit uses allow.tmax.in.half.life=FALSE", {
   time <- 0:3
   lloq <- 0.1
   # FALSE (strict >): keep time > 1 → only conc=1 at time 2 is above-LLOQ
-  # → 1 point < min.hl.points=2 → pknca_halflife_too_few_points warning
+  # → 1 point < min.hl.points=2 → pknca_warning_halflife_too_few_points_tobit warning
   expect_warning(
     pk.calc.half.life(conc, time, lloq = lloq, hl_method = "tobit",
                       allow.tmax.in.half.life = FALSE, min.hl.points = 2),
-    class = "pknca_halflife_too_few_points"
+    class = "pknca_warning_halflife_too_few_points_tobit"
   )
   # TRUE (>=): keep time >= 1 → conc=2 and conc=1 both above-LLOQ
   # → 2 points meets min.hl.points=2 → fitting succeeds
@@ -974,7 +974,7 @@ test_that("fit_half_life_tobit warns on optimization non-convergence", {
       min.hl.points = 3,
       tobit_optim_control = list(maxit = 1)
     ),
-    class = "pknca_tobit_no_convergence"
+    class = "pknca_warning_tobit_no_convergence"
   )
   expect_true(is.na(result$lambda.z))
 })
@@ -995,4 +995,9 @@ test_that("pk.calc.half.life tobit manually.selected.points sets exclude for neg
     attr(result, "exclude"),
     "Negative half-life estimated with manually-selected points"
   )
+})
+
+test_that("span.ratio is described as span over half-life, not the inverse (#582)", {
+  # ret$span.ratio <- (max(data$time) - min(data$time))/ret$half.life
+  expect_equal(get.interval.cols()[["span.ratio"]]$desc, "Lambda z time span to half-life ratio")
 })

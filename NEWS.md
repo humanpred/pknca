@@ -14,10 +14,73 @@ the dosing including dose amount and route.
   unchanged group, because the intervals are now filtered to the changed groups
   along with the concentration and dose data (#581).
 
+* Bug fix: `superposition()` no longer loops forever when steady-state is
+  requested (the default `n.tau=Inf`) and concentrations are extrapolated as
+  zero after `tlast` (for example, `auc.type="AUClast"` when `tlast < tau`).
+  Steady-state is now assessed on the concentrations that can become nonzero,
+  a warning is given when zero concentrations remain in the steady-state
+  profile, and an informative error (instead of an infinite loop) is raised if
+  steady-state cannot be reached within 10000 dosing intervals (#580).
+  Warnings, messages, and printed output from `superposition()` on a
+  `PKNCAconc` object are now raised by the parent process.  Each subject runs
+  through `parallel::mclapply()`, which forks on every platform except
+  Windows, and a condition raised in a forked worker never reaches the
+  caller, so the new warning was previously invisible except on Windows.
+
+* Corrected registry description strings that did not match the
+  implementation (#582).  `adj.r.squared.factor` is described as selecting
+  the regression with the most points among those within the tolerance of
+  the best adjusted r^2, rather than as a factor added per data point.
+  `span.ratio` is described as the lambda z time span divided by the
+  half-life; the previous text stated the inverse.  The eight dose-aware
+  `aucint*`/`aumcint*` parameters ending in `.dose` no longer describe
+  themselves as `AUCdn`/`AUMCdn`, which is this package's abbreviation for
+  dose normalization (`auclast.dn` and similar).
+
+* Bug fix: `pk.calc.sparse_auc()` and `pk.calc.sparse_aumc()` now use their
+  `options` argument when integrating the mean concentration-time profile, so
+  per-run options (e.g. `PKNCAdata(options = list(conc.blq = "keep"))`) affect
+  sparse AUC and AUMC calculations the same way global `PKNCA.options()`
+  settings always did.  The documentation for `sparse_mean()` now correctly
+  states that a timepoint mean is zeroed when >50% of the measurements are
+  BLQ (#579).
+
+* Parameter descriptions in `add.interval.col()` are now limited to 40
+  characters to comply with SDTM requirements.
+
 * Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
   Group-level concentration data are now sorted by time before calculation, so
   parameters that use the full group (e.g. `aucint.all` and the other `aucint*`
   parameters) work when the input rows are not in time order (#568).
+
+* Migrated input validation across the package from base R checks
+  (`stopifnot()`, `is.character()`, `is.numeric()`, etc.) to `checkmate`
+  assertions, and standardized error/warning signaling on classed
+  `rlang::abort()`/`rlang::warn()` conditions (e.g. `pknca_error_*`,
+  `pknca_warning_*`) instead of unclassed base `stop()`/`warning()`. This
+  makes failure modes catchable by class rather than by matching message
+  text. As a side effect, some validations became stricter (rejecting
+  previously-accepted edge cases like non-finite numbers); see
+  the entries below for specifics.
+
+* `pk.calc.aucabove()` now requires `conc_above` to be finite. Previously,
+  `Inf` or `-Inf` were silently accepted and produced a degenerate result
+  (AUC of 0 for all profiles, since `conc - Inf` is always `-Inf`). Passing
+  a non-finite `conc_above` now raises an error instead.
+  
+* `get_impute_method()` now requires `impute` to be an atomic scalar (via
+  `checkmate::assert_scalar()`). Previously, a bare `length(impute) == 1`
+  check meant a length-1 list (e.g. `list("start_conc0")`) could pass through,
+  relying on `%in%`'s implicit list coercion downstream instead of failing
+  clearly. Passing a list now raises an error instead.
+
+* `add.interval.col()` now validates the structure of `pptestcd_cdisc` and
+  `pptest_cdisc` rather than only checking that they are a character string or
+  a list.  A character value must be length 1 and non-missing, and a list must
+  have exactly one element named `route` whose value is a named list.  Values
+  that were previously accepted and would have produced incorrect CDISC output
+  (for example a multi-element character vector, or a list named something
+  other than `route`) now raise an error.
 
 * Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).
@@ -91,6 +154,16 @@ the dosing including dose amount and route.
 
 ## Breaking changes
 
+* The pre-existing `pknca_*` condition classes were renamed to carry an explicit
+  `error`/`warning`/`message` element, so code that catches them by class must be
+  updated.  For example, `pknca_conc_none` is now `pknca_warning_no_concentration`,
+  `pknca_no_intervals` is now `pknca_warning_no_intervals`, and
+  `pknca_all_warnings_no_results` is now `pknca_warning_no_results`.  One change
+  goes beyond renaming: the two classes `pknca_sparse_auclast_change_auclast` and
+  `pknca_sparse_aumclast_change_auc_type` were merged into the single class
+  `pknca_error_auc_last_type_override`, so they can no longer be caught
+  separately.
+
 * `pknca_units_table()` called on a `PKNCAdata` object now raises an error if
   unit columns within the same concentration group contain mixed values (e.g.,
   two different `concu` strings for the same subject group).  Previously, `NA`
@@ -108,8 +181,24 @@ the dosing including dose amount and route.
 when the issue is due to an excluded point (#310)
 * The `PKNCAdose` function won't give an error for a missing-time check when the issue is due to an excluded point (#310)
 * `pk.nca` will calculate `fe` and `clr` even if their dependent parameters (e.g, `ae`) were not requested to be calculated in the intervals (#473)
+* sparse calculations won't abort with `pk.nca` when the data contains missing (NA) concentrations. It will silently drop them.
 
 ## New features
+
+* Added bioequivalence (BE) assessment via a single calculation path.
+  `be_assess()` computes the full regulatory pass/fail decision for average
+  bioequivalence, the EMA/Health Canada/GCC expanding-limits (ABEL) frameworks,
+  and the FDA reference-scaled (RSABE), narrow therapeutic index (NTID), and
+  highly variable NTID (HVNTID) frameworks, with the model auto-selected from
+  the regulator and design; `be_compare()` assesses one dataset under several
+  frameworks at once.  These are coordinated by `be_fit_models()`, which runs
+  the pipeline `be_dataset()` -> `be_fit_model_single()` -> `be_extract_param()`
+  -> `be_table()`; the supporting functions `be_design()`, `be_within_var()`,
+  `be_regulator()`, and `be_expand_limits()` are also exported.  All regulatory
+  constants and criteria are internalized, so no additional packages are
+  required beyond `lme4`/`lmerTest`/`emmeans` (suggested) for the average-BE
+  model.  See the new `vignette("v50-bioequivalence")`.  Based on work by
+  @Sang-j111 (#490)
 
 * `pknca_units_table()` is now an S3 generic with a `PKNCAdata` method.  When
   called on a `PKNCAdata` object it automatically builds the unit conversion
