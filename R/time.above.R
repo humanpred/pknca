@@ -77,7 +77,7 @@ pk.calc.time_above <- function(conc, time,
       )
   } else {
     # Should be caught by the method assignment above
-    stop("Invalid 'method', please report this as a bug: ", method) # nocov
+    rlang::abort(sprintf("Invalid 'method', please report this as a bug: %s", method), class = "pknca_error_internal_invalid_time_above_method")  # nocov
   }
   ret
 }

@@ -126,15 +126,7 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
 
   extra_cols <- setdiff(ret$PPTESTCD, names(get.interval.cols()))
   if (length(extra_cols) > 0) {
-    # nocov start
-    rlang::abort(
-      sprintf(
-        "Please report a bug. Unknown NCA parameters have units defined: %s",
-        paste(extra_cols, collapse = ", ")
-      ),
-      class = "pknca_error_internal_unknown_nca_units"
-    )
-    # nocov end
+    rlang::abort(sprintf("Please report a bug. Unknown NCA parameters have units defined: %s", paste(extra_cols, collapse = ", ")), class = "pknca_error_internal_unknown_nca_units")  # nocov
   }
 
   # Apply conversion factors

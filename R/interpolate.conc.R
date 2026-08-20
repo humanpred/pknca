@@ -422,15 +422,7 @@ interp.extrap.conc.dose <- function(conc, time,
     TRUE~"unknown") # should never happen
   if (any(mask_unknown <- data_all$event %in% "unknown")) {
     # All events should be accounted for already
-    # nocov start
-    rlang::abort(
-      sprintf(
-        "Unknown event in interp.extrap.conc.dose at time(s): %s (Please report this as a bug)",
-        paste(unique(data_all$time[mask_unknown]), collapse = ", ")
-      ),
-      class = "pknca_error_internal_unknown_event"
-    )
-    # nocov end
+    rlang::abort(sprintf("Unknown event in interp.extrap.conc.dose at time(s): %s (Please report this as a bug)", paste(unique(data_all$time[mask_unknown]), collapse = ", ")), class = "pknca_error_internal_unknown_event")  # nocov
   }
   # Remove "output_only" from event_before and event_after
   simple_locf <- function(x, missing_val) {
@@ -475,15 +467,7 @@ interp.extrap.conc.dose <- function(conc, time,
   }
   if (any(mask_no_method <- is.na(data_all$method))) {
     # This should never happen, all eventualities should be covered
-    # nocov start
-    rlang::abort(
-      sprintf(
-        "No method for imputing concentration at time(s): %s",
-        paste(unique(data_all$time[mask_no_method]), collapse = ", ")
-      ),
-      class = "pknca_error_no_interp_method"
-    )
-    # nocov end
+    rlang::abort(sprintf("No method for imputing concentration at time(s): %s", paste(unique(data_all$time[mask_no_method]), collapse = ", ")), class = "pknca_error_no_interp_method")  # nocov
   }
   # Filter to the requested time points and output
   data_out <- data_all[data_all$out,,drop=FALSE]
@@ -511,17 +495,7 @@ iecd_impossible_select <- function(x) {
        x$event_after %in% c("conc_dose_iv_bolus_after", "dose_iv_bolus_after"))
 }
 iecd_impossible_value <- function(data_all, current_idx, ...) {
-  # nocov start
-  rlang::abort(
-    sprintf(
-      "Impossible combination requested for interp.extrap.conc.dose (please report this as a bug).  event_before: %s, event: %s, event_after: %s",
-      data_all$event_before[current_idx],
-      data_all$event[current_idx],
-      data_all$event_after[current_idx]
-    ),
-    class = "pknca_error_internal_impossible_event_combination"
-  )
-  # nocov end
+  rlang::abort(sprintf("Impossible combination requested for interp.extrap.conc.dose (please report this as a bug).  event_before: %s, event: %s, event_after: %s", data_all$event_before[current_idx], data_all$event[current_idx], data_all$event_after[current_idx]), class = "pknca_error_internal_impossible_event_combination")  # nocov
 }
 
 # Observed concentration ####

@@ -34,7 +34,7 @@ set_intervals <- function(data, intervals) {
 #' @export
 assert_intervals <- function(intervals, data) {
   checkmate::assert_data_frame(intervals)
-  checkmate::assert_class(data, classes = "PKNCAdata", .var.name = "data")
+  checkmate::assert_class(data, classes = "PKNCAdata")
 
   allowed_columns <-
     c(

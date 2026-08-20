@@ -488,15 +488,7 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
 
   current_summary_instructions <- PKNCA.set.summary()[[parameter]]
   if (is.null(current_summary_instructions)) {
-    # nocov start
-    rlang::abort(
-      sprintf(
-        "No summary function is set for parameter %s. Please set it with PKNCA.set.summary and report this as a bug in PKNCA.",
-        parameter
-      ),
-      class = "pknca_error_no_summary_function"
-    )
-    # nocov end
+    rlang::abort(sprintf("No summary function is set for parameter %s. Please set it with PKNCA.set.summary and report this as a bug in PKNCA.", parameter), class = "pknca_error_no_summary_function")  # nocov
   }
 
   point <- current_summary_instructions$point(current_data[[number_col]])
