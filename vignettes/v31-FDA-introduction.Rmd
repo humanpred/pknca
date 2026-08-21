@@ -463,7 +463,7 @@ pander::pander(as.data.frame(o_result), split.tables = Inf)
 
 Generate all individual profiles using the groups that you defined using the `ggtibble` package.
 
-```{r fig.width=4, fig.height=4, echo=TRUE}
+```{r fig.width=4, fig.height=4, echo=TRUE, eval=requireNamespace("ggtibble", quietly = TRUE)}
 library(ggtibble)
 o_conc <-
   PKNCAconc(

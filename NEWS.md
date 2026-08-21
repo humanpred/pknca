@@ -6,6 +6,11 @@ the dosing including dose amount and route.
 
 # Development version
 
+* PKNCA now declares a minimum R version of 4.4 in DESCRIPTION, and
+  continuous integration tests it.  The floor comes from `Matrix`, which
+  requires R >= 4.4 and is needed by `lme4` and so by the bioequivalence
+  functions; the rest of the package would run on R 4.1.
+
 * Breaking change: The `exclude_half.life` and `include_half.life` columns must
   now be logical (`TRUE`/`FALSE`/`NA`).  A non-logical column (e.g. character
   `"yes"`) previously was accepted silently and excluded or included nothing; it
