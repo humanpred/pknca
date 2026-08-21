@@ -161,7 +161,7 @@ prepare_PKNCAconc <- function(.dat, extra_cols = character()) {
         group_cols_selected=group_cols_selected
       )
   } else {
-    stop("Please report this as a bug: Invalid data_name") # nocov
+    rlang::abort("Please report this as a bug: Invalid data_name", class = "pknca_error_internal_invalid_data_name")  # nocov
   }
   ret
 }
@@ -302,10 +302,11 @@ check_reserved_column_names <- function(x) {
 #' @noRd
 #' @keywords Internal
 standardize_column_names <- function(x, cols, group_cols=NULL, insert_if_missing=list()) {
-  checkmate::assert_list(cols, .var.name = "cols")
-  checkmate::assert_named(cols, .var.name = "cols")
+  checkmate::assert_list(cols)
+  checkmate::assert_named(cols)
+  # `.var.name` is kept here because the default would report `unlist(cols)`
   checkmate::assert_subset(unlist(cols), choices = names(x), .var.name = "cols")
-  checkmate::assert_character(group_cols, null.ok = TRUE,.var.name = "group_cols")
+  checkmate::assert_character(group_cols, null.ok = TRUE)
   if (!is.null(group_cols) && (length(group_cols) > 0)) {
     # Give a clear error message if group columns overlap
     mask_overlap_colvalues <- group_cols %in% unlist(cols)
