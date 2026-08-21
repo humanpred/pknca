@@ -77,6 +77,14 @@
 <div class="page-header"><h1 id="the-pknca-r-package-">The PKNCA R Package <img src="reference/figures/pknca-hex.png" align="right"><a class="anchor" aria-label="anchor" href="#the-pknca-r-package-"></a>
 </h1></div>
 <p>The PKNCA R package is designed to perform all noncompartmental analysis (NCA) calculations for pharmacokinetic (PK) data. The package is broadly separated into two parts (calculation and summary) with some additional housekeeping functions.</p>
+<p>Along with dense-sampling NCA and its summaries, PKNCA supports:</p>
+<ul>
+<li>sparse sampling designs (<code><a href="articles/v04-sparse.html">vignette("v04-sparse")</a></code>)</li>
+<li>units, including automatic conversion to preferred reporting units</li>
+<li>imputation of missing or unmeasured data (<code><a href="articles/v08-data-imputation.html">vignette("v08-data-imputation")</a></code>)</li>
+<li>CDISC-formatted output (<code>as.data.frame(out_format = "cdisc")</code>)</li>
+<li>bioequivalence assessment (<code><a href="articles/v50-bioequivalence.html">vignette("v50-bioequivalence")</a></code>)</li>
+</ul>
 <p>The primary and secondary goals of the PKNCA package are to 1) only give correct answers to the specific questions being asked and 2) automate as much as possible to simplify the task of the analyst. When automation would leave ambiguity or make a choice that the analyst may have an alternate preference for, it is either not used, is possible to override or raises an error message.</p>
 <p>Note that backward compatibility will not be guaranteed until version 1.0. Argument and function changes will continue until then. These will be especially noticeable around the inclusion of IV NCA parameters and additional specifications of the drug, which include dose amount and route of administration.</p>
 </div>
@@ -99,9 +107,21 @@
 <h2 id="from-github">From GitHub<a class="anchor" aria-label="anchor" href="#from-github"></a>
 </h2>
 <p>To install the development version from GitHub, type the following commands:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"remotes"</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"humanpred/pknca"</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"pak"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">"humanpred/pknca"</span>)</span></code></pre></div>
 </div>
+</div>
+<div class="section level1">
+<h1 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h1>
+<ul>
+<li>Function reference and articles: <a href="https://humanpred.github.io/pknca/" class="uri">https://humanpred.github.io/pknca/</a>
+</li>
+<li>User Guide (book): <a href="https://humanpred.github.io/pknca-book/" class="uri">https://humanpred.github.io/pknca-book/</a>
+</li>
+<li>Vignettes: <code>vignette(package = "PKNCA")</code>, starting with <code><a href="articles/v01-introduction-and-usage.html">vignette("v01-introduction-and-usage", package = "PKNCA")</a></code>
+</li>
+</ul>
 </div>
 <div class="section level1">
 <h1 id="calculating-parameters">Calculating parameters<a class="anchor" aria-label="anchor" href="#calculating-parameters"></a>
@@ -110,9 +130,9 @@
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">library</span>(PKNCA)</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co"># Set the business rule options with the PKNCA.options() function</span></span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># Load your concentration-time data</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>conc_raw <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"myconc.csv"</span>, <span class="at">stringsAsFactors=</span><span class="cn">FALSE</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>conc_raw <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"myconc.csv"</span>)</span>
 <span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co"># Load your dose data</span></span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>dose_raw <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"mydose.csv"</span>, <span class="at">stringsAsFactors=</span><span class="cn">FALSE</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>dose_raw <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"mydose.csv"</span>)</span>
 <span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co"># Put your concentration data into a PKNCAconc object</span></span>
 <span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>o_conc <span class="ot">&lt;-</span> <span class="fu">PKNCAconc</span>(<span class="at">data=</span>conc_raw,</span>
 <span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>                    <span class="at">formula=</span>conc<span class="sc">~</span>time<span class="sc">|</span>treatment<span class="sc">+</span>subject<span class="sc">/</span>analyte)</span>
@@ -183,7 +203,7 @@
 <li><a href="https://github.com/humanpred/pknca/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/humanpred/pknca/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
 <li><a href="https://app.codecov.io/gh/humanpred/pknca" class="external-link"><img src="https://codecov.io/gh/humanpred/pknca/graph/badge.svg" alt="Codecov test coverage"></a></li>
 <li><a href="https://www.codefactor.io/repository/github/humanpred/pknca" class="external-link"><img src="https://www.codefactor.io/repository/github/humanpred/pknca/badge?style=plastic" alt="CodeFactor"></a></li>
-<li><a href="https://bestpractices.coreinfrastructure.org/projects/2054" class="external-link"><img src="https://bestpractices.coreinfrastructure.org/projects/2054/badge" alt="CII Best Practices"></a></li>
+<li><a href="https://www.bestpractices.dev/projects/2054" class="external-link"><img src="https://www.bestpractices.dev/projects/2054/badge" alt="OpenSSF Best Practices"></a></li>
 </ul>
 </div>
 

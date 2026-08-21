@@ -5,6 +5,17 @@ The PKNCA R package is designed to perform all noncompartmental analysis
 separated into two parts (calculation and summary) with some additional
 housekeeping functions.
 
+Along with dense-sampling NCA and its summaries, PKNCA supports:
+
+- sparse sampling designs
+  ([`vignette("v04-sparse")`](https://humanpred.github.io/pknca/articles/v04-sparse.md))
+- units, including automatic conversion to preferred reporting units
+- imputation of missing or unmeasured data
+  ([`vignette("v08-data-imputation")`](https://humanpred.github.io/pknca/articles/v08-data-imputation.md))
+- CDISC-formatted output (`as.data.frame(out_format = "cdisc")`)
+- bioequivalence assessment
+  ([`vignette("v50-bioequivalence")`](https://humanpred.github.io/pknca/articles/v50-bioequivalence.md))
+
 The primary and secondary goals of the PKNCA package are to 1) only give
 correct answers to the specific questions being asked and 2) automate as
 much as possible to simplify the task of the analyst. When automation
@@ -47,9 +58,16 @@ To install the development version from GitHub, type the following
 commands:
 
 ``` R
-install.packages("remotes")
-remotes::install_github("humanpred/pknca")
+install.packages("pak")
+pak::pak("humanpred/pknca")
 ```
+
+# Documentation
+
+- Function reference and articles: <https://humanpred.github.io/pknca/>
+- User Guide (book): <https://humanpred.github.io/pknca-book/>
+- Vignettes: `vignette(package = "PKNCA")`, starting with
+  [`vignette("v01-introduction-and-usage", package = "PKNCA")`](https://humanpred.github.io/pknca/articles/v01-introduction-and-usage.md)
 
 # Calculating parameters
 
@@ -58,9 +76,9 @@ remotes::install_github("humanpred/pknca")
 library(PKNCA)
 # Set the business rule options with the PKNCA.options() function
 # Load your concentration-time data
-conc_raw <- read.csv("myconc.csv", stringsAsFactors=FALSE)
+conc_raw <- read.csv("myconc.csv")
 # Load your dose data
-dose_raw <- read.csv("mydose.csv", stringsAsFactors=FALSE)
+dose_raw <- read.csv("mydose.csv")
 # Put your concentration data into a PKNCAconc object
 o_conc <- PKNCAconc(data=conc_raw,
                     formula=conc~time|treatment+subject/analyte)
