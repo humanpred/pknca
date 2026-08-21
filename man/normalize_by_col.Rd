@@ -2,7 +2,7 @@
 % Please edit documentation in R/normalize.R
 \name{normalize_by_col}
 \alias{normalize_by_col}
-\title{Internal function to normalize by a specified column}
+\title{Normalize PKNCA results by a column of the concentration data}
 \usage{
 normalize_by_col(object, col, unit, parameters, suffix)
 }
@@ -21,5 +21,5 @@ normalize_by_col(object, col, unit, parameters, suffix)
 A data.frame with normalized parameters
 }
 \description{
-Internal function to normalize by a specified column
+Normalize PKNCA results by a column of the concentration data
 }

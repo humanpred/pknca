@@ -585,8 +585,8 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       # Do the calculation
       tmp_result <- do.call(all_intervals[[n]]$FUN, call_args)
       # The handling of the exclude column is documented in the
-      # "Writing-Parameter-Functions.Rmd" vignette.  Document any changes to
-      # this section of code there.
+      # "vignettes/v80-writing-parameter-functions.Rmd" vignette.  Document any
+      # changes to this section of code there.
       exclude_reason <-
         stats::na.omit(c(
           exclude_from_argument, attr(tmp_result, "exclude")

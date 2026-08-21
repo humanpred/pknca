@@ -190,11 +190,11 @@ setRoute <- function(object, ...) {
 #' @export
 setRoute.PKNCAdose <- function(object, route, ...) {
   if (missing(route)) {
+    # The route silently defaults to extravascular by design.
     object <-
       setAttributeColumn(object=object,
                          attr_name="route",
-                         default_value="extravascular",
-                         message_if_default="Assuming route of administration is extravascular")
+                         default_value="extravascular")
   } else {
     object <-
       setAttributeColumn(object=object,
@@ -230,9 +230,8 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
     dose <- object$columns$dose
   }
   if (missing(duration) && missing(rate)) {
-    object <- setAttributeColumn(object=object, attr_name="duration", default_value=0,
-                                 message_if_default="Assuming instant dosing (duration=0)")
-
+    # The duration silently defaults to 0 (instant dosing) by design.
+    object <- setAttributeColumn(object=object, attr_name="duration", default_value=0)
   } else if (!missing(duration) && !missing(rate)) {
     rlang::abort("Both duration and rate cannot be given at the same time", class = "pknca_error_duration_and_rate")
     # TODO: A consistency check could be done, but that would get into
