@@ -738,3 +738,26 @@ test_that("Integration functions are passed correctly through wrapper", {
   expect_true(is.numeric(auc_result) && auc_result > 0)
   expect_true(is.numeric(aumc_result) && aumc_result > 0)
 })
+
+test_that("the *int.inf.* descriptions name the AUCinf extrapolation they use (#582)", {
+  cols <- get.interval.cols()
+  auc_inf <- grep("^aucint[.]inf[.]", names(cols), value = TRUE)
+  aumc_inf <- grep("^aumcint[.]inf[.]", names(cols), value = TRUE)
+  expect_equal(length(auc_inf), 4)
+  expect_equal(length(aumc_inf), 4)
+  auc_desc <- vapply(cols[auc_inf], FUN = function(x) x$desc, FUN.VALUE = character(1))
+  aumc_desc <- vapply(cols[aumc_inf], FUN = function(x) x$desc, FUN.VALUE = character(1))
+  expect_true(all(grepl("AUCinf,", auc_desc, fixed = TRUE)))
+  expect_true(all(grepl("AUMCinf,", aumc_desc, fixed = TRUE)))
+})
+
+test_that("dose-aware interval parameters are not described as dose-normalized (#582)", {
+  cols <- get.interval.cols()
+  dose_aware <- grep("int[.].*[.]dose$", names(cols), value = TRUE)
+  expect_equal(length(dose_aware), 8)
+  descs <- vapply(cols[dose_aware], FUN = function(x) x$desc, FUN.VALUE = character(1))
+  # "dn" is the abbreviation for dose normalization (auclast.dn and friends);
+  # these parameters use dose-aware interpolation instead.
+  expect_equal(unname(descs[grepl("dn", descs, fixed = TRUE)]), character(0))
+  expect_true(all(grepl("dose-aware", descs, fixed = TRUE)))
+})

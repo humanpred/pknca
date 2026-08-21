@@ -226,8 +226,8 @@ test_that("two-point half-life succeeds (fix #114)", {
         tlast=1
       )
     ),
-    class = "pknca_halflife_2points"),
-    class = "pknca_adjr2_2points"
+    class = "pknca_warning_halflife_2points"),
+    class = "pknca_warning_adjr2_2points"
   )
 })
 
@@ -525,6 +525,57 @@ test_that("half-life has a exclude message when it cannot be calculated for flat
   )
 })
 
+test_that("half-life has an exclude message when no span survives selection (#583)", {
+  # The rising tail (2, 2.2, 2.42) fits perfectly with lambda.z < 0 and anchors
+  # the adjusted r-squared tolerance, so no span with lambda.z > 0 survives.
+  result <- pk.calc.half.life(conc = c(0, 20, 10, 5, 2, 2.2, 2.42), time = 0:6)
+  expect_equal(result$half.life, NA_real_)
+  expect_equal(result$lambda.z, NA_real_)
+  expect_equal(
+    attr(result, "exclude"),
+    "No valid terminal phase: no span with lambda.z > 0 within the adjusted r-squared tolerance of the best fit"
+  )
+})
+
+test_that("the no-surviving-span exclude reason lands in the pk.nca() exclude column (#583)", {
+  d_conc <- data.frame(conc = c(0, 20, 10, 5, 2, 2.2, 2.42), time = 0:6, subject = 1)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  res <- as.data.frame(o_nca)
+  expect_equal(res$PPORRES[res$PPTESTCD %in% "half.life"], NA_real_)
+  expect_equal(
+    res$exclude[res$PPTESTCD %in% "half.life"],
+    "No valid terminal phase: no span with lambda.z > 0 within the adjusted r-squared tolerance of the best fit"
+  )
+
+  # A normal successful fit carries no exclusion reason
+  d_theoph <- as.data.frame(datasets::Theoph[datasets::Theoph$Subject %in% 1, ])
+  o_conc_norm <- PKNCAconc(d_theoph, conc ~ Time | Subject)
+  o_data_norm <- PKNCAdata(o_conc_norm, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca_norm <- suppressMessages(pk.nca(o_data_norm))
+  res_norm <- as.data.frame(o_nca_norm)
+  expect_equal(res_norm$PPORRES[res_norm$PPTESTCD %in% "half.life"], 14.30438, tolerance = 0.0001)
+  expect_equal(res_norm$exclude[res_norm$PPTESTCD %in% "half.life"], NA_character_)
+})
+
+test_that("tobit half-life has an exclude message when no span has lambda.z > 0 (#583)", {
+  # Concentrations rise after tmax, so every Tobit span fits lambda.z < 0
+  result <- pk.calc.half.life(
+    conc = c(10, 1, 1.12, 1.19, 1.33, 1.44),
+    time = 0:5,
+    lloq = 0.5,
+    hl_method = "tobit",
+    allow.tmax.in.half.life = FALSE,
+    min.hl.points = 3
+  )
+  expect_equal(result$half.life, NA_real_)
+  expect_equal(
+    attr(result, "exclude"),
+    "No valid terminal phase: no Tobit span with lambda.z > 0"
+  )
+})
+
 # ---- Tobit half-life tests ----
 
 test_that("fit_half_life_tobit_LL returns correct negative log-likelihood", {
@@ -588,7 +639,7 @@ test_that("fit_half_life_tobit returns NA with warning on too few above-LLOQ poi
   )
   expect_warning(
     result <- PKNCA:::fit_half_life_tobit(data, tlast = 2),
-    class = "pknca_tobit_too_few_points"
+    class = "pknca_warning_tobit_too_few_points"
   )
   expect_true(is.na(result$lambda.z))
   expect_true(is.na(result$half.life))
@@ -603,7 +654,7 @@ test_that("fit_half_life_tobit returns NA with warning on no variability", {
   )
   expect_warning(
     result <- PKNCA:::fit_half_life_tobit(data, tlast = 2),
-    class = "pknca_tobit_no_variability"
+    class = "pknca_warning_tobit_no_variability"
   )
   expect_true(is.na(result$lambda.z))
 })
@@ -708,7 +759,7 @@ test_that("pk.calc.half.life hl_method='tobit' warns with too few above-LLOQ poi
       allow.tmax.in.half.life = TRUE,
       min.hl.points = 3
     ),
-    class = "pknca_halflife_too_few_points"
+    class = "pknca_warning_halflife_too_few_points_tobit"
   )
   expect_true(is.na(result$lambda.z))
 })
@@ -862,11 +913,11 @@ test_that("pk.calc.half.life tobit uses allow.tmax.in.half.life=FALSE", {
   time <- 0:3
   lloq <- 0.1
   # FALSE (strict >): keep time > 1 → only conc=1 at time 2 is above-LLOQ
-  # → 1 point < min.hl.points=2 → pknca_halflife_too_few_points warning
+  # → 1 point < min.hl.points=2 → pknca_warning_halflife_too_few_points_tobit warning
   expect_warning(
     pk.calc.half.life(conc, time, lloq = lloq, hl_method = "tobit",
                       allow.tmax.in.half.life = FALSE, min.hl.points = 2),
-    class = "pknca_halflife_too_few_points"
+    class = "pknca_warning_halflife_too_few_points_tobit"
   )
   # TRUE (>=): keep time >= 1 → conc=2 and conc=1 both above-LLOQ
   # → 2 points meets min.hl.points=2 → fitting succeeds
@@ -974,7 +1025,7 @@ test_that("fit_half_life_tobit warns on optimization non-convergence", {
       min.hl.points = 3,
       tobit_optim_control = list(maxit = 1)
     ),
-    class = "pknca_tobit_no_convergence"
+    class = "pknca_warning_tobit_no_convergence"
   )
   expect_true(is.na(result$lambda.z))
 })
@@ -995,4 +1046,9 @@ test_that("pk.calc.half.life tobit manually.selected.points sets exclude for neg
     attr(result, "exclude"),
     "Negative half-life estimated with manually-selected points"
   )
+})
+
+test_that("span.ratio is described as span over half-life, not the inverse (#582)", {
+  # ret$span.ratio <- (max(data$time) - min(data$time))/ret$half.life
+  expect_equal(get.interval.cols()[["span.ratio"]]$desc, "Lambda z time span to half-life ratio")
 })

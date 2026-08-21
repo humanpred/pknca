@@ -85,20 +85,15 @@ extrapolate_conc_lambdaz <- function(clast, lambda.z, tlast, time_out) {
 #'   and 'extrap_log'
 choose_interval_method <- function(conc, time, tlast, method, auc.type, options) {
   # Input checking
-  stopifnot(is.numeric(conc))
-  stopifnot(is.numeric(time))
-  stopifnot(!any(is.na(time)))
-  stopifnot(!any(is.na(conc)))
-  stopifnot(length(conc) == length(time))
+  checkmate::assert_numeric(conc, any.missing = FALSE)
+  checkmate::assert_numeric(time, any.missing = FALSE, len = length(conc))
   assert_aucmethod(method)
-  stopifnot(length(auc.type) == 1)
-  stopifnot(auc.type %in% c("AUCinf", "AUClast", "AUCall"))
+  checkmate::assert_choice(auc.type, choices = c("AUCinf", "AUClast", "AUCall"))
 
   if (missing(tlast)) {
     tlast <- pk.calc.tlast(conc, time, check=FALSE)
   } else {
-    stopifnot(is.numeric(tlast))
-    stopifnot(length(tlast) == 1)
+    checkmate::assert_number(tlast)
   }
 
   ret <- rep(NA_character_, length(conc))
@@ -121,13 +116,15 @@ choose_interval_method <- function(conc, time, tlast, method, auc.type, options)
   # return above, since tlast is NA when all concentrations are zero.
   idx_tlast <- which(time == tlast)
   if (length(idx_tlast) != 1) {
-    stop(
-      "tlast (", tlast, ") must occur exactly once in time; ",
+    tlast_detail <-
       if (length(idx_tlast) == 0) {
         "tlast was not found in time (possible floating point issue)"
       } else {
         "tlast was found multiple times"
       }
+    rlang::abort(
+      sprintf("tlast (%s) must occur exactly once in time; %s", tlast, tlast_detail),
+      class = "pknca_error_tlast_not_unique"
     )
   }
 
@@ -151,7 +148,7 @@ choose_interval_method <- function(conc, time, tlast, method, auc.type, options)
     ret[c(mask_linear, FALSE)] <- "linear"
     ret[c(mask_log, FALSE)] <- "log"
   } else {
-    stop("Unknown integration method, please report a bug: ", method) # nocov
+    rlang::abort(sprintf("Unknown integration method, please report a bug: %s", method), class = "pknca_error_internal_unknown_integration_method")  # nocov
   }
   ret[c(mask_zero, FALSE)] <- "zero"
   # What happens after tlast?
@@ -205,7 +202,7 @@ auc_integrate <- function(conc, time, clast, tlast, lambda.z, interval_method, f
     # or clast,pred is passed in.
     ret[length(ret)+1] <- fun_inf(clast, tlast, lambda.z)
   } else if (interval_method_extrap != "zero") {
-    stop("Invalid interval_method_extrap, please report a bug: ", interval_method_extrap) # nocov
+    rlang::abort(sprintf("Invalid interval_method_extrap, please report a bug: %s", interval_method_extrap), class = "pknca_error_internal_invalid_interval_method_extrap")  # nocov
   }
   ret <- sum(ret)
   ret

@@ -66,7 +66,13 @@ values of \code{NA} or \code{""} for concentrations to include and non-empty tex
 concentrations to exclude.}
 
 \item{duration}{(optional) The duration of collection as is typically used
-for concentration measurements in urine or feces.}
+for concentration measurements in urine or feces.  The \code{time} of a
+measurement is the start of the collection, and only the \code{time} is used
+when selecting data for a calculation interval; the duration is not
+considered.  A collection starting within an interval and ending after the
+interval \code{end} contributes its full amount to that interval, so for the
+simplest interpretation of results, align collection start and end times
+with interval boundaries.}
 
 \item{volume}{(optional) The volume (or mass) of collection as is typically
 used for urine or feces measurements.}
@@ -81,9 +87,11 @@ curve-stripping point selection.  Each value is \code{TRUE}, \code{FALSE}, or \c
 (undefined); the column/vector is treated as "in use" for an interval
 unless it is entirely \code{NA} (so an all-\code{FALSE} column still counts as in
 use), so leave it \code{NA} (rather than \code{FALSE}) where the mechanism should not
-apply.  Only one of \code{exclude_half.life} and \code{include_half.life} may be in
-use for a given interval.  See the "Half-Life Calculation" vignette for
-more details on the use of these arguments.}
+apply.  The column must be logical and must exist in the data; anything
+else is an error.  Only one of \code{exclude_half.life} and
+\code{include_half.life} may be in use for a given interval.  See the
+"Half-Life Calculation" vignette for more details on the use of these
+arguments.}
 
 \item{lloq}{(optional) The lower limit of quantification used by the Tobit
 half-life method (\code{hl_method = "tobit"}).  Either the name of a column in

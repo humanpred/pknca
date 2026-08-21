@@ -211,11 +211,13 @@ test_that("pk.nca warnings", {
 test_that("pk.nca.interval errors", {
   expect_error(
     pk.nca.interval(interval="A"),
-    regexp="Interval must be a data.frame"
+    regexp="Please report a bug.  Interval must be a one-row data.frame",
+    class = "pknca_error_internal_interval_not_one_row_df"
   )
   expect_error(
     pk.nca.interval(interval=data.frame()),
-    regexp="Interval must be a one-row data.frame"
+    regexp="Please report a bug.  Interval must be a one-row data.frame",
+    class = "pknca_error_internal_interval_not_one_row_df"
   )
 })
 
@@ -396,6 +398,36 @@ test_that("include_half.life and exclude_half.life work with NAs treated as miss
   expect_equal(d_nca_false$PPORRES[d_nca_false$PPTESTCD %in% "half.life"], 1.512942, tolerance = 0.00001)
 })
 
+test_that("non-logical half-life point columns fail loud at calculation time (#583)", {
+  # PKNCAconc() validates at construction, so replace the column afterward to
+  # reach the check in pk.nca()
+  d_conc <-
+    data.frame(
+      conc = c(1, 0.5, 0.25, 0.125, 0.06),
+      time = 0:4,
+      excl = c(NA, NA, NA, TRUE, NA),
+      incl = c(NA, TRUE, TRUE, TRUE, NA),
+      subject = 1
+    )
+  o_conc_excl <- PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl")
+  o_data_excl <- PKNCAdata(o_conc_excl, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_data_excl$conc$data$excl <- ifelse(is.na(d_conc$excl), NA_character_, "yes")
+  expect_error(
+    suppressMessages(pk.nca(o_data_excl)),
+    regexp = "The exclude_half.life column ('excl') must be a logical (TRUE/FALSE/NA) column, not character",
+    fixed = TRUE
+  )
+
+  o_conc_incl <- PKNCAconc(d_conc, conc ~ time | subject, include_half.life = "incl")
+  o_data_incl <- PKNCAdata(o_conc_incl, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_data_incl$conc$data$incl <- ifelse(is.na(d_conc$incl), NA_character_, "yes")
+  expect_error(
+    suppressMessages(pk.nca(o_data_incl)),
+    regexp = "The include_half.life column ('incl') must be a logical (TRUE/FALSE/NA) column, not character",
+    fixed = TRUE
+  )
+})
+
 test_that("No interval requested (e.g. for placebo)", {
   tmpconc <- generate.conc(2, 1, 0:24)
   tmpdose <- generate.dose(tmpconc)
@@ -412,10 +444,10 @@ test_that("No interval requested (e.g. for placebo)", {
     )
   expect_warning(expect_warning(expect_warning(expect_warning(
     myresult <- pk.nca(mydata),
-    class = "pknca_no_intervals"),
-    class = "pknca_no_intervals"),
-    class = "pknca_no_conc_data"),
-    class = "pknca_all_warnings_no_results"
+    class = "pknca_warning_no_intervals"),
+    class = "pknca_warning_no_intervals"),
+    class = "pknca_warning_no_conc_data"),
+    class = "pknca_warning_no_results"
   )
   expect_equal(
     nrow(as.data.frame(myresult)),
@@ -568,8 +600,8 @@ test_that("calculate with sparse data", {
   suppressMessages(
     expect_warning(expect_warning(
       o_nca <- pk.nca(o_data_sparse),
-      class = "pknca_sparse_df_multi"),
-      class = "pknca_halflife_too_few_points"
+      class = "pknca_warning_sparse_df_multi"),
+      class = "pknca_warning_halflife_too_few_points"
     )
   )
   df_result <- as.data.frame(o_nca)
@@ -592,8 +624,8 @@ test_that("calculate with sparse data", {
   suppressMessages(
     expect_warning(expect_warning(
       o_nca_sparse_mixed <- pk.nca(o_data_sparse_mixed),
-      class = "pknca_sparse_df_multi"),
-      class = "pknca_sparse_df_multi"
+      class = "pknca_warning_sparse_df_multi"),
+      class = "pknca_warning_sparse_df_multi"
     )
   )
   df_result_sparse_mixed <- as.data.frame(o_nca_sparse_mixed)
@@ -603,8 +635,8 @@ test_that("calculate with sparse data", {
     expect_message(
       expect_warning(expect_warning(
         o_nca_sparse_mixed <- pk.nca(o_data_sparse_mixed, verbose=TRUE),
-        class = "pknca_sparse_df_multi"),
-        class = "pknca_sparse_df_multi"
+        class = "pknca_warning_sparse_df_multi"),
+        class = "pknca_warning_sparse_df_multi"
       ),
       regexp="No sparse calculations requested for an interval"
     )
@@ -632,10 +664,10 @@ test_that("calculate with sparse data", {
   suppressMessages(
     expect_warning(expect_warning(expect_warning(expect_warning(
       o_nca_sparse_multi_trt <- pk.nca(o_data_sparse_multi_trt),
-      class = "pknca_sparse_df_multi"),
-      class = "pknca_sparse_df_multi"),
-      class = "pknca_sparse_df_multi"),
-      class = "pknca_sparse_df_multi"
+      class = "pknca_warning_sparse_df_multi"),
+      class = "pknca_warning_sparse_df_multi"),
+      class = "pknca_warning_sparse_df_multi"),
+      class = "pknca_warning_sparse_df_multi"
     )
   )
   expect_equal(nrow(as.data.frame(o_nca_sparse_multi_trt)), 16)
@@ -1033,7 +1065,7 @@ test_that("pk.nca.interval covers route, volume.group, duration.conc.group, dose
     FUN = fn_name,
     unit_type = "conc",
     pretty_name = "Test: group arg branches",
-    desc = "Coverage test for group argument branches in pk.nca.interval"
+    desc = "Coverage test for group arg branches"
   )
 
   d <- as.data.frame(datasets::Theoph[datasets::Theoph$Subject == "1", ])
