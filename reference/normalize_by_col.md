@@ -1,6 +1,6 @@
-# Internal function to normalize by a specified column
+# Normalize PKNCA results by a column of the concentration data
 
-Internal function to normalize by a specified column
+Normalize PKNCA results by a column of the concentration data
 
 ## Usage
 

@@ -343,7 +343,7 @@
   : Normalize parameters in a PKNCAresults object or data.frame
 
 - [`normalize_by_col()`](https://humanpred.github.io/pknca/reference/normalize_by_col.md)
-  : Internal function to normalize by a specified column
+  : Normalize PKNCA results by a column of the concentration data
 
 - [`normalize_exclude()`](https://humanpred.github.io/pknca/reference/normalize_exclude.md)
   : Normalize the exclude column by setting blanks to NA
