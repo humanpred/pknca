@@ -6,6 +6,20 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Breaking change: The `exclude_half.life` and `include_half.life` columns must
+  now be logical (`TRUE`/`FALSE`/`NA`).  A non-logical column (e.g. character
+  `"yes"`) previously was accepted silently and excluded or included nothing; it
+  is now an error.  Likewise, an `exclude_half.life` or `include_half.life`
+  column name that does not exist in the data previously created an all-`NA`
+  column silently (so a typo deactivated the point selection); it is now an
+  error naming the missing column (#583).
+
+* Bug fix: `pk.calc.half.life()` now attaches an exclusion reason ("No valid
+  terminal phase...") when no candidate window survives point selection (for
+  example, when a well-fitting window with `lambda.z <= 0` anchors the adjusted
+  r-squared tolerance), instead of returning `NA` with no reason.  The reason
+  appears in the `exclude` column of `pk.nca()` results (#583).
+
 * Bug fix: `update()` on a `PKNCAresults` object now works when group columns
   are factors whose levels differ between the old and new data (for example,
   ordered factors like `datasets::Theoph$Subject` after re-leveling); group

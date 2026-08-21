@@ -212,6 +212,7 @@ assert_PKNCAdata <- function(object) {
   if (nrow(object$intervals) == 0) {
     rlang::warn("No intervals given; no calculations will be done.", class = "pknca_warning_no_intervals")
   }
+  assert_PKNCAconc(object$conc)
   object
 }
 
@@ -231,6 +232,25 @@ assert_PKNCAresults <- function(object) {
 assert_PKNCAconc <- function(object) {
   if (!inherits(object, "PKNCAconc")) {
     rlang::abort("Must be a PKNCAconc object", class = "pknca_error_not_concdata")
+  }
+  # A half-life point selection column of any other type selects nothing
+  # rather than erroring, so require logical here.  PKNCAconc() validates at
+  # construction and pk.nca() re-checks, catching a column replaced after.
+  data_name <- getDataName(object)
+  for (attr_name in c("exclude_half.life", "include_half.life")) {
+    col_name <- object$columns[[attr_name]]
+    if (!is.null(col_name) && all(col_name %in% names(object[[data_name]]))) {
+      current_col <- object[[data_name]][[col_name]]
+      if (!is.logical(current_col)) {
+        rlang::abort(
+          sprintf(
+            "The %s column ('%s') must be a logical (TRUE/FALSE/NA) column, not %s",
+            attr_name, col_name, class(current_col)[1]
+          ),
+          class = "pknca_error_half_life_column_not_logical"
+        )
+      }
+    }
   }
   object
 }

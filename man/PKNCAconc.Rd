@@ -87,9 +87,11 @@ curve-stripping point selection.  Each value is \code{TRUE}, \code{FALSE}, or \c
 (undefined); the column/vector is treated as "in use" for an interval
 unless it is entirely \code{NA} (so an all-\code{FALSE} column still counts as in
 use), so leave it \code{NA} (rather than \code{FALSE}) where the mechanism should not
-apply.  Only one of \code{exclude_half.life} and \code{include_half.life} may be in
-use for a given interval.  See the "Half-Life Calculation" vignette for
-more details on the use of these arguments.}
+apply.  The column must be logical and must exist in the data; anything
+else is an error.  Only one of \code{exclude_half.life} and
+\code{include_half.life} may be in use for a given interval.  See the
+"Half-Life Calculation" vignette for more details on the use of these
+arguments.}
 
 \item{lloq}{(optional) The lower limit of quantification used by the Tobit
 half-life method (\code{hl_method = "tobit"}).  Either the name of a column in

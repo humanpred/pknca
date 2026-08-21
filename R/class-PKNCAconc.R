@@ -43,9 +43,11 @@
 #'   (undefined); the column/vector is treated as "in use" for an interval
 #'   unless it is entirely `NA` (so an all-`FALSE` column still counts as in
 #'   use), so leave it `NA` (rather than `FALSE`) where the mechanism should not
-#'   apply.  Only one of `exclude_half.life` and `include_half.life` may be in
-#'   use for a given interval.  See the "Half-Life Calculation" vignette for
-#'   more details on the use of these arguments.
+#'   apply.  The column must be logical and must exist in the data; anything
+#'   else is an error.  Only one of `exclude_half.life` and
+#'   `include_half.life` may be in use for a given interval.  See the
+#'   "Half-Life Calculation" vignette for more details on the use of these
+#'   arguments.
 #' @param lloq (optional) The lower limit of quantification used by the Tobit
 #'   half-life method (`hl_method = "tobit"`).  Either the name of a column in
 #'   `data` giving the per-observation LLOQ or a numeric scalar applied to all
@@ -197,13 +199,21 @@ PKNCAconc.data.frame <- function(data, formula, subject,
     ret <-
       setAttributeColumn(object=ret,
                          attr_name="exclude_half.life",
-                         col_name=exclude_half.life)
+                         col_name=exclude_half.life,
+                         stop_if_default=paste0(
+                           "The exclude_half.life column ('", exclude_half.life,
+                           "') does not exist in the data"
+                         ))
   }
   if (!missing(include_half.life)) {
     ret <-
       setAttributeColumn(object=ret,
                          attr_name="include_half.life",
-                         col_name=include_half.life)
+                         col_name=include_half.life,
+                         stop_if_default=paste0(
+                           "The include_half.life column ('", include_half.life,
+                           "') does not exist in the data"
+                         ))
   }
   if (!missing(lloq)) {
     ret <- setAttributeColumn(object=ret, attr_name="lloq", col_or_value=lloq)
@@ -219,7 +229,7 @@ PKNCAconc.data.frame <- function(data, formula, subject,
       units_orig = list(concu = concu, amountu = amountu, timeu = timeu),
       units_pref = list(concu_pref = concu_pref, amountu_pref = amountu_pref, timeu_pref = timeu_pref)
     )
-  ret
+  assert_PKNCAconc(ret)
 }
 
 #' Extract the formula from a PKNCAconc object.
