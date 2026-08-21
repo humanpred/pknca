@@ -8,6 +8,8 @@ Authors@R: c(
     person("Gerardo Jose", "Rodriguez", email="gerardo.jrac@gmail.com", role="aut", comment=c(ORCID="0000-0003-1413-0060")),
     person("Sridhar", "Duvvuri", role="ctb"),
     person("Natalie", "Sang", email="nataliesang143@gmail.com", role="ctb"))
+Depends:
+    R (>= 4.1)
 Imports:
     checkmate,
     dplyr (>= 1.1.0),

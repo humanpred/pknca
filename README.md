@@ -3,7 +3,7 @@
 [![R-CMD-check](https://github.com/humanpred/pknca/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/humanpred/pknca/actions/workflows/R-CMD-check.yaml)
 [![Codecov test coverage](https://codecov.io/gh/humanpred/pknca/graph/badge.svg)](https://app.codecov.io/gh/humanpred/pknca)
 [![CodeFactor](https://www.codefactor.io/repository/github/humanpred/pknca/badge?style=plastic)](https://www.codefactor.io/repository/github/humanpred/pknca)
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2054/badge)](https://bestpractices.coreinfrastructure.org/projects/2054)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/2054/badge)](https://www.bestpractices.dev/projects/2054)
 <!-- badges: end -->
 
 The PKNCA R Package <img src="man/figures/pknca-hex.png" align="right" />
@@ -13,6 +13,15 @@ The PKNCA R package is designed to perform all noncompartmental
 analysis (NCA) calculations for pharmacokinetic (PK) data.  The
 package is broadly separated into two parts (calculation and summary)
 with some additional housekeeping functions.
+
+Along with dense-sampling NCA and its summaries, PKNCA supports:
+
+* sparse sampling designs (`vignette("v04-sparse")`)
+* units, including automatic conversion to preferred reporting units
+* imputation of missing or unmeasured data
+  (`vignette("v08-data-imputation")`)
+* CDISC-formatted output (`as.data.frame(out_format = "cdisc")`)
+* bioequivalence assessment (`vignette("v50-bioequivalence")`)
 
 The primary and secondary goals of the PKNCA package are to 1) only
 give correct answers to the specific questions being asked and 2)
@@ -50,8 +59,16 @@ install it and its dependencies using the following command:
 
 To install the development version from GitHub, type the following commands:
 
-    install.packages("remotes")
-    remotes::install_github("humanpred/pknca")
+    install.packages("pak")
+    pak::pak("humanpred/pknca")
+
+# Documentation
+
+* Function reference and articles:
+  https://humanpred.github.io/pknca/
+* User Guide (book): https://humanpred.github.io/pknca-book/
+* Vignettes: `vignette(package = "PKNCA")`, starting with
+  `vignette("v01-introduction-and-usage", package = "PKNCA")`
 
 # Calculating parameters
 
@@ -59,9 +76,9 @@ To install the development version from GitHub, type the following commands:
     library(PKNCA)
     # Set the business rule options with the PKNCA.options() function
     # Load your concentration-time data
-    conc_raw <- read.csv("myconc.csv", stringsAsFactors=FALSE)
+    conc_raw <- read.csv("myconc.csv")
     # Load your dose data
-    dose_raw <- read.csv("mydose.csv", stringsAsFactors=FALSE)
+    dose_raw <- read.csv("mydose.csv")
     # Put your concentration data into a PKNCAconc object
     o_conc <- PKNCAconc(data=conc_raw,
                         formula=conc~time|treatment+subject/analyte)

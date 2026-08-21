@@ -6,6 +6,10 @@ the dosing including dose amount and route.
 
 # Development version
 
+* PKNCA now declares a minimum R version of 4.1 in DESCRIPTION.  This is not
+  a change in what works; it states the floor that was previously implied by
+  the dependencies, and continuous integration now tests it.
+
 * Breaking change: The `exclude_half.life` and `include_half.life` columns must
   now be logical (`TRUE`/`FALSE`/`NA`).  A non-logical column (e.g. character
   `"yes"`) previously was accepted silently and excluded or included nothing; it
