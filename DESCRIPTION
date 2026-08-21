@@ -9,7 +9,7 @@ Authors@R: c(
     person("Sridhar", "Duvvuri", role="ctb"),
     person("Natalie", "Sang", email="nataliesang143@gmail.com", role="ctb"))
 Depends:
-    R (>= 4.1)
+    R (>= 4.4)
 Imports:
     checkmate,
     dplyr (>= 1.1.0),
