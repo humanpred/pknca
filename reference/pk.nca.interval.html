@@ -179,9 +179,11 @@ curve-stripping point selection.  Each value is <code>TRUE</code>, <code>FALSE</
 (undefined); the column/vector is treated as "in use" for an interval
 unless it is entirely <code>NA</code> (so an all-<code>FALSE</code> column still counts as in
 use), so leave it <code>NA</code> (rather than <code>FALSE</code>) where the mechanism should not
-apply.  Only one of <code>exclude_half.life</code> and <code>include_half.life</code> may be in
-use for a given interval.  See the "Half-Life Calculation" vignette for
-more details on the use of these arguments.</p></dd>
+apply.  The column must be logical and must exist in the data; anything
+else is an error.  Only one of <code>exclude_half.life</code> and
+<code>include_half.life</code> may be in use for a given interval.  See the
+"Half-Life Calculation" vignette for more details on the use of these
+arguments.</p></dd>
 
 
 <dt id="arg-lloq">lloq<a class="anchor" aria-label="anchor" href="#arg-lloq"></a></dt>

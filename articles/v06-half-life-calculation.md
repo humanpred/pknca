@@ -109,11 +109,13 @@ as.data.frame(result_obj)
 
 ## Manual Point Selection
 
-For both exclusion and inclusion methods below, the same `NA` handling
-rules apply on a per-interval basis. If all values are `NA`, then no
-inclusion or exclusion is applied (the interval is treated as-is, like
-the argument had not been given). If some values are `NA` for the
-interval, those are treated as `FALSE`.
+The `exclude_half.life` and `include_half.life` columns must be logical
+(`TRUE`/`FALSE`/`NA`); a non-logical column (for example, character
+`"yes"`) is an error. For both exclusion and inclusion methods below,
+the same `NA` handling rules apply on a per-interval basis. If all
+values are `NA`, then no inclusion or exclusion is applied (the interval
+is treated as-is, like the argument had not been given). If some values
+are `NA` for the interval, those are treated as `FALSE`.
 
 A column counts as in use for an interval whenever it contains any
 non-`NA` value, even if every value is `FALSE`. Only one of

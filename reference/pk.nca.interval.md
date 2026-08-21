@@ -114,10 +114,11 @@ pk.nca.interval(
   `NA` (undefined); the column/vector is treated as "in use" for an
   interval unless it is entirely `NA` (so an all-`FALSE` column still
   counts as in use), so leave it `NA` (rather than `FALSE`) where the
-  mechanism should not apply. Only one of `exclude_half.life` and
-  `include_half.life` may be in use for a given interval. See the
-  "Half-Life Calculation" vignette for more details on the use of these
-  arguments.
+  mechanism should not apply. The column must be logical and must exist
+  in the data; anything else is an error. Only one of
+  `exclude_half.life` and `include_half.life` may be in use for a given
+  interval. See the "Half-Life Calculation" vignette for more details on
+  the use of these arguments.
 
 - lloq:
 
