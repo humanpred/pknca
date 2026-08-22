@@ -6,6 +6,13 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: `pk.calc.cl()`, `pk.calc.totdose()`, `pk.calc.ae()`,
+  `pk.calc.clr()`, and `pk.calc.fe()` return `NA` rather than 0 when an input
+  is zero-length.  `sum()` of nothing is 0, so a clearance calculated without
+  a dose was reported as 0 instead of as missing (601).  Counting parameters
+  such as `pk.calc.count_conc()` still return 0, which is their documented
+  behavior.
+
 * PKNCA now declares a minimum R version of 4.4 in DESCRIPTION, and
   continuous integration tests it.  The floor comes from `Matrix`, which
   requires R >= 4.4 and is needed by `lme4` and so by the bioequivalence

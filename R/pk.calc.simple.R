@@ -615,6 +615,10 @@ add.interval.col("kel.sparse.last",
 #' @family Clearance and volume parameters
 #' @export
 pk.calc.cl <- function(dose, auc) {
+  # sum() of nothing is 0, which would be a wrong answer, not a missing one
+  if (length(dose) == 0) {
+    return(NA_real_)
+  }
   if (length(auc) == 1) {
     dose <- sum(dose)
   }
@@ -1750,6 +1754,9 @@ add.interval.col(
 #' @returns The total dose for an interval
 #' @export
 pk.calc.totdose <- function(dose) {
+  if (length(dose) == 0) {
+    return(NA_real_)
+  }
   sum(dose)
 }
 add.interval.col(

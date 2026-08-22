@@ -36,7 +36,12 @@ pk.calc.ae <- function(conc, volume, check=TRUE) {
                                            name_a = "concentrations",
                                            name_b = "volumes")
 
-  ret <- sum(conc * volume)
+  ret <-
+    if (length(conc) == 0 || length(volume) == 0) {
+      NA_real_
+    } else {
+      sum(conc * volume)
+    }
   if (length(message_all) != 0) {
     message <- paste(message_all, collapse = "; ")
     ret <- structure(ret, exclude = message)
@@ -65,6 +70,9 @@ add.interval.col("ae",
 #' @family Urine/Excretion parameters
 #' @export
 pk.calc.clr <- function(ae, auc) {
+  if (length(ae) == 0) {
+    return(NA_real_)
+  }
   sum(ae)/auc
 }
 add.interval.col("clr.last",
@@ -114,6 +122,9 @@ add.interval.col("clr.pred",
 #' @family Urine/Excretion parameters
 #' @export
 pk.calc.fe <- function(ae, dose) {
+  if (length(ae) == 0) {
+    return(NA_real_)
+  }
   sum(ae)/dose
 }
 add.interval.col("fe",

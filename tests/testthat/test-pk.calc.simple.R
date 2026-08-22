@@ -544,3 +544,19 @@ test_that("pk.calc.aucabove rejects non-finite conc_above", {
     regexp = "finite"
   )
 })
+
+test_that("zero-length input gives NA rather than zero (issue 601)", {
+  expect_equal(pk.calc.cl(dose = numeric(0), auc = 10), NA_real_)
+  expect_equal(pk.calc.cl(dose = NULL, auc = 10), NA_real_)
+  expect_equal(pk.calc.totdose(dose = numeric(0)), NA_real_)
+  expect_equal(pk.calc.totdose(dose = NULL), NA_real_)
+  # Unchanged for real input, including multiple doses in one interval
+  expect_equal(pk.calc.cl(dose = 100, auc = 10), 10)
+  expect_equal(pk.calc.cl(dose = c(50, 50), auc = 10), 10)
+  expect_equal(pk.calc.totdose(dose = c(50, 50)), 100)
+  # Counting parameters legitimately return zero for no measurements
+  expect_warning(
+    expect_equal(pk.calc.count_conc(conc = numeric(0)), 0),
+    class = "pknca_warning_no_concentration"
+  )
+})
