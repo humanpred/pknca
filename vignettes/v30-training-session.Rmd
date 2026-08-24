@@ -13,7 +13,6 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
-requireNamespace("pmxTools")
 library(PKNCA)
 library(dplyr)
 library(ggplot2)
@@ -222,7 +221,7 @@ PKNCA has several foci:
 
 I hope that you have a whale of a good time during this training.
 
-![](https://apps-afsc.fisheries.noaa.gov/Quarterly/amj2005/images/killerwhales.jpg)
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Killerwhales_jumping.jpg/1920px-Killerwhales_jumping.jpg){width=50%}
 
 (Foreshadowing...)
 
@@ -376,7 +375,7 @@ o_result <- suppressMessages(pk.nca(o_data))
     * Optional information includes: rate or duration of infusion, data to exclude
 * `PKNCAdata()`: combine `PKNCAconc`, optionally `PKNCAdose`, and optionally `intervals` into a `PKNCAdata` object
     * the `PKNCAconc` object must be given; the `PKNCAdose` object is optional; interval definitions are usually given; calculation options may be given
-* `pk.nca()`: calculate the NCA parameters from a data object into a `PKNCAresult` object
+* `pk.nca()`: calculate the NCA parameters from a data object into a `PKNCAresults` object
 
 ## How do I do a simple calculation? all steps
 
@@ -599,7 +598,7 @@ Columns must be created for:
 <p class="forceBreak"></p>
 
 <div class="autoImageWidth">
-![](https://apps-afsc.fisheries.noaa.gov/Quarterly/amj2005/images/killerwhales.jpg)<br />
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Killerwhales_jumping.jpg/1920px-Killerwhales_jumping.jpg){width=50%}<br />
 Group: <span style="color: green;">&#128504;</span> a pod of killer whales
 </div>
 
@@ -622,7 +621,7 @@ Intervals have columns for:
 
 * `start` and `end` times for the interval,
 * groups matching any level of grouping; intervals apply by a merge/join with the groups
-* parameters to calculate (`TRUE` means to calculate it; `FALSE` means don't).  The full list of available parameters is in the [selection of calculation intervals vignette](http://billdenney.github.io/pknca/articles/Selection-of-Calculation-Intervals.html#parameters-available-for-calculation-in-an-interval-1).
+* parameters to calculate (`TRUE` means to calculate it; `FALSE` means don't).  The full list of available parameters is in the [selection of calculation intervals vignette](http://humanpred.github.io/pknca/articles/Selection-of-Calculation-Intervals.html#parameters-available-for-calculation-in-an-interval-1).
     * You only have to specify the parameter you want, not all parameters.
 
 ## Define your intervals: example
@@ -823,7 +822,7 @@ With an interval start and end of 0 and 24 (and the last measurement time just a
 
 * **AUC~int~** looks at the points in the interval, and if there is no measurement at the interval end time, interpolates or extrapolates to the interval end time (the AUClast and AUCint color in the figure)
 
-## AUC considerations with PKNCA (2/3) {.columns-2}
+## AUC considerations with PKNCA (3/3) {.columns-2}
 
 ```{r warning=FALSE, out.width="100%"}
 p_auc_calcs
@@ -844,7 +843,7 @@ With an interval start and end of 0 and 24 (and the last measurement time just a
 
 The data for the exercise are from a PK study of amikacin in a killer whale and a beluga whale.  (DOI: 10.1638/03-078)
 
-![](https://apps-afsc.fisheries.noaa.gov/Quarterly/amj2005/images/killerwhales.jpg)
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Killerwhales_jumping.jpg/1920px-Killerwhales_jumping.jpg){width=50%}
 
 (Callback...)
 
@@ -852,7 +851,7 @@ The data for the exercise are from a PK study of amikacin in a killer whale and 
 
 ```{r eval=FALSE, echo=TRUE}
 library(PKNCA)
-
+# Data available from https://github.com/humanpred/pknca/tree/main/data-raw/whale
 d_conc <- read.csv("c:/tmp/whale_conc.csv")
 d_dose <- read.csv("c:/tmp/whale_dose.csv")
 head(d_conc)
@@ -879,7 +878,10 @@ Data may be included/excluded in two ways:
 * Overall: excluded a row of data from all analyses
 * Half-life: excluded from half-life calculations, but included in all other analyses
 
-For both ways of including/excluding data, it is defined by a column in the input data.  The column is either `NA` or an empty string (`""`) to indicate "no" or any other text to indicate "yes".
+For both ways of including/excluding data, it is defined by a column in the input data:
+
+* The overall `exclude` column is text:  `NA` or an empty string (`""`) keeps the row, and any other text excludes it (the text is the reason for exclusion).
+* The half-life `exclude_half.life` and `include_half.life` columns are logical:  `TRUE` marks the point, and `FALSE` or `NA` does not.
 
 ## Exclude data points overall {.columns-2}
 
@@ -945,6 +947,8 @@ o_conc <- PKNCAconc(data=d_before_exclude, conc~time, exclude="not_this")
 * Require &lambda;z` > 0`.
 * If more than one fit is available at this point, select the one with the most points included.
 
+Only points after the last dose administration are considered (since PKNCA 0.12.1), and a censored-likelihood (Tobit) estimation method is available with `hl_method = "tobit"` (development version).
+
 Note: WinNonlin first requires &lambda;z` > 0` then selects for adjusted r^2^.  Therefore, WinNonlin will occasionally provide a half-life when PKNCA will not, but the fit line is not as good (as measured by r^2^).  The selection of filtering order is an intentional feature with PKNCA, and it generally has minimal impact on summary statistics because the quality of the half-life fit is usually low in this scenario.
 
 ## &lambda;z control (manual exclusions and inclusions of data points)
@@ -997,7 +1001,7 @@ as.data.frame(o_nca)
 
 ## PKNCA only calculates what is required, not every possible parameter (2 of 2) {.columns-2 .smaller}
 
-If you need AUC~0-\infty~, PKNCA will calculate other required parameters behind the scenes.
+If you need AUC~0-$\infty$~, PKNCA will calculate other required parameters behind the scenes.
 
 ```{r echo=TRUE}
 o_data <-
@@ -1024,11 +1028,11 @@ CDISC has one set of names, but they are not precise (e.g. AUCINT doesn't tell t
 
 PKNCA tries to be everything to everyone (in terms of parameters calculated), and it simultaneously tries to be precise.  That yields many parameters.
 
-See the Selection of Calculation Intervals vignette in the [Parameters Available for Calculation in an Interval section](http://billdenney.github.io/pknca/articles/Selection-of-Calculation-Intervals.html#parameters-available-for-calculation-in-an-interval-1) for all available parameters.
+See the Selection of Calculation Intervals vignette in the [Parameters Available for Calculation in an Interval section](http://humanpred.github.io/pknca/articles/Selection-of-Calculation-Intervals.html#parameters-available-for-calculation-in-an-interval-1) for all available parameters.
 
 ## When are intervals (partly) ignored? {.smaller}
 
-Very few parameters reach outside of the `start` and `end` of an interval for additional information about what is being calculated.  As of the writing of these training materials (PKNCA version 0.9.5), the only parameters that look outside are the `aucint` class of parameters.
+Very few parameters reach outside of the `start` and `end` of an interval for additional information about what is being calculated.  The only parameters that look outside are the `aucint` and `aumcint` classes of parameters.
 
 AUC~int~ may look after the end of the interval to calculate the concentration at `end`.
 
@@ -1171,8 +1175,8 @@ d_multidose <-
   superposition(
     conc=d_prep$conc,
     time=d_prep$Time,
-    tau=96, # 48 hours
-    n.tau=1, # One tau interval (0 to 48 hours)
+    tau=96, # 96 hours
+    n.tau=1, # One tau interval (0 to 96 hours)
     dose.times=dose_times
   )
 pk.tss.monoexponential(
@@ -1221,7 +1225,7 @@ pander::pander(as.data.frame(o_nca))
 ## Units (especially clearance)
 
 PKNCA supports units with the `pknca_units_table()` function.  See the
-[Unit Assignment and Conversion with PKNCA](http://billdenney.github.io/pknca/articles/v07-unit-conversion.html)
+[Unit Assignment and Conversion with PKNCA](http://humanpred.github.io/pknca/articles/v07-unit-conversion.html)
 vignette for more information.
 
 When units are not specified, The most common place where that becomes an issue
@@ -1244,7 +1248,7 @@ use different AUC parameters such as `"aucivlast"` instead of `"auclast"`.
 ## Combined, multi-subject data (e.g. sparse animal sampling)
 
 Sparse NCA calculations are supported in PKNCA.  See the
-[Sparse NCA Calculations](http://billdenney.github.io/pknca/articles/v04-sparse.html)
+[Sparse NCA Calculations](http://humanpred.github.io/pknca/articles/v04-sparse.html)
 vignette for more information.
 
 # Limitations
@@ -1257,7 +1261,7 @@ PKNCA does not (yet) have the ability to calculate secondary PK parameters that 
 
 PKNCA has an extensive testing and validation suite built-in.  To run the
 testing and validation suite of tests with a full report generated, see the
-[PKNCA Validation](http://billdenney.github.io/pknca/articles/v60-PKNCA-validation.html)
+[PKNCA Validation](http://humanpred.github.io/pknca/articles/v60-PKNCA-validation.html)
 vignette.
 
 # Hands-on

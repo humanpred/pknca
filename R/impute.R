@@ -1,10 +1,12 @@
 #' Get the impute function from either the intervals column or from the method
 #'
 #' @param intervals the data.frame of intervals
-#' @param impute the imputation definition
+#' @param impute the imputation definition -- either the name of a column in
+#'   `intervals` (character scalar) or `NA` to look for a generic `"impute"`
+#'   column. Must be an atomic scalar; a list (even of length 1) is rejected.
 #' @return The imputation function vector
 get_impute_method <- function(intervals, impute) {
-  stopifnot(length(impute) == 1)
+  checkmate::assert_scalar(impute, na.ok = TRUE)
   checkmate::assert_data_frame(intervals)
   if (impute %in% names(intervals)) {
     impute_funs <- intervals[[impute]]
@@ -17,42 +19,22 @@ get_impute_method <- function(intervals, impute) {
   impute_funs
 }
 
-#' Add the imputation column to the intervals, if it is not already there
-#'
-#' @param object The PKNCAdata object to impute data within
-#' @return The PKNCAdata object with an impute column added to the intervals (if
-#'   it is not already there) and the object$impute set to that column name
-#' @keywords internal
-add_impute_to_intervals <- function(object) {
-  if (is.na(object$impute)) {
-    rlang::abort(
-      message = "add_impute_to_intervals cannot have an NA imputation defined",
-      class = "pknca_add_impute_to_intervals_NA"
-    )
-  }
-  # Do nothing if the impute column is already in the data
-  if (!(object$impute %in% names(object$intervals))) {
-    impute_col <-
-      if (!("impute" %in% names(object$intervals))) {
-        "impute"
-      } else {
-        paste0(max(grep(x = names(object$intervals), "^impute", value = TRUE)), "X")
-      }
-    object$intervals[[impute_col]] <- object$impute
-    object$impute <- impute_col
-  }
-  object
-}
-
 #' Methods for imputation of data with PKNCA
 #' @name PKNCA_impute_method
 #' @return A data.frame with one column named conc with imputed concentrations
 #'   and one column named time with the times.
 NULL
 
-#' @describeIn PKNCA_impute_method Add a new concentration of 0 at the start
-#'   time, even if a nonzero concentration exists at that time (usually used
-#'   with single-dose data)
+#' @describeIn PKNCA_impute_method Set the concentration at the start time to
+#'   0, even if a nonzero concentration exists at that time (usually used with
+#'   single-dose data).  Forcing the start concentration to zero is
+#'   intentional:  an existing start-time value is replaced with 0, including
+#'   a nonzero predose measurement shifted to the start time by
+#'   `start_predose`, so the imputation chain `"start_predose,start_conc0"`
+#'   gives the same result as `"start_conc0"` alone.  To carry a predose
+#'   measurement to the start time, use `start_predose` without
+#'   `start_conc0`.  When no observation exists at the start time, a new row
+#'   with a concentration of 0 is added.
 #' @inheritParams pk.calc.auxc
 #' @inheritParams assert_intervaltime_single
 #' @param ... ignored
@@ -120,6 +102,20 @@ PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group
   ret
 }
 
+#' @describeIn PKNCA_impute_method Drop a concentration measured exactly at the
+#'   end of the interval, if one is present (usually used with multiple-dose data
+#'   when a point at the interval boundary belongs to the next dose, e.g. an
+#'   imputed C0)
+#' @export
+PKNCA_impute_method_end_conc_drop <- function(conc, time, end, ..., options = list()) {
+  ret <- data.frame(conc = conc, time = time)
+  mask_end <- time %in% end
+  if (any(mask_end)) {
+    ret <- ret[!mask_end, , drop = FALSE]
+  }
+  ret
+}
+
 #' Separate out a vector of PKNCA imputation methods into a list of functions
 #'
 #' An error will be raised if the functions are not found.
@@ -151,9 +147,12 @@ PKNCA_impute_fun_list <- function(x) {
     }
   }
   if (length(bad_fun) > 0) {
-    stop(
-      "The following imputation functions were not found: ",
-      paste(bad_fun, collapse = ", ")
+    rlang::abort(
+      sprintf(
+        "The following imputation functions were not found: %s",
+        paste(bad_fun, collapse = ", ")
+      ),
+      class = "pknca_error_impute_funs_not_found"
     )
   }
   ret

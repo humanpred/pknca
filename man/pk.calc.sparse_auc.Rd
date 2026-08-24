@@ -9,7 +9,7 @@ pk.calc.sparse_auc(
   conc,
   time,
   subject,
-  method = NULL,
+  method = "linear",
   auc.type = "AUClast",
   ...,
   options = list()
@@ -58,6 +58,7 @@ Where:
 \seealso{
 Other Sparse Methods:
 \code{\link[=as_sparse_pk]{as_sparse_pk()}},
+\code{\link[=pk.calc.sparse_aumc]{pk.calc.sparse_aumc()}},
 \code{\link[=sparse_auc_weight_linear]{sparse_auc_weight_linear()}},
 \code{\link[=sparse_mean]{sparse_mean()}}
 }

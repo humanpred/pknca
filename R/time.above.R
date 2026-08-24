@@ -16,21 +16,18 @@
 #' @export
 pk.calc.time_above <- function(conc, time,
                                conc_above,
-                               #method=NULL,
                                ...,
                                options=list(),
                                check=TRUE) {
   arglist <- list(...)
   method <- PKNCA.choose.option(name="auc.method", value=arglist$method, options=options)
   if (missing(conc)) {
-    stop("conc must be given")
+    rlang::abort("conc must be given", class = "pknca_error_time_above_missing_conc")
   }
   if (missing(time)) {
-    stop("time must be given")
+    rlang::abort("time must be given", class = "pknca_error_time_above_missing_time")
   }
-  stopifnot("conc_above must be a scalar"=length(conc_above) == 1)
-  stopifnot("conc_above must not be NA"=!is.na(conc_above))
-  stopifnot("conc_above must be numeric"=is.numeric(conc_above))
+  checkmate::assert_number(conc_above, na.ok = FALSE)
   if (check) {
     assert_conc_time(conc = conc, time = time)
   }
@@ -80,7 +77,7 @@ pk.calc.time_above <- function(conc, time,
       )
   } else {
     # Should be caught by the method assignment above
-    stop("Invalid 'method', please report this as a bug: ", method) # nocov
+    rlang::abort(sprintf("Invalid 'method', please report this as a bug: %s", method), class = "pknca_error_internal_invalid_time_above_method")  # nocov
   }
   ret
 }
@@ -90,7 +87,11 @@ add.interval.col("time_above",
                  values=c(FALSE, TRUE),
                  unit_type="time",
                  pretty_name="Time above Concentration",
-                 desc="Time above a given concentration")
+                 desc="Time above a given concentration",
+                 pptestcd_cdisc="TAT",
+                 pptest_cdisc="Time Above Threshold",
+                 formula="$T_{\\text{above}} = \\sum \\Delta t_{i: C_i \\geq C_{\\text{ref}}}$",
+                 formula_note="Crossing times interpolated using the AUC method (linear or log-linear)")
 PKNCA.set.summary(
   name="time_above",
   description="arithmetic mean and standard deviation",

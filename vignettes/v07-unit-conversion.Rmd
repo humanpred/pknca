@@ -55,6 +55,12 @@ o_nca <- pk.nca(o_data)
 summary(o_nca)
 ```
 
+When units are provided through `PKNCAconc()` and `PKNCAdose()` like this,
+`PKNCAdata()` builds the units table automatically during construction by
+calling `pknca_units_table()` on the `PKNCAdata` object.  You can also call
+`pknca_units_table()` on a `PKNCAdata` object yourself to build or inspect that
+units table directly.
+
 It is also possible to specify the units without them coming from columns in the
 data.
 
@@ -119,7 +125,8 @@ summary(o_nca)
 A unit assignment and conversion table can be generated as a data.frame to use
 with the `pknca_units_table()` function or manually.
 
-The simplest method each of the types of units for inputs and automatically generates the units for each NCA parameter.
+The simplest method takes each of the types of units for inputs and
+automatically generates the units for each NCA parameter.
 
 ```{r create-units-auto}
 d_units_auto <- pknca_units_table(concu="ng/mL", doseu="mg", amountu="mg", timeu="hr")
@@ -127,22 +134,32 @@ d_units_auto <- pknca_units_table(concu="ng/mL", doseu="mg", amountu="mg", timeu
 d_units_auto[d_units_auto$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
 ```
 
-As you see above, the default units table has a column for the `PPTESTCD` indicating the parameter.  And, the column `PPORRESU` indicates what the default units are.
+As you see above, the default units table has a column for the `PPTESTCD`
+indicating the parameter.  And, the column `PPORRESU` indicates what the default
+units are.
 
-Without unit conversion, the units for some parameters (notably clearances and volumes) are not so useful.  You can add a conversion table to make any units into the desired units.  For automatic conversion to work, the units must always be convertible (by the `units` library).  Notably for automatic conversion, you cannot go from mass to molar units since there is not a unique conversion from mass to moles.
+Without unit conversion, the units for some parameters (notably clearances and
+volumes) are not so useful.  You can add a conversion table to make any units
+into the desired units.  For automatic conversion to work, the units must always
+be convertible (by the `units` library).  Notably for automatic conversion, you
+cannot go from mass to molar units since there is not a unique conversion from
+mass to moles.
+
+Loading the PKNCA package adds a unit of `"fraction"` so that it is usable for
+fraction excreted (`fe`).
 
 ```{r create-units-semi-manual}
 d_units_clean <-
   pknca_units_table(
-    concu="ng/mL", doseu="mg", amountu="mg", timeu="hr",
+    concu="ng/mL", doseu="mg", amountu="ng", timeu="hr",
     conversions=
       data.frame(
-        PPORRESU=c("mg/(hr*ng/mL)", "mg/(ng/mL)", "hr"),
-        PPSTRESU=c("L/hr", "L", "day")
+        PPORRESU=c("mg/(hr*ng/mL)", "mg/(ng/mL)", "hr", "ng/mg"),
+        PPSTRESU=c("L/hr", "L", "day", "fraction")
       )
   )
 # Show a selection of the units generated
-d_units_clean[d_units_clean$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
+d_units_clean[d_units_clean$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs", "fe"), ]
 ```
 
 Now, the units are much cleaner to look at.
@@ -162,6 +179,35 @@ d_units_clean_manual <-
   )
 # Show a selection of the units generated
 d_units_clean_manual[d_units_clean_manual$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
+```
+
+# What happens when units are missing for some parameters?
+
+A hand-made or hand-edited units table may not have a row for every parameter
+that an analysis requests.  By default, `pk.nca()` raises an error when units
+are provided for some but not all requested parameters so that results are not
+unintentionally reported without units.  Setting the
+`allow_partial_missing_units` option to `TRUE` converts that error to a warning
+naming the parameters without units, and those parameters are reported without
+units.  The option can be set for a single analysis with the `options` argument
+to `PKNCAdata()` (as below) or globally with
+`PKNCA.options(allow_partial_missing_units = TRUE)`.
+
+```{r partial-missing-units}
+o_conc <- PKNCAconc(as.data.frame(datasets::Theoph), conc~Time|Subject)
+d_dose <- datasets::Theoph[datasets::Theoph$Time == 0, c("Dose", "Time", "Subject")]
+o_dose <- PKNCAdose(d_dose, Dose~Time|Subject)
+d_units_full <- pknca_units_table(concu="mg/L", doseu="mg/kg", timeu="hr")
+# Drop the tmax row to simulate an incomplete units table
+d_units_partial <- d_units_full[!d_units_full$PPTESTCD %in% "tmax", ]
+o_data_partial <-
+  PKNCAdata(
+    o_conc, o_dose,
+    units=d_units_partial,
+    options=list(allow_partial_missing_units=TRUE)
+  )
+o_nca_partial <- pk.nca(o_data_partial)
+summary(o_nca_partial)
 ```
 
 # How do I add different unit conversions for different analytes?

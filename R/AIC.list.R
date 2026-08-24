@@ -25,7 +25,7 @@ AIC.list <- function(object, ..., assess.best=TRUE) {
           if ("indentation" %in% names(ret)) {
             ret$indentation <- ret$indentation + 1
           } else {
-            stop("Unknown way to get a data.frame without indentation set.  This is likely a bug.") # nocov
+            rlang::abort("Unknown way to get a data.frame without indentation set. This is likely a bug.", class = "pknca_error_internal_unknown_dataframe_indentation")  # nocov
           }
         }
       }
@@ -42,7 +42,7 @@ AIC.list <- function(object, ..., assess.best=TRUE) {
     tmpAICs$isBest <- NULL
     # Assign the correct rownames to tmpAICs
     if (!(retnames[i] %in% ""))
-      if (nrow(tmpAICs) > 1 |
+      if (nrow(tmpAICs) > 1 ||
           !identical(rownames(tmpAICs), as.character(seq_len(nrow(tmpAICs))))) {
         rownames(tmpAICs) <- paste(retnames[i], rownames(tmpAICs))
       } else {
@@ -63,37 +63,10 @@ AIC.list <- function(object, ..., assess.best=TRUE) {
 #' Extract the best model from a list of models using the AIC.
 #'
 #' @param object the list of models
-#' @param \dots Parameters passed to AIC.list
+#' @param \dots Passed to `AIC()`
 #' @returns The model which is assessed as best.  If more than one are equal,
 #'   the first is chosen.
 #' @export
 get.best.model <- function(object, ...) {
   object[stats::AIC(object, ...)$isBest %in% "Best Model"][[1]]
-}
-
-#' Get the first model from a list of models
-#'
-#' @param object the list of (lists of, ...) models
-#' @returns The first item in the `object` that is not a list or `NA`.  If `NA`
-#'   is passed in or the list (of lists) is all `NA`, then `NA` is returned.
-get.first.model <- function(object) {
-  ret <- NA
-  if (inherits(object, "list")) {
-    idx <- 0
-    while (identical(NA, ret) & idx < length(object)) {
-      idx <- idx + 1
-      if (identical(NA, object[[idx]])) {
-        # Do nothing
-      } else if (inherits(object[[idx]], "list")) {
-        ret <- get.first.model(object[[idx]])
-      } else {
-        # It is neither NA or a list, it's our first usable object;
-        # return it.
-        ret <- object[[idx]]
-      }
-    }
-  } else {
-    ret <- object
-  }
-  ret
 }

@@ -1,9 +1,9 @@
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/PKNCA)](https://CRAN.R-project.org/package=PKNCA)
-[![R-CMD-check](https://github.com/billdenney/pknca/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/billdenney/pknca/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/billdenney/pknca/graph/badge.svg)](https://app.codecov.io/gh/billdenney/pknca)
-[![CodeFactor](https://www.codefactor.io/repository/github/billdenney/pknca/badge?style=plastic)](https://www.codefactor.io/repository/github/billdenney/pknca)
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2054/badge)](https://bestpractices.coreinfrastructure.org/projects/2054)
+[![R-CMD-check](https://github.com/humanpred/pknca/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/humanpred/pknca/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/humanpred/pknca/graph/badge.svg)](https://app.codecov.io/gh/humanpred/pknca)
+[![CodeFactor](https://www.codefactor.io/repository/github/humanpred/pknca/badge?style=plastic)](https://www.codefactor.io/repository/github/humanpred/pknca)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/2054/badge)](https://www.bestpractices.dev/projects/2054)
 <!-- badges: end -->
 
 The PKNCA R Package <img src="man/figures/pknca-hex.png" align="right" />
@@ -13,6 +13,15 @@ The PKNCA R package is designed to perform all noncompartmental
 analysis (NCA) calculations for pharmacokinetic (PK) data.  The
 package is broadly separated into two parts (calculation and summary)
 with some additional housekeeping functions.
+
+Along with dense-sampling NCA and its summaries, PKNCA supports:
+
+* sparse sampling designs (`vignette("v04-sparse")`)
+* units, including automatic conversion to preferred reporting units
+* imputation of missing or unmeasured data
+  (`vignette("v08-data-imputation")`)
+* CDISC-formatted output (`as.data.frame(out_format = "cdisc")`)
+* bioequivalence assessment (`vignette("v50-bioequivalence")`)
 
 The primary and secondary goals of the PKNCA package are to 1) only
 give correct answers to the specific questions being asked and 2)
@@ -35,7 +44,7 @@ Denney W, Duvvuri S and Buckeridge C (2015). "Simple, Automatic
 Noncompartmental Analysis: The PKNCA R Package." _Journal of
 Pharmacokinetics and Pharmacodynamics_, *42*(1), pp. 11-107,S65. ISSN
 1573-8744, doi: 10.1007/s10928-015-9432-2, <URL:
-https://github.com/billdenney/pknca>.
+https://pknca.humanpredictions.com/ >.
 
 # Installation
 
@@ -50,8 +59,16 @@ install it and its dependencies using the following command:
 
 To install the development version from GitHub, type the following commands:
 
-    install.packages("remotes")
-    remotes::install_github("billdenney/pknca")
+    install.packages("pak")
+    pak::pak("humanpred/pknca")
+
+# Documentation
+
+* Function reference and articles:
+  https://humanpred.github.io/pknca/
+* User Guide (book): https://humanpred.github.io/pknca-book/
+* Vignettes: `vignette(package = "PKNCA")`, starting with
+  `vignette("v01-introduction-and-usage", package = "PKNCA")`
 
 # Calculating parameters
 
@@ -59,9 +76,9 @@ To install the development version from GitHub, type the following commands:
     library(PKNCA)
     # Set the business rule options with the PKNCA.options() function
     # Load your concentration-time data
-    conc_raw <- read.csv("myconc.csv", stringsAsFactors=FALSE)
+    conc_raw <- read.csv("myconc.csv")
     # Load your dose data
-    dose_raw <- read.csv("mydose.csv", stringsAsFactors=FALSE)
+    dose_raw <- read.csv("mydose.csv")
     # Put your concentration data into a PKNCAconc object
     o_conc <- PKNCAconc(data=conc_raw,
                         formula=conc~time|treatment+subject/analyte)
@@ -76,10 +93,10 @@ To install the development version from GitHub, type the following commands:
     # Summarize the results
     summary(o_results)
 
-More help is available in the function help files. Be sure to look at the PKNCA.options function for choices on making PKNCA conform to your company’s business rules on calculation and summarization.
+More help is available in the function help files. Be sure to look at the PKNCA.options function for options to make PKNCA conform to your company’s business rules on calculation and summarization.
 
 # Feature requests
 
 Please use the github issues page
-(https://github.com/billdenney/pknca/issues) to make feature requests
+(https://github.com/humanpred/pknca/issues) to make feature requests
 and bug reports.

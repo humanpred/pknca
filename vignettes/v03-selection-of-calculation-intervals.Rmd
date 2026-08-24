@@ -69,7 +69,8 @@ ggplot(d_conc_multi, aes(x=time, y=conc)) +
 intervals_manual <- data.frame(start=144, end=168, auclast=TRUE)
 knitr::kable(intervals_manual)
 
-PKNCAdata(d_conc, intervals=intervals_manual)
+d_conc_multi_obj <- PKNCAconc(d_conc_multi, conc~time|treatment+ID)
+PKNCAdata(d_conc_multi_obj, intervals=intervals_manual)
 ```
 
 # Group Matching
@@ -96,7 +97,7 @@ knitr::kable(intervals_manual)
 
 # Intervals
 
-Intervals are defined by `data.frame`s with one row per interval, zero or more columns to match the groups from the `PKNCAdata` object, and one or more NCA parameters to calculate.
+Intervals are defined by `data.frame`s with one row per interval, zero or more columns to match the groups from the `PKNCAdata` object, and one or more NCA parameters to calculate.  An interval may also have an `impute` column specifying the data imputation method(s) to apply to the interval before calculation (see the Data Imputation vignette for details).  Any other columns named in the `keep_interval_cols` PKNCA option are passed through from the intervals to the corresponding rows of the results.
 
 Selection of points within an interval occurs by choosing any point at or after the `start` and at or before the `end`.
 
@@ -189,7 +190,8 @@ intervals_manual <-
   )
 knitr::kable(intervals_manual)
 
-my.data <- PKNCAdata(d_conc, intervals=intervals_manual)
+d_conc_multi_obj <- PKNCAconc(d_conc_multi, conc~time|treatment+ID)
+my.data <- PKNCAdata(d_conc_multi_obj, intervals=intervals_manual)
 ```
 
 # Overlapping Intervals and Different Calculations by Interval
@@ -245,21 +247,25 @@ my.data <- PKNCAdata(d_conc, intervals=intervals_manual)
 
 Some events have durations of times rather than instants in time associated with them.  Two typical examples of duration data in NCA are intravenous infusions and urine or fecal sample collections.  Inform PKNCA of durations with the `duration` argument to the `PKNCAdose` and `PKNCAconc` functions.
 
-Durations data are selected based on both the beginning and ending of the duration existing within the interval.
+Duration data are selected for an interval by the event time, which is the time of the start of the duration (for example, the start of a urine collection).  Like any other data point, a duration record is selected when its start time is at or after the interval `start` and at or before the interval `end`; the end of the duration is not considered.  A collection that starts within the interval and ends after the interval `end` is therefore selected, and it contributes its full amount to calculations within the interval (the amount is not pro-rated to the portion of the duration inside the interval).  For the simplest interpretation of results, align collection start and end times with the interval boundaries.
+
+The figures below show which durations are selected for two intervals.  The vertical arrows indicate the interval `start` and `end`, and each horizontal segment is a duration (for example, a urine collection) with tick marks at the collection boundaries.  In the first figure, the interval is from 0 to 24, and all four durations are selected, including the duration from 24 to 48 because its start time is exactly at the interval `end`.  In the second figure, the interval is from 0 to 16:  the duration from 12 to 24 is selected because its start time is within the interval, even though the collection extends past the interval `end` (and its full amount contributes to the interval), while the duration from 24 to 48 is not selected.
 
 ```{r interval_yes_no, echo=FALSE, eval=requireNamespace("ggplot2")}
 ggplot_intervals <- function(definition, intervals) {
-  intervals$within <-
-    c("No", "Yes")[intervals$interval.start >= min(definition$start.x) &
-                     intervals$interval.end >= max(definition$start.x)]
-  intervals$within <-
-    factor(intervals$within, levels=c("Yes", "No"))
+  # A duration is selected for the interval when its start time is at or
+  # after the interval start and at or before the interval end.
+  intervals$selected <-
+    c("No", "Yes")[(intervals$interval.start >= min(definition$start.x) &
+                      intervals$interval.start <= max(definition$start.x)) + 1]
+  intervals$selected <-
+    factor(intervals$selected, levels=c("Yes", "No"))
   ggplot(intervals,
          aes(x=interval.start,
              xend=interval.end,
              y=y,
              yend=y,
-             linetype=within)) +
+             linetype=selected)) +
     geom_segment() +
     geom_segment(data=definition,
                  mapping=aes(x=start.x, xend=start.x, y=start.y, yend=end.y),
@@ -273,7 +279,8 @@ ggplot_intervals <- function(definition, intervals) {
                size=4) +
     scale_y_continuous(breaks=NULL) +
     labs(x="Time",
-         y=NULL)
+         y=NULL,
+         linetype="Selected")
 }
 
 interval_definition <-
@@ -306,7 +313,8 @@ The following parameters are available in an interval.  For more information abo
 
 ```{r parameters-available, echo=FALSE}
 interval_spec <- get.interval.cols()
-interval_spec <- interval_spec[sort(names(interval_spec))]
+# start and end define the interval itself; they are not calculated parameters
+interval_spec <- interval_spec[setdiff(sort(names(interval_spec)), c("start", "end"))]
 
 get_function_for_calc <- function(x) {
   if (is.na(x$FUN)) {
@@ -323,6 +331,16 @@ get_function_for_calc <- function(x) {
 kable(
   data.frame(
     `Parameter Name`=names(interval_spec),
+    `Formula` = vapply(
+      X = interval_spec,
+      FUN = function(x) if (is.null(x$formula)) "" else x$formula,
+      FUN.VALUE = ""
+    ),
+    `Formula Note` = vapply(
+      X = interval_spec,
+      FUN = function(x) if (is.null(x$formula_note)) "" else x$formula_note,
+      FUN.VALUE = ""
+    ),
     `Unit Type`=vapply(X = interval_spec, FUN = "[[", "unit_type", FUN.VALUE = ""),
     `Parameter Description`=vapply(X = interval_spec, FUN = "[[", "desc", FUN.VALUE = ""),
     `Function for Calculation`=vapply(X = interval_spec, FUN = get_function_for_calc, FUN.VALUE = ""),

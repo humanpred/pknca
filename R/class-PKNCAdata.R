@@ -56,15 +56,18 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
                               impute = NA_character_,
                               intervals, units, options=list()) {
   if (length(list(...))) {
-    stop("Unknown argument provided to PKNCAdata.  All arguments other than `data.conc` and `data.dose` must be named.")
+    rlang::abort(
+      "Unknown argument provided to PKNCAdata.  All arguments other than `data.conc` and `data.dose` must be named.",
+      class = "pknca_error_unknown_argument"
+    )
   }
   ret <- list()
   # Generate the conc element
   if (inherits(data.conc, "PKNCAconc")) {
     if (!missing(formula.conc)) {
       rlang::warn(
-        message = "data.conc was given as a PKNCAconc object.  Ignoring formula.conc",
-        class = "pknca_dataconc_formulaconc"
+        "data.conc was given as a PKNCAconc object.  Ignoring formula.conc",
+        class = "pknca_warning_dataconc_formulaconc"
       )
     }
     ret$conc <- data.conc
@@ -79,20 +82,21 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   } else if (inherits(data.dose, "PKNCAdose")) {
     if (!missing(formula.dose))
       rlang::warn(
-        message = "data.dose was given as a PKNCAdose object.  Ignoring formula.dose",
-        class = "pknca_dataconc_formuladose"
+        "data.dose was given as a PKNCAdose object.  Ignoring formula.dose",
+        class = "pknca_warning_dataconc_formuladose"
       )
     ret$dose <- data.dose
   } else {
     ret$dose <- PKNCAdose(data.dose, formula.dose)
   }
   # Check the options
-  if (!is.list(options)) {
-    stop("options must be a list.")
-  }
+  checkmate::assert_list(
+    x = options,
+    names = if (length(options) > 0) "named" else NULL
+  )
+
   if (length(options) > 0) {
-    if (is.null(names(options)))
-      stop("options must have names.")
+    checkmate::assert_named(options)
     for (n in names(options)) {
       tmp.opt <- list(options[[n]], TRUE)
       names(tmp.opt) <- c(n, "check")
@@ -105,13 +109,16 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   class(ret) <- c("PKNCAdata", class(ret))
 
   # Check the intervals
-  if (missing(intervals) & identical(ret$dose, NA)) {
-    stop("If data.dose is not given, intervals must be given")
+  if (missing(intervals) && identical(ret$dose, NA)) {
+    rlang::abort("If data.dose is not given, intervals must be given", class = "pknca_error_missing_intervals")
   } else if (missing(intervals)) {
     # Generate the intervals for each grouping of concentration and
     # dosing.
     if (length(ret$dose$columns$time) == 0) {
-      stop("Dose times were not given, so intervals must be manually specified.")
+      rlang::abort(
+        "Dose times were not given, so intervals must be manually specified.",
+        class = "pknca_error_missing_dose_times"
+      )
     }
     n_conc_dose <-
       full_join_PKNCAconc_PKNCAdose(
@@ -135,7 +142,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
             ": "
           )
         } else {
-          ""
+          "" # nocov
         }
       if (!is.null(current_conc)) {
         generated_intervals <-
@@ -147,12 +154,21 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
         if (nrow(generated_intervals) > 0) {
           n_conc_dose$data_intervals[[idx]] <- generated_intervals
         } else {
-          warning(warning_prefix, "No intervals generated likely due to limited concentration data")
+          rlang::warn(
+            sprintf(
+              "%sNo intervals generated likely due to limited concentration data",
+              warning_prefix
+            ),
+            class = "pknca_warning_no_intervals_limited_data"
+          )
         }
       } else {
         rlang::warn(
-          message = paste(warning_prefix, "No intervals generated due to no concentration data"),
-          class = "pknca_no_intervals_generated"
+          sprintf(
+            "%sNo intervals generated due to no concentration data",
+            warning_prefix
+          ),
+          class = "pknca_warning_no_intervals_generated"
         )
       }
     }
@@ -170,41 +186,22 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
 
   # Insert the unit conversion table
   if (missing(units)) {
-    # What unit types are recognized?
-    possible_units <-
-      setdiff(
-        grep(x = names(formals(pknca_units_table)), pattern = "_", invert = TRUE, value = TRUE),
-        "conversions"
-      )
-    possible_units_pref <- paste0(possible_units, "_pref")
-    # Accumulate available units
-    conc_units_values <- ret$conc$units
-    conc_units_cols <- ret$conc$columns[names(ret$conc$columns) %in% possible_units]
-
-    unit_args <- conc_units_values
-    for (nm in names(conc_units_cols)) {
-      unit_args[[nm]] <- unique(stats::na.omit(ret$conc$data[[conc_units_cols[[nm]]]]))
-    }
-
-    if (!identical(ret$dose, NA)) {
-      unit_args <- append(unit_args, ret$dose$units)
-      dose_units_cols <- ret$dose$columns[names(ret$dose$columns) %in% possible_units]
-      for (nm in names(dose_units_cols)) {
-        unit_args[[nm]] <- unique(stats::na.omit(ret$dose$data[[dose_units_cols[[nm]]]]))
-      }
-    }
-    # If there are any units to set, set them here
-    if (length(unit_args) > 0) {
-      unit_args <- lapply(X = unit_args, FUN = drop_attributes)
-      ret$units <- do.call(pknca_units_table, args = unit_args)
-    }
+    # Use the new automatic units table builder
+    ret$units <- pknca_units_table(ret)
   } else {
-    stopifnot("`units` must be a data.frame"=is.data.frame(units))
-    stopifnot(
-      "`units` data.frame must have at least names 'PPTESTCD' and 'PPORRESU'"=
-        all(c("PPTESTCD", "PPORRESU") %in% names(units))
-    )
-    stopifnot("`units` must have at least one row"=nrow(units) > 0)
+
+    checkmate::assert_data_frame(units)
+
+    missing_unit_cols <- setdiff(c("PPTESTCD", "PPORRESU"), names(units))
+    if (length(missing_unit_cols) > 0) {
+      rlang::abort(
+        "`units` data.frame must have at least names 'PPTESTCD' and 'PPORRESU'",
+        class = "pknca_error_units_missing_cols"
+      )
+    }
+
+    checkmate::assert_data_frame(units, min.rows = 1)
+
     ret$units <- units
   }
 
@@ -217,10 +214,6 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   ret
 }
 
-drop_attributes <- function(x) {
-  attributes(x) <- NULL
-  x
-}
 
 #' @rdname is_sparse_pk
 #' @export

@@ -8,7 +8,7 @@ data.frame.}
 \method{as.data.frame}{PKNCAresults}(
   x,
   ...,
-  out_format = c("long", "wide"),
+  out_format = c("long", "wide", "cdisc"),
   filter_requested = FALSE,
   filter_excluded = FALSE,
   out.format = deprecated()
@@ -19,7 +19,11 @@ data.frame.}
 
 \item{...}{Ignored (for compatibility with generic \code{\link[=as.data.frame]{as.data.frame()}})}
 
-\item{out_format}{Should the output be 'long' (default) or 'wide'?}
+\item{out_format}{Should the output be 'long' (default), 'wide', or 'cdisc'?
+When 'cdisc', the PPTESTCD column is translated to CDISC standard codes
+and a PPTEST column with the CDISC test name is added.  Route-dependent
+parameters (e.g. CL, VZ, MRT) are resolved using the route information
+from the dose data.}
 
 \item{filter_requested}{Only return rows with parameters that were
 specifically requested?}

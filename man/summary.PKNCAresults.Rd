@@ -16,7 +16,8 @@
   summarize.n.per.group = deprecated(),
   not.requested.string = deprecated(),
   not.calculated.string = deprecated(),
-  pretty_names = NULL
+  pretty_names = NULL,
+  caption_prefix = NULL
 )
 }
 \arguments{
@@ -47,6 +48,8 @@ returned \code{NA}.}
 \item{pretty_names}{Should pretty names (easier to understand in a report) be
 used?  \code{TRUE} is yes, \code{FALSE} is no, and \code{NULL} is yes if units are used
 and no if units are not used.}
+
+\item{caption_prefix}{Prefix to prepend to the generated table caption.}
 }
 \value{
 A data frame of NCA parameter results summarized according to the

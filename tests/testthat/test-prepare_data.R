@@ -139,12 +139,12 @@ test_that("standardize_column_names", {
   # group_cols overlap with cols values fails
   expect_error(
     standardize_column_names(data.frame(a=1, b=2), cols=list(c="a", d="b"), group_cols="b"),
-    regexp="group_cols must not overlap with other column names.  Change the name of the following groups: b"
+    regexp="group_cols must not overlap with other column names. Change the name of the following groups: b"
   )
   # group_cols overlap with cols names fails
   expect_error(
     standardize_column_names(data.frame(a=1, b=2), cols=list(c="a", d="b"), group_cols="c"),
-    regexp="group_cols must not overlap with standardized column names.  Change the name of the following groups: c"
+    regexp="group_cols must not overlap with standardized column names. Change the name of the following groups: c"
   )
   # group_cols works
   expect_equal(
@@ -201,4 +201,32 @@ test_that("restore_group_col_names", {
     restore_group_col_names(data.frame(a=1, group2=3, group1=2), c("b", "c")),
     regexp="Intermediate group_cols are out of order"
   )
+})
+
+test_that("requesting a parameter that needs volume without one is an error (#194)", {
+  d_conc <- data.frame(conc = c(2, 1, 0.5, 0.25, 0.125), time = 0:4, subject = 1)
+  d_dose <- data.frame(dose = 100, time = 0, subject = 1)
+  o_conc <- PKNCAconc(d_conc, conc~time|subject)
+  o_dose <- PKNCAdose(d_dose, dose~time|subject)
+  expect_error(
+    pk.nca(PKNCAdata(o_conc, o_dose, intervals = data.frame(start = 0, end = Inf, ae = TRUE))),
+    regexp = "No sample volume was given.*cannot be calculated: ae",
+    class = "pknca_error_missing_volume"
+  )
+  # Parameters downstream of ae are named, and those needing no volume are not
+  expect_error(
+    pk.nca(PKNCAdata(
+      o_conc, o_dose,
+      intervals = data.frame(start = 0, end = Inf, ae = TRUE, fe = TRUE, cmax = TRUE)
+    )),
+    regexp = "cannot be calculated: ae, fe$",
+    class = "pknca_error_missing_volume"
+  )
+  # With a volume the calculation proceeds
+  o_conc_vol <- PKNCAconc(cbind(d_conc, vol = 10), conc~time|subject, volume = "vol")
+  res <-
+    suppressMessages(pk.nca(PKNCAdata(
+      o_conc_vol, o_dose, intervals = data.frame(start = 0, end = Inf, ae = TRUE)
+    )))
+  expect_equal(as.data.frame(res)$PPORRES, sum(d_conc$conc * 10))
 })

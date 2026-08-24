@@ -97,13 +97,13 @@ test_that("exclude.default", {
 
   expect_error(exclude.default(obj1,
                               reason="Just because"),
-               regexp="Either mask for FUN must be given \\(but not both\\).",
+               regexp="Either mask or FUN must be given \\(but not both\\).",
                info="One of mask and FUN must be given")
   expect_error(exclude.default(obj1,
                               reason="Just because",
                               mask=rep(TRUE, 5),
                               FUN=function(x) rep(TRUE, nrow(x$data))),
-               regexp="Either mask for FUN must be given \\(but not both\\).",
+               regexp="Either mask or FUN must be given \\(but not both\\).",
                info="Both mask and FUN may not be given")
   obj2 <- obj1
   obj2$columns$exclude <- NULL
@@ -135,11 +135,10 @@ test_that("exclude.default", {
                regexp="reason must be a scalar or have the same length as the data",
                info="Interpretation of a non-scalar reason is unclear")
   expect_error(exclude.default(obj1,
-                              reason=1,
-                              FUN=function(x, ...) TRUE),
-               regexp="reason must be a character string.",
+                               reason=1,
+                               FUN=function(x, ...) TRUE),
+               regexp="reason must be a character vector.",
                info="Interpretation of a non-character reason is unclear")
-
   # Check operation
   obj4 <- obj1
   obj4$data$exclude <- c(NA_character_, rep("Just because", nrow(obj4$data)-1))

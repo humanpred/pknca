@@ -18,6 +18,58 @@ test_that("PKNCA_impute_method_start_conc0", {
   )
 })
 
+test_that("start_conc0 intentionally replaces an existing start concentration with 0 (#578)", {
+  # A nonzero concentration at the start time is forced to 0
+  expect_equal(
+    PKNCA_impute_method_start_conc0(conc = c(5, 2, 3), time = 0:2),
+    data.frame(conc = c(0, 2, 3), time = 0:2)
+  )
+  # The replacement also occurs at a nonzero start time
+  expect_equal(
+    PKNCA_impute_method_start_conc0(conc = 1:3, time = 0:2, start = 1),
+    data.frame(conc = c(1, 0, 3), time = 0:2)
+  )
+})
+
+test_that("start_predose,start_conc0 collapses to start_conc0 by design (#578)", {
+  # A predose sample within max_shift (5% of the 0-24 interval, so within 1.2)
+  d_conc <-
+    data.frame(
+      subject = 1,
+      time = c(-0.5, 1, 2, 4, 8, 12, 24),
+      conc = c(2, 5, 4, 3, 2.5, 2, 1)
+    )
+  o_conc <- PKNCAconc(d_conc, conc~time|subject)
+  d_intervals <- data.frame(start = 0, end = 24, auclast = TRUE)
+  get_auclast <- function(impute) {
+    o_data <- suppressMessages(PKNCAdata(o_conc, intervals = d_intervals, impute = impute))
+    d_res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+    d_res$PPORRES[d_res$PPTESTCD == "auclast"]
+  }
+  auclast_chain <- get_auclast("start_predose,start_conc0")
+  auclast_conc0 <- get_auclast("start_conc0")
+  auclast_predose <- get_auclast("start_predose")
+  # start_conc0 replaces the concentration that start_predose shifted to the
+  # start time, so the chain gives the same result as start_conc0 alone
+  expect_equal(auclast_chain, auclast_conc0)
+  expect_equal(
+    auclast_chain,
+    as.numeric(pk.calc.auc.last(
+      conc = c(0, 5, 4, 3, 2.5, 2, 1),
+      time = c(0, 1, 2, 4, 8, 12, 24)
+    ))
+  )
+  # start_predose alone carries the predose concentration to the start time
+  expect_equal(
+    auclast_predose,
+    as.numeric(pk.calc.auc.last(
+      conc = c(2, 5, 4, 3, 2.5, 2, 1),
+      time = c(0, 1, 2, 4, 8, 12, 24)
+    ))
+  )
+  expect_true(auclast_predose != auclast_conc0)
+})
+
 test_that("PKNCA_impute_method_start_predose", {
   # No modification if no predose samples
   expect_equal(
@@ -92,6 +144,56 @@ test_that("PKNCA_impute_method_start_cmin", {
 
 })
 
+test_that("PKNCA_impute_method_end_conc_drop", {
+  # A concentration exactly at the end is dropped
+  expect_equal(
+    PKNCA_impute_method_end_conc_drop(conc = c(10, 5, 1), time = c(0, 12, 24), end = 24),
+    data.frame(conc = c(10, 5), time = c(0, 12)),
+    ignore_attr = TRUE
+  )
+  # No modification when nothing sits exactly at the end
+  expect_equal(
+    PKNCA_impute_method_end_conc_drop(conc = c(10, 5, 1), time = c(0, 12, 23), end = 24),
+    data.frame(conc = c(10, 5, 1), time = c(0, 12, 23))
+  )
+  # Only the end point is dropped, earlier points are untouched
+  expect_equal(
+    PKNCA_impute_method_end_conc_drop(conc = c(10, 8, 6, 100), time = c(0, 1, 2, 24), end = 24),
+    data.frame(conc = c(10, 8, 6), time = c(0, 1, 2)),
+    ignore_attr = TRUE
+  )
+  # Works through the impute column of pk.nca: the boundary point (a foreign
+  # spike mimicking the next dose's C0) is removed for that interval only.
+  clean <- data.frame(
+    ID = 1,
+    time = c(0, 1, 2, 4, 8, 12, 24),
+    conc = c(10, 8, 6.5, 4, 2, 1, 0.5)
+  )
+  spiked <- clean
+  spiked$conc[spiked$time == 24] <- 100
+  dose <- data.frame(ID = 1, time = 0, dose = 100)
+  
+  make_tmax <- function(conc_df, impute) {
+    o_conc <- PKNCAconc(conc_df, formula = conc~time|ID)
+    o_dose <- PKNCAdose(dose, formula = dose~time|ID, route = "intravascular")
+    intervals <- data.frame(start = 0, end = 24, tmax = TRUE)
+    if (!is.null(impute)) intervals$impute <- impute
+    o_data <- PKNCAdata(o_conc, o_dose, intervals = intervals)
+    res <- as.data.frame(pk.nca(o_data))
+    res$PPORRES[res$PPTESTCD == "tmax"]
+  }
+  
+  # Without imputation the boundary spike wins tmax (== end)
+  expect_equal(make_tmax(spiked, NULL), 24)
+  # With the drop imputation the spike is removed and tmax returns to 0
+  expect_equal(make_tmax(spiked, "end_conc_drop"), 0)
+  # Applying the imputation to clean data (no boundary point) is a no-op
+  expect_equal(
+    make_tmax(clean, "end_conc_drop"),
+    make_tmax(clean, NULL)
+  )
+})
+
 test_that("PKNCA_impute_fun_list", {
   expect_equal(
     PKNCA_impute_fun_list(NA_character_),
@@ -157,40 +259,6 @@ test_that("PKNCA_impute_fun_list_paste", {
     PKNCA_impute_fun_list_paste(c("PKNCA_impute_method_A", "A", NA)),
     c("PKNCA_impute_method_A", "PKNCA_impute_method_A", NA_character_)
   )
-})
-
-test_that("add_impute_to_intervals", {
-  d_conc <- generate.conc(nsub=5, ntreat=2, time.points=0:24)
-  d_dose <- generate.dose(d_conc)
-  o_conc <- PKNCAconc(d_conc, formula=conc~time|treatment+ID)
-  o_dose <- PKNCAdose(d_dose, formula=dose~time|treatment+ID)
-  o_data <- PKNCAdata(o_conc, o_dose)
-  expect_error(
-    add_impute_to_intervals(o_data),
-    class = "pknca_add_impute_to_intervals_NA"
-  )
-  # Nothing if impute is in the data
-  o_data_start <- o_data
-  o_data_start$impute <- "start"
-  expect_equal(
-    add_impute_to_intervals(PKNCAdata(o_conc, o_dose, impute = "start")),
-    o_data_start
-  )
-  # Impute added to the intervals and the column is modified, if it is not in
-  # the data
-  o_data <- PKNCAdata(o_conc, o_dose, impute = "start_conc0")
-  expect_equal(add_impute_to_intervals(o_data)$impute, "impute")
-  expect_true(all(
-    add_impute_to_intervals(o_data)$intervals$impute %in% "start_conc0"
-  ))
-  # If impute is already in the names of the intervals, add something else as
-  # the impute column name
-  o_data <- PKNCAdata(o_conc, o_dose, impute = "start_conc0")
-  o_data$intervals$impute <- "foo"
-  expect_equal(add_impute_to_intervals(o_data)$impute, "imputeX")
-  expect_true(all(
-    add_impute_to_intervals(o_data)$intervals$imputeX %in% "start_conc0"
-  ))
 })
 
 test_that("PKNCAdata moves imputation to the intervals column, as applicable", {
@@ -275,5 +343,42 @@ test_that("PKNCA_impute_fun_list", {
   PKNCA_impute_method_character <- "A"
   expect_error(PKNCA_impute_fun_list("character"),
                regexp = "The following imputation functions were not found: PKNCA_impute_method_character"
+  )
+})
+
+test_that("PKNCA_impute_fun_list errors when imputation name resolves to a non-function", {
+  # utils::getAnywhere only searches namespaces and the search path, not local
+  # frames. Assign a non-function object to .GlobalEnv so getAnywhere finds it.
+  nm <- "PKNCA_impute_method_notafun_cov_test"
+  assign(nm, 42L, envir = .GlobalEnv)
+  on.exit(rm(list = nm, envir = .GlobalEnv), add = TRUE)
+  expect_error(
+    PKNCA_impute_fun_list("notafun_cov_test"),
+    regexp = "The following imputation functions were not found"
+  )
+})
+
+test_that("get_impute_method", {
+  ivals <- data.frame(start = 0, end = 24, impute = "start_conc0")
+  
+  # impute names a column in intervals directly
+  expect_equal(
+    get_impute_method(intervals = data.frame(start = 0, end = 24, myimpute = "start_conc0"), impute = "myimpute"),
+    "start_conc0"
+  )
+  # impute is NA and a generic "impute" column exists
+  expect_equal(
+    get_impute_method(intervals = ivals, impute = NA),
+    "start_conc0"
+  )
+  # impute is NA and no "impute" column exists -- returns NA itself
+  expect_equal(
+    get_impute_method(intervals = data.frame(start = 0, end = 24), impute = NA_character_),
+    NA_character_
+  )
+  
+  # the checkmate::assert_scalar() tightening 
+  expect_error(
+    get_impute_method(intervals = ivals, impute = list("start_conc0"))
   )
 })

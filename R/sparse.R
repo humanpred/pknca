@@ -14,8 +14,15 @@ as_sparse_pk <- function(conc, time, subject) {
     subject <- conc$subject
     conc <- conc$conc
   }
-  assert_conc_time(conc = conc, time = time, any_missing_conc = FALSE, sorted_time = FALSE)
+  assert_conc_time(conc = conc, time = time, any_missing_conc = TRUE, sorted_time = FALSE)
   checkmate::check_vector(subject, any.missing=FALSE, len=length(conc), null.ok=FALSE)
+  # Drop observations with missing concentrations so that per-timepoint means,
+  # variances, and subject counts reflect only available data.
+  mask_ok <- !is.na(conc)
+  conc <- conc[mask_ok]
+  time <- time[mask_ok]
+  subject <- subject[mask_ok]
+
   unique_times <- sort(unique(time))
   ret <- list()
   for (current_time in unique_times) {
@@ -43,11 +50,16 @@ as_sparse_pk <- function(conc, time, subject) {
 #' @keywords Internal
 sparse_pk_attribute <- function(sparse_pk, ...) {
   args <- list(...)
-  stopifnot(length(args) == 1)
+  checkmate::assert_list(args, len = 1)
   if (is.null(names(args))) {
     vapply(X=sparse_pk, FUN="[[", args[[1]], FUN.VALUE = 1)
   } else {
-    stopifnot(length(args[[1]]) == length(sparse_pk))
+    if (length(args[[1]]) != length(sparse_pk)) {
+      rlang::abort(
+        "The length of the argument must match the length of sparse_pk",
+        class = "pknca_error_sparse_pk_attribute_length"
+      )
+    }
     for (idx in seq_along(sparse_pk)) {
       sparse_pk[[idx]][names(args)[1]] <- args[[1]][idx]
     }
@@ -91,7 +103,7 @@ sparse_auc_weight_linear <- function(sparse_pk) {
 #'
 #' \describe{
 #'   \item{"arithmetic mean"}{Arithmetic mean (ignoring number of BLQ samples)}
-#'   \item{"arithmetic mean, <=50% BLQ"}{If >= 50% of the measurements are BLQ, zero.  Otherwise, the arithmetic mean of all samples (including the BLQ as zero).}
+#'   \item{"arithmetic mean, <=50% BLQ"}{If >50% of the measurements are BLQ, zero.  Otherwise, the arithmetic mean of all samples (including the BLQ as zero).}
 #' }
 #'
 #' @inheritParams sparse_pk_attribute
@@ -127,7 +139,13 @@ sparse_mean <- function(sparse_pk, sparse_mean_method=c("arithmetic mean, <=50% 
   } else if (sparse_mean_method == "arithmetic mean") {
     # do nothing
   } else {
-    stop("Invalid sparse_mean_method: ", sparse_mean_method) # nocov
+    rlang::abort(
+      sprintf(
+        "Invalid sparse_mean_method: %s",
+        sparse_mean_method
+      ),
+      class = "pknca_error_invalid_sparse_mean_method"
+    )
   }
   sparse_pk <- sparse_pk_attribute(sparse_pk, mean=ret)
   sparse_pk <- sparse_pk_attribute(sparse_pk, mean_method=rep(sparse_mean_method, length(ret)))
@@ -180,11 +198,11 @@ var_sparse_auc <- function(sparse_pk) {
     sum(weights^4 * diag(covariance)^2/(n^2*(n-1)))
   if (sum(covariance[lower.tri(covariance)] != 0) > 0) {
     rlang::warn(
-      message = "Cannot yet calculate sparse degrees of freedom for multiple samples per subject",
-      class = "pknca_sparse_df_multi"
+      "Cannot yet calculate sparse degrees of freedom for multiple samples per subject",
+      class = "pknca_warning_sparse_df_multi"
     )
     df <- NA_real_
-  }
+  } 
   attr(var_auc, "df") <- df
   var_auc
 }
@@ -233,9 +251,9 @@ cov_holder <- function(sparse_pk) {
       nrow=length(sparse_pk),
       ncol=length(sparse_pk)
     )
-
+  
   time_means <- sparse_pk_attribute(sparse_pk, "mean")
-
+  
   for (idx1 in seq_along(sparse_pk)) {
     # Variance on the diagonal
     ret[idx1, idx1] <- stats::var(sparse_pk[[idx1]]$conc)
@@ -302,10 +320,16 @@ sparse_to_dense_pk <- function(sparse_pk) {
 #' @family Sparse Methods
 #' @export
 pk.calc.sparse_auc <- function(conc, time, subject,
-                               method=NULL,
+                               method="linear",
                                auc.type="AUClast",
                                ...,
                                options=list()) {
+  # Sparse AUC is only defined for linear interpolation.  `method` is kept as an
+  # argument so it is used consistently below (and so other methods could be
+  # enabled here in the future), but only "linear" is currently allowed.
+  if (!identical(method, "linear")) {
+    rlang::abort('Sparse AUC calculation only supports `method = "linear"`.', class = "pknca_error_sparse_auc_method")
+  }
   sparse_pk <- as_sparse_pk(conc=conc, time=time, subject=subject)
   sparse_pk_wt <- sparse_auc_weight_linear(sparse_pk)
   sparse_pk_mean <- sparse_mean(sparse_pk=sparse_pk_wt, sparse_mean_method="arithmetic mean, <=50% BLQ")
@@ -314,15 +338,24 @@ pk.calc.sparse_auc <- function(conc, time, subject,
       conc=sparse_pk_attribute(sparse_pk_mean, "mean"),
       time=sparse_pk_attribute(sparse_pk_mean, "time"),
       auc.type=auc.type,
-      method="linear"
+      method=method,
+      options=options
     )
+
   var_auc <- var_sparse_auc(sparse_pk_mean)
-  data.frame(
+  ret <- data.frame(
     sparse_auc=auc,
     # as.numeric() drops the "df" attribute
     sparse_auc_se=sqrt(as.numeric(var_auc)),
     sparse_auc_df=attr(var_auc, "df")
   )
+
+  # Add method details as an attribute
+  for (col in names(ret)) {
+    attr(ret[[col]], "method") <- c(paste0("AUC: ", method), "Sparse: arithmetic mean, <=50% BLQ")
+  }
+
+  ret
 }
 
 #' @describeIn pk.calc.sparse_auc Compute the AUClast for sparse PK
@@ -330,8 +363,8 @@ pk.calc.sparse_auc <- function(conc, time, subject,
 pk.calc.sparse_auclast <- function(conc, time, subject, ..., options=list()) {
   if ("auc.type" %in% names(list(...))) {
     rlang::abort(
-      message = "auc.type cannot be changed when calling pk.calc.sparse_auclast, please use pk.calc.sparse_auc",
-      class = "pknca_sparse_auclast_change_auclast"
+      "auc.type cannot be changed when calling pk.calc.sparse_auclast, please use pk.calc.sparse_auc",
+      class = "pknca_error_sparse_auclast_change_auclast"
     )
   }
   ret <-
@@ -352,14 +385,11 @@ add.interval.col(
   values=c(FALSE, TRUE),
   unit_type="auc",
   pretty_name="Sparse AUClast",
-  desc="For sparse PK sampling, the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification"
-)
-PKNCA.set.summary(
-  name="sparse_auclast",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+  desc="Sparse AUC to last conc above LOQ",
+  pptestcd_cdisc="SPARSEAL",
+  pptest_cdisc="Sparse AUClast",
+  formula="$AUC_{\\text{sparse}} = \\sum_k \\frac{\\bar{C}_k + \\bar{C}_{k+1}}{2} \\Delta t_k$",
+  formula_note="Linear trapezoidal using population mean concentrations")
 
 add.interval.col(
   "sparse_auc_se",
@@ -367,15 +397,12 @@ add.interval.col(
   values=c(FALSE, TRUE),
   unit_type="auc",
   pretty_name="Sparse AUClast standard error",
-  desc="For sparse PK sampling, the standard error of the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
-  depends="sparse_auclast"
-)
-PKNCA.set.summary(
-  name="sparse_auc_se",
-  description="arithmetic mean and standard deviation",
-  point=business.mean,
-  spread=business.sd
-)
+  desc="SE of sparse AUC to last conc above LOQ",
+  depends="sparse_auclast",
+  pptestcd_cdisc="SPARSEAS",
+  pptest_cdisc="Sparse AUClast standard error",
+  formula="$SE(AUC_{\\text{sparse}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$",
+  formula_note="Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001)")
 
 add.interval.col(
   "sparse_auc_df",
@@ -383,15 +410,12 @@ add.interval.col(
   values=c(FALSE, TRUE),
   unit_type="count",
   pretty_name="Sparse AUClast degrees of freedom",
-  desc="For sparse PK sampling, the standard error degrees of freedom of the area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification",
-  depends="sparse_auclast"
-)
-PKNCA.set.summary(
-  name="sparse_auc_df",
-  description="arithmetic mean and standard deviation",
-  point=business.mean,
-  spread=business.sd
-)
+  desc="DF for sparse AUC to last conc above LOQ",
+  depends="sparse_auclast",
+  pptestcd_cdisc="SPARSEAD",
+  pptest_cdisc="Sparse AUClast degrees of freedom",
+  formula="$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$",
+  formula_note="Satterthwaite approximation (Nedelman et al 1995, eq. 6a)")
 
 #' Is a PKNCA object used for sparse PK?
 #'
@@ -401,3 +425,228 @@ PKNCA.set.summary(
 is_sparse_pk <- function(object) {
   UseMethod("is_sparse_pk")
 }
+
+#' Calculate the variance for the AUMC of sparsely sampled PK
+#'
+#' This function calculates the variance of the area under the first moment
+#' curve (AUMC) for sparse PK data. It follows the same methodology as
+#' [var_sparse_auc()] but applies to the moment curve (time × concentration).
+#'
+#' Equation 7.vii in Nedelman and Jia, 1998 is adapted for AUMC:
+#'
+#' \deqn{var\left(\hat{AUMC}\right) = \sum\limits_{i=0}^m\left(\frac{w_i^2 s_i^2}{r_i}\right) + 2\sum\limits_{i<j}\left(\frac{w_i w_j r_{ij} s_{ij}}{r_i r_j}\right)}{var(AUMC) = sum_(i=0)^(m) ((w_i^2 * s_i^2)/(r_i) + + 2*sum_(i<j)((w_i * w_j * r_ij * s_ij)/(r_i * r_j))}
+#'
+#' where the variance and covariance terms are calculated on the moment curve
+#' (time × concentration) rather than concentration alone.
+#'
+#' The degrees of freedom are calculated as described in equation 6 of the same
+#' paper, reusing the structure from [var_sparse_auc()].
+#'
+#' @inheritParams sparse_pk_attribute
+#' @returns The variance of the AUMC estimate with a "df" attribute containing
+#'   the degrees of freedom
+#' @references
+#' Nedelman JR, Jia X. An extension of Satterthwaite's approximation applied to
+#' pharmacokinetics. Journal of Biopharmaceutical Statistics. 1998;8(2):317-328.
+#' doi:10.1080/10543409808835241
+#' @keywords internal
+#' @export
+var_sparse_aumc <- function(sparse_pk) {
+  # Step 1: Transform concentration to moment data (t * C) per subject
+  # Must be done BEFORE calculating means — variance must be estimated
+  # on individual moment values, not on mean concentrations
+  # (Nedelman and Jia, 1998, equation 7.vii extended to moment curve)
+  moment_sparse_pk <- sparse_pk
+  for (idx in seq_along(moment_sparse_pk)) {
+    time_i <- moment_sparse_pk[[idx]]$time
+    # Multiply each individual concentration measurement by its time
+    moment_sparse_pk[[idx]]$conc <-
+      moment_sparse_pk[[idx]]$conc * time_i
+  }
+  
+  # Step 2: Calculate mean of moment data at each time point
+  # mean(t*C) not mean(C) — critical for correct variance estimation
+  moment_sparse_pk_mean <- sparse_mean(
+    sparse_pk = moment_sparse_pk,
+    sparse_mean_method = "arithmetic mean, <=50% BLQ"
+  )
+  
+  # Step 3: Covariance matrix on moment data using Holder (2001) estimator
+  covariance <- cov_holder(moment_sparse_pk_mean)
+  
+  # Step 4: Variance of AUMC via weighted sum (equation 7.vii,
+  # Nedelman and Jia 1998, applied to moment data)
+  var_aumc <- 0
+  # Use ORIGINAL sparse_pk for weights (time-based, not moment-based)
+  weights <- sparse_pk_attribute(sparse_pk, "weight")
+  # number of subjects at a given time point
+  n <- rep(0, length(sparse_pk))
+  
+  for (idx1 in seq_along(sparse_pk)) {
+    n_idx1 <- length(unique(sparse_pk[[idx1]]$subject))
+    n[idx1] <- n_idx1
+    var_aumc <-
+      var_aumc +
+      weights[idx1]^2 * covariance[idx1, idx1] / n_idx1
+    
+    for (idx2 in seq_len(idx1 - 1)) {
+      n_idx2 <- length(unique(sparse_pk[[idx2]]$subject))
+      n_both <- length(unique(intersect(sparse_pk[[idx1]]$subject, sparse_pk[[idx2]]$subject)))
+      var_aumc <-
+        var_aumc +
+        2 * weights[idx1] * weights[idx2] * n_both * covariance[idx1, idx2] / (n_idx1 * n_idx2)
+    }
+  }
+  
+  # Step 5: Degrees of freedom — Satterthwaite approximation
+  # (equation 6, Nedelman and Jia 1998)
+  df <-
+    sum(weights^2 * diag(covariance) / n)^2 /
+    sum(weights^4 * diag(covariance)^2 / (n^2 * (n - 1)))
+  
+  if (sum(covariance[lower.tri(covariance)] != 0) > 0) {
+    rlang::warn(
+      "Cannot yet calculate sparse degrees of freedom for multiple samples per subject",
+      class = "pknca_warning_sparse_aumc_df_multi"
+    )
+    df <- NA_real_
+  }
+  # else if (any(n == 1)) {
+  #   # Requires >= 2 subjects per time point for df calculation
+  #   df <- NA_real_
+  # }
+  
+  attr(var_aumc, "df") <- df
+  var_aumc
+}
+
+#' Calculate AUMC and related parameters using sparse NCA methods
+#'
+#' The AUMC is calculated as:
+#'
+#' \deqn{AUMC=\sum\limits_{i} w_i \overline{t_i C_i}}{AUMC = sum(w_i * mean(t_i * C_i))}
+#'
+#' Where:
+#'
+#' \describe{
+#'   \item{\eqn{AUMC}{AUMC}}{is the estimated area under the first moment curve}
+#'   \item{\eqn{w_i}{w_i}}{is the weight applied to time i (same as for AUC, see [sparse_auc_weight_linear()])}
+#'   \item{\eqn{\overline{t_i C_i}}{mean(t_i * C_i)}}{is the average of the moment (time × concentration) at time i}
+#' }
+#'
+#' @inheritParams pk.calc.sparse_auc
+#' @returns A data.frame with columns:
+#'   \item{sparse_aumc}{The estimated AUMC}
+#'   \item{sparse_aumc_se}{Standard error of the AUMC estimate}
+#'   \item{sparse_aumc_df}{Degrees of freedom for the variance estimate}
+#' @family Sparse Methods
+#' @export
+pk.calc.sparse_aumc <- function(conc, time, subject,
+                                method = "linear",
+                                auc.type = "AUClast",
+                                ...,
+                                options = list()) {
+  # Sparse AUMC is only defined for linear interpolation (see pk.calc.sparse_auc).
+  if (!identical(method, "linear")) {
+    rlang::abort('Sparse AUMC calculation only supports `method = "linear"`.', class = "pknca_error_sparse_aumc_method")
+  }
+  # Create sparse_pk object from data
+  sparse_pk <- as_sparse_pk(conc = conc, time = time, subject = subject)
+  
+  # Calculate weights (same as for AUC)
+  sparse_pk_wt <- sparse_auc_weight_linear(sparse_pk)
+  
+  # Calculate mean CONCENTRATION (for pk.calc.aumc integration)
+  sparse_pk_mean <- sparse_mean(
+    sparse_pk = sparse_pk_wt,
+    sparse_mean_method = "arithmetic mean, <=50% BLQ"
+  )
+  
+  # Use pk.calc.aumc on the mean concentration profile
+  # pk.calc.aumc will handle the time*conc multiplication during integration
+  aumc <-
+    pk.calc.aumc(
+      conc = sparse_pk_attribute(sparse_pk_mean, "mean"),
+      time = sparse_pk_attribute(sparse_pk_mean, "time"),
+      auc.type = auc.type,
+      method = method,
+      options = options
+    )
+  
+  # Calculate variance on MOMENT data (this is where the fix matters)
+  # var_sparse_aumc will create moment data internally
+  var_aumc <- var_sparse_aumc(sparse_pk_wt)
+  
+  data.frame(
+    sparse_aumc = aumc,
+    sparse_aumc_se = sqrt(as.numeric(var_aumc)),
+    sparse_aumc_df = attr(var_aumc, "df")
+  )
+}
+
+#' @describeIn pk.calc.sparse_aumc Compute the AUMClast for sparse PK
+#' @export
+pk.calc.sparse_aumclast <- function(conc, time, subject, ..., options = list()) {
+  if ("auc.type" %in% names(list(...))) {
+    rlang::abort(
+      "auc.type cannot be changed when calling pk.calc.sparse_aumclast, please use pk.calc.sparse_aumc",
+      class = "pknca_error_sparse_aumclast_change_auc_type"
+    )
+  }
+  ret <- pk.calc.sparse_aumc(
+    conc = conc, time = time, subject = subject,
+    ..., options = options,
+    auc.type = "AUClast",
+    lambda.z = NA
+  )
+  names(ret)[names(ret) == "sparse_aumc"] <- "sparse_aumclast"
+  ret
+}
+
+add.interval.col(
+  "sparse_aumclast",
+  sparse = TRUE,
+  FUN = "pk.calc.sparse_aumclast",
+  values = c(FALSE, TRUE),
+  unit_type = "aumc",
+  pretty_name = "Sparse AUMClast",
+  desc = "Sparse AUMC to last conc above LOQ",
+  depends     = "sparse_auclast"
+)
+
+add.interval.col(
+  "sparse_aumc_se",
+  FUN = NA,
+  values = c(FALSE, TRUE),
+  unit_type = "aumc",
+  pretty_name = "Sparse AUMC standard error",
+  desc = "SE of sparse AUMC to last conc above LOQ",
+  depends = "sparse_aumclast"
+)
+
+add.interval.col(
+  "sparse_aumc_df",
+  FUN = NA,
+  values = c(FALSE, TRUE),
+  unit_type = "count",
+  pretty_name = "Sparse AUMC degrees of freedom",
+  desc = "variance DF for sparse AUMC to Tlast",
+  depends = "sparse_aumclast"
+)
+
+PKNCA.set.summary(
+  name = c("sparse_auclast", "sparse_aumclast"),
+  description = "geometric mean and geometric coefficient of variation",
+  point = business.geomean,
+  spread = business.geocv
+)
+
+PKNCA.set.summary(
+  name = c(
+    "sparse_auc_se", "sparse_auc_df",
+    "sparse_aumc_se", "sparse_aumc_df"
+  ),
+  description = "arithmetic mean and standard deviation",
+  point = business.mean,
+  spread = business.sd
+)

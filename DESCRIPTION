@@ -1,14 +1,18 @@
 Package: PKNCA
 Type: Package
 Title: Perform Pharmacokinetic Non-Compartmental Analysis
-Version: 0.11.0.9000
+Version: 0.12.1.9000
 Authors@R: c(
     person("Bill", "Denney", email="wdenney@humanpredictions.com", role=c("aut", "cre"), comment=c(ORCID="0000-0002-5759-428X")),
     person("Clare", "Buckeridge", email="clare.buckeridge@pfizer.com", role="aut"),
-    person("Sridhar", "Duvvuri", role="ctb"))
+    person("Gerardo Jose", "Rodriguez", email="gerardo.jrac@gmail.com", role="aut", comment=c(ORCID="0000-0003-1413-0060")),
+    person("Sridhar", "Duvvuri", role="ctb"),
+    person("Natalie", "Sang", email="nataliesang143@gmail.com", role="ctb"))
+Depends:
+    R (>= 4.4)
 Imports:
     checkmate,
-    dplyr (>= 0.5.0),
+    dplyr (>= 1.1.0),
     digest,
     nlme,
     purrr,
@@ -21,11 +25,14 @@ Imports:
 Suggests:
     covr,
     cowplot,
+    emmeans,
     ggplot2,
+    ggtibble,
     knitr,
     labeling,
+    lme4,
+    lmerTest,
     pander,
-    pmxTools,
     rmarkdown,
     spelling,
     testthat (>= 3.0.0),
@@ -34,10 +41,9 @@ Suggests:
 Description: Compute standard Non-Compartmental Analysis (NCA) parameters for
     typical pharmacokinetic analyses and summarize them.
 License: AGPL-3
-URL: https://billdenney.github.io/pknca/,
-    https://github.com/billdenney/pknca,
-    http://billdenney.github.io/pknca/
-BugReports: https://github.com/billdenney/pknca/issues
+URL: https://pknca.humanpredictions.com/,
+    https://github.com/humanpred/pknca
+BugReports: https://github.com/humanpred/pknca/issues
 NeedsCompilation: no
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)

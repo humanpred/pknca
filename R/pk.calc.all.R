@@ -10,6 +10,17 @@
 #' the interval.  For example, if an interval starts at 168 hours, ends at 192
 #' hours, and and the maximum concentration is at 169 hours, `tmax=169-168=1`.
 #'
+#' Data are selected for each interval by the measurement or dose time: rows
+#' with a time at or after the interval `start` and at or before the interval
+#' `end` are included (a dose exactly at the interval `end` is not included in
+#' the interval).  For duration data (for example, urine collections or
+#' intravenous infusions), the time is the start of the collection or
+#' administration, and the duration is not considered during selection: a
+#' collection that starts within the interval and ends after the interval `end`
+#' contributes its full amount to the interval.  For the simplest
+#' interpretation of results, align collection start and end times with
+#' interval boundaries.
+#'
 #' @param data A PKNCAdata object
 #' @param verbose Indicate, by `message()`, the current state of calculation.
 #' @returns A `PKNCAresults` object.
@@ -20,7 +31,9 @@ pk.nca <- function(data, verbose=FALSE) {
   assert_PKNCAdata(data)
   results <- data.frame()
   if (nrow(data$intervals) > 0) {
-    if (verbose) message("Setting up options")
+    if (verbose) {
+      rlang::inform("Setting up options", class = "pknca_message_setup_options")
+    }
     # Merge the options into the default options.
     tmp_options <- PKNCA.options()
     tmp_options[names(data$options)] <- data$options
@@ -33,7 +46,9 @@ pk.nca <- function(data, verbose=FALSE) {
         drop=FALSE
       ]
     # Calculate the results
-    if (verbose) message("Starting dense PK NCA calculations.")
+    if (verbose) {
+      rlang::inform("Starting dense PK NCA calculations.", class = "pknca_message_dense_pk_start")
+    }
     results_dense <-
       purrr::pmap(
         .l = list(
@@ -48,10 +63,14 @@ pk.nca <- function(data, verbose=FALSE) {
         sparse = FALSE,
         .progress = data$options$progress
       )
-    if (verbose) message("Combining completed dense PK calculation results.")
+    if (verbose) {
+      rlang::inform("Combining completed dense PK calculation results.", class = "pknca_message_dense_pk_combine")
+    }
     results <- pk_nca_result_to_df(group_info, results_dense)
     if (is_sparse_pk(data)) {
-      if (verbose) message("Starting sparse PK NCA calculations.")
+      if (verbose) {
+        rlang::inform("Starting sparse PK NCA calculations.", class = "pknca_message_sparse_pk_start")
+      }
       results_sparse <-
         purrr::pmap(
           .l=list(
@@ -65,7 +84,9 @@ pk.nca <- function(data, verbose=FALSE) {
           verbose=verbose,
           sparse=TRUE
         )
-      if (verbose) message("Combining completed sparse PK calculation results.")
+      if (verbose) {
+        rlang::inform("Combining completed sparse PK calculation results.", class = "pknca_message_sparse_pk_combine")
+      }
       results <-
         dplyr::bind_rows(
           results,
@@ -114,18 +135,15 @@ pk_nca_result_to_df <- function(group_info, result) {
       X=seq_along(warning_preamble),
       FUN=function(idx) {
         warning_prep <- ret_warnings$data_result[[idx]]
-        warning_prep$message <- paste(warning_preamble[idx], warning_prep$message, sep=": ")
-        warning(warning_prep)
+        warning_prep$message <- sprintf("%s: %s", warning_preamble[idx], warning_prep$message)
+        rlang::warn(warning_prep$message, class = c("pknca_warning_parameter_calculation", class(warning_prep)))
       }
     ))
   }
   ret_nowarning <- ret[!mask_warning, ]
   # Generate the outputs
   if (nrow(ret_nowarning) == 0) {
-    rlang::warn(
-      message = "All results generated warnings or errors; no results generated",
-      class = "pknca_all_warnings_no_results"
-    )
+    rlang::warn("All results generated warnings or errors; no results generated", class = "pknca_warning_no_results")
     results <- data.frame()
   } else {
     results <- tidyr::unnest(ret_nowarning, cols="data_result")
@@ -134,6 +152,25 @@ pk_nca_result_to_df <- function(group_info, result) {
   results
 }
 
+#' Subset data to the rows used for calculations within an interval
+#'
+#' Rows are selected by their `time` falling within the interval: `start <=
+#' time` and `time <= end` (or `time < end` when `include_end=FALSE`).  For
+#' duration data (for example, urine collections or intravenous infusions),
+#' `time` is the start of the collection or administration, and the `duration`
+#' column is not consulted during selection: a record whose duration starts
+#' within the interval and ends after the interval `end` is selected and
+#' contributes its full amount to calculations within the interval.  For the
+#' simplest interpretation of results, align collection start and end times
+#' with interval boundaries.
+#'
+#' @param data A data.frame with a column named `time` (and, for duration data,
+#'   a column named `duration`, which is ignored during selection)
+#' @param start,end The beginning and end times of the interval
+#' @param include_na Should rows with an `NA` `time` be kept?
+#' @param include_end Should a row with `time == end` be kept?
+#' @returns The rows of `data` selected for the interval
+#' @keywords Internal
 filter_interval <- function(data, start, end, include_na=FALSE, include_end=TRUE) {
   mask_na <- include_na & is.na(data$time)
   mask_keep_start <- start <= data$time
@@ -191,12 +228,22 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
                              options, impute, verbose=FALSE) {
   if (is.null(data_conc) || (nrow(data_conc) == 0)) {
     # No concentration data; potentially placebo data
-    return(rlang::warning_cnd(class="pknca_no_conc_data", message="No concentration data"))
+    return(rlang::warning_cnd(class="pknca_warning_no_conc_data", message="No concentration data"))
   } else if (is.null(data_intervals) || (nrow(data_intervals) == 0)) {
     # No intervals; potentially placebo data
-    return(rlang::warning_cnd(class="pknca_no_intervals", message="No intervals for data"))
+    return(rlang::warning_cnd(class="pknca_warning_no_intervals", message="No intervals for data"))
   }
-  ret <- data.frame()
+  # Sort the group-level concentration data in time order.  The interval-level
+  # data are sorted below (per interval), but the group-level data are passed
+  # as-is to parameters that use `conc.group`/`time.group` (e.g. aucint*), and
+  # several of those (via interp.extrap.conc()) require time-sorted input.  See
+  # https://github.com/humanpred/pknca/issues/568.
+  data_conc <- data_conc[order(data_conc$time), , drop=FALSE]
+  # Hoist the debug check: options is already the fully-merged options object
+  # (merged at the top of pk.nca()), so there is no need to re-query
+  # PKNCA.options() from the environment on every iteration.
+  use_debug <- !is.null(options$debug)
+  ret_list <- list()
   for (i in seq_len(nrow(data_intervals))) {
     current_interval <- data_intervals[i, , drop=FALSE]
     has_calc_sparse_dense <- any_sparse_dense_in_interval(current_interval, sparse=sparse)
@@ -233,9 +280,17 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
           sep="=", collapse=", ")
       )
     if (nrow(conc_data_interval) == 0) {
-      warning(paste(error_preamble, "No data for interval", sep=": "))
+      rlang::warn(sprintf("%s: No data for interval", error_preamble), class = "pknca_warning_no_data_for_interval")
     } else if (!has_calc_sparse_dense) {
-      if (verbose) message("No ", ifelse(sparse, "sparse", "dense"), " calculations requested for an interval")
+      if (verbose) {
+        rlang::inform(
+          sprintf(
+            "No %s calculations requested for an interval",
+            if (sparse) "sparse" else "dense"
+          ),
+          class = "pknca_message_no_interval_calculations"
+        )
+      }
     } else {
       impute_method <- get_impute_method(intervals = current_interval, impute = impute)
       args <- list(
@@ -265,21 +320,38 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
       if ("subject" %in% names(conc_data_interval)) {
         args$subject <- conc_data_interval$subject
       }
+      uses_include_hl <- FALSE
       if ("include_half.life" %in% names(conc_data_interval)) {
         args$include_half.life <- conc_data_interval$include_half.life
+        uses_include_hl <- !is.null(args$include_half.life) && !all(is.na(args$include_half.life))
       }
+      uses_exclude_hl <- FALSE
       if ("exclude_half.life" %in% names(conc_data_interval)) {
         args$exclude_half.life <- conc_data_interval$exclude_half.life
+        uses_exclude_hl <- !is.null(args$exclude_half.life) && !all(is.na(args$exclude_half.life))
+      }
+      if ("lloq" %in% names(conc_data_interval)) {
+        args$lloq <- conc_data_interval$lloq
+      }
+      if (uses_include_hl && uses_exclude_hl) {
+        rlang::abort(
+          "Cannot both include and exclude half-life points for the same interval",
+          class = "pknca_error_include_exclude_halflife"
+        )
       }
       # Try the calculation
-      calculated_interval <-
-        tryCatch(
-          do.call(pk.nca.interval, args),
-          error=function(e) {
-            e$message <- paste("Please report a bug.\n", error_preamble, e$message, sep=": ") # nocov
-            stop(e) # nocov
-          }
-        )
+      if (use_debug) {
+        # debugging mode does not need coverage
+        calculated_interval <- do.call(pk.nca.interval, args) # nocov
+      } else {
+        calculated_interval <-
+          tryCatch(
+            do.call(pk.nca.interval, args),
+            error = function(e) {
+              rlang::abort(sprintf("Please report a bug.\n%s: %s", error_preamble, e$message), class = "pknca_error_interval_calculation", parent = e)  # nocov
+            }
+          )
+      }
       # Add all the new data into the output
       new_ret <-
         cbind(
@@ -292,10 +364,10 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
           calculated_interval,
           row.names=NULL
         )
-      ret <- rbind(ret, new_ret)
+      ret_list[[length(ret_list) + 1L]] <- new_ret
     }
   }
-  ret
+  if (length(ret_list) == 0L) data.frame() else dplyr::bind_rows(ret_list)
 }
 
 #' Compute all PK parameters for a single concentration-time data set
@@ -307,6 +379,7 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
 #'
 #' @inheritParams assert_conc_time
 #' @inheritParams PKNCA.choose.option
+#' @inheritParams PKNCAconc
 #' @param conc.group All concentrations measured for the group
 #' @param time.group Time of all concentrations measured for the group
 #' @param volume,volume.group The volume (or mass) of the concentration
@@ -317,22 +390,24 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
 #'   for urine and fecal measurements)
 #' @param dose,dose.group Dose amount (may be a scalar or vector) for the
 #'   current interval or all data for the group
-#' @param time.dose,time.dose.group Time of the dose for the current interval or
-#'   all data for the group (must be the same length as `dose` or `dose.group`)
-#' @param duration.dose,duration.dose.group The duration of the dose
-#'   administration for the current interval or all data for the group
-#'   (typically zero for extravascular and intravascular bolus and nonzero for
-#'   intravascular infusion)
+#' @param time.dose Time of the dose for the current interval (must be the same
+#'   length as `dose`)
+#' @param time.dose.group Time of the dose for all data for the group (must be
+#'   the same length as `dose.group`)
+#' @param duration.dose The duration of the dose administration for the current
+#'   interval (typically zero for extravascular and intravascular bolus and
+#'   nonzero for intravascular infusion)
+#' @param duration.dose.group The duration of the dose administration for all
+#'   data for the group (typically zero for extravascular and intravascular
+#'   bolus and nonzero for intravascular infusion)
 #' @param route,route.group The route of dosing for the current interval or all
 #'   data for the group
 #' @param impute_method The method to use for imputation as a character string
 #' @param interval One row of an interval definition (see
 #'   [check.interval.specification()] for how to define the interval.
-#' @param include_half.life An optional boolean vector of the concentration
-#'   measurements to include in the half-life calculation. If given, no
-#'   half-life point selection will occur.
-#' @param exclude_half.life An optional boolean vector of the concentration
-#'   measurements to exclude from the half-life calculation.
+#' @param lloq An optional scalar or vector (the same length as `conc`) with the
+#'   lower limit of quantification passed to [pk.calc.half.life()] for the Tobit
+#'   half-life method.
 #' @param subject Subject identifiers (used for sparse calculations)
 #' @param sparse Should only sparse calculations be performed (TRUE) or only
 #'   dense calculations (FALSE)?
@@ -341,19 +416,21 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
 #'
 #' @seealso [check.interval.specification()]
 #' @export
+#' @importFrom stats na.omit
 pk.nca.interval <- function(conc, time, volume, duration.conc,
                             dose, time.dose, duration.dose, route,
                             conc.group=NULL, time.group=NULL, volume.group=NULL, duration.conc.group=NULL,
                             dose.group=NULL, time.dose.group=NULL, duration.dose.group=NULL, route.group=NULL,
                             impute_method=NA_character_,
-                            include_half.life=NULL, exclude_half.life=NULL,
+                            include_half.life=NULL, exclude_half.life=NULL, lloq=NULL,
                             subject, sparse, interval, options=list()) {
-  if (!is.data.frame(interval)) {
-    stop("Please report a bug.  Interval must be a data.frame")
+  if (!checkmate::test_data_frame(interval, nrows = 1)) {
+    rlang::abort(
+      "Please report a bug.  Interval must be a one-row data.frame",
+      class = "pknca_error_internal_interval_not_one_row_df"
+    )
   }
-  if (nrow(interval) != 1) {
-    stop("Please report a bug.  Interval must be a one-row data.frame")
-  }
+
   if (!all(is.na(impute_method))) {
     impute_funs <- PKNCA_impute_fun_list(impute_method)
     stopifnot(length(impute_funs) == 1)
@@ -369,6 +446,9 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     }
     conc <- impute_data$conc
     time <- impute_data$time
+    tmp_imp_method <- paste0("Imputation: ", paste(na.omit(impute_method), collapse = ", "))
+  } else {
+    tmp_imp_method <- character()
   }
   # Prepare the return value using SDTM names
   ret <- data.frame(PPTESTCD=NA, PPORRES=NA)[-1,]
@@ -379,7 +459,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   all_intervals <- get.interval.cols()
   # Set the dose to NA if its length is zero
   if (length(dose) == 0) {
-    stop("Please report a bug. Length of dose should not be zero.") # nocov
+    rlang::abort("Please report a bug. Length of dose should not be zero.", class = "pknca_error_internal_dose_length_zero")  # nocov
   }
   # Make sure that we calculate all of the dependencies.  Do this in
   # reverse order for dependencies of dependencies.
@@ -393,7 +473,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     request_to_calculate <- as.logical(interval[[n]])
     has_calculation_function <- !is.na(all_intervals[[n]]$FUN)
     is_correct_sparse_dense <- all_intervals[[n]]$sparse == sparse
-    if (request_to_calculate & has_calculation_function & is_correct_sparse_dense) {
+    if (request_to_calculate && has_calculation_function && is_correct_sparse_dense) {
       call_args <- list()
       exclude_from_argument <- character(0)
       # Prepare to call the function by setting up its arguments.
@@ -449,6 +529,8 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           call_args[[arg_formal]] <- route.group
         } else if (arg_mapped == "subject") {
           call_args[[arg_formal]] <- subject
+        } else if (arg_mapped == "lloq") {
+          call_args[[arg_formal]] <- lloq
         } else if (arg_mapped %in% c("start", "end")) {
           # Provide the start and end of the interval if they are requested
           call_args[[arg_formal]] <- interval[[arg_mapped]]
@@ -469,31 +551,42 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
               } else {
                 sprintf("'%s' mapped to '%s'", arg_formal, arg_mapped)
               }
-            stop(sprintf(
-              "Cannot find argument %s for NCA function '%s'",
-              arg_text, all_intervals[[n]]$FUN)
-            ) # nocov end
+            rlang::abort(
+              sprintf(
+                "Cannot find argument %s for NCA function '%s'",
+                arg_text, all_intervals[[n]]$FUN
+              ), # nocov end
+              class = "pknca_error_missing_nca_argument"
+            )
           }
         }
       }
       # Apply manual inclusion and exclusion
       if (n %in% "half.life") {
-        if (!is.null(include_half.life) && !all(is.na(include_half.life))) {
+        uses_include_hl <- !is.null(include_half.life) && !all(is.na(include_half.life))
+        uses_exclude_hl <- !is.null(exclude_half.life) && !all(is.na(exclude_half.life))
+        # Keep a per-observation lloq aligned with conc when points are manually
+        # included or excluded (a scalar lloq is broadcast by pk.calc.half.life).
+        lloq_is_vector <-
+          !is.null(call_args$lloq) && length(call_args$lloq) == length(call_args$conc)
+        if (uses_include_hl) {
           include_tf <- include_half.life %in% TRUE
           call_args$conc <- call_args$conc[include_tf]
           call_args$time <- call_args$time[include_tf]
+          if (lloq_is_vector) call_args$lloq <- call_args$lloq[include_tf]
           call_args$manually.selected.points <- TRUE
-        } else if (!is.null(exclude_half.life) && !all(is.na(exclude_half.life))) {
+        } else if (uses_exclude_hl) {
           exclude_tf <- exclude_half.life %in% TRUE
           call_args$conc <- call_args$conc[!exclude_tf]
           call_args$time <- call_args$time[!exclude_tf]
+          if (lloq_is_vector) call_args$lloq <- call_args$lloq[!exclude_tf]
         }
       }
       # Do the calculation
       tmp_result <- do.call(all_intervals[[n]]$FUN, call_args)
       # The handling of the exclude column is documented in the
-      # "Writing-Parameter-Functions.Rmd" vignette.  Document any changes to
-      # this section of code there.
+      # "vignettes/v80-writing-parameter-functions.Rmd" vignette.  Document any
+      # changes to this section of code there.
       exclude_reason <-
         stats::na.omit(c(
           exclude_from_argument, attr(tmp_result, "exclude")
@@ -506,39 +599,23 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         } else {
           NA_character_
         }
+      # The handling of the method column (PPANMETH)
+      tmp_method <- c(tmp_imp_method, attr(tmp_result, "method"))
+      attr(tmp_result, "method") <- NULL
+
       # If the function returns a data frame, save all the returned values,
       # otherwise, save the value returned.
       if (is.data.frame(tmp_result)) {
-        # if (uses_units) {
-        #   # Convert to mixed_units so that rbind will work
-        #   for (nm in names(tmp_result)) {
-        #     if (inherits(tmp_result[[nm]], "units")) {
-        #       tmp_result[[nm]] <- units::mixed_units(tmp_result[[nm]])
-        #     } else {
-        #       # unitless
-        #       tmp_result[[nm]] <- units::mixed_units(tmp_result[[nm]], "")
-        #     }
-        #   }
-        # }
         tmp_testcd <- names(tmp_result)
         tmp_result <- unlist(tmp_result, use.names=FALSE, recursive=FALSE)
       } else {
-        # if (uses_units) {
-        #   if (inherits(tmp_result, "units")) {
-        #     # I() due to https://github.com/r-quantities/units/issues/309
-        #     tmp_result <- I(units::mixed_units(tmp_result))
-        #   } else {
-        #     # unitless
-        #     # I() due to https://github.com/r-quantities/units/issues/309
-        #     tmp_result <- I(units::mixed_units(tmp_result, ""))
-        #   }
-        # }
         tmp_testcd <- n
       }
       single_result <-
         data.frame(
           PPTESTCD=tmp_testcd,
           PPORRES=tmp_result,
+          PPANMETH=paste(tmp_method, collapse=". "),
           exclude=exclude_reason,
           stringsAsFactors=FALSE
         )

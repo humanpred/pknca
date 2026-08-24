@@ -39,10 +39,9 @@ as.data.frame(my.results)
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://billdenney.github.io/pknca/}
-  \item \url{https://github.com/billdenney/pknca}
-  \item \url{http://billdenney.github.io/pknca/}
-  \item Report bugs at \url{https://github.com/billdenney/pknca/issues}
+  \item \url{https://pknca.humanpredictions.com/}
+  \item \url{https://github.com/humanpred/pknca}
+  \item Report bugs at \url{https://github.com/humanpred/pknca/issues}
 }
 
 }
@@ -53,11 +52,13 @@ Authors:
 \itemize{
   \item Bill Denney \email{wdenney@humanpredictions.com} (\href{https://orcid.org/0000-0002-5759-428X}{ORCID})
   \item Clare Buckeridge \email{clare.buckeridge@pfizer.com}
+  \item Gerardo Jose Rodriguez \email{gerardo.jrac@gmail.com} (\href{https://orcid.org/0000-0003-1413-0060}{ORCID})
 }
 
 Other contributors:
 \itemize{
   \item Sridhar Duvvuri [contributor]
+  \item Natalie Sang \email{nataliesang143@gmail.com} [contributor]
 }
 
 }

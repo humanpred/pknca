@@ -47,7 +47,6 @@ calculate the half life after the last dose.
 
 Other Interval specifications:
 \code{\link[=add.interval.col]{add.interval.col()}},
-\code{\link[=check.interval.deps]{check.interval.deps()}},
 \code{\link[=check.interval.specification]{check.interval.specification()}},
 \code{\link[=get.interval.cols]{get.interval.cols()}},
 \code{\link[=get.parameter.deps]{get.parameter.deps()}},

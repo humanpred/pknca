@@ -24,6 +24,7 @@ pk.nca.interval(
   impute_method = NA_character_,
   include_half.life = NULL,
   exclude_half.life = NULL,
+  lloq = NULL,
   subject,
   sparse,
   interval,
@@ -46,13 +47,12 @@ for urine and fecal measurements)}
 \item{dose, dose.group}{Dose amount (may be a scalar or vector) for the
 current interval or all data for the group}
 
-\item{time.dose, time.dose.group}{Time of the dose for the current interval or
-all data for the group (must be the same length as \code{dose} or \code{dose.group})}
+\item{time.dose}{Time of the dose for the current interval (must be the same
+length as \code{dose})}
 
-\item{duration.dose, duration.dose.group}{The duration of the dose
-administration for the current interval or all data for the group
-(typically zero for extravascular and intravascular bolus and nonzero for
-intravascular infusion)}
+\item{duration.dose}{The duration of the dose administration for the current
+interval (typically zero for extravascular and intravascular bolus and
+nonzero for intravascular infusion)}
 
 \item{route, route.group}{The route of dosing for the current interval or all
 data for the group}
@@ -61,14 +61,34 @@ data for the group}
 
 \item{time.group}{Time of all concentrations measured for the group}
 
+\item{time.dose.group}{Time of the dose for all data for the group (must be
+the same length as \code{dose.group})}
+
+\item{duration.dose.group}{The duration of the dose administration for all
+data for the group (typically zero for extravascular and intravascular
+bolus and nonzero for intravascular infusion)}
+
 \item{impute_method}{The method to use for imputation as a character string}
 
-\item{include_half.life}{An optional boolean vector of the concentration
-measurements to include in the half-life calculation. If given, no
-half-life point selection will occur.}
+\item{exclude_half.life, include_half.life}{Manual half-life point selection,
+given as a logical value per concentration measurement (or, in
+\code{\link[=PKNCAconc]{PKNCAconc()}}, the name of such a column in the data).  \code{exclude_half.life}
+drops the flagged points; automatic curve-stripping point selection is
+still performed on the remaining (non-excluded) points and is not bypassed.
+\code{include_half.life} names the exact points to use, bypassing automatic
+curve-stripping point selection.  Each value is \code{TRUE}, \code{FALSE}, or \code{NA}
+(undefined); the column/vector is treated as "in use" for an interval
+unless it is entirely \code{NA} (so an all-\code{FALSE} column still counts as in
+use), so leave it \code{NA} (rather than \code{FALSE}) where the mechanism should not
+apply.  The column must be logical and must exist in the data; anything
+else is an error.  Only one of \code{exclude_half.life} and
+\code{include_half.life} may be in use for a given interval.  See the
+"Half-Life Calculation" vignette for more details on the use of these
+arguments.}
 
-\item{exclude_half.life}{An optional boolean vector of the concentration
-measurements to exclude from the half-life calculation.}
+\item{lloq}{An optional scalar or vector (the same length as \code{conc}) with the
+lower limit of quantification passed to \code{\link[=pk.calc.half.life]{pk.calc.half.life()}} for the Tobit
+half-life method.}
 
 \item{subject}{Subject identifiers (used for sparse calculations)}
 
