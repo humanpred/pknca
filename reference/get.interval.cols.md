@@ -22,7 +22,9 @@ Other Interval specifications:
 [`add.interval.col()`](https://humanpred.github.io/pknca/reference/add.interval.col.md),
 [`check.interval.specification()`](https://humanpred.github.io/pknca/reference/check.interval.specification.md),
 [`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
-[`get.parameter.deps()`](https://humanpred.github.io/pknca/reference/get.parameter.deps.md)
+[`get.parameter.deps()`](https://humanpred.github.io/pknca/reference/get.parameter.deps.md),
+[`interval_add_impute()`](https://humanpred.github.io/pknca/reference/interval_add_impute.md),
+[`interval_add_param()`](https://humanpred.github.io/pknca/reference/interval_add_param.md)
 
 ## Examples
 

@@ -42,6 +42,7 @@
 <url><loc>https://humanpred.github.io/pknca/reference/PKNCAresults.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/add.interval.col.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/addProvenance.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/add_impute_method.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/adj.r.squared.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/any_sparse_dense_in_interval.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/as.data.frame.PKNCAresults.html</loc></url>
@@ -56,6 +57,7 @@
 <url><loc>https://humanpred.github.io/pknca/reference/assert_lambdaz.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/assert_number_between.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/assert_numeric_between.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/assert_param_name.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/assert_unit.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/auc_integrate.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/be_assess.html</loc></url>
@@ -109,6 +111,9 @@
 <url><loc>https://humanpred.github.io/pknca/reference/inner_join.PKNCAresults.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/interp.extrap.conc.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/interp_extrap_conc_method.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/interval_add_impute.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/interval_add_param.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/interval_longer.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/is_sparse_pk.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/model.frame.PKNCAconc.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/mutate.PKNCAresults.html</loc></url>

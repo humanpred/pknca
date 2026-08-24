@@ -207,6 +207,9 @@ and bug reports.
 - [`assert_numeric_between()`](https://humanpred.github.io/pknca/reference/assert_numeric_between.md)
   : Confirm that a value is greater than another value
 
+- [`assert_param_name()`](https://humanpred.github.io/pknca/reference/assert_param_name.md)
+  : Assert that a character vector only contains PKNCA parameter names
+
 - [`assert_unit_col()`](https://humanpred.github.io/pknca/reference/assert_unit.md)
   [`assert_unit_value()`](https://humanpred.github.io/pknca/reference/assert_unit.md)
   [`assert_unit()`](https://humanpred.github.io/pknca/reference/assert_unit.md)
@@ -431,6 +434,15 @@ and bug reports.
   [`interpolate_conc_log()`](https://humanpred.github.io/pknca/reference/interp_extrap_conc_method.md)
   [`extrapolate_conc_lambdaz()`](https://humanpred.github.io/pknca/reference/interp_extrap_conc_method.md)
   : Interpolate or extrapolate concentrations using the provided method
+
+- [`interval_add_impute()`](https://humanpred.github.io/pknca/reference/interval_add_impute.md)
+  [`interval_remove_impute()`](https://humanpred.github.io/pknca/reference/interval_add_impute.md)
+  : Add or remove an imputation method in the intervals of a PKNCAdata
+  object
+
+- [`interval_add_param()`](https://humanpred.github.io/pknca/reference/interval_add_param.md)
+  [`interval_remove_param()`](https://humanpred.github.io/pknca/reference/interval_add_param.md)
+  : Add or remove parameters in the intervals of a PKNCAdata object
 
 - [`is_sparse_pk()`](https://humanpred.github.io/pknca/reference/is_sparse_pk.md)
   : Is a PKNCA object used for sparse PK?
