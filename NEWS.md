@@ -6,6 +6,10 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `add.interval.col()` gains `formula` and `formula_note` arguments giving the
+  calculation as a LaTeX expression.  They are shown in the parameter table in
+  `vignette("v03-selection-of-calculation-intervals")` (#507).
+
 * Requesting a parameter that needs a sample volume (`ae`, `fe`, `volpk`,
   `clr.last`, and similar) when no `volume` was given to `PKNCAconc()` is now
   an error naming those parameters, rather than silently reporting them as

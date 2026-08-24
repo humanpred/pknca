@@ -255,7 +255,9 @@ add.interval.col("aucint.last",
                  desc="AUC from T1 to T2 (zero extrap)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
                  pptestcd_cdisc="AUCINT",
-                 pptest_cdisc="AUC from T1 to T2")
+                 pptest_cdisc="AUC from T1 to T2",
+                 formula="$AUC_{\\text{int,last}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 add.interval.col("aucint.last.dose",
                  FUN="pk.calc.aucint.last",
@@ -265,7 +267,9 @@ add.interval.col("aucint.last.dose",
                  desc="AUC T1 to T2, dose-aware (zero extrap)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
                  pptestcd_cdisc="AUCINTD",
-                 pptest_cdisc="AUC from T1 to T2 Normalized by Dose")
+                 pptest_cdisc="AUC from T1 to T2 Normalized by Dose",
+                 formula="$AUC_{\\text{int,last,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 add.interval.col("aucint.all",
                  FUN="pk.calc.aucint.all",
@@ -275,7 +279,9 @@ add.interval.col("aucint.all",
                  desc="AUC from T1 to T2 (AUCall extrap)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
                  pptestcd_cdisc="AUCINTA",
-                 pptest_cdisc="AUCint (based on AUCall extrapolation)")
+                 pptest_cdisc="AUCint (based on AUCall extrapolation)",
+                 formula="$AUC_{\\text{int,all}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 add.interval.col("aucint.all.dose",
                  FUN="pk.calc.aucint.all",
@@ -285,7 +291,9 @@ add.interval.col("aucint.all.dose",
                  desc="AUC T1 to T2, dose-aware (AUCall)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
                  pptestcd_cdisc="AUCINTAD",
-                 pptest_cdisc="AUCint (based on AUCall extrapolation, dose-aware)")
+                 pptest_cdisc="AUCint (based on AUCall extrapolation, dose-aware)",
+                 formula="$AUC_{\\text{int,all,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 add.interval.col("aucint.inf.obs",
                  FUN="pk.calc.aucint.inf.obs",
@@ -296,7 +304,9 @@ add.interval.col("aucint.inf.obs",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
                  depends=c("lambda.z", "clast.obs"),
                  pptestcd_cdisc="AUCINTIS",
-                 pptest_cdisc="AUCint (based on AUCinf,obs extrapolation)")
+                 pptest_cdisc="AUCint (based on AUCinf,obs extrapolation)",
+                 formula="$AUC_{\\text{int,}\\infty\\text{,obs}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 add.interval.col("aucint.inf.obs.dose",
                  FUN="pk.calc.aucint.inf.obs",
@@ -307,7 +317,9 @@ add.interval.col("aucint.inf.obs.dose",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
                  depends=c("lambda.z", "clast.obs"),
                  pptestcd_cdisc="AUCINTID",
-                 pptest_cdisc="AUCint (based on AUCinf,obs extrapolation, dose-aware)")
+                 pptest_cdisc="AUCint (based on AUCinf,obs extrapolation, dose-aware)",
+                 formula="$AUC_{\\text{int,}\\infty\\text{,obs,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 add.interval.col("aucint.inf.pred",
                  FUN="pk.calc.aucint.inf.pred",
@@ -318,7 +330,9 @@ add.interval.col("aucint.inf.pred",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
                  depends=c("lambda.z", "clast.pred"),
                  pptestcd_cdisc="AUCINTIP",
-                 pptest_cdisc="AUCint (based on AUCinf,pred extrapolation)")
+                 pptest_cdisc="AUCint (based on AUCinf,pred extrapolation)",
+                 formula="$AUC_{\\text{int,}\\infty\\text{,pred}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 add.interval.col("aucint.inf.pred.dose",
                  FUN="pk.calc.aucint.inf.pred",
@@ -329,7 +343,9 @@ add.interval.col("aucint.inf.pred.dose",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
                  depends=c("lambda.z", "clast.pred"),
                  pptestcd_cdisc="AUCINTPD",
-                 pptest_cdisc="AUCint (based on AUCinf,pred extrapolation, dose-aware)")
+                 pptest_cdisc="AUCint (based on AUCinf,pred extrapolation, dose-aware)",
+                 formula="$AUC_{\\text{int,}\\infty\\text{,pred,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 
 #' @describeIn pk.calc.auxcint Calculate AUMC over an interval
@@ -408,7 +424,9 @@ add.interval.col("aumcint.last",
                  unit_type="aumc",
                  pretty_name="AUMCint (based on AUMClast extrapolation)",
                  desc="AUMC from T1 to T2 (zero extrap)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL))
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
+                 formula="$AUMC_{\\text{int,last}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 # aumcint.last.dose (WITH dose awareness)
 add.interval.col("aumcint.last.dose",
@@ -417,7 +435,9 @@ add.interval.col("aumcint.last.dose",
                  unit_type="aumc",
                  pretty_name="AUMCint (based on AUMClast extrapolation, dose-aware)",
                  desc="AUMC T1 to T2, dose-aware (zero extrap)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"))
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
+                 formula="$AUMC_{\\text{int,last,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 # aumcint.all (without dose awareness)
 add.interval.col("aumcint.all",
@@ -426,7 +446,9 @@ add.interval.col("aumcint.all",
                  unit_type="aumc",
                  pretty_name="AUMCint (based on AUMCall extrapolation)",
                  desc="AUMC from T1 to T2 (AUMCall extrap)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL))
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
+                 formula="$AUMC_{\\text{int,all}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 # aumcint.all.dose (WITH dose awareness)
 add.interval.col("aumcint.all.dose",
@@ -435,7 +457,9 @@ add.interval.col("aumcint.all.dose",
                  unit_type="aumc",
                  pretty_name="AUMCint (based on AUMCall extrapolation, dose-aware)",
                  desc="AUMC T1 to T2, dose-aware (AUMCall)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"))
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
+                 formula="$AUMC_{\\text{int,all,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 # aumcint.inf.obs (without dose awareness)
 add.interval.col("aumcint.inf.obs",
@@ -445,7 +469,9 @@ add.interval.col("aumcint.inf.obs",
                  pretty_name="AUMCint (based on AUMCinf,obs extrapolation)",
                  desc="AUMC from T1 to T2 (AUMCinf,obs extrap)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
-                 depends=c("lambda.z", "clast.obs"))
+                 depends=c("lambda.z", "clast.obs"),
+                 formula="$AUMC_{\\text{int,}\\infty\\text{,obs}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 # aumcint.inf.obs.dose (WITH dose awareness)
 add.interval.col("aumcint.inf.obs.dose",
@@ -455,7 +481,9 @@ add.interval.col("aumcint.inf.obs.dose",
                  pretty_name="AUMCint (based on AUMCinf,obs extrapolation, dose-aware)",
                  desc="AUMC T1 to T2, dose-aware (AUMCinf,obs)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
-                 depends=c("lambda.z", "clast.obs"))
+                 depends=c("lambda.z", "clast.obs"),
+                 formula="$AUMC_{\\text{int,}\\infty\\text{,obs,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 # aumcint.inf.pred (without dose awareness)
 add.interval.col("aumcint.inf.pred",
@@ -465,7 +493,9 @@ add.interval.col("aumcint.inf.pred",
                  pretty_name="AUMCint (based on AUMCinf,pred extrapolation)",
                  desc="AUMC from T1 to T2 (AUMCinf,pred extrap)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
-                 depends=c("lambda.z", "clast.pred"))
+                 depends=c("lambda.z", "clast.pred"),
+                 formula="$AUMC_{\\text{int,}\\infty\\text{,pred}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 # aumcint.inf.pred.dose (WITH dose awareness)
 add.interval.col("aumcint.inf.pred.dose",
@@ -475,7 +505,9 @@ add.interval.col("aumcint.inf.pred.dose",
                  pretty_name="AUMCint (based on AUMCinf,pred extrapolation, dose-aware)",
                  desc="AUMC T1 to T2, dose-aware (AUMCinf,pred)",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
-                 depends=c("lambda.z", "clast.pred"))
+                 depends=c("lambda.z", "clast.pred"),
+                 formula="$AUMC_{\\text{int,}\\infty\\text{,pred,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 # =============================================================================
 # SET SUMMARY STATISTICS - Count (16)

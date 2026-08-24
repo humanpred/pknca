@@ -16,7 +16,9 @@ add.interval.col(
   formalsmap = list(),
   datatype = c("interval", "individual", "population"),
   pptestcd_cdisc = NULL,
-  pptest_cdisc = NULL
+  pptest_cdisc = NULL,
+  formula = NULL,
+  formula_note = NULL
 )
 }
 \arguments{
@@ -63,6 +65,13 @@ by route (e.g. \code{list(route = list(extravascular = "CLF/FO", intravascular =
 \item{pptest_cdisc}{The CDISC PPTEST name for this parameter.  Can be a
 character string or a named list (same structure as \code{pptestcd_cdisc}).
 Defaults to \code{desc} if not provided.}
+
+\item{formula}{Character value providing a LaTeX expression for how the
+parameter is calculated.  Optional and used only for documentation.}
+
+\item{formula_note}{Character value providing additional context about the
+formula (e.g. assumptions or method details).  Displayed alongside the
+formula in documentation tables.}
 }
 \value{
 NULL (Calling this function has a side effect of changing the

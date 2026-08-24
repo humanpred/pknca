@@ -183,7 +183,9 @@ test_that("add.interval.col", {
       depends=NULL,
       datatype="interval",
       pptestcd_cdisc="a",
-      pptest_cdisc="test addition"
+      pptest_cdisc="test addition",
+      formula=NULL,
+      formula_note=NULL
     )
   )
   expect_equal(
@@ -202,7 +204,9 @@ test_that("add.interval.col", {
       depends=NULL,
       datatype="interval",
       pptestcd_cdisc="a",
-      pptest_cdisc="test addition"
+      pptest_cdisc="test addition",
+      formula=NULL,
+      formula_note=NULL
     )
   )
   expect_equal(
@@ -221,7 +225,9 @@ test_that("add.interval.col", {
       depends=NULL,
       datatype="interval",
       pptestcd_cdisc="a",
-      pptest_cdisc="test addition"
+      pptest_cdisc="test addition",
+      formula=NULL,
+      formula_note=NULL
     )
   )
 })

@@ -15,7 +15,8 @@ add.interval.col("volpk",
                  pretty_name="Total Urine Volume",
                  desc="Sum of urine volumes for interval",
                  pptestcd_cdisc="VOLPK",
-                 pptest_cdisc="Volume of PK sample")
+                 pptest_cdisc="Volume of PK sample",
+                 formula="$V_{\\text{urine}} = \\sum_i V_i$")
 
 #' Calculate amount excreted (typically in urine or feces)
 #'
@@ -55,7 +56,8 @@ add.interval.col("ae",
                  pretty_name="Amount excreted",
                  desc="Amount excreted (urine/feces)",
                  pptestcd_cdisc="RCAMINT",
-                 pptest_cdisc="Amt Rec from T1 to T2")
+                 pptest_cdisc="Amt Rec from T1 to T2",
+                 formula="$AE = \\sum_i C_i V_i$")
 
 #' Calculate renal clearance
 #'
@@ -84,7 +86,8 @@ add.interval.col("clr.last",
                  depends="ae",
                  desc="Renal clearance, AUClast",
                  pptestcd_cdisc="RENALCL",
-                 pptest_cdisc="Renal CL")
+                 pptest_cdisc="Renal CL",
+                 formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$")
 
 add.interval.col("clr.obs",
                  FUN="pk.calc.clr",
@@ -95,7 +98,8 @@ add.interval.col("clr.obs",
                  depends="ae",
                  desc="Renal clearance, AUCinf,obs",
                  pptestcd_cdisc="RENALCL",
-                 pptest_cdisc="Renal CL")
+                 pptest_cdisc="Renal CL",
+                 formula="$CL_{R,\\text{obs}} = \\frac{AE}{AUC_{\\infty,\\text{obs}}}$")
 
 add.interval.col("clr.pred",
                  FUN="pk.calc.clr",
@@ -106,7 +110,8 @@ add.interval.col("clr.pred",
                  depends="ae",
                  desc="Renal clearance, AUCinf,pred",
                  pptestcd_cdisc="RENALCL",
-                 pptest_cdisc="Renal CL")
+                 pptest_cdisc="Renal CL",
+                 formula="$CL_{R,\\text{pred}} = \\frac{AE}{AUC_{\\infty,\\text{pred}}}$")
 
 
 #' Calculate fraction excreted (typically in urine or feces)
@@ -135,7 +140,8 @@ add.interval.col("fe",
                  depends="ae",
                  desc="Fraction of dose excreted",
                  pptestcd_cdisc="FREXINT",
-                 pptest_cdisc="Fract Excr from T1 to T2")
+                 pptest_cdisc="Fract Excr from T1 to T2",
+                 formula="$f_e = \\frac{AE}{Dose}$")
 
 #' Calculate the midpoint collection time of the last measurable excretion rate
 #'
@@ -179,7 +185,8 @@ add.interval.col("ertlst",
                  pretty_name="Tlast excretion rate",
                  desc="Midpoint time of last excr rate",
                  pptestcd_cdisc="ERTLST",
-                 pptest_cdisc="Time of Last Excretion Rate")
+                 pptest_cdisc="Time of Last Excretion Rate",
+                 formula="$T_{\\text{last,ER}} = t_{\\text{mid},i: ER_i > 0, i = \\max}$")
 
 
 #' Calculate the maximum excretion rate
@@ -223,7 +230,8 @@ add.interval.col("ermax",
                  pretty_name="Maximum excretion rate",
                  desc="Maximum excretion rate",
                  pptestcd_cdisc="ERMAX",
-                 pptest_cdisc="Max Excretion Rate")
+                 pptest_cdisc="Max Excretion Rate",
+                 formula="$ER_{\\max} = \\max_i \\left( \\frac{C_i V_i}{d_i} \\right)$")
 
 
 #' Calculate the midpoint collection time of the maximum excretion rate
@@ -274,7 +282,8 @@ add.interval.col("ertmax",
                  pretty_name="Tmax excretion rate",
                  desc="Midpoint time of max excr rate",
                  pptestcd_cdisc="ERTMAX",
-                 pptest_cdisc="Midpoint of Interval of Maximum ER")
+                 pptest_cdisc="Midpoint of Interval of Maximum ER",
+                 formula="$T_{\\max,ER} = t_{\\text{mid},i: ER_i = ER_{\\max}}$")
 
 PKNCA.set.summary(
   name = c("volpk", "ae", "clr.last", "clr.obs", "clr.pred", "fe", "ermax"),

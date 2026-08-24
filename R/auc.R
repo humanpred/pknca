@@ -346,7 +346,8 @@ add.interval.col("aucinf.obs",
                  desc="AUC start to inf, obs Clast extrap",
                  depends=c("lambda.z", "clast.obs"),
                  pptestcd_cdisc="AUCIFO",
-                 pptest_cdisc="AUC Infinity Obs")
+                 pptest_cdisc="AUC Infinity Obs",
+                 formula="$AUC_{\\infty,\\text{obs}} = AUC_{0-\\text{last}} + \\frac{C_{\\text{last,obs}}}{\\lambda_z}$")
 
 add.interval.col("aucinf.pred",
                  FUN="pk.calc.auc.inf.pred",
@@ -356,7 +357,8 @@ add.interval.col("aucinf.pred",
                  desc="AUC start to inf, pred Clast extrap",
                  depends=c("lambda.z", "clast.pred"),
                  pptestcd_cdisc="AUCIFP",
-                 pptest_cdisc="AUC Infinity Pred")
+                 pptest_cdisc="AUC Infinity Pred",
+                 formula="$AUC_{\\infty,\\text{pred}} = AUC_{0-\\text{last}} + \\frac{C_{\\text{last,pred}}}{\\lambda_z}$")
 
 add.interval.col("auclast",
                  FUN="pk.calc.auc.last",
@@ -365,7 +367,9 @@ add.interval.col("auclast",
                  pretty_name="AUClast",
                  desc="AUC start to last conc above LOQ",
                  pptestcd_cdisc="AUCLST",
-                 pptest_cdisc="AUC to Last Nonzero Conc")
+                 pptest_cdisc="AUC to Last Nonzero Conc",
+                 formula="$AUC_{\\text{last}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule (linear-up/log-down by default)")
 
 add.interval.col("aucall",
                  FUN="pk.calc.auc.all",
@@ -374,7 +378,9 @@ add.interval.col("aucall",
                  pretty_name="AUCall",
                  desc="AUClast plus triangle, 0 at BLQ",
                  pptestcd_cdisc="AUCALL",
-                 pptest_cdisc="AUC All")
+                 pptest_cdisc="AUC All",
+                 formula="$AUC_{\\text{all}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule (linear-up/log-down by default)")
 
 add.interval.col("aumcinf.obs",
                  FUN="pk.calc.aumc.inf.obs",
@@ -384,7 +390,8 @@ add.interval.col("aumcinf.obs",
                  desc="AUMC start to inf, obs Clast extrap",
                  depends=c("lambda.z", "clast.obs"),
                  pptestcd_cdisc="AUMCIFO",
-                 pptest_cdisc="AUMC Infinity Obs")
+                 pptest_cdisc="AUMC Infinity Obs",
+                 formula="$AUMC_{\\infty,\\text{obs}} = AUMC_{0-\\text{last}} + \\frac{C_{\\text{last,obs}} T_{\\text{last}}}{\\lambda_z} + \\frac{C_{\\text{last,obs}}}{\\lambda_z^2}$")
 
 add.interval.col("aumcinf.pred",
                  FUN="pk.calc.aumc.inf.pred",
@@ -394,7 +401,8 @@ add.interval.col("aumcinf.pred",
                  desc="AUMC start to inf, pred Clast extrap",
                  depends=c("lambda.z", "clast.pred"),
                  pptestcd_cdisc="AUMCIFP",
-                 pptest_cdisc="AUMC Infinity Pred")
+                 pptest_cdisc="AUMC Infinity Pred",
+                 formula="$AUMC_{\\infty,\\text{pred}} = AUMC_{0-\\text{last}} + \\frac{C_{\\text{last,pred}} T_{\\text{last}}}{\\lambda_z} + \\frac{C_{\\text{last,pred}}}{\\lambda_z^2}$")
 
 add.interval.col("aumclast",
                  FUN="pk.calc.aumc.last",
@@ -403,7 +411,9 @@ add.interval.col("aumclast",
                  pretty_name="AUMC,last",
                  desc="AUMC start to last conc above LOQ",
                  pptestcd_cdisc="AUMCLST",
-                 pptest_cdisc="AUMC to Last Nonzero Conc")
+                 pptest_cdisc="AUMC to Last Nonzero Conc",
+                 formula="$AUMC_{\\text{last}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule (linear-up/log-down by default)")
 
 add.interval.col("aumcall",
                  FUN="pk.calc.aumc.all",
@@ -412,7 +422,9 @@ add.interval.col("aumcall",
                  pretty_name="AUMC,all",
                  desc="AUMClast plus triangle moment, 0 at BLQ",
                  pptestcd_cdisc="AUMCALL",
-                 pptest_cdisc="AUMC All")
+                 pptest_cdisc="AUMC All",
+                 formula="$AUMC_{\\text{all}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule (linear-up/log-down by default)")
 
 PKNCA.set.summary(
   name=

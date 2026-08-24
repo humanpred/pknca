@@ -89,7 +89,9 @@ add.interval.col("time_above",
                  pretty_name="Time above Concentration",
                  desc="Time above a given concentration",
                  pptestcd_cdisc="TAT",
-                 pptest_cdisc="Time Above Threshold")
+                 pptest_cdisc="Time Above Threshold",
+                 formula="$T_{\\text{above}} = \\sum \\Delta t_{i: C_i \\geq C_{\\text{ref}}}$",
+                 formula_note="Crossing times interpolated using the AUC method (linear or log-linear)")
 PKNCA.set.summary(
   name="time_above",
   description="arithmetic mean and standard deviation",
