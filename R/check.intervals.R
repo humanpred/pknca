@@ -193,16 +193,29 @@ get.parameter.deps_helper_searchdeps <- function(current, funmap, all_intervals)
   }
 }
 
+# The inputs a calculation can require, each mapped to the source-input names
+# that show the requirement.  Every entry becomes a cached `requires_<name>`
+# value on the registry entry, so a new input type is added here and nowhere
+# else.
+pknca_requires_inputs <-
+  list(
+    dose_amt = c("dose", "dose.group"),
+    dose_time = c("time.dose", "time.dose.group"),
+    dose_dur = c("duration.dose", "duration.dose.group"),
+    volume = c("volume", "volume.group")
+  )
+
 # Fill in the requires_* values for `params` and cache them in the registry,
 # computing only the ones that are not already known.  Deferred to first use
 # because a parameter may be registered before what it depends on.
 set_requires_inputs <- function(params) {
   all_intervals <- get.interval.cols()
   params <- intersect(params, names(all_intervals))
+  requires_names <- paste0("requires_", names(pknca_requires_inputs))
   unknown <-
     params[vapply(
       X = params,
-      FUN = function(x) is.null(all_intervals[[x]][["requires_dose_amt"]]),
+      FUN = function(x) !all(requires_names %in% names(all_intervals[[x]])),
       FUN.VALUE = TRUE
     )]
   if (length(unknown) > 0) {
@@ -211,14 +224,10 @@ set_requires_inputs <- function(params) {
         parameter_source_inputs(
           current_param, all_intervals = all_intervals, optional_dose = FALSE
         )
-      all_intervals[[current_param]][["requires_dose_amt"]] <-
-        any(c("dose", "dose.group") %in% current_src)
-      all_intervals[[current_param]][["requires_dose_time"]] <-
-        any(c("time.dose", "time.dose.group") %in% current_src)
-      all_intervals[[current_param]][["requires_dose_dur"]] <-
-        any(c("duration.dose", "duration.dose.group") %in% current_src)
-      all_intervals[[current_param]][["requires_volume"]] <-
-        any(c("volume", "volume.group") %in% current_src)
+      for (current_input in names(pknca_requires_inputs)) {
+        all_intervals[[current_param]][[paste0("requires_", current_input)]] <-
+          any(pknca_requires_inputs[[current_input]] %in% current_src)
+      }
     }
     assign("interval.cols", all_intervals, envir = .PKNCAEnv)
   }
@@ -237,59 +246,50 @@ requested_parameters <- function(intervals) {
   candidates[keep]
 }
 
-# Which requested parameters cannot be calculated from the dosing information
-# that was given.  Dose amount, time, and duration are supplied independently
-# (e.g. `PKNCAdose(data, ~time)` gives timing without an amount), so each is
-# checked separately: c0 needs the dose time but not the amount, and ceoi needs
-# the duration.
-uncalculable_without_dose <- function(intervals, o_dose) {
+# Which requested parameters need any of `absent`, the inputs that were not
+# given.  Names are those of `pknca_requires_inputs`.
+uncalculable_without <- function(intervals, absent) {
+  checkmate::assert_subset(absent, names(pknca_requires_inputs))
   params <- requested_parameters(intervals)
-  if (length(params) == 0) {
-    return(character(0))
-  }
-  has_dose <- !identical(o_dose, NA)
-  have_amt <- has_dose && length(o_dose$columns$dose) > 0
-  have_time <- has_dose && length(o_dose$columns$time) > 0
-  have_dur <- has_dose && length(o_dose$columns$duration) > 0
-  if (have_amt && have_time && have_dur) {
+  if (length(params) == 0 || length(absent) == 0) {
     return(character(0))
   }
   specs <- set_requires_inputs(params)
   keep <-
     vapply(
       X = specs,
-      FUN = function(x) {
-        (isTRUE(x[["requires_dose_amt"]]) && !have_amt) ||
-          (isTRUE(x[["requires_dose_time"]]) && !have_time) ||
-          (isTRUE(x[["requires_dose_dur"]]) && !have_dur)
-      },
+      FUN = function(x) any(unlist(x[paste0("requires_", absent)])),
       FUN.VALUE = TRUE
     )
   sort(names(specs)[keep])
 }
 
-# Which requested parameters need a sample volume that the data does not have.
-# A PKNCAconc object always carries a volume column, filled with NA when none
-# was given, so absence is detected by value rather than by name.  Volumes
-# missing for only some measurements are reported per-interval by the
-# calculations themselves.
-uncalculable_without_volume <- function(intervals, o_conc) {
-  params <- requested_parameters(intervals)
-  if (length(params) == 0) {
-    return(character(0))
-  }
-  volume <- getAttributeColumn(o_conc, attr_name = "volume", warn_missing = character())
-  if (!is.null(volume) && !all(is.na(volume[[1]]))) {
-    return(character(0))
-  }
-  specs <- set_requires_inputs(params)
-  keep <-
-    vapply(
-      X = specs,
-      FUN = function(x) isTRUE(x[["requires_volume"]]),
-      FUN.VALUE = TRUE
+# Dose inputs that were not given.  Amount, time, and duration are supplied
+# independently (e.g. `PKNCAdose(data, ~time)` gives timing without an amount),
+# so each is reported separately: c0 needs the dose time but not the amount,
+# and ceoi needs the duration.
+absent_dose_inputs <- function(o_dose) {
+  has_dose <- !identical(o_dose, NA)
+  present <-
+    c(
+      dose_amt = has_dose && length(o_dose$columns$dose) > 0,
+      dose_time = has_dose && length(o_dose$columns$time) > 0,
+      dose_dur = has_dose && length(o_dose$columns$duration) > 0
     )
-  sort(names(specs)[keep])
+  names(present)[!present]
+}
+
+# Concentration inputs that were not given.  A PKNCAconc object always carries
+# a volume column, filled with NA when none was given, so absence is detected
+# by value rather than by name.  Volumes missing for only some measurements are
+# reported per-interval by the calculations themselves.
+absent_conc_inputs <- function(o_conc) {
+  volume <- getAttributeColumn(o_conc, attr_name = "volume", warn_missing = character())
+  if (is.null(volume) || all(is.na(volume[[1]]))) {
+    "volume"
+  } else {
+    character(0)
+  }
 }
 
 # The inputs pk.nca.interval() supplies directly rather than calculating, so a
