@@ -185,7 +185,9 @@ test_that("add.interval.col", {
       pptestcd_cdisc="a",
       pptest_cdisc="test addition",
       formula=NULL,
-      formula_note=NULL
+      formula_note=NULL,
+      tier="uncommon",
+      selection=list()
     )
   )
   expect_equal(
@@ -206,7 +208,9 @@ test_that("add.interval.col", {
       pptestcd_cdisc="a",
       pptest_cdisc="test addition",
       formula=NULL,
-      formula_note=NULL
+      formula_note=NULL,
+      tier="uncommon",
+      selection=list()
     )
   )
   expect_equal(
@@ -227,7 +231,9 @@ test_that("add.interval.col", {
       pptestcd_cdisc="a",
       pptest_cdisc="test addition",
       formula=NULL,
-      formula_note=NULL
+      formula_note=NULL,
+      tier="uncommon",
+      selection=list()
     )
   )
 })

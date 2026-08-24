@@ -1,0 +1,279 @@
+# Classification of NCA parameters for interval selection
+#
+# Choosing the parameters to calculate for an interval needs to know, for each
+# parameter, what it *is* (the concept), how commonly it is reported (the
+# tier), and which contexts it applies to (route, dosing, sample type).
+#
+# Most of that is already implied by the registry and is derived here rather
+# than declared:
+#
+#   sample type  requires_volume, cached by set_requires_inputs()
+#   route        the parameters downstream of `c0` plus those needing a dose
+#                duration are the intravenous family
+#   dosing       the parameters downstream of an extrapolation to infinity are
+#                single-dose; the ones downstream of the multiple-dose seeds
+#                are multiple-dose
+#   AUC basis    get.parameter.deps() of each AUC
+#
+# What cannot be derived is declared:  the concept lives on the calculation
+# function as an attribute, and `tier` plus the handful of route and dosing
+# exceptions are arguments to add.interval.col().
+#
+# Nothing here raises an error for a parameter it cannot classify.  A parameter
+# registered by another package is simply never selected automatically; it
+# remains available by name.  The completeness of PKNCA's own classification is
+# enforced by its test suite, not at run time.
+
+#' Concepts, tiers, and contexts used to classify NCA parameters
+#'
+#' @returns `pknca_concepts()` gives the concept names PKNCA uses,
+#'   `pknca_tiers()` the reporting tiers, `pknca_routes()` the routes of
+#'   administration, `pknca_dosing()` the dosing patterns, and
+#'   `pknca_sample_types()` the sample collection types.
+#' @details A `tier` of `"common"` marks a parameter that belongs in a default
+#'   report for at least one context; `"uncommon"` marks one that is calculated
+#'   only when asked for by name.  `"uncommon"` is the default, so a parameter
+#'   registered without a tier is never selected automatically.
+#' @seealso [pknca_concept()], [add.interval.col()]
+#' @examples
+#' pknca_concepts()
+#' @family Interval specifications
+#' @export
+pknca_concepts <- function() {
+  pknca_concept_choices
+}
+
+#' @rdname pknca_concepts
+#' @export
+pknca_tiers <- function() {
+  pknca_tier_choices
+}
+
+#' @rdname pknca_concepts
+#' @export
+pknca_routes <- function() {
+  pknca_route_choices
+}
+
+#' @rdname pknca_concepts
+#' @export
+pknca_dosing <- function() {
+  pknca_dosing_choices
+}
+
+#' @rdname pknca_concepts
+#' @export
+pknca_sample_types <- function() {
+  pknca_sample_type_choices
+}
+
+# The roots of extrapolation to infinity.  Everything calculated from one of
+# these needs data after the last dose, so it belongs to single-dose analysis.
+pknca_infinity_roots <- c(
+  "aucinf.obs", "aucinf.pred",
+  "aucint.inf.obs", "aucint.inf.pred",
+  "aucivinf.obs", "aucivinf.pred"
+)
+
+# Union of get.parameter.deps() over several parameters, skipping any that are
+# not registered (another package may have removed one).
+deps_union <- function(params, all_intervals) {
+  params <- intersect(params, names(all_intervals))
+  if (length(params) == 0) {
+    return(character(0))
+  }
+  sort(unique(unlist(lapply(X = params, FUN = get.parameter.deps))))
+}
+
+# Resolve the concept for every parameter at once:  the declared concept, then
+# the calculation function's attribute, then the concept of what it depends on
+# (which is how the dose-normalized parameters and the half-life diagnostics
+# get theirs).
+classify_concepts <- function(all_intervals) {
+  ret <- stats::setNames(rep(NA_character_, length(all_intervals)), names(all_intervals))
+  for (n in names(all_intervals)) {
+    declared <- all_intervals[[n]]$selection$concept
+    if (!is.null(declared)) {
+      ret[[n]] <- declared
+      next
+    }
+    fun_name <- all_intervals[[n]]$FUN
+    if (length(fun_name) == 1 && !is.na(fun_name)) {
+      fun <- tryCatch(get(fun_name), error = function(e) NULL)
+      from_fun <- if (is.null(fun)) NULL else pknca_concept(fun)
+      if (!is.null(from_fun)) {
+        ret[[n]] <- from_fun
+      }
+    }
+  }
+  # Inherit from `depends` for anything still unresolved.  Repeat so that a
+  # chain (a diagnostic of a dose-normalized parameter, say) settles.
+  for (i in seq_len(3)) {
+    unresolved <- names(ret)[is.na(ret)]
+    if (length(unresolved) == 0) {
+      break
+    }
+    for (n in unresolved) {
+      inherited <- unique(stats::na.omit(ret[all_intervals[[n]]$depends]))
+      if (length(inherited) == 1) {
+        ret[[n]] <- inherited
+      }
+    }
+  }
+  ret
+}
+
+# Which routes each parameter applies to.  Declared wins; otherwise anything
+# calculated from `c0` (intravenous back-extrapolation) or needing a dose
+# duration is intravenous only, and everything else applies to any route.
+classify_routes <- function(all_intervals) {
+  specs <- set_requires_inputs(names(all_intervals))
+  needs_duration <-
+    names(specs)[vapply(specs, function(x) isTRUE(x$requires_dose_dur), TRUE)]
+  iv_family <- union(deps_union("c0", all_intervals), needs_duration)
+  lapply(
+    X = stats::setNames(names(all_intervals), names(all_intervals)),
+    FUN = function(n) {
+      declared <- all_intervals[[n]]$selection$route
+      if (!is.null(declared)) {
+        declared
+      } else if (n %in% iv_family) {
+        c("iv_bolus", "iv_infusion")
+      } else {
+        pknca_routes()
+      }
+    }
+  )
+}
+
+# Which dosing patterns each parameter applies to.  Declared wins and
+# propagates to everything calculated from the declared parameter, so the small
+# set of multiple-dose seeds carries its whole family.
+classify_dosing <- function(all_intervals) {
+  declared <-
+    vapply(
+      X = all_intervals,
+      FUN = function(x) !is.null(x$selection$dosing),
+      FUN.VALUE = TRUE
+    )
+  seeds <- names(all_intervals)[declared]
+  multiple_seeds <-
+    seeds[vapply(
+      X = seeds,
+      FUN = function(n) !("single" %in% all_intervals[[n]]$selection$dosing),
+      FUN.VALUE = TRUE
+    )]
+  multiple_family <- deps_union(multiple_seeds, all_intervals)
+  infinity_family <- deps_union(pknca_infinity_roots, all_intervals)
+  lapply(
+    X = stats::setNames(names(all_intervals), names(all_intervals)),
+    FUN = function(n) {
+      if (!is.null(all_intervals[[n]]$selection$dosing)) {
+        all_intervals[[n]]$selection$dosing
+      } else if (n %in% multiple_family) {
+        c("multiple", "steady_state")
+      } else if (n %in% infinity_family) {
+        "single"
+      } else {
+        pknca_dosing()
+      }
+    }
+  )
+}
+
+# Spot (blood, plasma, serum) or interval (urine, feces) collection.  A
+# parameter that needs a sample volume is an interval collection.
+classify_sample_types <- function(all_intervals) {
+  specs <- set_requires_inputs(names(all_intervals))
+  vapply(
+    X = stats::setNames(names(all_intervals), names(all_intervals)),
+    FUN = function(n) if (isTRUE(specs[[n]]$requires_volume)) "interval" else "spot",
+    FUN.VALUE = ""
+  )
+}
+
+# Classify every registered parameter, caching the result until the registry
+# changes.  add.interval.col() drops the cache.
+parameter_classification <- function() {
+  cached <- get0("parameter_classification", envir = .PKNCAEnv)
+  if (!is.null(cached)) {
+    return(cached)
+  }
+  all_intervals <- get.interval.cols()
+  all_intervals <- all_intervals[setdiff(names(all_intervals), c("start", "end"))]
+  ret <-
+    list(
+      concept = classify_concepts(all_intervals),
+      tier = vapply(all_intervals, function(x) x$tier %||% "uncommon", ""),
+      route = classify_routes(all_intervals),
+      dosing = classify_dosing(all_intervals),
+      sample_type = classify_sample_types(all_intervals),
+      sparse = vapply(all_intervals, function(x) isTRUE(x$sparse), TRUE),
+      dose_normalized =
+        vapply(
+          all_intervals,
+          function(x) identical(x$FUN, "pk.calc.dn"),
+          TRUE
+        )
+    )
+  assign("parameter_classification", ret, envir = .PKNCAEnv)
+  ret
+}
+
+#' How each NCA parameter is classified for interval selection
+#'
+#' @param param Parameter names to describe.  The default is every registered
+#'   parameter.
+#' @returns A data.frame with one row per parameter and columns for the
+#'   `concept`, `tier`, `sample_type`, whether it is `sparse` or
+#'   `dose_normalized`, and the `route` and `dosing` contexts it applies to
+#'   (comma-separated).
+#' @details A parameter whose concept could not be resolved has `NA` for
+#'   `concept`.  That is not an error:  it is calculated normally when asked
+#'   for by name, but it is never selected automatically.
+#' @seealso [pknca_concept()], [get.interval.cols()]
+#' @examples
+#' head(pknca_parameter_table())
+#' @family Interval specifications
+#' @export
+pknca_parameter_table <- function(param = NULL) {
+  classification <- parameter_classification()
+  if (is.null(param)) {
+    param <- names(classification$concept)
+  } else {
+    assert_param_name(param)
+    param <- intersect(param, names(classification$concept))
+  }
+  data.frame(
+    parameter = param,
+    concept = unname(classification$concept[param]),
+    tier = unname(classification$tier[param]),
+    sample_type = unname(classification$sample_type[param]),
+    sparse = unname(classification$sparse[param]),
+    dose_normalized = unname(classification$dose_normalized[param]),
+    route = vapply(classification$route[param], paste, collapse = ",", FUN.VALUE = ""),
+    dosing = vapply(classification$dosing[param], paste, collapse = ",", FUN.VALUE = ""),
+    row.names = NULL,
+    stringsAsFactors = FALSE
+  )
+}
+
+#' Report parameters that PKNCA cannot classify for automatic selection
+#'
+#' Intended for packages that register their own NCA parameters:  call it in
+#' your tests to find parameters that will never be selected automatically
+#' because they carry no concept.
+#'
+#' @inheritParams pknca_parameter_table
+#' @returns A data.frame of the unclassifiable parameters, with the same
+#'   columns as [pknca_parameter_table()].  Zero rows means everything is
+#'   classified.
+#' @seealso [pknca_concept()], [pknca_parameter_table()]
+#' @examples
+#' pknca_check_parameter_classification()
+#' @family Interval specifications
+#' @export
+pknca_check_parameter_classification <- function(param = NULL) {
+  ret <- pknca_parameter_table(param = param)
+  ret[is.na(ret$concept) | !(ret$concept %in% pknca_concepts()), , drop = FALSE]
+}

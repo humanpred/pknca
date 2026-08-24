@@ -444,6 +444,8 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   ret
 }
 
+pknca_concept(pk.calc.half.life) <- "half_life"
+
 #' Perform the half-life fit given the data.  The function simply fits
 #' the data without any validation.  No selection of points or any other
 #' components are done.
@@ -635,7 +637,8 @@ add.interval.col("half.life",
                  depends=c("tmax", "tlast"),
                  pptestcd_cdisc="LAMZHL",
                  pptest_cdisc="Half-Life Lambda z",
-                 formula="$t_{1/2} = \\frac{\\ln(2)}{\\lambda_z}$")
+                 formula="$t_{1/2} = \\frac{\\ln(2)}{\\lambda_z}$",
+                 tier = "common")
 PKNCA.set.summary(
   name="half.life",
   description="arithmetic mean and standard deviation",
@@ -651,7 +654,8 @@ add.interval.col("r.squared",
                  depends="half.life",
                  pptestcd_cdisc="R2",
                  pptest_cdisc="R Squared",
-                 formula="$r^2 = 1 - \\frac{\\sum_{i \\in \\lambda_z} (y_i - \\hat{y}_i)^2}{\\sum_{i \\in \\lambda_z} (y_i - \\bar{y})^2}$", formula_note="Regression of $y = \\log C$ on time over the terminal points")
+                 formula="$r^2 = 1 - \\frac{\\sum_{i \\in \\lambda_z} (y_i - \\hat{y}_i)^2}{\\sum_{i \\in \\lambda_z} (y_i - \\bar{y})^2}$", formula_note="Regression of $y = \\log C$ on time over the terminal points",
+                 tier = "common")
 PKNCA.set.summary(
   name="r.squared",
   description="arithmetic mean and standard deviation",
@@ -667,7 +671,8 @@ add.interval.col("adj.r.squared",
                  depends="half.life",
                  pptestcd_cdisc="R2ADJ",
                  pptest_cdisc="R Squared Adjusted",
-                 formula="$r^2_{adj} = 1 - (1 - r^2) \\frac{n-1}{n-2}$")
+                 formula="$r^2_{adj} = 1 - (1 - r^2) \\frac{n-1}{n-2}$",
+                 tier = "common")
 PKNCA.set.summary(
   name="adj.r.squared",
   description="arithmetic mean and standard deviation",
@@ -699,7 +704,8 @@ add.interval.col("lambda.z",
                  depends="half.life",
                  pptestcd_cdisc="LAMZ",
                  pptest_cdisc="Lambda z",
-                 formula="$\\lambda_z = -\\text{slope of } \\log(C) \\text{ vs } t$")
+                 formula="$\\lambda_z = -\\text{slope of } \\log(C) \\text{ vs } t$",
+                 tier = "common")
 PKNCA.set.summary(
   name="lambda.z",
   description="geometric mean and geometric coefficient of variation",
@@ -715,7 +721,8 @@ add.interval.col("lambda.z.time.first",
                  depends="half.life",
                  pptestcd_cdisc="LAMZLL",
                  pptest_cdisc="Lambda z Lower Limit",
-                 formula="$\\lambda_z t_{\\text{first}} = \\min\\left(t_{\\lambda_z}\\right)$")
+                 formula="$\\lambda_z t_{\\text{first}} = \\min\\left(t_{\\lambda_z}\\right)$",
+                 tier = "common")
 PKNCA.set.summary(
   name="lambda.z.time.first",
   description="median and range",
@@ -731,7 +738,8 @@ add.interval.col("lambda.z.time.last",
                  depends="half.life",
                  pptestcd_cdisc="LAMZUL",
                  pptest_cdisc="Lambda z Upper Limit",
-                 formula="$\\lambda_z t_{\\text{last}} = \\max\\left(t_{\\lambda_z}\\right)$")
+                 formula="$\\lambda_z t_{\\text{last}} = \\max\\left(t_{\\lambda_z}\\right)$",
+                 tier = "common")
 PKNCA.set.summary(
   name="lambda.z.time.last",
   description="median and range",
@@ -747,7 +755,8 @@ add.interval.col("lambda.z.n.points",
                  depends="half.life",
                  pptestcd_cdisc="LAMZNPT",
                  pptest_cdisc="Number of Points for Lambda z",
-                 formula="$n_{\\lambda_z} = \\left| t_{\\lambda_z} \\right|$")
+                 formula="$n_{\\lambda_z} = \\left| t_{\\lambda_z} \\right|$",
+                 tier = "common")
 PKNCA.set.summary(
   name="lambda.z.n.points",
   description="median and range",
@@ -763,7 +772,9 @@ add.interval.col("clast.pred",
                  depends="half.life",
                  pptestcd_cdisc="CLSTP",
                  pptest_cdisc="Clast pred",
-                 formula="$C_{\\text{last,pred}} = e^{\\text{intercept} - \\lambda_z \\cdot t_{\\text{last}}}$")
+                 formula="$C_{\\text{last,pred}} = e^{\\text{intercept} - \\lambda_z \\cdot t_{\\text{last}}}$",
+                 tier = "common",
+                 selection = list(concept = "last_conc"))
 PKNCA.set.summary(
   name="clast.pred",
   description="geometric mean and geometric coefficient of variation",
@@ -779,7 +790,8 @@ add.interval.col("span.ratio",
                  depends="half.life",
                  pptestcd_cdisc="LAMZSPN",
                  pptest_cdisc="Lambda z Span",
-                 formula="$\\text{span ratio} = \\frac{t_{\\lambda_z,\\text{last}} - t_{\\lambda_z,\\text{first}}}{t_{1/2}}$")
+                 formula="$\\text{span ratio} = \\frac{t_{\\lambda_z,\\text{last}} - t_{\\lambda_z,\\text{first}}}{t_{1/2}}$",
+                 tier = "common")
 PKNCA.set.summary(
   name="span.ratio",
   description="geometric mean and geometric coefficient of variation",

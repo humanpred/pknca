@@ -206,6 +206,8 @@ pk.calc.aucint.last <- function(conc, time, start=NULL, end=NULL, time.dose, ...
                  ...,
                  auc.type="AUClast")
 }
+
+pknca_concept(pk.calc.aucint.last) <- "auc"
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUCall
 #' @export
@@ -219,6 +221,8 @@ pk.calc.aucint.all <- function(conc, time, start=NULL, end=NULL, time.dose, ...,
                  ...,
                  auc.type="AUCall")
 }
+
+pknca_concept(pk.calc.aucint.all) <- "auc"
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUCinf.obs
 #' @export
@@ -232,6 +236,8 @@ pk.calc.aucint.inf.obs <- function(conc, time, start=NULL, end=NULL, time.dose, 
                  options=options, ...,
                  auc.type="AUCinf")
 }
+
+pknca_concept(pk.calc.aucint.inf.obs) <- "auc"
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUCinf.pred
 #' @export
@@ -246,6 +252,8 @@ pk.calc.aucint.inf.pred <- function(conc, time, start=NULL, end=NULL, time.dose,
                  options=options, ...,
                  auc.type="AUCinf")
 }
+
+pknca_concept(pk.calc.aucint.inf.pred) <- "auc"
 
 add.interval.col("aucint.last",
                  FUN="pk.calc.aucint.last",
@@ -306,7 +314,8 @@ add.interval.col("aucint.inf.obs",
                  pptestcd_cdisc="AUCINTIS",
                  pptest_cdisc="AUCint (based on AUCinf,obs extrapolation)",
                  formula="$AUC_{\\text{int,}\\infty\\text{,obs}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries",
+                 tier = "common")
 
 add.interval.col("aucint.inf.obs.dose",
                  FUN="pk.calc.aucint.inf.obs",
@@ -374,6 +383,8 @@ pk.calc.aumcint.last <- function(conc, time, start=NULL, end=NULL, time.dose, ..
                   auc.type="AUClast")
 }
 
+pknca_concept(pk.calc.aumcint.last) <- "aumc"
+
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUMCall
 #' @export
@@ -387,6 +398,8 @@ pk.calc.aumcint.all <- function(conc, time, start=NULL, end=NULL, time.dose, ...
                   ...,
                   auc.type="AUCall")
 }
+
+pknca_concept(pk.calc.aumcint.all) <- "aumc"
 
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUMCinf.obs
@@ -402,6 +415,8 @@ pk.calc.aumcint.inf.obs <- function(conc, time, start=NULL, end=NULL, time.dose,
                   auc.type="AUCinf")
 }
 
+pknca_concept(pk.calc.aumcint.inf.obs) <- "aumc"
+
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUMCinf.pred
 #' @export
@@ -415,6 +430,8 @@ pk.calc.aumcint.inf.pred <- function(conc, time, start=NULL, end=NULL, time.dose
                   options=options, ...,
                   auc.type="AUCinf")
 }
+
+pknca_concept(pk.calc.aumcint.inf.pred) <- "aumc"
 
 
 # aumcint.last (without dose awareness)

@@ -8,6 +8,8 @@ pk.calc.volpk <- function(volume) {
   if (length(volume) == 0) return(NA_real_)
   sum(volume)
 }
+
+pknca_concept(pk.calc.volpk) <- "collected_volume"
 add.interval.col("volpk",
                  FUN="pk.calc.volpk",
                  values=c(FALSE, TRUE),
@@ -16,7 +18,8 @@ add.interval.col("volpk",
                  desc="Sum of urine volumes for interval",
                  pptestcd_cdisc="VOLPK",
                  pptest_cdisc="Volume of PK sample",
-                 formula="$V_{\\text{urine}} = \\sum_i V_i$")
+                 formula="$V_{\\text{urine}} = \\sum_i V_i$",
+                 tier = "common")
 
 #' Calculate amount excreted (typically in urine or feces)
 #'
@@ -49,6 +52,8 @@ pk.calc.ae <- function(conc, volume, check=TRUE) {
   }
   ret
 }
+
+pknca_concept(pk.calc.ae) <- "excreted_amount"
 add.interval.col("ae",
                  FUN="pk.calc.ae",
                  values=c(FALSE, TRUE),
@@ -57,7 +62,8 @@ add.interval.col("ae",
                  desc="Amount excreted (urine/feces)",
                  pptestcd_cdisc="RCAMINT",
                  pptest_cdisc="Amt Rec from T1 to T2",
-                 formula="$AE = \\sum_i C_i V_i$")
+                 formula="$AE = \\sum_i C_i V_i$",
+                 tier = "common")
 
 #' Calculate renal clearance
 #'
@@ -77,6 +83,8 @@ pk.calc.clr <- function(ae, auc) {
   }
   sum(ae)/auc
 }
+
+pknca_concept(pk.calc.clr) <- "renal_clearance"
 add.interval.col("clr.last",
                  FUN="pk.calc.clr",
                  values=c(FALSE, TRUE),
@@ -99,7 +107,8 @@ add.interval.col("clr.obs",
                  desc="Renal clearance, AUCinf,obs",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL",
-                 formula="$CL_{R,\\text{obs}} = \\frac{AE}{AUC_{\\infty,\\text{obs}}}$")
+                 formula="$CL_{R,\\text{obs}} = \\frac{AE}{AUC_{\\infty,\\text{obs}}}$",
+                 tier = "common")
 
 add.interval.col("clr.pred",
                  FUN="pk.calc.clr",
@@ -132,6 +141,8 @@ pk.calc.fe <- function(ae, dose) {
   }
   sum(ae)/dose
 }
+
+pknca_concept(pk.calc.fe) <- "excreted_fraction"
 add.interval.col("fe",
                  FUN="pk.calc.fe",
                  unit_type="amount_dose",
@@ -141,7 +152,8 @@ add.interval.col("fe",
                  desc="Fraction of dose excreted",
                  pptestcd_cdisc="FREXINT",
                  pptest_cdisc="Fract Excr from T1 to T2",
-                 formula="$f_e = \\frac{AE}{Dose}$")
+                 formula="$f_e = \\frac{AE}{Dose}$",
+                 tier = "common")
 
 #' Calculate the midpoint collection time of the last measurable excretion rate
 #'
@@ -178,6 +190,8 @@ pk.calc.ertlst <- function(conc, volume, time, duration.conc, check = TRUE) {
   ret
 }
 
+pknca_concept(pk.calc.ertlst) <- "excretion_rate"
+
 # Add the column to the interval specification
 add.interval.col("ertlst",
                  FUN="pk.calc.ertlst",
@@ -186,7 +200,8 @@ add.interval.col("ertlst",
                  desc="Midpoint time of last excr rate",
                  pptestcd_cdisc="ERTLST",
                  pptest_cdisc="Time of Last Excretion Rate",
-                 formula="$T_{\\text{last,ER}} = t_{\\text{mid},i: ER_i > 0, i = \\max}$")
+                 formula="$T_{\\text{last,ER}} = t_{\\text{mid},i: ER_i > 0, i = \\max}$",
+                 tier = "common")
 
 
 #' Calculate the maximum excretion rate
@@ -224,6 +239,8 @@ pk.calc.ermax <- function(conc, volume, time, duration.conc, check = TRUE) {
   ret
 }
 
+pknca_concept(pk.calc.ermax) <- "excretion_rate"
+
 add.interval.col("ermax",
                  FUN="pk.calc.ermax",
                  unit_type="amount_time",
@@ -231,7 +248,8 @@ add.interval.col("ermax",
                  desc="Maximum excretion rate",
                  pptestcd_cdisc="ERMAX",
                  pptest_cdisc="Max Excretion Rate",
-                 formula="$ER_{\\max} = \\max_i \\left( \\frac{C_i V_i}{d_i} \\right)$")
+                 formula="$ER_{\\max} = \\max_i \\left( \\frac{C_i V_i}{d_i} \\right)$",
+                 tier = "common")
 
 
 #' Calculate the midpoint collection time of the maximum excretion rate
@@ -276,6 +294,8 @@ pk.calc.ertmax <- function(conc, volume, time, duration.conc, options = list(), 
   ret
 }
 
+pknca_concept(pk.calc.ertmax) <- "excretion_rate"
+
 add.interval.col("ertmax",
                  FUN="pk.calc.ertmax",
                  unit_type="time",
@@ -283,7 +303,8 @@ add.interval.col("ertmax",
                  desc="Midpoint time of max excr rate",
                  pptestcd_cdisc="ERTMAX",
                  pptest_cdisc="Midpoint of Interval of Maximum ER",
-                 formula="$T_{\\max,ER} = t_{\\text{mid},i: ER_i = ER_{\\max}}$")
+                 formula="$T_{\\max,ER} = t_{\\text{mid},i: ER_i = ER_{\\max}}$",
+                 tier = "common")
 
 PKNCA.set.summary(
   name = c("volpk", "ae", "clr.last", "clr.obs", "clr.pred", "fe", "ermax"),
