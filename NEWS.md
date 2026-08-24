@@ -284,6 +284,15 @@ when the issue is due to an excluded point (#310)
 * New post-processing functions to normalize PKNCA result parameters based on any column in PKNCAconc data.frame (`normalize_by_col()`) or by using a custom normalization table (`normalize()`)
 * New excretion rate parameters: `ermax`  (Maximum excretion rate), `ertmax` (Midpoint time of maximum excretion rate) and `ertlst` (Time of last excretion rate measurement) (#433)
 
+* New functions simplify the modification of intervals:
+  `interval_add_param()`, `interval_remove_param()`, `interval_add_impute()`,
+  and `interval_remove_impute()`.  Each accepts either a `PKNCAdata` object or
+  a data.frame of intervals, and the change may be restricted to specific
+  parameters (`target_params`) or specific intervals (`target_groups`).  When
+  the parameters within an interval no longer share the same imputation, the
+  interval is split into as many rows as are needed, and rows that come to
+  share every value are merged (#379).
+
 ## Minor changes (unlikely to affect PKNCA use)
 
 * Remove dead code: unused internal functions, commented-out code, unused

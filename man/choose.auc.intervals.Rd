@@ -49,7 +49,9 @@ Other Interval specifications:
 \code{\link[=add.interval.col]{add.interval.col()}},
 \code{\link[=check.interval.specification]{check.interval.specification()}},
 \code{\link[=get.interval.cols]{get.interval.cols()}},
-\code{\link[=get.parameter.deps]{get.parameter.deps()}}
+\code{\link[=get.parameter.deps]{get.parameter.deps()}},
+\code{\link[=interval_add_impute]{interval_add_impute()}},
+\code{\link[=interval_add_param]{interval_add_param()}}
 
 Other Interval determination:
 \code{\link[=find.tau]{find.tau()}}
