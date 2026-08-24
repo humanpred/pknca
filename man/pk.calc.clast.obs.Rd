@@ -24,10 +24,10 @@ is returned.  If Tlast is NA (due to no non-missing above LOQ measurements),
 this will return \code{NA_real_}.
 }
 \seealso{
-Other NCA parameters for concentrations during the intervals: 
-\code{\link{pk.calc.cmax}()},
-\code{\link{pk.calc.count_conc}()},
-\code{\link{pk.calc.cstart}()},
-\code{\link{pk.calc.ctrough}()}
+Other NCA parameters for concentrations during the intervals:
+\code{\link[=pk.calc.cmax]{pk.calc.cmax()}},
+\code{\link[=pk.calc.count_conc]{pk.calc.count_conc()}},
+\code{\link[=pk.calc.cstart]{pk.calc.cstart()}},
+\code{\link[=pk.calc.ctrough]{pk.calc.ctrough()}}
 }
 \concept{NCA parameters for concentrations during the intervals}

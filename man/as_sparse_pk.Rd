@@ -23,9 +23,9 @@ modified by future functions to add more named elements to the inner list.
 Generate a sparse_pk object
 }
 \seealso{
-Other Sparse Methods: 
-\code{\link{pk.calc.sparse_auc}()},
-\code{\link{sparse_auc_weight_linear}()},
-\code{\link{sparse_mean}()}
+Other Sparse Methods:
+\code{\link[=pk.calc.sparse_auc]{pk.calc.sparse_auc()}},
+\code{\link[=sparse_auc_weight_linear]{sparse_auc_weight_linear()}},
+\code{\link[=sparse_mean]{sparse_mean()}}
 }
 \concept{Sparse Methods}

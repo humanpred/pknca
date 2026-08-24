@@ -23,8 +23,8 @@ and/or \code{pk.tss.stepwise.linear}.
 Compute the time to steady-state (tss)
 }
 \seealso{
-Other Time to steady-state calculations: 
-\code{\link{pk.tss.monoexponential}()},
-\code{\link{pk.tss.stepwise.linear}()}
+Other Time to steady-state calculations:
+\code{\link[=pk.tss.monoexponential]{pk.tss.monoexponential()}},
+\code{\link[=pk.tss.stepwise.linear]{pk.tss.stepwise.linear()}}
 }
 \concept{Time to steady-state calculations}

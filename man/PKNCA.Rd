@@ -51,6 +51,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Bill Denney \email{wdenney@humanpredictions.com} (\href{https://orcid.org/0000-0002-5759-428X}{ORCID})
   \item Clare Buckeridge \email{clare.buckeridge@pfizer.com}
 }
 

@@ -28,16 +28,10 @@ concentration
 
 }}
 \seealso{
-Other NCA parameters for concentrations during the intervals: 
-\code{\link{pk.calc.clast.obs}()},
-\code{\link{pk.calc.count_conc}()},
-\code{\link{pk.calc.cstart}()},
-\code{\link{pk.calc.ctrough}()}
-
-Other NCA parameters for concentrations during the intervals: 
-\code{\link{pk.calc.clast.obs}()},
-\code{\link{pk.calc.count_conc}()},
-\code{\link{pk.calc.cstart}()},
-\code{\link{pk.calc.ctrough}()}
+Other NCA parameters for concentrations during the intervals:
+\code{\link[=pk.calc.clast.obs]{pk.calc.clast.obs()}},
+\code{\link[=pk.calc.count_conc]{pk.calc.count_conc()}},
+\code{\link[=pk.calc.cstart]{pk.calc.cstart()}},
+\code{\link[=pk.calc.ctrough]{pk.calc.ctrough()}}
 }
 \concept{NCA parameters for concentrations during the intervals}

@@ -85,9 +85,9 @@ same dose is given in every interval.  When given as a two-sided
 formula
 }
 \seealso{
-Other PKNCA objects: 
-\code{\link{PKNCAconc}()},
-\code{\link{PKNCAdata}()},
-\code{\link{PKNCAresults}()}
+Other PKNCA objects:
+\code{\link[=PKNCAconc]{PKNCAconc()}},
+\code{\link[=PKNCAdata]{PKNCAdata()}},
+\code{\link[=PKNCAresults]{PKNCAresults()}}
 }
 \concept{PKNCA objects}

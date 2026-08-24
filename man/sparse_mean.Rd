@@ -31,9 +31,9 @@ are:
 }
 }
 \seealso{
-Other Sparse Methods: 
-\code{\link{as_sparse_pk}()},
-\code{\link{pk.calc.sparse_auc}()},
-\code{\link{sparse_auc_weight_linear}()}
+Other Sparse Methods:
+\code{\link[=as_sparse_pk]{as_sparse_pk()}},
+\code{\link[=pk.calc.sparse_auc]{pk.calc.sparse_auc()}},
+\code{\link[=sparse_auc_weight_linear]{sparse_auc_weight_linear()}}
 }
 \concept{Sparse Methods}

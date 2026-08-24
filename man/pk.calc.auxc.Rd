@@ -172,7 +172,7 @@ Press, 2000.  164-7.
 \seealso{
 \code{\link[=clean.conc.blq]{clean.conc.blq()}}
 
-Other AUC calculations: 
-\code{\link{pk.calc.aucint}()}
+Other AUC calculations:
+\code{\link[=pk.calc.aucint]{pk.calc.aucint()}}
 }
 \concept{AUC calculations}
