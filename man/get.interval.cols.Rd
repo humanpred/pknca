@@ -25,6 +25,8 @@ Other Interval specifications:
 \code{\link[=check.interval.deps]{check.interval.deps()}},
 \code{\link[=check.interval.specification]{check.interval.specification()}},
 \code{\link[=choose.auc.intervals]{choose.auc.intervals()}},
-\code{\link[=get.parameter.deps]{get.parameter.deps()}}
+\code{\link[=get.parameter.deps]{get.parameter.deps()}},
+\code{\link[=interval_add_impute]{interval_add_impute()}},
+\code{\link[=interval_add_param]{interval_add_param()}}
 }
 \concept{Interval specifications}

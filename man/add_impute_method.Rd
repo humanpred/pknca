@@ -2,21 +2,28 @@
 % Please edit documentation in R/intervals_support.R
 \name{add_impute_method}
 \alias{add_impute_method}
-\title{Add impute method to the impute column}
+\alias{remove_impute_method}
+\title{Add or remove an imputation method within an impute specification}
 \usage{
-add_impute_method(impute_vals, target_impute, after)
+add_impute_method(impute_vals, target_impute, after = Inf)
+
+remove_impute_method(impute_vals, target_impute)
 }
 \arguments{
-\item{impute_vals}{Character vector of impute methods.}
+\item{impute_vals}{Character vector of impute specifications (comma- or
+space-separated method names).}
 
-\item{target_impute}{The imputation method to be added.}
+\item{target_impute}{The imputation method to add or remove.}
 
-\item{after}{Numeric value specifying the index position in which to add the impute.}
+\item{after}{Position for the added method, following \code{\link[base:append]{base::append()}}:  \code{0}
+makes it first and \code{Inf} makes it last.  An existing occurrence is removed
+before inserting, so adding a method that is already present moves it.}
 }
 \value{
-A character string or vector with the added impute method.
+A character vector of impute specifications.  Removing the last
+method gives \code{NA_character_}.
 }
 \description{
-This is an internal helper function used to add an impute method to the impute column.
+Add or remove an imputation method within an impute specification
 }
 \keyword{internal}

@@ -2,74 +2,73 @@
 % Please edit documentation in R/intervals_support.R
 \name{interval_add_impute}
 \alias{interval_add_impute}
-\title{Add specified imputation methods to the intervals in a PKNCAdata or data.frame object.}
+\alias{interval_remove_impute}
+\title{Add or remove an imputation method in the intervals of a PKNCAdata object}
 \usage{
 interval_add_impute(
   data,
   target_impute,
-  after,
-  target_params,
-  target_groups,
+  after = Inf,
+  target_params = NULL,
+  target_groups = NULL,
+  ...
+)
+
+interval_remove_impute(
+  data,
+  target_impute,
+  target_params = NULL,
+  target_groups = NULL,
   ...
 )
 }
 \arguments{
-\item{data}{A PKNCAdata object containing the intervals data frame, or a data frame of intervals.}
+\item{data}{A \code{PKNCAdata} object or a data.frame of intervals.}
 
-\item{target_impute}{A character string specifying the imputation method to be added.}
+\item{target_impute}{The imputation method to add or remove, as a character
+string (see \link{PKNCA_impute_method}).}
 
-\item{after}{Numeric value specifying the index in which the imputation will be added (optional).
-First is 0, last Inf. If missing, the imputation method is added at the end (Inf).}
+\item{after}{Where to insert the method within any imputation already
+present, following \code{\link[base:append]{base::append()}}:  \code{0} makes it first and \code{Inf} (the
+default) makes it last.  A method that is already present is moved to the
+requested position rather than duplicated.}
 
-\item{target_params}{A character vector specifying the parameters to be targeted (optional).
-If missing, all TRUE in the intervals are taken.}
+\item{target_params}{Restrict the change to these NCA parameters.  \code{NULL}
+(the default) applies it to every parameter being calculated.}
 
-\item{target_groups}{A data frame specifying the intervals to be targeted (optional).
-If missing, all relevant groups are considered.}
+\item{target_groups}{A data.frame of group values restricting the change to
+matching intervals.  Every column must match (and) for at least one row of
+\code{target_groups} (or).  \code{NULL} (the default) applies the change to all
+intervals.}
 
-\item{...}{arguments passed to \code{interval_add_impute}.}
+\item{...}{Ignored.}
 }
 \value{
-A modified PKNCAdata object with specified imputation methods on the target intervals.
+The input with the imputation updated.  An interval is split into
+more than one row when its parameters no longer share the same imputation,
+and rows that come to share every value are merged.
 }
 \description{
-Add specified imputation methods to the intervals in a PKNCAdata or data.frame object.
-}
-\details{
-If already present the target_impute method will be added substituting the existing one.
-All new intervals created will be added right after their original ones.
+Add or remove an imputation method in the intervals of a PKNCAdata object
 }
 \examples{
-d_conc <- data.frame(
-  conc = c(1, 0.6, 0.2, 0.1, 0.9, 0.4, 1.2, 0.8, 0.3, 0.2, 1.1, 0.5),
-  time = rep(0:5, 2),
-  ID = rep(1:2, each = 6),
-  analyte = rep(c("Analyte1", "Analyte2"), each = 6)
-)
-
-d_dose <- data.frame(
-  dose = c(100, 200),
-  time = c(0, 0),
-  ID = c(1, 2)
-)
-
-o_conc <- PKNCAconc(d_conc, conc ~ time | ID / analyte)
-o_dose <- PKNCAdose(d_dose, dose ~ time | ID)
-
-intervals <- data.frame(
-  start = c(0, 0, 0),
-  end = c(3, 5, Inf),
-  half.life = c(TRUE, TRUE, TRUE),
-  cmax = c(TRUE, TRUE, TRUE),
-  impute = c("start_conc0,start_predose", "start_predose", "start_conc0"),
-  analyte = c("Analyte1", "Analyte2", "Analyte1")
-)
-
-o_data <- PKNCAdata(o_conc, o_dose, intervals = intervals)
-
-# Apply interval_add_impute function
-o_data <- interval_add_impute(o_data,
-                              target_impute = "start_conc0",
-                              target_params = "half.life",
-                              target_groups = data.frame(analyte = "Analyte1"))
+intervals <- data.frame(start = 0, end = 24, cmax = TRUE, half.life = TRUE)
+# Impute a starting concentration for everything in the interval
+interval_add_impute(intervals, target_impute = "start_conc0")
+# ... but not for half-life, which splits the interval into two rows
+interval_add_impute(intervals, target_impute = "start_conc0", target_params = "cmax")
 }
+\seealso{
+\code{\link[=interval_add_param]{interval_add_param()}}, \code{\link[=PKNCAdata]{PKNCAdata()}}, and the vignette
+"Data Imputation"
+
+Other Interval specifications:
+\code{\link[=add.interval.col]{add.interval.col()}},
+\code{\link[=check.interval.deps]{check.interval.deps()}},
+\code{\link[=check.interval.specification]{check.interval.specification()}},
+\code{\link[=choose.auc.intervals]{choose.auc.intervals()}},
+\code{\link[=get.interval.cols]{get.interval.cols()}},
+\code{\link[=get.parameter.deps]{get.parameter.deps()}},
+\code{\link[=interval_add_param]{interval_add_param()}}
+}
+\concept{Interval specifications}

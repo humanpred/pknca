@@ -32,8 +32,14 @@ the dosing including dose amount and route.
 * `group_vars()` methods were added for `PKNCAdata` and `PKNCAresults` objects.
 * If intervals have attributes on the columns, there will no longer be an error
   during parameter calculation, and the attributes are preserved (#381)
-* New functions are available to simplify the modification of intervals: 
-  `intervals_add_impute()`, `intervals_remove_impute()` (#384)
+* New functions are available to simplify the modification of intervals:
+  `interval_add_param()`, `interval_remove_param()`, `interval_add_impute()`,
+  and `interval_remove_impute()`. Each accepts either a `PKNCAdata` object or a
+  data.frame of intervals, and the change may be restricted to specific
+  parameters (`target_params`) or specific intervals (`target_groups`). When
+  the parameters within an interval no longer share the same imputation, the
+  interval is split into as many rows as are needed, and rows that come to
+  share every value are merged (#379).
 * When adding units, if some but not all units are provided, then an error will
   be raised. This error can be converted to a warning using the option
   `allow_partial_missing_units = TRUE`. (#398)
