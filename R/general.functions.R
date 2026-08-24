@@ -12,8 +12,10 @@ check.conversion <- function(x, FUN, ...) {
   if (new.na != 0)
     # FIXME: It would be nice to have it give the function name as
     # part of the error
-    stop(sprintf("%g new NA value(s) created during conversion",
-                 new.na))
+    rlang::abort(
+      sprintf("%g new NA value(s) created during conversion", new.na),
+      class = "pknca_error_new_na_conversion"
+    )
   ret
 }
 
@@ -79,7 +81,7 @@ roundString <- function(x, digits=0, sci_range=Inf, sci_sep="e", si_range) {
   } else if (length(x) == length(digits)) {
     mapply(roundString, x, digits=digits, sci_range=sci_range, sci_sep=sci_sep)
   } else {
-    stop("digits must either be a scalar or the same length as x")
+    rlang::abort("digits must either be a scalar or the same length as x", class = "pknca_error_digits_length")
   }
 }
 
@@ -110,7 +112,7 @@ signifString <- function(x, ...)
 signifString.data.frame <- function(x, ...) {
   ret <- lapply(x,
                 function(y) {
-                  if (is.numeric(y) & !is.factor(y)) {
+                  if (is.numeric(y) && !is.factor(y)) {
                     signifString(x=y, ...)
                   } else {
                     y
@@ -127,7 +129,7 @@ signifString.data.frame <- function(x, ...) {
 #' @export
 signifString.default <- function(x, digits=6, sci_range=6, sci_sep="e", si_range, ...) {
   if (length(list(...))) {
-    stop("Additional, unsupported arguments were passed")
+    rlang::abort("Additional, unsupported arguments were passed", class = "pknca_error_unsupported_args")
   }
   if (!missing(si_range)) {
     .Deprecated(new="roundString with the sci_range argument",
@@ -154,7 +156,7 @@ signifString.default <- function(x, digits=6, sci_range=6, sci_sep="e", si_range
     # current value
     toplog <- log10(abs(xtmp))
     # When the order of magnitude is an exact log 10, move up one so
-    # that the math works for determing the lower log.
+    # that the math works for determining the lower log.
     mask.exact.log <- (toplog %% 1) %in% 0
     toplog[mask.exact.log] <- toplog[mask.exact.log] + 1
     toplog <- ceiling(toplog)
@@ -190,7 +192,8 @@ signifString.default <- function(x, digits=6, sci_range=6, sci_sep="e", si_range
 #' @return Either `zero_length` or `FUN(...)`
 #' @noRd
 zero_len_summary <- function(FUN) {
-  function(..., na.rm=FALSE, zero_length=NA) { #nocov
+  # nocov start
+  function(..., na.rm=FALSE, zero_length=NA) {
     x <- c(...)
     if (na.rm) {
       x <- stats::na.omit(x)
@@ -200,7 +203,8 @@ zero_len_summary <- function(FUN) {
     } else {
       FUN(x)
     }
-  } #nocov
+  }
+  # nocov end
 }
 
 #' @describeIn zero_len_summary Find the maximum value with a different value if

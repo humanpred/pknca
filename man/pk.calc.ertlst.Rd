@@ -23,3 +23,13 @@ The midpoint collection time of the last measurable excretion rate, or NA/0 if n
 \description{
 Calculate the midpoint collection time of the last measurable excretion rate
 }
+\seealso{
+Other Urine/Excretion parameters:
+\code{\link[=pk.calc.ae]{pk.calc.ae()}},
+\code{\link[=pk.calc.clr]{pk.calc.clr()}},
+\code{\link[=pk.calc.ermax]{pk.calc.ermax()}},
+\code{\link[=pk.calc.ertmax]{pk.calc.ertmax()}},
+\code{\link[=pk.calc.fe]{pk.calc.fe()}},
+\code{\link[=pk.calc.volpk]{pk.calc.volpk()}}
+}
+\concept{Urine/Excretion parameters}

@@ -8,9 +8,7 @@
 #'   to be on the same treatment)
 #' @param subject.dosing Subject number for dosing
 #' @param time.dosing Time of dosing
-#' @param conc.blq See [clean.conc.blq()]
-#' @param conc.na See [clean.conc.na()]
-#' @param check Run [assert_conc_time()]?
+#' @inheritParams clean.conc.blq
 #' @param \dots Discarded inputs to allow generic calls between tss methods.
 #' @returns a data frame with columns for `conc`entration, `time`, `subject`,
 #'   and `treatment`.
@@ -26,11 +24,11 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
     sorted_time <- missing(subject) & missing(treatment)
     assert_conc_time(conc = conc, time = time, sorted_time = sorted_time)
   }
-  if (!missing(subject.dosing) & missing(subject)) {
-    stop("Cannot give subject.dosing without subject")
+  if (!missing(subject.dosing) && missing(subject)) {
+    rlang::abort("Cannot give subject.dosing without subject", class = "pknca_error_tss_subject_dosing_without_subject")
   }
-  if (any(is.na(time.dosing))) {
-    stop("time.dosing may not contain any NA values")
+  if (anyNA(time.dosing)) {
+    rlang::abort("time.dosing may not contain any NA values", class = "pknca_error_tss_time_dosing_na")
   }
   if (!missing(subject)) {
     if (!missing(treatment)) {
@@ -124,7 +122,7 @@ pk.tss <- function(...,
     if (identical(NA, ret)) {
       ret <- ret_monoexponential
     } else {
-      stop("Bug in pk.tss where ret is set to non-NA too early.  Please report the bug with a reproducible example.") # nocov
+      rlang::abort("Bug in pk.tss where ret is set to non-NA too early. Please report the bug with a reproducible example.", class = "pknca_error_internal_pk_tss_ret_non_na")  # nocov
     }
     # Set check to FALSE if it has already been checked (so that it
     # doesn't happen again in stepwise.linear)

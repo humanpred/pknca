@@ -9,21 +9,25 @@ test_that("geomean", {
   # Test negative numbers
   expect_equal(geomean(c(-1, 2)), -geomean(c(1, 2)))
   # Test NAs
-  expect_equal(geomean(NA), as.numeric(NA))
-  expect_equal(geomean(c(NA, 0)), as.numeric(NA))
+  expect_equal(geomean(NA), NA_real_)
+  expect_equal(geomean(c(NA, 0)), NA_real_)
   expect_equal(geomean(c(NA, 5), na.rm=TRUE), 5)
   expect_equal(geomean(c(NA, NA), na.rm=TRUE), NaN)
 })
 
+test_that("empty inputs give NA_real_", {
+  expect_equal(business.geomean(c()), NA_real_)
+})
+
 test_that("geosd", {
   expect_equal(geosd(c(1, 2)), exp(sd(log(c(1, 2)))))
-  expect_equal(geosd(c(NA, 1, 2)), as.numeric(NA))
+  expect_equal(geosd(c(NA, 1, 2)), NA_real_)
 })
 
 test_that("geocv", {
   expect_equal(geocv(c(1, 2)),
                sqrt(exp(sd(log(c(1, 2)))^2)-1)*100)
-  expect_equal(geocv(c(NA, 1, 2)), as.numeric(NA))
+  expect_equal(geocv(c(NA, 1, 2)), NA_real_)
 })
 
 test_that("business.mean", {
@@ -35,11 +39,11 @@ test_that("business.mean", {
   # Ensure that at the max.missing fraction a value is reported and
   # above that, NA is returned.
   expect_equal(business.mean(c(NA, NA, 1, 2)), structure(1.5, n = 2))
-  expect_equal(business.mean(c(NA, NA, NA, 2)), NA)
+  expect_equal(business.mean(c(NA, NA, NA, 2)), NA_real_)
   # Ensure that it uses the current value of max.missing
   PKNCA.options(max.missing=0.3)
   expect_equal(business.mean(c(NA, 1, 2, 3)), structure(2, n = 3))
-  expect_equal(business.mean(c(NA, NA, 1, 2)), NA)
+  expect_equal(business.mean(c(NA, NA, 1, 2)), NA_real_)
 })
 
 test_that("pk.business", {
@@ -50,7 +54,7 @@ test_that("pk.business", {
   # Right at the border, it still reports
   expect_equal(b.mean(c(1, NA)), structure(1, n = 1))
   # When too much data is missing, NA is returned
-  expect_equal(b.mean(c(1, NA, NA)), NA)
+  expect_equal(b.mean(c(1, NA, NA)), NA_real_)
   # It respects zero.missing
   b.mean.2 <- pk.business(mean, zero.missing=TRUE)
   expect_equal(b.mean(c(0, 1)), structure(0.5, n = 2))

@@ -32,16 +32,12 @@ conc_data <- Theoph[Theoph$Subject == 1,]
 pk.calc.cmin(conc_data$conc)
 }
 \seealso{
-Other NCA parameters for concentrations during the intervals: 
-\code{\link{pk.calc.clast.obs}()},
-\code{\link{pk.calc.count_conc}()},
-\code{\link{pk.calc.cstart}()},
-\code{\link{pk.calc.ctrough}()}
-
-Other NCA parameters for concentrations during the intervals: 
-\code{\link{pk.calc.clast.obs}()},
-\code{\link{pk.calc.count_conc}()},
-\code{\link{pk.calc.cstart}()},
-\code{\link{pk.calc.ctrough}()}
+Other NCA parameters for concentrations during the intervals:
+\code{\link[=pk.calc.c0]{pk.calc.c0()}},
+\code{\link[=pk.calc.cav]{pk.calc.cav()}},
+\code{\link[=pk.calc.ceoi]{pk.calc.ceoi()}},
+\code{\link[=pk.calc.clast.obs]{pk.calc.clast.obs()}},
+\code{\link[=pk.calc.count_conc]{pk.calc.count_conc()}},
+\code{\link[=pk.calc.ctrough]{pk.calc.ctrough()}}
 }
 \concept{NCA parameters for concentrations during the intervals}

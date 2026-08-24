@@ -30,7 +30,7 @@ clean.conc.na <- function(conc, time, ...,
   } else {
     # This case should already have been captured by the PKNCA.options
     # call above.
-    stop("Unknown how to handle conc.na") # nocov
+    rlang::abort("Unknown how to handle conc.na", class = "pknca_error_unknown_conc_na")  # nocov
   }
   ret
 }
@@ -98,7 +98,12 @@ clean.conc.blq <- function(conc, time,
 
     # If all measurements are BLQ
     if (all(ret$conc == 0)){
-      # Apply "first" BLQ rule to everything for tfirst/tlast
+      # Apply "first" BLQ rule to everything for tfirst/tlast.
+      # tlast is set to tfirst + 1 as a sentinel that is guaranteed to be
+      # greater than all values in ret$time (since tfirst = max(ret$time)).
+      # It is only ever compared to ret$time (never used as an actual time
+      # point), so the fact that it lies outside the observed time range is
+      # intentional and harmless.
       tfirst <- max(ret$time)
       tlast <- tfirst + 1
 
@@ -110,7 +115,11 @@ clean.conc.blq <- function(conc, time,
     for (i in seq_len(length(conc.blq))) {
       # Set the mask to apply the rule to
       time_type <- names(conc.blq)[i]
-      if (is.null(time_type) & length(conc.blq) == 1) {
+      if (is.null(time_type) && length(conc.blq) == 1) {
+        # %in% 0 is used for BLQ checks throughout because BLQ concentrations
+        # are set to exactly 0 by this function. Exact equality is
+        # definitionally correct; a tolerance cannot be used because we do not
+        # know what a "low" concentration may be in all situations.
         mask <- ret$conc %in% 0
       } else if (time_type == "first") {
         mask <- ret$time <= tfirst & ret$conc %in% 0
@@ -123,7 +132,7 @@ clean.conc.blq <- function(conc, time,
       } else if (time_type == "after.tmax") {
         mask <- tmax <= ret$time & ret$conc %in% 0
       } else {
-        stop("There is a bug in cleaning the conc.blq with position names") # nocov
+        rlang::abort("There is a bug in cleaning the conc.blq with position names", class = "pknca_error_conc_blq_position_bug")  # nocov
       }
       # Choose the rule to apply
       this_rule <- unname(conc.blq)[[i]]
@@ -137,8 +146,7 @@ clean.conc.blq <- function(conc, time,
       } else {
         # This case should already have been captured by the PKNCA.options
         # call above.
-        stop(sprintf("Unknown how to handle conc.blq rule %s", # nocov
-                     as.character(this_rule)))                 # nocov
+        rlang::abort(sprintf("Unknown how to handle conc.blq rule %s", as.character(this_rule)), class = "pknca_error_unknown_conc_blq_rule")  # nocov
       }
     }
   }

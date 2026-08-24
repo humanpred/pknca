@@ -89,6 +89,11 @@ test_that("pk.calc.ermax", {
     pk.calc.ermax(conc = c(NA, NA), volume = c(1, 1), time = c(0, 1), duration.conc = c(1, 1)),
     structure(NA_real_, exclude = "All concentrations are missing")
   )
+  # Concentrations present but all volumes NA → all er values are NA
+  expect_equal(
+    pk.calc.ermax(conc = c(1, 2), volume = c(NA, NA), time = c(0, 1), duration.conc = c(1, 1)),
+    structure(NA_real_, exclude = "All volumes are missing")
+  )
   # Normal case
   expect_equal(
     pk.calc.ermax(conc = c(1, 2, 3), volume = c(2, 2, 2), time = c(0, 1, 2), duration.conc = c(2, 2, 2)),
@@ -131,4 +136,18 @@ test_that("generate_missing_messages", {
     as.character(PKNCA:::generate_missing_messages(conc, volume)),
     "All conc and volume are missing"
   )
+})
+
+test_that("zero-length input gives NA rather than zero (issue 601)", {
+  # pk.calc.ae() also attaches the reason for the exclusion
+  ae_empty <- pk.calc.ae(conc = numeric(0), volume = numeric(0))
+  expect_equal(as.numeric(ae_empty), NA_real_)
+  expect_match(attr(ae_empty, "exclude"), "missing")
+  expect_equal(as.numeric(pk.calc.ae(conc = NULL, volume = NULL)), NA_real_)
+  expect_equal(pk.calc.clr(ae = numeric(0), auc = 10), NA_real_)
+  expect_equal(pk.calc.fe(ae = numeric(0), dose = 100), NA_real_)
+  # Unchanged for real input
+  expect_equal(pk.calc.ae(conc = c(1, 2), volume = c(10, 10)), 30)
+  expect_equal(pk.calc.clr(ae = c(5, 5), auc = 10), 1)
+  expect_equal(pk.calc.fe(ae = c(5, 5), dose = 100), 0.1)
 })

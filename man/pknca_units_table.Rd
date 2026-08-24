@@ -2,9 +2,13 @@
 % Please edit documentation in R/unit-support.R
 \name{pknca_units_table}
 \alias{pknca_units_table}
+\alias{pknca_units_table.default}
+\alias{pknca_units_table.PKNCAdata}
 \title{Create a unit assignment and conversion table}
 \usage{
-pknca_units_table(
+pknca_units_table(concu, ...)
+
+\method{pknca_units_table}{default}(
   concu,
   doseu,
   amountu,
@@ -13,12 +17,17 @@ pknca_units_table(
   doseu_pref = NULL,
   amountu_pref = NULL,
   timeu_pref = NULL,
-  conversions = data.frame()
+  conversions = data.frame(),
+  ...
 )
+
+\method{pknca_units_table}{PKNCAdata}(concu, ..., conversions = data.frame())
 }
 \arguments{
 \item{concu, doseu, amountu, timeu}{Units for concentration, dose, amount, and
 time in the source data}
+
+\item{...}{Additional arguments (not used)}
 
 \item{concu_pref, doseu_pref, amountu_pref, timeu_pref}{Preferred units for
 reporting; \code{conversions} will be automatically.}
@@ -72,6 +81,7 @@ pknca_units_table(
   concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
   timeu_pref = "day"
 )
+
 }
 \seealso{
 The \code{units} argument for \code{\link[=PKNCAdata]{PKNCAdata()}}

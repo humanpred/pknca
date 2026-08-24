@@ -23,3 +23,13 @@ The maximum excretion rate, or NA if not available
 \description{
 Calculate the maximum excretion rate
 }
+\seealso{
+Other Urine/Excretion parameters:
+\code{\link[=pk.calc.ae]{pk.calc.ae()}},
+\code{\link[=pk.calc.clr]{pk.calc.clr()}},
+\code{\link[=pk.calc.ertlst]{pk.calc.ertlst()}},
+\code{\link[=pk.calc.ertmax]{pk.calc.ertmax()}},
+\code{\link[=pk.calc.fe]{pk.calc.fe()}},
+\code{\link[=pk.calc.volpk]{pk.calc.volpk()}}
+}
+\concept{Urine/Excretion parameters}

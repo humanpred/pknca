@@ -23,3 +23,10 @@ Calculate the AUC percent extrapolated
 \details{
 aucpext is \code{100*(1-auclast/aucinf)}.
 }
+\seealso{
+Other Half-life and elimination:
+\code{\link[=adj.r.squared]{adj.r.squared()}},
+\code{\link[=pk.calc.half.life]{pk.calc.half.life()}},
+\code{\link[=pk.calc.thalf.eff]{pk.calc.thalf.eff()}}
+}
+\concept{Half-life and elimination}

@@ -51,9 +51,9 @@ grouped with \code{.drop = FALSE}. See \code{\link[dplyr:group_by_drop_default]{
 dplyr grouping for PKNCA
 }
 \seealso{
-Other dplyr verbs: 
-\code{\link{filter.PKNCAresults}()},
-\code{\link{inner_join.PKNCAresults}()},
-\code{\link{mutate.PKNCAresults}()}
+Other dplyr verbs:
+\code{\link[=filter.PKNCAresults]{filter.PKNCAresults()}},
+\code{\link[=inner_join.PKNCAresults]{inner_join.PKNCAresults()}},
+\code{\link[=mutate.PKNCAresults]{mutate.PKNCAresults()}}
 }
 \concept{dplyr verbs}

@@ -39,7 +39,7 @@ utils::globalVariables(c("exclude_current_group_XXX", "row_number_XXX", "exclude
 exclude.default <- function(object, reason, mask, FUN) {
   dataname <- getDataName(object)
   # Check inputs
-  if (missing(mask) & !missing(FUN)) {
+  if (missing(mask) && !missing(FUN)) {
     # operate on one group at a time
     groupnames <-
       unique(c(
@@ -73,17 +73,24 @@ exclude.default <- function(object, reason, mask, FUN) {
       mask <- !is.na(reason)
     }
   } else if (!xor(missing(mask), missing(FUN))) {
-    stop("Either mask for FUN must be given (but not both).")
+    rlang::abort("Either mask or FUN must be given (but not both).", class = "pknca_error_mask_or_fun")
   }
   if (!(length(reason) %in% c(1, nrow(object[[dataname]])))) {
-    stop("reason must be a scalar or have the same length as the data.")
+    rlang::abort("reason must be a scalar or have the same length as the data.", class = "pknca_error_reason_length")
   } else if (!is.character(reason)) {
-    stop("reason must be a character string.")
+    rlang::abort("reason must be a character vector.", class = "pknca_error_reason_type")
   }
+
   if (!("exclude" %in% names(object$columns))) {
-    stop("object must have an exclude column specified.")
+    rlang::abort("object must have an exclude column specified.", class = "pknca_error_no_exclude_col")
   } else if (!(object$columns$exclude %in% names(object[[dataname]]))) {
-    stop("exclude column must exist in object[['", dataname, "']].")
+    rlang::abort(
+      sprintf(
+        "exclude column must exist in object[['%s']].",
+        dataname
+      ),
+      class = "pknca_error_exclude_col_missing"
+    )
   }
   # Make a scalar reason a vector
   if (length(reason) == 1)
@@ -91,7 +98,7 @@ exclude.default <- function(object, reason, mask, FUN) {
   # Find the original value of the 'exclude' column.
   orig <- object[[dataname]][[object$columns$exclude]]
   if (length(mask) != length(orig)) {
-    stop("mask must match the length of the data.")
+    rlang::abort("mask must match the length of the data.", class = "pknca_error_mask_length")
   }
   # No current value for exclude
   mask.none <- orig %in% c(NA, "")
@@ -133,7 +140,7 @@ setExcludeColumn <- function(object, exclude = NULL, dataname = "data") {
     # If exclude is already in the object, then make sure it matches
     # (and do nothing).
     if (!(object$columns$exclude == exclude)) {
-      stop("exclude is already set for the object.")
+      rlang::abort("exclude is already set for the object.", class = "pknca_error_exclude_already_set")
     }
   } else {
     # If exclude is not already in the object and it is given, then add
@@ -141,7 +148,7 @@ setExcludeColumn <- function(object, exclude = NULL, dataname = "data") {
     add.exclude <- TRUE
   }
   if (add.exclude) {
-    if (missing(exclude) | is.null(exclude)) {
+    if (missing(exclude) || is.null(exclude)) {
       # Generate the column name
       exclude <-
         setdiff(c("exclude", paste0("exclude.", max(names(object[[dataname]])))),
@@ -150,15 +157,21 @@ setExcludeColumn <- function(object, exclude = NULL, dataname = "data") {
     } else if (nrow(object[[dataname]]) == 0) {
       object[[dataname]][[exclude]] <- rep(NA_character_, nrow(object[[dataname]]))
     } else if (!(exclude %in% names(object[[dataname]]))) {
-      stop("exclude, if given, must be a column name in the input data.")
+      rlang::abort(
+        "exclude, if given, must be a column name in the input data.",
+        class = "pknca_error_exclude_not_in_data"
+      )
     } else {
       if (is.factor(object[[dataname]][[exclude]])) {
         object[[dataname]][[exclude]] <- as.character(object[[dataname]][[exclude]])
-      } else if (is.logical(object[[dataname]][[exclude]]) &
+      } else if (is.logical(object[[dataname]][[exclude]]) &&
                  all(is.na(object[[dataname]][[exclude]]))) {
         object[[dataname]][[exclude]] <- rep(NA_character_, nrow(object[[dataname]]))
       } else if (!is.character(object[[dataname]][[exclude]])) {
-        stop("exclude column must be character vector or something convertable to character without loss of information.")
+        rlang::abort(
+          "exclude column must be character vector or something convertable to character without loss of information.",
+          class = "pknca_error_exclude_not_character"
+        )
       }
     }
     object$columns$exclude <- exclude

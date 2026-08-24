@@ -22,6 +22,7 @@
 #' @param drop.group,summarize.n.per.group,not.requested.string,not.calculated.string
 #' Deprecated use `drop_group`, `not_requested`, `not_calculated`, or
 #' `summarize_n`, instead
+#' @param caption_prefix Prefix to prepend to the generated table caption.
 #' @returns A data frame of NCA parameter results summarized according to the
 #'   summarization settings.
 #' @seealso [PKNCA.set.summary()], [print.summary_PKNCAresults()]
@@ -63,7 +64,8 @@ summary.PKNCAresults <- function(object, ...,
                                  summarize.n.per.group = deprecated(),
                                  not.requested.string = deprecated(),
                                  not.calculated.string = deprecated(),
-                                 pretty_names = NULL) {
+                                 pretty_names = NULL,
+                                 caption_prefix = NULL) {
   # Process inputs ####
 
   ## Deprecated inputs ####
@@ -108,9 +110,12 @@ summary.PKNCAresults <- function(object, ...,
   has_subject_col <- length(subject_col) > 0
   if (is.na(summarize_n)) {
     summarize_n <- has_subject_col
-  } else if (summarize_n & !has_subject_col) {
-    warning("summarize_n was requested, but no subject column exists")
-    summarize_n <- FALSE
+ } else if (summarize_n && !has_subject_col) {
+    rlang::warn(
+      "summarize_n was requested, but no subject column exists",
+      class = "pknca_warning_summarize_n_no_subject"
+    )
+   summarize_n <- FALSE
   }
 
   # Preparation ####
@@ -136,7 +141,7 @@ summary.PKNCAresults <- function(object, ...,
       X = object$data$intervals[, parameter_cols, drop = FALSE],
       FUN = any
     )
-  # Then, filter them the the ones that have any "TRUE" values
+  # Then, filter them to the ones that have any "TRUE" values
   result_data_cols_list <- result_data_cols_list[unlist(result_data_cols_list)]
 
   # Prepare for unit management
@@ -183,7 +188,8 @@ summary.PKNCAresults <- function(object, ...,
       param_names = names(result_values),
       pretty_names = pretty_names,
       footnote_N = "N" %in% names(ret),
-      footnote_n = attr(ret, "footnote_n", exact = TRUE)
+      footnote_n = attr(ret, "footnote_n", exact = TRUE),
+      caption_prefix = caption_prefix
     )
   attr(ret, "footnote_n") <- NULL
   ret_pretty <- rename_summary_PKNCAresults(data = ret, unit_list = unit_list, pretty_names = pretty_names)
@@ -197,7 +203,10 @@ summary.PKNCAresults <- function(object, ...,
 get_summary_PKNCAresults_drop_group <- function(object, drop_group) {
   all_group_cols <- getGroups(object)
   if (any(c("start", "end") %in% drop_group)) {
-    warning("drop.group including start or end may result in incorrect groupings (such as inaccurate comparison of intervals).  Drop these with care.")
+    rlang::warn(
+      "drop.group including start or end may result in incorrect groupings (such as inaccurate comparison of intervals).  Drop these with care.",
+      class = "pknca_warning_drop_start_end"
+    )
   }
   ret <-
     unique(
@@ -219,7 +228,7 @@ get_summary_PKNCAresults_result_number_col <- function(object) {
   intersect(c("PPSTRES", "PPORRES"), names(data))[1]
 }
 
-# Get the column name with the result unitss to use for summarization
+# Get the column name with the result units to use for summarization
 get_summary_PKNCAresults_result_unit_col <- function(object) {
   if (is.data.frame(object)) {
     data <- object
@@ -284,8 +293,8 @@ get_summary_PKNCAresults_count_N <- function(data, result_group, subject_col, su
     ret[[key_col]] <- NULL
 
     ret$N <- as.character(ret$N)
-    if (any(is.na(ret$N))) {
-      stop("Please report a bug. If N is requested, but it is not provided, then it should be set to not calculated.") # nocov
+    if (anyNA(ret$N)) {
+      rlang::abort("Please report a bug. If N is requested, but it is not provided, then it should be set to not calculated.", class = "pknca_error_internal_n_is_na")  # nocov
     }
   } else {
     ret <- result_group
@@ -294,7 +303,7 @@ get_summary_PKNCAresults_count_N <- function(data, result_group, subject_col, su
 }
 
 # Provide a clean caption for summarized parameters
-get_summary_PKNCAresults_caption <- function(param_names, pretty_names, footnote_N, footnote_n) {
+get_summary_PKNCAresults_caption <- function(param_names, pretty_names, footnote_N, footnote_n, caption_prefix) {
   # Extract the summarization descriptions for the caption
   summary_descriptions <-
     unlist(
@@ -333,7 +342,13 @@ get_summary_PKNCAresults_caption <- function(param_names, pretty_names, footnote
   if (footnote_n) {
     ret <- c(ret, "n: number of measurements included in summary")
   }
-  paste(ret, collapse = "; ")
+  current_caption <- paste(ret, collapse = "; ")
+  
+  if (is.null(caption_prefix)) {
+    current_caption
+  } else {
+    paste(caption_prefix, current_caption)
+  }
 }
 
 #' Clean up the exclusions in the object
@@ -383,8 +398,13 @@ summarize_PKNCAresults_group <- function(data, current_group, subject_col, resul
   current_data <- dplyr::inner_join(data, current_group, by = intersect(names(data), names(current_group)))
   if (nrow(current_data) == 0) {
     # I don't think that a user can get here
-    warning("No results to summarize for result row, please report a bug") # nocov
-    return(ret) # nocov
+    # nocov start
+    rlang::warn(
+      "No results to summarize for result row, please report a bug",
+      class = "pknca_warning_no_results_to_summarize"
+    )
+    return(ret)
+    # nocov end
   }
   current_interval <- dplyr::inner_join(intervals, current_group, by = intersect(names(intervals), names(current_group)))
   current_param_prep <-
@@ -439,10 +459,13 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
   if (!is.null(unit_col)) {
     units <- unique(current_data[[unit_col]])
     if (length(units) > 1) {
-      stop(
-        "Multiple units cannot be summarized together.  For ",
-        parameter, ", trying to combine: ",
-        paste(units, collapse = ", ")
+      rlang::abort(
+        sprintf(
+          "Multiple units cannot be summarized together. For %s, trying to combine: %s",
+          parameter,
+          paste(units, collapse = ", ")
+        ),
+        class = "pknca_error_multiple_units"
       )
     }
   }
@@ -450,7 +473,13 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
   if (length(subject_col) == 1) {
     N <- length(unique(current_data[[subject_col]]))
     if (any(duplicated(current_data[[subject_col]]))) {
-      warning("Some subjects may have more than one result for ", parameter)
+      rlang::warn(
+        sprintf(
+          "Some subjects may have more than one result for %s",
+          parameter
+        ),
+        class = "pknca_warning_duplicate_subjects"
+      )
     }
   } else {
     N <- NULL
@@ -459,7 +488,7 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
 
   current_summary_instructions <- PKNCA.set.summary()[[parameter]]
   if (is.null(current_summary_instructions)) {
-    stop("No summary function is set for parameter ", parameter, ".  Please set it with PKNCA.set.summary and report this as a bug in PKNCA.") # nocov
+    rlang::abort(sprintf("No summary function is set for parameter %s. Please set it with PKNCA.set.summary and report this as a bug in PKNCA.", parameter), class = "pknca_error_no_summary_function")  # nocov
   }
 
   point <- current_summary_instructions$point(current_data[[number_col]])
@@ -494,7 +523,7 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
     result_txt <- paste0(point_txt, spread_txt)
   }
 
-  if (na_point & na_spread) {
+  if (na_point && na_spread) {
     result_txt <- not_calculated
   } else if (include_units) {
     result_txt <- paste(result_txt, units)
@@ -578,21 +607,27 @@ print.summary_PKNCAresults <- function(x, ...) {
 roundingSummarize <- function(x, name) {
   summary_instructions <- PKNCA.set.summary()
   if (!(name %in% names(summary_instructions))) {
-    stop(name, " is not in the summarization instructions from PKNCA.set.summary")
+    rlang::abort(
+      sprintf(
+        "%s is not in the summarization instructions from PKNCA.set.summary",
+        name
+      ),
+      class = "pknca_error_missing_summary_instructions"
+    )
   }
   roundingInstructions <- summary_instructions[[name]]$rounding
   if (is.function(roundingInstructions)) {
     ret <- roundingInstructions(x)
   } else if (is.list(roundingInstructions)) {
     if (length(roundingInstructions) != 1) {
-      stop("Cannot interpret rounding instructions for ", name, " (please report this as a bug)") # nocov
+      rlang::abort(sprintf("Cannot interpret rounding instructions for %s (please report this as a bug)", name), class = "pknca_error_internal_rounding_instructions")  # nocov
     }
     if ("signif" == names(roundingInstructions)) {
       ret <- signifString(x, roundingInstructions$signif)
     } else if ("round" == names(roundingInstructions)) {
       ret <- roundString(x, roundingInstructions$round)
     } else {
-      stop("Invalid rounding instruction list name for ", name, " (please report this as a bug)") # nocov
+      rlang::abort(sprintf("Invalid rounding instruction list name for %s (please report this as a bug)", name), class = "pknca_error_internal_invalid_rounding_name")  # nocov
     }
   }
   if (!is.character(ret)) {

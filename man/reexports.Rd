@@ -19,8 +19,8 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{dplyr}{\code{\link[dplyr]{filter}}, \code{\link[dplyr:mutate-joins]{full_join}}, \code{\link[dplyr]{group_by}}, \code{\link[dplyr:mutate-joins]{inner_join}}, \code{\link[dplyr:mutate-joins]{left_join}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr:mutate-joins]{right_join}}, \code{\link[dplyr:group_by]{ungroup}}}
+  \item{dplyr}{\code{\link[dplyr:filter]{filter()}}, \code{\link[dplyr:full_join]{full_join()}}, \code{\link[dplyr:group_by]{group_by()}}, \code{\link[dplyr:inner_join]{inner_join()}}, \code{\link[dplyr:left_join]{left_join()}}, \code{\link[dplyr:mutate]{mutate()}}, \code{\link[dplyr:right_join]{right_join()}}, \code{\link[dplyr:ungroup]{ungroup()}}}
 
-  \item{nlme}{\code{\link[nlme]{getGroups}}}
+  \item{nlme}{\code{\link[nlme:getGroups]{getGroups()}}}
 }}
 

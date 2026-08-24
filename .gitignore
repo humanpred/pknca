@@ -11,3 +11,17 @@ inst/doc
 Rprof.out
 .Rhistory
 /revdep
+.claude/worktrees/
+
+# R build and check artifacts
+*.Rcheck/
+/check/
+*.tar.gz
+*.tgz
+.RData
+.Rdata
+.Ruserdata
+.Rproj.user/
+src/*.o
+src/*.so
+src/*.dll

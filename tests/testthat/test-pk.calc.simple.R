@@ -61,8 +61,8 @@ test_that("pk.calc.tmax", {
   # No data give a warning and NA
   expect_warning(expect_warning(
     v1 <- pk.calc.tmax(numeric(), numeric()),
-    class = "pknca_conc_none"),
-    class = "pknca_time_none"
+    class = "pknca_warning_no_concentration"),
+    class = "pknca_warning_no_time"
   )
   expect_equal(v1, NA)
 
@@ -85,6 +85,42 @@ test_that("pk.calc.tmax", {
                0)
   expect_equal(pk.calc.tmax(c(1, 1), c(0, 1), first.tmax=FALSE),
                1)
+})
+
+test_that("pk.calc.tmin", {
+  # No data give a warning and NA
+  expect_warning(expect_warning(
+    v1 <- pk.calc.tmin(numeric(), numeric()),
+    class = "pknca_warning_no_concentration"),
+    class = "pknca_warning_no_time"
+  )
+  expect_equal(v1, NA)
+
+  # Either concentration or time is missing, give an error
+  expect_error(
+    suppressWarnings(pk.calc.tmin(conc = numeric())),
+    regexp='argument "time" is missing, with no default'
+  )
+  expect_error(
+    pk.calc.tmin(time=numeric()),
+    regexp='argument "conc" is missing, with no default'
+  )
+
+  # All NA concentrations give NA
+  expect_warning(
+    expect_equal(pk.calc.tmin(c(NA, NA), c(0, 1), first.tmin=TRUE), NA),
+    class = "pknca_warning_all_concentration_missing"
+  )
+
+  # It calculates tmin correctly based on the first.tmin option
+  expect_equal(pk.calc.tmin(c(1, 2), c(0, 1), first.tmin=TRUE), 0)
+  expect_equal(pk.calc.tmin(c(1, 2), c(0, 1), first.tmin=FALSE), 0)
+  expect_equal(pk.calc.tmin(c(1, 1), c(0, 1), first.tmin=TRUE), 0)
+  expect_equal(pk.calc.tmin(c(1, 1), c(0, 1), first.tmin=FALSE), 1)
+
+  # Zero concentrations are valid minima
+  expect_equal(pk.calc.tmin(c(0, 1), c(0, 1), first.tmin=TRUE), 0)
+  expect_equal(pk.calc.tmin(c(1, 0), c(0, 1), first.tmin=TRUE), 1)
 })
 
 test_that("pk.calc.tlast", {
@@ -150,7 +186,7 @@ test_that("pk.calc.clast.obs", {
   t1 <- c(0, 1, 2, 3)
   expect_warning(
     v1 <- pk.calc.clast.obs(c1, t1),
-    class = "pknca_conc_all_missing"
+    class = "pknca_warning_all_concentration_missing"
   )
   expect_equal(v1, NA_real_)
 
@@ -167,8 +203,10 @@ test_that("pk.calc.thalf.eff", {
   )
 
   # NA input gives equivalent NA output
-  expect_equal(pk.calc.thalf.eff(NA),
-               as.numeric(NA))
+  expect_equal(
+    pk.calc.thalf.eff(NA),
+    NA_real_
+  )
 
   # Numbers mixed with NA give appropriate output
   d1 <- c(0, 1, NA, 3)
@@ -187,7 +225,7 @@ test_that("pk.calc.kel", {
   # NA input gives equivalent NA output
   expect_equal(
     pk.calc.kel(NA),
-    as.numeric(NA)
+    NA_real_
   )
 
   # Numbers mixed with NA give appropriate output
@@ -248,8 +286,8 @@ test_that("pk.calc.aucpext", {
   expect_equal(v1, -100)
   expect_warning(expect_warning(
     v2 <- pk.calc.aucpext(auclast=0, aucinf=0),
-    class = "pknca_aucpext_aucinf_le_auclast"),
-    class = "pknca_aucpext_aucinf_auclast_positive"
+    class = "pknca_warning_aucpext_aucinf_le_auclast"),
+    class = "pknca_warning_aucpext_aucinf_auclast_positive"
   )
   expect_equal(v2, NA_real_,
                info="aucinf<=0 gives NA_real_ (not infinity)")
@@ -453,6 +491,7 @@ test_that("pk.calc.aucabove", {
           pk.calc.aucabove(conc = d_conc$conc, time = d_conc$time, conc_above = 2),
           pk.calc.aucabove(conc = d_conc$conc, time = d_conc$time, conc_above = 3)
         ),
+      PPANMETH = c("", "", "AUC: lin up/log down", "AUC: lin up/log down"),
       exclude = NA_character_
     )
   )
@@ -488,5 +527,36 @@ test_that("pk.calc.cstart", {
   expect_error(
     pk.calc.cstart(1:5, c(0, 0:3), 0),
     regexp = "Assertion on 'time' failed: Contains duplicated values, position 2."
+  )
+})
+
+test_that("pk.calc.aucabove rejects non-finite conc_above", {
+  # This is a deliberate tightening from the previous stopifnot()-based check,
+  # which allowed conc_above = Inf (silently yielding AUC = 0 for all
+  # profiles, since conc - Inf is always -Inf). Pinned here so it isn't
+  # accidentally reverted.
+  expect_error(
+    pk.calc.aucabove(conc = c(1, 2, 3), time = c(0, 1, 2), conc_above = Inf),
+    regexp = "finite"
+  )
+  expect_error(
+    pk.calc.aucabove(conc = c(1, 2, 3), time = c(0, 1, 2), conc_above = -Inf),
+    regexp = "finite"
+  )
+})
+
+test_that("zero-length input gives NA rather than zero (issue 601)", {
+  expect_equal(pk.calc.cl(dose = numeric(0), auc = 10), NA_real_)
+  expect_equal(pk.calc.cl(dose = NULL, auc = 10), NA_real_)
+  expect_equal(pk.calc.totdose(dose = numeric(0)), NA_real_)
+  expect_equal(pk.calc.totdose(dose = NULL), NA_real_)
+  # Unchanged for real input, including multiple doses in one interval
+  expect_equal(pk.calc.cl(dose = 100, auc = 10), 10)
+  expect_equal(pk.calc.cl(dose = c(50, 50), auc = 10), 10)
+  expect_equal(pk.calc.totdose(dose = c(50, 50)), 100)
+  # Counting parameters legitimately return zero for no measurements
+  expect_warning(
+    expect_equal(pk.calc.count_conc(conc = numeric(0)), 0),
+    class = "pknca_warning_no_concentration"
   )
 })

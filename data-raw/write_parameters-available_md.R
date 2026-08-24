@@ -1,7 +1,7 @@
 # Generate vignettes/parameters-available.Rmd
 #
 # Run from the package root:
-#   Rscript data-raw/write_param_table_md.R
+#   Rscript data-raw/write_parameters-available_md.R
 
 devtools::load_all()
 

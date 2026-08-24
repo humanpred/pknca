@@ -215,7 +215,7 @@ test_that("pk.tss.stepwise.linear", {
       level="A",
       verbose=FALSE
     ),
-    regexp="min.points must be a number"
+    regexp="Must be of type 'number'"
   )
   expect_error(
     pk.tss.stepwise.linear(
@@ -228,9 +228,9 @@ test_that("pk.tss.stepwise.linear", {
       level="A",
       verbose=FALSE
     ),
-    regexp="min.points must be at least 3"
+    regexp="Element 1 is not >= 3"
   )
-
+  
   expect_error(
     pk.tss.stepwise.linear(conc=tmpdata$conc,
                            time=tmpdata$time,
@@ -239,7 +239,7 @@ test_that("pk.tss.stepwise.linear", {
                            time.dosing=0:14,
                            level="A",
                            verbose=FALSE),
-    regexp="level must be a number"
+    regexp="Must be of type 'numeric'"
   )
 
   expect_error(
@@ -536,7 +536,7 @@ test_that("pk.tss.monoexponential expected warnings and errors", {
                            treatment=tmpdata$treatment,
                            time.dosing=0:14,
                            tss.fraction=factor(1)),
-    regexp="tss.fraction must be a number"
+    regexp="Must be of type 'number'"
   )
   suppressWarnings(
     expect_warning(

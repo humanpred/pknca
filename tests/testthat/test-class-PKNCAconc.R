@@ -12,6 +12,16 @@ test_that("PKNCAconc expected errors", {
   )
 })
 
+test_that("PKNCAconc does not error for excluded, invalid times (#310)", {
+  # Missing time points that are excluded are not checked
+  tmp.conc <- data.frame(time = c(1, NA), conc = c(1, NA), exclude = c(NA, "foo"))
+  expect_no_error(PKNCAconc(conc~time, data = tmp.conc, exclude = "exclude"))
+
+  # Exclude column can be not defined (NULL)
+  tmp.conc <- data.frame(time = c(1, 2), conc = c(1, 2))
+  expect_no_error(PKNCAconc(conc~time, data = tmp.conc, exclude = NULL))
+})
+
 test_that("PKNCAconc", {
   tmp.conc <- generate.conc(nsub=5, ntreat=2, time.points=0:24)
   tmp.conc.analyte <- generate.conc(nsub=5, ntreat=2, time.points=0:24,
@@ -53,10 +63,14 @@ test_that("PKNCAconc", {
   # Subject assignment
   expect_equal(PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte),
                PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject="ID"))
-  expect_error(PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject=5),
-               regexp="subject must be a character string")
-  expect_error(PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject=c("", "foo")),
-               regexp="subject must be a scalar")
+  expect_error(
+    PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject=5),
+    regexp="Must be of type 'string'"
+  )
+  expect_error(
+    PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject=c("", "foo")),
+    regexp="Must have length 1"
+  )
   expect_error(PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject="foo"),
                regexp="The subject parameter must map to a name in the data")
 
@@ -628,4 +642,96 @@ test_that("PKNCAconc units (#336)", {
     o_conc$columns$amountu,
     structure("amountu_x", unit_type = "column")
   )
+})
+
+test_that("PKNCAconc lloq argument is stored and validated (scalar and column)", {
+  tmp.conc <- generate.conc(nsub = 2, ntreat = 1, time.points = 0:6)
+
+  # A scalar value materialises an "lloq" column filled with that value
+  o_scalar <- PKNCAconc(tmp.conc, conc ~ time | ID, lloq = 0.5)
+  expect_equal(o_scalar$columns$lloq, "lloq")
+  expect_equal(o_scalar$data$lloq, rep(0.5, nrow(tmp.conc)))
+
+  # A column name is used directly
+  tmp.conc.col <- tmp.conc
+  tmp.conc.col$assay_lloq <- 0.25
+  o_col <- PKNCAconc(tmp.conc.col, conc ~ time | ID, lloq = "assay_lloq")
+  expect_equal(o_col$columns$lloq, "assay_lloq")
+  expect_equal(o_col$data$assay_lloq, rep(0.25, nrow(tmp.conc.col)))
+
+  # A non-numeric lloq column is rejected
+  tmp.conc.bad <- tmp.conc
+  tmp.conc.bad$bad_lloq <- "x"
+  expect_error(
+    PKNCAconc(tmp.conc.bad, conc ~ time | ID, lloq = "bad_lloq"),
+    regexp = "Must be of type 'numeric'"
+  )
+
+  # Without lloq, no lloq column or attribute is added
+  o_none <- PKNCAconc(tmp.conc, conc ~ time | ID)
+  expect_null(o_none$columns$lloq)
+  expect_false("lloq" %in% names(o_none$data))
+})
+
+test_that("exclude_half.life and include_half.life columns must be logical (#583)", {
+  d_conc <-
+    data.frame(
+      conc = c(1, 0.5, 0.25, 0.125),
+      time = 0:3,
+      excl_chr = c(NA, NA, "yes", NA),
+      incl_chr = c(NA, "yes", "yes", "yes"),
+      excl_num = c(0, 0, 1, 0),
+      excl_lgl = c(NA, NA, TRUE, NA),
+      incl_lgl = c(FALSE, TRUE, TRUE, TRUE),
+      subject = 1
+    )
+  # A non-logical column is an error that names the column
+  expect_error(
+    PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_chr"),
+    regexp = "The exclude_half.life column ('excl_chr') must be a logical (TRUE/FALSE/NA) column, not character",
+    fixed = TRUE
+  )
+  expect_error(
+    PKNCAconc(d_conc, conc ~ time | subject, include_half.life = "incl_chr"),
+    regexp = "The include_half.life column ('incl_chr') must be a logical (TRUE/FALSE/NA) column, not character",
+    fixed = TRUE
+  )
+  # Numeric 0/1 columns are also rejected
+  expect_error(
+    PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_num"),
+    regexp = "The exclude_half.life column ('excl_num') must be a logical (TRUE/FALSE/NA) column, not numeric",
+    fixed = TRUE
+  )
+  # Logical columns (including NA values) continue to work
+  o_excl <- PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_lgl")
+  expect_s3_class(o_excl, "PKNCAconc")
+  expect_equal(o_excl$columns$exclude_half.life, "excl_lgl")
+  o_incl <- PKNCAconc(d_conc, conc ~ time | subject, include_half.life = "incl_lgl")
+  expect_s3_class(o_incl, "PKNCAconc")
+  expect_equal(o_incl$columns$include_half.life, "incl_lgl")
+})
+
+test_that("exclude_half.life and include_half.life column names must exist in the data (#583)", {
+  d_conc <-
+    data.frame(
+      conc = c(1, 0.5, 0.25, 0.125),
+      time = 0:3,
+      excl_lgl = c(NA, NA, TRUE, NA),
+      subject = 1
+    )
+  # A column name not in the data is an error that names the missing column,
+  # so a typo cannot quietly deactivate the selection
+  expect_error(
+    PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_typo"),
+    regexp = "The exclude_half.life column ('excl_typo') does not exist in the data",
+    fixed = TRUE
+  )
+  expect_error(
+    PKNCAconc(d_conc, conc ~ time | subject, include_half.life = "incl_typo"),
+    regexp = "The include_half.life column ('incl_typo') does not exist in the data",
+    fixed = TRUE
+  )
+  # An existing logical column is unaffected by the existence check
+  o_excl <- PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_lgl")
+  expect_equal(o_excl$columns$exclude_half.life, "excl_lgl")
 })

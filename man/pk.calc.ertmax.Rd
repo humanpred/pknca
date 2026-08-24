@@ -23,7 +23,8 @@ pk.calc.ertmax(
 
 \item{duration.conc}{The duration of the collection interval}
 
-\item{options}{List of changes to the default PKNCA options (see \code{PKNCA.options()})}
+\item{options}{List of changes to the default PKNCA options (see
+\code{PKNCA.options()})}
 
 \item{check}{Should the concentration and time data be checked?}
 
@@ -35,3 +36,13 @@ The midpoint collection time of the maximum excretion rate, or NA if not availab
 \description{
 Calculate the midpoint collection time of the maximum excretion rate
 }
+\seealso{
+Other Urine/Excretion parameters:
+\code{\link[=pk.calc.ae]{pk.calc.ae()}},
+\code{\link[=pk.calc.clr]{pk.calc.clr()}},
+\code{\link[=pk.calc.ermax]{pk.calc.ermax()}},
+\code{\link[=pk.calc.ertlst]{pk.calc.ertlst()}},
+\code{\link[=pk.calc.fe]{pk.calc.fe()}},
+\code{\link[=pk.calc.volpk]{pk.calc.volpk()}}
+}
+\concept{Urine/Excretion parameters}

@@ -18,12 +18,12 @@
 #' @param time.nominal (optional) The name of the nominal time column (if the
 #'   main time variable is actual time.  The `time.nominal` is not used during
 #'   calculations; it is available to assist with data summary and checking.
-#' @param exclude (optional) The name of a column with concentrations to exclude
+#' @param exclude (optional) The name of a column with doses to exclude
 #'   from calculations and summarization.  If given, the column should have
-#'   values of `NA` or `""` for concentrations to include and non-empty text for
-#'   concentrations to exclude.
+#'   values of `NA` or `""` for doses to include and non-empty text for
+#'   doses to exclude.
 #' @param ... Ignored.
-#' @returns A PKNCAconc object that can be used for automated NCA.
+#' @returns A PKNCAdose object that can be used for automated NCA.
 #' @details The `formula` for a `PKNCAdose` object can be
 #'   given three ways: one-sided (missing left side), one-sided (missing
 #'   right side), or two-sided.  Each of the three ways can be given
@@ -37,7 +37,8 @@
 #'   `dose~.|treatment+subject`, and only a single row may be given
 #'   per group.  When the right side is missing, PKNCA assumes that the
 #'   same dose is given in every interval.  When given as a two-sided
-#'   formula
+#'   formula, both the dose amount and time are used directly from the
+#'   data.
 #' @family PKNCA objects
 #' @export
 PKNCAdose <- function(data, ...)
@@ -63,19 +64,21 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
                                  time.nominal, exclude = NULL, ...,
                                  doseu = NULL, doseu_pref = NULL) {
   # The data must have... data
-  if (nrow(data) == 0) {
-    stop("data must have at least one row.")
-  }
+  checkmate::assert_data_frame(data, min.rows = 1)
+
   # Check inputs
   if (!missing(time.nominal)) {
     if (!(time.nominal %in% names(data))) {
-      stop("time.nominal, if given, must be a column name in the input data.")
+      rlang::abort(
+        "time.nominal, if given, must be a column name in the input data.",
+        class = "pknca_error_timenominal_not_in_data"
+      )
     }
   }
   # Verify that all the variables in the formula are columns in the data.
   parsed_form_raw <- parse_formula_to_cols(form = formula)
   if (length(parsed_form_raw$groups_left_of_slash) > 0) {
-    stop("formula for PKNCAdose may not include a slash")
+    rlang::abort("formula for PKNCAdose may not include a slash", class = "pknca_error_formula_slash")
   }
   parsed_form_groups <-
     if (length(parsed_form_raw$groups) > 0) {
@@ -97,20 +100,29 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
     )
   # Check for variable existence and length
   if (!(length(parsed_form$dose) %in% c(0, 1))) {
-    stop("The left side of the formula must have zero or one variable")
+    rlang::abort("The left side of the formula must have zero or one variable", class = "pknca_error_dose_formula_lhs")
   } else if (length(parsed_form$dose) == 1 &&
              !(parsed_form$dose %in% names(data))) {
     # the "." is handled in parse_formula_to_cols
-    stop("The left side formula must be a variable in the data, empty, or '.'.")
+    rlang::abort(
+      "The left side formula must be a variable in the data, empty, or '.'.",
+      class = "pknca_error_formula_lhs_not_in_data"
+    )
   }
   if (!(length(parsed_form$time) %in% c(0, 1))) {
-    stop("The right side of the formula (excluding groups) must have exactly one variable")
+    rlang::abort(
+      "The right side of the formula (excluding groups) must have exactly one variable",
+      class = "pknca_error_dose_formula_rhs"
+    )
   } else if (length(parsed_form$time) == 1 &&
              !(parsed_form$time %in% names(data))) {
-    stop("The right side formula must be a variable in the data or '.'.")
+    rlang::abort(
+      "The right side formula must be a variable in the data or '.'.",
+      class = "pknca_error_formula_rhs_not_in_data"
+    )
   }
   if (!all(unlist(parsed_form$groups) %in% names(data))) {
-    stop("All of the variables in the groups must be in the data")
+    rlang::abort("All of the variables in the groups must be in the data", class = "pknca_error_groups_not_in_data")
   }
   ret <-
     list(
@@ -125,9 +137,16 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
   # in duplicate checking.
   duplicate_check(object = ret, data_type = "dosing")
 
-  mask.indep <- is.na(getIndepVar.PKNCAdose(ret))
-  if (any(mask.indep) & !all(mask.indep)) {
-    stop("Some but not all values are missing for the independent variable, please see the help for PKNCAdose for how to specify the formula and confirm that your data has dose times for all doses.")
+  # Do some general checking of the dose and time data.
+  # Disregard points that will be excluded.
+  is_excluded <- !is.na(normalize_exclude(ret))
+  # Check for missing independent variable (time) in non-excluded rows
+  mask.indep <- is.na(getIndepVar.PKNCAdose(ret)) & !is_excluded
+  if (any(mask.indep) && !all(is.na(getIndepVar.PKNCAdose(ret)[!is_excluded]))) {
+    rlang::abort(
+      "Some but not all values are missing for the independent variable, please see the help for PKNCAdose for how to specify the formula and confirm that your data has dose times for all doses.",
+      class = "pknca_error_partial_missing_indepvar"
+    )
   }
   if (missing(route)) {
     ret <- setRoute(ret)
@@ -171,11 +190,11 @@ setRoute <- function(object, ...) {
 #' @export
 setRoute.PKNCAdose <- function(object, route, ...) {
   if (missing(route)) {
+    # The route silently defaults to extravascular by design.
     object <-
       setAttributeColumn(object=object,
                          attr_name="route",
-                         default_value="extravascular",
-                         message_if_default="Assuming route of administration is extravascular")
+                         default_value="extravascular")
   } else {
     object <-
       setAttributeColumn(object=object,
@@ -184,7 +203,10 @@ setRoute.PKNCAdose <- function(object, route, ...) {
   }
   if (!all(tolower(getAttributeColumn(object=object, attr_name="route")[[1]]) %in%
            c("extravascular", "intravascular"))) {
-    stop("route must have values of either 'extravascular' or 'intravascular'.  Please set to one of those values and retry.")
+    rlang::abort(
+      "route must have values of either 'extravascular' or 'intravascular'.  Please set to one of those values and retry.",
+      class = "pknca_error_invalid_route"
+    )
   }
   object
 }
@@ -207,17 +229,16 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
   if (missing(dose)) {
     dose <- object$columns$dose
   }
-  if (missing(duration) & missing(rate)) {
-    object <- setAttributeColumn(object=object, attr_name="duration", default_value=0,
-                                 message_if_default="Assuming instant dosing (duration=0)")
-
-  } else if (!missing(duration) & !missing(rate)) {
-    stop("Both duration and rate cannot be given at the same time")
+  if (missing(duration) && missing(rate)) {
+    # The duration silently defaults to 0 (instant dosing) by design.
+    object <- setAttributeColumn(object=object, attr_name="duration", default_value=0)
+  } else if (!missing(duration) && !missing(rate)) {
+    rlang::abort("Both duration and rate cannot be given at the same time", class = "pknca_error_duration_and_rate")
     # TODO: A consistency check could be done, but that would get into
     # requiring near-equal checks for floating point error.
   } else if (!missing(duration)) {
     object <- setAttributeColumn(object=object, attr_name="duration", col_or_value=duration)
-  } else if (!missing(rate) & !missing(dose) && !is.na(dose)) {
+  } else if (!missing(rate) && !missing(dose) && !is.na(dose)) {
     tmprate <- getColumnValueOrNot(object$data, rate, "rate")
     tmpdose <- getColumnValueOrNot(object$data, dose, "dose")
     duration <- tmpdose$data[[tmpdose$name]]/tmprate$data[[tmprate$name]]
@@ -225,12 +246,15 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
   }
   duration.val <- getAttributeColumn(object=object, attr_name="duration")[[1]]
   if (is.numeric(duration.val) &&
-      !any(is.na(duration.val)) &&
+      !anyNA(duration.val) &&
       !any(is.infinite(duration.val)) &&
       all(duration.val >= 0)) {
     # It passes
   } else {
-    stop("duration must be numeric without missing (NA) or infinite values, and all values must be >= 0")
+    rlang::abort(
+      "duration must be numeric without missing (NA) or infinite values, and all values must be >= 0",
+      class = "pknca_error_dose_invalid_duration"
+    )
   }
   object
 }

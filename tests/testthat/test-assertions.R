@@ -104,6 +104,8 @@ test_that("assert_PKNCAconc", {
     assert_PKNCAconc("A"),
     regexp = "Must be a PKNCAconc object"
   )
+  obj <- PKNCAconc(data.frame(conc = 1, time = 0), conc~time)
+  expect_identical(assert_PKNCAconc(obj), obj)
 })
 
 test_that("assert_PKNCAdata", {
@@ -118,6 +120,8 @@ test_that("assert_PKNCAdose", {
     assert_PKNCAdose("A"),
     regexp = "Must be a PKNCAdose object"
   )
+  obj <- PKNCAdose(data.frame(dose = 1, time = 0), dose~time)
+  expect_identical(assert_PKNCAdose(obj), obj)
 })
 
 test_that("assert_PKNCAresults", {
@@ -154,25 +158,24 @@ test_that("assert_unit_col", {
   )
   expect_error(
     assert_unit_col(unit = 1:2),
-    regexp = "`unit` must be a single value"
+    regexp = "Must be of type 'character'"
   )
   expect_error(
     assert_unit_col(unit = 1),
-    regexp = "`unit` must be a character string"
+    regexp = "Must be of type 'character'"
   )
   expect_error(
     assert_unit_col(unit = "D", data = "A"),
-    regexp = "`data` must be a data.frame"
+    regexp = "Must be of type 'data.frame'"
   )
   expect_error(
     assert_unit_col(unit = "D", data = d),
-    regexp = "`unit` (D) must be a column name in the data",
+    regexp = "Names must include the elements {'D'}",
     fixed = TRUE
   )
   expect_error(
     assert_unit_col(unit = "A", data = d),
-    regexp = "`unit` (A) must contain character data",
-    fixed = TRUE
+    regexp = "Must be of type 'character'"
   )
 })
 
@@ -181,11 +184,11 @@ test_that("assert_unit_value", {
   expect_null(assert_unit_value(NULL))
   expect_error(
     assert_unit_value(c("A", "B")),
-    regexp = "`unit` must be a single value"
+    regexp = "Must have length 1"
   )
   expect_error(
     assert_unit_value(1),
-    regexp = "`unit` must be a character string"
+    regexp = "Must be of type 'character'"
   )
 })
 
@@ -203,6 +206,6 @@ test_that("assert_unit", {
   )
   expect_error(
     assert_unit(unit = 1, data = d),
-    regexp = "`unit` must be a character string"
+    regexp = "Must be of type 'character'"
   )
 })

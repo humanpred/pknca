@@ -33,14 +33,9 @@ set_intervals <- function(data, intervals) {
 #'   
 #' @export
 assert_intervals <- function(intervals, data) {
-  if (!is.data.frame(intervals)) {
-    stop("The 'intervals' argument must be a data frame or a data frame-like object.")
-  }
-  
-  if (!inherits(data, "PKNCAdata")) {
-    stop("The 'data' argument must be a PKNCAdata object.")
-  }
-  
+  checkmate::assert_data_frame(intervals)
+  checkmate::assert_class(data, classes = "PKNCAdata")
+
   allowed_columns <-
     c(
       names(getGroups.PKNCAdata(data)),
@@ -55,7 +50,13 @@ assert_intervals <- function(intervals, data) {
   invalid_columns <- setdiff(names(intervals), allowed_columns)
   
   if (length(invalid_columns) > 0) {
-    stop("The following columns in 'intervals' are not allowed: ", paste(invalid_columns, collapse = ", "))
+    rlang::abort(
+      sprintf(
+        "The following columns in 'intervals' are not allowed: %s",
+        paste(invalid_columns, collapse = ", ")
+      ),
+      class = "pknca_error_invalid_interval_columns"
+    )
   }
   
   intervals

@@ -28,7 +28,7 @@ test_that("AIC.list", {
                         stringsAsFactors=FALSE,
                         row.names=c("A", "B"))
   expect_equal(AIC.list(d3), result3)
-  
+
   d4 <- list("C"=list("A"=mod1), "B"=mod2)
   result4 <- data.frame(AIC=c(as.numeric(AIC(mod1)), as.numeric(AIC(mod2))),
                         df=c(3, 4),
@@ -46,7 +46,6 @@ test_that("AIC.list", {
                         stringsAsFactors=FALSE,
                         row.names=c("C A", "B", "C"))
   expect_equal(AIC.list(d5), result5)
-
 })
 
 test_that("get.best.model", {

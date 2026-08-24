@@ -72,9 +72,9 @@ given.  At least one of \code{data.dose} and \code{intervals} must be given.
 \seealso{
 \code{\link[=choose.auc.intervals]{choose.auc.intervals()}}, \code{\link[=pk.nca]{pk.nca()}}, \code{\link[=pknca_units_table]{pknca_units_table()}}
 
-Other PKNCA objects: 
-\code{\link{PKNCAconc}()},
-\code{\link{PKNCAdose}()},
-\code{\link{PKNCAresults}()}
+Other PKNCA objects:
+\code{\link[=PKNCAconc]{PKNCAconc()}},
+\code{\link[=PKNCAdose]{PKNCAdose()}},
+\code{\link[=PKNCAresults]{PKNCAresults()}}
 }
 \concept{PKNCA objects}

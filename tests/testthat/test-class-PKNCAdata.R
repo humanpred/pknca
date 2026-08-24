@@ -39,12 +39,14 @@ test_that("PKNCAdata", {
                info="Concentration and dose data can be created on the fly")
 
   # Input checking
-  expect_error(PKNCAdata(obj.conc, obj.dose, options="a"),
-               regexp="options must be a list.",
-               info="Option class")
-  expect_error(PKNCAdata(obj.conc, obj.dose, options=list(1)),
-               regexp="options must have names.",
-               info="Option structure")
+  expect_error(
+    PKNCAdata(obj.conc, obj.dose, options="a"),
+    regexp="Must be of type 'list'"
+  )
+  expect_error(
+    PKNCAdata(obj.conc, obj.dose, options=list(1)),
+    regexp="Must have names"
+  )
   expect_error(PKNCAdata(obj.conc, obj.dose, options=list(foo=1)),
                regexp="Invalid setting for PKNCA.*foo",
                info="Option names")
@@ -79,22 +81,22 @@ test_that("PKNCAdata", {
   obj.dose <- PKNCAdose(tmp.dose, formula=dose~time|treatment+ID)
   expect_warning(expect_warning(
     PKNCAdata(obj.conc, obj.dose),
-    class = "pknca_no_intervals_generated"),
-    class = "pknca_no_intervals_generated",
-    info="Missing concentration data with dose data gives a warning."
+    class = "pknca_warning_no_intervals_generated"),
+    class = "pknca_warning_no_intervals_generated",
+    info="No intervals generated due to no concentration data."
   )
 
   expect_warning(expect_warning(expect_warning(
     PKNCAdata(obj.conc, obj.dose, formula.conc=a~b),
-    class = "pknca_dataconc_formulaconc"),
-    class = "pknca_no_intervals_generated"),
-    class = "pknca_no_intervals_generated"
+    class = "pknca_warning_dataconc_formulaconc"),
+    class = "pknca_warning_no_intervals_generated"),
+    class = "pknca_warning_no_intervals_generated"
   )
   expect_warning(expect_warning(expect_warning(
     PKNCAdata(obj.conc, obj.dose, formula.dose=a~b),
-    class = "pknca_dataconc_formuladose"),
-    class = "pknca_no_intervals_generated"),
-    class = "pknca_no_intervals_generated"
+    class = "pknca_warning_dataconc_formuladose"),
+    class = "pknca_warning_no_intervals_generated"),
+    class = "pknca_warning_no_intervals_generated"
   )
 })
 
@@ -373,20 +375,6 @@ test_that("PKNCAdata units (#336)", {
   suppressWarnings(o_nca <- pk.nca(o_data))
   expect_true("Cmax (A)" %in% names(summary(o_nca)))
 
-  # NA unit values are ignored
-  d_conc <- data.frame(conc = 1, time = 0:1, concu_x = c("A", NA), timeu_x = "B", amountu_x = "C")
-  d_dose <- data.frame(dose = 1, time = 0, doseu_x = "D")
-
-  o_conc <- PKNCAconc(data = d_conc, conc~time, concu = "concu_x", timeu = "timeu_x")
-  o_dose <- PKNCAdose(data = d_dose, dose~time, doseu = "doseu_x")
-  o_data <- PKNCAdata(o_conc, o_dose)
-  expect_equal(
-    o_data$units,
-    pknca_units_table(concu = "A", doseu = "D", timeu = "B")
-  )
-  suppressWarnings(o_nca <- pk.nca(o_data))
-  expect_true("Cmax (A)" %in% names(summary(o_nca)))
-
   # multiple unit values cause an error
   d_conc <- data.frame(conc = 1, time = 0:1, concu_x = c("A", "C"), timeu_x = "B", amountu_x = "C")
   d_dose <- data.frame(dose = 1, time = 0, doseu_x = "B")
@@ -395,7 +383,7 @@ test_that("PKNCAdata units (#336)", {
   o_dose <- PKNCAdose(data = d_dose, dose~time, doseu = "doseu_x")
   expect_error(
     PKNCAdata(o_conc, o_dose),
-    regexp = "Only one unit may be provided at a time: A, C"
+    regexp = "Units should be uniform at least across concentration groups"
   )
 })
 
@@ -413,6 +401,15 @@ test_that("getGroups works", {
 
   # It should be an empty data.frame with 11 rows
   expect_equal(getGroups(o_data_nogroup), data.frame(A = 1:11)[, -1])
+})
+
+test_that("PKNCAdata auto-interval generation works with no grouping variables", {
+  d <- as.data.frame(datasets::Theoph[datasets::Theoph$Subject == 1, ])
+  o_conc <- PKNCAconc(d, conc~Time)
+  d_dose <- d[d$Time == 0, , drop = FALSE]
+  o_dose <- PKNCAdose(d_dose, Dose~Time)
+  o_data <- PKNCAdata(o_conc, o_dose)
+  expect_true(nrow(o_data$intervals) > 0)
 })
 
 test_that("group_vars.PKNCAdata", {

@@ -26,7 +26,10 @@ CodeFactor
 Codecov
 DL
 Dixit
+ERTmax
+ERmax
 Extrap
+GMR
 Gabrielsson
 Hadley
 Hsuan
@@ -59,6 +62,7 @@ Pharmacodynamics
 Pharmacokinetic
 Pharmacokinetics
 SDTM
+Satterthwaite
 Satterthwaite’s
 Semilog
 Soper
@@ -67,6 +71,7 @@ TSS
 Theophylline
 Tlast
 Tmax
+Tmin
 Tss
 Vss
 Vz
@@ -75,6 +80,7 @@ Wickham
 WinNonlin
 ae
 amikacin
+amountu
 analyte
 analytes
 assocuated
@@ -87,6 +93,7 @@ auclast
 aucpext
 bioavailability
 bioequivalence
+bioequivalent
 calc
 cav
 clast
@@ -94,14 +101,17 @@ clr
 cmax
 cmin
 conc
+concu
 ctrough
 dbplyr
+df
 doBy
 doi
 dosetype
 dplyr
 dtplyr
 entration
+exponentiating
 extrap
 extravascular
 fe
@@ -115,6 +125,7 @@ https
 ibute
 infty
 interp
+intra
 intravascular
 knitr
 leq
@@ -155,6 +166,7 @@ thalf
 theophylline
 tibble
 tibbles
+timeu
 tlast
 tmax
 totdose
@@ -168,3 +180,18 @@ unreportable
 vss
 vz
 λz
+EMA
+guidances
+HC
+HVNTID
+Hyslop
+linearized
+NTID
+RSABE
+anova
+ISC
+isc
+lmer
+varIdent
+swR
+swT

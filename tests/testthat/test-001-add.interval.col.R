@@ -1,103 +1,170 @@
 # Save the original state
 original_state <- get("interval.cols", envir=PKNCA:::.PKNCAEnv)
 
+test_that("sparse-derived parameters are each registered exactly once", {
+  cols <- get.interval.cols()
+  sparse_derived <-
+    c("cl.sparse.last", "kel.sparse.last", "mrt.sparse.last",
+      "vss.sparse.last", "vz.sparse.last")
+  for (param in sparse_derived) {
+    expect_equal(sum(names(cols) == param), 1L, info=param)
+    expect_true(cols[[param]]$sparse, info=param)
+  }
+  # No parameter name may appear twice in the registry
+  expect_equal(anyDuplicated(names(cols)), 0L)
+  # Pin the registry size so that a lost or accumulating registration is
+  # caught; update the value when a parameter is added or removed.
+  expect_length(cols, 203)
+})
+
 test_that("add.interval.col", {
   # Invalid inputs fail
+  # name
   expect_error(
-    add.interval.col(name=1),
-    regexp="name must be a character string",
-    info="interval column name must be a character string"
+    add.interval.col(name = 1),
+    regexp = "Must be of type 'character'"
   )
   expect_error(
-    add.interval.col(name=c("a", "b")),
-    regexp="name must have length",
-    info="interval column name must be a scalar character string"
-  )
-
-  expect_error(
-    add.interval.col(name="a", FUN=c("a", "b")),
-    regexp="FUN must have length == 1",
-    info="interval column function must be a scalar character string or NA"
+    add.interval.col(name = c("a", "b")),
+    regexp = "Must have length 1"
   )
   expect_error(
-    add.interval.col(name="a", FUN=1),
-    regexp="FUN must be a character string or NA",
-    info="interval column function must be a character string or NA"
+    add.interval.col(name = ""),
+    regexp = "at least 1 character"
+  )
+  expect_error(
+    add.interval.col(name = NA_character_),
+    regexp = "may not contain missing values|Contains missing values"
   )
   
+  # FUN
   expect_error(
-    add.interval.col(name="a", FUN=NA, datatype="interval", desc="test addition"),
-    regexp='argument "unit_type" is missing, with no default'
+    add.interval.col(name = "a", FUN = c("a", "b")),
+    regexp = "Must have length 1"
   )
   expect_error(
-    add.interval.col(name="a", FUN=NA, unit_type="foo", datatype="interval", desc="test addition"),
-    regexp="should be one of .*inverse_time"
+    add.interval.col(name = "a", FUN = 1),
+    regexp = "Must be of type 'character'"
+  )
+  expect_error(
+    add.interval.col(name = "a", FUN = "this function does not exist", unit_type = "conc", pretty_name = "foo", datatype = "interval", desc = "test addition"),
+    class = "pknca_error_fun_not_found"
+  )
+  
+  # unit_type
+  expect_error(
+    add.interval.col(name = "a", FUN = NA, pretty_name = "a", datatype = "interval", desc = "test addition"),
+    regexp = 'argument "unit_type" is missing, with no default'
+  )
+  expect_error(
+    add.interval.col(name = "a", FUN = NA, pretty_name = "a", unit_type = "foo", datatype = "interval", desc = "test addition"),
+    regexp = "should be one of .*inverse_time"
   )
   
   # pretty_name checks
   expect_error(
-    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name=1:2, datatype="interval", desc=1),
-    regexp="pretty_name must be a scalar"
+    add.interval.col(name = "a", FUN = NA, unit_type = "conc", pretty_name = 1:2, datatype = "interval", desc = 1),
+    regexp = "Must be of type 'character'"
   )
   expect_error(
-    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name=1, datatype="interval", desc=1),
-    regexp="pretty_name must be a character"
+    add.interval.col(name = "a", FUN = NA, unit_type = "conc", pretty_name = 1, datatype = "interval", desc = 1),
+    regexp = "Must be of type 'character'"
   )
   expect_error(
-    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="", datatype="interval", desc=1),
-    regexp="pretty_name must not be an empty string"
+    add.interval.col(name = "a", FUN = NA, unit_type = "conc", pretty_name = "", datatype = "interval", desc = 1),
+    regexp = "All elements must have at least 1 characters"
   )
   
+  # datatype
   expect_error(
-    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="individual"),
-    regexp="Only the 'interval' datatype is currently supported.",
-    info="interval column datatype must be 'interval'"
+    add.interval.col(name = "a", FUN = NA, unit_type = "conc", pretty_name = "a", datatype = "individual"),
+    regexp = "Must be element of set \\{'interval'\\}"
   )
   
-  expect_error(
-    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc=1:2),
-    regexp="desc must have length == 1",
-    info="interval column description must be a scalar"
+  # description
+  ## validates desc
+  # ---- Valid boundary: exactly 40 characters ----
+  expect_no_error(
+    add.interval.col(
+      name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = paste(rep("a", 40), collapse = "") )
   )
+  
+  # ---- Invalid boundary: 41 characters ----
   expect_error(
-    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc=1),
-    regexp="desc must be a character string",
-    info="interval column description must be a character scalar"
+    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = paste(rep("a", 41), collapse = "") )
   )
+  
+  # ---- NA ----
+  expect_error(
+    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = NA_character_  )  
+  )
+  
+  # ---- Zero-length character ----
+  expect_error(
+    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = character(0) )
+  )
+  
+  # ---- Length > 1 ----
+  expect_error(
+    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = c("a", "b") )
+  )
+  
+  # ---- Wrong type (numeric, not character) ----
+  expect_error(
+    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = 123 )
+  )
+  
   expect_error(
     add.interval.col(name="a", FUN=NA, depends = 1, unit_type="conc", pretty_name="a", datatype="interval", desc=1),
-    regexp="'depends' must be NULL or a character vector",
+    regexp="Must be of type 'character'",
     info="depends column must be a NULL or a character string"
   )
   
   expect_error(
-    add.interval.col(name="a", FUN="this function does not exist", unit_type="conc", pretty_name="foo", datatype="interval", desc="test addition"),
-    regexp="The function named '.*' is not defined.  Please define the function before calling add.interval.col.",
-    info="interval column function must exist (or be NA)"
+    add.interval.col(name = "a", FUN = NA, unit_type = "conc", pretty_name = "a", datatype = "interval", desc = c("a", "b")),
+    regexp = "Must have length 1"
   )
-
+  
+  # depends
+  expect_error(
+    add.interval.col(name = "a", FUN = NA, depends = 1, unit_type = "conc", pretty_name = "a", datatype = "interval", desc = "a"),
+    regexp = "Must be of type 'character'"
+  )
+  
+  # values
+  expect_error(
+    add.interval.col(name = "a", FUN = NA, unit_type = "conc", pretty_name = "a", datatype = "interval", desc = "a", values = NULL),
+    class = "pknca_error_values_invalid"
+  )
+  expect_error(
+    add.interval.col(name = "a", FUN = NA, unit_type = "conc", pretty_name = "a", datatype = "interval", desc = "a", values = quote(x) ),
+    class = "pknca_error_values_invalid"
+  )
+  
   # formalsmap
   expect_error(
-    add.interval.col(name="a", FUN="mean", unit_type="conc", pretty_name="foo", formalsmap=NA),
-    regexp="formalsmap must be a list"
+    add.interval.col(name = "a", FUN = "mean", unit_type = "conc", pretty_name = "foo", formalsmap = NA),
+    regexp = "Must be of type 'list'"
   )
   expect_error(
-    add.interval.col(name="a", FUN="mean", unit_type="conc", pretty_name="foo", formalsmap=list(1)),
-    regexp="formalsmap must be a named list"
+    add.interval.col(name = "a", FUN = "mean", unit_type = "conc", pretty_name = "foo", formalsmap = list(1)),
+    regexp = "Must have names"
   )
   expect_error(
-    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="foo", formalsmap=list(A="b")),
-    regexp="formalsmap may not be given when FUN is NA",
-    info="formalsmap cannot be used with FUN=NA"
+    add.interval.col(name = "a", FUN = NA, unit_type = "conc", pretty_name = "foo", formalsmap = list(A = "b")),
+    class = "pknca_error_formalsmap_with_na_fun"
   )
   expect_error(
-    add.interval.col(name="a", FUN="mean", unit_type="conc", pretty_name="foo", formalsmap=list(A="a", "b")),
-    regexp="All formalsmap elements must be named"
+    add.interval.col(name = "a", FUN = "mean", unit_type = "conc", pretty_name = "foo", formalsmap = list(A = "a", "b")),
+    regexp = "Must have names"
   )
   expect_error(
-    add.interval.col(name="a", FUN="mean", unit_type="conc", pretty_name="a", formalsmap=list(y="a")),
-    regexp="All names for the formalsmap list must be arguments to the function",
-    info="formalsmap arguments must map to function arguments"
+    add.interval.col(name = "a", FUN = "mean", unit_type = "conc", pretty_name = "a", formalsmap = list(y = "a")),
+    class = "pknca_error_formalsmap_invalid_names"
+  )
+  expect_error(
+    add.interval.col(name = "a", FUN = "mean", unit_type = "conc", pretty_name = "foo", formalsmap = list(x = "a", x = "b")),
+    regexp = "Must have unique names"
   )
   
   expect_equal(
@@ -115,10 +182,11 @@ test_that("add.interval.col", {
       formalsmap=list(),
       depends=NULL,
       datatype="interval",
+      pptestcd_cdisc="a",
+      pptest_cdisc="test addition",
       formula=NULL,
       formula_note=NULL
-    ),
-    info="interval column assignment works with FUN=NA"
+    )
   )
   expect_equal(
     {
@@ -135,10 +203,11 @@ test_that("add.interval.col", {
       formalsmap=list(),
       depends=NULL,
       datatype="interval",
+      pptestcd_cdisc="a",
+      pptest_cdisc="test addition",
       formula=NULL,
       formula_note=NULL
-    ),
-    info="interval column assignment works with FUN=a character string"
+    )
   )
   expect_equal(
     {
@@ -155,10 +224,11 @@ test_that("add.interval.col", {
       formalsmap=list(x="values"),
       depends=NULL,
       datatype="interval",
+      pptestcd_cdisc="a",
+      pptest_cdisc="test addition",
       formula=NULL,
       formula_note=NULL
-    ),
-    info="interval column assignment works with FUN=NA"
+    )
   )
 })
 
@@ -176,10 +246,134 @@ test_that("fake parameters", {
     depends="does_not_exist"
   )
   expect_error(
-    sort.interval.cols(),
-    regexp="Invalid dependencies for interval column (please report this as a bug): fake_parameter The following dependencies are missing: does_not_exist",
-    fixed=TRUE
+    sort_interval_cols(),
+    regexp="Invalid dependencies for interval column \\(please report this as a bug\\): fake_parameter The following dependencies are missing: does_not_exist"
   )
+})
+
+test_that("add.interval.col rejects pptestcd_cdisc types", {
+  
+  # invalid types
+  expect_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc",
+      pretty_name = "a", desc = "test",
+      pptestcd_cdisc = 123
+    ),
+    class = "pknca_error_cdisc_invalid_type"
+  )
+  
+  # invalid character values
+  expect_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc",
+      pretty_name = "a", desc = "test",
+      pptestcd_cdisc = c("PCMAX", "PCMIN")
+    ),
+    class = "pknca_error_cdisc_character_invalid"
+  )
+  
+  expect_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc",
+      pretty_name = "a", desc = "test",
+      pptestcd_cdisc = NA_character_
+    ),
+    class = "pknca_error_cdisc_character_invalid"
+  )
+  
+  # invalid route mappings
+  expect_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc",
+      pretty_name = "a", desc = "test",
+      pptestcd_cdisc = list(foo = "PCMAX")
+    ),
+    class = "pknca_error_cdisc_route_mapping_invalid"
+  )
+  
+  expect_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc",
+      pretty_name = "a", desc = "test",
+      pptestcd_cdisc = list(route = "PCMAX")
+    ),
+    class = "pknca_error_cdisc_route_mapping_invalid"
+  )
+})
+
+
+test_that("add.interval.col rejects pptest_cdisc types", {
+  
+  # invalid types
+  expect_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc",
+      pretty_name = "a", desc = "test",
+      pptest_cdisc = 123
+    ),
+    class = "pknca_error_cdisc_invalid_type"
+  )
+  
+  # invalid character values
+  expect_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc",
+      pretty_name = "a", desc = "test",
+      pptest_cdisc = c("PCMAX", "PCMIN")
+    ),
+    class = "pknca_error_cdisc_character_invalid"
+  )
+  
+  expect_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc",
+      pretty_name = "a", desc = "test",
+      pptest_cdisc = NA_character_
+    ),
+    class = "pknca_error_cdisc_character_invalid"
+  )
+  
+  # invalid route mappings
+  expect_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc",
+      pretty_name = "a", desc = "test",
+      pptest_cdisc = list(foo = "PCMAX")
+    ),
+    class = "pknca_error_cdisc_route_mapping_invalid"
+  )
+  
+  expect_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc",
+      pretty_name = "a", desc = "test",
+      pptest_cdisc = list(route = "PCMAX")
+    ),
+    class = "pknca_error_cdisc_route_mapping_invalid"
+  )
+})
+
+test_that("add.interval.col accepts list for pptestcd_cdisc", {
+  add.interval.col(name="a", FUN="mean", unit_type="conc", pretty_name="a",
+                   desc="test",
+                   pptestcd_cdisc=list(route=list(extravascular="EV", intravascular="IV")),
+                   pptest_cdisc="test desc")
+  result <- get("interval.cols", envir=PKNCA:::.PKNCAEnv)[["a"]]
+  expect_true(is.list(result$pptestcd_cdisc))
+  expect_equal(result$pptestcd_cdisc$route$extravascular, "EV")
+  expect_equal(result$pptestcd_cdisc$route$intravascular, "IV")
+})
+
+test_that("add.interval.col accepts list for pptest_cdisc", {
+  add.interval.col(name="a", FUN="mean", unit_type="conc", pretty_name="a",
+                   desc="test",
+                   pptestcd_cdisc="a",
+                   pptest_cdisc=list(route=list(extravascular="Route Test EV", intravascular="Route Test IV")))
+  result <- get("interval.cols", envir=PKNCA:::.PKNCAEnv)[["a"]]
+  expect_true(is.list(result$pptest_cdisc))
+  expect_equal(result$pptest_cdisc$route$extravascular, "Route Test EV")
+  expect_equal(result$pptest_cdisc$route$intravascular, "Route Test IV")
 })
 
 # Reset the original state
