@@ -229,8 +229,7 @@ add.interval.col("tlast",
                  depends=NULL,
                  pptestcd_cdisc="TLST",
                  pptest_cdisc="Time of Last Nonzero Conc",
-                 formula="$T_{\\text{last}} = t_{i: C_i > 0, i = \\max}$",
-                 tier = "common")
+                 formula="$T_{\\text{last}} = t_{i: C_i > 0, i = \\max}$")
 
 #' @describeIn pk.calc.tlast Determine the first concentration above
 #'   the limit of quantification.
@@ -257,8 +256,7 @@ add.interval.col("tfirst",
                  depends=NULL,
                  pptestcd_cdisc="TFIRST",
                  pptest_cdisc="Time of First Nonzero Conc",
-                 formula="$T_{\\text{first}} = t_{i: C_i > 0, i = \\min}$",
-                 tier = "common")
+                 formula="$T_{\\text{first}} = t_{i: C_i > 0, i = \\min}$")
 
 #' Determine the last observed concentration above the limit of quantification
 #' (LOQ).
@@ -302,8 +300,7 @@ add.interval.col("clast.obs",
                  depends=NULL,
                  pptestcd_cdisc="CLST",
                  pptest_cdisc="Last Nonzero Conc",
-                 formula="$C_{\\text{last,obs}} = C_{i: t_i = T_{\\text{last}}}$",
-                 tier = "common")
+                 formula="$C_{\\text{last,obs}} = C_{i: t_i = T_{\\text{last}}}$")
 
 #' Calculate the effective half-life
 #'
@@ -911,8 +908,7 @@ add.interval.col("mrt.obs",
                  depends=c("aucinf.obs", "aumcinf.obs"),
                  pptestcd_cdisc=list(route=list(extravascular="MRTEVFO", intravascular="MRTICFO")),
                  pptest_cdisc=list(route=list(extravascular="MRT Extravasc Infinity Obs", intravascular="MRT IV Cont Inf Infinity Obs")),
-                 formula="$MRT_{\\text{obs}} = \\frac{AUMC_{\\infty,\\text{obs}}}{AUC_{\\infty,\\text{obs}}}$",
-                 tier = "common")
+                 formula="$MRT_{\\text{obs}} = \\frac{AUMC_{\\infty,\\text{obs}}}{AUC_{\\infty,\\text{obs}}}$")
 
 add.interval.col("mrt.pred",
                  FUN="pk.calc.mrt",
@@ -1160,8 +1156,7 @@ add.interval.col("vz.obs",
                  depends=c("cl.obs", "lambda.z"),
                  pptestcd_cdisc=list(route=list(extravascular="VZF/FO", intravascular="VZO")),
                  pptest_cdisc=list(route=list(extravascular="Vz by F Obs", intravascular="Vz Obs")),
-                 formula="$V_{z,\\text{obs}} = \\frac{CL_{\\text{obs}}}{\\lambda_z}$",
-                 tier = "common")
+                 formula="$V_{z,\\text{obs}} = \\frac{CL_{\\text{obs}}}{\\lambda_z}$")
 
 add.interval.col("vz.pred",
                  FUN="pk.calc.vz",
@@ -1946,8 +1941,7 @@ add.interval.col(
   desc="Total dose given in interval",  
   pptestcd_cdisc="TDOSE",
   pptest_cdisc="Total dose administered",
-  formula="$Dose_{\\text{total}} = \\sum_i Dose_i$",
-  tier = "common")
+  formula="$Dose_{\\text{total}} = \\sum_i Dose_i$")
 
 # =============================================================================
 # SET SUMMARY STATISTICS

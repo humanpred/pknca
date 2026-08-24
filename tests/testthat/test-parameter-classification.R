@@ -45,23 +45,19 @@ test_that("the common tier is exactly the reviewed set", {
     sort(tbl$parameter[tbl$tier == "common"]),
     sort(c(
       # Concentrations and times
-      "cmax", "tmax", "tlast", "tfirst", "clast.obs", "clast.pred", "ctrough",
-      "tlag", "count_conc",
+      "cmax", "tmax", "ctrough", "tlag", "count_conc",
       # Exposure
       "auclast", "aucinf.obs", "aucint.inf.obs", "aucpext.obs",
       # Terminal phase
-      "half.life", "lambda.z", "r.squared", "adj.r.squared", "span.ratio",
-      "lambda.z.n.points", "lambda.z.time.first", "lambda.z.time.last",
+      "half.life", "span.ratio", "lambda.z.n.points",
       # Disposition
-      "cl.obs", "cl.int.inf.obs", "vz.obs", "mrt.obs",
+      "cl.obs", "cl.int.inf.obs",
       # Intravenous
       "c0", "ceoi", "vss.iv.obs",
       # Excreta
-      "ae", "fe", "clr.obs", "volpk", "ermax", "ertmax", "ertlst",
+      "ae", "fe", "clr.obs", "volpk",
       # Sparse
-      "sparse_auclast", "sparse_auc_se",
-      # Bookkeeping
-      "totdose"
+      "sparse_auclast", "sparse_auc_se"
     ))
   )
 })

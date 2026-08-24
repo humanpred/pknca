@@ -200,8 +200,7 @@ add.interval.col("ertlst",
                  desc="Midpoint time of last excr rate",
                  pptestcd_cdisc="ERTLST",
                  pptest_cdisc="Time of Last Excretion Rate",
-                 formula="$T_{\\text{last,ER}} = t_{\\text{mid},i: ER_i > 0, i = \\max}$",
-                 tier = "common")
+                 formula="$T_{\\text{last,ER}} = t_{\\text{mid},i: ER_i > 0, i = \\max}$")
 
 
 #' Calculate the maximum excretion rate
@@ -248,8 +247,7 @@ add.interval.col("ermax",
                  desc="Maximum excretion rate",
                  pptestcd_cdisc="ERMAX",
                  pptest_cdisc="Max Excretion Rate",
-                 formula="$ER_{\\max} = \\max_i \\left( \\frac{C_i V_i}{d_i} \\right)$",
-                 tier = "common")
+                 formula="$ER_{\\max} = \\max_i \\left( \\frac{C_i V_i}{d_i} \\right)$")
 
 
 #' Calculate the midpoint collection time of the maximum excretion rate
@@ -303,8 +301,7 @@ add.interval.col("ertmax",
                  desc="Midpoint time of max excr rate",
                  pptestcd_cdisc="ERTMAX",
                  pptest_cdisc="Midpoint of Interval of Maximum ER",
-                 formula="$T_{\\max,ER} = t_{\\text{mid},i: ER_i = ER_{\\max}}$",
-                 tier = "common")
+                 formula="$T_{\\max,ER} = t_{\\text{mid},i: ER_i = ER_{\\max}}$")
 
 PKNCA.set.summary(
   name = c("volpk", "ae", "clr.last", "clr.obs", "clr.pred", "fe", "ermax"),
