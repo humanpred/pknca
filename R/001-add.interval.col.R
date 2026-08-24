@@ -247,8 +247,8 @@ add.interval.col <- function(name,
 
   current <- get("interval.cols", envir=.PKNCAEnv)
   # A parameter may be registered before the parameters it depends on, so the
-  # requires_dose_* values are left empty here and filled in on first use by
-  # set_requires_dose().  Re-registering an existing parameter can change what
+  # requires_* values are left empty here and filled in on first use by
+  # set_requires_inputs().  Re-registering an existing parameter can change what
   # anything downstream of it needs, so clear every cached value in that case.
   redefining <- name %in% names(current)
   current[[name]] <-
@@ -266,13 +266,15 @@ add.interval.col <- function(name,
       pptest_cdisc=pptest_cdisc,
       requires_dose_amt=NULL,
       requires_dose_time=NULL,
-      requires_dose_dur=NULL
+      requires_dose_dur=NULL,
+      requires_volume=NULL
     )
   if (redefining) {
     for (current_name in names(current)) {
       current[[current_name]][["requires_dose_amt"]] <- NULL
       current[[current_name]][["requires_dose_time"]] <- NULL
       current[[current_name]][["requires_dose_dur"]] <- NULL
+      current[[current_name]][["requires_volume"]] <- NULL
     }
   }
   assign("interval.cols", current, envir=.PKNCAEnv)

@@ -193,10 +193,10 @@ get.parameter.deps_helper_searchdeps <- function(current, funmap, all_intervals)
   }
 }
 
-# Fill in the requires_dose_* values for `params` and cache them in the
-# registry, computing only the ones that are not already known.  Deferred to
-# first use because a parameter may be registered before what it depends on.
-set_requires_dose <- function(params) {
+# Fill in the requires_* values for `params` and cache them in the registry,
+# computing only the ones that are not already known.  Deferred to first use
+# because a parameter may be registered before what it depends on.
+set_requires_inputs <- function(params) {
   all_intervals <- get.interval.cols()
   params <- intersect(params, names(all_intervals))
   unknown <-
@@ -217,6 +217,8 @@ set_requires_dose <- function(params) {
         any(c("time.dose", "time.dose.group") %in% current_src)
       all_intervals[[current_param]][["requires_dose_dur"]] <-
         any(c("duration.dose", "duration.dose.group") %in% current_src)
+      all_intervals[[current_param]][["requires_volume"]] <-
+        any(c("volume", "volume.group") %in% current_src)
     }
     assign("interval.cols", all_intervals, envir = .PKNCAEnv)
   }
@@ -252,7 +254,7 @@ uncalculable_without_dose <- function(intervals, o_dose) {
   if (have_amt && have_time && have_dur) {
     return(character(0))
   }
-  specs <- set_requires_dose(params)
+  specs <- set_requires_inputs(params)
   keep <-
     vapply(
       X = specs,
@@ -261,6 +263,30 @@ uncalculable_without_dose <- function(intervals, o_dose) {
           (isTRUE(x[["requires_dose_time"]]) && !have_time) ||
           (isTRUE(x[["requires_dose_dur"]]) && !have_dur)
       },
+      FUN.VALUE = TRUE
+    )
+  sort(names(specs)[keep])
+}
+
+# Which requested parameters need a sample volume that the data does not have.
+# A PKNCAconc object always carries a volume column, filled with NA when none
+# was given, so absence is detected by value rather than by name.  Volumes
+# missing for only some measurements are reported per-interval by the
+# calculations themselves.
+uncalculable_without_volume <- function(intervals, o_conc) {
+  params <- requested_parameters(intervals)
+  if (length(params) == 0) {
+    return(character(0))
+  }
+  volume <- getAttributeColumn(o_conc, attr_name = "volume", warn_missing = character())
+  if (!is.null(volume) && !all(is.na(volume[[1]]))) {
+    return(character(0))
+  }
+  specs <- set_requires_inputs(params)
+  keep <-
+    vapply(
+      X = specs,
+      FUN = function(x) isTRUE(x[["requires_volume"]]),
       FUN.VALUE = TRUE
     )
   sort(names(specs)[keep])
