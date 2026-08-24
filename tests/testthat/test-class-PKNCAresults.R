@@ -206,12 +206,14 @@ test_that("exclude values are maintained in derived parameters during automatic 
           aucinf.obs=TRUE
         )
     )
-  expect_message(
+  # aucinf.obs is calculated without dosing information, so its absence is
+  # not reported (#538)
+  expect_no_message(
     expect_warning(
       results_obj <- pk.nca(data_obj),
       regexp="Too few points for half-life"
     ),
-    regexp="No dose information provided"
+    class="pknca_message_missing_dose"
   )
   d_results <- as.data.frame(results_obj)
   expect_equal(
@@ -233,12 +235,13 @@ test_that("ctrough is correctly calculated", {
           ctrough=TRUE
         )
     )
-  expect_message(
+  # ctrough is calculated from conc and time alone (#538)
+  expect_no_message(
     expect_equal(
       as.data.frame(pk.nca(data_obj))$PPORRES,
       c(2^-6, NA_real_)
     ),
-    regexp="No dose information provided"
+    class="pknca_message_missing_dose"
   )
 })
 
@@ -255,12 +258,13 @@ test_that("single subject, ungrouped data works (#74)", {
           cmax=TRUE
         )
     )
-  expect_message(
+  # cmax is calculated from conc alone (#538)
+  expect_no_message(
     expect_equal(
       as.data.frame(pk.nca(data_obj))$PPORRES,
       1
     ),
-    regexp="No dose information provided",
+    class="pknca_message_missing_dose"
   )
 })
 
