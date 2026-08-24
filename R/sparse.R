@@ -387,10 +387,9 @@ add.interval.col(
   pretty_name="Sparse AUClast",
   desc="Sparse AUC to last conc above LOQ",
   pptestcd_cdisc="SPARSEAL",
-  pptest_cdisc="Sparse AUClast"
-,
-formula="$AUC_{\\text{sparse}} = \\sum_k \\frac{\\bar{C}_k + \\bar{C}_{k+1}}{2} \\Delta t_k$",
-formula_note="Linear trapezoidal using population mean concentrations")
+  pptest_cdisc="Sparse AUClast",
+  formula="$AUC_{\\text{sparse}} = \\sum_k \\frac{\\bar{C}_k + \\bar{C}_{k+1}}{2} \\Delta t_k$",
+  formula_note="Linear trapezoidal using population mean concentrations")
 
 add.interval.col(
   "sparse_auc_se",
@@ -401,10 +400,9 @@ add.interval.col(
   desc="SE of sparse AUC to last conc above LOQ",
   depends="sparse_auclast",
   pptestcd_cdisc="SPARSEAS",
-  pptest_cdisc="Sparse AUClast standard error"
-,
-formula="$SE(AUC_{\\text{sparse}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$",
-formula_note="Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001)")
+  pptest_cdisc="Sparse AUClast standard error",
+  formula="$SE(AUC_{\\text{sparse}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$",
+  formula_note="Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001)")
 
 add.interval.col(
   "sparse_auc_df",
@@ -415,10 +413,9 @@ add.interval.col(
   desc="DF for sparse AUC to last conc above LOQ",
   depends="sparse_auclast",
   pptestcd_cdisc="SPARSEAD",
-  pptest_cdisc="Sparse AUClast degrees of freedom"
-,
-formula="$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$",
-formula_note="Satterthwaite approximation (Nedelman et al 1995, eq. 6a)")
+  pptest_cdisc="Sparse AUClast degrees of freedom",
+  formula="$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$",
+  formula_note="Satterthwaite approximation (Nedelman et al 1995, eq. 6a)")
 
 #' Is a PKNCA object used for sparse PK?
 #'

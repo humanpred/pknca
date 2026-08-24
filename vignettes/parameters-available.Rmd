@@ -16,8 +16,8 @@ vignette: >
 | adj.r.squared | $r^2_{adj} = 1 - (1 - r^2) \frac{n-1}{n-2}$ |  | unitless | Adjusted R-sq of half-life fit | See: half.life |  |
 | adj_tobit_residual |  |  | unitless | Adjusted Tobit residual SD | See: half.life |  |
 | ae | $AE = \sum_i C_i V_i$ |  | amount | Amount excreted (urine/feces) | pk.calc.ae |  |
-| aucabove.predose.all | $AUC_{\text{above}} = \int \max(C(t) - C_{\text{ref}},\; 0)\; dt$ |  | auc | AUC above predose, floor at 0 | pk.calc.aucabove | aucabove.trough.all |
-| aucabove.trough.all | $AUC_{\text{above}} = \int \max(C(t) - C_{\text{ref}},\; 0)\; dt$ |  | auc | AUC above trough, floor at 0 | pk.calc.aucabove | aucabove.predose.all |
+| aucabove.predose.all | $AUC_{\text{above,predose}} = \int \max(C(t) - C_{\text{start}},\; 0)\; dt$ |  | auc | AUC above predose, floor at 0 | pk.calc.aucabove | aucabove.trough.all |
+| aucabove.trough.all | $AUC_{\text{above,trough}} = \int \max(C(t) - C_{\text{trough}},\; 0)\; dt$ |  | auc | AUC above trough, floor at 0 | pk.calc.aucabove | aucabove.predose.all |
 | aucall | $AUC_{\text{all}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$ | Trapezoidal rule (linear-up/log-down by default) | auc | AUClast plus triangle, 0 at BLQ | pk.calc.auc.all |  |
 | aucall.dn | $AUC_{\text{all},dn} = \frac{AUC_{\text{all}}}{Dose}$ |  | auc_dosenorm | Dose normalized aucall | pk.calc.dn | aucinf.obs.dn, aucinf.pred.dn, auclast.dn, aumcall.dn, aumcinf.obs.dn, aumcinf.pred.dn, aumclast.dn, cav.dn, clast.obs.dn, clast.pred.dn, clr.last.dn, clr.obs.dn, clr.pred.dn, cmax.dn, cmin.dn, ctrough.dn |
 | aucinf.obs | $AUC_{\infty,\text{obs}} = AUC_{0-\text{last}} + \frac{C_{\text{last,obs}}}{\lambda_z}$ |  | auc | AUC start to inf, obs Clast extrap | pk.calc.auc.inf.obs |  |
@@ -70,7 +70,7 @@ vignette: >
 | aumcivlast |  |  | aumc | AUMClast, IV back-extrap C0 | pk.calc.aumciv | aumcivall, aumcivinf.obs, aumcivinf.pred, aumcivint.all, aumcivint.last |
 | aumclast | $AUMC_{\text{last}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$ | Trapezoidal rule (linear-up/log-down by default) | aumc | AUMC start to last conc above LOQ | pk.calc.aumc.last |  |
 | aumclast.dn | $AUMC_{\text{last},dn} = \frac{AUMC_{\text{last}}}{Dose}$ |  | aumc_dosenorm | Dose normalized aumclast | pk.calc.dn | aucall.dn, aucinf.obs.dn, aucinf.pred.dn, auclast.dn, aumcall.dn, aumcinf.obs.dn, aumcinf.pred.dn, cav.dn, clast.obs.dn, clast.pred.dn, clr.last.dn, clr.obs.dn, clr.pred.dn, cmax.dn, cmin.dn, ctrough.dn |
-| c0 | $C_0 = \text{if measured, } C_{t=0}; \text{ else, } C_0 = C_1 \exp\left(-\frac{\ln(C_2) - \ln(C_1)}{t_2-t_1} (t_1 - 0)\right)$ |  | conc | Initial conc after IV bolus | pk.calc.c0 |  |
+| c0 | $C_0 = \text{if measured, } C_{t=0}; \text{ else, } C_0 = C_1 \exp\left(-\frac{\ln(C_2) - \ln(C_1)}{t_2-t_1} (t_1 - t_{\text{dose}})\right)$ | Methods are tried in order: c0, logslope, c1, cmin, set0; the formula shows c0 and logslope | conc | Initial conc after IV bolus | pk.calc.c0 |  |
 | cav | $C_{av} = \frac{AUC_{\text{last}}}{t_{end} - t_{start}}$ |  | conc | Avg conc in interval (AUClast) | pk.calc.cav | cav.int.all, cav.int.inf.obs, cav.int.inf.pred, cav.int.last |
 | cav.dn | $C_{av,dn} = \frac{C_{av}}{Dose}$ |  | conc_dosenorm | Dose normalized cav | pk.calc.dn | aucall.dn, aucinf.obs.dn, aucinf.pred.dn, auclast.dn, aumcall.dn, aumcinf.obs.dn, aumcinf.pred.dn, aumclast.dn, clast.obs.dn, clast.pred.dn, clr.last.dn, clr.obs.dn, clr.pred.dn, cmax.dn, cmin.dn, ctrough.dn |
 | cav.int.all | $C_{av,\text{int,all}} = \frac{AUC_{\text{int,all}}}{t_{end} - t_{start}}$ |  | conc | Avg conc in interval (AUCint.all) | pk.calc.cav | cav, cav.int.inf.obs, cav.int.inf.pred, cav.int.last |
@@ -97,18 +97,18 @@ vignette: >
 | clast.obs.dn | $C_{\text{last,obs},dn} = \frac{C_{\text{last,obs}}}{Dose}$ |  | conc_dosenorm | Dose normalized clast.obs | pk.calc.dn | aucall.dn, aucinf.obs.dn, aucinf.pred.dn, auclast.dn, aumcall.dn, aumcinf.obs.dn, aumcinf.pred.dn, aumclast.dn, cav.dn, clast.pred.dn, clr.last.dn, clr.obs.dn, clr.pred.dn, cmax.dn, cmin.dn, ctrough.dn |
 | clast.pred | $C_{\text{last,pred}} = e^{\text{intercept} - \lambda_z \cdot t_{\text{last}}}$ |  | conc | Predicted Clast from half-life | See: half.life |  |
 | clast.pred.dn | $C_{\text{last,pred},dn} = \frac{C_{\text{last,pred}}}{Dose}$ |  | conc_dosenorm | Dose normalized clast.pred | pk.calc.dn | aucall.dn, aucinf.obs.dn, aucinf.pred.dn, auclast.dn, aumcall.dn, aumcinf.obs.dn, aumcinf.pred.dn, aumclast.dn, cav.dn, clast.obs.dn, clr.last.dn, clr.obs.dn, clr.pred.dn, cmax.dn, cmin.dn, ctrough.dn |
-| clr.last | $CL_R = \frac{AE}{AUC_{\text{last}}}$ |  | renal_clearance | Renal clearance, AUClast | pk.calc.clr | clr.obs, clr.pred |
-| clr.last.dn | $CL_{R,dn} = \frac{CL_R}{Dose}$ |  | renal_clearance_dosenorm | Dose normalized clr.last | pk.calc.dn | aucall.dn, aucinf.obs.dn, aucinf.pred.dn, auclast.dn, aumcall.dn, aumcinf.obs.dn, aumcinf.pred.dn, aumclast.dn, cav.dn, clast.obs.dn, clast.pred.dn, clr.obs.dn, clr.pred.dn, cmax.dn, cmin.dn, ctrough.dn |
-| clr.obs | $CL_R = \frac{AE}{AUC_{\infty,\text{obs}}}$ |  | renal_clearance | Renal clearance, AUCinf,obs | pk.calc.clr | clr.last, clr.pred |
-| clr.obs.dn | $CL_{R,dn} = \frac{CL_R}{Dose}$ |  | renal_clearance_dosenorm | Dose normalized clr.obs | pk.calc.dn | aucall.dn, aucinf.obs.dn, aucinf.pred.dn, auclast.dn, aumcall.dn, aumcinf.obs.dn, aumcinf.pred.dn, aumclast.dn, cav.dn, clast.obs.dn, clast.pred.dn, clr.last.dn, clr.pred.dn, cmax.dn, cmin.dn, ctrough.dn |
-| clr.pred | $CL_R = \frac{AE}{AUC_{\infty,\text{pred}}}$ |  | renal_clearance | Renal clearance, AUCinf,pred | pk.calc.clr | clr.last, clr.obs |
-| clr.pred.dn | $CL_{R,dn} = \frac{CL_R}{Dose}$ |  | renal_clearance_dosenorm | Dose normalized clr.pred | pk.calc.dn | aucall.dn, aucinf.obs.dn, aucinf.pred.dn, auclast.dn, aumcall.dn, aumcinf.obs.dn, aumcinf.pred.dn, aumclast.dn, cav.dn, clast.obs.dn, clast.pred.dn, clr.last.dn, clr.obs.dn, cmax.dn, cmin.dn, ctrough.dn |
+| clr.last | $CL_{R,\text{last}} = \frac{AE}{AUC_{\text{last}}}$ |  | renal_clearance | Renal clearance, AUClast | pk.calc.clr | clr.obs, clr.pred |
+| clr.last.dn | $CL_{R,\text{last},dn} = \frac{CL_{R,\text{last}}}{Dose}$ |  | renal_clearance_dosenorm | Dose normalized clr.last | pk.calc.dn | aucall.dn, aucinf.obs.dn, aucinf.pred.dn, auclast.dn, aumcall.dn, aumcinf.obs.dn, aumcinf.pred.dn, aumclast.dn, cav.dn, clast.obs.dn, clast.pred.dn, clr.obs.dn, clr.pred.dn, cmax.dn, cmin.dn, ctrough.dn |
+| clr.obs | $CL_{R,\text{obs}} = \frac{AE}{AUC_{\infty,\text{obs}}}$ |  | renal_clearance | Renal clearance, AUCinf,obs | pk.calc.clr | clr.last, clr.pred |
+| clr.obs.dn | $CL_{R,\text{obs},dn} = \frac{CL_{R,\text{obs}}}{Dose}$ |  | renal_clearance_dosenorm | Dose normalized clr.obs | pk.calc.dn | aucall.dn, aucinf.obs.dn, aucinf.pred.dn, auclast.dn, aumcall.dn, aumcinf.obs.dn, aumcinf.pred.dn, aumclast.dn, cav.dn, clast.obs.dn, clast.pred.dn, clr.last.dn, clr.pred.dn, cmax.dn, cmin.dn, ctrough.dn |
+| clr.pred | $CL_{R,\text{pred}} = \frac{AE}{AUC_{\infty,\text{pred}}}$ |  | renal_clearance | Renal clearance, AUCinf,pred | pk.calc.clr | clr.last, clr.obs |
+| clr.pred.dn | $CL_{R,\text{pred},dn} = \frac{CL_{R,\text{pred}}}{Dose}$ |  | renal_clearance_dosenorm | Dose normalized clr.pred | pk.calc.dn | aucall.dn, aucinf.obs.dn, aucinf.pred.dn, auclast.dn, aumcall.dn, aumcinf.obs.dn, aumcinf.pred.dn, aumclast.dn, cav.dn, clast.obs.dn, clast.pred.dn, clr.last.dn, clr.obs.dn, cmax.dn, cmin.dn, ctrough.dn |
 | cmax | $C_{\max} = \max_i C_i$ |  | conc | Maximum observed concentration | pk.calc.cmax |  |
 | cmax.dn | $C_{\max,dn} = \frac{C_{\max}}{Dose}$ |  | conc_dosenorm | Dose normalized cmax | pk.calc.dn | aucall.dn, aucinf.obs.dn, aucinf.pred.dn, auclast.dn, aumcall.dn, aumcinf.obs.dn, aumcinf.pred.dn, aumclast.dn, cav.dn, clast.obs.dn, clast.pred.dn, clr.last.dn, clr.obs.dn, clr.pred.dn, cmin.dn, ctrough.dn |
 | cmin | $C_{\min} = \min_i C_i$ |  | conc | Minimum observed concentration | pk.calc.cmin |  |
 | cmin.dn | $C_{\min,dn} = \frac{C_{\min}}{Dose}$ |  | conc_dosenorm | Dose normalized cmin | pk.calc.dn | aucall.dn, aucinf.obs.dn, aucinf.pred.dn, auclast.dn, aumcall.dn, aumcinf.obs.dn, aumcinf.pred.dn, aumclast.dn, cav.dn, clast.obs.dn, clast.pred.dn, clr.last.dn, clr.obs.dn, clr.pred.dn, cmax.dn, ctrough.dn |
-| count_conc | $n = \sum_{i} \mathbf{1}(C_i \neq NA)$ |  | count | Count of non-missing conc | pk.calc.count_conc |  |
-| count_conc_measured | $n = \sum_{i} \mathbf{1}(C_i > 0)$ |  | count | Count of measured, non-BLQ conc | pk.calc.count_conc_measured |  |
+| count_conc | $n_{\text{conc}} = \sum_{i} \mathbf{1}(C_i \neq NA)$ |  | count | Count of non-missing conc | pk.calc.count_conc |  |
+| count_conc_measured | $n_{\text{measured}} = \sum_{i} \mathbf{1}(C_i > 0)$ |  | count | Count of measured, non-BLQ conc | pk.calc.count_conc_measured |  |
 | cstart | $C_{\text{start}} = C(t_{\text{start}})$ |  | conc | The predose concentration | pk.calc.cstart |  |
 | ctrough | $C_{\text{trough}} = C(t_{\text{end}})$ |  | conc | Trough (end of interval) conc | pk.calc.ctrough |  |
 | ctrough.dn | $C_{\text{trough},dn} = \frac{C_{\text{trough}}}{Dose}$ |  | conc_dosenorm | Dose normalized ctrough | pk.calc.dn | aucall.dn, aucinf.obs.dn, aucinf.pred.dn, auclast.dn, aumcall.dn, aumcinf.obs.dn, aumcinf.pred.dn, aumclast.dn, cav.dn, clast.obs.dn, clast.pred.dn, clr.last.dn, clr.obs.dn, clr.pred.dn, cmax.dn, cmin.dn |
@@ -136,8 +136,8 @@ vignette: >
 | kel.pred | $k_{el,\text{pred}} = \frac{1}{MRT_{\text{pred}}}$ |  | inverse_time | Elim rate, MRT w/ pred Clast | pk.calc.kel | kel.all, kel.int.all, kel.int.inf.obs, kel.int.inf.pred, kel.int.last, kel.iv.all, kel.iv.last, kel.iv.obs, kel.iv.pred, kel.ivint.all, kel.ivint.last, kel.last, kel.obs, kel.sparse.last |
 | kel.sparse.last |  |  | inverse_time | Elim rate, sparse MRTlast | pk.calc.kel | kel.all, kel.int.all, kel.int.inf.obs, kel.int.inf.pred, kel.int.last, kel.iv.all, kel.iv.last, kel.iv.obs, kel.iv.pred, kel.ivint.all, kel.ivint.last, kel.last, kel.obs, kel.pred |
 | lambda.z | $\lambda_z = -\text{slope of } \log(C) \text{ vs } t$ |  | inverse_time | Terminal elim rate (lambda.z) | See: half.life |  |
-| lambda.z.corrxy | $\text{cor}(t, \log C)$ |  | unitless | Corr(time,log-conc) for lambda.z | See: half.life |  |
-| lambda.z.n.points | $n_{\text{hl}}$ |  | count | Number of points used, lambda.z | See: half.life |  |
+| lambda.z.corrxy | $r_{t,\log C} = \text{cor}(t_{\lambda_z}, \log C_{\lambda_z})$ |  | unitless | Corr(time,log-conc) for lambda.z | See: half.life |  |
+| lambda.z.n.points | $n_{\lambda_z} = \left\| t_{\lambda_z} \right\|$ |  | count | Number of points used, lambda.z | See: half.life |  |
 | lambda.z.n.points_blq |  |  | count | BLQ points in Tobit lambda.z | See: half.life |  |
 | lambda.z.time.first | $\lambda_z t_{\text{first}} = \min\left(t_{\lambda_z}\right)$ |  | time | First time point for lambda.z | See: half.life |  |
 | lambda.z.time.last | $\lambda_z t_{\text{last}} = \max\left(t_{\lambda_z}\right)$ |  | time | Last time point for lambda.z | See: half.life |  |
@@ -159,8 +159,8 @@ vignette: >
 | mrt.pred | $MRT_{\text{pred}} = \frac{AUMC_{\infty,\text{pred}}}{AUC_{\infty,\text{pred}}}$ |  | time | MRT to inf, predicted Clast | pk.calc.mrt | mrt.all, mrt.int.all, mrt.int.inf.obs, mrt.int.inf.pred, mrt.int.last, mrt.last, mrt.obs, mrt.sparse.last |
 | mrt.sparse.last |  |  | time | MRT, sparse AUClast/AUMClast | pk.calc.mrt | mrt.all, mrt.int.all, mrt.int.inf.obs, mrt.int.inf.pred, mrt.int.last, mrt.last, mrt.obs, mrt.pred |
 | ptr | $PTR = \frac{C_{\max}}{C_{\text{trough}}}$ |  | fraction | Peak-to-trough ratio | pk.calc.ptr |  |
-| r.squared | $r^2 = 1 - \frac{\sum_{i=t_{\lambda_z,\text{first}}}^{t_{\lambda_z,\text{last}}} (y_i - \hat{y}_i)^2}{\sum (y_i - \bar{y})^2}$ |  | unitless | R-squared of half-life fit | See: half.life |  |
-| span.ratio | $\text{span ratio} = \frac{t_{\text{last}} - t_{\text{first}}}{t_{1/2}}$ |  | fraction | Lambda z time span to half-life ratio | See: half.life |  |
+| r.squared | $r^2 = 1 - \frac{\sum_{i \in \lambda_z} (y_i - \hat{y}_i)^2}{\sum_{i \in \lambda_z} (y_i - \bar{y})^2}$ | Regression of $y = \log C$ on time over the terminal points | unitless | R-squared of half-life fit | See: half.life |  |
+| span.ratio | $\text{span ratio} = \frac{t_{\lambda_z,\text{last}} - t_{\lambda_z,\text{first}}}{t_{1/2}}$ |  | fraction | Lambda z time span to half-life ratio | See: half.life |  |
 | sparse_auc_df | $df = \frac{\left(\sum w_i^2 \hat{\sigma}_{ii}/n_i\right)^2}{\sum w_i^4 \hat{\sigma}_{ii}^2 / (n_i^2(n_i-1))}$ | Satterthwaite approximation (Nedelman et al 1995, eq. 6a) | count | DF for sparse AUC to last conc above LOQ | See: sparse_auclast |  |
 | sparse_auc_se | $SE(AUC_{\text{sparse}}) = \sqrt{\sum_{i,j} w_i w_j \hat{\sigma}_{ij} / n}$ | Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001) | auc | SE of sparse AUC to last conc above LOQ | See: sparse_auclast |  |
 | sparse_auclast | $AUC_{\text{sparse}} = \sum_k \frac{\bar{C}_k + \bar{C}_{k+1}}{2} \Delta t_k$ | Linear trapezoidal using population mean concentrations | auc | Sparse AUC to last conc above LOQ | pk.calc.sparse_auclast |  |

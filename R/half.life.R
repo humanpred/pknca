@@ -651,7 +651,7 @@ add.interval.col("r.squared",
                  depends="half.life",
                  pptestcd_cdisc="R2",
                  pptest_cdisc="R Squared",
-                 formula="$r^2 = 1 - \\frac{\\sum_{i=t_{\\lambda_z,\\text{first}}}^{t_{\\lambda_z,\\text{last}}} (y_i - \\hat{y}_i)^2}{\\sum (y_i - \\bar{y})^2}$")
+                 formula="$r^2 = 1 - \\frac{\\sum_{i \\in \\lambda_z} (y_i - \\hat{y}_i)^2}{\\sum_{i \\in \\lambda_z} (y_i - \\bar{y})^2}$", formula_note="Regression of $y = \\log C$ on time over the terminal points")
 PKNCA.set.summary(
   name="r.squared",
   description="arithmetic mean and standard deviation",
@@ -683,7 +683,7 @@ add.interval.col("lambda.z.corrxy",
                  depends="half.life",
                  pptestcd_cdisc="CORRXY",
                  pptest_cdisc="Correlation Between TimeX and Log ConcY",
-                 formula="$\\text{cor}(t, \\log C)$")
+                 formula="$r_{t,\\log C} = \\text{cor}(t_{\\lambda_z}, \\log C_{\\lambda_z})$")
 PKNCA.set.summary(
   name="lambda.z.corrxy",
   description="arithmetic mean and standard deviation",
@@ -747,7 +747,7 @@ add.interval.col("lambda.z.n.points",
                  depends="half.life",
                  pptestcd_cdisc="LAMZNPT",
                  pptest_cdisc="Number of Points for Lambda z",
-                 formula="$n_{\\text{hl}}$")
+                 formula="$n_{\\lambda_z} = \\left| t_{\\lambda_z} \\right|$")
 PKNCA.set.summary(
   name="lambda.z.n.points",
   description="median and range",
@@ -779,7 +779,7 @@ add.interval.col("span.ratio",
                  depends="half.life",
                  pptestcd_cdisc="LAMZSPN",
                  pptest_cdisc="Lambda z Span",
-                 formula="$\\text{span ratio} = \\frac{t_{\\text{last}} - t_{\\text{first}}}{t_{1/2}}$")
+                 formula="$\\text{span ratio} = \\frac{t_{\\lambda_z,\\text{last}} - t_{\\lambda_z,\\text{first}}}{t_{1/2}}$")
 PKNCA.set.summary(
   name="span.ratio",
   description="geometric mean and geometric coefficient of variation",

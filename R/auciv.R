@@ -79,9 +79,8 @@ add.interval.col(
   sparse = FALSE,
   formalsmap = list(auc="auclast"),
   pptestcd_cdisc="AUCIVLST",
-  pptest_cdisc="AUClast (IV dosing)"
-,
-formula = "$AUC_{\\text{iv,last}} = AUC_{\\text{last}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
+  pptest_cdisc="AUClast (IV dosing)",
+  formula = "$AUC_{\\text{iv,last}} = AUC_{\\text{last}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
 
 add.interval.col(
   name = "aucivall",
@@ -93,9 +92,8 @@ add.interval.col(
   sparse = FALSE,
   formalsmap = list(auc="aucall"),
   pptestcd_cdisc="AUCIVA",
-  pptest_cdisc="AUCall (IV dosing)"
-,
-formula = "$AUC_{\\text{iv,all}} = AUC_{\\text{all}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
+  pptest_cdisc="AUCall (IV dosing)",
+  formula = "$AUC_{\\text{iv,all}} = AUC_{\\text{all}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
 
 add.interval.col(
   name = "aucivint.last",
@@ -107,9 +105,8 @@ add.interval.col(
   sparse = FALSE,
   formalsmap = list(auc="aucint.last"),
   pptestcd_cdisc="AUCIVILT",
-  pptest_cdisc="AUCint,last (IV dosing)"
-,
-formula = "$AUC_{\\text{iv,int,last}} = AUC_{\\text{int,last}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
+  pptest_cdisc="AUCint,last (IV dosing)",
+  formula = "$AUC_{\\text{iv,int,last}} = AUC_{\\text{int,last}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
 
 add.interval.col(
   name = "aucivint.all",
@@ -121,9 +118,8 @@ add.interval.col(
   sparse = FALSE,
   formalsmap = list(auc="aucint.all"),
   pptestcd_cdisc="AUCIVINA",
-  pptest_cdisc="AUCint,all (IV dosing)"
-,
-formula = "$AUC_{\\text{iv,int,all}} = AUC_{\\text{int,all}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
+  pptest_cdisc="AUCint,all (IV dosing)",
+  formula = "$AUC_{\\text{iv,int,all}} = AUC_{\\text{int,all}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
 
 add.interval.col(
   name = "aucivinf.obs",
@@ -135,9 +131,8 @@ add.interval.col(
   sparse = FALSE,
   formalsmap = list(auc="aucinf.obs"),
   pptestcd_cdisc="AUCIVIS",
-  pptest_cdisc="AUCinf,obs (IV dosing)"
-,
-formula = "$AUC_{\\text{iv,}\\infty\\text{,obs}} = AUC_{\\infty,\\text{obs}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
+  pptest_cdisc="AUCinf,obs (IV dosing)",
+  formula = "$AUC_{\\text{iv,}\\infty\\text{,obs}} = AUC_{\\infty,\\text{obs}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
 
 add.interval.col(
   name = "aucivinf.pred",
@@ -149,9 +144,8 @@ add.interval.col(
   sparse = FALSE,
   formalsmap = list(auc="aucinf.pred"),
   pptestcd_cdisc="AUCIVIP",
-  pptest_cdisc="AUCinf,pred (IV dosing)"
-,
-formula = "$AUC_{\\text{iv,}\\infty\\text{,pred}} = AUC_{\\infty,\\text{pred}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
+  pptest_cdisc="AUCinf,pred (IV dosing)",
+  formula = "$AUC_{\\text{iv,}\\infty\\text{,pred}} = AUC_{\\infty,\\text{pred}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
 
 
 #' @describeIn pk.calc.auxciv Calculate the percent back-extrapolated AUC for IV
@@ -176,9 +170,8 @@ add.interval.col(
   sparse = FALSE,
   formalsmap = list(auc="auclast", auciv="aucivlast"),
   pptestcd_cdisc="AUCIVPLT",
-  pptest_cdisc="AUCbext (based on AUClast)"
-,
-formula = "$\\%AUC_{\\text{bext,last}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{last}}}{AUC_{\\text{iv,last}}}\\right)$")
+  pptest_cdisc="AUCbext (based on AUClast)",
+  formula = "$\\%AUC_{\\text{bext,last}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{last}}}{AUC_{\\text{iv,last}}}\\right)$")
 
 add.interval.col(
   name = "aucivpbextall",
@@ -190,9 +183,8 @@ add.interval.col(
   sparse = FALSE,
   formalsmap = list(auc="aucall", auciv="aucivall"),
   pptestcd_cdisc="AUCIVPEA",
-  pptest_cdisc="AUCbext (based on AUCall)"
-,
-formula = "$\\%AUC_{\\text{bext,all}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{all}}}{AUC_{\\text{iv,all}}}\\right)$")
+  pptest_cdisc="AUCbext (based on AUCall)",
+  formula = "$\\%AUC_{\\text{bext,all}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{all}}}{AUC_{\\text{iv,all}}}\\right)$")
 
 add.interval.col(
   name = "aucivpbextint.last",
@@ -204,9 +196,8 @@ add.interval.col(
   sparse = FALSE,
   formalsmap = list(auc="aucint.last", auciv="aucivint.last"),
   pptestcd_cdisc="AUCIVPIL",
-  pptest_cdisc="AUCbext (based on AUCint,last)"
-,
-formula = "$\\%AUC_{\\text{bext,int,last}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{int,last}}}{AUC_{\\text{iv,int,last}}}\\right)$")
+  pptest_cdisc="AUCbext (based on AUCint,last)",
+  formula = "$\\%AUC_{\\text{bext,int,last}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{int,last}}}{AUC_{\\text{iv,int,last}}}\\right)$")
 
 add.interval.col(
   name = "aucivpbextint.all",
@@ -218,9 +209,8 @@ add.interval.col(
   sparse = FALSE,
   formalsmap = list(auc="aucint.all", auciv="aucivint.all"),
   pptestcd_cdisc="AUCIVPIA",
-  pptest_cdisc="AUCbext (based on AUCint,all)"
-,
-formula = "$\\%AUC_{\\text{bext,int,all}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{int,all}}}{AUC_{\\text{iv,int,all}}}\\right)$")
+  pptest_cdisc="AUCbext (based on AUCint,all)",
+  formula = "$\\%AUC_{\\text{bext,int,all}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{int,all}}}{AUC_{\\text{iv,int,all}}}\\right)$")
 
 add.interval.col(
   name = "aucivpbextinf.obs",
@@ -232,9 +222,8 @@ add.interval.col(
   sparse = FALSE,
   formalsmap = list(auc="aucinf.obs", auciv="aucivinf.obs"),
   pptestcd_cdisc="AUCIVPEI",
-  pptest_cdisc="AUCbext (based on AUCinf,obs)"
-,
-formula = "$\\%AUC_{\\text{bext,}\\infty\\text{,obs}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\infty,\\text{obs}}}{AUC_{\\text{iv,}\\infty\\text{,obs}}}\\right)$")
+  pptest_cdisc="AUCbext (based on AUCinf,obs)",
+  formula = "$\\%AUC_{\\text{bext,}\\infty\\text{,obs}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\infty,\\text{obs}}}{AUC_{\\text{iv,}\\infty\\text{,obs}}}\\right)$")
 
 add.interval.col(
   name = "aucivpbextinf.pred",
@@ -246,9 +235,8 @@ add.interval.col(
   sparse = FALSE,
   formalsmap = list(auc="aucinf.pred", auciv="aucivinf.pred"),
   pptestcd_cdisc="AUCIVPEP",
-  pptest_cdisc="AUCbext (based on AUCinf,pred)"
-,
-formula = "$\\%AUC_{\\text{bext,}\\infty\\text{,pred}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\infty,\\text{pred}}}{AUC_{\\text{iv,}\\infty\\text{,pred}}}\\right)$")
+  pptest_cdisc="AUCbext (based on AUCinf,pred)",
+  formula = "$\\%AUC_{\\text{bext,}\\infty\\text{,pred}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\infty,\\text{pred}}}{AUC_{\\text{iv,}\\infty\\text{,pred}}}\\right)$")
 
 
 #' @describeIn pk.calc.auxciv Calculate AUMC for intravenous dosing with C0 back-extrapolation

@@ -1774,7 +1774,7 @@ add.interval.col(
   formalsmap = list(conc_above = "cstart"),
   pptestcd_cdisc="AUCABVPA",
   pptest_cdisc="AUC above predose",
-  formula="$AUC_{\\text{above}} = \\int \\max(C(t) - C_{\\text{ref}},\\; 0)\\; dt$")
+  formula="$AUC_{\\text{above,predose}} = \\int \\max(C(t) - C_{\\text{start}},\\; 0)\\; dt$")
 
 add.interval.col(
   "aucabove.trough.all",
@@ -1786,7 +1786,7 @@ add.interval.col(
   formalsmap = list(conc_above = "ctrough"),
   pptestcd_cdisc="AUCABVTA",
   pptest_cdisc="AUC above trough",
-  formula="$AUC_{\\text{above}} = \\int \\max(C(t) - C_{\\text{ref}},\\; 0)\\; dt$")
+  formula="$AUC_{\\text{above,trough}} = \\int \\max(C(t) - C_{\\text{trough}},\\; 0)\\; dt$")
 
 
 #' Count the number of concentration measurements in an interval
@@ -1818,7 +1818,7 @@ add.interval.col(
   depends = NULL,
   pptestcd_cdisc="CNTCONC",
   pptest_cdisc="Concentration count",
-  formula = "$n = \\sum_{i} \\mathbf{1}(C_i \\neq NA)$")
+  formula = "$n_{\\text{conc}} = \\sum_{i} \\mathbf{1}(C_i \\neq NA)$")
 
 #' @describeIn pk.calc.count_conc Count the number of concentration measurements
 #'   that are not missing, above, or below the limit of quantification in an
@@ -1841,9 +1841,8 @@ add.interval.col(
   unit_type="count",
   pretty_name="Measured concentration count",
   desc="Count of measured, non-BLQ conc",
-  depends=NULL
-,
-formula="$n = \\sum_{i} \\mathbf{1}(C_i > 0)$")
+  depends=NULL,
+  formula="$n_{\\text{measured}} = \\sum_{i} \\mathbf{1}(C_i > 0)$")
 
 
 #' Extract the dose used for calculations

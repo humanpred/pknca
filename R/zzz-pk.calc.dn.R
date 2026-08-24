@@ -34,7 +34,7 @@ local({
     # Dose-normalize the base parameter's formula by dividing its left-hand
     # side by the dose and marking that side with a "dn" subscript
     dn_formula <- "$X_{dn} = \\frac{X}{Dose}$"
-    if (!is.null(current_formula)) {
+    if (!is.null(current_formula) && grepl("^\\$.+? =", current_formula)) {
       lhs <- sub("^\\$(.+?) =.*", "\\1", current_formula)
       if (grepl("_\\{", lhs)) {
         lhs_dn <- sub("\\}$", ",dn}", lhs)

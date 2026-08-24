@@ -134,7 +134,8 @@ add.interval.col("c0",
                  depends=NULL,
                  pptestcd_cdisc="C0",
                  pptest_cdisc="Initial Conc",
-                 formula="$C_0 = \\text{if measured, } C_{t=0}; \\text{ else, } C_0 = C_1 \\exp\\left(-\\frac{\\ln(C_2) - \\ln(C_1)}{t_2-t_1} (t_1 - 0)\\right)$")
+                 formula="$C_0 = \\text{if measured, } C_{t=0}; \\text{ else, } C_0 = C_1 \\exp\\left(-\\frac{\\ln(C_2) - \\ln(C_1)}{t_2-t_1} (t_1 - t_{\\text{dose}})\\right)$",
+                 formula_note="Methods are tried in order: c0, logslope, c1, cmin, set0; the formula shows c0 and logslope")
 PKNCA.set.summary(
   name="c0",
   description="geometric mean and geometric coefficient of variation",
