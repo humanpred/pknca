@@ -111,6 +111,11 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
       )
     }
   }
+  # Missing concentrations would otherwise reach the half-life fit and the
+  # interpolation as NA.
+  clean_conc <- clean.conc.na(conc = conc, time = time, options = options, check = FALSE)
+  conc <- clean_conc$conc
+  time <- clean_conc$time
   assert_number_between(dose.input, na.ok = FALSE, null.ok = TRUE, lower = 0)
   assert_dosetau(tau)
   assert_numeric_between(x = dose.times, lower_eq = 0, min.len = 1, upper = tau)

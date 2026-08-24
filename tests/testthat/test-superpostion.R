@@ -665,3 +665,40 @@ test_that("superposition.PKNCAconc re-emits everything its workers produce (issu
   expect_equal(unique(trimws(messaged)), "mocked message")
   expect_equal(unique(printed), "mocked output")
 })
+
+test_that("superposition drops missing concentrations before calculating (#308)", {
+  conc <-
+    c(0, 0, 10, 31, 54, 73, 79, 62, 55, 31, 21, 10, 4, 5, 5, 5, 5, 6, 5, 8, 45,
+      92, 124, 116, 106, 93, 72, 50, 29, 15, 6, 5, 3, 2, NA, NA, 0)
+  time <-
+    c(0, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 24, 48, 72, 144, 192, 240,
+      312, 312.25, 312.5, 312.75, 313, 313.5, 314, 315, 316, 318, 320, 324, 330,
+      336, 348, 360, 384, 432, 504)
+  keep <- !is.na(conc)
+  expect_equal(
+    superposition(conc = conc, time = time, tau = 12),
+    superposition(conc = conc[keep], time = time[keep], tau = 12)
+  )
+  expect_equal(
+    superposition(conc = conc, time = time, tau = 12)$conc[1],
+    166.6999215,
+    tolerance = 1e-6
+  )
+  # An NA among otherwise-zero concentrations reached `all(conc == 0)` as NA
+  expect_equal(
+    superposition(conc = c(0, 0, NA, 0), time = c(0, 1, 2, 3), tau = 12),
+    data.frame(conc = rep(0, 4), time = c(0, 1, 3, 12))
+  )
+  # conc.na is still honored, substituting the value rather than dropping the row
+  expect_equal(
+    suppressWarnings(
+      superposition(
+        conc = c(0, 5, NA, 1), time = c(0, 1, 2, 3), tau = 12,
+        options = list(conc.na = 0)
+      )
+    ),
+    suppressWarnings(
+      superposition(conc = c(0, 5, 0, 1), time = c(0, 1, 2, 3), tau = 12)
+    )
+  )
+})
