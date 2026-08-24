@@ -9,9 +9,20 @@ the dosing including dose amount and route.
 * Bug fix: `pk.calc.cl()`, `pk.calc.totdose()`, `pk.calc.ae()`,
   `pk.calc.clr()`, and `pk.calc.fe()` return `NA` rather than 0 when an input
   is zero-length.  `sum()` of nothing is 0, so a clearance calculated without
-  a dose was reported as 0 instead of as missing (601).  Counting parameters
+  a dose was reported as 0 instead of as missing (#601).  Counting parameters
   such as `pk.calc.count_conc()` still return 0, which is their documented
   behavior.
+
+* The message about missing dosing information is now raised only when a
+  requested parameter actually needs it, and it names the parameters that will
+  not be calculated (#538).  Dose amount, time, and duration are checked
+  separately, so requesting `c0` with dose times but no amounts is quiet while
+  requesting `cl.last` is not.
+
+* `get.parameter.deps()` gains a `recursive` argument.  The default is
+  unchanged and returns the parameters calculated from `x`; `recursive = TRUE`
+  returns what `x` is calculated from, following each dependency back to raw
+  inputs such as `conc`, `time`, and `dose`.
 
 * PKNCA now declares a minimum R version of 4.4 in DESCRIPTION, and
   continuous integration tests it.  The floor comes from `Matrix`, which

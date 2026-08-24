@@ -193,20 +193,182 @@ get.parameter.deps_helper_searchdeps <- function(current, funmap, all_intervals)
   }
 }
 
+# Fill in the requires_dose_* values for `params` and cache them in the
+# registry, computing only the ones that are not already known.  Deferred to
+# first use because a parameter may be registered before what it depends on.
+set_requires_dose <- function(params) {
+  all_intervals <- get.interval.cols()
+  params <- intersect(params, names(all_intervals))
+  unknown <-
+    params[vapply(
+      X = params,
+      FUN = function(x) is.null(all_intervals[[x]][["requires_dose_amt"]]),
+      FUN.VALUE = TRUE
+    )]
+  if (length(unknown) > 0) {
+    for (current_param in unknown) {
+      current_src <-
+        parameter_source_inputs(
+          current_param, all_intervals = all_intervals, optional_dose = FALSE
+        )
+      all_intervals[[current_param]][["requires_dose_amt"]] <-
+        any(c("dose", "dose.group") %in% current_src)
+      all_intervals[[current_param]][["requires_dose_time"]] <-
+        any(c("time.dose", "time.dose.group") %in% current_src)
+      all_intervals[[current_param]][["requires_dose_dur"]] <-
+        any(c("duration.dose", "duration.dose.group") %in% current_src)
+    }
+    assign("interval.cols", all_intervals, envir = .PKNCAEnv)
+  }
+  all_intervals[params]
+}
+
+# The parameters requested by at least one interval
+requested_parameters <- function(intervals) {
+  candidates <- intersect(names(intervals), names(get.interval.cols()))
+  keep <-
+    vapply(
+      X = candidates,
+      FUN = function(x) any(intervals[[x]] %in% TRUE),
+      FUN.VALUE = TRUE
+    )
+  candidates[keep]
+}
+
+# Which requested parameters cannot be calculated from the dosing information
+# that was given.  Dose amount, time, and duration are supplied independently
+# (e.g. `PKNCAdose(data, ~time)` gives timing without an amount), so each is
+# checked separately: c0 needs the dose time but not the amount, and ceoi needs
+# the duration.
+uncalculable_without_dose <- function(intervals, o_dose) {
+  params <- requested_parameters(intervals)
+  if (length(params) == 0) {
+    return(character(0))
+  }
+  has_dose <- !identical(o_dose, NA)
+  have_amt <- has_dose && length(o_dose$columns$dose) > 0
+  have_time <- has_dose && length(o_dose$columns$time) > 0
+  have_dur <- has_dose && length(o_dose$columns$duration) > 0
+  if (have_amt && have_time && have_dur) {
+    return(character(0))
+  }
+  specs <- set_requires_dose(params)
+  keep <-
+    vapply(
+      X = specs,
+      FUN = function(x) {
+        (isTRUE(x[["requires_dose_amt"]]) && !have_amt) ||
+          (isTRUE(x[["requires_dose_time"]]) && !have_time) ||
+          (isTRUE(x[["requires_dose_dur"]]) && !have_dur)
+      },
+      FUN.VALUE = TRUE
+    )
+  sort(names(specs)[keep])
+}
+
+# The inputs pk.nca.interval() supplies directly rather than calculating, so a
+# backward dependency search ends when it reaches one of these.
+pknca_source_inputs <- c(
+  "conc", "time", "volume", "duration.conc", "dose", "time.dose", "duration.dose",
+  "route", "subject", "options", "lloq", "interval", "start", "end",
+  paste0(
+    c("conc", "time", "volume", "duration.conc", "dose", "time.dose", "duration.dose", "route"),
+    ".group"
+  )
+)
+
+# Dose inputs a calculation accepts but does not require.  pk.calc.half.life()
+# refines its point selection with the dose timing when it is available and
+# returns the same answer without it, so treating it as required would report
+# the whole terminal-phase family as uncalculable whenever dosing is absent.
+pknca_optional_dose_args <- list(
+  pk.calc.half.life = c("time.dose", "duration.dose")
+)
+
+# What a single parameter is calculated from: its function's formals after the
+# formalsmap is applied, plus the parameters it declares a dependency on.  A
+# parameter with `FUN = NA` is produced by another parameter's function, so the
+# chain continues through `depends`.
+parameter_direct_refs <- function(x, all_intervals, optional_dose) {
+  spec <- all_intervals[[x]]
+  if (is.null(spec)) {
+    return(character(0))
+  }
+  if (length(spec$FUN) != 1 || is.na(spec$FUN)) {
+    return(unique(spec$depends))
+  }
+  fun <- tryCatch(get(spec$FUN), error = function(e) NULL)
+  if (is.null(fun)) {
+    return(unique(spec$depends))  # nocov
+  }
+  arg_names <- setdiff(names(formals(fun)), "...")
+  args <- stats::setNames(as.list(arg_names), arg_names)
+  if (length(spec$formalsmap) > 0) {
+    args[names(spec$formalsmap)] <- spec$formalsmap
+  }
+  args <- args[!vapply(X = args, FUN = is.null, FUN.VALUE = TRUE)]
+  if (!optional_dose) {
+    drop_args <- pknca_optional_dose_args[[spec$FUN]]
+    if (!is.null(drop_args)) {
+      args <- args[!(names(args) %in% drop_args)]
+    }
+  }
+  unique(c(unlist(args, use.names = FALSE), spec$depends))
+}
+
+# Everything `x` is calculated from, following each reference to a source input.
+parameter_source_inputs <- function(x, all_intervals = get.interval.cols(),
+                                    optional_dose = TRUE, seen = character(0)) {
+  if (x %in% seen) {
+    return(character(0))
+  }
+  seen <- c(seen, x)
+  ret <- character(0)
+  for (current_ref in parameter_direct_refs(x, all_intervals, optional_dose)) {
+    if (current_ref %in% names(all_intervals)) {
+      ret <-
+        c(
+          ret,
+          parameter_source_inputs(
+            current_ref, all_intervals = all_intervals,
+            optional_dose = optional_dose, seen = seen
+          )
+        )
+    } else {
+      ret <- c(ret, current_ref)
+    }
+  }
+  unique(ret)
+}
+
 #' Get all columns that depend on a parameter
 #'
 #' @param x The parameter name (as a character string)
-#' @returns A character vector of parameter names that depend on the parameter
-#'   `x`.  If none depend on `x`, then the result will be an empty vector.
+#' @param recursive Search backward to the inputs `x` is calculated from,
+#'   rather than forward to the parameters calculated from `x`.  See the
+#'   details.
+#' @returns With `recursive = FALSE` (default), a character vector of
+#'   parameter names that depend on the parameter `x`; empty if none do.
+#'   With `recursive = TRUE`, the unique set of everything `x` is calculated
+#'   from, following each dependency to the end.
+#' @details The two directions answer different questions.  The default
+#'   answers "what becomes invalid if `x` changes?".  `recursive = TRUE`
+#'   answers "what does `x` need?", and its result mixes parameter names
+#'   with the raw inputs the calculation ends at, such as `"conc"`,
+#'   `"time"`, `"dose"`, and `"time.dose"`.
 #' @family Interval specifications
 #' @export
-get.parameter.deps <- function(x) {
+get.parameter.deps <- function(x, recursive = FALSE) {
+  checkmate::assert_flag(recursive)
   all_intervals <- get.interval.cols()
   if (!(x %in% names(all_intervals))) {
     rlang::abort(
       "`x` must be the name of an NCA parameter listed by the function `get.interval.cols()`",
       class = "pknca_error_invalid_parameter"
     )
+  }
+  if (recursive) {
+    return(sort(parameter_source_inputs(x, all_intervals = all_intervals, optional_dose = TRUE)))
   }
   funmap <-
     lapply(

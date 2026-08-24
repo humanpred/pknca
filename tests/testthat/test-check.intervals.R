@@ -239,3 +239,109 @@ test_that("check.intervals works with tibble input (fix #141)", {
     intervals_manual$start
   )
 })
+
+test_that("get.parameter.deps(recursive=TRUE) reaches the inputs a parameter is calculated from (#538)", {
+  # cmax is calculated from the concentrations alone; tmax also needs the times
+  expect_true("conc" %in% get.parameter.deps("cmax", recursive = TRUE))
+  expect_false("time" %in% get.parameter.deps("cmax", recursive = TRUE))
+  expect_true(all(c("conc", "time") %in% get.parameter.deps("tmax", recursive = TRUE)))
+  # cl.obs needs the dose amount; vz.obs needs it only through cl.obs
+  expect_true("dose" %in% get.parameter.deps("cl.obs", recursive = TRUE))
+  expect_true("dose" %in% get.parameter.deps("vz.obs", recursive = TRUE))
+  # The default direction is unchanged: parameters calculated from cmax
+  expect_true("cmax.dn" %in% get.parameter.deps("cmax"))
+  expect_false("cmax.dn" %in% get.parameter.deps("cmax", recursive = TRUE))
+  expect_error(
+    get.parameter.deps("not a parameter", recursive = TRUE),
+    class = "pknca_error_invalid_parameter"
+  )
+})
+
+test_that("dose amount, time, and duration are required separately (#538)", {
+  expect_equal(
+    unlist(set_requires_dose("c0")[["c0"]][c("requires_dose_amt", "requires_dose_time", "requires_dose_dur")]),
+    c(requires_dose_amt = FALSE, requires_dose_time = TRUE, requires_dose_dur = FALSE)
+  )
+  expect_equal(
+    unlist(set_requires_dose("ceoi")[["ceoi"]][c("requires_dose_amt", "requires_dose_time", "requires_dose_dur")]),
+    c(requires_dose_amt = FALSE, requires_dose_time = FALSE, requires_dose_dur = TRUE)
+  )
+  expect_true(set_requires_dose("cl.obs")[["cl.obs"]]$requires_dose_amt)
+  # pk.calc.half.life() uses the dose timing when present but does not need
+  # it, so neither it nor anything downstream of it is reported
+  for (param in c("half.life", "lambda.z", "aucinf.obs", "mrt.obs", "span.ratio")) {
+    expect_false(any(unlist(set_requires_dose(param)[[param]][
+      c("requires_dose_amt", "requires_dose_time", "requires_dose_dur")
+    ])), info = param)
+  }
+})
+
+test_that("every derived dose requirement matches what pk.nca() can calculate (#538)", {
+  # Enumerating guard: a parameter whose flags are wrong, or a newly added
+  # parameter, is caught here rather than producing a wrong message.
+  d_conc <- data.frame(conc = c(2, 1, 0.5, 0.25, 0.125), time = 0:4, subject = 1)
+  d_dose <- data.frame(dose = 100, time = 0, subject = 1)
+  o_conc <- PKNCAconc(d_conc, conc~time|subject)
+  o_dose <- PKNCAdose(d_dose, dose~time|subject)
+  check_params <-
+    c("cmax", "tmax", "auclast", "aucinf.obs", "half.life", "mrt.last", "cav",
+      "cl.last", "cl.obs", "vz.obs", "vss.obs", "cmax.dn", "auclast.dn", "totdose")
+  ivl <- data.frame(start = 0, end = Inf)
+  for (param in check_params) ivl[[param]] <- TRUE
+  res_with <-
+    suppressWarnings(suppressMessages(
+      as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = ivl)))
+    ))
+  res_without <-
+    suppressWarnings(suppressMessages(
+      as.data.frame(pk.nca(PKNCAdata(o_conc, intervals = ivl)))
+    ))
+  all_na <- function(d, param) {
+    v <- d$PPORRES[d$PPTESTCD %in% param]
+    length(v) == 0 || all(is.na(v))
+  }
+  for (param in check_params) {
+    spec <- set_requires_dose(param)[[param]]
+    derived <- any(unlist(spec[c("requires_dose_amt", "requires_dose_time", "requires_dose_dur")]))
+    observed <- !all_na(res_with, param) && all_na(res_without, param)
+    expect_equal(derived, observed, info = param)
+  }
+})
+
+test_that("the missing dose message names only what cannot be calculated (#538)", {
+  d_conc <- data.frame(conc = c(2, 1, 0.5, 0.25, 0.125), time = 0:4, subject = 1)
+  d_dose <- data.frame(dose = 100, time = 0, subject = 1)
+  o_conc <- PKNCAconc(d_conc, conc~time|subject)
+  mk <- function(params) {
+    ivl <- data.frame(start = 0, end = Inf)
+    for (param in params) ivl[[param]] <- TRUE
+    ivl
+  }
+  # Nothing requested needs dosing, so nothing is reported
+  expect_no_message(
+    suppressWarnings(pk.nca(PKNCAdata(o_conc, intervals = mk(c("cmax", "auclast"))))),
+    class = "pknca_message_missing_dose"
+  )
+  # Only the affected parameter is named
+  expect_message(
+    suppressWarnings(pk.nca(PKNCAdata(o_conc, intervals = mk(c("cmax", "cl.last"))))),
+    regexp = "will not be calculated: cl.last",
+    fixed = TRUE
+  )
+  # Dose timing without an amount covers c0 but not cl.last
+  expect_message(
+    suppressWarnings(pk.nca(PKNCAdata(
+      o_conc, PKNCAdose(d_dose, ~time|subject), intervals = mk(c("c0", "cl.last"))
+    ))),
+    regexp = "will not be calculated: cl.last",
+    fixed = TRUE
+  )
+  # A dose amount without timing covers cl.last but not c0
+  expect_message(
+    suppressWarnings(pk.nca(PKNCAdata(
+      o_conc, PKNCAdose(d_dose, dose~.|subject), intervals = mk(c("c0", "cl.last"))
+    ))),
+    regexp = "will not be calculated: c0",
+    fixed = TRUE
+  )
+})

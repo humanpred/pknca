@@ -15,10 +15,8 @@
 full_join_PKNCAconc_PKNCAdose <- function(o_conc, o_dose, extra_cols_conc = character()) {
   checkmate::assert_class(o_conc, "PKNCAconc")
   if (identical(o_dose, NA)) {
-    rlang::inform(
-      "No dose information provided, calculations requiring dose will return NA.",
-      class = "pknca_message_missing_dose"
-    )
+    # Whether this matters depends on which parameters were requested, which is
+    # only known where the intervals are; full_join_PKNCAdata() reports it.
     n_dose <- tibble::tibble(data_dose=list(NA))
   } else {
     checkmate::assert_class(o_dose, "PKNCAdose")
@@ -47,6 +45,16 @@ full_join_PKNCAconc_PKNCAdose <- function(o_conc, o_dose, extra_cols_conc = char
 #' @keywords Internal
 #' @noRd
 full_join_PKNCAdata <- function(x, extra_conc_cols = character()) {
+  missing_dose_params <- uncalculable_without_dose(x$intervals, x$dose)
+  if (length(missing_dose_params) > 0) {
+    rlang::inform(
+      sprintf(
+        "Missing dosing information; these parameters will not be calculated: %s",
+        paste(missing_dose_params, collapse = ", ")
+      ),
+      class = "pknca_message_missing_dose"
+    )
+  }
   conc_dose <- full_join_PKNCAconc_PKNCAdose(o_conc = x$conc, o_dose = x$dose, extra_cols_conc = extra_conc_cols)
   n_i <-
     prepare_PKNCAintervals(
