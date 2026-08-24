@@ -75,7 +75,9 @@
 <span>  formalsmap <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  datatype <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"interval"</span>, <span class="st">"individual"</span>, <span class="st">"population"</span><span class="op">)</span>,</span>
 <span>  pptestcd_cdisc <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  pptest_cdisc <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  pptest_cdisc <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  formula <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  formula_note <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -149,6 +151,17 @@ by route (e.g. <code>list(route = list(extravascular = "CLF/FO", intravascular =
 <dd><p>The CDISC PPTEST name for this parameter.  Can be a
 character string or a named list (same structure as <code>pptestcd_cdisc</code>).
 Defaults to <code>desc</code> if not provided.</p></dd>
+
+
+<dt id="arg-formula">formula<a class="anchor" aria-label="anchor" href="#arg-formula"></a></dt>
+<dd><p>Character value providing a LaTeX expression for how the
+parameter is calculated.  Optional and used only for documentation.</p></dd>
+
+
+<dt id="arg-formula-note">formula_note<a class="anchor" aria-label="anchor" href="#arg-formula-note"></a></dt>
+<dd><p>Character value providing additional context about the
+formula (e.g. assumptions or method details).  Displayed alongside the
+formula in documentation tables.</p></dd>
 
 </dl></div>
     <div class="section level2">

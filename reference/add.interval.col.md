@@ -17,7 +17,9 @@ add.interval.col(
   formalsmap = list(),
   datatype = c("interval", "individual", "population"),
   pptestcd_cdisc = NULL,
-  pptest_cdisc = NULL
+  pptest_cdisc = NULL,
+  formula = NULL,
+  formula_note = NULL
 )
 ```
 
@@ -91,6 +93,17 @@ add.interval.col(
   The CDISC PPTEST name for this parameter. Can be a character string or
   a named list (same structure as `pptestcd_cdisc`). Defaults to `desc`
   if not provided.
+
+- formula:
+
+  Character value providing a LaTeX expression for how the parameter is
+  calculated. Optional and used only for documentation.
+
+- formula_note:
+
+  Character value providing additional context about the formula (e.g.
+  assumptions or method details). Displayed alongside the formula in
+  documentation tables.
 
 ## Value
 

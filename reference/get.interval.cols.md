@@ -62,6 +62,12 @@ get.interval.cols()
 #> $start$pptest_cdisc
 #> [1] "Starting time of the interval"
 #> 
+#> $start$formula
+#> NULL
+#> 
+#> $start$formula_note
+#> NULL
+#> 
 #> 
 #> $end
 #> $end$FUN
@@ -97,6 +103,12 @@ get.interval.cols()
 #> $end$pptest_cdisc
 #> [1] "End time of interval (may be Inf)"
 #> 
+#> $end$formula
+#> NULL
+#> 
+#> $end$formula_note
+#> NULL
+#> 
 #> 
 #> $auclast
 #> $auclast$FUN
@@ -131,6 +143,12 @@ get.interval.cols()
 #> 
 #> $auclast$pptest_cdisc
 #> [1] "AUC to Last Nonzero Conc"
+#> 
+#> $auclast$formula
+#> [1] "$AUC_{\\text{last}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $auclast$formula_note
+#> [1] "Trapezoidal rule (linear-up/log-down by default)"
 #> 
 #> $auclast$requires_dose_amt
 #> [1] FALSE
@@ -179,6 +197,12 @@ get.interval.cols()
 #> $aucall$pptest_cdisc
 #> [1] "AUC All"
 #> 
+#> $aucall$formula
+#> [1] "$AUC_{\\text{all}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aucall$formula_note
+#> [1] "Trapezoidal rule (linear-up/log-down by default)"
+#> 
 #> 
 #> $aumclast
 #> $aumclast$FUN
@@ -214,6 +238,12 @@ get.interval.cols()
 #> $aumclast$pptest_cdisc
 #> [1] "AUMC to Last Nonzero Conc"
 #> 
+#> $aumclast$formula
+#> [1] "$AUMC_{\\text{last}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aumclast$formula_note
+#> [1] "Trapezoidal rule (linear-up/log-down by default)"
+#> 
 #> 
 #> $aumcall
 #> $aumcall$FUN
@@ -248,6 +278,12 @@ get.interval.cols()
 #> 
 #> $aumcall$pptest_cdisc
 #> [1] "AUMC All"
+#> 
+#> $aumcall$formula
+#> [1] "$AUMC_{\\text{all}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aumcall$formula_note
+#> [1] "Trapezoidal rule (linear-up/log-down by default)"
 #> 
 #> 
 #> $aucint.last
@@ -292,6 +328,12 @@ get.interval.cols()
 #> $aucint.last$pptest_cdisc
 #> [1] "AUC from T1 to T2"
 #> 
+#> $aucint.last$formula
+#> [1] "$AUC_{\\text{int,last}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aucint.last$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
 #> 
 #> $aucint.last.dose
 #> $aucint.last.dose$FUN
@@ -334,6 +376,12 @@ get.interval.cols()
 #> 
 #> $aucint.last.dose$pptest_cdisc
 #> [1] "AUC from T1 to T2 Normalized by Dose"
+#> 
+#> $aucint.last.dose$formula
+#> [1] "$AUC_{\\text{int,last,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aucint.last.dose$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
 #> 
 #> $aucint.all
@@ -378,6 +426,12 @@ get.interval.cols()
 #> $aucint.all$pptest_cdisc
 #> [1] "AUCint (based on AUCall extrapolation)"
 #> 
+#> $aucint.all$formula
+#> [1] "$AUC_{\\text{int,all}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aucint.all$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
 #> 
 #> $aucint.all.dose
 #> $aucint.all.dose$FUN
@@ -420,6 +474,12 @@ get.interval.cols()
 #> 
 #> $aucint.all.dose$pptest_cdisc
 #> [1] "AUCint (based on AUCall extrapolation, dose-aware)"
+#> 
+#> $aucint.all.dose$formula
+#> [1] "$AUC_{\\text{int,all,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aucint.all.dose$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
 #> 
 #> $aumcint.last
@@ -464,6 +524,12 @@ get.interval.cols()
 #> $aumcint.last$pptest_cdisc
 #> [1] "AUMC from T1 to T2 (zero extrap)"
 #> 
+#> $aumcint.last$formula
+#> [1] "$AUMC_{\\text{int,last}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aumcint.last$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
 #> 
 #> $aumcint.last.dose
 #> $aumcint.last.dose$FUN
@@ -506,6 +572,12 @@ get.interval.cols()
 #> 
 #> $aumcint.last.dose$pptest_cdisc
 #> [1] "AUMC T1 to T2, dose-aware (zero extrap)"
+#> 
+#> $aumcint.last.dose$formula
+#> [1] "$AUMC_{\\text{int,last,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aumcint.last.dose$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
 #> 
 #> $aumcint.all
@@ -550,6 +622,12 @@ get.interval.cols()
 #> $aumcint.all$pptest_cdisc
 #> [1] "AUMC from T1 to T2 (AUMCall extrap)"
 #> 
+#> $aumcint.all$formula
+#> [1] "$AUMC_{\\text{int,all}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aumcint.all$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
 #> 
 #> $aumcint.all.dose
 #> $aumcint.all.dose$FUN
@@ -593,6 +671,12 @@ get.interval.cols()
 #> $aumcint.all.dose$pptest_cdisc
 #> [1] "AUMC T1 to T2, dose-aware (AUMCall)"
 #> 
+#> $aumcint.all.dose$formula
+#> [1] "$AUMC_{\\text{int,all,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aumcint.all.dose$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
 #> 
 #> $c0
 #> $c0$FUN
@@ -628,6 +712,12 @@ get.interval.cols()
 #> $c0$pptest_cdisc
 #> [1] "Initial Conc"
 #> 
+#> $c0$formula
+#> [1] "$C_0 = \\text{if measured, } C_{t=0}; \\text{ else, } C_0 = C_1 \\exp\\left(-\\frac{\\ln(C_2) - \\ln(C_1)}{t_2-t_1} (t_1 - t_{\\text{dose}})\\right)$"
+#> 
+#> $c0$formula_note
+#> [1] "Methods are tried in order: c0, logslope, c1, cmin, set0; the formula shows c0 and logslope"
+#> 
 #> 
 #> $cmax
 #> $cmax$FUN
@@ -662,6 +752,12 @@ get.interval.cols()
 #> 
 #> $cmax$pptest_cdisc
 #> [1] "Max Conc"
+#> 
+#> $cmax$formula
+#> [1] "$C_{\\max} = \\max_i C_i$"
+#> 
+#> $cmax$formula_note
+#> NULL
 #> 
 #> $cmax$requires_dose_amt
 #> [1] FALSE
@@ -710,6 +806,12 @@ get.interval.cols()
 #> $cmin$pptest_cdisc
 #> [1] "Min Conc"
 #> 
+#> $cmin$formula
+#> [1] "$C_{\\min} = \\min_i C_i$"
+#> 
+#> $cmin$formula_note
+#> NULL
+#> 
 #> 
 #> $tmax
 #> $tmax$FUN
@@ -744,6 +846,12 @@ get.interval.cols()
 #> 
 #> $tmax$pptest_cdisc
 #> [1] "Time of CMAX"
+#> 
+#> $tmax$formula
+#> [1] "$T_{\\max} = t_{i: C_i = C_{\\max}}$"
+#> 
+#> $tmax$formula_note
+#> NULL
 #> 
 #> $tmax$requires_dose_amt
 #> [1] FALSE
@@ -792,6 +900,12 @@ get.interval.cols()
 #> $tmin$pptest_cdisc
 #> [1] "Time of CMIN Observation"
 #> 
+#> $tmin$formula
+#> NULL
+#> 
+#> $tmin$formula_note
+#> NULL
+#> 
 #> 
 #> $tlast
 #> $tlast$FUN
@@ -826,6 +940,12 @@ get.interval.cols()
 #> 
 #> $tlast$pptest_cdisc
 #> [1] "Time of Last Nonzero Conc"
+#> 
+#> $tlast$formula
+#> [1] "$T_{\\text{last}} = t_{i: C_i > 0, i = \\max}$"
+#> 
+#> $tlast$formula_note
+#> NULL
 #> 
 #> 
 #> $tfirst
@@ -862,6 +982,12 @@ get.interval.cols()
 #> $tfirst$pptest_cdisc
 #> [1] "Time of First Nonzero Conc"
 #> 
+#> $tfirst$formula
+#> [1] "$T_{\\text{first}} = t_{i: C_i > 0, i = \\min}$"
+#> 
+#> $tfirst$formula_note
+#> NULL
+#> 
 #> 
 #> $clast.obs
 #> $clast.obs$FUN
@@ -896,6 +1022,12 @@ get.interval.cols()
 #> 
 #> $clast.obs$pptest_cdisc
 #> [1] "Last Nonzero Conc"
+#> 
+#> $clast.obs$formula
+#> [1] "$C_{\\text{last,obs}} = C_{i: t_i = T_{\\text{last}}}$"
+#> 
+#> $clast.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $cl.last
@@ -948,6 +1080,12 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $cl.last$formula
+#> [1] "$CL_{\\text{last}} = \\frac{Dose}{AUC_{\\text{last}}}$"
+#> 
+#> $cl.last$formula_note
+#> NULL
+#> 
 #> 
 #> $cl.all
 #> $cl.all$FUN
@@ -999,6 +1137,12 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $cl.all$formula
+#> [1] "$CL_{\\text{all}} = \\frac{Dose}{AUC_{\\text{all}}}$"
+#> 
+#> $cl.all$formula_note
+#> NULL
+#> 
 #> 
 #> $cl.int.all
 #> $cl.int.all$FUN
@@ -1035,6 +1179,12 @@ get.interval.cols()
 #> 
 #> $cl.int.all$pptest_cdisc
 #> [1] "Clearance, AUCint.all"
+#> 
+#> $cl.int.all$formula
+#> [1] "$CL_{\\text{int,all}} = \\frac{Dose}{AUC_{\\text{int,all}}}$"
+#> 
+#> $cl.int.all$formula_note
+#> NULL
 #> 
 #> 
 #> $cl.int.last
@@ -1073,6 +1223,12 @@ get.interval.cols()
 #> $cl.int.last$pptest_cdisc
 #> [1] "Clearance, AUCint.last"
 #> 
+#> $cl.int.last$formula
+#> [1] "$CL_{\\text{int,last}} = \\frac{Dose}{AUC_{\\text{int,last}}}$"
+#> 
+#> $cl.int.last$formula_note
+#> NULL
+#> 
 #> 
 #> $f
 #> $f$FUN
@@ -1107,6 +1263,12 @@ get.interval.cols()
 #> 
 #> $f$pptest_cdisc
 #> [1] "Absolute Bioavailability"
+#> 
+#> $f$formula
+#> [1] "$F = \\frac{AUC_2 / Dose_2}{AUC_1 / Dose_1}$"
+#> 
+#> $f$formula_note
+#> NULL
 #> 
 #> 
 #> $mrt.last
@@ -1162,6 +1324,12 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $mrt.last$formula
+#> [1] "$MRT_{\\text{last}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}}$"
+#> 
+#> $mrt.last$formula_note
+#> NULL
+#> 
 #> 
 #> $mrt.all
 #> $mrt.all$FUN
@@ -1201,6 +1369,12 @@ get.interval.cols()
 #> 
 #> $mrt.all$pptest_cdisc
 #> [1] "MRT, AUCall/AUMCall"
+#> 
+#> $mrt.all$formula
+#> [1] "$MRT_{\\text{all}} = \\frac{AUMC_{\\text{all}}}{AUC_{\\text{all}}}$"
+#> 
+#> $mrt.all$formula_note
+#> NULL
 #> 
 #> 
 #> $mrt.int.all
@@ -1242,6 +1416,12 @@ get.interval.cols()
 #> $mrt.int.all$pptest_cdisc
 #> [1] "MRT, interval AUCall/AUMCall"
 #> 
+#> $mrt.int.all$formula
+#> [1] "$MRT_{\\text{int,all}} = \\frac{AUMC_{\\text{int,all}}}{AUC_{\\text{int,all}}}$"
+#> 
+#> $mrt.int.all$formula_note
+#> NULL
+#> 
 #> 
 #> $mrt.int.last
 #> $mrt.int.last$FUN
@@ -1282,6 +1462,12 @@ get.interval.cols()
 #> $mrt.int.last$pptest_cdisc
 #> [1] "MRT, interval AUClast/AUMClast"
 #> 
+#> $mrt.int.last$formula
+#> [1] "$MRT_{\\text{int,last}} = \\frac{AUMC_{\\text{int,last}}}{AUC_{\\text{int,last}}}$"
+#> 
+#> $mrt.int.last$formula_note
+#> NULL
+#> 
 #> 
 #> $mrt.iv.last
 #> $mrt.iv.last$FUN
@@ -1321,6 +1507,12 @@ get.interval.cols()
 #> 
 #> $mrt.iv.last$pptest_cdisc
 #> [1] "MRT Intravasc to Last Nonzero Conc"
+#> 
+#> $mrt.iv.last$formula
+#> [1] "$MRT_{\\text{iv,last}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$"
+#> 
+#> $mrt.iv.last$formula_note
+#> NULL
 #> 
 #> 
 #> $vss.last
@@ -1376,6 +1568,12 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $vss.last$formula
+#> [1] "$V_{ss,\\text{last}} = CL_{\\text{last}} \\cdot MRT_{\\text{last}}$"
+#> 
+#> $vss.last$formula_note
+#> NULL
+#> 
 #> 
 #> $vss.iv.last
 #> $vss.iv.last$FUN
@@ -1415,6 +1613,12 @@ get.interval.cols()
 #> 
 #> $vss.iv.last$pptest_cdisc
 #> [1] "Vss (for IV dosing, based on AUClast)"
+#> 
+#> $vss.iv.last$formula
+#> [1] "$V_{ss,\\text{iv,last}} = CL_{\\text{last}} \\cdot MRT_{\\text{iv,last}}$"
+#> 
+#> $vss.iv.last$formula_note
+#> NULL
 #> 
 #> 
 #> $vss.all
@@ -1456,6 +1660,12 @@ get.interval.cols()
 #> $vss.all$pptest_cdisc
 #> [1] "Vss, calc from AUCall"
 #> 
+#> $vss.all$formula
+#> [1] "$V_{ss,\\text{all}} = CL_{\\text{all}} \\cdot MRT_{\\text{all}}$"
+#> 
+#> $vss.all$formula_note
+#> NULL
+#> 
 #> 
 #> $vss.int.all
 #> $vss.int.all$FUN
@@ -1495,6 +1705,12 @@ get.interval.cols()
 #> 
 #> $vss.int.all$pptest_cdisc
 #> [1] "Vss, calc from interval AUCint.all"
+#> 
+#> $vss.int.all$formula
+#> [1] "$V_{ss,\\text{int,all}} = CL_{\\text{int,all}} \\cdot MRT_{\\text{int,all}}$"
+#> 
+#> $vss.int.all$formula_note
+#> NULL
 #> 
 #> 
 #> $vss.int.last
@@ -1536,6 +1752,12 @@ get.interval.cols()
 #> $vss.int.last$pptest_cdisc
 #> [1] "Vss, calc from interval AUCint.last"
 #> 
+#> $vss.int.last$formula
+#> [1] "$V_{ss,\\text{int,last}} = CL_{\\text{int,last}} \\cdot MRT_{\\text{int,last}}$"
+#> 
+#> $vss.int.last$formula_note
+#> NULL
+#> 
 #> 
 #> $cav
 #> $cav$FUN
@@ -1572,6 +1794,12 @@ get.interval.cols()
 #> 
 #> $cav$pptest_cdisc
 #> [1] "Average Conc"
+#> 
+#> $cav$formula
+#> [1] "$C_{av} = \\frac{AUC_{\\text{last}}}{t_{end} - t_{start}}$"
+#> 
+#> $cav$formula_note
+#> NULL
 #> 
 #> 
 #> $cav.int.last
@@ -1610,6 +1838,12 @@ get.interval.cols()
 #> $cav.int.last$pptest_cdisc
 #> [1] "Average Conc from T1 to T2"
 #> 
+#> $cav.int.last$formula
+#> [1] "$C_{av,\\text{int,last}} = \\frac{AUC_{\\text{int,last}}}{t_{end} - t_{start}}$"
+#> 
+#> $cav.int.last$formula_note
+#> NULL
+#> 
 #> 
 #> $cav.int.all
 #> $cav.int.all$FUN
@@ -1647,6 +1881,12 @@ get.interval.cols()
 #> $cav.int.all$pptest_cdisc
 #> [1] "Cavg All"
 #> 
+#> $cav.int.all$formula
+#> [1] "$C_{av,\\text{int,all}} = \\frac{AUC_{\\text{int,all}}}{t_{end} - t_{start}}$"
+#> 
+#> $cav.int.all$formula_note
+#> NULL
+#> 
 #> 
 #> $ctrough
 #> $ctrough$FUN
@@ -1681,6 +1921,12 @@ get.interval.cols()
 #> 
 #> $ctrough$pptest_cdisc
 #> [1] "Conc Trough"
+#> 
+#> $ctrough$formula
+#> [1] "$C_{\\text{trough}} = C(t_{\\text{end}})$"
+#> 
+#> $ctrough$formula_note
+#> NULL
 #> 
 #> 
 #> $cstart
@@ -1717,6 +1963,12 @@ get.interval.cols()
 #> $cstart$pptest_cdisc
 #> [1] "Cstart"
 #> 
+#> $cstart$formula
+#> [1] "$C_{\\text{start}} = C(t_{\\text{start}})$"
+#> 
+#> $cstart$formula_note
+#> NULL
+#> 
 #> 
 #> $ptr
 #> $ptr$FUN
@@ -1751,6 +2003,12 @@ get.interval.cols()
 #> 
 #> $ptr$pptest_cdisc
 #> [1] "Peak Trough Ratio"
+#> 
+#> $ptr$formula
+#> [1] "$PTR = \\frac{C_{\\max}}{C_{\\text{trough}}}$"
+#> 
+#> $ptr$formula_note
+#> NULL
 #> 
 #> 
 #> $tlag
@@ -1787,6 +2045,12 @@ get.interval.cols()
 #> $tlag$pptest_cdisc
 #> [1] "Time to First Nonzero Conc"
 #> 
+#> $tlag$formula
+#> [1] "$T_{\\text{lag}} = t_{i: C_{i+1} > C_i, i = \\min}$"
+#> 
+#> $tlag$formula_note
+#> NULL
+#> 
 #> 
 #> $deg.fluc
 #> $deg.fluc$FUN
@@ -1821,6 +2085,12 @@ get.interval.cols()
 #> 
 #> $deg.fluc$pptest_cdisc
 #> [1] "Degree of fluctuation"
+#> 
+#> $deg.fluc$formula
+#> [1] "$DF = 100 \\cdot \\frac{C_{\\max} - C_{\\min}}{C_{av}}$"
+#> 
+#> $deg.fluc$formula_note
+#> NULL
 #> 
 #> 
 #> $swing
@@ -1857,6 +2127,12 @@ get.interval.cols()
 #> $swing$pptest_cdisc
 #> [1] "Swing"
 #> 
+#> $swing$formula
+#> [1] "$Swing = 100 \\cdot \\frac{C_{\\max} - C_{\\min}}{C_{\\min}}$"
+#> 
+#> $swing$formula_note
+#> NULL
+#> 
 #> 
 #> $ceoi
 #> $ceoi$FUN
@@ -1891,6 +2167,12 @@ get.interval.cols()
 #> 
 #> $ceoi$pptest_cdisc
 #> [1] "Ceoi"
+#> 
+#> $ceoi$formula
+#> [1] "$C_{\\text{eoi}} = C(t = T_{\\text{inf}})$"
+#> 
+#> $ceoi$formula_note
+#> NULL
 #> 
 #> 
 #> $aucabove.predose.all
@@ -1929,6 +2211,12 @@ get.interval.cols()
 #> $aucabove.predose.all$pptest_cdisc
 #> [1] "AUC above predose"
 #> 
+#> $aucabove.predose.all$formula
+#> [1] "$AUC_{\\text{above,predose}} = \\int \\max(C(t) - C_{\\text{start}},\\; 0)\\; dt$"
+#> 
+#> $aucabove.predose.all$formula_note
+#> NULL
+#> 
 #> 
 #> $aucabove.trough.all
 #> $aucabove.trough.all$FUN
@@ -1966,6 +2254,12 @@ get.interval.cols()
 #> $aucabove.trough.all$pptest_cdisc
 #> [1] "AUC above trough"
 #> 
+#> $aucabove.trough.all$formula
+#> [1] "$AUC_{\\text{above,trough}} = \\int \\max(C(t) - C_{\\text{trough}},\\; 0)\\; dt$"
+#> 
+#> $aucabove.trough.all$formula_note
+#> NULL
+#> 
 #> 
 #> $count_conc
 #> $count_conc$FUN
@@ -2000,6 +2294,12 @@ get.interval.cols()
 #> 
 #> $count_conc$pptest_cdisc
 #> [1] "Concentration count"
+#> 
+#> $count_conc$formula
+#> [1] "$n_{\\text{conc}} = \\sum_{i} \\mathbf{1}(C_i \\neq NA)$"
+#> 
+#> $count_conc$formula_note
+#> NULL
 #> 
 #> 
 #> $count_conc_measured
@@ -2036,6 +2336,12 @@ get.interval.cols()
 #> $count_conc_measured$pptest_cdisc
 #> [1] "Count of measured, non-BLQ conc"
 #> 
+#> $count_conc_measured$formula
+#> [1] "$n_{\\text{measured}} = \\sum_{i} \\mathbf{1}(C_i > 0)$"
+#> 
+#> $count_conc_measured$formula_note
+#> NULL
+#> 
 #> 
 #> $totdose
 #> $totdose$FUN
@@ -2070,6 +2376,12 @@ get.interval.cols()
 #> 
 #> $totdose$pptest_cdisc
 #> [1] "Total dose administered"
+#> 
+#> $totdose$formula
+#> [1] "$Dose_{\\text{total}} = \\sum_i Dose_i$"
+#> 
+#> $totdose$formula_note
+#> NULL
 #> 
 #> 
 #> $volpk
@@ -2106,6 +2418,12 @@ get.interval.cols()
 #> $volpk$pptest_cdisc
 #> [1] "Volume of PK sample"
 #> 
+#> $volpk$formula
+#> [1] "$V_{\\text{urine}} = \\sum_i V_i$"
+#> 
+#> $volpk$formula_note
+#> NULL
+#> 
 #> 
 #> $ae
 #> $ae$FUN
@@ -2140,6 +2458,12 @@ get.interval.cols()
 #> 
 #> $ae$pptest_cdisc
 #> [1] "Amt Rec from T1 to T2"
+#> 
+#> $ae$formula
+#> [1] "$AE = \\sum_i C_i V_i$"
+#> 
+#> $ae$formula_note
+#> NULL
 #> 
 #> 
 #> $clr.last
@@ -2178,6 +2502,12 @@ get.interval.cols()
 #> $clr.last$pptest_cdisc
 #> [1] "Renal CL"
 #> 
+#> $clr.last$formula
+#> [1] "$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$"
+#> 
+#> $clr.last$formula_note
+#> NULL
+#> 
 #> 
 #> $clr.obs
 #> $clr.obs$FUN
@@ -2214,6 +2544,12 @@ get.interval.cols()
 #> 
 #> $clr.obs$pptest_cdisc
 #> [1] "Renal CL"
+#> 
+#> $clr.obs$formula
+#> [1] "$CL_{R,\\text{obs}} = \\frac{AE}{AUC_{\\infty,\\text{obs}}}$"
+#> 
+#> $clr.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $clr.pred
@@ -2252,6 +2588,12 @@ get.interval.cols()
 #> $clr.pred$pptest_cdisc
 #> [1] "Renal CL"
 #> 
+#> $clr.pred$formula
+#> [1] "$CL_{R,\\text{pred}} = \\frac{AE}{AUC_{\\infty,\\text{pred}}}$"
+#> 
+#> $clr.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $fe
 #> $fe$FUN
@@ -2286,6 +2628,12 @@ get.interval.cols()
 #> 
 #> $fe$pptest_cdisc
 #> [1] "Fract Excr from T1 to T2"
+#> 
+#> $fe$formula
+#> [1] "$f_e = \\frac{AE}{Dose}$"
+#> 
+#> $fe$formula_note
+#> NULL
 #> 
 #> 
 #> $ertlst
@@ -2322,6 +2670,12 @@ get.interval.cols()
 #> $ertlst$pptest_cdisc
 #> [1] "Time of Last Excretion Rate"
 #> 
+#> $ertlst$formula
+#> [1] "$T_{\\text{last,ER}} = t_{\\text{mid},i: ER_i > 0, i = \\max}$"
+#> 
+#> $ertlst$formula_note
+#> NULL
+#> 
 #> 
 #> $ermax
 #> $ermax$FUN
@@ -2356,6 +2710,12 @@ get.interval.cols()
 #> 
 #> $ermax$pptest_cdisc
 #> [1] "Max Excretion Rate"
+#> 
+#> $ermax$formula
+#> [1] "$ER_{\\max} = \\max_i \\left( \\frac{C_i V_i}{d_i} \\right)$"
+#> 
+#> $ermax$formula_note
+#> NULL
 #> 
 #> 
 #> $ertmax
@@ -2392,6 +2752,12 @@ get.interval.cols()
 #> $ertmax$pptest_cdisc
 #> [1] "Midpoint of Interval of Maximum ER"
 #> 
+#> $ertmax$formula
+#> [1] "$T_{\\max,ER} = t_{\\text{mid},i: ER_i = ER_{\\max}}$"
+#> 
+#> $ertmax$formula_note
+#> NULL
+#> 
 #> 
 #> $sparse_auclast
 #> $sparse_auclast$FUN
@@ -2426,6 +2792,12 @@ get.interval.cols()
 #> 
 #> $sparse_auclast$pptest_cdisc
 #> [1] "Sparse AUClast"
+#> 
+#> $sparse_auclast$formula
+#> [1] "$AUC_{\\text{sparse}} = \\sum_k \\frac{\\bar{C}_k + \\bar{C}_{k+1}}{2} \\Delta t_k$"
+#> 
+#> $sparse_auclast$formula_note
+#> [1] "Linear trapezoidal using population mean concentrations"
 #> 
 #> 
 #> $sparse_auc_se
@@ -2462,6 +2834,12 @@ get.interval.cols()
 #> $sparse_auc_se$pptest_cdisc
 #> [1] "Sparse AUClast standard error"
 #> 
+#> $sparse_auc_se$formula
+#> [1] "$SE(AUC_{\\text{sparse}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$"
+#> 
+#> $sparse_auc_se$formula_note
+#> [1] "Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001)"
+#> 
 #> 
 #> $sparse_auc_df
 #> $sparse_auc_df$FUN
@@ -2496,6 +2874,12 @@ get.interval.cols()
 #> 
 #> $sparse_auc_df$pptest_cdisc
 #> [1] "Sparse AUClast degrees of freedom"
+#> 
+#> $sparse_auc_df$formula
+#> [1] "$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$"
+#> 
+#> $sparse_auc_df$formula_note
+#> [1] "Satterthwaite approximation (Nedelman et al 1995, eq. 6a)"
 #> 
 #> 
 #> $sparse_aumclast
@@ -2532,6 +2916,12 @@ get.interval.cols()
 #> $sparse_aumclast$pptest_cdisc
 #> [1] "Sparse AUMC to last conc above LOQ"
 #> 
+#> $sparse_aumclast$formula
+#> NULL
+#> 
+#> $sparse_aumclast$formula_note
+#> NULL
+#> 
 #> 
 #> $sparse_aumc_se
 #> $sparse_aumc_se$FUN
@@ -2566,6 +2956,12 @@ get.interval.cols()
 #> 
 #> $sparse_aumc_se$pptest_cdisc
 #> [1] "SE of sparse AUMC to last conc above LOQ"
+#> 
+#> $sparse_aumc_se$formula
+#> NULL
+#> 
+#> $sparse_aumc_se$formula_note
+#> NULL
 #> 
 #> 
 #> $sparse_aumc_df
@@ -2602,6 +2998,12 @@ get.interval.cols()
 #> $sparse_aumc_df$pptest_cdisc
 #> [1] "variance DF for sparse AUMC to Tlast"
 #> 
+#> $sparse_aumc_df$formula
+#> NULL
+#> 
+#> $sparse_aumc_df$formula_note
+#> NULL
+#> 
 #> 
 #> $time_above
 #> $time_above$FUN
@@ -2636,6 +3038,12 @@ get.interval.cols()
 #> 
 #> $time_above$pptest_cdisc
 #> [1] "Time Above Threshold"
+#> 
+#> $time_above$formula
+#> [1] "$T_{\\text{above}} = \\sum \\Delta t_{i: C_i \\geq C_{\\text{ref}}}$"
+#> 
+#> $time_above$formula_note
+#> [1] "Crossing times interpolated using the AUC method (linear or log-linear)"
 #> 
 #> 
 #> $aucivlast
@@ -2674,6 +3082,12 @@ get.interval.cols()
 #> $aucivlast$pptest_cdisc
 #> [1] "AUClast (IV dosing)"
 #> 
+#> $aucivlast$formula
+#> [1] "$AUC_{\\text{iv,last}} = AUC_{\\text{last}} + AUC(C_0, t_1) - AUC(C(0), t_1)$"
+#> 
+#> $aucivlast$formula_note
+#> NULL
+#> 
 #> 
 #> $aucivall
 #> $aucivall$FUN
@@ -2710,6 +3124,12 @@ get.interval.cols()
 #> 
 #> $aucivall$pptest_cdisc
 #> [1] "AUCall (IV dosing)"
+#> 
+#> $aucivall$formula
+#> [1] "$AUC_{\\text{iv,all}} = AUC_{\\text{all}} + AUC(C_0, t_1) - AUC(C(0), t_1)$"
+#> 
+#> $aucivall$formula_note
+#> NULL
 #> 
 #> 
 #> $aucivint.last
@@ -2748,6 +3168,12 @@ get.interval.cols()
 #> $aucivint.last$pptest_cdisc
 #> [1] "AUCint,last (IV dosing)"
 #> 
+#> $aucivint.last$formula
+#> [1] "$AUC_{\\text{iv,int,last}} = AUC_{\\text{int,last}} + AUC(C_0, t_1) - AUC(C(0), t_1)$"
+#> 
+#> $aucivint.last$formula_note
+#> NULL
+#> 
 #> 
 #> $aucivint.all
 #> $aucivint.all$FUN
@@ -2784,6 +3210,12 @@ get.interval.cols()
 #> 
 #> $aucivint.all$pptest_cdisc
 #> [1] "AUCint,all (IV dosing)"
+#> 
+#> $aucivint.all$formula
+#> [1] "$AUC_{\\text{iv,int,all}} = AUC_{\\text{int,all}} + AUC(C_0, t_1) - AUC(C(0), t_1)$"
+#> 
+#> $aucivint.all$formula_note
+#> NULL
 #> 
 #> 
 #> $aucivpbextlast
@@ -2825,6 +3257,12 @@ get.interval.cols()
 #> $aucivpbextlast$pptest_cdisc
 #> [1] "AUCbext (based on AUClast)"
 #> 
+#> $aucivpbextlast$formula
+#> [1] "$\\%AUC_{\\text{bext,last}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{last}}}{AUC_{\\text{iv,last}}}\\right)$"
+#> 
+#> $aucivpbextlast$formula_note
+#> NULL
+#> 
 #> 
 #> $aucivpbextall
 #> $aucivpbextall$FUN
@@ -2864,6 +3302,12 @@ get.interval.cols()
 #> 
 #> $aucivpbextall$pptest_cdisc
 #> [1] "AUCbext (based on AUCall)"
+#> 
+#> $aucivpbextall$formula
+#> [1] "$\\%AUC_{\\text{bext,all}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{all}}}{AUC_{\\text{iv,all}}}\\right)$"
+#> 
+#> $aucivpbextall$formula_note
+#> NULL
 #> 
 #> 
 #> $aucivpbextint.last
@@ -2905,6 +3349,12 @@ get.interval.cols()
 #> $aucivpbextint.last$pptest_cdisc
 #> [1] "AUCbext (based on AUCint,last)"
 #> 
+#> $aucivpbextint.last$formula
+#> [1] "$\\%AUC_{\\text{bext,int,last}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{int,last}}}{AUC_{\\text{iv,int,last}}}\\right)$"
+#> 
+#> $aucivpbextint.last$formula_note
+#> NULL
+#> 
 #> 
 #> $aucivpbextint.all
 #> $aucivpbextint.all$FUN
@@ -2945,6 +3395,12 @@ get.interval.cols()
 #> $aucivpbextint.all$pptest_cdisc
 #> [1] "AUCbext (based on AUCint,all)"
 #> 
+#> $aucivpbextint.all$formula
+#> [1] "$\\%AUC_{\\text{bext,int,all}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{int,all}}}{AUC_{\\text{iv,int,all}}}\\right)$"
+#> 
+#> $aucivpbextint.all$formula_note
+#> NULL
+#> 
 #> 
 #> $aumcivlast
 #> $aumcivlast$FUN
@@ -2981,6 +3437,12 @@ get.interval.cols()
 #> 
 #> $aumcivlast$pptest_cdisc
 #> [1] "AUMClast, IV back-extrap C0"
+#> 
+#> $aumcivlast$formula
+#> NULL
+#> 
+#> $aumcivlast$formula_note
+#> NULL
 #> 
 #> 
 #> $aumcivall
@@ -3019,6 +3481,12 @@ get.interval.cols()
 #> $aumcivall$pptest_cdisc
 #> [1] "AUMCall, IV back-extrap C0"
 #> 
+#> $aumcivall$formula
+#> NULL
+#> 
+#> $aumcivall$formula_note
+#> NULL
+#> 
 #> 
 #> $aumcivint.last
 #> $aumcivint.last$FUN
@@ -3055,6 +3523,12 @@ get.interval.cols()
 #> 
 #> $aumcivint.last$pptest_cdisc
 #> [1] "AUMCint.last, IV back-extrap C0"
+#> 
+#> $aumcivint.last$formula
+#> NULL
+#> 
+#> $aumcivint.last$formula_note
+#> NULL
 #> 
 #> 
 #> $aumcivint.all
@@ -3093,6 +3567,12 @@ get.interval.cols()
 #> $aumcivint.all$pptest_cdisc
 #> [1] "AUMCint.all, IV back-extrap C0"
 #> 
+#> $aumcivint.all$formula
+#> NULL
+#> 
+#> $aumcivint.all$formula_note
+#> NULL
+#> 
 #> 
 #> $half.life
 #> $half.life$FUN
@@ -3127,6 +3607,12 @@ get.interval.cols()
 #> 
 #> $half.life$pptest_cdisc
 #> [1] "Half-Life Lambda z"
+#> 
+#> $half.life$formula
+#> [1] "$t_{1/2} = \\frac{\\ln(2)}{\\lambda_z}$"
+#> 
+#> $half.life$formula_note
+#> NULL
 #> 
 #> $half.life$requires_dose_amt
 #> [1] FALSE
@@ -3175,6 +3661,12 @@ get.interval.cols()
 #> $r.squared$pptest_cdisc
 #> [1] "R Squared"
 #> 
+#> $r.squared$formula
+#> [1] "$r^2 = 1 - \\frac{\\sum_{i \\in \\lambda_z} (y_i - \\hat{y}_i)^2}{\\sum_{i \\in \\lambda_z} (y_i - \\bar{y})^2}$"
+#> 
+#> $r.squared$formula_note
+#> [1] "Regression of $y = \\log C$ on time over the terminal points"
+#> 
 #> 
 #> $adj.r.squared
 #> $adj.r.squared$FUN
@@ -3209,6 +3701,12 @@ get.interval.cols()
 #> 
 #> $adj.r.squared$pptest_cdisc
 #> [1] "R Squared Adjusted"
+#> 
+#> $adj.r.squared$formula
+#> [1] "$r^2_{adj} = 1 - (1 - r^2) \\frac{n-1}{n-2}$"
+#> 
+#> $adj.r.squared$formula_note
+#> NULL
 #> 
 #> 
 #> $lambda.z.corrxy
@@ -3245,6 +3743,12 @@ get.interval.cols()
 #> $lambda.z.corrxy$pptest_cdisc
 #> [1] "Correlation Between TimeX and Log ConcY"
 #> 
+#> $lambda.z.corrxy$formula
+#> [1] "$r_{t,\\log C} = \\text{cor}(t_{\\lambda_z}, \\log C_{\\lambda_z})$"
+#> 
+#> $lambda.z.corrxy$formula_note
+#> NULL
+#> 
 #> 
 #> $lambda.z
 #> $lambda.z$FUN
@@ -3279,6 +3783,12 @@ get.interval.cols()
 #> 
 #> $lambda.z$pptest_cdisc
 #> [1] "Lambda z"
+#> 
+#> $lambda.z$formula
+#> [1] "$\\lambda_z = -\\text{slope of } \\log(C) \\text{ vs } t$"
+#> 
+#> $lambda.z$formula_note
+#> NULL
 #> 
 #> 
 #> $lambda.z.time.first
@@ -3315,6 +3825,12 @@ get.interval.cols()
 #> $lambda.z.time.first$pptest_cdisc
 #> [1] "Lambda z Lower Limit"
 #> 
+#> $lambda.z.time.first$formula
+#> [1] "$\\lambda_z t_{\\text{first}} = \\min\\left(t_{\\lambda_z}\\right)$"
+#> 
+#> $lambda.z.time.first$formula_note
+#> NULL
+#> 
 #> 
 #> $lambda.z.time.last
 #> $lambda.z.time.last$FUN
@@ -3349,6 +3865,12 @@ get.interval.cols()
 #> 
 #> $lambda.z.time.last$pptest_cdisc
 #> [1] "Lambda z Upper Limit"
+#> 
+#> $lambda.z.time.last$formula
+#> [1] "$\\lambda_z t_{\\text{last}} = \\max\\left(t_{\\lambda_z}\\right)$"
+#> 
+#> $lambda.z.time.last$formula_note
+#> NULL
 #> 
 #> 
 #> $lambda.z.n.points
@@ -3385,6 +3907,12 @@ get.interval.cols()
 #> $lambda.z.n.points$pptest_cdisc
 #> [1] "Number of Points for Lambda z"
 #> 
+#> $lambda.z.n.points$formula
+#> [1] "$n_{\\lambda_z} = \\left| t_{\\lambda_z} \\right|$"
+#> 
+#> $lambda.z.n.points$formula_note
+#> NULL
+#> 
 #> 
 #> $clast.pred
 #> $clast.pred$FUN
@@ -3419,6 +3947,12 @@ get.interval.cols()
 #> 
 #> $clast.pred$pptest_cdisc
 #> [1] "Clast pred"
+#> 
+#> $clast.pred$formula
+#> [1] "$C_{\\text{last,pred}} = e^{\\text{intercept} - \\lambda_z \\cdot t_{\\text{last}}}$"
+#> 
+#> $clast.pred$formula_note
+#> NULL
 #> 
 #> 
 #> $span.ratio
@@ -3455,6 +3989,12 @@ get.interval.cols()
 #> $span.ratio$pptest_cdisc
 #> [1] "Lambda z Span"
 #> 
+#> $span.ratio$formula
+#> [1] "$\\text{span ratio} = \\frac{t_{\\lambda_z,\\text{last}} - t_{\\lambda_z,\\text{first}}}{t_{1/2}}$"
+#> 
+#> $span.ratio$formula_note
+#> NULL
+#> 
 #> 
 #> $tobit_residual
 #> $tobit_residual$FUN
@@ -3489,6 +4029,12 @@ get.interval.cols()
 #> 
 #> $tobit_residual$pptest_cdisc
 #> [1] "Tobit fit residual SD, log-conc"
+#> 
+#> $tobit_residual$formula
+#> NULL
+#> 
+#> $tobit_residual$formula_note
+#> NULL
 #> 
 #> 
 #> $adj_tobit_residual
@@ -3525,6 +4071,12 @@ get.interval.cols()
 #> $adj_tobit_residual$pptest_cdisc
 #> [1] "Adjusted Tobit residual SD"
 #> 
+#> $adj_tobit_residual$formula
+#> NULL
+#> 
+#> $adj_tobit_residual$formula_note
+#> NULL
+#> 
 #> 
 #> $lambda.z.n.points_blq
 #> $lambda.z.n.points_blq$FUN
@@ -3559,6 +4111,12 @@ get.interval.cols()
 #> 
 #> $lambda.z.n.points_blq$pptest_cdisc
 #> [1] "BLQ points in Tobit lambda.z"
+#> 
+#> $lambda.z.n.points_blq$formula
+#> NULL
+#> 
+#> $lambda.z.n.points_blq$formula_note
+#> NULL
 #> 
 #> 
 #> $thalf.eff.last
@@ -3597,6 +4155,12 @@ get.interval.cols()
 #> $thalf.eff.last$pptest_cdisc
 #> [1] "Effective Half-Life (based on AUClast)"
 #> 
+#> $thalf.eff.last$formula
+#> [1] "$t_{1/2,\\text{eff,last}} = \\ln(2) \\cdot MRT_{\\text{last}}$"
+#> 
+#> $thalf.eff.last$formula_note
+#> NULL
+#> 
 #> 
 #> $thalf.eff.iv.last
 #> $thalf.eff.iv.last$FUN
@@ -3633,6 +4197,12 @@ get.interval.cols()
 #> 
 #> $thalf.eff.iv.last$pptest_cdisc
 #> [1] "Effective Half-Life (for IV dosing, based on AUClast)"
+#> 
+#> $thalf.eff.iv.last$formula
+#> [1] "$t_{1/2,\\text{eff,iv,last}} = \\ln(2) \\cdot MRT_{\\text{iv,last}}$"
+#> 
+#> $thalf.eff.iv.last$formula_note
+#> NULL
 #> 
 #> 
 #> $kel.last
@@ -3671,6 +4241,12 @@ get.interval.cols()
 #> $kel.last$pptest_cdisc
 #> [1] "Kel (based on AUClast)"
 #> 
+#> $kel.last$formula
+#> [1] "$k_{el,\\text{last}} = \\frac{1}{MRT_{\\text{last}}}$"
+#> 
+#> $kel.last$formula_note
+#> NULL
+#> 
 #> 
 #> $kel.iv.last
 #> $kel.iv.last$FUN
@@ -3707,6 +4283,12 @@ get.interval.cols()
 #> 
 #> $kel.iv.last$pptest_cdisc
 #> [1] "Kel (for IV dosing, based on AUClast)"
+#> 
+#> $kel.iv.last$formula
+#> [1] "$k_{el,\\text{iv,last}} = \\frac{1}{MRT_{\\text{iv,last}}}$"
+#> 
+#> $kel.iv.last$formula_note
+#> NULL
 #> 
 #> 
 #> $kel.all
@@ -3745,6 +4327,12 @@ get.interval.cols()
 #> $kel.all$pptest_cdisc
 #> [1] "Elim rate, MRTall"
 #> 
+#> $kel.all$formula
+#> [1] "$k_{el,\\text{all}} = \\frac{1}{MRT_{\\text{all}}}$"
+#> 
+#> $kel.all$formula_note
+#> NULL
+#> 
 #> 
 #> $kel.int.all
 #> $kel.int.all$FUN
@@ -3781,6 +4369,12 @@ get.interval.cols()
 #> 
 #> $kel.int.all$pptest_cdisc
 #> [1] "Elim rate, MRTint.all"
+#> 
+#> $kel.int.all$formula
+#> [1] "$k_{el,\\text{int,all}} = \\frac{1}{MRT_{\\text{int,all}}}$"
+#> 
+#> $kel.int.all$formula_note
+#> NULL
 #> 
 #> 
 #> $kel.int.last
@@ -3819,6 +4413,12 @@ get.interval.cols()
 #> $kel.int.last$pptest_cdisc
 #> [1] "Elim rate, MRTint.last"
 #> 
+#> $kel.int.last$formula
+#> [1] "$k_{el,\\text{int,last}} = \\frac{1}{MRT_{\\text{int,last}}}$"
+#> 
+#> $kel.int.last$formula_note
+#> NULL
+#> 
 #> 
 #> $cl.iv.all
 #> $cl.iv.all$FUN
@@ -3855,6 +4455,12 @@ get.interval.cols()
 #> 
 #> $cl.iv.all$pptest_cdisc
 #> [1] "IV clearance, AUCall"
+#> 
+#> $cl.iv.all$formula
+#> [1] "$CL_{\\text{iv,all}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,all}}}$"
+#> 
+#> $cl.iv.all$formula_note
+#> NULL
 #> 
 #> 
 #> $cl.iv.last
@@ -3893,6 +4499,12 @@ get.interval.cols()
 #> $cl.iv.last$pptest_cdisc
 #> [1] "IV clearance, AUClast"
 #> 
+#> $cl.iv.last$formula
+#> [1] "$CL_{\\text{iv,last}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,last}}}$"
+#> 
+#> $cl.iv.last$formula_note
+#> NULL
+#> 
 #> 
 #> $cl.ivint.all
 #> $cl.ivint.all$FUN
@@ -3929,6 +4541,12 @@ get.interval.cols()
 #> 
 #> $cl.ivint.all$pptest_cdisc
 #> [1] "IV clearance, AUCint.all"
+#> 
+#> $cl.ivint.all$formula
+#> [1] "$CL_{\\text{iv,int,all}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,all}}}$"
+#> 
+#> $cl.ivint.all$formula_note
+#> NULL
 #> 
 #> 
 #> $cl.ivint.last
@@ -3967,6 +4585,12 @@ get.interval.cols()
 #> $cl.ivint.last$pptest_cdisc
 #> [1] "IV clearance, AUCint.last"
 #> 
+#> $cl.ivint.last$formula
+#> [1] "$CL_{\\text{iv,int,last}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,last}}}$"
+#> 
+#> $cl.ivint.last$formula_note
+#> NULL
+#> 
 #> 
 #> $cl.sparse.last
 #> $cl.sparse.last$FUN
@@ -4003,6 +4627,12 @@ get.interval.cols()
 #> 
 #> $cl.sparse.last$pptest_cdisc
 #> [1] "Clearance, sparse AUClast"
+#> 
+#> $cl.sparse.last$formula
+#> [1] "$CL_{\\text{sparse,last}} = \\frac{Dose}{AUC_{\\text{sparse,last}}}$"
+#> 
+#> $cl.sparse.last$formula_note
+#> NULL
 #> 
 #> 
 #> $mrt.sparse.last
@@ -4044,6 +4674,12 @@ get.interval.cols()
 #> $mrt.sparse.last$pptest_cdisc
 #> [1] "MRT, sparse AUClast/AUMClast"
 #> 
+#> $mrt.sparse.last$formula
+#> NULL
+#> 
+#> $mrt.sparse.last$formula_note
+#> NULL
+#> 
 #> 
 #> $mrt.iv.all
 #> $mrt.iv.all$FUN
@@ -4083,6 +4719,12 @@ get.interval.cols()
 #> 
 #> $mrt.iv.all$pptest_cdisc
 #> [1] "IV MRT, AUCall/AUMCall"
+#> 
+#> $mrt.iv.all$formula
+#> NULL
+#> 
+#> $mrt.iv.all$formula_note
+#> NULL
 #> 
 #> 
 #> $mrt.ivint.all
@@ -4124,6 +4766,12 @@ get.interval.cols()
 #> $mrt.ivint.all$pptest_cdisc
 #> [1] "IV MRT, interval AUC/AUMCall"
 #> 
+#> $mrt.ivint.all$formula
+#> NULL
+#> 
+#> $mrt.ivint.all$formula_note
+#> NULL
+#> 
 #> 
 #> $mrt.ivint.last
 #> $mrt.ivint.last$FUN
@@ -4164,6 +4812,12 @@ get.interval.cols()
 #> $mrt.ivint.last$pptest_cdisc
 #> [1] "IV MRT, interval AUC/AUMClast"
 #> 
+#> $mrt.ivint.last$formula
+#> NULL
+#> 
+#> $mrt.ivint.last$formula_note
+#> NULL
+#> 
 #> 
 #> $vz.all
 #> $vz.all$FUN
@@ -4200,6 +4854,12 @@ get.interval.cols()
 #> 
 #> $vz.all$pptest_cdisc
 #> [1] "Vz, AUCall-based CL"
+#> 
+#> $vz.all$formula
+#> [1] "$V_{z,\\text{all}} = \\frac{CL_{\\text{all}}}{\\lambda_z}$"
+#> 
+#> $vz.all$formula_note
+#> NULL
 #> 
 #> 
 #> $vz.int.all
@@ -4238,6 +4898,12 @@ get.interval.cols()
 #> $vz.int.all$pptest_cdisc
 #> [1] "Vz, interval AUCint.all"
 #> 
+#> $vz.int.all$formula
+#> [1] "$V_{z,\\text{int,all}} = \\frac{CL_{\\text{int,all}}}{\\lambda_z}$"
+#> 
+#> $vz.int.all$formula_note
+#> NULL
+#> 
 #> 
 #> $vz.int.last
 #> $vz.int.last$FUN
@@ -4274,6 +4940,12 @@ get.interval.cols()
 #> 
 #> $vz.int.last$pptest_cdisc
 #> [1] "Vz, interval AUCint.last"
+#> 
+#> $vz.int.last$formula
+#> [1] "$V_{z,\\text{int,last}} = \\frac{CL_{\\text{int,last}}}{\\lambda_z}$"
+#> 
+#> $vz.int.last$formula_note
+#> NULL
 #> 
 #> 
 #> $vz.iv.all
@@ -4312,6 +4984,12 @@ get.interval.cols()
 #> $vz.iv.all$pptest_cdisc
 #> [1] "IV Vz, AUCall"
 #> 
+#> $vz.iv.all$formula
+#> [1] "$V_{z,\\text{iv,all}} = \\frac{CL_{\\text{iv,all}}}{\\lambda_z}$"
+#> 
+#> $vz.iv.all$formula_note
+#> NULL
+#> 
 #> 
 #> $vz.iv.last
 #> $vz.iv.last$FUN
@@ -4348,6 +5026,12 @@ get.interval.cols()
 #> 
 #> $vz.iv.last$pptest_cdisc
 #> [1] "IV Vz, AUClast"
+#> 
+#> $vz.iv.last$formula
+#> [1] "$V_{z,\\text{iv,last}} = \\frac{CL_{\\text{iv,last}}}{\\lambda_z}$"
+#> 
+#> $vz.iv.last$formula_note
+#> NULL
 #> 
 #> 
 #> $vz.ivint.all
@@ -4386,6 +5070,12 @@ get.interval.cols()
 #> $vz.ivint.all$pptest_cdisc
 #> [1] "IV Vz, interval AUCint.all"
 #> 
+#> $vz.ivint.all$formula
+#> [1] "$V_{z,\\text{iv,int,all}} = \\frac{CL_{\\text{iv,int,all}}}{\\lambda_z}$"
+#> 
+#> $vz.ivint.all$formula_note
+#> NULL
+#> 
 #> 
 #> $vz.ivint.last
 #> $vz.ivint.last$FUN
@@ -4423,6 +5113,12 @@ get.interval.cols()
 #> $vz.ivint.last$pptest_cdisc
 #> [1] "IV Vz, interval AUCint.last"
 #> 
+#> $vz.ivint.last$formula
+#> [1] "$V_{z,\\text{iv,int,last}} = \\frac{CL_{\\text{iv,int,last}}}{\\lambda_z}$"
+#> 
+#> $vz.ivint.last$formula_note
+#> NULL
+#> 
 #> 
 #> $vz.last
 #> $vz.last$FUN
@@ -4459,6 +5155,12 @@ get.interval.cols()
 #> 
 #> $vz.last$pptest_cdisc
 #> [1] "Vz, AUClast-based CL"
+#> 
+#> $vz.last$formula
+#> [1] "$V_{z,\\text{last}} = \\frac{CL_{\\text{last}}}{\\lambda_z}$"
+#> 
+#> $vz.last$formula_note
+#> NULL
 #> 
 #> 
 #> $vss.iv.all
@@ -4500,6 +5202,12 @@ get.interval.cols()
 #> $vss.iv.all$pptest_cdisc
 #> [1] "IV Vss, calc from AUCall"
 #> 
+#> $vss.iv.all$formula
+#> NULL
+#> 
+#> $vss.iv.all$formula_note
+#> NULL
+#> 
 #> 
 #> $vss.ivint.all
 #> $vss.ivint.all$FUN
@@ -4539,6 +5247,12 @@ get.interval.cols()
 #> 
 #> $vss.ivint.all$pptest_cdisc
 #> [1] "IV Vss, calc from interval AUCint.all"
+#> 
+#> $vss.ivint.all$formula
+#> NULL
+#> 
+#> $vss.ivint.all$formula_note
+#> NULL
 #> 
 #> 
 #> $vss.ivint.last
@@ -4580,6 +5294,12 @@ get.interval.cols()
 #> $vss.ivint.last$pptest_cdisc
 #> [1] "IV Vss, calc from interval AUCint.last"
 #> 
+#> $vss.ivint.last$formula
+#> NULL
+#> 
+#> $vss.ivint.last$formula_note
+#> NULL
+#> 
 #> 
 #> $vss.sparse.last
 #> $vss.sparse.last$FUN
@@ -4620,6 +5340,12 @@ get.interval.cols()
 #> $vss.sparse.last$pptest_cdisc
 #> [1] "Vss, calc from sparse AUClast"
 #> 
+#> $vss.sparse.last$formula
+#> NULL
+#> 
+#> $vss.sparse.last$formula_note
+#> NULL
+#> 
 #> 
 #> $aucinf.obs
 #> $aucinf.obs$FUN
@@ -4654,6 +5380,12 @@ get.interval.cols()
 #> 
 #> $aucinf.obs$pptest_cdisc
 #> [1] "AUC Infinity Obs"
+#> 
+#> $aucinf.obs$formula
+#> [1] "$AUC_{\\infty,\\text{obs}} = AUC_{0-\\text{last}} + \\frac{C_{\\text{last,obs}}}{\\lambda_z}$"
+#> 
+#> $aucinf.obs$formula_note
+#> NULL
 #> 
 #> $aucinf.obs$requires_dose_amt
 #> [1] FALSE
@@ -4702,6 +5434,12 @@ get.interval.cols()
 #> $aucinf.pred$pptest_cdisc
 #> [1] "AUC Infinity Pred"
 #> 
+#> $aucinf.pred$formula
+#> [1] "$AUC_{\\infty,\\text{pred}} = AUC_{0-\\text{last}} + \\frac{C_{\\text{last,pred}}}{\\lambda_z}$"
+#> 
+#> $aucinf.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $aumcinf.obs
 #> $aumcinf.obs$FUN
@@ -4737,6 +5475,12 @@ get.interval.cols()
 #> $aumcinf.obs$pptest_cdisc
 #> [1] "AUMC Infinity Obs"
 #> 
+#> $aumcinf.obs$formula
+#> [1] "$AUMC_{\\infty,\\text{obs}} = AUMC_{0-\\text{last}} + \\frac{C_{\\text{last,obs}} T_{\\text{last}}}{\\lambda_z} + \\frac{C_{\\text{last,obs}}}{\\lambda_z^2}$"
+#> 
+#> $aumcinf.obs$formula_note
+#> NULL
+#> 
 #> 
 #> $aumcinf.pred
 #> $aumcinf.pred$FUN
@@ -4771,6 +5515,12 @@ get.interval.cols()
 #> 
 #> $aumcinf.pred$pptest_cdisc
 #> [1] "AUMC Infinity Pred"
+#> 
+#> $aumcinf.pred$formula
+#> [1] "$AUMC_{\\infty,\\text{pred}} = AUMC_{0-\\text{last}} + \\frac{C_{\\text{last,pred}} T_{\\text{last}}}{\\lambda_z} + \\frac{C_{\\text{last,pred}}}{\\lambda_z^2}$"
+#> 
+#> $aumcinf.pred$formula_note
+#> NULL
 #> 
 #> 
 #> $aucint.inf.obs
@@ -4815,6 +5565,12 @@ get.interval.cols()
 #> $aucint.inf.obs$pptest_cdisc
 #> [1] "AUCint (based on AUCinf,obs extrapolation)"
 #> 
+#> $aucint.inf.obs$formula
+#> [1] "$AUC_{\\text{int,}\\infty\\text{,obs}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aucint.inf.obs$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
 #> 
 #> $aucint.inf.obs.dose
 #> $aucint.inf.obs.dose$FUN
@@ -4857,6 +5613,12 @@ get.interval.cols()
 #> 
 #> $aucint.inf.obs.dose$pptest_cdisc
 #> [1] "AUCint (based on AUCinf,obs extrapolation, dose-aware)"
+#> 
+#> $aucint.inf.obs.dose$formula
+#> [1] "$AUC_{\\text{int,}\\infty\\text{,obs,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aucint.inf.obs.dose$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
 #> 
 #> $aucint.inf.pred
@@ -4901,6 +5663,12 @@ get.interval.cols()
 #> $aucint.inf.pred$pptest_cdisc
 #> [1] "AUCint (based on AUCinf,pred extrapolation)"
 #> 
+#> $aucint.inf.pred$formula
+#> [1] "$AUC_{\\text{int,}\\infty\\text{,pred}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aucint.inf.pred$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
 #> 
 #> $aucint.inf.pred.dose
 #> $aucint.inf.pred.dose$FUN
@@ -4943,6 +5711,12 @@ get.interval.cols()
 #> 
 #> $aucint.inf.pred.dose$pptest_cdisc
 #> [1] "AUCint (based on AUCinf,pred extrapolation, dose-aware)"
+#> 
+#> $aucint.inf.pred.dose$formula
+#> [1] "$AUC_{\\text{int,}\\infty\\text{,pred,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aucint.inf.pred.dose$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
 #> 
 #> $aumcint.inf.obs
@@ -4987,6 +5761,12 @@ get.interval.cols()
 #> $aumcint.inf.obs$pptest_cdisc
 #> [1] "AUMC from T1 to T2 (AUMCinf,obs extrap)"
 #> 
+#> $aumcint.inf.obs$formula
+#> [1] "$AUMC_{\\text{int,}\\infty\\text{,obs}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aumcint.inf.obs$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
 #> 
 #> $aumcint.inf.obs.dose
 #> $aumcint.inf.obs.dose$FUN
@@ -5029,6 +5809,12 @@ get.interval.cols()
 #> 
 #> $aumcint.inf.obs.dose$pptest_cdisc
 #> [1] "AUMC T1 to T2, dose-aware (AUMCinf,obs)"
+#> 
+#> $aumcint.inf.obs.dose$formula
+#> [1] "$AUMC_{\\text{int,}\\infty\\text{,obs,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aumcint.inf.obs.dose$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
 #> 
 #> $aumcint.inf.pred
@@ -5073,6 +5859,12 @@ get.interval.cols()
 #> $aumcint.inf.pred$pptest_cdisc
 #> [1] "AUMC from T1 to T2 (AUMCinf,pred extrap)"
 #> 
+#> $aumcint.inf.pred$formula
+#> [1] "$AUMC_{\\text{int,}\\infty\\text{,pred}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aumcint.inf.pred$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
 #> 
 #> $aumcint.inf.pred.dose
 #> $aumcint.inf.pred.dose$FUN
@@ -5116,6 +5908,12 @@ get.interval.cols()
 #> $aumcint.inf.pred.dose$pptest_cdisc
 #> [1] "AUMC T1 to T2, dose-aware (AUMCinf,pred)"
 #> 
+#> $aumcint.inf.pred.dose$formula
+#> [1] "$AUMC_{\\text{int,}\\infty\\text{,pred,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
+#> 
+#> $aumcint.inf.pred.dose$formula_note
+#> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
 #> 
 #> $aucivinf.obs
 #> $aucivinf.obs$FUN
@@ -5153,6 +5951,12 @@ get.interval.cols()
 #> $aucivinf.obs$pptest_cdisc
 #> [1] "AUCinf,obs (IV dosing)"
 #> 
+#> $aucivinf.obs$formula
+#> [1] "$AUC_{\\text{iv,}\\infty\\text{,obs}} = AUC_{\\infty,\\text{obs}} + AUC(C_0, t_1) - AUC(C(0), t_1)$"
+#> 
+#> $aucivinf.obs$formula_note
+#> NULL
+#> 
 #> 
 #> $aucivinf.pred
 #> $aucivinf.pred$FUN
@@ -5189,6 +5993,12 @@ get.interval.cols()
 #> 
 #> $aucivinf.pred$pptest_cdisc
 #> [1] "AUCinf,pred (IV dosing)"
+#> 
+#> $aucivinf.pred$formula
+#> [1] "$AUC_{\\text{iv,}\\infty\\text{,pred}} = AUC_{\\infty,\\text{pred}} + AUC(C_0, t_1) - AUC(C(0), t_1)$"
+#> 
+#> $aucivinf.pred$formula_note
+#> NULL
 #> 
 #> 
 #> $aucivpbextinf.obs
@@ -5230,6 +6040,12 @@ get.interval.cols()
 #> $aucivpbextinf.obs$pptest_cdisc
 #> [1] "AUCbext (based on AUCinf,obs)"
 #> 
+#> $aucivpbextinf.obs$formula
+#> [1] "$\\%AUC_{\\text{bext,}\\infty\\text{,obs}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\infty,\\text{obs}}}{AUC_{\\text{iv,}\\infty\\text{,obs}}}\\right)$"
+#> 
+#> $aucivpbextinf.obs$formula_note
+#> NULL
+#> 
 #> 
 #> $aucivpbextinf.pred
 #> $aucivpbextinf.pred$FUN
@@ -5270,6 +6086,12 @@ get.interval.cols()
 #> $aucivpbextinf.pred$pptest_cdisc
 #> [1] "AUCbext (based on AUCinf,pred)"
 #> 
+#> $aucivpbextinf.pred$formula
+#> [1] "$\\%AUC_{\\text{bext,}\\infty\\text{,pred}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\infty,\\text{pred}}}{AUC_{\\text{iv,}\\infty\\text{,pred}}}\\right)$"
+#> 
+#> $aucivpbextinf.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $aumcivinf.obs
 #> $aumcivinf.obs$FUN
@@ -5306,6 +6128,12 @@ get.interval.cols()
 #> 
 #> $aumcivinf.obs$pptest_cdisc
 #> [1] "AUMCinf.obs, IV back-extrap C0"
+#> 
+#> $aumcivinf.obs$formula
+#> NULL
+#> 
+#> $aumcivinf.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $aumcivinf.pred
@@ -5344,6 +6172,12 @@ get.interval.cols()
 #> $aumcivinf.pred$pptest_cdisc
 #> [1] "AUMCinf.pred, IV back-extrap C0"
 #> 
+#> $aumcivinf.pred$formula
+#> NULL
+#> 
+#> $aumcivinf.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $aucpext.obs
 #> $aucpext.obs$FUN
@@ -5380,6 +6214,12 @@ get.interval.cols()
 #> 
 #> $aucpext.obs$pptest_cdisc
 #> [1] "AUC %Extrapolation Obs"
+#> 
+#> $aucpext.obs$formula
+#> [1] "$\\%AUC_{\\text{ext,obs}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{last}}}{AUC_{\\infty,\\text{obs}}}\\right)$"
+#> 
+#> $aucpext.obs$formula_note
+#> NULL
 #> 
 #> $aucpext.obs$requires_dose_amt
 #> [1] FALSE
@@ -5430,6 +6270,12 @@ get.interval.cols()
 #> $aucpext.pred$pptest_cdisc
 #> [1] "AUC %Extrapolation Pred"
 #> 
+#> $aucpext.pred$formula
+#> [1] "$\\%AUC_{\\text{ext,pred}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{last}}}{AUC_{\\infty,\\text{pred}}}\\right)$"
+#> 
+#> $aucpext.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $kel.iv.all
 #> $kel.iv.all$FUN
@@ -5466,6 +6312,12 @@ get.interval.cols()
 #> 
 #> $kel.iv.all$pptest_cdisc
 #> [1] "Elim rate, IV MRTall"
+#> 
+#> $kel.iv.all$formula
+#> NULL
+#> 
+#> $kel.iv.all$formula_note
+#> NULL
 #> 
 #> 
 #> $kel.ivint.all
@@ -5504,6 +6356,12 @@ get.interval.cols()
 #> $kel.ivint.all$pptest_cdisc
 #> [1] "Elim rate, IV MRTint.all"
 #> 
+#> $kel.ivint.all$formula
+#> NULL
+#> 
+#> $kel.ivint.all$formula_note
+#> NULL
+#> 
 #> 
 #> $kel.ivint.last
 #> $kel.ivint.last$FUN
@@ -5541,6 +6399,12 @@ get.interval.cols()
 #> $kel.ivint.last$pptest_cdisc
 #> [1] "Elim rate, IV MRTint.last"
 #> 
+#> $kel.ivint.last$formula
+#> NULL
+#> 
+#> $kel.ivint.last$formula_note
+#> NULL
+#> 
 #> 
 #> $kel.sparse.last
 #> $kel.sparse.last$FUN
@@ -5577,6 +6441,12 @@ get.interval.cols()
 #> 
 #> $kel.sparse.last$pptest_cdisc
 #> [1] "Elim rate, sparse MRTlast"
+#> 
+#> $kel.sparse.last$formula
+#> NULL
+#> 
+#> $kel.sparse.last$formula_note
+#> NULL
 #> 
 #> 
 #> $cl.obs
@@ -5629,6 +6499,12 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $cl.obs$formula
+#> [1] "$CL_{\\text{obs}} = \\frac{Dose}{AUC_{\\infty,\\text{obs}}}$"
+#> 
+#> $cl.obs$formula_note
+#> NULL
+#> 
 #> 
 #> $cl.pred
 #> $cl.pred$FUN
@@ -5680,6 +6556,12 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $cl.pred$formula
+#> [1] "$CL_{\\text{pred}} = \\frac{Dose}{AUC_{\\infty,\\text{pred}}}$"
+#> 
+#> $cl.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $cl.int.inf.obs
 #> $cl.int.inf.obs$FUN
@@ -5716,6 +6598,12 @@ get.interval.cols()
 #> 
 #> $cl.int.inf.obs$pptest_cdisc
 #> [1] "Clearance, AUCint.inf.obs"
+#> 
+#> $cl.int.inf.obs$formula
+#> [1] "$CL_{\\text{int,}\\infty\\text{,obs}} = \\frac{Dose}{AUC_{\\text{int,}\\infty\\text{,obs}}}$"
+#> 
+#> $cl.int.inf.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $cl.int.inf.pred
@@ -5754,6 +6642,12 @@ get.interval.cols()
 #> $cl.int.inf.pred$pptest_cdisc
 #> [1] "Clearance, AUCint.inf.pred"
 #> 
+#> $cl.int.inf.pred$formula
+#> [1] "$CL_{\\text{int,}\\infty\\text{,pred}} = \\frac{Dose}{AUC_{\\text{int,}\\infty\\text{,pred}}}$"
+#> 
+#> $cl.int.inf.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $cl.iv.obs
 #> $cl.iv.obs$FUN
@@ -5791,6 +6685,12 @@ get.interval.cols()
 #> $cl.iv.obs$pptest_cdisc
 #> [1] "IV clearance, AUCinf.obs"
 #> 
+#> $cl.iv.obs$formula
+#> [1] "$CL_{\\text{iv,obs}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,}\\infty\\text{,obs}}}$"
+#> 
+#> $cl.iv.obs$formula_note
+#> NULL
+#> 
 #> 
 #> $cl.iv.pred
 #> $cl.iv.pred$FUN
@@ -5827,6 +6727,12 @@ get.interval.cols()
 #> 
 #> $cl.iv.pred$pptest_cdisc
 #> [1] "IV clearance, AUCinf.pred"
+#> 
+#> $cl.iv.pred$formula
+#> [1] "$CL_{\\text{iv,pred}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,}\\infty\\text{,pred}}}$"
+#> 
+#> $cl.iv.pred$formula_note
+#> NULL
 #> 
 #> 
 #> $mrt.obs
@@ -5882,6 +6788,12 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $mrt.obs$formula
+#> [1] "$MRT_{\\text{obs}} = \\frac{AUMC_{\\infty,\\text{obs}}}{AUC_{\\infty,\\text{obs}}}$"
+#> 
+#> $mrt.obs$formula_note
+#> NULL
+#> 
 #> 
 #> $mrt.pred
 #> $mrt.pred$FUN
@@ -5936,6 +6848,12 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $mrt.pred$formula
+#> [1] "$MRT_{\\text{pred}} = \\frac{AUMC_{\\infty,\\text{pred}}}{AUC_{\\infty,\\text{pred}}}$"
+#> 
+#> $mrt.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $mrt.int.inf.obs
 #> $mrt.int.inf.obs$FUN
@@ -5975,6 +6893,12 @@ get.interval.cols()
 #> 
 #> $mrt.int.inf.obs$pptest_cdisc
 #> [1] "MRT, interval AUC/AUMCinf obs"
+#> 
+#> $mrt.int.inf.obs$formula
+#> [1] "$MRT_{\\text{int,}\\infty\\text{,obs}} = \\frac{AUMC_{\\text{int,}\\infty\\text{,obs}}}{AUC_{\\text{int,}\\infty\\text{,obs}}}$"
+#> 
+#> $mrt.int.inf.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $mrt.int.inf.pred
@@ -6016,6 +6940,12 @@ get.interval.cols()
 #> $mrt.int.inf.pred$pptest_cdisc
 #> [1] "MRT, interval AUC/AUMCinf pred"
 #> 
+#> $mrt.int.inf.pred$formula
+#> [1] "$MRT_{\\text{int,}\\infty\\text{,pred}} = \\frac{AUMC_{\\text{int,}\\infty\\text{,pred}}}{AUC_{\\text{int,}\\infty\\text{,pred}}}$"
+#> 
+#> $mrt.int.inf.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $mrt.iv.obs
 #> $mrt.iv.obs$FUN
@@ -6056,6 +6986,12 @@ get.interval.cols()
 #> $mrt.iv.obs$pptest_cdisc
 #> [1] "MRT Intravasc Infinity Obs"
 #> 
+#> $mrt.iv.obs$formula
+#> [1] "$MRT_{\\text{iv,obs}} = \\frac{AUMC_{\\infty,\\text{obs}}}{AUC_{\\infty,\\text{obs}}} - \\frac{T_{\\text{inf}}}{2}$"
+#> 
+#> $mrt.iv.obs$formula_note
+#> NULL
+#> 
 #> 
 #> $mrt.iv.pred
 #> $mrt.iv.pred$FUN
@@ -6095,6 +7031,12 @@ get.interval.cols()
 #> 
 #> $mrt.iv.pred$pptest_cdisc
 #> [1] "MRT Intravasc Infinity Pred"
+#> 
+#> $mrt.iv.pred$formula
+#> [1] "$MRT_{\\text{iv,pred}} = \\frac{AUMC_{\\infty,\\text{pred}}}{AUC_{\\infty,\\text{pred}}} - \\frac{T_{\\text{inf}}}{2}$"
+#> 
+#> $mrt.iv.pred$formula_note
+#> NULL
 #> 
 #> 
 #> $mrt.md.obs
@@ -6139,6 +7081,12 @@ get.interval.cols()
 #> $mrt.md.obs$pptest_cdisc
 #> [1] "MRT (for multiple dosing, based on AUCinf,obs)"
 #> 
+#> $mrt.md.obs$formula
+#> [1] "$MRT_{\\text{md,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}}$"
+#> 
+#> $mrt.md.obs$formula_note
+#> NULL
+#> 
 #> 
 #> $mrt.md.pred
 #> $mrt.md.pred$FUN
@@ -6181,6 +7129,12 @@ get.interval.cols()
 #> 
 #> $mrt.md.pred$pptest_cdisc
 #> [1] "MRT (for multiple dosing, based on AUCinf,pred)"
+#> 
+#> $mrt.md.pred$formula
+#> [1] "$MRT_{\\text{md,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}}$"
+#> 
+#> $mrt.md.pred$formula_note
+#> NULL
 #> 
 #> 
 #> $vz.obs
@@ -6233,6 +7187,12 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $vz.obs$formula
+#> [1] "$V_{z,\\text{obs}} = \\frac{CL_{\\text{obs}}}{\\lambda_z}$"
+#> 
+#> $vz.obs$formula_note
+#> NULL
+#> 
 #> 
 #> $vz.pred
 #> $vz.pred$FUN
@@ -6284,6 +7244,12 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $vz.pred$formula
+#> [1] "$V_{z,\\text{pred}} = \\frac{CL_{\\text{pred}}}{\\lambda_z}$"
+#> 
+#> $vz.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $vz.int.inf.obs
 #> $vz.int.inf.obs$FUN
@@ -6320,6 +7286,12 @@ get.interval.cols()
 #> 
 #> $vz.int.inf.obs$pptest_cdisc
 #> [1] "Vz, interval AUCint.inf.obs"
+#> 
+#> $vz.int.inf.obs$formula
+#> [1] "$V_{z,\\text{int,}\\infty\\text{,obs}} = \\frac{CL_{\\text{int,}\\infty\\text{,obs}}}{\\lambda_z}$"
+#> 
+#> $vz.int.inf.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $vz.int.inf.pred
@@ -6358,6 +7330,12 @@ get.interval.cols()
 #> $vz.int.inf.pred$pptest_cdisc
 #> [1] "Vz, interval AUCint.inf.pred"
 #> 
+#> $vz.int.inf.pred$formula
+#> [1] "$V_{z,\\text{int,}\\infty\\text{,pred}} = \\frac{CL_{\\text{int,}\\infty\\text{,pred}}}{\\lambda_z}$"
+#> 
+#> $vz.int.inf.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $vz.iv.obs
 #> $vz.iv.obs$FUN
@@ -6395,6 +7373,12 @@ get.interval.cols()
 #> $vz.iv.obs$pptest_cdisc
 #> [1] "IV Vz, observed AUCinf"
 #> 
+#> $vz.iv.obs$formula
+#> [1] "$V_{z,\\text{iv,obs}} = \\frac{CL_{\\text{iv,obs}}}{\\lambda_z}$"
+#> 
+#> $vz.iv.obs$formula_note
+#> NULL
+#> 
 #> 
 #> $vz.iv.pred
 #> $vz.iv.pred$FUN
@@ -6431,6 +7415,12 @@ get.interval.cols()
 #> 
 #> $vz.iv.pred$pptest_cdisc
 #> [1] "IV Vz, predicted AUCinf"
+#> 
+#> $vz.iv.pred$formula
+#> [1] "$V_{z,\\text{iv,pred}} = \\frac{CL_{\\text{iv,pred}}}{\\lambda_z}$"
+#> 
+#> $vz.iv.pred$formula_note
+#> NULL
 #> 
 #> 
 #> $vz.sparse.last
@@ -6471,6 +7461,12 @@ get.interval.cols()
 #> 
 #> $vz.sparse.last$pptest_cdisc
 #> [1] "Vz from sparse sampling"
+#> 
+#> $vz.sparse.last$formula
+#> [1] "$V_{z,\\text{sparse,last}} = \\frac{CL_{\\text{sparse,last}}}{\\lambda_z}$"
+#> 
+#> $vz.sparse.last$formula_note
+#> NULL
 #> 
 #> 
 #> $vss.obs
@@ -6526,6 +7522,12 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $vss.obs$formula
+#> [1] "$V_{ss,\\text{obs}} = CL_{\\text{obs}} \\cdot MRT_{\\text{obs}}$"
+#> 
+#> $vss.obs$formula_note
+#> NULL
+#> 
 #> 
 #> $vss.pred
 #> $vss.pred$FUN
@@ -6580,6 +7582,12 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $vss.pred$formula
+#> [1] "$V_{ss,\\text{pred}} = CL_{\\text{pred}} \\cdot MRT_{\\text{pred}}$"
+#> 
+#> $vss.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $vss.iv.obs
 #> $vss.iv.obs$FUN
@@ -6619,6 +7627,12 @@ get.interval.cols()
 #> 
 #> $vss.iv.obs$pptest_cdisc
 #> [1] "Vss (for IV dosing, based on AUCinf,obs)"
+#> 
+#> $vss.iv.obs$formula
+#> [1] "$V_{ss,\\text{iv,obs}} = CL_{\\text{obs}} \\cdot MRT_{\\text{iv,obs}}$"
+#> 
+#> $vss.iv.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $vss.iv.pred
@@ -6660,6 +7674,12 @@ get.interval.cols()
 #> $vss.iv.pred$pptest_cdisc
 #> [1] "Vss (for IV dosing, based on AUCinf,pred)"
 #> 
+#> $vss.iv.pred$formula
+#> [1] "$V_{ss,\\text{iv,pred}} = CL_{\\text{pred}} \\cdot MRT_{\\text{iv,pred}}$"
+#> 
+#> $vss.iv.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $vss.md.obs
 #> $vss.md.obs$FUN
@@ -6699,6 +7719,12 @@ get.interval.cols()
 #> 
 #> $vss.md.obs$pptest_cdisc
 #> [1] "Vss (for multiple-dose, based on AUCinf,obs)"
+#> 
+#> $vss.md.obs$formula
+#> [1] "$V_{ss,\\text{md,obs}} = CL_{\\text{last}} \\cdot MRT_{\\text{md,obs}}$"
+#> 
+#> $vss.md.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $vss.md.pred
@@ -6740,6 +7766,12 @@ get.interval.cols()
 #> $vss.md.pred$pptest_cdisc
 #> [1] "Vss (for multiple-dose, based on AUCinf,pred)"
 #> 
+#> $vss.md.pred$formula
+#> [1] "$V_{ss,\\text{md,pred}} = CL_{\\text{last}} \\cdot MRT_{\\text{md,pred}}$"
+#> 
+#> $vss.md.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $vss.int.inf.obs
 #> $vss.int.inf.obs$FUN
@@ -6779,6 +7811,12 @@ get.interval.cols()
 #> 
 #> $vss.int.inf.obs$pptest_cdisc
 #> [1] "Vss, calc from interval AUCint.inf.obs"
+#> 
+#> $vss.int.inf.obs$formula
+#> [1] "$V_{ss,\\text{int,}\\infty\\text{,obs}} = CL_{\\text{int,}\\infty\\text{,obs}} \\cdot MRT_{\\text{int,}\\infty\\text{,obs}}$"
+#> 
+#> $vss.int.inf.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $vss.int.inf.pred
@@ -6820,6 +7858,12 @@ get.interval.cols()
 #> $vss.int.inf.pred$pptest_cdisc
 #> [1] "Vss, calc from interval AUCint.inf.pred"
 #> 
+#> $vss.int.inf.pred$formula
+#> [1] "$V_{ss,\\text{int,}\\infty\\text{,pred}} = CL_{\\text{int,}\\infty\\text{,pred}} \\cdot MRT_{\\text{int,}\\infty\\text{,pred}}$"
+#> 
+#> $vss.int.inf.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $cav.int.inf.obs
 #> $cav.int.inf.obs$FUN
@@ -6856,6 +7900,12 @@ get.interval.cols()
 #> 
 #> $cav.int.inf.obs$pptest_cdisc
 #> [1] "Cavg Infinity Obs"
+#> 
+#> $cav.int.inf.obs$formula
+#> [1] "$C_{av,\\text{int,}\\infty\\text{,obs}} = \\frac{AUC_{\\text{int,}\\infty\\text{,obs}}}{t_{end} - t_{start}}$"
+#> 
+#> $cav.int.inf.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $cav.int.inf.pred
@@ -6894,6 +7944,12 @@ get.interval.cols()
 #> $cav.int.inf.pred$pptest_cdisc
 #> [1] "Cavg Infinity Pred"
 #> 
+#> $cav.int.inf.pred$formula
+#> [1] "$C_{av,\\text{int,}\\infty\\text{,pred}} = \\frac{AUC_{\\text{int,}\\infty\\text{,pred}}}{t_{end} - t_{start}}$"
+#> 
+#> $cav.int.inf.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $thalf.eff.obs
 #> $thalf.eff.obs$FUN
@@ -6930,6 +7986,12 @@ get.interval.cols()
 #> 
 #> $thalf.eff.obs$pptest_cdisc
 #> [1] "Effective Half-Life Obs"
+#> 
+#> $thalf.eff.obs$formula
+#> [1] "$t_{1/2,\\text{eff,obs}} = \\ln(2) \\cdot MRT_{\\text{obs}}$"
+#> 
+#> $thalf.eff.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $thalf.eff.pred
@@ -6968,6 +8030,12 @@ get.interval.cols()
 #> $thalf.eff.pred$pptest_cdisc
 #> [1] "Effective Half-Life Pred"
 #> 
+#> $thalf.eff.pred$formula
+#> [1] "$t_{1/2,\\text{eff,pred}} = \\ln(2) \\cdot MRT_{\\text{pred}}$"
+#> 
+#> $thalf.eff.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $thalf.eff.iv.obs
 #> $thalf.eff.iv.obs$FUN
@@ -7004,6 +8072,12 @@ get.interval.cols()
 #> 
 #> $thalf.eff.iv.obs$pptest_cdisc
 #> [1] "Effective Half-Life (for IV dosing, based on MRT Obs)"
+#> 
+#> $thalf.eff.iv.obs$formula
+#> [1] "$t_{1/2,\\text{eff,iv,obs}} = \\ln(2) \\cdot MRT_{\\text{iv,obs}}$"
+#> 
+#> $thalf.eff.iv.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $thalf.eff.iv.pred
@@ -7042,6 +8116,12 @@ get.interval.cols()
 #> $thalf.eff.iv.pred$pptest_cdisc
 #> [1] "Effective Half-Life (for IV dosing, based on MRT Pred)"
 #> 
+#> $thalf.eff.iv.pred$formula
+#> [1] "$t_{1/2,\\text{eff,iv,pred}} = \\ln(2) \\cdot MRT_{\\text{iv,pred}}$"
+#> 
+#> $thalf.eff.iv.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $kel.obs
 #> $kel.obs$FUN
@@ -7078,6 +8158,12 @@ get.interval.cols()
 #> 
 #> $kel.obs$pptest_cdisc
 #> [1] "Kel (based on AUCinf,obs)"
+#> 
+#> $kel.obs$formula
+#> [1] "$k_{el,\\text{obs}} = \\frac{1}{MRT_{\\text{obs}}}$"
+#> 
+#> $kel.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $kel.pred
@@ -7116,6 +8202,12 @@ get.interval.cols()
 #> $kel.pred$pptest_cdisc
 #> [1] "Kel (based on AUCinf,pred)"
 #> 
+#> $kel.pred$formula
+#> [1] "$k_{el,\\text{pred}} = \\frac{1}{MRT_{\\text{pred}}}$"
+#> 
+#> $kel.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $kel.iv.obs
 #> $kel.iv.obs$FUN
@@ -7152,6 +8244,12 @@ get.interval.cols()
 #> 
 #> $kel.iv.obs$pptest_cdisc
 #> [1] "Kel (for IV dosing, based on AUCinf,obs)"
+#> 
+#> $kel.iv.obs$formula
+#> [1] "$k_{el,\\text{iv,obs}} = \\frac{1}{MRT_{\\text{iv,obs}}}$"
+#> 
+#> $kel.iv.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $kel.iv.pred
@@ -7190,6 +8288,12 @@ get.interval.cols()
 #> $kel.iv.pred$pptest_cdisc
 #> [1] "Kel (for IV dosing, based on AUCinf,pred)"
 #> 
+#> $kel.iv.pred$formula
+#> [1] "$k_{el,\\text{iv,pred}} = \\frac{1}{MRT_{\\text{iv,pred}}}$"
+#> 
+#> $kel.iv.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $kel.int.inf.obs
 #> $kel.int.inf.obs$FUN
@@ -7226,6 +8330,12 @@ get.interval.cols()
 #> 
 #> $kel.int.inf.obs$pptest_cdisc
 #> [1] "Elim rate, MRTint.inf.obs"
+#> 
+#> $kel.int.inf.obs$formula
+#> [1] "$k_{el,\\text{int,}\\infty\\text{,obs}} = \\frac{1}{MRT_{\\text{int,}\\infty\\text{,obs}}}$"
+#> 
+#> $kel.int.inf.obs$formula_note
+#> NULL
 #> 
 #> 
 #> $kel.int.inf.pred
@@ -7264,6 +8374,12 @@ get.interval.cols()
 #> $kel.int.inf.pred$pptest_cdisc
 #> [1] "Elim rate, MRTint.inf.pred"
 #> 
+#> $kel.int.inf.pred$formula
+#> [1] "$k_{el,\\text{int,}\\infty\\text{,pred}} = \\frac{1}{MRT_{\\text{int,}\\infty\\text{,pred}}}$"
+#> 
+#> $kel.int.inf.pred$formula_note
+#> NULL
+#> 
 #> 
 #> $auclast.dn
 #> $auclast.dn$FUN
@@ -7300,6 +8416,12 @@ get.interval.cols()
 #> 
 #> $auclast.dn$pptest_cdisc
 #> [1] "AUC to Last Nonzero Conc by Dose"
+#> 
+#> $auclast.dn$formula
+#> [1] "$AUC_{\\text{last},dn} = \\frac{AUC_{\\text{last}}}{Dose}$"
+#> 
+#> $auclast.dn$formula_note
+#> NULL
 #> 
 #> 
 #> $aucall.dn
@@ -7338,6 +8460,12 @@ get.interval.cols()
 #> $aucall.dn$pptest_cdisc
 #> [1] "AUC All by Dose"
 #> 
+#> $aucall.dn$formula
+#> [1] "$AUC_{\\text{all},dn} = \\frac{AUC_{\\text{all}}}{Dose}$"
+#> 
+#> $aucall.dn$formula_note
+#> NULL
+#> 
 #> 
 #> $aucinf.obs.dn
 #> $aucinf.obs.dn$FUN
@@ -7374,6 +8502,12 @@ get.interval.cols()
 #> 
 #> $aucinf.obs.dn$pptest_cdisc
 #> [1] "AUC Infinity Obs by Dose"
+#> 
+#> $aucinf.obs.dn$formula
+#> [1] "$AUC_{\\infty,\\text{obs},dn} = \\frac{AUC_{\\infty,\\text{obs}}}{Dose}$"
+#> 
+#> $aucinf.obs.dn$formula_note
+#> NULL
 #> 
 #> 
 #> $aucinf.pred.dn
@@ -7412,6 +8546,12 @@ get.interval.cols()
 #> $aucinf.pred.dn$pptest_cdisc
 #> [1] "AUC Infinity Pred by Dose"
 #> 
+#> $aucinf.pred.dn$formula
+#> [1] "$AUC_{\\infty,\\text{pred},dn} = \\frac{AUC_{\\infty,\\text{pred}}}{Dose}$"
+#> 
+#> $aucinf.pred.dn$formula_note
+#> NULL
+#> 
 #> 
 #> $aumclast.dn
 #> $aumclast.dn$FUN
@@ -7448,6 +8588,12 @@ get.interval.cols()
 #> 
 #> $aumclast.dn$pptest_cdisc
 #> [1] "AUMC to Last Nonzero Conc by Dose"
+#> 
+#> $aumclast.dn$formula
+#> [1] "$AUMC_{\\text{last},dn} = \\frac{AUMC_{\\text{last}}}{Dose}$"
+#> 
+#> $aumclast.dn$formula_note
+#> NULL
 #> 
 #> 
 #> $aumcall.dn
@@ -7486,6 +8632,12 @@ get.interval.cols()
 #> $aumcall.dn$pptest_cdisc
 #> [1] "AUMC All by Dose"
 #> 
+#> $aumcall.dn$formula
+#> [1] "$AUMC_{\\text{all},dn} = \\frac{AUMC_{\\text{all}}}{Dose}$"
+#> 
+#> $aumcall.dn$formula_note
+#> NULL
+#> 
 #> 
 #> $aumcinf.obs.dn
 #> $aumcinf.obs.dn$FUN
@@ -7522,6 +8674,12 @@ get.interval.cols()
 #> 
 #> $aumcinf.obs.dn$pptest_cdisc
 #> [1] "AUMC Infinity Obs by Dose"
+#> 
+#> $aumcinf.obs.dn$formula
+#> [1] "$AUMC_{\\infty,\\text{obs},dn} = \\frac{AUMC_{\\infty,\\text{obs}}}{Dose}$"
+#> 
+#> $aumcinf.obs.dn$formula_note
+#> NULL
 #> 
 #> 
 #> $aumcinf.pred.dn
@@ -7560,6 +8718,12 @@ get.interval.cols()
 #> $aumcinf.pred.dn$pptest_cdisc
 #> [1] "AUMC Infinity Pred by Dose"
 #> 
+#> $aumcinf.pred.dn$formula
+#> [1] "$AUMC_{\\infty,\\text{pred},dn} = \\frac{AUMC_{\\infty,\\text{pred}}}{Dose}$"
+#> 
+#> $aumcinf.pred.dn$formula_note
+#> NULL
+#> 
 #> 
 #> $cmax.dn
 #> $cmax.dn$FUN
@@ -7596,6 +8760,12 @@ get.interval.cols()
 #> 
 #> $cmax.dn$pptest_cdisc
 #> [1] "Max Conc by Dose"
+#> 
+#> $cmax.dn$formula
+#> [1] "$C_{\\max,dn} = \\frac{C_{\\max}}{Dose}$"
+#> 
+#> $cmax.dn$formula_note
+#> NULL
 #> 
 #> 
 #> $cmin.dn
@@ -7634,6 +8804,12 @@ get.interval.cols()
 #> $cmin.dn$pptest_cdisc
 #> [1] "Min Conc by Dose"
 #> 
+#> $cmin.dn$formula
+#> [1] "$C_{\\min,dn} = \\frac{C_{\\min}}{Dose}$"
+#> 
+#> $cmin.dn$formula_note
+#> NULL
+#> 
 #> 
 #> $clast.obs.dn
 #> $clast.obs.dn$FUN
@@ -7670,6 +8846,12 @@ get.interval.cols()
 #> 
 #> $clast.obs.dn$pptest_cdisc
 #> [1] "Last Nonzero Conc by Dose"
+#> 
+#> $clast.obs.dn$formula
+#> [1] "$C_{\\text{last,obs},dn} = \\frac{C_{\\text{last,obs}}}{Dose}$"
+#> 
+#> $clast.obs.dn$formula_note
+#> NULL
 #> 
 #> 
 #> $clast.pred.dn
@@ -7708,6 +8890,12 @@ get.interval.cols()
 #> $clast.pred.dn$pptest_cdisc
 #> [1] "Clast pred by Dose"
 #> 
+#> $clast.pred.dn$formula
+#> [1] "$C_{\\text{last,pred},dn} = \\frac{C_{\\text{last,pred}}}{Dose}$"
+#> 
+#> $clast.pred.dn$formula_note
+#> NULL
+#> 
 #> 
 #> $cav.dn
 #> $cav.dn$FUN
@@ -7744,6 +8932,12 @@ get.interval.cols()
 #> 
 #> $cav.dn$pptest_cdisc
 #> [1] "Average Conc by Dose"
+#> 
+#> $cav.dn$formula
+#> [1] "$C_{av,dn} = \\frac{C_{av}}{Dose}$"
+#> 
+#> $cav.dn$formula_note
+#> NULL
 #> 
 #> 
 #> $ctrough.dn
@@ -7782,6 +8976,12 @@ get.interval.cols()
 #> $ctrough.dn$pptest_cdisc
 #> [1] "Conc Trough by Dose"
 #> 
+#> $ctrough.dn$formula
+#> [1] "$C_{\\text{trough},dn} = \\frac{C_{\\text{trough}}}{Dose}$"
+#> 
+#> $ctrough.dn$formula_note
+#> NULL
+#> 
 #> 
 #> $clr.last.dn
 #> $clr.last.dn$FUN
@@ -7818,6 +9018,12 @@ get.interval.cols()
 #> 
 #> $clr.last.dn$pptest_cdisc
 #> [1] "Renal CL by Dose"
+#> 
+#> $clr.last.dn$formula
+#> [1] "$CL_{R,\\text{last},dn} = \\frac{CL_{R,\\text{last}}}{Dose}$"
+#> 
+#> $clr.last.dn$formula_note
+#> NULL
 #> 
 #> 
 #> $clr.obs.dn
@@ -7856,6 +9062,12 @@ get.interval.cols()
 #> $clr.obs.dn$pptest_cdisc
 #> [1] "Renal CL by Dose"
 #> 
+#> $clr.obs.dn$formula
+#> [1] "$CL_{R,\\text{obs},dn} = \\frac{CL_{R,\\text{obs}}}{Dose}$"
+#> 
+#> $clr.obs.dn$formula_note
+#> NULL
+#> 
 #> 
 #> $clr.pred.dn
 #> $clr.pred.dn$FUN
@@ -7892,6 +9104,12 @@ get.interval.cols()
 #> 
 #> $clr.pred.dn$pptest_cdisc
 #> [1] "Renal CL by Dose"
+#> 
+#> $clr.pred.dn$formula
+#> [1] "$CL_{R,\\text{pred},dn} = \\frac{CL_{R,\\text{pred}}}{Dose}$"
+#> 
+#> $clr.pred.dn$formula_note
+#> NULL
 #> 
 #> 
 ```
