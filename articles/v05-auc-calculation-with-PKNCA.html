@@ -136,10 +136,8 @@ parameters.</p>
 <span>                                           auclast<span class="op">=</span><span class="cn">TRUE</span>,</span>
 <span>                                           aucinf.pred<span class="op">=</span><span class="cn">TRUE</span>,</span>
 <span>                                           aucinf.obs<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">results_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## No dose information provided, calculations requiring dose will return NA.</span></span></code></pre>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">results_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table style="width:100%;" class="table">
 <colgroup>
 <col width="10%">
@@ -325,14 +323,14 @@ above the limit of quantification, <code>tlast</code> (within PKNCA,
 this is the last value above 0). In the figure below,
 AUC<sub>0-last</sub> integrates the shaded region. Integration after
 <code>tlast</code> is 0.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tlast</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.calc.tlast.html">pk.calc.tlast</a></span><span class="op">(</span>conc<span class="op">=</span><span class="va">my_conc</span><span class="op">$</span><span class="va">conc</span>,</span>
 <span>                       time<span class="op">=</span><span class="va">my_conc</span><span class="op">$</span><span class="va">time</span><span class="op">)</span></span>
 <span><span class="va">tlast</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 8</span></span></code></pre>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my_conc</span><span class="op">$</span><span class="va">include_auclast</span> <span class="op">&lt;-</span> <span class="va">my_conc</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="va">tlast</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">my_conc</span>,</span>
 <span>       <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,</span>
 <span>           y<span class="op">=</span><span class="va">conc</span>,</span>
@@ -356,13 +354,13 @@ integrates from <code>tlast</code> to the first point after
 point after <code>tlast</code> to
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>∞</mi><annotation encoding="application/x-tex">\infty</annotation></semantics></math>
 is considered zero.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">first_after_tlast</span> <span class="op">&lt;-</span> <span class="va">my_conc</span><span class="op">$</span><span class="va">time</span><span class="op">[</span><span class="va">my_conc</span><span class="op">$</span><span class="va">time</span> <span class="op">&gt;</span> <span class="va">tlast</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
 <span><span class="va">first_after_tlast</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 12</span></span></code></pre>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my_conc</span><span class="op">$</span><span class="va">include_aucall</span> <span class="op">&lt;-</span> <span class="va">my_conc</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="va">first_after_tlast</span></span></code></pre></div>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">my_conc</span>,</span>
 <span>       <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,</span>
 <span>           y<span class="op">=</span><span class="va">conc</span>,</span>
@@ -400,7 +398,7 @@ using <code>clast.pred</code> after that point and
 <code>clast.obs</code> before that point. (To illustrate the integration
 differences, BLQ indicator shapes have been removed. BLQ is handled
 identically to previous figures.)</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Add one row to illustrate extrapolation beyond observed data</span></span>
 <span><span class="va">my_conc</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">my_conc</span>,</span>
@@ -429,7 +427,7 @@ identically to previous figures.)</p>
 <span>                     clast<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span><span class="op">$</span><span class="va">PPORRES</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"clast.pred"</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">my_conc</span><span class="op">$</span><span class="va">conc_aucinf.pred</span><span class="op">[</span><span class="va">my_conc</span><span class="op">$</span><span class="va">time</span> <span class="op">==</span> <span class="va">tlast</span><span class="op">]</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span><span class="op">$</span><span class="va">PPORRES</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"clast.pred"</span><span class="op">]</span></span></code></pre></div>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">my_conc</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">my_conc</span><span class="op">$</span><span class="va">conc</span><span class="op">)</span>,<span class="op">]</span>,</span>
 <span>       <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,</span>
 <span>           y<span class="op">=</span><span class="va">conc</span>,</span>
@@ -444,7 +442,7 @@ identically to previous figures.)</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.8</span>, <span class="fl">0.8</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title<span class="op">=</span><span class="st">"Extrapolation using AUCinf,obs"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="v05-auc-calculation-with-PKNCA_files/figure-html/aucinf-visualization-1.png" class="r-plt" alt="" width="700"></p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">my_conc</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">my_conc</span><span class="op">$</span><span class="va">conc</span><span class="op">)</span>,<span class="op">]</span>,</span>
 <span>       <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,</span>
 <span>           y<span class="op">=</span><span class="va">conc</span>,</span>
@@ -494,14 +492,12 @@ the specific parameter), so no manual data preparation is required. In
 the example below, the concentration at the end time of 1.5 is not in
 the observed data, and it is interpolated automatically during the
 calculation.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data_aucint_obj</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">conc_obj</span>,</span>
 <span>            intervals<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>start<span class="op">=</span><span class="fl">0</span>, end<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1.5</span><span class="op">)</span>, aucint.last<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">results_aucint_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_aucint_obj</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## No dose information provided, calculations requiring dose will return NA.</span></span></code></pre>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_aucint_obj</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">results_aucint_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_aucint_obj</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_aucint_obj</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="11%">

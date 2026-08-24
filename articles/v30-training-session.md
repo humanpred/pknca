@@ -507,8 +507,6 @@ o_data_manual_intervals <- PKNCAdata(o_conc, intervals=d_intervals)
 summary(pk.nca(o_data_manual_intervals))
 ```
 
-    ## No dose information provided, calculations requiring dose will return NA.
-
     ##  start end Treatment N        cmax               tmax   half.life aucinf.obs
     ##      0 Inf High dose 5 9.16 [19.4] 3.48 [0.980, 3.55] 7.73 [1.08] 120 [26.2]
     ##      0 Inf  Low dose 7 8.30 [15.2] 1.12 [0.630, 2.02] 8.50 [2.67] 111 [31.6]

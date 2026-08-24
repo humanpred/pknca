@@ -98,7 +98,6 @@ my_data <- PKNCAdata(my_conc,
                                           aucinf.obs=TRUE,
                                           aucpext.obs=TRUE))
 my_result <- pk.nca(my_data)
-#> No dose information provided, calculations requiring dose will return NA.
 my_result_excluded <- exclude(my_result,
                               FUN=exclude_nca_max.aucinf.pext())
 #> Loading required namespace: testthat

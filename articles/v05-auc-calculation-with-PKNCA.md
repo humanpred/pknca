@@ -60,12 +60,6 @@ data_obj <- PKNCAdata(data.conc=conc_obj,
                                            aucinf.pred=TRUE,
                                            aucinf.obs=TRUE))
 results_obj <- pk.nca(data_obj)
-```
-
-    ## No dose information provided, calculations requiring dose will return NA.
-
-``` r
-
 kable(as.data.frame(results_obj))
 ```
 
@@ -287,12 +281,6 @@ data_aucint_obj <-
   PKNCAdata(conc_obj,
             intervals=data.frame(start=0, end=c(2, 1.5), aucint.last=TRUE))
 results_aucint_obj <- pk.nca(data_aucint_obj)
-```
-
-    ## No dose information provided, calculations requiring dose will return NA.
-
-``` r
-
 kable(as.data.frame(results_aucint_obj))
 ```
 

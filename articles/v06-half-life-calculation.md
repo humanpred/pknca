@@ -81,11 +81,6 @@ conc_obj <-
 current_intervals <- data.frame(start=0, end=Inf, half.life=TRUE)
 data_obj <- PKNCAdata(conc_obj, intervals=current_intervals)
 result_obj <- pk.nca(data_obj)
-```
-
-    ## No dose information provided, calculations requiring dose will return NA.
-
-``` r
 
 # Extract the results for subject 1 
 as.data.frame(result_obj)
@@ -156,11 +151,6 @@ data_obj_exclude1 <- PKNCAdata(conc_obj_exclude1, intervals=current_intervals)
 
 # Perform the calculations
 result_obj_exclude1 <- pk.nca(data_obj_exclude1)
-```
-
-    ## No dose information provided, calculations requiring dose will return NA.
-
-``` r
 
 # Results differ when excluding the 12-hour point for subject 1 (compare to
 # example in the previous section)
@@ -213,11 +203,6 @@ data_obj_include6 <- PKNCAdata(conc_obj_include6, intervals=current_intervals)
 
 # Perform the calculations
 result_obj_include6 <- pk.nca(data_obj_include6)
-```
-
-    ## No dose information provided, calculations requiring dose will return NA.
-
-``` r
 
 # Results differ when including 6 points (compare to example in the previous
 # section)

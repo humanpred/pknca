@@ -29,9 +29,7 @@ all calculations, it is set to `NA` as well.
 o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
 o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
 o_nca <- pk.nca(o_data)
-#> No dose information provided, calculations requiring dose will return NA.
 get_halflife_points(o_nca)
-#> No dose information provided, calculations requiring dose will return NA.
 #>   [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE FALSE
 #>  [13] FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE FALSE FALSE
 #>  [25] FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE FALSE FALSE FALSE

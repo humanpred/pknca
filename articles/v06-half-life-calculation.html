@@ -192,10 +192,9 @@ fit with the most points included.</li>
 <span><span class="co"># Only calculate half-life and parameters required for half-life</span></span>
 <span><span class="va">current_intervals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>start<span class="op">=</span><span class="fl">0</span>, end<span class="op">=</span><span class="cn">Inf</span>, half.life<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">data_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">conc_obj</span>, intervals<span class="op">=</span><span class="va">current_intervals</span><span class="op">)</span></span>
-<span><span class="va">result_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## No dose information provided, calculations requiring dose will return NA.</span></span></code></pre>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Extract the results for subject 1 </span></span>
+<span><span class="va">result_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Extract the results for subject 1 </span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">result_obj</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 12 × 7</span></span></span>
 <span><span class="co">##    Subject start   end PPTESTCD            PPORRES PPANMETH exclude</span></span>
@@ -246,7 +245,7 @@ stripping methods described above.</p>
 <code>exclude_half.life</code> option as the column name in the
 concentration dataset for <code><a href="../reference/PKNCAconc.html">PKNCAconc()</a></code> as illustrated
 below.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data_conc</span><span class="op">$</span><span class="va">exclude_hl</span> <span class="op">&lt;-</span> <span class="va">data_conc</span><span class="op">$</span><span class="va">Time</span> <span class="op">==</span> <span class="fl">12.12</span></span>
 <span><span class="co"># Confirm that we will be excluding exactly one point</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">data_conc</span><span class="op">$</span><span class="va">exclude_hl</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span>
@@ -262,10 +261,9 @@ below.</p>
 <span><span class="va">data_obj_exclude1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">conc_obj_exclude1</span>, intervals<span class="op">=</span><span class="va">current_intervals</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Perform the calculations</span></span>
-<span><span class="va">result_obj_exclude1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj_exclude1</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## No dose information provided, calculations requiring dose will return NA.</span></span></code></pre>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Results differ when excluding the 12-hour point for subject 1 (compare to</span></span>
+<span><span class="va">result_obj_exclude1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj_exclude1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Results differ when excluding the 12-hour point for subject 1 (compare to</span></span>
 <span><span class="co"># example in the previous section)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">result_obj_exclude1</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 12 × 7</span></span></span>
@@ -294,7 +292,7 @@ performed.</p>
 the <code>include_half.life</code> option as the column name in the
 concentration dataset for <code><a href="../reference/PKNCAconc.html">PKNCAconc()</a></code> as illustrated
 below.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data_conc</span><span class="op">$</span><span class="va">include_hl</span> <span class="op">&lt;-</span> <span class="va">data_conc</span><span class="op">$</span><span class="va">Time</span> <span class="op">&gt;</span> <span class="fl">3</span></span>
 <span><span class="co"># Confirm that we will be including exactly six points</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">data_conc</span><span class="op">$</span><span class="va">include_hl</span><span class="op">)</span> <span class="op">==</span> <span class="fl">6</span><span class="op">)</span></span>
@@ -310,10 +308,9 @@ below.</p>
 <span><span class="va">data_obj_include6</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">conc_obj_include6</span>, intervals<span class="op">=</span><span class="va">current_intervals</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Perform the calculations</span></span>
-<span><span class="va">result_obj_include6</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj_include6</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## No dose information provided, calculations requiring dose will return NA.</span></span></code></pre>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Results differ when including 6 points (compare to example in the previous</span></span>
+<span><span class="va">result_obj_include6</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj_include6</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Results differ when including 6 points (compare to example in the previous</span></span>
 <span><span class="co"># section)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">result_obj_include6</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 12 × 7</span></span></span>

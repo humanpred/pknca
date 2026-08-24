@@ -63,7 +63,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get.parameter.deps</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get.parameter.deps</span><span class="op">(</span><span class="va">x</span>, recursive <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -73,11 +73,27 @@
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>The parameter name (as a character string)</p></dd>
 
+
+<dt id="arg-recursive">recursive<a class="anchor" aria-label="anchor" href="#arg-recursive"></a></dt>
+<dd><p>Search backward to the inputs <code>x</code> is calculated from,
+rather than forward to the parameters calculated from <code>x</code>.  See the
+details.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A character vector of parameter names that depend on the parameter
-<code>x</code>.  If none depend on <code>x</code>, then the result will be an empty vector.</p>
+    <p>With <code>recursive = FALSE</code> (default), a character vector of
+parameter names that depend on the parameter <code>x</code>; empty if none do.
+With <code>recursive = TRUE</code>, the unique set of everything <code>x</code> is calculated
+from, following each dependency to the end.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The two directions answer different questions.  The default
+answers "what becomes invalid if <code>x</code> changes?".  <code>recursive = TRUE</code>
+answers "what does <code>x</code> need?", and its result mixes parameter names
+with the raw inputs the calculation ends at, such as <code>"conc"</code>,
+<code>"time"</code>, <code>"dose"</code>, and <code>"time.dose"</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

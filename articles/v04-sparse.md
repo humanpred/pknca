@@ -144,8 +144,6 @@ o_data_sparse <- PKNCAdata(o_conc_sparse, intervals=d_intervals)
 o_nca <- pk.nca(o_data_sparse)
 ```
 
-    ## No dose information provided, calculations requiring dose will return NA.
-
     ## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2
     ## points)
 

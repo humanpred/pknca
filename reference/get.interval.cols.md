@@ -62,6 +62,15 @@ get.interval.cols()
 #> $start$pptest_cdisc
 #> [1] "Starting time of the interval"
 #> 
+#> $start$requires_dose_amt
+#> NULL
+#> 
+#> $start$requires_dose_time
+#> NULL
+#> 
+#> $start$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $end
 #> $end$FUN
@@ -96,6 +105,15 @@ get.interval.cols()
 #> 
 #> $end$pptest_cdisc
 #> [1] "End time of interval (may be Inf)"
+#> 
+#> $end$requires_dose_amt
+#> NULL
+#> 
+#> $end$requires_dose_time
+#> NULL
+#> 
+#> $end$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $auclast
@@ -132,6 +150,15 @@ get.interval.cols()
 #> $auclast$pptest_cdisc
 #> [1] "AUC to Last Nonzero Conc"
 #> 
+#> $auclast$requires_dose_amt
+#> NULL
+#> 
+#> $auclast$requires_dose_time
+#> NULL
+#> 
+#> $auclast$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucall
 #> $aucall$FUN
@@ -166,6 +193,15 @@ get.interval.cols()
 #> 
 #> $aucall$pptest_cdisc
 #> [1] "AUC All"
+#> 
+#> $aucall$requires_dose_amt
+#> NULL
+#> 
+#> $aucall$requires_dose_time
+#> NULL
+#> 
+#> $aucall$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aumclast
@@ -202,6 +238,15 @@ get.interval.cols()
 #> $aumclast$pptest_cdisc
 #> [1] "AUMC to Last Nonzero Conc"
 #> 
+#> $aumclast$requires_dose_amt
+#> NULL
+#> 
+#> $aumclast$requires_dose_time
+#> NULL
+#> 
+#> $aumclast$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aumcall
 #> $aumcall$FUN
@@ -236,6 +281,15 @@ get.interval.cols()
 #> 
 #> $aumcall$pptest_cdisc
 #> [1] "AUMC All"
+#> 
+#> $aumcall$requires_dose_amt
+#> NULL
+#> 
+#> $aumcall$requires_dose_time
+#> NULL
+#> 
+#> $aumcall$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aucint.last
@@ -280,6 +334,15 @@ get.interval.cols()
 #> $aucint.last$pptest_cdisc
 #> [1] "AUC from T1 to T2"
 #> 
+#> $aucint.last$requires_dose_amt
+#> NULL
+#> 
+#> $aucint.last$requires_dose_time
+#> NULL
+#> 
+#> $aucint.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucint.last.dose
 #> $aucint.last.dose$FUN
@@ -322,6 +385,15 @@ get.interval.cols()
 #> 
 #> $aucint.last.dose$pptest_cdisc
 #> [1] "AUC from T1 to T2 Normalized by Dose"
+#> 
+#> $aucint.last.dose$requires_dose_amt
+#> NULL
+#> 
+#> $aucint.last.dose$requires_dose_time
+#> NULL
+#> 
+#> $aucint.last.dose$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aucint.all
@@ -366,6 +438,15 @@ get.interval.cols()
 #> $aucint.all$pptest_cdisc
 #> [1] "AUCint (based on AUCall extrapolation)"
 #> 
+#> $aucint.all$requires_dose_amt
+#> NULL
+#> 
+#> $aucint.all$requires_dose_time
+#> NULL
+#> 
+#> $aucint.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucint.all.dose
 #> $aucint.all.dose$FUN
@@ -408,6 +489,15 @@ get.interval.cols()
 #> 
 #> $aucint.all.dose$pptest_cdisc
 #> [1] "AUCint (based on AUCall extrapolation, dose-aware)"
+#> 
+#> $aucint.all.dose$requires_dose_amt
+#> NULL
+#> 
+#> $aucint.all.dose$requires_dose_time
+#> NULL
+#> 
+#> $aucint.all.dose$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aumcint.last
@@ -452,6 +542,15 @@ get.interval.cols()
 #> $aumcint.last$pptest_cdisc
 #> [1] "AUMC from T1 to T2 (zero extrap)"
 #> 
+#> $aumcint.last$requires_dose_amt
+#> NULL
+#> 
+#> $aumcint.last$requires_dose_time
+#> NULL
+#> 
+#> $aumcint.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aumcint.last.dose
 #> $aumcint.last.dose$FUN
@@ -494,6 +593,15 @@ get.interval.cols()
 #> 
 #> $aumcint.last.dose$pptest_cdisc
 #> [1] "AUMC T1 to T2, dose-aware (zero extrap)"
+#> 
+#> $aumcint.last.dose$requires_dose_amt
+#> NULL
+#> 
+#> $aumcint.last.dose$requires_dose_time
+#> NULL
+#> 
+#> $aumcint.last.dose$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aumcint.all
@@ -538,6 +646,15 @@ get.interval.cols()
 #> $aumcint.all$pptest_cdisc
 #> [1] "AUMC from T1 to T2 (AUMCall extrap)"
 #> 
+#> $aumcint.all$requires_dose_amt
+#> NULL
+#> 
+#> $aumcint.all$requires_dose_time
+#> NULL
+#> 
+#> $aumcint.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aumcint.all.dose
 #> $aumcint.all.dose$FUN
@@ -581,6 +698,15 @@ get.interval.cols()
 #> $aumcint.all.dose$pptest_cdisc
 #> [1] "AUMC T1 to T2, dose-aware (AUMCall)"
 #> 
+#> $aumcint.all.dose$requires_dose_amt
+#> NULL
+#> 
+#> $aumcint.all.dose$requires_dose_time
+#> NULL
+#> 
+#> $aumcint.all.dose$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $c0
 #> $c0$FUN
@@ -615,6 +741,15 @@ get.interval.cols()
 #> 
 #> $c0$pptest_cdisc
 #> [1] "Initial Conc"
+#> 
+#> $c0$requires_dose_amt
+#> NULL
+#> 
+#> $c0$requires_dose_time
+#> NULL
+#> 
+#> $c0$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $cmax
@@ -651,6 +786,15 @@ get.interval.cols()
 #> $cmax$pptest_cdisc
 #> [1] "Max Conc"
 #> 
+#> $cmax$requires_dose_amt
+#> NULL
+#> 
+#> $cmax$requires_dose_time
+#> NULL
+#> 
+#> $cmax$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cmin
 #> $cmin$FUN
@@ -685,6 +829,15 @@ get.interval.cols()
 #> 
 #> $cmin$pptest_cdisc
 #> [1] "Min Conc"
+#> 
+#> $cmin$requires_dose_amt
+#> NULL
+#> 
+#> $cmin$requires_dose_time
+#> NULL
+#> 
+#> $cmin$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $tmax
@@ -721,6 +874,15 @@ get.interval.cols()
 #> $tmax$pptest_cdisc
 #> [1] "Time of CMAX"
 #> 
+#> $tmax$requires_dose_amt
+#> NULL
+#> 
+#> $tmax$requires_dose_time
+#> NULL
+#> 
+#> $tmax$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $tmin
 #> $tmin$FUN
@@ -755,6 +917,15 @@ get.interval.cols()
 #> 
 #> $tmin$pptest_cdisc
 #> [1] "Time of CMIN Observation"
+#> 
+#> $tmin$requires_dose_amt
+#> NULL
+#> 
+#> $tmin$requires_dose_time
+#> NULL
+#> 
+#> $tmin$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $tlast
@@ -791,6 +962,15 @@ get.interval.cols()
 #> $tlast$pptest_cdisc
 #> [1] "Time of Last Nonzero Conc"
 #> 
+#> $tlast$requires_dose_amt
+#> NULL
+#> 
+#> $tlast$requires_dose_time
+#> NULL
+#> 
+#> $tlast$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $tfirst
 #> $tfirst$FUN
@@ -826,6 +1006,15 @@ get.interval.cols()
 #> $tfirst$pptest_cdisc
 #> [1] "Time of First Nonzero Conc"
 #> 
+#> $tfirst$requires_dose_amt
+#> NULL
+#> 
+#> $tfirst$requires_dose_time
+#> NULL
+#> 
+#> $tfirst$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $clast.obs
 #> $clast.obs$FUN
@@ -860,6 +1049,15 @@ get.interval.cols()
 #> 
 #> $clast.obs$pptest_cdisc
 #> [1] "Last Nonzero Conc"
+#> 
+#> $clast.obs$requires_dose_amt
+#> NULL
+#> 
+#> $clast.obs$requires_dose_time
+#> NULL
+#> 
+#> $clast.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $cl.last
@@ -912,6 +1110,15 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $cl.last$requires_dose_amt
+#> NULL
+#> 
+#> $cl.last$requires_dose_time
+#> NULL
+#> 
+#> $cl.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cl.all
 #> $cl.all$FUN
@@ -963,6 +1170,15 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $cl.all$requires_dose_amt
+#> NULL
+#> 
+#> $cl.all$requires_dose_time
+#> NULL
+#> 
+#> $cl.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cl.int.all
 #> $cl.int.all$FUN
@@ -999,6 +1215,15 @@ get.interval.cols()
 #> 
 #> $cl.int.all$pptest_cdisc
 #> [1] "Clearance, AUCint.all"
+#> 
+#> $cl.int.all$requires_dose_amt
+#> NULL
+#> 
+#> $cl.int.all$requires_dose_time
+#> NULL
+#> 
+#> $cl.int.all$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $cl.int.last
@@ -1037,6 +1262,15 @@ get.interval.cols()
 #> $cl.int.last$pptest_cdisc
 #> [1] "Clearance, AUCint.last"
 #> 
+#> $cl.int.last$requires_dose_amt
+#> NULL
+#> 
+#> $cl.int.last$requires_dose_time
+#> NULL
+#> 
+#> $cl.int.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $f
 #> $f$FUN
@@ -1071,6 +1305,15 @@ get.interval.cols()
 #> 
 #> $f$pptest_cdisc
 #> [1] "Absolute Bioavailability"
+#> 
+#> $f$requires_dose_amt
+#> NULL
+#> 
+#> $f$requires_dose_time
+#> NULL
+#> 
+#> $f$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $mrt.last
@@ -1126,6 +1369,15 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $mrt.last$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.last$requires_dose_time
+#> NULL
+#> 
+#> $mrt.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $mrt.all
 #> $mrt.all$FUN
@@ -1165,6 +1417,15 @@ get.interval.cols()
 #> 
 #> $mrt.all$pptest_cdisc
 #> [1] "MRT, AUCall/AUMCall"
+#> 
+#> $mrt.all$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.all$requires_dose_time
+#> NULL
+#> 
+#> $mrt.all$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $mrt.int.all
@@ -1206,6 +1467,15 @@ get.interval.cols()
 #> $mrt.int.all$pptest_cdisc
 #> [1] "MRT, interval AUCall/AUMCall"
 #> 
+#> $mrt.int.all$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.int.all$requires_dose_time
+#> NULL
+#> 
+#> $mrt.int.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $mrt.int.last
 #> $mrt.int.last$FUN
@@ -1246,6 +1516,15 @@ get.interval.cols()
 #> $mrt.int.last$pptest_cdisc
 #> [1] "MRT, interval AUClast/AUMClast"
 #> 
+#> $mrt.int.last$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.int.last$requires_dose_time
+#> NULL
+#> 
+#> $mrt.int.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $mrt.iv.last
 #> $mrt.iv.last$FUN
@@ -1285,6 +1564,15 @@ get.interval.cols()
 #> 
 #> $mrt.iv.last$pptest_cdisc
 #> [1] "MRT Intravasc to Last Nonzero Conc"
+#> 
+#> $mrt.iv.last$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.iv.last$requires_dose_time
+#> NULL
+#> 
+#> $mrt.iv.last$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vss.last
@@ -1340,6 +1628,15 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $vss.last$requires_dose_amt
+#> NULL
+#> 
+#> $vss.last$requires_dose_time
+#> NULL
+#> 
+#> $vss.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vss.iv.last
 #> $vss.iv.last$FUN
@@ -1379,6 +1676,15 @@ get.interval.cols()
 #> 
 #> $vss.iv.last$pptest_cdisc
 #> [1] "Vss (for IV dosing, based on AUClast)"
+#> 
+#> $vss.iv.last$requires_dose_amt
+#> NULL
+#> 
+#> $vss.iv.last$requires_dose_time
+#> NULL
+#> 
+#> $vss.iv.last$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vss.all
@@ -1420,6 +1726,15 @@ get.interval.cols()
 #> $vss.all$pptest_cdisc
 #> [1] "Vss, calc from AUCall"
 #> 
+#> $vss.all$requires_dose_amt
+#> NULL
+#> 
+#> $vss.all$requires_dose_time
+#> NULL
+#> 
+#> $vss.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vss.int.all
 #> $vss.int.all$FUN
@@ -1459,6 +1774,15 @@ get.interval.cols()
 #> 
 #> $vss.int.all$pptest_cdisc
 #> [1] "Vss, calc from interval AUCint.all"
+#> 
+#> $vss.int.all$requires_dose_amt
+#> NULL
+#> 
+#> $vss.int.all$requires_dose_time
+#> NULL
+#> 
+#> $vss.int.all$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vss.int.last
@@ -1500,6 +1824,15 @@ get.interval.cols()
 #> $vss.int.last$pptest_cdisc
 #> [1] "Vss, calc from interval AUCint.last"
 #> 
+#> $vss.int.last$requires_dose_amt
+#> NULL
+#> 
+#> $vss.int.last$requires_dose_time
+#> NULL
+#> 
+#> $vss.int.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cav
 #> $cav$FUN
@@ -1536,6 +1869,15 @@ get.interval.cols()
 #> 
 #> $cav$pptest_cdisc
 #> [1] "Average Conc"
+#> 
+#> $cav$requires_dose_amt
+#> NULL
+#> 
+#> $cav$requires_dose_time
+#> NULL
+#> 
+#> $cav$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $cav.int.last
@@ -1574,6 +1916,15 @@ get.interval.cols()
 #> $cav.int.last$pptest_cdisc
 #> [1] "Average Conc from T1 to T2"
 #> 
+#> $cav.int.last$requires_dose_amt
+#> NULL
+#> 
+#> $cav.int.last$requires_dose_time
+#> NULL
+#> 
+#> $cav.int.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cav.int.all
 #> $cav.int.all$FUN
@@ -1611,6 +1962,15 @@ get.interval.cols()
 #> $cav.int.all$pptest_cdisc
 #> [1] "Cavg All"
 #> 
+#> $cav.int.all$requires_dose_amt
+#> NULL
+#> 
+#> $cav.int.all$requires_dose_time
+#> NULL
+#> 
+#> $cav.int.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $ctrough
 #> $ctrough$FUN
@@ -1645,6 +2005,15 @@ get.interval.cols()
 #> 
 #> $ctrough$pptest_cdisc
 #> [1] "Conc Trough"
+#> 
+#> $ctrough$requires_dose_amt
+#> NULL
+#> 
+#> $ctrough$requires_dose_time
+#> NULL
+#> 
+#> $ctrough$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $cstart
@@ -1681,6 +2050,15 @@ get.interval.cols()
 #> $cstart$pptest_cdisc
 #> [1] "Cstart"
 #> 
+#> $cstart$requires_dose_amt
+#> NULL
+#> 
+#> $cstart$requires_dose_time
+#> NULL
+#> 
+#> $cstart$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $ptr
 #> $ptr$FUN
@@ -1715,6 +2093,15 @@ get.interval.cols()
 #> 
 #> $ptr$pptest_cdisc
 #> [1] "Peak Trough Ratio"
+#> 
+#> $ptr$requires_dose_amt
+#> NULL
+#> 
+#> $ptr$requires_dose_time
+#> NULL
+#> 
+#> $ptr$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $tlag
@@ -1751,6 +2138,15 @@ get.interval.cols()
 #> $tlag$pptest_cdisc
 #> [1] "Time to First Nonzero Conc"
 #> 
+#> $tlag$requires_dose_amt
+#> NULL
+#> 
+#> $tlag$requires_dose_time
+#> NULL
+#> 
+#> $tlag$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $deg.fluc
 #> $deg.fluc$FUN
@@ -1785,6 +2181,15 @@ get.interval.cols()
 #> 
 #> $deg.fluc$pptest_cdisc
 #> [1] "Degree of fluctuation"
+#> 
+#> $deg.fluc$requires_dose_amt
+#> NULL
+#> 
+#> $deg.fluc$requires_dose_time
+#> NULL
+#> 
+#> $deg.fluc$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $swing
@@ -1821,6 +2226,15 @@ get.interval.cols()
 #> $swing$pptest_cdisc
 #> [1] "Swing"
 #> 
+#> $swing$requires_dose_amt
+#> NULL
+#> 
+#> $swing$requires_dose_time
+#> NULL
+#> 
+#> $swing$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $ceoi
 #> $ceoi$FUN
@@ -1855,6 +2269,15 @@ get.interval.cols()
 #> 
 #> $ceoi$pptest_cdisc
 #> [1] "Ceoi"
+#> 
+#> $ceoi$requires_dose_amt
+#> NULL
+#> 
+#> $ceoi$requires_dose_time
+#> NULL
+#> 
+#> $ceoi$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aucabove.predose.all
@@ -1893,6 +2316,15 @@ get.interval.cols()
 #> $aucabove.predose.all$pptest_cdisc
 #> [1] "AUC above predose"
 #> 
+#> $aucabove.predose.all$requires_dose_amt
+#> NULL
+#> 
+#> $aucabove.predose.all$requires_dose_time
+#> NULL
+#> 
+#> $aucabove.predose.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucabove.trough.all
 #> $aucabove.trough.all$FUN
@@ -1930,6 +2362,15 @@ get.interval.cols()
 #> $aucabove.trough.all$pptest_cdisc
 #> [1] "AUC above trough"
 #> 
+#> $aucabove.trough.all$requires_dose_amt
+#> NULL
+#> 
+#> $aucabove.trough.all$requires_dose_time
+#> NULL
+#> 
+#> $aucabove.trough.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $count_conc
 #> $count_conc$FUN
@@ -1964,6 +2405,15 @@ get.interval.cols()
 #> 
 #> $count_conc$pptest_cdisc
 #> [1] "Concentration count"
+#> 
+#> $count_conc$requires_dose_amt
+#> NULL
+#> 
+#> $count_conc$requires_dose_time
+#> NULL
+#> 
+#> $count_conc$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $count_conc_measured
@@ -2000,6 +2450,15 @@ get.interval.cols()
 #> $count_conc_measured$pptest_cdisc
 #> [1] "Count of measured, non-BLQ conc"
 #> 
+#> $count_conc_measured$requires_dose_amt
+#> NULL
+#> 
+#> $count_conc_measured$requires_dose_time
+#> NULL
+#> 
+#> $count_conc_measured$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $totdose
 #> $totdose$FUN
@@ -2034,6 +2493,15 @@ get.interval.cols()
 #> 
 #> $totdose$pptest_cdisc
 #> [1] "Total dose administered"
+#> 
+#> $totdose$requires_dose_amt
+#> NULL
+#> 
+#> $totdose$requires_dose_time
+#> NULL
+#> 
+#> $totdose$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $volpk
@@ -2070,6 +2538,15 @@ get.interval.cols()
 #> $volpk$pptest_cdisc
 #> [1] "Volume of PK sample"
 #> 
+#> $volpk$requires_dose_amt
+#> NULL
+#> 
+#> $volpk$requires_dose_time
+#> NULL
+#> 
+#> $volpk$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $ae
 #> $ae$FUN
@@ -2104,6 +2581,15 @@ get.interval.cols()
 #> 
 #> $ae$pptest_cdisc
 #> [1] "Amt Rec from T1 to T2"
+#> 
+#> $ae$requires_dose_amt
+#> NULL
+#> 
+#> $ae$requires_dose_time
+#> NULL
+#> 
+#> $ae$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $clr.last
@@ -2142,6 +2628,15 @@ get.interval.cols()
 #> $clr.last$pptest_cdisc
 #> [1] "Renal CL"
 #> 
+#> $clr.last$requires_dose_amt
+#> NULL
+#> 
+#> $clr.last$requires_dose_time
+#> NULL
+#> 
+#> $clr.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $clr.obs
 #> $clr.obs$FUN
@@ -2178,6 +2673,15 @@ get.interval.cols()
 #> 
 #> $clr.obs$pptest_cdisc
 #> [1] "Renal CL"
+#> 
+#> $clr.obs$requires_dose_amt
+#> NULL
+#> 
+#> $clr.obs$requires_dose_time
+#> NULL
+#> 
+#> $clr.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $clr.pred
@@ -2216,6 +2720,15 @@ get.interval.cols()
 #> $clr.pred$pptest_cdisc
 #> [1] "Renal CL"
 #> 
+#> $clr.pred$requires_dose_amt
+#> NULL
+#> 
+#> $clr.pred$requires_dose_time
+#> NULL
+#> 
+#> $clr.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $fe
 #> $fe$FUN
@@ -2250,6 +2763,15 @@ get.interval.cols()
 #> 
 #> $fe$pptest_cdisc
 #> [1] "Fract Excr from T1 to T2"
+#> 
+#> $fe$requires_dose_amt
+#> NULL
+#> 
+#> $fe$requires_dose_time
+#> NULL
+#> 
+#> $fe$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $ertlst
@@ -2286,6 +2808,15 @@ get.interval.cols()
 #> $ertlst$pptest_cdisc
 #> [1] "Time of Last Excretion Rate"
 #> 
+#> $ertlst$requires_dose_amt
+#> NULL
+#> 
+#> $ertlst$requires_dose_time
+#> NULL
+#> 
+#> $ertlst$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $ermax
 #> $ermax$FUN
@@ -2320,6 +2851,15 @@ get.interval.cols()
 #> 
 #> $ermax$pptest_cdisc
 #> [1] "Max Excretion Rate"
+#> 
+#> $ermax$requires_dose_amt
+#> NULL
+#> 
+#> $ermax$requires_dose_time
+#> NULL
+#> 
+#> $ermax$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $ertmax
@@ -2356,6 +2896,15 @@ get.interval.cols()
 #> $ertmax$pptest_cdisc
 #> [1] "Midpoint of Interval of Maximum ER"
 #> 
+#> $ertmax$requires_dose_amt
+#> NULL
+#> 
+#> $ertmax$requires_dose_time
+#> NULL
+#> 
+#> $ertmax$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $sparse_auclast
 #> $sparse_auclast$FUN
@@ -2390,6 +2939,15 @@ get.interval.cols()
 #> 
 #> $sparse_auclast$pptest_cdisc
 #> [1] "Sparse AUClast"
+#> 
+#> $sparse_auclast$requires_dose_amt
+#> NULL
+#> 
+#> $sparse_auclast$requires_dose_time
+#> NULL
+#> 
+#> $sparse_auclast$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $sparse_auc_se
@@ -2426,6 +2984,15 @@ get.interval.cols()
 #> $sparse_auc_se$pptest_cdisc
 #> [1] "Sparse AUClast standard error"
 #> 
+#> $sparse_auc_se$requires_dose_amt
+#> NULL
+#> 
+#> $sparse_auc_se$requires_dose_time
+#> NULL
+#> 
+#> $sparse_auc_se$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $sparse_auc_df
 #> $sparse_auc_df$FUN
@@ -2460,6 +3027,15 @@ get.interval.cols()
 #> 
 #> $sparse_auc_df$pptest_cdisc
 #> [1] "Sparse AUClast degrees of freedom"
+#> 
+#> $sparse_auc_df$requires_dose_amt
+#> NULL
+#> 
+#> $sparse_auc_df$requires_dose_time
+#> NULL
+#> 
+#> $sparse_auc_df$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $sparse_aumclast
@@ -2496,6 +3072,15 @@ get.interval.cols()
 #> $sparse_aumclast$pptest_cdisc
 #> [1] "Sparse AUMC to last conc above LOQ"
 #> 
+#> $sparse_aumclast$requires_dose_amt
+#> NULL
+#> 
+#> $sparse_aumclast$requires_dose_time
+#> NULL
+#> 
+#> $sparse_aumclast$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $sparse_aumc_se
 #> $sparse_aumc_se$FUN
@@ -2530,6 +3115,15 @@ get.interval.cols()
 #> 
 #> $sparse_aumc_se$pptest_cdisc
 #> [1] "SE of sparse AUMC to last conc above LOQ"
+#> 
+#> $sparse_aumc_se$requires_dose_amt
+#> NULL
+#> 
+#> $sparse_aumc_se$requires_dose_time
+#> NULL
+#> 
+#> $sparse_aumc_se$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $sparse_aumc_df
@@ -2566,6 +3160,15 @@ get.interval.cols()
 #> $sparse_aumc_df$pptest_cdisc
 #> [1] "variance DF for sparse AUMC to Tlast"
 #> 
+#> $sparse_aumc_df$requires_dose_amt
+#> NULL
+#> 
+#> $sparse_aumc_df$requires_dose_time
+#> NULL
+#> 
+#> $sparse_aumc_df$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $time_above
 #> $time_above$FUN
@@ -2600,6 +3203,15 @@ get.interval.cols()
 #> 
 #> $time_above$pptest_cdisc
 #> [1] "Time Above Threshold"
+#> 
+#> $time_above$requires_dose_amt
+#> NULL
+#> 
+#> $time_above$requires_dose_time
+#> NULL
+#> 
+#> $time_above$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aucivlast
@@ -2638,6 +3250,15 @@ get.interval.cols()
 #> $aucivlast$pptest_cdisc
 #> [1] "AUClast (IV dosing)"
 #> 
+#> $aucivlast$requires_dose_amt
+#> NULL
+#> 
+#> $aucivlast$requires_dose_time
+#> NULL
+#> 
+#> $aucivlast$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucivall
 #> $aucivall$FUN
@@ -2674,6 +3295,15 @@ get.interval.cols()
 #> 
 #> $aucivall$pptest_cdisc
 #> [1] "AUCall (IV dosing)"
+#> 
+#> $aucivall$requires_dose_amt
+#> NULL
+#> 
+#> $aucivall$requires_dose_time
+#> NULL
+#> 
+#> $aucivall$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aucivint.last
@@ -2712,6 +3342,15 @@ get.interval.cols()
 #> $aucivint.last$pptest_cdisc
 #> [1] "AUCint,last (IV dosing)"
 #> 
+#> $aucivint.last$requires_dose_amt
+#> NULL
+#> 
+#> $aucivint.last$requires_dose_time
+#> NULL
+#> 
+#> $aucivint.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucivint.all
 #> $aucivint.all$FUN
@@ -2748,6 +3387,15 @@ get.interval.cols()
 #> 
 #> $aucivint.all$pptest_cdisc
 #> [1] "AUCint,all (IV dosing)"
+#> 
+#> $aucivint.all$requires_dose_amt
+#> NULL
+#> 
+#> $aucivint.all$requires_dose_time
+#> NULL
+#> 
+#> $aucivint.all$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aucivpbextlast
@@ -2789,6 +3437,15 @@ get.interval.cols()
 #> $aucivpbextlast$pptest_cdisc
 #> [1] "AUCbext (based on AUClast)"
 #> 
+#> $aucivpbextlast$requires_dose_amt
+#> NULL
+#> 
+#> $aucivpbextlast$requires_dose_time
+#> NULL
+#> 
+#> $aucivpbextlast$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucivpbextall
 #> $aucivpbextall$FUN
@@ -2828,6 +3485,15 @@ get.interval.cols()
 #> 
 #> $aucivpbextall$pptest_cdisc
 #> [1] "AUCbext (based on AUCall)"
+#> 
+#> $aucivpbextall$requires_dose_amt
+#> NULL
+#> 
+#> $aucivpbextall$requires_dose_time
+#> NULL
+#> 
+#> $aucivpbextall$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aucivpbextint.last
@@ -2869,6 +3535,15 @@ get.interval.cols()
 #> $aucivpbextint.last$pptest_cdisc
 #> [1] "AUCbext (based on AUCint,last)"
 #> 
+#> $aucivpbextint.last$requires_dose_amt
+#> NULL
+#> 
+#> $aucivpbextint.last$requires_dose_time
+#> NULL
+#> 
+#> $aucivpbextint.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucivpbextint.all
 #> $aucivpbextint.all$FUN
@@ -2909,6 +3584,15 @@ get.interval.cols()
 #> $aucivpbextint.all$pptest_cdisc
 #> [1] "AUCbext (based on AUCint,all)"
 #> 
+#> $aucivpbextint.all$requires_dose_amt
+#> NULL
+#> 
+#> $aucivpbextint.all$requires_dose_time
+#> NULL
+#> 
+#> $aucivpbextint.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aumcivlast
 #> $aumcivlast$FUN
@@ -2945,6 +3629,15 @@ get.interval.cols()
 #> 
 #> $aumcivlast$pptest_cdisc
 #> [1] "AUMClast, IV back-extrap C0"
+#> 
+#> $aumcivlast$requires_dose_amt
+#> NULL
+#> 
+#> $aumcivlast$requires_dose_time
+#> NULL
+#> 
+#> $aumcivlast$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aumcivall
@@ -2983,6 +3676,15 @@ get.interval.cols()
 #> $aumcivall$pptest_cdisc
 #> [1] "AUMCall, IV back-extrap C0"
 #> 
+#> $aumcivall$requires_dose_amt
+#> NULL
+#> 
+#> $aumcivall$requires_dose_time
+#> NULL
+#> 
+#> $aumcivall$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aumcivint.last
 #> $aumcivint.last$FUN
@@ -3019,6 +3721,15 @@ get.interval.cols()
 #> 
 #> $aumcivint.last$pptest_cdisc
 #> [1] "AUMCint.last, IV back-extrap C0"
+#> 
+#> $aumcivint.last$requires_dose_amt
+#> NULL
+#> 
+#> $aumcivint.last$requires_dose_time
+#> NULL
+#> 
+#> $aumcivint.last$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aumcivint.all
@@ -3057,6 +3768,15 @@ get.interval.cols()
 #> $aumcivint.all$pptest_cdisc
 #> [1] "AUMCint.all, IV back-extrap C0"
 #> 
+#> $aumcivint.all$requires_dose_amt
+#> NULL
+#> 
+#> $aumcivint.all$requires_dose_time
+#> NULL
+#> 
+#> $aumcivint.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $half.life
 #> $half.life$FUN
@@ -3091,6 +3811,15 @@ get.interval.cols()
 #> 
 #> $half.life$pptest_cdisc
 #> [1] "Half-Life Lambda z"
+#> 
+#> $half.life$requires_dose_amt
+#> NULL
+#> 
+#> $half.life$requires_dose_time
+#> NULL
+#> 
+#> $half.life$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $r.squared
@@ -3127,6 +3856,15 @@ get.interval.cols()
 #> $r.squared$pptest_cdisc
 #> [1] "R Squared"
 #> 
+#> $r.squared$requires_dose_amt
+#> NULL
+#> 
+#> $r.squared$requires_dose_time
+#> NULL
+#> 
+#> $r.squared$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $adj.r.squared
 #> $adj.r.squared$FUN
@@ -3161,6 +3899,15 @@ get.interval.cols()
 #> 
 #> $adj.r.squared$pptest_cdisc
 #> [1] "R Squared Adjusted"
+#> 
+#> $adj.r.squared$requires_dose_amt
+#> NULL
+#> 
+#> $adj.r.squared$requires_dose_time
+#> NULL
+#> 
+#> $adj.r.squared$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $lambda.z.corrxy
@@ -3197,6 +3944,15 @@ get.interval.cols()
 #> $lambda.z.corrxy$pptest_cdisc
 #> [1] "Correlation Between TimeX and Log ConcY"
 #> 
+#> $lambda.z.corrxy$requires_dose_amt
+#> NULL
+#> 
+#> $lambda.z.corrxy$requires_dose_time
+#> NULL
+#> 
+#> $lambda.z.corrxy$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $lambda.z
 #> $lambda.z$FUN
@@ -3231,6 +3987,15 @@ get.interval.cols()
 #> 
 #> $lambda.z$pptest_cdisc
 #> [1] "Lambda z"
+#> 
+#> $lambda.z$requires_dose_amt
+#> NULL
+#> 
+#> $lambda.z$requires_dose_time
+#> NULL
+#> 
+#> $lambda.z$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $lambda.z.time.first
@@ -3267,6 +4032,15 @@ get.interval.cols()
 #> $lambda.z.time.first$pptest_cdisc
 #> [1] "Lambda z Lower Limit"
 #> 
+#> $lambda.z.time.first$requires_dose_amt
+#> NULL
+#> 
+#> $lambda.z.time.first$requires_dose_time
+#> NULL
+#> 
+#> $lambda.z.time.first$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $lambda.z.time.last
 #> $lambda.z.time.last$FUN
@@ -3301,6 +4075,15 @@ get.interval.cols()
 #> 
 #> $lambda.z.time.last$pptest_cdisc
 #> [1] "Lambda z Upper Limit"
+#> 
+#> $lambda.z.time.last$requires_dose_amt
+#> NULL
+#> 
+#> $lambda.z.time.last$requires_dose_time
+#> NULL
+#> 
+#> $lambda.z.time.last$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $lambda.z.n.points
@@ -3337,6 +4120,15 @@ get.interval.cols()
 #> $lambda.z.n.points$pptest_cdisc
 #> [1] "Number of Points for Lambda z"
 #> 
+#> $lambda.z.n.points$requires_dose_amt
+#> NULL
+#> 
+#> $lambda.z.n.points$requires_dose_time
+#> NULL
+#> 
+#> $lambda.z.n.points$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $clast.pred
 #> $clast.pred$FUN
@@ -3371,6 +4163,15 @@ get.interval.cols()
 #> 
 #> $clast.pred$pptest_cdisc
 #> [1] "Clast pred"
+#> 
+#> $clast.pred$requires_dose_amt
+#> NULL
+#> 
+#> $clast.pred$requires_dose_time
+#> NULL
+#> 
+#> $clast.pred$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $span.ratio
@@ -3407,6 +4208,15 @@ get.interval.cols()
 #> $span.ratio$pptest_cdisc
 #> [1] "Lambda z Span"
 #> 
+#> $span.ratio$requires_dose_amt
+#> NULL
+#> 
+#> $span.ratio$requires_dose_time
+#> NULL
+#> 
+#> $span.ratio$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $tobit_residual
 #> $tobit_residual$FUN
@@ -3441,6 +4251,15 @@ get.interval.cols()
 #> 
 #> $tobit_residual$pptest_cdisc
 #> [1] "Tobit fit residual SD, log-conc"
+#> 
+#> $tobit_residual$requires_dose_amt
+#> NULL
+#> 
+#> $tobit_residual$requires_dose_time
+#> NULL
+#> 
+#> $tobit_residual$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $adj_tobit_residual
@@ -3477,6 +4296,15 @@ get.interval.cols()
 #> $adj_tobit_residual$pptest_cdisc
 #> [1] "Adjusted Tobit residual SD"
 #> 
+#> $adj_tobit_residual$requires_dose_amt
+#> NULL
+#> 
+#> $adj_tobit_residual$requires_dose_time
+#> NULL
+#> 
+#> $adj_tobit_residual$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $lambda.z.n.points_blq
 #> $lambda.z.n.points_blq$FUN
@@ -3511,6 +4339,15 @@ get.interval.cols()
 #> 
 #> $lambda.z.n.points_blq$pptest_cdisc
 #> [1] "BLQ points in Tobit lambda.z"
+#> 
+#> $lambda.z.n.points_blq$requires_dose_amt
+#> NULL
+#> 
+#> $lambda.z.n.points_blq$requires_dose_time
+#> NULL
+#> 
+#> $lambda.z.n.points_blq$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $thalf.eff.last
@@ -3549,6 +4386,15 @@ get.interval.cols()
 #> $thalf.eff.last$pptest_cdisc
 #> [1] "Effective Half-Life (based on AUClast)"
 #> 
+#> $thalf.eff.last$requires_dose_amt
+#> NULL
+#> 
+#> $thalf.eff.last$requires_dose_time
+#> NULL
+#> 
+#> $thalf.eff.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $thalf.eff.iv.last
 #> $thalf.eff.iv.last$FUN
@@ -3585,6 +4431,15 @@ get.interval.cols()
 #> 
 #> $thalf.eff.iv.last$pptest_cdisc
 #> [1] "Effective Half-Life (for IV dosing, based on AUClast)"
+#> 
+#> $thalf.eff.iv.last$requires_dose_amt
+#> NULL
+#> 
+#> $thalf.eff.iv.last$requires_dose_time
+#> NULL
+#> 
+#> $thalf.eff.iv.last$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $kel.last
@@ -3623,6 +4478,15 @@ get.interval.cols()
 #> $kel.last$pptest_cdisc
 #> [1] "Kel (based on AUClast)"
 #> 
+#> $kel.last$requires_dose_amt
+#> NULL
+#> 
+#> $kel.last$requires_dose_time
+#> NULL
+#> 
+#> $kel.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $kel.iv.last
 #> $kel.iv.last$FUN
@@ -3659,6 +4523,15 @@ get.interval.cols()
 #> 
 #> $kel.iv.last$pptest_cdisc
 #> [1] "Kel (for IV dosing, based on AUClast)"
+#> 
+#> $kel.iv.last$requires_dose_amt
+#> NULL
+#> 
+#> $kel.iv.last$requires_dose_time
+#> NULL
+#> 
+#> $kel.iv.last$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $kel.all
@@ -3697,6 +4570,15 @@ get.interval.cols()
 #> $kel.all$pptest_cdisc
 #> [1] "Elim rate, MRTall"
 #> 
+#> $kel.all$requires_dose_amt
+#> NULL
+#> 
+#> $kel.all$requires_dose_time
+#> NULL
+#> 
+#> $kel.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $kel.int.all
 #> $kel.int.all$FUN
@@ -3733,6 +4615,15 @@ get.interval.cols()
 #> 
 #> $kel.int.all$pptest_cdisc
 #> [1] "Elim rate, MRTint.all"
+#> 
+#> $kel.int.all$requires_dose_amt
+#> NULL
+#> 
+#> $kel.int.all$requires_dose_time
+#> NULL
+#> 
+#> $kel.int.all$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $kel.int.last
@@ -3771,6 +4662,15 @@ get.interval.cols()
 #> $kel.int.last$pptest_cdisc
 #> [1] "Elim rate, MRTint.last"
 #> 
+#> $kel.int.last$requires_dose_amt
+#> NULL
+#> 
+#> $kel.int.last$requires_dose_time
+#> NULL
+#> 
+#> $kel.int.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cl.iv.all
 #> $cl.iv.all$FUN
@@ -3807,6 +4707,15 @@ get.interval.cols()
 #> 
 #> $cl.iv.all$pptest_cdisc
 #> [1] "IV clearance, AUCall"
+#> 
+#> $cl.iv.all$requires_dose_amt
+#> NULL
+#> 
+#> $cl.iv.all$requires_dose_time
+#> NULL
+#> 
+#> $cl.iv.all$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $cl.iv.last
@@ -3845,6 +4754,15 @@ get.interval.cols()
 #> $cl.iv.last$pptest_cdisc
 #> [1] "IV clearance, AUClast"
 #> 
+#> $cl.iv.last$requires_dose_amt
+#> NULL
+#> 
+#> $cl.iv.last$requires_dose_time
+#> NULL
+#> 
+#> $cl.iv.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cl.ivint.all
 #> $cl.ivint.all$FUN
@@ -3881,6 +4799,15 @@ get.interval.cols()
 #> 
 #> $cl.ivint.all$pptest_cdisc
 #> [1] "IV clearance, AUCint.all"
+#> 
+#> $cl.ivint.all$requires_dose_amt
+#> NULL
+#> 
+#> $cl.ivint.all$requires_dose_time
+#> NULL
+#> 
+#> $cl.ivint.all$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $cl.ivint.last
@@ -3919,6 +4846,15 @@ get.interval.cols()
 #> $cl.ivint.last$pptest_cdisc
 #> [1] "IV clearance, AUCint.last"
 #> 
+#> $cl.ivint.last$requires_dose_amt
+#> NULL
+#> 
+#> $cl.ivint.last$requires_dose_time
+#> NULL
+#> 
+#> $cl.ivint.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cl.sparse.last
 #> $cl.sparse.last$FUN
@@ -3955,6 +4891,15 @@ get.interval.cols()
 #> 
 #> $cl.sparse.last$pptest_cdisc
 #> [1] "Clearance, sparse AUClast"
+#> 
+#> $cl.sparse.last$requires_dose_amt
+#> NULL
+#> 
+#> $cl.sparse.last$requires_dose_time
+#> NULL
+#> 
+#> $cl.sparse.last$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $mrt.sparse.last
@@ -3996,6 +4941,15 @@ get.interval.cols()
 #> $mrt.sparse.last$pptest_cdisc
 #> [1] "MRT, sparse AUClast/AUMClast"
 #> 
+#> $mrt.sparse.last$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.sparse.last$requires_dose_time
+#> NULL
+#> 
+#> $mrt.sparse.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $mrt.iv.all
 #> $mrt.iv.all$FUN
@@ -4035,6 +4989,15 @@ get.interval.cols()
 #> 
 #> $mrt.iv.all$pptest_cdisc
 #> [1] "IV MRT, AUCall/AUMCall"
+#> 
+#> $mrt.iv.all$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.iv.all$requires_dose_time
+#> NULL
+#> 
+#> $mrt.iv.all$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $mrt.ivint.all
@@ -4076,6 +5039,15 @@ get.interval.cols()
 #> $mrt.ivint.all$pptest_cdisc
 #> [1] "IV MRT, interval AUC/AUMCall"
 #> 
+#> $mrt.ivint.all$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.ivint.all$requires_dose_time
+#> NULL
+#> 
+#> $mrt.ivint.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $mrt.ivint.last
 #> $mrt.ivint.last$FUN
@@ -4116,6 +5088,15 @@ get.interval.cols()
 #> $mrt.ivint.last$pptest_cdisc
 #> [1] "IV MRT, interval AUC/AUMClast"
 #> 
+#> $mrt.ivint.last$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.ivint.last$requires_dose_time
+#> NULL
+#> 
+#> $mrt.ivint.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vz.all
 #> $vz.all$FUN
@@ -4152,6 +5133,15 @@ get.interval.cols()
 #> 
 #> $vz.all$pptest_cdisc
 #> [1] "Vz, AUCall-based CL"
+#> 
+#> $vz.all$requires_dose_amt
+#> NULL
+#> 
+#> $vz.all$requires_dose_time
+#> NULL
+#> 
+#> $vz.all$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vz.int.all
@@ -4190,6 +5180,15 @@ get.interval.cols()
 #> $vz.int.all$pptest_cdisc
 #> [1] "Vz, interval AUCint.all"
 #> 
+#> $vz.int.all$requires_dose_amt
+#> NULL
+#> 
+#> $vz.int.all$requires_dose_time
+#> NULL
+#> 
+#> $vz.int.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vz.int.last
 #> $vz.int.last$FUN
@@ -4226,6 +5225,15 @@ get.interval.cols()
 #> 
 #> $vz.int.last$pptest_cdisc
 #> [1] "Vz, interval AUCint.last"
+#> 
+#> $vz.int.last$requires_dose_amt
+#> NULL
+#> 
+#> $vz.int.last$requires_dose_time
+#> NULL
+#> 
+#> $vz.int.last$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vz.iv.all
@@ -4264,6 +5272,15 @@ get.interval.cols()
 #> $vz.iv.all$pptest_cdisc
 #> [1] "IV Vz, AUCall"
 #> 
+#> $vz.iv.all$requires_dose_amt
+#> NULL
+#> 
+#> $vz.iv.all$requires_dose_time
+#> NULL
+#> 
+#> $vz.iv.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vz.iv.last
 #> $vz.iv.last$FUN
@@ -4300,6 +5317,15 @@ get.interval.cols()
 #> 
 #> $vz.iv.last$pptest_cdisc
 #> [1] "IV Vz, AUClast"
+#> 
+#> $vz.iv.last$requires_dose_amt
+#> NULL
+#> 
+#> $vz.iv.last$requires_dose_time
+#> NULL
+#> 
+#> $vz.iv.last$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vz.ivint.all
@@ -4338,6 +5364,15 @@ get.interval.cols()
 #> $vz.ivint.all$pptest_cdisc
 #> [1] "IV Vz, interval AUCint.all"
 #> 
+#> $vz.ivint.all$requires_dose_amt
+#> NULL
+#> 
+#> $vz.ivint.all$requires_dose_time
+#> NULL
+#> 
+#> $vz.ivint.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vz.ivint.last
 #> $vz.ivint.last$FUN
@@ -4375,6 +5410,15 @@ get.interval.cols()
 #> $vz.ivint.last$pptest_cdisc
 #> [1] "IV Vz, interval AUCint.last"
 #> 
+#> $vz.ivint.last$requires_dose_amt
+#> NULL
+#> 
+#> $vz.ivint.last$requires_dose_time
+#> NULL
+#> 
+#> $vz.ivint.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vz.last
 #> $vz.last$FUN
@@ -4411,6 +5455,15 @@ get.interval.cols()
 #> 
 #> $vz.last$pptest_cdisc
 #> [1] "Vz, AUClast-based CL"
+#> 
+#> $vz.last$requires_dose_amt
+#> NULL
+#> 
+#> $vz.last$requires_dose_time
+#> NULL
+#> 
+#> $vz.last$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vss.iv.all
@@ -4452,6 +5505,15 @@ get.interval.cols()
 #> $vss.iv.all$pptest_cdisc
 #> [1] "IV Vss, calc from AUCall"
 #> 
+#> $vss.iv.all$requires_dose_amt
+#> NULL
+#> 
+#> $vss.iv.all$requires_dose_time
+#> NULL
+#> 
+#> $vss.iv.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vss.ivint.all
 #> $vss.ivint.all$FUN
@@ -4491,6 +5553,15 @@ get.interval.cols()
 #> 
 #> $vss.ivint.all$pptest_cdisc
 #> [1] "IV Vss, calc from interval AUCint.all"
+#> 
+#> $vss.ivint.all$requires_dose_amt
+#> NULL
+#> 
+#> $vss.ivint.all$requires_dose_time
+#> NULL
+#> 
+#> $vss.ivint.all$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vss.ivint.last
@@ -4532,6 +5603,15 @@ get.interval.cols()
 #> $vss.ivint.last$pptest_cdisc
 #> [1] "IV Vss, calc from interval AUCint.last"
 #> 
+#> $vss.ivint.last$requires_dose_amt
+#> NULL
+#> 
+#> $vss.ivint.last$requires_dose_time
+#> NULL
+#> 
+#> $vss.ivint.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vss.sparse.last
 #> $vss.sparse.last$FUN
@@ -4572,6 +5652,15 @@ get.interval.cols()
 #> $vss.sparse.last$pptest_cdisc
 #> [1] "Vss, calc from sparse AUClast"
 #> 
+#> $vss.sparse.last$requires_dose_amt
+#> NULL
+#> 
+#> $vss.sparse.last$requires_dose_time
+#> NULL
+#> 
+#> $vss.sparse.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucinf.obs
 #> $aucinf.obs$FUN
@@ -4606,6 +5695,15 @@ get.interval.cols()
 #> 
 #> $aucinf.obs$pptest_cdisc
 #> [1] "AUC Infinity Obs"
+#> 
+#> $aucinf.obs$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aucinf.obs$requires_dose_time
+#> [1] FALSE
+#> 
+#> $aucinf.obs$requires_dose_dur
+#> [1] FALSE
 #> 
 #> 
 #> $aucinf.pred
@@ -4642,6 +5740,15 @@ get.interval.cols()
 #> $aucinf.pred$pptest_cdisc
 #> [1] "AUC Infinity Pred"
 #> 
+#> $aucinf.pred$requires_dose_amt
+#> NULL
+#> 
+#> $aucinf.pred$requires_dose_time
+#> NULL
+#> 
+#> $aucinf.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aumcinf.obs
 #> $aumcinf.obs$FUN
@@ -4677,6 +5784,15 @@ get.interval.cols()
 #> $aumcinf.obs$pptest_cdisc
 #> [1] "AUMC Infinity Obs"
 #> 
+#> $aumcinf.obs$requires_dose_amt
+#> NULL
+#> 
+#> $aumcinf.obs$requires_dose_time
+#> NULL
+#> 
+#> $aumcinf.obs$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aumcinf.pred
 #> $aumcinf.pred$FUN
@@ -4711,6 +5827,15 @@ get.interval.cols()
 #> 
 #> $aumcinf.pred$pptest_cdisc
 #> [1] "AUMC Infinity Pred"
+#> 
+#> $aumcinf.pred$requires_dose_amt
+#> NULL
+#> 
+#> $aumcinf.pred$requires_dose_time
+#> NULL
+#> 
+#> $aumcinf.pred$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aucint.inf.obs
@@ -4755,6 +5880,15 @@ get.interval.cols()
 #> $aucint.inf.obs$pptest_cdisc
 #> [1] "AUCint (based on AUCinf,obs extrapolation)"
 #> 
+#> $aucint.inf.obs$requires_dose_amt
+#> NULL
+#> 
+#> $aucint.inf.obs$requires_dose_time
+#> NULL
+#> 
+#> $aucint.inf.obs$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucint.inf.obs.dose
 #> $aucint.inf.obs.dose$FUN
@@ -4797,6 +5931,15 @@ get.interval.cols()
 #> 
 #> $aucint.inf.obs.dose$pptest_cdisc
 #> [1] "AUCint (based on AUCinf,obs extrapolation, dose-aware)"
+#> 
+#> $aucint.inf.obs.dose$requires_dose_amt
+#> NULL
+#> 
+#> $aucint.inf.obs.dose$requires_dose_time
+#> NULL
+#> 
+#> $aucint.inf.obs.dose$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aucint.inf.pred
@@ -4841,6 +5984,15 @@ get.interval.cols()
 #> $aucint.inf.pred$pptest_cdisc
 #> [1] "AUCint (based on AUCinf,pred extrapolation)"
 #> 
+#> $aucint.inf.pred$requires_dose_amt
+#> NULL
+#> 
+#> $aucint.inf.pred$requires_dose_time
+#> NULL
+#> 
+#> $aucint.inf.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucint.inf.pred.dose
 #> $aucint.inf.pred.dose$FUN
@@ -4883,6 +6035,15 @@ get.interval.cols()
 #> 
 #> $aucint.inf.pred.dose$pptest_cdisc
 #> [1] "AUCint (based on AUCinf,pred extrapolation, dose-aware)"
+#> 
+#> $aucint.inf.pred.dose$requires_dose_amt
+#> NULL
+#> 
+#> $aucint.inf.pred.dose$requires_dose_time
+#> NULL
+#> 
+#> $aucint.inf.pred.dose$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aumcint.inf.obs
@@ -4927,6 +6088,15 @@ get.interval.cols()
 #> $aumcint.inf.obs$pptest_cdisc
 #> [1] "AUMC from T1 to T2 (AUMCinf,obs extrap)"
 #> 
+#> $aumcint.inf.obs$requires_dose_amt
+#> NULL
+#> 
+#> $aumcint.inf.obs$requires_dose_time
+#> NULL
+#> 
+#> $aumcint.inf.obs$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aumcint.inf.obs.dose
 #> $aumcint.inf.obs.dose$FUN
@@ -4969,6 +6139,15 @@ get.interval.cols()
 #> 
 #> $aumcint.inf.obs.dose$pptest_cdisc
 #> [1] "AUMC T1 to T2, dose-aware (AUMCinf,obs)"
+#> 
+#> $aumcint.inf.obs.dose$requires_dose_amt
+#> NULL
+#> 
+#> $aumcint.inf.obs.dose$requires_dose_time
+#> NULL
+#> 
+#> $aumcint.inf.obs.dose$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aumcint.inf.pred
@@ -5013,6 +6192,15 @@ get.interval.cols()
 #> $aumcint.inf.pred$pptest_cdisc
 #> [1] "AUMC from T1 to T2 (AUMCinf,pred extrap)"
 #> 
+#> $aumcint.inf.pred$requires_dose_amt
+#> NULL
+#> 
+#> $aumcint.inf.pred$requires_dose_time
+#> NULL
+#> 
+#> $aumcint.inf.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aumcint.inf.pred.dose
 #> $aumcint.inf.pred.dose$FUN
@@ -5056,6 +6244,15 @@ get.interval.cols()
 #> $aumcint.inf.pred.dose$pptest_cdisc
 #> [1] "AUMC T1 to T2, dose-aware (AUMCinf,pred)"
 #> 
+#> $aumcint.inf.pred.dose$requires_dose_amt
+#> NULL
+#> 
+#> $aumcint.inf.pred.dose$requires_dose_time
+#> NULL
+#> 
+#> $aumcint.inf.pred.dose$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucivinf.obs
 #> $aucivinf.obs$FUN
@@ -5093,6 +6290,15 @@ get.interval.cols()
 #> $aucivinf.obs$pptest_cdisc
 #> [1] "AUCinf,obs (IV dosing)"
 #> 
+#> $aucivinf.obs$requires_dose_amt
+#> NULL
+#> 
+#> $aucivinf.obs$requires_dose_time
+#> NULL
+#> 
+#> $aucivinf.obs$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucivinf.pred
 #> $aucivinf.pred$FUN
@@ -5129,6 +6335,15 @@ get.interval.cols()
 #> 
 #> $aucivinf.pred$pptest_cdisc
 #> [1] "AUCinf,pred (IV dosing)"
+#> 
+#> $aucivinf.pred$requires_dose_amt
+#> NULL
+#> 
+#> $aucivinf.pred$requires_dose_time
+#> NULL
+#> 
+#> $aucivinf.pred$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aucivpbextinf.obs
@@ -5170,6 +6385,15 @@ get.interval.cols()
 #> $aucivpbextinf.obs$pptest_cdisc
 #> [1] "AUCbext (based on AUCinf,obs)"
 #> 
+#> $aucivpbextinf.obs$requires_dose_amt
+#> NULL
+#> 
+#> $aucivpbextinf.obs$requires_dose_time
+#> NULL
+#> 
+#> $aucivpbextinf.obs$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucivpbextinf.pred
 #> $aucivpbextinf.pred$FUN
@@ -5210,6 +6434,15 @@ get.interval.cols()
 #> $aucivpbextinf.pred$pptest_cdisc
 #> [1] "AUCbext (based on AUCinf,pred)"
 #> 
+#> $aucivpbextinf.pred$requires_dose_amt
+#> NULL
+#> 
+#> $aucivpbextinf.pred$requires_dose_time
+#> NULL
+#> 
+#> $aucivpbextinf.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aumcivinf.obs
 #> $aumcivinf.obs$FUN
@@ -5246,6 +6479,15 @@ get.interval.cols()
 #> 
 #> $aumcivinf.obs$pptest_cdisc
 #> [1] "AUMCinf.obs, IV back-extrap C0"
+#> 
+#> $aumcivinf.obs$requires_dose_amt
+#> NULL
+#> 
+#> $aumcivinf.obs$requires_dose_time
+#> NULL
+#> 
+#> $aumcivinf.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aumcivinf.pred
@@ -5284,6 +6526,15 @@ get.interval.cols()
 #> $aumcivinf.pred$pptest_cdisc
 #> [1] "AUMCinf.pred, IV back-extrap C0"
 #> 
+#> $aumcivinf.pred$requires_dose_amt
+#> NULL
+#> 
+#> $aumcivinf.pred$requires_dose_time
+#> NULL
+#> 
+#> $aumcivinf.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucpext.obs
 #> $aucpext.obs$FUN
@@ -5320,6 +6571,15 @@ get.interval.cols()
 #> 
 #> $aucpext.obs$pptest_cdisc
 #> [1] "AUC %Extrapolation Obs"
+#> 
+#> $aucpext.obs$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aucpext.obs$requires_dose_time
+#> [1] FALSE
+#> 
+#> $aucpext.obs$requires_dose_dur
+#> [1] FALSE
 #> 
 #> 
 #> $aucpext.pred
@@ -5358,6 +6618,15 @@ get.interval.cols()
 #> $aucpext.pred$pptest_cdisc
 #> [1] "AUC %Extrapolation Pred"
 #> 
+#> $aucpext.pred$requires_dose_amt
+#> NULL
+#> 
+#> $aucpext.pred$requires_dose_time
+#> NULL
+#> 
+#> $aucpext.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $kel.iv.all
 #> $kel.iv.all$FUN
@@ -5394,6 +6663,15 @@ get.interval.cols()
 #> 
 #> $kel.iv.all$pptest_cdisc
 #> [1] "Elim rate, IV MRTall"
+#> 
+#> $kel.iv.all$requires_dose_amt
+#> NULL
+#> 
+#> $kel.iv.all$requires_dose_time
+#> NULL
+#> 
+#> $kel.iv.all$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $kel.ivint.all
@@ -5432,6 +6710,15 @@ get.interval.cols()
 #> $kel.ivint.all$pptest_cdisc
 #> [1] "Elim rate, IV MRTint.all"
 #> 
+#> $kel.ivint.all$requires_dose_amt
+#> NULL
+#> 
+#> $kel.ivint.all$requires_dose_time
+#> NULL
+#> 
+#> $kel.ivint.all$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $kel.ivint.last
 #> $kel.ivint.last$FUN
@@ -5469,6 +6756,15 @@ get.interval.cols()
 #> $kel.ivint.last$pptest_cdisc
 #> [1] "Elim rate, IV MRTint.last"
 #> 
+#> $kel.ivint.last$requires_dose_amt
+#> NULL
+#> 
+#> $kel.ivint.last$requires_dose_time
+#> NULL
+#> 
+#> $kel.ivint.last$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $kel.sparse.last
 #> $kel.sparse.last$FUN
@@ -5505,6 +6801,15 @@ get.interval.cols()
 #> 
 #> $kel.sparse.last$pptest_cdisc
 #> [1] "Elim rate, sparse MRTlast"
+#> 
+#> $kel.sparse.last$requires_dose_amt
+#> NULL
+#> 
+#> $kel.sparse.last$requires_dose_time
+#> NULL
+#> 
+#> $kel.sparse.last$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $cl.obs
@@ -5557,6 +6862,15 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $cl.obs$requires_dose_amt
+#> NULL
+#> 
+#> $cl.obs$requires_dose_time
+#> NULL
+#> 
+#> $cl.obs$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cl.pred
 #> $cl.pred$FUN
@@ -5608,6 +6922,15 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $cl.pred$requires_dose_amt
+#> NULL
+#> 
+#> $cl.pred$requires_dose_time
+#> NULL
+#> 
+#> $cl.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cl.int.inf.obs
 #> $cl.int.inf.obs$FUN
@@ -5644,6 +6967,15 @@ get.interval.cols()
 #> 
 #> $cl.int.inf.obs$pptest_cdisc
 #> [1] "Clearance, AUCint.inf.obs"
+#> 
+#> $cl.int.inf.obs$requires_dose_amt
+#> NULL
+#> 
+#> $cl.int.inf.obs$requires_dose_time
+#> NULL
+#> 
+#> $cl.int.inf.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $cl.int.inf.pred
@@ -5682,6 +7014,15 @@ get.interval.cols()
 #> $cl.int.inf.pred$pptest_cdisc
 #> [1] "Clearance, AUCint.inf.pred"
 #> 
+#> $cl.int.inf.pred$requires_dose_amt
+#> NULL
+#> 
+#> $cl.int.inf.pred$requires_dose_time
+#> NULL
+#> 
+#> $cl.int.inf.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cl.iv.obs
 #> $cl.iv.obs$FUN
@@ -5719,6 +7060,15 @@ get.interval.cols()
 #> $cl.iv.obs$pptest_cdisc
 #> [1] "IV clearance, AUCinf.obs"
 #> 
+#> $cl.iv.obs$requires_dose_amt
+#> NULL
+#> 
+#> $cl.iv.obs$requires_dose_time
+#> NULL
+#> 
+#> $cl.iv.obs$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cl.iv.pred
 #> $cl.iv.pred$FUN
@@ -5755,6 +7105,15 @@ get.interval.cols()
 #> 
 #> $cl.iv.pred$pptest_cdisc
 #> [1] "IV clearance, AUCinf.pred"
+#> 
+#> $cl.iv.pred$requires_dose_amt
+#> NULL
+#> 
+#> $cl.iv.pred$requires_dose_time
+#> NULL
+#> 
+#> $cl.iv.pred$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $mrt.obs
@@ -5810,6 +7169,15 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $mrt.obs$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.obs$requires_dose_time
+#> NULL
+#> 
+#> $mrt.obs$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $mrt.pred
 #> $mrt.pred$FUN
@@ -5864,6 +7232,15 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $mrt.pred$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.pred$requires_dose_time
+#> NULL
+#> 
+#> $mrt.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $mrt.int.inf.obs
 #> $mrt.int.inf.obs$FUN
@@ -5903,6 +7280,15 @@ get.interval.cols()
 #> 
 #> $mrt.int.inf.obs$pptest_cdisc
 #> [1] "MRT, interval AUC/AUMCinf obs"
+#> 
+#> $mrt.int.inf.obs$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.int.inf.obs$requires_dose_time
+#> NULL
+#> 
+#> $mrt.int.inf.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $mrt.int.inf.pred
@@ -5944,6 +7330,15 @@ get.interval.cols()
 #> $mrt.int.inf.pred$pptest_cdisc
 #> [1] "MRT, interval AUC/AUMCinf pred"
 #> 
+#> $mrt.int.inf.pred$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.int.inf.pred$requires_dose_time
+#> NULL
+#> 
+#> $mrt.int.inf.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $mrt.iv.obs
 #> $mrt.iv.obs$FUN
@@ -5984,6 +7379,15 @@ get.interval.cols()
 #> $mrt.iv.obs$pptest_cdisc
 #> [1] "MRT Intravasc Infinity Obs"
 #> 
+#> $mrt.iv.obs$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.iv.obs$requires_dose_time
+#> NULL
+#> 
+#> $mrt.iv.obs$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $mrt.iv.pred
 #> $mrt.iv.pred$FUN
@@ -6023,6 +7427,15 @@ get.interval.cols()
 #> 
 #> $mrt.iv.pred$pptest_cdisc
 #> [1] "MRT Intravasc Infinity Pred"
+#> 
+#> $mrt.iv.pred$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.iv.pred$requires_dose_time
+#> NULL
+#> 
+#> $mrt.iv.pred$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $mrt.md.obs
@@ -6067,6 +7480,15 @@ get.interval.cols()
 #> $mrt.md.obs$pptest_cdisc
 #> [1] "MRT (for multiple dosing, based on AUCinf,obs)"
 #> 
+#> $mrt.md.obs$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.md.obs$requires_dose_time
+#> NULL
+#> 
+#> $mrt.md.obs$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $mrt.md.pred
 #> $mrt.md.pred$FUN
@@ -6109,6 +7531,15 @@ get.interval.cols()
 #> 
 #> $mrt.md.pred$pptest_cdisc
 #> [1] "MRT (for multiple dosing, based on AUCinf,pred)"
+#> 
+#> $mrt.md.pred$requires_dose_amt
+#> NULL
+#> 
+#> $mrt.md.pred$requires_dose_time
+#> NULL
+#> 
+#> $mrt.md.pred$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vz.obs
@@ -6161,6 +7592,15 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $vz.obs$requires_dose_amt
+#> NULL
+#> 
+#> $vz.obs$requires_dose_time
+#> NULL
+#> 
+#> $vz.obs$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vz.pred
 #> $vz.pred$FUN
@@ -6212,6 +7652,15 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $vz.pred$requires_dose_amt
+#> NULL
+#> 
+#> $vz.pred$requires_dose_time
+#> NULL
+#> 
+#> $vz.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vz.int.inf.obs
 #> $vz.int.inf.obs$FUN
@@ -6248,6 +7697,15 @@ get.interval.cols()
 #> 
 #> $vz.int.inf.obs$pptest_cdisc
 #> [1] "Vz, interval AUCint.inf.obs"
+#> 
+#> $vz.int.inf.obs$requires_dose_amt
+#> NULL
+#> 
+#> $vz.int.inf.obs$requires_dose_time
+#> NULL
+#> 
+#> $vz.int.inf.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vz.int.inf.pred
@@ -6286,6 +7744,15 @@ get.interval.cols()
 #> $vz.int.inf.pred$pptest_cdisc
 #> [1] "Vz, interval AUCint.inf.pred"
 #> 
+#> $vz.int.inf.pred$requires_dose_amt
+#> NULL
+#> 
+#> $vz.int.inf.pred$requires_dose_time
+#> NULL
+#> 
+#> $vz.int.inf.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vz.iv.obs
 #> $vz.iv.obs$FUN
@@ -6323,6 +7790,15 @@ get.interval.cols()
 #> $vz.iv.obs$pptest_cdisc
 #> [1] "IV Vz, observed AUCinf"
 #> 
+#> $vz.iv.obs$requires_dose_amt
+#> NULL
+#> 
+#> $vz.iv.obs$requires_dose_time
+#> NULL
+#> 
+#> $vz.iv.obs$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vz.iv.pred
 #> $vz.iv.pred$FUN
@@ -6359,6 +7835,15 @@ get.interval.cols()
 #> 
 #> $vz.iv.pred$pptest_cdisc
 #> [1] "IV Vz, predicted AUCinf"
+#> 
+#> $vz.iv.pred$requires_dose_amt
+#> NULL
+#> 
+#> $vz.iv.pred$requires_dose_time
+#> NULL
+#> 
+#> $vz.iv.pred$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vz.sparse.last
@@ -6399,6 +7884,15 @@ get.interval.cols()
 #> 
 #> $vz.sparse.last$pptest_cdisc
 #> [1] "Vz from sparse sampling"
+#> 
+#> $vz.sparse.last$requires_dose_amt
+#> NULL
+#> 
+#> $vz.sparse.last$requires_dose_time
+#> NULL
+#> 
+#> $vz.sparse.last$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vss.obs
@@ -6454,6 +7948,15 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $vss.obs$requires_dose_amt
+#> NULL
+#> 
+#> $vss.obs$requires_dose_time
+#> NULL
+#> 
+#> $vss.obs$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vss.pred
 #> $vss.pred$FUN
@@ -6508,6 +8011,15 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $vss.pred$requires_dose_amt
+#> NULL
+#> 
+#> $vss.pred$requires_dose_time
+#> NULL
+#> 
+#> $vss.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vss.iv.obs
 #> $vss.iv.obs$FUN
@@ -6547,6 +8059,15 @@ get.interval.cols()
 #> 
 #> $vss.iv.obs$pptest_cdisc
 #> [1] "Vss (for IV dosing, based on AUCinf,obs)"
+#> 
+#> $vss.iv.obs$requires_dose_amt
+#> NULL
+#> 
+#> $vss.iv.obs$requires_dose_time
+#> NULL
+#> 
+#> $vss.iv.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vss.iv.pred
@@ -6588,6 +8109,15 @@ get.interval.cols()
 #> $vss.iv.pred$pptest_cdisc
 #> [1] "Vss (for IV dosing, based on AUCinf,pred)"
 #> 
+#> $vss.iv.pred$requires_dose_amt
+#> NULL
+#> 
+#> $vss.iv.pred$requires_dose_time
+#> NULL
+#> 
+#> $vss.iv.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vss.md.obs
 #> $vss.md.obs$FUN
@@ -6627,6 +8157,15 @@ get.interval.cols()
 #> 
 #> $vss.md.obs$pptest_cdisc
 #> [1] "Vss (for multiple-dose, based on AUCinf,obs)"
+#> 
+#> $vss.md.obs$requires_dose_amt
+#> NULL
+#> 
+#> $vss.md.obs$requires_dose_time
+#> NULL
+#> 
+#> $vss.md.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vss.md.pred
@@ -6668,6 +8207,15 @@ get.interval.cols()
 #> $vss.md.pred$pptest_cdisc
 #> [1] "Vss (for multiple-dose, based on AUCinf,pred)"
 #> 
+#> $vss.md.pred$requires_dose_amt
+#> NULL
+#> 
+#> $vss.md.pred$requires_dose_time
+#> NULL
+#> 
+#> $vss.md.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $vss.int.inf.obs
 #> $vss.int.inf.obs$FUN
@@ -6707,6 +8255,15 @@ get.interval.cols()
 #> 
 #> $vss.int.inf.obs$pptest_cdisc
 #> [1] "Vss, calc from interval AUCint.inf.obs"
+#> 
+#> $vss.int.inf.obs$requires_dose_amt
+#> NULL
+#> 
+#> $vss.int.inf.obs$requires_dose_time
+#> NULL
+#> 
+#> $vss.int.inf.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $vss.int.inf.pred
@@ -6748,6 +8305,15 @@ get.interval.cols()
 #> $vss.int.inf.pred$pptest_cdisc
 #> [1] "Vss, calc from interval AUCint.inf.pred"
 #> 
+#> $vss.int.inf.pred$requires_dose_amt
+#> NULL
+#> 
+#> $vss.int.inf.pred$requires_dose_time
+#> NULL
+#> 
+#> $vss.int.inf.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cav.int.inf.obs
 #> $cav.int.inf.obs$FUN
@@ -6784,6 +8350,15 @@ get.interval.cols()
 #> 
 #> $cav.int.inf.obs$pptest_cdisc
 #> [1] "Cavg Infinity Obs"
+#> 
+#> $cav.int.inf.obs$requires_dose_amt
+#> NULL
+#> 
+#> $cav.int.inf.obs$requires_dose_time
+#> NULL
+#> 
+#> $cav.int.inf.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $cav.int.inf.pred
@@ -6822,6 +8397,15 @@ get.interval.cols()
 #> $cav.int.inf.pred$pptest_cdisc
 #> [1] "Cavg Infinity Pred"
 #> 
+#> $cav.int.inf.pred$requires_dose_amt
+#> NULL
+#> 
+#> $cav.int.inf.pred$requires_dose_time
+#> NULL
+#> 
+#> $cav.int.inf.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $thalf.eff.obs
 #> $thalf.eff.obs$FUN
@@ -6858,6 +8442,15 @@ get.interval.cols()
 #> 
 #> $thalf.eff.obs$pptest_cdisc
 #> [1] "Effective Half-Life Obs"
+#> 
+#> $thalf.eff.obs$requires_dose_amt
+#> NULL
+#> 
+#> $thalf.eff.obs$requires_dose_time
+#> NULL
+#> 
+#> $thalf.eff.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $thalf.eff.pred
@@ -6896,6 +8489,15 @@ get.interval.cols()
 #> $thalf.eff.pred$pptest_cdisc
 #> [1] "Effective Half-Life Pred"
 #> 
+#> $thalf.eff.pred$requires_dose_amt
+#> NULL
+#> 
+#> $thalf.eff.pred$requires_dose_time
+#> NULL
+#> 
+#> $thalf.eff.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $thalf.eff.iv.obs
 #> $thalf.eff.iv.obs$FUN
@@ -6932,6 +8534,15 @@ get.interval.cols()
 #> 
 #> $thalf.eff.iv.obs$pptest_cdisc
 #> [1] "Effective Half-Life (for IV dosing, based on MRT Obs)"
+#> 
+#> $thalf.eff.iv.obs$requires_dose_amt
+#> NULL
+#> 
+#> $thalf.eff.iv.obs$requires_dose_time
+#> NULL
+#> 
+#> $thalf.eff.iv.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $thalf.eff.iv.pred
@@ -6970,6 +8581,15 @@ get.interval.cols()
 #> $thalf.eff.iv.pred$pptest_cdisc
 #> [1] "Effective Half-Life (for IV dosing, based on MRT Pred)"
 #> 
+#> $thalf.eff.iv.pred$requires_dose_amt
+#> NULL
+#> 
+#> $thalf.eff.iv.pred$requires_dose_time
+#> NULL
+#> 
+#> $thalf.eff.iv.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $kel.obs
 #> $kel.obs$FUN
@@ -7006,6 +8626,15 @@ get.interval.cols()
 #> 
 #> $kel.obs$pptest_cdisc
 #> [1] "Kel (based on AUCinf,obs)"
+#> 
+#> $kel.obs$requires_dose_amt
+#> NULL
+#> 
+#> $kel.obs$requires_dose_time
+#> NULL
+#> 
+#> $kel.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $kel.pred
@@ -7044,6 +8673,15 @@ get.interval.cols()
 #> $kel.pred$pptest_cdisc
 #> [1] "Kel (based on AUCinf,pred)"
 #> 
+#> $kel.pred$requires_dose_amt
+#> NULL
+#> 
+#> $kel.pred$requires_dose_time
+#> NULL
+#> 
+#> $kel.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $kel.iv.obs
 #> $kel.iv.obs$FUN
@@ -7080,6 +8718,15 @@ get.interval.cols()
 #> 
 #> $kel.iv.obs$pptest_cdisc
 #> [1] "Kel (for IV dosing, based on AUCinf,obs)"
+#> 
+#> $kel.iv.obs$requires_dose_amt
+#> NULL
+#> 
+#> $kel.iv.obs$requires_dose_time
+#> NULL
+#> 
+#> $kel.iv.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $kel.iv.pred
@@ -7118,6 +8765,15 @@ get.interval.cols()
 #> $kel.iv.pred$pptest_cdisc
 #> [1] "Kel (for IV dosing, based on AUCinf,pred)"
 #> 
+#> $kel.iv.pred$requires_dose_amt
+#> NULL
+#> 
+#> $kel.iv.pred$requires_dose_time
+#> NULL
+#> 
+#> $kel.iv.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $kel.int.inf.obs
 #> $kel.int.inf.obs$FUN
@@ -7154,6 +8810,15 @@ get.interval.cols()
 #> 
 #> $kel.int.inf.obs$pptest_cdisc
 #> [1] "Elim rate, MRTint.inf.obs"
+#> 
+#> $kel.int.inf.obs$requires_dose_amt
+#> NULL
+#> 
+#> $kel.int.inf.obs$requires_dose_time
+#> NULL
+#> 
+#> $kel.int.inf.obs$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $kel.int.inf.pred
@@ -7192,6 +8857,15 @@ get.interval.cols()
 #> $kel.int.inf.pred$pptest_cdisc
 #> [1] "Elim rate, MRTint.inf.pred"
 #> 
+#> $kel.int.inf.pred$requires_dose_amt
+#> NULL
+#> 
+#> $kel.int.inf.pred$requires_dose_time
+#> NULL
+#> 
+#> $kel.int.inf.pred$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $auclast.dn
 #> $auclast.dn$FUN
@@ -7228,6 +8902,15 @@ get.interval.cols()
 #> 
 #> $auclast.dn$pptest_cdisc
 #> [1] "AUC to Last Nonzero Conc by Dose"
+#> 
+#> $auclast.dn$requires_dose_amt
+#> NULL
+#> 
+#> $auclast.dn$requires_dose_time
+#> NULL
+#> 
+#> $auclast.dn$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aucall.dn
@@ -7266,6 +8949,15 @@ get.interval.cols()
 #> $aucall.dn$pptest_cdisc
 #> [1] "AUC All by Dose"
 #> 
+#> $aucall.dn$requires_dose_amt
+#> NULL
+#> 
+#> $aucall.dn$requires_dose_time
+#> NULL
+#> 
+#> $aucall.dn$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aucinf.obs.dn
 #> $aucinf.obs.dn$FUN
@@ -7302,6 +8994,15 @@ get.interval.cols()
 #> 
 #> $aucinf.obs.dn$pptest_cdisc
 #> [1] "AUC Infinity Obs by Dose"
+#> 
+#> $aucinf.obs.dn$requires_dose_amt
+#> NULL
+#> 
+#> $aucinf.obs.dn$requires_dose_time
+#> NULL
+#> 
+#> $aucinf.obs.dn$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aucinf.pred.dn
@@ -7340,6 +9041,15 @@ get.interval.cols()
 #> $aucinf.pred.dn$pptest_cdisc
 #> [1] "AUC Infinity Pred by Dose"
 #> 
+#> $aucinf.pred.dn$requires_dose_amt
+#> NULL
+#> 
+#> $aucinf.pred.dn$requires_dose_time
+#> NULL
+#> 
+#> $aucinf.pred.dn$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aumclast.dn
 #> $aumclast.dn$FUN
@@ -7376,6 +9086,15 @@ get.interval.cols()
 #> 
 #> $aumclast.dn$pptest_cdisc
 #> [1] "AUMC to Last Nonzero Conc by Dose"
+#> 
+#> $aumclast.dn$requires_dose_amt
+#> NULL
+#> 
+#> $aumclast.dn$requires_dose_time
+#> NULL
+#> 
+#> $aumclast.dn$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aumcall.dn
@@ -7414,6 +9133,15 @@ get.interval.cols()
 #> $aumcall.dn$pptest_cdisc
 #> [1] "AUMC All by Dose"
 #> 
+#> $aumcall.dn$requires_dose_amt
+#> NULL
+#> 
+#> $aumcall.dn$requires_dose_time
+#> NULL
+#> 
+#> $aumcall.dn$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $aumcinf.obs.dn
 #> $aumcinf.obs.dn$FUN
@@ -7450,6 +9178,15 @@ get.interval.cols()
 #> 
 #> $aumcinf.obs.dn$pptest_cdisc
 #> [1] "AUMC Infinity Obs by Dose"
+#> 
+#> $aumcinf.obs.dn$requires_dose_amt
+#> NULL
+#> 
+#> $aumcinf.obs.dn$requires_dose_time
+#> NULL
+#> 
+#> $aumcinf.obs.dn$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $aumcinf.pred.dn
@@ -7488,6 +9225,15 @@ get.interval.cols()
 #> $aumcinf.pred.dn$pptest_cdisc
 #> [1] "AUMC Infinity Pred by Dose"
 #> 
+#> $aumcinf.pred.dn$requires_dose_amt
+#> NULL
+#> 
+#> $aumcinf.pred.dn$requires_dose_time
+#> NULL
+#> 
+#> $aumcinf.pred.dn$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cmax.dn
 #> $cmax.dn$FUN
@@ -7524,6 +9270,15 @@ get.interval.cols()
 #> 
 #> $cmax.dn$pptest_cdisc
 #> [1] "Max Conc by Dose"
+#> 
+#> $cmax.dn$requires_dose_amt
+#> NULL
+#> 
+#> $cmax.dn$requires_dose_time
+#> NULL
+#> 
+#> $cmax.dn$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $cmin.dn
@@ -7562,6 +9317,15 @@ get.interval.cols()
 #> $cmin.dn$pptest_cdisc
 #> [1] "Min Conc by Dose"
 #> 
+#> $cmin.dn$requires_dose_amt
+#> NULL
+#> 
+#> $cmin.dn$requires_dose_time
+#> NULL
+#> 
+#> $cmin.dn$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $clast.obs.dn
 #> $clast.obs.dn$FUN
@@ -7598,6 +9362,15 @@ get.interval.cols()
 #> 
 #> $clast.obs.dn$pptest_cdisc
 #> [1] "Last Nonzero Conc by Dose"
+#> 
+#> $clast.obs.dn$requires_dose_amt
+#> NULL
+#> 
+#> $clast.obs.dn$requires_dose_time
+#> NULL
+#> 
+#> $clast.obs.dn$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $clast.pred.dn
@@ -7636,6 +9409,15 @@ get.interval.cols()
 #> $clast.pred.dn$pptest_cdisc
 #> [1] "Clast pred by Dose"
 #> 
+#> $clast.pred.dn$requires_dose_amt
+#> NULL
+#> 
+#> $clast.pred.dn$requires_dose_time
+#> NULL
+#> 
+#> $clast.pred.dn$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $cav.dn
 #> $cav.dn$FUN
@@ -7672,6 +9454,15 @@ get.interval.cols()
 #> 
 #> $cav.dn$pptest_cdisc
 #> [1] "Average Conc by Dose"
+#> 
+#> $cav.dn$requires_dose_amt
+#> NULL
+#> 
+#> $cav.dn$requires_dose_time
+#> NULL
+#> 
+#> $cav.dn$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $ctrough.dn
@@ -7710,6 +9501,15 @@ get.interval.cols()
 #> $ctrough.dn$pptest_cdisc
 #> [1] "Conc Trough by Dose"
 #> 
+#> $ctrough.dn$requires_dose_amt
+#> NULL
+#> 
+#> $ctrough.dn$requires_dose_time
+#> NULL
+#> 
+#> $ctrough.dn$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $clr.last.dn
 #> $clr.last.dn$FUN
@@ -7746,6 +9546,15 @@ get.interval.cols()
 #> 
 #> $clr.last.dn$pptest_cdisc
 #> [1] "Renal CL by Dose"
+#> 
+#> $clr.last.dn$requires_dose_amt
+#> NULL
+#> 
+#> $clr.last.dn$requires_dose_time
+#> NULL
+#> 
+#> $clr.last.dn$requires_dose_dur
+#> NULL
 #> 
 #> 
 #> $clr.obs.dn
@@ -7784,6 +9593,15 @@ get.interval.cols()
 #> $clr.obs.dn$pptest_cdisc
 #> [1] "Renal CL by Dose"
 #> 
+#> $clr.obs.dn$requires_dose_amt
+#> NULL
+#> 
+#> $clr.obs.dn$requires_dose_time
+#> NULL
+#> 
+#> $clr.obs.dn$requires_dose_dur
+#> NULL
+#> 
 #> 
 #> $clr.pred.dn
 #> $clr.pred.dn$FUN
@@ -7820,6 +9638,15 @@ get.interval.cols()
 #> 
 #> $clr.pred.dn$pptest_cdisc
 #> [1] "Renal CL by Dose"
+#> 
+#> $clr.pred.dn$requires_dose_amt
+#> NULL
+#> 
+#> $clr.pred.dn$requires_dose_time
+#> NULL
+#> 
+#> $clr.pred.dn$requires_dose_dur
+#> NULL
 #> 
 #> 
 ```
