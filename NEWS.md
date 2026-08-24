@@ -6,6 +6,11 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Requesting a parameter that needs a sample volume (`ae`, `fe`, `volpk`,
+  `clr.last`, and similar) when no `volume` was given to `PKNCAconc()` is now
+  an error naming those parameters, rather than silently reporting them as
+  not calculated (#194).
+
 * Bug fix: `pk.calc.cl()`, `pk.calc.totdose()`, `pk.calc.ae()`,
   `pk.calc.clr()`, and `pk.calc.fe()` return `NA` rather than 0 when an input
   is zero-length.  `sum()` of nothing is 0, so a clearance calculated without

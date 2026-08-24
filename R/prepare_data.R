@@ -45,7 +45,17 @@ full_join_PKNCAconc_PKNCAdose <- function(o_conc, o_dose, extra_cols_conc = char
 #' @keywords Internal
 #' @noRd
 full_join_PKNCAdata <- function(x, extra_conc_cols = character()) {
-  missing_dose_params <- uncalculable_without_dose(x$intervals, x$dose)
+  missing_volume_params <- uncalculable_without(x$intervals, absent_conc_inputs(x$conc))
+  if (length(missing_volume_params) > 0) {
+    rlang::abort(
+      sprintf(
+        "No sample volume was given (see the `volume` argument to `PKNCAconc()`); these parameters cannot be calculated: %s",
+        paste(missing_volume_params, collapse = ", ")
+      ),
+      class = "pknca_error_missing_volume"
+    )
+  }
+  missing_dose_params <- uncalculable_without(x$intervals, absent_dose_inputs(x$dose))
   if (length(missing_dose_params) > 0) {
     rlang::inform(
       sprintf(

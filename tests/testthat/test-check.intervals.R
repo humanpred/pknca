@@ -259,18 +259,18 @@ test_that("get.parameter.deps(recursive=TRUE) reaches the inputs a parameter is 
 
 test_that("dose amount, time, and duration are required separately (#538)", {
   expect_equal(
-    unlist(set_requires_dose("c0")[["c0"]][c("requires_dose_amt", "requires_dose_time", "requires_dose_dur")]),
+    unlist(set_requires_inputs("c0")[["c0"]][c("requires_dose_amt", "requires_dose_time", "requires_dose_dur")]),
     c(requires_dose_amt = FALSE, requires_dose_time = TRUE, requires_dose_dur = FALSE)
   )
   expect_equal(
-    unlist(set_requires_dose("ceoi")[["ceoi"]][c("requires_dose_amt", "requires_dose_time", "requires_dose_dur")]),
+    unlist(set_requires_inputs("ceoi")[["ceoi"]][c("requires_dose_amt", "requires_dose_time", "requires_dose_dur")]),
     c(requires_dose_amt = FALSE, requires_dose_time = FALSE, requires_dose_dur = TRUE)
   )
-  expect_true(set_requires_dose("cl.obs")[["cl.obs"]]$requires_dose_amt)
+  expect_true(set_requires_inputs("cl.obs")[["cl.obs"]]$requires_dose_amt)
   # pk.calc.half.life() uses the dose timing when present but does not need
   # it, so neither it nor anything downstream of it is reported
   for (param in c("half.life", "lambda.z", "aucinf.obs", "mrt.obs", "span.ratio")) {
-    expect_false(any(unlist(set_requires_dose(param)[[param]][
+    expect_false(any(unlist(set_requires_inputs(param)[[param]][
       c("requires_dose_amt", "requires_dose_time", "requires_dose_dur")
     ])), info = param)
   }
@@ -301,7 +301,7 @@ test_that("every derived dose requirement matches what pk.nca() can calculate (#
     length(v) == 0 || all(is.na(v))
   }
   for (param in check_params) {
-    spec <- set_requires_dose(param)[[param]]
+    spec <- set_requires_inputs(param)[[param]]
     derived <- any(unlist(spec[c("requires_dose_amt", "requires_dose_time", "requires_dose_dur")]))
     observed <- !all_na(res_with, param) && all_na(res_without, param)
     expect_equal(derived, observed, info = param)
@@ -344,4 +344,81 @@ test_that("the missing dose message names only what cannot be calculated (#538)"
     regexp = "will not be calculated: c0",
     fixed = TRUE
   )
+})
+
+test_that("volume is required only by the parameters that use it (#194)", {
+  expect_true(set_requires_inputs("volpk")[["volpk"]]$requires_volume)
+  expect_true(set_requires_inputs("ae")[["ae"]]$requires_volume)
+  # clr.last and fe reach volume only through ae
+  expect_true(set_requires_inputs("clr.last")[["clr.last"]]$requires_volume)
+  expect_true(set_requires_inputs("fe")[["fe"]]$requires_volume)
+  for (param in c("cmax", "tmax", "auclast", "half.life", "cl.obs", "totdose")) {
+    expect_false(set_requires_inputs(param)[[param]]$requires_volume, info = param)
+  }
+})
+
+test_that("every parameter's cached volume requirement matches a fresh walk (#194)", {
+  # Enumerating guard on the caching in set_requires_inputs(): a newly added
+  # parameter, or a flag left stale by re-registration, is caught here rather
+  # than by a wrong error when the calculation is requested.
+  for (param in names(get.interval.cols())) {
+    expect_equal(
+      set_requires_inputs(param)[[param]]$requires_volume,
+      any(c("volume", "volume.group") %in% get.parameter.deps(param, recursive = TRUE)),
+      info = param
+    )
+  }
+})
+
+test_that("absent_dose_inputs and absent_conc_inputs report what was not given (#194)", {
+  d_conc <- data.frame(conc = c(2, 1, 0.5, 0.25, 0.125), time = 0:4, subject = 1)
+  d_dose <- data.frame(dose = 100, time = 0, subject = 1)
+  expect_equal(absent_dose_inputs(PKNCAdose(d_dose, dose~time|subject)), character(0))
+  expect_equal(absent_dose_inputs(suppressMessages(PKNCAdose(d_dose, ~time|subject))), "dose_amt")
+  expect_equal(absent_dose_inputs(suppressMessages(PKNCAdose(d_dose, dose~.|subject))), "dose_time")
+  expect_equal(absent_dose_inputs(NA), c("dose_amt", "dose_time", "dose_dur"))
+  expect_equal(absent_conc_inputs(PKNCAconc(d_conc, conc~time|subject)), "volume")
+  expect_equal(
+    absent_conc_inputs(PKNCAconc(cbind(d_conc, vol = 10), conc~time|subject, volume = "vol")),
+    character(0)
+  )
+  # A volume that is missing for only some measurements is left to the
+  # per-interval missing-data exclusions
+  expect_equal(
+    absent_conc_inputs(PKNCAconc(
+      cbind(d_conc, vol = c(10, NA, 10, NA, 10)), conc~time|subject, volume = "vol"
+    )),
+    character(0)
+  )
+})
+
+test_that("uncalculable_without selects on the inputs it is given (#194)", {
+  ivl <- data.frame(start = 0, end = Inf, ae = TRUE, cmax = TRUE, c0 = TRUE, cl.obs = TRUE)
+  expect_equal(uncalculable_without(ivl, "volume"), "ae")
+  expect_equal(uncalculable_without(ivl, "dose_amt"), "cl.obs")
+  expect_equal(uncalculable_without(ivl, "dose_time"), "c0")
+  expect_equal(uncalculable_without(ivl, c("volume", "dose_amt")), c("ae", "cl.obs"))
+  # Nothing absent, requested as FALSE, and nothing requested at all
+  expect_equal(uncalculable_without(ivl, character(0)), character(0))
+  expect_equal(
+    uncalculable_without(data.frame(start = 0, end = Inf, ae = FALSE), "volume"),
+    character(0)
+  )
+  expect_equal(uncalculable_without(data.frame(start = 0, end = Inf), "volume"), character(0))
+  expect_error(uncalculable_without(ivl, "nope"), regexp = "Must be a subset of")
+})
+
+test_that("re-registering a parameter drops every cached requirement (#194)", {
+  # A parameter registered later can change what an earlier one needs, so a
+  # cached value left behind would be wrong with nothing else failing.
+  original_state <- get("interval.cols", envir = .PKNCAEnv)
+  on.exit(assign("interval.cols", original_state, envir = .PKNCAEnv))
+  cached <- function(param) any(startsWith(names(get.interval.cols()[[param]]), "requires_"))
+  expect_true(set_requires_inputs("ae")[["ae"]]$requires_volume)
+  # A name that is not already registered is not a redefinition
+  add.interval.col(name = "zz", FUN = "mean", unit_type = "conc", pretty_name = "zz")
+  expect_true(cached("ae"))
+  add.interval.col(name = "zz", FUN = "mean", unit_type = "conc", pretty_name = "zz")
+  expect_false(cached("ae"))
+  expect_true(set_requires_inputs("ae")[["ae"]]$requires_volume)
 })
