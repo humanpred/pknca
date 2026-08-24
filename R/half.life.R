@@ -750,8 +750,7 @@ add.interval.col("lambda.z.n.points",
                  depends="half.life",
                  pptestcd_cdisc="LAMZNPT",
                  pptest_cdisc="Number of Points for Lambda z",
-                 formula="$n_{\\lambda_z} = \\left| t_{\\lambda_z} \\right|$",
-                 tier = "common")
+                 formula="$n_{\\lambda_z} = \\left| t_{\\lambda_z} \\right|$")
 PKNCA.set.summary(
   name="lambda.z.n.points",
   description="median and range",
@@ -784,8 +783,7 @@ add.interval.col("span.ratio",
                  depends="half.life",
                  pptestcd_cdisc="LAMZSPN",
                  pptest_cdisc="Lambda z Span",
-                 formula="$\\text{span ratio} = \\frac{t_{\\lambda_z,\\text{last}} - t_{\\lambda_z,\\text{first}}}{t_{1/2}}$",
-                 tier = "common")
+                 formula="$\\text{span ratio} = \\frac{t_{\\lambda_z,\\text{last}} - t_{\\lambda_z,\\text{first}}}{t_{1/2}}$")
 PKNCA.set.summary(
   name="span.ratio",
   description="geometric mean and geometric coefficient of variation",

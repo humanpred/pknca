@@ -47,13 +47,13 @@ test_that("the common tier is exactly the reviewed set", {
       # Concentrations and times
       "cmax", "tmax", "ctrough", "tlag", "count_conc",
       # Exposure
-      "auclast", "aucinf.obs", "aucint.inf.obs", "aucpext.obs",
+      "auclast", "aucint.last", "aucinf.obs", "aucint.inf.obs", "aucpext.obs",
       # Terminal phase
-      "half.life", "span.ratio", "lambda.z.n.points",
+      "half.life",
       # Disposition
       "cl.obs", "cl.int.inf.obs",
       # Intravenous
-      "c0", "ceoi", "vss.iv.obs",
+      "c0", "ceoi",
       # Excreta
       "ae", "fe", "clr.obs", "volpk",
       # Sparse
@@ -159,6 +159,13 @@ test_that("clast.pred is a concentration, not a half-life diagnostic", {
 test_that("ceoi is infusion-only and c0 is not infusion-only", {
   expect_equal(pknca_parameter_table("ceoi")$route, "iv_infusion")
   expect_equal(pknca_parameter_table("c0")$route, "iv_bolus,iv_infusion")
+})
+
+test_that("tlag is extravascular", {
+  # tlag is measured from spot samples.  The equivalent for an interval
+  # collection is a different calculation that PKNCA does not have.
+  expect_equal(pknca_parameter_table("tlag")$route, "extravascular")
+  expect_equal(pknca_parameter_table("tlag")$sample_type, "spot")
 })
 
 # pknca_concept() ---------------------------------------------------------

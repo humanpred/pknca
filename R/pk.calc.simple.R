@@ -1360,8 +1360,7 @@ add.interval.col("vss.iv.obs",
                  depends=c("cl.obs", "mrt.iv.obs"),
                  pptestcd_cdisc="VSSIVO",
                  pptest_cdisc="Vss (for IV dosing, based on AUCinf,obs)",
-                 formula="$V_{ss,\\text{iv,obs}} = CL_{\\text{obs}} \\cdot MRT_{\\text{iv,obs}}$",
-                 tier = "common")
+                 formula="$V_{ss,\\text{iv,obs}} = CL_{\\text{obs}} \\cdot MRT_{\\text{iv,obs}}$")
 
 add.interval.col("vss.iv.pred",
                  FUN="pk.calc.vss",
@@ -1707,7 +1706,8 @@ add.interval.col("tlag",
                  pptestcd_cdisc="TLAG",
                  pptest_cdisc="Time to First Nonzero Conc",
                  formula="$T_{\\text{lag}} = t_{i: C_{i+1} > C_i, i = \\min}$",
-                 tier = "common")
+                 tier = "common",
+                 selection = list(route = "extravascular"))
 
 
 #' Determine the degree of fluctuation

@@ -265,7 +265,8 @@ add.interval.col("aucint.last",
                  pptestcd_cdisc="AUCINT",
                  pptest_cdisc="AUC from T1 to T2",
                  formula="$AUC_{\\text{int,last}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries",
+                 tier = "common")
 
 add.interval.col("aucint.last.dose",
                  FUN="pk.calc.aucint.last",
