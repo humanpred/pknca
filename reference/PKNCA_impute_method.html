@@ -79,6 +79,18 @@
 <span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu">PKNCA_impute_method_start_predose_conc0</span><span class="op">(</span></span>
+<span>  <span class="va">conc</span>,</span>
+<span>  <span class="va">time</span>,</span>
+<span>  <span class="va">start</span>,</span>
+<span>  <span class="va">end</span>,</span>
+<span>  <span class="va">conc.group</span>,</span>
+<span>  <span class="va">time.group</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  max_shift <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
+<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu">PKNCA_impute_method_end_conc_drop</span><span class="op">(</span><span class="va">conc</span>, <span class="va">time</span>, <span class="va">end</span>, <span class="va">...</span>, options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -150,6 +162,13 @@ the interval at the start time (usually used with multiple-dose data)</p></li>
 time zero concentration (only if a time zero concentration does not exist).
 The most recent predose sample with a measured concentration is shifted;
 samples with a missing concentration are skipped.</p></li>
+<li><p><code>PKNCA_impute_method_start_predose_conc0()</code>: Use a predose concentration as the start
+concentration when one is available and 0 when it is not.  A concentration
+measured at the start time is kept as-is, which is what distinguishes this
+from <code>start_conc0</code>:  a measured concentration at the time of an
+intravenous bolus dose is the C0 for that dose, and <code>start_conc0</code> would
+replace it with 0.  The chain <code>"start_predose,start_conc0"</code> cannot express
+this, because <code>start_conc0</code> overwrites whatever <code>start_predose</code> shifted.</p></li>
 <li><p><code>PKNCA_impute_method_end_conc_drop()</code>: Drop a concentration measured exactly at the
 end of the interval, if one is present (usually used with multiple-dose data
 when a point at the interval boundary belongs to the next dose, e.g. an

@@ -109,7 +109,8 @@ by looking at <code><a href="../reference/PKNCA_impute_method.html">?PKNCA_imput
 <span><span class="co">#&gt; * PKNCA_impute_method_end_conc_drop</span></span>
 <span><span class="co">#&gt; * PKNCA_impute_method_start_cmin</span></span>
 <span><span class="co">#&gt; * PKNCA_impute_method_start_conc0</span></span>
-<span><span class="co">#&gt; * PKNCA_impute_method_start_predose</span></span></code></pre></div>
+<span><span class="co">#&gt; * PKNCA_impute_method_start_predose</span></span>
+<span><span class="co">#&gt; * PKNCA_impute_method_start_predose_conc0</span></span></code></pre></div>
 <p>In brief, the built-in methods work as follows:</p>
 <ul>
 <li>
@@ -198,8 +199,11 @@ and that can remove a nonzero predose concentration, too. To carry a
 predose concentration to the start time, use
 <code>"start_predose"</code> alone; to force the start concentration to
 zero, use <code>"start_conc0"</code>; and to use the predose
-concentration when one exists and 0 otherwise, write a custom imputation
-method (see the “Advanced” section below).</p>
+concentration when one exists and 0 otherwise, use
+<code>"start_predose_conc0"</code>. <code>start_predose_conc0</code>
+also keeps a concentration that was measured at the start time, which
+matters after an intravenous bolus dose where that measurement is the
+C<sub>0</sub> for the dose.</p>
 </div>
 <div class="section level2">
 <h2 id="imputation-for-the-full-dataset">Imputation for the full dataset<a class="anchor" aria-label="anchor" href="#imputation-for-the-full-dataset"></a>

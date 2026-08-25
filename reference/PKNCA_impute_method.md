@@ -21,6 +21,18 @@ PKNCA_impute_method_start_predose(
   options = list()
 )
 
+PKNCA_impute_method_start_predose_conc0(
+  conc,
+  time,
+  start,
+  end,
+  conc.group,
+  time.group,
+  ...,
+  max_shift = NA_real_,
+  options = list()
+)
+
 PKNCA_impute_method_end_conc_drop(conc, time, end, ..., options = list())
 ```
 
@@ -93,6 +105,15 @@ one column named time with the times.
   concentration does not exist). The most recent predose sample with a
   measured concentration is shifted; samples with a missing
   concentration are skipped.
+
+- `PKNCA_impute_method_start_predose_conc0()`: Use a predose
+  concentration as the start concentration when one is available and 0
+  when it is not. A concentration measured at the start time is kept
+  as-is, which is what distinguishes this from `start_conc0`: a measured
+  concentration at the time of an intravenous bolus dose is the C0 for
+  that dose, and `start_conc0` would replace it with 0. The chain
+  `"start_predose,start_conc0"` cannot express this, because
+  `start_conc0` overwrites whatever `start_predose` shifted.
 
 - `PKNCA_impute_method_end_conc_drop()`: Drop a concentration measured
   exactly at the end of the interval, if one is present (usually used
