@@ -82,20 +82,46 @@ as.data.frame(result_obj)
 
 # Manual Point Selection
 
-The `exclude_half.life` and `include_half.life` columns must be logical
-(`TRUE`/`FALSE`/`NA`); a non-logical column (for example, character `"yes"`) is
-an error.  For both exclusion and inclusion methods below, the same `NA`
-handling rules apply on a per-interval basis. If all values are `NA`, then no inclusion or
-exclusion is applied (the interval is treated as-is, like the argument had not
-been given). If some values are `NA` for the interval, those are treated as
-`FALSE`.
+Curve stripping chooses the points automatically, and it is what happens when
+nothing is specified.  Two optional columns given to `PKNCAconc()` change that:
+`exclude_half.life` drops specific points and then curve strips whatever
+remains, while `include_half.life` names the exact points to fit and switches
+curve stripping off entirely.  The decision tree below shows how to choose
+between them and what each one changes.
 
-A column counts as in use for an interval whenever it contains any non-`NA`
-value, even if every value is `FALSE`. Only one of `exclude_half.life` and
-`include_half.life` may be in use for the same interval; supplying both raises
-the error "Cannot both include and exclude half-life points for the same
-interval". For this reason, initialize these columns to `NA` (rather than
-`FALSE`) when the corresponding method is not being used.
+## Choosing a Point Selection Method
+
+![Decision tree for choosing between automatic curve stripping, `exclude_half.life`, and `include_half.life`.](v06-half-life-calculation_decision_tree.svg)
+
+Two parts of the tree are easy to overlook:
+
+* Only `include_half.life` turns off automatic selection.  `exclude_half.life`
+  removes the flagged points and then runs the usual curve stripping on the
+  rest, so `min.hl.points`, `allow.tmax.in.half.life`, and
+  `adj.r.squared.factor` still apply to the points that remain.
+* The middle band of the tree applies to `include_half.life` as well.  Naming a
+  point does not force it into the fit; BLQ and zero concentrations, and points
+  at or before the end of the last dose, are dropped first either way.
+  Including eight points that span a four-hour infusion therefore yields a
+  five-point fit, not an eight-point fit.
+
+## Column Requirements
+
+Both columns must be logical (`TRUE`/`FALSE`/`NA`); a non-logical column (for
+example, character `"yes"`) is an error.  Whether a column applies is decided
+separately for each interval, using the rules below.
+
+| Situation for an interval | Result |
+| ------------------------- | ------ |
+| The column was not given to `PKNCAconc()` | The method is not used |
+| Every value is `NA` | The method is not used; the interval is treated as though the column had not been given |
+| Some values are `NA` | The `NA` values are treated as `FALSE` |
+| Any value is not `NA`, even if every value is `FALSE` | The column counts as in use |
+| Both columns are in use | Error: "Cannot both include and exclude half-life points for the same interval" |
+
+Because an all-`FALSE` column still counts as in use, initialize these columns
+to `NA` (rather than `FALSE`) wherever the corresponding method should not
+apply.
 
 ## Exclusion of Specific Points with Curve Stripping
 
