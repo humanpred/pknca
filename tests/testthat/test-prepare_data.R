@@ -9,11 +9,7 @@ test_that("prepare_*", {
   expect_equal(
     prepare_PKNCAconc(o_conc),
     tidyr::nest(
-      dplyr::mutate(
-        tmp_conc[, c("treatment", "ID", "conc", "time")],
-        volume=NA_real_,
-        duration=0
-      ),
+      tmp_conc[, c("treatment", "ID", "conc", "time")],
       data_conc=!c("treatment", "ID")
     )
   )
@@ -210,8 +206,8 @@ test_that("requesting a parameter that needs volume without one is an error (#19
   o_dose <- PKNCAdose(d_dose, dose~time|subject)
   expect_error(
     pk.nca(PKNCAdata(o_conc, o_dose, intervals = data.frame(start = 0, end = Inf, ae = TRUE))),
-    regexp = "No sample volume was given.*cannot be calculated: ae",
-    class = "pknca_error_missing_volume"
+    regexp = "No sample volume was given.*`volume` argument.*cannot be calculated: ae",
+    class = "pknca_error_missing_conc_input"
   )
   # Parameters downstream of ae are named, and those needing no volume are not
   expect_error(
@@ -220,7 +216,7 @@ test_that("requesting a parameter that needs volume without one is an error (#19
       intervals = data.frame(start = 0, end = Inf, ae = TRUE, fe = TRUE, cmax = TRUE)
     )),
     regexp = "cannot be calculated: ae, fe$",
-    class = "pknca_error_missing_volume"
+    class = "pknca_error_missing_conc_input"
   )
   # With a volume the calculation proceeds
   o_conc_vol <- PKNCAconc(cbind(d_conc, vol = 10), conc~time|subject, volume = "vol")
@@ -229,4 +225,35 @@ test_that("requesting a parameter that needs volume without one is an error (#19
       o_conc_vol, o_dose, intervals = data.frame(start = 0, end = Inf, ae = TRUE)
     )))
   expect_equal(as.data.frame(res)$PPORRES, sum(d_conc$conc * 10))
+})
+
+test_that("requesting a parameter that needs a collection duration without one is an error (#166)", {
+  d_conc <- data.frame(conc = c(2, 1, 0.5, 0.25, 0.125), time = 0:4, subject = 1, vol = 10)
+  d_dose <- data.frame(dose = 100, time = 0, subject = 1)
+  o_dose <- PKNCAdose(d_dose, dose~time|subject)
+  o_conc_vol <- PKNCAconc(d_conc, conc~time|subject, volume = "vol")
+  expect_error(
+    pk.nca(PKNCAdata(
+      o_conc_vol, o_dose, intervals = data.frame(start = 0, end = Inf, ermax = TRUE)
+    )),
+    regexp = "No sample duration was given.*`duration` argument.*cannot be calculated: ermax",
+    class = "pknca_error_missing_conc_input"
+  )
+  # Both are reported together when both are absent
+  o_conc <- PKNCAconc(d_conc, conc~time|subject)
+  expect_error(
+    pk.nca(PKNCAdata(
+      o_conc, o_dose, intervals = data.frame(start = 0, end = Inf, ermax = TRUE)
+    )),
+    regexp = "No sample volume or duration was given .see the `volume` and `duration` arguments",
+    class = "pknca_error_missing_conc_input"
+  )
+  # With both, the calculation proceeds
+  o_conc_both <-
+    PKNCAconc(cbind(d_conc, dur = 1), conc~time|subject, volume = "vol", duration = "dur")
+  res <-
+    suppressMessages(pk.nca(PKNCAdata(
+      o_conc_both, o_dose, intervals = data.frame(start = 0, end = Inf, ermax = TRUE)
+    )))
+  expect_equal(as.data.frame(res)$PPORRES, max(d_conc$conc * 10 / 1))
 })

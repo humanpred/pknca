@@ -45,14 +45,27 @@ full_join_PKNCAconc_PKNCAdose <- function(o_conc, o_dose, extra_cols_conc = char
 #' @keywords Internal
 #' @noRd
 full_join_PKNCAdata <- function(x, extra_conc_cols = character()) {
-  missing_volume_params <- uncalculable_without(x$intervals, absent_conc_inputs(x$conc))
-  if (length(missing_volume_params) > 0) {
+  # Report only the absent inputs that something actually needs, so that (for
+  # example) a plasma analysis is not told about the sample volume it will
+  # never use.
+  absent_conc <- absent_conc_inputs(x$conc)
+  blocking_conc <-
+    absent_conc[vapply(
+      X = absent_conc,
+      FUN = function(x_input) length(uncalculable_without(x$intervals, x_input)) > 0,
+      FUN.VALUE = TRUE
+    )]
+  if (length(blocking_conc) > 0) {
+    blocking_args <- pknca_conc_input_args[blocking_conc]
     rlang::abort(
       sprintf(
-        "No sample volume was given (see the `volume` argument to `PKNCAconc()`); these parameters cannot be calculated: %s",
-        paste(missing_volume_params, collapse = ", ")
+        "No sample %s was given (see the %s %s to `PKNCAconc()`); these parameters cannot be calculated: %s",
+        paste(blocking_args, collapse = " or "),
+        paste0("`", blocking_args, "`", collapse = " and "),
+        ngettext(length(blocking_args), msg1 = "argument", msg2 = "arguments"),
+        paste(uncalculable_without(x$intervals, blocking_conc), collapse = ", ")
       ),
-      class = "pknca_error_missing_volume"
+      class = "pknca_error_missing_conc_input"
     )
   }
   missing_dose_params <- uncalculable_without(x$intervals, absent_dose_inputs(x$dose))

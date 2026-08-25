@@ -311,12 +311,18 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
       }
     } else {
       impute_method <- get_impute_method(intervals = current_interval, impute = impute)
+      # volume and duration are read with `[[` rather than the `$` used for
+      # every column around them because they are the only ones that may not be
+      # there: PKNCAconc() adds them to the data only when the user gives them.
+      # Both accessors give NULL for an absent column, but `$` on a tibble also
+      # warns.  NULL is the right answer here -- a parameter that needs either
+      # one stops the calculation in full_join_PKNCAdata() long before this.
       args <- list(
         # Interval-level data
         conc=conc_data_interval$conc,
         time=conc_data_interval$time,
-        volume=conc_data_interval$volume,
-        duration.conc=conc_data_interval$duration,
+        volume=conc_data_interval[["volume"]],
+        duration.conc=conc_data_interval[["duration"]],
         dose=dose_data_interval$dose,
         time.dose=dose_data_interval$time,
         duration.dose=dose_data_interval$duration,
@@ -325,8 +331,8 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
         # Group-level data
         conc.group=data_conc$conc,
         time.group=data_conc$time,
-        volume.group=data_conc$volume,
-        duration.conc.group=data_conc$duration,
+        volume.group=data_conc[["volume"]],
+        duration.conc.group=data_conc[["duration"]],
         dose.group=data_dose$dose,
         time.dose.group=data_dose$time,
         duration.dose.group=data_dose$duration,

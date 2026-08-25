@@ -72,10 +72,14 @@ when selecting data for a calculation interval; the duration is not
 considered.  A collection starting within an interval and ending after the
 interval \code{end} contributes its full amount to that interval, so for the
 simplest interpretation of results, align collection start and end times
-with interval boundaries.}
+with interval boundaries.  A \code{duration} column is added to the data only
+when this is given; requesting an excretion rate parameter (\code{ermax},
+\code{ertmax}, \code{ertlst}) without it is an error.}
 
 \item{volume}{(optional) The volume (or mass) of collection as is typically
-used for urine or feces measurements.}
+used for urine or feces measurements.  A \code{volume} column is added to the
+data only when this is given; requesting a parameter that needs it (\code{ae},
+\code{fe}, \code{volpk}, and similar) without it is an error.}
 
 \item{exclude_half.life, include_half.life}{Manual half-life point selection,
 given as a logical value per concentration measurement (or, in
