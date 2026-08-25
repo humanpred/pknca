@@ -24,49 +24,6 @@
 # remains available by name.  The completeness of PKNCA's own classification is
 # enforced by its test suite, not at run time.
 
-#' Concepts, tiers, and contexts used to classify NCA parameters
-#'
-#' @returns `pknca_concepts()` gives the concept names PKNCA uses,
-#'   `pknca_tiers()` the reporting tiers, `pknca_routes()` the routes of
-#'   administration, `pknca_dosing()` the dosing patterns, and
-#'   `pknca_sample_types()` the sample collection types.
-#' @details A `tier` of `"common"` marks a parameter that belongs in a default
-#'   report for at least one context; `"uncommon"` marks one that is calculated
-#'   only when asked for by name.  `"uncommon"` is the default, so a parameter
-#'   registered without a tier is never selected automatically.
-#' @seealso [pknca_concept()], [add.interval.col()]
-#' @examples
-#' pknca_concepts()
-#' @family Interval specifications
-#' @export
-pknca_concepts <- function() {
-  pknca_concept_choices
-}
-
-#' @rdname pknca_concepts
-#' @export
-pknca_tiers <- function() {
-  pknca_tier_choices
-}
-
-#' @rdname pknca_concepts
-#' @export
-pknca_routes <- function() {
-  pknca_route_choices
-}
-
-#' @rdname pknca_concepts
-#' @export
-pknca_dosing <- function() {
-  pknca_dosing_choices
-}
-
-#' @rdname pknca_concepts
-#' @export
-pknca_sample_types <- function() {
-  pknca_sample_type_choices
-}
-
 # The roots of extrapolation to infinity.  Everything calculated from one of
 # these needs data after the last dose, so it belongs to single-dose analysis.
 pknca_infinity_roots <- c(

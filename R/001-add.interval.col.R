@@ -48,12 +48,26 @@ validate_cdisc_arg <- function(x, arg_name) {
   }
 }
 
-# Vocabularies for classifying parameters.  They are constants rather than
-# only functions because add.interval.col() validates against them while the
-# package is still being sourced, before parameter-classification.R is
-# available.  The exported accessors there return these.
+# The vocabularies used to classify parameters.  They are defined here, next
+# to add.interval.col(), because it validates against them while the package is
+# still being sourced -- a file sorting after this one would not yet exist.
 
-pknca_concept_choices <-
+#' Concepts, tiers, and contexts used to classify NCA parameters
+#'
+#' @returns `pknca_concepts()` gives the concept names PKNCA uses,
+#'   `pknca_tiers()` the reporting tiers, `pknca_routes()` the routes of
+#'   administration, `pknca_dosing()` the dosing patterns, and
+#'   `pknca_sample_types()` the sample collection types.
+#' @details A `tier` of `"common"` marks a parameter that belongs in a default
+#'   report for at least one context; `"uncommon"` marks one that is calculated
+#'   only when asked for by name.  `"uncommon"` is the default, so a parameter
+#'   registered without a tier is never selected automatically.
+#' @seealso [pknca_concept()], [add.interval.col()]
+#' @examples
+#' pknca_concepts()
+#' @family Interval specifications
+#' @export
+pknca_concepts <- function() {
   c(
     # Exposure
     "auc", "aumc", "auc_above_conc", "auc_extrapolation",
@@ -74,15 +88,31 @@ pknca_concept_choices <-
     # Bookkeeping
     "bioavailability", "total_dose", "observation_count"
   )
+}
 
-pknca_tier_choices <- c("common", "uncommon")
+#' @rdname pknca_concepts
+#' @export
+pknca_tiers <- function() {
+  c("common", "uncommon")
+}
 
-pknca_route_choices <-
+#' @rdname pknca_concepts
+#' @export
+pknca_routes <- function() {
   c("extravascular", "iv_bolus", "iv_infusion", "iv_continuous_infusion")
+}
 
-pknca_dosing_choices <- c("single", "multiple", "steady_state")
+#' @rdname pknca_concepts
+#' @export
+pknca_dosing <- function() {
+  c("single", "multiple", "steady_state")
+}
 
-pknca_sample_type_choices <- c("spot", "interval")
+#' @rdname pknca_concepts
+#' @export
+pknca_sample_types <- function() {
+  c("spot", "interval")
+}
 
 #' The concept a parameter calculation function computes
 #'
@@ -145,10 +175,10 @@ assert_selection <- function(selection, name) {
     checkmate::assert_string(selection$concept, min.chars = 1, na.ok = FALSE)
   }
   if (!is.null(selection$route)) {
-    checkmate::assert_subset(selection$route, pknca_route_choices, empty.ok = FALSE)
+    checkmate::assert_subset(selection$route, pknca_routes(), empty.ok = FALSE)
   }
   if (!is.null(selection$dosing)) {
-    checkmate::assert_subset(selection$dosing, pknca_dosing_choices, empty.ok = FALSE)
+    checkmate::assert_subset(selection$dosing, pknca_dosing(), empty.ok = FALSE)
   }
   selection
 }
@@ -296,7 +326,7 @@ add.interval.col <- function(name,
   checkmate::assert_character(x = pretty_name, len = 1, min.chars = 1, any.missing=FALSE)
   checkmate::assert_character(x = desc, len = 1, any.missing=FALSE, max.chars = 40)
   checkmate::assert_character(x = depends, null.ok = TRUE)
-  tier <- match.arg(tier, choices = pknca_tier_choices)
+  tier <- match.arg(tier, choices = pknca_tiers())
   selection <- assert_selection(selection, name = name)
 
   # `values` must be either a function (used to validate/coerce) or a vector
