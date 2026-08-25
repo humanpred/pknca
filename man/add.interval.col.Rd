@@ -18,7 +18,9 @@ add.interval.col(
   pptestcd_cdisc = NULL,
   pptest_cdisc = NULL,
   formula = NULL,
-  formula_note = NULL
+  formula_note = NULL,
+  tier = "uncommon",
+  selection = NULL
 )
 }
 \arguments{
@@ -72,6 +74,30 @@ parameter is calculated.  Optional and used only for documentation.}
 \item{formula_note}{Character value providing additional context about the
 formula (e.g. assumptions or method details).  Displayed alongside the
 formula in documentation tables.}
+
+\item{tier}{How commonly the parameter is reported:  \code{"common"} for one
+that belongs in a default report for at least one context, or
+\code{"uncommon"} (the default) for one that is calculated only when asked for
+by name.  See \code{\link[=pknca_tiers]{pknca_tiers()}}.}
+
+\item{selection}{A named list declaring what cannot be derived about where
+the parameter applies.  Every element is optional, and the default of
+\code{NULL} derives everything:
+
+\describe{
+\item{\code{concept}}{The kind of quantity the parameter is (see
+\code{\link[=pknca_concepts]{pknca_concepts()}}).  Needed only when the calculation function
+carries no \code{\link[=pknca_concept]{pknca_concept()}} and the concept cannot be taken from
+\code{depends}.}
+\item{\code{route}}{The routes of administration the parameter applies to
+(see \code{\link[=pknca_routes]{pknca_routes()}}).  Derived as intravenous for anything
+calculated from \code{c0} or needing a dose duration, and as any route
+otherwise.}
+\item{\code{dosing}}{The dosing patterns the parameter applies to (see
+\code{\link[=pknca_dosing]{pknca_dosing()}}).  Derived as single-dose for anything calculated
+from an extrapolation to infinity.  A declared value propagates to
+every parameter calculated from this one.}
+}}
 }
 \value{
 NULL (Calling this function has a side effect of changing the
@@ -141,6 +167,9 @@ Other Interval specifications:
 \code{\link[=get.interval.cols]{get.interval.cols()}},
 \code{\link[=get.parameter.deps]{get.parameter.deps()}},
 \code{\link[=interval_add_impute]{interval_add_impute()}},
-\code{\link[=interval_add_param]{interval_add_param()}}
+\code{\link[=interval_add_param]{interval_add_param()}},
+\code{\link[=pknca_check_parameter_classification]{pknca_check_parameter_classification()}},
+\code{\link[=pknca_concepts]{pknca_concepts()}},
+\code{\link[=pknca_parameter_table]{pknca_parameter_table()}}
 }
 \concept{Interval specifications}

@@ -444,6 +444,8 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   ret
 }
 
+pknca_concept(pk.calc.half.life) <- "half_life"
+
 #' Perform the half-life fit given the data.  The function simply fits
 #' the data without any validation.  No selection of points or any other
 #' components are done.
@@ -635,7 +637,8 @@ add.interval.col("half.life",
                  depends=c("tmax", "tlast"),
                  pptestcd_cdisc="LAMZHL",
                  pptest_cdisc="Half-Life Lambda z",
-                 formula="$t_{1/2} = \\frac{\\ln(2)}{\\lambda_z}$")
+                 formula="$t_{1/2} = \\frac{\\ln(2)}{\\lambda_z}$",
+                 tier = "common")
 PKNCA.set.summary(
   name="half.life",
   description="arithmetic mean and standard deviation",
@@ -763,7 +766,8 @@ add.interval.col("clast.pred",
                  depends="half.life",
                  pptestcd_cdisc="CLSTP",
                  pptest_cdisc="Clast pred",
-                 formula="$C_{\\text{last,pred}} = e^{\\text{intercept} - \\lambda_z \\cdot t_{\\text{last}}}$")
+                 formula="$C_{\\text{last,pred}} = e^{\\text{intercept} - \\lambda_z \\cdot t_{\\text{last}}}$",
+                 selection = list(concept = "last_conc"))
 PKNCA.set.summary(
   name="clast.pred",
   description="geometric mean and geometric coefficient of variation",

@@ -328,6 +328,18 @@ when the issue is due to an excluded point (#310)
   interval is split into as many rows as are needed, and rows that come to
   share every value are merged (#379).
 
+* NCA parameters are now classified so that they can be chosen automatically
+  for a calculation interval.  `pknca_parameter_table()` shows the
+  classification:  the `concept` a parameter computes, its reporting `tier`,
+  and the route, dosing, and sample-collection contexts it applies to.  Most of
+  it is derived from the existing registry; `add.interval.col()` gains a `tier`
+  argument and a `selection` argument for the few cases that cannot be derived.
+  A parameter's concept is declared on its calculation function with
+  `pknca_concept()`, so a parameter added by another package can carry one too.
+  Nothing here raises an error:  an unclassified parameter is simply never
+  chosen automatically, and `pknca_check_parameter_classification()` reports
+  those.
+
 ## Minor changes (unlikely to affect PKNCA use)
 
 * Remove dead code: unused internal functions, commented-out code, unused
