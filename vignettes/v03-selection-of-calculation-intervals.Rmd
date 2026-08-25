@@ -97,7 +97,7 @@ knitr::kable(intervals_manual)
 
 # Intervals
 
-Intervals are defined by `data.frame`s with one row per interval, zero or more columns to match the groups from the `PKNCAdata` object, and one or more NCA parameters to calculate.  An interval may also have an `impute` column specifying the data imputation method(s) to apply to the interval before calculation (see the Data Imputation vignette for details).  Any other columns named in the `keep_interval_cols` PKNCA option are passed through from the intervals to the corresponding rows of the results.
+Intervals are defined by `data.frame`s with one row per interval, zero or more columns to match the groups from the `PKNCAdata` object, and one or more NCA parameters to calculate.  An interval may also have an `impute` column specifying the data imputation method(s) to apply to the interval before calculation (see the Data Imputation vignette for details).  An interval may have a `tau` column giving the dosing interval for the multiple-dose parameters (see Multiple-Dose MRT and Vss below).  Any other columns named in the `keep_interval_cols` PKNCA option are passed through from the intervals to the corresponding rows of the results.
 
 Selection of points within an interval occurs by choosing any point at or after the `start` and at or before the `end`.
 
@@ -306,6 +306,31 @@ ggplot_intervals(interval_definition,
                  show_intervals)
 
 ```
+
+# Multiple-Dose MRT and Vss
+
+The multiple-dose parameters `mrt.md.obs`, `mrt.md.pred`, `vss.md.obs`, and `vss.md.pred` measure MRT and Vss over a steady-state dosing interval instead of over a single dose.
+
+**These are the parameters to use when PK are nonlinear.**  When PK are linear, MRT and Vss can be measured from a single dose, and the single-dose parameters (`mrt.obs`, `vss.obs`, and similar) describe steady state as well.  When PK are nonlinear they do not: clearance and volume at steady state differ from their values after the first dose, so MRT and Vss have to be measured over a steady-state interval.
+
+Taking `mrt.last` over a dosing interval is not a substitute.  `AUMC` divided by `AUC` over 0 to tau leaves out the drug still in the body at the end of the interval and underestimates MRT substantially.  The multiple-dose parameters add the `tau*(AUCinf - AUCtau)/AUCtau` term that accounts for it.
+
+The dosing interval comes from a `tau` column in the interval specification, and that column takes precedence whenever it is given:
+
+```{r md-tau-column, eval=FALSE}
+intervals_md <-
+  data.frame(
+    start=0, end=24,
+    tau=24,
+    mrt.md.obs=TRUE, vss.md.obs=TRUE
+  )
+```
+
+When no `tau` column is given, `tau` is detected from the dose times with `find.tau()`, which needs at least two doses in the dosing data.  A steady-state design that records only the profiled dose has nothing that repeats, so it needs the `tau` column.  If `tau` can be neither given nor detected, the parameters are `NA` with a warning rather than silently falling back to the single-dose equation.
+
+## Intravenous Infusions
+
+For an IV infusion, use `mrt.ivmd.obs`, `mrt.ivmd.pred`, `vss.ivmd.obs`, and `vss.ivmd.pred` instead.  They subtract half of the infusion duration, the same correction that `mrt.iv.obs` applies to the single-dose MRT.  Without it, MRT is high by half the infusion duration and Vss is high by clearance times half the infusion duration.
 
 # Parameters Available for Calculation in an Interval
 

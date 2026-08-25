@@ -123,7 +123,8 @@ test_that("the multiple-dose family is the closure of the declared seeds", {
     sort(c(
       "ctrough", "ctrough.dn", "ptr", "deg.fluc", "swing",
       "aucabove.trough.all",
-      "mrt.md.obs", "mrt.md.pred", "vss.md.obs", "vss.md.pred"
+      "mrt.md.obs", "mrt.md.pred", "vss.md.obs", "vss.md.pred",
+      "mrt.ivmd.obs", "mrt.ivmd.pred", "vss.ivmd.obs", "vss.ivmd.pred"
     ))
   )
 })

@@ -547,6 +547,13 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           call_args[[arg_formal]] <- subject
         } else if (arg_mapped == "lloq") {
           call_args[[arg_formal]] <- lloq
+        } else if (arg_mapped == "tau") {
+          call_args[[arg_formal]] <-
+            resolve_dose_tau(
+              interval=interval,
+              time.dose=time.dose.group,
+              options=options
+            )
         } else if (arg_mapped %in% c("start", "end")) {
           # Provide the start and end of the interval if they are requested
           call_args[[arg_formal]] <- interval[[arg_mapped]]

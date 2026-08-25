@@ -341,6 +341,17 @@ test_that("pk.calc.mrt.md", {
                info="auctau <= 0 becomes NA (not Inf)")
 })
 
+test_that("pk.calc.mrt.md.iv", {
+  expect_equal(pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=4), 2 + 24*0.5 - 2)
+  expect_equal(pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=0),
+               pk.calc.mrt.md(1, 2, 1.5, 24),
+               info="a zero infusion duration is the same as the non-IV form")
+  expect_equal(pk.calc.mrt.md.iv(0, 2, 1.5, 24, duration.dose=4), NA_real_,
+               info="auctau <= 0 becomes NA (not Inf)")
+  expect_equal(pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=NA), NA_real_,
+               info="a missing infusion duration becomes NA")
+})
+
 test_that("pk.calc.vz", {
   # Ensure that cl and lambda.z are required
   expect_equal(pk.calc.vz(cl=NA, lambda.z=NA), NA_integer_)

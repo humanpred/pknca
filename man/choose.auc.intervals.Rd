@@ -57,7 +57,8 @@ Other Interval specifications:
 \code{\link[=pknca_parameter_table]{pknca_parameter_table()}}
 
 Other Interval determination:
-\code{\link[=find.tau]{find.tau()}}
+\code{\link[=find.tau]{find.tau()}},
+\code{\link[=resolve_dose_tau]{resolve_dose_tau()}}
 }
 \concept{Interval determination}
 \concept{Interval specifications}

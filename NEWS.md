@@ -6,6 +6,23 @@ the dosing including dose amount and route.
 
 # Development version
 
+* New parameters `mrt.ivmd.obs`, `mrt.ivmd.pred`, `vss.ivmd.obs`, and
+  `vss.ivmd.pred` give the multiple-dose (steady-state) MRT and Vss for an IV
+  infusion.  They subtract half of the infusion duration, the correction that
+  the `mrt.md.*` and `vss.md.*` parameters do not apply, so those were high by
+  `duration.dose/2` and by `cl.last*duration.dose/2` respectively for an
+  infusion (#151).
+
+* Bug fix: the multiple-dose parameters `mrt.md.obs`, `mrt.md.pred`,
+  `vss.md.obs`, and `vss.md.pred` can now be calculated by `pk.nca()`.
+  Requesting any of them previously stopped with `Cannot find argument 'tau'`
+  because nothing supplied the dosing interval.  `tau` is now detected from the
+  group's dose times, and the interval specification accepts a `tau` column
+  that takes precedence over detection (needed when only the profiled dose is
+  in the dosing data, so nothing repeats).  When `tau` can be neither given nor
+  detected, the parameters are `NA` with a warning rather than silently
+  reducing to their single-dose equivalents (#151).
+
 * Bug fix: the `start_predose` imputation method no longer stops with `missing
   value where TRUE/FALSE needed` when a concentration has a missing time.  A
   measurement at an unknown time cannot be known to be predose, so it is now
@@ -20,10 +37,9 @@ the dosing including dose amount and route.
 
 * `pk.nca()` only asks for a bug report when it did not diagnose the error
   itself.  A parameter that needs a value from the interval specification
-  (`conc_above` for `time_above`, `dose1` and `dose2` for `f`, `tau` for
-  `mrt.md.obs` and similar) now names the parameter and says to give it as an
-  interval column, instead of prefixing "Please report a bug." to an error that
-  is not one (#367).
+  (`conc_above` for `time_above`, `dose1` and `dose2` for `f`) now names the
+  parameter and says to give it as an interval column, instead of prefixing
+  "Please report a bug." to an error that is not one (#367).
 
 * Bug fix: the dose-aware interval parameters (`aucint.last.dose`,
   `aumcint.inf.pred.dose`, and the rest of the `*int.*.dose` family) return
