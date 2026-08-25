@@ -118,12 +118,15 @@ start time to 0. If an observation exists at the start time, its value
 is replaced with 0; otherwise, a new row is added (usually used with
 single-dose data).</li>
 <li>
-<code>start_predose</code> shifts the most recent observation before
-the interval start to the interval start time. It applies only when no
-start-time observation exists, only when a pre-start observation exists,
-and only when the shift is no more than <code>max_shift</code> (by
-default, 5% of the interval duration or, for intervals with an infinite
-end, 5% of the time from the interval start to the last sample).</li>
+<code>start_predose</code> shifts the most recent observation with a
+measured concentration before the interval start to the interval start
+time. It applies only when no start-time observation exists, only when
+such a pre-start observation exists, and only when the shift is no more
+than <code>max_shift</code> (by default, 5% of the interval duration or,
+for intervals with an infinite end, 5% of the time from the interval
+start to the last sample). Observations with a missing concentration are
+skipped, so an earlier measured observation is used when the nearest one
+is missing.</li>
 <li>
 <code>start_cmin</code> adds the minimum concentration within the
 interval at the interval start time when no start-time observation

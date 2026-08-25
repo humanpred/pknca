@@ -147,7 +147,9 @@ with a concentration of 0 is added.</p></li>
 <li><p><code>PKNCA_impute_method_start_cmin()</code>: Add a new concentration of the minimum during
 the interval at the start time (usually used with multiple-dose data)</p></li>
 <li><p><code>PKNCA_impute_method_start_predose()</code>: Shift a predose concentration to become the
-time zero concentration (only if a time zero concentration does not exist)</p></li>
+time zero concentration (only if a time zero concentration does not exist).
+The most recent predose sample with a measured concentration is shifted;
+samples with a missing concentration are skipped.</p></li>
 <li><p><code>PKNCA_impute_method_end_conc_drop()</code>: Drop a concentration measured exactly at the
 end of the interval, if one is present (usually used with multiple-dose data
 when a point at the interval boundary belongs to the next dose, e.g. an
