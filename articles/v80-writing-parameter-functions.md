@@ -91,6 +91,47 @@ function takes up to seven arguments:
   `thalf.eff.iv.last` with different mean residence time inputs.
 - `desc` is a text description of the parameter.
 
+### Passing a Constant with `formalsmap`
+
+A `formalsmap` value is normally the name of an NCA parameter or of one
+of the data inputs (`"conc"`, `"time"`, `"dose"`, and the rest listed in
+[`help("add.interval.col")`](https://humanpred.github.io/pknca/reference/add.interval.col.md)).
+Wrapping the value in [`I()`](https://rdrr.io/r/base/AsIs.html) passes
+it to the function unchanged instead of looking it up:
+
+    formalsmap = list(auc="aucall", auc.type=I("AUCall"))
+
+Use this when one function serves several parameters and an argument
+selects which variant to calculate. `pk.calc.auciv` is shared by all six
+IV AUC parameters, and each registration names its own `auc.type`:
+
+    add.interval.col(
+      name = "aucivlast",
+      FUN = "pk.calc.auciv",
+      unit_type = "auc",
+      pretty_name = "AUClast (IV dosing)",
+      depends = c("auclast", "c0"),
+      desc = "AUClast, IV back-extrap C0",
+      formalsmap = list(auc="auclast", auc.type=I("AUClast"), lambda.z=NULL, clast=NULL)
+    )
+
+Without [`I()`](https://rdrr.io/r/base/AsIs.html), `"AUCall"` would be
+looked up as a parameter name, not found, and the argument would
+silently keep its default.
+
+Two related points:
+
+- A constant is not a calculation dependency, so it does not appear in
+  `get.parameter.deps(recursive=TRUE)` and does not affect whether PKNCA
+  reports the parameter as needing dose or volume information.
+- Mapping an argument to `NULL` (as with `lambda.z` and `clast` above)
+  drops it from the call so that it keeps its default. Do this for any
+  argument whose name matches an NCA parameter that this parameter does
+  not use. An argument named `lambda.z` that is left out of the
+  `formalsmap` is filled from the calculated `lambda.z` when one exists,
+  and otherwise from the interval column of the same name, which is the
+  `TRUE`/`FALSE` requesting the parameter rather than a value.
+
 ## Tell PKNCA How to Summarize the Parameter
 
 For any parameter, PKNCA needs to know how to summarize it for the

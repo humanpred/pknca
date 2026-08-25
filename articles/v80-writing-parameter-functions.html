@@ -209,6 +209,50 @@ different mean residence time inputs.</li>
 <li>
 <code>desc</code> is a text description of the parameter.</li>
 </ul>
+<div class="section level3">
+<h3 id="passing-a-constant-with-formalsmap">Passing a Constant with <code>formalsmap</code><a class="anchor" aria-label="anchor" href="#passing-a-constant-with-formalsmap"></a>
+</h3>
+<p>A <code>formalsmap</code> value is normally the name of an NCA
+parameter or of one of the data inputs (<code>"conc"</code>,
+<code>"time"</code>, <code>"dose"</code>, and the rest listed in
+<code><a href="../reference/add.interval.col.html">help("add.interval.col")</a></code>). Wrapping the value in
+<code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code> passes it to the function unchanged instead of looking
+it up:</p>
+<pre><code><span><span class="va">formalsmap</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>auc<span class="op">=</span><span class="st">"aucall"</span>, auc.type<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="st">"AUCall"</span><span class="op">)</span><span class="op">)</span></span></code></pre>
+<p>Use this when one function serves several parameters and an argument
+selects which variant to calculate. <code>pk.calc.auciv</code> is shared
+by all six IV AUC parameters, and each registration names its own
+<code>auc.type</code>:</p>
+<pre><code><span><span class="fu"><a href="../reference/add.interval.col.html">add.interval.col</a></span><span class="op">(</span></span>
+<span>  name <span class="op">=</span> <span class="st">"aucivlast"</span>,</span>
+<span>  FUN <span class="op">=</span> <span class="st">"pk.calc.auciv"</span>,</span>
+<span>  unit_type <span class="op">=</span> <span class="st">"auc"</span>,</span>
+<span>  pretty_name <span class="op">=</span> <span class="st">"AUClast (IV dosing)"</span>,</span>
+<span>  depends <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auclast"</span>, <span class="st">"c0"</span><span class="op">)</span>,</span>
+<span>  desc <span class="op">=</span> <span class="st">"AUClast, IV back-extrap C0"</span>,</span>
+<span>  formalsmap <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>auc<span class="op">=</span><span class="st">"auclast"</span>, auc.type<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="st">"AUClast"</span><span class="op">)</span>, lambda.z<span class="op">=</span><span class="cn">NULL</span>, clast<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre>
+<p>Without <code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code>, <code>"AUCall"</code> would be looked up as
+a parameter name, not found, and the argument would silently keep its
+default.</p>
+<p>Two related points:</p>
+<ul>
+<li>A constant is not a calculation dependency, so it does not appear in
+<code>get.parameter.deps(recursive=TRUE)</code> and does not affect
+whether PKNCA reports the parameter as needing dose or volume
+information.</li>
+<li>Mapping an argument to <code>NULL</code> (as with
+<code>lambda.z</code> and <code>clast</code> above) drops it from the
+call so that it keeps its default. Do this for any argument whose name
+matches an NCA parameter that this parameter does not use. An argument
+named <code>lambda.z</code> that is left out of the
+<code>formalsmap</code> is filled from the calculated
+<code>lambda.z</code> when one exists, and otherwise from the interval
+column of the same name, which is the
+<code>TRUE</code>/<code>FALSE</code> requesting the parameter rather
+than a value.</li>
+</ul>
+</div>
 </div>
 <div class="section level2">
 <h2 id="tell-pknca-how-to-summarize-the-parameter">Tell PKNCA How to Summarize the Parameter<a class="anchor" aria-label="anchor" href="#tell-pknca-how-to-summarize-the-parameter"></a>

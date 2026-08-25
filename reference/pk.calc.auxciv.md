@@ -12,16 +12,50 @@ pk.calc.auxciv(
   c0,
   auxc,
   fun_auxc_last,
+  fun_auxc,
+  auc.type = NULL,
+  lambda.z = NA,
+  clast = NA,
   ...,
   options = list(),
   check = TRUE
 )
 
-pk.calc.auciv(conc, time, c0, auc, ..., options = list(), check = TRUE)
+pk.calc.auciv(
+  conc,
+  time,
+  c0,
+  auc,
+  auc.type = NULL,
+  lambda.z = NA,
+  clast = NA,
+  ...,
+  options = list(),
+  check = TRUE
+)
 
-pk.calc.auciv_pbext(auc, auciv)
+pk.calc.auciv_pbext(
+  conc,
+  time,
+  auc,
+  auciv,
+  ...,
+  options = list(),
+  check = TRUE
+)
 
-pk.calc.aumciv(conc, time, c0, aumc, ..., options = list(), check = TRUE)
+pk.calc.aumciv(
+  conc,
+  time,
+  c0,
+  aumc,
+  auc.type = NULL,
+  lambda.z = NA,
+  clast = NA,
+  ...,
+  options = list(),
+  check = TRUE
+)
 ```
 
 ## Arguments
@@ -48,6 +82,27 @@ pk.calc.aumciv(conc, time, c0, aumc, ..., options = list(), check = TRUE)
 
   Function to calculate the AUXC for the last interval (e.g.,
   `pk.calc.auc.last` or `pk.calc.aumc.last`)
+
+- fun_auxc:
+
+  Function to calculate the AUXC over the full interval when `auxc`
+  could not be calculated (e.g., `pk.calc.auc` or `pk.calc.aumc`)
+
+- auc.type:
+
+  The type of AUXC for `fun_auxc` to calculate. `NULL` (the default)
+  means that the AUXC will not be calculated from `c0` and the measured
+  data, so `NA` is returned when `auxc` is `NA`.
+
+- lambda.z:
+
+  The elimination rate (in units of inverse time) for extrapolation
+
+- clast:
+
+  The last concentration above the limit of quantification, used by
+  `fun_auxc` when `auc.type` is `"AUCinf"` (`clast.obs` gives AUCinf,obs
+  and `clast.pred` gives AUCinf,pred)
 
 - ...:
 
@@ -88,21 +143,31 @@ The AUXC for intravenous (IV) dosing extrapolates the AUXC back from the
 first measurement to time 0 using `c0` and the AUXC calculated by
 another method (e.g., auclast or aumclast).
 
-The calculation method takes the following steps:
+How the calculation proceeds depends on what is measured at `time = 0`:
 
-1.  `time = 0` must be present in the data with a measured
-    concentration.
+- A concentration is measured at `time = 0`:
 
-2.  The AUXC between `time = 0` and the next time point is calculated
-    (`auxc_first`).
+  The AUXC between `time = 0` and the next time point is calculated with
+  the measured concentration (`auxc_first`) and with `c0`
+  (`auxc_second`). The final AUXC is `auxc + auxc_second - auxc_first`.
 
-3.  The AUXC between `time = 0` with `c0` and the next time point is
-    calculated (`auxc_second`).
+- No concentration at `time = 0` and `auxc` was calculated:
 
-4.  The final AUXC is the initial AUXC plus the difference between the
-    two AUXCs (`auxc_final <- auxc + auxc_second - auxc_first`).
+  `auxc` comes from a method that extrapolates back to `time = 0` with
+  `conc.origin` (zero; the `aucint` family), so that segment is replaced
+  by the one using `c0` in the same way.
 
-The calculation for back-extrapolation is `100*(1 - auc/auciv)`.
+- No concentration at `time = 0` and `auxc` is `NA`:
+
+  `auxc` is `NA` because an AUXC may not start before the first
+  measurement. `c0` supplies that measurement, so the AUXC is calculated
+  here from `c0` and the measured data using `fun_auxc` and `auc.type`.
+
+The calculation for back-extrapolation is `100*(1 - auc/auciv)`. It
+requires a measured concentration at time 0; without one, `auc` does not
+describe the observed part of `auciv` (it either cannot be calculated
+or, for the `aucint` family, already extrapolates back to time 0 with
+`conc.origin`), so `NA` is returned.
 
 ## Functions
 

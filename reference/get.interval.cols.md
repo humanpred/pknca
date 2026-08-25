@@ -3595,6 +3595,15 @@ get.interval.cols()
 #> $aucivlast$formalsmap$auc
 #> [1] "auclast"
 #> 
+#> $aucivlast$formalsmap$auc.type
+#> [1] "AUClast"
+#> 
+#> $aucivlast$formalsmap$lambda.z
+#> NULL
+#> 
+#> $aucivlast$formalsmap$clast
+#> NULL
+#> 
 #> 
 #> $aucivlast$depends
 #> [1] "auclast" "c0"     
@@ -3643,6 +3652,15 @@ get.interval.cols()
 #> $aucivall$formalsmap
 #> $aucivall$formalsmap$auc
 #> [1] "aucall"
+#> 
+#> $aucivall$formalsmap$auc.type
+#> [1] "AUCall"
+#> 
+#> $aucivall$formalsmap$lambda.z
+#> NULL
+#> 
+#> $aucivall$formalsmap$clast
+#> NULL
 #> 
 #> 
 #> $aucivall$depends
@@ -3693,6 +3711,15 @@ get.interval.cols()
 #> $aucivint.last$formalsmap$auc
 #> [1] "aucint.last"
 #> 
+#> $aucivint.last$formalsmap$auc.type
+#> NULL
+#> 
+#> $aucivint.last$formalsmap$lambda.z
+#> NULL
+#> 
+#> $aucivint.last$formalsmap$clast
+#> NULL
+#> 
 #> 
 #> $aucivint.last$depends
 #> [1] "aucint.last" "c0"         
@@ -3741,6 +3768,15 @@ get.interval.cols()
 #> $aucivint.all$formalsmap
 #> $aucivint.all$formalsmap$auc
 #> [1] "aucint.all"
+#> 
+#> $aucivint.all$formalsmap$auc.type
+#> NULL
+#> 
+#> $aucivint.all$formalsmap$lambda.z
+#> NULL
+#> 
+#> $aucivint.all$formalsmap$clast
+#> NULL
 #> 
 #> 
 #> $aucivint.all$depends
@@ -3999,6 +4035,15 @@ get.interval.cols()
 #> $aumcivlast$formalsmap$aumc
 #> [1] "aumclast"
 #> 
+#> $aumcivlast$formalsmap$auc.type
+#> [1] "AUClast"
+#> 
+#> $aumcivlast$formalsmap$lambda.z
+#> NULL
+#> 
+#> $aumcivlast$formalsmap$clast
+#> NULL
+#> 
 #> 
 #> $aumcivlast$depends
 #> [1] "aumclast" "c0"      
@@ -4047,6 +4092,15 @@ get.interval.cols()
 #> $aumcivall$formalsmap
 #> $aumcivall$formalsmap$aumc
 #> [1] "aumcall"
+#> 
+#> $aumcivall$formalsmap$auc.type
+#> [1] "AUCall"
+#> 
+#> $aumcivall$formalsmap$lambda.z
+#> NULL
+#> 
+#> $aumcivall$formalsmap$clast
+#> NULL
 #> 
 #> 
 #> $aumcivall$depends
@@ -4097,6 +4151,15 @@ get.interval.cols()
 #> $aumcivint.last$formalsmap$aumc
 #> [1] "aumcint.last"
 #> 
+#> $aumcivint.last$formalsmap$auc.type
+#> NULL
+#> 
+#> $aumcivint.last$formalsmap$lambda.z
+#> NULL
+#> 
+#> $aumcivint.last$formalsmap$clast
+#> NULL
+#> 
 #> 
 #> $aumcivint.last$depends
 #> [1] "aumcint.last" "c0"          
@@ -4145,6 +4208,15 @@ get.interval.cols()
 #> $aumcivint.all$formalsmap
 #> $aumcivint.all$formalsmap$aumc
 #> [1] "aumcint.all"
+#> 
+#> $aumcivint.all$formalsmap$auc.type
+#> NULL
+#> 
+#> $aumcivint.all$formalsmap$lambda.z
+#> NULL
+#> 
+#> $aumcivint.all$formalsmap$clast
+#> NULL
 #> 
 #> 
 #> $aumcivint.all$depends
@@ -6862,9 +6934,15 @@ get.interval.cols()
 #> $aucivinf.obs$formalsmap$auc
 #> [1] "aucinf.obs"
 #> 
+#> $aucivinf.obs$formalsmap$auc.type
+#> [1] "AUCinf"
+#> 
+#> $aucivinf.obs$formalsmap$clast
+#> [1] "clast.obs"
+#> 
 #> 
 #> $aucivinf.obs$depends
-#> [1] "aucinf.obs" "c0"        
+#> [1] "aucinf.obs" "c0"         "lambda.z"   "clast.obs" 
 #> 
 #> $aucivinf.obs$datatype
 #> [1] "interval"
@@ -6911,9 +6989,15 @@ get.interval.cols()
 #> $aucivinf.pred$formalsmap$auc
 #> [1] "aucinf.pred"
 #> 
+#> $aucivinf.pred$formalsmap$auc.type
+#> [1] "AUCinf"
+#> 
+#> $aucivinf.pred$formalsmap$clast
+#> [1] "clast.pred"
+#> 
 #> 
 #> $aucivinf.pred$depends
-#> [1] "aucinf.pred" "c0"         
+#> [1] "aucinf.pred" "c0"          "lambda.z"    "clast.pred" 
 #> 
 #> $aucivinf.pred$datatype
 #> [1] "interval"
@@ -7064,9 +7148,15 @@ get.interval.cols()
 #> $aumcivinf.obs$formalsmap$aumc
 #> [1] "aumcinf.obs"
 #> 
+#> $aumcivinf.obs$formalsmap$auc.type
+#> [1] "AUCinf"
+#> 
+#> $aumcivinf.obs$formalsmap$clast
+#> [1] "clast.obs"
+#> 
 #> 
 #> $aumcivinf.obs$depends
-#> [1] "aumcinf.obs" "c0"         
+#> [1] "aumcinf.obs" "c0"          "lambda.z"    "clast.obs"  
 #> 
 #> $aumcivinf.obs$datatype
 #> [1] "interval"
@@ -7113,9 +7203,15 @@ get.interval.cols()
 #> $aumcivinf.pred$formalsmap$aumc
 #> [1] "aumcinf.pred"
 #> 
+#> $aumcivinf.pred$formalsmap$auc.type
+#> [1] "AUCinf"
+#> 
+#> $aumcivinf.pred$formalsmap$clast
+#> [1] "clast.pred"
+#> 
 #> 
 #> $aumcivinf.pred$depends
-#> [1] "aumcinf.pred" "c0"          
+#> [1] "aumcinf.pred" "c0"           "lambda.z"     "clast.pred"  
 #> 
 #> $aumcivinf.pred$datatype
 #> [1] "interval"

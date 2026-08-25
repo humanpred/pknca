@@ -252,6 +252,15 @@ parameter names and the values should be one of the following:
 
     Route of dosing for the current group.
 
+- Constants:
+
+  - a value wrapped in [`base::I()`](https://rdrr.io/r/base/AsIs.html):
+
+    The value itself, passed to the function unchanged. Use this for an
+    argument that selects a variant of a shared calculation function
+    (for example, `auc.type = I("AUCall")`) rather than naming a data
+    source or another parameter.
+
 ## See also
 
 Other Interval specifications:
