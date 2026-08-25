@@ -19,9 +19,19 @@ the dosing including dose amount and route.
   `NA`, which became a time point to interpolate to and stopped the calculation
   with `Assertion on 'time' failed: Contains missing values` (#367).
 
+* `vignette("v06-half-life-calculation")` gains a decision tree for choosing
+  between automatic curve stripping, `exclude_half.life`, and
+  `include_half.life`, and it now states that the points named by
+  `include_half.life` are still subject to dropping BLQ values and points
+  at or before the end of the last dose (#412).
+
 * Bug fix: `superposition()` drops missing concentrations before calculating.
   They previously reached the half-life fit and stopped the calculation with
   `NA/NaN/Inf in 'x'` (#308).
+
+* `superposition()` checks the `method` and `auc.type` arguments for every
+  input.  An invalid value was previously ignored when the calculation
+  required neither interpolation nor extrapolation (#247).
 
 * `add.interval.col()` gains `formula` and `formula_note` arguments giving the
   calculation as a LaTeX expression.  They are shown in the parameter table in
