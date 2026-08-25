@@ -156,9 +156,20 @@ test_that("clast.pred is a concentration, not a half-life diagnostic", {
   expect_equal(pknca_parameter_table("lambda.z")$concept, "half_life")
 })
 
-test_that("ceoi is infusion-only and c0 is not infusion-only", {
+test_that("ceoi is for a finite infusion only", {
+  # A continuous infusion has no end of infusion to measure a concentration at
   expect_equal(pknca_parameter_table("ceoi")$route, "iv_infusion")
-  expect_equal(pknca_parameter_table("c0")$route, "iv_bolus,iv_infusion")
+})
+
+test_that("the intravenous family applies to every intravenous route", {
+  expect_equal(
+    pknca_parameter_table("c0")$route,
+    "iv_bolus,iv_infusion,iv_continuous_infusion"
+  )
+  expect_equal(
+    pknca_parameter_table("aucivinf.obs")$route,
+    "iv_bolus,iv_infusion,iv_continuous_infusion"
+  )
 })
 
 test_that("tlag is extravascular", {

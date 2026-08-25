@@ -125,7 +125,9 @@ classify_concepts <- function(all_intervals) {
 
 # Which routes each parameter applies to.  Declared wins; otherwise anything
 # calculated from `c0` (intravenous back-extrapolation) or needing a dose
-# duration is intravenous only, and everything else applies to any route.
+# duration applies to every intravenous route, and everything else applies to
+# any route.  A parameter that distinguishes among the intravenous routes --
+# `ceoi`, which a continuous infusion never reaches -- declares that.
 classify_routes <- function(all_intervals) {
   specs <- set_requires_inputs(names(all_intervals))
   needs_duration <-
@@ -138,7 +140,7 @@ classify_routes <- function(all_intervals) {
       if (!is.null(declared)) {
         declared
       } else if (n %in% iv_family) {
-        c("iv_bolus", "iv_infusion")
+        setdiff(pknca_routes(), "extravascular")
       } else {
         pknca_routes()
       }

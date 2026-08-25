@@ -77,7 +77,8 @@ pknca_concept_choices <-
 
 pknca_tier_choices <- c("common", "uncommon")
 
-pknca_route_choices <- c("extravascular", "iv_bolus", "iv_infusion")
+pknca_route_choices <-
+  c("extravascular", "iv_bolus", "iv_infusion", "iv_continuous_infusion")
 
 pknca_dosing_choices <- c("single", "multiple", "steady_state")
 
