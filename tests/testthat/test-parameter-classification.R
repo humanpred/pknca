@@ -161,15 +161,32 @@ test_that("ceoi is for a finite infusion only", {
   expect_equal(pknca_parameter_table("ceoi")$route, "iv_infusion")
 })
 
-test_that("the intravenous family applies to every intravenous route", {
-  expect_equal(
-    pknca_parameter_table("c0")$route,
-    "iv_bolus,iv_infusion,iv_continuous_infusion"
-  )
-  expect_equal(
-    pknca_parameter_table("aucivinf.obs")$route,
-    "iv_bolus,iv_infusion,iv_continuous_infusion"
-  )
+test_that("back-extrapolation to c0 is bolus-only", {
+  # There is no back-extrapolated triangle for an infusion
+  all_iv <- "iv_bolus,iv_infusion,iv_continuous_infusion"
+  expect_equal(pknca_parameter_table("c0")$route, "iv_bolus")
+  expect_equal(pknca_parameter_table("aucivinf.obs")$route, "iv_bolus")
+  expect_equal(pknca_parameter_table("cl.iv.obs")$route, "iv_bolus")
+  expect_equal(pknca_parameter_table("vz.iv.obs")$route, "iv_bolus")
+  # ... but a dose duration makes a parameter infusion-capable, and it still
+  # applies to a bolus because the duration is then zero
+  expect_equal(pknca_parameter_table("mrt.iv.obs")$route, all_iv)
+  expect_equal(pknca_parameter_table("vss.iv.obs")$route, all_iv)
+  expect_equal(pknca_parameter_table("mrt.ivint.all")$route, all_iv)
+})
+
+test_that("the bolus-only set is exactly what c0 reaches without a dose duration", {
+  classification <- PKNCA:::parameter_classification()
+  bolus_only <-
+    names(classification$route)[
+      vapply(classification$route, function(x) identical(x, "iv_bolus"), TRUE)
+    ]
+  specs <- PKNCA:::set_requires_inputs(names(classification$route))
+  needs_duration <-
+    names(specs)[vapply(specs, function(x) isTRUE(x$requires_dose_dur), TRUE)]
+  from_c0 <- intersect(get.parameter.deps("c0"), names(classification$route))
+  expect_equal(sort(bolus_only), sort(setdiff(from_c0, needs_duration)))
+  expect_length(bolus_only, 31L)
 })
 
 test_that("tlag is extravascular", {

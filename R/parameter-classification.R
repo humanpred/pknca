@@ -123,24 +123,37 @@ classify_concepts <- function(all_intervals) {
   ret
 }
 
-# Which routes each parameter applies to.  Declared wins; otherwise anything
-# calculated from `c0` (intravenous back-extrapolation) or needing a dose
-# duration applies to every intravenous route, and everything else applies to
-# any route.  A parameter that distinguishes among the intravenous routes --
-# `ceoi`, which a continuous infusion never reaches -- declares that.
+# Which routes each parameter applies to.  Declared wins.  Otherwise a
+# parameter is intravenous when it is calculated from `c0` or needs a dose
+# duration, and which intravenous routes it applies to follows from why:
+#
+#   `c0` is the concentration back-extrapolated to the time of an intravenous
+#   bolus.  There is no back-extrapolated triangle for an infusion, so what is
+#   calculated from `c0` alone -- the auciv, aumciv, and aucivpbext families
+#   and the clearances and volumes taken from them -- is bolus-only.
+#
+#   A dose duration makes a parameter infusion-capable, and it still applies
+#   to a bolus because the duration is then zero.  So anything needing one
+#   applies to every intravenous route, whether or not it also uses `c0`.
+#
+# `ceoi` declares itself, because a continuous infusion never reaches an end
+# of infusion.
 classify_routes <- function(all_intervals) {
   specs <- set_requires_inputs(names(all_intervals))
   needs_duration <-
     names(specs)[vapply(specs, function(x) isTRUE(x$requires_dose_dur), TRUE)]
-  iv_family <- union(deps_union("c0", all_intervals), needs_duration)
+  back_extrapolated <- deps_union("c0", all_intervals)
+  iv_routes <- setdiff(pknca_routes(), "extravascular")
   lapply(
     X = stats::setNames(names(all_intervals), names(all_intervals)),
     FUN = function(n) {
       declared <- all_intervals[[n]]$selection$route
       if (!is.null(declared)) {
         declared
-      } else if (n %in% iv_family) {
-        setdiff(pknca_routes(), "extravascular")
+      } else if (n %in% needs_duration) {
+        iv_routes
+      } else if (n %in% back_extrapolated) {
+        "iv_bolus"
       } else {
         pknca_routes()
       }
