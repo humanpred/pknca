@@ -130,13 +130,6 @@ prepare_PKNCA_general <- function(.dat, cols, exclude, group_cols, data_name, in
   ret
 }
 
-# volume and duration are in the data only when the user gave them (see
-# PKNCAconc()), but pk.nca.interval() is handed both for every calculation, so
-# they are filled with their neutral values here rather than in the user's
-# data.  Nothing reads them when they were absent: a parameter that needs
-# either one stops the calculation in full_join_PKNCAdata().
-pknca_conc_insert_if_missing <- list(volume=NA_real_, duration=0)
-
 prepare_PKNCAconc_dense <- function(.dat, needed_cols, group_cols_selected) {
   ret <-
     prepare_PKNCA_general(
@@ -144,8 +137,7 @@ prepare_PKNCAconc_dense <- function(.dat, needed_cols, group_cols_selected) {
       exclude=.dat$columns$exclude,
       cols=needed_cols,
       data_name="data_conc",
-      group_cols=group_cols_selected,
-      insert_if_missing=pknca_conc_insert_if_missing
+      group_cols=group_cols_selected
     )
   ret
 }
@@ -158,8 +150,7 @@ prepare_PKNCAconc_sparse <- function(.dat, needed_cols, group_cols_selected) {
       exclude=.dat$columns$exclude,
       cols=needed_cols,
       data_name="data_sparse_conc",
-      group_cols=setdiff(group_cols_selected, .dat$columns$subject),
-      insert_if_missing=pknca_conc_insert_if_missing
+      group_cols=setdiff(group_cols_selected, .dat$columns$subject)
     )
   # Generate the mean profile for non-sparse parameters
   ret$data_conc <-
