@@ -26,6 +26,9 @@ Other Interval specifications:
 \code{\link[=choose.auc.intervals]{choose.auc.intervals()}},
 \code{\link[=get.parameter.deps]{get.parameter.deps()}},
 \code{\link[=interval_add_impute]{interval_add_impute()}},
-\code{\link[=interval_add_param]{interval_add_param()}}
+\code{\link[=interval_add_param]{interval_add_param()}},
+\code{\link[=pknca_check_parameter_classification]{pknca_check_parameter_classification()}},
+\code{\link[=pknca_concepts]{pknca_concepts()}},
+\code{\link[=pknca_parameter_table]{pknca_parameter_table()}}
 }
 \concept{Interval specifications}

@@ -224,6 +224,8 @@ pk.calc.auc.last <- function(conc, time, ..., options=list()) {
               lambda.z=NA)
 }
 
+pknca_concept(pk.calc.auc.last) <- "auc"
+
 #' @describeIn pk.calc.auxc Compute the AUCinf
 #' @export
 pk.calc.auc.inf <- function(conc, time, ..., options=list(), lambda.z) {
@@ -247,6 +249,8 @@ pk.calc.auc.inf.obs <- function(conc, time, clast.obs, ..., options=list(),
                   lambda.z=lambda.z)
 }
 
+pknca_concept(pk.calc.auc.inf.obs) <- "auc"
+
 #' @describeIn pk.calc.auxc Compute the AUCinf with the predicted Clast.
 #' @export
 pk.calc.auc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
@@ -255,6 +259,8 @@ pk.calc.auc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
                   options=options,
                   lambda.z=lambda.z)
 }
+
+pknca_concept(pk.calc.auc.inf.pred) <- "auc"
 
 #' @describeIn pk.calc.auxc Compute the AUCall.
 #' @export
@@ -268,6 +274,8 @@ pk.calc.auc.all <- function(conc, time, ..., options=list()) {
               auc.type="AUCall",
               lambda.z=NA)
 }
+
+pknca_concept(pk.calc.auc.all) <- "auc"
 
 
 #' @describeIn pk.calc.auxc Compute the area under the moment curve
@@ -293,6 +301,8 @@ pk.calc.aumc.last <- function(conc, time, ..., options=list()) {
                lambda.z=NA)
 }
 
+pknca_concept(pk.calc.aumc.last) <- "aumc"
+
 #' @describeIn pk.calc.auxc Compute the AUMCinf
 #' @export
 pk.calc.aumc.inf <- function(conc, time, ..., options=list(),
@@ -316,6 +326,8 @@ pk.calc.aumc.inf.obs <- function(conc, time, clast.obs, ..., options=list(),
                    lambda.z=lambda.z)
 }
 
+pknca_concept(pk.calc.aumc.inf.obs) <- "aumc"
+
 #' @describeIn pk.calc.auxc Compute the AUMCinf with the predicted Clast.
 #' @export
 pk.calc.aumc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
@@ -323,6 +335,8 @@ pk.calc.aumc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
   pk.calc.aumc.inf(conc=conc, time=time, clast=clast.pred, ..., options=options,
                    lambda.z=lambda.z)
 }
+
+pknca_concept(pk.calc.aumc.inf.pred) <- "aumc"
 
 #' @describeIn pk.calc.auxc Compute the AUMCall.
 #' @export
@@ -337,6 +351,8 @@ pk.calc.aumc.all <- function(conc, time, ..., options=list()) {
                lambda.z=NA)
 }
 
+pknca_concept(pk.calc.aumc.all) <- "aumc"
+
 # Add the columns to the interval specification
 add.interval.col("aucinf.obs",
                  FUN="pk.calc.auc.inf.obs",
@@ -347,7 +363,8 @@ add.interval.col("aucinf.obs",
                  depends=c("lambda.z", "clast.obs"),
                  pptestcd_cdisc="AUCIFO",
                  pptest_cdisc="AUC Infinity Obs",
-                 formula="$AUC_{\\infty,\\text{obs}} = AUC_{0-\\text{last}} + \\frac{C_{\\text{last,obs}}}{\\lambda_z}$")
+                 formula="$AUC_{\\infty,\\text{obs}} = AUC_{0-\\text{last}} + \\frac{C_{\\text{last,obs}}}{\\lambda_z}$",
+                 tier = "common")
 
 add.interval.col("aucinf.pred",
                  FUN="pk.calc.auc.inf.pred",
@@ -369,7 +386,8 @@ add.interval.col("auclast",
                  pptestcd_cdisc="AUCLST",
                  pptest_cdisc="AUC to Last Nonzero Conc",
                  formula="$AUC_{\\text{last}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule (linear-up/log-down by default)")
+                 formula_note="Trapezoidal rule (linear-up/log-down by default)",
+                 tier = "common")
 
 add.interval.col("aucall",
                  FUN="pk.calc.auc.all",

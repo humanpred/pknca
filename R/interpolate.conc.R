@@ -467,7 +467,7 @@ interp.extrap.conc.dose <- function(conc, time,
   }
   if (any(mask_no_method <- is.na(data_all$method))) {
     # This should never happen, all eventualities should be covered
-    rlang::abort(sprintf("No method for imputing concentration at time(s): %s", paste(unique(data_all$time[mask_no_method]), collapse = ", ")), class = "pknca_error_no_interp_method")  # nocov
+    rlang::abort(sprintf("No method for imputing concentration at time(s): %s", paste(unique(data_all$time[mask_no_method]), collapse = ", ")), class = "pknca_error_internal_no_interp_method")  # nocov
   }
   # Filter to the requested time points and output
   data_out <- data_all[data_all$out,,drop=FALSE]

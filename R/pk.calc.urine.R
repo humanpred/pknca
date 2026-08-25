@@ -8,6 +8,8 @@ pk.calc.volpk <- function(volume) {
   if (length(volume) == 0) return(NA_real_)
   sum(volume)
 }
+
+pknca_concept(pk.calc.volpk) <- "collected_volume"
 add.interval.col("volpk",
                  FUN="pk.calc.volpk",
                  values=c(FALSE, TRUE),
@@ -15,8 +17,9 @@ add.interval.col("volpk",
                  pretty_name="Total Urine Volume",
                  desc="Sum of urine volumes for interval",
                  pptestcd_cdisc="VOLPK",
-                 pptest_cdisc="Volume of PK sample",
-                 formula="$V_{\\text{urine}} = \\sum_i V_i$")
+                 pptest_cdisc="Sum of Urine Vol",
+                 formula="$V_{\\text{urine}} = \\sum_i V_i$",
+                 tier = "common")
 
 #' Calculate amount excreted (typically in urine or feces)
 #'
@@ -49,6 +52,8 @@ pk.calc.ae <- function(conc, volume, check=TRUE) {
   }
   ret
 }
+
+pknca_concept(pk.calc.ae) <- "excreted_amount"
 add.interval.col("ae",
                  FUN="pk.calc.ae",
                  values=c(FALSE, TRUE),
@@ -57,7 +62,8 @@ add.interval.col("ae",
                  desc="Amount excreted (urine/feces)",
                  pptestcd_cdisc="RCAMINT",
                  pptest_cdisc="Amt Rec from T1 to T2",
-                 formula="$AE = \\sum_i C_i V_i$")
+                 formula="$AE = \\sum_i C_i V_i$",
+                 tier = "common")
 
 #' Calculate renal clearance
 #'
@@ -77,6 +83,8 @@ pk.calc.clr <- function(ae, auc) {
   }
   sum(ae)/auc
 }
+
+pknca_concept(pk.calc.clr) <- "renal_clearance"
 add.interval.col("clr.last",
                  FUN="pk.calc.clr",
                  values=c(FALSE, TRUE),
@@ -99,7 +107,8 @@ add.interval.col("clr.obs",
                  desc="Renal clearance, AUCinf,obs",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL",
-                 formula="$CL_{R,\\text{obs}} = \\frac{AE}{AUC_{\\infty,\\text{obs}}}$")
+                 formula="$CL_{R,\\text{obs}} = \\frac{AE}{AUC_{\\infty,\\text{obs}}}$",
+                 tier = "common")
 
 add.interval.col("clr.pred",
                  FUN="pk.calc.clr",
@@ -132,6 +141,8 @@ pk.calc.fe <- function(ae, dose) {
   }
   sum(ae)/dose
 }
+
+pknca_concept(pk.calc.fe) <- "excreted_fraction"
 add.interval.col("fe",
                  FUN="pk.calc.fe",
                  unit_type="amount_dose",
@@ -141,7 +152,8 @@ add.interval.col("fe",
                  desc="Fraction of dose excreted",
                  pptestcd_cdisc="FREXINT",
                  pptest_cdisc="Fract Excr from T1 to T2",
-                 formula="$f_e = \\frac{AE}{Dose}$")
+                 formula="$f_e = \\frac{AE}{Dose}$",
+                 tier = "common")
 
 #' Calculate the midpoint collection time of the last measurable excretion rate
 #'
@@ -178,6 +190,8 @@ pk.calc.ertlst <- function(conc, volume, time, duration.conc, check = TRUE) {
   ret
 }
 
+pknca_concept(pk.calc.ertlst) <- "excretion_rate"
+
 # Add the column to the interval specification
 add.interval.col("ertlst",
                  FUN="pk.calc.ertlst",
@@ -185,7 +199,7 @@ add.interval.col("ertlst",
                  pretty_name="Tlast excretion rate",
                  desc="Midpoint time of last excr rate",
                  pptestcd_cdisc="ERTLST",
-                 pptest_cdisc="Time of Last Excretion Rate",
+                 pptest_cdisc="Midpoint of Interval of Last Nonzero ER",
                  formula="$T_{\\text{last,ER}} = t_{\\text{mid},i: ER_i > 0, i = \\max}$")
 
 
@@ -223,6 +237,8 @@ pk.calc.ermax <- function(conc, volume, time, duration.conc, check = TRUE) {
   }
   ret
 }
+
+pknca_concept(pk.calc.ermax) <- "excretion_rate"
 
 add.interval.col("ermax",
                  FUN="pk.calc.ermax",
@@ -276,6 +292,8 @@ pk.calc.ertmax <- function(conc, volume, time, duration.conc, options = list(), 
   ret
 }
 
+pknca_concept(pk.calc.ertmax) <- "excretion_rate"
+
 add.interval.col("ertmax",
                  FUN="pk.calc.ertmax",
                  unit_type="time",
@@ -285,8 +303,103 @@ add.interval.col("ertmax",
                  pptest_cdisc="Midpoint of Interval of Maximum ER",
                  formula="$T_{\\max,ER} = t_{\\text{mid},i: ER_i = ER_{\\max}}$")
 
+
+#' Calculate the excretion rate over the interval
+#'
+#' @details The excretion rate is the amount recovered during the interval
+#'   divided by the duration of the interval, `ae/(end - start)`.  It uses the
+#'   interval rather than the sum of the collection durations, so a gap between
+#'   collections lowers the rate.  An interval ending at infinity has no
+#'   duration to divide by and gives `NA`.
+#'
+#' @param ae The amount excreted during the interval (see [pk.calc.ae()])
+#' @inheritParams assert_intervaltime_single
+#' @returns The excretion rate during the interval
+#' @seealso [pk.calc.ae()], [pk.calc.ermax()]
+#' @family Urine/Excretion parameters
+#' @export
+pk.calc.erint <- function(ae, start, end) {
+  if (length(ae) == 0 || length(start) == 0 || length(end) == 0) {
+    return(NA_real_)
+  }
+  if (is.infinite(end)) {
+    return(
+      structure(
+        NA_real_,
+        exclude = "Excretion rate is not defined for an interval ending at infinity"
+      )
+    )
+  }
+  ae / (end - start)
+}
+
+pknca_concept(pk.calc.erint) <- "excretion_rate"
+
+add.interval.col("erint",
+                 FUN="pk.calc.erint",
+                 unit_type="amount_time",
+                 pretty_name="Excretion rate",
+                 desc="Excretion rate from T1 to T2",
+                 depends="ae",
+                 pptestcd_cdisc="ERINT",
+                 pptest_cdisc="Excret Rate from T1 to T2",
+                 formula="$ER_{T_1 \\rightarrow T_2} = \\frac{A_e}{T_2 - T_1}$",
+                 formula_note="Amount recovered during the interval divided by the interval duration")
+
+#' Calculate the last measurable excretion rate
+#'
+#' @details Collections are ordered by their midpoint time, matching
+#'   [pk.calc.ertlst()], which gives the midpoint time of this same collection.
+#'   When no collection has a positive excretion rate, the result is 0.
+#'
+#' @inheritParams pk.calc.ermax
+#' @returns The last measurable (positive) excretion rate, or `NA` if not
+#'   available
+#' @seealso [pk.calc.ertlst()], [pk.calc.ermax()]
+#' @family Urine/Excretion parameters
+#' @export
+pk.calc.erlst <- function(conc, volume, time, duration.conc, check = TRUE) {
+
+  # Generate messages about missing concentrations/volumes
+  message_all <- generate_missing_messages(conc, volume,
+                                           name_a = "concentrations",
+                                           name_b = "volumes")
+
+  er <- conc * volume / duration.conc
+
+  if (length(er) == 0 || all(is.na(er))) {
+    ret <- NA_real_
+  } else {
+    mask_measurable <- !is.na(er) & er != 0
+    if (!any(mask_measurable)) {
+      ret <- 0
+    } else {
+      midtime <- time + duration.conc / 2
+      ret <- er[mask_measurable][which.max(midtime[mask_measurable])]
+    }
+  }
+
+  if (length(message_all) != 0) {
+    message <- paste(message_all, collapse = "; ")
+    ret <- structure(ret, exclude = message)
+  }
+  ret
+}
+
+pknca_concept(pk.calc.erlst) <- "excretion_rate"
+
+add.interval.col("erlst",
+                 FUN="pk.calc.erlst",
+                 unit_type="amount_time",
+                 pretty_name="Last measurable excretion rate",
+                 desc="Last measurable excretion rate",
+                 pptestcd_cdisc="ERLST",
+                 pptest_cdisc="Last Meas Excretion Rate",
+                 formula="$ER_{\\text{last}} = \\frac{C_l V_l}{d_l}$",
+                 formula_note="The last collection with a nonzero excretion rate, ordered by collection midpoint")
+
 PKNCA.set.summary(
-  name = c("volpk", "ae", "clr.last", "clr.obs", "clr.pred", "fe", "ermax"),
+  name = c("volpk", "ae", "clr.last", "clr.obs", "clr.pred", "fe", "ermax", "erint", "erlst"),
   description = "geometric mean and geometric coefficient of variation",
   point = business.geomean,
   spread = business.geocv

@@ -48,6 +48,141 @@ validate_cdisc_arg <- function(x, arg_name) {
   }
 }
 
+# The vocabularies used to classify parameters.  They are defined here, next
+# to add.interval.col(), because it validates against them while the package is
+# still being sourced -- a file sorting after this one would not yet exist.
+
+#' Concepts, tiers, and contexts used to classify NCA parameters
+#'
+#' @returns `pknca_concepts()` gives the concept names PKNCA uses,
+#'   `pknca_tiers()` the reporting tiers, `pknca_routes()` the routes of
+#'   administration, `pknca_dosing()` the dosing patterns, and
+#'   `pknca_sample_types()` the sample collection types.
+#' @details A `tier` of `"common"` marks a parameter that belongs in a default
+#'   report for at least one context; `"uncommon"` marks one that is calculated
+#'   only when asked for by name.  `"uncommon"` is the default, so a parameter
+#'   registered without a tier is never selected automatically.
+#' @seealso [pknca_concept()], [add.interval.col()]
+#' @examples
+#' pknca_concepts()
+#' @family Interval specifications
+#' @export
+pknca_concepts <- function() {
+  c(
+    # Exposure
+    "auc", "aumc", "auc_above_conc", "auc_extrapolation",
+    # Concentrations
+    "peak_conc", "min_conc", "last_conc", "average_conc", "trough_conc",
+    "start_conc", "initial_conc", "eoi_conc",
+    # Times
+    "peak_time", "min_time", "last_time", "first_time", "lag_time",
+    "time_above_conc",
+    # Disposition
+    "clearance", "renal_clearance", "volume_z", "volume_ss", "mrt",
+    "half_life", "effective_half_life", "elimination_rate",
+    # Multiple dosing
+    "fluctuation",
+    # Excreta
+    "excreted_amount", "excreted_fraction", "excretion_rate",
+    "collected_volume",
+    # Bookkeeping
+    "bioavailability", "total_dose", "observation_count"
+  )
+}
+
+#' @rdname pknca_concepts
+#' @export
+pknca_tiers <- function() {
+  c("common", "uncommon")
+}
+
+#' @rdname pknca_concepts
+#' @export
+pknca_routes <- function() {
+  c("extravascular", "iv_bolus", "iv_infusion", "iv_continuous_infusion")
+}
+
+#' @rdname pknca_concepts
+#' @export
+pknca_dosing <- function() {
+  c("single", "multiple", "steady_state")
+}
+
+#' @rdname pknca_concepts
+#' @export
+pknca_sample_types <- function() {
+  c("spot", "interval")
+}
+
+#' The concept a parameter calculation function computes
+#'
+#' The concept is the kind of quantity a user asks for -- "clearance" rather
+#' than the fifteen registered clearance parameters.  It is stored as an
+#' attribute on the calculation function so that it sits with the code that
+#' computes it, and so that a parameter added by another package can carry one
+#' too.
+#'
+#' @param x A parameter calculation function (for example `pk.calc.cmax`).
+#' @param value A concept name; see [pknca_concepts()] for the ones PKNCA uses.
+#' @returns `pknca_concept()` gives the concept, or `NULL` when none is set.
+#'   The replacement form gives the function with the attribute set.
+#' @details A function that computes different concepts depending on which
+#'   parameter it is registered for -- `pk.calc.dn()` is the example within
+#'   PKNCA -- should have no concept.  Those parameters take the concept of the
+#'   parameter they depend on.  When neither applies, set the concept for the
+#'   individual parameter with the `selection` argument of
+#'   [add.interval.col()].
+#' @seealso [pknca_concepts()], [add.interval.col()], and the vignette
+#'   "Writing Parameter Functions"
+#' @examples
+#' pknca_concept(pk.calc.cmax)
+#' @export
+pknca_concept <- function(x) {
+  attr(x, "pknca_concept", exact = TRUE)
+}
+
+#' @rdname pknca_concept
+#' @export
+`pknca_concept<-` <- function(x, value) {
+  checkmate::assert_string(value, min.chars = 1, na.ok = FALSE)
+  attr(x, "pknca_concept") <- value
+  x
+}
+
+# Validate the `selection` argument of add.interval.col().  Every element is
+# optional; an empty or absent selection means "derive everything".
+assert_selection <- function(selection, name) {
+  if (is.null(selection)) {
+    return(list())
+  }
+  if (!checkmate::test_list(selection, names = "unique")) {
+    rlang::abort(
+      sprintf("`selection` for parameter '%s' must be a named list", name),
+      class = "pknca_error_selection_not_list"
+    )
+  }
+  extra <- setdiff(names(selection), c("concept", "route", "dosing"))
+  if (length(extra) > 0) {
+    rlang::abort(
+      sprintf(
+        "`selection` for parameter '%s' has unknown element(s): %s",
+        name, paste(extra, collapse = ", ")
+      ),
+      class = "pknca_error_selection_unknown_element"
+    )
+  }
+  if (!is.null(selection$concept)) {
+    checkmate::assert_string(selection$concept, min.chars = 1, na.ok = FALSE)
+  }
+  if (!is.null(selection$route)) {
+    checkmate::assert_subset(selection$route, pknca_routes(), empty.ok = FALSE)
+  }
+  if (!is.null(selection$dosing)) {
+    checkmate::assert_subset(selection$dosing, pknca_dosing(), empty.ok = FALSE)
+  }
+  selection
+}
+
 #' Add columns for calculations within PKNCA intervals
 #'
 #' @param name The column name as a non-empty character string (length 1,
@@ -88,6 +223,28 @@ validate_cdisc_arg <- function(x, arg_name) {
 #' @param formula_note Character value providing additional context about the
 #'   formula (e.g. assumptions or method details).  Displayed alongside the
 #'   formula in documentation tables.
+#' @param tier How commonly the parameter is reported:  `"common"` for one
+#'   that belongs in a default report for at least one context, or
+#'   `"uncommon"` (the default) for one that is calculated only when asked for
+#'   by name.  See [pknca_tiers()].
+#' @param selection A named list declaring what cannot be derived about where
+#'   the parameter applies.  Every element is optional, and the default of
+#'   `NULL` derives everything:
+#'
+#'   \describe{
+#'     \item{`concept`}{The kind of quantity the parameter is (see
+#'       [pknca_concepts()]).  Needed only when the calculation function
+#'       carries no [pknca_concept()] and the concept cannot be taken from
+#'       `depends`.}
+#'     \item{`route`}{The routes of administration the parameter applies to
+#'       (see [pknca_routes()]).  Derived as intravenous for anything
+#'       calculated from `c0` or needing a dose duration, and as any route
+#'       otherwise.}
+#'     \item{`dosing`}{The dosing patterns the parameter applies to (see
+#'       [pknca_dosing()]).  Derived as single-dose for anything calculated
+#'       from an extrapolation to infinity.  A declared value propagates to
+#'       every parameter calculated from this one.}
+#'   }
 #' @returns NULL (Calling this function has a side effect of changing the
 #'   available intervals for calculations)
 #'
@@ -159,7 +316,9 @@ add.interval.col <- function(name,
                              pptestcd_cdisc=NULL,
                              pptest_cdisc=NULL,
                              formula=NULL,
-                             formula_note=NULL) {
+                             formula_note=NULL,
+                             tier="uncommon",
+                             selection=NULL) {
   # Check inputs
   checkmate::assert_character(x = name, len = 1, min.chars = 1, any.missing = FALSE)
   checkmate::assert_character(x = FUN, len = 1, any.missing = TRUE) # allows NA
@@ -167,6 +326,8 @@ add.interval.col <- function(name,
   checkmate::assert_character(x = pretty_name, len = 1, min.chars = 1, any.missing=FALSE)
   checkmate::assert_character(x = desc, len = 1, any.missing=FALSE, max.chars = 40)
   checkmate::assert_character(x = depends, null.ok = TRUE)
+  tier <- match.arg(tier, choices = pknca_tiers())
+  selection <- assert_selection(selection, name = name)
 
   # `values` must be either a function (used to validate/coerce) or a vector
   # of allowed values -- both are acceptable, so just ensure it was supplied
@@ -272,7 +433,9 @@ add.interval.col <- function(name,
       pptestcd_cdisc=pptestcd_cdisc,
       pptest_cdisc=pptest_cdisc,
       formula=formula,
-      formula_note=formula_note
+      formula_note=formula_note,
+      tier=tier,
+      selection=selection
     )
   if (redefining) {
     for (current_name in names(current)) {
@@ -282,6 +445,11 @@ add.interval.col <- function(name,
     }
   }
   assign("interval.cols", current, envir=.PKNCAEnv)
+  # The classification is derived from the whole registry, so any registration
+  # can change it.
+  if (exists("parameter_classification", envir=.PKNCAEnv)) {
+    rm("parameter_classification", envir=.PKNCAEnv)
+  }
 }
 
 # Sort the interval columns by dependencies.

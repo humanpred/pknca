@@ -53,6 +53,8 @@ pk.calc.c0 <- function(conc, time, time.dose=0,
   ret
 }
 
+pknca_concept(pk.calc.c0) <- "initial_conc"
+
 #' @describeIn pk.calc.c0 Semilog regress the first and second points
 #' after time.dose.  This method will return `NA` if the second
 #' `conc` after `time.dose` is 0 or greater than the first.
@@ -135,7 +137,8 @@ add.interval.col("c0",
                  pptestcd_cdisc="C0",
                  pptest_cdisc="Initial Conc",
                  formula="$C_0 = \\text{if measured, } C_{t=0}; \\text{ else, } C_0 = C_1 \\exp\\left(-\\frac{\\ln(C_2) - \\ln(C_1)}{t_2-t_1} (t_1 - t_{\\text{dose}})\\right)$",
-                 formula_note="Methods are tried in order: c0, logslope, c1, cmin, set0; the formula shows c0 and logslope")
+                 formula_note="Methods are tried in order: c0, logslope, c1, cmin, set0; the formula shows c0 and logslope",
+                 tier = "common")
 PKNCA.set.summary(
   name="c0",
   description="geometric mean and geometric coefficient of variation",

@@ -81,6 +81,8 @@ pk.calc.time_above <- function(conc, time,
   }
   ret
 }
+
+pknca_concept(pk.calc.time_above) <- "time_above_conc"
 # Add the column to the interval specification
 add.interval.col("time_above",
                  FUN="pk.calc.time_above",
