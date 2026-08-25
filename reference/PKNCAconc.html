@@ -148,12 +148,16 @@ when selecting data for a calculation interval; the duration is not
 considered.  A collection starting within an interval and ending after the
 interval <code>end</code> contributes its full amount to that interval, so for the
 simplest interpretation of results, align collection start and end times
-with interval boundaries.</p></dd>
+with interval boundaries.  A <code>duration</code> column is added to the data only
+when this is given; requesting an excretion rate parameter (<code>ermax</code>,
+<code>ertmax</code>, <code>ertlst</code>) without it is an error.</p></dd>
 
 
 <dt id="arg-volume">volume<a class="anchor" aria-label="anchor" href="#arg-volume"></a></dt>
 <dd><p>(optional) The volume (or mass) of collection as is typically
-used for urine or feces measurements.</p></dd>
+used for urine or feces measurements.  A <code>volume</code> column is added to the
+data only when this is given; requesting a parameter that needs it (<code>ae</code>,
+<code>fe</code>, <code>volpk</code>, and similar) without it is an error.</p></dd>
 
 
 <dt id="arg-exclude-half-life-include-half-life">exclude_half.life, include_half.life<a class="anchor" aria-label="anchor" href="#arg-exclude-half-life-include-half-life"></a></dt>

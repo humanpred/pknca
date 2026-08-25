@@ -107,13 +107,13 @@ The group is all points in the figure, and the interval for the last day
 <span><span class="co">## Nominal time column is not specified.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## First 6 rows of concentration data:</span></span>
-<span><span class="co">##    study treatment ID time      conc   analyte exclude volume duration</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    &lt;NA&gt;     NA        0</span></span></code></pre>
+<span><span class="co">##    study treatment ID time      conc   analyte exclude</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    &lt;NA&gt;</span></span></code></pre>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot the concentration-time data and the interval</span></span>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="va">d_conc_multi</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>, y<span class="op">=</span><span class="va">conc</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -151,13 +151,13 @@ The group is all points in the figure, and the interval for the last day
 <span><span class="co">## Nominal time column is not specified.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## First 6 rows of concentration data:</span></span>
-<span><span class="co">##  treatment ID      conc time exclude volume duration</span></span>
-<span><span class="co">##      Trt 1  1 0.0000000    0    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##      Trt 1  1 0.6140526    1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##      Trt 1  1 0.8100022    2    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##      Trt 1  1 0.8425422    4    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##      Trt 1  1 0.7771994    6    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##      Trt 1  1 0.7052469    8    &lt;NA&gt;     NA        0</span></span>
+<span><span class="co">##  treatment ID      conc time exclude</span></span>
+<span><span class="co">##      Trt 1  1 0.0000000    0    &lt;NA&gt;</span></span>
+<span><span class="co">##      Trt 1  1 0.6140526    1    &lt;NA&gt;</span></span>
+<span><span class="co">##      Trt 1  1 0.8100022    2    &lt;NA&gt;</span></span>
+<span><span class="co">##      Trt 1  1 0.8425422    4    &lt;NA&gt;</span></span>
+<span><span class="co">##      Trt 1  1 0.7771994    6    &lt;NA&gt;</span></span>
+<span><span class="co">##      Trt 1  1 0.7052469    8    &lt;NA&gt;</span></span>
 <span><span class="co">## No dosing information.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## With 1 rows of interval specifications.</span></span>
@@ -264,13 +264,13 @@ simpler when scripting to ensure that all points are selected.</p>
 <span><span class="co">## Nominal time column is not specified.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## First 6 rows of concentration data:</span></span>
-<span><span class="co">##    study treatment ID time      conc   analyte exclude volume duration</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    &lt;NA&gt;     NA        0</span></span></code></pre>
+<span><span class="co">##    study treatment ID time      conc   analyte exclude</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    &lt;NA&gt;</span></span></code></pre>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Use superposition to simulate multiple doses</span></span>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">d_conc</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">d_conc</span><span class="op">)</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="fl">48</span>,<span class="op">]</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>, y<span class="op">=</span><span class="va">conc</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -311,13 +311,13 @@ first and second rows of the intervals, respectively.</p>
 <span><span class="co">## Nominal time column is not specified.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## First 6 rows of concentration data:</span></span>
-<span><span class="co">##    study treatment ID time      conc   analyte exclude volume duration</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    &lt;NA&gt;     NA        0</span></span></code></pre>
+<span><span class="co">##    study treatment ID time      conc   analyte exclude</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    &lt;NA&gt;</span></span></code></pre>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot the concentration-time data and the interval</span></span>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="va">d_conc_multi</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>, y<span class="op">=</span><span class="va">conc</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -384,13 +384,13 @@ calculations can be performed in different intervals. In this case,
 <span><span class="co">## Nominal time column is not specified.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## First 6 rows of concentration data:</span></span>
-<span><span class="co">##    study treatment ID time      conc   analyte exclude volume duration</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    &lt;NA&gt;     NA        0</span></span></code></pre>
+<span><span class="co">##    study treatment ID time      conc   analyte exclude</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    &lt;NA&gt;</span></span>
+<span><span class="co">##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    &lt;NA&gt;</span></span></code></pre>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Use superposition to simulate multiple doses</span></span>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">d_conc</span><span class="op">)</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>, y<span class="op">=</span><span class="va">conc</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>

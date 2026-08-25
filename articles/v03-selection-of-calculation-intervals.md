@@ -21,13 +21,13 @@ The group is all points in the figure, and the interval for the last day
     ## Nominal time column is not specified.
     ## 
     ## First 6 rows of concentration data:
-    ##    study treatment ID time      conc   analyte exclude volume duration
-    ##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    <NA>     NA        0
+    ##    study treatment ID time      conc   analyte exclude
+    ##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    <NA>
 
 ``` r
 
@@ -68,13 +68,13 @@ PKNCAdata(d_conc_multi_obj, intervals=intervals_manual)
     ## Nominal time column is not specified.
     ## 
     ## First 6 rows of concentration data:
-    ##  treatment ID      conc time exclude volume duration
-    ##      Trt 1  1 0.0000000    0    <NA>     NA        0
-    ##      Trt 1  1 0.6140526    1    <NA>     NA        0
-    ##      Trt 1  1 0.8100022    2    <NA>     NA        0
-    ##      Trt 1  1 0.8425422    4    <NA>     NA        0
-    ##      Trt 1  1 0.7771994    6    <NA>     NA        0
-    ##      Trt 1  1 0.7052469    8    <NA>     NA        0
+    ##  treatment ID      conc time exclude
+    ##      Trt 1  1 0.0000000    0    <NA>
+    ##      Trt 1  1 0.6140526    1    <NA>
+    ##      Trt 1  1 0.8100022    2    <NA>
+    ##      Trt 1  1 0.8425422    4    <NA>
+    ##      Trt 1  1 0.7771994    6    <NA>
+    ##      Trt 1  1 0.7052469    8    <NA>
     ## No dosing information.
     ## 
     ## With 1 rows of interval specifications.
@@ -156,13 +156,13 @@ all points are selected.
     ## Nominal time column is not specified.
     ## 
     ## First 6 rows of concentration data:
-    ##    study treatment ID time      conc   analyte exclude volume duration
-    ##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    <NA>     NA        0
+    ##    study treatment ID time      conc   analyte exclude
+    ##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    <NA>
 
 ``` r
 
@@ -214,13 +214,13 @@ and second rows of the intervals, respectively.
     ## Nominal time column is not specified.
     ## 
     ## First 6 rows of concentration data:
-    ##    study treatment ID time      conc   analyte exclude volume duration
-    ##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    <NA>     NA        0
+    ##    study treatment ID time      conc   analyte exclude
+    ##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    <NA>
 
 ``` r
 
@@ -283,13 +283,13 @@ calculated in the 0-Inf interval.
     ## Nominal time column is not specified.
     ## 
     ## First 6 rows of concentration data:
-    ##    study treatment ID time      conc   analyte exclude volume duration
-    ##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    <NA>     NA        0
-    ##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    <NA>     NA        0
+    ##    study treatment ID time      conc   analyte exclude
+    ##  Study 1     Trt 1  1    0 0.0000000 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    1 0.6140526 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    2 0.8100022 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    <NA>
+    ##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    <NA>
 
 ``` r
 

@@ -229,13 +229,13 @@ conc_obj_multi
     ## Nominal time column is not specified.
     ## 
     ## First 6 rows of concentration data:
-    ##  Subject     conc time exclude volume duration
-    ##        1  0.74000 0.00    <NA>     NA        0
-    ##        1  2.84000 0.25    <NA>     NA        0
-    ##        1  4.23875 0.37    <NA>     NA        0
-    ##        1  6.57000 0.57    <NA>     NA        0
-    ##        1 10.50000 1.12    <NA>     NA        0
-    ##        1  9.66000 2.02    <NA>     NA        0
+    ##  Subject     conc time exclude
+    ##        1  0.74000 0.00    <NA>
+    ##        1  2.84000 0.25    <NA>
+    ##        1  4.23875 0.37    <NA>
+    ##        1  6.57000 0.57    <NA>
+    ##        1 10.50000 1.12    <NA>
+    ##        1  9.66000 2.02    <NA>
 
 ``` r
 
@@ -441,13 +441,13 @@ print(results_obj)
     ## Nominal time column is not specified.
     ## 
     ## First 6 rows of concentration data:
-    ##  Subject     conc time exclude volume duration
-    ##        1  0.74000 0.00    <NA>     NA        0
-    ##        1  2.84000 0.25    <NA>     NA        0
-    ##        1  4.23875 0.37    <NA>     NA        0
-    ##        1  6.57000 0.57    <NA>     NA        0
-    ##        1 10.50000 1.12    <NA>     NA        0
-    ##        1  9.66000 2.02    <NA>     NA        0
+    ##  Subject     conc time exclude
+    ##        1  0.74000 0.00    <NA>
+    ##        1  2.84000 0.25    <NA>
+    ##        1  4.23875 0.37    <NA>
+    ##        1  6.57000 0.57    <NA>
+    ##        1 10.50000 1.12    <NA>
+    ##        1  9.66000 2.02    <NA>
     ## Formula for dosing:
     ##  ~time | Subject
     ## Nominal time column is not specified.
@@ -651,7 +651,7 @@ print(results_obj)
     ## attr(,"class")
     ## [1] "PKNCAresults" "list"        
     ## attr(,"provenance")
-    ## Provenance hash 1010dd656fa2060bf5d457ba131dbe6d generated on 2026-08-25 11:59:17.800432 with R version 4.6.1 (2026-06-24).
+    ## Provenance hash 1010dd656fa2060bf5d457ba131dbe6d generated on 2026-08-25 12:03:56.586311 with R version 4.6.1 (2026-06-24).
 
 ``` r
 

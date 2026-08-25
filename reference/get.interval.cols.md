@@ -185,6 +185,9 @@ get.interval.cols()
 #> $auclast$requires_volume
 #> [1] FALSE
 #> 
+#> $auclast$requires_conc_dur
+#> [1] FALSE
+#> 
 #> 
 #> $aucall
 #> $aucall$FUN
@@ -872,6 +875,9 @@ get.interval.cols()
 #> $cmax$requires_volume
 #> [1] FALSE
 #> 
+#> $cmax$requires_conc_dur
+#> [1] FALSE
+#> 
 #> 
 #> $cmin
 #> $cmin$FUN
@@ -976,6 +982,9 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> $tmax$requires_volume
+#> [1] FALSE
+#> 
+#> $tmax$requires_conc_dur
 #> [1] FALSE
 #> 
 #> 
@@ -4221,6 +4230,9 @@ get.interval.cols()
 #> $half.life$requires_volume
 #> [1] FALSE
 #> 
+#> $half.life$requires_conc_dur
+#> [1] FALSE
+#> 
 #> 
 #> $r.squared
 #> $r.squared$FUN
@@ -6242,6 +6254,9 @@ get.interval.cols()
 #> $aucinf.obs$requires_volume
 #> [1] FALSE
 #> 
+#> $aucinf.obs$requires_conc_dur
+#> [1] FALSE
+#> 
 #> 
 #> $aucinf.pred
 #> $aucinf.pred$FUN
@@ -7182,6 +7197,9 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> $aucpext.obs$requires_volume
+#> [1] FALSE
+#> 
+#> $aucpext.obs$requires_conc_dur
 #> [1] FALSE
 #> 
 #> 

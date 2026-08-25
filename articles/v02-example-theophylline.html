@@ -7558,13 +7558,13 @@ information).</p>
 <span><span class="co">## Nominal time column is not specified.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## First 6 rows of concentration data:</span></span>
-<span><span class="co">##  Subject     conc time exclude volume duration</span></span>
-<span><span class="co">##        1  0.74000 0.00    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##        1  2.84000 0.25    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##        1  4.23875 0.37    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##        1  6.57000 0.57    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##        1 10.50000 1.12    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##        1  9.66000 2.02    &lt;NA&gt;     NA        0</span></span></code></pre>
+<span><span class="co">##  Subject     conc time exclude</span></span>
+<span><span class="co">##        1  0.74000 0.00    &lt;NA&gt;</span></span>
+<span><span class="co">##        1  2.84000 0.25    &lt;NA&gt;</span></span>
+<span><span class="co">##        1  4.23875 0.37    &lt;NA&gt;</span></span>
+<span><span class="co">##        1  6.57000 0.57    &lt;NA&gt;</span></span>
+<span><span class="co">##        1 10.50000 1.12    &lt;NA&gt;</span></span>
+<span><span class="co">##        1  9.66000 2.02    &lt;NA&gt;</span></span></code></pre>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dose_obj_multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span>Subject<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">conc_obj_multi</span><span class="op">)</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span>,</span>
 <span>                                      time<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">144</span>, by<span class="op">=</span><span class="fl">24</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -7753,13 +7753,13 @@ progress.</p>
 <span><span class="co">## Nominal time column is not specified.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## First 6 rows of concentration data:</span></span>
-<span><span class="co">##  Subject     conc time exclude volume duration</span></span>
-<span><span class="co">##        1  0.74000 0.00    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##        1  2.84000 0.25    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##        1  4.23875 0.37    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##        1  6.57000 0.57    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##        1 10.50000 1.12    &lt;NA&gt;     NA        0</span></span>
-<span><span class="co">##        1  9.66000 2.02    &lt;NA&gt;     NA        0</span></span>
+<span><span class="co">##  Subject     conc time exclude</span></span>
+<span><span class="co">##        1  0.74000 0.00    &lt;NA&gt;</span></span>
+<span><span class="co">##        1  2.84000 0.25    &lt;NA&gt;</span></span>
+<span><span class="co">##        1  4.23875 0.37    &lt;NA&gt;</span></span>
+<span><span class="co">##        1  6.57000 0.57    &lt;NA&gt;</span></span>
+<span><span class="co">##        1 10.50000 1.12    &lt;NA&gt;</span></span>
+<span><span class="co">##        1  9.66000 2.02    &lt;NA&gt;</span></span>
 <span><span class="co">## Formula for dosing:</span></span>
 <span><span class="co">##  ~time | Subject</span></span>
 <span><span class="co">## Nominal time column is not specified.</span></span>
@@ -7963,7 +7963,7 @@ progress.</p>
 <span><span class="co">## attr(,"class")</span></span>
 <span><span class="co">## [1] "PKNCAresults" "list"        </span></span>
 <span><span class="co">## attr(,"provenance")</span></span>
-<span><span class="co">## Provenance hash 1010dd656fa2060bf5d457ba131dbe6d generated on 2026-08-25 11:59:17.800432 with R version 4.6.1 (2026-06-24).</span></span></code></pre>
+<span><span class="co">## Provenance hash 1010dd656fa2060bf5d457ba131dbe6d generated on 2026-08-25 12:03:56.586311 with R version 4.6.1 (2026-06-24).</span></span></code></pre>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N     auclast        cmax</span></span>

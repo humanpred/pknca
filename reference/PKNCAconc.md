@@ -91,12 +91,16 @@ PKNCAconc(
   not considered. A collection starting within an interval and ending
   after the interval `end` contributes its full amount to that interval,
   so for the simplest interpretation of results, align collection start
-  and end times with interval boundaries.
+  and end times with interval boundaries. A `duration` column is added
+  to the data only when this is given; requesting an excretion rate
+  parameter (`ermax`, `ertmax`, `ertlst`) without it is an error.
 
 - volume:
 
   (optional) The volume (or mass) of collection as is typically used for
-  urine or feces measurements.
+  urine or feces measurements. A `volume` column is added to the data
+  only when this is given; requesting a parameter that needs it (`ae`,
+  `fe`, `volpk`, and similar) without it is an error.
 
 - exclude_half.life, include_half.life:
 
