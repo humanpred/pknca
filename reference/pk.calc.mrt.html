@@ -70,7 +70,9 @@ multiple-dose data.</p>
 <span></span>
 <span><span class="fu">pk.calc.mrt.iv</span><span class="op">(</span><span class="va">auc</span>, <span class="va">aumc</span>, <span class="va">duration.dose</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">pk.calc.mrt.md</span><span class="op">(</span><span class="va">auctau</span>, <span class="va">aumctau</span>, <span class="va">aucinf</span>, <span class="va">tau</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">pk.calc.mrt.md</span><span class="op">(</span><span class="va">auctau</span>, <span class="va">aumctau</span>, <span class="va">aucinf</span>, <span class="va">tau</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">pk.calc.mrt.md.iv</span><span class="op">(</span><span class="va">auctau</span>, <span class="va">aumctau</span>, <span class="va">aucinf</span>, <span class="va">tau</span>, <span class="va">duration.dose</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -118,12 +120,33 @@ data)</p></dd>
 only be used for multiple dosing with equal intervals between doses.
 Note that if <code>aucinf == auctau</code> (as would be the assumption with
 linear kinetics), the equation becomes the same as the single-dose MRT.</p>
+<p>These are the parameters to use when PK are nonlinear.  With linear PK,
+MRT and Vss can be measured from a single dose and the single-dose
+parameters (<code>mrt.obs</code>, <code>vss.obs</code>, and similar) describe steady state as
+well.  When PK are nonlinear they do not, so MRT and Vss have to be
+measured over a steady-state dosing interval, which is what these
+parameters do.  The ratio <code>aumctau/auctau</code> on its own (<code>mrt.last</code> over a
+dosing interval) is not MRT at steady state and underestimates it
+substantially; the <code>tau*(aucinf-auctau)/auctau</code> term accounts for the drug
+still in the body at the end of the interval.</p>
+<p>Within <code><a href="pk.nca.html">pk.nca()</a></code>, <code>tau</code> is detected from the dose times of the group with
+<code><a href="find.tau.html">find.tau()</a></code>.  When the dosing data hold a single dose (a common
+steady-state design where only the profiled dose is recorded), nothing
+repeats and nothing can be detected, so give <code>tau</code> as a column of the
+interval specification instead; a <code>tau</code> column always takes precedence
+over detection.  If <code>tau</code> can be neither given nor detected, the parameter
+is <code>NA</code> with a warning.</p>
+<p>mrt.ivmd is mrt.md less half of the infusion duration, the same
+correction that mrt.iv applies to the single-dose MRT.  Without it, MRT
+and everything derived from it are high by <code>duration.dose/2</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
 
 <ul><li><p><code>pk.calc.mrt.iv()</code>: MRT for an IV infusion</p></li>
 <li><p><code>pk.calc.mrt.md()</code>: MRT for multiple-dose data with nonlinear kinetics</p></li>
+<li><p><code>pk.calc.mrt.md.iv()</code>: MRT for multiple-dose data with nonlinear kinetics
+given as an IV infusion</p></li>
 </ul></div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

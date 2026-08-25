@@ -239,9 +239,11 @@ interval, zero or more columns to match the groups from the
 <code>PKNCAdata</code> object, and one or more NCA parameters to
 calculate. An interval may also have an <code>impute</code> column
 specifying the data imputation method(s) to apply to the interval before
-calculation (see the Data Imputation vignette for details). Any other
-columns named in the <code>keep_interval_cols</code> PKNCA option are
-passed through from the intervals to the corresponding rows of the
+calculation (see the Data Imputation vignette for details). An interval
+may have a <code>tau</code> column giving the dosing interval for the
+multiple-dose parameters (see Multiple-Dose MRT and Vss below). Any
+other columns named in the <code>keep_interval_cols</code> PKNCA option
+are passed through from the intervals to the corresponding rows of the
 results.</p>
 <p>Selection of points within an interval occurs by choosing any point
 at or after the <code>start</code> and at or before the
@@ -474,6 +476,54 @@ to 48 is not selected.</p>
 <p><img src="v03-selection-of-calculation-intervals_files/figure-html/interval_yes_no-1.png" class="r-plt" alt="" width="576"><img src="v03-selection-of-calculation-intervals_files/figure-html/interval_yes_no-2.png" class="r-plt" alt="" width="576"></p>
 </div>
 <div class="section level2">
+<h2 id="multiple-dose-mrt-and-vss">Multiple-Dose MRT and Vss<a class="anchor" aria-label="anchor" href="#multiple-dose-mrt-and-vss"></a>
+</h2>
+<p>The multiple-dose parameters <code>mrt.md.obs</code>,
+<code>mrt.md.pred</code>, <code>vss.md.obs</code>, and
+<code>vss.md.pred</code> measure MRT and Vss over a steady-state dosing
+interval instead of over a single dose.</p>
+<p><strong>These are the parameters to use when PK are
+nonlinear.</strong> When PK are linear, MRT and Vss can be measured from
+a single dose, and the single-dose parameters (<code>mrt.obs</code>,
+<code>vss.obs</code>, and similar) describe steady state as well. When
+PK are nonlinear they do not: clearance and volume at steady state
+differ from their values after the first dose, so MRT and Vss have to be
+measured over a steady-state interval.</p>
+<p>Taking <code>mrt.last</code> over a dosing interval is not a
+substitute. <code>AUMC</code> divided by <code>AUC</code> over 0 to tau
+leaves out the drug still in the body at the end of the interval and
+underestimates MRT substantially. The multiple-dose parameters add the
+<code>tau*(AUCinf - AUCtau)/AUCtau</code> term that accounts for it.</p>
+<p>The dosing interval comes from a <code>tau</code> column in the
+interval specification, and that column takes precedence whenever it is
+given:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">intervals_md</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    start<span class="op">=</span><span class="fl">0</span>, end<span class="op">=</span><span class="fl">24</span>,</span>
+<span>    tau<span class="op">=</span><span class="fl">24</span>,</span>
+<span>    mrt.md.obs<span class="op">=</span><span class="cn">TRUE</span>, vss.md.obs<span class="op">=</span><span class="cn">TRUE</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p>When no <code>tau</code> column is given, <code>tau</code> is
+detected from the dose times with <code><a href="../reference/find.tau.html">find.tau()</a></code>, which needs
+at least two doses in the dosing data. A steady-state design that
+records only the profiled dose has nothing that repeats, so it needs the
+<code>tau</code> column. If <code>tau</code> can be neither given nor
+detected, the parameters are <code>NA</code> with a warning rather than
+silently falling back to the single-dose equation.</p>
+<div class="section level3">
+<h3 id="intravenous-infusions">Intravenous Infusions<a class="anchor" aria-label="anchor" href="#intravenous-infusions"></a>
+</h3>
+<p>For an IV infusion, use <code>mrt.ivmd.obs</code>,
+<code>mrt.ivmd.pred</code>, <code>vss.ivmd.obs</code>, and
+<code>vss.ivmd.pred</code> instead. They subtract half of the infusion
+duration, the same correction that <code>mrt.iv.obs</code> applies to
+the single-dose MRT. Without it, MRT is high by half the infusion
+duration and Vss is high by clearance times half the infusion
+duration.</p>
+</div>
+</div>
+<div class="section level2">
 <h2 id="parameters-available-for-calculation-in-an-interval">Parameters Available for Calculation in an Interval<a class="anchor" aria-label="anchor" href="#parameters-available-for-calculation-in-an-interval"></a>
 </h2>
 <p>The following parameters are available in an interval. For more
@@ -482,11 +532,11 @@ function.</p>
 <table class="table">
 <colgroup>
 <col width="5%">
-<col width="41%">
-<col width="24%">
+<col width="45%">
+<col width="22%">
 <col width="6%">
 <col width="10%">
-<col width="10%">
+<col width="9%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">Parameter Name</th>
@@ -1638,6 +1688,22 @@ ordered by collection midpoint</td>
 <td align="left">pk.calc.mrt.iv</td>
 </tr>
 <tr class="odd">
+<td align="left">mrt.ivmd.obs</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">ivmd,obs</mtext></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow></mfrac><mo>+</mo><mi>τ</mi><mo>⋅</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">obs</mtext></mrow></msub><mo>−</mo><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow></mfrac><mo>−</mo><mfrac><msub><mi>T</mi><mtext mathvariant="normal">inf</mtext></msub><mn>2</mn></mfrac></mrow><annotation encoding="application/x-tex">MRT_{\text{ivmd,obs}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{obs}} - AUC_{\text{last}}}{AUC_{\text{last}}} - \frac{T_{\text{inf}}}{2}</annotation></semantics></math></td>
+<td align="left"></td>
+<td align="left">time</td>
+<td align="left">IV MRT, multi-dose, AUCinf.obs</td>
+<td align="left">pk.calc.mrt.md.iv</td>
+</tr>
+<tr class="even">
+<td align="left">mrt.ivmd.pred</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">ivmd,pred</mtext></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow></mfrac><mo>+</mo><mi>τ</mi><mo>⋅</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">pred</mtext></mrow></msub><mo>−</mo><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow></mfrac><mo>−</mo><mfrac><msub><mi>T</mi><mtext mathvariant="normal">inf</mtext></msub><mn>2</mn></mfrac></mrow><annotation encoding="application/x-tex">MRT_{\text{ivmd,pred}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{pred}} - AUC_{\text{last}}}{AUC_{\text{last}}} - \frac{T_{\text{inf}}}{2}</annotation></semantics></math></td>
+<td align="left"></td>
+<td align="left">time</td>
+<td align="left">IV MRT, multi-dose, AUCinf.pred</td>
+<td align="left">pk.calc.mrt.md.iv</td>
+</tr>
+<tr class="odd">
 <td align="left">mrt.last</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">last</mtext></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">MRT_{\text{last}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}}</annotation></semantics></math></td>
 <td align="left"></td>
@@ -1977,6 +2043,22 @@ concentrations</td>
 <td align="left"></td>
 <td align="left">volume</td>
 <td align="left">IV Vss, calc from interval AUCint.last</td>
+<td align="left">pk.calc.vss</td>
+</tr>
+<tr class="odd">
+<td align="left">vss.ivmd.obs</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi><mo>,</mo><mtext mathvariant="normal">ivmd,obs</mtext></mrow></msub><mo>=</mo><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">last</mtext></msub><mo>⋅</mo><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">ivmd,obs</mtext></msub></mrow><annotation encoding="application/x-tex">V_{ss,\text{ivmd,obs}} = CL_{\text{last}} \cdot MRT_{\text{ivmd,obs}}</annotation></semantics></math></td>
+<td align="left"></td>
+<td align="left">volume</td>
+<td align="left">IV Vss, multi-dose, obs</td>
+<td align="left">pk.calc.vss</td>
+</tr>
+<tr class="even">
+<td align="left">vss.ivmd.pred</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi><mo>,</mo><mtext mathvariant="normal">ivmd,pred</mtext></mrow></msub><mo>=</mo><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">last</mtext></msub><mo>⋅</mo><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">ivmd,pred</mtext></msub></mrow><annotation encoding="application/x-tex">V_{ss,\text{ivmd,pred}} = CL_{\text{last}} \cdot MRT_{\text{ivmd,pred}}</annotation></semantics></math></td>
+<td align="left"></td>
+<td align="left">volume</td>
+<td align="left">IV Vss, multi-dose, pred</td>
 <td align="left">pk.calc.vss</td>
 </tr>
 <tr class="odd">

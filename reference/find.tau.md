@@ -47,4 +47,5 @@ A scalar indicating the repeating interval with the most repetition.
 ## See also
 
 Other Interval determination:
-[`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md)
+[`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
+[`resolve_dose_tau()`](https://humanpred.github.io/pknca/reference/resolve_dose_tau.md)

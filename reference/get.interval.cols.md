@@ -8206,6 +8206,120 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $mrt.ivmd.obs
+#> $mrt.ivmd.obs$FUN
+#> [1] "pk.calc.mrt.md.iv"
+#> 
+#> $mrt.ivmd.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $mrt.ivmd.obs$unit_type
+#> [1] "time"
+#> 
+#> $mrt.ivmd.obs$pretty_name
+#> [1] "MRT (for multiple dosing of an IV infusion, based on AUCinf,obs)"
+#> 
+#> $mrt.ivmd.obs$desc
+#> [1] "IV MRT, multi-dose, AUCinf.obs"
+#> 
+#> $mrt.ivmd.obs$sparse
+#> [1] FALSE
+#> 
+#> $mrt.ivmd.obs$formalsmap
+#> $mrt.ivmd.obs$formalsmap$auctau
+#> [1] "auclast"
+#> 
+#> $mrt.ivmd.obs$formalsmap$aumctau
+#> [1] "aumclast"
+#> 
+#> $mrt.ivmd.obs$formalsmap$aucinf
+#> [1] "aucinf.obs"
+#> 
+#> 
+#> $mrt.ivmd.obs$depends
+#> [1] "auclast"    "aumclast"   "aucinf.obs"
+#> 
+#> $mrt.ivmd.obs$datatype
+#> [1] "interval"
+#> 
+#> $mrt.ivmd.obs$pptestcd_cdisc
+#> [1] "mrt.ivmd.obs"
+#> 
+#> $mrt.ivmd.obs$pptest_cdisc
+#> [1] "IV MRT, multi-dose, AUCinf.obs"
+#> 
+#> $mrt.ivmd.obs$formula
+#> [1] "$MRT_{\\text{ivmd,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$"
+#> 
+#> $mrt.ivmd.obs$formula_note
+#> NULL
+#> 
+#> $mrt.ivmd.obs$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.ivmd.obs$selection
+#> $mrt.ivmd.obs$selection$dosing
+#> [1] "multiple"     "steady_state"
+#> 
+#> 
+#> 
+#> $mrt.ivmd.pred
+#> $mrt.ivmd.pred$FUN
+#> [1] "pk.calc.mrt.md.iv"
+#> 
+#> $mrt.ivmd.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $mrt.ivmd.pred$unit_type
+#> [1] "time"
+#> 
+#> $mrt.ivmd.pred$pretty_name
+#> [1] "MRT (for multiple dosing of an IV infusion, based on AUCinf,pred)"
+#> 
+#> $mrt.ivmd.pred$desc
+#> [1] "IV MRT, multi-dose, AUCinf.pred"
+#> 
+#> $mrt.ivmd.pred$sparse
+#> [1] FALSE
+#> 
+#> $mrt.ivmd.pred$formalsmap
+#> $mrt.ivmd.pred$formalsmap$auctau
+#> [1] "auclast"
+#> 
+#> $mrt.ivmd.pred$formalsmap$aumctau
+#> [1] "aumclast"
+#> 
+#> $mrt.ivmd.pred$formalsmap$aucinf
+#> [1] "aucinf.pred"
+#> 
+#> 
+#> $mrt.ivmd.pred$depends
+#> [1] "auclast"     "aumclast"    "aucinf.pred"
+#> 
+#> $mrt.ivmd.pred$datatype
+#> [1] "interval"
+#> 
+#> $mrt.ivmd.pred$pptestcd_cdisc
+#> [1] "mrt.ivmd.pred"
+#> 
+#> $mrt.ivmd.pred$pptest_cdisc
+#> [1] "IV MRT, multi-dose, AUCinf.pred"
+#> 
+#> $mrt.ivmd.pred$formula
+#> [1] "$MRT_{\\text{ivmd,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$"
+#> 
+#> $mrt.ivmd.pred$formula_note
+#> NULL
+#> 
+#> $mrt.ivmd.pred$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.ivmd.pred$selection
+#> $mrt.ivmd.pred$selection$dosing
+#> [1] "multiple"     "steady_state"
+#> 
+#> 
+#> 
 #> $vz.obs
 #> $vz.obs$FUN
 #> [1] "pk.calc.vz"
@@ -8920,6 +9034,114 @@ get.interval.cols()
 #> 
 #> $vss.md.pred$selection
 #> $vss.md.pred$selection$dosing
+#> [1] "multiple"     "steady_state"
+#> 
+#> 
+#> 
+#> $vss.ivmd.obs
+#> $vss.ivmd.obs$FUN
+#> [1] "pk.calc.vss"
+#> 
+#> $vss.ivmd.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $vss.ivmd.obs$unit_type
+#> [1] "volume"
+#> 
+#> $vss.ivmd.obs$pretty_name
+#> [1] "Vss (for multiple-dose IV infusion, based on Clast,obs)"
+#> 
+#> $vss.ivmd.obs$desc
+#> [1] "IV Vss, multi-dose, obs"
+#> 
+#> $vss.ivmd.obs$sparse
+#> [1] FALSE
+#> 
+#> $vss.ivmd.obs$formalsmap
+#> $vss.ivmd.obs$formalsmap$cl
+#> [1] "cl.last"
+#> 
+#> $vss.ivmd.obs$formalsmap$mrt
+#> [1] "mrt.ivmd.obs"
+#> 
+#> 
+#> $vss.ivmd.obs$depends
+#> [1] "cl.last"      "mrt.ivmd.obs"
+#> 
+#> $vss.ivmd.obs$datatype
+#> [1] "interval"
+#> 
+#> $vss.ivmd.obs$pptestcd_cdisc
+#> [1] "vss.ivmd.obs"
+#> 
+#> $vss.ivmd.obs$pptest_cdisc
+#> [1] "IV Vss, multi-dose, obs"
+#> 
+#> $vss.ivmd.obs$formula
+#> [1] "$V_{ss,\\text{ivmd,obs}} = CL_{\\text{last}} \\cdot MRT_{\\text{ivmd,obs}}$"
+#> 
+#> $vss.ivmd.obs$formula_note
+#> NULL
+#> 
+#> $vss.ivmd.obs$tier
+#> [1] "uncommon"
+#> 
+#> $vss.ivmd.obs$selection
+#> $vss.ivmd.obs$selection$dosing
+#> [1] "multiple"     "steady_state"
+#> 
+#> 
+#> 
+#> $vss.ivmd.pred
+#> $vss.ivmd.pred$FUN
+#> [1] "pk.calc.vss"
+#> 
+#> $vss.ivmd.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $vss.ivmd.pred$unit_type
+#> [1] "volume"
+#> 
+#> $vss.ivmd.pred$pretty_name
+#> [1] "Vss (for multiple-dose IV infusion, based on Clast,pred)"
+#> 
+#> $vss.ivmd.pred$desc
+#> [1] "IV Vss, multi-dose, pred"
+#> 
+#> $vss.ivmd.pred$sparse
+#> [1] FALSE
+#> 
+#> $vss.ivmd.pred$formalsmap
+#> $vss.ivmd.pred$formalsmap$cl
+#> [1] "cl.last"
+#> 
+#> $vss.ivmd.pred$formalsmap$mrt
+#> [1] "mrt.ivmd.pred"
+#> 
+#> 
+#> $vss.ivmd.pred$depends
+#> [1] "cl.last"       "mrt.ivmd.pred"
+#> 
+#> $vss.ivmd.pred$datatype
+#> [1] "interval"
+#> 
+#> $vss.ivmd.pred$pptestcd_cdisc
+#> [1] "vss.ivmd.pred"
+#> 
+#> $vss.ivmd.pred$pptest_cdisc
+#> [1] "IV Vss, multi-dose, pred"
+#> 
+#> $vss.ivmd.pred$formula
+#> [1] "$V_{ss,\\text{ivmd,pred}} = CL_{\\text{last}} \\cdot MRT_{\\text{ivmd,pred}}$"
+#> 
+#> $vss.ivmd.pred$formula_note
+#> NULL
+#> 
+#> $vss.ivmd.pred$tier
+#> [1] "uncommon"
+#> 
+#> $vss.ivmd.pred$selection
+#> $vss.ivmd.pred$selection$dosing
 #> [1] "multiple"     "steady_state"
 #> 
 #> 

@@ -131,9 +131,11 @@ or more columns to match the groups from the `PKNCAdata` object, and one
 or more NCA parameters to calculate. An interval may also have an
 `impute` column specifying the data imputation method(s) to apply to the
 interval before calculation (see the Data Imputation vignette for
-details). Any other columns named in the `keep_interval_cols` PKNCA
-option are passed through from the intervals to the corresponding rows
-of the results.
+details). An interval may have a `tau` column giving the dosing interval
+for the multiple-dose parameters (see Multiple-Dose MRT and Vss below).
+Any other columns named in the `keep_interval_cols` PKNCA option are
+passed through from the intervals to the corresponding rows of the
+results.
 
 Selection of points within an interval occurs by choosing any point at
 or after the `start` and at or before the `end`.
@@ -366,6 +368,55 @@ from 24 to 48 is not selected.
 
 ![](v03-selection-of-calculation-intervals_files/figure-html/interval_yes_no-1.png)![](v03-selection-of-calculation-intervals_files/figure-html/interval_yes_no-2.png)
 
+## Multiple-Dose MRT and Vss
+
+The multiple-dose parameters `mrt.md.obs`, `mrt.md.pred`, `vss.md.obs`,
+and `vss.md.pred` measure MRT and Vss over a steady-state dosing
+interval instead of over a single dose.
+
+**These are the parameters to use when PK are nonlinear.** When PK are
+linear, MRT and Vss can be measured from a single dose, and the
+single-dose parameters (`mrt.obs`, `vss.obs`, and similar) describe
+steady state as well. When PK are nonlinear they do not: clearance and
+volume at steady state differ from their values after the first dose, so
+MRT and Vss have to be measured over a steady-state interval.
+
+Taking `mrt.last` over a dosing interval is not a substitute. `AUMC`
+divided by `AUC` over 0 to tau leaves out the drug still in the body at
+the end of the interval and underestimates MRT substantially. The
+multiple-dose parameters add the `tau*(AUCinf - AUCtau)/AUCtau` term
+that accounts for it.
+
+The dosing interval comes from a `tau` column in the interval
+specification, and that column takes precedence whenever it is given:
+
+``` r
+
+intervals_md <-
+  data.frame(
+    start=0, end=24,
+    tau=24,
+    mrt.md.obs=TRUE, vss.md.obs=TRUE
+  )
+```
+
+When no `tau` column is given, `tau` is detected from the dose times
+with
+[`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md),
+which needs at least two doses in the dosing data. A steady-state design
+that records only the profiled dose has nothing that repeats, so it
+needs the `tau` column. If `tau` can be neither given nor detected, the
+parameters are `NA` with a warning rather than silently falling back to
+the single-dose equation.
+
+### Intravenous Infusions
+
+For an IV infusion, use `mrt.ivmd.obs`, `mrt.ivmd.pred`, `vss.ivmd.obs`,
+and `vss.ivmd.pred` instead. They subtract half of the infusion
+duration, the same correction that `mrt.iv.obs` applies to the
+single-dose MRT. Without it, MRT is high by half the infusion duration
+and Vss is high by clearance times half the infusion duration.
+
 ## Parameters Available for Calculation in an Interval
 
 The following parameters are available in an interval. For more
@@ -513,6 +564,8 @@ information about the parameter, see the documentation for the function.
 | mrt.iv.pred | $`MRT_{\text{iv,pred}} = \frac{AUMC_{\infty,\text{pred}}}{AUC_{\infty,\text{pred}}} - \frac{T_{\text{inf}}}{2}`$ |  | time | IV MRT, AUCinf.pred/AUMCinf.pred | pk.calc.mrt.iv |
 | mrt.ivint.all |  |  | time | IV MRT, interval AUC/AUMCall | pk.calc.mrt.iv |
 | mrt.ivint.last |  |  | time | IV MRT, interval AUC/AUMClast | pk.calc.mrt.iv |
+| mrt.ivmd.obs | $`MRT_{\text{ivmd,obs}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{obs}} - AUC_{\text{last}}}{AUC_{\text{last}}} - \frac{T_{\text{inf}}}{2}`$ |  | time | IV MRT, multi-dose, AUCinf.obs | pk.calc.mrt.md.iv |
+| mrt.ivmd.pred | $`MRT_{\text{ivmd,pred}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{pred}} - AUC_{\text{last}}}{AUC_{\text{last}}} - \frac{T_{\text{inf}}}{2}`$ |  | time | IV MRT, multi-dose, AUCinf.pred | pk.calc.mrt.md.iv |
 | mrt.last | $`MRT_{\text{last}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}}`$ |  | time | MRT, AUClast/AUMClast | pk.calc.mrt |
 | mrt.md.obs | $`MRT_{\text{md,obs}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{obs}} - AUC_{\text{last}}}{AUC_{\text{last}}}`$ |  | time | MRT, multi-dose AUCinf.obs/AUMCinf.obs | pk.calc.mrt.md |
 | mrt.md.pred | $`MRT_{\text{md,pred}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{pred}} - AUC_{\text{last}}}{AUC_{\text{last}}}`$ |  | time | MRT, multi-dose AUCinf.pred/AUMCinf.pred | pk.calc.mrt.md |
@@ -555,6 +608,8 @@ information about the parameter, see the documentation for the function.
 | vss.iv.pred | $`V_{ss,\text{iv,pred}} = CL_{\text{pred}} \cdot MRT_{\text{iv,pred}}`$ |  | volume | IV Vss, predicted Clast | pk.calc.vss |
 | vss.ivint.all |  |  | volume | IV Vss, calc from interval AUCint.all | pk.calc.vss |
 | vss.ivint.last |  |  | volume | IV Vss, calc from interval AUCint.last | pk.calc.vss |
+| vss.ivmd.obs | $`V_{ss,\text{ivmd,obs}} = CL_{\text{last}} \cdot MRT_{\text{ivmd,obs}}`$ |  | volume | IV Vss, multi-dose, obs | pk.calc.vss |
+| vss.ivmd.pred | $`V_{ss,\text{ivmd,pred}} = CL_{\text{last}} \cdot MRT_{\text{ivmd,pred}}`$ |  | volume | IV Vss, multi-dose, pred | pk.calc.vss |
 | vss.last | $`V_{ss,\text{last}} = CL_{\text{last}} \cdot MRT_{\text{last}}`$ |  | volume | Vss, calc’d through Tlast | pk.calc.vss |
 | vss.md.obs | $`V_{ss,\text{md,obs}} = CL_{\text{last}} \cdot MRT_{\text{md,obs}}`$ |  | volume | Vss, multi-dose, obs | pk.calc.vss |
 | vss.md.pred | $`V_{ss,\text{md,pred}} = CL_{\text{last}} \cdot MRT_{\text{md,pred}}`$ |  | volume | Vss, multi-dose, pred | pk.calc.vss |

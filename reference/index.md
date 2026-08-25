@@ -495,6 +495,7 @@
 - [`pk.calc.mrt()`](https://humanpred.github.io/pknca/reference/pk.calc.mrt.md)
   [`pk.calc.mrt.iv()`](https://humanpred.github.io/pknca/reference/pk.calc.mrt.md)
   [`pk.calc.mrt.md()`](https://humanpred.github.io/pknca/reference/pk.calc.mrt.md)
+  [`pk.calc.mrt.md.iv()`](https://humanpred.github.io/pknca/reference/pk.calc.mrt.md)
   : Calculate the mean residence time (MRT) for single-dose data or
   linear multiple-dose data.
 
@@ -619,6 +620,10 @@
 
 - [`print(`*`<summary_PKNCAresults>`*`)`](https://humanpred.github.io/pknca/reference/print.summary_PKNCAresults.md)
   : Print the results summary
+
+- [`resolve_dose_tau()`](https://humanpred.github.io/pknca/reference/resolve_dose_tau.md)
+  : Determine the dosing interval (tau) to use for a calculation
+  interval
 
 - [`roundString()`](https://humanpred.github.io/pknca/reference/roundString.md)
   : Round a value to a defined number of digits printing out trailing

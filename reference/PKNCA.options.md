@@ -219,15 +219,18 @@ PKNCA.options()
 #>   mrt.int.inf.obs mrt.int.inf.pred mrt.iv.obs mrt.iv.pred mrt.md.obs
 #> 1           FALSE            FALSE      FALSE       FALSE      FALSE
 #> 2           FALSE            FALSE      FALSE       FALSE      FALSE
-#>   mrt.md.pred vz.obs vz.pred vz.int.inf.obs vz.int.inf.pred vz.iv.obs
-#> 1       FALSE  FALSE   FALSE          FALSE           FALSE     FALSE
-#> 2       FALSE  FALSE   FALSE          FALSE           FALSE     FALSE
-#>   vz.iv.pred vz.sparse.last vss.obs vss.pred vss.iv.obs vss.iv.pred vss.md.obs
-#> 1      FALSE          FALSE   FALSE    FALSE      FALSE       FALSE      FALSE
-#> 2      FALSE          FALSE   FALSE    FALSE      FALSE       FALSE      FALSE
-#>   vss.md.pred vss.int.inf.obs vss.int.inf.pred cav.int.inf.obs cav.int.inf.pred
-#> 1       FALSE           FALSE            FALSE           FALSE            FALSE
-#> 2       FALSE           FALSE            FALSE           FALSE            FALSE
+#>   mrt.md.pred mrt.ivmd.obs mrt.ivmd.pred vz.obs vz.pred vz.int.inf.obs
+#> 1       FALSE        FALSE         FALSE  FALSE   FALSE          FALSE
+#> 2       FALSE        FALSE         FALSE  FALSE   FALSE          FALSE
+#>   vz.int.inf.pred vz.iv.obs vz.iv.pred vz.sparse.last vss.obs vss.pred
+#> 1           FALSE     FALSE      FALSE          FALSE   FALSE    FALSE
+#> 2           FALSE     FALSE      FALSE          FALSE   FALSE    FALSE
+#>   vss.iv.obs vss.iv.pred vss.md.obs vss.md.pred vss.ivmd.obs vss.ivmd.pred
+#> 1      FALSE       FALSE      FALSE       FALSE        FALSE         FALSE
+#> 2      FALSE       FALSE      FALSE       FALSE        FALSE         FALSE
+#>   vss.int.inf.obs vss.int.inf.pred cav.int.inf.obs cav.int.inf.pred
+#> 1           FALSE            FALSE           FALSE            FALSE
+#> 2           FALSE            FALSE           FALSE            FALSE
 #>   thalf.eff.obs thalf.eff.pred thalf.eff.iv.obs thalf.eff.iv.pred kel.obs
 #> 1         FALSE          FALSE            FALSE             FALSE   FALSE
 #> 2         FALSE          FALSE            FALSE             FALSE   FALSE

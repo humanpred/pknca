@@ -73,4 +73,5 @@ Other Interval specifications:
 [`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md)
 
 Other Interval determination:
-[`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md)
+[`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md),
+[`resolve_dose_tau()`](https://humanpred.github.io/pknca/reference/resolve_dose_tau.md)
