@@ -43,6 +43,7 @@ assert_intervals <- function(intervals, data) {
       "conc_above",
       "time_above",
       "impute",
+      "tau",
       # If not used, data$options$keep_interval_cols will be NULL
       data$options$keep_interval_cols
     )

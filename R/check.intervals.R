@@ -202,7 +202,8 @@ pknca_requires_inputs <-
     dose_amt = c("dose", "dose.group"),
     dose_time = c("time.dose", "time.dose.group"),
     dose_dur = c("duration.dose", "duration.dose.group"),
-    volume = c("volume", "volume.group")
+    volume = c("volume", "volume.group"),
+    conc_dur = c("duration.conc", "duration.conc.group")
   )
 
 # Fill in the requires_* values for `params` and cache them in the registry,
@@ -279,17 +280,25 @@ absent_dose_inputs <- function(o_dose) {
   names(present)[!present]
 }
 
-# Concentration inputs that were not given.  A PKNCAconc object always carries
-# a volume column, filled with NA when none was given, so absence is detected
-# by value rather than by name.  Volumes missing for only some measurements are
-# reported per-interval by the calculations themselves.
+# Concentration inputs a calculation can require, each mapped to the
+# `PKNCAconc()` argument (and attribute column name) that supplies it.
+pknca_conc_input_args <- c(volume = "volume", conc_dur = "duration")
+
+# Concentration inputs that were not given.  An all-NA column is treated the
+# same as a column that was never set, since neither can be calculated from.
+# Values missing for only some measurements are reported per-interval by the
+# calculations themselves.
 absent_conc_inputs <- function(o_conc) {
-  volume <- getAttributeColumn(o_conc, attr_name = "volume", warn_missing = character())
-  if (is.null(volume) || all(is.na(volume[[1]]))) {
-    "volume"
-  } else {
-    character(0)
-  }
+  present <-
+    vapply(
+      X = pknca_conc_input_args,
+      FUN = function(x) {
+        current <- getAttributeColumn(o_conc, attr_name = x, warn_missing = character())
+        !is.null(current) && !all(is.na(current[[1]]))
+      },
+      FUN.VALUE = TRUE
+    )
+  names(present)[!present]
 }
 
 # The inputs pk.nca.interval() supplies directly rather than calculating, so a

@@ -73,6 +73,7 @@ Tlast
 Tmax
 Tmin
 Tss
+unclassifiable
 Vss
 Vz
 Weiner
@@ -127,6 +128,7 @@ infty
 interp
 intra
 intravascular
+ivmd
 knitr
 leq
 lin

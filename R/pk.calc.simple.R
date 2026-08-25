@@ -34,6 +34,8 @@ pk.calc.cmax <- function(conc, check=TRUE) {
     max(conc, na.rm=TRUE)
   }
 }
+
+pknca_concept(pk.calc.cmax) <- "peak_conc"
 # Add the column to the interval specification
 add.interval.col("cmax",
                  FUN="pk.calc.cmax",
@@ -44,7 +46,8 @@ add.interval.col("cmax",
                  depends=NULL,
                  pptestcd_cdisc="CMAX",
                  pptest_cdisc="Max Conc",
-                 formula="$C_{\\max} = \\max_i C_i$")
+                 formula="$C_{\\max} = \\max_i C_i$",
+                 tier = "common")
 
 #' @describeIn pk.calc.cmax Determine the minimum observed PK
 #'   concentration
@@ -63,6 +66,8 @@ pk.calc.cmin <- function(conc, check=TRUE) {
     min(conc, na.rm=TRUE)
   }
 }
+
+pknca_concept(pk.calc.cmin) <- "min_conc"
 # Add the column to the interval specification
 add.interval.col("cmin",
                  FUN="pk.calc.cmin",
@@ -119,6 +124,8 @@ pk.calc.tmax <- function(conc, time,
     }
   }
 }
+
+pknca_concept(pk.calc.tmax) <- "peak_time"
 # Add the column to the interval specification
 add.interval.col("tmax",
                  FUN="pk.calc.tmax",
@@ -129,7 +136,8 @@ add.interval.col("tmax",
                  depends=NULL,
                  pptestcd_cdisc="TMAX",
                  pptest_cdisc="Time of CMAX",
-                 formula="$T_{\\max} = t_{i: C_i = C_{\\max}}$")
+                 formula="$T_{\\max} = t_{i: C_i = C_{\\max}}$",
+                 tier = "common")
 
 #' Determine time of minimum observed PK concentration
 #'
@@ -175,6 +183,8 @@ pk.calc.tmin <- function(conc, time,
     }
   }
 }
+
+pknca_concept(pk.calc.tmin) <- "min_time"
 # Add the column to the interval specification
 add.interval.col("tmin",
                  FUN="pk.calc.tmin",
@@ -207,6 +217,8 @@ pk.calc.tlast <- function(conc, time, check=TRUE) {
     max(time[!(conc %in% c(NA, 0))])
   }
 }
+
+pknca_concept(pk.calc.tlast) <- "last_time"
 # Add the column to the interval specification
 add.interval.col("tlast",
                  FUN="pk.calc.tlast",
@@ -232,6 +244,8 @@ pk.calc.tfirst <- function(conc, time, check=TRUE) {
     min(time[!(conc %in% c(NA, 0))])
   }
 }
+
+pknca_concept(pk.calc.tfirst) <- "first_time"
 # Add the column to the interval specification
 add.interval.col("tfirst",
                  FUN="pk.calc.tfirst",
@@ -274,6 +288,8 @@ pk.calc.clast.obs <- function(conc, time, check=TRUE) {
     }
   }
 }
+
+pknca_concept(pk.calc.clast.obs) <- "last_conc"
 # Add the column to the interval specification
 add.interval.col("clast.obs",
                  FUN="pk.calc.clast.obs",
@@ -297,6 +313,8 @@ add.interval.col("clast.obs",
 pk.calc.thalf.eff <- function(mrt) {
   log(2)*mrt
 }
+
+pknca_concept(pk.calc.thalf.eff) <- "effective_half_life"
 # Add the columns to the interval specification
 add.interval.col("thalf.eff.obs",
                  FUN="pk.calc.thalf.eff",
@@ -422,6 +440,8 @@ pk.calc.aucpext <- function(auclast, aucinf) {
   ret
 }
 
+pknca_concept(pk.calc.aucpext) <- "auc_extrapolation"
+
 # Add the columns to the interval specification
 add.interval.col("aucpext.obs",
                  FUN="pk.calc.aucpext",
@@ -433,7 +453,8 @@ add.interval.col("aucpext.obs",
                  depends=c("auclast", "aucinf.obs"),
                  pptestcd_cdisc="AUCPEO",
                  pptest_cdisc="AUC %Extrapolation Obs",
-                 formula="$\\%AUC_{\\text{ext,obs}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{last}}}{AUC_{\\infty,\\text{obs}}}\\right)$")
+                 formula="$\\%AUC_{\\text{ext,obs}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{last}}}{AUC_{\\infty,\\text{obs}}}\\right)$",
+                 tier = "common")
 
 add.interval.col("aucpext.pred",
                  FUN="pk.calc.aucpext",
@@ -459,6 +480,8 @@ add.interval.col("aucpext.pred",
 pk.calc.kel <- function(mrt) {
   1/mrt
 }
+
+pknca_concept(pk.calc.kel) <- "elimination_rate"
 # Add the columns to the interval specification
 add.interval.col("kel.obs",
                  FUN="pk.calc.kel",
@@ -655,6 +678,8 @@ pk.calc.cl <- function(dose, auc) {
   ret
 }
 
+pknca_concept(pk.calc.cl) <- "clearance"
+
 # Add the columns to the interval specification
 add.interval.col("cl.last",
                  FUN="pk.calc.cl",
@@ -690,7 +715,8 @@ add.interval.col("cl.obs",
                  depends="aucinf.obs",
                  pptestcd_cdisc=list(route=list(extravascular="CLF/FO", intravascular="CLO")),
                  pptest_cdisc=list(route=list(extravascular="Total CL Obs by F", intravascular="Total CL Obs")),
-                 formula="$CL_{\\text{obs}} = \\frac{Dose}{AUC_{\\infty,\\text{obs}}}$")
+                 formula="$CL_{\\text{obs}} = \\frac{Dose}{AUC_{\\infty,\\text{obs}}}$",
+                 tier = "common")
 
 add.interval.col("cl.pred",
                  FUN="pk.calc.cl",
@@ -722,7 +748,8 @@ add.interval.col("cl.int.inf.obs",
                  desc = "Clearance, AUCint.inf.obs",
                  formalsmap = list(auc = "aucint.inf.obs"),
                  depends = "aucint.inf.obs",
-                 formula = "$CL_{\\text{int,}\\infty\\text{,obs}} = \\frac{Dose}{AUC_{\\text{int,}\\infty\\text{,obs}}}$")
+                 formula = "$CL_{\\text{int,}\\infty\\text{,obs}} = \\frac{Dose}{AUC_{\\text{int,}\\infty\\text{,obs}}}$",
+                 tier = "common")
 
 add.interval.col("cl.int.inf.pred",
                  FUN = "pk.calc.cl",
@@ -838,6 +865,8 @@ pk.calc.f <- function(dose1, auc1, dose2, auc2) {
   }
   ret
 }
+
+pknca_concept(pk.calc.f) <- "bioavailability"
 add.interval.col("f",
                  FUN="pk.calc.f",
                  values=c(FALSE, TRUE),
@@ -866,6 +895,8 @@ add.interval.col("f",
 pk.calc.mrt <- function(auc, aumc) {
   pk.calc.mrt.iv(auc, aumc, duration.dose=0)
 }
+
+pknca_concept(pk.calc.mrt) <- "mrt"
 # Add the columns to the interval specification
 add.interval.col("mrt.obs",
                  FUN="pk.calc.mrt",
@@ -975,6 +1006,8 @@ pk.calc.mrt.iv <- function(auc, aumc, duration.dose) {
   ret
 }
 
+pknca_concept(pk.calc.mrt.iv) <- "mrt"
+
 # Add the columns to the interval specification
 add.interval.col("mrt.iv.obs",
                  FUN="pk.calc.mrt.iv",
@@ -1047,6 +1080,24 @@ add.interval.col("mrt.ivint.last",
 #'   Note that if `aucinf == auctau` (as would be the assumption with
 #'   linear kinetics), the equation becomes the same as the single-dose MRT.
 #'
+#'   These are the parameters to use when PK are nonlinear.  With linear PK,
+#'   MRT and Vss can be measured from a single dose and the single-dose
+#'   parameters (`mrt.obs`, `vss.obs`, and similar) describe steady state as
+#'   well.  When PK are nonlinear they do not, so MRT and Vss have to be
+#'   measured over a steady-state dosing interval, which is what these
+#'   parameters do.  The ratio `aumctau/auctau` on its own (`mrt.last` over a
+#'   dosing interval) is not MRT at steady state and underestimates it
+#'   substantially; the `tau*(aucinf-auctau)/auctau` term accounts for the drug
+#'   still in the body at the end of the interval.
+#'
+#'   Within [pk.nca()], `tau` is detected from the dose times of the group with
+#'   [find.tau()].  When the dosing data hold a single dose (a common
+#'   steady-state design where only the profiled dose is recorded), nothing
+#'   repeats and nothing can be detected, so give `tau` as a column of the
+#'   interval specification instead; a `tau` column always takes precedence
+#'   over detection.  If `tau` can be neither given nor detected, the parameter
+#'   is `NA` with a warning.
+#'
 #' @param auctau the AUC from time 0 to the end of the dosing interval (tau).
 #' @param aumctau the AUMC from time 0 to the end of the dosing interval (tau).
 #' @param aucinf the AUC from time 0 to infinity (typically using single-dose
@@ -1054,13 +1105,12 @@ add.interval.col("mrt.ivint.last",
 #' @inheritParams assert_dosetau
 #' @export
 pk.calc.mrt.md <- function(auctau, aumctau, aucinf, tau) {
-  ret <- aumctau/auctau + tau*(aucinf-auctau)/auctau
-  mask_zero <- is.na(auctau) | auctau <= 0
-  if (any(mask_zero)) {
-    ret[mask_zero] <- NA_real_
-  }
-  ret
+  pk.calc.mrt.md.iv(
+    auctau=auctau, aumctau=aumctau, aucinf=aucinf, tau=tau, duration.dose=0
+  )
 }
+
+pknca_concept(pk.calc.mrt.md) <- "mrt"
 
 add.interval.col("mrt.md.obs",
                  FUN="pk.calc.mrt.md",
@@ -1072,7 +1122,8 @@ add.interval.col("mrt.md.obs",
                  depends=c("auclast", "aumclast", "aucinf.obs"),
                  pptestcd_cdisc="MRTMDO",
                  pptest_cdisc="MRT (for multiple dosing, based on AUCinf,obs)",
-                 formula="$MRT_{\\text{md,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}}$")
+                 formula="$MRT_{\\text{md,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}}$",
+                 selection = list(dosing = c("multiple", "steady_state")))
 
 add.interval.col("mrt.md.pred",
                  FUN="pk.calc.mrt.md",
@@ -1084,7 +1135,50 @@ add.interval.col("mrt.md.pred",
                  depends=c("auclast", "aumclast", "aucinf.pred"),
                  pptestcd_cdisc="MRTMDP",
                  pptest_cdisc="MRT (for multiple dosing, based on AUCinf,pred)",
-                 formula="$MRT_{\\text{md,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}}$")
+                 formula="$MRT_{\\text{md,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}}$",
+                 selection = list(dosing = c("multiple", "steady_state")))
+
+
+#' @describeIn pk.calc.mrt MRT for multiple-dose data with nonlinear kinetics
+#'   given as an IV infusion
+#'
+#' @details mrt.ivmd is mrt.md less half of the infusion duration, the same
+#'   correction that mrt.iv applies to the single-dose MRT.  Without it, MRT
+#'   and everything derived from it are high by `duration.dose/2`.
+#'
+#' @export
+pk.calc.mrt.md.iv <- function(auctau, aumctau, aucinf, tau, duration.dose) {
+  ret <- aumctau/auctau + tau*(aucinf-auctau)/auctau - duration.dose/2
+  mask_zero <- is.na(auctau) | auctau <= 0
+  if (any(mask_zero)) {
+    ret[mask_zero] <- NA_real_
+  }
+  ret
+}
+
+pknca_concept(pk.calc.mrt.md.iv) <- "mrt"
+
+add.interval.col("mrt.ivmd.obs",
+                 FUN="pk.calc.mrt.md.iv",
+                 values=c(FALSE, TRUE),
+                 unit_type="time",
+                 pretty_name="MRT (for multiple dosing of an IV infusion, based on AUCinf,obs)",
+                 desc="IV MRT, multi-dose, AUCinf.obs",
+                 formalsmap=list(auctau="auclast", aumctau="aumclast", aucinf="aucinf.obs"),
+                 depends=c("auclast", "aumclast", "aucinf.obs"),
+                 formula="$MRT_{\\text{ivmd,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$",
+                 selection = list(dosing = c("multiple", "steady_state")))
+
+add.interval.col("mrt.ivmd.pred",
+                 FUN="pk.calc.mrt.md.iv",
+                 values=c(FALSE, TRUE),
+                 unit_type="time",
+                 pretty_name="MRT (for multiple dosing of an IV infusion, based on AUCinf,pred)",
+                 desc="IV MRT, multi-dose, AUCinf.pred",
+                 formalsmap=list(auctau="auclast", aumctau="aumclast", aucinf="aucinf.pred"),
+                 depends=c("auclast", "aumclast", "aucinf.pred"),
+                 formula="$MRT_{\\text{ivmd,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$",
+                 selection = list(dosing = c("multiple", "steady_state")))
 
 
 #' Calculate the terminal volume of distribution (Vz)
@@ -1105,6 +1199,8 @@ pk.calc.vz <- function(cl, lambda.z) {
     rlang::abort("'cl' and 'lambda.z' must be the same length", class = "pknca_error_cl_lambdaz_length")
   cl/lambda.z
 }
+
+pknca_concept(pk.calc.vz) <- "volume_z"
 
 # Add the columns to the interval specification
 add.interval.col("vz.obs",
@@ -1272,6 +1368,8 @@ add.interval.col("vz.sparse.last",
 pk.calc.vss <- function(cl, mrt) {
   cl*mrt
 }
+
+pknca_concept(pk.calc.vss) <- "volume_ss"
 # Add the columns to the interval specification
 add.interval.col("vss.obs",
                  FUN="pk.calc.vss",
@@ -1355,7 +1453,8 @@ add.interval.col("vss.md.obs",
                  depends=c("cl.last", "mrt.md.obs"),
                  pptestcd_cdisc="VSSMDO",
                  pptest_cdisc="Vss (for multiple-dose, based on AUCinf,obs)",
-                 formula="$V_{ss,\\text{md,obs}} = CL_{\\text{last}} \\cdot MRT_{\\text{md,obs}}$")
+                 formula="$V_{ss,\\text{md,obs}} = CL_{\\text{last}} \\cdot MRT_{\\text{md,obs}}$",
+                 selection = list(dosing = c("multiple", "steady_state")))
 
 add.interval.col("vss.md.pred",
                  FUN="pk.calc.vss",
@@ -1367,7 +1466,30 @@ add.interval.col("vss.md.pred",
                  depends=c("cl.last", "mrt.md.pred"),
                  pptestcd_cdisc="VSSMDP",
                  pptest_cdisc="Vss (for multiple-dose, based on AUCinf,pred)",
-                 formula="$V_{ss,\\text{md,pred}} = CL_{\\text{last}} \\cdot MRT_{\\text{md,pred}}$")
+                 formula="$V_{ss,\\text{md,pred}} = CL_{\\text{last}} \\cdot MRT_{\\text{md,pred}}$",
+                 selection = list(dosing = c("multiple", "steady_state")))
+
+add.interval.col("vss.ivmd.obs",
+                 FUN="pk.calc.vss",
+                 values=c(FALSE, TRUE),
+                 unit_type="volume",
+                 pretty_name="Vss (for multiple-dose IV infusion, based on Clast,obs)",
+                 desc="IV Vss, multi-dose, obs",
+                 formalsmap=list(cl="cl.last", mrt="mrt.ivmd.obs"),
+                 depends=c("cl.last", "mrt.ivmd.obs"),
+                 formula="$V_{ss,\\text{ivmd,obs}} = CL_{\\text{last}} \\cdot MRT_{\\text{ivmd,obs}}$",
+                 selection = list(dosing = c("multiple", "steady_state")))
+
+add.interval.col("vss.ivmd.pred",
+                 FUN="pk.calc.vss",
+                 values=c(FALSE, TRUE),
+                 unit_type="volume",
+                 pretty_name="Vss (for multiple-dose IV infusion, based on Clast,pred)",
+                 desc="IV Vss, multi-dose, pred",
+                 formalsmap=list(cl="cl.last", mrt="mrt.ivmd.pred"),
+                 depends=c("cl.last", "mrt.ivmd.pred"),
+                 formula="$V_{ss,\\text{ivmd,pred}} = CL_{\\text{last}} \\cdot MRT_{\\text{ivmd,pred}}$",
+                 selection = list(dosing = c("multiple", "steady_state")))
 
 add.interval.col("vss.all",
                  FUN = "pk.calc.vss",
@@ -1474,6 +1596,8 @@ pk.calc.cav <- function(auc, start, end) {
   }
   ret
 }
+
+pknca_concept(pk.calc.cav) <- "average_conc"
 add.interval.col(
   "cav",
   FUN = "pk.calc.cav",
@@ -1557,6 +1681,8 @@ pk.calc.ctrough <- function(conc, time, end) {
     rlang::abort("More than one time matches the starting time.  Please report this as a bug with a reproducible example.", class = "pknca_error_ctrough_multiple_start_times")  # nocov
   }
 }
+
+pknca_concept(pk.calc.ctrough) <- "trough_conc"
 add.interval.col("ctrough",
                  FUN="pk.calc.ctrough",
                  values=c(FALSE, TRUE),
@@ -1566,7 +1692,9 @@ add.interval.col("ctrough",
                  depends=NULL,
                  pptestcd_cdisc="CTROUGH",
                  pptest_cdisc="Conc Trough",
-                 formula="$C_{\\text{trough}} = C(t_{\\text{end}})$")
+                 formula="$C_{\\text{trough}} = C(t_{\\text{end}})$",
+                 tier = "common",
+                 selection = list(dosing = c("multiple", "steady_state")))
 
 
 #' @describeIn pk.calc.ctrough Concentration at the beginning of the interval
@@ -1586,6 +1714,8 @@ pk.calc.cstart <- function(conc, time, start) {
     rlang::abort("More than one time matches the starting time.  Please report this as a bug with a reproducible example.", class = "pknca_error_cstart_multiple_start_times")  # nocov
   }
 }
+
+pknca_concept(pk.calc.cstart) <- "start_conc"
 add.interval.col("cstart",
                  FUN="pk.calc.cstart",
                  values=c(FALSE, TRUE),
@@ -1612,6 +1742,8 @@ pk.calc.ptr <- function(cmax, ctrough) {
   ret[ctrough %in% 0] <- NA_real_
   ret
 }
+
+pknca_concept(pk.calc.ptr) <- "fluctuation"
 add.interval.col("ptr",
                  FUN="pk.calc.ptr",
                  values=c(FALSE, TRUE),
@@ -1641,6 +1773,8 @@ pk.calc.tlag <- function(conc, time) {
     NA_real_
   }
 }
+
+pknca_concept(pk.calc.tlag) <- "lag_time"
 add.interval.col("tlag",
                  FUN="pk.calc.tlag",
                  values=c(FALSE, TRUE),
@@ -1650,7 +1784,9 @@ add.interval.col("tlag",
                  depends=NULL,
                  pptestcd_cdisc="TLAG",
                  pptest_cdisc="Time to First Nonzero Conc",
-                 formula="$T_{\\text{lag}} = t_{i: C_{i+1} > C_i, i = \\min}$")
+                 formula="$T_{\\text{lag}} = t_{i: C_{i+1} > C_i, i = \\min}$",
+                 tier = "common",
+                 selection = list(route = "extravascular"))
 
 
 #' Determine the degree of fluctuation
@@ -1671,6 +1807,8 @@ pk.calc.deg.fluc <- function(cmax, cmin, cav) {
   }
   ret
 }
+
+pknca_concept(pk.calc.deg.fluc) <- "fluctuation"
 add.interval.col("deg.fluc",
                  FUN="pk.calc.deg.fluc",
                  unit_type="%",
@@ -1679,7 +1817,8 @@ add.interval.col("deg.fluc",
                  depends=c("cmax", "cmin", "cav"),
                  pptestcd_cdisc="DEGFLUC",
                  pptest_cdisc="Degree of fluctuation",
-                 formula="$DF = 100 \\cdot \\frac{C_{\\max} - C_{\\min}}{C_{av}}$")
+                 formula="$DF = 100 \\cdot \\frac{C_{\\max} - C_{\\min}}{C_{av}}$",
+                 selection = list(dosing = c("multiple", "steady_state")))
 
 
 #' @describeIn pk.calc.deg.fluc PK swing
@@ -1696,6 +1835,8 @@ pk.calc.swing <- function(cmax, cmin) {
     Inf
   }
 }
+
+pknca_concept(pk.calc.swing) <- "fluctuation"
 add.interval.col("swing",
                  FUN="pk.calc.swing",
                  unit_type="%",
@@ -1704,7 +1845,8 @@ add.interval.col("swing",
                  depends=c("cmax", "cmin"),
                  pptestcd_cdisc="SWING",
                  pptest_cdisc="Swing",
-                 formula="$Swing = 100 \\cdot \\frac{C_{\\max} - C_{\\min}}{C_{\\min}}$")
+                 formula="$Swing = 100 \\cdot \\frac{C_{\\max} - C_{\\min}}{C_{\\min}}$",
+                 selection = list(dosing = c("multiple", "steady_state")))
 
 
 #' Determine the concentration at the end of infusion
@@ -1729,6 +1871,8 @@ pk.calc.ceoi <- function(conc, time, duration.dose=NA, check=TRUE) {
     conc[time == duration.dose][1]
   }
 }
+
+pknca_concept(pk.calc.ceoi) <- "eoi_conc"
 add.interval.col("ceoi",
                  FUN="pk.calc.ceoi",
                  unit_type="conc",
@@ -1737,7 +1881,9 @@ add.interval.col("ceoi",
                  depends=NULL,
                  pptestcd_cdisc="CEOI",
                  pptest_cdisc="Ceoi",
-                 formula="$C_{\\text{eoi}} = C(t = T_{\\text{inf}})$")
+                 formula="$C_{\\text{eoi}} = C(t = T_{\\text{inf}})$",
+                 tier = "common",
+                 selection = list(route = "iv_infusion"))
 
 
 #' Calculate the AUC above a given concentration
@@ -1764,6 +1910,8 @@ pk.calc.aucabove <- function(conc, time, conc_above = NA_real_, ..., options=lis
   }
   ret
 }
+
+pknca_concept(pk.calc.aucabove) <- "auc_above_conc"
 add.interval.col(
   "aucabove.predose.all",
   FUN="pk.calc.aucabove",
@@ -1807,6 +1955,8 @@ pk.calc.count_conc <- function(conc, check=TRUE) {
   }
   sum(!is.na(conc))
 }
+
+pknca_concept(pk.calc.count_conc) <- "observation_count"
 # Add the column to the interval specification
 add.interval.col(
   "count_conc",
@@ -1818,7 +1968,8 @@ add.interval.col(
   depends = NULL,
   pptestcd_cdisc="CNTCONC",
   pptest_cdisc="Concentration count",
-  formula = "$n_{\\text{conc}} = \\sum_{i} \\mathbf{1}(C_i \\neq NA)$")
+  formula = "$n_{\\text{conc}} = \\sum_{i} \\mathbf{1}(C_i \\neq NA)$",
+  tier = "common")
 
 #' @describeIn pk.calc.count_conc Count the number of concentration measurements
 #'   that are not missing, above, or below the limit of quantification in an
@@ -1833,6 +1984,8 @@ pk.calc.count_conc_measured <- function(conc, check=TRUE) {
   }
   sum(!is.na(conc) & is.finite(conc) & conc > 0)
 }
+
+pknca_concept(pk.calc.count_conc_measured) <- "observation_count"
 # Add the column to the interval specification
 add.interval.col(
   "count_conc_measured",
@@ -1856,6 +2009,8 @@ pk.calc.totdose <- function(dose) {
   }
   sum(dose)
 }
+
+pknca_concept(pk.calc.totdose) <- "total_dose"
 add.interval.col(
   "totdose",
   FUN="pk.calc.totdose",
@@ -1978,21 +2133,23 @@ PKNCA.set.summary(
     "kel.ivint.all", "kel.ivint.last",
     "kel.sparse.last",
     
-    # Mean residence time (MRT) - count: 17
+    # Mean residence time (MRT) - count: 19
     "mrt.obs", "mrt.pred", "mrt.last", "mrt.all",
     "mrt.int.all", "mrt.int.last", "mrt.int.inf.obs", "mrt.int.inf.pred",
     "mrt.iv.obs", "mrt.iv.pred", "mrt.iv.last", "mrt.iv.all",
     "mrt.ivint.all", "mrt.ivint.last",
     "mrt.sparse.last",
     "mrt.md.obs", "mrt.md.pred",
+    "mrt.ivmd.obs", "mrt.ivmd.pred",
     
-    # Volume of distribution at steady state (VSS) - count: 17
+    # Volume of distribution at steady state (VSS) - count: 19
     "vss.obs", "vss.pred", "vss.last", "vss.all",
     "vss.int.all", "vss.int.last", "vss.int.inf.obs", "vss.int.inf.pred",
     "vss.iv.obs", "vss.iv.pred", "vss.iv.last", "vss.iv.all",
     "vss.ivint.all", "vss.ivint.last",
     "vss.sparse.last",
     "vss.md.obs", "vss.md.pred",
+    "vss.ivmd.obs", "vss.ivmd.pred",
     
     # Volume of distribution (VZ) - count: 15
     "vz.obs", "vz.pred", "vz.last", "vz.all",

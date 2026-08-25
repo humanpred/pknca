@@ -48,6 +48,10 @@ NeedsCompilation: no
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
+Config/testthat/parallel: true
+Config/testthat/start-first: pk.calc.all, half.life, update.PKNCAresults,
+    exclude_nca, class-PKNCAresults, impute, check.intervals,
+    bioequivalence-assess
 Encoding: UTF-8
 Language: en-US
 Config/roxygen2/version: 8.1.0

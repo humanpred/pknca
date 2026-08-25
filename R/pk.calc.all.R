@@ -207,6 +207,24 @@ any_sparse_dense_in_interval <- function(interval, sparse) {
   )
 }
 
+# Re-raise an error from a single interval calculation with the interval named.
+#
+# PKNCA raises a `pknca_error_*` condition wherever it has diagnosed the problem
+# itself, and those messages already say what the user has to change.  A
+# `pknca_error_internal_*` condition, or anything unclassed arriving from base R
+# or another package, is a case PKNCA did not anticipate, so only those ask for a
+# bug report.
+interval_calculation_error <- function(e, error_preamble) {
+  diagnosed <-
+    any(grepl("^pknca_error_", class(e))) &&
+    !any(grepl("^pknca_error_internal_", class(e)))
+  msg <- sprintf("%s: %s", error_preamble, e$message)
+  if (!diagnosed) {
+    msg <- paste("Please report a bug.", msg, sep = "\n")
+  }
+  rlang::abort(msg, class = "pknca_error_interval_calculation", parent = e)
+}
+
 # Subset data down to just the times of interest and then pass it
 # further to the calculation routines.
 #
@@ -293,12 +311,18 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
       }
     } else {
       impute_method <- get_impute_method(intervals = current_interval, impute = impute)
+      # volume and duration are read with `[[` rather than the `$` used for
+      # every column around them because they are the only ones that may not be
+      # there: PKNCAconc() adds them to the data only when the user gives them.
+      # Both accessors give NULL for an absent column, but `$` on a tibble also
+      # warns.  NULL is the right answer here -- a parameter that needs either
+      # one stops the calculation in full_join_PKNCAdata() long before this.
       args <- list(
         # Interval-level data
         conc=conc_data_interval$conc,
         time=conc_data_interval$time,
-        volume=conc_data_interval$volume,
-        duration.conc=conc_data_interval$duration,
+        volume=conc_data_interval[["volume"]],
+        duration.conc=conc_data_interval[["duration"]],
         dose=dose_data_interval$dose,
         time.dose=dose_data_interval$time,
         duration.dose=dose_data_interval$duration,
@@ -307,8 +331,8 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
         # Group-level data
         conc.group=data_conc$conc,
         time.group=data_conc$time,
-        volume.group=data_conc$volume,
-        duration.conc.group=data_conc$duration,
+        volume.group=data_conc[["volume"]],
+        duration.conc.group=data_conc[["duration"]],
         dose.group=data_dose$dose,
         time.dose.group=data_dose$time,
         duration.dose.group=data_dose$duration,
@@ -347,9 +371,7 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
         calculated_interval <-
           tryCatch(
             do.call(pk.nca.interval, args),
-            error = function(e) {
-              rlang::abort(sprintf("Please report a bug.\n%s: %s", error_preamble, e$message), class = "pknca_error_interval_calculation", parent = e)  # nocov
-            }
+            error = function(e) interval_calculation_error(e, error_preamble = error_preamble)
           )
       }
       # Add all the new data into the output
@@ -535,6 +557,13 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           call_args[[arg_formal]] <- subject
         } else if (arg_mapped == "lloq") {
           call_args[[arg_formal]] <- lloq
+        } else if (arg_mapped == "tau") {
+          call_args[[arg_formal]] <-
+            resolve_dose_tau(
+              interval=interval,
+              time.dose=time.dose.group,
+              options=options
+            )
         } else if (arg_mapped %in% c("start", "end")) {
           # Provide the start and end of the interval if they are requested
           call_args[[arg_formal]] <- interval[[arg_mapped]]
@@ -549,17 +578,22 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         } else {
           # Give an error if there is not a default argument.
           if (inherits(formals(get(all_intervals[[n]]$FUN))[[arg_formal]], "name")) {
-            arg_text <- # nocov start
+            arg_text <-
               if (arg_formal == arg_mapped) {
                 sprintf("'%s'", arg_formal)
               } else {
-                sprintf("'%s' mapped to '%s'", arg_formal, arg_mapped)
+                # Every formalsmap name resolves to a source input or to a
+                # parameter calculated first, so reaching here means the
+                # add.interval.col() registration is wrong, not the interval
+                sprintf("'%s' mapped to '%s'", arg_formal, arg_mapped)  # nocov
               }
+            # The interval specification is the last place an argument is looked
+            # for, so that is where the user has to supply it.
             rlang::abort(
               sprintf(
-                "Cannot find argument %s for NCA function '%s'",
-                arg_text, all_intervals[[n]]$FUN
-              ), # nocov end
+                "Cannot find argument %s for NCA parameter '%s' (calculated by '%s'); give it as a column in the interval specification",
+                arg_text, n, all_intervals[[n]]$FUN
+              ),
               class = "pknca_error_missing_nca_argument"
             )
           }

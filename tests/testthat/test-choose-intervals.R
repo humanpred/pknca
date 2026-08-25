@@ -154,3 +154,67 @@ test_that("choose.auc.intervals", {
                             cmax=TRUE,
                             tmax=TRUE)))
 })
+
+test_that("resolve_dose_tau prefers the interval column over detection", {
+  # The interval column wins even when the dose times say otherwise, because
+  # only the user knows the regimen when the data hold one dose per profile.
+  expect_equal(
+    resolve_dose_tau(interval=data.frame(start=0, end=24, tau=12), time.dose=c(0, 24, 48)),
+    12
+  )
+  expect_equal(
+    resolve_dose_tau(interval=data.frame(start=0, end=24, tau=24), time.dose=0),
+    24
+  )
+})
+
+test_that("resolve_dose_tau detects tau from repeated dose times", {
+  expect_equal(
+    resolve_dose_tau(interval=data.frame(start=96, end=120), time.dose=c(0, 24, 48, 72, 96)),
+    24
+  )
+  # An NA tau column falls through to detection
+  expect_equal(
+    resolve_dose_tau(interval=data.frame(start=0, end=12, tau=NA_real_), time.dose=c(0, 12, 24)),
+    12
+  )
+})
+
+test_that("resolve_dose_tau gives NA with a warning when tau is undetermined", {
+  # find.tau() reports 0 for a single dose time; that is not a dosing interval
+  expect_warning(
+    single_dose <- resolve_dose_tau(interval=data.frame(start=0, end=24), time.dose=0),
+    regexp="Cannot determine tau from the dose times",
+    class="pknca_warning_tau_undetermined"
+  )
+  expect_equal(single_dose, NA_real_)
+  expect_warning(
+    no_dose <- resolve_dose_tau(interval=data.frame(start=0, end=24), time.dose=NA_real_),
+    class="pknca_warning_tau_undetermined"
+  )
+  expect_equal(no_dose, NA_real_)
+  # Unequally-spaced doses with no repeating interval
+  expect_warning(
+    irregular <- resolve_dose_tau(interval=data.frame(start=0, end=24), time.dose=c(0, 5, 17)),
+    class="pknca_warning_tau_undetermined"
+  )
+  expect_equal(irregular, NA_real_)
+})
+
+test_that("resolve_dose_tau rejects an invalid tau column", {
+  # A given tau is validated rather than quietly detected around
+  expect_error(
+    resolve_dose_tau(interval=data.frame(start=0, end=24, tau=0), time.dose=c(0, 24)),
+    regexp="is not > 0",
+    class="pknca_error_numeric_between"
+  )
+  expect_error(
+    resolve_dose_tau(interval=data.frame(start=0, end=24, tau=-1), time.dose=c(0, 24)),
+    regexp="is not > 0",
+    class="pknca_error_numeric_between"
+  )
+  expect_error(
+    resolve_dose_tau(interval=data.frame(start=0, end=24, tau=Inf), time.dose=c(0, 24)),
+    regexp="Must be finite"
+  )
+})

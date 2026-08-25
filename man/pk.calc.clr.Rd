@@ -28,6 +28,8 @@ units of volume/time.
 
 Other Urine/Excretion parameters:
 \code{\link[=pk.calc.ae]{pk.calc.ae()}},
+\code{\link[=pk.calc.erint]{pk.calc.erint()}},
+\code{\link[=pk.calc.erlst]{pk.calc.erlst()}},
 \code{\link[=pk.calc.ermax]{pk.calc.ermax()}},
 \code{\link[=pk.calc.ertlst]{pk.calc.ertlst()}},
 \code{\link[=pk.calc.ertmax]{pk.calc.ertmax()}},

@@ -122,6 +122,8 @@ pk.calc.auciv <- function(conc, time, c0, auc, auc.type = NULL,
   )
 }
 
+pknca_concept(pk.calc.auciv) <- "auc"
+
 
 add.interval.col(
   name = "aucivlast",
@@ -237,6 +239,8 @@ pk.calc.auciv_pbext <- function(conc, time, auc, auciv, ..., options = list(), c
   100*(1 - auc/auciv)
 }
 
+pknca_concept(pk.calc.auciv_pbext) <- "auc_extrapolation"
+
 add.interval.col(
   name = "aucivpbextlast",
   FUN = "pk.calc.auciv_pbext",
@@ -335,6 +339,8 @@ pk.calc.aumciv <- function(conc, time, c0, aumc, auc.type = NULL,
     check = check
   )
 }
+
+pknca_concept(pk.calc.aumciv) <- "aumc"
 # Register all standard AUMC IV versions
 add.interval.col(
   name = "aumcivlast",

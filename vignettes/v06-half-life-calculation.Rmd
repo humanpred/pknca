@@ -82,20 +82,131 @@ as.data.frame(result_obj)
 
 # Manual Point Selection
 
-The `exclude_half.life` and `include_half.life` columns must be logical
-(`TRUE`/`FALSE`/`NA`); a non-logical column (for example, character `"yes"`) is
-an error.  For both exclusion and inclusion methods below, the same `NA`
-handling rules apply on a per-interval basis. If all values are `NA`, then no inclusion or
-exclusion is applied (the interval is treated as-is, like the argument had not
-been given). If some values are `NA` for the interval, those are treated as
-`FALSE`.
+Curve stripping chooses the points automatically, and it is what happens when
+nothing is specified.  Two optional columns given to `PKNCAconc()` change that:
+`exclude_half.life` drops specific points and then curve strips whatever
+remains, while `include_half.life` names the exact points to fit and switches
+curve stripping off entirely.  The decision tree below shows how to choose
+between them and what each one changes.
 
-A column counts as in use for an interval whenever it contains any non-`NA`
-value, even if every value is `FALSE`. Only one of `exclude_half.life` and
-`include_half.life` may be in use for the same interval; supplying both raises
-the error "Cannot both include and exclude half-life points for the same
-interval". For this reason, initialize these columns to `NA` (rather than
-`FALSE`) when the corresponding method is not being used.
+## Choosing a Point Selection Method
+
+```{r decision-tree-options, echo=FALSE}
+# Named in both the figure and the text below.  Fail the build if one is
+# renamed or removed rather than describing options that no longer exist.
+hl_auto_options <-
+  c("min.hl.points", "allow.tmax.in.half.life", "adj.r.squared.factor")
+stopifnot(all(hl_auto_options %in% names(PKNCA.options())))
+hl_auto_options_md <-
+  paste0(
+    paste0("`", utils::head(hl_auto_options, -1), "`", collapse = ", "),
+    ", and `", utils::tail(hl_auto_options, 1), "`"
+  )
+```
+
+```{r decision-tree, echo=FALSE, fig.width=8.4, fig.height=5.2, dpi=192, out.width="100%", fig.alt="Decision tree for choosing between automatic curve stripping, exclude_half.life, and include_half.life.  Automatic curve stripping is the default and needs neither column.  exclude_half.life drops the points flagged TRUE and curve strips the rest.  include_half.life keeps only the points flagged TRUE and fits them directly.  In every case, BLQ and zero concentrations and points at or before the end of the last dose are dropped before fitting."}
+# The tree is drawn in the coordinate system of the figure itself (840 wide by
+# 520 tall, y increasing downward) so that positions read as pixels.
+tree_box <- function(x, y, w, h, fill = "white") {
+  rect(x, y, x + w, y + h, border = "black", lwd = 1.5, col = fill)
+}
+tree_arrow <- function(x, y0, y1) {
+  arrows(x, y0, x, y1, length = 0.08, angle = 20, lwd = 1.5)
+}
+
+cex_body <- 0.78
+cex_head <- 0.9
+branch_x <- c(140, 420, 700)
+branch_x_left <- branch_x - 125
+
+op <- par(mar = rep(0, 4))
+plot.new()
+plot.window(xlim = c(0, 840), ylim = c(520, 0), xaxs = "i", yaxs = "i")
+
+tree_box(45, 15, 750, 45)
+text(420, 38, "How should the points for the half-life fit be chosen?",
+     font = 2, cex = cex_head)
+segments(420, 60, 420, 92, lwd = 1.5)
+segments(140, 92, 700, 92, lwd = 1.5)
+for (x in branch_x) tree_arrow(x, 92, 120)
+
+for (x in branch_x_left) tree_box(x, 120, 250, 60)
+text(
+  branch_x, 150,
+  c(
+    "Let PKNCA choose them\n(the default)",
+    "Curve strip, but drop\nspecific known-bad points",
+    "Use exactly the points I\nname, with no curve stripping"
+  ),
+  cex = cex_body
+)
+for (x in branch_x) tree_arrow(x, 180, 215)
+
+for (x in branch_x_left) tree_box(x, 215, 250, 60)
+text(140, 237, "Set neither column", cex = cex_body)
+text(c(420, 700), 237, c("exclude_half.life", "include_half.life"),
+     cex = cex_body, family = "mono")
+text(branch_x, 257,
+     c("on PKNCAconc()", "TRUE drops that point", "TRUE keeps that point"),
+     cex = cex_body)
+for (x in branch_x) tree_arrow(x, 275, 310)
+
+tree_box(15, 310, 810, 70, fill = "grey95")
+text(420, 331, "In every case, before any line is fit:", font = 2, cex = cex_body)
+text(
+  420, 358,
+  paste(
+    "drop BLQ and zero concentrations, and drop points at or before the end of the",
+    "last dose (including infusion duration)",
+    sep = "\n"
+  ),
+  cex = cex_body
+)
+for (x in branch_x) tree_arrow(x, 380, 405)
+
+tree_box(15, 405, 530, 100)
+text(280, 428, "Automatic point selection", font = 2, cex = cex_body)
+text(280, 455, "Every allowed set of points is fit and the best is kept, using",
+     cex = cex_body)
+text(280, 477, paste(hl_auto_options, collapse = ", "),
+     cex = cex_body, family = "mono")
+
+tree_box(575, 405, 250, 100)
+text(700, 428, "Manual point selection", font = 2, cex = cex_body)
+text(700, 466,
+     "One fit through exactly those\npoints.  The three options at\nleft are ignored.",
+     cex = cex_body)
+par(op)
+```
+
+Two parts of the tree are easy to overlook:
+
+* Only `include_half.life` turns off automatic selection.  `exclude_half.life`
+  removes the flagged points and then runs the usual curve stripping on the
+  rest, so `r hl_auto_options_md` still apply to the points that remain.
+* The middle band of the tree applies to `include_half.life` as well.  Naming a
+  point does not force it into the fit; BLQ and zero concentrations, and points
+  at or before the end of the last dose, are dropped first either way.
+  Including eight points that span a four-hour infusion therefore yields a
+  five-point fit, not an eight-point fit.
+
+## Column Requirements
+
+Both columns must be logical (`TRUE`/`FALSE`/`NA`); a non-logical column (for
+example, character `"yes"`) is an error.  Whether a column applies is decided
+separately for each interval, using the rules below.
+
+| Situation for an interval | Result |
+| ------------------------- | ------ |
+| The column was not given to `PKNCAconc()` | The method is not used |
+| Every value is `NA` | The method is not used; the interval is treated as though the column had not been given |
+| Some values are `NA` | The `NA` values are treated as `FALSE` |
+| Any value is not `NA`, even if every value is `FALSE` | The column counts as in use |
+| Both columns are in use | Error: "Cannot both include and exclude half-life points for the same interval" |
+
+Because an all-`FALSE` column still counts as in use, initialize these columns
+to `NA` (rather than `FALSE`) wherever the corresponding method should not
+apply.
 
 ## Exclusion of Specific Points with Curve Stripping
 

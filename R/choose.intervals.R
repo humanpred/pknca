@@ -200,3 +200,39 @@ find.tau <- function(x, na.action=stats::na.omit,
   }
   ret
 }
+
+#' Determine the dosing interval (tau) to use for a calculation interval
+#'
+#' A `tau` column in the interval specification takes precedence over
+#' detection so that designs where only the steady-state dose is present in the
+#' dosing data (nothing repeats, so nothing can be detected) can still be
+#' calculated.  Otherwise `tau` is detected from the group's dose times with
+#' [find.tau()].
+#'
+#' @inheritParams PKNCA.choose.option
+#' @param interval One row of an interval definition (see
+#'   [check.interval.specification()])
+#' @param time.dose The dose times for the whole group (not just the interval;
+#'   an interval one `tau` long contains a single dose, so nothing repeats
+#'   within it)
+#' @returns The dosing interval, or `NA_real_` when it cannot be determined
+#' @family Interval determination
+#' @keywords Internal
+resolve_dose_tau <- function(interval, time.dose, options=list()) {
+  tau_manual <- interval[["tau"]]
+  if (!is.null(tau_manual) && !is.na(tau_manual[1])) {
+    return(assert_dosetau(as.numeric(tau_manual[1])))
+  }
+  ret <- find.tau(time.dose, options=options)
+  # find.tau() gives 0 for a single dose time and NA when no interval repeats.
+  # Neither is a dosing interval, and a tau of 0 would silently reduce a
+  # multiple-dose parameter to its single-dose equivalent rather than failing.
+  if (is.na(ret) || ret <= 0) {
+    rlang::warn(
+      "Cannot determine tau from the dose times; add a 'tau' column to the intervals to calculate multiple-dose parameters",
+      class = "pknca_warning_tau_undetermined"
+    )
+    return(NA_real_)
+  }
+  as.numeric(ret)
+}
