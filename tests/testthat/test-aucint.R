@@ -761,3 +761,52 @@ test_that("dose-aware interval parameters are not described as dose-normalized (
   expect_equal(unname(descs[grepl("dn", descs, fixed = TRUE)]), character(0))
   expect_true(all(grepl("dose-aware", descs, fixed = TRUE)))
 })
+
+test_that("a missing dose time gives NA rather than interpolating at NA (#367)", {
+  conc <- 2^(0:-5)
+  time <- 0:5
+  expect_warning(
+    auc_na_dose <- pk.calc.aucint.last(conc = conc, time = time, start = 0, end = Inf, time.dose = NA_real_),
+    regexp = "time.dose is NA"
+  )
+  expect_equal(auc_na_dose, structure(NA_real_, exclude = "dose time is missing"))
+  expect_warning(
+    aumc_na_dose <- pk.calc.aumcint.last(conc = conc, time = time, start = 0, end = Inf, time.dose = NA_real_),
+    regexp = "time.dose is NA"
+  )
+  expect_equal(aumc_na_dose, structure(NA_real_, exclude = "dose time is missing"))
+  # One unknown dose time is enough; the others cannot make the timeline whole
+  expect_warning(
+    auc_partial_na_dose <-
+      pk.calc.aucint.last(conc = conc, time = time, start = 0, end = Inf, time.dose = c(0, NA_real_)),
+    regexp = "time.dose is NA"
+  )
+  expect_equal(auc_partial_na_dose, structure(NA_real_, exclude = "dose time is missing"))
+  # A known dose time is still used
+  expect_equal(
+    pk.calc.aucint.last(conc = conc, time = time, start = 0, end = Inf, time.dose = 0),
+    pk.calc.aucint.last(conc = conc, time = time, start = 0, end = Inf)
+  )
+})
+
+test_that("pk.nca gives NA for dose-aware interval parameters without dose data (#367)", {
+  d_conc <- data.frame(conc = 2^(0:-5), time = 0:5)
+  o_conc <- PKNCAconc(d_conc, conc~time)
+  dose_aware <- grep("int[.].*[.]dose$", names(get.interval.cols()), value = TRUE)
+  d_interval <- data.frame(start = 0, end = Inf, aucint.last = TRUE)
+  d_interval[dose_aware] <- TRUE
+  o_data <- PKNCAdata(o_conc, intervals = d_interval)
+  suppressMessages(suppressWarnings(o_nca <- pk.nca(o_data)))
+  res <- as.data.frame(o_nca)
+  res_dose_aware <- res[res$PPTESTCD %in% dose_aware, ]
+  expect_equal(sort(res_dose_aware$PPTESTCD), sort(dose_aware))
+  expect_equal(as.numeric(res_dose_aware$PPORRES), rep(NA_real_, length(dose_aware)))
+  expect_equal(res_dose_aware$exclude, rep("dose time is missing", length(dose_aware)))
+  # The dose-unaware siblings are still calculated
+  # lin up/log down (the default) with conc halving every hour: each 1-hour
+  # segment contributes (conc_k - conc_k/2)/log(2)
+  expect_equal(
+    as.numeric(res$PPORRES[res$PPTESTCD %in% "aucint.last"]),
+    sum(2^(-1:-5)) / log(2)
+  )
+})

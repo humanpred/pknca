@@ -6,6 +6,12 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: the dose-aware interval parameters (`aucint.last.dose`,
+  `aumcint.inf.pred.dose`, and the rest of the `*int.*.dose` family) return
+  `NA` when the dose time is missing.  With no dosing data, the dose time was
+  `NA`, which became a time point to interpolate to and stopped the calculation
+  with `Assertion on 'time' failed: Contains missing values` (#367).
+
 * Bug fix: `superposition()` drops missing concentrations before calculating.
   They previously reached the half-life fit and stopped the calculation with
   `NA/NaN/Inf in 'x'` (#308).
