@@ -650,8 +650,31 @@ test_that("superposition rejects invalid method and auc.type (#247)", {
     regexp = 'should be one of .*lin up/log down'
   )
   expect_error(
+    superposition(conc = d_method_conc, time = d_method_time, tau = 4, method = "foo", n.tau = 1),
+    regexp = 'should be one of .*lin up/log down'
+  )
+  expect_error(
     superposition(conc = d_method_conc, time = d_method_time, tau = 4, auc.type = "foo"),
-    class = "pknca_error_invalid_auc_type"
+    regexp = 'Must be element of set'
+  )
+  # tau*n.tau <= tlast requires no extrapolation, and all-zero concentrations
+  # return before any interpolation, so neither reaches interp.extrap.conc()
+  expect_error(
+    superposition(conc = d_method_conc, time = d_method_time, tau = 4, auc.type = "foo", n.tau = 1),
+    regexp = 'Must be element of set'
+  )
+  expect_error(
+    superposition(conc = rep(0, 4), time = 0:3, tau = 4, auc.type = "foo"),
+    regexp = 'Must be element of set'
+  )
+  expect_error(
+    superposition(conc = rep(0, 4), time = 0:3, tau = 4, method = "foo"),
+    regexp = 'should be one of .*lin up/log down'
+  )
+  # The documented values are case-sensitive
+  expect_error(
+    superposition(conc = d_method_conc, time = d_method_time, tau = 4, auc.type = "aucinf"),
+    regexp = 'Must be element of set'
   )
 })
 

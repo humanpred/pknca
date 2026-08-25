@@ -157,6 +157,11 @@ superposition.numeric <- function(conc, time, dose.input = NULL,
   if (!missing(tlast)) {
     checkmate::assert_number(tlast)
   }
+  # method and auc.type are used by interp.extrap.conc(), which only sees them
+  # when interpolation or extrapolation is required; resolve and check them here
+  # so that an invalid value is an error for every input.
+  method <- PKNCA.choose.option(name = "auc.method", value = method, options = options)
+  checkmate::assert_choice(auc.type, choices = c("AUCinf", "AUClast", "AUCall"))
   # additional.times
   if (length(additional.times) > 0) {
     if (any(is.na(additional.times))) {
