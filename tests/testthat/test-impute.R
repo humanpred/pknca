@@ -160,15 +160,35 @@ test_that("PKNCA_impute_method_start_predose with degenerate data (#361)", {
     ),
     data.frame(conc = rep(NA_real_, 2), time = 1:2)
   )
-  # The predose sample is selected by time, so a missing concentration at the
-  # nearest predose time skips the shift rather than reaching further back
+  # A missing concentration at the nearest predose time falls back to the most
+  # recent measured predose sample (max_shift here is 0.05*24 = 1.2)
   expect_equal(
     PKNCA_impute_method_start_predose(
       conc = 3:4, time = 1:2,
-      conc.group = c(5, NA, 3, 4), time.group = c(-2, -1, 1, 2),
+      conc.group = c(5, NA, 3, 4), time.group = c(-1, -0.5, 1, 2),
+      start = 0, end = 24
+    ),
+    data.frame(conc = c(5, 3, 4), time = 0:2)
+  )
+  # The fallback is still bound by max_shift: the measured sample at -2 is too
+  # far back to shift, even though the nearer sample at -0.5 is missing
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = 3:4, time = 1:2,
+      conc.group = c(5, NA, 3, 4), time.group = c(-2, -0.5, 1, 2),
       start = 0, end = 24
     ),
     data.frame(conc = 3:4, time = 1:2)
+  )
+  # max_shift is measured against the sample that is actually shifted, so
+  # raising it lets the fallback through
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = 3:4, time = 1:2,
+      conc.group = c(5, NA, 3, 4), time.group = c(-2, -0.5, 1, 2),
+      start = 0, end = 24, max_shift = 2
+    ),
+    data.frame(conc = c(5, 3, 4), time = 0:2)
   )
   # With duplicate predose times, only the measured concentrations are shifted
   expect_equal(

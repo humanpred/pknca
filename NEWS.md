@@ -14,7 +14,9 @@ the dosing including dose amount and route.
 * The `start_predose` imputation method no longer shifts a predose
   concentration that is `NA`.  A missing predose value carries no information,
   and shifting it added a missing concentration at the start time where there
-  had been no measurement at all (#361).
+  had been no measurement at all.  The most recent predose sample with a
+  measured concentration is shifted instead, as long as it is within
+  `max_shift` (#361).
 
 * Bug fix: `superposition()` drops missing concentrations before calculating.
   They previously reached the half-life fit and stopped the calculation with
