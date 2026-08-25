@@ -80,7 +80,10 @@ PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group
   ret <- data.frame(conc = conc, time = time)
   if (is.na(max_shift)) {
     if (is.infinite(end)) {
-      shift_end <- max(time)
+      # A measurement at an unknown time cannot bound the shift window, so
+      # fall back to the start when no time is known
+      time_known <- time[!is.na(time)]
+      shift_end <- if (length(time_known) > 0) max(time_known) else start
     } else {
       shift_end <- end
     }
@@ -89,11 +92,13 @@ PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group
   # determine if the start time is already in the
   mask_start <- time %in% start
   if (!any(mask_start)) {
-    mask_predose <- time.group < start
+    # A measurement at an unknown time cannot be known to be predose, so it is
+    # neither selected as the predose sample nor carried along with one
+    mask_predose <- !is.na(time.group) & time.group < start
     if (any(mask_predose)) {
       time_predose <- max(time.group[mask_predose])
       if ((-time_predose) <= max_shift) {
-        mask_predose_change <- time.group == time_predose
+        mask_predose_change <- time.group %in% time_predose
         ret_predose <- data.frame(conc = conc.group[mask_predose_change], time = start)
         ret <- dplyr::bind_rows(ret_predose, ret)
       }

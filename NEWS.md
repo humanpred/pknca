@@ -6,6 +6,11 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: the `start_predose` imputation method no longer stops with `missing
+  value where TRUE/FALSE needed` when a concentration has a missing time.  A
+  measurement at an unknown time cannot be known to be predose, so it is now
+  ignored by the imputation (#361).
+
 * Bug fix: `superposition()` drops missing concentrations before calculating.
   They previously reached the half-life fit and stopped the calculation with
   `NA/NaN/Inf in 'x'` (#308).

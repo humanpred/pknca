@@ -18,6 +18,38 @@ test_that("PKNCA_impute_method_start_conc0", {
   )
 })
 
+test_that("PKNCA_impute_method_start_conc0 with degenerate data (#361)", {
+  # All concentrations missing: the start concentration is still set to 0 and
+  # the missing values are left alone
+  expect_equal(
+    PKNCA_impute_method_start_conc0(conc = rep(NA_real_, 3), time = 0:2),
+    data.frame(conc = c(0, NA, NA), time = 0:2)
+  )
+  expect_equal(
+    PKNCA_impute_method_start_conc0(conc = rep(NA_real_, 3), time = 1:3),
+    data.frame(conc = c(0, NA, NA, NA), time = 0:3),
+    ignore_attr = TRUE
+  )
+  # All times missing: no time matches the start, so a start row is added and
+  # the unknown times sort to the end
+  expect_equal(
+    PKNCA_impute_method_start_conc0(conc = 1:3, time = rep(NA_real_, 3)),
+    data.frame(conc = c(0, 1:3), time = c(0, NA, NA, NA)),
+    ignore_attr = TRUE
+  )
+  # All concentrations zero: setting the start to 0 is a no-op
+  expect_equal(
+    PKNCA_impute_method_start_conc0(conc = rep(0, 3), time = 0:2),
+    data.frame(conc = rep(0, 3), time = 0:2)
+  )
+  # All concentrations zero without a start time: a zero row is still added
+  expect_equal(
+    PKNCA_impute_method_start_conc0(conc = rep(0, 3), time = 1:3),
+    data.frame(conc = rep(0, 4), time = 0:3),
+    ignore_attr = TRUE
+  )
+})
+
 test_that("start_conc0 intentionally replaces an existing start concentration with 0 (#578)", {
   # A nonzero concentration at the start time is forced to 0
   expect_equal(
@@ -117,6 +149,58 @@ test_that("PKNCA_impute_method_start_predose", {
   )
 })
 
+test_that("PKNCA_impute_method_start_predose with degenerate data (#361)", {
+  # All concentrations missing: the predose sample is still shifted, carrying
+  # its missing value rather than fabricating one
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = rep(NA_real_, 2), time = 1:2,
+      conc.group = rep(NA_real_, 3), time.group = c(-1, 1:2),
+      start = 0, end = 24
+    ),
+    data.frame(conc = rep(NA_real_, 3), time = 0:2)
+  )
+  # All times missing: nothing is known to be predose, so the data are
+  # unchanged (previously this stopped with "missing value where TRUE/FALSE
+  # needed")
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = 1:2, time = rep(NA_real_, 2),
+      conc.group = 1:3, time.group = rep(NA_real_, 3),
+      start = 0, end = 24
+    ),
+    data.frame(conc = 1:2, time = rep(NA_real_, 2))
+  )
+  # The same holds when max_shift must be derived from the times
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = 1:2, time = rep(NA_real_, 2),
+      conc.group = 1:3, time.group = rep(NA_real_, 3),
+      start = 0, end = Inf
+    ),
+    data.frame(conc = 1:2, time = rep(NA_real_, 2))
+  )
+  # A missing time alongside a usable predose sample is neither selected as the
+  # predose sample nor carried along with the one that is
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = 3:4, time = 1:2,
+      conc.group = c(5, 2, 3, 4), time.group = c(NA, -1, 1, 2),
+      start = 0, end = 24
+    ),
+    data.frame(conc = c(2, 3, 4), time = 0:2)
+  )
+  # All concentrations zero: the zero predose value is shifted
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = c(0, 0), time = 1:2,
+      conc.group = rep(0, 3), time.group = c(-1, 1:2),
+      start = 0, end = 24
+    ),
+    data.frame(conc = rep(0, 3), time = 0:2)
+  )
+})
+
 test_that("PKNCA_impute_method_start_cmin", {
   # No imputation when start is in the data
   expect_equal(
@@ -142,6 +226,34 @@ test_that("PKNCA_impute_method_start_cmin", {
     ignore_attr = TRUE
   )
 
+})
+
+test_that("PKNCA_impute_method_start_cmin with degenerate data (#361)", {
+  # All concentrations missing: there is no minimum to impute, so the data are
+  # unchanged
+  expect_equal(
+    PKNCA_impute_method_start_cmin(conc = rep(NA_real_, 3), time = 1:3, start = 0, end = 24),
+    data.frame(conc = rep(NA_real_, 3), time = 1:3)
+  )
+  # All times missing: no concentration is known to be within the interval, so
+  # the data are unchanged
+  expect_equal(
+    PKNCA_impute_method_start_cmin(conc = 1:3, time = rep(NA_real_, 3), start = 0, end = 24),
+    data.frame(conc = 1:3, time = rep(NA_real_, 3))
+  )
+  # A missing time is ignored when finding the minimum within the interval, and
+  # the row with the unknown time sorts to the end
+  expect_equal(
+    PKNCA_impute_method_start_cmin(conc = c(0.5, 1:3), time = c(NA, 1:3), start = 0, end = 24),
+    data.frame(conc = c(1, 1:3, 0.5), time = c(0, 1:3, NA)),
+    ignore_attr = TRUE
+  )
+  # All concentrations zero: zero is the minimum and is imputed at the start
+  expect_equal(
+    PKNCA_impute_method_start_cmin(conc = rep(0, 3), time = 1:3, start = 0, end = 24),
+    data.frame(conc = rep(0, 4), time = 0:3),
+    ignore_attr = TRUE
+  )
 })
 
 test_that("PKNCA_impute_method_end_conc_drop", {
@@ -191,6 +303,26 @@ test_that("PKNCA_impute_method_end_conc_drop", {
   expect_equal(
     make_tmax(clean, "end_conc_drop"),
     make_tmax(clean, NULL)
+  )
+})
+
+test_that("PKNCA_impute_method_end_conc_drop with degenerate data (#361)", {
+  # All concentrations missing: the row at the end is still dropped
+  expect_equal(
+    PKNCA_impute_method_end_conc_drop(conc = rep(NA_real_, 3), time = c(0, 12, 24), end = 24),
+    data.frame(conc = rep(NA_real_, 2), time = c(0, 12)),
+    ignore_attr = TRUE
+  )
+  # All times missing: no time is known to be at the end, so nothing is dropped
+  expect_equal(
+    PKNCA_impute_method_end_conc_drop(conc = 1:3, time = rep(NA_real_, 3), end = 24),
+    data.frame(conc = 1:3, time = rep(NA_real_, 3))
+  )
+  # All concentrations zero: the row at the end is still dropped
+  expect_equal(
+    PKNCA_impute_method_end_conc_drop(conc = rep(0, 3), time = c(0, 12, 24), end = 24),
+    data.frame(conc = rep(0, 2), time = c(0, 12)),
+    ignore_attr = TRUE
   )
 })
 
