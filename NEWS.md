@@ -293,6 +293,18 @@ when the issue is due to an excluded point (#310)
   interval is split into as many rows as are needed, and rows that come to
   share every value are merged (#379).
 
+* Two excretion parameters were added:  `erint`, the excretion rate over the
+  interval (the amount recovered divided by the interval duration), and
+  `erlst`, the last measurable excretion rate.  Both are standard CDISC
+  parameters (`ERINT` and `ERLST`) that PKNCA calculated internally but did
+  not report.
+
+* Bug fix: the CDISC parameter names for `ertlst` and `volpk` did not match
+  the standard and did not describe what the functions return.  `ertlst` is now
+  "Midpoint of Interval of Last Nonzero ER" rather than "Time of Last
+  Excretion Rate" (it returns the collection midpoint, as `ertmax` does), and
+  `volpk` is now "Sum of Urine Vol" rather than "Volume of PK sample".
+
 * NCA parameters are now classified so that they can be chosen automatically
   for a calculation interval.  `pknca_parameter_table()` shows the
   classification:  the `concept` a parameter computes, its reporting `tier`,
