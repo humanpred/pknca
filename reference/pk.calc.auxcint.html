@@ -223,7 +223,9 @@ extrapolation</p></dd>
 <dd><p>The time of doses, route of
 administration, and duration of dose used with interpolation and
 extrapolation of concentration data (see <code><a href="interp.extrap.conc.html">interp.extrap.conc.dose()</a></code>).
-If <code>NULL</code>, <code><a href="interp.extrap.conc.html">interp.extrap.conc()</a></code> will be used instead.</p></dd>
+If <code>NULL</code>, <code><a href="interp.extrap.conc.html">interp.extrap.conc()</a></code> will be used instead.  If any <code>time.dose</code>
+is <code>NA</code>, the dose-aware result is <code>NA</code> because the dose cannot be placed on
+the timeline.</p></dd>
 
 
 <dt id="arg-auc-type">auc.type<a class="anchor" aria-label="anchor" href="#arg-auc-type"></a></dt>

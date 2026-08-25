@@ -163,7 +163,8 @@ pk.calc.aumcint.inf.pred(
   [`interp.extrap.conc.dose()`](https://humanpred.github.io/pknca/reference/interp.extrap.conc.md)).
   If `NULL`,
   [`interp.extrap.conc()`](https://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
-  will be used instead.
+  will be used instead. If any `time.dose` is `NA`, the dose-aware
+  result is `NA` because the dose cannot be placed on the timeline.
 
 - auc.type:
 
