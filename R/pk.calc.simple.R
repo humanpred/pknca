@@ -1047,6 +1047,16 @@ add.interval.col("mrt.ivint.last",
 #'   Note that if `aucinf == auctau` (as would be the assumption with
 #'   linear kinetics), the equation becomes the same as the single-dose MRT.
 #'
+#'   These are the parameters to use when PK are nonlinear.  With linear PK,
+#'   MRT and Vss can be measured from a single dose and the single-dose
+#'   parameters (`mrt.obs`, `vss.obs`, and similar) describe steady state as
+#'   well.  When PK are nonlinear they do not, so MRT and Vss have to be
+#'   measured over a steady-state dosing interval, which is what these
+#'   parameters do.  The ratio `aumctau/auctau` on its own (`mrt.last` over a
+#'   dosing interval) is not MRT at steady state and underestimates it
+#'   substantially; the `tau*(aucinf-auctau)/auctau` term accounts for the drug
+#'   still in the body at the end of the interval.
+#'
 #'   Within [pk.nca()], `tau` is detected from the dose times of the group with
 #'   [find.tau()].  When the dosing data hold a single dose (a common
 #'   steady-state design where only the profiled dose is recorded), nothing
@@ -1062,12 +1072,9 @@ add.interval.col("mrt.ivint.last",
 #' @inheritParams assert_dosetau
 #' @export
 pk.calc.mrt.md <- function(auctau, aumctau, aucinf, tau) {
-  ret <- aumctau/auctau + tau*(aucinf-auctau)/auctau
-  mask_zero <- is.na(auctau) | auctau <= 0
-  if (any(mask_zero)) {
-    ret[mask_zero] <- NA_real_
-  }
-  ret
+  pk.calc.mrt.md.iv(
+    auctau=auctau, aumctau=aumctau, aucinf=aucinf, tau=tau, duration.dose=0
+  )
 }
 
 add.interval.col("mrt.md.obs",
@@ -1093,6 +1100,44 @@ add.interval.col("mrt.md.pred",
                  pptestcd_cdisc="MRTMDP",
                  pptest_cdisc="MRT (for multiple dosing, based on AUCinf,pred)",
                  formula="$MRT_{\\text{md,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}}$")
+
+
+#' @describeIn pk.calc.mrt MRT for multiple-dose data with nonlinear kinetics
+#'   given as an IV infusion
+#'
+#' @details mrt.ivmd is mrt.md less half of the infusion duration, the same
+#'   correction that mrt.iv applies to the single-dose MRT.  Without it, MRT
+#'   and everything derived from it are high by `duration.dose/2`.
+#'
+#' @export
+pk.calc.mrt.md.iv <- function(auctau, aumctau, aucinf, tau, duration.dose) {
+  ret <- aumctau/auctau + tau*(aucinf-auctau)/auctau - duration.dose/2
+  mask_zero <- is.na(auctau) | auctau <= 0
+  if (any(mask_zero)) {
+    ret[mask_zero] <- NA_real_
+  }
+  ret
+}
+
+add.interval.col("mrt.ivmd.obs",
+                 FUN="pk.calc.mrt.md.iv",
+                 values=c(FALSE, TRUE),
+                 unit_type="time",
+                 pretty_name="MRT (for multiple dosing of an IV infusion, based on AUCinf,obs)",
+                 desc="IV MRT, multi-dose, AUCinf.obs",
+                 formalsmap=list(auctau="auclast", aumctau="aumclast", aucinf="aucinf.obs"),
+                 depends=c("auclast", "aumclast", "aucinf.obs"),
+                 formula="$MRT_{\\text{ivmd,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$")
+
+add.interval.col("mrt.ivmd.pred",
+                 FUN="pk.calc.mrt.md.iv",
+                 values=c(FALSE, TRUE),
+                 unit_type="time",
+                 pretty_name="MRT (for multiple dosing of an IV infusion, based on AUCinf,pred)",
+                 desc="IV MRT, multi-dose, AUCinf.pred",
+                 formalsmap=list(auctau="auclast", aumctau="aumclast", aucinf="aucinf.pred"),
+                 depends=c("auclast", "aumclast", "aucinf.pred"),
+                 formula="$MRT_{\\text{ivmd,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$")
 
 
 #' Calculate the terminal volume of distribution (Vz)
@@ -1376,6 +1421,26 @@ add.interval.col("vss.md.pred",
                  pptestcd_cdisc="VSSMDP",
                  pptest_cdisc="Vss (for multiple-dose, based on AUCinf,pred)",
                  formula="$V_{ss,\\text{md,pred}} = CL_{\\text{last}} \\cdot MRT_{\\text{md,pred}}$")
+
+add.interval.col("vss.ivmd.obs",
+                 FUN="pk.calc.vss",
+                 values=c(FALSE, TRUE),
+                 unit_type="volume",
+                 pretty_name="Vss (for multiple-dose IV infusion, based on Clast,obs)",
+                 desc="IV Vss, multi-dose, obs",
+                 formalsmap=list(cl="cl.last", mrt="mrt.ivmd.obs"),
+                 depends=c("cl.last", "mrt.ivmd.obs"),
+                 formula="$V_{ss,\\text{ivmd,obs}} = CL_{\\text{last}} \\cdot MRT_{\\text{ivmd,obs}}$")
+
+add.interval.col("vss.ivmd.pred",
+                 FUN="pk.calc.vss",
+                 values=c(FALSE, TRUE),
+                 unit_type="volume",
+                 pretty_name="Vss (for multiple-dose IV infusion, based on Clast,pred)",
+                 desc="IV Vss, multi-dose, pred",
+                 formalsmap=list(cl="cl.last", mrt="mrt.ivmd.pred"),
+                 depends=c("cl.last", "mrt.ivmd.pred"),
+                 formula="$V_{ss,\\text{ivmd,pred}} = CL_{\\text{last}} \\cdot MRT_{\\text{ivmd,pred}}$")
 
 add.interval.col("vss.all",
                  FUN = "pk.calc.vss",
@@ -1986,21 +2051,23 @@ PKNCA.set.summary(
     "kel.ivint.all", "kel.ivint.last",
     "kel.sparse.last",
     
-    # Mean residence time (MRT) - count: 17
+    # Mean residence time (MRT) - count: 19
     "mrt.obs", "mrt.pred", "mrt.last", "mrt.all",
     "mrt.int.all", "mrt.int.last", "mrt.int.inf.obs", "mrt.int.inf.pred",
     "mrt.iv.obs", "mrt.iv.pred", "mrt.iv.last", "mrt.iv.all",
     "mrt.ivint.all", "mrt.ivint.last",
     "mrt.sparse.last",
     "mrt.md.obs", "mrt.md.pred",
+    "mrt.ivmd.obs", "mrt.ivmd.pred",
     
-    # Volume of distribution at steady state (VSS) - count: 17
+    # Volume of distribution at steady state (VSS) - count: 19
     "vss.obs", "vss.pred", "vss.last", "vss.all",
     "vss.int.all", "vss.int.last", "vss.int.inf.obs", "vss.int.inf.pred",
     "vss.iv.obs", "vss.iv.pred", "vss.iv.last", "vss.iv.all",
     "vss.ivint.all", "vss.ivint.last",
     "vss.sparse.last",
     "vss.md.obs", "vss.md.pred",
+    "vss.ivmd.obs", "vss.ivmd.pred",
     
     # Volume of distribution (VZ) - count: 15
     "vz.obs", "vz.pred", "vz.last", "vz.all",

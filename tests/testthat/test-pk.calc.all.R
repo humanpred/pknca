@@ -1232,3 +1232,72 @@ test_that("mrt.md.pred and vss.md.pred get tau the same way (#151)", {
   expect_equal(value[["vss.md.pred"]], value[["cl.last"]]*value[["mrt.md.pred"]])
   expect_false(is.na(value[["mrt.md.pred"]]))
 })
+
+test_that("mrt.ivmd and vss.ivmd correct the multiple-dose MRT for the infusion duration (#151)", {
+  # The same steady-state one-compartment profile as above (CL=0.5, V=10,
+  # k=0.05, 100 q24h) given as a 4 hour infusion instead of a bolus.  The true
+  # MRT is still 1/k = 20 and the true Vss is still V = 10.
+  tau <- 24
+  duration <- 4
+  d_time <- c(0, 1, 2, 3, 4, 5, 6, 8, 12, 18, 24)
+  # Superposition of the single-dose infusion profile over many prior doses
+  conc_single <- function(t) {
+    rate <- 100/duration
+    ifelse(
+      t <= duration,
+      rate/0.5*(1 - exp(-0.05*t)),
+      rate/0.5*(1 - exp(-0.05*duration))*exp(-0.05*(t - duration))
+    )
+  }
+  d_conc <- rowSums(sapply(0:400, function(i) conc_single(d_time + i*tau)))
+
+  o_conc <- PKNCAconc(data.frame(subj=1, time=d_time, conc=d_conc), conc~time|subj)
+  o_dose <-
+    PKNCAdose(
+      data.frame(subj=1, time=0, dose=100, duration=duration),
+      dose~time|subj, route="intravascular", duration="duration"
+    )
+  interval <-
+    data.frame(
+      start=0, end=tau, tau=tau, cl.last=TRUE,
+      mrt.md.obs=TRUE, vss.md.obs=TRUE,
+      mrt.ivmd.obs=TRUE, vss.ivmd.obs=TRUE,
+      mrt.ivmd.pred=TRUE, vss.ivmd.pred=TRUE
+    )
+  res <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals=interval)))
+  value <- stats::setNames(res$PPORRES, res$PPTESTCD)
+
+  # The IV form hits the true MRT and Vss; the non-IV form is high by
+  # duration/2 and by cl.last*duration/2 respectively.
+  expect_equal(value[["mrt.ivmd.obs"]], 20, tolerance=1e-3)
+  expect_equal(value[["vss.ivmd.obs"]], 10, tolerance=1e-3)
+  expect_equal(value[["mrt.ivmd.obs"]], value[["mrt.md.obs"]] - duration/2)
+  expect_equal(
+    value[["vss.md.obs"]] - value[["vss.ivmd.obs"]],
+    value[["cl.last"]]*duration/2
+  )
+  expect_equal(value[["vss.ivmd.obs"]], value[["cl.last"]]*value[["mrt.ivmd.obs"]])
+  expect_equal(value[["vss.ivmd.pred"]], value[["cl.last"]]*value[["mrt.ivmd.pred"]])
+
+  # tau reaches the IV form the same way it reaches the non-IV form.  One
+  # warning is raised per requested parameter that takes tau, so collect them
+  # all rather than letting the ones expect_warning() does not take escape.
+  interval_no_tau <- interval
+  interval_no_tau$tau <- NULL
+  warn_class <- character()
+  res_na <-
+    withCallingHandlers(
+      as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals=interval_no_tau))),
+      warning = function(w) {
+        warn_class <<- c(warn_class, class(w)[1])
+        invokeRestart("muffleWarning")
+      }
+    )
+  expect_equal(warn_class, rep("pknca_warning_tau_undetermined", 3),
+               info="one warning per requested parameter taking tau")
+  value_na <- stats::setNames(res_na$PPORRES, res_na$PPTESTCD)
+  expect_equal(value_na[["mrt.ivmd.obs"]], NA_real_)
+  expect_equal(value_na[["vss.ivmd.obs"]], NA_real_)
+  expect_equal(value_na[["mrt.ivmd.pred"]], NA_real_)
+  expect_equal(value_na[["vss.ivmd.pred"]], NA_real_)
+})

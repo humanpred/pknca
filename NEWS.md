@@ -6,6 +6,13 @@ the dosing including dose amount and route.
 
 # Development version
 
+* New parameters `mrt.ivmd.obs`, `mrt.ivmd.pred`, `vss.ivmd.obs`, and
+  `vss.ivmd.pred` give the multiple-dose (steady-state) MRT and Vss for an IV
+  infusion.  They subtract half of the infusion duration, the correction that
+  the `mrt.md.*` and `vss.md.*` parameters do not apply, so those were high by
+  `duration.dose/2` and by `cl.last*duration.dose/2` respectively for an
+  infusion (#151).
+
 * Bug fix: the multiple-dose parameters `mrt.md.obs`, `mrt.md.pred`,
   `vss.md.obs`, and `vss.md.pred` can now be calculated by `pk.nca()`.
   Requesting any of them previously stopped with `Cannot find argument 'tau'`
