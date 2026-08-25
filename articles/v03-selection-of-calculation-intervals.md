@@ -473,6 +473,8 @@ information about the parameter, see the documentation for the function.
 | ctrough | $`C_{\text{trough}} = C(t_{\text{end}})`$ |  | conc | Trough (end of interval) conc | pk.calc.ctrough |
 | ctrough.dn | $`C_{\text{trough},dn} = \frac{C_{\text{trough}}}{Dose}`$ |  | conc_dosenorm | Dose normalized ctrough | pk.calc.dn |
 | deg.fluc | $`DF = 100 \cdot \frac{C_{\max} - C_{\min}}{C_{av}}`$ |  | % | Degree of fluctuation | pk.calc.deg.fluc |
+| erint | $`ER_{T_1 \rightarrow T_2} = \frac{A_e}{T_2 - T_1}`$ | Amount recovered during the interval divided by the interval duration | amount_time | Excretion rate from T1 to T2 | pk.calc.erint |
+| erlst | $`ER_{\text{last}} = \frac{C_l V_l}{d_l}`$ | The last collection with a nonzero excretion rate, ordered by collection midpoint | amount_time | Last measurable excretion rate | pk.calc.erlst |
 | ermax | $`ER_{\max} = \max_i \left( \frac{C_i V_i}{d_i} \right)`$ |  | amount_time | Maximum excretion rate | pk.calc.ermax |
 | ertlst | $`T_{\text{last,ER}} = t_{\text{mid},i: ER_i > 0, i = \max}`$ |  | time | Midpoint time of last excr rate | pk.calc.ertlst |
 | ertmax | $`T_{\max,ER} = t_{\text{mid},i: ER_i = ER_{\max}}`$ |  | time | Midpoint time of max excr rate | pk.calc.ertmax |

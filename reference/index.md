@@ -464,6 +464,12 @@
 - [`pk.calc.dn()`](https://humanpred.github.io/pknca/reference/pk.calc.dn.md)
   : Determine dose normalized NCA parameter
 
+- [`pk.calc.erint()`](https://humanpred.github.io/pknca/reference/pk.calc.erint.md)
+  : Calculate the excretion rate over the interval
+
+- [`pk.calc.erlst()`](https://humanpred.github.io/pknca/reference/pk.calc.erlst.md)
+  : Calculate the last measurable excretion rate
+
 - [`pk.calc.ermax()`](https://humanpred.github.io/pknca/reference/pk.calc.ermax.md)
   : Calculate the maximum excretion rate
 

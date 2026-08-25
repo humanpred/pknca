@@ -1,19 +1,11 @@
-# Calculate the midpoint collection time of the maximum excretion rate
+# Calculate the last measurable excretion rate
 
-Calculate the midpoint collection time of the maximum excretion rate
+Calculate the last measurable excretion rate
 
 ## Usage
 
 ``` r
-pk.calc.ertmax(
-  conc,
-  volume,
-  time,
-  duration.conc,
-  options = list(),
-  check = TRUE,
-  first.tmax = NULL
-)
+pk.calc.erlst(conc, volume, time, duration.conc, check = TRUE)
 ```
 
 ## Arguments
@@ -34,33 +26,32 @@ pk.calc.ertmax(
 
   The duration of the collection interval
 
-- options:
-
-  List of changes to the default PKNCA options (see
-  [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
-
 - check:
 
-  Should the concentration and time data be checked?
-
-- first.tmax:
-
-  If TRUE, return the first time of maximum excretion rate; otherwise,
-  return the last
+  Should the concentration data be checked?
 
 ## Value
 
-The midpoint collection time of the maximum excretion rate, or NA if not
-available
+The last measurable (positive) excretion rate, or `NA` if not available
+
+## Details
+
+Collections are ordered by their midpoint time, matching
+[`pk.calc.ertlst()`](https://humanpred.github.io/pknca/reference/pk.calc.ertlst.md),
+which gives the midpoint time of this same collection. When no
+collection has a positive excretion rate, the result is 0.
 
 ## See also
+
+[`pk.calc.ertlst()`](https://humanpred.github.io/pknca/reference/pk.calc.ertlst.md),
+[`pk.calc.ermax()`](https://humanpred.github.io/pknca/reference/pk.calc.ermax.md)
 
 Other Urine/Excretion parameters:
 [`pk.calc.ae()`](https://humanpred.github.io/pknca/reference/pk.calc.ae.md),
 [`pk.calc.clr()`](https://humanpred.github.io/pknca/reference/pk.calc.clr.md),
 [`pk.calc.erint()`](https://humanpred.github.io/pknca/reference/pk.calc.erint.md),
-[`pk.calc.erlst()`](https://humanpred.github.io/pknca/reference/pk.calc.erlst.md),
 [`pk.calc.ermax()`](https://humanpred.github.io/pknca/reference/pk.calc.ermax.md),
 [`pk.calc.ertlst()`](https://humanpred.github.io/pknca/reference/pk.calc.ertlst.md),
+[`pk.calc.ertmax()`](https://humanpred.github.io/pknca/reference/pk.calc.ertmax.md),
 [`pk.calc.fe()`](https://humanpred.github.io/pknca/reference/pk.calc.fe.md),
 [`pk.calc.volpk()`](https://humanpred.github.io/pknca/reference/pk.calc.volpk.md)

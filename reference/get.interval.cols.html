@@ -2800,7 +2800,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VOLPK"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $volpk$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Volume of PK sample"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sum of Urine Vol"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $volpk$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{\\text{urine}} = \\sum_i V_i$"</span>
@@ -3088,7 +3088,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ERTLST"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ertlst$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time of Last Excretion Rate"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Midpoint of Interval of Last Nonzero ER"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ertlst$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$T_{\\text{last,ER}} = t_{\\text{mid},i: ER_i &gt; 0, i = \\max}$"</span>
@@ -3194,6 +3194,100 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ertmax$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.erint"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "amount_time"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Excretion rate"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Excretion rate from T1 to T2"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ae"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ERINT"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Excret Rate from T1 to T2"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$ER_{T_1 \\rightarrow T_2} = \\frac{A_e}{T_2 - T_1}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Amount recovered during the interval divided by the interval duration"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erint$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.erlst"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "amount_time"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Last measurable excretion rate"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Last measurable excretion rate"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ERLST"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Last Meas Excretion Rate"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$ER_{\\text{last}} = \\frac{C_l V_l}{d_l}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "The last collection with a nonzero excretion rate, ordered by collection midpoint"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $erlst$selection</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>

@@ -40,6 +40,8 @@ The units for the concentration and volume should match such that
 
 Other Urine/Excretion parameters:
 [`pk.calc.clr()`](https://humanpred.github.io/pknca/reference/pk.calc.clr.md),
+[`pk.calc.erint()`](https://humanpred.github.io/pknca/reference/pk.calc.erint.md),
+[`pk.calc.erlst()`](https://humanpred.github.io/pknca/reference/pk.calc.erlst.md),
 [`pk.calc.ermax()`](https://humanpred.github.io/pknca/reference/pk.calc.ermax.md),
 [`pk.calc.ertlst()`](https://humanpred.github.io/pknca/reference/pk.calc.ertlst.md),
 [`pk.calc.ertmax()`](https://humanpred.github.io/pknca/reference/pk.calc.ertmax.md),

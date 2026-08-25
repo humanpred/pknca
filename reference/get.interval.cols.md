@@ -2743,7 +2743,7 @@ get.interval.cols()
 #> [1] "VOLPK"
 #> 
 #> $volpk$pptest_cdisc
-#> [1] "Volume of PK sample"
+#> [1] "Sum of Urine Vol"
 #> 
 #> $volpk$formula
 #> [1] "$V_{\\text{urine}} = \\sum_i V_i$"
@@ -3031,7 +3031,7 @@ get.interval.cols()
 #> [1] "ERTLST"
 #> 
 #> $ertlst$pptest_cdisc
-#> [1] "Time of Last Excretion Rate"
+#> [1] "Midpoint of Interval of Last Nonzero ER"
 #> 
 #> $ertlst$formula
 #> [1] "$T_{\\text{last,ER}} = t_{\\text{mid},i: ER_i > 0, i = \\max}$"
@@ -3137,6 +3137,100 @@ get.interval.cols()
 #> [1] "uncommon"
 #> 
 #> $ertmax$selection
+#> list()
+#> 
+#> 
+#> $erint
+#> $erint$FUN
+#> [1] "pk.calc.erint"
+#> 
+#> $erint$values
+#> [1] FALSE  TRUE
+#> 
+#> $erint$unit_type
+#> [1] "amount_time"
+#> 
+#> $erint$pretty_name
+#> [1] "Excretion rate"
+#> 
+#> $erint$desc
+#> [1] "Excretion rate from T1 to T2"
+#> 
+#> $erint$sparse
+#> [1] FALSE
+#> 
+#> $erint$formalsmap
+#> list()
+#> 
+#> $erint$depends
+#> [1] "ae"
+#> 
+#> $erint$datatype
+#> [1] "interval"
+#> 
+#> $erint$pptestcd_cdisc
+#> [1] "ERINT"
+#> 
+#> $erint$pptest_cdisc
+#> [1] "Excret Rate from T1 to T2"
+#> 
+#> $erint$formula
+#> [1] "$ER_{T_1 \\rightarrow T_2} = \\frac{A_e}{T_2 - T_1}$"
+#> 
+#> $erint$formula_note
+#> [1] "Amount recovered during the interval divided by the interval duration"
+#> 
+#> $erint$tier
+#> [1] "uncommon"
+#> 
+#> $erint$selection
+#> list()
+#> 
+#> 
+#> $erlst
+#> $erlst$FUN
+#> [1] "pk.calc.erlst"
+#> 
+#> $erlst$values
+#> [1] FALSE  TRUE
+#> 
+#> $erlst$unit_type
+#> [1] "amount_time"
+#> 
+#> $erlst$pretty_name
+#> [1] "Last measurable excretion rate"
+#> 
+#> $erlst$desc
+#> [1] "Last measurable excretion rate"
+#> 
+#> $erlst$sparse
+#> [1] FALSE
+#> 
+#> $erlst$formalsmap
+#> list()
+#> 
+#> $erlst$depends
+#> NULL
+#> 
+#> $erlst$datatype
+#> [1] "interval"
+#> 
+#> $erlst$pptestcd_cdisc
+#> [1] "ERLST"
+#> 
+#> $erlst$pptest_cdisc
+#> [1] "Last Meas Excretion Rate"
+#> 
+#> $erlst$formula
+#> [1] "$ER_{\\text{last}} = \\frac{C_l V_l}{d_l}$"
+#> 
+#> $erlst$formula_note
+#> [1] "The last collection with a nonzero excretion rate, ordered by collection midpoint"
+#> 
+#> $erlst$tier
+#> [1] "uncommon"
+#> 
+#> $erlst$selection
 #> list()
 #> 
 #> 
