@@ -97,7 +97,7 @@ knitr::kable(intervals_manual)
 
 # Intervals
 
-Intervals are defined by `data.frame`s with one row per interval, zero or more columns to match the groups from the `PKNCAdata` object, and one or more NCA parameters to calculate.  An interval may also have an `impute` column specifying the data imputation method(s) to apply to the interval before calculation (see the Data Imputation vignette for details).  Any other columns named in the `keep_interval_cols` PKNCA option are passed through from the intervals to the corresponding rows of the results.
+Intervals are defined by `data.frame`s with one row per interval, zero or more columns to match the groups from the `PKNCAdata` object, and one or more NCA parameters to calculate.  An interval may also have an `impute` column specifying the data imputation method(s) to apply to the interval before calculation (see the Data Imputation vignette for details).  An interval may have a `tau` column giving the dosing interval for the multiple-dose parameters (`mrt.md.obs`, `mrt.md.pred`, `vss.md.obs`, and `vss.md.pred`); when it is omitted, `tau` is detected from the dose times, which requires at least two doses in the dosing data.  Any other columns named in the `keep_interval_cols` PKNCA option are passed through from the intervals to the corresponding rows of the results.
 
 Selection of points within an interval occurs by choosing any point at or after the `start` and at or before the `end`.
 

@@ -1047,6 +1047,14 @@ add.interval.col("mrt.ivint.last",
 #'   Note that if `aucinf == auctau` (as would be the assumption with
 #'   linear kinetics), the equation becomes the same as the single-dose MRT.
 #'
+#'   Within [pk.nca()], `tau` is detected from the dose times of the group with
+#'   [find.tau()].  When the dosing data hold a single dose (a common
+#'   steady-state design where only the profiled dose is recorded), nothing
+#'   repeats and nothing can be detected, so give `tau` as a column of the
+#'   interval specification instead; a `tau` column always takes precedence
+#'   over detection.  If `tau` can be neither given nor detected, the parameter
+#'   is `NA` with a warning.
+#'
 #' @param auctau the AUC from time 0 to the end of the dosing interval (tau).
 #' @param aumctau the AUMC from time 0 to the end of the dosing interval (tau).
 #' @param aucinf the AUC from time 0 to infinity (typically using single-dose

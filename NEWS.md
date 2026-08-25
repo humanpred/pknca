@@ -6,6 +6,16 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: the multiple-dose parameters `mrt.md.obs`, `mrt.md.pred`,
+  `vss.md.obs`, and `vss.md.pred` can now be calculated by `pk.nca()`.
+  Requesting any of them previously stopped with `Cannot find argument 'tau'`
+  because nothing supplied the dosing interval.  `tau` is now detected from the
+  group's dose times, and the interval specification accepts a `tau` column
+  that takes precedence over detection (needed when only the profiled dose is
+  in the dosing data, so nothing repeats).  When `tau` can be neither given nor
+  detected, the parameters are `NA` with a warning rather than silently
+  reducing to their single-dose equivalents (#151).
+
 * Bug fix: `superposition()` drops missing concentrations before calculating.
   They previously reached the half-life fit and stopped the calculation with
   `NA/NaN/Inf in 'x'` (#308).

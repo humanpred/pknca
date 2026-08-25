@@ -103,3 +103,11 @@ test_that("set_intervals fails when not using PKNCAdata", {
   expect_error(set_intervals(data = o_conc, intervals = data.frame(start = 0, end = 1, cmin = TRUE)), 
                regex = "Must inherit from class 'PKNCAdata'")
 })
+
+test_that("assert_intervals allows a tau column for multiple-dose parameters", {
+  o_conc <- PKNCAconc(as.data.frame(datasets::Theoph), conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 1, cmax = TRUE))
+  intervals <- data.frame(start = 0, end = 24, tau = 24, mrt.md.obs = TRUE)
+
+  expect_equal(assert_intervals(intervals = intervals, data = o_data), expected = intervals)
+})

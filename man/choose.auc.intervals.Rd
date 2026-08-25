@@ -54,7 +54,8 @@ Other Interval specifications:
 \code{\link[=interval_add_param]{interval_add_param()}}
 
 Other Interval determination:
-\code{\link[=find.tau]{find.tau()}}
+\code{\link[=find.tau]{find.tau()}},
+\code{\link[=resolve_dose_tau]{resolve_dose_tau()}}
 }
 \concept{Interval determination}
 \concept{Interval specifications}

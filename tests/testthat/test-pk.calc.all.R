@@ -961,8 +961,6 @@ test_that("pk.nca can be run for each parameter independently (#473)", {
   # and are tested in dedicated tests elsewhere
   non_pknca_covered_params <- c(
     "f", "time_above",
-    "mrt.md.obs", "mrt.md.pred",
-    "vss.md.obs", "vss.md.pred",
     "sparse_auc_se", "sparse_auc_df",
     "sparse_aumc_se", "sparse_aumc_df",
     "ceoi"
@@ -1128,4 +1126,109 @@ test_that("pk.nca sorts group data by time so unsorted input works (#568)", {
       by = "PPTESTCD", suffixes = c(".uns", ".srt")
     )
   expect_equal(merged$PPORRES.uns, merged$PPORRES.srt)
+})
+
+test_that("mrt.md and vss.md get tau from the intervals or the dose times (#151)", {
+  # Steady-state profile for a one-compartment IV bolus with CL=0.5, V=10
+  # (k=0.05) dosed 100 every 24 hours, so the true MRT is 1/k = 20 and the true
+  # Vss is V = 10.
+  tau <- 24
+  d_time <- c(0, 0.5, 1, 2, 4, 6, 8, 12, 18, 24)
+  d_conc <- 10/(1 - exp(-0.05*tau))*exp(-0.05*d_time)
+
+  # A single dose in the dosing data (the common steady-state design): tau
+  # cannot be detected, so it comes from the interval specification.
+  o_conc_1 <- PKNCAconc(data.frame(subj=1, time=d_time, conc=d_conc), conc~time|subj)
+  o_dose_1 <- PKNCAdose(data.frame(subj=1, time=0, dose=100), dose~time|subj, route="intravascular")
+  interval_tau <-
+    data.frame(
+      start=0, end=tau, tau=tau,
+      auclast=TRUE, aumclast=TRUE, aucinf.obs=TRUE, cl.last=TRUE,
+      mrt.md.obs=TRUE, vss.md.obs=TRUE
+    )
+  res_1 <- as.data.frame(pk.nca(PKNCAdata(o_conc_1, o_dose_1, intervals=interval_tau)))
+  value_1 <- stats::setNames(res_1$PPORRES, res_1$PPTESTCD)
+
+  # The multiple-dose equation recovers the model's true MRT and Vss exactly
+  # here; the single-dose parameters over the same interval do not (mrt.last is
+  # AUMClast/AUClast = 9.66).
+  expect_equal(value_1[["mrt.md.obs"]], 20, tolerance=1e-8)
+  expect_equal(value_1[["vss.md.obs"]], 10, tolerance=1e-8)
+  # The wiring is what is under test: confirm the reported value is the
+  # multiple-dose equation applied to this interval's own AUC and AUMC.
+  expect_equal(
+    value_1[["mrt.md.obs"]],
+    value_1[["aumclast"]]/value_1[["auclast"]] +
+      tau*(value_1[["aucinf.obs"]] - value_1[["auclast"]])/value_1[["auclast"]]
+  )
+  expect_equal(value_1[["vss.md.obs"]], value_1[["cl.last"]]*value_1[["mrt.md.obs"]])
+
+  # The same profile as the last of four q24h doses: tau is detected from the
+  # dose times, so no tau column is needed.
+  o_conc_4 <-
+    PKNCAconc(data.frame(subj=1, time=3*tau + d_time, conc=d_conc), conc~time|subj)
+  o_dose_4 <-
+    PKNCAdose(
+      data.frame(subj=1, time=(0:3)*tau, dose=100),
+      dose~time|subj, route="intravascular"
+    )
+  interval_detect <-
+    data.frame(
+      start=3*tau, end=4*tau,
+      auclast=TRUE, aumclast=TRUE, aucinf.obs=TRUE, cl.last=TRUE,
+      mrt.md.obs=TRUE, vss.md.obs=TRUE
+    )
+  res_4 <- as.data.frame(pk.nca(PKNCAdata(o_conc_4, o_dose_4, intervals=interval_detect)))
+  value_4 <- stats::setNames(res_4$PPORRES, res_4$PPTESTCD)
+  expect_equal(value_4[["mrt.md.obs"]], value_1[["mrt.md.obs"]])
+  expect_equal(value_4[["vss.md.obs"]], value_1[["vss.md.obs"]])
+
+  # A tau column overrides detection
+  interval_override <- interval_detect
+  interval_override$tau <- 12
+  res_override <-
+    as.data.frame(pk.nca(PKNCAdata(o_conc_4, o_dose_4, intervals=interval_override)))
+  value_override <- stats::setNames(res_override$PPORRES, res_override$PPTESTCD)
+  expect_equal(
+    value_override[["mrt.md.obs"]],
+    value_1[["aumclast"]]/value_1[["auclast"]] +
+      12*(value_1[["aucinf.obs"]] - value_1[["auclast"]])/value_1[["auclast"]]
+  )
+
+  # Without a tau column and without repeating doses, the parameter is NA
+  # rather than silently falling back to the single-dose equation.
+  interval_no_tau <- interval_tau
+  interval_no_tau$tau <- NULL
+  expect_warning(
+    res_na <- as.data.frame(pk.nca(PKNCAdata(o_conc_1, o_dose_1, intervals=interval_no_tau))),
+    class="pknca_warning_tau_undetermined"
+  )
+  value_na <- stats::setNames(res_na$PPORRES, res_na$PPTESTCD)
+  expect_equal(value_na[["mrt.md.obs"]], NA_real_)
+  expect_equal(value_na[["vss.md.obs"]], NA_real_)
+  # The single-dose parameters in the same interval are unaffected
+  expect_equal(value_na[["auclast"]], value_1[["auclast"]])
+})
+
+test_that("mrt.md.pred and vss.md.pred get tau the same way (#151)", {
+  tau <- 12
+  d_time <- c(0, 0.5, 1, 2, 4, 6, 9, 12)
+  d_conc <- 10/(1 - exp(-0.1*tau))*exp(-0.1*d_time)
+  o_conc <- PKNCAconc(data.frame(subj=1, time=d_time, conc=d_conc), conc~time|subj)
+  o_dose <- PKNCAdose(data.frame(subj=1, time=0, dose=50), dose~time|subj, route="intravascular")
+  interval <-
+    data.frame(
+      start=0, end=tau, tau=tau,
+      auclast=TRUE, aumclast=TRUE, aucinf.pred=TRUE, cl.last=TRUE,
+      mrt.md.pred=TRUE, vss.md.pred=TRUE
+    )
+  res <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals=interval)))
+  value <- stats::setNames(res$PPORRES, res$PPTESTCD)
+  expect_equal(
+    value[["mrt.md.pred"]],
+    value[["aumclast"]]/value[["auclast"]] +
+      tau*(value[["aucinf.pred"]] - value[["auclast"]])/value[["auclast"]]
+  )
+  expect_equal(value[["vss.md.pred"]], value[["cl.last"]]*value[["mrt.md.pred"]])
+  expect_false(is.na(value[["mrt.md.pred"]]))
 })

@@ -44,6 +44,14 @@ mrt.md is \code{aumctau/auctau + tau*(aucinf-auctau)/auctau} and should
 only be used for multiple dosing with equal intervals between doses.
 Note that if \code{aucinf == auctau} (as would be the assumption with
 linear kinetics), the equation becomes the same as the single-dose MRT.
+
+Within \code{\link[=pk.nca]{pk.nca()}}, \code{tau} is detected from the dose times of the group with
+\code{\link[=find.tau]{find.tau()}}.  When the dosing data hold a single dose (a common
+steady-state design where only the profiled dose is recorded), nothing
+repeats and nothing can be detected, so give \code{tau} as a column of the
+interval specification instead; a \code{tau} column always takes precedence
+over detection.  If \code{tau} can be neither given nor detected, the parameter
+is \code{NA} with a warning.
 }
 \section{Functions}{
 \itemize{

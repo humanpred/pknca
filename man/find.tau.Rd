@@ -36,6 +36,7 @@ This is intended to find the interval over which x repeats by the rule
 }
 \seealso{
 Other Interval determination:
-\code{\link[=choose.auc.intervals]{choose.auc.intervals()}}
+\code{\link[=choose.auc.intervals]{choose.auc.intervals()}},
+\code{\link[=resolve_dose_tau]{resolve_dose_tau()}}
 }
 \concept{Interval determination}
