@@ -9,7 +9,11 @@ test_that("prepare_*", {
   expect_equal(
     prepare_PKNCAconc(o_conc),
     tidyr::nest(
-      tmp_conc[, c("treatment", "ID", "conc", "time")],
+      dplyr::mutate(
+        tmp_conc[, c("treatment", "ID", "conc", "time")],
+        volume=NA_real_,
+        duration=0
+      ),
       data_conc=!c("treatment", "ID")
     )
   )
