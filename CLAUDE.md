@@ -12,7 +12,8 @@ WinNonlin and Pumas. Licensed under AGPL-3.
 ``` r
 
 devtools::load_all()                                       # Load package for interactive testing
-devtools::test()                                           # Run full testthat suite
+devtools::test()                                           # Run full testthat suite (parallel)
+options(Ncpus = 4); devtools::test()                       # Best measured worker count
 devtools::test_active_file("tests/testthat/test-auc.R")    # Run a single test file
 devtools::check()                                          # Full R CMD check
 devtools::document()                                       # Regenerate roxygen2 docs + NAMESPACE
