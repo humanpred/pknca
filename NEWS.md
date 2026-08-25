@@ -16,6 +16,10 @@ the dosing including dose amount and route.
   They previously reached the half-life fit and stopped the calculation with
   `NA/NaN/Inf in 'x'` (#308).
 
+* `superposition()` checks the `method` and `auc.type` arguments for every
+  input.  An invalid value was previously ignored when the calculation
+  required neither interpolation nor extrapolation (#247).
+
 * `add.interval.col()` gains `formula` and `formula_note` arguments giving the
   calculation as a LaTeX expression.  They are shown in the parameter table in
   `vignette("v03-selection-of-calculation-intervals")` (#507).
