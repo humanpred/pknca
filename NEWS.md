@@ -6,6 +6,18 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: the `start_predose` imputation method no longer stops with `missing
+  value where TRUE/FALSE needed` when a concentration has a missing time.  A
+  measurement at an unknown time cannot be known to be predose, so it is now
+  ignored by the imputation (#361).
+
+* The `start_predose` imputation method no longer shifts a predose
+  concentration that is `NA`.  A missing predose value carries no information,
+  and shifting it added a missing concentration at the start time where there
+  had been no measurement at all.  The most recent predose sample with a
+  measured concentration is shifted instead, as long as it is within
+  `max_shift` (#361).
+
 * `pk.nca()` only asks for a bug report when it did not diagnose the error
   itself.  A parameter that needs a value from the interval specification
   (`conc_above` for `time_above`, `dose1` and `dose2` for `f`, `tau` for
