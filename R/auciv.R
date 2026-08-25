@@ -68,6 +68,8 @@ pk.calc.auciv <- function(conc, time, c0, auc, ..., options = list(), check = TR
   )
 }
 
+pknca_concept(pk.calc.auciv) <- "auc"
+
 
 add.interval.col(
   name = "aucivlast",
@@ -159,6 +161,8 @@ pk.calc.auciv_pbext <- function(auc, auciv) {
   if (!is.na(auciv) && !is.na(auc) && auciv < auc){rlang::abort("auciv must be >= auc; back-extrapolation cannot be negative.")}
   100*(1 - auc/auciv)
 }
+
+pknca_concept(pk.calc.auciv_pbext) <- "auc_extrapolation"
 
 add.interval.col(
   name = "aucivpbextlast",
@@ -252,6 +256,8 @@ pk.calc.aumciv <- function(conc, time, c0, aumc, ..., options = list(), check = 
     check = check
   )
 }
+
+pknca_concept(pk.calc.aumciv) <- "aumc"
 # Register all standard AUMC IV versions
 add.interval.col(
   name = "aumcivlast",

@@ -207,6 +207,24 @@ any_sparse_dense_in_interval <- function(interval, sparse) {
   )
 }
 
+# Re-raise an error from a single interval calculation with the interval named.
+#
+# PKNCA raises a `pknca_error_*` condition wherever it has diagnosed the problem
+# itself, and those messages already say what the user has to change.  A
+# `pknca_error_internal_*` condition, or anything unclassed arriving from base R
+# or another package, is a case PKNCA did not anticipate, so only those ask for a
+# bug report.
+interval_calculation_error <- function(e, error_preamble) {
+  diagnosed <-
+    any(grepl("^pknca_error_", class(e))) &&
+    !any(grepl("^pknca_error_internal_", class(e)))
+  msg <- sprintf("%s: %s", error_preamble, e$message)
+  if (!diagnosed) {
+    msg <- paste("Please report a bug.", msg, sep = "\n")
+  }
+  rlang::abort(msg, class = "pknca_error_interval_calculation", parent = e)
+}
+
 # Subset data down to just the times of interest and then pass it
 # further to the calculation routines.
 #
@@ -347,9 +365,7 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
         calculated_interval <-
           tryCatch(
             do.call(pk.nca.interval, args),
-            error = function(e) {
-              rlang::abort(sprintf("Please report a bug.\n%s: %s", error_preamble, e$message), class = "pknca_error_interval_calculation", parent = e)  # nocov
-            }
+            error = function(e) interval_calculation_error(e, error_preamble = error_preamble)
           )
       }
       # Add all the new data into the output
@@ -552,17 +568,22 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         } else {
           # Give an error if there is not a default argument.
           if (inherits(formals(get(all_intervals[[n]]$FUN))[[arg_formal]], "name")) {
-            arg_text <- # nocov start
+            arg_text <-
               if (arg_formal == arg_mapped) {
                 sprintf("'%s'", arg_formal)
               } else {
-                sprintf("'%s' mapped to '%s'", arg_formal, arg_mapped)
+                # Every formalsmap name resolves to a source input or to a
+                # parameter calculated first, so reaching here means the
+                # add.interval.col() registration is wrong, not the interval
+                sprintf("'%s' mapped to '%s'", arg_formal, arg_mapped)  # nocov
               }
+            # The interval specification is the last place an argument is looked
+            # for, so that is where the user has to supply it.
             rlang::abort(
               sprintf(
-                "Cannot find argument %s for NCA function '%s'",
-                arg_text, all_intervals[[n]]$FUN
-              ), # nocov end
+                "Cannot find argument %s for NCA parameter '%s' (calculated by '%s'); give it as a column in the interval specification",
+                arg_text, n, all_intervals[[n]]$FUN
+              ),
               class = "pknca_error_missing_nca_argument"
             )
           }

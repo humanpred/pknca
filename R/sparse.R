@@ -378,6 +378,8 @@ pk.calc.sparse_auclast <- function(conc, time, subject, ..., options=list()) {
   ret
 }
 
+pknca_concept(pk.calc.sparse_auclast) <- "auc"
+
 add.interval.col(
   "sparse_auclast",
   sparse=TRUE,
@@ -389,7 +391,8 @@ add.interval.col(
   pptestcd_cdisc="SPARSEAL",
   pptest_cdisc="Sparse AUClast",
   formula="$AUC_{\\text{sparse}} = \\sum_k \\frac{\\bar{C}_k + \\bar{C}_{k+1}}{2} \\Delta t_k$",
-  formula_note="Linear trapezoidal using population mean concentrations")
+  formula_note="Linear trapezoidal using population mean concentrations",
+  tier = "common")
 
 add.interval.col(
   "sparse_auc_se",
@@ -402,7 +405,8 @@ add.interval.col(
   pptestcd_cdisc="SPARSEAS",
   pptest_cdisc="Sparse AUClast standard error",
   formula="$SE(AUC_{\\text{sparse}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$",
-  formula_note="Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001)")
+  formula_note="Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001)",
+  tier = "common")
 
 add.interval.col(
   "sparse_auc_df",
@@ -602,6 +606,8 @@ pk.calc.sparse_aumclast <- function(conc, time, subject, ..., options = list()) 
   names(ret)[names(ret) == "sparse_aumc"] <- "sparse_aumclast"
   ret
 }
+
+pknca_concept(pk.calc.sparse_aumclast) <- "aumc"
 
 add.interval.col(
   "sparse_aumclast",

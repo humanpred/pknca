@@ -221,6 +221,79 @@ test_that("pk.nca.interval errors", {
   )
 })
 
+test_that("a parameter needing an interval column says so instead of asking for a bug report", {
+  d_conc <- data.frame(conc = 2^(0:-5), time = 0:5)
+  o_conc <- PKNCAconc(d_conc, conc~time)
+  # `conc_above` for time_above and `dose1` for f have to be given by the user
+  # as interval columns.  `tau` does not belong here: it is detected from the
+  # dose times when it is not given, and is NA with a warning when it can be
+  # neither given nor detected.
+  needs_interval_col <-
+    list(
+      time_above = "Cannot find argument 'conc_above' for NCA parameter 'time_above' (calculated by 'pk.calc.time_above'); give it as a column in the interval specification",
+      f = "Cannot find argument 'dose1' for NCA parameter 'f' (calculated by 'pk.calc.f'); give it as a column in the interval specification"
+    )
+  for (current_param in names(needs_interval_col)) {
+    d_interval <- data.frame(start = 0, end = Inf)
+    d_interval[[current_param]] <- TRUE
+    o_data <- PKNCAdata(o_conc, intervals = d_interval)
+    # purrr wraps the error it gets from pk.nca(), so the text is checked in the
+    # whole chain rather than in the top condition
+    current_message <-
+      conditionMessage(tryCatch(
+        suppressMessages(suppressWarnings(pk.nca(o_data))),
+        error = function(e) e
+      ))
+    expect_true(grepl(needs_interval_col[[current_param]], current_message, fixed = TRUE))
+    expect_false(grepl("report a bug", current_message, fixed = TRUE))
+  }
+  # Supplying the column makes the parameter calculable
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, time_above = TRUE, conc_above = 0.2))
+  suppressMessages(suppressWarnings(o_nca <- pk.nca(o_data)))
+  expect_equal(as.data.frame(o_nca)$PPTESTCD, "time_above")
+})
+
+test_that("interval_calculation_error asks for a bug report only when PKNCA did not diagnose the error", {
+  preamble <- "Error with interval start=0, end=Inf"
+  # Diagnosed by PKNCA: the message already says what to change
+  err_diagnosed <-
+    tryCatch(
+      interval_calculation_error(
+        rlang::catch_cnd(rlang::abort("say what to change", class = "pknca_error_invalid_route")),
+        error_preamble = preamble
+      ),
+      error = function(e) e
+    )
+  expect_s3_class(err_diagnosed, "pknca_error_interval_calculation")
+  expect_equal(err_diagnosed$message, paste0(preamble, ": say what to change"))
+  # Internal: PKNCA did not expect this
+  err_internal <-
+    tryCatch(
+      interval_calculation_error(
+        rlang::catch_cnd(rlang::abort("should not happen", class = "pknca_error_internal_tlast")),
+        error_preamble = preamble
+      ),
+      error = function(e) e
+    )
+  expect_equal(
+    err_internal$message,
+    paste0("Please report a bug.\n", preamble, ": should not happen")
+  )
+  # Unclassed errors from outside PKNCA are also unexpected
+  err_unclassed <-
+    tryCatch(
+      interval_calculation_error(
+        rlang::catch_cnd(stop("from somewhere else")),
+        error_preamble = preamble
+      ),
+      error = function(e) e
+    )
+  expect_equal(
+    err_unclassed$message,
+    paste0("Please report a bug.\n", preamble, ": from somewhere else")
+  )
+})
+
 test_that("Calculations when dose time is missing", {
   # Ensure that the correct number of doses are included in parameters that use dosing.
   tmpconc <- generate.conc(2, 1, 0:24)

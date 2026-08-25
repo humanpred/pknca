@@ -23,9 +23,55 @@ the dosing including dose amount and route.
   detected, the parameters are `NA` with a warning rather than silently
   reducing to their single-dose equivalents (#151).
 
+* Bug fix: the `start_predose` imputation method no longer stops with `missing
+  value where TRUE/FALSE needed` when a concentration has a missing time.  A
+  measurement at an unknown time cannot be known to be predose, so it is now
+  ignored by the imputation (#361).
+
+* The `start_predose` imputation method no longer shifts a predose
+  concentration that is `NA`.  A missing predose value carries no information,
+  and shifting it added a missing concentration at the start time where there
+  had been no measurement at all.  The most recent predose sample with a
+  measured concentration is shifted instead, as long as it is within
+  `max_shift` (#361).
+
+* `pk.nca()` only asks for a bug report when it did not diagnose the error
+  itself.  A parameter that needs a value from the interval specification
+  (`conc_above` for `time_above`, `dose1` and `dose2` for `f`) now names the
+  parameter and says to give it as an interval column, instead of prefixing
+  "Please report a bug." to an error that is not one (#367).
+
+* Bug fix: the dose-aware interval parameters (`aucint.last.dose`,
+  `aumcint.inf.pred.dose`, and the rest of the `*int.*.dose` family) return
+  `NA` when the dose time is missing.  With no dosing data, the dose time was
+  `NA`, which became a time point to interpolate to and stopped the calculation
+  with `Assertion on 'time' failed: Contains missing values` (#367).
+
+* `vignette("v06-half-life-calculation")` gains a decision tree for choosing
+  between automatic curve stripping, `exclude_half.life`, and
+  `include_half.life`, and it now states that the points named by
+  `include_half.life` are still subject to dropping BLQ values and points
+  at or before the end of the last dose (#412).
+
+* A new function `get_halflife_fit()` gives the slope, intercept, and time
+  range of the half-life fit for each group and interval so that the fitted
+  line can be drawn or predicted from.  Times are given on the same scale as
+  the concentration data rather than relative to the interval start (#342).
+
+* A new function `get_halflife_curve()` interpolates and extrapolates
+  concentrations along the half-life fit.  Give `tout` for specific times or
+  `n` for equally-spaced times, as with `stats::approx()`.  Extrapolation
+  after the last concentration used for the fit is done by default and
+  extrapolation before the first is not; both are controlled by the
+  `extrapolate_later` and `extrapolate_earlier` arguments (#342).
+
 * Bug fix: `superposition()` drops missing concentrations before calculating.
   They previously reached the half-life fit and stopped the calculation with
   `NA/NaN/Inf in 'x'` (#308).
+
+* `superposition()` checks the `method` and `auc.type` arguments for every
+  input.  An invalid value was previously ignored when the calculation
+  required neither interpolation nor extrapolation (#247).
 
 * `add.interval.col()` gains `formula` and `formula_note` arguments giving the
   calculation as a LaTeX expression.  They are shown in the parameter table in
@@ -309,6 +355,30 @@ when the issue is due to an excluded point (#310)
   the parameters within an interval no longer share the same imputation, the
   interval is split into as many rows as are needed, and rows that come to
   share every value are merged (#379).
+
+* Two excretion parameters were added:  `erint`, the excretion rate over the
+  interval (the amount recovered divided by the interval duration), and
+  `erlst`, the last measurable excretion rate.  Both are standard CDISC
+  parameters (`ERINT` and `ERLST`) that PKNCA calculated internally but did
+  not report.
+
+* Bug fix: the CDISC parameter names for `ertlst` and `volpk` did not match
+  the standard and did not describe what the functions return.  `ertlst` is now
+  "Midpoint of Interval of Last Nonzero ER" rather than "Time of Last
+  Excretion Rate" (it returns the collection midpoint, as `ertmax` does), and
+  `volpk` is now "Sum of Urine Vol" rather than "Volume of PK sample".
+
+* NCA parameters are now classified so that they can be chosen automatically
+  for a calculation interval.  `pknca_parameter_table()` shows the
+  classification:  the `concept` a parameter computes, its reporting `tier`,
+  and the route, dosing, and sample-collection contexts it applies to.  Most of
+  it is derived from the existing registry; `add.interval.col()` gains a `tier`
+  argument and a `selection` argument for the few cases that cannot be derived.
+  A parameter's concept is declared on its calculation function with
+  `pknca_concept()`, so a parameter added by another package can carry one too.
+  Nothing here raises an error:  an unclassified parameter is simply never
+  chosen automatically, and `pknca_check_parameter_classification()` reports
+  those.
 
 ## Minor changes (unlikely to affect PKNCA use)
 

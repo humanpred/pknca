@@ -69,7 +69,9 @@ PKNCA_impute_method_start_cmin <- function(conc, time, start, end, ..., options 
 }
 
 #' @describeIn PKNCA_impute_method Shift a predose concentration to become the
-#'   time zero concentration (only if a time zero concentration does not exist)
+#'   time zero concentration (only if a time zero concentration does not exist).
+#'   The most recent predose sample with a measured concentration is shifted;
+#'   samples with a missing concentration are skipped.
 #' @param max_shift The maximum amount of time to shift a concentration forward
 #'   (defaults to 5% of the interval duration, i.e. `0.05*(end - start)`, if
 #'   `is.finite(end)`, and when `is.infinite(end)`, defaults to 5% of the time
@@ -80,7 +82,10 @@ PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group
   ret <- data.frame(conc = conc, time = time)
   if (is.na(max_shift)) {
     if (is.infinite(end)) {
-      shift_end <- max(time)
+      # A measurement at an unknown time cannot bound the shift window, so
+      # fall back to the start when no time is known
+      time_known <- time[!is.na(time)]
+      shift_end <- if (length(time_known) > 0) max(time_known) else start
     } else {
       shift_end <- end
     }
@@ -89,11 +94,14 @@ PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group
   # determine if the start time is already in the
   mask_start <- time %in% start
   if (!any(mask_start)) {
-    mask_predose <- time.group < start
+    # A measurement at an unknown time cannot be known to be predose, and a
+    # missing concentration carries nothing to shift, so the predose sample is
+    # the most recent one with both a known time and a measured concentration
+    mask_predose <- !is.na(time.group) & !is.na(conc.group) & time.group < start
     if (any(mask_predose)) {
       time_predose <- max(time.group[mask_predose])
       if ((-time_predose) <= max_shift) {
-        mask_predose_change <- time.group == time_predose
+        mask_predose_change <- time.group %in% time_predose & !is.na(conc.group)
         ret_predose <- data.frame(conc = conc.group[mask_predose_change], time = start)
         ret <- dplyr::bind_rows(ret_predose, ret)
       }
