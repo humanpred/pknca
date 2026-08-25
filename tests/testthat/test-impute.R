@@ -579,3 +579,132 @@ test_that("get_impute_method", {
     get_impute_method(intervals = ivals, impute = list("start_conc0"))
   )
 })
+
+# start_predose_conc0 is specified as "start_predose when it applies, and
+# start_conc0 otherwise", so each case is checked against the method it should
+# be equivalent to rather than against a literal.
+
+test_that("PKNCA_impute_method_start_predose_conc0 shifts a predose sample", {
+  args <-
+    list(
+      conc = c(1, 2), time = c(1, 2), start = 0, end = 24,
+      conc.group = c(5, 1, 2), time.group = c(-0.5, 1, 2)
+    )
+  expect_equal(
+    do.call(PKNCA_impute_method_start_predose_conc0, args),
+    do.call(PKNCA_impute_method_start_predose, args)
+  )
+  expect_equal(
+    do.call(PKNCA_impute_method_start_predose_conc0, args),
+    data.frame(conc = c(5, 1, 2), time = c(0, 1, 2))
+  )
+})
+
+test_that("PKNCA_impute_method_start_predose_conc0 keeps a measured start concentration", {
+  # This is the difference from start_conc0:  a concentration measured at the
+  # time of an IV bolus dose is the C0 for that dose
+  args <-
+    list(
+      conc = c(9, 1, 2), time = c(0, 1, 2), start = 0, end = 24,
+      conc.group = c(9, 1, 2), time.group = c(0, 1, 2)
+    )
+  expect_equal(
+    do.call(PKNCA_impute_method_start_predose_conc0, args),
+    data.frame(conc = c(9, 1, 2), time = c(0, 1, 2))
+  )
+  # start_conc0 would have replaced it
+  expect_equal(
+    PKNCA_impute_method_start_conc0(conc = c(9, 1, 2), time = c(0, 1, 2), start = 0),
+    data.frame(conc = c(0, 1, 2), time = c(0, 1, 2))
+  )
+})
+
+test_that("PKNCA_impute_method_start_predose_conc0 falls back to start_conc0", {
+  fallback <-
+    list(
+      # No predose sample at all
+      list(
+        conc = c(1, 2), time = c(1, 2), start = 0, end = 24,
+        conc.group = c(1, 2), time.group = c(1, 2)
+      ),
+      # A predose sample farther back than max_shift (5% of 0-24, so 1.2)
+      list(
+        conc = c(1, 2), time = c(1, 2), start = 0, end = 24,
+        conc.group = c(5, 1, 2), time.group = c(-5, 1, 2)
+      ),
+      # A predose sample with a missing concentration carries nothing to shift
+      list(
+        conc = c(1, 2), time = c(1, 2), start = 0, end = 24,
+        conc.group = c(NA, 1, 2), time.group = c(-0.5, 1, 2)
+      )
+    )
+  for (args in fallback) {
+    expect_equal(
+      do.call(PKNCA_impute_method_start_predose_conc0, args),
+      PKNCA_impute_method_start_conc0(
+        conc = args$conc, time = args$time, start = args$start
+      )
+    )
+  }
+})
+
+test_that("PKNCA_impute_method_start_predose_conc0 with degenerate data (#361)", {
+  degenerate <-
+    list(
+      list(
+        conc = numeric(), time = numeric(), start = 0, end = 24,
+        conc.group = numeric(), time.group = numeric()
+      ),
+      list(
+        conc = NA_real_, time = 1, start = 0, end = 24,
+        conc.group = NA_real_, time.group = 1
+      )
+    )
+  for (args in degenerate) {
+    expect_equal(
+      do.call(PKNCA_impute_method_start_predose_conc0, args),
+      PKNCA_impute_method_start_conc0(
+        conc = args$conc, time = args$time, start = args$start
+      )
+    )
+  }
+})
+
+test_that("start_predose_conc0 is usable as an impute method by name", {
+  d_conc <-
+    data.frame(
+      subject = 1,
+      time = c(-0.5, 1, 2, 4, 8, 12, 24),
+      conc = c(2, 5, 4, 3, 2.5, 2, 1)
+    )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  d_intervals <- data.frame(start = 0, end = 24, auclast = TRUE)
+  get_auclast <- function(impute) {
+    o_data <- suppressMessages(PKNCAdata(o_conc, intervals = d_intervals, impute = impute))
+    d_res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+    d_res$PPORRES[d_res$PPTESTCD == "auclast"]
+  }
+  # With a predose sample available it matches start_predose, and differs from
+  # start_conc0, which would zero the shifted concentration
+  expect_equal(get_auclast("start_predose_conc0"), get_auclast("start_predose"))
+  expect_false(isTRUE(all.equal(
+    get_auclast("start_predose_conc0"), get_auclast("start_conc0")
+  )))
+})
+
+test_that("start_predose_conc0 falls back to 0 within pk.nca when there is no predose sample", {
+  d_conc <-
+    data.frame(
+      subject = 1,
+      time = c(1, 2, 4, 8, 12, 24),
+      conc = c(5, 4, 3, 2.5, 2, 1)
+    )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  d_intervals <- data.frame(start = 0, end = 24, auclast = TRUE)
+  get_auclast <- function(impute) {
+    o_data <- suppressMessages(PKNCAdata(o_conc, intervals = d_intervals, impute = impute))
+    d_res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+    d_res$PPORRES[d_res$PPTESTCD == "auclast"]
+  }
+  expect_equal(get_auclast("start_predose_conc0"), get_auclast("start_conc0"))
+})

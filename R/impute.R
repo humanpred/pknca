@@ -110,6 +110,34 @@ PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group
   ret
 }
 
+#' @describeIn PKNCA_impute_method Use a predose concentration as the start
+#'   concentration when one is available and 0 when it is not.  A concentration
+#'   measured at the start time is kept as-is, which is what distinguishes this
+#'   from `start_conc0`:  a measured concentration at the time of an
+#'   intravenous bolus dose is the C0 for that dose, and `start_conc0` would
+#'   replace it with 0.  The chain `"start_predose,start_conc0"` cannot express
+#'   this, because `start_conc0` overwrites whatever `start_predose` shifted.
+#' @export
+PKNCA_impute_method_start_predose_conc0 <- function(conc, time, start, end,
+                                                    conc.group, time.group, ...,
+                                                    max_shift = NA_real_,
+                                                    options = list()) {
+  ret <-
+    PKNCA_impute_method_start_predose(
+      conc = conc, time = time, start = start, end = end,
+      conc.group = conc.group, time.group = time.group,
+      max_shift = max_shift, options = options
+    )
+  if (!any(ret$time %in% start)) {
+    # No measurement at the start and no predose sample to shift there
+    ret <-
+      PKNCA_impute_method_start_conc0(
+        conc = ret$conc, time = ret$time, start = start, options = options
+      )
+  }
+  ret
+}
+
 #' @describeIn PKNCA_impute_method Drop a concentration measured exactly at the
 #'   end of the interval, if one is present (usually used with multiple-dose data
 #'   when a point at the interval boundary belongs to the next dose, e.g. an
