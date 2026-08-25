@@ -81,7 +81,10 @@ Calculation Intervals"</p>
 <code><a href="choose.auc.intervals.html">choose.auc.intervals()</a></code>,
 <code><a href="get.parameter.deps.html">get.parameter.deps()</a></code>,
 <code><a href="interval_add_impute.html">interval_add_impute()</a></code>,
-<code><a href="interval_add_param.html">interval_add_param()</a></code></p></div>
+<code><a href="interval_add_param.html">interval_add_param()</a></code>,
+<code><a href="pknca_check_parameter_classification.html">pknca_check_parameter_classification()</a></code>,
+<code><a href="pknca_concepts.html">pknca_concepts()</a></code>,
+<code><a href="pknca_parameter_table.html">pknca_parameter_table()</a></code></p></div>
     </div>
 
     <div class="section level2">
@@ -127,6 +130,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $start$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $start$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $start$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $end</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $end$FUN</span>
@@ -168,6 +177,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $end$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $end$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $end$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast$FUN</span>
@@ -208,6 +223,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule (linear-up/log-down by default)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $auclast$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $auclast$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast$requires_dose_amt</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -262,6 +283,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucall$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule (linear-up/log-down by default)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast$FUN</span>
@@ -303,6 +330,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule (linear-up/log-down by default)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall$FUN</span>
@@ -343,6 +376,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule (linear-up/log-down by default)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last</span>
@@ -393,6 +432,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$FUN</span>
@@ -441,6 +486,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all</span>
@@ -491,6 +542,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$FUN</span>
@@ -539,6 +596,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last</span>
@@ -589,6 +652,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$FUN</span>
@@ -637,6 +706,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all</span>
@@ -687,6 +762,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$FUN</span>
@@ -736,6 +817,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $c0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $c0$FUN</span>
@@ -777,6 +864,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $c0$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Methods are tried in order: c0, logslope, c1, cmin, set0; the formula shows c0 and logslope"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $c0$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $c0$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmax</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmax$FUN</span>
@@ -817,6 +910,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmax$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cmax$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cmax$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmax$requires_dose_amt</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -871,6 +970,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmin$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cmin$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cmin$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tmax</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tmax$FUN</span>
@@ -911,6 +1016,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tmax$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tmax$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tmax$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tmax$requires_dose_amt</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -965,6 +1076,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tmin$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tmin$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tmin$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tlast</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tlast$FUN</span>
@@ -1005,6 +1122,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tlast$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tlast$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tlast$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tfirst</span>
@@ -1047,6 +1170,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tfirst$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tfirst$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tfirst$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs$FUN</span>
@@ -1087,6 +1216,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.last</span>
@@ -1145,6 +1280,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.all$FUN</span>
@@ -1202,6 +1343,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all$FUN</span>
@@ -1244,6 +1391,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last</span>
@@ -1288,6 +1441,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f$FUN</span>
@@ -1328,6 +1487,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.last</span>
@@ -1389,6 +1554,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.all$FUN</span>
@@ -1434,6 +1605,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.all</span>
@@ -1481,6 +1658,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.last$FUN</span>
@@ -1527,6 +1710,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.last$FUN</span>
@@ -1572,6 +1761,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.last</span>
@@ -1633,6 +1828,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.last$FUN</span>
@@ -1678,6 +1879,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.all</span>
@@ -1725,6 +1932,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all$FUN</span>
@@ -1770,6 +1983,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last</span>
@@ -1817,6 +2036,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav$FUN</span>
@@ -1859,6 +2084,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cav$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cav$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.last</span>
@@ -1903,6 +2134,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.all$FUN</span>
@@ -1946,6 +2183,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough$FUN</span>
@@ -1986,6 +2229,14 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough$selection$dosing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "multiple"     "steady_state"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cstart</span>
@@ -2028,6 +2279,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cstart$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cstart$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cstart$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ptr</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ptr$FUN</span>
@@ -2068,6 +2325,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ptr$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ptr$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ptr$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tlag</span>
@@ -2110,6 +2373,14 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tlag$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tlag$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tlag$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tlag$selection$route</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "extravascular"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $deg.fluc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $deg.fluc$FUN</span>
@@ -2150,6 +2421,14 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $deg.fluc$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $deg.fluc$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $deg.fluc$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $deg.fluc$selection$dosing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "multiple"     "steady_state"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $swing</span>
@@ -2192,6 +2471,14 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $swing$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $swing$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $swing$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $swing$selection$dosing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "multiple"     "steady_state"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ceoi</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ceoi$FUN</span>
@@ -2232,6 +2519,14 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ceoi$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ceoi$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ceoi$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ceoi$selection$route</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "iv_infusion"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.predose.all</span>
@@ -2276,6 +2571,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.predose.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.predose.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.predose.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.trough.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.trough.all$FUN</span>
@@ -2319,6 +2620,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.trough.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.trough.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.trough.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $count_conc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $count_conc$FUN</span>
@@ -2359,6 +2666,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $count_conc$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $count_conc$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $count_conc$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $count_conc_measured</span>
@@ -2401,6 +2714,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $count_conc_measured$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $count_conc_measured$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $count_conc_measured$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $totdose</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $totdose$FUN</span>
@@ -2441,6 +2760,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $totdose$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $totdose$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $totdose$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $volpk</span>
@@ -2483,6 +2808,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $volpk$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $volpk$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $volpk$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ae</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ae$FUN</span>
@@ -2523,6 +2854,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ae$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ae$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ae$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last</span>
@@ -2567,6 +2904,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs$FUN</span>
@@ -2609,6 +2952,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred</span>
@@ -2653,6 +3002,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $fe</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $fe$FUN</span>
@@ -2693,6 +3048,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $fe$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $fe$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $fe$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ertlst</span>
@@ -2735,6 +3096,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ertlst$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ertlst$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ertlst$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ermax</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ermax$FUN</span>
@@ -2775,6 +3142,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ermax$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ermax$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ermax$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ertmax</span>
@@ -2817,6 +3190,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ertmax$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ertmax$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ertmax$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auclast</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auclast$FUN</span>
@@ -2857,6 +3236,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auclast$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Linear trapezoidal using population mean concentrations"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auclast$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auclast$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auc_se</span>
@@ -2899,6 +3284,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auc_se$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auc_se$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auc_se$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auc_df</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auc_df$FUN</span>
@@ -2939,6 +3330,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auc_df$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Satterthwaite approximation (Nedelman et al 1995, eq. 6a)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auc_df$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auc_df$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumclast</span>
@@ -2981,6 +3378,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumclast$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumclast$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumclast$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_se</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_se$FUN</span>
@@ -3021,6 +3424,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_se$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_se$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_se$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_df</span>
@@ -3063,6 +3472,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_df$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_df$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_df$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $time_above</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $time_above$FUN</span>
@@ -3103,6 +3518,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $time_above$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Crossing times interpolated using the AUC method (linear or log-linear)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $time_above$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $time_above$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast</span>
@@ -3147,6 +3568,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall$FUN</span>
@@ -3189,6 +3616,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.last</span>
@@ -3233,6 +3666,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.all$FUN</span>
@@ -3275,6 +3714,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextlast</span>
@@ -3322,6 +3767,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextlast$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextlast$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextlast$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextall</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextall$FUN</span>
@@ -3367,6 +3818,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextall$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextall$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextall$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.last</span>
@@ -3414,6 +3871,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.all$FUN</span>
@@ -3460,6 +3923,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast$FUN</span>
@@ -3502,6 +3971,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall</span>
@@ -3546,6 +4021,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last$FUN</span>
@@ -3588,6 +4069,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.all</span>
@@ -3632,6 +4119,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $half.life</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $half.life$FUN</span>
@@ -3672,6 +4165,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $half.life$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $half.life$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $half.life$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $half.life$requires_dose_amt</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -3726,6 +4225,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $r.squared$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Regression of $y = \\log C$ on time over the terminal points"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $r.squared$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $r.squared$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $adj.r.squared</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $adj.r.squared$FUN</span>
@@ -3766,6 +4271,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $adj.r.squared$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $adj.r.squared$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $adj.r.squared$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.corrxy</span>
@@ -3808,6 +4319,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.corrxy$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.corrxy$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.corrxy$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z$FUN</span>
@@ -3848,6 +4365,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.time.first</span>
@@ -3890,6 +4413,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.time.first$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.time.first$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.time.first$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.time.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.time.last$FUN</span>
@@ -3930,6 +4459,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.time.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.time.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.time.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points</span>
@@ -3972,6 +4507,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred$FUN</span>
@@ -4012,6 +4553,14 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred$selection$concept</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "last_conc"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $span.ratio</span>
@@ -4054,6 +4603,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $span.ratio$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $span.ratio$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $span.ratio$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tobit_residual</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tobit_residual$FUN</span>
@@ -4094,6 +4649,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tobit_residual$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tobit_residual$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tobit_residual$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $adj_tobit_residual</span>
@@ -4136,6 +4697,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $adj_tobit_residual$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $adj_tobit_residual$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $adj_tobit_residual$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points_blq</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points_blq$FUN</span>
@@ -4176,6 +4743,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points_blq$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points_blq$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points_blq$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.last</span>
@@ -4220,6 +4793,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.last$FUN</span>
@@ -4262,6 +4841,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.last</span>
@@ -4306,6 +4891,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.last$FUN</span>
@@ -4348,6 +4939,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.all</span>
@@ -4392,6 +4989,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all$FUN</span>
@@ -4434,6 +5037,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last</span>
@@ -4478,6 +5087,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.all$FUN</span>
@@ -4520,6 +5135,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.last</span>
@@ -4564,6 +5185,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all$FUN</span>
@@ -4606,6 +5233,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last</span>
@@ -4650,6 +5283,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.sparse.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.sparse.last$FUN</span>
@@ -4692,6 +5331,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.sparse.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.sparse.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.sparse.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.sparse.last</span>
@@ -4739,6 +5384,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.sparse.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.sparse.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.sparse.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.all$FUN</span>
@@ -4784,6 +5435,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all</span>
@@ -4831,6 +5488,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last$FUN</span>
@@ -4877,6 +5540,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.all$FUN</span>
@@ -4919,6 +5588,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all</span>
@@ -4963,6 +5638,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last$FUN</span>
@@ -5005,6 +5686,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.all</span>
@@ -5049,6 +5736,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.last$FUN</span>
@@ -5091,6 +5784,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all</span>
@@ -5135,6 +5834,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last$FUN</span>
@@ -5178,6 +5883,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.last$FUN</span>
@@ -5220,6 +5931,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.all</span>
@@ -5267,6 +5984,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all$FUN</span>
@@ -5312,6 +6035,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last</span>
@@ -5359,6 +6088,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.sparse.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.sparse.last$FUN</span>
@@ -5405,6 +6140,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.sparse.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.sparse.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.sparse.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs$FUN</span>
@@ -5445,6 +6186,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs$requires_dose_amt</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -5499,6 +6246,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs$FUN</span>
@@ -5540,6 +6293,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred$FUN</span>
@@ -5580,6 +6339,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs</span>
@@ -5630,6 +6395,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$FUN</span>
@@ -5678,6 +6449,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred</span>
@@ -5728,6 +6505,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$FUN</span>
@@ -5776,6 +6559,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs</span>
@@ -5826,6 +6615,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$FUN</span>
@@ -5874,6 +6669,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred</span>
@@ -5924,6 +6725,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$FUN</span>
@@ -5973,6 +6780,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs$FUN</span>
@@ -6016,6 +6829,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.pred$FUN</span>
@@ -6058,6 +6877,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.obs</span>
@@ -6105,6 +6930,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.pred$FUN</span>
@@ -6151,6 +6982,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$FUN</span>
@@ -6193,6 +7030,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.pred</span>
@@ -6237,6 +7080,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucpext.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucpext.obs$FUN</span>
@@ -6279,6 +7128,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucpext.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucpext.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucpext.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucpext.obs$requires_dose_amt</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -6335,6 +7190,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucpext.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucpext.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucpext.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.all$FUN</span>
@@ -6377,6 +7238,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all</span>
@@ -6421,6 +7288,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last$FUN</span>
@@ -6464,6 +7337,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.sparse.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.sparse.last$FUN</span>
@@ -6506,6 +7385,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.sparse.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.sparse.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.sparse.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.obs</span>
@@ -6564,6 +7449,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.pred$FUN</span>
@@ -6621,6 +7512,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs$FUN</span>
@@ -6663,6 +7560,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "common"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred</span>
@@ -6707,6 +7610,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs$FUN</span>
@@ -6750,6 +7659,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred$FUN</span>
@@ -6792,6 +7707,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.obs</span>
@@ -6853,6 +7774,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.pred$FUN</span>
@@ -6913,6 +7840,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs$FUN</span>
@@ -6958,6 +7891,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred</span>
@@ -7005,6 +7944,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.obs$FUN</span>
@@ -7051,6 +7996,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.pred$FUN</span>
@@ -7096,6 +8047,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.obs</span>
@@ -7146,6 +8103,14 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.obs$selection$dosing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "multiple"     "steady_state"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.pred$FUN</span>
@@ -7194,6 +8159,14 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.pred$selection$dosing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "multiple"     "steady_state"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.obs</span>
@@ -7252,6 +8225,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.pred$FUN</span>
@@ -7309,6 +8288,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs$FUN</span>
@@ -7351,6 +8336,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred</span>
@@ -7395,6 +8386,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.obs$FUN</span>
@@ -7438,6 +8435,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.pred$FUN</span>
@@ -7480,6 +8483,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.sparse.last</span>
@@ -7526,6 +8535,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.sparse.last$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.sparse.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vz.sparse.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.obs</span>
@@ -7587,6 +8602,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.pred$FUN</span>
@@ -7647,6 +8668,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.obs$FUN</span>
@@ -7692,6 +8719,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.pred</span>
@@ -7739,6 +8772,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.obs$FUN</span>
@@ -7784,6 +8823,14 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.obs$selection$dosing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "multiple"     "steady_state"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.pred</span>
@@ -7831,6 +8878,14 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.pred$selection$dosing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "multiple"     "steady_state"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs$FUN</span>
@@ -7876,6 +8931,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred</span>
@@ -7923,6 +8984,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.obs$FUN</span>
@@ -7965,6 +9032,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.pred</span>
@@ -8009,6 +9082,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.obs$FUN</span>
@@ -8051,6 +9130,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.pred</span>
@@ -8095,6 +9180,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.obs$FUN</span>
@@ -8137,6 +9228,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.pred</span>
@@ -8181,6 +9278,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.obs$FUN</span>
@@ -8223,6 +9326,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.pred</span>
@@ -8267,6 +9376,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.obs$FUN</span>
@@ -8309,6 +9424,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.pred</span>
@@ -8353,6 +9474,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs$FUN</span>
@@ -8395,6 +9522,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred</span>
@@ -8439,6 +9572,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn$FUN</span>
@@ -8481,6 +9620,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucall.dn</span>
@@ -8525,6 +9670,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucall.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs.dn</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs.dn$FUN</span>
@@ -8567,6 +9718,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.pred.dn</span>
@@ -8611,6 +9768,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.pred.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.pred.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.pred.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast.dn</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast.dn$FUN</span>
@@ -8653,6 +9816,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall.dn</span>
@@ -8697,6 +9866,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs.dn</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs.dn$FUN</span>
@@ -8739,6 +9914,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred.dn</span>
@@ -8783,6 +9964,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmax.dn</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmax.dn$FUN</span>
@@ -8825,6 +10012,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmax.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cmax.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cmax.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmin.dn</span>
@@ -8869,6 +10062,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmin.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cmin.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cmin.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs.dn</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs.dn$FUN</span>
@@ -8911,6 +10110,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred.dn</span>
@@ -8955,6 +10160,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.dn</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.dn$FUN</span>
@@ -8997,6 +10208,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cav.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $cav.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough.dn</span>
@@ -9041,6 +10258,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last.dn</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last.dn$FUN</span>
@@ -9083,6 +10306,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs.dn</span>
@@ -9127,6 +10356,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred.dn</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred.dn$FUN</span>
@@ -9169,6 +10404,12 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred.dn$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred.dn$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred.dn$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>

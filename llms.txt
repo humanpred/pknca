@@ -676,8 +676,25 @@ and bug reports.
   : Convert the grouping info and list of results for each group into a
   results data.frame
 
+- [`pknca_check_parameter_classification()`](https://humanpred.github.io/pknca/reference/pknca_check_parameter_classification.md)
+  : Report parameters that PKNCA cannot classify for automatic selection
+
+- [`pknca_concept()`](https://humanpred.github.io/pknca/reference/pknca_concept.md)
+  [`` `pknca_concept<-`() ``](https://humanpred.github.io/pknca/reference/pknca_concept.md)
+  : The concept a parameter calculation function computes
+
+- [`pknca_concepts()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md)
+  [`pknca_tiers()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md)
+  [`pknca_routes()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md)
+  [`pknca_dosing()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md)
+  [`pknca_sample_types()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md)
+  : Concepts, tiers, and contexts used to classify NCA parameters
+
 - [`pknca_find_units_param()`](https://humanpred.github.io/pknca/reference/pknca_find_units_param.md)
   : Find NCA parameters with a given unit type
+
+- [`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md)
+  : How each NCA parameter is classified for interval selection
 
 - [`pknca_unit_conversion()`](https://humanpred.github.io/pknca/reference/pknca_unit_conversion.md)
   : Perform unit conversion (if possible) on PKNCA results

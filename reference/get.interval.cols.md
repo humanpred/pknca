@@ -24,7 +24,10 @@ Other Interval specifications:
 [`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
 [`get.parameter.deps()`](https://humanpred.github.io/pknca/reference/get.parameter.deps.md),
 [`interval_add_impute()`](https://humanpred.github.io/pknca/reference/interval_add_impute.md),
-[`interval_add_param()`](https://humanpred.github.io/pknca/reference/interval_add_param.md)
+[`interval_add_param()`](https://humanpred.github.io/pknca/reference/interval_add_param.md),
+[`pknca_check_parameter_classification()`](https://humanpred.github.io/pknca/reference/pknca_check_parameter_classification.md),
+[`pknca_concepts()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md),
+[`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md)
 
 ## Examples
 
@@ -70,6 +73,12 @@ get.interval.cols()
 #> $start$formula_note
 #> NULL
 #> 
+#> $start$tier
+#> [1] "uncommon"
+#> 
+#> $start$selection
+#> list()
+#> 
 #> 
 #> $end
 #> $end$FUN
@@ -111,6 +120,12 @@ get.interval.cols()
 #> $end$formula_note
 #> NULL
 #> 
+#> $end$tier
+#> [1] "uncommon"
+#> 
+#> $end$selection
+#> list()
+#> 
 #> 
 #> $auclast
 #> $auclast$FUN
@@ -151,6 +166,12 @@ get.interval.cols()
 #> 
 #> $auclast$formula_note
 #> [1] "Trapezoidal rule (linear-up/log-down by default)"
+#> 
+#> $auclast$tier
+#> [1] "common"
+#> 
+#> $auclast$selection
+#> list()
 #> 
 #> $auclast$requires_dose_amt
 #> [1] FALSE
@@ -205,6 +226,12 @@ get.interval.cols()
 #> $aucall$formula_note
 #> [1] "Trapezoidal rule (linear-up/log-down by default)"
 #> 
+#> $aucall$tier
+#> [1] "uncommon"
+#> 
+#> $aucall$selection
+#> list()
+#> 
 #> 
 #> $aumclast
 #> $aumclast$FUN
@@ -246,6 +273,12 @@ get.interval.cols()
 #> $aumclast$formula_note
 #> [1] "Trapezoidal rule (linear-up/log-down by default)"
 #> 
+#> $aumclast$tier
+#> [1] "uncommon"
+#> 
+#> $aumclast$selection
+#> list()
+#> 
 #> 
 #> $aumcall
 #> $aumcall$FUN
@@ -286,6 +319,12 @@ get.interval.cols()
 #> 
 #> $aumcall$formula_note
 #> [1] "Trapezoidal rule (linear-up/log-down by default)"
+#> 
+#> $aumcall$tier
+#> [1] "uncommon"
+#> 
+#> $aumcall$selection
+#> list()
 #> 
 #> 
 #> $aucint.last
@@ -336,6 +375,12 @@ get.interval.cols()
 #> $aucint.last$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
+#> $aucint.last$tier
+#> [1] "common"
+#> 
+#> $aucint.last$selection
+#> list()
+#> 
 #> 
 #> $aucint.last.dose
 #> $aucint.last.dose$FUN
@@ -384,6 +429,12 @@ get.interval.cols()
 #> 
 #> $aucint.last.dose$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
+#> $aucint.last.dose$tier
+#> [1] "uncommon"
+#> 
+#> $aucint.last.dose$selection
+#> list()
 #> 
 #> 
 #> $aucint.all
@@ -434,6 +485,12 @@ get.interval.cols()
 #> $aucint.all$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
+#> $aucint.all$tier
+#> [1] "uncommon"
+#> 
+#> $aucint.all$selection
+#> list()
+#> 
 #> 
 #> $aucint.all.dose
 #> $aucint.all.dose$FUN
@@ -482,6 +539,12 @@ get.interval.cols()
 #> 
 #> $aucint.all.dose$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
+#> $aucint.all.dose$tier
+#> [1] "uncommon"
+#> 
+#> $aucint.all.dose$selection
+#> list()
 #> 
 #> 
 #> $aumcint.last
@@ -532,6 +595,12 @@ get.interval.cols()
 #> $aumcint.last$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
+#> $aumcint.last$tier
+#> [1] "uncommon"
+#> 
+#> $aumcint.last$selection
+#> list()
+#> 
 #> 
 #> $aumcint.last.dose
 #> $aumcint.last.dose$FUN
@@ -580,6 +649,12 @@ get.interval.cols()
 #> 
 #> $aumcint.last.dose$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
+#> $aumcint.last.dose$tier
+#> [1] "uncommon"
+#> 
+#> $aumcint.last.dose$selection
+#> list()
 #> 
 #> 
 #> $aumcint.all
@@ -630,6 +705,12 @@ get.interval.cols()
 #> $aumcint.all$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
+#> $aumcint.all$tier
+#> [1] "uncommon"
+#> 
+#> $aumcint.all$selection
+#> list()
+#> 
 #> 
 #> $aumcint.all.dose
 #> $aumcint.all.dose$FUN
@@ -679,6 +760,12 @@ get.interval.cols()
 #> $aumcint.all.dose$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
+#> $aumcint.all.dose$tier
+#> [1] "uncommon"
+#> 
+#> $aumcint.all.dose$selection
+#> list()
+#> 
 #> 
 #> $c0
 #> $c0$FUN
@@ -720,6 +807,12 @@ get.interval.cols()
 #> $c0$formula_note
 #> [1] "Methods are tried in order: c0, logslope, c1, cmin, set0; the formula shows c0 and logslope"
 #> 
+#> $c0$tier
+#> [1] "common"
+#> 
+#> $c0$selection
+#> list()
+#> 
 #> 
 #> $cmax
 #> $cmax$FUN
@@ -760,6 +853,12 @@ get.interval.cols()
 #> 
 #> $cmax$formula_note
 #> NULL
+#> 
+#> $cmax$tier
+#> [1] "common"
+#> 
+#> $cmax$selection
+#> list()
 #> 
 #> $cmax$requires_dose_amt
 #> [1] FALSE
@@ -814,6 +913,12 @@ get.interval.cols()
 #> $cmin$formula_note
 #> NULL
 #> 
+#> $cmin$tier
+#> [1] "uncommon"
+#> 
+#> $cmin$selection
+#> list()
+#> 
 #> 
 #> $tmax
 #> $tmax$FUN
@@ -854,6 +959,12 @@ get.interval.cols()
 #> 
 #> $tmax$formula_note
 #> NULL
+#> 
+#> $tmax$tier
+#> [1] "common"
+#> 
+#> $tmax$selection
+#> list()
 #> 
 #> $tmax$requires_dose_amt
 #> [1] FALSE
@@ -908,6 +1019,12 @@ get.interval.cols()
 #> $tmin$formula_note
 #> NULL
 #> 
+#> $tmin$tier
+#> [1] "uncommon"
+#> 
+#> $tmin$selection
+#> list()
+#> 
 #> 
 #> $tlast
 #> $tlast$FUN
@@ -948,6 +1065,12 @@ get.interval.cols()
 #> 
 #> $tlast$formula_note
 #> NULL
+#> 
+#> $tlast$tier
+#> [1] "uncommon"
+#> 
+#> $tlast$selection
+#> list()
 #> 
 #> 
 #> $tfirst
@@ -990,6 +1113,12 @@ get.interval.cols()
 #> $tfirst$formula_note
 #> NULL
 #> 
+#> $tfirst$tier
+#> [1] "uncommon"
+#> 
+#> $tfirst$selection
+#> list()
+#> 
 #> 
 #> $clast.obs
 #> $clast.obs$FUN
@@ -1030,6 +1159,12 @@ get.interval.cols()
 #> 
 #> $clast.obs$formula_note
 #> NULL
+#> 
+#> $clast.obs$tier
+#> [1] "uncommon"
+#> 
+#> $clast.obs$selection
+#> list()
 #> 
 #> 
 #> $cl.last
@@ -1088,6 +1223,12 @@ get.interval.cols()
 #> $cl.last$formula_note
 #> NULL
 #> 
+#> $cl.last$tier
+#> [1] "uncommon"
+#> 
+#> $cl.last$selection
+#> list()
+#> 
 #> 
 #> $cl.all
 #> $cl.all$FUN
@@ -1145,6 +1286,12 @@ get.interval.cols()
 #> $cl.all$formula_note
 #> NULL
 #> 
+#> $cl.all$tier
+#> [1] "uncommon"
+#> 
+#> $cl.all$selection
+#> list()
+#> 
 #> 
 #> $cl.int.all
 #> $cl.int.all$FUN
@@ -1187,6 +1334,12 @@ get.interval.cols()
 #> 
 #> $cl.int.all$formula_note
 #> NULL
+#> 
+#> $cl.int.all$tier
+#> [1] "uncommon"
+#> 
+#> $cl.int.all$selection
+#> list()
 #> 
 #> 
 #> $cl.int.last
@@ -1231,6 +1384,12 @@ get.interval.cols()
 #> $cl.int.last$formula_note
 #> NULL
 #> 
+#> $cl.int.last$tier
+#> [1] "uncommon"
+#> 
+#> $cl.int.last$selection
+#> list()
+#> 
 #> 
 #> $f
 #> $f$FUN
@@ -1271,6 +1430,12 @@ get.interval.cols()
 #> 
 #> $f$formula_note
 #> NULL
+#> 
+#> $f$tier
+#> [1] "uncommon"
+#> 
+#> $f$selection
+#> list()
 #> 
 #> 
 #> $mrt.last
@@ -1332,6 +1497,12 @@ get.interval.cols()
 #> $mrt.last$formula_note
 #> NULL
 #> 
+#> $mrt.last$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.last$selection
+#> list()
+#> 
 #> 
 #> $mrt.all
 #> $mrt.all$FUN
@@ -1377,6 +1548,12 @@ get.interval.cols()
 #> 
 #> $mrt.all$formula_note
 #> NULL
+#> 
+#> $mrt.all$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.all$selection
+#> list()
 #> 
 #> 
 #> $mrt.int.all
@@ -1424,6 +1601,12 @@ get.interval.cols()
 #> $mrt.int.all$formula_note
 #> NULL
 #> 
+#> $mrt.int.all$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.int.all$selection
+#> list()
+#> 
 #> 
 #> $mrt.int.last
 #> $mrt.int.last$FUN
@@ -1470,6 +1653,12 @@ get.interval.cols()
 #> $mrt.int.last$formula_note
 #> NULL
 #> 
+#> $mrt.int.last$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.int.last$selection
+#> list()
+#> 
 #> 
 #> $mrt.iv.last
 #> $mrt.iv.last$FUN
@@ -1515,6 +1704,12 @@ get.interval.cols()
 #> 
 #> $mrt.iv.last$formula_note
 #> NULL
+#> 
+#> $mrt.iv.last$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.iv.last$selection
+#> list()
 #> 
 #> 
 #> $vss.last
@@ -1576,6 +1771,12 @@ get.interval.cols()
 #> $vss.last$formula_note
 #> NULL
 #> 
+#> $vss.last$tier
+#> [1] "uncommon"
+#> 
+#> $vss.last$selection
+#> list()
+#> 
 #> 
 #> $vss.iv.last
 #> $vss.iv.last$FUN
@@ -1621,6 +1822,12 @@ get.interval.cols()
 #> 
 #> $vss.iv.last$formula_note
 #> NULL
+#> 
+#> $vss.iv.last$tier
+#> [1] "uncommon"
+#> 
+#> $vss.iv.last$selection
+#> list()
 #> 
 #> 
 #> $vss.all
@@ -1668,6 +1875,12 @@ get.interval.cols()
 #> $vss.all$formula_note
 #> NULL
 #> 
+#> $vss.all$tier
+#> [1] "uncommon"
+#> 
+#> $vss.all$selection
+#> list()
+#> 
 #> 
 #> $vss.int.all
 #> $vss.int.all$FUN
@@ -1713,6 +1926,12 @@ get.interval.cols()
 #> 
 #> $vss.int.all$formula_note
 #> NULL
+#> 
+#> $vss.int.all$tier
+#> [1] "uncommon"
+#> 
+#> $vss.int.all$selection
+#> list()
 #> 
 #> 
 #> $vss.int.last
@@ -1760,6 +1979,12 @@ get.interval.cols()
 #> $vss.int.last$formula_note
 #> NULL
 #> 
+#> $vss.int.last$tier
+#> [1] "uncommon"
+#> 
+#> $vss.int.last$selection
+#> list()
+#> 
 #> 
 #> $cav
 #> $cav$FUN
@@ -1802,6 +2027,12 @@ get.interval.cols()
 #> 
 #> $cav$formula_note
 #> NULL
+#> 
+#> $cav$tier
+#> [1] "uncommon"
+#> 
+#> $cav$selection
+#> list()
 #> 
 #> 
 #> $cav.int.last
@@ -1846,6 +2077,12 @@ get.interval.cols()
 #> $cav.int.last$formula_note
 #> NULL
 #> 
+#> $cav.int.last$tier
+#> [1] "uncommon"
+#> 
+#> $cav.int.last$selection
+#> list()
+#> 
 #> 
 #> $cav.int.all
 #> $cav.int.all$FUN
@@ -1889,6 +2126,12 @@ get.interval.cols()
 #> $cav.int.all$formula_note
 #> NULL
 #> 
+#> $cav.int.all$tier
+#> [1] "uncommon"
+#> 
+#> $cav.int.all$selection
+#> list()
+#> 
 #> 
 #> $ctrough
 #> $ctrough$FUN
@@ -1929,6 +2172,14 @@ get.interval.cols()
 #> 
 #> $ctrough$formula_note
 #> NULL
+#> 
+#> $ctrough$tier
+#> [1] "common"
+#> 
+#> $ctrough$selection
+#> $ctrough$selection$dosing
+#> [1] "multiple"     "steady_state"
+#> 
 #> 
 #> 
 #> $cstart
@@ -1971,6 +2222,12 @@ get.interval.cols()
 #> $cstart$formula_note
 #> NULL
 #> 
+#> $cstart$tier
+#> [1] "uncommon"
+#> 
+#> $cstart$selection
+#> list()
+#> 
 #> 
 #> $ptr
 #> $ptr$FUN
@@ -2011,6 +2268,12 @@ get.interval.cols()
 #> 
 #> $ptr$formula_note
 #> NULL
+#> 
+#> $ptr$tier
+#> [1] "uncommon"
+#> 
+#> $ptr$selection
+#> list()
 #> 
 #> 
 #> $tlag
@@ -2053,6 +2316,14 @@ get.interval.cols()
 #> $tlag$formula_note
 #> NULL
 #> 
+#> $tlag$tier
+#> [1] "common"
+#> 
+#> $tlag$selection
+#> $tlag$selection$route
+#> [1] "extravascular"
+#> 
+#> 
 #> 
 #> $deg.fluc
 #> $deg.fluc$FUN
@@ -2093,6 +2364,14 @@ get.interval.cols()
 #> 
 #> $deg.fluc$formula_note
 #> NULL
+#> 
+#> $deg.fluc$tier
+#> [1] "uncommon"
+#> 
+#> $deg.fluc$selection
+#> $deg.fluc$selection$dosing
+#> [1] "multiple"     "steady_state"
+#> 
 #> 
 #> 
 #> $swing
@@ -2135,6 +2414,14 @@ get.interval.cols()
 #> $swing$formula_note
 #> NULL
 #> 
+#> $swing$tier
+#> [1] "uncommon"
+#> 
+#> $swing$selection
+#> $swing$selection$dosing
+#> [1] "multiple"     "steady_state"
+#> 
+#> 
 #> 
 #> $ceoi
 #> $ceoi$FUN
@@ -2175,6 +2462,14 @@ get.interval.cols()
 #> 
 #> $ceoi$formula_note
 #> NULL
+#> 
+#> $ceoi$tier
+#> [1] "common"
+#> 
+#> $ceoi$selection
+#> $ceoi$selection$route
+#> [1] "iv_infusion"
+#> 
 #> 
 #> 
 #> $aucabove.predose.all
@@ -2219,6 +2514,12 @@ get.interval.cols()
 #> $aucabove.predose.all$formula_note
 #> NULL
 #> 
+#> $aucabove.predose.all$tier
+#> [1] "uncommon"
+#> 
+#> $aucabove.predose.all$selection
+#> list()
+#> 
 #> 
 #> $aucabove.trough.all
 #> $aucabove.trough.all$FUN
@@ -2262,6 +2563,12 @@ get.interval.cols()
 #> $aucabove.trough.all$formula_note
 #> NULL
 #> 
+#> $aucabove.trough.all$tier
+#> [1] "uncommon"
+#> 
+#> $aucabove.trough.all$selection
+#> list()
+#> 
 #> 
 #> $count_conc
 #> $count_conc$FUN
@@ -2302,6 +2609,12 @@ get.interval.cols()
 #> 
 #> $count_conc$formula_note
 #> NULL
+#> 
+#> $count_conc$tier
+#> [1] "common"
+#> 
+#> $count_conc$selection
+#> list()
 #> 
 #> 
 #> $count_conc_measured
@@ -2344,6 +2657,12 @@ get.interval.cols()
 #> $count_conc_measured$formula_note
 #> NULL
 #> 
+#> $count_conc_measured$tier
+#> [1] "uncommon"
+#> 
+#> $count_conc_measured$selection
+#> list()
+#> 
 #> 
 #> $totdose
 #> $totdose$FUN
@@ -2384,6 +2703,12 @@ get.interval.cols()
 #> 
 #> $totdose$formula_note
 #> NULL
+#> 
+#> $totdose$tier
+#> [1] "uncommon"
+#> 
+#> $totdose$selection
+#> list()
 #> 
 #> 
 #> $volpk
@@ -2426,6 +2751,12 @@ get.interval.cols()
 #> $volpk$formula_note
 #> NULL
 #> 
+#> $volpk$tier
+#> [1] "common"
+#> 
+#> $volpk$selection
+#> list()
+#> 
 #> 
 #> $ae
 #> $ae$FUN
@@ -2466,6 +2797,12 @@ get.interval.cols()
 #> 
 #> $ae$formula_note
 #> NULL
+#> 
+#> $ae$tier
+#> [1] "common"
+#> 
+#> $ae$selection
+#> list()
 #> 
 #> 
 #> $clr.last
@@ -2510,6 +2847,12 @@ get.interval.cols()
 #> $clr.last$formula_note
 #> NULL
 #> 
+#> $clr.last$tier
+#> [1] "uncommon"
+#> 
+#> $clr.last$selection
+#> list()
+#> 
 #> 
 #> $clr.obs
 #> $clr.obs$FUN
@@ -2552,6 +2895,12 @@ get.interval.cols()
 #> 
 #> $clr.obs$formula_note
 #> NULL
+#> 
+#> $clr.obs$tier
+#> [1] "common"
+#> 
+#> $clr.obs$selection
+#> list()
 #> 
 #> 
 #> $clr.pred
@@ -2596,6 +2945,12 @@ get.interval.cols()
 #> $clr.pred$formula_note
 #> NULL
 #> 
+#> $clr.pred$tier
+#> [1] "uncommon"
+#> 
+#> $clr.pred$selection
+#> list()
+#> 
 #> 
 #> $fe
 #> $fe$FUN
@@ -2636,6 +2991,12 @@ get.interval.cols()
 #> 
 #> $fe$formula_note
 #> NULL
+#> 
+#> $fe$tier
+#> [1] "common"
+#> 
+#> $fe$selection
+#> list()
 #> 
 #> 
 #> $ertlst
@@ -2678,6 +3039,12 @@ get.interval.cols()
 #> $ertlst$formula_note
 #> NULL
 #> 
+#> $ertlst$tier
+#> [1] "uncommon"
+#> 
+#> $ertlst$selection
+#> list()
+#> 
 #> 
 #> $ermax
 #> $ermax$FUN
@@ -2718,6 +3085,12 @@ get.interval.cols()
 #> 
 #> $ermax$formula_note
 #> NULL
+#> 
+#> $ermax$tier
+#> [1] "uncommon"
+#> 
+#> $ermax$selection
+#> list()
 #> 
 #> 
 #> $ertmax
@@ -2760,6 +3133,12 @@ get.interval.cols()
 #> $ertmax$formula_note
 #> NULL
 #> 
+#> $ertmax$tier
+#> [1] "uncommon"
+#> 
+#> $ertmax$selection
+#> list()
+#> 
 #> 
 #> $sparse_auclast
 #> $sparse_auclast$FUN
@@ -2800,6 +3179,12 @@ get.interval.cols()
 #> 
 #> $sparse_auclast$formula_note
 #> [1] "Linear trapezoidal using population mean concentrations"
+#> 
+#> $sparse_auclast$tier
+#> [1] "common"
+#> 
+#> $sparse_auclast$selection
+#> list()
 #> 
 #> 
 #> $sparse_auc_se
@@ -2842,6 +3227,12 @@ get.interval.cols()
 #> $sparse_auc_se$formula_note
 #> [1] "Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001)"
 #> 
+#> $sparse_auc_se$tier
+#> [1] "common"
+#> 
+#> $sparse_auc_se$selection
+#> list()
+#> 
 #> 
 #> $sparse_auc_df
 #> $sparse_auc_df$FUN
@@ -2882,6 +3273,12 @@ get.interval.cols()
 #> 
 #> $sparse_auc_df$formula_note
 #> [1] "Satterthwaite approximation (Nedelman et al 1995, eq. 6a)"
+#> 
+#> $sparse_auc_df$tier
+#> [1] "uncommon"
+#> 
+#> $sparse_auc_df$selection
+#> list()
 #> 
 #> 
 #> $sparse_aumclast
@@ -2924,6 +3321,12 @@ get.interval.cols()
 #> $sparse_aumclast$formula_note
 #> NULL
 #> 
+#> $sparse_aumclast$tier
+#> [1] "uncommon"
+#> 
+#> $sparse_aumclast$selection
+#> list()
+#> 
 #> 
 #> $sparse_aumc_se
 #> $sparse_aumc_se$FUN
@@ -2964,6 +3367,12 @@ get.interval.cols()
 #> 
 #> $sparse_aumc_se$formula_note
 #> NULL
+#> 
+#> $sparse_aumc_se$tier
+#> [1] "uncommon"
+#> 
+#> $sparse_aumc_se$selection
+#> list()
 #> 
 #> 
 #> $sparse_aumc_df
@@ -3006,6 +3415,12 @@ get.interval.cols()
 #> $sparse_aumc_df$formula_note
 #> NULL
 #> 
+#> $sparse_aumc_df$tier
+#> [1] "uncommon"
+#> 
+#> $sparse_aumc_df$selection
+#> list()
+#> 
 #> 
 #> $time_above
 #> $time_above$FUN
@@ -3046,6 +3461,12 @@ get.interval.cols()
 #> 
 #> $time_above$formula_note
 #> [1] "Crossing times interpolated using the AUC method (linear or log-linear)"
+#> 
+#> $time_above$tier
+#> [1] "uncommon"
+#> 
+#> $time_above$selection
+#> list()
 #> 
 #> 
 #> $aucivlast
@@ -3090,6 +3511,12 @@ get.interval.cols()
 #> $aucivlast$formula_note
 #> NULL
 #> 
+#> $aucivlast$tier
+#> [1] "uncommon"
+#> 
+#> $aucivlast$selection
+#> list()
+#> 
 #> 
 #> $aucivall
 #> $aucivall$FUN
@@ -3132,6 +3559,12 @@ get.interval.cols()
 #> 
 #> $aucivall$formula_note
 #> NULL
+#> 
+#> $aucivall$tier
+#> [1] "uncommon"
+#> 
+#> $aucivall$selection
+#> list()
 #> 
 #> 
 #> $aucivint.last
@@ -3176,6 +3609,12 @@ get.interval.cols()
 #> $aucivint.last$formula_note
 #> NULL
 #> 
+#> $aucivint.last$tier
+#> [1] "uncommon"
+#> 
+#> $aucivint.last$selection
+#> list()
+#> 
 #> 
 #> $aucivint.all
 #> $aucivint.all$FUN
@@ -3218,6 +3657,12 @@ get.interval.cols()
 #> 
 #> $aucivint.all$formula_note
 #> NULL
+#> 
+#> $aucivint.all$tier
+#> [1] "uncommon"
+#> 
+#> $aucivint.all$selection
+#> list()
 #> 
 #> 
 #> $aucivpbextlast
@@ -3265,6 +3710,12 @@ get.interval.cols()
 #> $aucivpbextlast$formula_note
 #> NULL
 #> 
+#> $aucivpbextlast$tier
+#> [1] "uncommon"
+#> 
+#> $aucivpbextlast$selection
+#> list()
+#> 
 #> 
 #> $aucivpbextall
 #> $aucivpbextall$FUN
@@ -3310,6 +3761,12 @@ get.interval.cols()
 #> 
 #> $aucivpbextall$formula_note
 #> NULL
+#> 
+#> $aucivpbextall$tier
+#> [1] "uncommon"
+#> 
+#> $aucivpbextall$selection
+#> list()
 #> 
 #> 
 #> $aucivpbextint.last
@@ -3357,6 +3814,12 @@ get.interval.cols()
 #> $aucivpbextint.last$formula_note
 #> NULL
 #> 
+#> $aucivpbextint.last$tier
+#> [1] "uncommon"
+#> 
+#> $aucivpbextint.last$selection
+#> list()
+#> 
 #> 
 #> $aucivpbextint.all
 #> $aucivpbextint.all$FUN
@@ -3403,6 +3866,12 @@ get.interval.cols()
 #> $aucivpbextint.all$formula_note
 #> NULL
 #> 
+#> $aucivpbextint.all$tier
+#> [1] "uncommon"
+#> 
+#> $aucivpbextint.all$selection
+#> list()
+#> 
 #> 
 #> $aumcivlast
 #> $aumcivlast$FUN
@@ -3445,6 +3914,12 @@ get.interval.cols()
 #> 
 #> $aumcivlast$formula_note
 #> NULL
+#> 
+#> $aumcivlast$tier
+#> [1] "uncommon"
+#> 
+#> $aumcivlast$selection
+#> list()
 #> 
 #> 
 #> $aumcivall
@@ -3489,6 +3964,12 @@ get.interval.cols()
 #> $aumcivall$formula_note
 #> NULL
 #> 
+#> $aumcivall$tier
+#> [1] "uncommon"
+#> 
+#> $aumcivall$selection
+#> list()
+#> 
 #> 
 #> $aumcivint.last
 #> $aumcivint.last$FUN
@@ -3531,6 +4012,12 @@ get.interval.cols()
 #> 
 #> $aumcivint.last$formula_note
 #> NULL
+#> 
+#> $aumcivint.last$tier
+#> [1] "uncommon"
+#> 
+#> $aumcivint.last$selection
+#> list()
 #> 
 #> 
 #> $aumcivint.all
@@ -3575,6 +4062,12 @@ get.interval.cols()
 #> $aumcivint.all$formula_note
 #> NULL
 #> 
+#> $aumcivint.all$tier
+#> [1] "uncommon"
+#> 
+#> $aumcivint.all$selection
+#> list()
+#> 
 #> 
 #> $half.life
 #> $half.life$FUN
@@ -3615,6 +4108,12 @@ get.interval.cols()
 #> 
 #> $half.life$formula_note
 #> NULL
+#> 
+#> $half.life$tier
+#> [1] "common"
+#> 
+#> $half.life$selection
+#> list()
 #> 
 #> $half.life$requires_dose_amt
 #> [1] FALSE
@@ -3669,6 +4168,12 @@ get.interval.cols()
 #> $r.squared$formula_note
 #> [1] "Regression of $y = \\log C$ on time over the terminal points"
 #> 
+#> $r.squared$tier
+#> [1] "uncommon"
+#> 
+#> $r.squared$selection
+#> list()
+#> 
 #> 
 #> $adj.r.squared
 #> $adj.r.squared$FUN
@@ -3709,6 +4214,12 @@ get.interval.cols()
 #> 
 #> $adj.r.squared$formula_note
 #> NULL
+#> 
+#> $adj.r.squared$tier
+#> [1] "uncommon"
+#> 
+#> $adj.r.squared$selection
+#> list()
 #> 
 #> 
 #> $lambda.z.corrxy
@@ -3751,6 +4262,12 @@ get.interval.cols()
 #> $lambda.z.corrxy$formula_note
 #> NULL
 #> 
+#> $lambda.z.corrxy$tier
+#> [1] "uncommon"
+#> 
+#> $lambda.z.corrxy$selection
+#> list()
+#> 
 #> 
 #> $lambda.z
 #> $lambda.z$FUN
@@ -3791,6 +4308,12 @@ get.interval.cols()
 #> 
 #> $lambda.z$formula_note
 #> NULL
+#> 
+#> $lambda.z$tier
+#> [1] "uncommon"
+#> 
+#> $lambda.z$selection
+#> list()
 #> 
 #> 
 #> $lambda.z.time.first
@@ -3833,6 +4356,12 @@ get.interval.cols()
 #> $lambda.z.time.first$formula_note
 #> NULL
 #> 
+#> $lambda.z.time.first$tier
+#> [1] "uncommon"
+#> 
+#> $lambda.z.time.first$selection
+#> list()
+#> 
 #> 
 #> $lambda.z.time.last
 #> $lambda.z.time.last$FUN
@@ -3873,6 +4402,12 @@ get.interval.cols()
 #> 
 #> $lambda.z.time.last$formula_note
 #> NULL
+#> 
+#> $lambda.z.time.last$tier
+#> [1] "uncommon"
+#> 
+#> $lambda.z.time.last$selection
+#> list()
 #> 
 #> 
 #> $lambda.z.n.points
@@ -3915,6 +4450,12 @@ get.interval.cols()
 #> $lambda.z.n.points$formula_note
 #> NULL
 #> 
+#> $lambda.z.n.points$tier
+#> [1] "uncommon"
+#> 
+#> $lambda.z.n.points$selection
+#> list()
+#> 
 #> 
 #> $clast.pred
 #> $clast.pred$FUN
@@ -3955,6 +4496,14 @@ get.interval.cols()
 #> 
 #> $clast.pred$formula_note
 #> NULL
+#> 
+#> $clast.pred$tier
+#> [1] "uncommon"
+#> 
+#> $clast.pred$selection
+#> $clast.pred$selection$concept
+#> [1] "last_conc"
+#> 
 #> 
 #> 
 #> $span.ratio
@@ -3997,6 +4546,12 @@ get.interval.cols()
 #> $span.ratio$formula_note
 #> NULL
 #> 
+#> $span.ratio$tier
+#> [1] "uncommon"
+#> 
+#> $span.ratio$selection
+#> list()
+#> 
 #> 
 #> $tobit_residual
 #> $tobit_residual$FUN
@@ -4037,6 +4592,12 @@ get.interval.cols()
 #> 
 #> $tobit_residual$formula_note
 #> NULL
+#> 
+#> $tobit_residual$tier
+#> [1] "uncommon"
+#> 
+#> $tobit_residual$selection
+#> list()
 #> 
 #> 
 #> $adj_tobit_residual
@@ -4079,6 +4640,12 @@ get.interval.cols()
 #> $adj_tobit_residual$formula_note
 #> NULL
 #> 
+#> $adj_tobit_residual$tier
+#> [1] "uncommon"
+#> 
+#> $adj_tobit_residual$selection
+#> list()
+#> 
 #> 
 #> $lambda.z.n.points_blq
 #> $lambda.z.n.points_blq$FUN
@@ -4119,6 +4686,12 @@ get.interval.cols()
 #> 
 #> $lambda.z.n.points_blq$formula_note
 #> NULL
+#> 
+#> $lambda.z.n.points_blq$tier
+#> [1] "uncommon"
+#> 
+#> $lambda.z.n.points_blq$selection
+#> list()
 #> 
 #> 
 #> $thalf.eff.last
@@ -4163,6 +4736,12 @@ get.interval.cols()
 #> $thalf.eff.last$formula_note
 #> NULL
 #> 
+#> $thalf.eff.last$tier
+#> [1] "uncommon"
+#> 
+#> $thalf.eff.last$selection
+#> list()
+#> 
 #> 
 #> $thalf.eff.iv.last
 #> $thalf.eff.iv.last$FUN
@@ -4205,6 +4784,12 @@ get.interval.cols()
 #> 
 #> $thalf.eff.iv.last$formula_note
 #> NULL
+#> 
+#> $thalf.eff.iv.last$tier
+#> [1] "uncommon"
+#> 
+#> $thalf.eff.iv.last$selection
+#> list()
 #> 
 #> 
 #> $kel.last
@@ -4249,6 +4834,12 @@ get.interval.cols()
 #> $kel.last$formula_note
 #> NULL
 #> 
+#> $kel.last$tier
+#> [1] "uncommon"
+#> 
+#> $kel.last$selection
+#> list()
+#> 
 #> 
 #> $kel.iv.last
 #> $kel.iv.last$FUN
@@ -4291,6 +4882,12 @@ get.interval.cols()
 #> 
 #> $kel.iv.last$formula_note
 #> NULL
+#> 
+#> $kel.iv.last$tier
+#> [1] "uncommon"
+#> 
+#> $kel.iv.last$selection
+#> list()
 #> 
 #> 
 #> $kel.all
@@ -4335,6 +4932,12 @@ get.interval.cols()
 #> $kel.all$formula_note
 #> NULL
 #> 
+#> $kel.all$tier
+#> [1] "uncommon"
+#> 
+#> $kel.all$selection
+#> list()
+#> 
 #> 
 #> $kel.int.all
 #> $kel.int.all$FUN
@@ -4377,6 +4980,12 @@ get.interval.cols()
 #> 
 #> $kel.int.all$formula_note
 #> NULL
+#> 
+#> $kel.int.all$tier
+#> [1] "uncommon"
+#> 
+#> $kel.int.all$selection
+#> list()
 #> 
 #> 
 #> $kel.int.last
@@ -4421,6 +5030,12 @@ get.interval.cols()
 #> $kel.int.last$formula_note
 #> NULL
 #> 
+#> $kel.int.last$tier
+#> [1] "uncommon"
+#> 
+#> $kel.int.last$selection
+#> list()
+#> 
 #> 
 #> $cl.iv.all
 #> $cl.iv.all$FUN
@@ -4463,6 +5078,12 @@ get.interval.cols()
 #> 
 #> $cl.iv.all$formula_note
 #> NULL
+#> 
+#> $cl.iv.all$tier
+#> [1] "uncommon"
+#> 
+#> $cl.iv.all$selection
+#> list()
 #> 
 #> 
 #> $cl.iv.last
@@ -4507,6 +5128,12 @@ get.interval.cols()
 #> $cl.iv.last$formula_note
 #> NULL
 #> 
+#> $cl.iv.last$tier
+#> [1] "uncommon"
+#> 
+#> $cl.iv.last$selection
+#> list()
+#> 
 #> 
 #> $cl.ivint.all
 #> $cl.ivint.all$FUN
@@ -4549,6 +5176,12 @@ get.interval.cols()
 #> 
 #> $cl.ivint.all$formula_note
 #> NULL
+#> 
+#> $cl.ivint.all$tier
+#> [1] "uncommon"
+#> 
+#> $cl.ivint.all$selection
+#> list()
 #> 
 #> 
 #> $cl.ivint.last
@@ -4593,6 +5226,12 @@ get.interval.cols()
 #> $cl.ivint.last$formula_note
 #> NULL
 #> 
+#> $cl.ivint.last$tier
+#> [1] "uncommon"
+#> 
+#> $cl.ivint.last$selection
+#> list()
+#> 
 #> 
 #> $cl.sparse.last
 #> $cl.sparse.last$FUN
@@ -4635,6 +5274,12 @@ get.interval.cols()
 #> 
 #> $cl.sparse.last$formula_note
 #> NULL
+#> 
+#> $cl.sparse.last$tier
+#> [1] "uncommon"
+#> 
+#> $cl.sparse.last$selection
+#> list()
 #> 
 #> 
 #> $mrt.sparse.last
@@ -4682,6 +5327,12 @@ get.interval.cols()
 #> $mrt.sparse.last$formula_note
 #> NULL
 #> 
+#> $mrt.sparse.last$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.sparse.last$selection
+#> list()
+#> 
 #> 
 #> $mrt.iv.all
 #> $mrt.iv.all$FUN
@@ -4727,6 +5378,12 @@ get.interval.cols()
 #> 
 #> $mrt.iv.all$formula_note
 #> NULL
+#> 
+#> $mrt.iv.all$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.iv.all$selection
+#> list()
 #> 
 #> 
 #> $mrt.ivint.all
@@ -4774,6 +5431,12 @@ get.interval.cols()
 #> $mrt.ivint.all$formula_note
 #> NULL
 #> 
+#> $mrt.ivint.all$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.ivint.all$selection
+#> list()
+#> 
 #> 
 #> $mrt.ivint.last
 #> $mrt.ivint.last$FUN
@@ -4820,6 +5483,12 @@ get.interval.cols()
 #> $mrt.ivint.last$formula_note
 #> NULL
 #> 
+#> $mrt.ivint.last$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.ivint.last$selection
+#> list()
+#> 
 #> 
 #> $vz.all
 #> $vz.all$FUN
@@ -4862,6 +5531,12 @@ get.interval.cols()
 #> 
 #> $vz.all$formula_note
 #> NULL
+#> 
+#> $vz.all$tier
+#> [1] "uncommon"
+#> 
+#> $vz.all$selection
+#> list()
 #> 
 #> 
 #> $vz.int.all
@@ -4906,6 +5581,12 @@ get.interval.cols()
 #> $vz.int.all$formula_note
 #> NULL
 #> 
+#> $vz.int.all$tier
+#> [1] "uncommon"
+#> 
+#> $vz.int.all$selection
+#> list()
+#> 
 #> 
 #> $vz.int.last
 #> $vz.int.last$FUN
@@ -4948,6 +5629,12 @@ get.interval.cols()
 #> 
 #> $vz.int.last$formula_note
 #> NULL
+#> 
+#> $vz.int.last$tier
+#> [1] "uncommon"
+#> 
+#> $vz.int.last$selection
+#> list()
 #> 
 #> 
 #> $vz.iv.all
@@ -4992,6 +5679,12 @@ get.interval.cols()
 #> $vz.iv.all$formula_note
 #> NULL
 #> 
+#> $vz.iv.all$tier
+#> [1] "uncommon"
+#> 
+#> $vz.iv.all$selection
+#> list()
+#> 
 #> 
 #> $vz.iv.last
 #> $vz.iv.last$FUN
@@ -5034,6 +5727,12 @@ get.interval.cols()
 #> 
 #> $vz.iv.last$formula_note
 #> NULL
+#> 
+#> $vz.iv.last$tier
+#> [1] "uncommon"
+#> 
+#> $vz.iv.last$selection
+#> list()
 #> 
 #> 
 #> $vz.ivint.all
@@ -5078,6 +5777,12 @@ get.interval.cols()
 #> $vz.ivint.all$formula_note
 #> NULL
 #> 
+#> $vz.ivint.all$tier
+#> [1] "uncommon"
+#> 
+#> $vz.ivint.all$selection
+#> list()
+#> 
 #> 
 #> $vz.ivint.last
 #> $vz.ivint.last$FUN
@@ -5121,6 +5826,12 @@ get.interval.cols()
 #> $vz.ivint.last$formula_note
 #> NULL
 #> 
+#> $vz.ivint.last$tier
+#> [1] "uncommon"
+#> 
+#> $vz.ivint.last$selection
+#> list()
+#> 
 #> 
 #> $vz.last
 #> $vz.last$FUN
@@ -5163,6 +5874,12 @@ get.interval.cols()
 #> 
 #> $vz.last$formula_note
 #> NULL
+#> 
+#> $vz.last$tier
+#> [1] "uncommon"
+#> 
+#> $vz.last$selection
+#> list()
 #> 
 #> 
 #> $vss.iv.all
@@ -5210,6 +5927,12 @@ get.interval.cols()
 #> $vss.iv.all$formula_note
 #> NULL
 #> 
+#> $vss.iv.all$tier
+#> [1] "uncommon"
+#> 
+#> $vss.iv.all$selection
+#> list()
+#> 
 #> 
 #> $vss.ivint.all
 #> $vss.ivint.all$FUN
@@ -5255,6 +5978,12 @@ get.interval.cols()
 #> 
 #> $vss.ivint.all$formula_note
 #> NULL
+#> 
+#> $vss.ivint.all$tier
+#> [1] "uncommon"
+#> 
+#> $vss.ivint.all$selection
+#> list()
 #> 
 #> 
 #> $vss.ivint.last
@@ -5302,6 +6031,12 @@ get.interval.cols()
 #> $vss.ivint.last$formula_note
 #> NULL
 #> 
+#> $vss.ivint.last$tier
+#> [1] "uncommon"
+#> 
+#> $vss.ivint.last$selection
+#> list()
+#> 
 #> 
 #> $vss.sparse.last
 #> $vss.sparse.last$FUN
@@ -5348,6 +6083,12 @@ get.interval.cols()
 #> $vss.sparse.last$formula_note
 #> NULL
 #> 
+#> $vss.sparse.last$tier
+#> [1] "uncommon"
+#> 
+#> $vss.sparse.last$selection
+#> list()
+#> 
 #> 
 #> $aucinf.obs
 #> $aucinf.obs$FUN
@@ -5388,6 +6129,12 @@ get.interval.cols()
 #> 
 #> $aucinf.obs$formula_note
 #> NULL
+#> 
+#> $aucinf.obs$tier
+#> [1] "common"
+#> 
+#> $aucinf.obs$selection
+#> list()
 #> 
 #> $aucinf.obs$requires_dose_amt
 #> [1] FALSE
@@ -5442,6 +6189,12 @@ get.interval.cols()
 #> $aucinf.pred$formula_note
 #> NULL
 #> 
+#> $aucinf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $aucinf.pred$selection
+#> list()
+#> 
 #> 
 #> $aumcinf.obs
 #> $aumcinf.obs$FUN
@@ -5483,6 +6236,12 @@ get.interval.cols()
 #> $aumcinf.obs$formula_note
 #> NULL
 #> 
+#> $aumcinf.obs$tier
+#> [1] "uncommon"
+#> 
+#> $aumcinf.obs$selection
+#> list()
+#> 
 #> 
 #> $aumcinf.pred
 #> $aumcinf.pred$FUN
@@ -5523,6 +6282,12 @@ get.interval.cols()
 #> 
 #> $aumcinf.pred$formula_note
 #> NULL
+#> 
+#> $aumcinf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $aumcinf.pred$selection
+#> list()
 #> 
 #> 
 #> $aucint.inf.obs
@@ -5573,6 +6338,12 @@ get.interval.cols()
 #> $aucint.inf.obs$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
+#> $aucint.inf.obs$tier
+#> [1] "common"
+#> 
+#> $aucint.inf.obs$selection
+#> list()
+#> 
 #> 
 #> $aucint.inf.obs.dose
 #> $aucint.inf.obs.dose$FUN
@@ -5621,6 +6392,12 @@ get.interval.cols()
 #> 
 #> $aucint.inf.obs.dose$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
+#> $aucint.inf.obs.dose$tier
+#> [1] "uncommon"
+#> 
+#> $aucint.inf.obs.dose$selection
+#> list()
 #> 
 #> 
 #> $aucint.inf.pred
@@ -5671,6 +6448,12 @@ get.interval.cols()
 #> $aucint.inf.pred$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
+#> $aucint.inf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $aucint.inf.pred$selection
+#> list()
+#> 
 #> 
 #> $aucint.inf.pred.dose
 #> $aucint.inf.pred.dose$FUN
@@ -5719,6 +6502,12 @@ get.interval.cols()
 #> 
 #> $aucint.inf.pred.dose$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
+#> $aucint.inf.pred.dose$tier
+#> [1] "uncommon"
+#> 
+#> $aucint.inf.pred.dose$selection
+#> list()
 #> 
 #> 
 #> $aumcint.inf.obs
@@ -5769,6 +6558,12 @@ get.interval.cols()
 #> $aumcint.inf.obs$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
+#> $aumcint.inf.obs$tier
+#> [1] "uncommon"
+#> 
+#> $aumcint.inf.obs$selection
+#> list()
+#> 
 #> 
 #> $aumcint.inf.obs.dose
 #> $aumcint.inf.obs.dose$FUN
@@ -5817,6 +6612,12 @@ get.interval.cols()
 #> 
 #> $aumcint.inf.obs.dose$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
+#> 
+#> $aumcint.inf.obs.dose$tier
+#> [1] "uncommon"
+#> 
+#> $aumcint.inf.obs.dose$selection
+#> list()
 #> 
 #> 
 #> $aumcint.inf.pred
@@ -5867,6 +6668,12 @@ get.interval.cols()
 #> $aumcint.inf.pred$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
+#> $aumcint.inf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $aumcint.inf.pred$selection
+#> list()
+#> 
 #> 
 #> $aumcint.inf.pred.dose
 #> $aumcint.inf.pred.dose$FUN
@@ -5916,6 +6723,12 @@ get.interval.cols()
 #> $aumcint.inf.pred.dose$formula_note
 #> [1] "Trapezoidal rule with interpolation at interval boundaries"
 #> 
+#> $aumcint.inf.pred.dose$tier
+#> [1] "uncommon"
+#> 
+#> $aumcint.inf.pred.dose$selection
+#> list()
+#> 
 #> 
 #> $aucivinf.obs
 #> $aucivinf.obs$FUN
@@ -5959,6 +6772,12 @@ get.interval.cols()
 #> $aucivinf.obs$formula_note
 #> NULL
 #> 
+#> $aucivinf.obs$tier
+#> [1] "uncommon"
+#> 
+#> $aucivinf.obs$selection
+#> list()
+#> 
 #> 
 #> $aucivinf.pred
 #> $aucivinf.pred$FUN
@@ -6001,6 +6820,12 @@ get.interval.cols()
 #> 
 #> $aucivinf.pred$formula_note
 #> NULL
+#> 
+#> $aucivinf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $aucivinf.pred$selection
+#> list()
 #> 
 #> 
 #> $aucivpbextinf.obs
@@ -6048,6 +6873,12 @@ get.interval.cols()
 #> $aucivpbextinf.obs$formula_note
 #> NULL
 #> 
+#> $aucivpbextinf.obs$tier
+#> [1] "uncommon"
+#> 
+#> $aucivpbextinf.obs$selection
+#> list()
+#> 
 #> 
 #> $aucivpbextinf.pred
 #> $aucivpbextinf.pred$FUN
@@ -6094,6 +6925,12 @@ get.interval.cols()
 #> $aucivpbextinf.pred$formula_note
 #> NULL
 #> 
+#> $aucivpbextinf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $aucivpbextinf.pred$selection
+#> list()
+#> 
 #> 
 #> $aumcivinf.obs
 #> $aumcivinf.obs$FUN
@@ -6136,6 +6973,12 @@ get.interval.cols()
 #> 
 #> $aumcivinf.obs$formula_note
 #> NULL
+#> 
+#> $aumcivinf.obs$tier
+#> [1] "uncommon"
+#> 
+#> $aumcivinf.obs$selection
+#> list()
 #> 
 #> 
 #> $aumcivinf.pred
@@ -6180,6 +7023,12 @@ get.interval.cols()
 #> $aumcivinf.pred$formula_note
 #> NULL
 #> 
+#> $aumcivinf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $aumcivinf.pred$selection
+#> list()
+#> 
 #> 
 #> $aucpext.obs
 #> $aucpext.obs$FUN
@@ -6222,6 +7071,12 @@ get.interval.cols()
 #> 
 #> $aucpext.obs$formula_note
 #> NULL
+#> 
+#> $aucpext.obs$tier
+#> [1] "common"
+#> 
+#> $aucpext.obs$selection
+#> list()
 #> 
 #> $aucpext.obs$requires_dose_amt
 #> [1] FALSE
@@ -6278,6 +7133,12 @@ get.interval.cols()
 #> $aucpext.pred$formula_note
 #> NULL
 #> 
+#> $aucpext.pred$tier
+#> [1] "uncommon"
+#> 
+#> $aucpext.pred$selection
+#> list()
+#> 
 #> 
 #> $kel.iv.all
 #> $kel.iv.all$FUN
@@ -6320,6 +7181,12 @@ get.interval.cols()
 #> 
 #> $kel.iv.all$formula_note
 #> NULL
+#> 
+#> $kel.iv.all$tier
+#> [1] "uncommon"
+#> 
+#> $kel.iv.all$selection
+#> list()
 #> 
 #> 
 #> $kel.ivint.all
@@ -6364,6 +7231,12 @@ get.interval.cols()
 #> $kel.ivint.all$formula_note
 #> NULL
 #> 
+#> $kel.ivint.all$tier
+#> [1] "uncommon"
+#> 
+#> $kel.ivint.all$selection
+#> list()
+#> 
 #> 
 #> $kel.ivint.last
 #> $kel.ivint.last$FUN
@@ -6407,6 +7280,12 @@ get.interval.cols()
 #> $kel.ivint.last$formula_note
 #> NULL
 #> 
+#> $kel.ivint.last$tier
+#> [1] "uncommon"
+#> 
+#> $kel.ivint.last$selection
+#> list()
+#> 
 #> 
 #> $kel.sparse.last
 #> $kel.sparse.last$FUN
@@ -6449,6 +7328,12 @@ get.interval.cols()
 #> 
 #> $kel.sparse.last$formula_note
 #> NULL
+#> 
+#> $kel.sparse.last$tier
+#> [1] "uncommon"
+#> 
+#> $kel.sparse.last$selection
+#> list()
 #> 
 #> 
 #> $cl.obs
@@ -6507,6 +7392,12 @@ get.interval.cols()
 #> $cl.obs$formula_note
 #> NULL
 #> 
+#> $cl.obs$tier
+#> [1] "common"
+#> 
+#> $cl.obs$selection
+#> list()
+#> 
 #> 
 #> $cl.pred
 #> $cl.pred$FUN
@@ -6564,6 +7455,12 @@ get.interval.cols()
 #> $cl.pred$formula_note
 #> NULL
 #> 
+#> $cl.pred$tier
+#> [1] "uncommon"
+#> 
+#> $cl.pred$selection
+#> list()
+#> 
 #> 
 #> $cl.int.inf.obs
 #> $cl.int.inf.obs$FUN
@@ -6606,6 +7503,12 @@ get.interval.cols()
 #> 
 #> $cl.int.inf.obs$formula_note
 #> NULL
+#> 
+#> $cl.int.inf.obs$tier
+#> [1] "common"
+#> 
+#> $cl.int.inf.obs$selection
+#> list()
 #> 
 #> 
 #> $cl.int.inf.pred
@@ -6650,6 +7553,12 @@ get.interval.cols()
 #> $cl.int.inf.pred$formula_note
 #> NULL
 #> 
+#> $cl.int.inf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $cl.int.inf.pred$selection
+#> list()
+#> 
 #> 
 #> $cl.iv.obs
 #> $cl.iv.obs$FUN
@@ -6693,6 +7602,12 @@ get.interval.cols()
 #> $cl.iv.obs$formula_note
 #> NULL
 #> 
+#> $cl.iv.obs$tier
+#> [1] "uncommon"
+#> 
+#> $cl.iv.obs$selection
+#> list()
+#> 
 #> 
 #> $cl.iv.pred
 #> $cl.iv.pred$FUN
@@ -6735,6 +7650,12 @@ get.interval.cols()
 #> 
 #> $cl.iv.pred$formula_note
 #> NULL
+#> 
+#> $cl.iv.pred$tier
+#> [1] "uncommon"
+#> 
+#> $cl.iv.pred$selection
+#> list()
 #> 
 #> 
 #> $mrt.obs
@@ -6796,6 +7717,12 @@ get.interval.cols()
 #> $mrt.obs$formula_note
 #> NULL
 #> 
+#> $mrt.obs$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.obs$selection
+#> list()
+#> 
 #> 
 #> $mrt.pred
 #> $mrt.pred$FUN
@@ -6856,6 +7783,12 @@ get.interval.cols()
 #> $mrt.pred$formula_note
 #> NULL
 #> 
+#> $mrt.pred$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.pred$selection
+#> list()
+#> 
 #> 
 #> $mrt.int.inf.obs
 #> $mrt.int.inf.obs$FUN
@@ -6901,6 +7834,12 @@ get.interval.cols()
 #> 
 #> $mrt.int.inf.obs$formula_note
 #> NULL
+#> 
+#> $mrt.int.inf.obs$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.int.inf.obs$selection
+#> list()
 #> 
 #> 
 #> $mrt.int.inf.pred
@@ -6948,6 +7887,12 @@ get.interval.cols()
 #> $mrt.int.inf.pred$formula_note
 #> NULL
 #> 
+#> $mrt.int.inf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.int.inf.pred$selection
+#> list()
+#> 
 #> 
 #> $mrt.iv.obs
 #> $mrt.iv.obs$FUN
@@ -6994,6 +7939,12 @@ get.interval.cols()
 #> $mrt.iv.obs$formula_note
 #> NULL
 #> 
+#> $mrt.iv.obs$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.iv.obs$selection
+#> list()
+#> 
 #> 
 #> $mrt.iv.pred
 #> $mrt.iv.pred$FUN
@@ -7039,6 +7990,12 @@ get.interval.cols()
 #> 
 #> $mrt.iv.pred$formula_note
 #> NULL
+#> 
+#> $mrt.iv.pred$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.iv.pred$selection
+#> list()
 #> 
 #> 
 #> $mrt.md.obs
@@ -7089,6 +8046,14 @@ get.interval.cols()
 #> $mrt.md.obs$formula_note
 #> NULL
 #> 
+#> $mrt.md.obs$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.md.obs$selection
+#> $mrt.md.obs$selection$dosing
+#> [1] "multiple"     "steady_state"
+#> 
+#> 
 #> 
 #> $mrt.md.pred
 #> $mrt.md.pred$FUN
@@ -7137,6 +8102,14 @@ get.interval.cols()
 #> 
 #> $mrt.md.pred$formula_note
 #> NULL
+#> 
+#> $mrt.md.pred$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.md.pred$selection
+#> $mrt.md.pred$selection$dosing
+#> [1] "multiple"     "steady_state"
+#> 
 #> 
 #> 
 #> $vz.obs
@@ -7195,6 +8168,12 @@ get.interval.cols()
 #> $vz.obs$formula_note
 #> NULL
 #> 
+#> $vz.obs$tier
+#> [1] "uncommon"
+#> 
+#> $vz.obs$selection
+#> list()
+#> 
 #> 
 #> $vz.pred
 #> $vz.pred$FUN
@@ -7252,6 +8231,12 @@ get.interval.cols()
 #> $vz.pred$formula_note
 #> NULL
 #> 
+#> $vz.pred$tier
+#> [1] "uncommon"
+#> 
+#> $vz.pred$selection
+#> list()
+#> 
 #> 
 #> $vz.int.inf.obs
 #> $vz.int.inf.obs$FUN
@@ -7294,6 +8279,12 @@ get.interval.cols()
 #> 
 #> $vz.int.inf.obs$formula_note
 #> NULL
+#> 
+#> $vz.int.inf.obs$tier
+#> [1] "uncommon"
+#> 
+#> $vz.int.inf.obs$selection
+#> list()
 #> 
 #> 
 #> $vz.int.inf.pred
@@ -7338,6 +8329,12 @@ get.interval.cols()
 #> $vz.int.inf.pred$formula_note
 #> NULL
 #> 
+#> $vz.int.inf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $vz.int.inf.pred$selection
+#> list()
+#> 
 #> 
 #> $vz.iv.obs
 #> $vz.iv.obs$FUN
@@ -7381,6 +8378,12 @@ get.interval.cols()
 #> $vz.iv.obs$formula_note
 #> NULL
 #> 
+#> $vz.iv.obs$tier
+#> [1] "uncommon"
+#> 
+#> $vz.iv.obs$selection
+#> list()
+#> 
 #> 
 #> $vz.iv.pred
 #> $vz.iv.pred$FUN
@@ -7423,6 +8426,12 @@ get.interval.cols()
 #> 
 #> $vz.iv.pred$formula_note
 #> NULL
+#> 
+#> $vz.iv.pred$tier
+#> [1] "uncommon"
+#> 
+#> $vz.iv.pred$selection
+#> list()
 #> 
 #> 
 #> $vz.sparse.last
@@ -7469,6 +8478,12 @@ get.interval.cols()
 #> 
 #> $vz.sparse.last$formula_note
 #> NULL
+#> 
+#> $vz.sparse.last$tier
+#> [1] "uncommon"
+#> 
+#> $vz.sparse.last$selection
+#> list()
 #> 
 #> 
 #> $vss.obs
@@ -7530,6 +8545,12 @@ get.interval.cols()
 #> $vss.obs$formula_note
 #> NULL
 #> 
+#> $vss.obs$tier
+#> [1] "uncommon"
+#> 
+#> $vss.obs$selection
+#> list()
+#> 
 #> 
 #> $vss.pred
 #> $vss.pred$FUN
@@ -7590,6 +8611,12 @@ get.interval.cols()
 #> $vss.pred$formula_note
 #> NULL
 #> 
+#> $vss.pred$tier
+#> [1] "uncommon"
+#> 
+#> $vss.pred$selection
+#> list()
+#> 
 #> 
 #> $vss.iv.obs
 #> $vss.iv.obs$FUN
@@ -7635,6 +8662,12 @@ get.interval.cols()
 #> 
 #> $vss.iv.obs$formula_note
 #> NULL
+#> 
+#> $vss.iv.obs$tier
+#> [1] "uncommon"
+#> 
+#> $vss.iv.obs$selection
+#> list()
 #> 
 #> 
 #> $vss.iv.pred
@@ -7682,6 +8715,12 @@ get.interval.cols()
 #> $vss.iv.pred$formula_note
 #> NULL
 #> 
+#> $vss.iv.pred$tier
+#> [1] "uncommon"
+#> 
+#> $vss.iv.pred$selection
+#> list()
+#> 
 #> 
 #> $vss.md.obs
 #> $vss.md.obs$FUN
@@ -7727,6 +8766,14 @@ get.interval.cols()
 #> 
 #> $vss.md.obs$formula_note
 #> NULL
+#> 
+#> $vss.md.obs$tier
+#> [1] "uncommon"
+#> 
+#> $vss.md.obs$selection
+#> $vss.md.obs$selection$dosing
+#> [1] "multiple"     "steady_state"
+#> 
 #> 
 #> 
 #> $vss.md.pred
@@ -7774,6 +8821,14 @@ get.interval.cols()
 #> $vss.md.pred$formula_note
 #> NULL
 #> 
+#> $vss.md.pred$tier
+#> [1] "uncommon"
+#> 
+#> $vss.md.pred$selection
+#> $vss.md.pred$selection$dosing
+#> [1] "multiple"     "steady_state"
+#> 
+#> 
 #> 
 #> $vss.int.inf.obs
 #> $vss.int.inf.obs$FUN
@@ -7819,6 +8874,12 @@ get.interval.cols()
 #> 
 #> $vss.int.inf.obs$formula_note
 #> NULL
+#> 
+#> $vss.int.inf.obs$tier
+#> [1] "uncommon"
+#> 
+#> $vss.int.inf.obs$selection
+#> list()
 #> 
 #> 
 #> $vss.int.inf.pred
@@ -7866,6 +8927,12 @@ get.interval.cols()
 #> $vss.int.inf.pred$formula_note
 #> NULL
 #> 
+#> $vss.int.inf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $vss.int.inf.pred$selection
+#> list()
+#> 
 #> 
 #> $cav.int.inf.obs
 #> $cav.int.inf.obs$FUN
@@ -7908,6 +8975,12 @@ get.interval.cols()
 #> 
 #> $cav.int.inf.obs$formula_note
 #> NULL
+#> 
+#> $cav.int.inf.obs$tier
+#> [1] "uncommon"
+#> 
+#> $cav.int.inf.obs$selection
+#> list()
 #> 
 #> 
 #> $cav.int.inf.pred
@@ -7952,6 +9025,12 @@ get.interval.cols()
 #> $cav.int.inf.pred$formula_note
 #> NULL
 #> 
+#> $cav.int.inf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $cav.int.inf.pred$selection
+#> list()
+#> 
 #> 
 #> $thalf.eff.obs
 #> $thalf.eff.obs$FUN
@@ -7994,6 +9073,12 @@ get.interval.cols()
 #> 
 #> $thalf.eff.obs$formula_note
 #> NULL
+#> 
+#> $thalf.eff.obs$tier
+#> [1] "uncommon"
+#> 
+#> $thalf.eff.obs$selection
+#> list()
 #> 
 #> 
 #> $thalf.eff.pred
@@ -8038,6 +9123,12 @@ get.interval.cols()
 #> $thalf.eff.pred$formula_note
 #> NULL
 #> 
+#> $thalf.eff.pred$tier
+#> [1] "uncommon"
+#> 
+#> $thalf.eff.pred$selection
+#> list()
+#> 
 #> 
 #> $thalf.eff.iv.obs
 #> $thalf.eff.iv.obs$FUN
@@ -8080,6 +9171,12 @@ get.interval.cols()
 #> 
 #> $thalf.eff.iv.obs$formula_note
 #> NULL
+#> 
+#> $thalf.eff.iv.obs$tier
+#> [1] "uncommon"
+#> 
+#> $thalf.eff.iv.obs$selection
+#> list()
 #> 
 #> 
 #> $thalf.eff.iv.pred
@@ -8124,6 +9221,12 @@ get.interval.cols()
 #> $thalf.eff.iv.pred$formula_note
 #> NULL
 #> 
+#> $thalf.eff.iv.pred$tier
+#> [1] "uncommon"
+#> 
+#> $thalf.eff.iv.pred$selection
+#> list()
+#> 
 #> 
 #> $kel.obs
 #> $kel.obs$FUN
@@ -8166,6 +9269,12 @@ get.interval.cols()
 #> 
 #> $kel.obs$formula_note
 #> NULL
+#> 
+#> $kel.obs$tier
+#> [1] "uncommon"
+#> 
+#> $kel.obs$selection
+#> list()
 #> 
 #> 
 #> $kel.pred
@@ -8210,6 +9319,12 @@ get.interval.cols()
 #> $kel.pred$formula_note
 #> NULL
 #> 
+#> $kel.pred$tier
+#> [1] "uncommon"
+#> 
+#> $kel.pred$selection
+#> list()
+#> 
 #> 
 #> $kel.iv.obs
 #> $kel.iv.obs$FUN
@@ -8252,6 +9367,12 @@ get.interval.cols()
 #> 
 #> $kel.iv.obs$formula_note
 #> NULL
+#> 
+#> $kel.iv.obs$tier
+#> [1] "uncommon"
+#> 
+#> $kel.iv.obs$selection
+#> list()
 #> 
 #> 
 #> $kel.iv.pred
@@ -8296,6 +9417,12 @@ get.interval.cols()
 #> $kel.iv.pred$formula_note
 #> NULL
 #> 
+#> $kel.iv.pred$tier
+#> [1] "uncommon"
+#> 
+#> $kel.iv.pred$selection
+#> list()
+#> 
 #> 
 #> $kel.int.inf.obs
 #> $kel.int.inf.obs$FUN
@@ -8338,6 +9465,12 @@ get.interval.cols()
 #> 
 #> $kel.int.inf.obs$formula_note
 #> NULL
+#> 
+#> $kel.int.inf.obs$tier
+#> [1] "uncommon"
+#> 
+#> $kel.int.inf.obs$selection
+#> list()
 #> 
 #> 
 #> $kel.int.inf.pred
@@ -8382,6 +9515,12 @@ get.interval.cols()
 #> $kel.int.inf.pred$formula_note
 #> NULL
 #> 
+#> $kel.int.inf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $kel.int.inf.pred$selection
+#> list()
+#> 
 #> 
 #> $auclast.dn
 #> $auclast.dn$FUN
@@ -8424,6 +9563,12 @@ get.interval.cols()
 #> 
 #> $auclast.dn$formula_note
 #> NULL
+#> 
+#> $auclast.dn$tier
+#> [1] "uncommon"
+#> 
+#> $auclast.dn$selection
+#> list()
 #> 
 #> 
 #> $aucall.dn
@@ -8468,6 +9613,12 @@ get.interval.cols()
 #> $aucall.dn$formula_note
 #> NULL
 #> 
+#> $aucall.dn$tier
+#> [1] "uncommon"
+#> 
+#> $aucall.dn$selection
+#> list()
+#> 
 #> 
 #> $aucinf.obs.dn
 #> $aucinf.obs.dn$FUN
@@ -8510,6 +9661,12 @@ get.interval.cols()
 #> 
 #> $aucinf.obs.dn$formula_note
 #> NULL
+#> 
+#> $aucinf.obs.dn$tier
+#> [1] "uncommon"
+#> 
+#> $aucinf.obs.dn$selection
+#> list()
 #> 
 #> 
 #> $aucinf.pred.dn
@@ -8554,6 +9711,12 @@ get.interval.cols()
 #> $aucinf.pred.dn$formula_note
 #> NULL
 #> 
+#> $aucinf.pred.dn$tier
+#> [1] "uncommon"
+#> 
+#> $aucinf.pred.dn$selection
+#> list()
+#> 
 #> 
 #> $aumclast.dn
 #> $aumclast.dn$FUN
@@ -8596,6 +9759,12 @@ get.interval.cols()
 #> 
 #> $aumclast.dn$formula_note
 #> NULL
+#> 
+#> $aumclast.dn$tier
+#> [1] "uncommon"
+#> 
+#> $aumclast.dn$selection
+#> list()
 #> 
 #> 
 #> $aumcall.dn
@@ -8640,6 +9809,12 @@ get.interval.cols()
 #> $aumcall.dn$formula_note
 #> NULL
 #> 
+#> $aumcall.dn$tier
+#> [1] "uncommon"
+#> 
+#> $aumcall.dn$selection
+#> list()
+#> 
 #> 
 #> $aumcinf.obs.dn
 #> $aumcinf.obs.dn$FUN
@@ -8682,6 +9857,12 @@ get.interval.cols()
 #> 
 #> $aumcinf.obs.dn$formula_note
 #> NULL
+#> 
+#> $aumcinf.obs.dn$tier
+#> [1] "uncommon"
+#> 
+#> $aumcinf.obs.dn$selection
+#> list()
 #> 
 #> 
 #> $aumcinf.pred.dn
@@ -8726,6 +9907,12 @@ get.interval.cols()
 #> $aumcinf.pred.dn$formula_note
 #> NULL
 #> 
+#> $aumcinf.pred.dn$tier
+#> [1] "uncommon"
+#> 
+#> $aumcinf.pred.dn$selection
+#> list()
+#> 
 #> 
 #> $cmax.dn
 #> $cmax.dn$FUN
@@ -8768,6 +9955,12 @@ get.interval.cols()
 #> 
 #> $cmax.dn$formula_note
 #> NULL
+#> 
+#> $cmax.dn$tier
+#> [1] "uncommon"
+#> 
+#> $cmax.dn$selection
+#> list()
 #> 
 #> 
 #> $cmin.dn
@@ -8812,6 +10005,12 @@ get.interval.cols()
 #> $cmin.dn$formula_note
 #> NULL
 #> 
+#> $cmin.dn$tier
+#> [1] "uncommon"
+#> 
+#> $cmin.dn$selection
+#> list()
+#> 
 #> 
 #> $clast.obs.dn
 #> $clast.obs.dn$FUN
@@ -8854,6 +10053,12 @@ get.interval.cols()
 #> 
 #> $clast.obs.dn$formula_note
 #> NULL
+#> 
+#> $clast.obs.dn$tier
+#> [1] "uncommon"
+#> 
+#> $clast.obs.dn$selection
+#> list()
 #> 
 #> 
 #> $clast.pred.dn
@@ -8898,6 +10103,12 @@ get.interval.cols()
 #> $clast.pred.dn$formula_note
 #> NULL
 #> 
+#> $clast.pred.dn$tier
+#> [1] "uncommon"
+#> 
+#> $clast.pred.dn$selection
+#> list()
+#> 
 #> 
 #> $cav.dn
 #> $cav.dn$FUN
@@ -8940,6 +10151,12 @@ get.interval.cols()
 #> 
 #> $cav.dn$formula_note
 #> NULL
+#> 
+#> $cav.dn$tier
+#> [1] "uncommon"
+#> 
+#> $cav.dn$selection
+#> list()
 #> 
 #> 
 #> $ctrough.dn
@@ -8984,6 +10201,12 @@ get.interval.cols()
 #> $ctrough.dn$formula_note
 #> NULL
 #> 
+#> $ctrough.dn$tier
+#> [1] "uncommon"
+#> 
+#> $ctrough.dn$selection
+#> list()
+#> 
 #> 
 #> $clr.last.dn
 #> $clr.last.dn$FUN
@@ -9026,6 +10249,12 @@ get.interval.cols()
 #> 
 #> $clr.last.dn$formula_note
 #> NULL
+#> 
+#> $clr.last.dn$tier
+#> [1] "uncommon"
+#> 
+#> $clr.last.dn$selection
+#> list()
 #> 
 #> 
 #> $clr.obs.dn
@@ -9070,6 +10299,12 @@ get.interval.cols()
 #> $clr.obs.dn$formula_note
 #> NULL
 #> 
+#> $clr.obs.dn$tier
+#> [1] "uncommon"
+#> 
+#> $clr.obs.dn$selection
+#> list()
+#> 
 #> 
 #> $clr.pred.dn
 #> $clr.pred.dn$FUN
@@ -9112,6 +10347,12 @@ get.interval.cols()
 #> 
 #> $clr.pred.dn$formula_note
 #> NULL
+#> 
+#> $clr.pred.dn$tier
+#> [1] "uncommon"
+#> 
+#> $clr.pred.dn$selection
+#> list()
 #> 
 #> 
 ```

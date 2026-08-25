@@ -77,7 +77,9 @@
 <span>  pptestcd_cdisc <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  pptest_cdisc <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  formula <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  formula_note <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  formula_note <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  tier <span class="op">=</span> <span class="st">"uncommon"</span>,</span>
+<span>  selection <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -162,6 +164,39 @@ parameter is calculated.  Optional and used only for documentation.</p></dd>
 <dd><p>Character value providing additional context about the
 formula (e.g. assumptions or method details).  Displayed alongside the
 formula in documentation tables.</p></dd>
+
+
+<dt id="arg-tier">tier<a class="anchor" aria-label="anchor" href="#arg-tier"></a></dt>
+<dd><p>How commonly the parameter is reported:  <code>"common"</code> for one
+that belongs in a default report for at least one context, or
+<code>"uncommon"</code> (the default) for one that is calculated only when asked for
+by name.  See <code><a href="pknca_concepts.html">pknca_tiers()</a></code>.</p></dd>
+
+
+<dt id="arg-selection">selection<a class="anchor" aria-label="anchor" href="#arg-selection"></a></dt>
+<dd><p>A named list declaring what cannot be derived about where
+the parameter applies.  Every element is optional, and the default of
+<code>NULL</code> derives everything:</p>
+<dl><dt><code>concept</code></dt>
+<dd><p>The kind of quantity the parameter is (see
+<code><a href="pknca_concepts.html">pknca_concepts()</a></code>).  Needed only when the calculation function
+carries no <code><a href="pknca_concept.html">pknca_concept()</a></code> and the concept cannot be taken from
+<code>depends</code>.</p></dd>
+
+<dt><code>route</code></dt>
+<dd><p>The routes of administration the parameter applies to
+(see <code><a href="pknca_concepts.html">pknca_routes()</a></code>).  Derived as intravenous for anything
+calculated from <code>c0</code> or needing a dose duration, and as any route
+otherwise.</p></dd>
+
+<dt><code>dosing</code></dt>
+<dd><p>The dosing patterns the parameter applies to (see
+<code><a href="pknca_concepts.html">pknca_dosing()</a></code>).  Derived as single-dose for anything calculated
+from an extrapolation to infinity.  A declared value propagates to
+every parameter calculated from this one.</p></dd>
+
+
+</dl></dd>
 
 </dl></div>
     <div class="section level2">
@@ -249,7 +284,10 @@ and the values should be one of the following:</p>
 <code><a href="get.interval.cols.html">get.interval.cols()</a></code>,
 <code><a href="get.parameter.deps.html">get.parameter.deps()</a></code>,
 <code><a href="interval_add_impute.html">interval_add_impute()</a></code>,
-<code><a href="interval_add_param.html">interval_add_param()</a></code></p></div>
+<code><a href="interval_add_param.html">interval_add_param()</a></code>,
+<code><a href="pknca_check_parameter_classification.html">pknca_check_parameter_classification()</a></code>,
+<code><a href="pknca_concepts.html">pknca_concepts()</a></code>,
+<code><a href="pknca_parameter_table.html">pknca_parameter_table()</a></code></p></div>
     </div>
 
     <div class="section level2">
