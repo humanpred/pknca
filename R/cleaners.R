@@ -132,7 +132,7 @@ clean.conc.blq <- function(conc, time,
       } else if (time_type == "after.tmax") {
         mask <- tmax <= ret$time & ret$conc %in% 0
       } else {
-        rlang::abort("There is a bug in cleaning the conc.blq with position names", class = "pknca_error_conc_blq_position_bug")  # nocov
+        rlang::abort("There is a bug in cleaning the conc.blq with position names", class = "pknca_error_internal_conc_blq_position")  # nocov
       }
       # Choose the rule to apply
       this_rule <- unname(conc.blq)[[i]]

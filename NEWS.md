@@ -6,6 +6,13 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `pk.nca()` only asks for a bug report when it did not diagnose the error
+  itself.  A parameter that needs a value from the interval specification
+  (`conc_above` for `time_above`, `dose1` and `dose2` for `f`, `tau` for
+  `mrt.md.obs` and similar) now names the parameter and says to give it as an
+  interval column, instead of prefixing "Please report a bug." to an error that
+  is not one (#367).
+
 * Bug fix: the dose-aware interval parameters (`aucint.last.dose`,
   `aumcint.inf.pred.dose`, and the rest of the `*int.*.dose` family) return
   `NA` when the dose time is missing.  With no dosing data, the dose time was
