@@ -13,16 +13,42 @@ pk.calc.auxciv(
   c0,
   auxc,
   fun_auxc_last,
+  fun_auxc,
+  auc.type = NULL,
+  lambda.z = NA,
+  clast = NA,
   ...,
   options = list(),
   check = TRUE
 )
 
-pk.calc.auciv(conc, time, c0, auc, ..., options = list(), check = TRUE)
+pk.calc.auciv(
+  conc,
+  time,
+  c0,
+  auc,
+  auc.type = NULL,
+  lambda.z = NA,
+  clast = NA,
+  ...,
+  options = list(),
+  check = TRUE
+)
 
 pk.calc.auciv_pbext(auc, auciv)
 
-pk.calc.aumciv(conc, time, c0, aumc, ..., options = list(), check = TRUE)
+pk.calc.aumciv(
+  conc,
+  time,
+  c0,
+  aumc,
+  auc.type = NULL,
+  lambda.z = NA,
+  clast = NA,
+  ...,
+  options = list(),
+  check = TRUE
+)
 }
 \arguments{
 \item{conc}{Measured concentrations}
@@ -36,6 +62,20 @@ pk.calc.aumciv(conc, time, c0, aumc, ..., options = list(), check = TRUE)
 
 \item{fun_auxc_last}{Function to calculate the AUXC for the last interval
 (e.g., \code{pk.calc.auc.last} or \code{pk.calc.aumc.last})}
+
+\item{fun_auxc}{Function to calculate the AUXC over the full interval when
+\code{auxc} could not be calculated (e.g., \code{pk.calc.auc} or \code{pk.calc.aumc})}
+
+\item{auc.type}{The type of AUXC for \code{fun_auxc} to calculate.  \code{NULL} (the
+default) means that the AUXC will not be calculated from \code{c0} and the
+measured data, so \code{NA} is returned when \code{auxc} is \code{NA}.}
+
+\item{lambda.z}{The elimination rate (in units of inverse time) for
+extrapolation}
+
+\item{clast}{The last concentration above the limit of quantification, used
+by \code{fun_auxc} when \code{auc.type} is \code{"AUCinf"} (\code{clast.obs} gives AUCinf,obs
+and \code{clast.pred} gives AUCinf,pred)}
 
 \item{...}{For functions other than \code{pk.calc.auxc}, these values are passed
 to \code{pk.calc.auxc}}
@@ -65,13 +105,21 @@ The AUXC for intravenous (IV) dosing extrapolates the AUXC back from the first
 measurement to time 0 using \code{c0} and the AUXC calculated by another method
 (e.g., auclast or aumclast).
 
-The calculation method takes the following steps:
-\enumerate{
-\item \code{time = 0} must be present in the data with a measured concentration.
-\item The AUXC between \code{time = 0} and the next time point is calculated (\code{auxc_first}).
-\item The AUXC between \code{time = 0} with \code{c0} and the next time point is calculated (\code{auxc_second}).
-\item The final AUXC is the initial AUXC plus the difference between the two
-AUXCs (\code{auxc_final <- auxc + auxc_second - auxc_first}).
+How the calculation proceeds depends on what is measured at \code{time = 0}:
+
+\describe{
+\item{A concentration is measured at \code{time = 0}}{The AUXC between \code{time = 0}
+and the next time point is calculated with the measured concentration
+(\code{auxc_first}) and with \code{c0} (\code{auxc_second}).  The final AUXC is
+\code{auxc + auxc_second - auxc_first}.}
+\item{No concentration at \code{time = 0} and \code{auxc} was calculated}{\code{auxc} comes
+from a method that extrapolates back to \code{time = 0} with \code{conc.origin}
+(zero; the \code{aucint} family), so that segment is replaced by the one using
+\code{c0} in the same way.}
+\item{No concentration at \code{time = 0} and \code{auxc} is \code{NA}}{\code{auxc} is \code{NA}
+because an AUXC may not start before the first measurement.  \code{c0} supplies
+that measurement, so the AUXC is calculated here from \code{c0} and the
+measured data using \code{fun_auxc} and \code{auc.type}.}
 }
 
 The calculation for back-extrapolation is \code{100*(1 - auc/auciv)}.

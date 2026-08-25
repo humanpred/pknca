@@ -487,7 +487,11 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       arglist <- arglist[!vapply(X = arglist, FUN = is.null, FUN.VALUE = TRUE)]
       for (arg_formal in names(arglist)) {
         arg_mapped <- arglist[[arg_formal]]
-        if (arg_mapped == "conc") {
+        if (inherits(arg_mapped, "AsIs")) {
+          # An I()-wrapped formalsmap value is the argument itself rather than
+          # the name of a data source or another parameter.
+          call_args[[arg_formal]] <- unclass(arg_mapped)
+        } else if (arg_mapped == "conc") {
           call_args[[arg_formal]] <- conc
         } else if (arg_mapped == "time") {
           # Realign the time to be relative to the start of the

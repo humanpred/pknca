@@ -3,9 +3,9 @@
 # Basic pk.calc.auciv Tests
 # ============================================================================
 test_that("pk.calc.auciv works correctly", {
-  # No time 0 in data
+  # No time 0 in data and no auc.type to calculate the AUC from c0
   expect_equal(
-    pk.calc.auciv(conc = 1:2, time = 1:2),
+    pk.calc.auciv(conc = 1:2, time = 1:2, c0 = 3, auc = NA_real_),
     structure(NA_real_, exclude = "No time 0 in data")
   )
   
@@ -58,9 +58,9 @@ test_that("pk.calc.auciv_pbext calculates percent back-extrapolation correctly",
 # pk.calc.aumciv Tests
 # ============================================================================
 test_that("pk.calc.aumciv works correctly", {
-  # No time 0 in data
+  # No time 0 in data and no auc.type to calculate the AUMC from c0
   expect_equal(
-    pk.calc.aumciv(conc = 1:2, time = 1:2, c0 = NA, aumc = 5),
+    pk.calc.aumciv(conc = 1:2, time = 1:2, c0 = 3, aumc = NA_real_),
     structure(NA_real_, exclude = "No time 0 in data")
   )
   
@@ -87,17 +87,21 @@ test_that("NA data are removed from concentrations for calculation of AUCiv (#35
   o_conc_353alt <- PKNCAconc(data = d_iv_353alt, conc~time)
   o_dose <- PKNCAdose(data = data.frame(time = 0), ~time)
   o_data_353alt <- PKNCAdata(o_conc_353alt, o_dose, intervals = d_intervals)
-  # The same warning is expected three times
-  expect_warning(expect_warning(expect_warning(
+  # aucinf.obs cannot start before the first measurement and warns once.  The NA
+  # concentration at time 0 is dropped, so aucivinf.obs is calculated from c0
+  # rather than from aucinf.obs.
+  expect_warning(
     o_nca <- pk.nca(o_data_353alt),
-    regexp = "Requesting an AUC range starting (0) before the first measurement (5) is not allowed",
-    fixed = TRUE),
-    regexp = "Requesting an AUC range starting (0) before the first measurement (5) is not allowed",
-    fixed = TRUE),
     regexp = "Requesting an AUC range starting (0) before the first measurement (5) is not allowed",
     fixed = TRUE
   )
   expect_s3_class(o_nca, "PKNCAresults")
+  result <- as.data.frame(o_nca)
+  expect_equal(
+    result$PPORRES[result$PPTESTCD == "aucivinf.obs"], 109.02992,
+    tolerance = 1e-6
+  )
+  expect_true(is.na(result$PPORRES[result$PPTESTCD == "aucinf.obs"]))
 })
 
 test_that("missing dose information does not cause NA time (#353)", {
@@ -277,4 +281,170 @@ test_that("AUCiv and AUMCiv calculations are consistent", {
   
   # AUMC should be larger than AUC (for positive concentrations and times)
   expect_true(aumciv_result > auciv_result)
+})
+
+
+# ============================================================================
+# Back-extrapolation without a measured time 0 concentration (#352)
+# ============================================================================
+
+# The profile without a time 0 measurement and the same profile with a measured
+# BLQ (zero) concentration at time 0.  c0 replaces the time 0 concentration in
+# both, so every IV parameter must agree between them.
+d_iv_352 <- data.frame(conc = c(4, 2, 1, 0.45), time = c(5, 15, 30, 60))
+d_iv_352_t0 <- data.frame(conc = c(0, 4, 2, 1, 0.45), time = c(0, 5, 15, 30, 60))
+d_dose_352 <- data.frame(dose = 100, time = 0)
+params_352 <-
+  c(
+    "aucivlast", "aucivall", "aucivint.last", "aucivint.all",
+    "aucivinf.obs", "aucivinf.pred",
+    "aumcivlast", "aumcivall", "aumcivint.last", "aumcivint.all",
+    "aumcivinf.obs", "aumcivinf.pred",
+    "aucivpbextlast", "aucivpbextall", "aucivpbextint.last",
+    "aucivpbextint.all", "aucivpbextinf.obs", "aucivpbextinf.pred"
+  )
+
+nca_352 <- function(d_conc) {
+  d_intervals <- data.frame(start = 0, end = Inf)
+  d_intervals[params_352] <- TRUE
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time),
+      PKNCAdose(d_dose_352, dose~time, route = "intravascular"),
+      intervals = d_intervals
+    )
+  as.data.frame(suppressWarnings(pk.nca(o_data)))
+}
+
+test_that("IV AUC is calculated without a time 0 concentration (#352)", {
+  r <- nca_352(d_iv_352)
+  value <- stats::setNames(r$PPORRES, r$PPTESTCD)
+  # c0 back-extrapolates to 5.656854, so the AUC starts at time 0 even though
+  # the first measurement is at time 5.
+  expect_equal(unname(value["c0"]), 5.656854, tolerance = 1e-6)
+  expect_equal(unname(value["aucivlast"]), 95.06123, tolerance = 1e-6)
+  expect_equal(unname(value["aucivall"]), 95.06123, tolerance = 1e-6)
+  expect_equal(unname(value["aucivint.last"]), 95.06123, tolerance = 1e-6)
+  expect_equal(unname(value["aucivint.all"]), 95.06123, tolerance = 1e-6)
+  expect_equal(unname(value["aucivinf.obs"]), 109.02992, tolerance = 1e-6)
+  expect_equal(unname(value["aucivinf.pred"]), 108.45559, tolerance = 1e-6)
+  expect_equal(unname(value["aumcivlast"]), 1685.66716, tolerance = 1e-6)
+  expect_equal(unname(value["aumcivall"]), 1685.66716, tolerance = 1e-6)
+  expect_equal(unname(value["aumcivint.last"]), 1685.66716, tolerance = 1e-6)
+  expect_equal(unname(value["aumcivint.all"]), 1685.66716, tolerance = 1e-6)
+  expect_equal(unname(value["aumcivinf.obs"]), 2957.39875, tolerance = 1e-6)
+  expect_equal(unname(value["aumcivinf.pred"]), 2905.11073, tolerance = 1e-6)
+})
+
+test_that("the percent back-extrapolated is NA without a time 0 concentration (#352)", {
+  r <- nca_352(d_iv_352)
+  value <- stats::setNames(r$PPORRES, r$PPTESTCD)
+  exclude <- stats::setNames(r$exclude, r$PPTESTCD)
+  # AUClast, AUCall, AUCinf,obs, and AUCinf,pred cannot be calculated from time
+  # 0 without a measurement there, so the percent back-extrapolated against them
+  # is not calculable.
+  pbext_na <-
+    c("aucivpbextlast", "aucivpbextall", "aucivpbextinf.obs", "aucivpbextinf.pred")
+  expect_true(all(is.na(value[pbext_na])))
+  expect_equal(
+    unname(exclude[pbext_na]),
+    rep(
+      "Requesting an AUC range starting (0) before the first measurement (5) is not allowed",
+      length(pbext_na)
+    )
+  )
+  # The aucint family extrapolates back to the start of the interval with
+  # conc.origin (zero), so the percent back-extrapolated against it is
+  # calculable and matches the value with a measured zero at time 0.
+  expect_equal(unname(value["aucivpbextint.last"]), 14.62568, tolerance = 1e-6)
+  expect_equal(unname(value["aucivpbextint.all"]), 14.62568, tolerance = 1e-6)
+  # The AUCs that c0 makes calculable are not excluded.
+  expect_true(all(is.na(exclude[setdiff(params_352, pbext_na)])))
+})
+
+test_that("a measured zero at time 0 gives the same IV parameters (#352)", {
+  no_t0 <- nca_352(d_iv_352)
+  with_t0 <- nca_352(d_iv_352_t0)
+  ivparams <-
+    setdiff(
+      params_352,
+      c("aucivpbextlast", "aucivpbextall", "aucivpbextinf.obs", "aucivpbextinf.pred")
+    )
+  expect_equal(
+    stats::setNames(no_t0$PPORRES, no_t0$PPTESTCD)[ivparams],
+    stats::setNames(with_t0$PPORRES, with_t0$PPTESTCD)[ivparams]
+  )
+  # The percent back-extrapolated is calculable only when the AUC without
+  # back-extrapolation is.
+  with_t0_value <- stats::setNames(with_t0$PPORRES, with_t0$PPTESTCD)
+  expect_equal(unname(with_t0_value["aucivpbextlast"]), 14.62568, tolerance = 1e-6)
+  expect_equal(unname(with_t0_value["aucivpbextinf.obs"]), 12.75187, tolerance = 1e-6)
+})
+
+test_that("pk.calc.auxciv calculates the AUXC from c0 when auxc is NA", {
+  conc <- c(4, 2, 1, 0.45)
+  time <- c(5, 15, 30, 60)
+  c0 <- 5.656854
+  # Identical to calculating on the profile with c0 measured at time 0
+  expect_equal(
+    pk.calc.auciv(conc = conc, time = time, c0 = c0, auc = NA_real_, auc.type = "AUClast"),
+    structure(
+      pk.calc.auc.last(conc = c(c0, conc), time = c(0, time)),
+      exclude = "DO NOT EXCLUDE"
+    ),
+    ignore_attr = "method"
+  )
+  expect_equal(
+    pk.calc.aumciv(conc = conc, time = time, c0 = c0, aumc = NA_real_, auc.type = "AUClast"),
+    structure(
+      pk.calc.aumc.last(conc = c(c0, conc), time = c(0, time)),
+      exclude = "DO NOT EXCLUDE"
+    ),
+    ignore_attr = "method"
+  )
+  lambda.z <- 0.03221489
+  expect_equal(
+    pk.calc.auciv(
+      conc = conc, time = time, c0 = c0, auc = NA_real_,
+      auc.type = "AUCinf", lambda.z = lambda.z, clast = 0.45
+    ),
+    structure(
+      pk.calc.auc.inf.obs(
+        conc = c(c0, conc), time = c(0, time),
+        clast.obs = 0.45, lambda.z = lambda.z
+      ),
+      exclude = "DO NOT EXCLUDE"
+    ),
+    ignore_attr = "method"
+  )
+})
+
+test_that("pk.calc.auxciv replaces the conc.origin segment when auxc is calculated", {
+  conc <- c(4, 2, 1, 0.45)
+  time <- c(5, 15, 30, 60)
+  c0 <- 5.656854
+  # aucint.last extrapolates back to time 0 with conc.origin = 0
+  auc_origin0 <- pk.calc.aucint.last(conc = conc, time = time, start = 0, end = Inf, time.dose = NULL)
+  expect_equal(
+    pk.calc.auciv(conc = conc, time = time, c0 = c0, auc = auc_origin0),
+    pk.calc.auc.last(conc = c(c0, conc), time = c(0, time)),
+    ignore_attr = TRUE
+  )
+})
+
+test_that("pk.calc.auxciv reports why it could not calculate", {
+  expect_warning(
+    expect_warning(
+      expect_equal(
+        pk.calc.auciv(conc = numeric(), time = numeric(), c0 = 1, auc = 1),
+        structure(NA_real_, exclude = "No data for AUC calculation")
+      ),
+      regexp = "No concentration data given"
+    ),
+    regexp = "No time data given"
+  )
+  expect_equal(
+    pk.calc.auciv(conc = c(4, 2), time = c(5, 15), c0 = NA, auc = 1, auc.type = "AUClast"),
+    structure(NA_real_, exclude = "c0 is not calculated")
+  )
 })

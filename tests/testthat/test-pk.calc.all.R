@@ -1129,3 +1129,53 @@ test_that("pk.nca sorts group data by time so unsorted input works (#568)", {
     )
   expect_equal(merged$PPORRES.uns, merged$PPORRES.srt)
 })
+
+test_that("an I()-wrapped formalsmap value is passed to the function as a constant", {
+  fn_name <- "pknca_test_formalsmap_constant_"
+  assign(
+    fn_name,
+    function(conc, time, multiplier) {
+      multiplier * length(conc)
+    },
+    envir = .GlobalEnv
+  )
+  old_cols <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
+  old_sorted <- get0("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
+  on.exit({
+    assign("interval.cols", old_cols, envir = PKNCA:::.PKNCAEnv)
+    if (!is.null(old_sorted)) {
+      assign("interval.cols_sorted", old_sorted, envir = PKNCA:::.PKNCAEnv)
+    } else if (exists("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv, inherits = FALSE)) {
+      rm("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
+    }
+    rm(list = fn_name, envir = .GlobalEnv)
+  }, add = TRUE)
+
+  add.interval.col(
+    "pknca_test_formalsmap_constant_col_",
+    FUN = fn_name,
+    unit_type = "conc",
+    pretty_name = "Test: formalsmap constant",
+    desc = "Coverage test for a formalsmap constant",
+    formalsmap = list(multiplier = I(10))
+  )
+  # A constant is the value itself, not a reference to another parameter
+  expect_equal(
+    get.parameter.deps("pknca_test_formalsmap_constant_col_", recursive = TRUE),
+    c("conc", "time")
+  )
+
+  d_conc <- data.frame(conc = c(1, 2, 3), time = c(0, 1, 2))
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time),
+      PKNCAdose(data.frame(dose = 1, time = 0), dose~time),
+      intervals =
+        data.frame(start = 0, end = 24, pknca_test_formalsmap_constant_col_ = TRUE)
+    )
+  result <- as.data.frame(pk.nca(o_data))
+  expect_equal(
+    result$PPORRES[result$PPTESTCD == "pknca_test_formalsmap_constant_col_"],
+    30
+  )
+})

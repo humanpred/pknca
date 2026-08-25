@@ -6,6 +6,18 @@ the dosing including dose amount and route.
 
 # Development version
 
+* IV bolus AUC and AUMC parameters (`aucivlast`, `aucivinf.obs`, `aumcivlast`,
+  and the rest of the `auciv`/`aumciv` family) no longer require a measured
+  concentration at time 0.  When the profile starts after the dose, `c0`
+  supplies the concentration at time 0 and the AU(M)C is calculated from it.
+  The percent back-extrapolated (`aucivpbextlast` and similar) is `NA` in that
+  case because the AUC without back-extrapolation cannot start before the first
+  measurement (#352).
+
+* `add.interval.col()` accepts an `I()`-wrapped value in `formalsmap` to pass a
+  constant to the calculation function instead of naming a data source or
+  another parameter.
+
 * Bug fix: `superposition()` drops missing concentrations before calculating.
   They previously reached the half-life fit and stopped the calculation with
   `NA/NaN/Inf in 'x'` (#308).
