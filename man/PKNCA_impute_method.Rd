@@ -5,6 +5,7 @@
 \alias{PKNCA_impute_method_start_conc0}
 \alias{PKNCA_impute_method_start_cmin}
 \alias{PKNCA_impute_method_start_predose}
+\alias{PKNCA_impute_method_start_predose_conc0}
 \alias{PKNCA_impute_method_end_conc_drop}
 \title{Methods for imputation of data with PKNCA}
 \usage{
@@ -13,6 +14,18 @@ PKNCA_impute_method_start_conc0(conc, time, start = 0, ..., options = list())
 PKNCA_impute_method_start_cmin(conc, time, start, end, ..., options = list())
 
 PKNCA_impute_method_start_predose(
+  conc,
+  time,
+  start,
+  end,
+  conc.group,
+  time.group,
+  ...,
+  max_shift = NA_real_,
+  options = list()
+)
+
+PKNCA_impute_method_start_predose_conc0(
   conc,
   time,
   start,
@@ -76,6 +89,14 @@ the interval at the start time (usually used with multiple-dose data)
 time zero concentration (only if a time zero concentration does not exist).
 The most recent predose sample with a measured concentration is shifted;
 samples with a missing concentration are skipped.
+
+\item \code{PKNCA_impute_method_start_predose_conc0()}: Use a predose concentration as the start
+concentration when one is available and 0 when it is not.  A concentration
+measured at the start time is kept as-is, which is what distinguishes this
+from \code{start_conc0}:  a measured concentration at the time of an
+intravenous bolus dose is the C0 for that dose, and \code{start_conc0} would
+replace it with 0.  The chain \code{"start_predose,start_conc0"} cannot express
+this, because \code{start_conc0} overwrites whatever \code{start_predose} shifted.
 
 \item \code{PKNCA_impute_method_end_conc_drop()}: Drop a concentration measured exactly at the
 end of the interval, if one is present (usually used with multiple-dose data

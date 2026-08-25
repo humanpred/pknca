@@ -6,6 +6,14 @@ the dosing including dose amount and route.
 
 # Development version
 
+* A new imputation method, `start_predose_conc0`, uses a predose concentration
+  as the start concentration when one is available and 0 when it is not, and
+  keeps a concentration measured at the start time.  The chain
+  `"start_predose,start_conc0"` cannot express this because `start_conc0`
+  overwrites whatever `start_predose` shifted.  Keeping a measured start
+  concentration matters after an intravenous bolus dose, where it is the C0 for
+  that dose.
+
 * Bug fix: PKNCA loads in a session where `utils` is not attached (an
   `Rscript` with a trimmed `R_DEFAULT_PACKAGES`, or a `callr` subprocess).
   `add.interval.col()` checks that its `FUN` exists with `utils::getAnywhere()`,
