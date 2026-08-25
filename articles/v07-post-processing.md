@@ -543,3 +543,93 @@ d_conc_hl %>%
     ## 9        1 79.6 4.02  9.05  6.89    TRUE
     ## 10       1 79.6 4.02 12.12  5.94    TRUE
     ## 11       1 79.6 4.02 24.37  3.28    TRUE
+
+### The Half-Life Fit
+
+[`get_halflife_fit()`](https://humanpred.github.io/pknca/reference/get_halflife_fit.md)
+gives the log-linear fit itself, one row per group and interval, as the
+slope and intercept of `log(conc) = intercept + slope*time`. The slope
+is $`-\lambda_z`$.
+
+``` r
+
+get_halflife_fit(results_obj)
+```
+
+    ##    Subject start end intercept       slope time_first time_last
+    ## 1        1     0 Inf  2.368785 -0.04845700       9.05     24.37
+    ## 2        2     0 Inf  2.411237 -0.10408644       7.03     24.30
+    ## 3        3     0 Inf  2.529712 -0.10244431       9.00     24.17
+    ## 4        4     0 Inf  2.592755 -0.09928702       9.02     24.65
+    ## 5        5     0 Inf  2.551092 -0.08661888       7.02     24.35
+    ## 6        6     0 Inf  2.033404 -0.08779574       2.03     23.85
+    ## 7        7     0 Inf  2.288550 -0.08833650       6.98     24.22
+    ## 8        8     0 Inf  2.170403 -0.08145054       3.53     24.12
+    ## 9        9     0 Inf  2.124648 -0.08245863       8.80     24.43
+    ## 10      10     0 Inf  2.657705 -0.07495982       9.38     23.70
+    ## 11      11     0 Inf  2.147594 -0.09545856       9.03     24.08
+    ## 12      12     0 Inf  2.824493 -0.11025949       9.03     24.15
+
+Times in a PKNCAresults object are relative to the start of the
+interval, but `time_first`, `time_last`, and the time scale of
+`intercept` are all on the same scale as the times in the concentration
+data. The fitted line can therefore be drawn with the observed
+concentrations without shifting anything. `intercept` and `slope` are
+`NA` when the half-life could not be calculated or was excluded.
+
+### Concentrations Along the Half-Life Fit
+
+[`get_halflife_curve()`](https://humanpred.github.io/pknca/reference/get_halflife_curve.md)
+gives concentrations along that line. As with
+[`stats::approx()`](https://rdrr.io/r/stats/approxfun.html), give either
+`n` for equally-spaced times or `tout` for specific times.
+Concentrations are returned as concentrations, not log-concentrations.
+
+With `n`, the times span the concentrations used for the fit:
+
+``` r
+
+get_halflife_curve(results_obj, n = 5) %>%
+  filter(Subject == 1)
+```
+
+    ##   Subject start end  time     conc
+    ## 1       1     0 Inf  9.05 6.891228
+    ## 2       1     0 Inf 12.88 5.723949
+    ## 3       1     0 Inf 16.71 4.754391
+    ## 4       1     0 Inf 20.54 3.949063
+    ## 5       1     0 Inf 24.37 3.280146
+
+With `tout`, any times may be requested. Extrapolation after the last
+concentration used for the fit is done by default, and extrapolation
+before the first is not, so early times give `NA`:
+
+``` r
+
+get_halflife_curve(results_obj, tout = c(0, 12, 48)) %>%
+  filter(Subject == 1)
+```
+
+    ##   Subject start end time     conc
+    ## 1       1     0 Inf    0       NA
+    ## 2       1     0 Inf   12 5.973310
+    ## 3       1     0 Inf   48 1.043781
+
+Both defaults can be changed with the `extrapolate_earlier` and
+`extrapolate_later` arguments:
+
+``` r
+
+get_halflife_curve(
+  results_obj,
+  tout = c(0, 12, 48),
+  extrapolate_earlier = TRUE,
+  extrapolate_later = FALSE
+) %>%
+  filter(Subject == 1)
+```
+
+    ##   Subject start end time     conc
+    ## 1       1     0 Inf    0 10.68440
+    ## 2       1     0 Inf   12  5.97331
+    ## 3       1     0 Inf   48       NA

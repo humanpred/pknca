@@ -580,6 +580,82 @@ start at time 0.</p>
 <span><span class="co">## 10       1 79.6 4.02 12.12  5.94    TRUE</span></span>
 <span><span class="co">## 11       1 79.6 4.02 24.37  3.28    TRUE</span></span></code></pre>
 </div>
+<div class="section level3">
+<h3 id="the-half-life-fit">The Half-Life Fit<a class="anchor" aria-label="anchor" href="#the-half-life-fit"></a>
+</h3>
+<p><code><a href="../reference/get_halflife_fit.html">get_halflife_fit()</a></code> gives the log-linear fit itself, one
+row per group and interval, as the slope and intercept of
+<code>log(conc) = intercept + slope*time</code>. The slope is
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><msub><mi>λ</mi><mi>z</mi></msub></mrow><annotation encoding="application/x-tex">-\lambda_z</annotation></semantics></math>.</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_halflife_fit.html">get_halflife_fit</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##    Subject start end intercept       slope time_first time_last</span></span>
+<span><span class="co">## 1        1     0 Inf  2.368785 -0.04845700       9.05     24.37</span></span>
+<span><span class="co">## 2        2     0 Inf  2.411237 -0.10408644       7.03     24.30</span></span>
+<span><span class="co">## 3        3     0 Inf  2.529712 -0.10244431       9.00     24.17</span></span>
+<span><span class="co">## 4        4     0 Inf  2.592755 -0.09928702       9.02     24.65</span></span>
+<span><span class="co">## 5        5     0 Inf  2.551092 -0.08661888       7.02     24.35</span></span>
+<span><span class="co">## 6        6     0 Inf  2.033404 -0.08779574       2.03     23.85</span></span>
+<span><span class="co">## 7        7     0 Inf  2.288550 -0.08833650       6.98     24.22</span></span>
+<span><span class="co">## 8        8     0 Inf  2.170403 -0.08145054       3.53     24.12</span></span>
+<span><span class="co">## 9        9     0 Inf  2.124648 -0.08245863       8.80     24.43</span></span>
+<span><span class="co">## 10      10     0 Inf  2.657705 -0.07495982       9.38     23.70</span></span>
+<span><span class="co">## 11      11     0 Inf  2.147594 -0.09545856       9.03     24.08</span></span>
+<span><span class="co">## 12      12     0 Inf  2.824493 -0.11025949       9.03     24.15</span></span></code></pre>
+<p>Times in a PKNCAresults object are relative to the start of the
+interval, but <code>time_first</code>, <code>time_last</code>, and the
+time scale of <code>intercept</code> are all on the same scale as the
+times in the concentration data. The fitted line can therefore be drawn
+with the observed concentrations without shifting anything.
+<code>intercept</code> and <code>slope</code> are <code>NA</code> when
+the half-life could not be calculated or was excluded.</p>
+</div>
+<div class="section level3">
+<h3 id="concentrations-along-the-half-life-fit">Concentrations Along the Half-Life Fit<a class="anchor" aria-label="anchor" href="#concentrations-along-the-half-life-fit"></a>
+</h3>
+<p><code><a href="../reference/get_halflife_curve.html">get_halflife_curve()</a></code> gives concentrations along that
+line. As with <code><a href="https://rdrr.io/r/stats/approxfun.html" class="external-link">stats::approx()</a></code>, give either <code>n</code>
+for equally-spaced times or <code>tout</code> for specific times.
+Concentrations are returned as concentrations, not
+log-concentrations.</p>
+<p>With <code>n</code>, the times span the concentrations used for the
+fit:</p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_halflife_curve.html">get_halflife_curve</a></span><span class="op">(</span><span class="va">results_obj</span>, n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##   Subject start end  time     conc</span></span>
+<span><span class="co">## 1       1     0 Inf  9.05 6.891228</span></span>
+<span><span class="co">## 2       1     0 Inf 12.88 5.723949</span></span>
+<span><span class="co">## 3       1     0 Inf 16.71 4.754391</span></span>
+<span><span class="co">## 4       1     0 Inf 20.54 3.949063</span></span>
+<span><span class="co">## 5       1     0 Inf 24.37 3.280146</span></span></code></pre>
+<p>With <code>tout</code>, any times may be requested. Extrapolation
+after the last concentration used for the fit is done by default, and
+extrapolation before the first is not, so early times give
+<code>NA</code>:</p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_halflife_curve.html">get_halflife_curve</a></span><span class="op">(</span><span class="va">results_obj</span>, tout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">12</span>, <span class="fl">48</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##   Subject start end time     conc</span></span>
+<span><span class="co">## 1       1     0 Inf    0       NA</span></span>
+<span><span class="co">## 2       1     0 Inf   12 5.973310</span></span>
+<span><span class="co">## 3       1     0 Inf   48 1.043781</span></span></code></pre>
+<p>Both defaults can be changed with the
+<code>extrapolate_earlier</code> and <code>extrapolate_later</code>
+arguments:</p>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_halflife_curve.html">get_halflife_curve</a></span><span class="op">(</span></span>
+<span>  <span class="va">results_obj</span>,</span>
+<span>  tout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">12</span>, <span class="fl">48</span><span class="op">)</span>,</span>
+<span>  extrapolate_earlier <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  extrapolate_later <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##   Subject start end time     conc</span></span>
+<span><span class="co">## 1       1     0 Inf    0 10.68440</span></span>
+<span><span class="co">## 2       1     0 Inf   12  5.97331</span></span>
+<span><span class="co">## 3       1     0 Inf   48       NA</span></span></code></pre>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

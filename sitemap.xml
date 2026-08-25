@@ -103,6 +103,8 @@
 <url><loc>https://humanpred.github.io/pknca/reference/getDepVar.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/getGroups.PKNCAconc.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/getIndepVar.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/get_halflife_curve.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/get_halflife_fit.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/get_halflife_points.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/get_impute_method.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/group_by.PKNCAresults.html</loc></url>

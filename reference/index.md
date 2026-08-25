@@ -282,6 +282,12 @@
   : Get the independent variable (right hand side of the formula) from a
   PKNCA object.
 
+- [`get_halflife_curve()`](https://humanpred.github.io/pknca/reference/get_halflife_curve.md)
+  : Interpolate and extrapolate concentrations along the half-life fit
+
+- [`get_halflife_fit()`](https://humanpred.github.io/pknca/reference/get_halflife_fit.md)
+  : Get the half-life fit line for each interval
+
 - [`get_halflife_points()`](https://humanpred.github.io/pknca/reference/get_halflife_points.md)
   : Determine which concentrations were used for half-life calculation
 
