@@ -11,6 +11,13 @@ the dosing including dose amount and route.
   line can be drawn or predicted from.  Times are given on the same scale as
   the concentration data rather than relative to the interval start (#342).
 
+* A new function `get_halflife_curve()` interpolates and extrapolates
+  concentrations along the half-life fit.  Give `tout` for specific times or
+  `n` for equally-spaced times, as with `stats::approx()`.  Extrapolation
+  after the last concentration used for the fit is done by default and
+  extrapolation before the first is not; both are controlled by the
+  `extrapolate_later` and `extrapolate_earlier` arguments (#342).
+
 * Bug fix: `superposition()` drops missing concentrations before calculating.
   They previously reached the half-life fit and stopped the calculation with
   `NA/NaN/Inf in 'x'` (#308).

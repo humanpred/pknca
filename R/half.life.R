@@ -1036,3 +1036,100 @@ get_halflife_fit.PKNCAresults <- function(object) {
 
   as.data.frame(ret[, c(group_cols, "intercept", "slope", "time_first", "time_last")])
 }
+
+#' Interpolate and extrapolate concentrations along the half-life fit
+#'
+#' Concentrations are given as concentrations, not log-concentrations.  Take the
+#' natural log of `conc` if the log-concentration is wanted.
+#'
+#' Like [stats::approx()], give either `tout` for specific times or `n` for
+#' equally-spaced times.  With `n`, the times span the concentrations used for
+#' the fit (`time_first` to `time_last` from [get_halflife_fit()]), so `tout` is
+#' required to extrapolate.
+#'
+#' @inheritParams get_halflife_points
+#' @param tout Times for output.  The same times are used for every group and
+#'   interval.  If `NULL` (the default), `n` equally-spaced times spanning the
+#'   concentrations used for the fit are used instead.
+#' @param n The number of equally-spaced times to generate when `tout` is
+#'   `NULL`.  It is ignored when `tout` is given.
+#' @param extrapolate_earlier,extrapolate_later Should concentrations be
+#'   extrapolated before the first (`extrapolate_earlier`) or after the last
+#'   (`extrapolate_later`) concentration used for the fit?  Times outside the
+#'   fit that are not extrapolated give an `NA` concentration.
+#' @returns A data.frame with the grouping columns, the interval `start` and
+#'   `end` times, and the columns:
+#'
+#'   * `time`: the time of the concentration, on the same scale as the times in
+#'     the concentration data
+#'   * `conc`: the concentration on the half-life fit at that time
+#'
+#'   `conc` is `NA` where the half-life could not be calculated or was excluded,
+#'   and where extrapolation was requested but not allowed.  Groups without a
+#'   fit give a single row with an `NA` `time` when `tout` is `NULL`, since no
+#'   times can be generated for them.
+#' @seealso [get_halflife_fit()] for the slope and intercept of the fit, and
+#'   [get_halflife_points()] for the concentrations used for it
+#' @examples
+#' o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+#' o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+#' o_nca <- pk.nca(o_data)
+#' # Equally-spaced times across the fit
+#' head(get_halflife_curve(o_nca))
+#' # Specific times, extrapolating past the last concentration used
+#' get_halflife_curve(o_nca, tout = c(12, 24, 36))
+#' @export
+get_halflife_curve <- function(object, tout = NULL, n = 50,
+                               extrapolate_earlier = FALSE, extrapolate_later = TRUE) {
+  checkmate::assert_numeric(tout, any.missing = FALSE, min.len = 1, null.ok = TRUE)
+  checkmate::assert_count(n, positive = TRUE)
+  checkmate::assert_flag(extrapolate_earlier)
+  checkmate::assert_flag(extrapolate_later)
+  fit <- get_halflife_fit(object)
+  # A group column named time or conc cannot reach here; standardize_column_names()
+  # rejects it when the PKNCAdata object is made.
+  group_cols <-
+    setdiff(names(fit), c("intercept", "slope", "time_first", "time_last"))
+  curves <-
+    lapply(
+      X = seq_len(nrow(fit)),
+      FUN = halflife_curve_single,
+      fit = fit,
+      tout = tout,
+      n = n,
+      extrapolate_earlier = extrapolate_earlier,
+      extrapolate_later = extrapolate_later
+    )
+  curves <- do.call(rbind, curves)
+  ret <-
+    cbind(
+      fit[curves$idx, group_cols, drop = FALSE],
+      curves[, c("time", "conc"), drop = FALSE]
+    )
+  rownames(ret) <- NULL
+  ret
+}
+
+# Generate the concentrations along the half-life fit for one row of the fit
+halflife_curve_single <- function(idx, fit, tout, n, extrapolate_earlier, extrapolate_later) {
+  time_first <- fit$time_first[idx]
+  time_last <- fit$time_last[idx]
+  time_current <-
+    if (!is.null(tout)) {
+      tout
+    } else if (is.na(time_first)) {
+      # Without a fit there is no time range to span
+      NA_real_
+    } else {
+      seq(from = time_first, to = time_last, length.out = n)
+    }
+  conc <- exp(fit$intercept[idx] + fit$slope[idx]*time_current)
+  # %in% TRUE keeps an NA time or an NA fit out of the subscript
+  if (!extrapolate_earlier) {
+    conc[(time_current < time_first) %in% TRUE] <- NA_real_
+  }
+  if (!extrapolate_later) {
+    conc[(time_current > time_last) %in% TRUE] <- NA_real_
+  }
+  data.frame(idx = idx, time = time_current, conc = conc)
+}

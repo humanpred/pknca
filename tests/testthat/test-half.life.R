@@ -1197,3 +1197,119 @@ test_that("get_halflife_fit errors when no half-life was calculated", {
     class = "pknca_error_no_halflife_fit"
   )
 })
+
+test_that("get_halflife_curve spans the fit and lies on the fit line", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  hl_fit <- suppressMessages(get_halflife_fit(o_nca))
+  hl_curve <- suppressMessages(get_halflife_curve(o_nca))
+
+  expect_named(hl_curve, c("Subject", "start", "end", "time", "conc"))
+  expect_equal(nrow(hl_curve), 12*50)
+  expect_false(any(is.na(hl_curve$conc)))
+
+  # Without tout, the times span the concentrations used for the fit exactly
+  curve_6 <- hl_curve[hl_curve$Subject %in% "6", ]
+  expect_equal(nrow(curve_6), 50)
+  expect_equal(min(curve_6$time), hl_fit$time_first[hl_fit$Subject %in% "6"])
+  expect_equal(max(curve_6$time), hl_fit$time_last[hl_fit$Subject %in% "6"])
+  # Equally-spaced
+  expect_equal(diff(range(diff(curve_6$time))), 0)
+
+  # Every concentration is on the line from get_halflife_fit()
+  fit_by_row <- hl_fit[match(hl_curve$Subject, hl_fit$Subject), ]
+  expect_equal(hl_curve$conc, exp(fit_by_row$intercept + fit_by_row$slope*hl_curve$time))
+
+  # n is honored
+  expect_equal(nrow(suppressMessages(get_halflife_curve(o_nca, n = 3))), 12*3)
+
+  # A PKNCAdata object gives the same answer as a PKNCAresults object
+  expect_equal(suppressMessages(get_halflife_curve(o_data)), hl_curve)
+})
+
+test_that("get_halflife_curve extrapolates later but not earlier by default", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  # Subject 6 uses 2.03 to 23.85, so 1 is before the fit and 36 is after it
+  tout <- c(1, 12, 36)
+  hl_curve <- suppressMessages(get_halflife_curve(o_nca, tout = tout))
+
+  expect_equal(nrow(hl_curve), 12*3)
+  expect_equal(hl_curve$time, rep(tout, times = 12))
+  curve_6 <- hl_curve[hl_curve$Subject %in% "6", ]
+  expect_true(is.na(curve_6$conc[curve_6$time == 1]))
+  expect_equal(curve_6$conc[curve_6$time == 12], 2.66407129538531)
+  expect_equal(curve_6$conc[curve_6$time == 36], 0.323925332013977)
+
+  # Turning each extrapolation around
+  curve_early <- suppressMessages(get_halflife_curve(o_nca, tout = tout, extrapolate_earlier = TRUE))
+  curve_late <- suppressMessages(get_halflife_curve(o_nca, tout = tout, extrapolate_later = FALSE))
+  expect_false(any(is.na(curve_early$conc)))
+  expect_true(all(is.na(curve_late$conc[curve_late$time == 36])))
+  # Times within the fit are not touched by either option
+  expect_equal(curve_early$conc[curve_early$time == 12], hl_curve$conc[hl_curve$time == 12])
+  expect_equal(curve_late$conc[curve_late$time == 12], hl_curve$conc[hl_curve$time == 12])
+  # Extrapolating earlier continues the same line
+  hl_fit <- suppressMessages(get_halflife_fit(o_nca))
+  expect_equal(
+    curve_early$conc[curve_early$time == 1],
+    exp(hl_fit$intercept + hl_fit$slope*1)
+  )
+})
+
+test_that("get_halflife_curve gives all concentrations for a full interval of times", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  hl_curve <- suppressMessages(get_halflife_curve(o_nca, tout = c(12, 24, 36)))
+
+  expect_equal(as.character(hl_curve$Subject), rep(c("6", "7", "8", "11", "3", "2", "4", "9", "12", "10", "1", "5"), each = 3))
+  expect_equal(
+    hl_curve$conc,
+    c(2.66407129538531, 0.928956499986191, 0.323925332013977, 3.41614187104158,
+      1.18349728123428, 0.410013947770227, 3.29694485521297, 1.24059333216816,
+      0.46681757912529, 2.72397337067147, 0.866397814374815, 0.275569937957367,
+      3.67069028209821, 1.07363271909938, 0.314024645757321, 3.19695889523329,
+      0.916826240532077, 0.262928108516341, 4.06052071724696, 1.23351396023302,
+      0.374719597815858, 3.11162312049232, 1.15678069450622, 0.430046160272315,
+      4.48787629728025, 1.19514286606068, 0.318272246309765, 5.80191234098495,
+      2.36001905194332, 0.959974849359743, 5.97330951016178, 3.33948688194781,
+      1.86700063268603, 4.53427717527063, 1.6035807140397, 0.567118199227991)
+  )
+})
+
+test_that("get_halflife_curve gives NA where there is no fit", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  o_nca_excl <- exclude(o_nca, FUN = exclude_nca_span.ratio(2.5))
+
+  # Without tout there are no times to generate, so one NA row marks the group
+  curve_n <- suppressMessages(get_halflife_curve(o_nca_excl))
+  expect_equal(nrow(curve_n), 2*50 + 10)
+  expect_equal(as.character(unique(curve_n$Subject[is.na(curve_n$time)])),
+               c("7", "8", "11", "3", "4", "9", "12", "10", "1", "5"))
+  expect_true(all(is.na(curve_n$conc[is.na(curve_n$time)])))
+  expect_false(any(is.na(curve_n$conc[!is.na(curve_n$time)])))
+
+  # With tout the times are known, so the rows are kept with an NA concentration
+  curve_t <- suppressMessages(get_halflife_curve(o_nca_excl, tout = c(12, 24)))
+  expect_equal(nrow(curve_t), 12*2)
+  expect_false(any(is.na(curve_t$time)))
+  expect_true(all(is.na(curve_t$conc[!curve_t$Subject %in% c("6", "2")])))
+  expect_false(any(is.na(curve_t$conc[curve_t$Subject %in% c("6", "2")])))
+})
+
+test_that("get_halflife_curve validates its arguments", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+
+  expect_error(get_halflife_curve(o_nca, n = 0), regexp = "Must be >= 1")
+  expect_error(get_halflife_curve(o_nca, tout = c(1, NA)), regexp = "Contains missing values")
+  expect_error(get_halflife_curve(o_nca, tout = "A"), regexp = "Must be of type 'numeric'")
+  expect_error(get_halflife_curve(o_nca, extrapolate_earlier = "yes"), regexp = "Must be of type 'logical flag'")
+  expect_error(get_halflife_curve(o_nca, extrapolate_later = NA), regexp = "May not be NA")
+})
