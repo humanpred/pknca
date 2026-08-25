@@ -242,3 +242,43 @@ d_conc_hl$hl_used <- get_halflife_points(results_obj)
 d_conc_hl %>%
   filter(Subject == 1)
 ```
+
+## The Half-Life Fit
+
+`get_halflife_fit()` gives the log-linear fit itself, one row per group and interval, as the slope and intercept of `log(conc) = intercept + slope*time`.  The slope is $-\lambda_z$.
+
+```{r halflife-fit}
+get_halflife_fit(results_obj)
+```
+
+Times in a PKNCAresults object are relative to the start of the interval, but `time_first`, `time_last`, and the time scale of `intercept` are all on the same scale as the times in the concentration data.  The fitted line can therefore be drawn with the observed concentrations without shifting anything.  `intercept` and `slope` are `NA` when the half-life could not be calculated or was excluded.
+
+## Concentrations Along the Half-Life Fit
+
+`get_halflife_curve()` gives concentrations along that line.  As with `stats::approx()`, give either `n` for equally-spaced times or `tout` for specific times.  Concentrations are returned as concentrations, not log-concentrations.
+
+With `n`, the times span the concentrations used for the fit:
+
+```{r halflife-curve-n}
+get_halflife_curve(results_obj, n = 5) %>%
+  filter(Subject == 1)
+```
+
+With `tout`, any times may be requested.  Extrapolation after the last concentration used for the fit is done by default, and extrapolation before the first is not, so early times give `NA`:
+
+```{r halflife-curve-tout}
+get_halflife_curve(results_obj, tout = c(0, 12, 48)) %>%
+  filter(Subject == 1)
+```
+
+Both defaults can be changed with the `extrapolate_earlier` and `extrapolate_later` arguments:
+
+```{r halflife-curve-extrapolate}
+get_halflife_curve(
+  results_obj,
+  tout = c(0, 12, 48),
+  extrapolate_earlier = TRUE,
+  extrapolate_later = FALSE
+) %>%
+  filter(Subject == 1)
+```

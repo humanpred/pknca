@@ -892,8 +892,12 @@ get_halflife_points.PKNCAresults <- function(object) {
 
 #' @export
 get_halflife_points.PKNCAdata <- function(object) {
+  get_halflife_points(pk.nca(halflife_only_PKNCAdata(object)))
+}
 
-  # Keep only intervals with half-life calculations
+# Reduce a PKNCAdata object to calculating only half-life, and only for the
+# intervals where half-life (or a parameter depending on it) was requested.
+halflife_only_PKNCAdata <- function(object) {
   hl_dep_cols <- c("half.life" ,get.parameter.deps("half.life"))
   int_to_keep <- rowSums(object$intervals[, hl_dep_cols]) > 0
   object$intervals <- object$intervals[int_to_keep, ]
@@ -901,12 +905,7 @@ get_halflife_points.PKNCAdata <- function(object) {
   params_to_ignore <- setdiff(names(get.interval.cols()), c("half.life", "start", "end"))
   object$intervals[, params_to_ignore] <- FALSE
   object$intervals <- unique(object$intervals)
-
-  # Only calculate half.life for the results object
-  o_nca <- pk.nca(object)
-
-  # Get the half-life points from the results object
-  get_halflife_points(o_nca)
+  object
 }
 
 # Get the half-life points for a single interval
@@ -938,4 +937,199 @@ get_halflife_points_single <- function(conc, results, time_start, time_end, rowi
     }
   }
   ret
+}
+
+#' Get the half-life fit line for each interval
+#'
+#' The half-life fit is the log-linear regression of concentration on time,
+#' `log(conc) = intercept + slope*time`.  Concentrations along the line are
+#' `exp(intercept + slope*time)`.
+#'
+#' Times in a `PKNCAresults` object are relative to the start of the interval,
+#' but `time_first`, `time_last`, and the time scale of `intercept` are on the
+#' same scale as the times in the concentration data so that the line can be
+#' drawn with the observed concentrations.
+#'
+#' @inheritParams get_halflife_points
+#' @returns A data.frame with one row for each group and interval where
+#'   half-life was calculated.  Along with the grouping columns and the interval
+#'   `start` and `end` times, it has the columns:
+#'
+#'   * `intercept`: the natural log of the concentration where the line crosses
+#'     time 0
+#'   * `slope`: the slope of the line, `-lambda.z`
+#'   * `time_first`, `time_last`: the first and last times of the concentrations
+#'     used for the fit
+#'
+#'   `intercept` and `slope` are `NA` when the half-life could not be
+#'   calculated or was excluded.
+#' @seealso [get_halflife_points()] to see which concentrations were used for
+#'   the fit
+#' @examples
+#' o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+#' o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+#' o_nca <- pk.nca(o_data)
+#' get_halflife_fit(o_nca)
+#' @export
+get_halflife_fit <- function(object) {
+  UseMethod("get_halflife_fit")
+}
+
+#' @export
+get_halflife_fit.PKNCAdata <- function(object) {
+  get_halflife_fit(pk.nca(halflife_only_PKNCAdata(object)))
+}
+
+#' @export
+get_halflife_fit.PKNCAresults <- function(object) {
+  # clast.pred is the fitted concentration at tlast, so it is on the line
+  # whether or not tlast was one of the points used for the fit.
+  fit_params <-
+    c("lambda.z", "clast.pred", "tlast", "lambda.z.time.first", "lambda.z.time.last")
+  results <- as.data.frame(object)
+  results <- results[results$PPTESTCD %in% fit_params, , drop = FALSE]
+  if (nrow(results) == 0) {
+    rlang::abort(
+      "No half-life results are available to make a fit",
+      class = "pknca_error_no_halflife_fit"
+    )
+  }
+  # Excluded values cannot contribute to a fit
+  exclude_col <- object$columns$exclude
+  if (!is.null(exclude_col) && exclude_col %in% names(results)) {
+    results$PPORRES[!is.na(results[[exclude_col]])] <- NA_real_
+  }
+  # PPORRES is used (rather than PPSTRES) so that the fit is on the same scale
+  # as the concentration and time data.
+  group_cols <-
+    setdiff(
+      names(results),
+      c("PPTESTCD", "PPORRES", "PPSTRES", "PPORRESU", "PPSTRESU", "PPANMETH", exclude_col)
+    )
+  ret <-
+    tidyr::pivot_wider(
+      results,
+      id_cols = dplyr::all_of(group_cols),
+      names_from = "PPTESTCD",
+      values_from = "PPORRES"
+    )
+  missing_params <- setdiff(fit_params, names(ret))
+  if (length(missing_params) > 0) {
+    rlang::abort(
+      sprintf(
+        "Half-life fit requires the following missing parameters: %s",
+        paste(missing_params, collapse = ", ")
+      ),
+      class = "pknca_error_no_halflife_fit"
+    )
+  }
+
+  # Results times are relative to the start of the interval; shift them to the
+  # times in the concentration data.
+  ret$slope <- -ret$lambda.z
+  ret$intercept <- log(ret$clast.pred) + ret$lambda.z*(ret$tlast + ret$start)
+  ret$time_first <- ret$start + ret$lambda.z.time.first
+  ret$time_last <- ret$start + ret$lambda.z.time.last
+  # A partial fit is not usable, so give all or nothing
+  no_fit <- is.na(ret$intercept) | is.na(ret$slope)
+  ret[no_fit, c("intercept", "slope", "time_first", "time_last")] <- NA_real_
+
+  as.data.frame(ret[, c(group_cols, "intercept", "slope", "time_first", "time_last")])
+}
+
+#' Interpolate and extrapolate concentrations along the half-life fit
+#'
+#' Concentrations are given as concentrations, not log-concentrations.  Take the
+#' natural log of `conc` if the log-concentration is wanted.
+#'
+#' Like [stats::approx()], give either `tout` for specific times or `n` for
+#' equally-spaced times.  With `n`, the times span the concentrations used for
+#' the fit (`time_first` to `time_last` from [get_halflife_fit()]), so `tout` is
+#' required to extrapolate.
+#'
+#' @inheritParams get_halflife_points
+#' @param tout Times for output.  The same times are used for every group and
+#'   interval.  If `NULL` (the default), `n` equally-spaced times spanning the
+#'   concentrations used for the fit are used instead.
+#' @param n The number of equally-spaced times to generate when `tout` is
+#'   `NULL`.  It is ignored when `tout` is given.
+#' @param extrapolate_earlier,extrapolate_later Should concentrations be
+#'   extrapolated before the first (`extrapolate_earlier`) or after the last
+#'   (`extrapolate_later`) concentration used for the fit?  Times outside the
+#'   fit that are not extrapolated give an `NA` concentration.
+#' @returns A data.frame with the grouping columns, the interval `start` and
+#'   `end` times, and the columns:
+#'
+#'   * `time`: the time of the concentration, on the same scale as the times in
+#'     the concentration data
+#'   * `conc`: the concentration on the half-life fit at that time
+#'
+#'   `conc` is `NA` where the half-life could not be calculated or was excluded,
+#'   and where extrapolation was requested but not allowed.  Groups without a
+#'   fit give a single row with an `NA` `time` when `tout` is `NULL`, since no
+#'   times can be generated for them.
+#' @seealso [get_halflife_fit()] for the slope and intercept of the fit, and
+#'   [get_halflife_points()] for the concentrations used for it
+#' @examples
+#' o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+#' o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+#' o_nca <- pk.nca(o_data)
+#' # Equally-spaced times across the fit
+#' head(get_halflife_curve(o_nca))
+#' # Specific times, extrapolating past the last concentration used
+#' get_halflife_curve(o_nca, tout = c(12, 24, 36))
+#' @export
+get_halflife_curve <- function(object, tout = NULL, n = 50,
+                               extrapolate_earlier = FALSE, extrapolate_later = TRUE) {
+  checkmate::assert_numeric(tout, any.missing = FALSE, min.len = 1, null.ok = TRUE)
+  checkmate::assert_count(n, positive = TRUE)
+  checkmate::assert_flag(extrapolate_earlier)
+  checkmate::assert_flag(extrapolate_later)
+  fit <- get_halflife_fit(object)
+  # A group column named time or conc cannot reach here; standardize_column_names()
+  # rejects it when the PKNCAdata object is made.
+  group_cols <-
+    setdiff(names(fit), c("intercept", "slope", "time_first", "time_last"))
+  curves <-
+    lapply(
+      X = seq_len(nrow(fit)),
+      FUN = halflife_curve_single,
+      fit = fit,
+      tout = tout,
+      n = n,
+      extrapolate_earlier = extrapolate_earlier,
+      extrapolate_later = extrapolate_later
+    )
+  curves <- do.call(rbind, curves)
+  ret <-
+    cbind(
+      fit[curves$idx, group_cols, drop = FALSE],
+      curves[, c("time", "conc"), drop = FALSE]
+    )
+  rownames(ret) <- NULL
+  ret
+}
+
+# Generate the concentrations along the half-life fit for one row of the fit
+halflife_curve_single <- function(idx, fit, tout, n, extrapolate_earlier, extrapolate_later) {
+  time_first <- fit$time_first[idx]
+  time_last <- fit$time_last[idx]
+  time_current <-
+    if (!is.null(tout)) {
+      tout
+    } else if (is.na(time_first)) {
+      # Without a fit there is no time range to span
+      NA_real_
+    } else {
+      seq(from = time_first, to = time_last, length.out = n)
+    }
+  conc <- exp(fit$intercept[idx] + fit$slope[idx]*time_current)
+  # %in% TRUE keeps an NA time or an NA fit out of the subscript
+  if (!extrapolate_earlier) {
+    conc[(time_current < time_first) %in% TRUE] <- NA_real_
+  }
+  if (!extrapolate_later) {
+    conc[(time_current > time_last) %in% TRUE] <- NA_real_
+  }
+  data.frame(idx = idx, time = time_current, conc = conc)
 }
