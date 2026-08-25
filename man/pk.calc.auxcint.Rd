@@ -152,7 +152,9 @@ extrapolation}
 \item{time.dose, route, duration.dose}{The time of doses, route of
 administration, and duration of dose used with interpolation and
 extrapolation of concentration data (see \code{\link[=interp.extrap.conc.dose]{interp.extrap.conc.dose()}}).
-If \code{NULL}, \code{\link[=interp.extrap.conc]{interp.extrap.conc()}} will be used instead.}
+If \code{NULL}, \code{\link[=interp.extrap.conc]{interp.extrap.conc()}} will be used instead.  If any \code{time.dose}
+is \code{NA}, the dose-aware result is \code{NA} because the dose cannot be placed on
+the timeline.}
 
 \item{auc.type}{The type of AUC to compute.  Choices are 'AUCinf', 'AUClast',
 and 'AUCall'.}

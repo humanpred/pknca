@@ -1052,3 +1052,264 @@ test_that("span.ratio is described as span over half-life, not the inverse (#582
   # ret$span.ratio <- (max(data$time) - min(data$time))/ret$half.life
   expect_equal(get.interval.cols()[["span.ratio"]]$desc, "Lambda z time span to half-life ratio")
 })
+
+# Refit a half-life from the concentrations used, for testing get_halflife_fit()
+halflife_fit_by_lm <- function(d) {
+  fit <- stats::lm(log(conc) ~ Time, data = d)
+  data.frame(
+    Subject = as.character(d$Subject[1]),
+    intercept = unname(stats::coef(fit)[1]),
+    slope = unname(stats::coef(fit)[2]),
+    time_first = min(d$Time),
+    time_last = max(d$Time)
+  )
+}
+
+test_that("get_halflife_fit method (1: PKNCAdata, 2: PKNCAresults)", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+
+  hl_fit1 <- suppressMessages(get_halflife_fit(o_data))
+  hl_fit2 <- suppressMessages(get_halflife_fit(o_nca))
+
+  expect_equal(hl_fit1, hl_fit2)
+  expect_named(hl_fit2, c("Subject", "start", "end", "intercept", "slope", "time_first", "time_last"))
+  expect_equal(as.character(hl_fit2$Subject), c("6", "7", "8", "11", "3", "2", "4", "9", "12", "10", "1", "5"))
+  expect_equal(
+    hl_fit2$intercept,
+    c(2.0334043955261, 2.28854976005424, 2.17040271754659, 2.1475943307927,
+      2.52971150145858, 2.41123733696293, 2.59275546723663, 2.12464810390587,
+      2.82449347826545, 2.65770546248091, 2.36878509420585, 2.55109229061238)
+  )
+  expect_equal(
+    hl_fit2$slope,
+    c(-0.0877957400561703, -0.0883364961379133, -0.0814505399453018,
+      -0.0954585598642771, -0.102444314109434, -0.104086443688432,
+      -0.0992870205306231, -0.0824586341803179, -0.110259489451627,
+      -0.0749598237757766, -0.0484569969657748, -0.08661888398182)
+  )
+  expect_equal(
+    hl_fit2$time_first,
+    c(2.03, 6.98, 3.53, 9.03, 9, 7.03, 9.02, 8.8, 9.03, 9.38, 9.05, 7.02)
+  )
+  expect_equal(
+    hl_fit2$time_last,
+    c(23.85, 24.22, 24.12, 24.08, 24.17, 24.3, 24.65, 24.43, 24.15, 23.7, 24.37, 24.35)
+  )
+
+  # The slope is -lambda.z and the line goes through clast.pred at tlast
+  d_res <- as.data.frame(o_nca)
+  lambda_z <- d_res$PPORRES[d_res$PPTESTCD %in% "lambda.z"]
+  clast_pred <- d_res$PPORRES[d_res$PPTESTCD %in% "clast.pred"]
+  tlast <- d_res$PPORRES[d_res$PPTESTCD %in% "tlast"]
+  expect_equal(hl_fit2$slope, -lambda_z)
+  expect_equal(exp(hl_fit2$intercept + hl_fit2$slope*tlast), clast_pred)
+
+  # Other analyses that depend on half-life trigger the half-life calculation
+  o_data_auc <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, aucinf.obs = TRUE))
+  expect_equal(suppressMessages(get_halflife_fit(o_data_auc)), hl_fit2)
+})
+
+test_that("get_halflife_fit times are on the concentration time scale, not interval-relative", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 5, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  hl_fit <- suppressMessages(get_halflife_fit(o_nca))
+
+  # Refit the points that get_halflife_points() reports were used, using the
+  # original (unshifted) times, and confirm that the reported fit matches.
+  d_used <- Theoph
+  d_used$used <- suppressMessages(get_halflife_points(o_nca))
+  d_used <- d_used[d_used$used %in% TRUE, ]
+  refit <-
+    lapply(
+      split(d_used, droplevels(d_used$Subject)),
+      halflife_fit_by_lm
+    )
+  refit <- do.call(rbind, refit)
+  hl_fit_ordered <- hl_fit[order(as.character(hl_fit$Subject)), ]
+  refit_ordered <- refit[order(as.character(refit$Subject)), ]
+
+  expect_equal(hl_fit_ordered$intercept, refit_ordered$intercept)
+  expect_equal(hl_fit_ordered$slope, refit_ordered$slope)
+  expect_equal(hl_fit_ordered$time_first, refit_ordered$time_first)
+  expect_equal(hl_fit_ordered$time_last, refit_ordered$time_last)
+  # All times used are within the interval, so they must be at or after start
+  expect_true(all(hl_fit$time_first >= 5))
+})
+
+test_that("get_halflife_fit gives one row per group and interval", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = c(0, 5), end = Inf, half.life = TRUE))
+  hl_fit <- suppressMessages(get_halflife_fit(o_data))
+
+  expect_equal(nrow(hl_fit), 24)
+  expect_equal(sort(unique(hl_fit$start)), c(0, 5))
+  # Subject 6 loses its two earliest points when the interval starts at 5, so
+  # the two intervals must not give the same fit
+  fit_6 <- hl_fit[hl_fit$Subject %in% "6", ]
+  expect_equal(fit_6$time_first, c(2.03, 9.22))
+  expect_false(isTRUE(all.equal(fit_6$slope[1], fit_6$slope[2])))
+})
+
+test_that("get_halflife_fit gives NA for excluded results", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  hl_fit <- suppressMessages(get_halflife_fit(o_nca))
+  hl_fit_excl <- suppressMessages(get_halflife_fit(exclude(o_nca, FUN = exclude_nca_span.ratio(2.5))))
+
+  # The rows are kept so that the interval is still visible, but the whole fit
+  # is NA rather than partially reported
+  expect_equal(nrow(hl_fit_excl), nrow(hl_fit))
+  expect_equal(as.character(hl_fit_excl$Subject[!is.na(hl_fit_excl$slope)]), c("6", "2"))
+  mask_kept <- !is.na(hl_fit_excl$slope)
+  expect_equal(hl_fit_excl$slope[mask_kept], hl_fit$slope[mask_kept])
+  expect_equal(hl_fit_excl$intercept[mask_kept], hl_fit$intercept[mask_kept])
+  expect_true(all(is.na(hl_fit_excl$intercept[!mask_kept])))
+  expect_true(all(is.na(hl_fit_excl$time_first[!mask_kept])))
+  expect_true(all(is.na(hl_fit_excl$time_last[!mask_kept])))
+})
+
+test_that("get_halflife_fit works with units", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject, concu = "mg/L", timeu = "hr")
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  hl_fit_units <- suppressMessages(get_halflife_fit(o_data))
+
+  o_conc_nounits <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data_nounits <- PKNCAdata(o_conc_nounits, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  hl_fit_nounits <- suppressMessages(get_halflife_fit(o_data_nounits))
+
+  # The unit columns must not become grouping columns, and the fit is on the
+  # original (not preferred) unit scale, so it is unchanged by adding units
+  expect_equal(hl_fit_units, hl_fit_nounits)
+})
+
+test_that("get_halflife_fit errors when no half-life was calculated", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 24, cmax = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+
+  expect_error(
+    get_halflife_fit(o_nca),
+    regexp = "No half-life results are available to make a fit",
+    class = "pknca_error_no_halflife_fit"
+  )
+})
+
+test_that("get_halflife_curve spans the fit and lies on the fit line", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  hl_fit <- suppressMessages(get_halflife_fit(o_nca))
+  hl_curve <- suppressMessages(get_halflife_curve(o_nca))
+
+  expect_named(hl_curve, c("Subject", "start", "end", "time", "conc"))
+  expect_equal(nrow(hl_curve), 12*50)
+  expect_false(any(is.na(hl_curve$conc)))
+
+  # Without tout, the times span the concentrations used for the fit exactly
+  curve_6 <- hl_curve[hl_curve$Subject %in% "6", ]
+  expect_equal(nrow(curve_6), 50)
+  expect_equal(min(curve_6$time), hl_fit$time_first[hl_fit$Subject %in% "6"])
+  expect_equal(max(curve_6$time), hl_fit$time_last[hl_fit$Subject %in% "6"])
+  # Equally-spaced
+  expect_equal(diff(range(diff(curve_6$time))), 0)
+
+  # Every concentration is on the line from get_halflife_fit()
+  fit_by_row <- hl_fit[match(hl_curve$Subject, hl_fit$Subject), ]
+  expect_equal(hl_curve$conc, exp(fit_by_row$intercept + fit_by_row$slope*hl_curve$time))
+
+  # n is honored
+  expect_equal(nrow(suppressMessages(get_halflife_curve(o_nca, n = 3))), 12*3)
+
+  # A PKNCAdata object gives the same answer as a PKNCAresults object
+  expect_equal(suppressMessages(get_halflife_curve(o_data)), hl_curve)
+})
+
+test_that("get_halflife_curve extrapolates later but not earlier by default", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  # Subject 6 uses 2.03 to 23.85, so 1 is before the fit and 36 is after it
+  tout <- c(1, 12, 36)
+  hl_curve <- suppressMessages(get_halflife_curve(o_nca, tout = tout))
+
+  expect_equal(nrow(hl_curve), 12*3)
+  expect_equal(hl_curve$time, rep(tout, times = 12))
+  curve_6 <- hl_curve[hl_curve$Subject %in% "6", ]
+  expect_true(is.na(curve_6$conc[curve_6$time == 1]))
+  expect_equal(curve_6$conc[curve_6$time == 12], 2.66407129538531)
+  expect_equal(curve_6$conc[curve_6$time == 36], 0.323925332013977)
+
+  # Turning each extrapolation around
+  curve_early <- suppressMessages(get_halflife_curve(o_nca, tout = tout, extrapolate_earlier = TRUE))
+  curve_late <- suppressMessages(get_halflife_curve(o_nca, tout = tout, extrapolate_later = FALSE))
+  expect_false(any(is.na(curve_early$conc)))
+  expect_true(all(is.na(curve_late$conc[curve_late$time == 36])))
+  # Times within the fit are not touched by either option
+  expect_equal(curve_early$conc[curve_early$time == 12], hl_curve$conc[hl_curve$time == 12])
+  expect_equal(curve_late$conc[curve_late$time == 12], hl_curve$conc[hl_curve$time == 12])
+  # Extrapolating earlier continues the same line
+  hl_fit <- suppressMessages(get_halflife_fit(o_nca))
+  expect_equal(
+    curve_early$conc[curve_early$time == 1],
+    exp(hl_fit$intercept + hl_fit$slope*1)
+  )
+})
+
+test_that("get_halflife_curve gives all concentrations for a full interval of times", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  hl_curve <- suppressMessages(get_halflife_curve(o_nca, tout = c(12, 24, 36)))
+
+  expect_equal(as.character(hl_curve$Subject), rep(c("6", "7", "8", "11", "3", "2", "4", "9", "12", "10", "1", "5"), each = 3))
+  expect_equal(
+    hl_curve$conc,
+    c(2.66407129538531, 0.928956499986191, 0.323925332013977, 3.41614187104158,
+      1.18349728123428, 0.410013947770227, 3.29694485521297, 1.24059333216816,
+      0.46681757912529, 2.72397337067147, 0.866397814374815, 0.275569937957367,
+      3.67069028209821, 1.07363271909938, 0.314024645757321, 3.19695889523329,
+      0.916826240532077, 0.262928108516341, 4.06052071724696, 1.23351396023302,
+      0.374719597815858, 3.11162312049232, 1.15678069450622, 0.430046160272315,
+      4.48787629728025, 1.19514286606068, 0.318272246309765, 5.80191234098495,
+      2.36001905194332, 0.959974849359743, 5.97330951016178, 3.33948688194781,
+      1.86700063268603, 4.53427717527063, 1.6035807140397, 0.567118199227991)
+  )
+})
+
+test_that("get_halflife_curve gives NA where there is no fit", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+  o_nca_excl <- exclude(o_nca, FUN = exclude_nca_span.ratio(2.5))
+
+  # Without tout there are no times to generate, so one NA row marks the group
+  curve_n <- suppressMessages(get_halflife_curve(o_nca_excl))
+  expect_equal(nrow(curve_n), 2*50 + 10)
+  expect_equal(as.character(unique(curve_n$Subject[is.na(curve_n$time)])),
+               c("7", "8", "11", "3", "4", "9", "12", "10", "1", "5"))
+  expect_true(all(is.na(curve_n$conc[is.na(curve_n$time)])))
+  expect_false(any(is.na(curve_n$conc[!is.na(curve_n$time)])))
+
+  # With tout the times are known, so the rows are kept with an NA concentration
+  curve_t <- suppressMessages(get_halflife_curve(o_nca_excl, tout = c(12, 24)))
+  expect_equal(nrow(curve_t), 12*2)
+  expect_false(any(is.na(curve_t$time)))
+  expect_true(all(is.na(curve_t$conc[!curve_t$Subject %in% c("6", "2")])))
+  expect_false(any(is.na(curve_t$conc[curve_t$Subject %in% c("6", "2")])))
+})
+
+test_that("get_halflife_curve validates its arguments", {
+  o_conc <- PKNCAconc(Theoph, conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, half.life = TRUE))
+  o_nca <- suppressMessages(pk.nca(o_data))
+
+  expect_error(get_halflife_curve(o_nca, n = 0), regexp = "Must be >= 1")
+  expect_error(get_halflife_curve(o_nca, tout = c(1, NA)), regexp = "Contains missing values")
+  expect_error(get_halflife_curve(o_nca, tout = "A"), regexp = "Must be of type 'numeric'")
+  expect_error(get_halflife_curve(o_nca, extrapolate_earlier = "yes"), regexp = "Must be of type 'logical flag'")
+  expect_error(get_halflife_curve(o_nca, extrapolate_later = NA), regexp = "May not be NA")
+})

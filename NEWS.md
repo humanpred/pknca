@@ -6,9 +6,44 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `pk.nca()` only asks for a bug report when it did not diagnose the error
+  itself.  A parameter that needs a value from the interval specification
+  (`conc_above` for `time_above`, `dose1` and `dose2` for `f`, `tau` for
+  `mrt.md.obs` and similar) now names the parameter and says to give it as an
+  interval column, instead of prefixing "Please report a bug." to an error that
+  is not one (#367).
+
+* Bug fix: the dose-aware interval parameters (`aucint.last.dose`,
+  `aumcint.inf.pred.dose`, and the rest of the `*int.*.dose` family) return
+  `NA` when the dose time is missing.  With no dosing data, the dose time was
+  `NA`, which became a time point to interpolate to and stopped the calculation
+  with `Assertion on 'time' failed: Contains missing values` (#367).
+
+* `vignette("v06-half-life-calculation")` gains a decision tree for choosing
+  between automatic curve stripping, `exclude_half.life`, and
+  `include_half.life`, and it now states that the points named by
+  `include_half.life` are still subject to dropping BLQ values and points
+  at or before the end of the last dose (#412).
+
+* A new function `get_halflife_fit()` gives the slope, intercept, and time
+  range of the half-life fit for each group and interval so that the fitted
+  line can be drawn or predicted from.  Times are given on the same scale as
+  the concentration data rather than relative to the interval start (#342).
+
+* A new function `get_halflife_curve()` interpolates and extrapolates
+  concentrations along the half-life fit.  Give `tout` for specific times or
+  `n` for equally-spaced times, as with `stats::approx()`.  Extrapolation
+  after the last concentration used for the fit is done by default and
+  extrapolation before the first is not; both are controlled by the
+  `extrapolate_later` and `extrapolate_earlier` arguments (#342).
+
 * Bug fix: `superposition()` drops missing concentrations before calculating.
   They previously reached the half-life fit and stopped the calculation with
   `NA/NaN/Inf in 'x'` (#308).
+
+* `superposition()` checks the `method` and `auc.type` arguments for every
+  input.  An invalid value was previously ignored when the calculation
+  required neither interpolation nor extrapolation (#247).
 
 * `add.interval.col()` gains `formula` and `formula_note` arguments giving the
   calculation as a LaTeX expression.  They are shown in the parameter table in

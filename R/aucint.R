@@ -19,7 +19,9 @@
 #' @param time.dose,route,duration.dose The time of doses, route of
 #'   administration, and duration of dose used with interpolation and
 #'   extrapolation of concentration data (see [interp.extrap.conc.dose()]).
-#'   If `NULL`, [interp.extrap.conc()] will be used instead.
+#'   If `NULL`, [interp.extrap.conc()] will be used instead.  If any `time.dose`
+#'   is `NA`, the dose-aware result is `NA` because the dose cannot be placed on
+#'   the timeline.
 #' @param fun_linear,fun_log,fun_inf Integration functions for linear,
 #'   logarithmic, and infinite extrapolation methods.
 #' @param ... Additional arguments passed to `pk.calc.auxc` and
@@ -51,6 +53,12 @@ pk.calc.auxcint <- function(conc, time,
   # Check inputs
   auc.type <- match.arg(auc.type)
   method <- PKNCA.choose.option(name="auc.method", value=method, options=options)
+  if (!is.null(time.dose) && any(is.na(time.dose))) {
+    # Dose-aware interpolation cannot place a dose at an unknown time, and the
+    # unknown time must not become a point to interpolate to.
+    rlang::warn("time.dose is NA", class = "pknca_warning_timedose_na")
+    return(structure(NA_real_, exclude = "dose time is missing"))
+  }
   if (check) {
     assert_conc_time(conc, time)
     data <-

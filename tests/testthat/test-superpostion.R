@@ -500,6 +500,184 @@ test_that("superposition math", {
   )
 })
 
+# A profile with a dip before tmax (t=3) and a perfectly log-linear terminal
+# phase (4, 2, 1 at t=4, 5, 6 so lambda.z=log(2)), then a BLQ at t=7.  The dip
+# separates "lin up/log down" (log through any decrease) from "lin-log" (linear
+# before tmax), and the trailing BLQ separates AUCall from AUClast.
+d_method_conc <- c(0, 4, 2, 8, 4, 2, 1, 0)
+d_method_time <- 0:7
+
+test_that("superposition interpolates with the requested method (#247)", {
+  # tau=4 with n.tau=2 makes each output concentration the sum of an
+  # interpolation in each of the two dosing intervals: conc(t) = f(t) + f(t+4).
+  # Only t=1.5 differs by method: f(1.5) interpolates the pre-tmax decrease from
+  # 4 to 2, and f(5.5) interpolates the post-tmax decrease from 2 to 1.
+  expect_equal(
+    superposition(
+      conc = d_method_conc, time = d_method_time, tau = 4, n.tau = 2,
+      additional.times = 1.5, method = "linear"
+    ),
+    # f(1.5)=3, f(5.5)=1.5
+    data.frame(conc = c(4, 6, 4.5, 3, 8.5, 4.25), time = c(0, 1, 1.5, 2, 3, 4))
+  )
+  expect_equal(
+    superposition(
+      conc = d_method_conc, time = d_method_time, tau = 4, n.tau = 2,
+      additional.times = 1.5, method = "lin up/log down"
+    ),
+    # both decreases are log: f(1.5)=2*sqrt(2), f(5.5)=sqrt(2)
+    data.frame(conc = c(4, 6, 3*sqrt(2), 3, 8.5, 4.25), time = c(0, 1, 1.5, 2, 3, 4))
+  )
+  expect_equal(
+    superposition(
+      conc = d_method_conc, time = d_method_time, tau = 4, n.tau = 2,
+      additional.times = 1.5, method = "lin-log"
+    ),
+    # linear before tmax and log after: f(1.5)=3, f(5.5)=sqrt(2)
+    data.frame(conc = c(4, 6, 3+sqrt(2), 3, 8.5, 4.25), time = c(0, 1, 1.5, 2, 3, 4))
+  )
+  # The default is the auc.method option, "lin up/log down"
+  expect_equal(
+    superposition(
+      conc = d_method_conc, time = d_method_time, tau = 4, n.tau = 2,
+      additional.times = 1.5
+    ),
+    superposition(
+      conc = d_method_conc, time = d_method_time, tau = 4, n.tau = 2,
+      additional.times = 1.5, method = "lin up/log down"
+    )
+  )
+  # The method may also be set through the options, and the argument wins over
+  # the option.
+  expect_equal(
+    superposition(
+      conc = d_method_conc, time = d_method_time, tau = 4, n.tau = 2,
+      additional.times = 1.5, options = list(auc.method = "lin-log")
+    ),
+    superposition(
+      conc = d_method_conc, time = d_method_time, tau = 4, n.tau = 2,
+      additional.times = 1.5, method = "lin-log"
+    )
+  )
+  expect_equal(
+    superposition(
+      conc = d_method_conc, time = d_method_time, tau = 4, n.tau = 2,
+      additional.times = 1.5, method = "linear",
+      options = list(auc.method = "lin-log")
+    ),
+    superposition(
+      conc = d_method_conc, time = d_method_time, tau = 4, n.tau = 2,
+      additional.times = 1.5, method = "linear"
+    )
+  )
+})
+
+test_that("superposition extrapolates with the requested auc.type (#247)", {
+  # tau=8 with n.tau=1 leaves the observed concentrations through tlast=6 alone
+  # and extrapolates at t=6.5, 7, and 8, where the three auc.type values differ.
+  expect_equal(
+    superposition(
+      conc = d_method_conc, time = d_method_time, tau = 8, n.tau = 1,
+      additional.times = 6.5, auc.type = "AUCinf"
+    ),
+    # clast=1 at tlast=6 decaying with lambda.z=log(2)
+    data.frame(
+      conc = c(0, 4, 2, 8, 4, 2, 1, 1/sqrt(2), 0.5, 0.25),
+      time = c(0:6, 6.5, 7, 8)
+    )
+  )
+  expect_equal(
+    superposition(
+      conc = d_method_conc, time = d_method_time, tau = 8, n.tau = 1,
+      additional.times = 6.5, auc.type = "AUClast"
+    ),
+    # everything after tlast is zero
+    data.frame(conc = c(0, 4, 2, 8, 4, 2, 1, 0, 0, 0), time = c(0:6, 6.5, 7, 8))
+  )
+  expect_equal(
+    superposition(
+      conc = d_method_conc, time = d_method_time, tau = 8, n.tau = 1,
+      additional.times = 6.5, auc.type = "AUCall"
+    ),
+    # the triangle from clast=1 at t=6 down to the BLQ at t=7, then zero
+    data.frame(conc = c(0, 4, 2, 8, 4, 2, 1, 0.5, 0, 0), time = c(0:6, 6.5, 7, 8))
+  )
+  # Without a BLQ measurement after tlast there is no triangle, so AUCall
+  # extrapolates as zero just like AUClast.
+  expect_equal(
+    superposition(
+      conc = d_method_conc[1:7], time = d_method_time[1:7], tau = 8, n.tau = 1,
+      additional.times = 6.5, auc.type = "AUCall"
+    ),
+    superposition(
+      conc = d_method_conc[1:7], time = d_method_time[1:7], tau = 8, n.tau = 1,
+      additional.times = 6.5, auc.type = "AUClast"
+    )
+  )
+})
+
+test_that("superposition.PKNCAconc passes method and auc.type to each group (#247)", {
+  o_conc <-
+    PKNCAconc(
+      data.frame(
+        ID = rep(1:2, each = length(d_method_conc)),
+        conc = rep(d_method_conc, 2),
+        time = rep(d_method_time, 2)
+      ),
+      conc~time|ID
+    )
+  expect_equal(
+    superposition(o_conc, tau = 4, n.tau = 2, additional.times = 1.5, method = "lin-log"),
+    tibble::tibble(
+      ID = rep(1:2, each = 6),
+      conc = rep(c(4, 6, 3+sqrt(2), 3, 8.5, 4.25), 2),
+      time = rep(c(0, 1, 1.5, 2, 3, 4), 2)
+    )
+  )
+  expect_equal(
+    superposition(o_conc, tau = 8, n.tau = 1, additional.times = 6.5, auc.type = "AUCall"),
+    tibble::tibble(
+      ID = rep(1:2, each = 10),
+      conc = rep(c(0, 4, 2, 8, 4, 2, 1, 0.5, 0, 0), 2),
+      time = rep(c(0:6, 6.5, 7, 8), 2)
+    )
+  )
+})
+
+test_that("superposition rejects invalid method and auc.type (#247)", {
+  expect_error(
+    superposition(conc = d_method_conc, time = d_method_time, tau = 4, method = "foo"),
+    regexp = 'should be one of .*lin up/log down'
+  )
+  expect_error(
+    superposition(conc = d_method_conc, time = d_method_time, tau = 4, method = "foo", n.tau = 1),
+    regexp = 'should be one of .*lin up/log down'
+  )
+  expect_error(
+    superposition(conc = d_method_conc, time = d_method_time, tau = 4, auc.type = "foo"),
+    regexp = 'Must be element of set'
+  )
+  # tau*n.tau <= tlast requires no extrapolation, and all-zero concentrations
+  # return before any interpolation, so neither reaches interp.extrap.conc()
+  expect_error(
+    superposition(conc = d_method_conc, time = d_method_time, tau = 4, auc.type = "foo", n.tau = 1),
+    regexp = 'Must be element of set'
+  )
+  expect_error(
+    superposition(conc = rep(0, 4), time = 0:3, tau = 4, auc.type = "foo"),
+    regexp = 'Must be element of set'
+  )
+  expect_error(
+    superposition(conc = rep(0, 4), time = 0:3, tau = 4, method = "foo"),
+    regexp = 'should be one of .*lin up/log down'
+  )
+  # The documented values are case-sensitive
+  expect_error(
+    superposition(conc = d_method_conc, time = d_method_time, tau = 4, auc.type = "aucinf"),
+    regexp = 'Must be element of set'
+  )
+})
+
 test_that("PKNCAconc superposition", {
   myconc <- PKNCAconc(conc~time|ID,
                       data=data.frame(ID=rep(1:2, each=7),
