@@ -270,6 +270,7 @@ export(pk.calc.kel)
 export(pk.calc.mrt)
 export(pk.calc.mrt.iv)
 export(pk.calc.mrt.md)
+export(pk.calc.mrt.md.iv)
 export(pk.calc.ptr)
 export(pk.calc.sparse_auc)
 export(pk.calc.sparse_auclast)
@@ -335,3 +336,4 @@ importFrom(stats,
   model.frame,
   na.omit
 )
+importFrom(utils,getS3method)

@@ -6,6 +6,14 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: PKNCA loads in a session where `utils` is not attached (an
+  `Rscript` with a trimmed `R_DEFAULT_PACKAGES`, or a `callr` subprocess).
+  `add.interval.col()` checks that its `FUN` exists with `utils::getAnywhere()`,
+  which looks a dotted name up as a generic and class with an unqualified
+  `getS3method()` evaluated in the calling namespace.  Nearly every PKNCA
+  function name has a dot in it, so loading the package failed with `could not
+  find function "getS3method"`.  `getS3method` is now imported.
+
 * New parameters `mrt.ivmd.obs`, `mrt.ivmd.pred`, `vss.ivmd.obs`, and
   `vss.ivmd.pred` give the multiple-dose (steady-state) MRT and Vss for an IV
   infusion.  They subtract half of the infusion duration, the correction that

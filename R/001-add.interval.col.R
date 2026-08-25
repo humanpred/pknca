@@ -300,6 +300,8 @@ assert_selection <- function(selection, name) {
 #'                  depends="cmax")
 #' }
 #' @family Interval specifications
+#'
+#' @importFrom utils getS3method
 #' @export
 add.interval.col <- function(name,
                              FUN,
@@ -371,7 +373,11 @@ add.interval.col <- function(name,
   
   # Ensure that the function exists
   if (!is.na(FUN)) {
-    # Ensure that the function exists
+    # getAnywhere() splits a dotted name into generic.class pairs and looks each
+    # one up with an unqualified getS3method() evaluated in this namespace, so
+    # getS3method has to be imported.  Nearly every PKNCA function name has a dot
+    # in it, and utils is not attached in a subprocess (testthat runs test files
+    # in one), where the package would otherwise fail to load.
     fun_obj <- utils::getAnywhere(FUN)
     if (length(fun_obj$objs) == 0) {
       rlang::abort(
