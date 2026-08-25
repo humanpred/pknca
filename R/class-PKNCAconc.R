@@ -24,7 +24,9 @@
 #'   values of `NA` or `""` for concentrations to include and non-empty text for
 #'   concentrations to exclude.
 #' @param volume (optional) The volume (or mass) of collection as is typically
-#'   used for urine or feces measurements.
+#'   used for urine or feces measurements.  A `volume` column is added to the
+#'   data only when this is given; requesting a parameter that needs it (`ae`,
+#'   `fe`, `volpk`, and similar) without it is an error.
 #' @param duration (optional) The duration of collection as is typically used
 #'   for concentration measurements in urine or feces.  The `time` of a
 #'   measurement is the start of the collection, and only the `time` is used
@@ -32,7 +34,9 @@
 #'   considered.  A collection starting within an interval and ending after the
 #'   interval `end` contributes its full amount to that interval, so for the
 #'   simplest interpretation of results, align collection start and end times
-#'   with interval boundaries.
+#'   with interval boundaries.  A `duration` column is added to the data only
+#'   when this is given; requesting an excretion rate parameter (`ermax`,
+#'   `ertmax`, `ertlst`) without it is an error.
 #' @param exclude_half.life,include_half.life Manual half-life point selection,
 #'   given as a logical value per concentration measurement (or, in
 #'   [PKNCAconc()], the name of such a column in the data).  `exclude_half.life`
@@ -176,17 +180,16 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   # in duplicate checking.
   duplicate_check(object = ret, data_type = "concentration")
 
-  if (missing(volume)) {
-    ret <- setAttributeColumn(ret, attr_name="volume", default_value=NA_real_)
-  } else {
+  # volume and duration are only used by urine/fecal calculations, so the
+  # columns are added only when the user gives them; calculations that need
+  # them report their absence (see absent_conc_inputs()).
+  if (!missing(volume)) {
     ret <- setAttributeColumn(ret, attr_name="volume", col_or_value=volume)
     if (!is.numeric(getAttributeColumn(ret, attr_name="volume")[[1]])) {
       rlang::abort("Volume must be numeric", class = "pknca_error_volume_not_numeric")
     }
   }
-  if (missing(duration)) {
-    ret <- setDuration.PKNCAconc(ret)
-  } else {
+  if (!missing(duration)) {
     ret <- setDuration.PKNCAconc(ret, duration=duration)
   }
   if (!missing(time.nominal)) {

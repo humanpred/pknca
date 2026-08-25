@@ -241,12 +241,7 @@ test_that("PKNCAconc with exclusions", {
     myconc,
     structure(
       list(
-        data=
-          cbind(
-            tmp.conc,
-            volume=NA_real_,
-            duration=0
-          ),
+        data=tmp.conc,
         formula=conc~time|treatment+ID,
         columns=
           list(
@@ -258,9 +253,7 @@ test_that("PKNCAconc with exclusions", {
                 group_analyte=character()
               ),
             subject="ID",
-            exclude="excl",
-            volume="volume",
-            duration="duration"
+            exclude="excl"
           ),
         units = list()
       ),
@@ -284,7 +277,6 @@ test_that("PKNCAconc with duration", {
             tmp.conc,
             data.frame(
               exclude=NA_character_,
-              volume=NA_real_,
               stringsAsFactors=FALSE
             )
           ),
@@ -300,7 +292,6 @@ test_that("PKNCAconc with duration", {
               ),
             subject="ID",
             exclude="exclude",
-            volume="volume",
             duration="duration_test"
           ),
         units = list()
@@ -323,8 +314,6 @@ test_that("PKNCAconc with nominal time added", {
             tmp.conc,
             data.frame(
               exclude=NA_character_,
-              volume=NA_real_,
-              duration=0,
               stringsAsFactors=FALSE
             )
           ),
@@ -340,8 +329,6 @@ test_that("PKNCAconc with nominal time added", {
               ),
             subject="ID",
             exclude="exclude",
-            volume="volume",
-            duration="duration",
             time.nominal="tnom"
           ),
         units = list()
@@ -354,8 +341,6 @@ test_that("PKNCAconc with nominal time added", {
     structure(
       list(data=cbind(tmp.conc,
                       data.frame(exclude=NA_character_,
-                                 volume=NA_real_,
-                                 duration=0,
                                  foo=NA,
                                  stringsAsFactors=FALSE)),
            formula=conc~time|treatment+ID,
@@ -370,8 +355,6 @@ test_that("PKNCAconc with nominal time added", {
                  ),
                subject="ID",
                exclude="exclude",
-               volume="volume",
-               duration="duration",
                time.nominal="foo"
              ),
            units = list()
@@ -389,7 +372,6 @@ test_that("PKNCAconc with volume added", {
     structure(
       list(data=cbind(tmp.conc,
                       data.frame(exclude=NA_character_,
-                                 duration=0,
                                  stringsAsFactors=FALSE)),
            formula=conc~time|treatment+ID,
            columns=list(
@@ -402,8 +384,7 @@ test_that("PKNCAconc with volume added", {
                ),
              subject="ID",
              exclude="exclude",
-             volume="vol",
-             duration="duration"
+             volume="vol"
            ),
            units = list()
       ),
@@ -416,7 +397,6 @@ test_that("PKNCAconc with volume added", {
       list(data=cbind(tmp.conc,
                       data.frame(exclude=NA_character_,
                                  volume=2,
-                                 duration=0,
                                  stringsAsFactors=FALSE)),
            formula=conc~time|treatment+ID,
            columns=
@@ -430,8 +410,7 @@ test_that("PKNCAconc with volume added", {
                  ),
                subject="ID",
                exclude="exclude",
-               volume="volume",
-               duration="duration"
+               volume="volume"
              ),
            units = list()
       ),
@@ -448,8 +427,7 @@ test_that("PKNCAconc with volume added", {
             tmp.conc,
             data.frame(
               exclude=NA_character_,
-              volume=seq_len(nrow(tmp.conc)),
-              duration=0
+              volume=seq_len(nrow(tmp.conc))
             )
           ),
         formula=conc~time|treatment+ID,
@@ -464,8 +442,7 @@ test_that("PKNCAconc with volume added", {
               ),
             subject="ID",
             exclude="exclude",
-            volume="volume",
-            duration="duration"
+            volume="volume"
           ),
         units = list()
       ),
@@ -478,8 +455,6 @@ test_that("as.data.frame.PKNCAconc", {
   tmp_conc <- generate.conc(nsub=1, ntreat=1, time.points=0:24)
   result_conc <- tmp_conc
   result_conc$exclude <- NA_character_
-  result_conc$volume <- NA_real_
-  result_conc$duration <- 0
   expect_equal(
     as.data.frame(PKNCAconc(conc~time, data=tmp_conc)),
     result_conc
@@ -500,8 +475,6 @@ test_that("PKNCAconc with sparse data", {
 
   d_sparse_aug <- d_sparse
   d_sparse_aug$exclude <- NA_character_
-  d_sparse_aug$volume <- NA_real_
-  d_sparse_aug$duration <- 0
   expect_equal(
     o_conc_sparse$data_sparse,
     d_sparse_aug
@@ -525,13 +498,13 @@ With 9 subjects defined in the 'id' column.
 Nominal time column is not specified.
 
 First 6 rows of concentration data:
- id conc time dose exclude volume duration
-  1 0.00    0  100    <NA>     NA        0
-  2 0.00    0  100    <NA>     NA        0
-  3 0.00    0  100    <NA>     NA        0
-  1 1.75    1  100    <NA>     NA        0
-  2 2.20    1  100    <NA>     NA        0
-  3 1.58    1  100    <NA>     NA        0"
+ id conc time dose exclude
+  1 0.00    0  100    <NA>
+  2 0.00    0  100    <NA>
+  3 0.00    0  100    <NA>
+  1 1.75    1  100    <NA>
+  2 2.20    1  100    <NA>
+  3 1.58    1  100    <NA>"
   )
 })
 

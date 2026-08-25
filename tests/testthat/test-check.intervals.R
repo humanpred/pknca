@@ -357,16 +357,31 @@ test_that("volume is required only by the parameters that use it (#194)", {
   }
 })
 
-test_that("every parameter's cached volume requirement matches a fresh walk (#194)", {
+test_that("the collection duration is required only by the parameters that use it (#166)", {
+  for (param in c("ertlst", "ermax", "ertmax")) {
+    expect_true(set_requires_inputs(param)[[param]]$requires_conc_dur, info = param)
+  }
+  # ae and volpk use the volume without needing the collection duration
+  for (param in c("ae", "volpk", "cmax", "tmax", "auclast", "half.life", "cl.obs")) {
+    expect_false(set_requires_inputs(param)[[param]]$requires_conc_dur, info = param)
+  }
+})
+
+test_that("every parameter's cached concentration requirements match a fresh walk (#194, #166)", {
   # Enumerating guard on the caching in set_requires_inputs(): a newly added
   # parameter, or a flag left stale by re-registration, is caught here rather
-  # than by a wrong error when the calculation is requested.
+  # than by a wrong error when the calculation is requested.  The dose inputs
+  # are left out because pknca_optional_dose_args makes them deliberately
+  # differ from a plain dependency walk.
   for (param in names(get.interval.cols())) {
-    expect_equal(
-      set_requires_inputs(param)[[param]]$requires_volume,
-      any(c("volume", "volume.group") %in% get.parameter.deps(param, recursive = TRUE)),
-      info = param
-    )
+    deps <- get.parameter.deps(param, recursive = TRUE)
+    for (current_input in c("volume", "conc_dur")) {
+      expect_equal(
+        set_requires_inputs(param)[[param]][[paste0("requires_", current_input)]],
+        any(pknca_requires_inputs[[current_input]] %in% deps),
+        info = paste(param, current_input)
+      )
+    }
   }
 })
 
@@ -377,16 +392,23 @@ test_that("absent_dose_inputs and absent_conc_inputs report what was not given (
   expect_equal(absent_dose_inputs(suppressMessages(PKNCAdose(d_dose, ~time|subject))), "dose_amt")
   expect_equal(absent_dose_inputs(suppressMessages(PKNCAdose(d_dose, dose~.|subject))), "dose_time")
   expect_equal(absent_dose_inputs(NA), c("dose_amt", "dose_time", "dose_dur"))
-  expect_equal(absent_conc_inputs(PKNCAconc(d_conc, conc~time|subject)), "volume")
+  expect_equal(absent_conc_inputs(PKNCAconc(d_conc, conc~time|subject)), c("volume", "conc_dur"))
   expect_equal(
     absent_conc_inputs(PKNCAconc(cbind(d_conc, vol = 10), conc~time|subject, volume = "vol")),
+    "conc_dur"
+  )
+  expect_equal(
+    absent_conc_inputs(PKNCAconc(
+      cbind(d_conc, vol = 10, dur = 1), conc~time|subject, volume = "vol", duration = "dur"
+    )),
     character(0)
   )
   # A volume that is missing for only some measurements is left to the
   # per-interval missing-data exclusions
   expect_equal(
     absent_conc_inputs(PKNCAconc(
-      cbind(d_conc, vol = c(10, NA, 10, NA, 10)), conc~time|subject, volume = "vol"
+      cbind(d_conc, vol = c(10, NA, 10, NA, 10), dur = 1),
+      conc~time|subject, volume = "vol", duration = "dur"
     )),
     character(0)
   )
@@ -395,6 +417,7 @@ test_that("absent_dose_inputs and absent_conc_inputs report what was not given (
 test_that("uncalculable_without selects on the inputs it is given (#194)", {
   ivl <- data.frame(start = 0, end = Inf, ae = TRUE, cmax = TRUE, c0 = TRUE, cl.obs = TRUE)
   expect_equal(uncalculable_without(ivl, "volume"), "ae")
+  expect_equal(uncalculable_without(ivl, "conc_dur"), character(0))
   expect_equal(uncalculable_without(ivl, "dose_amt"), "cl.obs")
   expect_equal(uncalculable_without(ivl, "dose_time"), "c0")
   expect_equal(uncalculable_without(ivl, c("volume", "dose_amt")), c("ae", "cl.obs"))
