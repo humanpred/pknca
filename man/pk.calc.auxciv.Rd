@@ -35,7 +35,15 @@ pk.calc.auciv(
   check = TRUE
 )
 
-pk.calc.auciv_pbext(auc, auciv)
+pk.calc.auciv_pbext(
+  conc,
+  time,
+  auc,
+  auciv,
+  ...,
+  options = list(),
+  check = TRUE
+)
 
 pk.calc.aumciv(
   conc,
@@ -122,7 +130,11 @@ that measurement, so the AUXC is calculated here from \code{c0} and the
 measured data using \code{fun_auxc} and \code{auc.type}.}
 }
 
-The calculation for back-extrapolation is \code{100*(1 - auc/auciv)}.
+The calculation for back-extrapolation is \code{100*(1 - auc/auciv)}.  It
+requires a measured concentration at time 0; without one, \code{auc} does not
+describe the observed part of \code{auciv} (it either cannot be calculated or,
+for the \code{aucint} family, already extrapolates back to time 0 with
+\code{conc.origin}), so \code{NA} is returned.
 }
 \section{Functions}{
 \itemize{

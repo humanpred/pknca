@@ -37,19 +37,19 @@ test_that("pk.calc.auciv works correctly", {
 # ============================================================================
 test_that("pk.calc.auciv_pbext calculates percent back-extrapolation correctly", {
   expect_equal(
-    pk.calc.auciv_pbext(auc = 1, auciv = 2.1),
+    pk.calc.auciv_pbext(conc = c(0, 1), time = c(0, 1), auc = 1, auciv = 2.1),
     100 * (1 - 1/2.1)
   )
   
   # Zero back-extrapolation (auc = auciv)
   expect_equal(
-    pk.calc.auciv_pbext(auc = 2.5, auciv = 2.5),
+    pk.calc.auciv_pbext(conc = c(0, 1), time = c(0, 1), auc = 2.5, auciv = 2.5),
     0
   )
   
   # 50% back-extrapolation
   expect_equal(
-    pk.calc.auciv_pbext(auc = 1, auciv = 2),
+    pk.calc.auciv_pbext(conc = c(0, 1), time = c(0, 1), auc = 1, auciv = 2),
     50
   )
 })
@@ -240,14 +240,14 @@ test_that("IV calculations handle edge cases correctly", {
 # ============================================================================
 test_that("pk.calc.auciv_pbext handles edge cases correctly", {
   # Zero back-extrapolation (auciv = auc)
-  expect_equal(pk.calc.auciv_pbext(auc = 5, auciv = 5), 0)
+  expect_equal(pk.calc.auciv_pbext(conc = c(0, 1), time = c(0, 1), auc = 5, auciv = 5), 0)
   
   # 100% back-extrapolation (auc = 0, auciv > 0)
-  expect_equal(pk.calc.auciv_pbext(auc = 0, auciv = 5), 100)
+  expect_equal(pk.calc.auciv_pbext(conc = c(0, 1), time = c(0, 1), auc = 0, auciv = 5), 100)
   
   # auciv < auc must raise an error — not a valid physical scenario
   expect_error(
-    pk.calc.auciv_pbext(auc = 5, auciv = 3),
+    pk.calc.auciv_pbext(conc = c(0, 1), time = c(0, 1), auc = 5, auciv = 3),
     regexp = "(?i)auciv must be >= auc"
   )
 })
@@ -340,36 +340,42 @@ test_that("the percent back-extrapolated is NA without a time 0 concentration (#
   r <- nca_352(d_iv_352)
   value <- stats::setNames(r$PPORRES, r$PPTESTCD)
   exclude <- stats::setNames(r$exclude, r$PPTESTCD)
-  # AUClast, AUCall, AUCinf,obs, and AUCinf,pred cannot be calculated from time
-  # 0 without a measurement there, so the percent back-extrapolated against them
-  # is not calculable.
-  pbext_na <-
-    c("aucivpbextlast", "aucivpbextall", "aucivpbextinf.obs", "aucivpbextinf.pred")
-  expect_true(all(is.na(value[pbext_na])))
+  pbext <- grep("^aucivpbext", params_352, value = TRUE)
+  # Without a measured concentration at time 0, no AUC describes the observed
+  # part of the IV AUC, so the percent back-extrapolated is not calculable.
+  expect_true(all(is.na(value[pbext])))
+  expect_true(
+    all(grepl(
+      "Percent back-extrapolated requires a measured concentration at time 0",
+      exclude[pbext],
+      fixed = TRUE
+    ))
+  )
+  # AUClast, AUCall, AUCinf,obs, and AUCinf,pred also carry the reason they
+  # could not be calculated; the aucint family calculates and does not.
   expect_equal(
-    unname(exclude[pbext_na]),
+    unname(exclude[c("aucivpbextlast", "aucivpbextall", "aucivpbextinf.obs", "aucivpbextinf.pred")]),
     rep(
-      "Requesting an AUC range starting (0) before the first measurement (5) is not allowed",
-      length(pbext_na)
+      paste(
+        "Requesting an AUC range starting (0) before the first measurement (5) is not allowed",
+        "Percent back-extrapolated requires a measured concentration at time 0",
+        sep = "; "
+      ),
+      4
     )
   )
-  # The aucint family extrapolates back to the start of the interval with
-  # conc.origin (zero), so the percent back-extrapolated against it is
-  # calculable and matches the value with a measured zero at time 0.
-  expect_equal(unname(value["aucivpbextint.last"]), 14.62568, tolerance = 1e-6)
-  expect_equal(unname(value["aucivpbextint.all"]), 14.62568, tolerance = 1e-6)
+  expect_equal(
+    unname(exclude[c("aucivpbextint.last", "aucivpbextint.all")]),
+    rep("Percent back-extrapolated requires a measured concentration at time 0", 2)
+  )
   # The AUCs that c0 makes calculable are not excluded.
-  expect_true(all(is.na(exclude[setdiff(params_352, pbext_na)])))
+  expect_true(all(is.na(exclude[setdiff(params_352, pbext)])))
 })
 
 test_that("a measured zero at time 0 gives the same IV parameters (#352)", {
   no_t0 <- nca_352(d_iv_352)
   with_t0 <- nca_352(d_iv_352_t0)
-  ivparams <-
-    setdiff(
-      params_352,
-      c("aucivpbextlast", "aucivpbextall", "aucivpbextinf.obs", "aucivpbextinf.pred")
-    )
+  ivparams <- setdiff(params_352, grep("^aucivpbext", params_352, value = TRUE))
   expect_equal(
     stats::setNames(no_t0$PPORRES, no_t0$PPTESTCD)[ivparams],
     stats::setNames(with_t0$PPORRES, with_t0$PPTESTCD)[ivparams]
@@ -378,7 +384,11 @@ test_that("a measured zero at time 0 gives the same IV parameters (#352)", {
   # back-extrapolation is.
   with_t0_value <- stats::setNames(with_t0$PPORRES, with_t0$PPTESTCD)
   expect_equal(unname(with_t0_value["aucivpbextlast"]), 14.62568, tolerance = 1e-6)
+  expect_equal(unname(with_t0_value["aucivpbextall"]), 14.62568, tolerance = 1e-6)
+  expect_equal(unname(with_t0_value["aucivpbextint.last"]), 14.62568, tolerance = 1e-6)
+  expect_equal(unname(with_t0_value["aucivpbextint.all"]), 14.62568, tolerance = 1e-6)
   expect_equal(unname(with_t0_value["aucivpbextinf.obs"]), 12.75187, tolerance = 1e-6)
+  expect_equal(unname(with_t0_value["aucivpbextinf.pred"]), 12.81940, tolerance = 1e-6)
 })
 
 test_that("pk.calc.auxciv calculates the AUXC from c0 when auxc is NA", {
@@ -446,5 +456,29 @@ test_that("pk.calc.auxciv reports why it could not calculate", {
   expect_equal(
     pk.calc.auciv(conc = c(4, 2), time = c(5, 15), c0 = NA, auc = 1, auc.type = "AUClast"),
     structure(NA_real_, exclude = "c0 is not calculated")
+  )
+})
+
+
+test_that("pk.calc.auciv_pbext requires a measured concentration at time 0", {
+  expect_equal(
+    pk.calc.auciv_pbext(conc = c(4, 2), time = c(5, 15), auc = 81, auciv = 95),
+    structure(
+      NA_real_,
+      exclude = "Percent back-extrapolated requires a measured concentration at time 0"
+    )
+  )
+  # An NA at time 0 is not a measurement
+  expect_equal(
+    pk.calc.auciv_pbext(conc = c(NA, 4, 2), time = c(0, 5, 15), auc = 81, auciv = 95),
+    structure(
+      NA_real_,
+      exclude = "Percent back-extrapolated requires a measured concentration at time 0"
+    )
+  )
+  # A BLQ (zero) at time 0 is a measurement
+  expect_equal(
+    pk.calc.auciv_pbext(conc = c(0, 4, 2), time = c(0, 5, 15), auc = 81, auciv = 95),
+    100 * (1 - 81/95)
   )
 })

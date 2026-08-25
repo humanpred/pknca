@@ -204,12 +204,35 @@ add.interval.col(
 
 #' @describeIn pk.calc.auxciv Calculate the percent back-extrapolated AUC for IV
 #'   administration
-#' @details The calculation for back-extrapolation is `100*(1 - auc/auciv)`.
+#' @details The calculation for back-extrapolation is `100*(1 - auc/auciv)`.  It
+#'   requires a measured concentration at time 0; without one, `auc` does not
+#'   describe the observed part of `auciv` (it either cannot be calculated or,
+#'   for the `aucint` family, already extrapolates back to time 0 with
+#'   `conc.origin`), so `NA` is returned.
 #' @param auc The AUC calculated without C0 back-extrapolation 
 #' @param auciv The AUC calculated using `c0`
 #' @returns `pk.calc.auciv_pctbackextrap`: The AUC percent back-extrapolated
 #' @export
-pk.calc.auciv_pbext <- function(auc, auciv) {
+pk.calc.auciv_pbext <- function(conc, time, auc, auciv, ..., options = list(), check = TRUE) {
+  if (check) {
+    assert_conc_time(conc = conc, time = time)
+    data <-
+      clean.conc.blq(
+        conc, time,
+        options = options,
+        check = FALSE
+      )
+  } else {
+    data <- data.frame(conc = conc, time = time)
+  }
+  if (!(0 %in% data$time)) {
+    return(
+      structure(
+        NA_real_,
+        exclude = "Percent back-extrapolated requires a measured concentration at time 0"
+      )
+    )
+  }
   if (!is.na(auciv) && !is.na(auc) && auciv < auc){rlang::abort("auciv must be >= auc; back-extrapolation cannot be negative.")}
   100*(1 - auc/auciv)
 }

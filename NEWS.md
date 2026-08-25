@@ -9,14 +9,19 @@ the dosing including dose amount and route.
 * IV bolus AUC and AUMC parameters (`aucivlast`, `aucivinf.obs`, `aumcivlast`,
   and the rest of the `auciv`/`aumciv` family) no longer require a measured
   concentration at time 0.  When the profile starts after the dose, `c0`
-  supplies the concentration at time 0 and the AU(M)C is calculated from it.
-  The percent back-extrapolated (`aucivpbextlast` and similar) is `NA` in that
-  case because the AUC without back-extrapolation cannot start before the first
-  measurement (#352).
+  supplies the concentration at time 0 and the AU(M)C is calculated from it
+  (#352).
+
+* Breaking change: `pk.calc.auciv_pbext()` gains `conc` and `time` arguments.
+  The percent back-extrapolated (`aucivpbextlast`, `aucivpbextint.last`, and
+  the rest) is now `NA` unless a concentration was measured at time 0.  Without
+  one, the AUC it compares against either cannot be calculated or, for the
+  `aucint` family, already extrapolates back to time 0 with `conc.origin`, so
+  it does not describe the observed part of the IV AUC (#352).
 
 * `add.interval.col()` accepts an `I()`-wrapped value in `formalsmap` to pass a
   constant to the calculation function instead of naming a data source or
-  another parameter.
+  another parameter.  See `vignette("v80-writing-parameter-functions")`.
 
 * Bug fix: `superposition()` drops missing concentrations before calculating.
   They previously reached the half-life fit and stopped the calculation with
