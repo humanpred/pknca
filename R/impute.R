@@ -69,7 +69,8 @@ PKNCA_impute_method_start_cmin <- function(conc, time, start, end, ..., options 
 }
 
 #' @describeIn PKNCA_impute_method Shift a predose concentration to become the
-#'   time zero concentration (only if a time zero concentration does not exist)
+#'   time zero concentration (only if a time zero concentration does not exist).
+#'   A predose concentration that is `NA` is not shifted.
 #' @param max_shift The maximum amount of time to shift a concentration forward
 #'   (defaults to 5% of the interval duration, i.e. `0.05*(end - start)`, if
 #'   `is.finite(end)`, and when `is.infinite(end)`, defaults to 5% of the time
@@ -98,9 +99,13 @@ PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group
     if (any(mask_predose)) {
       time_predose <- max(time.group[mask_predose])
       if ((-time_predose) <= max_shift) {
-        mask_predose_change <- time.group %in% time_predose
-        ret_predose <- data.frame(conc = conc.group[mask_predose_change], time = start)
-        ret <- dplyr::bind_rows(ret_predose, ret)
+        # A missing predose concentration carries no information, so shifting it
+        # would only add a missing value at the start time
+        mask_predose_change <- time.group %in% time_predose & !is.na(conc.group)
+        if (any(mask_predose_change)) {
+          ret_predose <- data.frame(conc = conc.group[mask_predose_change], time = start)
+          ret <- dplyr::bind_rows(ret_predose, ret)
+        }
       }
     }
   }

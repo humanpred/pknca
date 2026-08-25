@@ -11,6 +11,11 @@ the dosing including dose amount and route.
   measurement at an unknown time cannot be known to be predose, so it is now
   ignored by the imputation (#361).
 
+* The `start_predose` imputation method no longer shifts a predose
+  concentration that is `NA`.  A missing predose value carries no information,
+  and shifting it added a missing concentration at the start time where there
+  had been no measurement at all (#361).
+
 * Bug fix: `superposition()` drops missing concentrations before calculating.
   They previously reached the half-life fit and stopped the calculation with
   `NA/NaN/Inf in 'x'` (#308).

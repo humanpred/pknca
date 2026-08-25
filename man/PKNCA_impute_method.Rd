@@ -73,7 +73,8 @@ with a concentration of 0 is added.
 the interval at the start time (usually used with multiple-dose data)
 
 \item \code{PKNCA_impute_method_start_predose()}: Shift a predose concentration to become the
-time zero concentration (only if a time zero concentration does not exist)
+time zero concentration (only if a time zero concentration does not exist).
+A predose concentration that is \code{NA} is not shifted.
 
 \item \code{PKNCA_impute_method_end_conc_drop()}: Drop a concentration measured exactly at the
 end of the interval, if one is present (usually used with multiple-dose data

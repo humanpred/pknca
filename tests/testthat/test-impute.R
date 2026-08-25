@@ -150,15 +150,34 @@ test_that("PKNCA_impute_method_start_predose", {
 })
 
 test_that("PKNCA_impute_method_start_predose with degenerate data (#361)", {
-  # All concentrations missing: the predose sample is still shifted, carrying
-  # its missing value rather than fabricating one
+  # All concentrations missing: a missing predose concentration is not shifted,
+  # so no missing value is added at the start time
   expect_equal(
     PKNCA_impute_method_start_predose(
       conc = rep(NA_real_, 2), time = 1:2,
       conc.group = rep(NA_real_, 3), time.group = c(-1, 1:2),
       start = 0, end = 24
     ),
-    data.frame(conc = rep(NA_real_, 3), time = 0:2)
+    data.frame(conc = rep(NA_real_, 2), time = 1:2)
+  )
+  # The predose sample is selected by time, so a missing concentration at the
+  # nearest predose time skips the shift rather than reaching further back
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = 3:4, time = 1:2,
+      conc.group = c(5, NA, 3, 4), time.group = c(-2, -1, 1, 2),
+      start = 0, end = 24
+    ),
+    data.frame(conc = 3:4, time = 1:2)
+  )
+  # With duplicate predose times, only the measured concentrations are shifted
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = 3:4, time = 1:2,
+      conc.group = c(NA, 2, 3, 4), time.group = c(-1, -1, 1, 2),
+      start = 0, end = 24
+    ),
+    data.frame(conc = c(2, 3, 4), time = 0:2)
   )
   # All times missing: nothing is known to be predose, so the data are
   # unchanged (previously this stopped with "missing value where TRUE/FALSE
@@ -199,6 +218,32 @@ test_that("PKNCA_impute_method_start_predose with degenerate data (#361)", {
     ),
     data.frame(conc = rep(0, 3), time = 0:2)
   )
+})
+
+test_that("start_predose does not fabricate a start concentration from a missing predose sample (#361)", {
+  # With conc.na = 0 a shifted missing predose value becomes a measured zero at
+  # the start time.  auclast was then reported as 51.17835 from a measurement
+  # that was never made; it must instead be missing because the interval starts
+  # before the first real measurement.
+  d_conc <-
+    data.frame(
+      subject = 1,
+      time = c(-0.5, 1, 2, 4, 8, 12, 24),
+      conc = c(NA, 5, 4, 3, 2.5, 2, 1)
+    )
+  o_conc <- PKNCAconc(d_conc, conc~time|subject)
+  o_data <-
+    suppressMessages(PKNCAdata(
+      o_conc,
+      intervals = data.frame(start = 0, end = 24, auclast = TRUE),
+      impute = "start_predose",
+      options = list(conc.na = 0)
+    ))
+  expect_warning(
+    d_res <- as.data.frame(pk.nca(o_data)),
+    regexp = "Requesting an AUC range starting .0. before the first measurement .1. is not allowed"
+  )
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD == "auclast"], NA_real_)
 })
 
 test_that("PKNCA_impute_method_start_cmin", {
