@@ -342,6 +342,9 @@ parameter_direct_refs <- function(x, all_intervals, optional_dose) {
     args[names(spec$formalsmap)] <- spec$formalsmap
   }
   args <- args[!vapply(X = args, FUN = is.null, FUN.VALUE = TRUE)]
+  # I()-wrapped formalsmap values are constants, not references to a data source
+  # or another parameter.
+  args <- args[!vapply(X = args, FUN = inherits, FUN.VALUE = TRUE, what = "AsIs")]
   if (!optional_dose) {
     drop_args <- pknca_optional_dose_args[[spec$FUN]]
     if (!is.null(drop_args)) {

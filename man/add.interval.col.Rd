@@ -140,6 +140,13 @@ and the values should be one of the following:
 \item{"duration.dose.group"}{Duration of dose (typically infusion duration) for doses in the current group.}
 \item{"route.group"}{Route of dosing for the current group.}
 }
+\item{Constants:}
+\describe{
+\item{a value wrapped in \code{\link[base:I]{base::I()}}}{The value itself, passed to the
+function unchanged.  Use this for an argument that selects a variant of
+a shared calculation function (for example, \code{auc.type = I("AUCall")})
+rather than naming a data source or another parameter.}
+}
 }
 }
 \examples{
