@@ -6,6 +6,11 @@ the dosing including dose amount and route.
 
 # Development version
 
+* A new function `get_halflife_fit()` gives the slope, intercept, and time
+  range of the half-life fit for each group and interval so that the fitted
+  line can be drawn or predicted from.  Times are given on the same scale as
+  the concentration data rather than relative to the interval start (#342).
+
 * Bug fix: `superposition()` drops missing concentrations before calculating.
   They previously reached the half-life fit and stopped the calculation with
   `NA/NaN/Inf in 'x'` (#308).
