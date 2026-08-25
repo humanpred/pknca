@@ -216,24 +216,86 @@ fit with the most points included.</li>
 <div class="section level2">
 <h2 id="manual-point-selection">Manual Point Selection<a class="anchor" aria-label="anchor" href="#manual-point-selection"></a>
 </h2>
-<p>The <code>exclude_half.life</code> and <code>include_half.life</code>
-columns must be logical
+<p>Curve stripping chooses the points automatically, and it is what
+happens when nothing is specified. Two optional columns given to
+<code><a href="../reference/PKNCAconc.html">PKNCAconc()</a></code> change that: <code>exclude_half.life</code>
+drops specific points and then curve strips whatever remains, while
+<code>include_half.life</code> names the exact points to fit and
+switches curve stripping off entirely. The decision tree below shows how
+to choose between them and what each one changes.</p>
+<div class="section level3">
+<h3 id="choosing-a-point-selection-method">Choosing a Point Selection Method<a class="anchor" aria-label="anchor" href="#choosing-a-point-selection-method"></a>
+</h3>
+<p><img src="v06-half-life-calculation_files/figure-html/decision-tree-1.png" class="r-plt" alt="Decision tree for choosing between automatic curve stripping, exclude_half.life, and include_half.life.  Automatic curve stripping is the default and needs neither column.  exclude_half.life drops the points flagged TRUE and curve strips the rest.  include_half.life keeps only the points flagged TRUE and fits them directly.  In every case, BLQ and zero concentrations and points at or before the end of the last dose are dropped before fitting." width="100%"></p>
+<p>Two parts of the tree are easy to overlook:</p>
+<ul>
+<li>Only <code>include_half.life</code> turns off automatic selection.
+<code>exclude_half.life</code> removes the flagged points and then runs
+the usual curve stripping on the rest, so <code>min.hl.points</code>,
+<code>allow.tmax.in.half.life</code>, and
+<code>adj.r.squared.factor</code> still apply to the points that
+remain.</li>
+<li>The middle band of the tree applies to
+<code>include_half.life</code> as well. Naming a point does not force it
+into the fit; BLQ and zero concentrations, and points at or before the
+end of the last dose, are dropped first either way. Including eight
+points that span a four-hour infusion therefore yields a five-point fit,
+not an eight-point fit.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="column-requirements">Column Requirements<a class="anchor" aria-label="anchor" href="#column-requirements"></a>
+</h3>
+<p>Both columns must be logical
 (<code>TRUE</code>/<code>FALSE</code>/<code>NA</code>); a non-logical
-column (for example, character <code>"yes"</code>) is an error. For both
-exclusion and inclusion methods below, the same <code>NA</code> handling
-rules apply on a per-interval basis. If all values are <code>NA</code>,
-then no inclusion or exclusion is applied (the interval is treated
-as-is, like the argument had not been given). If some values are
-<code>NA</code> for the interval, those are treated as
-<code>FALSE</code>.</p>
-<p>A column counts as in use for an interval whenever it contains any
-non-<code>NA</code> value, even if every value is <code>FALSE</code>.
-Only one of <code>exclude_half.life</code> and
-<code>include_half.life</code> may be in use for the same interval;
-supplying both raises the error “Cannot both include and exclude
-half-life points for the same interval”. For this reason, initialize
-these columns to <code>NA</code> (rather than <code>FALSE</code>) when
-the corresponding method is not being used.</p>
+column (for example, character <code>"yes"</code>) is an error. Whether
+a column applies is decided separately for each interval, using the
+rules below.</p>
+<table class="table">
+<colgroup>
+<col width="80%">
+<col width="19%">
+</colgroup>
+<thead><tr class="header">
+<th>Situation for an interval</th>
+<th>Result</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>The column was not given to <code><a href="../reference/PKNCAconc.html">PKNCAconc()</a></code>
+</td>
+<td>The method is not used</td>
+</tr>
+<tr class="even">
+<td>Every value is <code>NA</code>
+</td>
+<td>The method is not used; the interval is treated as though the column
+had not been given</td>
+</tr>
+<tr class="odd">
+<td>Some values are <code>NA</code>
+</td>
+<td>The <code>NA</code> values are treated as <code>FALSE</code>
+</td>
+</tr>
+<tr class="even">
+<td>Any value is not <code>NA</code>, even if every value is
+<code>FALSE</code>
+</td>
+<td>The column counts as in use</td>
+</tr>
+<tr class="odd">
+<td>Both columns are in use</td>
+<td>Error: “Cannot both include and exclude half-life points for the
+same interval”</td>
+</tr>
+</tbody>
+</table>
+<p>Because an all-<code>FALSE</code> column still counts as in use,
+initialize these columns to <code>NA</code> (rather than
+<code>FALSE</code>) wherever the corresponding method should not
+apply.</p>
+</div>
 <div class="section level3">
 <h3 id="exclusion-of-specific-points-with-curve-stripping">Exclusion of Specific Points with Curve Stripping<a class="anchor" aria-label="anchor" href="#exclusion-of-specific-points-with-curve-stripping"></a>
 </h3>
