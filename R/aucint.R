@@ -86,13 +86,21 @@ pk.calc.auxcint <- function(conc, time,
   if (auc.type %in% "AUCinf") {
     tlast <- pk.calc.tlast(conc=data$conc, time=data$time)
     clast_obs <- pk.calc.clast.obs(conc=data$conc, time=data$time)
+    all_times <- c(data$time, missing_times)
+    time_after_tlast <- all_times[all_times > tlast & all_times <= interval[2]]
     if (is.na(clast) && is.na(lambda.z)) {
       # clast.pred is NA likely because the half-life was not calculable
       return(structure(NA_real_, exclude = "clast.pred is NA because the half-life is NA"))
     } else if (is.na(clast)) {
       rlang::abort("Please report a bug. clast is NA and the half-life is not NA", class = "pknca_error_internal_clast_na")  # nocov
-    } else if (clast != clast_obs && interval[2] > tlast) {
-      # If using clast.pred, we need to doubly calculate at tlast.
+    } else if (clast != clast_obs && length(time_after_tlast) > 0) {
+      # If using clast.pred, the integration is done twice at tlast: once with
+      # clast.obs to end the observed data and once with clast.pred to start the
+      # extrapolation.  That duplicate only changes the result when a later
+      # point in the interval is integrated to from clast.pred.  Extrapolation
+      # past the end of the interval is analytic from clast and tlast, so a
+      # trailing duplicate would only add a zero-width interval that makes tlast
+      # ambiguous in choose_interval_method().
       conc_clast <- clast
       time_clast <- tlast
     }

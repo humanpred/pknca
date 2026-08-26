@@ -571,3 +571,37 @@ test_that("zero-length input gives NA rather than zero (issue 601)", {
     class = "pknca_warning_no_concentration"
   )
 })
+
+test_that("count_conc and count_conc_measured count imputed concentrations by value", {
+  # Documented in the "Imputed concentrations" section:  neither count knows
+  # whether a concentration was imputed, so count_conc_measured includes an
+  # imputed concentration that is above the limit of quantification and
+  # excludes an imputed zero
+  d_conc <-
+    data.frame(
+      subject = 1,
+      time = c(-0.5, 1, 2, 4, 8, 12, 24),
+      conc = c(2, 50, 40, 30, 15, 8, 2)
+    )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_dose <- PKNCAdose(data.frame(subject = 1, dose = 100, time = 0), dose ~ time | subject)
+  intervals <-
+    data.frame(start = 0, end = 24, count_conc = TRUE, count_conc_measured = TRUE)
+  counts <- function(impute) {
+    o_data <- suppressMessages(PKNCAdata(o_conc, o_dose, intervals = intervals, impute = impute))
+    res <- as.data.frame(suppressMessages(suppressWarnings(pk.nca(o_data))))
+    c(
+      conc = res$PPORRES[res$PPTESTCD == "count_conc"],
+      measured = res$PPORRES[res$PPTESTCD == "count_conc_measured"]
+    )
+  }
+  # Six samples are in the 0-24 interval; the predose sample at -0.5 is not
+  expect_equal(counts(NA_character_), c(conc = 6, measured = 6))
+  # A zero is added:  counted by count_conc, not by count_conc_measured
+  expect_equal(counts("start_conc0"), c(conc = 7, measured = 6))
+  # A measured concentration is carried to the start time:  counted by both
+  expect_equal(counts("start_predose"), c(conc = 7, measured = 7))
+  # A fabricated minimum is above the limit of quantification, so it is counted
+  # by both even though it was not measured at that time
+  expect_equal(counts("start_cmin"), c(conc = 7, measured = 7))
+})
