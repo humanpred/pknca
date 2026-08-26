@@ -305,31 +305,24 @@ pknca_interval_table <- function(start, end,
   checkmate::assert_string(impute, na.ok = TRUE)
   excluded_from_impute <- intersect(params, impute_exclusions(impute, dosing = dosing))
 
-  interval_starts <- rep(start, length.out = max(length(start), length(end)))
-  interval_ends <- rep(end, length.out = max(length(start), length(end)))
+  n_intervals <- max(length(start), length(end))
+  interval_starts <- rep(start, length.out = n_intervals)
+  interval_ends <- rep(end, length.out = n_intervals)
+  # One row per interval and parameter, which interval_wider() collapses into
+  # as many rows as the imputation needs
   long <-
-    do.call(
-      rbind,
-      lapply(
-        X = seq_along(interval_starts),
-        FUN = function(i) {
-          data.frame(
-            start = interval_starts[i],
-            end = interval_ends[i],
-            impute =
-              ifelse(params %in% excluded_from_impute, NA_character_, impute),
-            param = params,
-            stringsAsFactors = FALSE
-          )
-        }
-      )
+    data.frame(
+      start = rep(interval_starts, each = length(params)),
+      end = rep(interval_ends, each = length(params)),
+      param = rep(params, times = n_intervals),
+      stringsAsFactors = FALSE
     )
+  long$impute <- ifelse(long$param %in% excluded_from_impute, NA_character_, impute)
+  long[[pknca_interval_row_col]] <- rep(seq_len(n_intervals), each = length(params))
   extra <- list(...)
   for (n in names(extra)) {
     long[[n]] <- extra[[n]]
   }
-  long[[pknca_interval_row_col]] <-
-    match(paste(long$start, long$end), unique(paste(long$start, long$end)))
   template <- data.frame(start = interval_starts, end = interval_ends)
   ret <- interval_wider(long, template)
   # An interval with no imputation anywhere does not need the column
@@ -337,48 +330,6 @@ pknca_interval_table <- function(start, end,
     ret$impute <- NULL
   }
   check.interval.specification(ret)
-}
-
-# Argument sets for pknca_presets()
-pknca_preset_definitions <- function() {
-  list(
-    single_dose =
-      list(dosing = "single", route = "extravascular"),
-    steady_state =
-      list(dosing = "steady_state", route = "extravascular"),
-    bioequivalence =
-      list(
-        dosing = "single", route = "extravascular",
-        include = c("aucall", "clast.obs", "tlast")
-      ),
-    first_in_human =
-      list(
-        dosing = "single", route = "extravascular",
-        include = c("clast.obs", "tlast", "span.ratio", "lambda.z.n.points")
-      ),
-    mass_balance =
-      list(
-        dosing = "single", route = "extravascular", sample_type = "interval",
-        include = c("excretion_rate")
-      ),
-    sparse_single_dose =
-      list(dosing = "single", route = "extravascular", sparse = TRUE)
-  )
-}
-
-pknca_preset_args <- function(preset) {
-  checkmate::assert_string(preset)
-  definitions <- pknca_preset_definitions()
-  if (!(preset %in% names(definitions))) {
-    rlang::abort(
-      sprintf(
-        "`preset` must be one of: %s",
-        paste(names(definitions), collapse = ", ")
-      ),
-      class = "pknca_error_interval_unknown_preset"
-    )
-  }
-  definitions[[preset]]
 }
 
 #' Named argument sets for building an interval specification
@@ -393,5 +344,42 @@ pknca_preset_args <- function(preset) {
 #' @family Interval specifications
 #' @export
 pknca_presets <- function() {
-  pknca_preset_definitions()
+  list(
+    single_dose =
+      list(dosing = "single", route = "extravascular"),
+    steady_state =
+      list(dosing = "steady_state", route = "extravascular"),
+    bioequivalence =
+      list(
+        dosing = "single", route = "extravascular",
+        include = c("aucall", "clast.obs", "tlast")
+      ),
+    first_in_human =
+      list(
+        dosing = "single", route = "extravascular",
+        include = c("clast.obs", "tlast", "span.ratio")
+      ),
+    mass_balance =
+      list(
+        dosing = "single", route = "extravascular", sample_type = "interval",
+        include = "excretion_rate"
+      ),
+    sparse_single_dose =
+      list(dosing = "single", route = "extravascular", sparse = TRUE)
+  )
+}
+
+pknca_preset_args <- function(preset) {
+  checkmate::assert_string(preset)
+  definitions <- pknca_presets()
+  if (!(preset %in% names(definitions))) {
+    rlang::abort(
+      sprintf(
+        "`preset` must be one of: %s",
+        paste(names(definitions), collapse = ", ")
+      ),
+      class = "pknca_error_interval_unknown_preset"
+    )
+  }
+  definitions[[preset]]
 }
