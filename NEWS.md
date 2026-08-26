@@ -22,6 +22,14 @@ the dosing including dose amount and route.
   function name has a dot in it, so loading the package failed with `could not
   find function "getS3method"`.  `getS3method` is now imported.
 
+* Bug fix: `aucint.inf.pred` and `aumcint.inf.pred` (and their dose-aware
+  versions) no longer fail with `tlast (...) must occur exactly once in time`
+  when the interval ends at infinity.  The concentration at tlast is calculated
+  twice so that integration up to tlast uses `clast.obs` and integration after
+  tlast starts from `clast.pred`.  When nothing in the interval follows tlast,
+  extrapolation to infinity is analytic and the duplicate only added a
+  zero-width interval, so it is now omitted (#620).
+
 * New parameters `mrt.ivmd.obs`, `mrt.ivmd.pred`, `vss.ivmd.obs`, and
   `vss.ivmd.pred` give the multiple-dose (steady-state) MRT and Vss for an IV
   infusion.  They subtract half of the infusion duration, the correction that
