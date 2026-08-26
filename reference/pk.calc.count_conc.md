@@ -30,13 +30,34 @@ a count of the non-missing concentrations (0 if all concentrations are
 missing)
 
 a count of the non-missing, measured (not below or above the limit of
-quantification) concentrations (0 if all concentrations are missing)
+quantification) concentrations (0 if all concentrations are missing).
+"Measured" here means above the limit of quantification; an imputed
+concentration above it is counted (see the "Imputed concentrations"
+section).
 
 ## Functions
 
 - `pk.calc.count_conc_measured()`: Count the number of concentration
   measurements that are not missing, above, or below the limit of
   quantification in an interval
+
+## Imputed concentrations
+
+Both counts are taken after imputation, and neither distinguishes an
+imputed concentration from a measured one. `count_conc` counts every
+non-missing concentration, so any imputation that adds a point increases
+it. `count_conc_measured` counts concentrations above the limit of
+quantification, so whether an imputed point is counted depends on its
+value rather than on its being imputed: the zero added by
+[`PKNCA_impute_method_start_conc0()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md)
+is not counted, while the concentration carried to the start time by
+[`PKNCA_impute_method_start_predose()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md)
+and the minimum added by
+[`PKNCA_impute_method_start_cmin()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md)
+are.
+
+To count only measured samples, calculate the counts in an interval with
+no imputation.
 
 ## See also
 

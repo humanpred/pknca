@@ -94,7 +94,10 @@ individuals.</p>
     <p>a count of the non-missing concentrations (0 if all concentrations
 are missing)</p>
 <p>a count of the non-missing, measured (not below or above the limit
-of quantification) concentrations (0 if all concentrations are missing)</p>
+of quantification) concentrations (0 if all concentrations are missing).
+"Measured" here means above the limit of quantification; an imputed
+concentration above it is counted (see the "Imputed concentrations"
+section).</p>
     </div>
     <div class="section level2">
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
@@ -103,6 +106,23 @@ of quantification) concentrations (0 if all concentrations are missing)</p>
 that are not missing, above, or below the limit of quantification in an
 interval</p></li>
 </ul></div>
+    <div class="section level2">
+    <h2 id="imputed-concentrations">Imputed concentrations<a class="anchor" aria-label="anchor" href="#imputed-concentrations"></a></h2>
+
+
+
+<p>Both counts are taken after imputation, and neither distinguishes an imputed
+concentration from a measured one.  <code>count_conc</code> counts every non-missing
+concentration, so any imputation that adds a point increases it.
+<code>count_conc_measured</code> counts concentrations above the limit of
+quantification, so whether an imputed point is counted depends on its value
+rather than on its being imputed:  the zero added by
+<code><a href="PKNCA_impute_method.html">PKNCA_impute_method_start_conc0()</a></code> is not counted, while the concentration
+carried to the start time by <code><a href="PKNCA_impute_method.html">PKNCA_impute_method_start_predose()</a></code> and the
+minimum added by <code><a href="PKNCA_impute_method.html">PKNCA_impute_method_start_cmin()</a></code> are.</p>
+<p>To count only measured samples, calculate the counts in an interval with no
+imputation.</p>
+    </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other NCA parameters for concentrations during the intervals:
