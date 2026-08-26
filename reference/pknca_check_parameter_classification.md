@@ -37,13 +37,16 @@ Other Interval specifications:
 [`interval_add_impute()`](https://humanpred.github.io/pknca/reference/interval_add_impute.md),
 [`interval_add_param()`](https://humanpred.github.io/pknca/reference/interval_add_param.md),
 [`pknca_concepts()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md),
-[`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md)
+[`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md),
+[`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md),
+[`pknca_presets()`](https://humanpred.github.io/pknca/reference/pknca_presets.md)
 
 ## Examples
 
 ``` r
 pknca_check_parameter_classification()
 #> [1] parameter       concept         tier            sample_type    
-#> [5] sparse          dose_normalized route           dosing         
+#> [5] sparse          secondary       dose_normalized route          
+#> [9] dosing         
 #> <0 rows> (or 0-length row.names)
 ```

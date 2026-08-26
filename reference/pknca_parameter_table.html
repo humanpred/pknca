@@ -78,8 +78,9 @@ parameter.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A data.frame with one row per parameter and columns for the
-<code>concept</code>, <code>tier</code>, <code>sample_type</code>, whether it is <code>sparse</code> or
-<code>dose_normalized</code>, and the <code>route</code> and <code>dosing</code> contexts it applies to
+<code>concept</code>, <code>tier</code>, <code>sample_type</code>, whether it is <code>sparse</code>,
+<code>dose_normalized</code>, or <code>secondary</code> (needing inputs from more than one
+profile), and the <code>route</code> and <code>dosing</code> contexts it applies to
 (comma-separated).</p>
     </div>
     <div class="section level2">
@@ -100,26 +101,28 @@ for by name, but it is never selected automatically.</p>
 <code><a href="interval_add_impute.html">interval_add_impute()</a></code>,
 <code><a href="interval_add_param.html">interval_add_param()</a></code>,
 <code><a href="pknca_check_parameter_classification.html">pknca_check_parameter_classification()</a></code>,
-<code><a href="pknca_concepts.html">pknca_concepts()</a></code></p></div>
+<code><a href="pknca_concepts.html">pknca_concepts()</a></code>,
+<code><a href="pknca_interval_table.html">pknca_interval_table()</a></code>,
+<code><a href="pknca_presets.html">pknca_presets()</a></code></p></div>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">pknca_parameter_table</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          parameter concept     tier sample_type sparse dose_normalized</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          auclast     auc   common        spot  FALSE           FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           aucall     auc uncommon        spot  FALSE           FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3         aumclast    aumc uncommon        spot  FALSE           FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4          aumcall    aumc uncommon        spot  FALSE           FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5      aucint.last     auc   common        spot  FALSE           FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 aucint.last.dose     auc uncommon        spot  FALSE           FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       route</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          parameter concept     tier sample_type sparse secondary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          auclast     auc   common        spot  FALSE     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           aucall     auc uncommon        spot  FALSE     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3         aumclast    aumc uncommon        spot  FALSE     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4          aumcall    aumc uncommon        spot  FALSE     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      aucint.last     auc   common        spot  FALSE     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 aucint.last.dose     auc uncommon        spot  FALSE     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   dose_normalized                                                     route</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                         dosing</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 single,multiple,steady_state</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 single,multiple,steady_state</span>

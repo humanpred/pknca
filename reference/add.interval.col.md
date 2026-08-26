@@ -144,6 +144,16 @@ add.interval.col(
       extrapolation to infinity. A declared value propagates to every
       parameter calculated from this one.
 
+  `secondary`
+
+  :   `TRUE` for a parameter that needs inputs from more than one
+      profile, such as bioavailability, which compares two
+      administrations, or renal clearance, which needs an amount
+      excreted and a plasma AUC. One interval cannot supply those, so a
+      secondary parameter is never chosen automatically; it stays
+      available by name. A declared value propagates to every parameter
+      calculated from this one.
+
 ## Value
 
 NULL (Calling this function has a side effect of changing the available
@@ -272,7 +282,9 @@ Other Interval specifications:
 [`interval_add_param()`](https://humanpred.github.io/pknca/reference/interval_add_param.md),
 [`pknca_check_parameter_classification()`](https://humanpred.github.io/pknca/reference/pknca_check_parameter_classification.md),
 [`pknca_concepts()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md),
-[`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md)
+[`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md),
+[`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md),
+[`pknca_presets()`](https://humanpred.github.io/pknca/reference/pknca_presets.md)
 
 ## Examples
 

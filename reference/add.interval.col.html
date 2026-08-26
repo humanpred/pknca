@@ -195,6 +195,15 @@ otherwise.</p></dd>
 from an extrapolation to infinity.  A declared value propagates to
 every parameter calculated from this one.</p></dd>
 
+<dt><code>secondary</code></dt>
+<dd><p><code>TRUE</code> for a parameter that needs inputs from more
+than one profile, such as bioavailability, which compares two
+administrations, or renal clearance, which needs an amount excreted
+and a plasma AUC.  One interval cannot supply those, so a secondary
+parameter is never chosen automatically; it stays available by name.
+A declared value propagates to every parameter calculated from this
+one.</p></dd>
+
 
 </dl></dd>
 
@@ -295,7 +304,9 @@ rather than naming a data source or another parameter.</p></dd>
 <code><a href="interval_add_param.html">interval_add_param()</a></code>,
 <code><a href="pknca_check_parameter_classification.html">pknca_check_parameter_classification()</a></code>,
 <code><a href="pknca_concepts.html">pknca_concepts()</a></code>,
-<code><a href="pknca_parameter_table.html">pknca_parameter_table()</a></code></p></div>
+<code><a href="pknca_interval_table.html">pknca_interval_table()</a></code>,
+<code><a href="pknca_parameter_table.html">pknca_parameter_table()</a></code>,
+<code><a href="pknca_presets.html">pknca_presets()</a></code></p></div>
     </div>
 
     <div class="section level2">

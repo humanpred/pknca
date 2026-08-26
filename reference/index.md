@@ -595,8 +595,14 @@
 - [`pknca_find_units_param()`](https://humanpred.github.io/pknca/reference/pknca_find_units_param.md)
   : Find NCA parameters with a given unit type
 
+- [`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md)
+  : Build an interval specification from a description of the analysis
+
 - [`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md)
   : How each NCA parameter is classified for interval selection
+
+- [`pknca_presets()`](https://humanpred.github.io/pknca/reference/pknca_presets.md)
+  : Named argument sets for building an interval specification
 
 - [`pknca_unit_conversion()`](https://humanpred.github.io/pknca/reference/pknca_unit_conversion.md)
   : Perform unit conversion (if possible) on PKNCA results

@@ -27,7 +27,9 @@ Other Interval specifications:
 [`interval_add_param()`](https://humanpred.github.io/pknca/reference/interval_add_param.md),
 [`pknca_check_parameter_classification()`](https://humanpred.github.io/pknca/reference/pknca_check_parameter_classification.md),
 [`pknca_concepts()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md),
-[`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md)
+[`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md),
+[`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md),
+[`pknca_presets()`](https://humanpred.github.io/pknca/reference/pknca_presets.md)
 
 ## Examples
 
@@ -1444,7 +1446,9 @@ get.interval.cols()
 #> [1] "uncommon"
 #> 
 #> $f$selection
-#> list()
+#> $f$selection$secondary
+#> [1] TRUE
+#> 
 #> 
 #> 
 #> $mrt.last
@@ -2860,7 +2864,9 @@ get.interval.cols()
 #> [1] "uncommon"
 #> 
 #> $clr.last$selection
-#> list()
+#> $clr.last$selection$secondary
+#> [1] TRUE
+#> 
 #> 
 #> 
 #> $clr.obs
@@ -2909,7 +2915,9 @@ get.interval.cols()
 #> [1] "common"
 #> 
 #> $clr.obs$selection
-#> list()
+#> $clr.obs$selection$secondary
+#> [1] TRUE
+#> 
 #> 
 #> 
 #> $clr.pred
@@ -2958,7 +2966,9 @@ get.interval.cols()
 #> [1] "uncommon"
 #> 
 #> $clr.pred$selection
-#> list()
+#> $clr.pred$selection$secondary
+#> [1] TRUE
+#> 
 #> 
 #> 
 #> $fe
