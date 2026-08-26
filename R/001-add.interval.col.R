@@ -460,8 +460,10 @@ add.interval.col <- function(name,
   assign("interval.cols", current, envir=.PKNCAEnv)
   # The classification is derived from the whole registry, so any registration
   # can change it.
-  if (exists("parameter_classification", envir=.PKNCAEnv)) {
-    rm("parameter_classification", envir=.PKNCAEnv)
+  for (cache_name in c("parameter_classification", "auc_basis_families")) {
+    if (exists(cache_name, envir=.PKNCAEnv)) {
+      rm(list=cache_name, envir=.PKNCAEnv)
+    }
   }
 }
 

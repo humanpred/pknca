@@ -26,9 +26,13 @@
 
 # The roots of extrapolation to infinity.  Everything calculated from one of
 # these needs data after the last dose, so it belongs to single-dose analysis.
+#
+# The aucint parameters are deliberately absent.  The "inf" in aucint.inf.obs
+# names the extrapolation used for the tail, not the end of the interval:  over
+# a bounded interval it extrapolates to the interval end, which is how AUCtau
+# is calculated at steady state.
 pknca_infinity_roots <- c(
   "aucinf.obs", "aucinf.pred",
-  "aucint.inf.obs", "aucint.inf.pred",
   "aucivinf.obs", "aucivinf.pred"
 )
 
@@ -164,6 +168,23 @@ classify_sample_types <- function(all_intervals) {
   )
 }
 
+# Sparse or dense.  The registry flag is set where pk.nca() needs it to route a
+# calculation, which leaves the parameters produced alongside a sparse one --
+# its standard error and degrees of freedom -- unflagged.  A parameter
+# calculated from a sparse parameter is sparse.
+classify_sparse <- function(all_intervals) {
+  flagged <-
+    names(all_intervals)[
+      vapply(all_intervals, function(x) isTRUE(x$sparse), TRUE)
+    ]
+  from_sparse <- deps_union(flagged, all_intervals)
+  vapply(
+    X = stats::setNames(names(all_intervals), names(all_intervals)),
+    FUN = function(n) n %in% from_sparse,
+    FUN.VALUE = TRUE
+  )
+}
+
 # Classify every registered parameter, caching the result until the registry
 # changes.  add.interval.col() drops the cache.
 parameter_classification <- function() {
@@ -180,7 +201,7 @@ parameter_classification <- function() {
       route = classify_routes(all_intervals),
       dosing = classify_dosing(all_intervals),
       sample_type = classify_sample_types(all_intervals),
-      sparse = vapply(all_intervals, function(x) isTRUE(x$sparse), TRUE),
+      sparse = classify_sparse(all_intervals),
       dose_normalized =
         vapply(
           all_intervals,

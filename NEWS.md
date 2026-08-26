@@ -6,6 +6,23 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `pknca_interval_table()` builds an interval specification from a description
+  of the analysis:  when the interval runs, how the drug was given, how often,
+  and what was collected.  Given only a start, an end, `dosing`, and `route` it
+  chooses the parameters usually reported for that context, the AUC they are
+  built on, and the imputation to calculate them from, and it keeps a parameter
+  out of the imputation when the imputed value would become the answer.
+  `pknca_presets()` gives named argument sets for common analyses.
+
+* Bug fix: `aucint.inf.obs` and `aucint.inf.pred` were classified as
+  single-dose parameters.  The "inf" in the name is the extrapolation used for
+  the tail, not the end of the interval, so they apply to any dosing pattern;
+  over a bounded interval they give AUCtau.
+
+* Bug fix: the standard errors and degrees of freedom produced alongside a
+  sparse AUC (`sparse_auc_se` and similar) were not classified as sparse, so
+  `pknca_parameter_table()` described them as dense.
+
 * A new imputation method, `start_predose_conc0`, uses a predose concentration
   as the start concentration when one is available and 0 when it is not, and
   keeps a concentration measured at the start time.  The chain
