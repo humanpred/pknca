@@ -30,6 +30,7 @@ calculated.  Otherwise \code{tau} is detected from the group's dose times with
 \seealso{
 Other Interval determination:
 \code{\link[=choose.auc.intervals]{choose.auc.intervals()}},
+\code{\link[=choose_tau]{choose_tau()}},
 \code{\link[=find.tau]{find.tau()}}
 }
 \concept{Interval determination}

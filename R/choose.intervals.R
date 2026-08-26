@@ -236,3 +236,85 @@ resolve_dose_tau <- function(interval, time.dose, options=list()) {
   }
   as.numeric(ret)
 }
+
+#' Choose the dosing interval from the times doses were given
+#'
+#' Doses recorded at the time they were actually given are not evenly spaced:
+#' a nominally daily dose may be given 22.5 hours after the last one and 24.3
+#' hours after that.  This finds the interval the doses were meant to repeat
+#' on, by taking the typical spacing between them and, when it is close enough
+#' to one of the intervals drugs are usually given on, using that.
+#'
+#' @inheritParams PKNCA.choose.option
+#' @param time.dosing Times when doses were given.
+#' @param tau.typical Dosing intervals to consider, in the time units of the
+#'   data.  The default (see [PKNCA.options()]) assumes hours and covers
+#'   four-hourly through four-weekly dosing.
+#' @param tau.tolerance How far the spacing between doses may be from a typical
+#'   interval and still be treated as that interval, as a fraction of it.  The
+#'   default of 0.1 accepts a nominally daily dose given between 21.6 and 26.4
+#'   hours after the last one.
+#' @returns The dosing interval, or `NA` when fewer than two doses were given
+#'   and nothing repeats.
+#' @details Doses that are exactly evenly spaced give that spacing, whatever
+#'   `tau.typical` holds, so nominal times are unaffected.  Otherwise the
+#'   median spacing is compared with `tau.typical` and the closest is used when
+#'   it is within `tau.tolerance`.  When none is close enough the median
+#'   spacing itself is returned with a warning, because the doses repeat on
+#'   something that is not a usual interval.
+#'
+#'   The median is used rather than the mean so that a missed or a late dose
+#'   does not move the answer.
+#'
+#'   **`tau.typical` is in the time units of the data.**  The default assumes
+#'   hours.  For data recorded in days or minutes, set the option to match, or
+#'   the snapping will not do anything useful.
+#' @seealso [find.tau()], which finds an interval that the doses repeat on
+#'   exactly, and [choose.auc.intervals()]
+#' @family Interval determination
+#' @examples
+#' # Nominal daily dosing
+#' choose_tau(c(0, 24, 48, 72))
+#'
+#' # The same doses as actually given
+#' choose_tau(c(0, 22.5, 48.3, 71.2))
+#'
+#' # Doses that repeat on something that is not a usual interval
+#' suppressWarnings(choose_tau(c(0, 20, 40, 60)))
+#' @export
+choose_tau <- function(time.dosing, tau.typical = NULL, tau.tolerance = NULL,
+                       options = list()) {
+  tau.typical <-
+    PKNCA.choose.option(name = "tau.typical", value = tau.typical, options = options)
+  tau.tolerance <-
+    PKNCA.choose.option(name = "tau.tolerance", value = tau.tolerance, options = options)
+  checkmate::assert_numeric(time.dosing)
+  x <- sort(unique(stats::na.omit(time.dosing)))
+  if (length(x) < 2) {
+    # One dose does not repeat
+    return(NA_real_)
+  }
+  spacing <- diff(x)
+  if (all(spacing == spacing[1])) {
+    # Evenly spaced doses say what the interval is without help
+    return(spacing[1])
+  }
+  observed <- stats::median(spacing)
+  nearest <- tau.typical[which.min(abs(tau.typical - observed))]
+  if (abs(observed - nearest) <= tau.tolerance * nearest) {
+    nearest
+  } else {
+    rlang::warn(
+      sprintf(
+        paste(
+          "Doses are spaced %g apart on average, which is not within %g%% of a",
+          "typical dosing interval (%s).  Using the spacing itself as tau; set",
+          "the `tau.typical` or `tau.tolerance` option if that is wrong."
+        ),
+        observed, 100 * tau.tolerance, paste(tau.typical, collapse = ", ")
+      ),
+      class = "pknca_warning_tau_not_typical"
+    )
+    observed
+  }
+}

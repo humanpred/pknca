@@ -59,6 +59,7 @@ Other Interval specifications:
 \code{\link[=pknca_presets]{pknca_presets()}}
 
 Other Interval determination:
+\code{\link[=choose_tau]{choose_tau()}},
 \code{\link[=find.tau]{find.tau()}},
 \code{\link[=resolve_dose_tau]{resolve_dose_tau()}}
 }

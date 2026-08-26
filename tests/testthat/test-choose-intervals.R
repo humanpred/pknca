@@ -218,3 +218,90 @@ test_that("resolve_dose_tau rejects an invalid tau column", {
     regexp="Must be finite"
   )
 })
+
+describe("choose_tau", {
+  it("gives the spacing when doses are evenly spaced", {
+    expect_equal(choose_tau(c(0, 24, 48, 72)), 24)
+    expect_equal(choose_tau(c(0, 12, 24, 36)), 12)
+    # ... whatever tau.typical holds, because there is nothing to infer
+    expect_equal(choose_tau(c(0, 20, 40, 60)), 20)
+    expect_equal(choose_tau(c(0, 5, 10)), 5)
+  })
+
+  it("snaps doses recorded at the time they were given to the interval intended", {
+    # find.tau() requires the doses to repeat exactly, so it gives NA for these
+    expect_equal(choose_tau(c(0, 22.52, 46.8, 71.3)), 24)
+    expect_true(is.na(find.tau(c(0, 22.52, 46.8, 71.3))))
+
+    expect_equal(choose_tau(c(0, 11.6, 24.4, 35.7)), 12)
+    expect_equal(choose_tau(c(0, 7.8, 16.4, 23.9)), 8)
+    expect_equal(choose_tau(c(0, 170, 335, 504)), 168)
+  })
+
+  it("is not moved by a single late dose", {
+    # The median spacing here is 24 while the mean is 32
+    expect_equal(choose_tau(c(0, 22.5, 48.3, 96.1)), 24)
+  })
+
+  it("does not snap to a typical interval that is not close", {
+    expect_warning(
+      expect_equal(choose_tau(c(0, 20.1, 39.8, 60.2)), 20.1),
+      class = "pknca_warning_tau_not_typical"
+    )
+  })
+
+  it("respects the tolerance", {
+    # 21 is 12.5% from 24, so it snaps only with a wider tolerance
+    expect_warning(
+      expect_equal(choose_tau(c(0, 21.2, 41.8, 63.1)), 21.2),
+      class = "pknca_warning_tau_not_typical"
+    )
+    expect_equal(choose_tau(c(0, 21.2, 41.8, 63.1), tau.tolerance = 0.2), 24)
+  })
+
+  it("respects the set of typical intervals", {
+    # Data recorded in days rather than hours
+    expect_equal(choose_tau(c(0, 0.98, 2.03, 2.99), tau.typical = c(1, 7, 14)), 1)
+    expect_warning(
+      choose_tau(c(0, 0.98, 2.03, 2.99)),
+      class = "pknca_warning_tau_not_typical"
+    )
+  })
+
+  it("gives NA when nothing repeats", {
+    expect_true(is.na(choose_tau(0)))
+    expect_true(is.na(choose_tau(numeric())))
+    expect_true(is.na(choose_tau(c(24, 24, 24))))
+    expect_true(is.na(choose_tau(NA_real_)))
+  })
+
+  it("ignores missing dose times", {
+    expect_equal(choose_tau(c(0, NA, 22.52, 46.8, 71.3)), 24)
+  })
+
+  it("does not care about the order the doses are given in", {
+    expect_equal(choose_tau(c(46.8, 0, 71.3, 22.52)), 24)
+  })
+
+  it("validates its inputs", {
+    expect_error(choose_tau("24"))
+    expect_error(choose_tau(c(0, 24), tau.typical = c(-1, 24)))
+    expect_error(choose_tau(c(0, 24), tau.tolerance = -0.1))
+  })
+})
+
+describe("tau.typical and tau.tolerance options", {
+  it("have documented defaults", {
+    expect_equal(
+      PKNCA.options("tau.typical"),
+      c(4, 6, 8, 12, 24, 48, 72, 168, 336, 672)
+    )
+    expect_equal(PKNCA.options("tau.tolerance"), 0.1)
+  })
+
+  it("are used by choose_tau", {
+    on.exit(PKNCA.options(default = TRUE))
+    PKNCA.options(tau.typical = c(1, 7))
+    expect_equal(choose_tau(c(0, 0.98, 2.03, 2.99)), 1)
+  })
+})

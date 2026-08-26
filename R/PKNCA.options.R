@@ -338,6 +338,31 @@
     }
     x
   },
+  tau.typical=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return(paste(
+        "Typical dosing intervals to snap a detected tau to when doses are not",
+        "exactly evenly spaced.  In the same time units as the concentration",
+        "and dose data; the default assumes hours.  See 'choose_tau'."))
+    if (default)
+      return(c(4, 6, 8, 12, 24, 48, 72, 168, 336, 672))
+    checkmate::assert_numeric(
+      x, any.missing = FALSE, lower = 0, min.len = 1, unique = TRUE,
+      .var.name = "tau.typical"
+    )
+    sort(x)
+  },
+  tau.tolerance=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return(paste(
+        "How far a detected dosing interval may be from a typical one and",
+        "still be treated as that typical interval, as a fraction of the",
+        "typical interval.  See 'choose_tau'."))
+    if (default)
+      return(0.1)
+    checkmate::assert_number(x, na.ok = FALSE, lower = 0, .var.name = "tau.tolerance")
+    x
+  },
   single.dose.aucs=function(x, default=FALSE, description=FALSE) {
     if (description)
       return("When data is single-dose, what intervals should be used?")

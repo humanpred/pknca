@@ -75,6 +75,8 @@ test_that("PKNCA.options", {
       min.hl.r.squared = 0.9,
       progress = TRUE,
       tau.choices = NA,
+      tau.typical = c(4, 6, 8, 12, 24, 48, 72, 168, 336, 672),
+      tau.tolerance = 0.1,
       single.dose.aucs = check.interval.specification(
         data.frame(
           start = 0,

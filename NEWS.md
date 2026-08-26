@@ -6,6 +6,16 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `choose_tau()` finds the dosing interval from the times doses were given.
+  Doses recorded as given are not evenly spaced -- a nominally daily dose may
+  come 22.5 hours after the last one and 24.3 hours after that -- which
+  [find.tau()] cannot see, because it looks for an interval the doses repeat on
+  exactly.  `choose_tau()` takes the median spacing and, when it is close
+  enough to an interval drugs are usually given on, uses that.  The new
+  `tau.typical` and `tau.tolerance` options say which intervals to consider and
+  how close is close enough; both are in the time units of the data and the
+  defaults assume hours.
+
 * `add.interval.col()` gains a `secondary` element in `selection`, marking a
   parameter that needs inputs from more than one profile.  Bioavailability
   compares two administrations and renal clearance needs both an amount
