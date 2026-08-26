@@ -380,6 +380,97 @@ test_that("aucint works with infinite intervals", {
   )
 })
 
+test_that("aucint.inf.pred works when the interval ends at infinity (#620)", {
+  concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
+  lambda_z <- log(2)
+  clast_pred <- 2
+  clast_obs <- 1
+  # Starting at 0.5 requires an interpolated concentration, which is the path
+  # where the clast.pred concentration is added a second time at tlast.  With
+  # nothing after tlast in the interval, that duplicate made tlast ambiguous.
+  conc_start <- 8 * 2^-0.5
+  # lin up/log down (the default) with a monotonically decreasing profile: the
+  # log trapezoid for each segment plus clast.pred/lambda.z after tlast
+  expected_pred <-
+    (conc_start - 4) / log(conc_start / 4) * 0.5 +
+    (4 - 2) / log(4 / 2) +
+    (2 - 1) / log(2 / 1) +
+    clast_pred / lambda_z
+  auc_pred <-
+    pk.calc.aucint.inf.pred(
+      conc = concdata$conc, time = concdata$time,
+      start = 0.5, end = Inf,
+      clast.pred = clast_pred, lambda.z = lambda_z
+    )
+  expect_equal(as.numeric(auc_pred), expected_pred)
+  expect_equal(attr(auc_pred, "method"), "AUC: lin up/log down")
+
+  # AUCinf,obs and AUCinf,pred differ only by the extrapolated tail
+  auc_obs <-
+    pk.calc.aucint.inf.obs(
+      conc = concdata$conc, time = concdata$time,
+      start = 0.5, end = Inf,
+      clast.obs = clast_obs, lambda.z = lambda_z
+    )
+  expect_equal(as.numeric(auc_obs) - as.numeric(auc_pred), (clast_obs - clast_pred) / lambda_z)
+
+  # An interval that ends far after tlast converges to the infinite interval
+  expect_equal(
+    as.numeric(
+      pk.calc.aucint.inf.pred(
+        conc = concdata$conc, time = concdata$time,
+        start = 0.5, end = 200,
+        clast.pred = clast_pred, lambda.z = lambda_z
+      )
+    ),
+    expected_pred
+  )
+
+  # The same holds for AUMC
+  aumc_pred <-
+    pk.calc.aumcint.inf.pred(
+      conc = concdata$conc, time = concdata$time,
+      start = 0.5, end = Inf,
+      clast.pred = clast_pred, lambda.z = lambda_z
+    )
+  aumc_obs <-
+    pk.calc.aumcint.inf.obs(
+      conc = concdata$conc, time = concdata$time,
+      start = 0.5, end = Inf,
+      clast.obs = clast_obs, lambda.z = lambda_z
+    )
+  tlast <- 3
+  expect_equal(
+    as.numeric(aumc_obs) - as.numeric(aumc_pred),
+    (clast_obs - clast_pred) * tlast / lambda_z + (clast_obs - clast_pred) / lambda_z^2
+  )
+})
+
+test_that("pk.nca calculates aucint.inf.pred with an infinite interval end (#620)", {
+  d_conc <- data.frame(subject = 1, time = c(1, 2, 4, 8), conc = c(50, 40, 8, 2))
+  d_dose <- data.frame(subject = 1, dose = 100, time = 0)
+  o_conc <- PKNCAconc(d_conc, conc~time|subject)
+  o_dose <- PKNCAdose(d_dose, dose~time|subject)
+  o_data <-
+    PKNCAdata(
+      o_conc, o_dose,
+      intervals =
+        data.frame(
+          start = 0, end = Inf,
+          aucint.inf.obs = TRUE, aucint.inf.pred = TRUE,
+          lambda.z = TRUE, clast.obs = TRUE, clast.pred = TRUE
+        )
+    )
+  o_nca <- pk.nca(o_data)
+  res <- as.data.frame(o_nca)
+  value <- function(x) res$PPORRES[res$PPTESTCD %in% x]
+  expect_equal(value("aucint.inf.obs"), 131.08069, tolerance = 1e-6)
+  expect_equal(
+    value("aucint.inf.obs") - value("aucint.inf.pred"),
+    (value("clast.obs") - value("clast.pred")) / value("lambda.z")
+  )
+})
+
 # ============================================================================
 # Check Argument Tests
 # ============================================================================
