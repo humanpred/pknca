@@ -6,6 +6,12 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `pk.calc.count_conc()` and `pk.calc.count_conc_measured()` document how they
+  treat imputed concentrations.  Neither distinguishes an imputed concentration
+  from a measured one, and `count_conc_measured` counts by value:  an imputed
+  zero is excluded because it is not above the limit of quantification, while a
+  concentration carried to the start time or a fabricated minimum is counted.
+
 * A new imputation method, `start_predose_conc0`, uses a predose concentration
   as the start concentration when one is available and 0 when it is not, and
   keeps a concentration measured at the start time.  The chain

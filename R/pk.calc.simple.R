@@ -1944,6 +1944,21 @@ add.interval.col(
 #' samples for a calculation and to ensure that data are consistent between
 #' individuals.
 #'
+#' @section Imputed concentrations:
+#'
+#' Both counts are taken after imputation, and neither distinguishes an imputed
+#' concentration from a measured one.  `count_conc` counts every non-missing
+#' concentration, so any imputation that adds a point increases it.
+#' `count_conc_measured` counts concentrations above the limit of
+#' quantification, so whether an imputed point is counted depends on its value
+#' rather than on its being imputed:  the zero added by
+#' [PKNCA_impute_method_start_conc0()] is not counted, while the concentration
+#' carried to the start time by [PKNCA_impute_method_start_predose()] and the
+#' minimum added by [PKNCA_impute_method_start_cmin()] are.
+#'
+#' To count only measured samples, calculate the counts in an interval with no
+#' imputation.
+#'
 #' @inheritParams pk.calc.cmax
 #' @returns a count of the non-missing concentrations (0 if all concentrations
 #'   are missing)
@@ -1976,7 +1991,10 @@ add.interval.col(
 #'   interval
 #'
 #' @returns a count of the non-missing, measured (not below or above the limit
-#'   of quantification) concentrations (0 if all concentrations are missing)
+#'   of quantification) concentrations (0 if all concentrations are missing).
+#'   "Measured" here means above the limit of quantification; an imputed
+#'   concentration above it is counted (see the "Imputed concentrations"
+#'   section).
 #' @export
 pk.calc.count_conc_measured <- function(conc, check=TRUE) {
   if (check) {
