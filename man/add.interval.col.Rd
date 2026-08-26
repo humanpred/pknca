@@ -97,6 +97,13 @@ otherwise.}
 \code{\link[=pknca_dosing]{pknca_dosing()}}).  Derived as single-dose for anything calculated
 from an extrapolation to infinity.  A declared value propagates to
 every parameter calculated from this one.}
+\item{\code{secondary}}{\code{TRUE} for a parameter that needs inputs from more
+than one profile, such as bioavailability, which compares two
+administrations, or renal clearance, which needs an amount excreted
+and a plasma AUC.  One interval cannot supply those, so a secondary
+parameter is never chosen automatically; it stays available by name.
+A declared value propagates to every parameter calculated from this
+one.}
 }}
 }
 \value{

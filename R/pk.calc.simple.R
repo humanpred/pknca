@@ -876,7 +876,8 @@ add.interval.col("f",
                  depends=NULL,
                  pptestcd_cdisc="FAB",
                  pptest_cdisc="Absolute Bioavailability",
-                 formula="$F = \\frac{AUC_2 / Dose_2}{AUC_1 / Dose_1}$")
+                 formula="$F = \\frac{AUC_2 / Dose_2}{AUC_1 / Dose_1}$",
+                 selection = list(secondary = TRUE))
 
 
 #' Calculate the mean residence time (MRT) for single-dose data or linear

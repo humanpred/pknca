@@ -76,7 +76,9 @@ test_that("an interval collection gives the excreta parameters and no imputation
     pknca_interval_table(
       0, 24, dosing = "single", route = "extravascular", sample_type = "interval"
     )
-  expect_equal(params_of(ret), sort(c("ae", "fe", "clr.obs", "volpk")))
+  # Renal clearance needs a plasma AUC as well as the amount excreted, so it
+  # is secondary and is not chosen automatically
+  expect_equal(params_of(ret), sort(c("ae", "fe", "volpk")))
   expect_false("impute" %in% names(ret))
 })
 
@@ -305,12 +307,47 @@ test_that("every parameter is reachable from some context, or documented as not"
       "kel.all", "kel.int.all", "kel.iv.all", "kel.ivint.all",
       "mrt.all", "mrt.int.all", "mrt.iv.all", "mrt.ivint.all",
       "vss.all", "vss.int.all", "vss.iv.all", "vss.ivint.all",
-      "vz.all", "vz.int.all", "vz.iv.all", "vz.ivint.all"
+      "vz.all", "vz.int.all", "vz.iv.all", "vz.ivint.all",
+      # Secondary parameters need inputs from more than one profile, which one
+      # interval cannot supply
+      "f",
+      "clr.last", "clr.obs", "clr.pred",
+      "clr.last.dn", "clr.obs.dn", "clr.pred.dn"
     ))
   )
   # Asking for it by name works
   expect_true(
     "aucall" %in% params_of(pknca_interval_table(0, 24, dosing = "single", include = "aucall"))
+  )
+})
+
+# Secondary parameters ---------------------------------------------------
+
+test_that("a secondary parameter is not chosen automatically", {
+  for (tier in c("common", "all")) {
+    expect_false(
+      "f" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", tier = tier)),
+      info = tier
+    )
+    expect_false(
+      "clr.obs" %in%
+        params_of_all(pknca_interval_table(
+          0, 24, dosing = "single", sample_type = "interval", tier = tier
+        )),
+      info = tier
+    )
+  }
+})
+
+test_that("a secondary parameter is still available by name", {
+  expect_true(
+    "f" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", include = "f"))
+  )
+  expect_true(
+    "clr.obs" %in%
+      params_of_all(pknca_interval_table(
+        0, 24, dosing = "single", sample_type = "interval", include = "clr.obs"
+      ))
   )
 })
 

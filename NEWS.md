@@ -6,6 +6,12 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `add.interval.col()` gains a `secondary` element in `selection`, marking a
+  parameter that needs inputs from more than one profile.  Bioavailability
+  compares two administrations and renal clearance needs both an amount
+  excreted and a plasma AUC, so one interval cannot supply what they need;
+  they are never chosen automatically but remain available by name.
+
 * `pknca_interval_table()` builds an interval specification from a description
   of the analysis:  when the interval runs, how the drug was given, how often,
   and what was collected.  Given only a start, an end, `dosing`, and `route` it

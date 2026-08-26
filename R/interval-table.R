@@ -119,7 +119,10 @@ context_parameters <- function(dosing, route, sample_type, sparse, tier, auc_bas
         route %in% classification$route[[n]] &&
           dosing %in% classification$dosing[[n]] &&
           identical(classification$sample_type[[n]], sample_type) &&
-          identical(classification$sparse[[n]], sparse)
+          identical(classification$sparse[[n]], sparse) &&
+          # A secondary parameter needs inputs from another profile, which one
+          # interval cannot supply; it is reached by name through `include`
+          !classification$secondary[[n]]
       },
       FUN.VALUE = TRUE
     )

@@ -95,7 +95,8 @@ add.interval.col("clr.last",
                  desc="Renal clearance, AUClast",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL",
-                 formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$")
+                 formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$",
+                 selection = list(secondary = TRUE))
 
 add.interval.col("clr.obs",
                  FUN="pk.calc.clr",
@@ -108,7 +109,8 @@ add.interval.col("clr.obs",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL",
                  formula="$CL_{R,\\text{obs}} = \\frac{AE}{AUC_{\\infty,\\text{obs}}}$",
-                 tier = "common")
+                 tier = "common",
+                 selection = list(secondary = TRUE))
 
 add.interval.col("clr.pred",
                  FUN="pk.calc.clr",
@@ -120,7 +122,8 @@ add.interval.col("clr.pred",
                  desc="Renal clearance, AUCinf,pred",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL",
-                 formula="$CL_{R,\\text{pred}} = \\frac{AE}{AUC_{\\infty,\\text{pred}}}$")
+                 formula="$CL_{R,\\text{pred}} = \\frac{AE}{AUC_{\\infty,\\text{pred}}}$",
+                 selection = list(secondary = TRUE))
 
 
 #' Calculate fraction excreted (typically in urine or feces)

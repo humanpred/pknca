@@ -183,6 +183,23 @@ test_that("a parameter calculated from a sparse parameter is sparse", {
   expect_false(tbl$sparse[tbl$parameter == "auclast"])
 })
 
+test_that("secondary marks the parameters needing more than one profile", {
+  tbl <- pknca_parameter_table()
+  expect_equal(
+    sort(tbl$parameter[tbl$secondary]),
+    sort(c(
+      # Compares two administrations
+      "f",
+      # Needs an amount excreted and a plasma AUC
+      "clr.last", "clr.obs", "clr.pred",
+      # ... and the dose-normalized forms follow from those
+      "clr.last.dn", "clr.obs.dn", "clr.pred.dn"
+    ))
+  )
+  # Fe needs only the amount excreted and the dose, both from one profile
+  expect_false(tbl$secondary[tbl$parameter == "fe"])
+})
+
 test_that("ceoi is for a finite infusion only", {
   # A continuous infusion has no end of infusion to measure a concentration at
   expect_equal(pknca_parameter_table("ceoi")$route, "iv_infusion")
@@ -346,7 +363,7 @@ test_that("pknca_parameter_table() describes the requested parameters", {
   expect_equal(
     names(ret),
     c(
-      "parameter", "concept", "tier", "sample_type", "sparse",
+      "parameter", "concept", "tier", "sample_type", "sparse", "secondary",
       "dose_normalized", "route", "dosing"
     )
   )
