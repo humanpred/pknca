@@ -6,6 +6,28 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `add.interval.col()` gains a `secondary` element in `selection`, marking a
+  parameter that needs inputs from more than one profile.  Bioavailability
+  compares two administrations and renal clearance needs both an amount
+  excreted and a plasma AUC, so one interval cannot supply what they need;
+  they are never chosen automatically but remain available by name.
+
+* `pknca_interval_table()` builds an interval specification from a description
+  of the analysis:  when the interval runs, how the drug was given, how often,
+  and what was collected.  Given only a start, an end, `dosing`, and `route` it
+  chooses the parameters usually reported for that context, the AUC they are
+  built on, and the imputation to calculate them from, and it keeps a parameter
+  out of the imputation when the imputed value would become the answer.
+  `pknca_presets()` gives named argument sets for common analyses.
+
+* Bug fix: `aucint.inf.obs` and `aucint.inf.pred` were classified as
+  single-dose parameters.  The "inf" in the name is the extrapolation used for
+  the tail, not the end of the interval, so they apply to any dosing pattern;
+  over a bounded interval they give AUCtau.
+
+* Bug fix: the standard errors and degrees of freedom produced alongside a
+  sparse AUC (`sparse_auc_se` and similar) were not classified as sparse, so
+  `pknca_parameter_table()` described them as dense.
 * `pk.calc.count_conc()` and `pk.calc.count_conc_measured()` document how they
   treat imputed concentrations.  Neither distinguishes an imputed concentration
   from a measured one, and `count_conc_measured` counts by value:  an imputed

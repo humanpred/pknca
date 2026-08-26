@@ -157,6 +157,49 @@ test_that("clast.pred is a concentration, not a half-life diagnostic", {
   expect_equal(pknca_parameter_table("lambda.z")$concept, "half_life")
 })
 
+test_that("the aucint parameters are not single-dose only", {
+  # The "inf" in aucint.inf.obs names the extrapolation used for the tail, not
+  # the end of the interval:  over a bounded interval it extrapolates to the
+  # interval end, which is how AUCtau is calculated at steady state
+  for (p in c("aucint.inf.obs", "aucint.inf.pred", "cl.int.inf.obs")) {
+    expect_equal(
+      pknca_parameter_table(p)$dosing,
+      "single,multiple,steady_state",
+      info = p
+    )
+  }
+  # ... while extrapolating a whole profile to infinity is
+  expect_equal(pknca_parameter_table("aucinf.obs")$dosing, "single")
+})
+
+test_that("a parameter calculated from a sparse parameter is sparse", {
+  # The registry flag is set only where pk.nca() needs it to route a
+  # calculation, so the standard error and degrees of freedom produced
+  # alongside a sparse AUC are not flagged
+  tbl <- pknca_parameter_table()
+  for (p in c("sparse_auc_se", "sparse_auc_df", "sparse_aumc_se", "sparse_aumc_df")) {
+    expect_true(tbl$sparse[tbl$parameter == p], info = p)
+  }
+  expect_false(tbl$sparse[tbl$parameter == "auclast"])
+})
+
+test_that("secondary marks the parameters needing more than one profile", {
+  tbl <- pknca_parameter_table()
+  expect_equal(
+    sort(tbl$parameter[tbl$secondary]),
+    sort(c(
+      # Compares two administrations
+      "f",
+      # Needs an amount excreted and a plasma AUC
+      "clr.last", "clr.obs", "clr.pred",
+      # ... and the dose-normalized forms follow from those
+      "clr.last.dn", "clr.obs.dn", "clr.pred.dn"
+    ))
+  )
+  # Fe needs only the amount excreted and the dose, both from one profile
+  expect_false(tbl$secondary[tbl$parameter == "fe"])
+})
+
 test_that("ceoi is for a finite infusion only", {
   # A continuous infusion has no end of infusion to measure a concentration at
   expect_equal(pknca_parameter_table("ceoi")$route, "iv_infusion")
@@ -320,7 +363,7 @@ test_that("pknca_parameter_table() describes the requested parameters", {
   expect_equal(
     names(ret),
     c(
-      "parameter", "concept", "tier", "sample_type", "sparse",
+      "parameter", "concept", "tier", "sample_type", "sparse", "secondary",
       "dose_normalized", "route", "dosing"
     )
   )

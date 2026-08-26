@@ -12,8 +12,9 @@ parameter.}
 }
 \value{
 A data.frame with one row per parameter and columns for the
-\code{concept}, \code{tier}, \code{sample_type}, whether it is \code{sparse} or
-\code{dose_normalized}, and the \code{route} and \code{dosing} contexts it applies to
+\code{concept}, \code{tier}, \code{sample_type}, whether it is \code{sparse},
+\code{dose_normalized}, or \code{secondary} (needing inputs from more than one
+profile), and the \code{route} and \code{dosing} contexts it applies to
 (comma-separated).
 }
 \description{
@@ -39,6 +40,8 @@ Other Interval specifications:
 \code{\link[=interval_add_impute]{interval_add_impute()}},
 \code{\link[=interval_add_param]{interval_add_param()}},
 \code{\link[=pknca_check_parameter_classification]{pknca_check_parameter_classification()}},
-\code{\link[=pknca_concepts]{pknca_concepts()}}
+\code{\link[=pknca_concepts]{pknca_concepts()}},
+\code{\link[=pknca_interval_table]{pknca_interval_table()}},
+\code{\link[=pknca_presets]{pknca_presets()}}
 }
 \concept{Interval specifications}
