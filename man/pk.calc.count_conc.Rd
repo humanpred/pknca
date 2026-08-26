@@ -19,7 +19,10 @@ a count of the non-missing concentrations (0 if all concentrations
 are missing)
 
 a count of the non-missing, measured (not below or above the limit
-of quantification) concentrations (0 if all concentrations are missing)
+of quantification) concentrations (0 if all concentrations are missing).
+"Measured" here means above the limit of quantification; an imputed
+concentration above it is counted (see the "Imputed concentrations"
+section).
 }
 \description{
 \code{count_conc} and \code{count_conc_measured} are typically used for quality control
@@ -34,6 +37,23 @@ that are not missing, above, or below the limit of quantification in an
 interval
 
 }}
+\section{Imputed concentrations}{
+
+
+Both counts are taken after imputation, and neither distinguishes an imputed
+concentration from a measured one.  \code{count_conc} counts every non-missing
+concentration, so any imputation that adds a point increases it.
+\code{count_conc_measured} counts concentrations above the limit of
+quantification, so whether an imputed point is counted depends on its value
+rather than on its being imputed:  the zero added by
+\code{\link[=PKNCA_impute_method_start_conc0]{PKNCA_impute_method_start_conc0()}} is not counted, while the concentration
+carried to the start time by \code{\link[=PKNCA_impute_method_start_predose]{PKNCA_impute_method_start_predose()}} and the
+minimum added by \code{\link[=PKNCA_impute_method_start_cmin]{PKNCA_impute_method_start_cmin()}} are.
+
+To count only measured samples, calculate the counts in an interval with no
+imputation.
+}
+
 \seealso{
 Other NCA parameters for concentrations during the intervals:
 \code{\link[=pk.calc.c0]{pk.calc.c0()}},
