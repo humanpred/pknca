@@ -61,8 +61,8 @@ add.interval.col(
 
 - desc:
 
-  A human-readable description of the parameter (\<=40 characters to
-  comply with SDTM)
+  A human-readable description of the parameter. SDTM requires \<=40
+  characters; a longer description is accepted with a warning.
 
 - sparse:
 
