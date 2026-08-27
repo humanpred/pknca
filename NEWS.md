@@ -237,8 +237,10 @@ the dosing including dose amount and route.
   states that a timepoint mean is zeroed when >50% of the measurements are
   BLQ (#579).
 
-* Parameter descriptions in `add.interval.col()` are now limited to 40
-  characters to comply with SDTM requirements.
+* Parameter descriptions in `add.interval.col()` longer than 40 characters now
+  warn, since SDTM requires descriptions of 40 characters or fewer.  The
+  description is still registered, so a package that supplies a longer one
+  keeps working and can shorten it before an SDTM submission.
 
 * Bug fix: `pk.nca()` no longer errors on unsorted concentration-time data.
   Group-level concentration data are now sorted by time before calculation, so

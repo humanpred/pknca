@@ -84,14 +84,20 @@ test_that("add.interval.col", {
   # description
   ## validates desc
   # ---- Valid boundary: exactly 40 characters ----
-  expect_no_error(
+  expect_no_warning(
     add.interval.col(
       name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = paste(rep("a", 40), collapse = "") )
   )
   
-  # ---- Invalid boundary: 41 characters ----
-  expect_error(
-    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = paste(rep("a", 41), collapse = "") )
+  # ---- Over-length: 41 characters warns, but still registers ----
+  expect_warning(
+    add.interval.col(name="a", FUN=NA, unit_type="conc", pretty_name="a", datatype="interval", desc = paste(rep("a", 41), collapse = "") ),
+    regexp = "`desc` is 41 characters; SDTM requires <=40",
+    class = "pknca_warning_desc_too_long"
+  )
+  expect_equal(
+    PKNCA::get.interval.cols()[["a"]]$desc,
+    paste(rep("a", 41), collapse = "")
   )
   
   # ---- NA ----

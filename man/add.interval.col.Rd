@@ -45,8 +45,8 @@ name is used.)}
 \item{depends}{Character vector of columns that must be run before this
 column.}
 
-\item{desc}{A human-readable description of the parameter (<=40 characters to
-comply with SDTM)}
+\item{desc}{A human-readable description of the parameter.  SDTM requires
+<=40 characters; a longer description is accepted with a warning.}
 
 \item{sparse}{Is the calculation for sparse PK?}
 

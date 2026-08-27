@@ -203,8 +203,8 @@ assert_selection <- function(selection, name) {
 #'   name is used.)
 #' @param depends Character vector of columns that must be run before this
 #'   column.
-#' @param desc A human-readable description of the parameter (<=40 characters to
-#'   comply with SDTM)
+#' @param desc A human-readable description of the parameter.  SDTM requires
+#'   <=40 characters; a longer description is accepted with a warning.
 #' @param sparse Is the calculation for sparse PK?
 #' @param formalsmap A named list mapping parameter names in the function call
 #'   to NCA parameter names.  See the details for information on use of
@@ -343,7 +343,16 @@ add.interval.col <- function(name,
   checkmate::assert_character(x = FUN, len = 1, any.missing = TRUE) # allows NA
   checkmate::assert_logical(x = sparse, len = 1, any.missing=FALSE)
   checkmate::assert_character(x = pretty_name, len = 1, min.chars = 1, any.missing=FALSE)
-  checkmate::assert_character(x = desc, len = 1, any.missing=FALSE, max.chars = 40)
+  checkmate::assert_character(x = desc, len = 1, any.missing=FALSE)
+  if (nchar(desc) > 40) {
+    rlang::warn(
+      sprintf(
+        "`desc` is %d characters; SDTM requires <=40.  The description for %s will need to be shortened before it can be used in an SDTM submission: %s",
+        nchar(desc), sQuote(name), sQuote(desc)
+      ),
+      class = "pknca_warning_desc_too_long"
+    )
+  }
   checkmate::assert_character(x = depends, null.ok = TRUE)
   tier <- match.arg(tier, choices = pknca_tiers())
   selection <- assert_selection(selection, name = name)
