@@ -151,15 +151,21 @@ the dosing including dose amount and route.
   an error naming those parameters, rather than silently reporting them as
   not calculated (#194).
 
-* `PKNCAconc()` no longer adds `volume` and `duration` columns to the data
-  when those arguments are not given.  They are only used by urine and fecal
-  calculations, so most datasets carried two columns of `NA` and `0` that
-  nothing read (#166).  Requesting an excretion rate parameter (`ermax`,
-  `ertmax`, `ertlst`) without a `duration` is now an error naming those
-  parameters; previously the collection duration silently defaulted to zero
-  and the rates were reported as infinite.  The error class for a missing
-  volume changed from `pknca_error_missing_volume` to
-  `pknca_error_missing_conc_input`, which now covers both inputs.
+* Breaking change: `PKNCAconc()` no longer adds `volume` and `duration` columns
+  to the data when those arguments are not given.  They are only used by urine
+  and fecal calculations, so most datasets carried two columns of `NA` and `0`
+  that nothing read (#166).  The object's column map changed to match:
+  `x$columns$volume` and `x$columns$duration` are `NULL` unless the argument was
+  given, where before they held the literal names `"volume"` and `"duration"` on
+  every object.  Code that reads one of those and passes it on will now pass
+  `NULL` rather than a column name, so guard for it (this broke `aNCA`, which
+  forwarded `x$columns$volume` into a function that only tested `missing()`).
+  Requesting an excretion rate parameter (`ermax`, `ertmax`, `ertlst`) without a
+  `duration` is now an error naming those parameters; previously the collection
+  duration silently defaulted to zero and the rates were reported as infinite.
+  The error class for a missing volume changed from
+  `pknca_error_missing_volume` to `pknca_error_missing_conc_input`, which now
+  covers both inputs.
 
 * Bug fix: `pk.calc.cl()`, `pk.calc.totdose()`, `pk.calc.ae()`,
   `pk.calc.clr()`, and `pk.calc.fe()` return `NA` rather than 0 when an input
