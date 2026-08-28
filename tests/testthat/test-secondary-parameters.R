@@ -309,6 +309,9 @@ test_that("exclusions on the source values carry through the linkage", {
   expect_false(is.na(exclude_auc))
   expect_match(exclude_auc, "half-life")
   expect_equal(d_res$exclude[d_res$PPTESTCD %in% "clr.obs"], exclude_auc)
+  # Every exclusion PKNCA sets during a calculation leaves the value NA, so what
+  # crosses the linkage here is the reason rather than a number
+  expect_true(is.na(d_res$PPORRES[d_res$PPTESTCD %in% "clr.obs"]))
 })
 
 # 11: an explicit link that cannot find its reference instance fails loud
