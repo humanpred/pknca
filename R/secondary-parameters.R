@@ -288,7 +288,17 @@ pk_nca_secondary <- function(results, data_calc) {
       for (col in override_cols) {
         m_home <- m_home & (results[[col]] %in% iv[[col]][r])
       }
-      instances <- unique(results[m_home, result_group_cols, drop = FALSE])
+      instances <-
+        if (length(result_group_cols) > 0) {
+          unique(results[m_home, result_group_cols, drop = FALSE])
+        } else if (any(m_home)) {
+          # Ungrouped data has one anonymous instance.  unique() cannot produce
+          # it: duplicated() on a zero-column data.frame returns length zero
+          # before R 4.5, and tibble refuses the zero-length subscript.
+          data.frame(row.names = 1L)
+        } else {
+          data.frame()
+        }
       for (k in seq_len(nrow(instances))) {
         g_home <- instances[k, , drop = FALSE]
         g_ref <- g_home
