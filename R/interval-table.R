@@ -33,15 +33,18 @@ context_auc_basis <- function(dosing, clast_type) {
 
 # What each AUC root is the basis for, cached because walking the dependency
 # graph for every root is too slow to redo per interval.  Dropped when the
-# registry changes, alongside the classification.
+# registry changes, alongside the classification; the recorded parameter names
+# additionally invalidate it when a registry is restored by assigning a saved
+# copy, which bypasses add.interval.col().
 auc_basis_families <- function() {
+  key <- names(get.interval.cols())
   cached <- get0("auc_basis_families", envir = .PKNCAEnv)
-  if (!is.null(cached)) {
-    return(cached)
+  if (!is.null(cached) && identical(cached$key, key)) {
+    return(cached$value)
   }
   roots <- pknca_auc_roots()
   ret <- stats::setNames(lapply(X = roots, FUN = get.parameter.deps), roots)
-  assign("auc_basis_families", ret, envir = .PKNCAEnv)
+  assign("auc_basis_families", list(key = key, value = ret), envir = .PKNCAEnv)
   ret
 }
 

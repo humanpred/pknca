@@ -24,6 +24,33 @@ test_that("every PKNCA parameter resolves to a concept in the vocabulary", {
   )
 })
 
+test_that("a registry restored by assignment does not leave a stale classification", {
+  # Restoring a saved registry bypasses add.interval.col()'s cache
+  # invalidation, so the classification must notice the parameter set changed
+  # on its own.  Only interval.cols is restored here -- deliberately not the
+  # caches -- because that is what an outside restorer does.
+  saved <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
+  withr::defer({
+    assign("interval.cols", saved, envir = PKNCA:::.PKNCAEnv)
+    if (exists("parameter_classification", envir = PKNCA:::.PKNCAEnv)) {
+      rm("parameter_classification", envir = PKNCA:::.PKNCAEnv)
+    }
+  })
+  add.interval.col(
+    "pknca_test_stale_cache_col_",
+    FUN = NA,
+    values = c(FALSE, TRUE),
+    unit_type = "unitless",
+    pretty_name = "Test: stale cache",
+    desc = "Coverage test for cache invalidation"
+  )
+  # Rebuild the cache while the temporary parameter is registered
+  expect_true("pknca_test_stale_cache_col_" %in% pknca_parameter_table()$parameter)
+  assign("interval.cols", saved, envir = PKNCA:::.PKNCAEnv)
+  expect_false("pknca_test_stale_cache_col_" %in% pknca_parameter_table()$parameter)
+  expect_equal(pknca_check_parameter_classification()$parameter, character(0))
+})
+
 test_that("every concept in the vocabulary is used by at least one parameter", {
   used <- unique(pknca_parameter_table()$concept)
   expect_equal(setdiff(pknca_concepts(), used), character(0))
