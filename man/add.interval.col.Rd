@@ -154,6 +154,14 @@ function unchanged.  Use this for an argument that selects a variant of
 a shared calculation function (for example, \code{auc.type = I("AUCall")})
 rather than naming a data source or another parameter.}
 }
+\item{For the reference interval:}
+\describe{
+\item{a parameter name wrapped in \code{\link[=pknca_ref]{pknca_ref()}}}{The value of that NCA
+parameter calculated in the reference interval, which is the interval
+named by the \verb{<name>_ref} column of the interval specification.  A
+parameter with any such argument is a secondary parameter; see the
+vignette "Secondary parameters".}
+}
 }
 }
 \examples{
@@ -186,6 +194,7 @@ Other Interval specifications:
 \code{\link[=pknca_concepts]{pknca_concepts()}},
 \code{\link[=pknca_interval_table]{pknca_interval_table()}},
 \code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
-\code{\link[=pknca_presets]{pknca_presets()}}
+\code{\link[=pknca_presets]{pknca_presets()}},
+\code{\link[=pknca_ref]{pknca_ref()}}
 }
 \concept{Interval specifications}

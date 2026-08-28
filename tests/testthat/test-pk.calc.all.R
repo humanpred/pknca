@@ -224,14 +224,15 @@ test_that("pk.nca.interval errors", {
 test_that("a parameter needing an interval column says so instead of asking for a bug report", {
   d_conc <- data.frame(conc = 2^(0:-5), time = 0:5)
   o_conc <- PKNCAconc(d_conc, conc~time)
-  # `conc_above` for time_above and `dose1` for f have to be given by the user
-  # as interval columns.  `tau` does not belong here: it is detected from the
-  # dose times when it is not given, and is NA with a warning when it can be
-  # neither given nor detected.
+  # `conc_above` for time_above has to be given by the user as an interval
+  # column, and `f` needs a reference interval to take its comparator from.
+  # `tau` does not belong here: it is detected from the dose times when it is
+  # not given, and is NA with a warning when it can be neither given nor
+  # detected.
   needs_interval_col <-
     list(
       time_above = "Cannot find argument 'conc_above' for NCA parameter 'time_above' (calculated by 'pk.calc.time_above'); give it as a column in the interval specification",
-      f = "Cannot find argument 'dose1' for NCA parameter 'f' (calculated by 'pk.calc.f'); give it as a column in the interval specification"
+      f = "The secondary parameter 'f' needs a reference interval for its 'dose1' argument (the value of 'totdose' from another interval). Set the 'f_ref' column in the interval specification to the 'interval_id' of the reference interval, give `group_ref` to PKNCAdata(), or use interval_add_secondary()."
     )
   for (current_param in names(needs_interval_col)) {
     d_interval <- data.frame(start = 0, end = Inf)
@@ -1032,8 +1033,13 @@ test_that("pk.nca can be run for each parameter independently (#473)", {
   # ── Params that cannot be tested independently ────────────────────────────
   # These require special data structures or multi-dose designs
   # and are tested in dedicated tests elsewhere
+  # The secondary parameters need a reference interval to take their comparator
+  # from, so one interval alone cannot calculate them; they are covered in
+  # test-secondary-parameters.R
   non_pknca_covered_params <- c(
     "f", "time_above",
+    "clr.last", "clr.obs", "clr.pred",
+    "clr.last.dn", "clr.obs.dn", "clr.pred.dn",
     "sparse_auc_se", "sparse_auc_df",
     "sparse_aumc_se", "sparse_aumc_df",
     "ceoi"

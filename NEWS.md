@@ -6,6 +6,25 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Secondary parameters can now be calculated by linking intervals with
+  `interval_id` and `<parameter>_ref` columns in the interval specification.
+  The reference interval supplies the cross-profile input (the plasma AUC for
+  renal clearance, the reference dose and AUC for bioavailability), it gains
+  the source parameter it needs without any change to the intervals the user
+  gets back, and exclusions on the source values carry through to the secondary
+  result (#76).
+
+* `add.interval.col()` accepts `pknca_ref()` in `formalsmap` to declare an
+  argument that comes from the reference interval rather than the current one.
+
+* Bug fix: requesting `clr.last`, `clr.obs`, or `clr.pred` without its AUC (and
+  without a reference interval) silently divided by zero and gave `Inf`.  It is
+  now an error saying which reference interval to give.
+
+* `f` now takes `dose1`/`auc1` from the reference interval and computes
+  `dose2`/`auc2` from its own interval as `totdose` and `aucinf.obs`; the old
+  `dose2` and `auc2` interval columns are ignored.
+
 * `add.interval.col()` gains a `secondary` element in `selection`, marking a
   parameter that needs inputs from more than one profile.  Bioavailability
   compares two administrations and renal clearance needs both an amount

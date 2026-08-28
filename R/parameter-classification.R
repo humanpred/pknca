@@ -192,7 +192,10 @@ classify_secondary <- function(all_intervals) {
     names(all_intervals)[
       vapply(
         all_intervals,
-        function(x) isTRUE(x$selection$secondary),
+        function(x) {
+          isTRUE(x$selection$secondary) ||
+            any(vapply(x$formalsmap, is_pknca_ref, TRUE))
+        },
         TRUE
       )
     ]

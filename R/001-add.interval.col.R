@@ -48,9 +48,41 @@ validate_cdisc_arg <- function(x, arg_name) {
   }
 }
 
+#' Mark a formalsmap entry as coming from the reference interval
+#'
+#' Used in the `formalsmap` argument of [add.interval.col()] to declare that an
+#' argument takes the value of `param` calculated in the *reference* interval
+#' (the interval named by the `<parameter>_ref` column of the interval
+#' specification) rather than in the current interval.
+#'
+#' @param param The name of the NCA parameter to take from the reference
+#'   interval (a single non-missing character string).  It does not need to be
+#'   registered yet when `pknca_ref()` is called; it is validated when the
+#'   parameter is calculated.
+#' @returns An object of class `pknca_ref`.
+#' @seealso [add.interval.col()], the vignette "Secondary parameters"
+#' @examples
+#' pknca_ref("aucinf.obs")
+#' @family Interval specifications
+#' @export
+pknca_ref <- function(param) {
+  checkmate::assert_string(param, min.chars = 1, na.ok = FALSE)
+  structure(list(param = param), class = "pknca_ref")
+}
+
+#' @rdname pknca_ref
+#' @param x An object to test.
+#' @export
+is_pknca_ref <- function(x) {
+  inherits(x, "pknca_ref")
+}
+
 # The vocabularies used to classify parameters.  They are defined here, next
 # to add.interval.col(), because it validates against them while the package is
 # still being sourced -- a file sorting after this one would not yet exist.
+# `pknca_ref()` is here for the same reason:  the registrations that use it in
+# their formalsmap run while `R/pk.calc.simple.R` and `R/pk.calc.urine.R` are
+# sourced, both of which sort before `R/secondary-parameters.R`.
 
 #' Concepts, tiers, and contexts used to classify NCA parameters
 #'
@@ -297,6 +329,14 @@ assert_selection <- function(selection, name) {
 #'     function unchanged.  Use this for an argument that selects a variant of
 #'     a shared calculation function (for example, `auc.type = I("AUCall")`)
 #'     rather than naming a data source or another parameter.}
+#'   }
+#'   \item{For the reference interval:}
+#'   \describe{
+#'     \item{a parameter name wrapped in [pknca_ref()]}{The value of that NCA
+#'     parameter calculated in the reference interval, which is the interval
+#'     named by the `<name>_ref` column of the interval specification.  A
+#'     parameter with any such argument is a secondary parameter; see the
+#'     vignette "Secondary parameters".}
 #'   }
 #' }
 #' @examples
