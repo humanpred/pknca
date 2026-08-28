@@ -48,6 +48,11 @@ validate_cdisc_arg <- function(x, arg_name) {
   }
 }
 
+# pknca_ref() lives here rather than with the rest of the secondary-parameter
+# machinery because the registrations that call it run while
+# R/pk.calc.simple.R and R/pk.calc.urine.R are sourced, and both of those sort
+# before R/secondary-parameters.R.
+
 #' Mark a formalsmap entry as coming from the reference interval
 #'
 #' Used in the `formalsmap` argument of [add.interval.col()] to declare that an
@@ -80,9 +85,6 @@ is_pknca_ref <- function(x) {
 # The vocabularies used to classify parameters.  They are defined here, next
 # to add.interval.col(), because it validates against them while the package is
 # still being sourced -- a file sorting after this one would not yet exist.
-# `pknca_ref()` is here for the same reason:  the registrations that use it in
-# their formalsmap run while `R/pk.calc.simple.R` and `R/pk.calc.urine.R` are
-# sourced, both of which sort before `R/secondary-parameters.R`.
 
 #' Concepts, tiers, and contexts used to classify NCA parameters
 #'
