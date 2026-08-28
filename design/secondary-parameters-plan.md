@@ -4,8 +4,8 @@ Resolves the request in issue 76 (secondary parameters such as renal clearance,
 bioavailability, accumulation ratio, and metabolite ratio, which need results
 from two different profiles).  This document is an implementation-grade
 specification: an implementer should be able to follow it section by section
-without making design decisions.  Where a judgement call was possible, it has
-already been made and is recorded in the "Decided defaults" table.
+without making design decisions.  Every judgement call has been made and is
+recorded in the "Confirmed decisions" table.
 
 Prior art reviewed while designing this: `pharmaverse/aNCA`
 (`R/ratio_calculations.R` computes ratios post-hoc on the results data.frame —
@@ -24,19 +24,24 @@ data.frame; it needs the linkage to be plain, editable columns).
 | instance | One (group values, start, end) realization of an intervals row in the results.  An intervals row without group columns yields one instance per matching data group. |
 | ref-marked argument | A `formalsmap` entry wrapped in `pknca_ref()`: its value comes from the reference interval. |
 | home argument | A `formalsmap` entry that is a plain parameter name: its value comes from the home interval, as today. |
+| explicit link | A pointer the user set (in their intervals, or via `interval_add_secondary()`). |
+| automatic link | A pointer the engine derived (the PR 3 reference finder). |
 
-**Decided defaults** (formerly open questions; the maintainer may override, but
-implement these unless told otherwise):
+**Confirmed decisions** (maintainer-confirmed 2026-08-28; implement exactly
+these):
 
 | # | Decision |
 |---|---|
-| 1 | Pointer columns are named `<param>_ref` (e.g. `clr.obs_ref`), not `<param>_ref_interval_id`. |
+| 1 | Pointer columns are named `<param>_ref` (e.g. `clr.obs_ref`). |
 | 2 | Engine-side dependency expansion (completing or creating reference intervals) is **ephemeral**: it operates on a working copy inside `pk.nca()`; the `PKNCAresults$data$intervals` the user gets back is their own intervals unchanged.  Visible materialization happens only through `interval_add_secondary()`. |
-| 3 | The automatic reference finder (PR 3) is on by default but **only replaces what would otherwise be an error** (see §5.2 eligibility rule), and always announces itself with a classed message. |
-| 4 | Ratio starter set: `ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`, `ratio.aucint.last`, `ratio.aucint.all`.  `f` stays single-variant (built on `aucinf.obs`). |
-| 5 | A reference instance that produced no value gives `NA` plus an `exclude` reason, not an error. |
-| 6 | Units for secondary rows come from the existing PPTESTCD units join.  With group-stratified units, warn on home/reference unit mismatch (`pknca_warning_secondary_units`); composing units from source rows is a follow-up, not part of this work. |
-| 7 | Sparse data (`is_sparse_pk(data)` is `TRUE`) with any secondary parameter requested aborts with `pknca_error_secondary_sparse_unsupported`.  Lifting this is a follow-up. |
+| 3 | The automatic reference finder (PR 3) is on by default and only acts where the alternative would be an error (§5.1 eligibility rule). |
+| 4 | Adding a needed source parameter to a reference interval is **silent** — calculating dependencies without announcement is default PKNCA behavior.  Creating a whole reference *interval* (PR 3) is announced with `pknca_message_secondary_ref_created`, and every link is disclosed in `PPANMETH`. |
+| 5 | **Explicit links fail loud; automatic links degrade.**  When an explicit link cannot supply a value (missing reference instance or missing source value), `pk.nca()` aborts (`pknca_error_secondary_ref_value_missing`).  When the automatic path fails (no unique reference found, or an auto-linked value is missing), the affected results are `NA` with an `exclude` reason and a warning (`pknca_warning_secondary_auto_reference`). |
+| 6 | Reference-group steering: `PKNCAdata()` gains `group_ref`, a **data.frame** of group values (e.g. `data.frame(PCSPEC = "PLASMA")`) that constrains — and can by itself direct — the automatic finder.  `interval_add_secondary()`'s `reference` argument is likewise a data.frame. |
+| 7 | Ratio starter set: `ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`, `ratio.aucint.last`, `ratio.aucint.all`.  Bioavailability gains basis variants: `f` (existing, AUCinf,obs-based) plus `f.pred`, `f.last`, `f.int.last`, `f.int.all`. |
+| 8 | **Unit reconciliation is in scope** and is the final PR (PR 4): reference-side input values are converted into the home group's units before the calculation; non-convertible units give `NA` + reason + `pknca_warning_secondary_units`.  §6.1; the text to post on issue 76 is Appendix A. |
+| 9 | Sparse data (`is_sparse_pk(data)` is `TRUE`) with any secondary parameter requested aborts with `pknca_error_secondary_sparse_unsupported`.  Lifting this is a to-do (§8). |
+| 10 | Aggregated (across-subject) references are **not** planned: parallel-design comparisons of that kind are bioavailability-style analyses already served by the existing bioavailability/`be_assess()` calculation methods. |
 
 **Work is split into four PRs, in order.**  Each PR ends with the "Definition
 of done" in §7.  Do not start a PR before the previous one is merged or at
@@ -52,9 +57,11 @@ least green.
 | `R/pk.calc.all.R` | `pk.nca()` (top-level flow, where the options merge happens, where results are combined), `pk.nca.intervals()` (per-group loop), `pk.nca.interval()` (per-interval loop; the argument-resolution chain around line 510–600; the exclusion concatenation around line 625–640; the `depends` expansion around line 488–492). |
 | `R/check.intervals.R` | `check.interval.specification()`, `parameter_direct_refs()`, `parameter_source_inputs()`, `set_requires_inputs()`. |
 | `R/parameter-classification.R` | `classify_secondary()`, `parameter_classification()`, `pknca_parameter_table()`. |
-| `R/intervals_support.R` | `interval_longer()`/`interval_wider()` key semantics, `interval_match_groups()`, the `interval_add_param()` S3 pattern (PR 2 copies this pattern). |
+| `R/intervals_support.R` | `interval_longer()`/`interval_wider()` key semantics, `interval_match_groups()` (multi-row data.frames match with AND-across-columns, OR-across-rows), the `interval_add_param()` S3 pattern (PR 2 copies this pattern). |
 | `R/set_and_assert_intervals.R` | `assert_intervals()` allowed-column computation. |
-| `R/prepare_data.R` | `full_join_PKNCAdata()` — how intervals scope to groups (the D2 matching rule reuses this mental model; no code change here). |
+| `R/class-PKNCAdata.R` | `PKNCAdata.default()` (named arguments after `...`; PR 3 adds `group_ref` there). |
+| `R/prepare_data.R` | `full_join_PKNCAdata()` — how intervals scope to groups (the reference-matching rule reuses this mental model; no code change here). |
+| `R/unit-support.R` | `pknca_units_table()` (group-stratified units tables and how conversion factors are computed — PR 4 reuses that machinery), `pknca_unit_conversion()`. |
 | `R/pk.calc.simple.R` lines ~850–880 and ~2020–2045 | Current registrations of `f` and `totdose`. |
 | `R/pk.calc.urine.R` lines ~60–130 | Current registrations of `pk.calc.clr` / `clr.last` / `clr.obs` / `clr.pred`. |
 | `tests/testthat/helper-generate_data.R` | `generate.conc()` / `generate.dose()` (optional; the fixtures below are explicit). |
@@ -80,11 +87,19 @@ noted): `pknca_ref()`, `is_pknca_ref()`, `interval_add_secondary()` (+
 `interval_add_accumulation_ratio()`, `interval_add_metabolite_ratio()`,
 `pk.calc.ratio()`.
 
-New internal functions (same file): `secondary_param_info()`,
-`combine_exclude_reasons()` (extracted, lives in `R/pk.calc.all.R`),
-`interval_deferred_params()`, `expand_secondary_intervals()`,
-`pk_nca_secondary()`, `secondary_lookup()`, `secondary_ppanmeth()`,
-`find_secondary_reference()` (PR 3), `secondary_legacy_resolvable()`.
+Changed exported function: `PKNCAdata()` gains a `group_ref` argument (PR 3).
+
+New registered parameters: `ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`,
+`ratio.aucinf.pred`, `ratio.aucint.last`, `ratio.aucint.all`, `f.pred`,
+`f.last`, `f.int.last`, `f.int.all` (all PR 2).
+
+New internal functions (in `R/secondary-parameters.R` unless noted):
+`secondary_param_info()`, `combine_exclude_reasons()` (extracted, lives in
+`R/pk.calc.all.R`), `interval_deferred_params()`,
+`expand_secondary_intervals()`, `pk_nca_secondary()`, `secondary_lookup()`,
+`secondary_ppanmeth()`, `secondary_parameter_names()`,
+`find_secondary_reference()` (PR 3), `secondary_legacy_resolvable()` (PR 3),
+`pknca_unit_reconcile_factor()` (PR 4, in `R/unit-support.R`).
 
 New intervals columns: `interval_id` (character), `<param>_ref` (character,
 one per secondary parameter, only when used).
@@ -100,18 +115,26 @@ New condition classes (all follow the existing `pknca_error_*` /
 | `pknca_error_secondary_ref_self` | error | A row's pointer equals its own `interval_id`. |
 | `pknca_error_secondary_id_conflict` | error | Rows sharing an `interval_id` disagree outside parameter/impute columns. |
 | `pknca_error_secondary_interval_id_invalid` | error | `interval_id` or a pointer column is a factor or non-character (all-`NA` logical is coerced instead). |
-| `pknca_error_secondary_needs_ref` | error | A secondary parameter is requested with no pointer and no legacy fallback (PR 3 narrows this to "and no findable reference"). |
+| `pknca_error_secondary_needs_ref` | error | A secondary parameter is requested with no pointer, no legacy fallback, and no way for the finder to act (finder not applicable: no sample-type contrast and no `group_ref`). |
+| `pknca_error_secondary_ref_value_missing` | error | An **explicit** link cannot supply a value: the reference instance or a source value does not exist in the results. |
 | `pknca_error_secondary_ambiguous_reference` | error | A results lookup for one (group, start, end, parameter) matches more than one row. |
 | `pknca_error_secondary_target_unregistered` | error | A `pknca_ref()` target is not a registered parameter at calculation time. |
 | `pknca_error_secondary_registration` | error | A secondary registration is malformed (uncovered formals; home argument missing from `depends`). |
 | `pknca_error_secondary_sparse_unsupported` | error | Sparse data plus any requested secondary parameter. |
 | `pknca_error_secondary_not_secondary_param` | error | `interval_add_secondary()` called for a non-secondary parameter. |
 | `pknca_error_secondary_ref_ambiguous_spec` | error | `interval_add_secondary()` cannot pick one reference row per test row. |
+| `pknca_error_group_ref_invalid` | error | `PKNCAdata(group_ref=)` is not a data.frame with >= 1 row and >= 1 column, or has columns that are not concentration group columns. |
+| `pknca_error_group_ref_value` | error | A `group_ref` column contains a value that appears nowhere in that column of the concentration data. |
 | `pknca_warning_secondary_ref_exists` | warning | `interval_add_secondary()` skips a test row that already has a different pointer. |
-| `pknca_warning_secondary_units` | warning | Group-stratified units differ between home and reference for a source parameter. |
-| `pknca_message_secondary_ref_completed` | message | Engine added a source parameter to a pointed-at reference row (ephemeral). |
-| `pknca_message_secondary_ref_created` | message | Engine derived and created/linked a reference interval (PR 3). |
+| `pknca_warning_secondary_auto_reference` | warning | The **automatic** path failed for some instances (no unique reference; auto-linked value missing); results are `NA` with reasons. |
+| `pknca_warning_secondary_units` | warning | PR 1–3: group-stratified units differ between home and reference for a source parameter.  PR 4 narrows it to: the units differ and are **not convertible** (result `NA` + reason). |
+| `pknca_message_secondary_ref_created` | message | The finder derived and created/linked a reference interval. |
 | `pknca_message_secondary_created_interval` | message | `interval_add_secondary()` created reference rows / assigned ids (visible). |
+
+There is deliberately **no** message when a source parameter is added to a
+reference interval (either ephemerally by the engine or visibly by the
+helper): silently calculating what a requested parameter depends on is default
+PKNCA behavior.
 
 ---
 
@@ -214,6 +237,12 @@ secondary_param_info <- function(param) {
   }
   list(fun = spec$FUN, ref_args = ref_args, home_args = home_params)
 }
+
+# Names of all registered secondary parameters
+secondary_parameter_names <- function() {
+  cls <- parameter_classification()
+  names(cls$secondary)[cls$secondary]
+}
 ```
 
 ### 3.3 Registry changes (`R/001-add.interval.col.R`)
@@ -282,8 +311,7 @@ returning the possibly-coerced `x`.  Rules, in order:
    aborts the same class.  (Mirrors the tolerance in `setExcludeColumn()`.)
 4. If any pointer column exists but `interval_id` does not, create
    `x$interval_id <- NA_character_` (pointers will then always fail rule 6 —
-   which is the correct error — unless PR 3's finder later fills them; do NOT
-   skip creating the column).
+   which is the correct error; do NOT skip creating the column).
 5. Rows sharing a non-`NA` `interval_id` must be identical in every column
    *except* the registered parameter request columns and `impute`.  Compare
    with `duplicated()` on the subset of other columns within each id; on
@@ -307,16 +335,6 @@ In `assert_intervals()`, extend `allowed_columns` with:
 ```r
       "interval_id",
       paste0(secondary_parameter_names(), "_ref"),
-```
-
-where `secondary_parameter_names()` is a small internal helper in
-`R/secondary-parameters.R`:
-
-```r
-secondary_parameter_names <- function() {
-  cls <- parameter_classification()
-  names(cls$secondary)[cls$secondary]
-}
 ```
 
 ### 3.8 Extract the exclusion combiner (`R/pk.calc.all.R`)
@@ -406,7 +424,7 @@ In `pk.nca.interval()`:
           } else {
             rlang::abort(
               sprintf(
-                "The secondary parameter '%s' needs a reference interval for its '%s' argument (the value of '%s' from another interval). Set the '%s_ref' column in the interval specification to the 'interval_id' of the reference interval, or use interval_add_secondary().",
+                "The secondary parameter '%s' needs a reference interval for its '%s' argument (the value of '%s' from another interval). Set the '%s_ref' column in the interval specification to the 'interval_id' of the reference interval, give `group_ref` to PKNCAdata(), or use interval_add_secondary().",
                 n, arg_formal, target, n
               ),
               class = "pknca_error_secondary_needs_ref"
@@ -423,8 +441,8 @@ Behavior notes the implementer must preserve and test:
 * `clr.last` requested *without* `auclast` and without a pointer previously
   fell through to `interval[["auclast"]]`, which is the logical request flag
   `FALSE`, silently computing `sum(ae)/0 = Inf`.  The new chain turns that
-  into `pknca_error_secondary_needs_ref`.  This is an intended fix; add a
-  NEWS bullet and a test.
+  into `pknca_error_secondary_needs_ref` (until PR 3's finder makes it
+  resolvable).  This is an intended fix; add a NEWS bullet and a test.
 * `f` with legacy `dose1`/`auc1` value columns (allowed only via
   `PKNCA.options(keep_interval_cols = ...)`) keeps computing; its `dose2`/
   `auc2` legacy columns are now ignored in favor of the calculated `totdose`
@@ -432,6 +450,9 @@ Behavior notes the implementer must preserve and test:
   bullet.
 
 ### 3.10 Ephemeral expansion, step 1 (`R/secondary-parameters.R`)
+
+Silent by design (decision 4): adding a needed source parameter to a
+reference interval is dependency calculation, which PKNCA never announces.
 
 ```r
 # Ensure every pointed-at reference interval requests the source parameters
@@ -465,13 +486,6 @@ expand_secondary_intervals <- function(data) {
           # split row's imputation.  A user needing a different imputation
           # requests the source parameter on the appropriate row explicitly.
           iv[[target]][ref_rows[1]] <- TRUE
-          rlang::inform(
-            sprintf(
-              "Secondary parameter '%s': added '%s' to reference interval '%s' for calculation.",
-              p, target, iv[[rc]][r]
-            ),
-            class = "pknca_message_secondary_ref_completed"
-          )
         }
       }
     }
@@ -481,7 +495,8 @@ expand_secondary_intervals <- function(data) {
 }
 ```
 
-(PR 3 extends this function; keep its shape.)
+(PR 3 extends this function — including the sparse guard moving so it also
+covers finder-eligible requests without pointers; keep its shape.)
 
 ### 3.11 The secondary pass (`R/secondary-parameters.R`)
 
@@ -515,9 +530,40 @@ secondary_ppanmeth <- function(ref_id, override_cols, g_home, g_ref, ref_start, 
   )
   sprintf("Reference interval: %s (%s)", ref_id, paste(details, collapse = ", "))
 }
+
+stop_secondary_ambiguous <- function(param, target, group_values) {
+  rlang::abort(
+    sprintf(
+      "More than one result found for '%s' (needed by secondary parameter '%s') for group %s. Differentiate the intervals (for example with distinct start/end or groups) so the reference is unique.",
+      target, param,
+      paste(names(group_values), unlist(lapply(group_values, as.character)),
+            sep = "=", collapse = ", ")
+    ),
+    class = "pknca_error_secondary_ambiguous_reference"
+  )
+}
+
+stop_secondary_value_missing <- function(param, target, ref_id, group_values, side) {
+  rlang::abort(
+    sprintf(
+      "The secondary parameter '%s' could not be calculated for group %s: the %s value '%s'%s is not available. Calculate it in the linked intervals, or remove the request.",
+      param,
+      paste(names(group_values), unlist(lapply(group_values, as.character)),
+            sep = "=", collapse = ", "),
+      side, target,
+      if (identical(side, "reference")) sprintf(" from reference interval '%s'", ref_id) else ""
+    ),
+    class = "pknca_error_secondary_ref_value_missing"
+  )
+}
 ```
 
-The pass:
+The pass.  Provenance (decision 5): links created by the finder are recorded
+by PR 3 in `attr(data_calc$intervals, "pknca_secondary_auto")` — a list with
+elements `links` (data.frame: `param`, `ref_id`) and `failures` (data.frame:
+one row per failed (interval row, param) with the row's intervals group
+columns, `start`, `end`, `param`, `reason`).  In PR 1 that attribute is always
+absent, so every link is explicit.
 
 ```r
 # Compute deferred secondary parameters from the combined results and append
@@ -530,10 +576,11 @@ pk_nca_secondary <- function(results, data_calc) {
     return(results)
   }
   iv <- data_calc$intervals
+  auto <- attr(iv, "pknca_secondary_auto")   # NULL in PR 1
   params <- intersect(names(iv), names(get.interval.cols()))
   ref_cols <- paste0(params, "_ref")
   present <- ref_cols %in% names(iv)
-  if (!any(present)) {
+  if (!any(present) && is.null(auto)) {
     return(results)
   }
   keep_cols <- data_calc$options$keep_interval_cols
@@ -549,6 +596,8 @@ pk_nca_secondary <- function(results, data_calc) {
     for (r in which(!is.na(iv[[rc]]) & vapply(iv[[p]], isTRUE, TRUE))) {
       info <- secondary_param_info(p)
       ref_id <- iv[[rc]][r]
+      is_auto <- !is.null(auto) &&
+        any(auto$links$param %in% p & auto$links$ref_id %in% ref_id)
       ref_row <- which(!is.na(iv$interval_id) & iv$interval_id == ref_id)[1]
       # Home instances: distinct group combinations with any result for this
       # row's scope and times
@@ -571,6 +620,10 @@ pk_nca_secondary <- function(results, data_calc) {
                                     info$home_args[[formal]], result_group_cols)
           if (found$n > 1) stop_secondary_ambiguous(p, info$home_args[[formal]], g_home)
           if (found$n == 0) {
+            if (!is_auto) {
+              stop_secondary_value_missing(p, info$home_args[[formal]], ref_id,
+                                           g_home, side = "home")
+            }
             failed_reason <- sprintf(
               "Home value '%s' is not available for the interval",
               info$home_args[[formal]]
@@ -584,6 +637,10 @@ pk_nca_secondary <- function(results, data_calc) {
                                     info$ref_args[[formal]], result_group_cols)
           if (found$n > 1) stop_secondary_ambiguous(p, info$ref_args[[formal]], g_ref)
           if (found$n == 0) {
+            if (!is_auto) {
+              stop_secondary_value_missing(p, info$ref_args[[formal]], ref_id,
+                                           g_home, side = "reference")
+            }
             failed_reason <- sprintf(
               "Reference value '%s' is not available from reference interval '%s'",
               info$ref_args[[formal]], ref_id
@@ -592,6 +649,7 @@ pk_nca_secondary <- function(results, data_calc) {
           inputs[[formal]] <- found$value
           excludes <- c(excludes, found$exclude)
         }
+        # PR 4 inserts unit reconciliation of the ref-side inputs here.
         if (is.null(failed_reason)) {
           value <- do.call(info$fun, inputs)
           excl <- combine_exclude_reasons(excludes, attr(value, "exclude"))
@@ -617,30 +675,21 @@ pk_nca_secondary <- function(results, data_calc) {
       }
     }
   }
+  # PR 3 adds here: NA rows from auto$failures, plus one
+  # pknca_warning_secondary_auto_reference per parameter that had any
+  # automatic failure (finder failure or missing auto-linked value).
   if (length(new_rows) == 0) results else dplyr::bind_rows(results, new_rows)
-}
-
-stop_secondary_ambiguous <- function(param, target, group_values) {
-  rlang::abort(
-    sprintf(
-      "More than one result found for '%s' (needed by secondary parameter '%s') for group %s. Differentiate the intervals (for example with distinct start/end or groups) so the reference is unique.",
-      target, param,
-      paste(names(group_values), unlist(lapply(group_values, as.character)),
-            sep = "=", collapse = ", ")
-    ),
-    class = "pknca_error_secondary_ambiguous_reference"
-  )
 }
 ```
 
-Units warning (decided default 6): after computing `override_cols`, if
-`data_calc$units` is a data.frame containing any column in
-`result_group_cols`, then for each computed instance compare the units row
-matched by the *home* group with the row matched by the *reference* group for
-each `info$ref_args` target's PPTESTCD; if they differ, `rlang::warn(...,
-class = "pknca_warning_secondary_units")` once per (parameter, pair).  Keep
-this self-contained and defensive (wrap lookups so absent PPTESTCD rows do
-not error).
+Interim units warning (superseded by the PR 4 reconciliation): after
+computing `override_cols`, if `data_calc$units` is a data.frame containing
+any column in `result_group_cols`, then for each computed instance compare
+the units row matched by the *home* group with the row matched by the
+*reference* group for each `info$ref_args` target's PPTESTCD; if they differ,
+`rlang::warn(..., class = "pknca_warning_secondary_units")` once per
+(parameter, pair).  Keep this self-contained and defensive (wrap lookups so
+absent PPTESTCD rows do not error); PR 4 replaces it.
 
 ### 3.12 Hooking into `pk.nca()` (`R/pk.calc.all.R`)
 
@@ -732,15 +781,14 @@ knowable; `expect_error(..., class = )` for every classed condition):
 7. Deferral is ephemeral: `result$data$intervals` is identical to
    `check.interval.specification(iv_sec)` (no machinery mutations), and the
    `ae` row exists in the results (home-side `depends` ran).
-8. Step-1 completion: with `auclast = c(FALSE, FALSE)` in the fixture
-   intervals, `pk.nca()` emits `pknca_message_secondary_ref_completed`, the
-   `clr.last` value is still `350/144`, the plasma `auclast` row is present in
-   `as.data.frame(result)` and absent with `filter_requested = TRUE`.
+8. Silent completion: with `auclast = c(FALSE, FALSE)` in the fixture
+   intervals, `pk.nca()` still gives `clr.last == 350/144` and emits no
+   secondary-related message or warning; the plasma `auclast` row is present
+   in `as.data.frame(result)` and absent with `filter_requested = TRUE`.
 9. `f` end-to-end self-consistency: two-treatment crossover fixture (one
    subject, groups `treatment %in% c("ref", "test")`, doses 100 and 50,
-   concentration profiles long enough for `aucinf.obs` — reuse
-   `generate.conc`-style profiles or an exponential decay with at least 3
-   points after tmax).  Assert
+   concentration profiles long enough for `aucinf.obs` — at least 3 points
+   after tmax).  Assert
    `f == (aucinf_test/totdose_test)/(aucinf_ref/totdose_ref)` where the four
    values are extracted from the same run's results, and
    `totdose` rows equal `c(100, 50)` exactly.
@@ -751,18 +799,19 @@ knowable; `expect_error(..., class = )` for every classed condition):
     (`expect_match(..., regexp = "[Ss]pan ratio")` — verify the exact wording
     from the `aucinf.obs` row and assert the `clr.obs` text `expect_equal`
     to it), and `clr.obs` `PPORRES` is the computed (non-`NA`) ratio.
-11. Missing reference instance: add `subject = 2` urine-only data; subject 2's
-    `clr.last` row has `PPORRES` `NA` and `exclude ==
-    "Reference value 'auclast' is not available from reference interval 'plasma024'"`.
+11. Explicit link, missing reference instance (decision 5): add
+    `subject = 2` urine-only data; `pk.nca()` aborts with
+    `pknca_error_secondary_ref_value_missing` and a message naming
+    `clr.last`, `auclast`, `plasma024`, and `subject=2`.
 12. Ambiguous reference: duplicate the plasma intervals row (second copy with
     `interval_id = NA`) so `auclast` is computed twice for the same
     (group, start, end); `pk.nca()` aborts with
     `pknca_error_secondary_ambiguous_reference`.
 13. Needs-ref error: intervals requesting only `f = TRUE` abort with class
-    `pknca_error_secondary_needs_ref` and message containing `"f_ref"`.
-    **Update** the existing expectation in `tests/testthat/test-pk.calc.all.R`
-    (around line 227–235) that currently expects
-    `"Cannot find argument 'dose1' ..."` to the new class/message.
+    `pknca_error_secondary_needs_ref` and message containing `"f_ref"` and
+    `"group_ref"`.  **Update** the existing expectation in
+    `tests/testthat/test-pk.calc.all.R` (around line 227–235) that currently
+    expects `"Cannot find argument 'dose1' ..."` to the new class/message.
 14. Legacy same-interval clr: single interval with `ae`, `auclast`, and
     `clr.last` all `TRUE` (no pointer) on data carrying both `conc` and
     `volume` values gives `clr.last == sum(conc*vol)/auclast` exactly (the
@@ -805,9 +854,9 @@ knowable; `expect_error(..., class = )` for every classed condition):
 
 ---
 
-## 4. PR 2 — authoring API and ratio parameters
+## 4. PR 2 — authoring API, ratio parameters, and bioavailability variants
 
-### 4.1 `pk.calc.ratio()` and registrations (`R/secondary-parameters.R`)
+### 4.1 `pk.calc.ratio()` and ratio registrations (`R/secondary-parameters.R`)
 
 ```r
 #' Calculate the ratio of a parameter between two intervals
@@ -829,9 +878,9 @@ Add `"parameter_ratio"` to the vector returned by `pknca_concepts()` in
 `R/001-add.interval.col.R` (append in the "Bookkeeping" group).  **Check
 whether a test pins the `pknca_concepts()` vector and update it.**
 
-Register the six ratios (loop or six explicit calls; explicit calls are the
-house style).  For each `p` in `c("cmax", "auclast", "aucinf.obs",
-"aucinf.pred", "aucint.last", "aucint.all")`:
+Register the six ratios (explicit calls, house style).  For each `p` in
+`c("cmax", "auclast", "aucinf.obs", "aucinf.pred", "aucint.last",
+"aucint.all")`:
 
 ```r
 add.interval.col(
@@ -840,16 +889,12 @@ add.interval.col(
   values = c(FALSE, TRUE),
   unit_type = "fraction",
   pretty_name = paste("Ratio of", p),
-  desc = paste("Ratio of", p, "to a reference interval"),   # keep <= 40 chars
+  desc = paste("Ratio of", p, "vs reference"),   # longest is 33 chars
   formalsmap = list(test = p, reference = pknca_ref(p)),
   depends = p,
   selection = list(concept = "parameter_ratio")
 )
 ```
-
-(`desc` length check: `"Ratio of aucinf.pred to a reference interval"` is 44
-characters — too long.  Use `desc = paste("Ratio of", p, "vs reference")` for
-every ratio; the longest, `"Ratio of aucint.last vs reference"`, is 33.)
 
 After the registrations, add the summary settings in the same file:
 
@@ -863,13 +908,49 @@ PKNCA.set.summary(
 )
 ```
 
+### 4.2 Bioavailability basis variants (`R/pk.calc.simple.R`, next to `f`)
+
+Four new registrations sharing `FUN = "pk.calc.f"`.  `f` itself stays as
+re-registered in PR 1 (AUCinf,obs basis, CDISC `FAB`).  For each pair
+(name, basis) in `("f.pred", "aucinf.pred")`, `("f.last", "auclast")`,
+`("f.int.last", "aucint.last")`, `("f.int.all", "aucint.all")`:
+
+```r
+add.interval.col("f.pred",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUCinf,pred)",
+                 desc="Bioavailability from AUCinf,pred",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("aucinf.pred"),
+                                 dose2="totdose",
+                                 auc2="aucinf.pred"),
+                 depends=c("totdose", "aucinf.pred"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{\\infty,pred,2} / Dose_2}{AUC_{\\infty,pred,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+```
+
+Analogous for the other three (`pretty_name` "Bioavailability (AUClast)" /
+"(AUCint,last)" / "(AUCint,all)"; `desc` "Bioavailability from AUClast" /
+"from AUCint,last" / "from AUCint,all" — all under 40 characters; the formula
+strings substitute the basis).  Repeating `pptestcd_cdisc="FAB"` across
+variants follows the `clr.*`/`RENALCL` precedent.  Add all four names plus
+`"f"` to a geomean/geocv `PKNCA.set.summary()` call if `f` is not already
+covered (check `grep 'PKNCA.set.summary' R/pk.calc.simple.R` — `f` is in an
+existing geomean group; extend that call with the new names).
+
 **Update the pinned secondary-parameter list** in
 `tests/testthat/test-parameter-classification.R` (the test
 "secondary marks the parameters needing more than one profile") to include the
-six `ratio.*` names.  Also confirm `pknca_check_parameter_classification()`
-still returns zero rows (the declared concept guarantees it).
+six `ratio.*` names and the four `f.*` variants.  Also confirm
+`pknca_check_parameter_classification()` still returns zero rows (the ratio
+concept declaration and the `bioavailability` concept on `pk.calc.f`
+guarantee it).
 
-### 4.2 `interval_add_secondary()` (`R/secondary-parameters.R`)
+### 4.3 `interval_add_secondary()` (`R/secondary-parameters.R`)
 
 S3 generic + methods, modeled line-for-line on the `interval_add_param()`
 pattern in `R/intervals_support.R` (data.frame method does the work; the
@@ -880,6 +961,12 @@ interval_add_secondary <- function(data, param, reference = NULL,
                                    target_groups = NULL, ref_id = NULL, ...)
 ```
 
+`reference` is a **data.frame** (decision 6): columns name intervals columns
+and/or `start`/`end`; multiple rows mean "any of these" (OR), matching
+`interval_match_groups()` semantics.  A named list input is accepted by
+coercing with `as.data.frame()` for convenience, but the data.frame form is
+the documented interface.
+
 Data.frame-method algorithm (each numbered step is sequential):
 
 1. `assert_param_name(param)` (from `R/assertions.R`); `param` must be length
@@ -887,26 +974,27 @@ Data.frame-method algorithm (each numbered step is sequential):
    `pknca_error_secondary_not_secondary_param` with message
    `"'<param>' is not a secondary parameter; use interval_add_param() instead"`.
 2. If `reference` is `NULL`: in PR 2, abort with a plain error
-   `"reference must be given"` (`checkmate::assert_list` /
-   `assert_data_frame`); PR 3 replaces this branch with the finder.
-   Otherwise coerce `reference` to a one-row data.frame.  Its names must each
-   be either `"start"`, `"end"`, or an existing column of the intervals
-   data.frame; unknown names abort (reuse the message style of
-   `interval_match_groups()`).
+   `"reference must be given"`; PR 3 replaces this branch with the finder
+   (and, for the PKNCAdata method, with `data$group_ref` as the default).
+   Otherwise coerce to a data.frame; its names must each be `"start"`,
+   `"end"`, or an existing column of the intervals data.frame; unknown names
+   abort (reuse the message style of `interval_match_groups()`).
 3. Locate reference rows: start from all rows; if `reference` has group
    columns, keep rows matching them via
    `interval_match_groups(iv, reference[group cols])`; if it has `start`/`end`
-   elements, additionally require equality on them.  Zero matching rows means
+   columns, additionally require equality on them.  Zero matching rows means
    **create** (step 4); otherwise go to step 5.
 4. Create reference rows: take the test rows (step 6 determines them; compute
    test rows first in the implementation), keep only their non-parameter,
    non-pointer columns (drop `impute` too — created rows get `NA` imputation;
    the data-level `data$impute` still applies to them automatically), override
-   the columns named in `reference` with its values, set every registered
-   parameter column `FALSE`, set the source parameters
-   (`secondary_param_info(param)$ref_args`) `TRUE`, and `unique()` the result.
-   Append to the intervals.  Emit `pknca_message_secondary_created_interval`
-   listing each created row as `col=value` pairs.
+   the columns named in `reference` with its values (one created row per
+   `reference` row when it has several), set every registered parameter
+   column `FALSE`, set the source parameters
+   (`secondary_param_info(param)$ref_args`) `TRUE`, and `unique()` the
+   result.  Append to the intervals.  Emit
+   `pknca_message_secondary_created_interval` listing each created row as
+   `col=value` pairs.
 5. Assign ids: reference rows lacking a non-`NA` `interval_id` get one.  If
    `ref_id` is given and there is exactly one distinct reference interval, use
    it; otherwise generate `"ref1"`, `"ref2"`, ... skipping ids already present
@@ -918,13 +1006,13 @@ Data.frame-method algorithm (each numbered step is sequential):
    matched in step 3, prefer the one with the same `start`/`end` as the test
    row; if that leaves anything ambiguous, abort
    `pknca_error_secondary_ref_ambiguous_spec` telling the user to narrow
-   `reference` (for example by adding `start`/`end`).
+   `reference` (for example by adding `start`/`end` columns).
 7. For each test row: if it already has a non-`NA` pointer differing from the
    chosen id, `rlang::warn(class = "pknca_warning_secondary_ref_exists")` and
    skip; otherwise set `iv[[param]] <- TRUE` and
    `iv[[paste0(param, "_ref")]] <- id` on that row.  Also set the source
-   parameters `TRUE` on the chosen reference rows (visible, unlike the
-   engine's ephemeral step).
+   parameters `TRUE` on the chosen reference rows (visible and silent —
+   dependency completion is not announced).
 8. Return `check.interval.specification(iv)` so the output is always valid.
 
 Wrappers (thin, one-line bodies delegating to `interval_add_secondary()`):
@@ -935,49 +1023,55 @@ interval_add_renal_clearance <- function(data, reference, param = "clr.obs",
 interval_add_accumulation_ratio <- function(data, ref_start, ref_end,
                                             param = "ratio.aucint.last",
                                             target_groups = NULL, ...)
-  # builds reference = list(start = ref_start, end = ref_end)
+  # builds reference = data.frame(start = ref_start, end = ref_end)
 interval_add_metabolite_ratio <- function(data, reference,
                                           param = "ratio.aucinf.obs",
                                           target_groups = NULL, ...)
 ```
 
-### 4.3 PR 2 tests
+### 4.4 PR 2 tests
 
 1. `pk.calc.ratio()` exact: `pk.calc.ratio(10, 20) == 0.5`; reference `0`,
    negative, and `NA` give `NA_real_`.
 2. `interval_add_secondary()` on the §3.14 fixture intervals *without* the
-   pointer/id columns, `reference = list(PCSPEC = "plasma")`: the returned
-   data.frame equals the hero-table intervals (`expect_equal` on the full
-   data.frame after column reordering by `check.interval.specification()`),
-   with the auto id `"ref1"`.
+   pointer/id columns, `reference = data.frame(PCSPEC = "plasma")`: the
+   returned data.frame equals the hero-table intervals (`expect_equal` on the
+   full data.frame after column reordering by
+   `check.interval.specification()`), with the auto id `"ref1"`.
 3. `ref_id = "plasma024"` reproduces the fixture exactly.
 4. Creation: intervals containing only the urine row; the same call creates
    the plasma row (message class checked with `expect_message(..., class =)`),
    and `pk.nca()` on the result gives `clr.last == 350/144`.
-5. Existing-pointer warning; not-secondary abort; unknown reference-name
+5. Existing-pointer warning; not-secondary abort; unknown reference-column
    abort; ambiguous-reference-spec abort (two plasma rows with different
-   times, no start/end in `reference`).
+   times, no `start`/`end` in `reference`).
 6. Accumulation ratio end-to-end: one group, two intervals 0–24 and 24–48
    with `aucint.last`; `interval_add_accumulation_ratio(iv, 0, 24)` then
    `pk.nca()`; assert `ratio.aucint.last == aucint_2/aucint_1` from the same
    run's rows, and PPANMETH `"Reference interval: ref1 (0-24)"`.
 7. Metabolite ratio end-to-end across an `Analyte` group, including the
    exclusion-carry assertion (excluded parent AUC marks the ratio).
-8. Cross-check: in a single-dose run computing `f` (via linkage) and
-   `ratio.aucinf.obs` on dose-normalized... (skip — instead) compute `f` and
-   verify `f == ratio_of(aucinf.obs.dn)` numerically by extracting
-   `aucinf.obs.dn` values from the same run and dividing manually.
-9. Summary settings: `PKNCA.set.summary` registered for all six ratios
-   (query `PKNCA.set.summary()`/the summary env the way existing tests do).
+8. Cross-check: in a crossover run computing `f` (via linkage), extract
+   `aucinf.obs.dn` for both treatments and assert
+   `f == aucinf.obs.dn_test / aucinf.obs.dn_ref`.
+9. `f.last` end-to-end with the linear-AUC crossover fixture: assert against
+   the hand-computable `auclast` values and doses
+   (`f.last == (auclast_test/dose_test)/(auclast_ref/dose_ref)` exactly);
+   `f.pred` self-consistency against same-run `aucinf.pred` rows.
+10. Summary settings: geomean/geocv registered for all six ratios and the
+    four `f.*` variants (query the summary settings the way existing tests
+    do).
+11. Registered `desc` lengths: `nchar(desc) <= 40` for every new
+    registration (loop over `get.interval.cols()` entries added here).
 
-### 4.4 PR 2 documentation
+### 4.5 PR 2 documentation
 
 `devtools::document()`; NEWS bullets (new `interval_add_secondary()` family;
-new `ratio.*` parameters); spell check.
+new `ratio.*` parameters; new `f.*` basis variants); spell check.
 
 ---
 
-## 5. PR 3 — automatic reference finder and interval creation
+## 5. PR 3 — automatic reference finder, `group_ref`, and interval creation
 
 ### 5.1 Eligibility (the error-replacing rule)
 
@@ -1001,71 +1095,155 @@ secondary_legacy_resolvable <- function(iv_row, info) {
 }
 ```
 
-### 5.2 The finder
+### 5.2 `group_ref` on `PKNCAdata()` (`R/class-PKNCAdata.R`)
+
+Add `group_ref = NULL` to the named arguments of `PKNCAdata.default()` (after
+`options`), store it as `ret$group_ref`, and document it:
+
+> `group_ref`: A data.frame of group values identifying reference profiles
+> for automatically-linked secondary parameters.  Columns must be group
+> columns of the concentration data; multiple rows mean any row may match.
+> For example, with groups crossing `TRTP`, `PCTEST`, and `PCSPEC`,
+> `group_ref = data.frame(PCSPEC = "PLASMA")` directs renal-clearance
+> references to the plasma profiles, and
+> `group_ref = data.frame(PCTEST = "midazolam")` directs metabolite ratios to
+> the parent analyte.
+
+Validation at `PKNCAdata()` time (fail loud on typos):
+
+* Not `NULL` and not a data.frame with at least one row and one column, or
+  any column not in `names(getGroups(o_conc))` — abort
+  `pknca_error_group_ref_invalid`.
+* Any value in a `group_ref` column that appears nowhere in that column of
+  the concentration data — abort `pknca_error_group_ref_value` naming the
+  column and value.
+
+### 5.3 The finder
 
 ```r
 # For one home intervals row and secondary parameter, derive the reference
-# group override(s) from the data.  Returns a list of candidate override sets
-# (named lists restricted to columns present in the intervals), or a classed
-# abort. Only the sample-type contrast is implemented: it applies when every
-# ref target needs a "spot" profile and the home parameter is an "interval"
-# collection (renal clearance), per parameter_classification().
+# group override(s) from the data.  Returns a named list of override values
+# (restricted to columns present in the intervals) on success, or a character
+# string holding the failure reason.  Returns NULL when the finder is not
+# applicable (caller falls through to the in-interval needs-ref abort).
 find_secondary_reference <- function(data, iv, row, param, info) { ... }
 ```
 
-Algorithm:
+Algorithm (all outcomes are per (intervals row, parameter); see step 7):
 
-1. `cls <- parameter_classification()`.  Applicability: every
-   `cls$sample_type[[t]]` for `t` in `info$ref_args` must be `"spot"` AND
-   `cls$sample_type[[param]]` must be `"interval"`.  If not applicable,
-   return `NULL` (the caller falls through to the PR 1 abort).  This rule is
-   mechanical — do not special-case parameter names.  (`ratio.*` parameters
-   are spot-vs-spot, so the finder never fires for them.)
-2. Volume signal: `vol_col <- data$conc$columns$volume`; if `NULL`, not
-   applicable (return `NULL`).  Build the per-group table: group columns
-   `gcols <- unlist(data$conc$columns$groups)`; for each distinct group in
-   `data$conc$data`, `has_volume <- any(!is.na(vol) & vol > 0)`.
-3. Home instances for the row: distinct groups matching the row's values for
-   the group columns present in the intervals.
-4. For each home instance `g`: candidates are groups with
-   `has_volume == FALSE`; distance = number of `gcols` where the candidate
-   differs from `g`; keep candidates at the minimum distance (must be >= 1).
-   Exactly one candidate: its differing columns/values form the override set.
-   Zero candidates or a tie: abort `pknca_error_secondary_needs_ref` with the
-   PR 1 message extended by
-   `" Automatic reference detection found <0|N> candidate reference group(s)[: <list>]."`.
-   A differing column that is not a column of the intervals data.frame also
-   aborts (message: add that column to the intervals so the reference can be
-   expressed, or set the pointer explicitly).
-5. Return the distinct override sets across home instances (normally one).
+1. `group_ref <- data$group_ref` (may be `NULL`).
+   `cls <- parameter_classification()`.
+   Sample-type applicability: `st_applicable <-` every
+   `cls$sample_type[[t]]` for `t` in `info$ref_args` equals `"spot"`, AND
+   `cls$sample_type[[param]] == "interval"`, AND the concentration data
+   declares a volume column (`!is.null(data$conc$columns$volume)`).  This
+   rule is mechanical — never special-case parameter names.
+2. If `is.null(group_ref) && !st_applicable`, return `NULL` (not applicable;
+   `ratio.*` with no `group_ref` lands here).
+3. Group table: `gcols <- unlist(data$conc$columns$groups)`; for each
+   distinct group combination in `data$conc$data`, compute `has_volume`
+   (`any(!is.na(vol) & vol > 0)` over that group's rows of the declared
+   volume column; `FALSE` when no volume column exists).
+4. Candidate pool: start from all groups; if `st_applicable`, keep
+   `has_volume == FALSE`; if `group_ref` is non-`NULL`, keep groups matching
+   it (`interval_match_groups()`).  Empty pool: return the failure reason
+   `"no candidate reference groups match"` (mentioning `group_ref` when it
+   was given).
+5. Home instances: distinct group combinations matching the row's values for
+   the group columns present in the intervals.  If a home instance matches
+   `group_ref` itself (all `group_ref` columns), the row fails with reason
+   `"the interval's own group matches group_ref; there is no distinct reference"`
+   (this is the parent-analyte row when a metabolite ratio is requested
+   everywhere).
+6. Per home instance: candidates are pool groups minus the instance itself
+   (distance 0 excluded); distance = number of `gcols` where the candidate
+   differs; keep the minimum distance.  Exactly one candidate: its differing
+   column/value pairs form the override set.  A tie: the row fails with a
+   reason listing the tied candidates and suggesting `group_ref` or an
+   explicit pointer.  An override column not present in the intervals
+   data.frame: the row fails with reason
+   `"add '<col>' to the intervals so the reference can be expressed, or set '<param>_ref'"`.
+7. Collapse across instances: all home instances of the row must produce the
+   same override set (they share the row's intervals-column values, so this
+   is the normal case).  More than one distinct set, or any instance-level
+   failure, fails the whole row (single-pointer model; the reason names the
+   first conflict).  Success returns the one override set.
 
-### 5.3 Extending `expand_secondary_intervals()`
+### 5.4 Extending `expand_secondary_intervals()`
 
-After the PR 1 step-1 loop, add: for every `(row r, secondary param p)` with
+Restructure so the sparse guard runs whenever any secondary parameter is
+requested at all (not only when pointer columns exist).  Then, after the
+PR 1 step-1 loop, for every (row `r`, secondary parameter `p`) with
 `isTRUE(iv[[p]][r])`, pointer `NA` (or column absent), and
 `!secondary_legacy_resolvable(iv[r, ], info)`:
 
-1. `overrides <- find_secondary_reference(...)`; `NULL` means leave it for
-   the in-interval abort (do nothing here).
-2. For each override set: look for an existing intervals row with the same
-   `start`/`end` as row `r` whose values match the override for the override
+1. `res <- find_secondary_reference(data, iv, r, p, info)`.
+   `NULL`: do nothing (the in-interval `needs_ref` abort handles it).
+2. Character (failure reason), per decision 5: record a row in the
+   `failures` ledger (the row's intervals group-column values, `start`,
+   `end`, `param = p`, `reason = res`) and set `iv[[p]][r] <- FALSE` so the
+   in-interval abort never fires.  Do not warn here; the pass warns once per
+   parameter (§5.5).
+3. Named list (success): look for an existing intervals row with the same
+   `start`/`end` as row `r` whose values match the override set for those
    columns and match row `r` for every other intervals group column.  Found:
    reuse it (assign an id if it has none).  Not found: append a working-copy
    row — copy row `r`'s non-parameter/non-pointer columns, apply the
-   override, set all parameter columns `FALSE` then the `info$ref_args`
-   targets `TRUE`, `impute <- NA_character_` if that column exists.
-3. Ids for created/reused rows: `"autoref1"`, `"autoref2"`, ... skipping
+   override, set all parameter columns `FALSE`, `impute <- NA_character_` if
+   that column exists.  Ids: `"autoref1"`, `"autoref2"`, ... skipping
    existing ids.  Ensure the pointer column exists
-   (`iv[[paste0(p, "_ref")]]`, created as `NA_character_` if absent) and set
-   it on row `r`.
-4. `rlang::inform(class = "pknca_message_secondary_ref_created")` with message
-   `sprintf("Secondary parameter '%s': using (%s) as the reference interval ('%s').", p, <col=value pairs plus start-end>, <id>)` —
-   or "created reference interval" wording when a row was appended.
-5. Ensure the ref targets are requested (the PR 1 step-1 loop logic; factor it
-   so both paths share it), then re-run
-   `check.interval.specification()` on the working copy before returning.
+   (`iv[[paste0(p, "_ref")]]`, created as `NA_character_` if absent), set it
+   on row `r`, record `(param = p, ref_id = id)` in the `links` ledger, and
+   run the shared completion logic (source parameters `TRUE` on the
+   reference row — silent).  Announce the linkage:
+   `rlang::inform(class = "pknca_message_secondary_ref_created")` with
+   message
+   `sprintf("Secondary parameter '%s': using (%s) as the reference interval ('%s').", p, <col=value pairs plus start-end>, id)`
+   — wording "created reference interval" when a row was appended, "using
+   existing interval" when reused.
+4. Attach the ledgers before returning:
+   `attr(data$intervals, "pknca_secondary_auto") <- list(links = ..., failures = ...)`
+   (both zero-row data.frames when nothing automatic happened).  Do **not**
+   re-run `check.interval.specification()` on the working copy — its
+   mutations preserve validity by construction, and a re-run would emit a
+   spurious "nothing to calculate" warning for a row whose only request was
+   removed in step 2.
 
-### 5.4 PR 3 tests
+### 5.5 Automatic-failure results (`pk_nca_secondary()`)
+
+Extend the pass (the marked insertion point in §3.11):
+
+* For each row of `auto$failures`: enumerate its instances from `results`
+  (match the ledger's group-column values plus `start`/`end`, the same
+  template mechanics as §3.11), and append one row per instance with
+  `PPTESTCD = param`, `PPORRES = NA_real_`, `PPANMETH = NA_character_`, and
+  `exclude = reason`.
+* Emit **one** `rlang::warn(class = "pknca_warning_secondary_auto_reference")`
+  per parameter that had any automatic failure (finder failures and missing
+  auto-linked values combined), e.g.
+  `"Secondary parameter 'clr.obs': no unique reference interval could be determined for 3 interval(s); results are NA (see the exclude column). Set 'clr.obs_ref', give group_ref to PKNCAdata(), or use interval_add_secondary()."`
+* Missing values on **auto** links already give `NA` + reason via the
+  `is_auto` branch in §3.11; count those instances into the same one-per-
+  parameter warning.
+
+### 5.6 `interval_add_secondary(reference = NULL)` and `group_ref`
+
+Replace the PR 2 "reference must be given" branch:
+
+* The PKNCAdata method with `reference = NULL` uses `data$group_ref` as the
+  reference specification when set (equivalent to passing it as
+  `reference`); otherwise both methods run `find_secondary_reference()` per
+  test row and **materialize** its answer (created rows, ids, pointers) with
+  the PR 2 message.  Finder failures here are errors (this is an explicit
+  user call, not the automatic path): abort with the failure reason, class
+  `pknca_error_secondary_needs_ref`.
+
+### 5.7 PR 3 tests
+
+The worked steering example (from the maintainer): groups
+`tidyr::crossing(TRTP = c("10 mg", "20 mg"), PCTEST = c("midazolam",
+"1-OH-midazolam"), PCSPEC = c("URINE", "PLASMA"))` with
+`group_ref = data.frame(PCSPEC = "PLASMA")`.
 
 1. Urine-only specification: the §3.14 conc fixture with intervals containing
    *only* the urine row (`ae`, `clr.last`); `pk.nca()` emits
@@ -1077,40 +1255,131 @@ After the PR 1 step-1 loop, add: for every `(row r, secondary param p)` with
 3. Reuse: when a plasma 0–24 row already exists (with or without `auclast`),
    no duplicate is created — exactly one `auclast` result row for the plasma
    group.
-4. Ambiguity: add a second spot group (e.g. `PCSPEC = "serum"`) with data;
-   abort `pknca_error_secondary_needs_ref` with message listing both
-   candidates.
-5. Eligibility: urine row requesting `clr.last` *and* `auclast` (legacy
+4. Ambiguity degrades (decision 5): add a second spot group
+   (`PCSPEC = "serum"`) with data and no `group_ref`; `pk.nca()` warns
+   (`pknca_warning_secondary_auto_reference`, message listing both
+   candidates), the `clr.last` rows are `NA` with the reason in `exclude`,
+   and every other requested parameter still calculates.
+5. `group_ref` breaks the tie: same fixture plus
+   `group_ref = data.frame(PCSPEC = "plasma")`; no warning, `clr.last ==
+   350/144`.
+6. Four-group steering fixture (the crossing above, minimal data per group):
+   `clr.*` requested on urine rows resolves each (TRTP, PCTEST) to its own
+   plasma reference — assert the PPANMETH of each result names the matching
+   PCTEST and TRTP is unchanged.
+7. `group_ref`-directed metabolite ratio: `ratio.aucinf.obs` requested on
+   all rows, `group_ref = data.frame(PCTEST = "midazolam")`, intervals carry
+   the `PCTEST` column: metabolite rows get parent-referenced ratios
+   (values asserted against same-run AUCs); parent rows get `NA` with the
+   "own group matches group_ref" reason and the one-per-parameter warning.
+8. Inexpressible override: intervals *without* the `PCSPEC` column on
+   mixed-specimen data — `clr` requests fail with the
+   "add 'PCSPEC' to the intervals" reason (NA + warning, not an abort).
+9. Eligibility: urine row requesting `clr.last` *and* `auclast` (legacy
    same-interval) — finder must NOT fire; value is the legacy same-interval
    value; no `pknca_message_secondary_ref_created`.
-6. Ratio params never trigger the finder: `ratio.cmax` requested without a
-   pointer aborts `pknca_error_secondary_needs_ref`.
-7. Multi-subject: two subjects with plasma+urine; both get correct values;
-   one created reference row serves both instances.
-8. `interval_add_secondary(iv, param = "clr.last", reference = NULL)`
-   materializes the same rows/pointers the engine derives (compare
-   data.frames), replacing the PR 2 "reference must be given" branch.
+10. Ratio params without `group_ref` never trigger the finder: `ratio.cmax`
+    requested without a pointer aborts `pknca_error_secondary_needs_ref`.
+11. Multi-subject: two subjects with plasma+urine; both get correct values;
+    one created reference row serves both instances.
+12. `PKNCAdata(group_ref=)` validation: non-data.frame aborts
+    `pknca_error_group_ref_invalid`; a column that is not a group column
+    aborts the same; a typo'd value (`PCSPEC = "PLASMAA"`) aborts
+    `pknca_error_group_ref_value`.
+13. `interval_add_secondary(iv, param = "clr.last", reference = NULL)` on a
+    data.frame materializes the same rows/pointers the engine derives
+    (compare data.frames); on a PKNCAdata with `group_ref` set, uses it.
 
-### 5.5 PR 3 documentation
+### 5.8 PR 3 documentation
 
-NEWS bullet ("Requesting renal clearance now derives and creates the plasma
-reference interval automatically when it is unambiguous"); document the
-finder's rules in the `interval_add_secondary()` roxygen.
+NEWS bullets ("Requesting renal clearance now derives and creates the plasma
+reference interval automatically when it is unambiguous"; "`PKNCAdata()`
+gains `group_ref` to steer automatic reference selection"); document the
+finder's rules in the `interval_add_secondary()` and `PKNCAdata()` roxygen.
 
 ---
 
-## 6. PR 4 — documentation
+## 6. PR 4 — unit reconciliation and documentation
+
+### 6.1 Unit reconciliation (decision 8)
+
+Principle: a secondary result keeps its registered unit type and continues to
+receive `PPORRESU` from the standard units-table join on the **home** group.
+For that assigned unit string to be *correct*, every reference-side input
+value must first be expressed in the units the home group's units table
+implies for that source parameter.  (Modeled on aNCA's convert-or-flag
+behavior in `calculate_ratios()`, done at calculation time instead of
+post-hoc.)
+
+Implementation, at the marked insertion point in `pk_nca_secondary()`
+(§3.11), active only when `data_calc$units` is a data.frame:
+
+1. For each ref-marked input: find the units-table `PPORRESU` for the source
+   parameter under the **reference** group (`u_ref`) and under the **home**
+   group (`u_home`).  The units table's group columns are a (possibly
+   minimal) subset of the result group columns — match with `%in%` on the
+   columns the units table actually has; a table without group columns means
+   uniform units (`u_ref == u_home`, nothing to do — make this the fast
+   path).
+2. `u_ref == u_home` (or either is `NA`): no change.
+3. Otherwise compute `factor <- pknca_unit_reconcile_factor(u_ref, u_home)`
+   (new internal in `R/unit-support.R`): returns the multiplicative factor
+   that converts a value in `u_ref` into `u_home`, or `NA_real_` when the
+   units are not convertible or the `units` package is unavailable.
+   Implement it by reusing the conversion-factor machinery that
+   `pknca_units_table(..., conversions=)` already uses (search
+   `R/unit-support.R` for where `units::set_units()` is called and factor it
+   out rather than re-implementing; wrap in
+   `requireNamespace("units", quietly = TRUE)`).
+4. Finite factor: multiply the reference-side input value by it before the
+   calculation.  Record nothing extra — `PPANMETH` already names the
+   reference interval, and the assigned home-group units are now correct.
+5. `NA` factor (not convertible): per the fail-loud rule, the result must
+   not be a number with wrong implied units.  Set the instance's result to
+   `NA_real_` with `exclude` reason
+   `sprintf("Units of '%s' differ between the reference ('%s') and home ('%s') groups and are not convertible", target, u_ref, u_home)`,
+   and emit one `pknca_warning_secondary_units` per (parameter, unit pair)
+   per run.  This applies to explicit and automatic links alike (it is a
+   data/units gap, not a specification error).
+
+Remove the interim PR 1 mismatch-only warning (§3.11 last paragraph) when
+this lands — reconciliation supersedes it, and
+`pknca_warning_secondary_units` keeps its class with the narrowed
+(non-convertible-only) meaning.
+
+Tests (extend `test-secondary-parameters.R`):
+
+1. Convertible stratified units: the §3.14 fixture with per-group units —
+   plasma `concu = "ng/mL"`, urine `concu = "mg/L"`, both `timeu = "hr"`,
+   urine `amountu = "mg"` (unit columns on the conc data so
+   `pknca_units_table()` stratifies).  1 ng/mL = 0.001 mg/L, so the plasma
+   `auclast` (144 hr*ng/mL) reconciles to `144*0.001` hr*mg/L and
+   `clr.last == 350/(144*0.001)` exactly, with `PPORRESU ==
+   "mg/(hr*mg/L)"`.
+2. Uniform units: values and units identical to the PR 1 run (fast path — no
+   behavior change; compare full result data.frames).
+3. Non-convertible: urine `concu = "mg/L"`, plasma `concu = "IU/mL"` (no
+   conversion defined): `clr.last` is `NA`, `exclude` matches
+   `"not convertible"`, warning class `pknca_warning_secondary_units`.
+4. `pknca_unit_reconcile_factor()` unit tests: `("ng/mL", "mg/L") == 0.001`;
+   identical units give 1; non-convertible gives `NA`; behaves when the
+   `units` package is missing (mock or skip-if-installed pattern used
+   elsewhere in the suite).
+
+### 6.2 Documentation
 
 1. New vignette `vignettes/v22-secondary-parameters.Rmd` (check the existing
    numbering scheme with `ls vignettes/` and pick the first free number in
    the intervals-related range; do not renumber existing vignettes).
    Sections: what a secondary parameter is; the hero table (hand
    specification); renal clearance start-to-finish (reuse the §3.14 fixture);
-   the automatic path (urine-only request); `interval_add_secondary()` and
-   the wrappers (accumulation ratio, metabolite ratio); how exclusions
-   propagate (show the excluded-AUC example and the `exclude` column);
+   the automatic path (urine-only request; `group_ref` steering with the
+   midazolam example); `interval_add_secondary()` and the wrappers
+   (accumulation ratio, metabolite ratio); bioavailability and its basis
+   variants; how exclusions propagate (show the excluded-AUC example and the
+   `exclude` column); unit reconciliation (the stratified-units example);
    reporting (`PPANMETH`, `summary()`, `filter_requested`); limitations
-   (sparse, stratified units, parallel-design references).
+   (sparse; §8 to-dos).
 2. `vignettes/v80-writing-parameter-functions.Rmd`: a new section "Parameters
    that need another interval" documenting `pknca_ref()`, the requirement
    that every formal be covered by `formalsmap`, home arguments listed in
@@ -1119,7 +1388,9 @@ finder's rules in the `interval_add_secondary()` roxygen.
 3. `_pkgdown.yml` currently lists no vignettes or reference index — verify
    this is still true and change nothing if so.
 4. `spelling::spell_check_package()`; update `inst/WORDLIST`.
-5. NEWS: add the vignette bullet.
+5. NEWS: unit-reconciliation and vignette bullets.
+6. Post the Appendix A text as a comment on issue 76 (maintainer action —
+   the `gh` credential in this environment is read-only).
 
 ---
 
@@ -1136,10 +1407,67 @@ finder's rules in the `interval_add_secondary()` roxygen.
 * No restyling of untouched code; new code follows the file's local style
   (registrations keep the aligned `argument=value` style of their file).
 
-## 8. Guardrails and known traps
+## 8. To-do list (deferred, in priority order)
+
+Kept here so nothing is lost; each becomes a GitHub issue when its turn
+comes.  (Aggregated/across-subject references are deliberately **not** on
+this list — decision 10.)
+
+1. **Sparse-data secondary parameters** — lift
+   `pknca_error_secondary_sparse_unsupported` (decision 9).
+2. **Route-based reference finder for absolute bioavailability** —
+   extravascular home, intravascular reference, derivable from `PKNCAdose`'s
+   route; relative bioavailability stays explicit/`group_ref`-driven, since
+   which formulation is the reference is not derivable from data.
+3. **Context-aware CDISC codes for ratios** — emit `RA*`/`MR*`-style
+   PPTESTCD by which columns differ between home and reference (aNCA's
+   `RA<param>` naming is prior art); refine FAB/FREL for the `f.*` family.
+4. **Post-hoc cross-group exclusion propagation** — `exclude()`/
+   `exclude_nca_*()` on a finished `PKNCAresults` cannot reach across groups;
+   includes teaching the forward `get.parameter.deps()` search to see
+   `formalsmap` references.
+5. **Preset integration** — `pknca_interval_table()`/`pknca_presets()`
+   emitting linked rows directly (largely subsumed by the finder plus
+   `group_ref`; revisit after PR 3 experience).
+6. **Molecular-weight-adjusted metabolite ratios** — molar conversion in the
+   units layer (`mw_reference`/`mw_test` style), explicitly not an
+   `adj_factor` on the secondary calculation.
+
+---
+
+## Appendix A — text to post on issue 76 (unit reconciliation)
+
+**Unit handling for secondary parameters** (recording this here so it is not
+lost): when a secondary parameter combines values from two different
+profiles, the two sides can carry different units — for example, renal
+clearance divides a urine amount in mg by a plasma AUC in hr\*ng/mL, and a
+metabolite ratio can compare analytes reported in different concentration
+units.  The cross-interval implementation
+(`design/secondary-parameters-plan.md`) handles this as follows, as the final
+step of the work:
+
+- Secondary results keep their registered unit types (`renal_clearance` =
+  amount/(time×conc), `fraction` for ratios and bioavailability), and units
+  continue to be assigned by the standard units-table join on the reporting
+  (home) interval's group.
+- Before a secondary value is computed, every reference-side input value is
+  converted into the units the *home* group's units table implies for that
+  source parameter (e.g., a plasma AUC in hr\*ng/mL is converted to hr\*mg/L
+  when the urine group's concentration unit is mg/L), using the `units`
+  package.  After that conversion, the home group's assigned unit string is
+  correct as-is.
+- When the two unit strings are not convertible (or the `units` package is
+  unavailable), the result is NA with an explanatory `exclude` reason and a
+  `pknca_warning_secondary_units` warning, rather than a number whose implied
+  units are wrong.
+- Molecular-weight adjustment for metabolite ratios remains a units-layer
+  feature (molar conversion), not part of the secondary-parameter linkage;
+  `adj_factor`-style multipliers are deliberately not part of the interface.
+
+## Appendix B — guardrails and known traps
 
 * **Do not** store `data_calc` in the returned `PKNCAresults`; ephemerality
-  (decided default 2) depends on storing the user's `data`.
+  (decision 2) depends on storing the user's `data`.
 * **Do not** resolve a ref-marked argument from the interval column named by
   the *target* (`interval[["auclast"]]` is the logical request flag — the
   historical silent-`Inf` bug).  Only the formal-named column
@@ -1147,10 +1475,17 @@ finder's rules in the `interval_add_secondary()` roxygen.
 * `%in%` (not `==`) for all group-value matching so `NA` group values match
   literally, mirroring the join semantics of `full_join_PKNCAdata()`.
 * `results$start`/`end` comparisons may involve `Inf`; `%in%` handles it.
+* The auto ledger rides as an attribute on `data_calc$intervals`
+  (`"pknca_secondary_auto"`); `pk_nca_secondary()` must read
+  `data_calc$intervals` directly — do not pass the intervals through
+  subsetting or joins between the expansion and the pass, which would strip
+  the attribute.
+* Adding source parameters to reference intervals is **silent** everywhere
+  (decision 4); only interval creation/linking is announced.
 * The registry is global state: any test that registers a parameter must
   snapshot `get("interval.cols", envir = PKNCA:::.PKNCAEnv)` before and
-  `assign` it back (plus re-run nothing else — the caches self-invalidate).
-  Prefer testing through `f`/`clr`/`ratio.*` instead of dynamic registration.
+  `assign` it back (the caches self-invalidate).  Prefer testing through
+  `f`/`clr`/`ratio.*` instead of dynamic registration.
 * Tests that set `PKNCA.options()` must save and restore the previous values
   (existing suite has the pattern).
 * `interval_longer()`/`interval_wider()` treat `interval_id` and pointer
@@ -1162,4 +1497,4 @@ finder's rules in the `interval_add_secondary()` roxygen.
   `ratio.*` registrations in the same file.
 * `R/secondary-parameters.R` sorts alphabetically after `R/pk.calc.*.R` and
   before `R/zzz-pk.calc.dn.R`; the dose-normalized machinery in the `zzz`
-  file must not be touched (no `.dn` variants for `ratio.*`).
+  file must not be touched (no `.dn` variants for `ratio.*` or `f.*`).
