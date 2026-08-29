@@ -1143,6 +1143,43 @@ interval_add_metabolite_ratio <- function(data, reference,
 `devtools::document()`; NEWS bullets (new `interval_add_secondary()` family;
 new `ratio.*` parameters; new `f.*` basis variants); spell check.
 
+### 4.6 As built (PR 2)
+
+PR 2 merged with these differences from the section-4 text above; trust the
+code over the sketches:
+
+* `pk.calc.ratio()` is vectorized (`ret <- test/reference` with an `NA` mask
+  for missing or non-positive references) rather than the scalar `if` sketch,
+  matching `pk.calc.f()`'s style and tolerating zero-length input.
+* `ref_id` given while `reference` matches more than one distinct reference
+  interval is an error (`pknca_error_secondary_ref_ambiguous_spec`), not
+  silent generation.
+* Invalid `reference` columns reuse the existing
+  `pknca_error_interval_target_groups_cols` class with a reference-specific
+  message; a parameter request column is rejected as a reference descriptor.
+  Valid descriptor columns are `interval_describe_cols()`: everything except
+  parameter requests, pointer columns, `interval_id`, and `impute`.
+* `target_groups` matching nothing (or only reference rows) warns
+  `pknca_warning_interval_no_target_rows` and returns the input unchanged,
+  mirroring `interval_edit_param()`.
+* Generating a factor identifier re-levels every pointer column to the
+  identifier column's levels (`interval_sync_ref_cols()`), or the result
+  would fail the comparability rule.
+* Reference rows are always excluded from the test rows, so a row can never
+  become its own reference.
+* When several reference intervals match, a test row takes the one sharing
+  its own `start`/`end` (`interval_pick_reference()`); with no such match the
+  ambiguity abort names the row.
+* The `interval_edit_secondary()` internals PR 3 will touch: the
+  `reference = NULL` branch to replace lives in
+  `interval_secondary_validate()`, and id generation is
+  `interval_new_ids()`/`interval_assign_ref_ids()` (already class-matched per
+  section 4.3 step 5).
+* Two test files (`test-pk.calc.all.R`, `test-interval-table.R`) derive their
+  secondary-parameter exclusion lists from
+  `pknca_parameter_table()$secondary` instead of hard-coding names, so new
+  secondary registrations do not break unrelated tests.
+
 ---
 
 ## 5. PR 3 — automatic reference finder, `group_ref`, and interval creation
