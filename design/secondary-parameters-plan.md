@@ -114,7 +114,8 @@ New condition classes (all follow the existing `pknca_error_*` /
 | `pknca_error_secondary_ref_not_secondary` | error | A `<p>_ref` column exists where `p` is a registered parameter that is not secondary. |
 | `pknca_error_secondary_ref_self` | error | A row's pointer equals its own `interval_id`. |
 | `pknca_error_secondary_id_conflict` | error | Rows sharing an `interval_id` disagree outside parameter/impute columns. |
-| `pknca_error_secondary_interval_id_invalid` | error | `interval_id` or a pointer column can hold no identifiers (factors and all-`NA` logical columns are coerced to character instead). |
+| `pknca_error_secondary_interval_id_invalid` | error | `interval_id` or a pointer column is not an atomic vector (e.g. a list column). |
+| `pknca_error_secondary_ref_class_mismatch` | error | The linkage columns do not share one comparable class (`interval_id` vs the pointer columns, or the pointer columns among themselves when `interval_id` is absent); factors must also share their level sets. |
 | `pknca_error_param_name_reserved` | error | `add.interval.col()` was given a name ending in `_ref` or the name `interval_id`. |
 | `pknca_error_secondary_needs_ref` | error | A secondary parameter is requested with no pointer, no legacy fallback, and no way for the finder to act (finder not applicable: no sample-type contrast and no `group_ref`). |
 | `pknca_error_secondary_ref_value_missing` | error | An **explicit** link cannot supply a value: the reference instance or a source value does not exist in the results. |
@@ -886,8 +887,18 @@ implementers should trust the code over the sketches where they differ:
   * `add.interval.col()` rejects parameter names ending in `_ref` and the
     name `interval_id` (`pknca_error_param_name_reserved`) — they would
     collide with the linkage columns.
-  * Factor `interval_id`/pointer columns are converted to character rather
-    than rejected.
+  * The linkage columns hold identifiers of **any comparable class** —
+    character names, factors, or numbers such as row indices — instead of
+    being forced to character.  Rules (replacing section 3.6's rule 3):
+    every linkage column must be an atomic vector
+    (`pknca_error_secondary_interval_id_invalid`); `interval_id` and every
+    pointer column must share one class, factors must also share their level
+    sets, and with no `interval_id` column the pointer columns must agree
+    among themselves (`pknca_error_secondary_ref_class_mismatch`); an all-`NA`
+    logical column is an unfilled column, compatible with anything and left
+    uncoerced.  Integer and double are one class for this purpose.  When
+    pointer columns exist without `interval_id`, the created all-`NA`
+    `interval_id` takes the pointer columns' class.
   * `PPANMETH` names the reference by how it differs and by its times only
     (`"Reference interval: PCSPEC=plasma, 0-24"`); the `interval_id` is
     tracking information, not part of the analysis method, so it is not in
@@ -1054,9 +1065,13 @@ Data.frame-method algorithm (each numbered step is sequential):
    `col=value` pairs.
 5. Assign ids: reference rows lacking a non-`NA` `interval_id` get one.  If
    `ref_id` is given and there is exactly one distinct reference interval, use
-   it; otherwise generate `"ref1"`, `"ref2"`, ... skipping ids already present
-   anywhere in the intervals.  Reference rows that already share ids keep
-   them.
+   it; otherwise generate an id **matching the class of the existing
+   `interval_id` column** (identifiers may be any comparable class, per
+   section 3.16): `"ref1"`, `"ref2"`, ... for character (skipping ids already
+   present anywhere in the intervals), `max(interval_id, na.rm = TRUE) + 1`
+   for numeric, and a new level `"ref<k>"` appended to the levels for factor.
+   An all-`NA` unfilled column defaults to character ids.  Reference rows
+   that already share ids keep them.
 6. Test rows: rows matching `target_groups` (via `interval_match_groups()`)
    when given, otherwise all rows that are not reference rows.  For each test
    row pick the reference row: if more than one distinct reference interval
@@ -1248,11 +1263,13 @@ PR 1 step-1 loop, for every (row `r`, secondary parameter `p`) with
    row — copy row `r`'s non-parameter/non-pointer columns, apply the
    override, set all parameter columns `FALSE`, `impute <- NA_character_` if
    that column exists.  Ids: `"autoref1"`, `"autoref2"`, ... skipping
-   existing ids.  Ensure the pointer column exists
-   (`iv[[paste0(p, "_ref")]]`, created as `NA_character_` if absent), set it
-   on row `r`, record `(param = p, ref_id = id)` in the `links` ledger, and
-   run the shared completion logic (source parameters `TRUE` on the
-   reference row — silent).  Announce the linkage:
+   existing ids, matched to the `interval_id` column's class as in section
+   4.3 step 5 (numeric ids continue with `max + 1`; factor ids gain a new
+   level).  Ensure the pointer column exists (created with the
+   `interval_id` column's class if absent), set it on row `r`, record
+   `(param = p, ref_id = id)` in the `links` ledger, and run the shared
+   completion logic (source parameters `TRUE` on the reference row —
+   silent).  Announce the linkage:
    `rlang::inform(class = "pknca_message_secondary_ref_created")` with
    message
    `sprintf("Secondary parameter '%s': using (%s) as the reference interval ('%s').", p, <col=value pairs plus start-end>, id)`

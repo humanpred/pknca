@@ -129,26 +129,66 @@ check.interval.specification <- function(x) {
     ]
 }
 
-# `interval_id` and the pointer columns hold ids, so they are character.  A
-# factor carries its labels and is converted; an all-NA logical column is what
-# an intervals data.frame gets from an unfilled column, and it is coerced
-# rather than rejected (mirroring the tolerance in setExcludeColumn()).
-coerce_interval_id_col <- function(value, col) {
-  if (is.character(value)) {
-    value
-  } else if (is.factor(value)) {
-    as.character(value)
-  } else if (is.logical(value) && all(is.na(value))) {
-    as.character(value)
+# How a linkage column's class reads in an error message
+interval_id_class_text <- function(value) {
+  if (is.factor(value)) {
+    sprintf("a factor with levels %s", paste(levels(value), collapse = ", "))
   } else {
-    rlang::abort(
-      sprintf(
-        "Interval column '%s' must be a character column of interval identifiers; it is of class '%s'",
-        col, class(value)[1]
-      ),
-      class = "pknca_error_secondary_interval_id_invalid"
-    )
+    class(value)[1]
   }
+}
+
+# The linkage columns hold identifiers of any comparable class -- character
+# names, numbers (such as row indices), or factors -- so what is required is
+# not one specific class but that the values can be compared to each other:
+# `interval_id` and every pointer column share one class, and factors share one
+# level set.  An all-NA logical column is what an intervals data.frame gets
+# from an unfilled column and is compatible with anything.
+check_interval_id_classes <- function(x, ref_cols) {
+  cols <- intersect(c("interval_id", ref_cols), names(x))
+  for (col in cols) {
+    if (!is.atomic(x[[col]])) {
+      rlang::abort(
+        sprintf(
+          "Interval column '%s' must be an atomic vector of interval identifiers; it is of class '%s'",
+          col, class(x[[col]])[1]
+        ),
+        class = "pknca_error_secondary_interval_id_invalid"
+      )
+    }
+  }
+  is_wildcard <-
+    vapply(
+      X = x[cols],
+      FUN = function(value) is.logical(value) && all(is.na(value)),
+      FUN.VALUE = TRUE
+    )
+  compare_cols <- cols[!is_wildcard]
+  if (length(compare_cols) > 1) {
+    first_col <- compare_cols[1]
+    for (col in compare_cols[-1]) {
+      compatible <-
+        if (is.factor(x[[first_col]]) || is.factor(x[[col]])) {
+          is.factor(x[[first_col]]) && is.factor(x[[col]]) &&
+            identical(levels(x[[first_col]]), levels(x[[col]]))
+        } else if (is.numeric(x[[first_col]])) {
+          is.numeric(x[[col]])
+        } else {
+          identical(class(x[[first_col]])[1], class(x[[col]])[1])
+        }
+      if (!compatible) {
+        rlang::abort(
+          sprintf(
+            "Interval linkage columns must hold comparable identifiers: '%s' is %s and '%s' is %s",
+            first_col, interval_id_class_text(x[[first_col]]),
+            col, interval_id_class_text(x[[col]])
+          ),
+          class = "pknca_error_secondary_ref_class_mismatch"
+        )
+      }
+    }
+  }
+  x
 }
 
 # Validate the cross-interval linkage columns of an interval specification:
@@ -180,13 +220,13 @@ check_interval_secondary_cols <- function(x) {
       )
     }
   }
+  x <- check_interval_id_classes(x, ref_cols)
   if (length(ref_cols) > 0 && !("interval_id" %in% names(x))) {
-    # Every pointer then fails the unknown-id check below, which is the correct
-    # error: the intervals say what to reference but nothing carries the id.
-    x$interval_id <- NA_character_
-  }
-  for (col in c("interval_id", ref_cols)) {
-    x[[col]] <- coerce_interval_id_col(x[[col]], col)
+    # Every non-NA pointer then fails the unknown-id check below, which is the
+    # correct error: the intervals say what to reference but nothing carries
+    # the id.  The created column takes the pointer columns' class (including
+    # factor levels) so it stays comparable.
+    x$interval_id <- x[[ref_cols[1]]][rep(NA_integer_, nrow(x))]
   }
   # An id names one logical interval, so rows sharing it may differ only in what
   # they calculate:  the parameter request columns and `impute`.

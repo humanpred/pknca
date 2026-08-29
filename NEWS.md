@@ -21,6 +21,11 @@ the dosing including dose amount and route.
   `interval_id`, which are reserved for the interval-linkage columns of the
   interval specification.
 
+* The `interval_id` and `<parameter>_ref` columns hold identifiers of any
+  comparable class: character names, factors, or numbers such as row indices.
+  The linkage columns must share one class (factors must also share their
+  levels) so that the values can be compared.
+
 * Bug fix: requesting `clr.last`, `clr.obs`, or `clr.pred` without its AUC (and
   without a reference interval) silently divided by zero and gave `Inf`.  It is
   now an error saying which reference interval to give.

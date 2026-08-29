@@ -100,7 +100,7 @@ test_that("check.interval.specification() validates interval_id and pointers", {
     ),
     class = "pknca_error_secondary_ref_not_secondary"
   )
-  # A factor carries its labels, so it is converted to character
+  # Identifiers may be any comparable class; factors keep their levels
   checked_factor <-
     check.interval.specification(
       data.frame(
@@ -108,25 +108,59 @@ test_that("check.interval.specification() validates interval_id and pointers", {
         interval_id = factor("a")
       )
     )
-  expect_identical(checked_factor$interval_id, "a")
+  expect_identical(checked_factor$interval_id, factor("a"))
   checked_factor_ref <-
+    check.interval.specification(
+      data.frame(
+        start = 0, end = 24, interval_id = factor(c("a", NA), levels = "a"),
+        auclast = c(TRUE, FALSE), ae = c(FALSE, TRUE),
+        clr.last = c(FALSE, TRUE),
+        clr.last_ref = factor(c(NA, "a"), levels = "a")
+      )
+    )
+  expect_identical(checked_factor_ref$clr.last_ref, factor(c(NA, "a"), levels = "a"))
+  # ... but the id and pointer columns must be comparable to each other
+  expect_error(
     check.interval.specification(
       data.frame(
         start = 0, end = 24, interval_id = c("a", NA),
         auclast = c(TRUE, FALSE), ae = c(FALSE, TRUE),
-        clr.last = c(FALSE, TRUE),
-        clr.last_ref = factor(c(NA, "a"))
+        clr.last = c(FALSE, TRUE), clr.last_ref = c(NA, 1)
       )
-    )
-  expect_identical(checked_factor_ref$clr.last_ref, c(NA, "a"))
-  # A column that cannot hold identifiers is rejected
+    ),
+    class = "pknca_error_secondary_ref_class_mismatch"
+  )
   expect_error(
     check.interval.specification(
-      data.frame(start = 0, end = 24, auclast = TRUE, interval_id = 1)
+      data.frame(
+        start = 0, end = 24, interval_id = factor(c("a", NA), levels = c("a", "b")),
+        auclast = c(TRUE, FALSE), ae = c(FALSE, TRUE),
+        clr.last = c(FALSE, TRUE),
+        clr.last_ref = factor(c(NA, "a"), levels = "a")
+      )
     ),
+    class = "pknca_error_secondary_ref_class_mismatch"
+  )
+  # Without an interval_id column the pointer columns must agree among
+  # themselves
+  expect_error(
+    check.interval.specification(
+      data.frame(
+        start = 0, end = 24, auclast = TRUE, ae = TRUE, aucinf.obs = TRUE,
+        clr.last = TRUE, clr.obs = TRUE,
+        clr.last_ref = "x", clr.obs_ref = 1
+      )
+    ),
+    class = "pknca_error_secondary_ref_class_mismatch"
+  )
+  # A column that cannot hold identifiers at all is rejected
+  invalid_list_col <- data.frame(start = 0, end = 24, auclast = TRUE)
+  invalid_list_col$interval_id <- list("a")
+  expect_error(
+    check.interval.specification(invalid_list_col),
     class = "pknca_error_secondary_interval_id_invalid"
   )
-  # An all-NA logical pointer column is coerced rather than rejected
+  # An all-NA logical column is an unfilled column, compatible with anything
   checked <-
     check.interval.specification(
       data.frame(
@@ -134,9 +168,8 @@ test_that("check.interval.specification() validates interval_id and pointers", {
         interval_id = NA, clr.last_ref = NA
       )
     )
-  expect_true(is.character(checked$interval_id))
-  expect_true(is.character(checked$clr.last_ref))
-  expect_equal(checked$clr.last_ref, NA_character_)
+  expect_true(all(is.na(checked$interval_id)))
+  expect_true(all(is.na(checked$clr.last_ref)))
   # One id must name one interval
   expect_error(
     check.interval.specification(
@@ -219,6 +252,18 @@ test_that("a secondary parameter links across intervals of ungrouped data", {
     d_res$PPANMETH[d_res$PPTESTCD %in% "clr.last"],
     "Reference interval: 0-12"
   )
+})
+
+# 5c: identifiers of any comparable class link intervals; row numbers are as
+# good as names
+test_that("numeric interval ids link intervals", {
+  iv_num <- iv_sec
+  iv_num$interval_id <- c(1, NA)
+  iv_num$clr.last_ref <- c(NA, 1)
+  o_data_num <-
+    PKNCAdata(o_conc_sec, intervals = iv_num, options = list(auc.method = "linear"))
+  d_res <- as.data.frame(pk.nca(o_data_num))
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/144)
 })
 
 # 6: the reference interval is disclosed in PPANMETH by how it differs (the

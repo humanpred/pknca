@@ -553,3 +553,17 @@ describe("edited intervals are usable by PKNCA", {
     expect_false(anyNA(result$intervals[, param_cols]))
   })
 })
+
+test_that("interval_add_param() warns and changes nothing when target_groups match no intervals", {
+  intervals <- data.frame(PCSPEC = "plasma", start = 0, end = 24, cmax = TRUE)
+  expect_warning(
+    result <-
+      interval_add_param(
+        intervals,
+        param = "auclast",
+        target_groups = data.frame(PCSPEC = "urine")
+      ),
+    class = "pknca_warning_interval_no_target_rows"
+  )
+  expect_equal(result, intervals)
+})
