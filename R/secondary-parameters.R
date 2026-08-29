@@ -977,6 +977,7 @@ interval_add_secondary.PKNCAdata <- function(data, param, reference = NULL,
 #'   `data.frame(Analyte = "parent")`).
 #' @param ref_start,ref_end The start and end times of the reference dosing
 #'   interval.
+#' @param ... Passed to [interval_add_secondary()], which accepts `ref_id`.
 #' @returns The input with the parameter requested and the linkage columns set.
 #' @seealso [interval_add_secondary()]
 #' @family Interval specifications

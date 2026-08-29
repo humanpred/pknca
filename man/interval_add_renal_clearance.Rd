@@ -46,7 +46,7 @@ request to matching intervals, with the same matching rules as \code{reference}.
 \code{NULL} (the default) requests it on every interval that is not a reference
 interval.}
 
-\item{...}{Ignored.}
+\item{...}{Passed to \code{\link[=interval_add_secondary]{interval_add_secondary()}}, which accepts \code{ref_id}.}
 
 \item{ref_start, ref_end}{The start and end times of the reference dosing
 interval.}
