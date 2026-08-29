@@ -713,6 +713,14 @@ test_that("interval_add_secondary() writes the linkage of the hand-written inter
     ),
     check.interval.specification(expected)
   )
+  # Linking what is already linked the same way changes nothing
+  expect_equal(
+    interval_add_secondary(
+      check.interval.specification(expected), param = "clr.last",
+      reference = data.frame(PCSPEC = "plasma")
+    ),
+    check.interval.specification(expected)
+  )
   # ... and the PKNCAdata method edits the object's own intervals
   o_data_bare <-
     PKNCAdata(o_conc_sec, intervals = iv_sec_bare, options = list(auc.method = "linear"))
@@ -990,6 +998,9 @@ test_that("interval_add_accumulation_ratio() links the later interval to the fir
   expect_equal(d_ratio$start, 24)
   # No group column differs, so only the reference times are reported
   expect_equal(d_ratio$PPANMETH, "Reference interval: 0-24")
+  # ... and it is summarized on the interval that requested it
+  d_summary <- as.data.frame(summary(pk.nca(o_data_acc)))
+  expect_equal(d_summary$ratio.aucint.last, c(".", "1.60"))
 })
 
 # 4.4.7: metabolite ratio across an analyte group
