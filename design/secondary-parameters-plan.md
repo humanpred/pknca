@@ -1120,7 +1120,9 @@ interval_add_metabolite_ratio <- function(data, reference,
 6. Accumulation ratio end-to-end: one group, two intervals 0–24 and 24–48
    with `aucint.last`; `interval_add_accumulation_ratio(iv, 0, 24)` then
    `pk.nca()`; assert `ratio.aucint.last == aucint_2/aucint_1` from the same
-   run's rows, and PPANMETH `"Reference interval: ref1 (0-24)"`.
+   run's rows, and PPANMETH `"Reference interval: 0-24"` (the as-built format
+   of section 3.16: the id is tracking information and stays out of
+   PPANMETH).
 7. Metabolite ratio end-to-end across an `Analyte` group, including the
    exclusion-carry assertion (excluded parent AUC marks the ratio).
 8. Cross-check: in a crossover run computing `f` (via linkage), extract
