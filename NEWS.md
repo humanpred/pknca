@@ -14,6 +14,23 @@ the dosing including dose amount and route.
   gets back, and exclusions on the source values carry through to the secondary
   result (#76).
 
+* `interval_add_secondary()` writes that linkage for you:  given the parameter
+  and a data.frame describing the reference profile, it requests the parameter,
+  gives the reference interval an `interval_id`, points the calculating
+  intervals at it, and creates the reference interval when the specification
+  does not have one yet.  `interval_add_renal_clearance()`,
+  `interval_add_accumulation_ratio()`, and `interval_add_metabolite_ratio()` are
+  the same call with the reference specification each analysis implies (#76).
+
+* New `ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`,
+  `ratio.aucint.last`, and `ratio.aucint.all` parameters give the ratio of a
+  parameter between the interval calculating it and its reference interval, for
+  accumulation ratios, metabolite ratios, and any other two-profile comparison
+  (#76).
+
+* Bioavailability gains the AUC basis variants `f.pred`, `f.last`, `f.int.last`,
+  and `f.int.all` alongside `f` (which is AUCinf,obs-based) (#76).
+
 * `add.interval.col()` accepts `pknca_ref()` in `formalsmap` to declare an
   argument that comes from the reference interval rather than the current one.
 

@@ -58,9 +58,11 @@ test_that("declaring pknca_ref() arguments does not change the secondary set", {
   expect_equal(
     sort(tbl$parameter[tbl$secondary]),
     sort(c(
-      "f",
+      "f", "f.pred", "f.last", "f.int.last", "f.int.all",
       "clr.last", "clr.obs", "clr.pred",
-      "clr.last.dn", "clr.obs.dn", "clr.pred.dn"
+      "clr.last.dn", "clr.obs.dn", "clr.pred.dn",
+      "ratio.cmax", "ratio.auclast", "ratio.aucinf.obs", "ratio.aucinf.pred",
+      "ratio.aucint.last", "ratio.aucint.all"
     ))
   )
   # A pknca_ref() in the formalsmap is by itself enough to be secondary
@@ -642,6 +644,537 @@ test_that("interval_remove_param() clears the pointer of a removed secondary par
   kept <- interval_remove_param(iv_sec, param = "ae")
   expect_identical(kept$clr.last_ref, iv_sec$clr.last_ref)
   expect_no_error(check.interval.specification(kept))
+})
+
+# The authoring API, the ratio parameters, and the bioavailability bases ------
+
+# The hero-table intervals without the linkage that interval_add_secondary()
+# writes
+iv_sec_bare <-
+  data.frame(
+    PCSPEC = c("plasma", "urine"),
+    start = 0, end = 24,
+    auclast = c(TRUE, FALSE),
+    ae = c(FALSE, TRUE)
+  )
+
+# The crossover fixture of PR 1 test 9, with `auc.method = "linear"` so that the
+# trapezoids are hand-computable:
+#   auclast(ref)  = (0+10)/2*1 + (10+8)/2*1 + (8+5)/2*2 + (5+2)/2*4 = 41
+#   auclast(test) = (0+6)/2*1  + (6+5)/2*1  + (5+3)/2*2 + (3+1)/2*4 = 24.5
+d_conc_cross <-
+  data.frame(
+    treatment = rep(c("ref", "test"), each = 5),
+    subject = 1,
+    time = rep(c(0, 1, 2, 4, 8), 2),
+    conc = c(0, 10, 8, 5, 2, 0, 6, 5, 3, 1)
+  )
+d_dose_cross <-
+  data.frame(treatment = c("ref", "test"), subject = 1, time = 0, dose = c(100, 50))
+o_conc_cross <- PKNCAconc(d_conc_cross, conc~time|treatment+subject)
+o_dose_cross <- PKNCAdose(d_dose_cross, dose~time|treatment+subject)
+
+# The parameters PR 2 registers
+new_secondary_params <-
+  c(
+    paste0(
+      "ratio.",
+      c("cmax", "auclast", "aucinf.obs", "aucinf.pred", "aucint.last", "aucint.all")
+    ),
+    "f.pred", "f.last", "f.int.last", "f.int.all"
+  )
+
+# 4.4.1: the ratio calculation itself
+test_that("pk.calc.ratio() divides the test value by the reference value", {
+  expect_equal(pk.calc.ratio(10, 20), 0.5)
+  expect_equal(pk.calc.ratio(3, 1.5), 2)
+  # A ratio to a reference that is not above zero is not interpretable
+  expect_equal(pk.calc.ratio(10, 0), NA_real_)
+  expect_equal(pk.calc.ratio(10, -5), NA_real_)
+  expect_equal(pk.calc.ratio(10, NA_real_), NA_real_)
+  expect_equal(pk.calc.ratio(NA_real_, 20), NA_real_)
+})
+
+# 4.4.2: the helper writes the hand-written specification
+test_that("interval_add_secondary() writes the linkage of the hand-written intervals", {
+  expected <- iv_sec
+  expected$interval_id <- c("ref1", NA)
+  expected$clr.last_ref <- c(NA, "ref1")
+  expect_equal(
+    interval_add_secondary(
+      iv_sec_bare, param = "clr.last", reference = data.frame(PCSPEC = "plasma")
+    ),
+    check.interval.specification(expected)
+  )
+  # A named list is coerced for convenience
+  expect_equal(
+    interval_add_secondary(
+      iv_sec_bare, param = "clr.last", reference = list(PCSPEC = "plasma")
+    ),
+    check.interval.specification(expected)
+  )
+  # ... and the PKNCAdata method edits the object's own intervals
+  o_data_bare <-
+    PKNCAdata(o_conc_sec, intervals = iv_sec_bare, options = list(auc.method = "linear"))
+  o_data_linked <-
+    interval_add_secondary(
+      o_data_bare, param = "clr.last", reference = data.frame(PCSPEC = "plasma")
+    )
+  expect_s3_class(o_data_linked, "PKNCAdata")
+  expect_equal(o_data_linked$intervals, check.interval.specification(expected))
+  d_res <- as.data.frame(pk.nca(o_data_linked))
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/144)
+})
+
+# 4.4.3: a named identifier reproduces the hand-written fixture exactly
+test_that("interval_add_secondary() uses the requested interval_id", {
+  expect_equal(
+    interval_add_secondary(
+      iv_sec_bare, param = "clr.last", reference = data.frame(PCSPEC = "plasma"),
+      ref_id = "plasma024"
+    ),
+    check.interval.specification(iv_sec)
+  )
+})
+
+# 4.4.4: a reference interval that does not exist yet is created
+test_that("interval_add_secondary() creates the reference interval it needs", {
+  iv_urine <- data.frame(PCSPEC = "urine", start = 0, end = 24, ae = TRUE)
+  expect_message(
+    iv_created <-
+      interval_add_secondary(
+        iv_urine, param = "clr.last", reference = data.frame(PCSPEC = "plasma")
+      ),
+    class = "pknca_message_secondary_created_interval"
+  )
+  expect_equal(nrow(iv_created), 2L)
+  expect_equal(iv_created$PCSPEC, c("urine", "plasma"))
+  expect_equal(iv_created$interval_id, c(NA, "ref1"))
+  expect_equal(iv_created$clr.last_ref, c("ref1", NA))
+  # The created interval calculates the source parameter and nothing else
+  expect_equal(iv_created$auclast, c(FALSE, TRUE))
+  expect_equal(iv_created$ae, c(TRUE, FALSE))
+  expect_equal(iv_created$clr.last, c(TRUE, FALSE))
+  o_data_created <-
+    PKNCAdata(o_conc_sec, intervals = iv_created, options = list(auc.method = "linear"))
+  d_res <- as.data.frame(pk.nca(o_data_created))
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/144)
+  # The renal clearance wrapper is the same call with the parameter filled in
+  expect_message(
+    iv_wrapped <-
+      interval_add_renal_clearance(
+        data.frame(PCSPEC = "urine", start = 0, end = 24, ae = TRUE),
+        reference = data.frame(PCSPEC = "plasma"), param = "clr.last"
+      ),
+    class = "pknca_message_secondary_created_interval"
+  )
+  expect_equal(iv_wrapped, iv_created)
+})
+
+# Each interval keeps its own reference, so a created reference follows the
+# times of the interval that needs it
+test_that("interval_add_secondary() creates one reference per test interval", {
+  iv_windows <- data.frame(PCSPEC = "urine", start = c(0, 24), end = c(24, 48), ae = TRUE)
+  expect_message(
+    iv_linked <-
+      interval_add_secondary(
+        iv_windows, param = "clr.last", reference = data.frame(PCSPEC = "plasma")
+      ),
+    class = "pknca_message_secondary_created_interval"
+  )
+  expect_equal(nrow(iv_linked), 4L)
+  expect_equal(iv_linked$PCSPEC, c("urine", "urine", "plasma", "plasma"))
+  expect_equal(iv_linked$start, c(0, 24, 0, 24))
+  expect_equal(iv_linked$interval_id, c(NA, NA, "ref1", "ref2"))
+  expect_equal(iv_linked$clr.last_ref, c("ref1", "ref2", NA, NA))
+})
+
+# A created reference row is a new interval:  it carries the columns of the
+# intervals it was built from but none of their bookkeeping
+test_that("a created reference interval takes no identifier or imputation of its own", {
+  iv_ids <-
+    data.frame(
+      PCSPEC = "urine", start = 0, end = 24, interval_id = "urine024",
+      impute = "start_conc0", ae = TRUE
+    )
+  expect_message(
+    iv_created <-
+      interval_add_secondary(
+        iv_ids, param = "clr.last", reference = data.frame(PCSPEC = "plasma")
+      ),
+    class = "pknca_message_secondary_created_interval"
+  )
+  expect_equal(iv_created$interval_id, c("urine024", "ref1"))
+  expect_equal(iv_created$clr.last_ref, c("ref1", NA))
+  # The whole-dataset imputation applies to the created row instead
+  expect_equal(iv_created$impute, c("start_conc0", NA))
+})
+
+# 4.4.5: every way the specification can be unusable
+test_that("interval_add_secondary() rejects what it cannot link", {
+  # A parameter that does not need a second profile
+  expect_error(
+    interval_add_secondary(
+      iv_sec_bare, param = "cmax", reference = data.frame(PCSPEC = "plasma")
+    ),
+    class = "pknca_error_secondary_not_secondary_param",
+    regexp = "interval_add_param"
+  )
+  # PR 3 replaces this with the automatic reference finder
+  expect_error(
+    interval_add_secondary(iv_sec_bare, param = "clr.last"),
+    regexp = "reference must be given"
+  )
+  # A reference column that is not part of the intervals
+  expect_error(
+    interval_add_secondary(
+      iv_sec_bare, param = "clr.last", reference = data.frame(nosuchcolumn = "plasma")
+    ),
+    class = "pknca_error_interval_target_groups_cols",
+    regexp = "nosuchcolumn"
+  )
+  # ... including a parameter request column, which does not identify an
+  # interval
+  expect_error(
+    interval_add_secondary(
+      iv_sec_bare, param = "clr.last", reference = data.frame(auclast = TRUE)
+    ),
+    class = "pknca_error_interval_target_groups_cols"
+  )
+  # An interval that already names a different reference is left alone
+  iv_pointed <-
+    data.frame(
+      PCSPEC = c("plasma", "serum", "urine"),
+      start = 0, end = 24,
+      interval_id = c("plasma024", "serum024", NA),
+      auclast = c(TRUE, TRUE, FALSE),
+      ae = c(FALSE, FALSE, TRUE),
+      clr.last = c(FALSE, FALSE, TRUE),
+      clr.last_ref = c(NA, NA, "serum024")
+    )
+  expect_warning(
+    iv_kept <-
+      interval_add_secondary(
+        iv_pointed, param = "clr.last", reference = data.frame(PCSPEC = "plasma"),
+        target_groups = data.frame(PCSPEC = "urine")
+      ),
+    class = "pknca_warning_secondary_ref_exists"
+  )
+  expect_equal(iv_kept$clr.last_ref, c(NA, NA, "serum024"))
+  # More than one reference interval and no way to choose between them
+  iv_two_plasma <-
+    data.frame(
+      PCSPEC = c("plasma", "plasma", "urine"),
+      start = c(0, 24, 0), end = c(24, 48, 48),
+      auclast = c(TRUE, TRUE, FALSE),
+      ae = c(FALSE, FALSE, TRUE)
+    )
+  expect_error(
+    interval_add_secondary(
+      iv_two_plasma, param = "clr.last", reference = data.frame(PCSPEC = "plasma")
+    ),
+    class = "pknca_error_secondary_ref_ambiguous_spec",
+    regexp = "start"
+  )
+  # ... and `ref_id` names exactly one of them, so it cannot be used either
+  expect_error(
+    interval_add_secondary(
+      iv_two_plasma, param = "clr.last", reference = data.frame(PCSPEC = "plasma"),
+      ref_id = "plasma"
+    ),
+    class = "pknca_error_secondary_ref_ambiguous_spec",
+    regexp = "ref_id"
+  )
+  # Nothing is left to calculate the parameter on
+  expect_warning(
+    iv_unchanged <-
+      interval_add_secondary(
+        iv_sec_bare, param = "clr.last", reference = data.frame(PCSPEC = "plasma"),
+        target_groups = data.frame(PCSPEC = "nothing")
+      ),
+    class = "pknca_warning_interval_no_target_rows"
+  )
+  expect_identical(iv_unchanged, iv_sec_bare)
+})
+
+# Identifiers may be of any comparable class, so a generated one has to match
+# what the intervals already use
+test_that("interval_add_secondary() generates ids matching the existing class", {
+  iv_numeric <- iv_sec_bare
+  iv_numeric$interval_id <- c(7, NA)
+  expect_equal(
+    interval_add_secondary(
+      iv_numeric, param = "clr.last", reference = data.frame(PCSPEC = "urine")
+    )$clr.last_ref,
+    c(8, NA)
+  )
+  iv_numeric_empty <- iv_sec_bare
+  iv_numeric_empty$interval_id <- c(NA_real_, NA_real_)
+  expect_equal(
+    interval_add_secondary(
+      iv_numeric_empty, param = "clr.last", reference = data.frame(PCSPEC = "plasma")
+    )$interval_id,
+    c(1, NA)
+  )
+  iv_factor <- iv_sec_bare
+  iv_factor$interval_id <- factor(c("ref1", NA), levels = "ref1")
+  iv_factor$auclast <- c(TRUE, TRUE)
+  linked_factor <-
+    interval_add_secondary(
+      iv_factor, param = "clr.last", reference = data.frame(PCSPEC = "urine")
+    )
+  expect_identical(levels(linked_factor$interval_id), c("ref1", "ref2"))
+  expect_identical(
+    linked_factor$clr.last_ref,
+    factor(c("ref2", NA), levels = c("ref1", "ref2"))
+  )
+  # A generated level has to reach the pointer columns that already exist, or
+  # the linkage columns stop being comparable
+  iv_factor_pointed <- iv_factor
+  iv_factor_pointed$aucinf.obs <- c(TRUE, FALSE)
+  iv_factor_pointed$clr.obs <- c(FALSE, TRUE)
+  iv_factor_pointed$clr.obs_ref <- factor(c(NA, "ref1"), levels = "ref1")
+  linked_both <-
+    interval_add_secondary(
+      iv_factor_pointed, param = "clr.last", reference = data.frame(PCSPEC = "urine")
+    )
+  expect_identical(
+    linked_both$clr.obs_ref,
+    factor(c(NA, "ref1"), levels = c("ref1", "ref2"))
+  )
+  expect_no_error(check.interval.specification(linked_both))
+  # An unfilled logical column is not an identifier of any class yet
+  iv_unfilled <- iv_sec_bare
+  iv_unfilled$interval_id <- NA
+  iv_unfilled$clr.last_ref <- NA
+  iv_linked_unfilled <-
+    interval_add_secondary(
+      iv_unfilled, param = "clr.last", reference = data.frame(PCSPEC = "plasma")
+    )
+  expect_equal(iv_linked_unfilled$interval_id, c("ref1", NA))
+  expect_equal(iv_linked_unfilled$clr.last_ref, c(NA, "ref1"))
+})
+
+# 4.4.6: accumulation ratio across two dosing intervals
+test_that("interval_add_accumulation_ratio() links the later interval to the first", {
+  d_conc_acc <-
+    data.frame(
+      subject = 1,
+      time = c(0, 6, 12, 24, 30, 36, 48),
+      conc = c(0, 8, 5, 2, 12, 8, 3)
+    )
+  d_dose_acc <- data.frame(subject = 1, time = c(0, 24), dose = 100)
+  o_conc_acc <- PKNCAconc(d_conc_acc, conc~time|subject)
+  o_dose_acc <- PKNCAdose(d_dose_acc, dose~time|subject)
+  iv_acc <-
+    interval_add_accumulation_ratio(
+      data.frame(start = c(0, 24), end = c(24, 48), aucint.last = TRUE),
+      ref_start = 0, ref_end = 24
+    )
+  expect_equal(iv_acc$interval_id, c("ref1", NA))
+  expect_equal(iv_acc$ratio.aucint.last, c(FALSE, TRUE))
+  expect_equal(iv_acc$ratio.aucint.last_ref, c(NA, "ref1"))
+  o_data_acc <-
+    PKNCAdata(
+      o_conc_acc, o_dose_acc, intervals = iv_acc,
+      options = list(auc.method = "linear")
+    )
+  d_res <- as.data.frame(pk.nca(o_data_acc))
+  auc_first <- d_res$PPORRES[d_res$PPTESTCD %in% "aucint.last" & d_res$start %in% 0]
+  auc_second <- d_res$PPORRES[d_res$PPTESTCD %in% "aucint.last" & d_res$start %in% 24]
+  d_ratio <- d_res[d_res$PPTESTCD %in% "ratio.aucint.last", ]
+  expect_equal(nrow(d_ratio), 1L)
+  expect_equal(d_ratio$PPORRES, auc_second/auc_first)
+  expect_equal(d_ratio$start, 24)
+  # No group column differs, so only the reference times are reported
+  expect_equal(d_ratio$PPANMETH, "Reference interval: 0-24")
+})
+
+# 4.4.7: metabolite ratio across an analyte group
+test_that("interval_add_metabolite_ratio() links a metabolite to its parent", {
+  d_conc_met <-
+    data.frame(
+      subject = 1,
+      Analyte = rep(c("parent", "metabolite"), each = 5),
+      time = rep(c(0, 1, 2, 4, 8), 2),
+      conc = c(0, 10, 8, 5, 2, 0, 4, 3.5, 2, 0.8)
+    )
+  o_conc_met <- PKNCAconc(d_conc_met, conc~time|Analyte+subject)
+  iv_met <-
+    interval_add_metabolite_ratio(
+      data.frame(
+        Analyte = c("parent", "metabolite"), start = 0, end = Inf, aucinf.obs = TRUE
+      ),
+      reference = data.frame(Analyte = "parent")
+    )
+  expect_equal(iv_met$interval_id, c("ref1", NA))
+  expect_equal(iv_met$ratio.aucinf.obs_ref, c(NA, "ref1"))
+  o_data_met <-
+    PKNCAdata(o_conc_met, intervals = iv_met, options = list(auc.method = "linear"))
+  d_res <- as.data.frame(pk.nca(o_data_met))
+  auc_of <- function(analyte) {
+    d_res$PPORRES[d_res$PPTESTCD %in% "aucinf.obs" & d_res$Analyte %in% analyte]
+  }
+  d_ratio <- d_res[d_res$PPTESTCD %in% "ratio.aucinf.obs", ]
+  expect_equal(nrow(d_ratio), 1L)
+  expect_equal(d_ratio$Analyte, "metabolite")
+  expect_equal(d_ratio$PPORRES, auc_of("metabolite")/auc_of("parent"))
+  expect_equal(d_ratio$PPANMETH, "Reference interval: Analyte=parent, 0-Inf")
+  # An exclusion on the parent AUC marks the ratio with the same reason
+  d_conc_met_x <-
+    rbind(
+      data.frame(subject = 1, Analyte = "parent", time = c(0, 1, 2), conc = c(0, 10, 8)),
+      data.frame(
+        subject = 1, Analyte = "metabolite", time = c(0, 1, 2, 4, 8),
+        conc = c(0, 4, 3.5, 2, 0.8)
+      )
+    )
+  o_conc_met_x <- PKNCAconc(d_conc_met_x, conc~time|Analyte+subject)
+  d_res_x <-
+    as.data.frame(suppressWarnings(pk.nca(
+      PKNCAdata(o_conc_met_x, intervals = iv_met, options = list(auc.method = "linear"))
+    )))
+  exclude_parent <-
+    d_res_x$exclude[d_res_x$PPTESTCD %in% "aucinf.obs" & d_res_x$Analyte %in% "parent"]
+  expect_false(is.na(exclude_parent))
+  expect_match(exclude_parent, "half-life")
+  expect_equal(d_res_x$exclude[d_res_x$PPTESTCD %in% "ratio.aucinf.obs"], exclude_parent)
+  expect_true(is.na(d_res_x$PPORRES[d_res_x$PPTESTCD %in% "ratio.aucinf.obs"]))
+})
+
+# 4.4.8: bioavailability is the ratio of the dose-normalized AUCs
+test_that("f equals the ratio of the dose-normalized AUCinf,obs", {
+  iv_f <-
+    interval_add_secondary(
+      data.frame(
+        treatment = c("ref", "test"), start = 0, end = Inf,
+        aucinf.obs = TRUE, aucinf.obs.dn = TRUE, totdose = TRUE
+      ),
+      param = "f", reference = data.frame(treatment = "ref")
+    )
+  o_data_f <-
+    PKNCAdata(
+      o_conc_cross, o_dose_cross, intervals = iv_f,
+      options = list(auc.method = "linear")
+    )
+  d_res <- as.data.frame(pk.nca(o_data_f))
+  dn_of <- function(trt) {
+    d_res$PPORRES[d_res$PPTESTCD %in% "aucinf.obs.dn" & d_res$treatment %in% trt]
+  }
+  expect_equal(
+    d_res$PPORRES[d_res$PPTESTCD %in% "f"],
+    dn_of("test")/dn_of("ref")
+  )
+})
+
+# 4.4.9: the AUC basis a bioavailability is built on is the user's choice
+test_that("the bioavailability basis variants use their own AUC", {
+  basis_of <-
+    c(
+      f.last = "auclast", f.pred = "aucinf.pred",
+      f.int.last = "aucint.last", f.int.all = "aucint.all"
+    )
+  iv_basis <- data.frame(treatment = c("ref", "test"), start = 0, end = Inf, totdose = TRUE)
+  iv_basis[unname(basis_of)] <- TRUE
+  for (current_param in names(basis_of)) {
+    iv_basis <-
+      interval_add_secondary(
+        iv_basis, param = current_param, reference = data.frame(treatment = "ref")
+      )
+  }
+  # One reference interval serves every link
+  expect_equal(iv_basis$interval_id, c("ref1", NA))
+  for (current_param in names(basis_of)) {
+    expect_equal(
+      iv_basis[[paste0(current_param, "_ref")]], c(NA, "ref1"),
+      info = current_param
+    )
+  }
+  o_data_basis <-
+    PKNCAdata(
+      o_conc_cross, o_dose_cross, intervals = iv_basis,
+      options = list(auc.method = "linear")
+    )
+  d_res <- as.data.frame(pk.nca(o_data_basis))
+  value_of <- function(param, trt) {
+    d_res$PPORRES[d_res$PPTESTCD %in% param & d_res$treatment %in% trt]
+  }
+  # The hand-computed trapezoids and the given doses
+  expect_equal(value_of("auclast", "ref"), 41)
+  expect_equal(value_of("auclast", "test"), 24.5)
+  expect_equal(c(value_of("totdose", "ref"), value_of("totdose", "test")), c(100, 50))
+  expect_equal(value_of("f.last", "test"), (24.5/50)/(41/100))
+  expect_equal(length(value_of("f.last", "ref")), 0L)
+  for (current_param in names(basis_of)) {
+    expect_equal(
+      value_of(current_param, "test"),
+      (value_of(basis_of[[current_param]], "test")/50) /
+        (value_of(basis_of[[current_param]], "ref")/100),
+      info = current_param
+    )
+  }
+})
+
+# Each ratio compares the parameter it is named for, and no other
+test_that("every ratio parameter divides its own basis", {
+  ratio_bases <-
+    c("cmax", "auclast", "aucinf.obs", "aucinf.pred", "aucint.last", "aucint.all")
+  iv_ratio <- data.frame(treatment = c("ref", "test"), start = 0, end = Inf)
+  iv_ratio[ratio_bases] <- TRUE
+  for (current_basis in ratio_bases) {
+    iv_ratio <-
+      interval_add_secondary(
+        iv_ratio, param = paste0("ratio.", current_basis),
+        reference = data.frame(treatment = "ref")
+      )
+  }
+  o_data_ratio <-
+    PKNCAdata(
+      o_conc_cross, o_dose_cross, intervals = iv_ratio,
+      options = list(auc.method = "linear")
+    )
+  d_res <- as.data.frame(pk.nca(o_data_ratio))
+  value_of <- function(param, trt) {
+    d_res$PPORRES[d_res$PPTESTCD %in% param & d_res$treatment %in% trt]
+  }
+  # Cmax is 10 and 6, so the ratio is exactly 0.6
+  expect_equal(value_of("ratio.cmax", "test"), 0.6)
+  for (current_basis in ratio_bases) {
+    expect_equal(
+      value_of(paste0("ratio.", current_basis), "test"),
+      value_of(current_basis, "test")/value_of(current_basis, "ref"),
+      info = current_basis
+    )
+    # The ratio is reported on the interval that requested it, not the reference
+    expect_equal(
+      length(value_of(paste0("ratio.", current_basis), "ref")), 0L,
+      info = current_basis
+    )
+  }
+})
+
+# 4.4.10: the new parameters are summarized like the ratios they are
+test_that("the ratio and bioavailability variants are summarized geometrically", {
+  summary_settings <- PKNCA.set.summary()
+  for (current_param in new_secondary_params) {
+    expect_equal(
+      summary_settings[[current_param]]$description,
+      "geometric mean and geometric coefficient of variation",
+      info = current_param
+    )
+    expect_identical(summary_settings[[current_param]]$point, business.geomean,
+                     info = current_param)
+    expect_identical(summary_settings[[current_param]]$spread, business.geocv,
+                     info = current_param)
+  }
+})
+
+# 4.4.11: SDTM allows 40 characters for a parameter description
+test_that("the new parameter descriptions fit in an SDTM submission", {
+  all_intervals <- get.interval.cols()
+  for (current_param in new_secondary_params) {
+    expect_lte(nchar(all_intervals[[current_param]]$desc), 40, label = current_param)
+  }
 })
 
 # 20: the extracted exclusion combiner keeps the documented precedence
