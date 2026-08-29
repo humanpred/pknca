@@ -129,21 +129,22 @@ check.interval.specification <- function(x) {
     ]
 }
 
-# `interval_id` and the pointer columns hold ids, so they are character.  An
-# all-NA logical column is what an intervals data.frame gets from an unfilled
-# column, and it is coerced rather than rejected (mirroring the tolerance in
-# setExcludeColumn()).
+# `interval_id` and the pointer columns hold ids, so they are character.  A
+# factor carries its labels and is converted; an all-NA logical column is what
+# an intervals data.frame gets from an unfilled column, and it is coerced
+# rather than rejected (mirroring the tolerance in setExcludeColumn()).
 coerce_interval_id_col <- function(value, col) {
   if (is.character(value)) {
     value
+  } else if (is.factor(value)) {
+    as.character(value)
   } else if (is.logical(value) && all(is.na(value))) {
     as.character(value)
   } else {
     rlang::abort(
       sprintf(
-        "Interval column '%s' must be a character column of interval identifiers; it is %s",
-        col,
-        if (is.factor(value)) "a factor" else sprintf("of class '%s'", class(value)[1])
+        "Interval column '%s' must be a character column of interval identifiers; it is of class '%s'",
+        col, class(value)[1]
       ),
       class = "pknca_error_secondary_interval_id_invalid"
     )
@@ -156,16 +157,19 @@ coerce_interval_id_col <- function(value, col) {
 # Returns the (possibly coerced) interval specification.
 check_interval_secondary_cols <- function(x) {
   interval_cols <- get.interval.cols()
-  candidate <- grep("_ref$", names(x), value = TRUE)
+  candidate <- grep(pattern = "_ref$", x = names(x), value = TRUE)
   # A `<something>_ref` column whose prefix is not a parameter is the user's own
   # data and is left alone.
-  ref_cols <- candidate[sub("_ref$", "", candidate) %in% names(interval_cols)]
+  ref_cols <-
+    candidate[
+      sub(pattern = "_ref$", replacement = "", x = candidate) %in% names(interval_cols)
+    ]
   if (length(ref_cols) == 0 && !("interval_id" %in% names(x))) {
     return(x)
   }
   secondary_params <- secondary_parameter_names()
   for (col in ref_cols) {
-    prefix <- sub("_ref$", "", col)
+    prefix <- sub(pattern = "_ref$", replacement = "", x = col)
     if (!(prefix %in% secondary_params)) {
       rlang::abort(
         sprintf(
@@ -201,7 +205,7 @@ check_interval_secondary_cols <- function(x) {
     }
   }
   for (col in ref_cols) {
-    prefix <- sub("_ref$", "", col)
+    prefix <- sub(pattern = "_ref$", replacement = "", x = col)
     unknown <- setdiff(stats::na.omit(x[[col]]), stats::na.omit(x$interval_id))
     if (length(unknown) > 0) {
       rlang::abort(
@@ -217,7 +221,7 @@ check_interval_secondary_cols <- function(x) {
     if (any(mask_pointer & !mask_requested)) {
       rlang::abort(
         sprintf(
-          "Column '%s' gives a reference interval in row(s) %s where '%s' is not requested",
+          "Column '%s' gives a reference interval in row(s) %s where '%s' is not requested. Request the parameter or clear the pointer.",
           col, paste(which(mask_pointer & !mask_requested), collapse = ", "), prefix
         ),
         class = "pknca_error_secondary_ref_without_request"
@@ -458,7 +462,7 @@ parameter_direct_refs <- function(x, all_intervals, optional_dose) {
   args <- args[!vapply(X = args, FUN = inherits, FUN.VALUE = TRUE, what = "AsIs")]
   # A pknca_ref() value names a parameter like a plain reference does; the
   # interval it comes from does not change what the calculation is made of.
-  args <- lapply(args, function(a) if (is_pknca_ref(a)) a$param else a)
+  args <- lapply(X = args, FUN = function(a) if (is_pknca_ref(a)) a$param else a)
   if (!optional_dose) {
     drop_args <- pknca_optional_dose_args[[spec$FUN]]
     if (!is.null(drop_args)) {

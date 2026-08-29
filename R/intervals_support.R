@@ -293,7 +293,14 @@ interval_edit_param <- function(intervals, param, param_pattern, target_groups, 
     }
     long <- long[!target, , drop = FALSE]
   }
-  interval_wider(long, intervals)
+  ret <- interval_wider(long, intervals)
+  if (!add) {
+    # Removing a secondary parameter also removes its reference pointer, so
+    # that the result does not fail validation with a pointer to an
+    # unrequested parameter.
+    ret <- clear_orphan_ref_pointers(ret)
+  }
+  ret
 }
 
 # Move a PKNCAdata object's whole-dataset imputation into an intervals column so

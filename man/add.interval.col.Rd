@@ -25,7 +25,9 @@ add.interval.col(
 }
 \arguments{
 \item{name}{The column name as a non-empty character string (length 1,
-may not be \code{NA} or \code{""}).}
+may not be \code{NA} or \code{""}).  Names ending in \verb{_ref} and the name
+\code{interval_id} are reserved for the reference-interval linkage columns of
+the interval specification and may not be used.}
 
 \item{FUN}{The function to run (as a character string) or \code{NA} if the
 parameter is automatically calculated when calculating another parameter.}

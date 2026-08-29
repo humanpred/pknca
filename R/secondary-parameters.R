@@ -20,13 +20,13 @@ secondary_param_info <- function(param) {
   all_intervals <- get.interval.cols()
   spec <- all_intervals[[param]]
   fm <- spec$formalsmap
-  is_ref <- vapply(fm, is_pknca_ref, TRUE)
-  ref_args <- vapply(fm[is_ref], function(x) x$param, "")
+  is_ref <- vapply(X = fm, FUN = is_pknca_ref, FUN.VALUE = TRUE)
+  ref_args <- vapply(X = fm[is_ref], FUN = function(x) x$param, FUN.VALUE = "")
   plain <- fm[!is_ref]
   # An I()-wrapped value is a constant and a NULL drops the argument; neither is
   # a parameter result, and pk.nca.interval() handles both the same way.
-  plain <- plain[!vapply(plain, inherits, TRUE, what = "AsIs")]
-  plain <- plain[!vapply(plain, is.null, TRUE)]
+  plain <- plain[!vapply(X = plain, FUN = inherits, FUN.VALUE = TRUE, what = "AsIs")]
+  plain <- plain[!vapply(X = plain, FUN = is.null, FUN.VALUE = TRUE)]
   home_args <- unlist(plain)   # named character vector (may be empty)
   if (is.null(home_args)) {
     home_args <- stats::setNames(character(0), character(0))
@@ -108,10 +108,10 @@ interval_deferred_params <- function(interval) {
 # Silent by design: adding a needed source parameter to a reference interval is
 # dependency calculation, which PKNCA never announces.
 expand_secondary_intervals <- function(data) {
-  iv <- data$intervals
-  params <- intersect(names(iv), names(get.interval.cols()))
+  current_intervals <- data$intervals
+  params <- intersect(names(current_intervals), names(get.interval.cols()))
   ref_cols <- paste0(params, "_ref")
-  present <- ref_cols %in% names(iv)
+  present <- ref_cols %in% names(current_intervals)
   if (!any(present)) {
     return(data)
   }
@@ -124,23 +124,55 @@ expand_secondary_intervals <- function(data) {
   for (i in which(present)) {
     p <- params[i]
     rc <- ref_cols[i]
-    rows <- which(!is.na(iv[[rc]]) & vapply(iv[[p]], isTRUE, TRUE))
+    rows <-
+      which(
+        !is.na(current_intervals[[rc]]) &
+          vapply(X = current_intervals[[p]], FUN = isTRUE, FUN.VALUE = TRUE)
+      )
     for (r in rows) {
       info <- secondary_param_info(p)
-      ref_rows <- which(!is.na(iv$interval_id) & iv$interval_id == iv[[rc]][r])
+      ref_rows <-
+        which(
+          !is.na(current_intervals$interval_id) &
+            current_intervals$interval_id == current_intervals[[rc]][r]
+        )
       for (target in info$ref_args) {
-        if (!any(vapply(iv[[target]][ref_rows], isTRUE, TRUE))) {
+        target_requested <-
+          vapply(
+            X = current_intervals[[target]][ref_rows],
+            FUN = isTRUE,
+            FUN.VALUE = TRUE
+          )
+        if (!any(target_requested)) {
           # First reference row only: when the reference interval is
           # impute-split, the source parameter is calculated under the first
           # split row's imputation.  A user needing a different imputation
           # requests the source parameter on the appropriate row explicitly.
-          iv[[target]][ref_rows[1]] <- TRUE
+          current_intervals[[target]][ref_rows[1]] <- TRUE
         }
       }
     }
   }
-  data$intervals <- iv
+  data$intervals <- current_intervals
   data
+}
+
+# Clear reference pointers whose parameter is no longer requested on the row.
+# interval_remove_param() calls this so that removing a secondary parameter
+# also removes its linkage instead of leaving a pointer that fails
+# check.interval.specification().
+clear_orphan_ref_pointers <- function(intervals) {
+  params <- intersect(names(intervals), names(get.interval.cols()))
+  for (current_param in params) {
+    ref_col <- paste0(current_param, "_ref")
+    if (ref_col %in% names(intervals)) {
+      orphan <-
+        !is.na(intervals[[ref_col]]) &
+        !vapply(X = intervals[[current_param]], FUN = isTRUE, FUN.VALUE = TRUE)
+      intervals[[ref_col]][orphan] <- NA_character_
+    }
+  }
+  intervals
 }
 
 # The single result value of `param` for one instance.  Returns
@@ -159,44 +191,47 @@ secondary_lookup <- function(results, group_values, start, end, param, group_col
   )
 }
 
-# "Reference interval: plasma024 (PCSPEC=plasma, 0-24)"
-secondary_ppanmeth <- function(ref_id, override_cols, g_home, g_ref, ref_start, ref_end) {
+# "Reference interval: PCSPEC=plasma, 0-24" -- how the reference differs from
+# the home instance, and its times.  The interval_id is tracking information
+# rather than part of the analysis method, so it is not part of PPANMETH.
+secondary_ppanmeth <- function(override_cols, g_home, g_ref, ref_start, ref_end) {
   differing <-
     override_cols[
-      vapply(override_cols, function(col) !(g_ref[[col]] %in% g_home[[col]]), TRUE)
+      vapply(
+        X = override_cols,
+        FUN = function(col) !(g_ref[[col]] %in% g_home[[col]]),
+        FUN.VALUE = TRUE
+      )
     ]
   details <-
     c(
-      vapply(differing, function(col) sprintf("%s=%s", col, g_ref[[col]]), ""),
+      if (length(differing) > 0) name_value_text(g_ref[differing]),
       sprintf("%s-%s", format(ref_start), format(ref_end))
     )
-  sprintf("Reference interval: %s (%s)", ref_id, paste(details, collapse = ", "))
-}
-
-# Group values as "col=value, col=value" for an error message
-secondary_group_text <- function(group_values) {
-  paste(
-    names(group_values), unlist(lapply(group_values, as.character)),
-    sep = "=", collapse = ", "
-  )
+  sprintf("Reference interval: %s", paste(details, collapse = ", "))
 }
 
 stop_secondary_ambiguous <- function(param, target, group_values) {
   rlang::abort(
     sprintf(
-      "More than one result found for '%s' (needed by secondary parameter '%s') for group %s. Differentiate the intervals (for example with distinct start/end or groups) so the reference is unique.",
-      target, param, secondary_group_text(group_values)
+      "More than one result found for '%s' (needed by secondary parameter '%s') for group %s. Differentiate the intervals (for example with distinct start/end or groups) so the reference is unique; if the reference interval is split for imputation, request '%s' on only one of its rows.",
+      target, param, name_value_text(group_values), target
     ),
     class = "pknca_error_secondary_ambiguous_reference"
   )
 }
 
 stop_secondary_value_missing <- function(param, target, ref_id, group_values, side) {
+  source_text <-
+    if (identical(side, "reference")) {
+      sprintf("the reference interval ('%s')", ref_id)
+    } else {
+      "this interval"
+    }
   rlang::abort(
     sprintf(
-      "The secondary parameter '%s' could not be calculated for group %s: the %s value '%s'%s is not available. Calculate it in the linked intervals, or remove the request.",
-      param, secondary_group_text(group_values), side, target,
-      if (identical(side, "reference")) sprintf(" from reference interval '%s'", ref_id) else ""
+      "The secondary parameter '%s' could not be calculated for group %s: the value '%s' from %s is not available. Calculate it in the linked intervals, restrict the interval rows to groups that have the data, or remove the request.",
+      param, name_value_text(group_values), target, source_text
     ),
     class = "pknca_error_secondary_ref_value_missing"
   )
@@ -255,11 +290,14 @@ pk_nca_secondary <- function(results, data_calc) {
   if (nrow(results) == 0 || !("PPTESTCD" %in% names(results))) {
     return(results)
   }
-  iv <- data_calc$intervals
-  auto <- attr(iv, "pknca_secondary_auto")   # NULL in PR 1
-  params <- intersect(names(iv), names(get.interval.cols()))
+  current_intervals <- data_calc$intervals
+  # The automatic-linkage ledger arrives as a list element of the working-copy
+  # PKNCAdata (never as an attribute, which subsetting could strip); NULL until
+  # the automatic reference finder exists.
+  auto <- data_calc$secondary_auto
+  params <- intersect(names(current_intervals), names(get.interval.cols()))
   ref_cols <- paste0(params, "_ref")
-  present <- ref_cols %in% names(iv)
+  present <- ref_cols %in% names(current_intervals)
   if (!any(present) && is.null(auto)) {
     return(results)
   }
@@ -269,24 +307,35 @@ pk_nca_secondary <- function(results, data_calc) {
       names(results),
       c("start", "end", "PPTESTCD", "PPORRES", "PPANMETH", "exclude", keep_cols)
     )
-  override_cols <- intersect(names(iv), result_group_cols)
+  override_cols <- intersect(names(current_intervals), result_group_cols)
   units_seen <- character(0)
   new_rows <- list()
   for (i in which(present)) {
     p <- params[i]
     rc <- ref_cols[i]
-    for (r in which(!is.na(iv[[rc]]) & vapply(iv[[p]], isTRUE, TRUE))) {
+    requested_rows <-
+      which(
+        !is.na(current_intervals[[rc]]) &
+          vapply(X = current_intervals[[p]], FUN = isTRUE, FUN.VALUE = TRUE)
+      )
+    for (r in requested_rows) {
       info <- secondary_param_info(p)
-      ref_id <- iv[[rc]][r]
+      ref_id <- current_intervals[[rc]][r]
       is_auto <-
         !is.null(auto) &&
         any(auto$links$param %in% p & auto$links$ref_id %in% ref_id)
-      ref_row <- which(!is.na(iv$interval_id) & iv$interval_id == ref_id)[1]
+      ref_row <-
+        which(
+          !is.na(current_intervals$interval_id) &
+            current_intervals$interval_id == ref_id
+        )[1]
       # Home instances: distinct group combinations with any result for this
       # row's scope and times
-      m_home <- results$start %in% iv$start[r] & results$end %in% iv$end[r]
+      m_home <-
+        results$start %in% current_intervals$start[r] &
+        results$end %in% current_intervals$end[r]
       for (col in override_cols) {
-        m_home <- m_home & (results[[col]] %in% iv[[col]][r])
+        m_home <- m_home & (results[[col]] %in% current_intervals[[col]][r])
       }
       instances <-
         if (length(result_group_cols) > 0) {
@@ -303,7 +352,7 @@ pk_nca_secondary <- function(results, data_calc) {
         g_home <- instances[k, , drop = FALSE]
         g_ref <- g_home
         for (col in override_cols) {
-          g_ref[[col]] <- iv[[col]][ref_row]
+          g_ref[[col]] <- current_intervals[[col]][ref_row]
         }
         inputs <- list()      # formal -> value
         excludes <- character(0)
@@ -311,7 +360,8 @@ pk_nca_secondary <- function(results, data_calc) {
         for (formal in names(info$home_args)) {
           found <-
             secondary_lookup(
-              results, g_home, iv$start[r], iv$end[r],
+              results, g_home,
+              current_intervals$start[r], current_intervals$end[r],
               info$home_args[[formal]], result_group_cols
             )
           if (found$n > 1) stop_secondary_ambiguous(p, info$home_args[[formal]], g_home)
@@ -323,7 +373,7 @@ pk_nca_secondary <- function(results, data_calc) {
             }
             failed_reason <-
               sprintf(
-                "Home value '%s' is not available for the interval",
+                "Value '%s' is not available for the interval",
                 info$home_args[[formal]]
               )
           }
@@ -333,7 +383,8 @@ pk_nca_secondary <- function(results, data_calc) {
         for (formal in names(info$ref_args)) {
           found <-
             secondary_lookup(
-              results, g_ref, iv$start[ref_row], iv$end[ref_row],
+              results, g_ref,
+              current_intervals$start[ref_row], current_intervals$end[ref_row],
               info$ref_args[[formal]], result_group_cols
             )
           if (found$n > 1) stop_secondary_ambiguous(p, info$ref_args[[formal]], g_ref)
@@ -381,8 +432,8 @@ pk_nca_secondary <- function(results, data_calc) {
         template$PPORRES <- value
         template$PPANMETH <-
           secondary_ppanmeth(
-            ref_id, override_cols, g_home, g_ref,
-            iv$start[ref_row], iv$end[ref_row]
+            override_cols, g_home, g_ref,
+            current_intervals$start[ref_row], current_intervals$end[ref_row]
           )
         template$exclude <- excl
         new_rows[[length(new_rows) + 1L]] <- template

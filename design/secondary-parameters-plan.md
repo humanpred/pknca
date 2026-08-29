@@ -114,7 +114,8 @@ New condition classes (all follow the existing `pknca_error_*` /
 | `pknca_error_secondary_ref_not_secondary` | error | A `<p>_ref` column exists where `p` is a registered parameter that is not secondary. |
 | `pknca_error_secondary_ref_self` | error | A row's pointer equals its own `interval_id`. |
 | `pknca_error_secondary_id_conflict` | error | Rows sharing an `interval_id` disagree outside parameter/impute columns. |
-| `pknca_error_secondary_interval_id_invalid` | error | `interval_id` or a pointer column is a factor or non-character (all-`NA` logical is coerced instead). |
+| `pknca_error_secondary_interval_id_invalid` | error | `interval_id` or a pointer column can hold no identifiers (factors and all-`NA` logical columns are coerced to character instead). |
+| `pknca_error_param_name_reserved` | error | `add.interval.col()` was given a name ending in `_ref` or the name `interval_id`. |
 | `pknca_error_secondary_needs_ref` | error | A secondary parameter is requested with no pointer, no legacy fallback, and no way for the finder to act (finder not applicable: no sample-type contrast and no `group_ref`). |
 | `pknca_error_secondary_ref_value_missing` | error | An **explicit** link cannot supply a value: the reference instance or a source value does not exist in the results. |
 | `pknca_error_secondary_ambiguous_reference` | error | A results lookup for one (group, start, end, parameter) matches more than one row. |
@@ -559,11 +560,12 @@ stop_secondary_value_missing <- function(param, target, ref_id, group_values, si
 ```
 
 The pass.  Provenance (decision 5): links created by the finder are recorded
-by PR 3 in `attr(data_calc$intervals, "pknca_secondary_auto")` — a list with
-elements `links` (data.frame: `param`, `ref_id`) and `failures` (data.frame:
-one row per failed (interval row, param) with the row's intervals group
-columns, `start`, `end`, `param`, `reason`).  In PR 1 that attribute is always
-absent, so every link is explicit.
+by PR 3 in `data_calc$secondary_auto` — a plain list element of the
+working-copy PKNCAdata (never an attribute on the intervals, which subsetting
+or joins could strip) with elements `links` (data.frame: `param`, `ref_id`)
+and `failures` (data.frame: one row per failed (interval row, param) with the
+row's intervals group columns, `start`, `end`, `param`, `reason`).  In PR 1
+that element is always absent, so every link is explicit.
 
 ```r
 # Compute deferred secondary parameters from the combined results and append
@@ -851,6 +853,61 @@ knowable; `expect_error(..., class = )` for every classed condition):
     `dose2`/`auc2` passthrough columns are ignored.
 * Run `spelling::spell_check_package()`; add genuinely new words to
   `inst/WORDLIST`.
+
+### 3.16 As built (PR 1 and its review)
+
+PR 1 merged with these differences from the section-3 text above.  PR 2–4
+implementers should trust the code over the sketches where they differ:
+
+* `pknca_ref()`/`is_pknca_ref()` live in `R/001-add.interval.col.R` (the
+  `clr.*`/`f` registrations call `pknca_ref()` at source time, so it must be
+  defined before the `pk.calc.*` files load); everything else is in
+  `R/secondary-parameters.R`.
+* `secondary_param_info()`: a formal that `formalsmap` does not mention keeps
+  `pk.nca.interval()`'s identity mapping and is a home argument when a
+  parameter of that name is registered (`ae` for `clr.*`); a plain formalsmap
+  value that is not a registered parameter is reported as uncovered.  The
+  original "every formal must be in `formalsmap`" rule would have rejected
+  the `clr.*` registrations this spec itself prescribes.
+* Section 3.14's test 10 was rewritten: span-ratio exclusion is post-hoc only
+  (`exclude_nca_span.ratio()` on a finished `PKNCAresults`), so the fixture
+  uses the too-few-half-life-points exclusion, and the excluded value
+  crossing the link is `NA` (every exclusion PKNCA sets during a calculation
+  leaves the value `NA`).
+* `parameter_classification()` and `auc_basis_families()` cache with the
+  registry's parameter names as the key, so a registry restored by direct
+  assignment cannot leave a stale cache.  Tests snapshot and restore the
+  registry only through the shared helper `local_interval_cols()`
+  (`tests/testthat/helper-interval-cols.R`).
+* Ungrouped data is one anonymous instance in `pk_nca_secondary()`
+  (`duplicated()` on a zero-column data.frame returns length zero before
+  R 4.5, so `unique()` cannot be used there).
+* From the pull-request review of PR 1:
+  * `add.interval.col()` rejects parameter names ending in `_ref` and the
+    name `interval_id` (`pknca_error_param_name_reserved`) — they would
+    collide with the linkage columns.
+  * Factor `interval_id`/pointer columns are converted to character rather
+    than rejected.
+  * `PPANMETH` names the reference by how it differs and by its times only
+    (`"Reference interval: PCSPEC=plasma, 0-24"`); the `interval_id` is
+    tracking information, not part of the analysis method, so it is not in
+    `PPANMETH` (it still appears in error messages).
+  * The missing-value messages read "the value 'x' from this interval / from
+    the reference interval ('id') is not available" and list the remedies,
+    including restricting the interval rows to groups that have the data.
+  * The ambiguity message points at the impute-split remedy (request the
+    source parameter on only one split row).
+  * `name_value_text()` (`R/general.functions.R`) renders `name=value`
+    message text package-wide (secondary messages, interval error preambles,
+    group warning preambles, sparse-dose mismatches, unit-mismatch listings).
+  * The intervals data.frame variables are named `current_intervals`, never
+    `iv` (which reads as intravenous).
+* `interval_remove_param()` clears the reference pointer of a removed
+  secondary parameter (`clear_orphan_ref_pointers()` in
+  `R/secondary-parameters.R`), so edited intervals keep validating; removing
+  a reference row's last parameter still surfaces as
+  `pknca_error_secondary_ref_unknown` at the next validation, which is the
+  correct loud outcome.
 
 ---
 
@@ -1202,7 +1259,7 @@ PR 1 step-1 loop, for every (row `r`, secondary parameter `p`) with
    — wording "created reference interval" when a row was appended, "using
    existing interval" when reused.
 4. Attach the ledgers before returning:
-   `attr(data$intervals, "pknca_secondary_auto") <- list(links = ..., failures = ...)`
+   `data$secondary_auto <- list(links = ..., failures = ...)`
    (both zero-row data.frames when nothing automatic happened).  Do **not**
    re-run `check.interval.specification()` on the working copy — its
    mutations preserve validity by construction, and a re-run would emit a
@@ -1413,8 +1470,10 @@ Kept here so nothing is lost; each becomes a GitHub issue when its turn
 comes.  (Aggregated/across-subject references are deliberately **not** on
 this list — decision 10.)
 
-1. **Sparse-data secondary parameters** — lift
-   `pknca_error_secondary_sparse_unsupported` (decision 9).
+1. **Sparse-data secondary parameters** (release blocker) — lift
+   `pknca_error_secondary_sparse_unsupported` (decision 9).  Maintainer
+   decision on the pull-request review: this must be supported before the
+   release that ships secondary-parameter calculations.
 2. **Route-based reference finder for absolute bioavailability** —
    extravascular home, intravascular reference, derivable from `PKNCAdose`'s
    route; relative bioavailability stays explicit/`group_ref`-driven, since
@@ -1475,11 +1534,9 @@ step of the work:
 * `%in%` (not `==`) for all group-value matching so `NA` group values match
   literally, mirroring the join semantics of `full_join_PKNCAdata()`.
 * `results$start`/`end` comparisons may involve `Inf`; `%in%` handles it.
-* The auto ledger rides as an attribute on `data_calc$intervals`
-  (`"pknca_secondary_auto"`); `pk_nca_secondary()` must read
-  `data_calc$intervals` directly — do not pass the intervals through
-  subsetting or joins between the expansion and the pass, which would strip
-  the attribute.
+* The auto ledger rides as `data_calc$secondary_auto`, a plain list element
+  of the working-copy PKNCAdata — never as an attribute on the intervals,
+  which subsetting or joins could silently strip.
 * Adding source parameters to reference intervals is **silent** everywhere
   (decision 4); only interval creation/linking is announced.
 * The registry is global state: any test that registers a parameter must

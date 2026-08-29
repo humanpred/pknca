@@ -388,5 +388,18 @@ test_that("add.interval.col accepts list for pptest_cdisc", {
   expect_equal(result$pptest_cdisc$route$intravascular, "Route Test IV")
 })
 
+test_that("parameter names that would collide with the interval-linkage columns are rejected", {
+  expect_error(
+    add.interval.col(name="myparam_ref", FUN="mean", unit_type="conc",
+                     pretty_name="colliding", desc="test"),
+    class = "pknca_error_param_name_reserved"
+  )
+  expect_error(
+    add.interval.col(name="interval_id", FUN="mean", unit_type="conc",
+                     pretty_name="colliding", desc="test"),
+    class = "pknca_error_param_name_reserved"
+  )
+})
+
 # Reset the original state
 assign("interval.cols", original_state, envir=PKNCA:::.PKNCAEnv)

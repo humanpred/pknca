@@ -1,16 +1,5 @@
-# Restore the parameter registry after a test that registers something
-restore_interval_cols <- function(env = parent.frame()) {
-  saved <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
-  withr::defer(
-    {
-      assign("interval.cols", saved, envir = PKNCA:::.PKNCAEnv)
-      if (exists("parameter_classification", envir = PKNCA:::.PKNCAEnv)) {
-        rm("parameter_classification", envir = PKNCA:::.PKNCAEnv)
-      }
-    },
-    envir = env
-  )
-}
+# Registry snapshot/restore lives in helper-interval-cols.R
+# (local_interval_cols()) so that every test file restores the same way.
 
 # Completeness ------------------------------------------------------------
 #
@@ -27,15 +16,11 @@ test_that("every PKNCA parameter resolves to a concept in the vocabulary", {
 test_that("a registry restored by assignment does not leave a stale classification", {
   # Restoring a saved registry bypasses add.interval.col()'s cache
   # invalidation, so the classification must notice the parameter set changed
-  # on its own.  Only interval.cols is restored here -- deliberately not the
-  # caches -- because that is what an outside restorer does.
+  # on its own.  The mid-test restore assigns interval.cols only --
+  # deliberately not the caches -- because that is what an outside restorer
+  # does.
+  local_interval_cols()
   saved <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
-  withr::defer({
-    assign("interval.cols", saved, envir = PKNCA:::.PKNCAEnv)
-    if (exists("parameter_classification", envir = PKNCA:::.PKNCAEnv)) {
-      rm("parameter_classification", envir = PKNCA:::.PKNCAEnv)
-    }
-  })
   add.interval.col(
     "pknca_test_stale_cache_col_",
     FUN = NA,
@@ -291,7 +276,7 @@ test_that("the replacement form sets the attribute and validates", {
 # add.interval.col() validation ------------------------------------------
 
 test_that("tier must be one of the tiers", {
-  restore_interval_cols()
+  local_interval_cols()
   expect_error(
     add.interval.col(
       "test_tier", FUN = "pk.calc.cmax", unit_type = "conc",
@@ -301,7 +286,7 @@ test_that("tier must be one of the tiers", {
 })
 
 test_that("selection must be a named list of known elements", {
-  restore_interval_cols()
+  local_interval_cols()
   expect_error(
     add.interval.col(
       "test_sel", FUN = "pk.calc.cmax", unit_type = "conc",
@@ -333,7 +318,7 @@ test_that("selection must be a named list of known elements", {
 # Third-party parameters --------------------------------------------------
 
 test_that("a parameter with no concept registers and calculates, but is not classified", {
-  restore_interval_cols()
+  local_interval_cols()
   other_package_fun <- function(conc) max(conc)
   assign("other_package_fun", other_package_fun, envir = globalenv())
   withr::defer(rm("other_package_fun", envir = globalenv()))
@@ -354,7 +339,7 @@ test_that("a parameter with no concept registers and calculates, but is not clas
 })
 
 test_that("a third-party parameter can declare its concept on its function", {
-  restore_interval_cols()
+  local_interval_cols()
   other_package_fun2 <- function(conc) max(conc)
   pknca_concept(other_package_fun2) <- "peak_conc"
   assign("other_package_fun2", other_package_fun2, envir = globalenv())
@@ -369,7 +354,7 @@ test_that("a third-party parameter can declare its concept on its function", {
 })
 
 test_that("registering a parameter invalidates the cached classification", {
-  restore_interval_cols()
+  local_interval_cols()
   before <- nrow(pknca_parameter_table())
   other_package_fun3 <- function(conc) max(conc)
   assign("other_package_fun3", other_package_fun3, envir = globalenv())

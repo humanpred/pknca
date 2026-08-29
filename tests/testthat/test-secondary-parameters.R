@@ -100,13 +100,29 @@ test_that("check.interval.specification() validates interval_id and pointers", {
     ),
     class = "pknca_error_secondary_ref_not_secondary"
   )
-  # interval_id must hold identifiers, so a factor is rejected
-  expect_error(
+  # A factor carries its labels, so it is converted to character
+  checked_factor <-
     check.interval.specification(
       data.frame(
         start = 0, end = 24, auclast = TRUE,
         interval_id = factor("a")
       )
+    )
+  expect_identical(checked_factor$interval_id, "a")
+  checked_factor_ref <-
+    check.interval.specification(
+      data.frame(
+        start = 0, end = 24, interval_id = c("a", NA),
+        auclast = c(TRUE, FALSE), ae = c(FALSE, TRUE),
+        clr.last = c(FALSE, TRUE),
+        clr.last_ref = factor(c(NA, "a"))
+      )
+    )
+  expect_identical(checked_factor_ref$clr.last_ref, c(NA, "a"))
+  # A column that cannot hold identifiers is rejected
+  expect_error(
+    check.interval.specification(
+      data.frame(start = 0, end = 24, auclast = TRUE, interval_id = 1)
     ),
     class = "pknca_error_secondary_interval_id_invalid"
   )
@@ -201,17 +217,18 @@ test_that("a secondary parameter links across intervals of ungrouped data", {
   expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 250/18)
   expect_equal(
     d_res$PPANMETH[d_res$PPTESTCD %in% "clr.last"],
-    "Reference interval: early (0-12)"
+    "Reference interval: 0-12"
   )
 })
 
-# 6: the reference interval is disclosed in PPANMETH
+# 6: the reference interval is disclosed in PPANMETH by how it differs (the
+# interval_id is tracking information, not part of the analysis method)
 test_that("PPANMETH names the reference interval and how it differs", {
   res <- pk.nca(o_data_sec)
   d_res <- as.data.frame(res)
   expect_equal(
     d_res$PPANMETH[d_res$PPTESTCD %in% "clr.last"],
-    "Reference interval: plasma024 (PCSPEC=plasma, 0-24)"
+    "Reference interval: PCSPEC=plasma, 0-24"
   )
 })
 
@@ -465,6 +482,19 @@ test_that("secondary parameters abort with sparse data", {
     pk.nca(o_data_sparse),
     class = "pknca_error_secondary_sparse_unsupported"
   )
+})
+
+# Removing a secondary parameter also removes its reference pointer, so the
+# edited intervals still validate
+test_that("interval_remove_param() clears the pointer of a removed secondary parameter", {
+  edited <- interval_remove_param(iv_sec, param = "clr.last")
+  expect_false(any(vapply(X = edited$clr.last, FUN = isTRUE, FUN.VALUE = TRUE)))
+  expect_identical(edited$clr.last_ref, rep(NA_character_, nrow(edited)))
+  expect_no_error(check.interval.specification(edited))
+  # Removing an unrelated parameter leaves the linkage alone
+  kept <- interval_remove_param(iv_sec, param = "ae")
+  expect_identical(kept$clr.last_ref, iv_sec$clr.last_ref)
+  expect_no_error(check.interval.specification(kept))
 })
 
 # 20: the extracted exclusion combiner keeps the documented precedence

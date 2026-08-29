@@ -124,18 +124,7 @@ pk_nca_result_to_df <- function(group_info, result) {
   if (nrow(ret_warnings) > 0) {
     group_names <- setdiff(names(ret_warnings), "data_result")
     # Tell the user where the warning comes from
-    warning_preamble <-
-      do.call(
-        what=paste,
-        args=
-          append(
-            lapply(
-              X=group_names,
-              FUN=function(x) paste(x, ret_warnings[[x]], sep="=")
-            ),
-            list(sep="; ")
-          )
-      )
+    warning_preamble <- name_value_text(ret_warnings[group_names], collapse="; ")
     invisible(lapply(
       X=seq_along(warning_preamble),
       FUN=function(idx) {
@@ -297,10 +286,7 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
     error_preamble <-
       paste(
         "Error with interval",
-        paste(
-          c("start", "end"),
-          unlist(current_interval[, c("start", "end")]),
-          sep="=", collapse=", ")
+        name_value_text(current_interval[, c("start", "end")])
       )
     if (nrow(conc_data_interval) == 0) {
       rlang::warn(sprintf("%s: No data for interval", error_preamble), class = "pknca_warning_no_data_for_interval")

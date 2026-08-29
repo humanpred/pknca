@@ -243,22 +243,7 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
     mismatching_units_groups <- groups_units_tbl[mask_duplicated_groups, , drop = FALSE]
   }
   if (nrow(mismatching_units_groups) > 0) {
-    mismatching_units_groups_msg <- vapply(
-      seq_len(nrow(mismatching_units_groups)),
-      FUN.VALUE = character(1),
-      FUN = function(row_idx) {
-        do.call(
-          paste,
-          c(
-            lapply(
-              X = names(mismatching_units_groups),
-              FUN = function(x) paste(x, mismatching_units_groups[[x]][row_idx], sep = "=")
-            ),
-            sep = ", "
-          )
-        )
-      }
-    )
+    mismatching_units_groups_msg <- name_value_text(mismatching_units_groups)
     rlang::abort(
       sprintf(
         "Units should be uniform at least across concentration groups. Review the units for the next group(s):\n%s",

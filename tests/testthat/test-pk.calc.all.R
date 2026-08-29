@@ -1126,17 +1126,8 @@ test_that("pk.nca.interval covers route, volume.group, duration.conc.group, dose
     },
     envir = .GlobalEnv
   )
-  old_cols <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
-  old_sorted <- get0("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
-  on.exit({
-    assign("interval.cols", old_cols, envir = PKNCA:::.PKNCAEnv)
-    if (!is.null(old_sorted)) {
-      assign("interval.cols_sorted", old_sorted, envir = PKNCA:::.PKNCAEnv)
-    } else if (exists("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv, inherits = FALSE)) {
-      rm("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
-    }
-    rm(list = fn_name, envir = .GlobalEnv)
-  }, add = TRUE)
+  local_interval_cols()
+  on.exit(rm(list = fn_name, envir = .GlobalEnv), add = TRUE)
 
   add.interval.col(
     "pknca_test_grp_args_cov_col_",
@@ -1390,17 +1381,8 @@ test_that("an I()-wrapped formalsmap value is passed to the function as a consta
     },
     envir = .GlobalEnv
   )
-  old_cols <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
-  old_sorted <- get0("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
-  on.exit({
-    assign("interval.cols", old_cols, envir = PKNCA:::.PKNCAEnv)
-    if (!is.null(old_sorted)) {
-      assign("interval.cols_sorted", old_sorted, envir = PKNCA:::.PKNCAEnv)
-    } else if (exists("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv, inherits = FALSE)) {
-      rm("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
-    }
-    rm(list = fn_name, envir = .GlobalEnv)
-  }, add = TRUE)
+  local_interval_cols()
+  on.exit(rm(list = fn_name, envir = .GlobalEnv), add = TRUE)
 
   add.interval.col(
     "pknca_test_formalsmap_constant_col_",

@@ -17,6 +17,10 @@ the dosing including dose amount and route.
 * `add.interval.col()` accepts `pknca_ref()` in `formalsmap` to declare an
   argument that comes from the reference interval rather than the current one.
 
+* `add.interval.col()` rejects parameter names ending in `_ref` and the name
+  `interval_id`, which are reserved for the interval-linkage columns of the
+  interval specification.
+
 * Bug fix: requesting `clr.last`, `clr.obs`, or `clr.pred` without its AUC (and
   without a reference interval) silently divided by zero and gave `Inf`.  It is
   now an error saying which reference interval to give.
