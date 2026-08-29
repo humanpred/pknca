@@ -1175,8 +1175,19 @@ code over the sketches:
 * Reference rows are always excluded from the test rows, so a row can never
   become its own reference.
 * When several reference intervals match, a test row takes the one sharing
-  its own `start`/`end` (`interval_pick_reference()`); with no such match the
-  ambiguity abort names the row.
+  its own `start`/`end` (`interval_pick_reference()`), or failing that the
+  single one *covering* its times; with neither the ambiguity abort names the
+  row.
+* **Created spot-sample references span the collections whole** (maintainer
+  decision on review):  when the parameter pairs an interval collection with
+  spot-sample references (`secondary_interval_over_spot()`, i.e. renal
+  clearance) and the `PKNCAdata` method creates the reference, the created
+  interval's `end` extends to `max(time + duration)` over the test rows'
+  collections (`interval_collection_ends()`), because a collection beginning
+  inside the interval contributes its full amount and the paired AUC must
+  cover the same span.  An explicit `end` in `reference` overrides it, and
+  the data.frame method (no concentration data) copies the test times
+  unchanged.
 * The `interval_edit_secondary()` internals PR 3 will touch: the
   `reference = NULL` branch to replace lives in
   `interval_secondary_validate()`, and id generation is
@@ -1308,7 +1319,10 @@ PR 1 step-1 loop, for every (row `r`, secondary parameter `p`) with
    reuse it (assign an id if it has none).  Not found: append a working-copy
    row — copy row `r`'s non-parameter/non-pointer columns, apply the
    override, set all parameter columns `FALSE`, `impute <- NA_character_` if
-   that column exists.  Ids: `"autoref1"`, `"autoref2"`, ... skipping
+   that column exists.  Apply the whole-collection span of section 4.6 to the
+   created row: for an interval-over-spot parameter, extend its `end` with
+   `interval_collection_ends()` so the ephemeral reference covers the home
+   row's collections including their durations.  Ids: `"autoref1"`, `"autoref2"`, ... skipping
    existing ids, matched to the `interval_id` column's class as in section
    4.3 step 5 (numeric ids continue with `max + 1`; factor ids gain a new
    level).  Ensure the pointer column exists (created with the

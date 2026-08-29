@@ -1190,6 +1190,101 @@ test_that("the new parameter descriptions fit in an SDTM submission", {
   }
 })
 
+# A created spot-sample reference spans the excreta collections whole:  a
+# collection beginning inside the interval contributes its full amount, so the
+# paired plasma AUC must cover its full duration
+test_that("a created reference interval spans the collections' durations", {
+  d_conc_span <- data.frame(
+    subject = 1,
+    PCSPEC = rep(c("plasma", "urine"), times = c(4, 2)),
+    time = c(0, 12, 24, 36, 0, 12),
+    conc = c(10, 6, 4, 2, 2, 1),
+    vol  = c(NA, NA, NA, NA, 100, 150),
+    dur  = c(0, 0, 0, 0, 12, 24)
+  )
+  o_conc_span <-
+    PKNCAconc(d_conc_span, conc~time|PCSPEC+subject, volume = "vol", duration = "dur")
+  iv_span <- data.frame(PCSPEC = "urine", start = 0, end = 24, ae = TRUE)
+  o_data_span <-
+    PKNCAdata(o_conc_span, intervals = iv_span, options = list(auc.method = "linear"))
+  expect_message(
+    o_data_linked <-
+      interval_add_renal_clearance(
+        o_data_span, reference = data.frame(PCSPEC = "plasma"), param = "clr.last"
+      ),
+    class = "pknca_message_secondary_created_interval"
+  )
+  created <- o_data_linked$intervals[o_data_linked$intervals$PCSPEC %in% "plasma", ]
+  # The last collection begins at 12 and runs 24 more: the reference reaches 36
+  expect_equal(created$start, 0)
+  expect_equal(created$end, 36)
+  d_res <- as.data.frame(pk.nca(o_data_linked))
+  # auclast(0-36) = (10+6)/2*12 + (6+4)/2*12 + (4+2)/2*12 = 192; ae = 350
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "auclast"], 192)
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/192)
+  # The wider reference still serves the narrower test interval
+  expect_equal(
+    d_res$PPANMETH[d_res$PPTESTCD %in% "clr.last"],
+    "Reference interval: PCSPEC=plasma, 0-36"
+  )
+
+  # The data.frame method has no concentration data, so the created interval
+  # copies the test interval's times unchanged
+  iv_df <-
+    suppressMessages(
+      interval_add_renal_clearance(
+        iv_span, reference = data.frame(PCSPEC = "plasma"), param = "clr.last"
+      )
+    )
+  expect_equal(iv_df$end[iv_df$PCSPEC %in% "plasma"], 24)
+
+  # An explicit `end` in `reference` overrides the extension
+  o_data_explicit <-
+    suppressMessages(
+      interval_add_renal_clearance(
+        o_data_span,
+        reference = data.frame(PCSPEC = "plasma", end = 48), param = "clr.last"
+      )
+    )
+  expect_equal(
+    o_data_explicit$intervals$end[o_data_explicit$intervals$PCSPEC %in% "plasma"],
+    48
+  )
+})
+
+# Several created references are told apart by covering their test intervals
+test_that("collection-spanning references link to the intervals they cover", {
+  d_conc_two <- data.frame(
+    subject = 1,
+    PCSPEC = rep(c("plasma", "urine"), times = c(6, 4)),
+    time = c(0, 12, 24, 36, 48, 60, 0, 12, 24, 36),
+    conc = c(10, 6, 4, 2, 1, 0.5, 2, 1, 1.5, 0.8),
+    vol  = c(rep(NA, 6), 100, 150, 120, 130),
+    dur  = c(rep(0, 6), 12, 24, 12, 24)
+  )
+  o_conc_two <-
+    PKNCAconc(d_conc_two, conc~time|PCSPEC+subject, volume = "vol", duration = "dur")
+  iv_two <- data.frame(PCSPEC = "urine", start = c(0, 24), end = c(24, 48), ae = TRUE)
+  o_data_two <-
+    PKNCAdata(o_conc_two, intervals = iv_two, options = list(auc.method = "linear"))
+  o_data_linked <-
+    suppressMessages(
+      interval_add_renal_clearance(
+        o_data_two, reference = data.frame(PCSPEC = "plasma"), param = "clr.last"
+      )
+    )
+  linked <- o_data_linked$intervals
+  plasma_rows <- linked[linked$PCSPEC %in% "plasma", ]
+  expect_equal(plasma_rows$end[order(plasma_rows$start)], c(36, 60))
+  urine_rows <- linked[linked$PCSPEC %in% "urine", ]
+  # Each urine interval points at the reference that covers it
+  expect_equal(
+    urine_rows$clr.last_ref[order(urine_rows$start)],
+    plasma_rows$interval_id[order(plasma_rows$start)]
+  )
+  expect_no_error(pk.nca(o_data_linked))
+})
+
 # 20: the extracted exclusion combiner keeps the documented precedence
 test_that("combine_exclude_reasons() combines and clears exclusion reasons", {
   expect_equal(combine_exclude_reasons(NULL, NULL), NA_character_)

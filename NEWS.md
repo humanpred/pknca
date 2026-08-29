@@ -22,6 +22,13 @@ the dosing including dose amount and route.
   `interval_add_accumulation_ratio()`, and `interval_add_metabolite_ratio()` are
   the same call with the reference specification each analysis implies (#76).
 
+* When `interval_add_secondary()` on a `PKNCAdata` object creates a spot-sample
+  reference for an excretion analysis (renal clearance), the created interval
+  spans the excreta collections whole:  a collection that begins inside the
+  interval contributes its full amount, so a collection running past the
+  interval's end extends the created reference to cover its duration, and the
+  paired plasma AUC covers the same span as the amount excreted (#76).
+
 * New `ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`,
   `ratio.aucint.last`, and `ratio.aucint.all` parameters give the ratio of a
   parameter between the interval calculating it and its reference interval, for

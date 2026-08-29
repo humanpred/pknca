@@ -707,7 +707,9 @@ interval_reference_groups <- function(intervals, ref_rows) {
 }
 
 # Which of the reference intervals a test row uses.  One reference serves every
-# test row; several are told apart by matching the test row's own times.
+# test row; several are told apart by matching the test row's own times, or by
+# a single reference covering them (a created reference can be wider than its
+# test interval when it spans whole collections).
 interval_pick_reference <- function(intervals, row, ref_groups, param) {
   if (length(ref_groups) == 1) {
     return(1L)
@@ -724,6 +726,18 @@ interval_pick_reference <- function(intervals, row, ref_groups, param) {
   if (length(same_time) == 1) {
     return(same_time)
   }
+  covering <-
+    which(vapply(
+      X = ref_groups,
+      FUN = function(rows) {
+        (intervals$start[rows[1]] <= intervals$start[row]) &&
+          (intervals$end[rows[1]] >= intervals$end[row])
+      },
+      FUN.VALUE = TRUE
+    ))
+  if (length(covering) == 1) {
+    return(covering)
+  }
   rlang::abort(
     sprintf(
       "`reference` matched %d reference intervals and none of them is the single reference for '%s' in interval row %d. Narrow `reference` (for example by adding `start` and `end` columns) so that each interval has one reference.",
@@ -733,11 +747,67 @@ interval_pick_reference <- function(intervals, row, ref_groups, param) {
   )
 }
 
+# Does `param` pair an interval collection with spot-sample references?  Renal
+# clearance is the case in PKNCA:  an amount excreted against a plasma AUC.
+secondary_interval_over_spot <- function(param) {
+  cls <- parameter_classification()
+  targets <- unname(secondary_param_info(param)$ref_args)
+  identical(cls$sample_type[[param]], "interval") &&
+    length(targets) > 0 &&
+    all(vapply(
+      X = targets,
+      FUN = function(x) identical(cls$sample_type[[x]], "spot"),
+      FUN.VALUE = TRUE
+    ))
+}
+
+# The end each test interval's spot-sample reference must reach so that it
+# spans the test interval's collections whole.  A collection that begins inside
+# the interval contributes its full amount (see filter_interval()), so a
+# collection running past `end` extends what the paired spot-sample
+# calculations must cover.
+interval_collection_ends <- function(intervals, test_rows, conc) {
+  duration_col <- conc$columns$duration
+  time_col <- conc$columns$time
+  if (is.null(duration_col) || is.null(time_col)) {
+    return(NULL)
+  }
+  conc_data <- conc$data[is.na(normalize_exclude(conc)), , drop = FALSE]
+  scope_cols <-
+    intersect(
+      setdiff(interval_describe_cols(intervals), c("start", "end")),
+      names(conc_data)
+    )
+  ret <- intervals$end[test_rows]
+  for (i in seq_along(test_rows)) {
+    r <- test_rows[i]
+    m <-
+      !is.na(conc_data[[time_col]]) &
+      conc_data[[time_col]] >= intervals$start[r] &
+      conc_data[[time_col]] <= intervals$end[r] &
+      !is.na(conc_data[[duration_col]]) &
+      conc_data[[duration_col]] > 0
+    for (col in scope_cols) {
+      m <- m & (conc_data[[col]] %in% intervals[[col]][r])
+    }
+    if (any(m)) {
+      ret[i] <-
+        max(ret[i], max(conc_data[[time_col]][m] + conc_data[[duration_col]][m]))
+    }
+  }
+  ret
+}
+
 # Build the reference rows for an interval specification that has none:  the
 # test rows with the `reference` values applied.  `impute` is dropped, so a
-# created row takes the whole-dataset imputation.
-interval_create_reference <- function(intervals, test_rows, reference) {
+# created row takes the whole-dataset imputation.  `ends` (when given) widens
+# each created row to span the test row's collections; an explicit `end` in
+# `reference` still overrides it below.
+interval_create_reference <- function(intervals, test_rows, reference, ends = NULL) {
   base <- intervals[test_rows, interval_describe_cols(intervals), drop = FALSE]
+  if (!is.null(ends)) {
+    base$end <- ends
+  }
   ret_list <- list()
   for (i in seq_len(nrow(reference))) {
     current <- base
@@ -805,8 +875,11 @@ interval_secondary_validate <- function(intervals, param, reference, ref_id) {
 }
 
 # Link `param` on the test rows to the reference interval `reference` describes,
-# creating that interval when the specification does not have it yet.
-interval_edit_secondary <- function(intervals, param, reference, target_groups, ref_id) {
+# creating that interval when the specification does not have it yet.  `conc`
+# (a PKNCAconc, given by the PKNCAdata method) lets a created spot-sample
+# reference span the test rows' collections whole.
+interval_edit_secondary <- function(intervals, param, reference, target_groups, ref_id,
+                                    conc = NULL) {
   reference <- interval_secondary_validate(intervals, param, reference, ref_id)
   source_params <- unname(secondary_param_info(param)$ref_args)
   ref_rows <- which(interval_match_groups(intervals, reference))
@@ -825,7 +898,14 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
   }
   intervals <- interval_ensure_param_cols(intervals, c(param, source_params))
   if (length(ref_rows) == 0) {
-    created <- interval_create_reference(intervals, test_rows, reference)
+    creation_ends <-
+      if (!is.null(conc) && secondary_interval_over_spot(param)) {
+        interval_collection_ends(intervals, test_rows, conc)
+      } else {
+        NULL
+      }
+    created <-
+      interval_create_reference(intervals, test_rows, reference, ends = creation_ends)
     created <- interval_complete_reference(created, intervals, source_params)
     rlang::inform(
       sprintf(
@@ -923,6 +1003,17 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
 #'   An interval that already names a different reference for `param` is left
 #'   alone with a `pknca_warning_secondary_ref_exists` warning, so that the
 #'   helper never silently re-points an analysis.
+#'
+#'   When the parameter pairs an interval collection with spot-sample
+#'   references (renal clearance:  an amount excreted against a plasma AUC)
+#'   and the reference interval is created by the `PKNCAdata` method, the
+#'   created interval spans the collections whole:  a collection that begins
+#'   inside the interval contributes its full amount (see [pk.nca()]), so a
+#'   collection running past the interval's `end` extends the created
+#'   reference's `end` to `time + duration` of the latest collection.  An
+#'   explicit `end` in `reference` overrides the extension, and the data.frame
+#'   method (which has no concentration data) copies the test interval's times
+#'   unchanged.
 #' @seealso [interval_add_param()], [pknca_ref()], [pk.nca()]
 #' @family Interval specifications
 #' @examples
@@ -959,7 +1050,8 @@ interval_add_secondary.PKNCAdata <- function(data, param, reference = NULL,
   data$intervals <-
     interval_edit_secondary(
       data$intervals, param = param, reference = reference,
-      target_groups = target_groups, ref_id = ref_id
+      target_groups = target_groups, ref_id = ref_id,
+      conc = data$conc
     )
   data
 }

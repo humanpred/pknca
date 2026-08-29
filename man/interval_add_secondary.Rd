@@ -57,6 +57,17 @@ announced, as calculating any dependency is.
 An interval that already names a different reference for \code{param} is left
 alone with a \code{pknca_warning_secondary_ref_exists} warning, so that the
 helper never silently re-points an analysis.
+
+When the parameter pairs an interval collection with spot-sample
+references (renal clearance:  an amount excreted against a plasma AUC)
+and the reference interval is created by the \code{PKNCAdata} method, the
+created interval spans the collections whole:  a collection that begins
+inside the interval contributes its full amount (see \code{\link[=pk.nca]{pk.nca()}}), so a
+collection running past the interval's \code{end} extends the created
+reference's \code{end} to \code{time + duration} of the latest collection.  An
+explicit \code{end} in \code{reference} overrides the extension, and the data.frame
+method (which has no concentration data) copies the test interval's times
+unchanged.
 }
 \examples{
 intervals <-
