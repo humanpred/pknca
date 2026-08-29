@@ -1625,6 +1625,11 @@ step of the work:
   `f`/`clr`/`ratio.*` instead of dynamic registration.
 * Tests that set `PKNCA.options()` must save and restore the previous values
   (existing suite has the pattern).
+* Never compare package function objects by identity in a test
+  (`expect_identical(x$point, business.geomean)`): the coverage CI job runs
+  the suite under covr, whose instrumentation rewrites function bodies, so
+  the comparison fails there and nowhere else.  Compare behavior (call both
+  on distinguishing values) or a recorded name instead.
 * `interval_longer()`/`interval_wider()` treat `interval_id` and pointer
   columns as key columns automatically — no change there; do not add them to
   `interval_param_cols()`.

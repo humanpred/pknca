@@ -1175,10 +1175,19 @@ test_that("the ratio and bioavailability variants are summarized geometrically",
       "geometric mean and geometric coefficient of variation",
       info = current_param
     )
-    expect_identical(summary_settings[[current_param]]$point, business.geomean,
-                     info = current_param)
-    expect_identical(summary_settings[[current_param]]$spread, business.geocv,
-                     info = current_param)
+    # Compared by behavior rather than function identity, which coverage
+    # instrumentation would break; the values distinguish the geometric mean
+    # and CV from their arithmetic counterparts and from the median
+    expect_equal(
+      summary_settings[[current_param]]$point(c(1, 4, 32)),
+      business.geomean(c(1, 4, 32)),
+      info = current_param
+    )
+    expect_equal(
+      summary_settings[[current_param]]$spread(c(1, 4, 32)),
+      business.geocv(c(1, 4, 32)),
+      info = current_param
+    )
   }
 })
 
