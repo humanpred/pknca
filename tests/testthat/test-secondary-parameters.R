@@ -795,7 +795,7 @@ test_that("a created reference interval takes no identifier or imputation of its
   iv_ids <-
     data.frame(
       PCSPEC = "urine", start = 0, end = 24, interval_id = "urine024",
-      impute = "start_conc0", ae = TRUE
+      impute = "start_conc0", note = "collection", ae = TRUE
     )
   expect_message(
     iv_created <-
@@ -808,6 +808,8 @@ test_that("a created reference interval takes no identifier or imputation of its
   expect_equal(iv_created$clr.last_ref, c("ref1", NA))
   # The whole-dataset imputation applies to the created row instead
   expect_equal(iv_created$impute, c("start_conc0", NA))
+  # A column of the user's own describes the interval, so it is carried over
+  expect_equal(iv_created$note, c("collection", "collection"))
 })
 
 # 4.4.5: every way the specification can be unusable
