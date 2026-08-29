@@ -326,7 +326,7 @@ test_that("every parameter is reachable from some context, or documented as not"
 test_that("a secondary parameter is not chosen automatically", {
   for (tier in c("common", "all")) {
     expect_false(
-      "f" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", tier = tier)),
+      "f.obs" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", tier = tier)),
       info = tier
     )
     expect_false(
@@ -341,7 +341,7 @@ test_that("a secondary parameter is not chosen automatically", {
 
 test_that("a secondary parameter is still available by name", {
   expect_true(
-    "f" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", include = "f"))
+    "f.obs" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", include = "f.obs"))
   )
   expect_true(
     "clr.obs" %in%

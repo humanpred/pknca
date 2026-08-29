@@ -867,12 +867,15 @@ pk.calc.f <- function(dose1, auc1, dose2, auc2) {
 }
 
 pknca_concept(pk.calc.f) <- "bioavailability"
-add.interval.col("f",
+# The AUC a bioavailability is built on is a choice of the analysis, so each
+# basis is its own parameter.  They share the CDISC code, as the clr.* family
+# shares RENALCL.
+add.interval.col("f.obs",
                  FUN="pk.calc.f",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
-                 pretty_name="Bioavailability",
-                 desc="Bioavailability (absolute or relative)",
+                 pretty_name="Bioavailability (AUCinf,obs)",
+                 desc="Bioavailability from AUCinf,obs",
                  formalsmap=list(dose1=pknca_ref("totdose"),
                                  auc1=pknca_ref("aucinf.obs"),
                                  dose2="totdose",
@@ -880,12 +883,9 @@ add.interval.col("f",
                  depends=c("totdose", "aucinf.obs"),
                  pptestcd_cdisc="FAB",
                  pptest_cdisc="Absolute Bioavailability",
-                 formula="$F = \\frac{AUC_2 / Dose_2}{AUC_1 / Dose_1}$",
+                 formula="$F = \\frac{AUC_{\\infty,obs,2} / Dose_2}{AUC_{\\infty,obs,1} / Dose_1}$",
                  selection = list(secondary = TRUE))
 
-# The AUC a bioavailability is built on is a choice of the analysis, so each
-# basis is its own parameter.  They share the CDISC code, as the clr.* family
-# shares RENALCL.
 add.interval.col("f.pred",
                  FUN="pk.calc.f",
                  values=c(FALSE, TRUE),
@@ -2169,7 +2169,7 @@ PKNCA.set.summary(
 #===============================================================================
 PKNCA.set.summary(
   name = c(
-    "ptr", "f",
+    "ptr", "f.obs",
     "f.pred", "f.last", "f.int.last", "f.int.all"
   ),
   description = "geometric mean and geometric coefficient of variation",

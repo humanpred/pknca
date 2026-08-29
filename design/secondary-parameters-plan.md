@@ -38,7 +38,7 @@ these):
 | 4 | Adding a needed source parameter to a reference interval is **silent** — calculating dependencies without announcement is default PKNCA behavior.  Creating a whole reference *interval* (PR 3) is announced with `pknca_message_secondary_ref_created`, and every link is disclosed in `PPANMETH`. |
 | 5 | **Explicit links fail loud; automatic links degrade.**  When an explicit link cannot supply a value (missing reference instance or missing source value), `pk.nca()` aborts (`pknca_error_secondary_ref_value_missing`).  When the automatic path fails (no unique reference found, or an auto-linked value is missing), the affected results are `NA` with an `exclude` reason and a warning (`pknca_warning_secondary_auto_reference`). |
 | 6 | Reference-group steering: `PKNCAdata()` gains `group_ref`, a **data.frame** of group values (e.g. `data.frame(PCSPEC = "PLASMA")`) that constrains — and can by itself direct — the automatic finder.  `interval_add_secondary()`'s `reference` argument is likewise a data.frame. |
-| 7 | Ratio starter set: `ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`, `ratio.aucint.last`, `ratio.aucint.all`.  Bioavailability gains basis variants: `f` (existing, AUCinf,obs-based) plus `f.pred`, `f.last`, `f.int.last`, `f.int.all`. |
+| 7 | Ratio starter set: `ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`, `ratio.aucint.last`, `ratio.aucint.all`.  Bioavailability names its AUC basis: `f` is renamed `f.obs` (AUCinf,obs-based) and gains `f.pred`, `f.last`, `f.int.last`, `f.int.all`. |
 | 8 | **Unit reconciliation is in scope** and is the final PR (PR 4): reference-side input values are converted into the home group's units before the calculation; non-convertible units give `NA` + reason + `pknca_warning_secondary_units`.  §6.1; the text to post on issue 76 is Appendix A. |
 | 9 | Sparse data (`is_sparse_pk(data)` is `TRUE`) with any secondary parameter requested aborts with `pknca_error_secondary_sparse_unsupported`.  Lifting this is a to-do (§8). |
 | 10 | Aggregated (across-subject) references are **not** planned: parallel-design comparisons of that kind are bioavailability-style analyses already served by the existing bioavailability/`be_assess()` calculation methods. |
@@ -1147,6 +1147,13 @@ new `ratio.*` parameters; new `f.*` basis variants); spell check.
 
 PR 2 merged with these differences from the section-4 text above; trust the
 code over the sketches:
+
+* **The parameter `f` is renamed `f.obs`** (maintainer decision on review),
+  matching the specificity of `f.pred` and the `clr.*` family.
+  `pk.calc.f()` keeps its name (it computes every basis), the CDISC code
+  stays `FAB`, and `assert_intervals()` points an interval specification
+  using the old name `f` at `f.obs`.  Everywhere else this document says the
+  parameter `f`, read `f.obs`.
 
 * `pk.calc.ratio()` is vectorized (`ret <- test/reference` with an `NA` mask
   for missing or non-positive references) rather than the scalar `if` sketch,

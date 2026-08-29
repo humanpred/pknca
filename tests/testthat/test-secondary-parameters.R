@@ -58,7 +58,7 @@ test_that("declaring pknca_ref() arguments does not change the secondary set", {
   expect_equal(
     sort(tbl$parameter[tbl$secondary]),
     sort(c(
-      "f", "f.pred", "f.last", "f.int.last", "f.int.all",
+      "f.obs", "f.pred", "f.last", "f.int.last", "f.int.all",
       "clr.last", "clr.obs", "clr.pred",
       "clr.last.dn", "clr.obs.dn", "clr.pred.dn",
       "ratio.cmax", "ratio.auclast", "ratio.aucinf.obs", "ratio.aucinf.pred",
@@ -308,7 +308,7 @@ test_that("a reference interval gains the source parameter without announcement"
 })
 
 # 9: bioavailability across a crossover is self-consistent with its inputs
-test_that("f takes dose and AUC from the reference interval", {
+test_that("f.obs takes dose and AUC from the reference interval", {
   d_conc_f <- data.frame(
     treatment = rep(c("ref", "test"), each = 5),
     subject = 1,
@@ -324,8 +324,8 @@ test_that("f takes dose and AUC from the reference interval", {
     interval_id = c("refprofile", NA),
     aucinf.obs = TRUE,
     totdose = TRUE,
-    f = c(FALSE, TRUE),
-    f_ref = c(NA, "refprofile")
+    f.obs = c(FALSE, TRUE),
+    f.obs_ref = c(NA, "refprofile")
   )
   o_data_f <- PKNCAdata(o_conc_f, o_dose_f, intervals = iv_f)
   res <- pk.nca(o_data_f)
@@ -338,11 +338,11 @@ test_that("f takes dose and AUC from the reference interval", {
     c(100, 50)
   )
   expect_equal(
-    value_of("f", "test"),
+    value_of("f.obs", "test"),
     (value_of("aucinf.obs", "test")/value_of("totdose", "test")) /
       (value_of("aucinf.obs", "ref")/value_of("totdose", "ref"))
   )
-  expect_equal(length(value_of("f", "ref")), 0L)
+  expect_equal(length(value_of("f.obs", "ref")), 0L)
 })
 
 # 10: an exclusion on a source value reaches the secondary result unchanged
@@ -411,14 +411,14 @@ test_that("an ambiguous reference lookup aborts", {
 test_that("a secondary parameter with no reference says how to give one", {
   d_conc <- data.frame(conc = 2^(0:-5), time = 0:5)
   o_conc <- PKNCAconc(d_conc, conc~time)
-  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, f = TRUE))
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, f.obs = TRUE))
   err <-
     rlang::catch_cnd(
       suppressMessages(suppressWarnings(pk.nca(o_data))),
       classes = "error"
     )
   expect_true("pknca_error_secondary_needs_ref" %in% condition_classes(err))
-  expect_match(conditionMessage(err), "f_ref", fixed = TRUE)
+  expect_match(conditionMessage(err), "f.obs_ref", fixed = TRUE)
   expect_match(conditionMessage(err), "group_ref", fixed = TRUE)
 })
 
@@ -437,7 +437,7 @@ test_that("clr requested with its AUC in the same interval keeps calculating", {
 })
 
 # 15: the same-interval fallback may not make test and reference the same value
-test_that("f is not resolved from its own interval", {
+test_that("f.obs is not resolved from its own interval", {
   d_conc_f <- data.frame(treatment = "test", subject = 1, time = c(0, 1, 2, 4, 8),
                          conc = c(0, 6, 5, 3, 1))
   d_dose_f <- data.frame(treatment = "test", subject = 1, time = 0, dose = 50)
@@ -446,7 +446,7 @@ test_that("f is not resolved from its own interval", {
   o_data_f <-
     PKNCAdata(
       o_conc_f, o_dose_f,
-      intervals = data.frame(start = 0, end = Inf, aucinf.obs = TRUE, totdose = TRUE, f = TRUE)
+      intervals = data.frame(start = 0, end = Inf, aucinf.obs = TRUE, totdose = TRUE, f.obs = TRUE)
     )
   err <- rlang::catch_cnd(pk.nca(o_data_f), classes = "error")
   expect_true("pknca_error_secondary_needs_ref" %in% condition_classes(err))
@@ -1056,14 +1056,14 @@ test_that("interval_add_metabolite_ratio() links a metabolite to its parent", {
 })
 
 # 4.4.8: bioavailability is the ratio of the dose-normalized AUCs
-test_that("f equals the ratio of the dose-normalized AUCinf,obs", {
+test_that("f.obs equals the ratio of the dose-normalized AUCinf,obs", {
   iv_f <-
     interval_add_secondary(
       data.frame(
         treatment = c("ref", "test"), start = 0, end = Inf,
         aucinf.obs = TRUE, aucinf.obs.dn = TRUE, totdose = TRUE
       ),
-      param = "f", reference = data.frame(treatment = "ref")
+      param = "f.obs", reference = data.frame(treatment = "ref")
     )
   o_data_f <-
     PKNCAdata(
@@ -1075,7 +1075,7 @@ test_that("f equals the ratio of the dose-normalized AUCinf,obs", {
     d_res$PPORRES[d_res$PPTESTCD %in% "aucinf.obs.dn" & d_res$treatment %in% trt]
   }
   expect_equal(
-    d_res$PPORRES[d_res$PPTESTCD %in% "f"],
+    d_res$PPORRES[d_res$PPTESTCD %in% "f.obs"],
     dn_of("test")/dn_of("ref")
   )
 })

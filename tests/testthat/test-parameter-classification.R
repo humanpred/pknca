@@ -201,7 +201,7 @@ test_that("secondary marks the parameters needing more than one profile", {
     sort(tbl$parameter[tbl$secondary]),
     sort(c(
       # Compares two administrations, on each AUC basis
-      "f", "f.pred", "f.last", "f.int.last", "f.int.all",
+      "f.obs", "f.pred", "f.last", "f.int.last", "f.int.all",
       # Needs an amount excreted and a plasma AUC
       "clr.last", "clr.obs", "clr.pred",
       # ... and the dose-normalized forms follow from those

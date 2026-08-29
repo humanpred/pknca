@@ -111,3 +111,17 @@ test_that("assert_intervals allows a tau column for multiple-dose parameters", {
 
   expect_equal(assert_intervals(intervals = intervals, data = o_data), expected = intervals)
 })
+
+test_that("assert_intervals points a renamed parameter at its new name", {
+  o_conc <- PKNCAconc(as.data.frame(datasets::Theoph), conc~Time|Subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 1, cmax = TRUE))
+  err <-
+    expect_error(
+      assert_intervals(
+        intervals = data.frame(start = 0, end = 24, f = TRUE),
+        data = o_data
+      ),
+      class = "pknca_error_invalid_interval_columns"
+    )
+  expect_match(conditionMessage(err), "'f' is now named 'f.obs'", fixed = TRUE)
+})

@@ -28,8 +28,11 @@ the dosing including dose amount and route.
   accumulation ratios, metabolite ratios, and any other two-profile comparison
   (#76).
 
-* Bioavailability gains the AUC basis variants `f.pred`, `f.last`, `f.int.last`,
-  and `f.int.all` alongside `f` (which is AUCinf,obs-based) (#76).
+* Bioavailability names the AUC basis it is built on: the `f` parameter is
+  renamed `f.obs` (AUCinf,obs-based), joined by the new variants `f.pred`,
+  `f.last`, `f.int.last`, and `f.int.all`, matching how the `clr.*` family is
+  named.  An interval specification requesting the old name `f` gets an error
+  pointing at `f.obs` (#76).
 
 * `add.interval.col()` accepts `pknca_ref()` in `formalsmap` to declare an
   argument that comes from the reference interval rather than the current one.
@@ -47,9 +50,9 @@ the dosing including dose amount and route.
   without a reference interval) silently divided by zero and gave `Inf`.  It is
   now an error saying which reference interval to give.
 
-* `f` now takes `dose1`/`auc1` from the reference interval and computes
-  `dose2`/`auc2` from its own interval as `totdose` and `aucinf.obs`; the old
-  `dose2` and `auc2` interval columns are ignored.
+* `f.obs` (previously `f`) now takes `dose1`/`auc1` from the reference interval
+  and computes `dose2`/`auc2` from its own interval as `totdose` and
+  `aucinf.obs`; the old `dose2` and `auc2` interval columns are ignored.
 
 * `add.interval.col()` gains a `secondary` element in `selection`, marking a
   parameter that needs inputs from more than one profile.  Bioavailability

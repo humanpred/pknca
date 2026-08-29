@@ -232,7 +232,7 @@ test_that("a parameter needing an interval column says so instead of asking for 
   needs_interval_col <-
     list(
       time_above = "Cannot find argument 'conc_above' for NCA parameter 'time_above' (calculated by 'pk.calc.time_above'); give it as a column in the interval specification",
-      f = "The secondary parameter 'f' needs a reference interval for its 'dose1' argument (the value of 'totdose' from another interval). Set the 'f_ref' column in the interval specification to the 'interval_id' of the reference interval, give `group_ref` to PKNCAdata(), or use interval_add_secondary()."
+      f.obs = "The secondary parameter 'f.obs' needs a reference interval for its 'dose1' argument (the value of 'totdose' from another interval). Set the 'f.obs_ref' column in the interval specification to the 'interval_id' of the reference interval, give `group_ref` to PKNCAdata(), or use interval_add_secondary()."
     )
   for (current_param in names(needs_interval_col)) {
     d_interval <- data.frame(start = 0, end = Inf)
