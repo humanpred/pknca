@@ -604,6 +604,10 @@
 - [`pknca_presets()`](https://humanpred.github.io/pknca/reference/pknca_presets.md)
   : Named argument sets for building an interval specification
 
+- [`pknca_ref()`](https://humanpred.github.io/pknca/reference/pknca_ref.md)
+  [`is_pknca_ref()`](https://humanpred.github.io/pknca/reference/pknca_ref.md)
+  : Mark a formalsmap entry as coming from the reference interval
+
 - [`pknca_unit_conversion()`](https://humanpred.github.io/pknca/reference/pknca_unit_conversion.md)
   : Perform unit conversion (if possible) on PKNCA results
 

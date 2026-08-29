@@ -89,7 +89,9 @@
 
 <dl><dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
 <dd><p>The column name as a non-empty character string (length 1,
-may not be <code>NA</code> or <code>""</code>).</p></dd>
+may not be <code>NA</code> or <code>""</code>).  Names ending in <code>_ref</code> and the name
+<code>interval_id</code> are reserved for the reference-interval linkage columns of
+the interval specification and may not be used.</p></dd>
 
 
 <dt id="arg-fun">FUN<a class="anchor" aria-label="anchor" href="#arg-fun"></a></dt>
@@ -292,6 +294,15 @@ rather than naming a data source or another parameter.</p></dd>
 
 
 </dl></li>
+<li><p>For the reference interval:</p><dl><dt>a parameter name wrapped in <code><a href="pknca_ref.html">pknca_ref()</a></code></dt>
+<dd><p>The value of that NCA
+parameter calculated in the reference interval, which is the interval
+named by the <code>&lt;name&gt;_ref</code> column of the interval specification.  A
+parameter with any such argument is a secondary parameter; see the
+vignette "Secondary parameters".</p></dd>
+
+
+</dl></li>
 </ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -306,7 +317,8 @@ rather than naming a data source or another parameter.</p></dd>
 <code><a href="pknca_concepts.html">pknca_concepts()</a></code>,
 <code><a href="pknca_interval_table.html">pknca_interval_table()</a></code>,
 <code><a href="pknca_parameter_table.html">pknca_parameter_table()</a></code>,
-<code><a href="pknca_presets.html">pknca_presets()</a></code></p></div>
+<code><a href="pknca_presets.html">pknca_presets()</a></code>,
+<code><a href="pknca_ref.html">pknca_ref()</a></code></p></div>
     </div>
 
     <div class="section level2">

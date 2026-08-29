@@ -72,9 +72,9 @@ pknca_units_table() # only parameters that are unitless
 #> 3   unitless       lambda.z.corrxy
 #> 4   unitless        tobit_residual
 #> 5   unitless    adj_tobit_residual
-#> 6   fraction                     f
-#> 7   fraction                   ptr
-#> 8   fraction            span.ratio
+#> 6   fraction                   ptr
+#> 7   fraction            span.ratio
+#> 8   fraction                     f
 #> 9          %              deg.fluc
 #> 10         %                 swing
 #> 11         %        aucivpbextlast
@@ -285,9 +285,9 @@ pknca_units_table(
 #> 3                  unitless       lambda.z.corrxy
 #> 4                  unitless        tobit_residual
 #> 5                  unitless    adj_tobit_residual
-#> 6                  fraction                     f
-#> 7                  fraction                   ptr
-#> 8                  fraction            span.ratio
+#> 6                  fraction                   ptr
+#> 7                  fraction            span.ratio
+#> 8                  fraction                     f
 #> 9                         %              deg.fluc
 #> 10                        %                 swing
 #> 11                        %        aucivpbextlast
@@ -504,9 +504,9 @@ pknca_units_table(
 #> 3                  unitless       lambda.z.corrxy                unitless
 #> 4                  unitless        tobit_residual                unitless
 #> 5                  unitless    adj_tobit_residual                unitless
-#> 6                  fraction                     f                fraction
-#> 7                  fraction                   ptr                fraction
-#> 8                  fraction            span.ratio                fraction
+#> 6                  fraction                   ptr                fraction
+#> 7                  fraction            span.ratio                fraction
+#> 8                  fraction                     f                fraction
 #> 9                         %              deg.fluc                       %
 #> 10                        %                 swing                       %
 #> 11                        %        aucivpbextlast                       %
@@ -936,9 +936,9 @@ pknca_units_table(
 #> 3                 unitless       lambda.z.corrxy               unitless
 #> 4                 unitless        tobit_residual               unitless
 #> 5                 unitless    adj_tobit_residual               unitless
-#> 6                 fraction                     f               fraction
-#> 7                 fraction                   ptr               fraction
-#> 8                 fraction            span.ratio               fraction
+#> 6                 fraction                   ptr               fraction
+#> 7                 fraction            span.ratio               fraction
+#> 8                 fraction                     f               fraction
 #> 9                        %              deg.fluc                      %
 #> 10                       %                 swing                      %
 #> 11                       %        aucivpbextlast                      %
@@ -1363,9 +1363,9 @@ pknca_units_table(
 #> 3                  unitless       lambda.z.corrxy                 unitless
 #> 4                  unitless        tobit_residual                 unitless
 #> 5                  unitless    adj_tobit_residual                 unitless
-#> 6                  fraction                     f                 fraction
-#> 7                  fraction                   ptr                 fraction
-#> 8                  fraction            span.ratio                 fraction
+#> 6                  fraction                   ptr                 fraction
+#> 7                  fraction            span.ratio                 fraction
+#> 8                  fraction                     f                 fraction
 #> 9                         %              deg.fluc                        %
 #> 10                        %                 swing                        %
 #> 11                        %        aucivpbextlast                        %

@@ -147,9 +147,9 @@ PKNCA.options()
 #>   aumcint.all.dose    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last
 #> 1            FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE
 #> 2            FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE
-#>   cl.all cl.int.all cl.int.last     f mrt.last mrt.all mrt.int.all mrt.int.last
-#> 1  FALSE      FALSE       FALSE FALSE    FALSE   FALSE       FALSE        FALSE
-#> 2  FALSE      FALSE       FALSE FALSE    FALSE   FALSE       FALSE        FALSE
+#>   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last
+#> 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE
+#> 2  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE
 #>   mrt.iv.last vss.last vss.iv.last vss.all vss.int.all vss.int.last   cav
 #> 1       FALSE    FALSE       FALSE   FALSE       FALSE        FALSE FALSE
 #> 2       FALSE    FALSE       FALSE   FALSE       FALSE        FALSE FALSE
@@ -213,9 +213,9 @@ PKNCA.options()
 #>   kel.iv.all kel.ivint.all kel.ivint.last kel.sparse.last cl.obs cl.pred
 #> 1      FALSE         FALSE          FALSE           FALSE  FALSE   FALSE
 #> 2      FALSE         FALSE          FALSE           FALSE  FALSE   FALSE
-#>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred mrt.obs mrt.pred
-#> 1          FALSE           FALSE     FALSE      FALSE   FALSE    FALSE
-#> 2          FALSE           FALSE     FALSE      FALSE   FALSE    FALSE
+#>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred     f mrt.obs mrt.pred
+#> 1          FALSE           FALSE     FALSE      FALSE FALSE   FALSE    FALSE
+#> 2          FALSE           FALSE     FALSE      FALSE FALSE   FALSE    FALSE
 #>   mrt.int.inf.obs mrt.int.inf.pred mrt.iv.obs mrt.iv.pred mrt.md.obs
 #> 1           FALSE            FALSE      FALSE       FALSE      FALSE
 #> 2           FALSE            FALSE      FALSE       FALSE      FALSE

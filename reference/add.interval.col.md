@@ -30,7 +30,9 @@ add.interval.col(
 - name:
 
   The column name as a non-empty character string (length 1, may not be
-  `NA` or `""`).
+  `NA` or `""`). Names ending in `_ref` and the name `interval_id` are
+  reserved for the reference-interval linkage columns of the interval
+  specification and may not be used.
 
 - FUN:
 
@@ -271,6 +273,16 @@ parameter names and the values should be one of the following:
     (for example, `auc.type = I("AUCall")`) rather than naming a data
     source or another parameter.
 
+- For the reference interval:
+
+  - a parameter name wrapped in
+    [`pknca_ref()`](https://humanpred.github.io/pknca/reference/pknca_ref.md):
+
+    The value of that NCA parameter calculated in the reference
+    interval, which is the interval named by the `<name>_ref` column of
+    the interval specification. A parameter with any such argument is a
+    secondary parameter; see the vignette "Secondary parameters".
+
 ## See also
 
 Other Interval specifications:
@@ -284,7 +296,8 @@ Other Interval specifications:
 [`pknca_concepts()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md),
 [`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md),
 [`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md),
-[`pknca_presets()`](https://humanpred.github.io/pknca/reference/pknca_presets.md)
+[`pknca_presets()`](https://humanpred.github.io/pknca/reference/pknca_presets.md),
+[`pknca_ref()`](https://humanpred.github.io/pknca/reference/pknca_ref.md)
 
 ## Examples
 

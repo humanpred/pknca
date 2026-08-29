@@ -1,22 +1,40 @@
-# Named argument sets for building an interval specification
+# Mark a formalsmap entry as coming from the reference interval
 
-Named argument sets for building an interval specification
+Used in the `formalsmap` argument of
+[`add.interval.col()`](https://humanpred.github.io/pknca/reference/add.interval.col.md)
+to declare that an argument takes the value of `param` calculated in the
+*reference* interval (the interval named by the `<parameter>_ref` column
+of the interval specification) rather than in the current interval.
 
 ## Usage
 
 ``` r
-pknca_presets()
+pknca_ref(param)
+
+is_pknca_ref(x)
 ```
+
+## Arguments
+
+- param:
+
+  The name of the NCA parameter to take from the reference interval (a
+  single non-missing character string). It does not need to be
+  registered yet when `pknca_ref()` is called; it is validated when the
+  parameter is calculated.
+
+- x:
+
+  An object to test.
 
 ## Value
 
-A named list of the arguments each preset gives to
-[`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md).
-Arguments given to that function directly override the preset.
+An object of class `pknca_ref`.
 
 ## See also
 
-[`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md)
+[`add.interval.col()`](https://humanpred.github.io/pknca/reference/add.interval.col.md),
+the vignette "Secondary parameters"
 
 Other Interval specifications:
 [`add.interval.col()`](https://humanpred.github.io/pknca/reference/add.interval.col.md),
@@ -30,22 +48,15 @@ Other Interval specifications:
 [`pknca_concepts()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md),
 [`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md),
 [`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md),
-[`pknca_ref()`](https://humanpred.github.io/pknca/reference/pknca_ref.md)
+[`pknca_presets()`](https://humanpred.github.io/pknca/reference/pknca_presets.md)
 
 ## Examples
 
 ``` r
-names(pknca_presets())
-#> [1] "single_dose"        "steady_state"       "bioequivalence"    
-#> [4] "first_in_human"     "mass_balance"       "sparse_single_dose"
-pknca_presets()$bioequivalence
-#> $dosing
-#> [1] "single"
+pknca_ref("aucinf.obs")
+#> $param
+#> [1] "aucinf.obs"
 #> 
-#> $route
-#> [1] "extravascular"
-#> 
-#> $include
-#> [1] "aucall"    "clast.obs" "tlast"    
-#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
 ```

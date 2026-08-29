@@ -130,7 +130,8 @@ Other Interval specifications:
 [`pknca_check_parameter_classification()`](https://humanpred.github.io/pknca/reference/pknca_check_parameter_classification.md),
 [`pknca_concepts()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md),
 [`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md),
-[`pknca_presets()`](https://humanpred.github.io/pknca/reference/pknca_presets.md)
+[`pknca_presets()`](https://humanpred.github.io/pknca/reference/pknca_presets.md),
+[`pknca_ref()`](https://humanpred.github.io/pknca/reference/pknca_ref.md)
 
 ## Examples
 
@@ -143,8 +144,8 @@ pknca_interval_table(0, 24, dosing = "single", route = "extravascular")
 #> 1      FALSE           FALSE        FALSE             FALSE       FALSE
 #>   aumcint.all.dose    c0 cmax  cmin tmax  tmin tlast tfirst clast.obs cl.last
 #> 1            FALSE FALSE TRUE FALSE TRUE FALSE FALSE  FALSE     FALSE   FALSE
-#>   cl.all cl.int.all cl.int.last     f mrt.last mrt.all mrt.int.all mrt.int.last
-#> 1  FALSE      FALSE       FALSE FALSE    FALSE   FALSE       FALSE        FALSE
+#>   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last
+#> 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE
 #>   mrt.iv.last vss.last vss.iv.last vss.all vss.int.all vss.int.last   cav
 #> 1       FALSE    FALSE       FALSE   FALSE       FALSE        FALSE FALSE
 #>   cav.int.last cav.int.all ctrough cstart   ptr tlag deg.fluc swing  ceoi
@@ -187,8 +188,8 @@ pknca_interval_table(0, 24, dosing = "single", route = "extravascular")
 #> 1              FALSE         FALSE          FALSE        TRUE        FALSE
 #>   kel.iv.all kel.ivint.all kel.ivint.last kel.sparse.last cl.obs cl.pred
 #> 1      FALSE         FALSE          FALSE           FALSE   TRUE   FALSE
-#>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred mrt.obs mrt.pred
-#> 1          FALSE           FALSE     FALSE      FALSE   FALSE    FALSE
+#>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred     f mrt.obs mrt.pred
+#> 1          FALSE           FALSE     FALSE      FALSE FALSE   FALSE    FALSE
 #>   mrt.int.inf.obs mrt.int.inf.pred mrt.iv.obs mrt.iv.pred mrt.md.obs
 #> 1           FALSE            FALSE      FALSE       FALSE      FALSE
 #>   mrt.md.pred mrt.ivmd.obs mrt.ivmd.pred vz.obs vz.pred vz.int.inf.obs
@@ -222,8 +223,8 @@ pknca_interval_table(
 #> 1      FALSE           FALSE        FALSE             FALSE       FALSE
 #>   aumcint.all.dose    c0 cmax  cmin tmax  tmin tlast tfirst clast.obs cl.last
 #> 1            FALSE FALSE TRUE FALSE TRUE FALSE FALSE  FALSE     FALSE   FALSE
-#>   cl.all cl.int.all cl.int.last     f mrt.last mrt.all mrt.int.all mrt.int.last
-#> 1  FALSE      FALSE       FALSE FALSE    FALSE   FALSE       FALSE        FALSE
+#>   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last
+#> 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE
 #>   mrt.iv.last vss.last vss.iv.last vss.all vss.int.all vss.int.last   cav
 #> 1       FALSE    FALSE       FALSE   FALSE       FALSE        FALSE FALSE
 #>   cav.int.last cav.int.all ctrough cstart  ptr tlag deg.fluc swing  ceoi
@@ -266,8 +267,8 @@ pknca_interval_table(
 #> 1              FALSE         FALSE          FALSE       FALSE        FALSE
 #>   kel.iv.all kel.ivint.all kel.ivint.last kel.sparse.last cl.obs cl.pred
 #> 1      FALSE         FALSE          FALSE           FALSE  FALSE   FALSE
-#>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred mrt.obs mrt.pred
-#> 1           TRUE           FALSE     FALSE      FALSE   FALSE    FALSE
+#>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred     f mrt.obs mrt.pred
+#> 1           TRUE           FALSE     FALSE      FALSE FALSE   FALSE    FALSE
 #>   mrt.int.inf.obs mrt.int.inf.pred mrt.iv.obs mrt.iv.pred mrt.md.obs
 #> 1           FALSE            FALSE      FALSE       FALSE      FALSE
 #>   mrt.md.pred mrt.ivmd.obs mrt.ivmd.pred vz.obs vz.pred vz.int.inf.obs
@@ -298,8 +299,8 @@ pknca_interval_table(0, 24, dosing = "single", route = "extravascular",
 #> 1      FALSE           FALSE        FALSE             FALSE       FALSE
 #>   aumcint.all.dose    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last
 #> 1            FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE
-#>   cl.all cl.int.all cl.int.last     f mrt.last mrt.all mrt.int.all mrt.int.last
-#> 1  FALSE      FALSE       FALSE FALSE    FALSE   FALSE       FALSE        FALSE
+#>   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last
+#> 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE
 #>   mrt.iv.last vss.last vss.iv.last vss.all vss.int.all vss.int.last   cav
 #> 1       FALSE    FALSE       FALSE   FALSE       FALSE        FALSE FALSE
 #>   cav.int.last cav.int.all ctrough cstart   ptr  tlag deg.fluc swing  ceoi
@@ -342,8 +343,8 @@ pknca_interval_table(0, 24, dosing = "single", route = "extravascular",
 #> 1              FALSE         FALSE          FALSE       FALSE        FALSE
 #>   kel.iv.all kel.ivint.all kel.ivint.last kel.sparse.last cl.obs cl.pred
 #> 1      FALSE         FALSE          FALSE           FALSE  FALSE   FALSE
-#>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred mrt.obs mrt.pred
-#> 1          FALSE           FALSE     FALSE      FALSE   FALSE    FALSE
+#>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred     f mrt.obs mrt.pred
+#> 1          FALSE           FALSE     FALSE      FALSE FALSE   FALSE    FALSE
 #>   mrt.int.inf.obs mrt.int.inf.pred mrt.iv.obs mrt.iv.pred mrt.md.obs
 #> 1           FALSE            FALSE      FALSE       FALSE      FALSE
 #>   mrt.md.pred mrt.ivmd.obs mrt.ivmd.pred vz.obs vz.pred vz.int.inf.obs

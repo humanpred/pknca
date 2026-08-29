@@ -185,7 +185,8 @@ chosen to match.</p>
 <code><a href="pknca_check_parameter_classification.html">pknca_check_parameter_classification()</a></code>,
 <code><a href="pknca_concepts.html">pknca_concepts()</a></code>,
 <code><a href="pknca_parameter_table.html">pknca_parameter_table()</a></code>,
-<code><a href="pknca_presets.html">pknca_presets()</a></code></p></div>
+<code><a href="pknca_presets.html">pknca_presets()</a></code>,
+<code><a href="pknca_ref.html">pknca_ref()</a></code></p></div>
     </div>
 
     <div class="section level2">
@@ -198,8 +199,8 @@ chosen to match.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1      FALSE           FALSE        FALSE             FALSE       FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   aumcint.all.dose    c0 cmax  cmin tmax  tmin tlast tfirst clast.obs cl.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1            FALSE FALSE TRUE FALSE TRUE FALSE FALSE  FALSE     FALSE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.all cl.int.all cl.int.last     f mrt.last mrt.all mrt.int.all mrt.int.last</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  FALSE      FALSE       FALSE FALSE    FALSE   FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.iv.last vss.last vss.iv.last vss.all vss.int.all vss.int.last   cav</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE    FALSE       FALSE   FALSE       FALSE        FALSE FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   cav.int.last cav.int.all ctrough cstart   ptr tlag deg.fluc swing  ceoi</span>
@@ -242,8 +243,8 @@ chosen to match.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1              FALSE         FALSE          FALSE        TRUE        FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   kel.iv.all kel.ivint.all kel.ivint.last kel.sparse.last cl.obs cl.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1      FALSE         FALSE          FALSE           FALSE   TRUE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred mrt.obs mrt.pred</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE           FALSE     FALSE      FALSE   FALSE    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred     f mrt.obs mrt.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE           FALSE     FALSE      FALSE FALSE   FALSE    FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.int.inf.obs mrt.int.inf.pred mrt.iv.obs mrt.iv.pred mrt.md.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1           FALSE            FALSE      FALSE       FALSE      FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.md.pred mrt.ivmd.obs mrt.ivmd.pred vz.obs vz.pred vz.int.inf.obs</span>
@@ -277,8 +278,8 @@ chosen to match.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1      FALSE           FALSE        FALSE             FALSE       FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   aumcint.all.dose    c0 cmax  cmin tmax  tmin tlast tfirst clast.obs cl.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1            FALSE FALSE TRUE FALSE TRUE FALSE FALSE  FALSE     FALSE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.all cl.int.all cl.int.last     f mrt.last mrt.all mrt.int.all mrt.int.last</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  FALSE      FALSE       FALSE FALSE    FALSE   FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.iv.last vss.last vss.iv.last vss.all vss.int.all vss.int.last   cav</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE    FALSE       FALSE   FALSE       FALSE        FALSE FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   cav.int.last cav.int.all ctrough cstart  ptr tlag deg.fluc swing  ceoi</span>
@@ -321,8 +322,8 @@ chosen to match.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1              FALSE         FALSE          FALSE       FALSE        FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   kel.iv.all kel.ivint.all kel.ivint.last kel.sparse.last cl.obs cl.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1      FALSE         FALSE          FALSE           FALSE  FALSE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred mrt.obs mrt.pred</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           TRUE           FALSE     FALSE      FALSE   FALSE    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred     f mrt.obs mrt.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           TRUE           FALSE     FALSE      FALSE FALSE   FALSE    FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.int.inf.obs mrt.int.inf.pred mrt.iv.obs mrt.iv.pred mrt.md.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1           FALSE            FALSE      FALSE       FALSE      FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.md.pred mrt.ivmd.obs mrt.ivmd.pred vz.obs vz.pred vz.int.inf.obs</span>
@@ -353,8 +354,8 @@ chosen to match.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1      FALSE           FALSE        FALSE             FALSE       FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   aumcint.all.dose    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1            FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.all cl.int.all cl.int.last     f mrt.last mrt.all mrt.int.all mrt.int.last</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  FALSE      FALSE       FALSE FALSE    FALSE   FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.iv.last vss.last vss.iv.last vss.all vss.int.all vss.int.last   cav</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE    FALSE       FALSE   FALSE       FALSE        FALSE FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   cav.int.last cav.int.all ctrough cstart   ptr  tlag deg.fluc swing  ceoi</span>
@@ -397,8 +398,8 @@ chosen to match.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1              FALSE         FALSE          FALSE       FALSE        FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   kel.iv.all kel.ivint.all kel.ivint.last kel.sparse.last cl.obs cl.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1      FALSE         FALSE          FALSE           FALSE  FALSE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred mrt.obs mrt.pred</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE           FALSE     FALSE      FALSE   FALSE    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred     f mrt.obs mrt.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE           FALSE     FALSE      FALSE FALSE   FALSE    FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.int.inf.obs mrt.int.inf.pred mrt.iv.obs mrt.iv.pred mrt.md.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1           FALSE            FALSE      FALSE       FALSE      FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.md.pred mrt.ivmd.obs mrt.ivmd.pred vz.obs vz.pred vz.int.inf.obs</span>

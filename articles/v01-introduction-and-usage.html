@@ -267,9 +267,9 @@ no arguments:</p>
 <span><span class="co">##   aumcint.all.dose    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last</span></span>
 <span><span class="co">## 1            FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE</span></span>
 <span><span class="co">## 2            FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE</span></span>
-<span><span class="co">##   cl.all cl.int.all cl.int.last     f mrt.last mrt.all mrt.int.all mrt.int.last</span></span>
-<span><span class="co">## 1  FALSE      FALSE       FALSE FALSE    FALSE   FALSE       FALSE        FALSE</span></span>
-<span><span class="co">## 2  FALSE      FALSE       FALSE FALSE    FALSE   FALSE       FALSE        FALSE</span></span>
+<span><span class="co">##   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last</span></span>
+<span><span class="co">## 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE</span></span>
+<span><span class="co">## 2  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE</span></span>
 <span><span class="co">##   mrt.iv.last vss.last vss.iv.last vss.all vss.int.all vss.int.last   cav</span></span>
 <span><span class="co">## 1       FALSE    FALSE       FALSE   FALSE       FALSE        FALSE FALSE</span></span>
 <span><span class="co">## 2       FALSE    FALSE       FALSE   FALSE       FALSE        FALSE FALSE</span></span>
@@ -333,9 +333,9 @@ no arguments:</p>
 <span><span class="co">##   kel.iv.all kel.ivint.all kel.ivint.last kel.sparse.last cl.obs cl.pred</span></span>
 <span><span class="co">## 1      FALSE         FALSE          FALSE           FALSE  FALSE   FALSE</span></span>
 <span><span class="co">## 2      FALSE         FALSE          FALSE           FALSE  FALSE   FALSE</span></span>
-<span><span class="co">##   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred mrt.obs mrt.pred</span></span>
-<span><span class="co">## 1          FALSE           FALSE     FALSE      FALSE   FALSE    FALSE</span></span>
-<span><span class="co">## 2          FALSE           FALSE     FALSE      FALSE   FALSE    FALSE</span></span>
+<span><span class="co">##   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred     f mrt.obs mrt.pred</span></span>
+<span><span class="co">## 1          FALSE           FALSE     FALSE      FALSE FALSE   FALSE    FALSE</span></span>
+<span><span class="co">## 2          FALSE           FALSE     FALSE      FALSE FALSE   FALSE    FALSE</span></span>
 <span><span class="co">##   mrt.int.inf.obs mrt.int.inf.pred mrt.iv.obs mrt.iv.pred mrt.md.obs</span></span>
 <span><span class="co">## 1           FALSE            FALSE      FALSE       FALSE      FALSE</span></span>
 <span><span class="co">## 2           FALSE            FALSE      FALSE       FALSE      FALSE</span></span>
@@ -799,7 +799,6 @@ dosing data.</p>
 <th align="left">cl.all</th>
 <th align="left">cl.int.all</th>
 <th align="left">cl.int.last</th>
-<th align="left">f</th>
 <th align="left">mrt.last</th>
 <th align="left">mrt.all</th>
 <th align="left">mrt.int.all</th>
@@ -926,6 +925,7 @@ dosing data.</p>
 <th align="left">cl.int.inf.pred</th>
 <th align="left">cl.iv.obs</th>
 <th align="left">cl.iv.pred</th>
+<th align="left">f</th>
 <th align="left">mrt.obs</th>
 <th align="left">mrt.pred</th>
 <th align="left">mrt.int.inf.obs</th>
@@ -1277,7 +1277,6 @@ dosing data.</p>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
-<td align="left">FALSE</td>
 <td align="left">TRUE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
@@ -1320,6 +1319,7 @@ dosing data.</p>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">TRUE</td>
+<td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
