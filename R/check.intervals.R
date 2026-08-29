@@ -103,6 +103,9 @@ check.interval.specification <- function(x) {
   if (any(x$start >= x$end)) {
     rlang::abort("start must be < end", class = "pknca_error_interval_start_gte_end")
   }
+  # interval_id and the <parameter>_ref pointers that link a secondary parameter
+  # to its reference interval
+  x <- check_interval_secondary_cols(x)
   # Confirm that something is being calculated for each interval (and warn if not)
   mask_calculated <- rep(FALSE, nrow(x))
   for (n in setdiff(names(interval_cols), c("start", "end"))) {
@@ -124,6 +127,158 @@ check.interval.specification <- function(x) {
     c(names(interval_cols), setdiff(names(x), names(interval_cols))),
     drop=FALSE
     ]
+}
+
+# How a linkage column's class reads in an error message
+interval_id_class_text <- function(value) {
+  if (is.factor(value)) {
+    sprintf("a factor with levels %s", paste(levels(value), collapse = ", "))
+  } else {
+    class(value)[1]
+  }
+}
+
+# The linkage columns hold identifiers of any comparable class -- character
+# names, numbers (such as row indices), or factors -- so what is required is
+# not one specific class but that the values can be compared to each other:
+# `interval_id` and every pointer column share one class, and factors share one
+# level set.  An all-NA logical column is what an intervals data.frame gets
+# from an unfilled column and is compatible with anything.
+check_interval_id_classes <- function(x, ref_cols) {
+  cols <- intersect(c("interval_id", ref_cols), names(x))
+  for (col in cols) {
+    if (!is.atomic(x[[col]])) {
+      rlang::abort(
+        sprintf(
+          "Interval column '%s' must be an atomic vector of interval identifiers; it is of class '%s'",
+          col, class(x[[col]])[1]
+        ),
+        class = "pknca_error_secondary_interval_id_invalid"
+      )
+    }
+  }
+  is_wildcard <-
+    vapply(
+      X = x[cols],
+      FUN = function(value) is.logical(value) && all(is.na(value)),
+      FUN.VALUE = TRUE
+    )
+  compare_cols <- cols[!is_wildcard]
+  if (length(compare_cols) > 1) {
+    first_col <- compare_cols[1]
+    for (col in compare_cols[-1]) {
+      compatible <-
+        if (is.factor(x[[first_col]]) || is.factor(x[[col]])) {
+          is.factor(x[[first_col]]) && is.factor(x[[col]]) &&
+            identical(levels(x[[first_col]]), levels(x[[col]]))
+        } else if (is.numeric(x[[first_col]])) {
+          is.numeric(x[[col]])
+        } else {
+          identical(class(x[[first_col]])[1], class(x[[col]])[1])
+        }
+      if (!compatible) {
+        rlang::abort(
+          sprintf(
+            "Interval linkage columns must hold comparable identifiers: '%s' is %s and '%s' is %s",
+            first_col, interval_id_class_text(x[[first_col]]),
+            col, interval_id_class_text(x[[col]])
+          ),
+          class = "pknca_error_secondary_ref_class_mismatch"
+        )
+      }
+    }
+  }
+  x
+}
+
+# Validate the cross-interval linkage columns of an interval specification:
+# `interval_id` and the `<parameter>_ref` pointers naming it.  Called from
+# check.interval.specification() after every registered parameter column exists.
+# Returns the (possibly coerced) interval specification.
+check_interval_secondary_cols <- function(x) {
+  interval_cols <- get.interval.cols()
+  candidate <- grep(pattern = "_ref$", x = names(x), value = TRUE)
+  # A `<something>_ref` column whose prefix is not a parameter is the user's own
+  # data and is left alone.
+  ref_cols <-
+    candidate[
+      sub(pattern = "_ref$", replacement = "", x = candidate) %in% names(interval_cols)
+    ]
+  if (length(ref_cols) == 0 && !("interval_id" %in% names(x))) {
+    return(x)
+  }
+  secondary_params <- secondary_parameter_names()
+  for (col in ref_cols) {
+    prefix <- sub(pattern = "_ref$", replacement = "", x = col)
+    if (!(prefix %in% secondary_params)) {
+      rlang::abort(
+        sprintf(
+          "Column '%s' is a reference pointer for '%s', which is not a secondary parameter",
+          col, prefix
+        ),
+        class = "pknca_error_secondary_ref_not_secondary"
+      )
+    }
+  }
+  x <- check_interval_id_classes(x, ref_cols)
+  if (length(ref_cols) > 0 && !("interval_id" %in% names(x))) {
+    # Every non-NA pointer then fails the unknown-id check below, which is the
+    # correct error: the intervals say what to reference but nothing carries
+    # the id.  The created column takes the pointer columns' class (including
+    # factor levels) so it stays comparable.
+    x$interval_id <- x[[ref_cols[1]]][rep(NA_integer_, nrow(x))]
+  }
+  # An id names one logical interval, so rows sharing it may differ only in what
+  # they calculate:  the parameter request columns and `impute`.
+  request_cols <- setdiff(intersect(names(x), names(interval_cols)), c("start", "end"))
+  compare_cols <- setdiff(names(x), c(request_cols, "impute"))
+  for (current_id in unique(stats::na.omit(x$interval_id))) {
+    rows <- which(x$interval_id %in% current_id)
+    if (!all(duplicated(x[rows, compare_cols, drop = FALSE])[-1])) {
+      rlang::abort(
+        sprintf(
+          "Rows sharing interval_id '%s' must describe the same interval; they differ outside the parameter and impute columns",
+          current_id
+        ),
+        class = "pknca_error_secondary_id_conflict"
+      )
+    }
+  }
+  for (col in ref_cols) {
+    prefix <- sub(pattern = "_ref$", replacement = "", x = col)
+    unknown <- setdiff(stats::na.omit(x[[col]]), stats::na.omit(x$interval_id))
+    if (length(unknown) > 0) {
+      rlang::abort(
+        sprintf(
+          "Column '%s' references interval_id value(s) that no interval has: %s",
+          col, paste(unique(unknown), collapse = ", ")
+        ),
+        class = "pknca_error_secondary_ref_unknown"
+      )
+    }
+    mask_pointer <- !is.na(x[[col]])
+    mask_requested <- vapply(X = x[[prefix]], FUN = isTRUE, FUN.VALUE = TRUE)
+    if (any(mask_pointer & !mask_requested)) {
+      rlang::abort(
+        sprintf(
+          "Column '%s' gives a reference interval in row(s) %s where '%s' is not requested. Request the parameter or clear the pointer.",
+          col, paste(which(mask_pointer & !mask_requested), collapse = ", "), prefix
+        ),
+        class = "pknca_error_secondary_ref_without_request"
+      )
+    }
+    mask_self <- mask_pointer & !is.na(x$interval_id) & (x$interval_id == x[[col]])
+    if (any(mask_self)) {
+      rlang::abort(
+        sprintf(
+          "Column '%s' in row(s) %s must reference a different interval than the row's own interval_id",
+          col, paste(which(mask_self), collapse = ", ")
+        ),
+        class = "pknca_error_secondary_ref_self"
+      )
+    }
+  }
+  x
 }
 
 # Helper function to get.parameter.deps to determine the function map
@@ -345,6 +500,9 @@ parameter_direct_refs <- function(x, all_intervals, optional_dose) {
   # I()-wrapped formalsmap values are constants, not references to a data source
   # or another parameter.
   args <- args[!vapply(X = args, FUN = inherits, FUN.VALUE = TRUE, what = "AsIs")]
+  # A pknca_ref() value names a parameter like a plain reference does; the
+  # interval it comes from does not change what the calculation is made of.
+  args <- lapply(X = args, FUN = function(a) if (is_pknca_ref(a)) a$param else a)
   if (!optional_dose) {
     drop_args <- pknca_optional_dose_args[[spec$FUN]]
     if (!is.null(drop_args)) {

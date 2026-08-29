@@ -25,7 +25,9 @@ add.interval.col(
 }
 \arguments{
 \item{name}{The column name as a non-empty character string (length 1,
-may not be \code{NA} or \code{""}).}
+may not be \code{NA} or \code{""}).  Names ending in \verb{_ref} and the name
+\code{interval_id} are reserved for the reference-interval linkage columns of
+the interval specification and may not be used.}
 
 \item{FUN}{The function to run (as a character string) or \code{NA} if the
 parameter is automatically calculated when calculating another parameter.}
@@ -154,6 +156,14 @@ function unchanged.  Use this for an argument that selects a variant of
 a shared calculation function (for example, \code{auc.type = I("AUCall")})
 rather than naming a data source or another parameter.}
 }
+\item{For the reference interval:}
+\describe{
+\item{a parameter name wrapped in \code{\link[=pknca_ref]{pknca_ref()}}}{The value of that NCA
+parameter calculated in the reference interval, which is the interval
+named by the \verb{<name>_ref} column of the interval specification.  A
+parameter with any such argument is a secondary parameter; see the
+vignette "Secondary parameters".}
+}
 }
 }
 \examples{
@@ -186,6 +196,7 @@ Other Interval specifications:
 \code{\link[=pknca_concepts]{pknca_concepts()}},
 \code{\link[=pknca_interval_table]{pknca_interval_table()}},
 \code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
-\code{\link[=pknca_presets]{pknca_presets()}}
+\code{\link[=pknca_presets]{pknca_presets()}},
+\code{\link[=pknca_ref]{pknca_ref()}}
 }
 \concept{Interval specifications}

@@ -48,6 +48,40 @@ validate_cdisc_arg <- function(x, arg_name) {
   }
 }
 
+# pknca_ref() lives here rather than with the rest of the secondary-parameter
+# machinery because the registrations that call it run while
+# R/pk.calc.simple.R and R/pk.calc.urine.R are sourced, and both of those sort
+# before R/secondary-parameters.R.
+
+#' Mark a formalsmap entry as coming from the reference interval
+#'
+#' Used in the `formalsmap` argument of [add.interval.col()] to declare that an
+#' argument takes the value of `param` calculated in the *reference* interval
+#' (the interval named by the `<parameter>_ref` column of the interval
+#' specification) rather than in the current interval.
+#'
+#' @param param The name of the NCA parameter to take from the reference
+#'   interval (a single non-missing character string).  It does not need to be
+#'   registered yet when `pknca_ref()` is called; it is validated when the
+#'   parameter is calculated.
+#' @returns An object of class `pknca_ref`.
+#' @seealso [add.interval.col()], the vignette "Secondary parameters"
+#' @examples
+#' pknca_ref("aucinf.obs")
+#' @family Interval specifications
+#' @export
+pknca_ref <- function(param) {
+  checkmate::assert_string(param, min.chars = 1, na.ok = FALSE)
+  structure(list(param = param), class = "pknca_ref")
+}
+
+#' @rdname pknca_ref
+#' @param x An object to test.
+#' @export
+is_pknca_ref <- function(x) {
+  inherits(x, "pknca_ref")
+}
+
 # The vocabularies used to classify parameters.  They are defined here, next
 # to add.interval.col(), because it validates against them while the package is
 # still being sourced -- a file sorting after this one would not yet exist.
@@ -189,7 +223,9 @@ assert_selection <- function(selection, name) {
 #' Add columns for calculations within PKNCA intervals
 #'
 #' @param name The column name as a non-empty character string (length 1,
-#'   may not be `NA` or `""`).
+#'   may not be `NA` or `""`).  Names ending in `_ref` and the name
+#'   `interval_id` are reserved for the reference-interval linkage columns of
+#'   the interval specification and may not be used.
 #' @param FUN The function to run (as a character string) or `NA` if the
 #'   parameter is automatically calculated when calculating another parameter.
 #' @param values Valid values for the column: either a function used to
@@ -298,6 +334,14 @@ assert_selection <- function(selection, name) {
 #'     a shared calculation function (for example, `auc.type = I("AUCall")`)
 #'     rather than naming a data source or another parameter.}
 #'   }
+#'   \item{For the reference interval:}
+#'   \describe{
+#'     \item{a parameter name wrapped in [pknca_ref()]}{The value of that NCA
+#'     parameter calculated in the reference interval, which is the interval
+#'     named by the `<name>_ref` column of the interval specification.  A
+#'     parameter with any such argument is a secondary parameter; see the
+#'     vignette "Secondary parameters".}
+#'   }
 #' }
 #' @examples
 #' \dontrun{
@@ -340,6 +384,18 @@ add.interval.col <- function(name,
                              selection=NULL) {
   # Check inputs
   checkmate::assert_character(x = name, len = 1, min.chars = 1, any.missing = FALSE)
+  # `<name>_ref` columns in an interval specification are the reference-interval
+  # pointers for secondary parameters, and `interval_id` names intervals, so a
+  # parameter may not take either form.
+  if (grepl(pattern = "_ref$", x = name) || name %in% "interval_id") {
+    rlang::abort(
+      sprintf(
+        "The parameter name '%s' is reserved: names ending in '_ref' and the name 'interval_id' identify the reference-interval linkage columns of the interval specification",
+        name
+      ),
+      class = "pknca_error_param_name_reserved"
+    )
+  }
   checkmate::assert_character(x = FUN, len = 1, any.missing = TRUE) # allows NA
   checkmate::assert_logical(x = sparse, len = 1, any.missing=FALSE)
   checkmate::assert_character(x = pretty_name, len = 1, min.chars = 1, any.missing=FALSE)

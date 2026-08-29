@@ -231,7 +231,7 @@ prepare_PKNCAdose <- function(.dat, sparse, subject_col) {
         ret_grp$data_dose[[current_row]] <- ret_grp$sparse_group_check[[current_row]]$data_dose[[1]]
       } else {
         names_to_print <- setdiff(names(ret_grp), c("sparse_group_check", "data_dose"))
-        msg_error_row <- paste(names_to_print, unlist(ret_grp[current_row, names_to_print]), sep="=", collapse="; ")
+        msg_error_row <- name_value_text(ret_grp[current_row, names_to_print], collapse="; ")
         msg_error <-
           if (length(names_to_print) > 0) {
             paste(

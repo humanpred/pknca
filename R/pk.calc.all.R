@@ -38,7 +38,11 @@ pk.nca <- function(data, verbose=FALSE) {
     tmp_options <- PKNCA.options()
     tmp_options[names(data$options)] <- data$options
     data$options <- tmp_options
-    splitdata <- full_join_PKNCAdata(data)
+    # A working copy: reference intervals gain the source parameters their links
+    # need.  The PKNCAresults below keeps the user's own `data`, so the
+    # expansion never becomes visible in `x$data$intervals`.
+    data_calc <- expand_secondary_intervals(data)
+    splitdata <- full_join_PKNCAdata(data_calc)
     group_info <-
       splitdata[
         ,
@@ -93,6 +97,7 @@ pk.nca <- function(data, verbose=FALSE) {
           pk_nca_result_to_df(group_info, results_sparse)
         )
     }
+    results <- pk_nca_secondary(results, data_calc)
   }
   PKNCAresults(
     result=results,
@@ -119,18 +124,7 @@ pk_nca_result_to_df <- function(group_info, result) {
   if (nrow(ret_warnings) > 0) {
     group_names <- setdiff(names(ret_warnings), "data_result")
     # Tell the user where the warning comes from
-    warning_preamble <-
-      do.call(
-        what=paste,
-        args=
-          append(
-            lapply(
-              X=group_names,
-              FUN=function(x) paste(x, ret_warnings[[x]], sep="=")
-            ),
-            list(sep="; ")
-          )
-      )
+    warning_preamble <- name_value_text(ret_warnings[group_names], collapse="; ")
     invisible(lapply(
       X=seq_along(warning_preamble),
       FUN=function(idx) {
@@ -292,10 +286,7 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
     error_preamble <-
       paste(
         "Error with interval",
-        paste(
-          c("start", "end"),
-          unlist(current_interval[, c("start", "end")]),
-          sep="=", collapse=", ")
+        name_value_text(current_interval[, c("start", "end")])
       )
     if (nrow(conc_data_interval) == 0) {
       rlang::warn(sprintf("%s: No data for interval", error_preamble), class = "pknca_warning_no_data_for_interval")
@@ -390,6 +381,21 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
     }
   }
   if (length(ret_list) == 0L) data.frame() else dplyr::bind_rows(ret_list)
+}
+
+# Combine exclusion reasons from a calculation's inputs with the exclusion the
+# calculation itself set (the "exclude" attribute).  "DO NOT EXCLUDE" on the
+# result wins and clears everything.  Documented in
+# vignettes/v80-writing-parameter-functions.Rmd.
+combine_exclude_reasons <- function(from_inputs, from_result) {
+  reasons <- stats::na.omit(c(from_inputs, from_result))
+  if (identical(from_result, "DO NOT EXCLUDE")) {
+    NA_character_
+  } else if (length(reasons) > 0) {
+    paste(reasons, collapse = "; ")
+  } else {
+    NA_character_
+  }
 }
 
 #' Compute all PK parameters for a single concentration-time data set
@@ -490,12 +496,18 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       interval[all_intervals[[n]]$depends] <- TRUE
     }
   }
+  # Parameters linked to a reference interval are calculated across intervals by
+  # pk_nca_secondary() after every interval has been calculated.  Their
+  # dependencies are still expanded above, because the home-interval half of the
+  # calculation (`ae`, `totdose`, ...) is computed here.
+  deferred <- interval_deferred_params(interval)
   # Do the calculations
   for (n in names(all_intervals)) {
     request_to_calculate <- as.logical(interval[[n]])
     has_calculation_function <- !is.na(all_intervals[[n]]$FUN)
     is_correct_sparse_dense <- all_intervals[[n]]$sparse == sparse
-    if (request_to_calculate && has_calculation_function && is_correct_sparse_dense) {
+    if (request_to_calculate && has_calculation_function && is_correct_sparse_dense &&
+        !(n %in% deferred)) {
       call_args <- list()
       exclude_from_argument <- character(0)
       # Prepare to call the function by setting up its arguments.
@@ -509,7 +521,34 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       arglist <- arglist[!vapply(X = arglist, FUN = is.null, FUN.VALUE = TRUE)]
       for (arg_formal in names(arglist)) {
         arg_mapped <- arglist[[arg_formal]]
-        if (inherits(arg_mapped, "AsIs")) {
+        if (is_pknca_ref(arg_mapped)) {
+          # A secondary parameter reaching here was requested without a
+          # reference pointer, so only the historical same-interval sources can
+          # supply the value.
+          info <- secondary_param_info(n)
+          target <- arg_mapped$param
+          if (!is.null(interval[[arg_formal]])) {
+            # Historical escape hatch: a value column named by the formal (e.g.
+            # `dose1` for f), passed through via keep_interval_cols
+            call_args[[arg_formal]] <- interval[[arg_formal]]
+          } else if (!(target %in% info$home_args) &&
+                     any(mask_arg <- ret$PPTESTCD %in% target)) {
+            # Historical same-interval behavior (e.g. clr with auclast requested
+            # in the same interval).  Disallowed when the target is also a home
+            # argument, because test and reference would then be the same value
+            # and the result degenerate (f would always be 1).
+            call_args[[arg_formal]] <- ret$PPORRES[mask_arg]
+            exclude_from_argument <- c(exclude_from_argument, ret$exclude[mask_arg])
+          } else {
+            rlang::abort(
+              sprintf(
+                "The secondary parameter '%s' needs a reference interval for its '%s' argument (the value of '%s' from another interval). Set the '%s_ref' column in the interval specification to the 'interval_id' of the reference interval, give `group_ref` to PKNCAdata(), or use interval_add_secondary().",
+                n, arg_formal, target, n
+              ),
+              class = "pknca_error_secondary_needs_ref"
+            )
+          }
+        } else if (inherits(arg_mapped, "AsIs")) {
           # An I()-wrapped formalsmap value is the argument itself rather than
           # the name of a data source or another parameter.
           call_args[[arg_formal]] <- unclass(arg_mapped)
@@ -626,17 +665,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       # "vignettes/v80-writing-parameter-functions.Rmd" vignette.  Document any
       # changes to this section of code there.
       exclude_reason <-
-        stats::na.omit(c(
-          exclude_from_argument, attr(tmp_result, "exclude")
-        ))
-      exclude_reason <-
-        if (identical(attr(tmp_result, "exclude"), "DO NOT EXCLUDE")) {
-          NA_character_
-        } else if (length(exclude_reason) > 0) {
-          paste(exclude_reason, collapse="; ")
-        } else {
-          NA_character_
-        }
+        combine_exclude_reasons(exclude_from_argument, attr(tmp_result, "exclude"))
       # The handling of the method column (PPANMETH)
       tmp_method <- c(tmp_imp_method, attr(tmp_result, "method"))
       attr(tmp_result, "method") <- NULL

@@ -192,7 +192,10 @@ classify_secondary <- function(all_intervals) {
     names(all_intervals)[
       vapply(
         all_intervals,
-        function(x) isTRUE(x$selection$secondary),
+        function(x) {
+          isTRUE(x$selection$secondary) ||
+            any(vapply(x$formalsmap, is_pknca_ref, TRUE))
+        },
         TRUE
       )
     ]
@@ -205,14 +208,17 @@ classify_secondary <- function(all_intervals) {
 }
 
 # Classify every registered parameter, caching the result until the registry
-# changes.  add.interval.col() drops the cache.
+# changes.  add.interval.col() drops the cache, but a registry restored by
+# assigning a saved copy back into the package environment (tests and other
+# packages do this) bypasses it, so the cache also records the parameter names
+# it was computed from and is recomputed when they differ.
 parameter_classification <- function() {
-  cached <- get0("parameter_classification", envir = .PKNCAEnv)
-  if (!is.null(cached)) {
-    return(cached)
-  }
   all_intervals <- get.interval.cols()
   all_intervals <- all_intervals[setdiff(names(all_intervals), c("start", "end"))]
+  cached <- get0("parameter_classification", envir = .PKNCAEnv)
+  if (!is.null(cached) && identical(cached$key, names(all_intervals))) {
+    return(cached$value)
+  }
   ret <-
     list(
       concept = classify_concepts(all_intervals),
@@ -229,7 +235,11 @@ parameter_classification <- function() {
           TRUE
         )
     )
-  assign("parameter_classification", ret, envir = .PKNCAEnv)
+  assign(
+    "parameter_classification",
+    list(key = names(all_intervals), value = ret),
+    envir = .PKNCAEnv
+  )
   ret
 }
 

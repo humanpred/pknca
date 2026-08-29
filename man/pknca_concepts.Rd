@@ -50,6 +50,7 @@ Other Interval specifications:
 \code{\link[=pknca_check_parameter_classification]{pknca_check_parameter_classification()}},
 \code{\link[=pknca_interval_table]{pknca_interval_table()}},
 \code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
-\code{\link[=pknca_presets]{pknca_presets()}}
+\code{\link[=pknca_presets]{pknca_presets()}},
+\code{\link[=pknca_ref]{pknca_ref()}}
 }
 \concept{Interval specifications}
