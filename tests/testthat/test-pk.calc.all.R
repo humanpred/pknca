@@ -1033,16 +1033,17 @@ test_that("pk.nca can be run for each parameter independently (#473)", {
   # ── Params that cannot be tested independently ────────────────────────────
   # These require special data structures or multi-dose designs
   # and are tested in dedicated tests elsewhere
-  # The secondary parameters need a reference interval to take their comparator
-  # from, so one interval alone cannot calculate them; they are covered in
-  # test-secondary-parameters.R
+  # A secondary parameter needs a reference interval to take its comparator
+  # from, so one interval alone cannot calculate any of them; they are covered
+  # in test-secondary-parameters.R.  Derived from the classification so that a
+  # newly registered secondary parameter is excluded without editing this list.
+  parameter_table <- pknca_parameter_table()
   non_pknca_covered_params <- c(
-    "f", "time_above",
-    "clr.last", "clr.obs", "clr.pred",
-    "clr.last.dn", "clr.obs.dn", "clr.pred.dn",
+    "time_above",
     "sparse_auc_se", "sparse_auc_df",
     "sparse_aumc_se", "sparse_aumc_df",
-    "ceoi"
+    "ceoi",
+    parameter_table$parameter[parameter_table$secondary]
   )
   
   all_params <- setdiff(

@@ -290,6 +290,7 @@ test_that("every parameter is reachable from some context, or documented as not"
     }
   }
   unreachable <- sort(setdiff(setdiff(names(get.interval.cols()), c("start", "end")), emitted))
+  parameter_table <- pknca_parameter_table()
   # Everything built on AUCall.  Whether AUCall differs from AUClast depends on
   # whether there are values below the limit of quantification after the last
   # measurable one, which is a property of the data rather than of the
@@ -309,10 +310,9 @@ test_that("every parameter is reachable from some context, or documented as not"
       "vss.all", "vss.int.all", "vss.iv.all", "vss.ivint.all",
       "vz.all", "vz.int.all", "vz.iv.all", "vz.ivint.all",
       # Secondary parameters need inputs from more than one profile, which one
-      # interval cannot supply
-      "f",
-      "clr.last", "clr.obs", "clr.pred",
-      "clr.last.dn", "clr.obs.dn", "clr.pred.dn"
+      # interval cannot supply.  Derived from the classification so that a newly
+      # registered secondary parameter does not need this list edited.
+      parameter_table$parameter[parameter_table$secondary]
     ))
   )
   # Asking for it by name works
