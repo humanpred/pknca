@@ -484,6 +484,108 @@ test_that("secondary parameters abort with sparse data", {
   )
 })
 
+# A malformed secondary registration is reported when the parameter is used
+test_that("secondary_param_info() rejects registrations it cannot calculate", {
+  local_interval_cols()
+  fn_name <- "pknca_test_secondary_fun_"
+  assign(fn_name, function(other, reference) other/reference, envir = .GlobalEnv)
+  withr::defer(rm(list = fn_name, envir = .GlobalEnv))
+  # A formal that is neither in formalsmap nor a parameter name
+  add.interval.col(
+    "pknca_test_secondary_col_",
+    FUN = fn_name,
+    unit_type = "fraction",
+    pretty_name = "Test: secondary registration",
+    desc = "Coverage test for registration checks",
+    formalsmap = list(reference = pknca_ref("cmax")),
+    depends = "cmax"
+  )
+  expect_error(
+    PKNCA:::secondary_param_info("pknca_test_secondary_col_"),
+    class = "pknca_error_secondary_registration",
+    regexp = "other"
+  )
+  # A pknca_ref() target that is not a registered parameter
+  add.interval.col(
+    "pknca_test_secondary_col_",
+    FUN = fn_name,
+    unit_type = "fraction",
+    pretty_name = "Test: secondary registration",
+    desc = "Coverage test for registration checks",
+    formalsmap = list(other = "cmax", reference = pknca_ref("nosuchparam")),
+    depends = "cmax"
+  )
+  expect_error(
+    PKNCA:::secondary_param_info("pknca_test_secondary_col_"),
+    class = "pknca_error_secondary_target_unregistered",
+    regexp = "nosuchparam"
+  )
+  # A home argument that is not listed in `depends`
+  add.interval.col(
+    "pknca_test_secondary_col_",
+    FUN = fn_name,
+    unit_type = "fraction",
+    pretty_name = "Test: secondary registration",
+    desc = "Coverage test for registration checks",
+    formalsmap = list(other = "cmax", reference = pknca_ref("cmax"))
+  )
+  expect_error(
+    PKNCA:::secondary_param_info("pknca_test_secondary_col_"),
+    class = "pknca_error_secondary_registration",
+    regexp = "depends"
+  )
+})
+
+# The home-side wording of the missing-value error (defensive in the engine,
+# where `depends` guarantees the home value for an explicit link)
+test_that("stop_secondary_value_missing() names the interval a value is missing from", {
+  err_home <-
+    expect_error(
+      PKNCA:::stop_secondary_value_missing(
+        "clr.last", "ae", "plasma024", data.frame(subject = 1), side = "home"
+      ),
+      class = "pknca_error_secondary_ref_value_missing"
+    )
+  expect_match(conditionMessage(err_home), "from this interval", fixed = TRUE)
+  expect_false(grepl("plasma024", conditionMessage(err_home), fixed = TRUE))
+})
+
+# Duplicate home rows make the home-side lookup ambiguous, not silently doubled
+test_that("a duplicated home interval row is an ambiguity error", {
+  iv_home_dup <- rbind(iv_sec, iv_sec[2, ])
+  o_data_dup <-
+    PKNCAdata(o_conc_sec, intervals = iv_home_dup, options = list(auc.method = "linear"))
+  expect_error(
+    pk.nca(o_data_dup),
+    class = "pknca_error_secondary_ambiguous_reference"
+  )
+})
+
+# A home interval with no data produces no secondary row and no error; the
+# per-interval no-data warning is the only signal
+test_that("a linked interval without data is skipped like any other empty interval", {
+  d_flat <- data.frame(time = c(0, 6, 12), conc = c(2, 1, 0.5), vol = c(100, 150, 200))
+  o_flat <- PKNCAconc(d_flat, conc~time, volume = "vol")
+  iv_nodata <-
+    data.frame(
+      start = c(0, 30), end = c(12, 40),
+      interval_id = c("early", NA),
+      auclast = c(TRUE, FALSE),
+      ae = c(FALSE, TRUE),
+      clr.last = c(FALSE, TRUE),
+      clr.last_ref = c(NA, "early")
+    )
+  o_data_nodata <-
+    PKNCAdata(o_flat, intervals = iv_nodata, options = list(auc.method = "linear"))
+  expect_warning(
+    res <- pk.nca(o_data_nodata),
+    class = "pknca_warning_no_data_for_interval"
+  )
+  d_res <- as.data.frame(res)
+  expect_false("clr.last" %in% d_res$PPTESTCD)
+  expect_true("auclast" %in% d_res$PPTESTCD)
+})
+
 # Removing a secondary parameter also removes its reference pointer, so the
 # edited intervals still validate
 test_that("interval_remove_param() clears the pointer of a removed secondary parameter", {

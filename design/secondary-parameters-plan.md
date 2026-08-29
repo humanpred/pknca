@@ -1275,6 +1275,9 @@ Extend the pass (the marked insertion point in §3.11):
   template mechanics as §3.11), and append one row per instance with
   `PPTESTCD = param`, `PPORRES = NA_real_`, `PPANMETH = NA_character_`, and
   `exclude = reason`.
+* Remove the three `# nocov` blocks in `pk_nca_secondary()` that guard the
+  automatic-failure branches (home-side missing, `failed_reason` recording,
+  and the `NA`-result arm) — they become reachable and tested here.
 * Emit **one** `rlang::warn(class = "pknca_warning_secondary_auto_reference")`
   per parameter that had any automatic failure (finder failures and missing
   auto-linked values combined), e.g.

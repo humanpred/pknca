@@ -366,6 +366,10 @@ pk_nca_secondary <- function(results, data_calc) {
             )
           if (found$n > 1) stop_secondary_ambiguous(p, info$home_args[[formal]], g_home)
           if (found$n == 0) {
+            # The home-side value is guaranteed by `depends` for an explicit
+            # link, so this branch defends the automatic linkage, which cannot
+            # arise until the reference finder exists.
+            # nocov start
             if (!is_auto) {
               stop_secondary_value_missing(
                 p, info$home_args[[formal]], ref_id, g_home, side = "home"
@@ -376,6 +380,7 @@ pk_nca_secondary <- function(results, data_calc) {
                 "Value '%s' is not available for the interval",
                 info$home_args[[formal]]
               )
+            # nocov end
           }
           inputs[[formal]] <- found$value
           excludes <- c(excludes, found$exclude)
@@ -394,11 +399,16 @@ pk_nca_secondary <- function(results, data_calc) {
                 p, info$ref_args[[formal]], ref_id, g_home, side = "reference"
               )
             }
+            # An explicit link aborted just above, so recording the reason is
+            # for automatic links only, which cannot arise until the reference
+            # finder exists.
+            # nocov start
             failed_reason <-
               sprintf(
                 "Reference value '%s' is not available from reference interval '%s'",
                 info$ref_args[[formal]], ref_id
               )
+            # nocov end
           }
           inputs[[formal]] <- found$value
           excludes <- c(excludes, found$exclude)
@@ -413,8 +423,12 @@ pk_nca_secondary <- function(results, data_calc) {
           excl <- combine_exclude_reasons(excludes, attr(value, "exclude"))
           value <- as.numeric(value)
         } else {
+          # A failed_reason is only recorded for automatic links, which cannot
+          # arise until the reference finder exists.
+          # nocov start
           value <- NA_real_
           excl <- combine_exclude_reasons(c(excludes, failed_reason), NULL)
+          # nocov end
         }
         template <- results[m_home, , drop = FALSE]
         template <-
