@@ -512,11 +512,13 @@ find_secondary_reference <- function(intervals, row, param, info, conc, group_re
   conc_data <- as.data.frame(conc)
   groups <- unique(conc_data[, group_cols, drop = FALSE])
   rownames(groups) <- NULL
-  # Without a declared collection volume no profile is an interval collection
-  has_volume <-
-    if (is.null(conc$columns$volume)) {
-      rep(FALSE, nrow(groups))
-    } else {
+  pool <- rep(TRUE, nrow(groups))
+  if (st_applicable) {
+    # A profile with a collection volume is an interval collection, so it is
+    # what the parameter is calculated on rather than what it references.  Only
+    # the sample-type rule reads the volume, and it applies only where the
+    # concentration data declare one.
+    has_volume <-
       vapply(
         X = seq_len(nrow(groups)),
         FUN = function(i) {
@@ -526,11 +528,6 @@ find_secondary_reference <- function(intervals, row, param, info, conc, group_re
         },
         FUN.VALUE = TRUE
       )
-    }
-  pool <- rep(TRUE, nrow(groups))
-  if (st_applicable) {
-    # A profile with a collection volume is an interval collection, so it is
-    # what the parameter is calculated on rather than what it references.
     pool <- pool & !has_volume
   }
   if (!is.null(group_ref)) {
