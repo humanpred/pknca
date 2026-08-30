@@ -24,7 +24,8 @@ columns are \code{start}, \code{end}, and/or group columns of the intervals, eve
 column must match (and) for at least one of its rows (or).  A named list is
 accepted and coerced.  When no interval matches, one is created and the
 creation is reported with a \code{pknca_message_secondary_created_interval}
-message.}
+message.  \code{NULL} (the default) takes the \code{group_ref} given to
+\code{\link[=PKNCAdata]{PKNCAdata()}}, or derives the reference from the data (see Details).}
 
 \item{target_groups}{A data.frame of group values restricting the parameter
 request to matching intervals, with the same matching rules as \code{reference}.
@@ -57,6 +58,20 @@ announced, as calculating any dependency is.
 An interval that already names a different reference for \code{param} is left
 alone with a \code{pknca_warning_secondary_ref_exists} warning, so that the
 helper never silently re-points an analysis.
+
+With \code{reference = NULL} the reference is derived from the data, which needs
+a \code{PKNCAdata} object (a bare intervals data.frame carries no concentrations
+to derive it from).  The \code{group_ref} given to \code{\link[=PKNCAdata]{PKNCAdata()}} is used when it
+is set.  Otherwise the derivation applies where the parameter is measured on
+an interval collection while everything it references is a spot sample
+(renal clearance) and the concentration data declare a collection \code{volume}:
+each interval takes the profile with no collection volume that differs from
+its own in the fewest group columns.  This is the same derivation
+\code{\link[=pk.nca]{pk.nca()}} makes on its own, written out into the returned intervals
+instead of being ephemeral.  Anything the derivation cannot resolve is an
+error here (\code{pknca_error_secondary_needs_ref}) rather than the \code{NA} result
+the automatic path gives, so narrow the request with \code{target_groups} when
+some intervals are not meant to calculate \code{param}.
 
 When the parameter pairs an interval collection with spot-sample
 references (renal clearance:  an amount excreted against a plasma AUC)
