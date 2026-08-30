@@ -2035,3 +2035,45 @@ test_that("a factor group column gives a reference the intervals can hold", {
   d_res <- as.data.frame(res)
   expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/144)
 })
+
+# The reference has to match the interval in every group column the intervals
+# scope on, not only the one the finder overrides
+test_that("a found reference keeps the interval's other group values", {
+  d_pair <-
+    rbind(
+      d_conc_sec,
+      data.frame(
+        subject = 2,
+        PCSPEC = rep(c("plasma", "urine"), times = c(3, 2)),
+        time = c(0, 12, 24, 0, 12),
+        # Twice subject 1's plasma, the same urine:  a reference taken from the
+        # wrong subject would show
+        conc = c(20, 12, 4, 2, 1),
+        vol = c(NA, NA, NA, 100, 150)
+      )
+    )
+  o_conc_pair <- PKNCAconc(d_pair, conc~time|PCSPEC+subject, volume = "vol")
+  o_data_pair <-
+    PKNCAdata(
+      o_conc_pair,
+      intervals =
+        data.frame(
+          PCSPEC = "urine", subject = c(1, 2), start = 0, end = 24,
+          ae = TRUE, clr.last = TRUE
+        ),
+      options = list(auc.method = "linear")
+    )
+  # One reference interval per subject, each announced
+  expect_message(
+    expect_message(
+      res <- pk.nca(o_data_pair),
+      class = "pknca_message_secondary_ref_created"
+    ),
+    class = "pknca_message_secondary_ref_created"
+  )
+  d_res <- as.data.frame(res)
+  d_clr <- d_res[d_res$PPTESTCD %in% "clr.last", ]
+  expect_equal(d_clr$PPORRES[order(d_clr$subject)], c(350/144, 350/288))
+  d_auc <- d_res[d_res$PPTESTCD %in% "auclast", ]
+  expect_equal(d_auc$PPORRES[order(d_auc$subject)], c(144, 288))
+})

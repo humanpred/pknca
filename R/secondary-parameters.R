@@ -917,14 +917,18 @@ pk_nca_secondary <- function(results, data_calc) {
             )
           if (found$n > 1) stop_secondary_ambiguous(p, info$home_args[[formal]], g_home)
           if (found$n == 0) {
-            # `depends` guarantees the home-side value wherever the interval has
-            # data, so this is an automatically linked interval whose own half
-            # could not be calculated.
+            # `depends` puts the home-side value in the same interval, so an
+            # instance with no home value has no result rows at all and is not
+            # an instance:  the explicit-link abort defends a results table that
+            # no calculation produces, while the automatic reason below is
+            # reached through a results table built by hand.
+            # nocov start
             if (!is_auto) {
               stop_secondary_value_missing(
                 p, info$home_args[[formal]], ref_id, g_home, side = "home"
               )
             }
+            # nocov end
             failed_reason <-
               sprintf(
                 "Value '%s' is not available for the interval",
