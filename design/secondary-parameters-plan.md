@@ -1449,6 +1449,61 @@ reference interval automatically when it is unambiguous"; "`PKNCAdata()`
 gains `group_ref` to steer automatic reference selection"); document the
 finder's rules in the `interval_add_secondary()` and `PKNCAdata()` roxygen.
 
+### 5.9 As built (PR 3)
+
+PR 3 merged with these differences from the section-5 text above; trust the
+code over the sketches:
+
+* **`find_secondary_reference()` takes the pieces it needs, not the
+  `PKNCAdata`**: `find_secondary_reference(intervals, row, param, info, conc,
+  group_ref)`, so that `interval_add_secondary()` (which holds an intervals
+  data.frame and, for the `PKNCAdata` method, a `PKNCAconc`) can call it.  A
+  `NULL` `conc` is "not applicable".
+* **The data.frame method of `interval_add_secondary()` cannot run the
+  finder** (section 5.6 says both methods do).  The derivation is defined over
+  the concentration data — the group table and the collection volumes of
+  section 5.3 — and a bare intervals data.frame has none, so
+  `reference = NULL` there aborts `pknca_error_secondary_needs_ref`.  The
+  `PKNCAdata` method runs it.
+* **Every test row must resolve in the explicit call.**  `reference = NULL`
+  requests the parameter on the test rows, so a row the finder cannot resolve
+  (the plasma row of a specification that also has one) is an error naming
+  `target_groups` as the way to exclude it, rather than being skipped.
+* **`secondary_legacy_resolvable()` expands `depends` first**
+  (`interval_expanded_params()`), because `pk.nca.interval()` does before its
+  argument-resolution ladder runs.  A target that arrives as another
+  parameter's dependency is calculated in the interval, so the finder must not
+  fire.
+* **A row's instance-level failures are reported together** rather than by the
+  first one (section 5.3 step 7):  the distinct reasons are joined with `"; "`,
+  because the actionable one ("add 'PCSPEC' to the intervals") is often not the
+  first.  The one-per-parameter warning likewise carries the distinct reasons,
+  which is what makes it name the tied candidates.
+* **Reuse is matched against the reference's own end**, which for an
+  interval-over-spot parameter is the collection-spanning end rather than the
+  home row's (section 5.4 step 3 says the home row's).  Otherwise a
+  specification already holding the wider reference would get a duplicate.
+* **Requesting `clr.*` without its AUC on data with no other profile is no
+  longer an error.**  The finder is applicable there and finds nothing, so
+  decision 5 applies:  `NA` with the reason and the one-per-parameter warning.
+  PR 1's error for that case (its §3.14 test 16) is gone.
+* Exclusion reasons never name an `interval_id`.  An automatic identifier
+  (`autoref1`) is engine bookkeeping that appears in no data the user holds.
+* Identifier generation is `interval_new_ids()`/`interval_next_ref_names()`/
+  `interval_assign_ref_ids()` with a `prefix` argument -- `"autoref"` for the
+  finder, `"ref"` for `interval_add_secondary()` -- so the two paths cannot
+  collide and a generated identifier still matches the `interval_id` column's
+  class.
+* `interval_complete_source_params()` is the one place a reference interval
+  gains what a link reads from it; `expand_secondary_intervals()`, the finder,
+  and `interval_edit_secondary()` all call it.
+* The explicit-link half of the missing-home-value guard in
+  `pk_nca_secondary()` is back under `# nocov` (section 5.5 removes all three
+  blocks).  `depends` puts the home value in the same interval, so an instance
+  with no home value has no result rows and is not an instance; the automatic
+  half beside it is covered by calling `pk_nca_secondary()` on a hand-built
+  results table.
+
 ---
 
 ## 6. PR 4 — unit reconciliation and documentation
