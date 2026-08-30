@@ -38,7 +38,7 @@ these):
 | 4 | Adding a needed source parameter to a reference interval is **silent** — calculating dependencies without announcement is default PKNCA behavior.  Creating a whole reference *interval* (PR 3) is announced with `pknca_message_secondary_ref_created`, and every link is disclosed in `PPANMETH`. |
 | 5 | **Explicit links fail loud; automatic links degrade.**  When an explicit link cannot supply a value (missing reference instance or missing source value), `pk.nca()` aborts (`pknca_error_secondary_ref_value_missing`).  When the automatic path fails (no unique reference found, or an auto-linked value is missing), the affected results are `NA` with an `exclude` reason and a warning (`pknca_warning_secondary_auto_reference`). |
 | 6 | Reference-group steering: `PKNCAdata()` gains `group_ref`, a **data.frame** of group values (e.g. `data.frame(PCSPEC = "PLASMA")`) that constrains — and can by itself direct — the automatic finder.  `interval_add_secondary()`'s `reference` argument is likewise a data.frame. |
-| 7 | Ratio starter set: `ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`, `ratio.aucint.last`, `ratio.aucint.all`.  Bioavailability gains basis variants: `f` (existing, AUCinf,obs-based) plus `f.pred`, `f.last`, `f.int.last`, `f.int.all`. |
+| 7 | Ratio starter set: `ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`, `ratio.aucint.last`, `ratio.aucint.all`.  Bioavailability names its AUC basis: `f` is renamed `f.obs` (AUCinf,obs-based) and gains `f.pred`, `f.last`, `f.int.last`, `f.int.all`, `f.int.obs`, `f.int.pred`. |
 | 8 | **Unit reconciliation is in scope** and is the final PR (PR 4): reference-side input values are converted into the home group's units before the calculation; non-convertible units give `NA` + reason + `pknca_warning_secondary_units`.  §6.1; the text to post on issue 76 is Appendix A. |
 | 9 | Sparse data (`is_sparse_pk(data)` is `TRUE`) with any secondary parameter requested aborts with `pknca_error_secondary_sparse_unsupported`.  Lifting this is a to-do (§8). |
 | 10 | Aggregated (across-subject) references are **not** planned: parallel-design comparisons of that kind are bioavailability-style analyses already served by the existing bioavailability/`be_assess()` calculation methods. |
@@ -1120,7 +1120,9 @@ interval_add_metabolite_ratio <- function(data, reference,
 6. Accumulation ratio end-to-end: one group, two intervals 0–24 and 24–48
    with `aucint.last`; `interval_add_accumulation_ratio(iv, 0, 24)` then
    `pk.nca()`; assert `ratio.aucint.last == aucint_2/aucint_1` from the same
-   run's rows, and PPANMETH `"Reference interval: ref1 (0-24)"`.
+   run's rows, and PPANMETH `"Reference interval: 0-24"` (the as-built format
+   of section 3.16: the id is tracking information and stays out of
+   PPANMETH).
 7. Metabolite ratio end-to-end across an `Analyte` group, including the
    exclusion-carry assertion (excluded parent AUC marks the ratio).
 8. Cross-check: in a crossover run computing `f` (via linkage), extract
@@ -1140,6 +1142,76 @@ interval_add_metabolite_ratio <- function(data, reference,
 
 `devtools::document()`; NEWS bullets (new `interval_add_secondary()` family;
 new `ratio.*` parameters; new `f.*` basis variants); spell check.
+
+### 4.6 As built (PR 2)
+
+PR 2 merged with these differences from the section-4 text above; trust the
+code over the sketches:
+
+* **The parameter `f` is renamed `f.obs`** (maintainer decision on review),
+  matching the specificity of `f.pred` and the `clr.*` family.
+  `pk.calc.f()` keeps its name (it computes every basis), the CDISC code
+  stays `FAB`, and `assert_intervals()` points an interval specification
+  using the old name `f` at `f.obs`.  Everywhere else this document says the
+  parameter `f`, read `f.obs`.
+* **The bioavailability family also has `f.int.obs` and `f.int.pred`**
+  (review comment), built on `aucint.inf.obs` and `aucint.inf.pred`.
+* **The named wrappers were removed** (review comment):
+  `interval_add_secondary()` is the single authoring verb;
+  `interval_add_renal_clearance()`, `interval_add_accumulation_ratio()`, and
+  `interval_add_metabolite_ratio()` do not exist.  Sections above that
+  mention them describe the same calls spelled through
+  `interval_add_secondary()`.
+* **Ratio naming and SDTM text** (review comments): the `ratio.*`
+  registrations use the base parameter's pretty name and "to reference"
+  (`pretty_name`/`desc` "Ratio of Cmax to reference") and set `pptest_cdisc`
+  ("Ratio of Cmax to Reference").  `pptestcd_cdisc` stays the PKNCA name:
+  the controlled-terminology code depends on what differs between the
+  intervals (accumulation `AR*` vs metabolite-ratio codes), which is the
+  context-aware CDISC translation of to-do item 3.
+
+* `pk.calc.ratio()` is vectorized (`ret <- test/reference` with an `NA` mask
+  for missing or non-positive references) rather than the scalar `if` sketch,
+  matching `pk.calc.f()`'s style and tolerating zero-length input.
+* `ref_id` given while `reference` matches more than one distinct reference
+  interval is an error (`pknca_error_secondary_ref_ambiguous_spec`), not
+  silent generation.
+* Invalid `reference` columns reuse the existing
+  `pknca_error_interval_target_groups_cols` class with a reference-specific
+  message; a parameter request column is rejected as a reference descriptor.
+  Valid descriptor columns are `interval_describe_cols()`: everything except
+  parameter requests, pointer columns, `interval_id`, and `impute`.
+* `target_groups` matching nothing (or only reference rows) warns
+  `pknca_warning_interval_no_target_rows` and returns the input unchanged,
+  mirroring `interval_edit_param()`.
+* Generating a factor identifier re-levels every pointer column to the
+  identifier column's levels (`interval_sync_ref_cols()`), or the result
+  would fail the comparability rule.
+* Reference rows are always excluded from the test rows, so a row can never
+  become its own reference.
+* When several reference intervals match, a test row takes the one sharing
+  its own `start`/`end` (`interval_pick_reference()`), or failing that the
+  single one *covering* its times; with neither the ambiguity abort names the
+  row.
+* **Created spot-sample references span the collections whole** (maintainer
+  decision on review):  when the parameter pairs an interval collection with
+  spot-sample references (`secondary_interval_over_spot()`, i.e. renal
+  clearance) and the `PKNCAdata` method creates the reference, the created
+  interval's `end` extends to `max(time + duration)` over the test rows'
+  collections (`interval_collection_ends()`), because a collection beginning
+  inside the interval contributes its full amount and the paired AUC must
+  cover the same span.  An explicit `end` in `reference` overrides it, and
+  the data.frame method (no concentration data) copies the test times
+  unchanged.
+* The `interval_edit_secondary()` internals PR 3 will touch: the
+  `reference = NULL` branch to replace lives in
+  `interval_secondary_validate()`, and id generation is
+  `interval_new_ids()`/`interval_assign_ref_ids()` (already class-matched per
+  section 4.3 step 5).
+* Two test files (`test-pk.calc.all.R`, `test-interval-table.R`) derive their
+  secondary-parameter exclusion lists from
+  `pknca_parameter_table()$secondary` instead of hard-coding names, so new
+  secondary registrations do not break unrelated tests.
 
 ---
 
@@ -1262,7 +1334,10 @@ PR 1 step-1 loop, for every (row `r`, secondary parameter `p`) with
    reuse it (assign an id if it has none).  Not found: append a working-copy
    row — copy row `r`'s non-parameter/non-pointer columns, apply the
    override, set all parameter columns `FALSE`, `impute <- NA_character_` if
-   that column exists.  Ids: `"autoref1"`, `"autoref2"`, ... skipping
+   that column exists.  Apply the whole-collection span of section 4.6 to the
+   created row: for an interval-over-spot parameter, extend its `end` with
+   `interval_collection_ends()` so the ephemeral reference covers the home
+   row's collections including their durations.  Ids: `"autoref1"`, `"autoref2"`, ... skipping
    existing ids, matched to the `interval_id` column's class as in section
    4.3 step 5 (numeric ids continue with `max + 1`; factor ids gain a new
    level).  Ensure the pointer column exists (created with the
@@ -1565,6 +1640,11 @@ step of the work:
   `f`/`clr`/`ratio.*` instead of dynamic registration.
 * Tests that set `PKNCA.options()` must save and restore the previous values
   (existing suite has the pattern).
+* Never compare package function objects by identity in a test
+  (`expect_identical(x$point, business.geomean)`): the coverage CI job runs
+  the suite under covr, whose instrumentation rewrites function bodies, so
+  the comparison fails there and nowhere else.  Compare behavior (call both
+  on distinguishing values) or a recorded name instead.
 * `interval_longer()`/`interval_wider()` treat `interval_id` and pointer
   columns as key columns automatically — no change there; do not add them to
   `interval_param_cols()`.

@@ -200,12 +200,16 @@ test_that("secondary marks the parameters needing more than one profile", {
   expect_equal(
     sort(tbl$parameter[tbl$secondary]),
     sort(c(
-      # Compares two administrations
-      "f",
+      # Compares two administrations, on each AUC basis
+      "f.obs", "f.pred", "f.last", "f.int.last", "f.int.all",
+      "f.int.obs", "f.int.pred",
       # Needs an amount excreted and a plasma AUC
       "clr.last", "clr.obs", "clr.pred",
       # ... and the dose-normalized forms follow from those
-      "clr.last.dn", "clr.obs.dn", "clr.pred.dn"
+      "clr.last.dn", "clr.obs.dn", "clr.pred.dn",
+      # Compares the same parameter between two profiles
+      "ratio.cmax", "ratio.auclast", "ratio.aucinf.obs", "ratio.aucinf.pred",
+      "ratio.aucint.last", "ratio.aucint.all"
     ))
   )
   # Fe needs only the amount excreted and the dose, both from one profile

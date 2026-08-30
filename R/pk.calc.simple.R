@@ -867,12 +867,15 @@ pk.calc.f <- function(dose1, auc1, dose2, auc2) {
 }
 
 pknca_concept(pk.calc.f) <- "bioavailability"
-add.interval.col("f",
+# The AUC a bioavailability is built on is a choice of the analysis, so each
+# basis is its own parameter.  They share the CDISC code, as the clr.* family
+# shares RENALCL.
+add.interval.col("f.obs",
                  FUN="pk.calc.f",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
-                 pretty_name="Bioavailability",
-                 desc="Bioavailability (absolute or relative)",
+                 pretty_name="Bioavailability (AUCinf,obs)",
+                 desc="Bioavailability from AUCinf,obs",
                  formalsmap=list(dose1=pknca_ref("totdose"),
                                  auc1=pknca_ref("aucinf.obs"),
                                  dose2="totdose",
@@ -880,7 +883,103 @@ add.interval.col("f",
                  depends=c("totdose", "aucinf.obs"),
                  pptestcd_cdisc="FAB",
                  pptest_cdisc="Absolute Bioavailability",
-                 formula="$F = \\frac{AUC_2 / Dose_2}{AUC_1 / Dose_1}$",
+                 formula="$F = \\frac{AUC_{\\infty,obs,2} / Dose_2}{AUC_{\\infty,obs,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("f.pred",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUCinf,pred)",
+                 desc="Bioavailability from AUCinf,pred",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("aucinf.pred"),
+                                 dose2="totdose",
+                                 auc2="aucinf.pred"),
+                 depends=c("totdose", "aucinf.pred"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{\\infty,pred,2} / Dose_2}{AUC_{\\infty,pred,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("f.last",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUClast)",
+                 desc="Bioavailability from AUClast",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("auclast"),
+                                 dose2="totdose",
+                                 auc2="auclast"),
+                 depends=c("totdose", "auclast"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{last,2} / Dose_2}{AUC_{last,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("f.int.last",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUCint,last)",
+                 desc="Bioavailability from AUCint,last",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("aucint.last"),
+                                 dose2="totdose",
+                                 auc2="aucint.last"),
+                 depends=c("totdose", "aucint.last"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{int,last,2} / Dose_2}{AUC_{int,last,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("f.int.all",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUCint,all)",
+                 desc="Bioavailability from AUCint,all",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("aucint.all"),
+                                 dose2="totdose",
+                                 auc2="aucint.all"),
+                 depends=c("totdose", "aucint.all"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{int,all,2} / Dose_2}{AUC_{int,all,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("f.int.obs",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUCint,inf,obs)",
+                 desc="Bioavailability from AUCint,inf,obs",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("aucint.inf.obs"),
+                                 dose2="totdose",
+                                 auc2="aucint.inf.obs"),
+                 depends=c("totdose", "aucint.inf.obs"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{int,\\infty,obs,2} / Dose_2}{AUC_{int,\\infty,obs,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("f.int.pred",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUCint,inf,pred)",
+                 desc="Bioavailability from AUCint,inf,pred",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("aucint.inf.pred"),
+                                 dose2="totdose",
+                                 auc2="aucint.inf.pred"),
+                 depends=c("totdose", "aucint.inf.pred"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{int,\\infty,pred,2} / Dose_2}{AUC_{int,\\infty,pred,1} / Dose_1}$",
                  selection = list(secondary = TRUE))
 
 
@@ -2098,11 +2197,12 @@ PKNCA.set.summary(
 )
 
 #===============================================================================
-# RATIO PARAMETERS   - count: 2
+# RATIO PARAMETERS
 #===============================================================================
 PKNCA.set.summary(
   name = c(
-    "ptr", "f"
+    "ptr", "f.obs",
+    "f.pred", "f.last", "f.int.last", "f.int.all", "f.int.obs", "f.int.pred"
   ),
   description = "geometric mean and geometric coefficient of variation",
   point = business.geomean,

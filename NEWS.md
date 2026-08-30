@@ -14,6 +14,33 @@ the dosing including dose amount and route.
   gets back, and exclusions on the source values carry through to the secondary
   result (#76).
 
+* `interval_add_secondary()` writes that linkage for you:  given the parameter
+  and a data.frame describing the reference profile (the plasma profile for a
+  renal clearance, the first dosing interval for an accumulation ratio, the
+  parent analyte for a metabolite ratio), it requests the parameter, gives the
+  reference interval an `interval_id`, points the calculating intervals at it,
+  and creates the reference interval when the specification does not have one
+  yet (#76).
+
+* When `interval_add_secondary()` on a `PKNCAdata` object creates a spot-sample
+  reference for an excretion analysis (renal clearance), the created interval
+  spans the excreta collections whole:  a collection that begins inside the
+  interval contributes its full amount, so a collection running past the
+  interval's end extends the created reference to cover its duration, and the
+  paired plasma AUC covers the same span as the amount excreted (#76).
+
+* New `ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`,
+  `ratio.aucint.last`, and `ratio.aucint.all` parameters give the ratio of a
+  parameter between the interval calculating it and its reference interval, for
+  accumulation ratios, metabolite ratios, and any other two-profile comparison
+  (#76).
+
+* Bioavailability names the AUC basis it is built on: the `f` parameter is
+  renamed `f.obs` (AUCinf,obs-based), joined by the new variants `f.pred`,
+  `f.last`, `f.int.last`, `f.int.all`, `f.int.obs`, and `f.int.pred`, matching
+  how the `clr.*` family is named.  An interval specification requesting the
+  old name `f` gets an error pointing at `f.obs` (#76).
+
 * `add.interval.col()` accepts `pknca_ref()` in `formalsmap` to declare an
   argument that comes from the reference interval rather than the current one.
 
@@ -30,9 +57,9 @@ the dosing including dose amount and route.
   without a reference interval) silently divided by zero and gave `Inf`.  It is
   now an error saying which reference interval to give.
 
-* `f` now takes `dose1`/`auc1` from the reference interval and computes
-  `dose2`/`auc2` from its own interval as `totdose` and `aucinf.obs`; the old
-  `dose2` and `auc2` interval columns are ignored.
+* `f.obs` (previously `f`) now takes `dose1`/`auc1` from the reference interval
+  and computes `dose2`/`auc2` from its own interval as `totdose` and
+  `aucinf.obs`; the old `dose2` and `auc2` interval columns are ignored.
 
 * `add.interval.col()` gains a `secondary` element in `selection`, marking a
   parameter that needs inputs from more than one profile.  Bioavailability

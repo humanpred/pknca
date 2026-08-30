@@ -84,6 +84,107 @@ secondary_parameter_names <- function() {
   names(cls$secondary)[cls$secondary]
 }
 
+#' Calculate the ratio of a parameter between two intervals
+#'
+#' @param test The parameter value in the current (test) interval
+#' @param reference The parameter value in the reference interval
+#' @returns `test/reference`, or `NA` where the reference is missing or is not
+#'   above zero (a ratio to a zero or negative reference is not interpretable).
+#' @seealso [interval_add_secondary()]
+#' @examples
+#' pk.calc.ratio(test = 10, reference = 20)
+#' @export
+pk.calc.ratio <- function(test, reference) {
+  ret <- test/reference
+  mask_invalid <- is.na(reference) | (reference <= 0)
+  if (any(mask_invalid)) {
+    ret[mask_invalid] <- NA_real_
+  }
+  ret
+}
+
+add.interval.col("ratio.cmax",
+                 FUN="pk.calc.ratio",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Ratio of Cmax to reference",
+                 desc="Ratio of Cmax to reference",
+                 formalsmap=list(test="cmax",
+                                 reference=pknca_ref("cmax")),
+                 depends="cmax",
+                 pptest_cdisc="Ratio of Cmax to Reference",
+                 selection = list(concept = "parameter_ratio"))
+
+add.interval.col("ratio.auclast",
+                 FUN="pk.calc.ratio",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Ratio of AUClast to reference",
+                 desc="Ratio of AUClast to reference",
+                 formalsmap=list(test="auclast",
+                                 reference=pknca_ref("auclast")),
+                 depends="auclast",
+                 pptest_cdisc="Ratio of AUClast to Reference",
+                 selection = list(concept = "parameter_ratio"))
+
+add.interval.col("ratio.aucinf.obs",
+                 FUN="pk.calc.ratio",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Ratio of AUCinf,obs to reference",
+                 desc="Ratio of AUCinf,obs to reference",
+                 formalsmap=list(test="aucinf.obs",
+                                 reference=pknca_ref("aucinf.obs")),
+                 depends="aucinf.obs",
+                 pptest_cdisc="Ratio of AUCinf,obs to Reference",
+                 selection = list(concept = "parameter_ratio"))
+
+add.interval.col("ratio.aucinf.pred",
+                 FUN="pk.calc.ratio",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Ratio of AUCinf,pred to reference",
+                 desc="Ratio of AUCinf,pred to reference",
+                 formalsmap=list(test="aucinf.pred",
+                                 reference=pknca_ref("aucinf.pred")),
+                 depends="aucinf.pred",
+                 pptest_cdisc="Ratio of AUCinf,pred to Reference",
+                 selection = list(concept = "parameter_ratio"))
+
+add.interval.col("ratio.aucint.last",
+                 FUN="pk.calc.ratio",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Ratio of AUCint,last to reference",
+                 desc="Ratio of AUCint,last to reference",
+                 formalsmap=list(test="aucint.last",
+                                 reference=pknca_ref("aucint.last")),
+                 depends="aucint.last",
+                 pptest_cdisc="Ratio of AUCint,last to Reference",
+                 selection = list(concept = "parameter_ratio"))
+
+add.interval.col("ratio.aucint.all",
+                 FUN="pk.calc.ratio",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Ratio of AUCint,all to reference",
+                 desc="Ratio of AUCint,all to reference",
+                 formalsmap=list(test="aucint.all",
+                                 reference=pknca_ref("aucint.all")),
+                 depends="aucint.all",
+                 pptest_cdisc="Ratio of AUCint,all to Reference",
+                 selection = list(concept = "parameter_ratio"))
+
+PKNCA.set.summary(
+  name = paste0(
+    "ratio.",
+    c("cmax", "auclast", "aucinf.obs", "aucinf.pred", "aucint.last", "aucint.all")
+  ),
+  description = "geometric mean and geometric coefficient of variation",
+  point = business.geomean,
+  spread = business.geocv
+)
+
 # Parameters in this one-row interval that are deferred to the cross-interval
 # pass: requested, and with a non-NA reference pointer.
 interval_deferred_params <- function(interval) {
@@ -459,3 +560,522 @@ pk_nca_secondary <- function(results, data_calc) {
   # failure (finder failure or missing auto-linked value).
   if (length(new_rows) == 0) results else dplyr::bind_rows(results, new_rows)
 }
+
+# Authoring the linkage ---------------------------------------------------
+#
+# interval_add_secondary() writes the `interval_id` and `<parameter>_ref`
+# columns the engine above reads.  Unlike the engine's expansion, everything it
+# does is visible in the intervals it returns.
+
+# The columns that say *which* interval a row is:  not the parameter requests,
+# not the linkage columns, and not the imputation.
+interval_describe_cols <- function(intervals) {
+  all_params <- names(get.interval.cols())
+  setdiff(
+    names(intervals),
+    c(
+      setdiff(all_params, c("start", "end")),
+      paste0(all_params, "_ref"),
+      "interval_id", "impute"
+    )
+  )
+}
+
+# The value an interval column takes when it is not requested, as
+# check.interval.specification() assigns it for an absent column.  `start` and
+# `end` are the only columns validated by a function instead of a set of allowed
+# values, and neither is ever defaulted here.
+interval_default_value <- function(param) {
+  get.interval.cols()[[param]]$values[1]
+}
+
+# Ensure the named parameter columns exist, unrequested
+interval_ensure_param_cols <- function(intervals, params) {
+  for (current_param in setdiff(params, names(intervals))) {
+    intervals[[current_param]] <- interval_default_value(current_param)
+  }
+  intervals
+}
+
+# Keep the pointer columns comparable with `interval_id`:  create the one for
+# `param` when it is absent or unfilled, and give every pointer column the
+# identifier column's levels, since generating an identifier adds one.
+interval_sync_ref_cols <- function(intervals, param) {
+  ref_col <- paste0(param, "_ref")
+  if (!(ref_col %in% names(intervals)) ||
+      (is.logical(intervals[[ref_col]]) && all(is.na(intervals[[ref_col]])))) {
+    intervals[[ref_col]] <- intervals$interval_id[rep(NA_integer_, nrow(intervals))]
+  }
+  if (is.factor(intervals$interval_id)) {
+    all_ref_cols <- intersect(paste0(names(get.interval.cols()), "_ref"), names(intervals))
+    for (col in all_ref_cols) {
+      if (is.factor(intervals[[col]]) &&
+          !identical(levels(intervals[[col]]), levels(intervals$interval_id))) {
+        intervals[[col]] <-
+          factor(as.character(intervals[[col]]), levels = levels(intervals$interval_id))
+      }
+    }
+  }
+  intervals
+}
+
+# "ref1", "ref2", ... skipping any identifier already in use
+interval_next_ref_names <- function(used, n) {
+  ret <- character(0)
+  k <- 0L
+  while (length(ret) < n) {
+    k <- k + 1L
+    candidate <- paste0("ref", k)
+    if (!(candidate %in% used)) {
+      ret <- c(ret, candidate)
+    }
+  }
+  ret
+}
+
+# `n` new interval identifiers matching the class of the `interval_id` column,
+# because identifiers may be of any comparable class:  "ref1", "ref2", ... for
+# character (skipping ids already in use), `max + 1` for numbers, and new levels
+# for a factor.  An absent or unfilled (all-NA logical) column takes character
+# identifiers, and is created here so the caller can assign into it.
+interval_new_ids <- function(intervals, n) {
+  existing <- intervals$interval_id
+  if (is.null(existing) || (is.logical(existing) && all(is.na(existing)))) {
+    intervals$interval_id <- NA_character_
+    existing <- character(0)
+  }
+  if (is.factor(existing)) {
+    ids <-
+      interval_next_ref_names(
+        unique(c(levels(existing), as.character(stats::na.omit(existing)))), n
+      )
+    # Appending keeps every existing level at its position, so the values in
+    # this and every other linkage column are unchanged; the pointer columns
+    # gain the new levels in interval_sync_ref_cols(), which runs after every
+    # id assignment, so the shared-levels comparability rule of
+    # check_interval_id_classes() still holds.
+    levels(intervals$interval_id) <- c(levels(existing), ids)
+  } else if (is.numeric(existing)) {
+    highest <- if (all(is.na(existing))) 0 else max(existing, na.rm = TRUE)
+    ids <- highest + seq_len(n)
+  } else {
+    ids <- interval_next_ref_names(as.character(stats::na.omit(existing)), n)
+  }
+  list(intervals = intervals, ids = ids)
+}
+
+# Give every reference interval an identifier:  `ref_id` when the user named
+# one, the identifier the rows already share, or a newly generated one.
+#
+# `ref_id = NULL` (the default) takes the third branch for any reference
+# interval with no identifier:  `need_new` marks it and interval_new_ids()
+# generates one, creating the `interval_id` column itself when the intervals
+# have none.  The `!is.null(ref_id)` block below only covers the user-named
+# case, where the column must exist (matching `ref_id`'s class) before the
+# assignment loop writes into it.
+interval_assign_ref_ids <- function(intervals, ref_groups, ref_id) {
+  ids <- vector(mode = "list", length = length(ref_groups))
+  need_new <- rep(FALSE, length(ref_groups))
+  for (i in seq_along(ref_groups)) {
+    current <-
+      if (is.null(intervals$interval_id)) {
+        NULL
+      } else {
+        stats::na.omit(intervals$interval_id[ref_groups[[i]]])
+      }
+    if (!is.null(ref_id)) {
+      ids[[i]] <- ref_id
+    } else if (length(current) > 0) {
+      ids[[i]] <- current[1]
+    } else {
+      need_new[i] <- TRUE
+    }
+  }
+  if (!is.null(ref_id) &&
+      (is.null(intervals$interval_id) ||
+       (is.logical(intervals$interval_id) && all(is.na(intervals$interval_id))))) {
+    intervals$interval_id <- ref_id[rep(NA_integer_, nrow(intervals))]
+  }
+  if (any(need_new)) {
+    generated <- interval_new_ids(intervals, sum(need_new))
+    intervals <- generated$intervals
+    ids[need_new] <- as.list(generated$ids)
+  }
+  for (i in seq_along(ref_groups)) {
+    rows <- ref_groups[[i]]
+    blank_rows <- if (is.null(ref_id)) rows[is.na(intervals$interval_id[rows])] else rows
+    intervals$interval_id[blank_rows] <- ids[[i]]
+  }
+  list(intervals = intervals, ids = ids)
+}
+
+# The reference rows grouped into the distinct intervals they describe
+interval_reference_groups <- function(intervals, ref_rows) {
+  describe_cols <- interval_describe_cols(intervals)
+  signature <-
+    do.call(
+      paste,
+      c(
+        lapply(X = intervals[ref_rows, describe_cols, drop = FALSE], FUN = as.character),
+        sep = "\r"
+      )
+    )
+  lapply(X = unique(signature), FUN = function(x) ref_rows[signature %in% x])
+}
+
+# Which of the reference intervals a test row uses.  One reference serves every
+# test row; several are told apart by matching the test row's own times, or by
+# a single reference covering them (a created reference can be wider than its
+# test interval when it spans whole collections).
+interval_pick_reference <- function(intervals, row, ref_groups, param) {
+  if (length(ref_groups) == 1) {
+    return(1L)
+  }
+  same_time <-
+    which(vapply(
+      X = ref_groups,
+      FUN = function(rows) {
+        (intervals$start[rows[1]] %in% intervals$start[row]) &&
+          (intervals$end[rows[1]] %in% intervals$end[row])
+      },
+      FUN.VALUE = TRUE
+    ))
+  if (length(same_time) == 1) {
+    return(same_time)
+  }
+  covering <-
+    which(vapply(
+      X = ref_groups,
+      FUN = function(rows) {
+        (intervals$start[rows[1]] <= intervals$start[row]) &&
+          (intervals$end[rows[1]] >= intervals$end[row])
+      },
+      FUN.VALUE = TRUE
+    ))
+  if (length(covering) == 1) {
+    return(covering)
+  }
+  rlang::abort(
+    sprintf(
+      "`reference` matched %d reference intervals and none of them is the single reference for '%s' in interval row %d. Narrow `reference` (for example by adding `start` and `end` columns) so that each interval has one reference.",
+      length(ref_groups), param, row
+    ),
+    class = "pknca_error_secondary_ref_ambiguous_spec"
+  )
+}
+
+# Does `param` pair an interval collection with spot-sample references?  Renal
+# clearance is the case in PKNCA:  an amount excreted against a plasma AUC.
+secondary_interval_over_spot <- function(param) {
+  cls <- parameter_classification()
+  targets <- unname(secondary_param_info(param)$ref_args)
+  identical(cls$sample_type[[param]], "interval") &&
+    length(targets) > 0 &&
+    all(vapply(
+      X = targets,
+      FUN = function(x) identical(cls$sample_type[[x]], "spot"),
+      FUN.VALUE = TRUE
+    ))
+}
+
+# The end each test interval's spot-sample reference must reach so that it
+# spans the test interval's collections whole.  A collection that begins inside
+# the interval contributes its full amount (see filter_interval()), so a
+# collection running past `end` extends what the paired spot-sample
+# calculations must cover.
+interval_collection_ends <- function(intervals, test_rows, conc) {
+  duration_col <- conc$columns$duration
+  time_col <- conc$columns$time
+  if (is.null(duration_col) || is.null(time_col)) {
+    return(NULL)
+  }
+  conc_data <- conc$data[is.na(normalize_exclude(conc)), , drop = FALSE]
+  scope_cols <-
+    intersect(
+      setdiff(interval_describe_cols(intervals), c("start", "end")),
+      names(conc_data)
+    )
+  ret <- intervals$end[test_rows]
+  for (i in seq_along(test_rows)) {
+    r <- test_rows[i]
+    m <-
+      !is.na(conc_data[[time_col]]) &
+      conc_data[[time_col]] >= intervals$start[r] &
+      conc_data[[time_col]] <= intervals$end[r] &
+      !is.na(conc_data[[duration_col]]) &
+      conc_data[[duration_col]] > 0
+    for (col in scope_cols) {
+      m <- m & (conc_data[[col]] %in% intervals[[col]][r])
+    }
+    if (any(m)) {
+      ret[i] <-
+        max(ret[i], max(conc_data[[time_col]][m] + conc_data[[duration_col]][m]))
+    }
+  }
+  ret
+}
+
+# Build the reference rows for an interval specification that has none:  the
+# test rows with the `reference` values applied.  `impute` is dropped, so a
+# created row takes the whole-dataset imputation.  `ends` (when given) widens
+# each created row to span the test row's collections; an explicit `end` in
+# `reference` still overrides it below.
+interval_create_reference <- function(intervals, test_rows, reference, ends = NULL) {
+  base <- intervals[test_rows, interval_describe_cols(intervals), drop = FALSE]
+  if (!is.null(ends)) {
+    base$end <- ends
+  }
+  ret_list <- list()
+  for (i in seq_len(nrow(reference))) {
+    current <- base
+    for (col in names(reference)) {
+      current[[col]] <- reference[[col]][i]
+    }
+    ret_list[[i]] <- current
+  }
+  ret <- unique(do.call(rbind, ret_list))
+  rownames(ret) <- NULL
+  ret
+}
+
+# Fill the columns a created reference row does not have:  nothing is
+# calculated on it but the source parameters the linkage needs.
+interval_complete_reference <- function(created, intervals, source_params) {
+  for (col in setdiff(names(intervals), names(created))) {
+    created[[col]] <-
+      if (col %in% names(get.interval.cols())) {
+        interval_default_value(col)
+      } else if (identical(col, "impute")) {
+        NA_character_
+      } else {
+        intervals[[col]][rep(NA_integer_, nrow(created))]
+      }
+  }
+  for (target in source_params) {
+    created[[target]] <- TRUE
+  }
+  created[, names(intervals), drop = FALSE]
+}
+
+interval_secondary_validate <- function(intervals, param, reference, ref_id) {
+  checkmate::assert_data_frame(intervals, min.rows = 1)
+  checkmate::assert_character(param, len = 1, any.missing = FALSE)
+  assert_param_name(param)
+  if (!isTRUE(parameter_classification()$secondary[[param]])) {
+    rlang::abort(
+      sprintf(
+        "'%s' is not a secondary parameter; use interval_add_param() instead",
+        param
+      ),
+      class = "pknca_error_secondary_not_secondary_param"
+    )
+  }
+  if (is.null(reference)) {
+    # PR 3 replaces this branch with the automatic reference finder (and, for
+    # the PKNCAdata method, with `data$group_ref` as the default).
+    rlang::abort("reference must be given")
+  }
+  reference <- as.data.frame(reference, stringsAsFactors = FALSE)
+  checkmate::assert_data_frame(reference, min.rows = 1, min.cols = 1)
+  invalid <- setdiff(names(reference), interval_describe_cols(intervals))
+  if (length(invalid) > 0) {
+    rlang::abort(
+      sprintf(
+        "Column(s) in `reference` must be `start`, `end`, or a group column of the intervals: %s",
+        paste(invalid, collapse = ", ")
+      ),
+      class = "pknca_error_interval_target_groups_cols"
+    )
+  }
+  checkmate::assert_scalar(ref_id, na.ok = FALSE, null.ok = TRUE)
+  reference
+}
+
+# Link `param` on the test rows to the reference interval `reference` describes,
+# creating that interval when the specification does not have it yet.  `conc`
+# (a PKNCAconc, given by the PKNCAdata method) lets a created spot-sample
+# reference span the test rows' collections whole.
+interval_edit_secondary <- function(intervals, param, reference, target_groups, ref_id,
+                                    conc = NULL) {
+  reference <- interval_secondary_validate(intervals, param, reference, ref_id)
+  source_params <- unname(secondary_param_info(param)$ref_args)
+  ref_rows <- which(interval_match_groups(intervals, reference))
+  test_rows <-
+    if (is.null(target_groups)) {
+      setdiff(seq_len(nrow(intervals)), ref_rows)
+    } else {
+      setdiff(which(interval_match_groups(intervals, target_groups)), ref_rows)
+    }
+  if (length(test_rows) == 0) {
+    rlang::warn(
+      sprintf("No intervals are left to calculate '%s' on.  No changes made.", param),
+      class = "pknca_warning_interval_no_target_rows"
+    )
+    return(intervals)
+  }
+  intervals <- interval_ensure_param_cols(intervals, c(param, source_params))
+  if (length(ref_rows) == 0) {
+    creation_ends <-
+      if (!is.null(conc) && secondary_interval_over_spot(param)) {
+        interval_collection_ends(intervals, test_rows, conc)
+      } else {
+        NULL
+      }
+    created <-
+      interval_create_reference(intervals, test_rows, reference, ends = creation_ends)
+    created <- interval_complete_reference(created, intervals, source_params)
+    rlang::inform(
+      sprintf(
+        "Created reference interval(s) for '%s': %s",
+        param,
+        paste(
+          name_value_text(created[, interval_describe_cols(created), drop = FALSE]),
+          collapse = "; "
+        )
+      ),
+      class = "pknca_message_secondary_created_interval"
+    )
+    intervals <- rbind(intervals, created)
+    rownames(intervals) <- NULL
+    ref_rows <- seq(to = nrow(intervals), length.out = nrow(created))
+  }
+  ref_groups <- interval_reference_groups(intervals, ref_rows)
+  if (!is.null(ref_id) && length(ref_groups) > 1) {
+    rlang::abort(
+      sprintf(
+        "`ref_id` names one reference interval, but `reference` matched %d of them. Narrow `reference` (for example by adding `start` and `end` columns) or leave `ref_id` unset.",
+        length(ref_groups)
+      ),
+      class = "pknca_error_secondary_ref_ambiguous_spec"
+    )
+  }
+  assigned <- interval_assign_ref_ids(intervals, ref_groups, ref_id)
+  intervals <- interval_sync_ref_cols(assigned$intervals, param)
+  ref_col <- paste0(param, "_ref")
+  used_groups <- integer(0)
+  for (row in test_rows) {
+    current_group <- interval_pick_reference(intervals, row, ref_groups, param)
+    current_id <- assigned$ids[[current_group]]
+    current_pointer <- intervals[[ref_col]][row]
+    if (!is.na(current_pointer) &&
+        !identical(as.character(current_pointer), as.character(current_id))) {
+      rlang::warn(
+        sprintf(
+          "Interval row %d already gives a reference interval ('%s') for '%s'; it was left unchanged.",
+          row, as.character(current_pointer), param
+        ),
+        class = "pknca_warning_secondary_ref_exists"
+      )
+      next
+    }
+    intervals[[param]][row] <- TRUE
+    intervals[[ref_col]][row] <- current_id
+    used_groups <- c(used_groups, current_group)
+  }
+  # The reference interval gains what the link reads from it.  Silent, as
+  # calculating a dependency always is.
+  for (current_group in unique(used_groups)) {
+    # One reference interval can span several rows:  interval_reference_groups()
+    # groups by everything except the parameter requests and `impute`, so an
+    # impute-split reference contributes all of its rows here.  The source
+    # parameter goes on the first row only, matching the engine's expansion
+    # (calculating it under each split's imputation would make the reference
+    # lookup ambiguous).
+    rows <- ref_groups[[current_group]]
+    for (target in source_params) {
+      if (!any(vapply(X = intervals[[target]][rows], FUN = isTRUE, FUN.VALUE = TRUE))) {
+        intervals[[target]][rows[1]] <- TRUE
+      }
+    }
+  }
+  rownames(intervals) <- NULL
+  check.interval.specification(intervals)
+}
+
+#' Link a secondary parameter to the interval it is calculated against
+#'
+#' A secondary parameter needs a result from a second profile:  renal clearance
+#' divides an amount excreted in urine by a plasma AUC, an accumulation ratio
+#' compares one dosing interval with another, and a metabolite ratio compares
+#' two analytes.  This adds the request and the linkage columns
+#' (`interval_id` on the reference interval and `<param>_ref` on the intervals
+#' calculating the parameter) that [pk.nca()] reads.
+#'
+#' @inheritParams interval_add_impute
+#' @param param The name of one secondary NCA parameter (see
+#'   [pknca_parameter_table()] for which parameters are secondary).
+#' @param reference A data.frame describing the reference interval:  its
+#'   columns are `start`, `end`, and/or group columns of the intervals, every
+#'   column must match (and) for at least one of its rows (or).  A named list is
+#'   accepted and coerced.  When no interval matches, one is created and the
+#'   creation is reported with a `pknca_message_secondary_created_interval`
+#'   message.
+#' @param target_groups A data.frame of group values restricting the parameter
+#'   request to matching intervals, with the same matching rules as `reference`.
+#'   `NULL` (the default) requests it on every interval that is not a reference
+#'   interval.
+#' @param ref_id The `interval_id` to give the reference interval.  The default
+#'   of `NULL` keeps an identifier the reference rows already have and
+#'   otherwise generates one matching the class of the `interval_id` column.
+#' @returns The input with the parameter requested and the linkage columns set,
+#'   after [check.interval.specification()].
+#' @details The reference interval gains whatever the linked calculation reads
+#'   from it (the plasma AUC for a renal clearance, for example) without being
+#'   announced, as calculating any dependency is.
+#'
+#'   An interval that already names a different reference for `param` is left
+#'   alone with a `pknca_warning_secondary_ref_exists` warning, so that the
+#'   helper never silently re-points an analysis.
+#'
+#'   When the parameter pairs an interval collection with spot-sample
+#'   references (renal clearance:  an amount excreted against a plasma AUC)
+#'   and the reference interval is created by the `PKNCAdata` method, the
+#'   created interval spans the collections whole:  a collection that begins
+#'   inside the interval contributes its full amount (see [pk.nca()]), so a
+#'   collection running past the interval's `end` extends the created
+#'   reference's `end` to `time + duration` of the latest collection.  An
+#'   explicit `end` in `reference` overrides the extension, and the data.frame
+#'   method (which has no concentration data) copies the test interval's times
+#'   unchanged.
+#' @seealso [interval_add_param()], [pknca_ref()], [pk.nca()]
+#' @family Interval specifications
+#' @examples
+#' intervals <-
+#'   data.frame(
+#'     PCSPEC = c("plasma", "urine"),
+#'     start = 0, end = 24,
+#'     auclast = c(TRUE, FALSE),
+#'     ae = c(FALSE, TRUE)
+#'   )
+#' interval_add_secondary(
+#'   intervals,
+#'   param = "clr.last",
+#'   reference = data.frame(PCSPEC = "plasma")
+#' )
+#' @export
+interval_add_secondary <- function(data, param, reference = NULL,
+                                   target_groups = NULL, ref_id = NULL, ...) {
+  UseMethod("interval_add_secondary", data)
+}
+
+#' @export
+interval_add_secondary.data.frame <- function(data, param, reference = NULL,
+                                              target_groups = NULL, ref_id = NULL, ...) {
+  interval_edit_secondary(
+    data, param = param, reference = reference, target_groups = target_groups,
+    ref_id = ref_id
+  )
+}
+
+#' @export
+interval_add_secondary.PKNCAdata <- function(data, param, reference = NULL,
+                                             target_groups = NULL, ref_id = NULL, ...) {
+  data$intervals <-
+    interval_edit_secondary(
+      data$intervals, param = param, reference = reference,
+      target_groups = target_groups, ref_id = ref_id,
+      conc = data$conc
+    )
+  data
+}
+

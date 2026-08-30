@@ -51,12 +51,26 @@ assert_intervals <- function(intervals, data) {
     )
   
   invalid_columns <- setdiff(names(intervals), allowed_columns)
-  
+
   if (length(invalid_columns) > 0) {
+    # A renamed parameter gets a pointer to its new name instead of a bare
+    # rejection
+    renamed <- c(f = "f.obs")
+    hints <- renamed[intersect(names(renamed), invalid_columns)]
+    hint_text <-
+      if (length(hints) > 0) {
+        paste0(
+          "  ",
+          paste(sprintf("'%s' is now named '%s'.", names(hints), hints), collapse = "  ")
+        )
+      } else {
+        ""
+      }
     rlang::abort(
       sprintf(
-        "The following columns in 'intervals' are not allowed: %s",
-        paste(invalid_columns, collapse = ", ")
+        "The following columns in 'intervals' are not allowed: %s%s",
+        paste(invalid_columns, collapse = ", "),
+        hint_text
       ),
       class = "pknca_error_invalid_interval_columns"
     )
