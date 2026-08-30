@@ -529,7 +529,13 @@ information about the parameter, see the documentation for the function.
 | ermax | $`ER_{\max} = \max_i \left( \frac{C_i V_i}{d_i} \right)`$ |  | amount_time | Maximum excretion rate | pk.calc.ermax |
 | ertlst | $`T_{\text{last,ER}} = t_{\text{mid},i: ER_i > 0, i = \max}`$ |  | time | Midpoint time of last excr rate | pk.calc.ertlst |
 | ertmax | $`T_{\max,ER} = t_{\text{mid},i: ER_i = ER_{\max}}`$ |  | time | Midpoint time of max excr rate | pk.calc.ertmax |
-| f | $`F = \frac{AUC_2 / Dose_2}{AUC_1 / Dose_1}`$ |  | fraction | Bioavailability (absolute or relative) | pk.calc.f |
+| f.int.all | $`F = \frac{AUC_{int,all,2} / Dose_2}{AUC_{int,all,1} / Dose_1}`$ |  | fraction | Bioavailability from AUCint,all | pk.calc.f |
+| f.int.last | $`F = \frac{AUC_{int,last,2} / Dose_2}{AUC_{int,last,1} / Dose_1}`$ |  | fraction | Bioavailability from AUCint,last | pk.calc.f |
+| f.int.obs | $`F = \frac{AUC_{int,\infty,obs,2} / Dose_2}{AUC_{int,\infty,obs,1} / Dose_1}`$ |  | fraction | Bioavailability from AUCint,inf,obs | pk.calc.f |
+| f.int.pred | $`F = \frac{AUC_{int,\infty,pred,2} / Dose_2}{AUC_{int,\infty,pred,1} / Dose_1}`$ |  | fraction | Bioavailability from AUCint,inf,pred | pk.calc.f |
+| f.last | $`F = \frac{AUC_{last,2} / Dose_2}{AUC_{last,1} / Dose_1}`$ |  | fraction | Bioavailability from AUClast | pk.calc.f |
+| f.obs | $`F = \frac{AUC_{\infty,obs,2} / Dose_2}{AUC_{\infty,obs,1} / Dose_1}`$ |  | fraction | Bioavailability from AUCinf,obs | pk.calc.f |
+| f.pred | $`F = \frac{AUC_{\infty,pred,2} / Dose_2}{AUC_{\infty,pred,1} / Dose_1}`$ |  | fraction | Bioavailability from AUCinf,pred | pk.calc.f |
 | fe | $`f_e = \frac{AE}{Dose}`$ |  | amount_dose | Fraction of dose excreted | pk.calc.fe |
 | half.life | $`t_{1/2} = \frac{\ln(2)}{\lambda_z}`$ |  | time | The (terminal) half-life | pk.calc.half.life |
 | kel.all | $`k_{el,\text{all}} = \frac{1}{MRT_{\text{all}}}`$ |  | inverse_time | Elim rate, MRTall | pk.calc.kel |
@@ -574,6 +580,12 @@ information about the parameter, see the documentation for the function.
 | mrt.sparse.last |  |  | time | MRT, sparse AUClast/AUMClast | pk.calc.mrt |
 | ptr | $`PTR = \frac{C_{\max}}{C_{\text{trough}}}`$ |  | fraction | Peak-to-trough ratio | pk.calc.ptr |
 | r.squared | $`r^2 = 1 - \frac{\sum_{i \in \lambda_z} (y_i - \hat{y}_i)^2}{\sum_{i \in \lambda_z} (y_i - \bar{y})^2}`$ | Regression of $`y = \log C`$ on time over the terminal points | unitless | R-squared of half-life fit | See the parameter name half.life |
+| ratio.aucinf.obs |  |  | fraction | Ratio of AUCinf,obs to reference | pk.calc.ratio |
+| ratio.aucinf.pred |  |  | fraction | Ratio of AUCinf,pred to reference | pk.calc.ratio |
+| ratio.aucint.all |  |  | fraction | Ratio of AUCint,all to reference | pk.calc.ratio |
+| ratio.aucint.last |  |  | fraction | Ratio of AUCint,last to reference | pk.calc.ratio |
+| ratio.auclast |  |  | fraction | Ratio of AUClast to reference | pk.calc.ratio |
+| ratio.cmax |  |  | fraction | Ratio of Cmax to reference | pk.calc.ratio |
 | span.ratio | $`\text{span ratio} = \frac{t_{\lambda_z,\text{last}} - t_{\lambda_z,\text{first}}}{t_{1/2}}`$ |  | fraction | Lambda z time span to half-life ratio | See the parameter name half.life |
 | sparse_auc_df | $`df = \frac{\left(\sum w_i^2 \hat{\sigma}_{ii}/n_i\right)^2}{\sum w_i^4 \hat{\sigma}_{ii}^2 / (n_i^2(n_i-1))}`$ | Satterthwaite approximation (Nedelman et al 1995, eq. 6a) | count | DF for sparse AUC to last conc above LOQ | See the parameter name sparse_auclast |
 | sparse_auc_se | $`SE(AUC_{\text{sparse}}) = \sqrt{\sum_{i,j} w_i w_j \hat{\sigma}_{ij} / n}`$ | Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001) | auc | SE of sparse AUC to last conc above LOQ | See the parameter name sparse_auclast |

@@ -1,152 +1,139 @@
-# Set default options for PKNCA functions
+# Link a secondary parameter to the interval it is calculated against
 
-This function will set the default PKNCA options. If given no inputs, it
-will provide the current option set. If given name/value pairs, it will
-set the option (as in the
-[`options()`](https://rdrr.io/r/base/options.html) function). If given a
-name, it will return the value for the parameter. If given the `default`
-option as true, it will provide the default options.
+A secondary parameter needs a result from a second profile: renal
+clearance divides an amount excreted in urine by a plasma AUC, an
+accumulation ratio compares one dosing interval with another, and a
+metabolite ratio compares two analytes. This adds the request and the
+linkage columns (`interval_id` on the reference interval and
+`<param>_ref` on the intervals calculating the parameter) that
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+reads.
 
 ## Usage
 
 ``` r
-PKNCA.options(..., default = FALSE, check = FALSE, name, value)
+interval_add_secondary(
+  data,
+  param,
+  reference = NULL,
+  target_groups = NULL,
+  ref_id = NULL,
+  ...
+)
 ```
 
 ## Arguments
 
+- data:
+
+  A `PKNCAdata` object or a data.frame of intervals.
+
+- param:
+
+  The name of one secondary NCA parameter (see
+  [`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md)
+  for which parameters are secondary).
+
+- reference:
+
+  A data.frame describing the reference interval: its columns are
+  `start`, `end`, and/or group columns of the intervals, every column
+  must match (and) for at least one of its rows (or). A named list is
+  accepted and coerced. When no interval matches, one is created and the
+  creation is reported with a `pknca_message_secondary_created_interval`
+  message.
+
+- target_groups:
+
+  A data.frame of group values restricting the parameter request to
+  matching intervals, with the same matching rules as `reference`.
+  `NULL` (the default) requests it on every interval that is not a
+  reference interval.
+
+- ref_id:
+
+  The `interval_id` to give the reference interval. The default of
+  `NULL` keeps an identifier the reference rows already have and
+  otherwise generates one matching the class of the `interval_id`
+  column.
+
 - ...:
 
-  options to set or get the value for
-
-- default:
-
-  (re)sets all default options
-
-- check:
-
-  check a single option given, but do not set it (for validation of the
-  values when used in another function)
-
-- name:
-
-  An option name to use with the `value`.
-
-- value:
-
-  An option value (paired with the `name`) to set or check (if `NULL`,
-  the current value of the option is returned).
+  Ignored.
 
 ## Value
 
-If...
-
-- no arguments are given:
-
-  returns the current options.
-
-- a value is set (including the defaults):
-
-  returns `NULL`
-
-- a single value is requested:
-
-  the current value of that option is returned as a scalar
-
-- multiple values are requested:
-
-  the current values of those options are returned as a list
+The input with the parameter requested and the linkage columns set,
+after
+[`check.interval.specification()`](https://humanpred.github.io/pknca/reference/check.interval.specification.md).
 
 ## Details
 
-Options are either for calculation or summary functions. Calculation
-options are required for a calculation function to report a result
-(otherwise the reported value will be `NA`). Summary options are used
-during summarization and are used for assessing what values are included
-in the summary.
+The reference interval gains whatever the linked calculation reads from
+it (the plasma AUC for a renal clearance, for example) without being
+announced, as calculating any dependency is.
 
-See the vignette 'Options for Controlling PKNCA' for a current list of
-options (`vignette("Options-for-Controlling-PKNCA", package="PKNCA")`).
+An interval that already names a different reference for `param` is left
+alone with a `pknca_warning_secondary_ref_exists` warning, so that the
+helper never silently re-points an analysis.
+
+When the parameter pairs an interval collection with spot-sample
+references (renal clearance: an amount excreted against a plasma AUC)
+and the reference interval is created by the `PKNCAdata` method, the
+created interval spans the collections whole: a collection that begins
+inside the interval contributes its full amount (see
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)), so
+a collection running past the interval's `end` extends the created
+reference's `end` to `time + duration` of the latest collection. An
+explicit `end` in `reference` overrides the extension, and the
+data.frame method (which has no concentration data) copies the test
+interval's times unchanged.
 
 ## See also
 
-[`PKNCA.options.describe()`](https://humanpred.github.io/pknca/reference/PKNCA.options.describe.md)
+[`interval_add_param()`](https://humanpred.github.io/pknca/reference/interval_add_param.md),
+[`pknca_ref()`](https://humanpred.github.io/pknca/reference/pknca_ref.md),
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
 
-Other PKNCA calculation and summary settings:
-[`PKNCA.choose.option()`](https://humanpred.github.io/pknca/reference/PKNCA.choose.option.md),
-[`PKNCA.set.summary()`](https://humanpred.github.io/pknca/reference/PKNCA.set.summary.md)
+Other Interval specifications:
+[`add.interval.col()`](https://humanpred.github.io/pknca/reference/add.interval.col.md),
+[`check.interval.specification()`](https://humanpred.github.io/pknca/reference/check.interval.specification.md),
+[`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
+[`get.interval.cols()`](https://humanpred.github.io/pknca/reference/get.interval.cols.md),
+[`get.parameter.deps()`](https://humanpred.github.io/pknca/reference/get.parameter.deps.md),
+[`interval_add_impute()`](https://humanpred.github.io/pknca/reference/interval_add_impute.md),
+[`interval_add_param()`](https://humanpred.github.io/pknca/reference/interval_add_param.md),
+[`pknca_check_parameter_classification()`](https://humanpred.github.io/pknca/reference/pknca_check_parameter_classification.md),
+[`pknca_concepts()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md),
+[`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md),
+[`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md),
+[`pknca_presets()`](https://humanpred.github.io/pknca/reference/pknca_presets.md),
+[`pknca_ref()`](https://humanpred.github.io/pknca/reference/pknca_ref.md)
 
 ## Examples
 
 ``` r
-
-PKNCA.options()
-#> $adj.r.squared.factor
-#> [1] 1e-04
-#> 
-#> $max.missing
-#> [1] 0.5
-#> 
-#> $auc.method
-#> [1] "lin up/log down"
-#> 
-#> $conc.na
-#> [1] "drop"
-#> 
-#> $conc.blq
-#> $conc.blq$first
-#> [1] "keep"
-#> 
-#> $conc.blq$middle
-#> [1] "drop"
-#> 
-#> $conc.blq$last
-#> [1] "keep"
-#> 
-#> 
-#> $debug
-#> NULL
-#> 
-#> $first.tmax
-#> [1] TRUE
-#> 
-#> $first.tmin
-#> [1] TRUE
-#> 
-#> $allow.tmax.in.half.life
-#> [1] FALSE
-#> 
-#> $keep_interval_cols
-#> NULL
-#> 
-#> $min.hl.points
-#> [1] 3
-#> 
-#> $min.span.ratio
-#> [1] 2
-#> 
-#> $max.aucinf.pext
-#> [1] 20
-#> 
-#> $min.hl.r.squared
-#> [1] 0.9
-#> 
-#> $progress
-#> [1] TRUE
-#> 
-#> $tau.choices
-#> [1] NA
-#> 
-#> $single.dose.aucs
+intervals <-
+  data.frame(
+    PCSPEC = c("plasma", "urine"),
+    start = 0, end = 24,
+    auclast = c(TRUE, FALSE),
+    ae = c(FALSE, TRUE)
+  )
+interval_add_secondary(
+  intervals,
+  param = "clr.last",
+  reference = data.frame(PCSPEC = "plasma")
+)
 #>   start end auclast aucall aumclast aumcall aucint.last aucint.last.dose
 #> 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE            FALSE
-#> 2     0 Inf   FALSE  FALSE    FALSE   FALSE       FALSE            FALSE
+#> 2     0  24   FALSE  FALSE    FALSE   FALSE       FALSE            FALSE
 #>   aucint.all aucint.all.dose aumcint.last aumcint.last.dose aumcint.all
 #> 1      FALSE           FALSE        FALSE             FALSE       FALSE
 #> 2      FALSE           FALSE        FALSE             FALSE       FALSE
 #>   aumcint.all.dose    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last
 #> 1            FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE
-#> 2            FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE
+#> 2            FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE
 #>   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last
 #> 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE
 #> 2  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE
@@ -161,7 +148,7 @@ PKNCA.options()
 #> 2                FALSE               FALSE      FALSE               FALSE
 #>   totdose volpk    ae clr.last clr.obs clr.pred    fe ertlst ermax ertmax erint
 #> 1   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE FALSE
-#> 2   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE FALSE
+#> 2   FALSE FALSE  TRUE     TRUE   FALSE    FALSE FALSE  FALSE FALSE  FALSE FALSE
 #>   erlst ratio.cmax ratio.auclast ratio.aucint.last ratio.aucint.all
 #> 1 FALSE      FALSE         FALSE             FALSE            FALSE
 #> 2 FALSE      FALSE         FALSE             FALSE            FALSE
@@ -176,7 +163,7 @@ PKNCA.options()
 #> 2          FALSE         FALSE              FALSE             FALSE      FALSE
 #>   aumcivall aumcivint.last aumcivint.all half.life r.squared adj.r.squared
 #> 1     FALSE          FALSE         FALSE     FALSE     FALSE         FALSE
-#> 2     FALSE          FALSE         FALSE      TRUE     FALSE         FALSE
+#> 2     FALSE          FALSE         FALSE     FALSE     FALSE         FALSE
 #>   lambda.z.corrxy lambda.z lambda.z.time.first lambda.z.time.last
 #> 1           FALSE    FALSE               FALSE              FALSE
 #> 2           FALSE    FALSE               FALSE              FALSE
@@ -200,7 +187,7 @@ PKNCA.options()
 #> 2     FALSE      FALSE        FALSE         FALSE   FALSE      FALSE
 #>   vss.ivint.all vss.ivint.last vss.sparse.last aucinf.obs aucinf.pred
 #> 1         FALSE          FALSE           FALSE      FALSE       FALSE
-#> 2         FALSE          FALSE           FALSE       TRUE       FALSE
+#> 2         FALSE          FALSE           FALSE      FALSE       FALSE
 #>   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.obs.dose aucint.inf.pred
 #> 1       FALSE        FALSE          FALSE               FALSE           FALSE
 #> 2       FALSE        FALSE          FALSE               FALSE           FALSE
@@ -249,26 +236,7 @@ PKNCA.options()
 #>   aumcinf.pred.dn cmax.dn cmin.dn clast.obs.dn clast.pred.dn cav.dn ctrough.dn
 #> 1           FALSE   FALSE   FALSE        FALSE         FALSE  FALSE      FALSE
 #> 2           FALSE   FALSE   FALSE        FALSE         FALSE  FALSE      FALSE
-#>   clr.last.dn clr.obs.dn clr.pred.dn
-#> 1       FALSE      FALSE       FALSE
-#> 2       FALSE      FALSE       FALSE
-#> 
-#> $allow_partial_missing_units
-#> [1] FALSE
-#> 
-#> $hl_method
-#> [1] "log-linear"
-#> 
-#> $tobit_n_points_penalty
-#> [1] 0
-#> 
-#> $tobit_optim_control
-#> list()
-#> 
-PKNCA.options(default=TRUE)
-PKNCA.options("auc.method")
-#> [1] "lin up/log down"
-PKNCA.options(name="auc.method")
-#> [1] "lin up/log down"
-PKNCA.options(auc.method="lin up/log down", min.hl.points=3)
+#>   clr.last.dn clr.obs.dn clr.pred.dn PCSPEC interval_id clr.last_ref
+#> 1       FALSE      FALSE       FALSE plasma        ref1         <NA>
+#> 2       FALSE      FALSE       FALSE  urine        <NA>         ref1
 ```

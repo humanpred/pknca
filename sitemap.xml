@@ -115,6 +115,7 @@
 <url><loc>https://humanpred.github.io/pknca/reference/interp_extrap_conc_method.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/interval_add_impute.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/interval_add_param.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/interval_add_secondary.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/interval_longer.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/is_sparse_pk.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/model.frame.PKNCAconc.html</loc></url>
@@ -152,6 +153,7 @@
 <url><loc>https://humanpred.github.io/pknca/reference/pk.calc.kel.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pk.calc.mrt.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pk.calc.ptr.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/pk.calc.ratio.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pk.calc.thalf.eff.html</loc></url>

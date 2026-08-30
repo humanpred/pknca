@@ -345,6 +345,9 @@
   [`interval_remove_param()`](https://humanpred.github.io/pknca/reference/interval_add_param.md)
   : Add or remove parameters in the intervals of a PKNCAdata object
 
+- [`interval_add_secondary()`](https://humanpred.github.io/pknca/reference/interval_add_secondary.md)
+  : Link a secondary parameter to the interval it is calculated against
+
 - [`is_sparse_pk()`](https://humanpred.github.io/pknca/reference/is_sparse_pk.md)
   : Is a PKNCA object used for sparse PK?
 
@@ -502,6 +505,9 @@
 
 - [`pk.calc.ptr()`](https://humanpred.github.io/pknca/reference/pk.calc.ptr.md)
   : Determine the peak-to-trough ratio
+
+- [`pk.calc.ratio()`](https://humanpred.github.io/pknca/reference/pk.calc.ratio.md)
+  : Calculate the ratio of a parameter between two intervals
 
 - [`pk.calc.sparse_auc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md)
   [`pk.calc.sparse_auclast()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md)

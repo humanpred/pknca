@@ -82,6 +82,7 @@ Calculation Intervals"</p>
 <code><a href="get.parameter.deps.html">get.parameter.deps()</a></code>,
 <code><a href="interval_add_impute.html">interval_add_impute()</a></code>,
 <code><a href="interval_add_param.html">interval_add_param()</a></code>,
+<code><a href="interval_add_secondary.html">interval_add_secondary()</a></code>,
 <code><a href="pknca_check_parameter_classification.html">pknca_check_parameter_classification()</a></code>,
 <code><a href="pknca_concepts.html">pknca_concepts()</a></code>,
 <code><a href="pknca_interval_table.html">pknca_interval_table()</a></code>,
@@ -4129,6 +4130,298 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.ratio"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of Cmax to reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of Cmax to reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$formalsmap$test</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cmax"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$formalsmap$reference</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cmax"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cmax"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ratio.cmax"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of Cmax to Reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$selection$concept</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "parameter_ratio"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.ratio"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUClast to reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUClast to reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$formalsmap$test</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auclast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$formalsmap$reference</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auclast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auclast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ratio.auclast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUClast to Reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$selection$concept</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "parameter_ratio"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.ratio"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCint,last to reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCint,last to reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$formalsmap$test</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$formalsmap$reference</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ratio.aucint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCint,last to Reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$selection$concept</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "parameter_ratio"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.ratio"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCint,all to reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCint,all to reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$formalsmap$test</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$formalsmap$reference</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ratio.aucint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCint,all to Reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$selection$concept</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "parameter_ratio"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auclast</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auclast$FUN</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.sparse_auclast"</span>
@@ -6988,6 +7281,255 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.sparse.last$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.f"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (AUClast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability from AUClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$formalsmap$dose1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$formalsmap$auc1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auclast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$formalsmap$dose2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$formalsmap$auc2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auclast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose" "auclast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "FAB"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Absolute Bioavailability"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$F = \\frac{AUC_{last,2} / Dose_2}{AUC_{last,1} / Dose_1}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$selection$secondary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.f"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (AUCint,last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability from AUCint,last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$formalsmap$dose1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$formalsmap$auc1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$formalsmap$dose2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$formalsmap$auc2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"     "aucint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "FAB"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Absolute Bioavailability"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$F = \\frac{AUC_{int,last,2} / Dose_2}{AUC_{int,last,1} / Dose_1}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$selection$secondary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.f"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (AUCint,all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability from AUCint,all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$formalsmap$dose1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$formalsmap$auc1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$formalsmap$dose2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$formalsmap$auc2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"    "aucint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "FAB"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Absolute Bioavailability"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$F = \\frac{AUC_{int,all,2} / Dose_2}{AUC_{int,all,1} / Dose_1}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$selection$secondary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$requires_conc_dur</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -10057,86 +10599,335 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$FUN</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.f"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$values</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$unit_type</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (absolute or relative)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability from AUCinf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$sparse</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$formalsmap</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$formalsmap$dose1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$formalsmap$dose1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$formalsmap$auc1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$formalsmap$auc1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucinf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$formalsmap$dose2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$formalsmap$dose2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$formalsmap$auc2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$formalsmap$auc2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucinf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$depends</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"    "aucinf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$datatype</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$pptestcd_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "FAB"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$pptest_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Absolute Bioavailability"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$formula</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$F = \\frac{AUC_2 / Dose_2}{AUC_1 / Dose_1}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$F = \\frac{AUC_{\\infty,obs,2} / Dose_2}{AUC_{\\infty,obs,1} / Dose_1}$"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$formula_note</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$tier</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$selection</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$selection$secondary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$selection$secondary</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$requires_dose_amt</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$requires_dose_time</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$requires_dose_dur</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$requires_volume</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $f$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.f"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (AUCinf,pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability from AUCinf,pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$formalsmap$dose1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$formalsmap$auc1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$formalsmap$dose2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$formalsmap$auc2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"     "aucinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "FAB"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Absolute Bioavailability"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$F = \\frac{AUC_{\\infty,pred,2} / Dose_2}{AUC_{\\infty,pred,1} / Dose_1}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$selection$secondary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.f"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (AUCint,inf,obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability from AUCint,inf,obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$formalsmap$dose1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$formalsmap$auc1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$formalsmap$dose2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$formalsmap$auc2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"        "aucint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "FAB"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Absolute Bioavailability"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$F = \\frac{AUC_{int,\\infty,obs,2} / Dose_2}{AUC_{int,\\infty,obs,1} / Dose_1}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$selection$secondary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.f"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (AUCint,inf,pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability from AUCint,inf,pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$formalsmap$dose1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$formalsmap$auc1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$formalsmap$dose2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$formalsmap$auc2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "totdose"         "aucint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "FAB"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Absolute Bioavailability"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$F = \\frac{AUC_{int,\\infty,pred,2} / Dose_2}{AUC_{int,\\infty,pred,1} / Dose_1}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$selection$secondary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$requires_conc_dur</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -12168,6 +12959,152 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.pred$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.ratio"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCinf,obs to reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCinf,obs to reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$formalsmap$test</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$formalsmap$reference</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ratio.aucinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCinf,obs to Reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$selection$concept</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "parameter_ratio"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.ratio"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCinf,pred to reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCinf,pred to reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$formalsmap$test</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$formalsmap$reference</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $param</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pknca_ref"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ratio.aucinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCinf,pred to Reference"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$selection$concept</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "parameter_ratio"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$requires_conc_dur</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>

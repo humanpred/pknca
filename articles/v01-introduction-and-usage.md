@@ -222,45 +222,48 @@ PKNCA.options()
     ##   totdose volpk    ae clr.last clr.obs clr.pred    fe ertlst ermax ertmax erint
     ## 1   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE FALSE
     ## 2   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE FALSE
-    ##   erlst sparse_auclast sparse_auc_se sparse_auc_df sparse_aumclast
-    ## 1 FALSE          FALSE         FALSE         FALSE           FALSE
-    ## 2 FALSE          FALSE         FALSE         FALSE           FALSE
-    ##   sparse_aumc_se sparse_aumc_df time_above aucivlast aucivall aucivint.last
-    ## 1          FALSE          FALSE      FALSE     FALSE    FALSE         FALSE
-    ## 2          FALSE          FALSE      FALSE     FALSE    FALSE         FALSE
-    ##   aucivint.all aucivpbextlast aucivpbextall aucivpbextint.last
-    ## 1        FALSE          FALSE         FALSE              FALSE
-    ## 2        FALSE          FALSE         FALSE              FALSE
-    ##   aucivpbextint.all aumcivlast aumcivall aumcivint.last aumcivint.all half.life
-    ## 1             FALSE      FALSE     FALSE          FALSE         FALSE     FALSE
-    ## 2             FALSE      FALSE     FALSE          FALSE         FALSE      TRUE
-    ##   r.squared adj.r.squared lambda.z.corrxy lambda.z lambda.z.time.first
-    ## 1     FALSE         FALSE           FALSE    FALSE               FALSE
-    ## 2     FALSE         FALSE           FALSE    FALSE               FALSE
-    ##   lambda.z.time.last lambda.z.n.points clast.pred span.ratio tobit_residual
-    ## 1              FALSE             FALSE      FALSE      FALSE          FALSE
-    ## 2              FALSE             FALSE      FALSE      FALSE          FALSE
-    ##   adj_tobit_residual lambda.z.n.points_blq thalf.eff.last thalf.eff.iv.last
-    ## 1              FALSE                 FALSE          FALSE             FALSE
-    ## 2              FALSE                 FALSE          FALSE             FALSE
-    ##   kel.last kel.iv.last kel.all kel.int.all kel.int.last cl.iv.all cl.iv.last
-    ## 1    FALSE       FALSE   FALSE       FALSE        FALSE     FALSE      FALSE
-    ## 2    FALSE       FALSE   FALSE       FALSE        FALSE     FALSE      FALSE
-    ##   cl.ivint.all cl.ivint.last cl.sparse.last mrt.sparse.last mrt.iv.all
-    ## 1        FALSE         FALSE          FALSE           FALSE      FALSE
-    ## 2        FALSE         FALSE          FALSE           FALSE      FALSE
-    ##   mrt.ivint.all mrt.ivint.last vz.all vz.int.all vz.int.last vz.iv.all
-    ## 1         FALSE          FALSE  FALSE      FALSE       FALSE     FALSE
-    ## 2         FALSE          FALSE  FALSE      FALSE       FALSE     FALSE
-    ##   vz.iv.last vz.ivint.all vz.ivint.last vz.last vss.iv.all vss.ivint.all
-    ## 1      FALSE        FALSE         FALSE   FALSE      FALSE         FALSE
-    ## 2      FALSE        FALSE         FALSE   FALSE      FALSE         FALSE
-    ##   vss.ivint.last vss.sparse.last aucinf.obs aucinf.pred aumcinf.obs
-    ## 1          FALSE           FALSE      FALSE       FALSE       FALSE
-    ## 2          FALSE           FALSE       TRUE       FALSE       FALSE
-    ##   aumcinf.pred aucint.inf.obs aucint.inf.obs.dose aucint.inf.pred
-    ## 1        FALSE          FALSE               FALSE           FALSE
-    ## 2        FALSE          FALSE               FALSE           FALSE
+    ##   erlst ratio.cmax ratio.auclast ratio.aucint.last ratio.aucint.all
+    ## 1 FALSE      FALSE         FALSE             FALSE            FALSE
+    ## 2 FALSE      FALSE         FALSE             FALSE            FALSE
+    ##   sparse_auclast sparse_auc_se sparse_auc_df sparse_aumclast sparse_aumc_se
+    ## 1          FALSE         FALSE         FALSE           FALSE          FALSE
+    ## 2          FALSE         FALSE         FALSE           FALSE          FALSE
+    ##   sparse_aumc_df time_above aucivlast aucivall aucivint.last aucivint.all
+    ## 1          FALSE      FALSE     FALSE    FALSE         FALSE        FALSE
+    ## 2          FALSE      FALSE     FALSE    FALSE         FALSE        FALSE
+    ##   aucivpbextlast aucivpbextall aucivpbextint.last aucivpbextint.all aumcivlast
+    ## 1          FALSE         FALSE              FALSE             FALSE      FALSE
+    ## 2          FALSE         FALSE              FALSE             FALSE      FALSE
+    ##   aumcivall aumcivint.last aumcivint.all half.life r.squared adj.r.squared
+    ## 1     FALSE          FALSE         FALSE     FALSE     FALSE         FALSE
+    ## 2     FALSE          FALSE         FALSE      TRUE     FALSE         FALSE
+    ##   lambda.z.corrxy lambda.z lambda.z.time.first lambda.z.time.last
+    ## 1           FALSE    FALSE               FALSE              FALSE
+    ## 2           FALSE    FALSE               FALSE              FALSE
+    ##   lambda.z.n.points clast.pred span.ratio tobit_residual adj_tobit_residual
+    ## 1             FALSE      FALSE      FALSE          FALSE              FALSE
+    ## 2             FALSE      FALSE      FALSE          FALSE              FALSE
+    ##   lambda.z.n.points_blq thalf.eff.last thalf.eff.iv.last kel.last kel.iv.last
+    ## 1                 FALSE          FALSE             FALSE    FALSE       FALSE
+    ## 2                 FALSE          FALSE             FALSE    FALSE       FALSE
+    ##   kel.all kel.int.all kel.int.last cl.iv.all cl.iv.last cl.ivint.all
+    ## 1   FALSE       FALSE        FALSE     FALSE      FALSE        FALSE
+    ## 2   FALSE       FALSE        FALSE     FALSE      FALSE        FALSE
+    ##   cl.ivint.last cl.sparse.last f.last f.int.last f.int.all mrt.sparse.last
+    ## 1         FALSE          FALSE  FALSE      FALSE     FALSE           FALSE
+    ## 2         FALSE          FALSE  FALSE      FALSE     FALSE           FALSE
+    ##   mrt.iv.all mrt.ivint.all mrt.ivint.last vz.all vz.int.all vz.int.last
+    ## 1      FALSE         FALSE          FALSE  FALSE      FALSE       FALSE
+    ## 2      FALSE         FALSE          FALSE  FALSE      FALSE       FALSE
+    ##   vz.iv.all vz.iv.last vz.ivint.all vz.ivint.last vz.last vss.iv.all
+    ## 1     FALSE      FALSE        FALSE         FALSE   FALSE      FALSE
+    ## 2     FALSE      FALSE        FALSE         FALSE   FALSE      FALSE
+    ##   vss.ivint.all vss.ivint.last vss.sparse.last aucinf.obs aucinf.pred
+    ## 1         FALSE          FALSE           FALSE      FALSE       FALSE
+    ## 2         FALSE          FALSE           FALSE       TRUE       FALSE
+    ##   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.obs.dose aucint.inf.pred
+    ## 1       FALSE        FALSE          FALSE               FALSE           FALSE
+    ## 2       FALSE        FALSE          FALSE               FALSE           FALSE
     ##   aucint.inf.pred.dose aumcint.inf.obs aumcint.inf.obs.dose aumcint.inf.pred
     ## 1                FALSE           FALSE                FALSE            FALSE
     ## 2                FALSE           FALSE                FALSE            FALSE
@@ -273,33 +276,36 @@ PKNCA.options()
     ##   kel.iv.all kel.ivint.all kel.ivint.last kel.sparse.last cl.obs cl.pred
     ## 1      FALSE         FALSE          FALSE           FALSE  FALSE   FALSE
     ## 2      FALSE         FALSE          FALSE           FALSE  FALSE   FALSE
-    ##   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred     f mrt.obs mrt.pred
-    ## 1          FALSE           FALSE     FALSE      FALSE FALSE   FALSE    FALSE
-    ## 2          FALSE           FALSE     FALSE      FALSE FALSE   FALSE    FALSE
-    ##   mrt.int.inf.obs mrt.int.inf.pred mrt.iv.obs mrt.iv.pred mrt.md.obs
-    ## 1           FALSE            FALSE      FALSE       FALSE      FALSE
-    ## 2           FALSE            FALSE      FALSE       FALSE      FALSE
-    ##   mrt.md.pred mrt.ivmd.obs mrt.ivmd.pred vz.obs vz.pred vz.int.inf.obs
-    ## 1       FALSE        FALSE         FALSE  FALSE   FALSE          FALSE
-    ## 2       FALSE        FALSE         FALSE  FALSE   FALSE          FALSE
-    ##   vz.int.inf.pred vz.iv.obs vz.iv.pred vz.sparse.last vss.obs vss.pred
-    ## 1           FALSE     FALSE      FALSE          FALSE   FALSE    FALSE
-    ## 2           FALSE     FALSE      FALSE          FALSE   FALSE    FALSE
-    ##   vss.iv.obs vss.iv.pred vss.md.obs vss.md.pred vss.ivmd.obs vss.ivmd.pred
-    ## 1      FALSE       FALSE      FALSE       FALSE        FALSE         FALSE
-    ## 2      FALSE       FALSE      FALSE       FALSE        FALSE         FALSE
-    ##   vss.int.inf.obs vss.int.inf.pred cav.int.inf.obs cav.int.inf.pred
-    ## 1           FALSE            FALSE           FALSE            FALSE
-    ## 2           FALSE            FALSE           FALSE            FALSE
-    ##   thalf.eff.obs thalf.eff.pred thalf.eff.iv.obs thalf.eff.iv.pred kel.obs
-    ## 1         FALSE          FALSE            FALSE             FALSE   FALSE
-    ## 2         FALSE          FALSE            FALSE             FALSE   FALSE
-    ##   kel.pred kel.iv.obs kel.iv.pred kel.int.inf.obs kel.int.inf.pred auclast.dn
-    ## 1    FALSE      FALSE       FALSE           FALSE            FALSE      FALSE
-    ## 2    FALSE      FALSE       FALSE           FALSE            FALSE      FALSE
-    ##   aucall.dn aucinf.obs.dn aucinf.pred.dn aumclast.dn aumcall.dn aumcinf.obs.dn
-    ## 1     FALSE         FALSE          FALSE       FALSE      FALSE          FALSE
-    ## 2     FALSE         FALSE          FALSE       FALSE      FALSE          FALSE
+    ##   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred f.obs f.pred f.int.obs
+    ## 1          FALSE           FALSE     FALSE      FALSE FALSE  FALSE     FALSE
+    ## 2          FALSE           FALSE     FALSE      FALSE FALSE  FALSE     FALSE
+    ##   f.int.pred mrt.obs mrt.pred mrt.int.inf.obs mrt.int.inf.pred mrt.iv.obs
+    ## 1      FALSE   FALSE    FALSE           FALSE            FALSE      FALSE
+    ## 2      FALSE   FALSE    FALSE           FALSE            FALSE      FALSE
+    ##   mrt.iv.pred mrt.md.obs mrt.md.pred mrt.ivmd.obs mrt.ivmd.pred vz.obs vz.pred
+    ## 1       FALSE      FALSE       FALSE        FALSE         FALSE  FALSE   FALSE
+    ## 2       FALSE      FALSE       FALSE        FALSE         FALSE  FALSE   FALSE
+    ##   vz.int.inf.obs vz.int.inf.pred vz.iv.obs vz.iv.pred vz.sparse.last vss.obs
+    ## 1          FALSE           FALSE     FALSE      FALSE          FALSE   FALSE
+    ## 2          FALSE           FALSE     FALSE      FALSE          FALSE   FALSE
+    ##   vss.pred vss.iv.obs vss.iv.pred vss.md.obs vss.md.pred vss.ivmd.obs
+    ## 1    FALSE      FALSE       FALSE      FALSE       FALSE        FALSE
+    ## 2    FALSE      FALSE       FALSE      FALSE       FALSE        FALSE
+    ##   vss.ivmd.pred vss.int.inf.obs vss.int.inf.pred cav.int.inf.obs
+    ## 1         FALSE           FALSE            FALSE           FALSE
+    ## 2         FALSE           FALSE            FALSE           FALSE
+    ##   cav.int.inf.pred ratio.aucinf.obs ratio.aucinf.pred thalf.eff.obs
+    ## 1            FALSE            FALSE             FALSE         FALSE
+    ## 2            FALSE            FALSE             FALSE         FALSE
+    ##   thalf.eff.pred thalf.eff.iv.obs thalf.eff.iv.pred kel.obs kel.pred kel.iv.obs
+    ## 1          FALSE            FALSE             FALSE   FALSE    FALSE      FALSE
+    ## 2          FALSE            FALSE             FALSE   FALSE    FALSE      FALSE
+    ##   kel.iv.pred kel.int.inf.obs kel.int.inf.pred auclast.dn aucall.dn
+    ## 1       FALSE           FALSE            FALSE      FALSE     FALSE
+    ## 2       FALSE           FALSE            FALSE      FALSE     FALSE
+    ##   aucinf.obs.dn aucinf.pred.dn aumclast.dn aumcall.dn aumcinf.obs.dn
+    ## 1         FALSE          FALSE       FALSE      FALSE          FALSE
+    ## 2         FALSE          FALSE       FALSE      FALSE          FALSE
     ##   aumcinf.pred.dn cmax.dn cmin.dn clast.obs.dn clast.pred.dn cav.dn ctrough.dn
     ## 1           FALSE   FALSE   FALSE        FALSE         FALSE  FALSE      FALSE
     ## 2           FALSE   FALSE   FALSE        FALSE         FALSE  FALSE      FALSE
@@ -524,10 +530,10 @@ dosing data.
 Single dose data has a simple interval selection: the option
 `single.dose.aucs` is used from the `PKNCA.options`.
 
-| start | end | auclast | aucall | aumclast | aumcall | aucint.last | aucint.last.dose | aucint.all | aucint.all.dose | aumcint.last | aumcint.last.dose | aumcint.all | aumcint.all.dose | c0 | cmax | cmin | tmax | tmin | tlast | tfirst | clast.obs | cl.last | cl.all | cl.int.all | cl.int.last | mrt.last | mrt.all | mrt.int.all | mrt.int.last | mrt.iv.last | vss.last | vss.iv.last | vss.all | vss.int.all | vss.int.last | cav | cav.int.last | cav.int.all | ctrough | cstart | ptr | tlag | deg.fluc | swing | ceoi | aucabove.predose.all | aucabove.trough.all | count_conc | count_conc_measured | totdose | volpk | ae | clr.last | clr.obs | clr.pred | fe | ertlst | ermax | ertmax | erint | erlst | sparse_auclast | sparse_auc_se | sparse_auc_df | sparse_aumclast | sparse_aumc_se | sparse_aumc_df | time_above | aucivlast | aucivall | aucivint.last | aucivint.all | aucivpbextlast | aucivpbextall | aucivpbextint.last | aucivpbextint.all | aumcivlast | aumcivall | aumcivint.last | aumcivint.all | half.life | r.squared | adj.r.squared | lambda.z.corrxy | lambda.z | lambda.z.time.first | lambda.z.time.last | lambda.z.n.points | clast.pred | span.ratio | tobit_residual | adj_tobit_residual | lambda.z.n.points_blq | thalf.eff.last | thalf.eff.iv.last | kel.last | kel.iv.last | kel.all | kel.int.all | kel.int.last | cl.iv.all | cl.iv.last | cl.ivint.all | cl.ivint.last | cl.sparse.last | mrt.sparse.last | mrt.iv.all | mrt.ivint.all | mrt.ivint.last | vz.all | vz.int.all | vz.int.last | vz.iv.all | vz.iv.last | vz.ivint.all | vz.ivint.last | vz.last | vss.iv.all | vss.ivint.all | vss.ivint.last | vss.sparse.last | aucinf.obs | aucinf.pred | aumcinf.obs | aumcinf.pred | aucint.inf.obs | aucint.inf.obs.dose | aucint.inf.pred | aucint.inf.pred.dose | aumcint.inf.obs | aumcint.inf.obs.dose | aumcint.inf.pred | aumcint.inf.pred.dose | aucivinf.obs | aucivinf.pred | aucivpbextinf.obs | aucivpbextinf.pred | aumcivinf.obs | aumcivinf.pred | aucpext.obs | aucpext.pred | kel.iv.all | kel.ivint.all | kel.ivint.last | kel.sparse.last | cl.obs | cl.pred | cl.int.inf.obs | cl.int.inf.pred | cl.iv.obs | cl.iv.pred | f | mrt.obs | mrt.pred | mrt.int.inf.obs | mrt.int.inf.pred | mrt.iv.obs | mrt.iv.pred | mrt.md.obs | mrt.md.pred | mrt.ivmd.obs | mrt.ivmd.pred | vz.obs | vz.pred | vz.int.inf.obs | vz.int.inf.pred | vz.iv.obs | vz.iv.pred | vz.sparse.last | vss.obs | vss.pred | vss.iv.obs | vss.iv.pred | vss.md.obs | vss.md.pred | vss.ivmd.obs | vss.ivmd.pred | vss.int.inf.obs | vss.int.inf.pred | cav.int.inf.obs | cav.int.inf.pred | thalf.eff.obs | thalf.eff.pred | thalf.eff.iv.obs | thalf.eff.iv.pred | kel.obs | kel.pred | kel.iv.obs | kel.iv.pred | kel.int.inf.obs | kel.int.inf.pred | auclast.dn | aucall.dn | aucinf.obs.dn | aucinf.pred.dn | aumclast.dn | aumcall.dn | aumcinf.obs.dn | aumcinf.pred.dn | cmax.dn | cmin.dn | clast.obs.dn | clast.pred.dn | cav.dn | ctrough.dn | clr.last.dn | clr.obs.dn | clr.pred.dn |
-|---:|---:|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
-| 0 | 24 | TRUE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE |
-| 0 | Inf | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | TRUE | FALSE | TRUE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | TRUE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | TRUE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE |
+| start | end | auclast | aucall | aumclast | aumcall | aucint.last | aucint.last.dose | aucint.all | aucint.all.dose | aumcint.last | aumcint.last.dose | aumcint.all | aumcint.all.dose | c0 | cmax | cmin | tmax | tmin | tlast | tfirst | clast.obs | cl.last | cl.all | cl.int.all | cl.int.last | mrt.last | mrt.all | mrt.int.all | mrt.int.last | mrt.iv.last | vss.last | vss.iv.last | vss.all | vss.int.all | vss.int.last | cav | cav.int.last | cav.int.all | ctrough | cstart | ptr | tlag | deg.fluc | swing | ceoi | aucabove.predose.all | aucabove.trough.all | count_conc | count_conc_measured | totdose | volpk | ae | clr.last | clr.obs | clr.pred | fe | ertlst | ermax | ertmax | erint | erlst | ratio.cmax | ratio.auclast | ratio.aucint.last | ratio.aucint.all | sparse_auclast | sparse_auc_se | sparse_auc_df | sparse_aumclast | sparse_aumc_se | sparse_aumc_df | time_above | aucivlast | aucivall | aucivint.last | aucivint.all | aucivpbextlast | aucivpbextall | aucivpbextint.last | aucivpbextint.all | aumcivlast | aumcivall | aumcivint.last | aumcivint.all | half.life | r.squared | adj.r.squared | lambda.z.corrxy | lambda.z | lambda.z.time.first | lambda.z.time.last | lambda.z.n.points | clast.pred | span.ratio | tobit_residual | adj_tobit_residual | lambda.z.n.points_blq | thalf.eff.last | thalf.eff.iv.last | kel.last | kel.iv.last | kel.all | kel.int.all | kel.int.last | cl.iv.all | cl.iv.last | cl.ivint.all | cl.ivint.last | cl.sparse.last | f.last | f.int.last | f.int.all | mrt.sparse.last | mrt.iv.all | mrt.ivint.all | mrt.ivint.last | vz.all | vz.int.all | vz.int.last | vz.iv.all | vz.iv.last | vz.ivint.all | vz.ivint.last | vz.last | vss.iv.all | vss.ivint.all | vss.ivint.last | vss.sparse.last | aucinf.obs | aucinf.pred | aumcinf.obs | aumcinf.pred | aucint.inf.obs | aucint.inf.obs.dose | aucint.inf.pred | aucint.inf.pred.dose | aumcint.inf.obs | aumcint.inf.obs.dose | aumcint.inf.pred | aumcint.inf.pred.dose | aucivinf.obs | aucivinf.pred | aucivpbextinf.obs | aucivpbextinf.pred | aumcivinf.obs | aumcivinf.pred | aucpext.obs | aucpext.pred | kel.iv.all | kel.ivint.all | kel.ivint.last | kel.sparse.last | cl.obs | cl.pred | cl.int.inf.obs | cl.int.inf.pred | cl.iv.obs | cl.iv.pred | f.obs | f.pred | f.int.obs | f.int.pred | mrt.obs | mrt.pred | mrt.int.inf.obs | mrt.int.inf.pred | mrt.iv.obs | mrt.iv.pred | mrt.md.obs | mrt.md.pred | mrt.ivmd.obs | mrt.ivmd.pred | vz.obs | vz.pred | vz.int.inf.obs | vz.int.inf.pred | vz.iv.obs | vz.iv.pred | vz.sparse.last | vss.obs | vss.pred | vss.iv.obs | vss.iv.pred | vss.md.obs | vss.md.pred | vss.ivmd.obs | vss.ivmd.pred | vss.int.inf.obs | vss.int.inf.pred | cav.int.inf.obs | cav.int.inf.pred | ratio.aucinf.obs | ratio.aucinf.pred | thalf.eff.obs | thalf.eff.pred | thalf.eff.iv.obs | thalf.eff.iv.pred | kel.obs | kel.pred | kel.iv.obs | kel.iv.pred | kel.int.inf.obs | kel.int.inf.pred | auclast.dn | aucall.dn | aucinf.obs.dn | aucinf.pred.dn | aumclast.dn | aumcall.dn | aumcinf.obs.dn | aumcinf.pred.dn | cmax.dn | cmin.dn | clast.obs.dn | clast.pred.dn | cav.dn | ctrough.dn | clr.last.dn | clr.obs.dn | clr.pred.dn |
+|---:|---:|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
+| 0 | 24 | TRUE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE |
+| 0 | Inf | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | TRUE | FALSE | TRUE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | TRUE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | TRUE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE | FALSE |
 
 For multiple-dose studies, PKNCA selects one group at a time and
 compares the concentration and dosing times. When there is a

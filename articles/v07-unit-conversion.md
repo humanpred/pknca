@@ -191,10 +191,10 @@ d_units_auto <- pknca_units_table(concu="ng/mL", doseu="mg", amountu="mg", timeu
 # Show a selection of the units generated
 d_units_auto[d_units_auto$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
 #>          PPORRESU PPTESTCD
-#> 27             hr     tmax
-#> 80          ng/mL     cmax
-#> 136      hr*ng/mL  auclast
-#> 198 mg/(hr*ng/mL)   cl.obs
+#> 39             hr     tmax
+#> 92          ng/mL     cmax
+#> 148      hr*ng/mL  auclast
+#> 210 mg/(hr*ng/mL)   cl.obs
 ```
 
 As you see above, the default units table has a column for the
@@ -225,11 +225,11 @@ d_units_clean <-
 # Show a selection of the units generated
 d_units_clean[d_units_clean$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs", "fe"), ]
 #>          PPORRESU PPTESTCD PPSTRESU conversion_factor
-#> 27             hr     tmax      day      4.166667e-02
-#> 80          ng/mL     cmax    ng/mL      1.000000e+00
-#> 93          ng/mg       fe fraction      1.000000e-06
-#> 136      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
-#> 198 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
+#> 39             hr     tmax      day      4.166667e-02
+#> 92          ng/mL     cmax    ng/mL      1.000000e+00
+#> 105         ng/mg       fe fraction      1.000000e-06
+#> 148      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
+#> 210 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
 ```
 
 Now, the units are much cleaner to look at.
@@ -258,10 +258,10 @@ d_units_clean_manual <-
 # Show a selection of the units generated
 d_units_clean_manual[d_units_clean_manual$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
 #>          PPORRESU PPTESTCD PPSTRESU conversion_factor
-#> 27             hr     tmax      day      4.166667e-02
-#> 80          ng/mL     cmax   nmol/L      8.130081e+00
-#> 136      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
-#> 198 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
+#> 39             hr     tmax      day      4.166667e-02
+#> 92          ng/mL     cmax   nmol/L      8.130081e+00
+#> 148      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
+#> 210 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
 ```
 
 ## What happens when units are missing for some parameters?

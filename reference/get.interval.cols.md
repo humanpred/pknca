@@ -25,6 +25,7 @@ Other Interval specifications:
 [`get.parameter.deps()`](https://humanpred.github.io/pknca/reference/get.parameter.deps.md),
 [`interval_add_impute()`](https://humanpred.github.io/pknca/reference/interval_add_impute.md),
 [`interval_add_param()`](https://humanpred.github.io/pknca/reference/interval_add_param.md),
+[`interval_add_secondary()`](https://humanpred.github.io/pknca/reference/interval_add_secondary.md),
 [`pknca_check_parameter_classification()`](https://humanpred.github.io/pknca/reference/pknca_check_parameter_classification.md),
 [`pknca_concepts()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md),
 [`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md),
@@ -4072,6 +4073,298 @@ get.interval.cols()
 #> [1] TRUE
 #> 
 #> 
+#> $ratio.cmax
+#> $ratio.cmax$FUN
+#> [1] "pk.calc.ratio"
+#> 
+#> $ratio.cmax$values
+#> [1] FALSE  TRUE
+#> 
+#> $ratio.cmax$unit_type
+#> [1] "fraction"
+#> 
+#> $ratio.cmax$pretty_name
+#> [1] "Ratio of Cmax to reference"
+#> 
+#> $ratio.cmax$desc
+#> [1] "Ratio of Cmax to reference"
+#> 
+#> $ratio.cmax$sparse
+#> [1] FALSE
+#> 
+#> $ratio.cmax$formalsmap
+#> $ratio.cmax$formalsmap$test
+#> [1] "cmax"
+#> 
+#> $ratio.cmax$formalsmap$reference
+#> $param
+#> [1] "cmax"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> 
+#> $ratio.cmax$depends
+#> [1] "cmax"
+#> 
+#> $ratio.cmax$datatype
+#> [1] "interval"
+#> 
+#> $ratio.cmax$pptestcd_cdisc
+#> [1] "ratio.cmax"
+#> 
+#> $ratio.cmax$pptest_cdisc
+#> [1] "Ratio of Cmax to Reference"
+#> 
+#> $ratio.cmax$formula
+#> NULL
+#> 
+#> $ratio.cmax$formula_note
+#> NULL
+#> 
+#> $ratio.cmax$tier
+#> [1] "uncommon"
+#> 
+#> $ratio.cmax$selection
+#> $ratio.cmax$selection$concept
+#> [1] "parameter_ratio"
+#> 
+#> 
+#> $ratio.cmax$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $ratio.cmax$requires_dose_time
+#> [1] FALSE
+#> 
+#> $ratio.cmax$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $ratio.cmax$requires_volume
+#> [1] FALSE
+#> 
+#> $ratio.cmax$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $ratio.auclast
+#> $ratio.auclast$FUN
+#> [1] "pk.calc.ratio"
+#> 
+#> $ratio.auclast$values
+#> [1] FALSE  TRUE
+#> 
+#> $ratio.auclast$unit_type
+#> [1] "fraction"
+#> 
+#> $ratio.auclast$pretty_name
+#> [1] "Ratio of AUClast to reference"
+#> 
+#> $ratio.auclast$desc
+#> [1] "Ratio of AUClast to reference"
+#> 
+#> $ratio.auclast$sparse
+#> [1] FALSE
+#> 
+#> $ratio.auclast$formalsmap
+#> $ratio.auclast$formalsmap$test
+#> [1] "auclast"
+#> 
+#> $ratio.auclast$formalsmap$reference
+#> $param
+#> [1] "auclast"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> 
+#> $ratio.auclast$depends
+#> [1] "auclast"
+#> 
+#> $ratio.auclast$datatype
+#> [1] "interval"
+#> 
+#> $ratio.auclast$pptestcd_cdisc
+#> [1] "ratio.auclast"
+#> 
+#> $ratio.auclast$pptest_cdisc
+#> [1] "Ratio of AUClast to Reference"
+#> 
+#> $ratio.auclast$formula
+#> NULL
+#> 
+#> $ratio.auclast$formula_note
+#> NULL
+#> 
+#> $ratio.auclast$tier
+#> [1] "uncommon"
+#> 
+#> $ratio.auclast$selection
+#> $ratio.auclast$selection$concept
+#> [1] "parameter_ratio"
+#> 
+#> 
+#> $ratio.auclast$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $ratio.auclast$requires_dose_time
+#> [1] FALSE
+#> 
+#> $ratio.auclast$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $ratio.auclast$requires_volume
+#> [1] FALSE
+#> 
+#> $ratio.auclast$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $ratio.aucint.last
+#> $ratio.aucint.last$FUN
+#> [1] "pk.calc.ratio"
+#> 
+#> $ratio.aucint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $ratio.aucint.last$unit_type
+#> [1] "fraction"
+#> 
+#> $ratio.aucint.last$pretty_name
+#> [1] "Ratio of AUCint,last to reference"
+#> 
+#> $ratio.aucint.last$desc
+#> [1] "Ratio of AUCint,last to reference"
+#> 
+#> $ratio.aucint.last$sparse
+#> [1] FALSE
+#> 
+#> $ratio.aucint.last$formalsmap
+#> $ratio.aucint.last$formalsmap$test
+#> [1] "aucint.last"
+#> 
+#> $ratio.aucint.last$formalsmap$reference
+#> $param
+#> [1] "aucint.last"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> 
+#> $ratio.aucint.last$depends
+#> [1] "aucint.last"
+#> 
+#> $ratio.aucint.last$datatype
+#> [1] "interval"
+#> 
+#> $ratio.aucint.last$pptestcd_cdisc
+#> [1] "ratio.aucint.last"
+#> 
+#> $ratio.aucint.last$pptest_cdisc
+#> [1] "Ratio of AUCint,last to Reference"
+#> 
+#> $ratio.aucint.last$formula
+#> NULL
+#> 
+#> $ratio.aucint.last$formula_note
+#> NULL
+#> 
+#> $ratio.aucint.last$tier
+#> [1] "uncommon"
+#> 
+#> $ratio.aucint.last$selection
+#> $ratio.aucint.last$selection$concept
+#> [1] "parameter_ratio"
+#> 
+#> 
+#> $ratio.aucint.last$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $ratio.aucint.last$requires_dose_time
+#> [1] FALSE
+#> 
+#> $ratio.aucint.last$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $ratio.aucint.last$requires_volume
+#> [1] FALSE
+#> 
+#> $ratio.aucint.last$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $ratio.aucint.all
+#> $ratio.aucint.all$FUN
+#> [1] "pk.calc.ratio"
+#> 
+#> $ratio.aucint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $ratio.aucint.all$unit_type
+#> [1] "fraction"
+#> 
+#> $ratio.aucint.all$pretty_name
+#> [1] "Ratio of AUCint,all to reference"
+#> 
+#> $ratio.aucint.all$desc
+#> [1] "Ratio of AUCint,all to reference"
+#> 
+#> $ratio.aucint.all$sparse
+#> [1] FALSE
+#> 
+#> $ratio.aucint.all$formalsmap
+#> $ratio.aucint.all$formalsmap$test
+#> [1] "aucint.all"
+#> 
+#> $ratio.aucint.all$formalsmap$reference
+#> $param
+#> [1] "aucint.all"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> 
+#> $ratio.aucint.all$depends
+#> [1] "aucint.all"
+#> 
+#> $ratio.aucint.all$datatype
+#> [1] "interval"
+#> 
+#> $ratio.aucint.all$pptestcd_cdisc
+#> [1] "ratio.aucint.all"
+#> 
+#> $ratio.aucint.all$pptest_cdisc
+#> [1] "Ratio of AUCint,all to Reference"
+#> 
+#> $ratio.aucint.all$formula
+#> NULL
+#> 
+#> $ratio.aucint.all$formula_note
+#> NULL
+#> 
+#> $ratio.aucint.all$tier
+#> [1] "uncommon"
+#> 
+#> $ratio.aucint.all$selection
+#> $ratio.aucint.all$selection$concept
+#> [1] "parameter_ratio"
+#> 
+#> 
+#> $ratio.aucint.all$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $ratio.aucint.all$requires_dose_time
+#> [1] FALSE
+#> 
+#> $ratio.aucint.all$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $ratio.aucint.all$requires_volume
+#> [1] FALSE
+#> 
+#> $ratio.aucint.all$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
 #> $sparse_auclast
 #> $sparse_auclast$FUN
 #> [1] "pk.calc.sparse_auclast"
@@ -6931,6 +7224,255 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> $cl.sparse.last$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $f.last
+#> $f.last$FUN
+#> [1] "pk.calc.f"
+#> 
+#> $f.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $f.last$unit_type
+#> [1] "fraction"
+#> 
+#> $f.last$pretty_name
+#> [1] "Bioavailability (AUClast)"
+#> 
+#> $f.last$desc
+#> [1] "Bioavailability from AUClast"
+#> 
+#> $f.last$sparse
+#> [1] FALSE
+#> 
+#> $f.last$formalsmap
+#> $f.last$formalsmap$dose1
+#> $param
+#> [1] "totdose"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> $f.last$formalsmap$auc1
+#> $param
+#> [1] "auclast"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> $f.last$formalsmap$dose2
+#> [1] "totdose"
+#> 
+#> $f.last$formalsmap$auc2
+#> [1] "auclast"
+#> 
+#> 
+#> $f.last$depends
+#> [1] "totdose" "auclast"
+#> 
+#> $f.last$datatype
+#> [1] "interval"
+#> 
+#> $f.last$pptestcd_cdisc
+#> [1] "FAB"
+#> 
+#> $f.last$pptest_cdisc
+#> [1] "Absolute Bioavailability"
+#> 
+#> $f.last$formula
+#> [1] "$F = \\frac{AUC_{last,2} / Dose_2}{AUC_{last,1} / Dose_1}$"
+#> 
+#> $f.last$formula_note
+#> NULL
+#> 
+#> $f.last$tier
+#> [1] "uncommon"
+#> 
+#> $f.last$selection
+#> $f.last$selection$secondary
+#> [1] TRUE
+#> 
+#> 
+#> $f.last$requires_dose_amt
+#> [1] TRUE
+#> 
+#> $f.last$requires_dose_time
+#> [1] FALSE
+#> 
+#> $f.last$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $f.last$requires_volume
+#> [1] FALSE
+#> 
+#> $f.last$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $f.int.last
+#> $f.int.last$FUN
+#> [1] "pk.calc.f"
+#> 
+#> $f.int.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $f.int.last$unit_type
+#> [1] "fraction"
+#> 
+#> $f.int.last$pretty_name
+#> [1] "Bioavailability (AUCint,last)"
+#> 
+#> $f.int.last$desc
+#> [1] "Bioavailability from AUCint,last"
+#> 
+#> $f.int.last$sparse
+#> [1] FALSE
+#> 
+#> $f.int.last$formalsmap
+#> $f.int.last$formalsmap$dose1
+#> $param
+#> [1] "totdose"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> $f.int.last$formalsmap$auc1
+#> $param
+#> [1] "aucint.last"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> $f.int.last$formalsmap$dose2
+#> [1] "totdose"
+#> 
+#> $f.int.last$formalsmap$auc2
+#> [1] "aucint.last"
+#> 
+#> 
+#> $f.int.last$depends
+#> [1] "totdose"     "aucint.last"
+#> 
+#> $f.int.last$datatype
+#> [1] "interval"
+#> 
+#> $f.int.last$pptestcd_cdisc
+#> [1] "FAB"
+#> 
+#> $f.int.last$pptest_cdisc
+#> [1] "Absolute Bioavailability"
+#> 
+#> $f.int.last$formula
+#> [1] "$F = \\frac{AUC_{int,last,2} / Dose_2}{AUC_{int,last,1} / Dose_1}$"
+#> 
+#> $f.int.last$formula_note
+#> NULL
+#> 
+#> $f.int.last$tier
+#> [1] "uncommon"
+#> 
+#> $f.int.last$selection
+#> $f.int.last$selection$secondary
+#> [1] TRUE
+#> 
+#> 
+#> $f.int.last$requires_dose_amt
+#> [1] TRUE
+#> 
+#> $f.int.last$requires_dose_time
+#> [1] FALSE
+#> 
+#> $f.int.last$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $f.int.last$requires_volume
+#> [1] FALSE
+#> 
+#> $f.int.last$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $f.int.all
+#> $f.int.all$FUN
+#> [1] "pk.calc.f"
+#> 
+#> $f.int.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $f.int.all$unit_type
+#> [1] "fraction"
+#> 
+#> $f.int.all$pretty_name
+#> [1] "Bioavailability (AUCint,all)"
+#> 
+#> $f.int.all$desc
+#> [1] "Bioavailability from AUCint,all"
+#> 
+#> $f.int.all$sparse
+#> [1] FALSE
+#> 
+#> $f.int.all$formalsmap
+#> $f.int.all$formalsmap$dose1
+#> $param
+#> [1] "totdose"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> $f.int.all$formalsmap$auc1
+#> $param
+#> [1] "aucint.all"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> $f.int.all$formalsmap$dose2
+#> [1] "totdose"
+#> 
+#> $f.int.all$formalsmap$auc2
+#> [1] "aucint.all"
+#> 
+#> 
+#> $f.int.all$depends
+#> [1] "totdose"    "aucint.all"
+#> 
+#> $f.int.all$datatype
+#> [1] "interval"
+#> 
+#> $f.int.all$pptestcd_cdisc
+#> [1] "FAB"
+#> 
+#> $f.int.all$pptest_cdisc
+#> [1] "Absolute Bioavailability"
+#> 
+#> $f.int.all$formula
+#> [1] "$F = \\frac{AUC_{int,all,2} / Dose_2}{AUC_{int,all,1} / Dose_1}$"
+#> 
+#> $f.int.all$formula_note
+#> NULL
+#> 
+#> $f.int.all$tier
+#> [1] "uncommon"
+#> 
+#> $f.int.all$selection
+#> $f.int.all$selection$secondary
+#> [1] TRUE
+#> 
+#> 
+#> $f.int.all$requires_dose_amt
+#> [1] TRUE
+#> 
+#> $f.int.all$requires_dose_time
+#> [1] FALSE
+#> 
+#> $f.int.all$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $f.int.all$requires_volume
+#> [1] FALSE
+#> 
+#> $f.int.all$requires_conc_dur
 #> [1] FALSE
 #> 
 #> 
@@ -10000,86 +10542,335 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> 
-#> $f
-#> $f$FUN
+#> $f.obs
+#> $f.obs$FUN
 #> [1] "pk.calc.f"
 #> 
-#> $f$values
+#> $f.obs$values
 #> [1] FALSE  TRUE
 #> 
-#> $f$unit_type
+#> $f.obs$unit_type
 #> [1] "fraction"
 #> 
-#> $f$pretty_name
-#> [1] "Bioavailability"
+#> $f.obs$pretty_name
+#> [1] "Bioavailability (AUCinf,obs)"
 #> 
-#> $f$desc
-#> [1] "Bioavailability (absolute or relative)"
+#> $f.obs$desc
+#> [1] "Bioavailability from AUCinf,obs"
 #> 
-#> $f$sparse
+#> $f.obs$sparse
 #> [1] FALSE
 #> 
-#> $f$formalsmap
-#> $f$formalsmap$dose1
+#> $f.obs$formalsmap
+#> $f.obs$formalsmap$dose1
 #> $param
 #> [1] "totdose"
 #> 
 #> attr(,"class")
 #> [1] "pknca_ref"
 #> 
-#> $f$formalsmap$auc1
+#> $f.obs$formalsmap$auc1
 #> $param
 #> [1] "aucinf.obs"
 #> 
 #> attr(,"class")
 #> [1] "pknca_ref"
 #> 
-#> $f$formalsmap$dose2
+#> $f.obs$formalsmap$dose2
 #> [1] "totdose"
 #> 
-#> $f$formalsmap$auc2
+#> $f.obs$formalsmap$auc2
 #> [1] "aucinf.obs"
 #> 
 #> 
-#> $f$depends
+#> $f.obs$depends
 #> [1] "totdose"    "aucinf.obs"
 #> 
-#> $f$datatype
+#> $f.obs$datatype
 #> [1] "interval"
 #> 
-#> $f$pptestcd_cdisc
+#> $f.obs$pptestcd_cdisc
 #> [1] "FAB"
 #> 
-#> $f$pptest_cdisc
+#> $f.obs$pptest_cdisc
 #> [1] "Absolute Bioavailability"
 #> 
-#> $f$formula
-#> [1] "$F = \\frac{AUC_2 / Dose_2}{AUC_1 / Dose_1}$"
+#> $f.obs$formula
+#> [1] "$F = \\frac{AUC_{\\infty,obs,2} / Dose_2}{AUC_{\\infty,obs,1} / Dose_1}$"
 #> 
-#> $f$formula_note
+#> $f.obs$formula_note
 #> NULL
 #> 
-#> $f$tier
+#> $f.obs$tier
 #> [1] "uncommon"
 #> 
-#> $f$selection
-#> $f$selection$secondary
+#> $f.obs$selection
+#> $f.obs$selection$secondary
 #> [1] TRUE
 #> 
 #> 
-#> $f$requires_dose_amt
+#> $f.obs$requires_dose_amt
 #> [1] TRUE
 #> 
-#> $f$requires_dose_time
+#> $f.obs$requires_dose_time
 #> [1] FALSE
 #> 
-#> $f$requires_dose_dur
+#> $f.obs$requires_dose_dur
 #> [1] FALSE
 #> 
-#> $f$requires_volume
+#> $f.obs$requires_volume
 #> [1] FALSE
 #> 
-#> $f$requires_conc_dur
+#> $f.obs$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $f.pred
+#> $f.pred$FUN
+#> [1] "pk.calc.f"
+#> 
+#> $f.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $f.pred$unit_type
+#> [1] "fraction"
+#> 
+#> $f.pred$pretty_name
+#> [1] "Bioavailability (AUCinf,pred)"
+#> 
+#> $f.pred$desc
+#> [1] "Bioavailability from AUCinf,pred"
+#> 
+#> $f.pred$sparse
+#> [1] FALSE
+#> 
+#> $f.pred$formalsmap
+#> $f.pred$formalsmap$dose1
+#> $param
+#> [1] "totdose"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> $f.pred$formalsmap$auc1
+#> $param
+#> [1] "aucinf.pred"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> $f.pred$formalsmap$dose2
+#> [1] "totdose"
+#> 
+#> $f.pred$formalsmap$auc2
+#> [1] "aucinf.pred"
+#> 
+#> 
+#> $f.pred$depends
+#> [1] "totdose"     "aucinf.pred"
+#> 
+#> $f.pred$datatype
+#> [1] "interval"
+#> 
+#> $f.pred$pptestcd_cdisc
+#> [1] "FAB"
+#> 
+#> $f.pred$pptest_cdisc
+#> [1] "Absolute Bioavailability"
+#> 
+#> $f.pred$formula
+#> [1] "$F = \\frac{AUC_{\\infty,pred,2} / Dose_2}{AUC_{\\infty,pred,1} / Dose_1}$"
+#> 
+#> $f.pred$formula_note
+#> NULL
+#> 
+#> $f.pred$tier
+#> [1] "uncommon"
+#> 
+#> $f.pred$selection
+#> $f.pred$selection$secondary
+#> [1] TRUE
+#> 
+#> 
+#> $f.pred$requires_dose_amt
+#> [1] TRUE
+#> 
+#> $f.pred$requires_dose_time
+#> [1] FALSE
+#> 
+#> $f.pred$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $f.pred$requires_volume
+#> [1] FALSE
+#> 
+#> $f.pred$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $f.int.obs
+#> $f.int.obs$FUN
+#> [1] "pk.calc.f"
+#> 
+#> $f.int.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $f.int.obs$unit_type
+#> [1] "fraction"
+#> 
+#> $f.int.obs$pretty_name
+#> [1] "Bioavailability (AUCint,inf,obs)"
+#> 
+#> $f.int.obs$desc
+#> [1] "Bioavailability from AUCint,inf,obs"
+#> 
+#> $f.int.obs$sparse
+#> [1] FALSE
+#> 
+#> $f.int.obs$formalsmap
+#> $f.int.obs$formalsmap$dose1
+#> $param
+#> [1] "totdose"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> $f.int.obs$formalsmap$auc1
+#> $param
+#> [1] "aucint.inf.obs"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> $f.int.obs$formalsmap$dose2
+#> [1] "totdose"
+#> 
+#> $f.int.obs$formalsmap$auc2
+#> [1] "aucint.inf.obs"
+#> 
+#> 
+#> $f.int.obs$depends
+#> [1] "totdose"        "aucint.inf.obs"
+#> 
+#> $f.int.obs$datatype
+#> [1] "interval"
+#> 
+#> $f.int.obs$pptestcd_cdisc
+#> [1] "FAB"
+#> 
+#> $f.int.obs$pptest_cdisc
+#> [1] "Absolute Bioavailability"
+#> 
+#> $f.int.obs$formula
+#> [1] "$F = \\frac{AUC_{int,\\infty,obs,2} / Dose_2}{AUC_{int,\\infty,obs,1} / Dose_1}$"
+#> 
+#> $f.int.obs$formula_note
+#> NULL
+#> 
+#> $f.int.obs$tier
+#> [1] "uncommon"
+#> 
+#> $f.int.obs$selection
+#> $f.int.obs$selection$secondary
+#> [1] TRUE
+#> 
+#> 
+#> $f.int.obs$requires_dose_amt
+#> [1] TRUE
+#> 
+#> $f.int.obs$requires_dose_time
+#> [1] FALSE
+#> 
+#> $f.int.obs$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $f.int.obs$requires_volume
+#> [1] FALSE
+#> 
+#> $f.int.obs$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $f.int.pred
+#> $f.int.pred$FUN
+#> [1] "pk.calc.f"
+#> 
+#> $f.int.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $f.int.pred$unit_type
+#> [1] "fraction"
+#> 
+#> $f.int.pred$pretty_name
+#> [1] "Bioavailability (AUCint,inf,pred)"
+#> 
+#> $f.int.pred$desc
+#> [1] "Bioavailability from AUCint,inf,pred"
+#> 
+#> $f.int.pred$sparse
+#> [1] FALSE
+#> 
+#> $f.int.pred$formalsmap
+#> $f.int.pred$formalsmap$dose1
+#> $param
+#> [1] "totdose"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> $f.int.pred$formalsmap$auc1
+#> $param
+#> [1] "aucint.inf.pred"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> $f.int.pred$formalsmap$dose2
+#> [1] "totdose"
+#> 
+#> $f.int.pred$formalsmap$auc2
+#> [1] "aucint.inf.pred"
+#> 
+#> 
+#> $f.int.pred$depends
+#> [1] "totdose"         "aucint.inf.pred"
+#> 
+#> $f.int.pred$datatype
+#> [1] "interval"
+#> 
+#> $f.int.pred$pptestcd_cdisc
+#> [1] "FAB"
+#> 
+#> $f.int.pred$pptest_cdisc
+#> [1] "Absolute Bioavailability"
+#> 
+#> $f.int.pred$formula
+#> [1] "$F = \\frac{AUC_{int,\\infty,pred,2} / Dose_2}{AUC_{int,\\infty,pred,1} / Dose_1}$"
+#> 
+#> $f.int.pred$formula_note
+#> NULL
+#> 
+#> $f.int.pred$tier
+#> [1] "uncommon"
+#> 
+#> $f.int.pred$selection
+#> $f.int.pred$selection$secondary
+#> [1] TRUE
+#> 
+#> 
+#> $f.int.pred$requires_dose_amt
+#> [1] TRUE
+#> 
+#> $f.int.pred$requires_dose_time
+#> [1] FALSE
+#> 
+#> $f.int.pred$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $f.int.pred$requires_volume
+#> [1] FALSE
+#> 
+#> $f.int.pred$requires_conc_dur
 #> [1] FALSE
 #> 
 #> 
@@ -12111,6 +12902,152 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> $cav.int.inf.pred$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $ratio.aucinf.obs
+#> $ratio.aucinf.obs$FUN
+#> [1] "pk.calc.ratio"
+#> 
+#> $ratio.aucinf.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $ratio.aucinf.obs$unit_type
+#> [1] "fraction"
+#> 
+#> $ratio.aucinf.obs$pretty_name
+#> [1] "Ratio of AUCinf,obs to reference"
+#> 
+#> $ratio.aucinf.obs$desc
+#> [1] "Ratio of AUCinf,obs to reference"
+#> 
+#> $ratio.aucinf.obs$sparse
+#> [1] FALSE
+#> 
+#> $ratio.aucinf.obs$formalsmap
+#> $ratio.aucinf.obs$formalsmap$test
+#> [1] "aucinf.obs"
+#> 
+#> $ratio.aucinf.obs$formalsmap$reference
+#> $param
+#> [1] "aucinf.obs"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> 
+#> $ratio.aucinf.obs$depends
+#> [1] "aucinf.obs"
+#> 
+#> $ratio.aucinf.obs$datatype
+#> [1] "interval"
+#> 
+#> $ratio.aucinf.obs$pptestcd_cdisc
+#> [1] "ratio.aucinf.obs"
+#> 
+#> $ratio.aucinf.obs$pptest_cdisc
+#> [1] "Ratio of AUCinf,obs to Reference"
+#> 
+#> $ratio.aucinf.obs$formula
+#> NULL
+#> 
+#> $ratio.aucinf.obs$formula_note
+#> NULL
+#> 
+#> $ratio.aucinf.obs$tier
+#> [1] "uncommon"
+#> 
+#> $ratio.aucinf.obs$selection
+#> $ratio.aucinf.obs$selection$concept
+#> [1] "parameter_ratio"
+#> 
+#> 
+#> $ratio.aucinf.obs$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $ratio.aucinf.obs$requires_dose_time
+#> [1] FALSE
+#> 
+#> $ratio.aucinf.obs$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $ratio.aucinf.obs$requires_volume
+#> [1] FALSE
+#> 
+#> $ratio.aucinf.obs$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $ratio.aucinf.pred
+#> $ratio.aucinf.pred$FUN
+#> [1] "pk.calc.ratio"
+#> 
+#> $ratio.aucinf.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $ratio.aucinf.pred$unit_type
+#> [1] "fraction"
+#> 
+#> $ratio.aucinf.pred$pretty_name
+#> [1] "Ratio of AUCinf,pred to reference"
+#> 
+#> $ratio.aucinf.pred$desc
+#> [1] "Ratio of AUCinf,pred to reference"
+#> 
+#> $ratio.aucinf.pred$sparse
+#> [1] FALSE
+#> 
+#> $ratio.aucinf.pred$formalsmap
+#> $ratio.aucinf.pred$formalsmap$test
+#> [1] "aucinf.pred"
+#> 
+#> $ratio.aucinf.pred$formalsmap$reference
+#> $param
+#> [1] "aucinf.pred"
+#> 
+#> attr(,"class")
+#> [1] "pknca_ref"
+#> 
+#> 
+#> $ratio.aucinf.pred$depends
+#> [1] "aucinf.pred"
+#> 
+#> $ratio.aucinf.pred$datatype
+#> [1] "interval"
+#> 
+#> $ratio.aucinf.pred$pptestcd_cdisc
+#> [1] "ratio.aucinf.pred"
+#> 
+#> $ratio.aucinf.pred$pptest_cdisc
+#> [1] "Ratio of AUCinf,pred to Reference"
+#> 
+#> $ratio.aucinf.pred$formula
+#> NULL
+#> 
+#> $ratio.aucinf.pred$formula_note
+#> NULL
+#> 
+#> $ratio.aucinf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $ratio.aucinf.pred$selection
+#> $ratio.aucinf.pred$selection$concept
+#> [1] "parameter_ratio"
+#> 
+#> 
+#> $ratio.aucinf.pred$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $ratio.aucinf.pred$requires_dose_time
+#> [1] FALSE
+#> 
+#> $ratio.aucinf.pred$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $ratio.aucinf.pred$requires_volume
+#> [1] FALSE
+#> 
+#> $ratio.aucinf.pred$requires_conc_dur
 #> [1] FALSE
 #> 
 #> 

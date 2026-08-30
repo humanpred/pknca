@@ -1407,11 +1407,59 @@ ordered by collection midpoint</td>
 <td align="left">pk.calc.ertmax</td>
 </tr>
 <tr class="even">
-<td align="left">f</td>
-<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mn>2</mn></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>2</mn></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mn>1</mn></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>1</mn></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">F = \frac{AUC_2 / Dose_2}{AUC_1 / Dose_1}</annotation></semantics></math></td>
+<td align="left">f.int.all</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>i</mi><mi>n</mi><mi>t</mi><mo>,</mo><mi>a</mi><mi>l</mi><mi>l</mi><mo>,</mo><mn>2</mn></mrow></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>2</mn></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>i</mi><mi>n</mi><mi>t</mi><mo>,</mo><mi>a</mi><mi>l</mi><mi>l</mi><mo>,</mo><mn>1</mn></mrow></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>1</mn></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">F = \frac{AUC_{int,all,2} / Dose_2}{AUC_{int,all,1} / Dose_1}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">fraction</td>
-<td align="left">Bioavailability (absolute or relative)</td>
+<td align="left">Bioavailability from AUCint,all</td>
+<td align="left">pk.calc.f</td>
+</tr>
+<tr class="odd">
+<td align="left">f.int.last</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>i</mi><mi>n</mi><mi>t</mi><mo>,</mo><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi><mo>,</mo><mn>2</mn></mrow></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>2</mn></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>i</mi><mi>n</mi><mi>t</mi><mo>,</mo><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi><mo>,</mo><mn>1</mn></mrow></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>1</mn></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">F = \frac{AUC_{int,last,2} / Dose_2}{AUC_{int,last,1} / Dose_1}</annotation></semantics></math></td>
+<td align="left"></td>
+<td align="left">fraction</td>
+<td align="left">Bioavailability from AUCint,last</td>
+<td align="left">pk.calc.f</td>
+</tr>
+<tr class="even">
+<td align="left">f.int.obs</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>i</mi><mi>n</mi><mi>t</mi><mo>,</mo><mi>∞</mi><mo>,</mo><mi>o</mi><mi>b</mi><mi>s</mi><mo>,</mo><mn>2</mn></mrow></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>2</mn></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>i</mi><mi>n</mi><mi>t</mi><mo>,</mo><mi>∞</mi><mo>,</mo><mi>o</mi><mi>b</mi><mi>s</mi><mo>,</mo><mn>1</mn></mrow></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>1</mn></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">F = \frac{AUC_{int,\infty,obs,2} / Dose_2}{AUC_{int,\infty,obs,1} / Dose_1}</annotation></semantics></math></td>
+<td align="left"></td>
+<td align="left">fraction</td>
+<td align="left">Bioavailability from AUCint,inf,obs</td>
+<td align="left">pk.calc.f</td>
+</tr>
+<tr class="odd">
+<td align="left">f.int.pred</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>i</mi><mi>n</mi><mi>t</mi><mo>,</mo><mi>∞</mi><mo>,</mo><mi>p</mi><mi>r</mi><mi>e</mi><mi>d</mi><mo>,</mo><mn>2</mn></mrow></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>2</mn></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>i</mi><mi>n</mi><mi>t</mi><mo>,</mo><mi>∞</mi><mo>,</mo><mi>p</mi><mi>r</mi><mi>e</mi><mi>d</mi><mo>,</mo><mn>1</mn></mrow></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>1</mn></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">F = \frac{AUC_{int,\infty,pred,2} / Dose_2}{AUC_{int,\infty,pred,1} / Dose_1}</annotation></semantics></math></td>
+<td align="left"></td>
+<td align="left">fraction</td>
+<td align="left">Bioavailability from AUCint,inf,pred</td>
+<td align="left">pk.calc.f</td>
+</tr>
+<tr class="even">
+<td align="left">f.last</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi><mo>,</mo><mn>2</mn></mrow></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>2</mn></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi><mo>,</mo><mn>1</mn></mrow></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>1</mn></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">F = \frac{AUC_{last,2} / Dose_2}{AUC_{last,1} / Dose_1}</annotation></semantics></math></td>
+<td align="left"></td>
+<td align="left">fraction</td>
+<td align="left">Bioavailability from AUClast</td>
+<td align="left">pk.calc.f</td>
+</tr>
+<tr class="odd">
+<td align="left">f.obs</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mi>o</mi><mi>b</mi><mi>s</mi><mo>,</mo><mn>2</mn></mrow></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>2</mn></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mi>o</mi><mi>b</mi><mi>s</mi><mo>,</mo><mn>1</mn></mrow></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>1</mn></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">F = \frac{AUC_{\infty,obs,2} / Dose_2}{AUC_{\infty,obs,1} / Dose_1}</annotation></semantics></math></td>
+<td align="left"></td>
+<td align="left">fraction</td>
+<td align="left">Bioavailability from AUCinf,obs</td>
+<td align="left">pk.calc.f</td>
+</tr>
+<tr class="even">
+<td align="left">f.pred</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mi>p</mi><mi>r</mi><mi>e</mi><mi>d</mi><mo>,</mo><mn>2</mn></mrow></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>2</mn></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mi>p</mi><mi>r</mi><mi>e</mi><mi>d</mi><mo>,</mo><mn>1</mn></mrow></msub><mi>/</mi><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mn>1</mn></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">F = \frac{AUC_{\infty,pred,2} / Dose_2}{AUC_{\infty,pred,1} / Dose_1}</annotation></semantics></math></td>
+<td align="left"></td>
+<td align="left">fraction</td>
+<td align="left">Bioavailability from AUCinf,pred</td>
 <td align="left">pk.calc.f</td>
 </tr>
 <tr class="odd">
@@ -1768,6 +1816,54 @@ on time over the terminal points</td>
 <td align="left">unitless</td>
 <td align="left">R-squared of half-life fit</td>
 <td align="left">See the parameter name half.life</td>
+</tr>
+<tr class="odd">
+<td align="left">ratio.aucinf.obs</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">fraction</td>
+<td align="left">Ratio of AUCinf,obs to reference</td>
+<td align="left">pk.calc.ratio</td>
+</tr>
+<tr class="even">
+<td align="left">ratio.aucinf.pred</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">fraction</td>
+<td align="left">Ratio of AUCinf,pred to reference</td>
+<td align="left">pk.calc.ratio</td>
+</tr>
+<tr class="odd">
+<td align="left">ratio.aucint.all</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">fraction</td>
+<td align="left">Ratio of AUCint,all to reference</td>
+<td align="left">pk.calc.ratio</td>
+</tr>
+<tr class="even">
+<td align="left">ratio.aucint.last</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">fraction</td>
+<td align="left">Ratio of AUCint,last to reference</td>
+<td align="left">pk.calc.ratio</td>
+</tr>
+<tr class="odd">
+<td align="left">ratio.auclast</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">fraction</td>
+<td align="left">Ratio of AUClast to reference</td>
+<td align="left">pk.calc.ratio</td>
+</tr>
+<tr class="even">
+<td align="left">ratio.cmax</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">fraction</td>
+<td align="left">Ratio of Cmax to reference</td>
+<td align="left">pk.calc.ratio</td>
 </tr>
 <tr class="odd">
 <td align="left">span.ratio</td>
