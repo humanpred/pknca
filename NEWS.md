@@ -67,7 +67,8 @@ the dosing including dose amount and route.
   profiles the derivation may use.  It narrows an otherwise ambiguous choice
   (`group_ref = data.frame(PCSPEC = "PLASMA")`) and directs comparisons that
   have no other way to tell the profiles apart, such as a metabolite ratio to
-  its parent analyte (`group_ref = data.frame(PCTEST = "midazolam")`) (#76).
+  its parent analyte (`group_ref = data.frame(PCTEST = "midazolam")`).  The
+  printed `PKNCAdata` object shows it (#76).
 
 * `interval_add_secondary()` accepts `reference = NULL` (its default), writing
   the same derivation into the intervals it returns instead of leaving it to

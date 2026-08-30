@@ -268,6 +268,14 @@ print.PKNCAdata <- function(x, ...) {
   if (!is.null(x$impute)) {
     cat(sprintf("With imputation: %s\n", x$impute))
   }
+  if (!is.null(x$group_ref)) {
+    cat(
+      sprintf(
+        "With reference profiles for secondary parameters (group_ref): %s\n",
+        paste(name_value_text(x$group_ref), collapse = "; ")
+      )
+    )
+  }
   if (length(x$options) == 0) {
     cat("No options are set differently than default.\n")
   } else {

@@ -138,6 +138,22 @@ test_that("PKNCAdata with no or limited dose information", {
                info="No dose times requires intervals.")
 })
 
+test_that("print.PKNCAdata shows group_ref", {
+  tmp.conc <- generate.conc(nsub=2, ntreat=2, time.points=0:24)
+  obj.conc <- PKNCAconc(tmp.conc, formula=conc~time|treatment+ID)
+  obj.data.ref <-
+    PKNCAdata(
+      obj.conc,
+      intervals = data.frame(start = 0, end = 24, aucinf.obs = TRUE),
+      group_ref = data.frame(treatment = "Trt 1")
+    )
+  expect_output(
+    print(obj.data.ref),
+    regexp = "With reference profiles for secondary parameters (group_ref): treatment=Trt 1",
+    fixed = TRUE
+  )
+})
+
 test_that("print.PKNCAdata", {
   tmp.conc <- generate.conc(nsub=2, ntreat=2, time.points=0:24)
   tmp.dose <- generate.dose(tmp.conc)
