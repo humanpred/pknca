@@ -1933,3 +1933,105 @@ test_that("the finder reports the data it has nothing to work with", {
     "The interval matches no group in the concentration data"
   )
 })
+
+# A created spot-sample reference spans the collections whole here too:  a
+# collection beginning inside the interval contributes its full amount, so the
+# paired plasma AUC has to cover its full duration
+test_that("a found reference interval spans the collections' durations", {
+  d_span <-
+    data.frame(
+      subject = 1,
+      PCSPEC = rep(c("plasma", "urine"), times = c(4, 2)),
+      time = c(0, 12, 24, 36, 0, 12),
+      conc = c(10, 6, 4, 2, 2, 1),
+      vol  = c(NA, NA, NA, NA, 100, 150),
+      dur  = c(0, 0, 0, 0, 12, 24)
+    )
+  o_conc_span <-
+    PKNCAconc(d_span, conc~time|PCSPEC+subject, volume = "vol", duration = "dur")
+  o_data_span <-
+    PKNCAdata(o_conc_span, intervals = iv_sec_urine, options = list(auc.method = "linear"))
+  message_text <-
+    conditionMessage(
+      expect_message(
+        res <- pk.nca(o_data_span),
+        class = "pknca_message_secondary_ref_created"
+      )
+    )
+  # The last collection begins at 12 and runs 24 more, so the reference reaches 36
+  expect_match(message_text, "PCSPEC=plasma, 0-36", fixed = TRUE)
+  d_res <- as.data.frame(res)
+  # auclast(0-36) = (10+6)/2*12 + (6+4)/2*12 + (4+2)/2*12 = 192; ae = 350
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "auclast"], 192)
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/192)
+  expect_equal(
+    d_res$PPANMETH[d_res$PPTESTCD %in% "clr.last"],
+    "Reference interval: PCSPEC=plasma, 0-36"
+  )
+})
+
+# group_ref narrows the candidates rather than replacing them, so naming the
+# collection itself leaves nothing to reference
+test_that("group_ref that excludes every candidate says so", {
+  o_data_gr <-
+    PKNCAdata(
+      o_conc_sec, intervals = iv_sec_urine, options = list(auc.method = "linear"),
+      group_ref = data.frame(PCSPEC = "urine")
+    )
+  expect_warning(
+    res <- muffle_interval_warnings(pk.nca(o_data_gr)),
+    class = "pknca_warning_secondary_auto_reference"
+  )
+  d_res <- as.data.frame(res)
+  expect_equal(
+    d_res$exclude[d_res$PPTESTCD %in% "clr.last"],
+    "No profile in the data matches `group_ref`"
+  )
+})
+
+# One interval row carries one pointer, so every group it applies to has to
+# reach the same reference
+test_that("groups of one interval needing different references fail the row", {
+  d_split <-
+    rbind(
+      d_conc_sec,
+      data.frame(
+        subject = 2, PCSPEC = "serum", time = c(0, 12, 24), conc = c(9, 5, 2),
+        vol = NA_real_
+      ),
+      data.frame(
+        subject = 2, PCSPEC = "urine", time = c(0, 12), conc = c(2, 1),
+        vol = c(100, 150)
+      )
+    )
+  o_conc_split <- PKNCAconc(d_split, conc~time|PCSPEC+subject, volume = "vol")
+  o_data_split <-
+    PKNCAdata(o_conc_split, intervals = iv_sec_urine, options = list(auc.method = "linear"))
+  warning_text <-
+    conditionMessage(
+      expect_warning(
+        res <- muffle_interval_warnings(pk.nca(o_data_split)),
+        class = "pknca_warning_secondary_auto_reference"
+      )
+    )
+  expect_match(warning_text, "need different reference profiles", fixed = TRUE)
+  expect_match(warning_text, "PCSPEC=plasma", fixed = TRUE)
+  expect_match(warning_text, "PCSPEC=serum", fixed = TRUE)
+  d_res <- as.data.frame(res)
+  expect_true(all(is.na(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"])))
+})
+
+# Group values may be factors, and the intervals hold their labels
+test_that("a factor group column gives a reference the intervals can hold", {
+  d_factor <- d_conc_sec
+  d_factor$PCSPEC <- factor(d_factor$PCSPEC)
+  o_conc_factor <- PKNCAconc(d_factor, conc~time|PCSPEC+subject, volume = "vol")
+  o_data_factor <-
+    PKNCAdata(o_conc_factor, intervals = iv_sec_urine, options = list(auc.method = "linear"))
+  expect_message(
+    res <- pk.nca(o_data_factor),
+    class = "pknca_message_secondary_ref_created"
+  )
+  d_res <- as.data.frame(res)
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/144)
+})
