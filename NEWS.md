@@ -53,9 +53,31 @@ the dosing including dose amount and route.
   The linkage columns must share one class (factors must also share their
   levels) so that the values can be compared.
 
+* A secondary parameter that names no reference interval now has one derived
+  from the data:  requesting renal clearance on a urine collection finds the
+  matching plasma profile, and the plasma interval it needs is created for the
+  calculation.  The derived interval is used for the calculation only and does
+  not appear in `PKNCAresults$data$intervals`, and each linkage is reported with
+  a `pknca_message_secondary_ref_created` message and named in `PPANMETH`.  When
+  no single reference can be derived, the affected results are `NA` with the
+  reason in the `exclude` column and one `pknca_warning_secondary_auto_reference`
+  warning per parameter, rather than stopping the analysis (#76).
+
+* `PKNCAdata()` gains `group_ref`, a data.frame of group values steering which
+  profiles the derivation may use.  It narrows an otherwise ambiguous choice
+  (`group_ref = data.frame(PCSPEC = "PLASMA")`) and directs comparisons that
+  have no other way to tell the profiles apart, such as a metabolite ratio to
+  its parent analyte (`group_ref = data.frame(PCTEST = "midazolam")`) (#76).
+
+* `interval_add_secondary()` accepts `reference = NULL` (its default), writing
+  the same derivation into the intervals it returns instead of leaving it to
+  [pk.nca()].  On a `PKNCAdata` object it uses that object's `group_ref` when
+  one is set (#76).
+
 * Bug fix: requesting `clr.last`, `clr.obs`, or `clr.pred` without its AUC (and
-  without a reference interval) silently divided by zero and gave `Inf`.  It is
-  now an error saying which reference interval to give.
+  without a reference interval) silently divided by zero and gave `Inf`.  The
+  reference interval is now derived from the data where it can be, and where it
+  cannot the result is `NA` with the reason instead of a number.
 
 * `f.obs` (previously `f`) now takes `dose1`/`auc1` from the reference interval
   and computes `dose2`/`auc2` from its own interval as `totdose` and
