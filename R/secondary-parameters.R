@@ -90,8 +90,7 @@ secondary_parameter_names <- function() {
 #' @param reference The parameter value in the reference interval
 #' @returns `test/reference`, or `NA` where the reference is missing or is not
 #'   above zero (a ratio to a zero or negative reference is not interpretable).
-#' @seealso [interval_add_secondary()], [interval_add_accumulation_ratio()],
-#'   [interval_add_metabolite_ratio()]
+#' @seealso [interval_add_secondary()]
 #' @examples
 #' pk.calc.ratio(test = 10, reference = 20)
 #' @export
@@ -108,66 +107,72 @@ add.interval.col("ratio.cmax",
                  FUN="pk.calc.ratio",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
-                 pretty_name="Ratio of cmax",
-                 desc="Ratio of cmax vs reference",
+                 pretty_name="Ratio of Cmax to reference",
+                 desc="Ratio of Cmax to reference",
                  formalsmap=list(test="cmax",
                                  reference=pknca_ref("cmax")),
                  depends="cmax",
+                 pptest_cdisc="Ratio of Cmax to Reference",
                  selection = list(concept = "parameter_ratio"))
 
 add.interval.col("ratio.auclast",
                  FUN="pk.calc.ratio",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
-                 pretty_name="Ratio of auclast",
-                 desc="Ratio of auclast vs reference",
+                 pretty_name="Ratio of AUClast to reference",
+                 desc="Ratio of AUClast to reference",
                  formalsmap=list(test="auclast",
                                  reference=pknca_ref("auclast")),
                  depends="auclast",
+                 pptest_cdisc="Ratio of AUClast to Reference",
                  selection = list(concept = "parameter_ratio"))
 
 add.interval.col("ratio.aucinf.obs",
                  FUN="pk.calc.ratio",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
-                 pretty_name="Ratio of aucinf.obs",
-                 desc="Ratio of aucinf.obs vs reference",
+                 pretty_name="Ratio of AUCinf,obs to reference",
+                 desc="Ratio of AUCinf,obs to reference",
                  formalsmap=list(test="aucinf.obs",
                                  reference=pknca_ref("aucinf.obs")),
                  depends="aucinf.obs",
+                 pptest_cdisc="Ratio of AUCinf,obs to Reference",
                  selection = list(concept = "parameter_ratio"))
 
 add.interval.col("ratio.aucinf.pred",
                  FUN="pk.calc.ratio",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
-                 pretty_name="Ratio of aucinf.pred",
-                 desc="Ratio of aucinf.pred vs reference",
+                 pretty_name="Ratio of AUCinf,pred to reference",
+                 desc="Ratio of AUCinf,pred to reference",
                  formalsmap=list(test="aucinf.pred",
                                  reference=pknca_ref("aucinf.pred")),
                  depends="aucinf.pred",
+                 pptest_cdisc="Ratio of AUCinf,pred to Reference",
                  selection = list(concept = "parameter_ratio"))
 
 add.interval.col("ratio.aucint.last",
                  FUN="pk.calc.ratio",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
-                 pretty_name="Ratio of aucint.last",
-                 desc="Ratio of aucint.last vs reference",
+                 pretty_name="Ratio of AUCint,last to reference",
+                 desc="Ratio of AUCint,last to reference",
                  formalsmap=list(test="aucint.last",
                                  reference=pknca_ref("aucint.last")),
                  depends="aucint.last",
+                 pptest_cdisc="Ratio of AUCint,last to Reference",
                  selection = list(concept = "parameter_ratio"))
 
 add.interval.col("ratio.aucint.all",
                  FUN="pk.calc.ratio",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
-                 pretty_name="Ratio of aucint.all",
-                 desc="Ratio of aucint.all vs reference",
+                 pretty_name="Ratio of AUCint,all to reference",
+                 desc="Ratio of AUCint,all to reference",
                  formalsmap=list(test="aucint.all",
                                  reference=pknca_ref("aucint.all")),
                  depends="aucint.all",
+                 pptest_cdisc="Ratio of AUCint,all to Reference",
                  selection = list(concept = "parameter_ratio"))
 
 PKNCA.set.summary(
@@ -644,6 +649,11 @@ interval_new_ids <- function(intervals, n) {
       interval_next_ref_names(
         unique(c(levels(existing), as.character(stats::na.omit(existing)))), n
       )
+    # Appending keeps every existing level at its position, so the values in
+    # this and every other linkage column are unchanged; the pointer columns
+    # gain the new levels in interval_sync_ref_cols(), which runs after every
+    # id assignment, so the shared-levels comparability rule of
+    # check_interval_id_classes() still holds.
     levels(intervals$interval_id) <- c(levels(existing), ids)
   } else if (is.numeric(existing)) {
     highest <- if (all(is.na(existing))) 0 else max(existing, na.rm = TRUE)
@@ -656,6 +666,13 @@ interval_new_ids <- function(intervals, n) {
 
 # Give every reference interval an identifier:  `ref_id` when the user named
 # one, the identifier the rows already share, or a newly generated one.
+#
+# `ref_id = NULL` (the default) takes the third branch for any reference
+# interval with no identifier:  `need_new` marks it and interval_new_ids()
+# generates one, creating the `interval_id` column itself when the intervals
+# have none.  The `!is.null(ref_id)` block below only covers the user-named
+# case, where the column must exist (matching `ref_id`'s class) before the
+# assignment loop writes into it.
 interval_assign_ref_ids <- function(intervals, ref_groups, ref_id) {
   ids <- vector(mode = "list", length = length(ref_groups))
   need_new <- rep(FALSE, length(ref_groups))
@@ -958,6 +975,12 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
   # The reference interval gains what the link reads from it.  Silent, as
   # calculating a dependency always is.
   for (current_group in unique(used_groups)) {
+    # One reference interval can span several rows:  interval_reference_groups()
+    # groups by everything except the parameter requests and `impute`, so an
+    # impute-split reference contributes all of its rows here.  The source
+    # parameter goes on the first row only, matching the engine's expansion
+    # (calculating it under each split's imputation would make the reference
+    # lookup ambiguous).
     rows <- ref_groups[[current_group]]
     for (target in source_params) {
       if (!any(vapply(X = intervals[[target]][rows], FUN = isTRUE, FUN.VALUE = TRUE))) {
@@ -1056,57 +1079,3 @@ interval_add_secondary.PKNCAdata <- function(data, param, reference = NULL,
   data
 }
 
-#' Link the common secondary parameters to their reference intervals
-#'
-#' Each of these is [interval_add_secondary()] with the reference specification
-#' the analysis implies:  the profile the drug is cleared from for a renal
-#' clearance, the first dosing interval for an accumulation ratio, and the
-#' parent analyte for a metabolite ratio.
-#'
-#' @inheritParams interval_add_secondary
-#' @param reference A data.frame of group values identifying the reference
-#'   profile (for example `data.frame(PCSPEC = "plasma")` or
-#'   `data.frame(Analyte = "parent")`).
-#' @param ref_start,ref_end The start and end times of the reference dosing
-#'   interval.
-#' @param ... Passed to [interval_add_secondary()], which accepts `ref_id`.
-#' @returns The input with the parameter requested and the linkage columns set.
-#' @seealso [interval_add_secondary()]
-#' @family Interval specifications
-#' @examples
-#' intervals <-
-#'   data.frame(
-#'     PCSPEC = c("plasma", "urine"),
-#'     start = 0, end = 24,
-#'     aucinf.obs = c(TRUE, FALSE),
-#'     ae = c(FALSE, TRUE)
-#'   )
-#' interval_add_renal_clearance(intervals, reference = data.frame(PCSPEC = "plasma"))
-#' @export
-interval_add_renal_clearance <- function(data, reference, param = "clr.obs",
-                                         target_groups = NULL, ...) {
-  interval_add_secondary(
-    data, param = param, reference = reference, target_groups = target_groups, ...
-  )
-}
-
-#' @rdname interval_add_renal_clearance
-#' @export
-interval_add_accumulation_ratio <- function(data, ref_start, ref_end,
-                                            param = "ratio.aucint.last",
-                                            target_groups = NULL, ...) {
-  interval_add_secondary(
-    data, param = param, reference = data.frame(start = ref_start, end = ref_end),
-    target_groups = target_groups, ...
-  )
-}
-
-#' @rdname interval_add_renal_clearance
-#' @export
-interval_add_metabolite_ratio <- function(data, reference,
-                                          param = "ratio.aucinf.obs",
-                                          target_groups = NULL, ...) {
-  interval_add_secondary(
-    data, param = param, reference = reference, target_groups = target_groups, ...
-  )
-}

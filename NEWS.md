@@ -15,12 +15,12 @@ the dosing including dose amount and route.
   result (#76).
 
 * `interval_add_secondary()` writes that linkage for you:  given the parameter
-  and a data.frame describing the reference profile, it requests the parameter,
-  gives the reference interval an `interval_id`, points the calculating
-  intervals at it, and creates the reference interval when the specification
-  does not have one yet.  `interval_add_renal_clearance()`,
-  `interval_add_accumulation_ratio()`, and `interval_add_metabolite_ratio()` are
-  the same call with the reference specification each analysis implies (#76).
+  and a data.frame describing the reference profile (the plasma profile for a
+  renal clearance, the first dosing interval for an accumulation ratio, the
+  parent analyte for a metabolite ratio), it requests the parameter, gives the
+  reference interval an `interval_id`, points the calculating intervals at it,
+  and creates the reference interval when the specification does not have one
+  yet (#76).
 
 * When `interval_add_secondary()` on a `PKNCAdata` object creates a spot-sample
   reference for an excretion analysis (renal clearance), the created interval
@@ -37,9 +37,9 @@ the dosing including dose amount and route.
 
 * Bioavailability names the AUC basis it is built on: the `f` parameter is
   renamed `f.obs` (AUCinf,obs-based), joined by the new variants `f.pred`,
-  `f.last`, `f.int.last`, and `f.int.all`, matching how the `clr.*` family is
-  named.  An interval specification requesting the old name `f` gets an error
-  pointing at `f.obs` (#76).
+  `f.last`, `f.int.last`, `f.int.all`, `f.int.obs`, and `f.int.pred`, matching
+  how the `clr.*` family is named.  An interval specification requesting the
+  old name `f` gets an error pointing at `f.obs` (#76).
 
 * `add.interval.col()` accepts `pknca_ref()` in `formalsmap` to declare an
   argument that comes from the reference interval rather than the current one.

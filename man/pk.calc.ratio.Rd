@@ -22,6 +22,5 @@ Calculate the ratio of a parameter between two intervals
 pk.calc.ratio(test = 10, reference = 20)
 }
 \seealso{
-\code{\link[=interval_add_secondary]{interval_add_secondary()}}, \code{\link[=interval_add_accumulation_ratio]{interval_add_accumulation_ratio()}},
-\code{\link[=interval_add_metabolite_ratio]{interval_add_metabolite_ratio()}}
+\code{\link[=interval_add_secondary]{interval_add_secondary()}}
 }

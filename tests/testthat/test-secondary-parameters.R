@@ -59,6 +59,7 @@ test_that("declaring pknca_ref() arguments does not change the secondary set", {
     sort(tbl$parameter[tbl$secondary]),
     sort(c(
       "f.obs", "f.pred", "f.last", "f.int.last", "f.int.all",
+      "f.int.obs", "f.int.pred",
       "clr.last", "clr.obs", "clr.pred",
       "clr.last.dn", "clr.obs.dn", "clr.pred.dn",
       "ratio.cmax", "ratio.auclast", "ratio.aucinf.obs", "ratio.aucinf.pred",
@@ -681,7 +682,7 @@ new_secondary_params <-
       "ratio.",
       c("cmax", "auclast", "aucinf.obs", "aucinf.pred", "aucint.last", "aucint.all")
     ),
-    "f.pred", "f.last", "f.int.last", "f.int.all"
+    "f.pred", "f.last", "f.int.last", "f.int.all", "f.int.obs", "f.int.pred"
   )
 
 # 4.4.1: the ratio calculation itself
@@ -767,16 +768,6 @@ test_that("interval_add_secondary() creates the reference interval it needs", {
     PKNCAdata(o_conc_sec, intervals = iv_created, options = list(auc.method = "linear"))
   d_res <- as.data.frame(pk.nca(o_data_created))
   expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/144)
-  # The renal clearance wrapper is the same call with the parameter filled in
-  expect_message(
-    iv_wrapped <-
-      interval_add_renal_clearance(
-        data.frame(PCSPEC = "urine", start = 0, end = 24, ae = TRUE),
-        reference = data.frame(PCSPEC = "plasma"), param = "clr.last"
-      ),
-    class = "pknca_message_secondary_created_interval"
-  )
-  expect_equal(iv_wrapped, iv_created)
 })
 
 # Each interval keeps its own reference, so a created reference follows the
@@ -966,7 +957,7 @@ test_that("interval_add_secondary() generates ids matching the existing class", 
 })
 
 # 4.4.6: accumulation ratio across two dosing intervals
-test_that("interval_add_accumulation_ratio() links the later interval to the first", {
+test_that("an accumulation ratio links the later interval to the first", {
   d_conc_acc <-
     data.frame(
       subject = 1,
@@ -977,9 +968,10 @@ test_that("interval_add_accumulation_ratio() links the later interval to the fir
   o_conc_acc <- PKNCAconc(d_conc_acc, conc~time|subject)
   o_dose_acc <- PKNCAdose(d_dose_acc, dose~time|subject)
   iv_acc <-
-    interval_add_accumulation_ratio(
+    interval_add_secondary(
       data.frame(start = c(0, 24), end = c(24, 48), aucint.last = TRUE),
-      ref_start = 0, ref_end = 24
+      param = "ratio.aucint.last",
+      reference = data.frame(start = 0, end = 24)
     )
   expect_equal(iv_acc$interval_id, c("ref1", NA))
   expect_equal(iv_acc$ratio.aucint.last, c(FALSE, TRUE))
@@ -1004,7 +996,7 @@ test_that("interval_add_accumulation_ratio() links the later interval to the fir
 })
 
 # 4.4.7: metabolite ratio across an analyte group
-test_that("interval_add_metabolite_ratio() links a metabolite to its parent", {
+test_that("a metabolite ratio links a metabolite to its parent", {
   d_conc_met <-
     data.frame(
       subject = 1,
@@ -1014,10 +1006,11 @@ test_that("interval_add_metabolite_ratio() links a metabolite to its parent", {
     )
   o_conc_met <- PKNCAconc(d_conc_met, conc~time|Analyte+subject)
   iv_met <-
-    interval_add_metabolite_ratio(
+    interval_add_secondary(
       data.frame(
         Analyte = c("parent", "metabolite"), start = 0, end = Inf, aucinf.obs = TRUE
       ),
+      param = "ratio.aucinf.obs",
       reference = data.frame(Analyte = "parent")
     )
   expect_equal(iv_met$interval_id, c("ref1", NA))
@@ -1085,7 +1078,8 @@ test_that("the bioavailability basis variants use their own AUC", {
   basis_of <-
     c(
       f.last = "auclast", f.pred = "aucinf.pred",
-      f.int.last = "aucint.last", f.int.all = "aucint.all"
+      f.int.last = "aucint.last", f.int.all = "aucint.all",
+      f.int.obs = "aucint.inf.obs", f.int.pred = "aucint.inf.pred"
     )
   iv_basis <- data.frame(treatment = c("ref", "test"), start = 0, end = Inf, totdose = TRUE)
   iv_basis[unname(basis_of)] <- TRUE
@@ -1218,8 +1212,8 @@ test_that("a created reference interval spans the collections' durations", {
     PKNCAdata(o_conc_span, intervals = iv_span, options = list(auc.method = "linear"))
   expect_message(
     o_data_linked <-
-      interval_add_renal_clearance(
-        o_data_span, reference = data.frame(PCSPEC = "plasma"), param = "clr.last"
+      interval_add_secondary(
+        o_data_span, param = "clr.last", reference = data.frame(PCSPEC = "plasma")
       ),
     class = "pknca_message_secondary_created_interval"
   )
@@ -1241,8 +1235,8 @@ test_that("a created reference interval spans the collections' durations", {
   # copies the test interval's times unchanged
   iv_df <-
     suppressMessages(
-      interval_add_renal_clearance(
-        iv_span, reference = data.frame(PCSPEC = "plasma"), param = "clr.last"
+      interval_add_secondary(
+        iv_span, param = "clr.last", reference = data.frame(PCSPEC = "plasma")
       )
     )
   expect_equal(iv_df$end[iv_df$PCSPEC %in% "plasma"], 24)
@@ -1250,9 +1244,9 @@ test_that("a created reference interval spans the collections' durations", {
   # An explicit `end` in `reference` overrides the extension
   o_data_explicit <-
     suppressMessages(
-      interval_add_renal_clearance(
-        o_data_span,
-        reference = data.frame(PCSPEC = "plasma", end = 48), param = "clr.last"
+      interval_add_secondary(
+        o_data_span, param = "clr.last",
+        reference = data.frame(PCSPEC = "plasma", end = 48)
       )
     )
   expect_equal(
@@ -1278,8 +1272,8 @@ test_that("collection-spanning references link to the intervals they cover", {
     PKNCAdata(o_conc_two, intervals = iv_two, options = list(auc.method = "linear"))
   o_data_linked <-
     suppressMessages(
-      interval_add_renal_clearance(
-        o_data_two, reference = data.frame(PCSPEC = "plasma"), param = "clr.last"
+      interval_add_secondary(
+        o_data_two, param = "clr.last", reference = data.frame(PCSPEC = "plasma")
       )
     )
   linked <- o_data_linked$intervals
@@ -1292,6 +1286,43 @@ test_that("collection-spanning references link to the intervals they cover", {
     plasma_rows$interval_id[order(plasma_rows$start)]
   )
   expect_no_error(pk.nca(o_data_linked))
+})
+
+# Generating an identifier on factor linkage columns appends a level, and
+# every linkage column ends up sharing the grown level set with its existing
+# values untouched
+test_that("generating a factor identifier keeps every linkage column comparable", {
+  iv_factor <- data.frame(
+    PCSPEC = c("plasma", "urine"),
+    start = 0, end = 24,
+    interval_id = factor(c("plasma024", NA), levels = "plasma024"),
+    auclast = c(TRUE, FALSE),
+    ae = c(FALSE, TRUE),
+    clr.last = c(FALSE, TRUE),
+    clr.last_ref = factor(c(NA, "plasma024"), levels = "plasma024")
+  )
+  iv_grown <-
+    suppressMessages(
+      interval_add_secondary(
+        iv_factor, param = "ratio.cmax", reference = data.frame(PCSPEC = "serum")
+      )
+    )
+  expect_identical(levels(iv_grown$interval_id), c("plasma024", "ref1"))
+  expect_identical(levels(iv_grown$clr.last_ref), c("plasma024", "ref1"))
+  expect_identical(levels(iv_grown$ratio.cmax_ref), c("plasma024", "ref1"))
+  expect_identical(
+    as.character(iv_grown$clr.last_ref[iv_grown$PCSPEC %in% "urine"]),
+    "plasma024"
+  )
+  expect_identical(
+    as.character(iv_grown$interval_id[iv_grown$PCSPEC %in% "serum"]),
+    "ref1"
+  )
+  expect_identical(
+    unique(as.character(iv_grown$ratio.cmax_ref[iv_grown$PCSPEC %in% c("plasma", "urine")])),
+    "ref1"
+  )
+  expect_no_error(check.interval.specification(iv_grown))
 })
 
 # 20: the extracted exclusion combiner keeps the documented precedence

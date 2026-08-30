@@ -950,6 +950,38 @@ add.interval.col("f.int.all",
                  formula="$F = \\frac{AUC_{int,all,2} / Dose_2}{AUC_{int,all,1} / Dose_1}$",
                  selection = list(secondary = TRUE))
 
+add.interval.col("f.int.obs",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUCint,inf,obs)",
+                 desc="Bioavailability from AUCint,inf,obs",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("aucint.inf.obs"),
+                                 dose2="totdose",
+                                 auc2="aucint.inf.obs"),
+                 depends=c("totdose", "aucint.inf.obs"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{int,\\infty,obs,2} / Dose_2}{AUC_{int,\\infty,obs,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("f.int.pred",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUCint,inf,pred)",
+                 desc="Bioavailability from AUCint,inf,pred",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("aucint.inf.pred"),
+                                 dose2="totdose",
+                                 auc2="aucint.inf.pred"),
+                 depends=c("totdose", "aucint.inf.pred"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{int,\\infty,pred,2} / Dose_2}{AUC_{int,\\infty,pred,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+
 
 #' Calculate the mean residence time (MRT) for single-dose data or linear
 #' multiple-dose data.
@@ -2165,12 +2197,12 @@ PKNCA.set.summary(
 )
 
 #===============================================================================
-# RATIO PARAMETERS   - count: 6
+# RATIO PARAMETERS
 #===============================================================================
 PKNCA.set.summary(
   name = c(
     "ptr", "f.obs",
-    "f.pred", "f.last", "f.int.last", "f.int.all"
+    "f.pred", "f.last", "f.int.last", "f.int.all", "f.int.obs", "f.int.pred"
   ),
   description = "geometric mean and geometric coefficient of variation",
   point = business.geomean,
