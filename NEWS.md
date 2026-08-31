@@ -89,7 +89,9 @@ the dosing including dose amount and route.
   reported in `ng/mL` and `mg/L`) the raw quotient is standardized to a
   `PPSTRESU` of `"fraction"` through `PPSTRES`, and where they are not (a
   bioavailability between an `mg` dose and a `mg/kg` dose) the composite units
-  stand and say so (#76).
+  stand and say so.  A per-group analysis with such a quotient therefore gains
+  `PPSTRES` and `PPSTRESU` result columns, which equal `PPORRES` and `PPORRESU`
+  for every other parameter (#76).
 
 * A new vignette, "Secondary Parameters"
   (`vignette("v09-secondary-parameters")`), works through the parameters that
