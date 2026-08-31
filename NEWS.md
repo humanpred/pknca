@@ -87,8 +87,17 @@ the dosing including dose amount and route.
   `pknca_warning_secondary_units` warning and a number in units that did not
   describe it.  That warning now means the units are *not* convertible (`IU/mL`
   against `mg/L`, or units of different dimensions), and the result is then `NA`
-  with the reason in the `exclude` column rather than a misdescribed number
-  (#76).
+  with the reason in the `exclude` column rather than a number in units that do
+  not describe it (#76).
+
+* A new vignette, "Secondary Parameters"
+  (`vignette("v09-secondary-parameters")`), works through the parameters that
+  need two profiles:  linking intervals by hand, letting PKNCA derive the
+  reference, steering it with `group_ref`, writing the linkage with
+  `interval_add_secondary()`, bioavailability and its AUC bases, how exclusions
+  and differing units are handled, and what is not yet supported.
+  "Writing PKNCA Parameter Functions" gains a section on registering a
+  parameter that needs another interval (#76).
 
 * Bug fix: requesting `clr.last`, `clr.obs`, or `clr.pred` without its AUC (and
   without a reference interval) silently divided by zero and gave `Inf`.  The

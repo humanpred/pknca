@@ -1617,6 +1617,63 @@ Tests (extend `test-secondary-parameters.R`):
 6. Post the Appendix A text as a comment on issue 76 (maintainer action —
    the `gh` credential in this environment is read-only).
 
+### 6.3 As built (PR 4)
+
+PR 4 landed with these differences from the section-6 text above; trust the
+code over the sketches:
+
+* **The exclusion reason and the warning say "this interval"**, not "the home
+  group", following the naming decision of section 5.9.  The reason is
+  `"Units of '<target>' differ between the reference ('<u_ref>') and this
+  interval ('<u_own>') and are not convertible"`.
+* **The fast path is tighter than "the units table has no group columns"**:
+  reconciliation is skipped unless the units table has a group column that the
+  reference *overrides*.  The reference group differs from the requesting
+  interval's own group only in the override columns, so a units table
+  stratified by anything else gives both sides the same row and has nothing to
+  reconcile either.
+* **A units gap is not a linkage failure.**  It gives `NA` with its reason and
+  its own `pknca_warning_secondary_units`, and is deliberately kept out of the
+  `pknca_warning_secondary_auto_reference` count, which is about references
+  that could not be found.  `pk_nca_secondary()` therefore carries two reason
+  variables into one `NA` arm rather than reusing `failed_reason`.
+* `pknca_units_conversion_factor(from, to)` is the extracted
+  `units::set_units()` machinery, kept fail-loud because a `conversions`
+  argument is user-declared and a silent `NA` there would become a conversion
+  factor of 1.  `pknca_unit_reconcile_factor()` wraps it: identical units give
+  1 without consulting the `units` package at all, and anything the package
+  cannot do (a unit outside udunits, two units of different dimensions, a
+  package that is not installed) gives `NA_real_`.
+* Conversion factors are memoized per `<param>|<target>|<u_ref>|<u_own>` key
+  across the whole pass, alongside the set of keys already warned about, so a
+  fixture with many instances converts once and warns once.
+* **The `units`-unavailable branch is `# nocov`.**  The suite has no mocking
+  pattern for optional packages (only `skip_if_not_installed()`), and the
+  package already treats the same `requireNamespace("units")` branch in
+  `pknca_units_table()` that way.
+* **`PPSTRES` needed no change**, and a test pins why:  the reference-side
+  value arrives in the requesting group's `PPORRESU`, so the requesting group's
+  `conversion_factor` — the one the standard join applies — is coherent with
+  it.  The two conversions compose.
+* **The vignette is `vignettes/v09-secondary-parameters.Rmd`.**  Section 6.2's
+  suggested `v22` is taken (`v22-time-to-steady-state.Rmd`); `v09` is the first
+  free number and follows the core series the topic belongs with (`v03`
+  interval selection, `v07` unit conversion, `v08` imputation).
+* The vignette defines a small `kable_intervals()` helper, because
+  `check.interval.specification()` fills in every registered parameter and an
+  interval specification printed whole is a few hundred columns wide.
+  `interval_longer()` would say it better but is not exported.
+* The vignette's bioavailability example uses lower test-treatment
+  concentrations than the section 3.14 test fixture, so that `f.obs` is below
+  1;  a worked example showing 113% bioavailability distracts from the point.
+  Renal clearance keeps the fixture's numbers, which the text derives by hand.
+* Section 6.2's "wrappers (accumulation ratio, metabolite ratio)" are spelled
+  through `interval_add_secondary()` (section 4.6 removed the wrappers):  the
+  accumulation ratio as a `reference` of `start`/`end`, the metabolite ratio
+  through `group_ref`.
+* `_pkgdown.yml` still lists no vignettes or reference index, so it is
+  unchanged as section 6.2 item 3 anticipated.
+
 ---
 
 ## 7. Definition of done (every PR)
