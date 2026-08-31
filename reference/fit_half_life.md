@@ -23,9 +23,13 @@ fit_half_life(data, tlast)
 
 ## Value
 
-A data.frame with one row and columns named "r.squared",
-"adj.r.squared", "PROB", "lambda.z", "clast.pred", "lambda.z.n.points",
-"half.life", "span.ratio"
+A named list with one value each for "r.squared", "adj.r.squared",
+"lambda.z.corrxy", "lambda.z", "clast.pred", "lambda.z.time.first",
+"lambda.z.time.last", "lambda.z.n.points", "half.life", and
+"span.ratio".
+[`pk.calc.half.life()`](https://humanpred.github.io/pknca/reference/pk.calc.half.life.md)
+fits one candidate per span of terminal points and builds a data.frame
+from the candidate it selects.
 
 ## See also
 

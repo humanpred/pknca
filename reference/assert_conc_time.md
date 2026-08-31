@@ -47,7 +47,7 @@ assert_conc_time(conc, time, any_missing_conc = TRUE, sorted_time = TRUE)
 
 `time` or give an informative error
 
-A data.frame with columns named "conc" and "time" or an informative
+`NULL`, invisibly, when the data are valid; otherwise an informative
 error
 
 ## Details

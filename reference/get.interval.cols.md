@@ -192,6 +192,22 @@ get.interval.cols()
 #> $auclast$requires_conc_dur
 #> [1] FALSE
 #> 
+#> $auclast$arg_spec
+#> $auclast$arg_spec$arglist
+#> $auclast$arg_spec$arglist$conc
+#> [1] "conc"
+#> 
+#> $auclast$arg_spec$arglist$time
+#> [1] "time"
+#> 
+#> $auclast$arg_spec$arglist$options
+#> [1] "options"
+#> 
+#> 
+#> $auclast$arg_spec$required
+#> [1] "conc" "time"
+#> 
+#> 
 #> 
 #> $aucall
 #> $aucall$FUN
@@ -1062,6 +1078,19 @@ get.interval.cols()
 #> $cmax$requires_conc_dur
 #> [1] FALSE
 #> 
+#> $cmax$arg_spec
+#> $cmax$arg_spec$arglist
+#> $cmax$arg_spec$arglist$conc
+#> [1] "conc"
+#> 
+#> $cmax$arg_spec$arglist$check
+#> [1] "check"
+#> 
+#> 
+#> $cmax$arg_spec$required
+#> [1] "conc"
+#> 
+#> 
 #> 
 #> $cmin
 #> $cmin$FUN
@@ -1185,6 +1214,28 @@ get.interval.cols()
 #> 
 #> $tmax$requires_conc_dur
 #> [1] FALSE
+#> 
+#> $tmax$arg_spec
+#> $tmax$arg_spec$arglist
+#> $tmax$arg_spec$arglist$conc
+#> [1] "conc"
+#> 
+#> $tmax$arg_spec$arglist$time
+#> [1] "time"
+#> 
+#> $tmax$arg_spec$arglist$options
+#> [1] "options"
+#> 
+#> $tmax$arg_spec$arglist$first.tmax
+#> [1] "first.tmax"
+#> 
+#> $tmax$arg_spec$arglist$check
+#> [1] "check"
+#> 
+#> 
+#> $tmax$arg_spec$required
+#> [1] "conc" "time"
+#> 
 #> 
 #> 
 #> $tmin
@@ -1310,6 +1361,22 @@ get.interval.cols()
 #> $tlast$requires_conc_dur
 #> [1] FALSE
 #> 
+#> $tlast$arg_spec
+#> $tlast$arg_spec$arglist
+#> $tlast$arg_spec$arglist$conc
+#> [1] "conc"
+#> 
+#> $tlast$arg_spec$arglist$time
+#> [1] "time"
+#> 
+#> $tlast$arg_spec$arglist$check
+#> [1] "check"
+#> 
+#> 
+#> $tlast$arg_spec$required
+#> [1] "conc" "time"
+#> 
+#> 
 #> 
 #> $tfirst
 #> $tfirst$FUN
@@ -1433,6 +1500,22 @@ get.interval.cols()
 #> 
 #> $clast.obs$requires_conc_dur
 #> [1] FALSE
+#> 
+#> $clast.obs$arg_spec
+#> $clast.obs$arg_spec$arglist
+#> $clast.obs$arg_spec$arglist$conc
+#> [1] "conc"
+#> 
+#> $clast.obs$arg_spec$arglist$time
+#> [1] "time"
+#> 
+#> $clast.obs$arg_spec$arglist$check
+#> [1] "check"
+#> 
+#> 
+#> $clast.obs$arg_spec$required
+#> [1] "conc" "time"
+#> 
 #> 
 #> 
 #> $cl.last
@@ -5712,6 +5795,70 @@ get.interval.cols()
 #> $half.life$requires_conc_dur
 #> [1] FALSE
 #> 
+#> $half.life$arg_spec
+#> $half.life$arg_spec$arglist
+#> $half.life$arg_spec$arglist$conc
+#> [1] "conc"
+#> 
+#> $half.life$arg_spec$arglist$time
+#> [1] "time"
+#> 
+#> $half.life$arg_spec$arglist$tmax
+#> [1] "tmax"
+#> 
+#> $half.life$arg_spec$arglist$tlast
+#> [1] "tlast"
+#> 
+#> $half.life$arg_spec$arglist$time.dose
+#> [1] "time.dose"
+#> 
+#> $half.life$arg_spec$arglist$duration.dose
+#> [1] "duration.dose"
+#> 
+#> $half.life$arg_spec$arglist$lloq
+#> [1] "lloq"
+#> 
+#> $half.life$arg_spec$arglist$hl_method
+#> [1] "hl_method"
+#> 
+#> $half.life$arg_spec$arglist$manually.selected.points
+#> [1] "manually.selected.points"
+#> 
+#> $half.life$arg_spec$arglist$options
+#> [1] "options"
+#> 
+#> $half.life$arg_spec$arglist$min.hl.points
+#> [1] "min.hl.points"
+#> 
+#> $half.life$arg_spec$arglist$adj.r.squared.factor
+#> [1] "adj.r.squared.factor"
+#> 
+#> $half.life$arg_spec$arglist$tobit_n_points_penalty
+#> [1] "tobit_n_points_penalty"
+#> 
+#> $half.life$arg_spec$arglist$tobit_optim_control
+#> [1] "tobit_optim_control"
+#> 
+#> $half.life$arg_spec$arglist$conc.blq
+#> [1] "conc.blq"
+#> 
+#> $half.life$arg_spec$arglist$conc.na
+#> [1] "conc.na"
+#> 
+#> $half.life$arg_spec$arglist$first.tmax
+#> [1] "first.tmax"
+#> 
+#> $half.life$arg_spec$arglist$allow.tmax.in.half.life
+#> [1] "allow.tmax.in.half.life"
+#> 
+#> $half.life$arg_spec$arglist$check
+#> [1] "check"
+#> 
+#> 
+#> $half.life$arg_spec$required
+#> [1] "conc"  "time"  "tmax"  "tlast"
+#> 
+#> 
 #> 
 #> $r.squared
 #> $r.squared$FUN
@@ -8585,6 +8732,28 @@ get.interval.cols()
 #> $aucinf.obs$requires_conc_dur
 #> [1] FALSE
 #> 
+#> $aucinf.obs$arg_spec
+#> $aucinf.obs$arg_spec$arglist
+#> $aucinf.obs$arg_spec$arglist$conc
+#> [1] "conc"
+#> 
+#> $aucinf.obs$arg_spec$arglist$time
+#> [1] "time"
+#> 
+#> $aucinf.obs$arg_spec$arglist$clast.obs
+#> [1] "clast.obs"
+#> 
+#> $aucinf.obs$arg_spec$arglist$options
+#> [1] "options"
+#> 
+#> $aucinf.obs$arg_spec$arglist$lambda.z
+#> [1] "lambda.z"
+#> 
+#> 
+#> $aucinf.obs$arg_spec$required
+#> [1] "conc"      "time"      "clast.obs" "lambda.z" 
+#> 
+#> 
 #> 
 #> $aucinf.pred
 #> $aucinf.pred$FUN
@@ -9808,6 +9977,19 @@ get.interval.cols()
 #> 
 #> $aucpext.obs$requires_conc_dur
 #> [1] FALSE
+#> 
+#> $aucpext.obs$arg_spec
+#> $aucpext.obs$arg_spec$arglist
+#> $aucpext.obs$arg_spec$arglist$auclast
+#> [1] "auclast"
+#> 
+#> $aucpext.obs$arg_spec$arglist$aucinf
+#> [1] "aucinf.obs"
+#> 
+#> 
+#> $aucpext.obs$arg_spec$required
+#> [1] "auclast" "aucinf" 
+#> 
 #> 
 #> 
 #> $aucpext.pred
