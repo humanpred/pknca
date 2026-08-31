@@ -1408,3 +1408,38 @@ test_that("an I()-wrapped formalsmap value is passed to the function as a consta
     30
   )
 })
+
+test_that("a calculation function returning names without values errors instead of recycling", {
+  fn_name <- "pknca_test_zero_row_result_"
+  assign(
+    fn_name,
+    function(conc, time) {
+      data.frame(a = numeric(0), b = numeric(0), c = numeric(0))
+    },
+    envir = .GlobalEnv
+  )
+  local_interval_cols()
+  on.exit(rm(list = fn_name, envir = .GlobalEnv), add = TRUE)
+
+  add.interval.col(
+    "pknca_test_zero_row_result_col_",
+    FUN = fn_name,
+    unit_type = "conc",
+    pretty_name = "Test: zero-row result",
+    desc = "Shape check for a zero-row result"
+  )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(data.frame(conc = c(1, 2, 3), time = c(0, 1, 2)), conc~time),
+      PKNCAdose(data.frame(dose = 1, time = 0), dose~time),
+      intervals =
+        data.frame(start = 0, end = 24, pknca_test_zero_row_result_col_ = TRUE)
+    )
+  # A zero-row data.frame gives 3 names and 0 values; padding it out would
+  # report NA results under real parameter names, so it must be an error.
+  expect_error(
+    pk.nca(o_data),
+    regexp = "returned 3 result name\\(s\\) and 0 value\\(s\\); it must return one value per name",
+    class = "pknca_error_interval_calculation"
+  )
+})

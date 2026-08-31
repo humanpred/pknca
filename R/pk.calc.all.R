@@ -714,6 +714,20 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       # column of it.  The method and the exclusion belong to the calculation,
       # so they apply to every row it produced.
       n_result <- max(length(tmp_testcd), length(tmp_result))
+      # The names and the values must pair up: equal lengths, or a scalar on
+      # either side that applies to all of the other.  Anything else (an empty
+      # or ragged return) would recycle into misassigned names.
+      if (n_result == 0 ||
+          !(length(tmp_testcd) %in% c(1L, n_result)) ||
+          !(length(tmp_result) %in% c(1L, n_result))) {
+        rlang::abort(
+          sprintf(
+            "The calculation function '%s' returned %g result name(s) and %g value(s); it must return one value per name",
+            all_intervals[[n]]$FUN, length(tmp_testcd), length(tmp_result)
+          ),
+          class = "pknca_error_calc_result_shape"
+        )
+      }
       row_testcd <- rep_len(tmp_testcd, n_result)
       row_value <- rep_len(tmp_result, n_result)
       row_exclude <- rep(exclude_reason, n_result)
