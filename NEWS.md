@@ -78,16 +78,18 @@ the dosing including dose amount and route.
   [pk.nca()].  On a `PKNCAdata` object it uses that object's `group_ref` when
   one is set (#76).
 
-* When units are given per group and the two profiles of a secondary parameter
-  report theirs differently, the reference value is converted into the units of
-  the interval calculating it before the calculation, so that the units assigned
-  to the result describe it.  A plasma AUC in `hr*ng/mL` becomes `hr*mg/L` to
-  divide a urine amount in `mg` into a renal clearance of `mg/(hr*mg/L)`.  This
-  is a behavior change:  such a difference previously gave a
-  `pknca_warning_secondary_units` warning and a number in units that did not
-  describe it.  That warning now means the units are *not* convertible (`IU/mL`
-  against `mg/L`, or units of different dimensions), and the result is then `NA`
-  with the reason in the `exclude` column instead (#76).
+* The units of a secondary parameter are composed from the units of the values
+  it was actually calculated from.  A renal clearance dividing a urine amount in
+  `mg` by a plasma AUC in `hr*ng/mL` is reported in `mg/(hr*ng/mL)`, not in the
+  urine group's own `mg/(hr*mg/L)`.  The composition happens in the units table,
+  which gains `<group column>_ref` columns and one row per pair of groups, and
+  results gain the same columns naming the group each secondary value took its
+  reference from.  No value is ever converted or made `NA` for unit reasons:
+  where the two sides of a quotient are convertible (a `ratio.*` of two analytes
+  reported in `ng/mL` and `mg/L`) the raw quotient is standardized to a
+  `PPSTRESU` of `"fraction"` through `PPSTRES`, and where they are not (a
+  bioavailability between an `mg` dose and a `mg/kg` dose) the composite units
+  stand and say so (#76).
 
 * A new vignette, "Secondary Parameters"
   (`vignette("v09-secondary-parameters")`), works through the parameters that

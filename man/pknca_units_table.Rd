@@ -49,6 +49,28 @@ This data.frame is typically used for the \code{units} argument for \code{\link[
 If a unit is not given, then all of the units derived from that unit will be
 \code{NA}.
 }
+\section{Secondary parameters and reference groups}{
+
+
+A secondary parameter (renal clearance, bioavailability, a ratio; see
+\code{vignette("v09-secondary-parameters")}) takes one value from the interval
+requesting it and another from a reference interval, so its units are a
+quotient of the two groups' units.  When the \code{PKNCAdata} method finds more
+than one set of units among the groups, the table therefore gains a
+\verb{<group column>_ref} column for each of its group columns and, for each
+secondary parameter, one row per pair of (own group, reference group) with
+"PPORRESU" composed from the correct side of each.  Rows describing a
+result that names no reference -- every primary parameter, and a secondary
+parameter calculated without a reference -- hold \code{NA} in the \verb{_ref}
+columns, and results carrying no reference group join to them.  A quotient
+whose two sides are convertible into one another is dimensionless, and such
+a row also gets "PPSTRESU" of "fraction" with the "conversion_factor" that
+turns the raw quotient into that number.
+
+With one set of units for every group there is no reference side to name
+and no \verb{_ref} column is added.
+}
+
 \examples{
 pknca_units_table() # only parameters that are unitless
 pknca_units_table(

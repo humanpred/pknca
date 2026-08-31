@@ -925,75 +925,22 @@ stop_secondary_value_missing <- function(param, target, ref_id, group_values, si
   )
 }
 
-# The units assigned to `param` for one group, or NA when the units table
-# cannot answer.  Deliberately forgiving: an absent table, an absent parameter
-# row, and an ambiguous match all give NA, which reconciliation reads as "no
-# units to reconcile" rather than turning a units gap into an error.
-secondary_units_lookup <- function(units, group_values, param) {
-  if (!is.data.frame(units) || !all(c("PPTESTCD", "PPORRESU") %in% names(units))) {
-    return(NA_character_)
-  }
-  m <- units$PPTESTCD %in% param
-  for (col in intersect(names(units), names(group_values))) {
-    m <- m & (units[[col]] %in% group_values[[col]])
-  }
-  ret <- unique(units$PPORRESU[m])
-  if (length(ret) == 1) as.character(ret) else NA_character_
-}
-
-# Express every reference-side input in the units of the requesting interval's
-# own group, which are the units the result is reported in.  Group-stratified
-# units let the two sides differ (a plasma AUC in hr*ng/mL feeding a renal
-# clearance reported in mg/(hr*mg/L)), and the value must be converted before
-# the calculation for the reported units to describe it.
-#
-# Returns the converted `inputs`, the reasons the instance cannot be calculated
-# (empty when it can), the updated set of unit pairs already warned about, and
-# the updated conversion factors already looked up.
-#
-# `seen` is the set of "<param>|<target>|<u_ref>|<u_own>" keys already warned
-# about in this run, so that one non-convertible pair warns once however many
-# instances it affects.  `factors` memoizes `pknca_unit_reconcile_factor()`,
-# which is the same answer for every instance of a unit pair.
-secondary_reconcile_units <- function(units, param, ref_args, inputs, own_group, ref_group, seen, factors) {
-  reasons <- character(0)
-  for (formal in names(ref_args)) {
-    target <- ref_args[[formal]]
-    u_own <- secondary_units_lookup(units, own_group, target)
-    u_ref <- secondary_units_lookup(units, ref_group, target)
-    if (is.na(u_own) || is.na(u_ref) || identical(u_own, u_ref)) {
-      next
-    }
-    key <- paste(param, target, u_ref, u_own, sep = "|")
-    if (!(key %in% names(factors))) {
-      factors[[key]] <- pknca_unit_reconcile_factor(from = u_ref, to = u_own)
-    }
-    if (is.na(factors[[key]])) {
-      # Fail loud:  a number reported in units that do not describe it is worse
-      # than no number.
-      reasons <-
-        c(
-          reasons,
-          sprintf(
-            "Units of '%s' differ between the reference ('%s') and this interval ('%s') and are not convertible",
-            target, u_ref, u_own
-          )
-        )
-      if (!(key %in% seen)) {
-        seen <- c(seen, key)
-        rlang::warn(
-          sprintf(
-            "Secondary parameter '%s': the units of '%s' differ between the reference ('%s') and the interval calculating it ('%s') and cannot be converted, so the results are NA (see the exclude column).",
-            param, target, u_ref, u_own
-          ),
-          class = "pknca_warning_secondary_units"
-        )
+# The group values a secondary result took its reference side from, as the
+# `<group column>_ref` columns of the result row.  They make the linkage
+# machine-readable (`PPANMETH` says the same thing in prose) and are what the
+# units table keys its reference-side unit strings on.
+secondary_ref_group_cols <- function(template, ref_group, result_group_cols) {
+  for (col in result_group_cols) {
+    template[[paste0(col, "_ref")]] <-
+      if (is.null(ref_group)) {
+        # No reference was found, so there is no reference group to name.  The
+        # NA keeps the column's type and joins to the reference-free units row.
+        template[[col]][NA_integer_]
+      } else {
+        ref_group[[col]]
       }
-    } else {
-      inputs[[formal]] <- inputs[[formal]] * factors[[key]]
-    }
   }
-  list(inputs = inputs, reasons = reasons, seen = seen, factors = factors)
+  template
 }
 
 # Compute deferred secondary parameters from the combined results and append
@@ -1023,14 +970,6 @@ pk_nca_secondary <- function(results, data_calc) {
       c("start", "end", "PPTESTCD", "PPORRES", "PPANMETH", "exclude", keep_cols)
     )
   override_cols <- intersect(names(current_intervals), result_group_cols)
-  # A reference-side value can only be in different units than the interval
-  # calculating it when the units table assigns units by a group column that the
-  # reference overrides; uniform units are the fast path.
-  units_stratified <-
-    is.data.frame(data_calc$units) &&
-    length(intersect(names(data_calc$units), override_cols)) > 0
-  units_seen <- character(0)
-  units_factors <- list()
   # Reasons an automatically linked parameter could not be calculated, by
   # parameter:  one warning per parameter is raised for all of them together.
   auto_reasons <- list()
@@ -1127,34 +1066,19 @@ pk_nca_secondary <- function(results, data_calc) {
           inputs[[formal]] <- found$value
           excludes <- c(excludes, found$exclude)
         }
-        units_reasons <- character(0)
-        if (units_stratified) {
-          reconciled <-
-            secondary_reconcile_units(
-              data_calc$units, p, info$ref_args, inputs, own_group, ref_group,
-              units_seen, units_factors
-            )
-          inputs <- reconciled$inputs
-          units_reasons <- reconciled$reasons
-          units_seen <- reconciled$seen
-          units_factors <- reconciled$factors
-        }
-        if (is.null(failed_reason) && length(units_reasons) == 0) {
+        if (is.null(failed_reason)) {
           value <- do.call(info$fun, inputs)
           excl <- combine_exclude_reasons(excludes, attr(value, "exclude"))
           value <- as.numeric(value)
         } else {
-          # An automatic link with a value missing, or a reference value that
-          # cannot be expressed in this interval's units, degrades to NA with the
-          # reason.  Only the first is a linkage failure to warn about below; the
-          # units gap has already warned for itself.
+          # An automatic link with a value missing degrades to NA with the
+          # reason, and is counted into the one-per-parameter warning below.
           value <- NA_real_
-          excl <- combine_exclude_reasons(c(excludes, failed_reason, units_reasons), NULL)
-          if (!is.null(failed_reason)) {
-            auto_reasons[[p]] <- c(auto_reasons[[p]], failed_reason)
-          }
+          excl <- combine_exclude_reasons(c(excludes, failed_reason), NULL)
+          auto_reasons[[p]] <- c(auto_reasons[[p]], failed_reason)
         }
         template <- secondary_template(results, own_rows, own_group, result_group_cols)
+        template <- secondary_ref_group_cols(template, ref_group, result_group_cols)
         template$PPTESTCD <- p
         template$PPORRES <- value
         template$PPANMETH <-
@@ -1184,6 +1108,7 @@ pk_nca_secondary <- function(results, data_calc) {
           secondary_template(
             results, own_rows, instances[k, , drop = FALSE], result_group_cols
           )
+        template <- secondary_ref_group_cols(template, NULL, result_group_cols)
         template$PPTESTCD <- p
         template$PPORRES <- NA_real_
         template$PPANMETH <- NA_character_
