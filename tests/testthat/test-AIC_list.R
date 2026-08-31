@@ -6,8 +6,7 @@ test_that("AIC.list", {
   result1 <- data.frame(AIC=c(as.numeric(AIC(mod1)), as.numeric(AIC(mod2))),
                         df=c(3, 4),
                         indentation=c(1, 0),
-                        isBest=c("", "Best Model"),
-                        stringsAsFactors=FALSE)
+                        isBest=c("", "Best Model"))
   expect_equal(AIC.list(d1), result1)
 
   # Check that simple names apply correctly
@@ -16,7 +15,6 @@ test_that("AIC.list", {
                         df=c(3, 4),
                         indentation=c(1, 0),
                         isBest=c("", "Best Model"),
-                        stringsAsFactors=FALSE,
                         row.names=c("A", "B"))
   expect_equal(AIC.list(d2), result2)
 
@@ -25,7 +23,6 @@ test_that("AIC.list", {
                         df=c(3, 4),
                         indentation=c(0, 0),
                         isBest=c("", "Best Model"),
-                        stringsAsFactors=FALSE,
                         row.names=c("A", "B"))
   expect_equal(AIC.list(d3), result3)
 
@@ -34,7 +31,6 @@ test_that("AIC.list", {
                         df=c(3, 4),
                         indentation=c(1, 0),
                         isBest=c("", "Best Model"),
-                        stringsAsFactors=FALSE,
                         row.names=c("C A", "B"))
   expect_equal(AIC.list(d4), result4)
 
@@ -43,7 +39,6 @@ test_that("AIC.list", {
                         df=c(3, 4, NA),
                         indentation=c(1, 0, 0),
                         isBest=c("", "Best Model", ""),
-                        stringsAsFactors=FALSE,
                         row.names=c("C A", "B", "C"))
   expect_equal(AIC.list(d5), result5)
 })

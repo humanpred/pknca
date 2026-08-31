@@ -513,8 +513,7 @@ test_that("No interval requested (e.g. for placebo)", {
       myconc, mydose,
       intervals=
         data.frame(
-          treatment="Trt 3", start=0, end=24, cmax=TRUE,
-          stringsAsFactors=FALSE
+          treatment="Trt 3", start=0, end=24, cmax=TRUE
         )
     )
   expect_warning(expect_warning(expect_warning(expect_warning(
@@ -540,8 +539,7 @@ test_that("Volume-related calculations", {
   mydose <- PKNCAdose(tmpdose, formula=dose~time|treatment+ID)
   mydata <-  PKNCAdata(myconc, mydose,
                        intervals=data.frame(treatment="Trt 1", start=0, end=24,
-                                            ae=TRUE, fe=TRUE,
-                                            stringsAsFactors=FALSE))
+                                            ae=TRUE, fe=TRUE))
   myresult <- pk.nca(mydata)
   expect_equal(as.data.frame(myresult)[["PPORRES"]], c(12, 12, 30, 30),
               info="ae and fe are correctly calculated")
@@ -550,8 +548,7 @@ test_that("Volume-related calculations", {
   mydose2 <- PKNCAdose(tmpdose2, formula=dose~time|treatment+ID)
   mydata2 <-  PKNCAdata(myconc, mydose2,
                        intervals=data.frame(treatment="Trt 1", start=0, end=24,
-                                            ae=TRUE, fe=TRUE,
-                                            stringsAsFactors=FALSE))
+                                            ae=TRUE, fe=TRUE))
   myresult2 <- pk.nca(mydata2)
   expect_equal(as.data.frame(myresult2)[["PPORRES"]], c(12, 6, 30, 15),
                info="fe respects dose")
@@ -573,13 +570,11 @@ test_that("pk.nca can calculate values with group-level data", {
   mydata_impute <-
     PKNCAdata(myconc_impute, mydose,
               intervals=data.frame(treatment="Trt 1", start=0, end=24,
-                                   aucint.last.dose=TRUE,
-                                   stringsAsFactors=FALSE))
+                                   aucint.last.dose=TRUE))
   mydata_observe <-
     PKNCAdata(myconc_observe, mydose,
               intervals=data.frame(treatment="Trt 1", start=0, end=24,
-                                   auclast=TRUE,
-                                   stringsAsFactors=FALSE))
+                                   auclast=TRUE))
   myres_impute <- pk.nca(mydata_impute)
   myres_observe <- pk.nca(mydata_observe)
   expect_equal(as.data.frame(myres_impute)$PPORRES,

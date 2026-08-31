@@ -22,7 +22,8 @@ PKNCAdata(data.conc, data.dose, ...)
   impute = NA_character_,
   intervals,
   units,
-  options = list()
+  options = list(),
+  group_ref = NULL
 )
 }
 \arguments{
@@ -55,6 +56,11 @@ automatically chosen by \code{\link[=choose.auc.intervals]{choose.auc.intervals(
 
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
+
+\item{group_ref}{The reference profiles for automatically-linked secondary
+parameters, as a data.frame of group values, optionally
+parameter-specific (see Details).  \code{NULL} (the default) derives the
+reference from the data.}
 }
 \value{
 A PKNCAdata object with concentration, dose, interval, and
@@ -68,6 +74,35 @@ intervals for PK calculations.
 \details{
 If \code{data.dose} is not given or is \code{NA}, then the \code{intervals} must be
 given.  At least one of \code{data.dose} and \code{intervals} must be given.
+
+A secondary parameter is calculated from a result in another interval, and
+the interval specification links the two with an \code{interval_id} column and a
+\verb{<parameter>_ref} pointer (see \code{\link[=interval_add_secondary]{interval_add_secondary()}}).  Where a request
+has no pointer and could not otherwise be calculated, \code{\link[=pk.nca]{pk.nca()}} derives the
+reference profile from the data:  a parameter measured on an interval
+collection whose inputs are spot samples (renal clearance) takes the nearest
+profile with no collection volume, and \code{group_ref} restricts -- or, for
+anything else, supplies -- the profiles that may be used.  The derived
+reference interval is created for the calculation only and is not added to
+the intervals in the result.  When more than one profile is equally close,
+the affected results are \code{NA} with the reason in the \code{exclude} column and a
+\code{pknca_warning_secondary_auto_reference} warning.
+
+\code{group_ref} takes three forms.  A data.frame of group values applies to
+every secondary parameter:  its columns must be group columns of the
+concentration data, every column must match (and) for at least one of its
+rows (or), and every value must appear in the data -- for example, with
+groups crossing \code{TRTP}, \code{PCTEST}, and \code{PCSPEC},
+\code{group_ref = data.frame(PCSPEC = "PLASMA")} directs renal-clearance
+references to the plasma profiles and
+\code{group_ref = data.frame(PCTEST = "midazolam")} directs metabolite ratios
+to the parent analyte.  The same data.frame with a \code{parameter} column
+applies each row only to the secondary parameter it names, and the columns
+a parameter's rows leave \code{NA} do not apply to it, so one table can steer
+renal clearance by \code{PCSPEC} and a metabolite ratio by \code{PCTEST}:
+\code{group_ref = data.frame(parameter = c("clr.obs", "ratio.aucinf.obs"), PCSPEC = c("PLASMA", NA), PCTEST = c(NA, "midazolam"))}.  A named list of
+data.frames, one per parameter, says the same thing:
+\code{group_ref = list(clr.obs = data.frame(PCSPEC = "PLASMA"), ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))}.
 }
 \seealso{
 \code{\link[=choose.auc.intervals]{choose.auc.intervals()}}, \code{\link[=pk.nca]{pk.nca()}}, \code{\link[=pknca_units_table]{pknca_units_table()}}

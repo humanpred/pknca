@@ -13,8 +13,7 @@ make_be_df <- function(nsub = 24, seed = 123, test_effect = 0, endpoint = "aucla
     data.frame(
       subject = i, sequence = sequence[i], period = c(1, 2), form = forms,
       PPTESTCD = endpoint, PPORRES = exp(mu + stats::rnorm(2, sd = 0.1)),
-      PPORRESU = if (endpoint == "cmax") "ng/mL" else "h*ng/mL",
-      stringsAsFactors = FALSE
+      PPORRESU = if (endpoint == "cmax") "ng/mL" else "h*ng/mL"
     )
   }))
 }
@@ -41,7 +40,7 @@ simulate_be_conc <- function(nsub = 8, seed = 42) {
       rows[[length(rows) + 1]] <-
         data.frame(
           subject = i, sequence = sequence[i], period = p, form = form,
-          time = times, conc = conc, stringsAsFactors = FALSE
+          time = times, conc = conc
         )
     }
   }

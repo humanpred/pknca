@@ -22,12 +22,47 @@
 #'   automatically chosen by [choose.auc.intervals()]. (see details)
 #' @param units A data.frame of unit assignments and conversions as created by
 #'   [pknca_units_table()]
+#' @param group_ref The reference profiles for automatically-linked secondary
+#'   parameters, as a data.frame of group values, optionally
+#'   parameter-specific (see Details).  `NULL` (the default) derives the
+#'   reference from the data.
 #' @param ... arguments passed to `PKNCAdata.default`
 #' @returns A PKNCAdata object with concentration, dose, interval, and
 #'   calculation options stored (note that PKNCAdata objects can also have
 #'   results after a NCA calculations are done to the data).
 #' @details If `data.dose` is not given or is `NA`, then the `intervals` must be
 #'   given.  At least one of `data.dose` and `intervals` must be given.
+#'
+#'   A secondary parameter is calculated from a result in another interval, and
+#'   the interval specification links the two with an `interval_id` column and a
+#'   `<parameter>_ref` pointer (see [interval_add_secondary()]).  Where a request
+#'   has no pointer and could not otherwise be calculated, [pk.nca()] derives the
+#'   reference profile from the data:  a parameter measured on an interval
+#'   collection whose inputs are spot samples (renal clearance) takes the nearest
+#'   profile with no collection volume, and `group_ref` restricts -- or, for
+#'   anything else, supplies -- the profiles that may be used.  The derived
+#'   reference interval is created for the calculation only and is not added to
+#'   the intervals in the result.  When more than one profile is equally close,
+#'   the affected results are `NA` with the reason in the `exclude` column and a
+#'   `pknca_warning_secondary_auto_reference` warning.
+#'
+#'   `group_ref` takes three forms.  A data.frame of group values applies to
+#'   every secondary parameter:  its columns must be group columns of the
+#'   concentration data, every column must match (and) for at least one of its
+#'   rows (or), and every value must appear in the data -- for example, with
+#'   groups crossing `TRTP`, `PCTEST`, and `PCSPEC`,
+#'   `group_ref = data.frame(PCSPEC = "PLASMA")` directs renal-clearance
+#'   references to the plasma profiles and
+#'   `group_ref = data.frame(PCTEST = "midazolam")` directs metabolite ratios
+#'   to the parent analyte.  The same data.frame with a `parameter` column
+#'   applies each row only to the secondary parameter it names, and the columns
+#'   a parameter's rows leave `NA` do not apply to it, so one table can steer
+#'   renal clearance by `PCSPEC` and a metabolite ratio by `PCTEST`:
+#'   `group_ref = data.frame(parameter = c("clr.obs", "ratio.aucinf.obs"),
+#'   PCSPEC = c("PLASMA", NA), PCTEST = c(NA, "midazolam"))`.  A named list of
+#'   data.frames, one per parameter, says the same thing:
+#'   `group_ref = list(clr.obs = data.frame(PCSPEC = "PLASMA"),
+#'   ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))`.
 #' @family PKNCA objects
 #' @seealso [choose.auc.intervals()], [pk.nca()], [pknca_units_table()]
 #' @export
@@ -54,7 +89,7 @@ PKNCAdata.PKNCAdose <- function(data.conc, data.dose, ...) {
 PKNCAdata.default <- function(data.conc, data.dose, ...,
                               formula.conc, formula.dose,
                               impute = NA_character_,
-                              intervals, units, options=list()) {
+                              intervals, units, options=list(), group_ref = NULL) {
   if (length(list(...))) {
     rlang::abort(
       "Unknown argument provided to PKNCAdata.  All arguments other than `data.conc` and `data.dose` must be named.",
@@ -104,6 +139,10 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
     }
   }
   ret$options <- options
+
+  # Which profiles the automatic reference finder may use for secondary
+  # parameters
+  ret$group_ref <- assert_group_ref(group_ref, ret$conc)
 
   # Assign the class and give it all back to the user.
   class(ret) <- c("PKNCAdata", class(ret))
@@ -239,6 +278,41 @@ print.PKNCAdata <- function(x, ...) {
   }
   if (!is.null(x$impute)) {
     cat(sprintf("With imputation: %s\n", x$impute))
+  }
+  if (!is.null(x$group_ref)) {
+    group_ref_text <-
+      if (is.data.frame(x$group_ref) && !("parameter" %in% names(x$group_ref))) {
+        paste(name_value_text(x$group_ref), collapse = "; ")
+      } else {
+        # Parameter-specific forms print one entry per parameter, dropping the
+        # columns that do not apply to it
+        params <-
+          if (is.data.frame(x$group_ref)) {
+            unique(as.character(x$group_ref$parameter))
+          } else {
+            names(x$group_ref)
+          }
+        paste(
+          vapply(
+            X = params,
+            FUN = function(p) {
+              sprintf(
+                "%s: %s",
+                p,
+                paste(name_value_text(group_ref_for_param(x$group_ref, p)), collapse = "; ")
+              )
+            },
+            FUN.VALUE = ""
+          ),
+          collapse = "; "
+        )
+      }
+    cat(
+      sprintf(
+        "With reference profiles for secondary parameters (group_ref): %s\n",
+        group_ref_text
+      )
+    )
   }
   if (length(x$options) == 0) {
     cat("No options are set differently than default.\n")

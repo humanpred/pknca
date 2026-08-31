@@ -317,8 +317,7 @@ pknca_interval_table <- function(start, end,
     data.frame(
       start = rep(interval_starts, each = length(params)),
       end = rep(interval_ends, each = length(params)),
-      param = rep(params, times = n_intervals),
-      stringsAsFactors = FALSE
+      param = rep(params, times = n_intervals)
     )
   long$impute <- ifelse(long$param %in% excluded_from_impute, NA_character_, impute)
   long[[pknca_interval_row_col]] <- rep(seq_len(n_intervals), each = length(params))

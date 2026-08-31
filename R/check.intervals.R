@@ -32,7 +32,7 @@ check.interval.specification <- function(x) {
     # Just a warning and let as.data.frame make it an error if it can't be
     # coerced.
     rlang::warn("Interval specification must be a data.frame", class = "pknca_warning_interval_not_df")
-    x <- as.data.frame(x, stringsAsFactors=FALSE)
+    x <- as.data.frame(x)
   }
   if (nrow(x) == 0) {
     rlang::abort("interval specification has no rows", class = "pknca_error_interval_no_rows")

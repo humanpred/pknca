@@ -111,7 +111,6 @@ pk.tss.stepwise.linear <- function(...,
     remaining.time <- remaining.time[-1]
   }
   data.frame(
-    tss.stepwise.linear=ret,
-    stringsAsFactors=FALSE
+    tss.stepwise.linear=ret
   )
 }

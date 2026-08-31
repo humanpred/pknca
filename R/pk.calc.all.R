@@ -498,7 +498,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   }
   # Parameters linked to a reference interval are calculated across intervals by
   # pk_nca_secondary() after every interval has been calculated.  Their
-  # dependencies are still expanded above, because the home-interval half of the
+  # dependencies are still expanded above, because the requesting interval's own half of the
   # calculation (`ae`, `totdose`, ...) is computed here.
   deferred <- interval_deferred_params(interval)
   # Do the calculations
@@ -531,10 +531,10 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
             # Historical escape hatch: a value column named by the formal (e.g.
             # `dose1` for f), passed through via keep_interval_cols
             call_args[[arg_formal]] <- interval[[arg_formal]]
-          } else if (!(target %in% info$home_args) &&
+          } else if (!(target %in% info$own_args) &&
                      any(mask_arg <- ret$PPTESTCD %in% target)) {
             # Historical same-interval behavior (e.g. clr with auclast requested
-            # in the same interval).  Disallowed when the target is also a home
+            # in the same interval).  Disallowed when the target is also an own
             # argument, because test and reference would then be the same value
             # and the result degenerate (f would always be 1).
             call_args[[arg_formal]] <- ret$PPORRES[mask_arg]
@@ -683,8 +683,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           PPTESTCD=tmp_testcd,
           PPORRES=tmp_result,
           PPANMETH=paste(tmp_method, collapse=". "),
-          exclude=exclude_reason,
-          stringsAsFactors=FALSE
+          exclude=exclude_reason
         )
       ret <- rbind(ret, single_result)
     }

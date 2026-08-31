@@ -7,19 +7,19 @@ test_that("setExcludeColumn", {
   )
   expect_equal(
     setExcludeColumn(list(data=data.frame(a=1))),
-    list(data=data.frame(a=1, exclude=NA_character_, stringsAsFactors=FALSE),
+    list(data=data.frame(a=1, exclude=NA_character_),
          columns = list(exclude="exclude")),
     info="setExcludeColumn adds a column named exclude"
   )
   expect_equal(
     setExcludeColumn(list(data=data.frame(a=1, exclude=2))),
-    list(data=data.frame(a=1, exclude=2, exclude.exclude=NA_character_, stringsAsFactors=FALSE),
+    list(data=data.frame(a=1, exclude=2, exclude.exclude=NA_character_),
          columns = list(exclude="exclude.exclude")),
     info="setExcludeColumn adds a column named exclude.exclude if 'exclude' is already present"
   )
   expect_equal(
     setExcludeColumn(list(results=data.frame(a=1)), dataname="results"),
-    list(results=data.frame(a=1, exclude=NA_character_, stringsAsFactors=FALSE),
+    list(results=data.frame(a=1, exclude=NA_character_),
          columns = list(exclude="exclude")),
     info="setExcludeColumn works with an alternate dataname"
   )
@@ -49,22 +49,22 @@ test_that("setExcludeColumn", {
   expect_equal(
     setExcludeColumn(list(data=data.frame(a=1, exclude=factor("a"))),
                      exclude="exclude"),
-    list(data=data.frame(a=1, exclude="a", stringsAsFactors=FALSE),
+    list(data=data.frame(a=1, exclude="a"),
          columns = list(exclude="exclude")),
     info="setExcludeColumn converts factor column to character"
   )
   expect_equal(
-    setExcludeColumn(list(data=data.frame(a=1, exclude=NA, stringsAsFactors=FALSE)),
+    setExcludeColumn(list(data=data.frame(a=1, exclude=NA)),
                      exclude="exclude"),
-    list(data=data.frame(a=1, exclude=NA_character_, stringsAsFactors=FALSE),
+    list(data=data.frame(a=1, exclude=NA_character_),
          columns = list(exclude="exclude")),
     info="setExcludeColumn converts logical NA column to character"
   )
-  expect_error(setExcludeColumn(list(data=data.frame(a=1, exclude=FALSE, stringsAsFactors=FALSE)),
+  expect_error(setExcludeColumn(list(data=data.frame(a=1, exclude=FALSE)),
                                 exclude="exclude"),
                regexp="exclude column must be character vector or something convertable to character without loss of information.",
                info="setExcludeColumn gives error on logical non-NA value")
-  expect_error(setExcludeColumn(list(data=data.frame(a=1, exclude=5, stringsAsFactors=FALSE)),
+  expect_error(setExcludeColumn(list(data=data.frame(a=1, exclude=5)),
                                 exclude="exclude"),
                regexp="exclude column must be character vector or something convertable to character without loss of information.",
                info="setExcludeColumn gives error on non-character value")
@@ -74,7 +74,7 @@ test_that("setExcludeColumn", {
     expect_equal(
       setExcludeColumn(list(data=data.frame())),
       list(
-        data=data.frame(exclude=NA_character_, stringsAsFactors=FALSE)[-1,,drop=FALSE],
+        data=data.frame(exclude=NA_character_)[-1,,drop=FALSE],
         columns = list(exclude="exclude")
       )
     ),
@@ -83,7 +83,7 @@ test_that("setExcludeColumn", {
   expect_equal(
     setExcludeColumn(list(data=data.frame()), exclude="foo"),
     list(
-      data=data.frame(foo=NA_character_, stringsAsFactors=FALSE)[-1,,drop=FALSE],
+      data=data.frame(foo=NA_character_)[-1,,drop=FALSE],
       columns = list(exclude="foo")
     ),
     info="setExcludeColumn works with zero-row data"
