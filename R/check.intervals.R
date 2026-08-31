@@ -464,7 +464,9 @@ pknca_source_inputs <- c(
   paste0(
     c("conc", "time", "volume", "duration.conc", "dose", "time.dose", "duration.dose", "route"),
     ".group"
-  )
+  ),
+  # The pooled individual samples for sparse PK
+  "conc.sparse", "time.sparse", "conc.sparse.group", "time.sparse.group"
 )
 
 # Dose inputs a calculation accepts but does not require.  pk.calc.half.life()

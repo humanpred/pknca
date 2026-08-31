@@ -21,12 +21,15 @@ pk.nca.interval(
   time.dose.group = NULL,
   duration.dose.group = NULL,
   route.group = NULL,
+  conc.sparse = NULL,
+  time.sparse = NULL,
+  conc.sparse.group = NULL,
+  time.sparse.group = NULL,
   impute_method = NA_character_,
   include_half.life = NULL,
   exclude_half.life = NULL,
   lloq = NULL,
-  subject,
-  sparse,
+  subject = NULL,
   interval,
   options = list()
 )
@@ -68,6 +71,14 @@ the same length as \code{dose.group})}
 data for the group (typically zero for extravascular and intravascular
 bolus and nonzero for intravascular infusion)}
 
+\item{conc.sparse, time.sparse}{The pooled individual concentrations and their
+times for the current interval with sparse PK (\code{conc} and \code{time} are the
+arithmetic-mean profile built from them).  \code{NULL} for dense PK.}
+
+\item{conc.sparse.group, time.sparse.group}{The pooled individual
+concentrations and their times for all data for the group with sparse PK.
+\code{NULL} for dense PK.}
+
 \item{impute_method}{The method to use for imputation as a character string}
 
 \item{exclude_half.life, include_half.life}{Manual half-life point selection,
@@ -90,10 +101,7 @@ arguments.}
 lower limit of quantification passed to \code{\link[=pk.calc.half.life]{pk.calc.half.life()}} for the Tobit
 half-life method.}
 
-\item{subject}{Subject identifiers (used for sparse calculations)}
-
-\item{sparse}{Should only sparse calculations be performed (TRUE) or only
-dense calculations (FALSE)?}
+\item{subject}{Subject identifiers for the pooled sparse samples}
 
 \item{interval}{One row of an interval definition (see
 \code{\link[=check.interval.specification]{check.interval.specification()}} for how to define the interval.}
@@ -102,8 +110,10 @@ dense calculations (FALSE)?}
 \code{PKNCA.options()})}
 }
 \value{
-A data frame with the start and end time along with all PK
-parameters for the \code{interval}
+A data frame with one row per result, with columns \code{PPTESTCD},
+\code{PPORRES}, \code{PPANMETH}, and \code{exclude}.  Its "sparse" attribute is a logical
+vector saying, for each row, whether the parameter that produced it is
+registered as a sparse PK parameter.
 }
 \description{
 For one subject/time range, compute all available PK parameters. All the

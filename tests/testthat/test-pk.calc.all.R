@@ -187,7 +187,7 @@ test_that("verbose pk.nca", {
   expect_message(expect_message(expect_message(
     suppressWarnings(pk.nca(mydata, verbose=TRUE)),
     regexp = "Setting up options"),
-    regexp = "Starting dense PK NCA calculations"),
+    regexp = "Starting PK NCA calculations"),
     regexp = "Combining completed dense PK calculation results"
   )
   expect_message(
@@ -766,6 +766,179 @@ test_that("calculate with sparse data", {
     regexp="With sparse PK, all subjects in a group must have the same dosing information.*Not all subjects have the same dosing information for this group: +dose_grp=100"
   )
   # Correct detection of mixed doses within a sparse dose group when there are no groups
+})
+
+test_that("sparse data give dense parameters the mean profile and sparse parameters the pooled samples", {
+  fn_dense <- "pknca_test_nconc_dense_fn_"
+  fn_sparse <- "pknca_test_nconc_sparse_fn_"
+  assign(fn_dense, function(conc, time) length(conc), envir = .GlobalEnv)
+  assign(
+    fn_sparse,
+    function(conc, time, subject) 1000 * length(unique(subject)) + length(conc),
+    envir = .GlobalEnv
+  )
+  local_interval_cols()
+  on.exit(rm(list = c(fn_dense, fn_sparse), envir = .GlobalEnv), add = TRUE)
+  add.interval.col(
+    "pknca_test_nconc_dense_",
+    FUN = fn_dense,
+    unit_type = "count",
+    pretty_name = "Test: dense sample count",
+    desc = "Count of dense concentrations"
+  )
+  add.interval.col(
+    "pknca_test_nconc_sparse_",
+    FUN = fn_sparse,
+    sparse = TRUE,
+    unit_type = "count",
+    pretty_name = "Test: sparse sample count",
+    desc = "Count of pooled sparse concentrations"
+  )
+  # The pooled samples are also reachable by name from a formalsmap, as
+  # add.interval.col() documents
+  add.interval.col(
+    "pknca_test_nconc_pooled_",
+    FUN = fn_dense,
+    unit_type = "count",
+    pretty_name = "Test: pooled sample count",
+    desc = "Count from the pooled samples",
+    formalsmap = list(conc = "conc.sparse", time = "time.sparse")
+  )
+
+  # 9 subjects, 21 measurements, 7 unique times, so the mean profile has 7 rows
+  # and the pooled samples have 21
+  d_sparse <-
+    data.frame(
+      id = c(1L, 2L, 3L, 1L, 2L, 3L, 1L, 2L, 3L, 4L, 5L, 6L, 4L, 5L, 6L, 7L, 8L, 9L, 7L, 8L, 9L),
+      conc = c(0, 0, 0, 1.75, 2.2, 1.58, 4.63, 2.99, 1.52, 3.03, 1.98, 2.22, 3.34, 1.3, 1.22, 3.54, 2.84, 2.55, 0.3, 0.0421, 0.231),
+      time = c(0, 0, 0, 1, 1, 1, 6, 6, 6, 2, 2, 2, 10, 10, 10, 4, 4, 4, 24, 24, 24)
+    )
+  o_conc_sparse <- PKNCAconc(d_sparse, conc~time|id, sparse = TRUE)
+  d_intervals <-
+    data.frame(
+      start = 0, end = 24,
+      pknca_test_nconc_dense_ = TRUE, pknca_test_nconc_sparse_ = TRUE,
+      pknca_test_nconc_pooled_ = TRUE
+    )
+  o_nca <- suppressMessages(pk.nca(PKNCAdata(o_conc_sparse, intervals = d_intervals)))
+  df_result <- as.data.frame(o_nca)
+  # The dense results stay ahead of the sparse one even though both are now
+  # calculated in the same pass
+  expect_equal(
+    df_result$PPTESTCD,
+    c("pknca_test_nconc_dense_", "pknca_test_nconc_pooled_", "pknca_test_nconc_sparse_")
+  )
+  expect_equal(df_result$PPORRES, c(7, 21, 9021))
+
+  # The same parameters on dense data: the sparse one has no pooled samples to
+  # calculate from, so it is silently skipped
+  o_conc_dense <- PKNCAconc(d_sparse, conc~time|id)
+  d_intervals_dense <- d_intervals
+  d_intervals_dense$pknca_test_nconc_pooled_ <- FALSE
+  o_nca_dense <-
+    suppressMessages(pk.nca(PKNCAdata(o_conc_dense, intervals = d_intervals_dense)))
+  df_dense <- as.data.frame(o_nca_dense)
+  expect_equal(unique(df_dense$PPTESTCD), "pknca_test_nconc_dense_")
+})
+
+test_that("pk.nca.interval marks each result row with its parameter's sparse flag", {
+  d_interval <-
+    check.interval.specification(
+      data.frame(start = 0, end = 24, cmax = TRUE, sparse_auclast = TRUE)
+    )
+  # Without the pooled samples the sparse parameter cannot be calculated
+  ret_dense <-
+    pk.nca.interval(
+      conc = c(0, 1.5, 2.5), time = c(0, 1, 2), volume = NULL, duration.conc = NULL,
+      dose = 1, time.dose = 0, duration.dose = 0, route = "extravascular",
+      interval = d_interval
+    )
+  expect_equal(ret_dense$PPTESTCD, "cmax")
+  expect_equal(attr(ret_dense, "sparse"), FALSE)
+
+  # The pooled samples are given separately from the mean profile, and the
+  # sparse parameter is calculated from them
+  ret_sparse <-
+    pk.nca.interval(
+      conc = c(0, 1.5, 2.5), time = c(0, 1, 2), volume = NULL, duration.conc = NULL,
+      dose = 1, time.dose = 0, duration.dose = 0, route = "extravascular",
+      conc.sparse = c(0, 0, 1, 2, 2, 3), time.sparse = c(0, 0, 1, 1, 2, 2),
+      subject = 1:6,
+      interval = d_interval
+    )
+  expect_equal(
+    ret_sparse$PPTESTCD,
+    c("cmax", "sparse_auclast", "sparse_auc_se", "sparse_auc_df")
+  )
+  expect_equal(attr(ret_sparse, "sparse"), c(FALSE, TRUE, TRUE, TRUE))
+  # cmax comes from the mean profile given in `conc`, not from the pooled samples
+  expect_equal(ret_sparse$PPORRES[ret_sparse$PPTESTCD %in% "cmax"], 2.5)
+})
+
+test_that("remap_sparse_sources points only the dense concentration sources at the pooled samples", {
+  expect_equal(
+    remap_sparse_sources(
+      list(
+        conc = "conc", time = "time",
+        conc.group = "conc.group", time.group = "time.group",
+        subject = "subject", dose = "dose", options = "options"
+      )
+    ),
+    list(
+      conc = "conc.sparse", time = "time.sparse",
+      conc.group = "conc.sparse.group", time.group = "time.sparse.group",
+      subject = "subject", dose = "dose", options = "options"
+    )
+  )
+  # A source already naming the pooled samples, a parameter name, a constant,
+  # and a reference-interval pointer are all left alone
+  arglist_other <-
+    list(
+      conc = "conc.sparse", auc = "sparse_auclast",
+      auc.type = I("AUCall"), dose1 = pknca_ref("totdose")
+    )
+  expect_equal(remap_sparse_sources(arglist_other), arglist_other)
+})
+
+test_that("impute_conc_time applies each imputation function in order", {
+  # start_conc0 inserts a zero at the interval start; end_conc_drop then removes
+  # the measurement at the interval end
+  expect_equal(
+    impute_conc_time(
+      impute_funs = c("PKNCA_impute_method_start_conc0", "PKNCA_impute_method_end_conc_drop"),
+      conc = c(1, 2, 3), time = c(1, 2, 4), start = 0, end = 4,
+      conc.group = c(1, 2, 3), time.group = c(1, 2, 4), options = list()
+    ),
+    data.frame(conc = c(0, 1, 2), time = c(0, 1, 2)),
+    ignore_attr = "row.names"
+  )
+  # An empty chain returns the input unchanged
+  expect_equal(
+    impute_conc_time(
+      impute_funs = character(),
+      conc = c(1, 2), time = c(1, 2), start = 0, end = 4,
+      conc.group = c(1, 2), time.group = c(1, 2), options = list()
+    ),
+    data.frame(conc = c(1, 2), time = c(1, 2))
+  )
+})
+
+test_that("bind_interval_result repeats the interval columns for every result row", {
+  expect_equal(
+    bind_interval_result(
+      data.frame(start = 0, end = 24),
+      data.frame(PPTESTCD = c("cmax", "tmax"), PPORRES = c(2, 1))
+    ),
+    data.frame(
+      start = c(0, 0), end = c(24, 24),
+      PPTESTCD = c("cmax", "tmax"), PPORRES = c(2, 1)
+    )
+  )
+  # A zero-row calculation keeps the columns and adds no rows
+  expect_equal(
+    nrow(bind_interval_result(data.frame(start = 0, end = 24), data.frame(PPTESTCD = character()))),
+    0L
+  )
 })
 
 test_that("Unexpected interval columns now not cause an error (#238)", {
