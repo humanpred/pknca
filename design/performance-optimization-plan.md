@@ -259,3 +259,32 @@ above it keeps its form, and only call-count reductions (chiefly item 5's
 hoisting) would move that number.  No further single change approaches the
 merged items' payoff; items 1–3 here are the only ones worth individual
 pull requests, and 4–8 are opportunistic.
+
+## Item 5, the safe half (2026-08-31)
+
+`assert_conc_time()` ended with `data.frame(conc = conc, time = time)` — and
+no caller anywhere (package code, tests, vignettes, or the course materials)
+used the return value; the function is not exported, so the data.frame was
+built and discarded at every one of its ~31 call sites.  It now returns
+`NULL` invisibly.  After the change, `assertions.R` no longer appears in any
+workload's top profile lines (it had the largest single self-time share, 8%
+of A and 10% of B), and the sampled R-evaluation time of workload A fell
+about 14%; the wall-clock change is within this machine's noise.  All three
+workloads remain `identical()` to the pre-optimization baselines.
+
+The rest of item 5 is re-scoped by a discovery: the plan's sketch of passing
+`check = FALSE` from the engine is **unsafe for the largest functions**.  In
+`pk.calc.auc()`, `pk.calc.aucint()`, `pk.calc.auciv()`, and
+`pk.calc.half.life()`, the `check` argument gates the
+`clean.conc.blq()`/`clean.conc.na()` data cleaning as well as the validation,
+so `check = FALSE` changes results, not just checking.  What remains safe:
+give the pure-validation parameters (`cmax`, `cmin`, `tmax`, `tlast`,
+`tfirst`, `clast.obs`, `ceoi`, `count_conc`, `count_conc_measured`, `c0`,
+`time_above`, and — once they gain a `check` argument — `ctrough`, `cstart`,
+and `tlag`) a `formalsmap = list(check = I(FALSE))` registration, and have
+`pk.nca.interval()` run `assert_conc_time()` once after imputation (which
+would also catch a user imputation method returning malformed data).  The
+`.group` sources need no per-call re-validation: they are validated at
+`PKNCAconc()` construction and imputation does not modify them.  That
+remainder is worth roughly 1% plus de-duplicating repeated validation
+warnings within an interval, and it is left undone until it is wanted.
