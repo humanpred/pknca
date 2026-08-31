@@ -58,7 +58,7 @@ summary(
 
   A character string to use when a parameter summary was requested, but
   the point estimate AND spread calculations (if applicable) returned
-  `NA`.
+  `NA`. It is described in the caption when it is used.
 
 - drop.group, summarize.n.per.group, not.requested.string,
   not.calculated.string:

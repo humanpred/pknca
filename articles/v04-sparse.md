@@ -163,7 +163,7 @@ summary(o_nca)
     ##  start end cmax sparse_auclast aucinf.obs
     ##      0  24 3.05           39.5         NC
     ## 
-    ## Caption: cmax, sparse_auclast, aucinf.obs: geometric mean and geometric coefficient of variation
+    ## Caption: cmax, sparse_auclast, aucinf.obs: geometric mean and geometric coefficient of variation; NC: not calculated
 
 or individual results are available through the
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) function:

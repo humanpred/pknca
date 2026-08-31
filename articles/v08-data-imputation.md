@@ -192,7 +192,7 @@ summary(nca_obj)
 #>      0 24.0 12          NC
 #>      0 24.1 12 76.4 [23.0]
 #> 
-#> Caption: auclast: geometric mean and geometric coefficient of variation; N: number of subjects
+#> Caption: auclast: geometric mean and geometric coefficient of variation; N: number of subjects; NC: not calculated
 ```
 
 ## Advanced: Writing your own imputation functions

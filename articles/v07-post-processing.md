@@ -407,8 +407,12 @@ and they are described in the caption. When a parameter is not requested
 for a given interval, it is illustrated with a period (`.`), by default
 (customizable with the `not_requested` argument to
 [`summary()`](https://rdrr.io/r/base/summary.html)). When a parameter is
-required to calculate another parameter, but it is not specifically
-requested, it will not be shown in the summary.
+requested but cannot be calculated, it is illustrated with `NC`, by
+default (customizable with the `not_calculated` argument to
+[`summary()`](https://rdrr.io/r/base/summary.html)), and that
+abbreviation is described in the caption. When a parameter is required
+to calculate another parameter, but it is not specifically requested, it
+will not be shown in the summary.
 
 The summary will have one column for each grouping variable other than
 the subject grouping variable; one column each for the start and end

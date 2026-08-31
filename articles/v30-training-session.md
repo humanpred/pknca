@@ -956,7 +956,7 @@ summary(o_nca_excluded)
     ##  start end aucinf.obs
     ##      0 Inf         NC
     ## 
-    ## Caption: aucinf.obs: geometric mean and geometric coefficient of variation
+    ## Caption: aucinf.obs: geometric mean and geometric coefficient of variation; NC: not calculated
 
 ## NCA-related calculations
 
