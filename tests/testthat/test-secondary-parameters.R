@@ -797,6 +797,14 @@ test_that("summary() and the CDISC output ignore the reference group columns", {
   expect_true("RENALCL" %in% d_cdisc$PPTESTCD)
   d_requested <- as.data.frame(res, filter_requested = TRUE)
   expect_equal(sort(unique(d_requested$PPTESTCD)), c("ae", "auclast", "clr.last"))
+  # The wide layout gives one row per interval, so the reference group cannot be
+  # a row key there:  the urine collection's amount and clearance share a row
+  d_wide <- as.data.frame(res, out_format = "wide")
+  expect_false(any(grepl("_ref$", names(d_wide))))
+  expect_equal(nrow(d_wide), 2L)
+  mask_urine <- d_wide$PCSPEC %in% "urine"
+  expect_equal(d_wide[["ae (mg)"]][mask_urine], 350)
+  expect_equal(d_wide[["clr.last (mg/(hr*ng/mL))"]][mask_urine], 350/144)
 })
 
 # 6.1-4: the factor between two unit strings, or NA when there is not one
