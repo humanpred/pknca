@@ -6,6 +6,11 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `as_sparse_pk()` now raises an error when `subject` is `NULL`, has a
+  different length than `conc`, or contains missing values.  Previously the
+  check was inert and such inputs passed silently into the sparse
+  calculations.
+
 * Secondary parameters can now be calculated by linking intervals with
   `interval_id` and `<parameter>_ref` columns in the interval specification.
   The reference interval supplies the cross-profile input (the plasma AUC for
