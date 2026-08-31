@@ -149,6 +149,15 @@ and the values should be one of the following:
 \item{"duration.dose.group"}{Duration of dose (typically infusion duration) for doses in the current group.}
 \item{"route.group"}{Route of dosing for the current group.}
 }
+\item{For sparse PK (\code{NULL} with dense PK, so a parameter naming one of
+these is only calculable with a sparse \code{PKNCAconc}):}
+\describe{
+\item{"conc.sparse"}{The pooled individual concentration measurements for the current interval ("conc" is the arithmetic-mean profile built from them).}
+\item{"time.sparse"}{Times associated with the pooled individual concentration measurements for the current interval (values start at 0 at the beginning of the current interval).}
+\item{"conc.sparse.group"}{The pooled individual concentration measurements for the current group.}
+\item{"time.sparse.group"}{Times associated with the pooled individual concentration measurements for the current group.}
+\item{"subject"}{Subject identifiers for the pooled individual concentration measurements for the current interval.}
+}
 \item{Constants:}
 \describe{
 \item{a value wrapped in \code{\link[base:I]{base::I()}}}{The value itself, passed to the
