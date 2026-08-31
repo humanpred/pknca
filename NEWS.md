@@ -586,6 +586,11 @@ when the issue is due to an excluded point (#310)
   both lengths.  Previously a zero-row return was an obscure error, and a
   multiple-row return silently reported values under the wrong parameter names.
 
+* The caption from `summary()` on a `PKNCAresults` object describes the
+  not-calculated abbreviation (`"NC"`, by default) when the summary shows it,
+  so the table says what the abbreviation means.  Summaries with nothing
+  not-calculated keep the caption they had (#320).
+
 ## Minor changes (unlikely to affect PKNCA use)
 
 * Remove dead code: unused internal functions, commented-out code, unused
