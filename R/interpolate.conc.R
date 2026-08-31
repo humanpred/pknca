@@ -529,9 +529,12 @@ iecd_interp_select <- function(x) {
 iecd_interp_value <- function(data_all, current_idx, ...) {
   tmp_conc <- data_all[!is.na(data_all$conc) &
                          data_all$dose_count %in% data_all$dose_count[current_idx],]
-  interpolate.conc(conc=tmp_conc$conc, time=tmp_conc$time,
-                   time.out=data_all$time[current_idx],
-                   check=FALSE, ...)
+  # interp.extrap.conc() rather than interpolate.conc() because the
+  # concentrations on both sides of the output time may both be after Tlast (a
+  # run of values below the limit of quantification), and that is extrapolation.
+  interp.extrap.conc(conc=tmp_conc$conc, time=tmp_conc$time,
+                     time.out=data_all$time[current_idx],
+                     check=FALSE, ...)
 }
 
 # Extrapolation ####
@@ -547,9 +550,16 @@ iecd_extrap_select <- function(x) {
   extrap_output_only | extrap_dose
 }
 iecd_extrap_value <- function(data_all, current_idx, lambda.z, ...) {
-  last_conc <- data_all[data_all$time < data_all$time[current_idx] &
-                          !is.na(data_all$conc),]
-  last_conc <- last_conc[nrow(last_conc),]
+  # Extrapolate from the run of measurements immediately before the output
+  # time, back to the dose that started them.  Only the last of them matters for
+  # AUClast and AUCinf, but AUCall draws a line from it to the first measurement
+  # below the limit of quantification after it, so extrapolate.conc() has to see
+  # them all.
+  idx_before <- seq_len(current_idx - 1)
+  idx_dose <- idx_before[data_all$dose_event[idx_before]]
+  idx_conc <- max(c(1L, idx_dose)):(current_idx - 1)
+  tmp_conc <- data_all[idx_conc[data_all$conc_event[idx_conc]], ]
+  last_conc <- tmp_conc[nrow(tmp_conc),]
   if (last_conc$conc %in% 0) {
     # BLQ continues to be BLQ
     0
@@ -557,12 +567,12 @@ iecd_extrap_value <- function(data_all, current_idx, lambda.z, ...) {
     if (missing(lambda.z)) {
       lambda.z <- NA_real_
     }
-    args <- list(conc=last_conc$conc[nrow(last_conc)],
-                 time=last_conc$time[nrow(last_conc)],
+    args <- list(conc=tmp_conc$conc,
+                 time=tmp_conc$time,
                  time.out=data_all$time[current_idx], lambda.z=lambda.z,
                  ...)
     if (!("clast" %in% names(args))) {
-      args$clast <- last_conc$conc[nrow(last_conc)]
+      args$clast <- last_conc$conc
     }
     do.call(extrapolate.conc, args)
   }

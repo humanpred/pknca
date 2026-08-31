@@ -4,10 +4,37 @@
 #' extrapolating concentrations.
 #'
 #' @details
-#' When `pk.calc.auxcint()` needs to extrapolate using `lambda.z` (in other
-#' words, using the half-life), it will always extrapolate using the logarithmic
-#' trapezoidal rule to align with using a half-life calculation for the
-#' extrapolation.
+#' # Doses bound the profile
+#'
+#' When dose times are given, the concentrations used are limited to the dosing
+#' window around the interval:  measurements from before the last dose at or
+#' before `start` and from after the first dose at or after `end` belong to
+#' other profiles and are neither integrated nor used for
+#' interpolation/extrapolation into this interval.  A dose within the interval
+#' does not bound the window -- the interval asks for the profiles on both sides
+#' of it to be integrated together -- but it does become a point to integrate
+#' to, so that the profile ending at the dose is not interpolated into the one
+#' starting at it.
+#'
+#' # The region after Tlast
+#'
+#' Within the dosing window, the region of the interval after the last
+#' measurable concentration is handled the same way as the matching AUC
+#' parameter:
+#'
+#' \describe{
+#'   \item{`AUClast`}{contributes zero.}
+#'   \item{`AUCall`}{contributes the triangle from `clast` to the first
+#'     below-the-limit-of-quantification measurement and zero after that.}
+#'   \item{`AUCinf`}{is extrapolated with `lambda.z` (in other words, with the
+#'     half-life), always using the logarithmic trapezoidal rule to align with
+#'     the exponential decay that the half-life describes.  When `lambda.z` is
+#'     not estimable and the interval is finite, `AUCall` is used instead.}
+#' }
+#'
+#' When the interval ends at or before Tlast, no extrapolation happens and
+#' `lambda.z` is not used at all.  The extrapolation that was used is reported
+#' in the method (`PPANMETH`) column.
 #'
 #' @inheritParams pk.calc.auxc
 #' @inheritParams assert_intervaltime_single
@@ -19,9 +46,10 @@
 #' @param time.dose,route,duration.dose The time of doses, route of
 #'   administration, and duration of dose used with interpolation and
 #'   extrapolation of concentration data (see [interp.extrap.conc.dose()]).
-#'   If `NULL`, [interp.extrap.conc()] will be used instead.  If any `time.dose`
-#'   is `NA`, the dose-aware result is `NA` because the dose cannot be placed on
-#'   the timeline.
+#'   If `NULL` or if every `time.dose` is `NA` (an analysis with no dosing
+#'   data), [interp.extrap.conc()] is used instead and the calculation is not
+#'   dose-aware.  If only some `time.dose` values are `NA`, the result is `NA`
+#'   because that dose cannot be placed on the timeline.
 #' @param fun_linear,fun_log,fun_inf Integration functions for linear,
 #'   logarithmic, and infinite extrapolation methods.
 #' @param ... Additional arguments passed to `pk.calc.auxc` and
@@ -53,14 +81,45 @@ pk.calc.auxcint <- function(conc, time,
   # Check inputs
   auc.type <- match.arg(auc.type)
   method <- PKNCA.choose.option(name="auc.method", value=method, options=options)
-  if (!is.null(time.dose) && any(is.na(time.dose))) {
+  if (!is.null(time.dose) && all(is.na(time.dose))) {
+    # No dose time is known at all, which is what an analysis without dosing
+    # data gives, so the calculation simply is not dose-aware.
+    time.dose <- NULL
+  } else if (anyNA(time.dose)) {
     # Dose-aware interpolation cannot place a dose at an unknown time, and the
     # unknown time must not become a point to interpolate to.
     rlang::warn("time.dose is NA", class = "pknca_warning_timedose_na")
     return(structure(NA_real_, exclude = "dose time is missing"))
   }
+  dose_aware <- !is.null(time.dose)
   if (check) {
     assert_conc_time(conc, time)
+  }
+  interval <- assert_intervaltime_single(interval = interval, start = start, end = end)
+  if (dose_aware) {
+    # Doses bound the profile:  a concentration measured after the dose that
+    # follows the interval belongs to a later profile and one measured before
+    # the dose that starts the interval belongs to an earlier one, so neither is
+    # integrated nor interpolated/extrapolated into this interval (#508).
+    # Limiting the data before cleaning also lets clean.conc.blq() see the
+    # trailing BLQ values of this profile as trailing rather than as middle.
+    window <- dose_window(time.dose = time.dose, interval = interval)
+    mask_conc <- window[1] <= time & time <= window[2]
+    conc <- conc[mask_conc]
+    time <- time[mask_conc]
+    mask_dose <- window[1] <= time.dose & time.dose <= window[2]
+    if (length(route) == length(time.dose)) {
+      route <- route[mask_dose]
+    }
+    if (length(duration.dose) == length(time.dose)) {
+      duration.dose <- duration.dose[mask_dose]
+    }
+    time.dose <- time.dose[mask_dose]
+  }
+  if (length(conc) == 0) {
+    return(structure(NA_real_, exclude = "no concentration data between the doses around the interval"))
+  }
+  if (check) {
     data <-
       clean.conc.blq(
         conc = conc, time = time,
@@ -73,25 +132,73 @@ pk.calc.auxcint <- function(conc, time,
   if (all(data$conc %in% 0)) {
     return(structure(0, exclude = "DO NOT EXCLUDE"))
   }
-  interval <- assert_intervaltime_single(interval = interval, start = start, end = end)
+  tlast <- pk.calc.tlast(conc = data$conc, time = data$time, check = FALSE)
+  # Does the interval reach past the last measurable concentration?  That region
+  # is the only one where the type of extrapolation, and with it lambda.z, can
+  # matter.
+  extrapolates <- is.infinite(interval[2]) || interval[2] > tlast
+  auc_type_calc <- auc.type
+  lambda_z_used <- FALSE
+  if (auc.type %in% "AUCinf") {
+    if (!extrapolates) {
+      # The interval is interpolated throughout, so the half-life never enters
+      # the result and neither does an exclusion of it (#270).  AUClast and
+      # AUCinf integrate identically when nothing after tlast is in the
+      # interval.
+      auc_type_calc <- "AUClast"
+    } else if (is.na(lambda.z)) {
+      if (is.infinite(interval[2])) {
+        # Without a half-life there is no finite tail to fall back to
+        return(structure(NA_real_, exclude = "the half-life is NA"))
+      }
+      # With no estimable half-life, the tail of the interval is the AUCall
+      # triangle instead (#508)
+      auc_type_calc <- "AUCall"
+    } else {
+      lambda_z_used <- TRUE
+    }
+  }
+  if (auc_type_calc %in% "AUCinf") {
+    # After tlast the half-life describes the profile, so the measurements there
+    # (all below the limit of quantification) are replaced by the extrapolated
+    # concentrations, the same way pk.calc.auxc() ignores everything after tlast
+    # for AUCinf.
+    data <- data[data$time <= tlast, , drop = FALSE]
+  }
+  extrap_method <-
+    if (!extrapolates) {
+      "none"
+    } else if (lambda_z_used) {
+      pknca_extrap_method_halflife
+    } else if (auc.type %in% "AUCinf") {
+      "AUCall (half-life not estimable)"
+    } else {
+      auc.type
+    }
+  # The ends of the interval, and each dose within it, become points to
+  # integrate to.  The dose is a point of its own because the concentration
+  # before it belongs to the profile that is ending: without it, a pre-dose gap
+  # would be filled by interpolating from before the dose to after it.
+  time_dose_interp <-
+    if (dose_aware) {
+      time.dose[interval[1] <= time.dose & time.dose <= interval[2]]
+    } else {
+      NULL
+    }
   missing_times <-
     if (is.infinite(interval[2])) {
-      setdiff(c(interval[1], time.dose), data$time)
+      setdiff(c(interval[1], time_dose_interp), data$time)
     } else {
-      setdiff(c(interval, time.dose), data$time)
+      setdiff(c(interval, time_dose_interp), data$time)
     }
   # Handle the potential double-calculation (before/after tlast) with AUCinf/AUMCinf
   conc_clast <- NULL
   time_clast <- NULL
-  if (auc.type %in% "AUCinf") {
-    tlast <- pk.calc.tlast(conc=data$conc, time=data$time)
+  if (auc_type_calc %in% "AUCinf") {
     clast_obs <- pk.calc.clast.obs(conc=data$conc, time=data$time)
     all_times <- c(data$time, missing_times)
     time_after_tlast <- all_times[all_times > tlast & all_times <= interval[2]]
-    if (is.na(clast) && is.na(lambda.z)) {
-      # clast.pred is NA likely because the half-life was not calculable
-      return(structure(NA_real_, exclude = "clast.pred is NA because the half-life is NA"))
-    } else if (is.na(clast)) {
+    if (is.na(clast)) {
       rlang::abort("Please report a bug. clast is NA and the half-life is not NA", class = "pknca_error_internal_clast_na")  # nocov
     } else if (clast != clast_obs && length(time_after_tlast) > 0) {
       # If using clast.pred, the integration is done twice at tlast: once with
@@ -107,13 +214,13 @@ pk.calc.auxcint <- function(conc, time,
   }
   extrap_times <- numeric()
   if (length(missing_times) > 0) {
-    if (is.null(time.dose)) {
+    if (!dose_aware) {
       missing_conc <-
         interp.extrap.conc(
           conc = data$conc, time = data$time,
           time.out = missing_times,
           method = method,
-          auc.type = auc.type,
+          auc.type = auc_type_calc,
           clast = clast,
           lambda.z = lambda.z,
           options = options,
@@ -125,7 +232,7 @@ pk.calc.auxcint <- function(conc, time,
           conc = data$conc, time = data$time,
           time.out = missing_times,
           method = method,
-          auc.type = auc.type,
+          auc.type = auc_type_calc,
           clast = clast, lambda.z = lambda.z,
           options = options,
           # arguments specific to interp.extrap.conc.dose
@@ -138,7 +245,6 @@ pk.calc.auxcint <- function(conc, time,
     }
     new_data <- data.frame(conc=c(data$conc, conc_clast, missing_conc),
                            time=c(data$time, time_clast, missing_times))
-    tlast <- pk.calc.tlast(conc = data$conc, time = data$time, check = FALSE)
     extrap_times <- missing_times[missing_times > tlast]
     new_data <- new_data[new_data$time >= interval[1] &
                            new_data$time <= interval[2],]
@@ -166,21 +272,34 @@ pk.calc.auxcint <- function(conc, time,
     conc_interp <- data$conc[mask_time]
     time_interp <- data$time[mask_time]
   }
-  
+
+  tlast_integrate <-
+    if (lambda_z_used) {
+      # The extrapolated concentrations are the half-life's description of the
+      # profile after tlast, so they are integrated as though measured.
+      max(time_interp)
+    } else {
+      pk.calc.tlast(conc = conc_interp, time = time_interp, check = FALSE)
+    }
+  if (is.na(tlast_integrate)) {
+    # Every concentration within the interval is zero.  choose_interval_method()
+    # short-circuits to zero integration, but it still requires a number.
+    tlast_integrate <- max(time_interp)
+  }
   interval_method <-
     choose_interval_method(
       conc = conc_interp,
       time = time_interp,
-      tlast = max(time_interp),
+      tlast = tlast_integrate,
       method = method,
-      auc.type = auc.type,
+      auc.type = auc_type_calc,
       options = options
     )
   if (is.finite(interval[2])) {
     interval_method[length(interval_method)] <- "zero"
   }
-  if (length(extrap_times) > 0) {
-    interval_method[which(time_interp == extrap_times) - 1] <- "log"
+  if (lambda_z_used && length(extrap_times) > 0) {
+    interval_method[which(time_interp %in% extrap_times) - 1] <- "log"
   }
   ret <-
     auc_integrate(
@@ -192,9 +311,46 @@ pk.calc.auxcint <- function(conc, time,
       fun_inf = fun_inf
     )
   # Add method details as an attribute
-  attr(ret, "method") <- paste0("AUC: ", method)
-  
+  attr(ret, "method") <-
+    c(
+      paste0("AUC: ", method),
+      paste0(
+        pknca_interp_method_prefix,
+        if (dose_aware) "dose-aware" else "not dose-aware (no dosing data)"
+      ),
+      paste0(pknca_extrap_method_prefix, extrap_method)
+    )
+  if (auc.type %in% "AUCinf" && !lambda_z_used) {
+    # The half-life did not enter the result, so an exclusion of the half-life
+    # (or of clast.pred, which comes from it) does not apply to it (#270).
+    attr(ret, "exclude") <- "DO NOT EXCLUDE"
+  }
+
   ret
+}
+
+# How pk.calc.auxcint() names, in the method (PPANMETH) column, whether it knew
+# the dose times (#539) and how it handled the interval after Tlast.  The
+# half-life exclusions in exclude_nca.R read the extrapolation text to tell an
+# AUCint that used the half-life from one that only interpolated (#270), so
+# these are named once here.
+pknca_interp_method_prefix <- "Interpolation: "
+pknca_extrap_method_prefix <- "Extrapolation: "
+pknca_extrap_method_halflife <- "half-life"
+
+# The concentrations that belong to the profile being integrated:  everything
+# from the last dose at or before the start of the interval through the first
+# dose at or after its end.  A dose within the interval does not bound the
+# window, because the interval asks for the profiles on both sides of it to be
+# integrated together.  A concentration measured at the same time as a dose is
+# taken to be measured before it, matching interp.extrap.conc.dose().
+dose_window <- function(time.dose, interval) {
+  dose_before <- time.dose[time.dose <= interval[1]]
+  dose_after <- time.dose[time.dose >= interval[2]]
+  c(
+    if (length(dose_before) > 0) max(dose_before) else -Inf,
+    if (length(dose_after) > 0) min(dose_after) else Inf
+  )
 }
 
 #' @describeIn pk.calc.auxcint Calculate AUC over an interval
@@ -212,13 +368,16 @@ pk.calc.aucint <- function(conc, time, ..., options=list()) {
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUClast
 #' @export
-pk.calc.aucint.last <- function(conc, time, start=NULL, end=NULL, time.dose, ..., options=list()) {
+pk.calc.aucint.last <- function(conc, time, start=NULL, end=NULL, time.dose,
+                                route="extravascular", duration.dose=0,
+                                ..., options=list()) {
   if (missing(time.dose))
     time.dose <- NULL
   pk.calc.aucint(conc=conc, time=time,
                  start=start, end=end,
                  options=options,
                  time.dose=time.dose,
+                 route=route, duration.dose=duration.dose,
                  ...,
                  auc.type="AUClast")
 }
@@ -227,13 +386,16 @@ pknca_concept(pk.calc.aucint.last) <- "auc"
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUCall
 #' @export
-pk.calc.aucint.all <- function(conc, time, start=NULL, end=NULL, time.dose, ..., options=list()) {
+pk.calc.aucint.all <- function(conc, time, start=NULL, end=NULL, time.dose,
+                               route="extravascular", duration.dose=0,
+                               ..., options=list()) {
   if (missing(time.dose))
     time.dose <- NULL
   pk.calc.aucint(conc=conc, time=time,
                  start=start, end=end,
                  options=options,
                  time.dose=time.dose,
+                 route=route, duration.dose=duration.dose,
                  ...,
                  auc.type="AUCall")
 }
@@ -242,12 +404,15 @@ pknca_concept(pk.calc.aucint.all) <- "auc"
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUCinf.obs
 #' @export
-pk.calc.aucint.inf.obs <- function(conc, time, start=NULL, end=NULL, time.dose, lambda.z, clast.obs, ..., options=list()) {
+pk.calc.aucint.inf.obs <- function(conc, time, start=NULL, end=NULL, time.dose, lambda.z, clast.obs,
+                                   route="extravascular", duration.dose=0,
+                                   ..., options=list()) {
   if (missing(time.dose))
     time.dose <- NULL
   pk.calc.aucint(conc=conc, time=time,
                  start=start, end=end,
                  time.dose=time.dose,
+                 route=route, duration.dose=duration.dose,
                  lambda.z=lambda.z, clast=clast.obs,
                  options=options, ...,
                  auc.type="AUCinf")
@@ -257,13 +422,16 @@ pknca_concept(pk.calc.aucint.inf.obs) <- "auc"
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUCinf.pred
 #' @export
-pk.calc.aucint.inf.pred <- function(conc, time, start=NULL, end=NULL, time.dose, lambda.z, clast.pred, ..., options=list()) {
+pk.calc.aucint.inf.pred <- function(conc, time, start=NULL, end=NULL, time.dose, lambda.z, clast.pred,
+                                    route="extravascular", duration.dose=0,
+                                    ..., options=list()) {
   if (missing(time.dose)) {
     time.dose <- NULL
   }
   pk.calc.aucint(conc=conc, time=time,
                  start=start, end=end,
                  time.dose=time.dose,
+                 route=route, duration.dose=duration.dose,
                  lambda.z=lambda.z, clast=clast.pred,
                  options=options, ...,
                  auc.type="AUCinf")
@@ -277,24 +445,13 @@ add.interval.col("aucint.last",
                  unit_type="auc",
                  pretty_name="AUCint (based on AUClast extrapolation)",
                  desc="AUC from T1 to T2 (zero extrap)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group",
+                                 route="route.group", duration.dose="duration.dose.group"),
                  pptestcd_cdisc="AUCINT",
                  pptest_cdisc="AUC from T1 to T2",
                  formula="$AUC_{\\text{int,last}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule with interpolation at interval boundaries",
                  tier = "common")
-
-add.interval.col("aucint.last.dose",
-                 FUN="pk.calc.aucint.last",
-                 values=c(FALSE, TRUE),
-                 unit_type="auc",
-                 pretty_name="AUCint (based on AUClast extrapolation, dose-aware)",
-                 desc="AUC T1 to T2, dose-aware (zero extrap)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
-                 pptestcd_cdisc="AUCINTD",
-                 pptest_cdisc="AUC from T1 to T2 Normalized by Dose",
-                 formula="$AUC_{\\text{int,last,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 add.interval.col("aucint.all",
                  FUN="pk.calc.aucint.all",
@@ -302,22 +459,11 @@ add.interval.col("aucint.all",
                  unit_type="auc",
                  pretty_name="AUCint (based on AUCall extrapolation)",
                  desc="AUC from T1 to T2 (AUCall extrap)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group",
+                                 route="route.group", duration.dose="duration.dose.group"),
                  pptestcd_cdisc="AUCINTA",
                  pptest_cdisc="AUCint (based on AUCall extrapolation)",
                  formula="$AUC_{\\text{int,all}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
-
-add.interval.col("aucint.all.dose",
-                 FUN="pk.calc.aucint.all",
-                 values=c(FALSE, TRUE),
-                 unit_type="auc",
-                 pretty_name="AUCint (based on AUCall extrapolation, dose-aware)",
-                 desc="AUC T1 to T2, dose-aware (AUCall)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
-                 pptestcd_cdisc="AUCINTAD",
-                 pptest_cdisc="AUCint (based on AUCall extrapolation, dose-aware)",
-                 formula="$AUC_{\\text{int,all,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
 add.interval.col("aucint.inf.obs",
@@ -326,7 +472,8 @@ add.interval.col("aucint.inf.obs",
                  unit_type="auc",
                  pretty_name="AUCint (based on AUCinf,obs extrapolation)",
                  desc="AUC from T1 to T2 (AUCinf,obs extrap)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group",
+                                 route="route.group", duration.dose="duration.dose.group"),
                  depends=c("lambda.z", "clast.obs"),
                  pptestcd_cdisc="AUCINTIS",
                  pptest_cdisc="AUCint (based on AUCinf,obs extrapolation)",
@@ -334,45 +481,19 @@ add.interval.col("aucint.inf.obs",
                  formula_note="Trapezoidal rule with interpolation at interval boundaries",
                  tier = "common")
 
-add.interval.col("aucint.inf.obs.dose",
-                 FUN="pk.calc.aucint.inf.obs",
-                 values=c(FALSE, TRUE),
-                 unit_type="auc",
-                 pretty_name="AUCint (based on AUCinf,obs extrapolation, dose-aware)",
-                 desc="AUC T1 to T2, dose-aware (AUCinf,obs)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
-                 depends=c("lambda.z", "clast.obs"),
-                 pptestcd_cdisc="AUCINTID",
-                 pptest_cdisc="AUCint (based on AUCinf,obs extrapolation, dose-aware)",
-                 formula="$AUC_{\\text{int,}\\infty\\text{,obs,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
-
 add.interval.col("aucint.inf.pred",
                  FUN="pk.calc.aucint.inf.pred",
                  values=c(FALSE, TRUE),
                  unit_type="auc",
                  pretty_name="AUCint (based on AUCinf,pred extrapolation)",
                  desc="AUC from T1 to T2 (AUCinf,pred extrap)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group",
+                                 route="route.group", duration.dose="duration.dose.group"),
                  depends=c("lambda.z", "clast.pred"),
                  pptestcd_cdisc="AUCINTIP",
                  pptest_cdisc="AUCint (based on AUCinf,pred extrapolation)",
                  formula="$AUC_{\\text{int,}\\infty\\text{,pred}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule with interpolation at interval boundaries")
-
-add.interval.col("aucint.inf.pred.dose",
-                 FUN="pk.calc.aucint.inf.pred",
-                 values=c(FALSE, TRUE),
-                 unit_type="auc",
-                 pretty_name="AUCint (based on AUCinf,pred extrapolation, dose-aware)",
-                 desc="AUC T1 to T2, dose-aware (AUCinf,pred)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
-                 depends=c("lambda.z", "clast.pred"),
-                 pptestcd_cdisc="AUCINTPD",
-                 pptest_cdisc="AUCint (based on AUCinf,pred extrapolation, dose-aware)",
-                 formula="$AUC_{\\text{int,}\\infty\\text{,pred,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
-
 
 #' @describeIn pk.calc.auxcint Calculate AUMC over an interval
 #' @export
@@ -389,13 +510,16 @@ pk.calc.aumcint <- function(conc, time, ..., options=list()) {
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUMClast
 #' @export
-pk.calc.aumcint.last <- function(conc, time, start=NULL, end=NULL, time.dose, ..., options=list()) {
+pk.calc.aumcint.last <- function(conc, time, start=NULL, end=NULL, time.dose,
+                                 route="extravascular", duration.dose=0,
+                                 ..., options=list()) {
   if (missing(time.dose))
     time.dose <- NULL
   pk.calc.aumcint(conc=conc, time=time,
                   start=start, end=end,
                   options=options,
                   time.dose=time.dose,
+                  route=route, duration.dose=duration.dose,
                   ...,
                   auc.type="AUClast")
 }
@@ -405,13 +529,16 @@ pknca_concept(pk.calc.aumcint.last) <- "aumc"
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUMCall
 #' @export
-pk.calc.aumcint.all <- function(conc, time, start=NULL, end=NULL, time.dose, ..., options=list()) {
+pk.calc.aumcint.all <- function(conc, time, start=NULL, end=NULL, time.dose,
+                                route="extravascular", duration.dose=0,
+                                ..., options=list()) {
   if (missing(time.dose))
     time.dose <- NULL
   pk.calc.aumcint(conc=conc, time=time,
                   start=start, end=end,
                   options=options,
                   time.dose=time.dose,
+                  route=route, duration.dose=duration.dose,
                   ...,
                   auc.type="AUCall")
 }
@@ -421,12 +548,15 @@ pknca_concept(pk.calc.aumcint.all) <- "aumc"
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUMCinf.obs
 #' @export
-pk.calc.aumcint.inf.obs <- function(conc, time, start=NULL, end=NULL, time.dose, lambda.z, clast.obs, ..., options=list()) {
+pk.calc.aumcint.inf.obs <- function(conc, time, start=NULL, end=NULL, time.dose, lambda.z, clast.obs,
+                                    route="extravascular", duration.dose=0,
+                                    ..., options=list()) {
   if (missing(time.dose))
     time.dose <- NULL
   pk.calc.aumcint(conc=conc, time=time,
                   start=start, end=end,
                   time.dose=time.dose,
+                  route=route, duration.dose=duration.dose,
                   lambda.z=lambda.z, clast=clast.obs,
                   options=options, ...,
                   auc.type="AUCinf")
@@ -437,12 +567,15 @@ pknca_concept(pk.calc.aumcint.inf.obs) <- "aumc"
 #' @describeIn pk.calc.auxcint Interpolate or extrapolate concentrations for
 #'   AUMCinf.pred
 #' @export
-pk.calc.aumcint.inf.pred <- function(conc, time, start=NULL, end=NULL, time.dose, lambda.z, clast.pred, ..., options=list()) {
+pk.calc.aumcint.inf.pred <- function(conc, time, start=NULL, end=NULL, time.dose, lambda.z, clast.pred,
+                                     route="extravascular", duration.dose=0,
+                                     ..., options=list()) {
   if (missing(time.dose))
     time.dose <- NULL
   pk.calc.aumcint(conc=conc, time=time,
                   start=start, end=end,
                   time.dose=time.dose,
+                  route=route, duration.dose=duration.dose,
                   lambda.z=lambda.z, clast=clast.pred,
                   options=options, ...,
                   auc.type="AUCinf")
@@ -451,110 +584,62 @@ pk.calc.aumcint.inf.pred <- function(conc, time, start=NULL, end=NULL, time.dose
 pknca_concept(pk.calc.aumcint.inf.pred) <- "aumc"
 
 
-# aumcint.last (without dose awareness)
 add.interval.col("aumcint.last",
                  FUN="pk.calc.aumcint.last",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMCint (based on AUMClast extrapolation)",
                  desc="AUMC from T1 to T2 (zero extrap)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group",
+                                 route="route.group", duration.dose="duration.dose.group"),
                  formula="$AUMC_{\\text{int,last}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
-# aumcint.last.dose (WITH dose awareness)
-add.interval.col("aumcint.last.dose",
-                 FUN="pk.calc.aumcint.last",
-                 values=c(FALSE, TRUE),
-                 unit_type="aumc",
-                 pretty_name="AUMCint (based on AUMClast extrapolation, dose-aware)",
-                 desc="AUMC T1 to T2, dose-aware (zero extrap)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
-                 formula="$AUMC_{\\text{int,last,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
-
-# aumcint.all (without dose awareness)
 add.interval.col("aumcint.all",
                  FUN="pk.calc.aumcint.all",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMCint (based on AUMCall extrapolation)",
                  desc="AUMC from T1 to T2 (AUMCall extrap)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group",
+                                 route="route.group", duration.dose="duration.dose.group"),
                  formula="$AUMC_{\\text{int,all}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
-# aumcint.all.dose (WITH dose awareness)
-add.interval.col("aumcint.all.dose",
-                 FUN="pk.calc.aumcint.all",
-                 values=c(FALSE, TRUE),
-                 unit_type="aumc",
-                 pretty_name="AUMCint (based on AUMCall extrapolation, dose-aware)",
-                 desc="AUMC T1 to T2, dose-aware (AUMCall)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
-                 formula="$AUMC_{\\text{int,all,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
-
-# aumcint.inf.obs (without dose awareness)
 add.interval.col("aumcint.inf.obs",
                  FUN="pk.calc.aumcint.inf.obs",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMCint (based on AUMCinf,obs extrapolation)",
                  desc="AUMC from T1 to T2 (AUMCinf,obs extrap)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group",
+                                 route="route.group", duration.dose="duration.dose.group"),
                  depends=c("lambda.z", "clast.obs"),
                  formula="$AUMC_{\\text{int,}\\infty\\text{,obs}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
-# aumcint.inf.obs.dose (WITH dose awareness)
-add.interval.col("aumcint.inf.obs.dose",
-                 FUN="pk.calc.aumcint.inf.obs",
-                 values=c(FALSE, TRUE),
-                 unit_type="aumc",
-                 pretty_name="AUMCint (based on AUMCinf,obs extrapolation, dose-aware)",
-                 desc="AUMC T1 to T2, dose-aware (AUMCinf,obs)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
-                 depends=c("lambda.z", "clast.obs"),
-                 formula="$AUMC_{\\text{int,}\\infty\\text{,obs,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
-
-# aumcint.inf.pred (without dose awareness)
 add.interval.col("aumcint.inf.pred",
                  FUN="pk.calc.aumcint.inf.pred",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMCint (based on AUMCinf,pred extrapolation)",
                  desc="AUMC from T1 to T2 (AUMCinf,pred extrap)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose=NULL),
+                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group",
+                                 route="route.group", duration.dose="duration.dose.group"),
                  depends=c("lambda.z", "clast.pred"),
                  formula="$AUMC_{\\text{int,}\\infty\\text{,pred}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
-# aumcint.inf.pred.dose (WITH dose awareness)
-add.interval.col("aumcint.inf.pred.dose",
-                 FUN="pk.calc.aumcint.inf.pred",
-                 values=c(FALSE, TRUE),
-                 unit_type="aumc",
-                 pretty_name="AUMCint (based on AUMCinf,pred extrapolation, dose-aware)",
-                 desc="AUMC T1 to T2, dose-aware (AUMCinf,pred)",
-                 formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group"),
-                 depends=c("lambda.z", "clast.pred"),
-                 formula="$AUMC_{\\text{int,}\\infty\\text{,pred,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
-
 # =============================================================================
-# SET SUMMARY STATISTICS - Count (16)
+# SET SUMMARY STATISTICS - Count (8)
 # =============================================================================
 PKNCA.set.summary(
   name= c(
     # AUC related
-    "aucint.last", "aucint.last.dose", "aucint.all", "aucint.all.dose",
-    "aucint.inf.obs", "aucint.inf.obs.dose", "aucint.inf.pred", "aucint.inf.pred.dose",
-    
+    "aucint.last", "aucint.all", "aucint.inf.obs", "aucint.inf.pred",
+
     # AUMC related
-    "aumcint.last", "aumcint.last.dose", "aumcint.all",  "aumcint.all.dose",
-    "aumcint.inf.obs", "aumcint.inf.obs.dose", "aumcint.inf.pred", "aumcint.inf.pred.dose"
+    "aumcint.last", "aumcint.all", "aumcint.inf.obs", "aumcint.inf.pred"
   ), 
   description="geometric mean and geometric coefficient of variation",
   point=business.geomean,

@@ -45,6 +45,8 @@ pk.calc.aucint.last(
   start = NULL,
   end = NULL,
   time.dose,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -55,6 +57,8 @@ pk.calc.aucint.all(
   start = NULL,
   end = NULL,
   time.dose,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -67,6 +71,8 @@ pk.calc.aucint.inf.obs(
   time.dose,
   lambda.z,
   clast.obs,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -79,6 +85,8 @@ pk.calc.aucint.inf.pred(
   time.dose,
   lambda.z,
   clast.pred,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -91,6 +99,8 @@ pk.calc.aumcint.last(
   start = NULL,
   end = NULL,
   time.dose,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -101,6 +111,8 @@ pk.calc.aumcint.all(
   start = NULL,
   end = NULL,
   time.dose,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -113,6 +125,8 @@ pk.calc.aumcint.inf.obs(
   time.dose,
   lambda.z,
   clast.obs,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -125,6 +139,8 @@ pk.calc.aumcint.inf.pred(
   time.dose,
   lambda.z,
   clast.pred,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -152,9 +168,10 @@ extrapolation}
 \item{time.dose, route, duration.dose}{The time of doses, route of
 administration, and duration of dose used with interpolation and
 extrapolation of concentration data (see \code{\link[=interp.extrap.conc.dose]{interp.extrap.conc.dose()}}).
-If \code{NULL}, \code{\link[=interp.extrap.conc]{interp.extrap.conc()}} will be used instead.  If any \code{time.dose}
-is \code{NA}, the dose-aware result is \code{NA} because the dose cannot be placed on
-the timeline.}
+If \code{NULL} or if every \code{time.dose} is \code{NA} (an analysis with no dosing
+data), \code{\link[=interp.extrap.conc]{interp.extrap.conc()}} is used instead and the calculation is not
+dose-aware.  If only some \code{time.dose} values are \code{NA}, the result is \code{NA}
+because that dose cannot be placed on the timeline.}
 
 \item{auc.type}{The type of AUC to compute.  Choices are 'AUCinf', 'AUClast',
 and 'AUCall'.}
@@ -184,12 +201,6 @@ The AUXC for an interval of time as a number
 \description{
 Calculates AUC or AUMC over a given interval, optionally interpolating or
 extrapolating concentrations.
-}
-\details{
-When \code{pk.calc.auxcint()} needs to extrapolate using \code{lambda.z} (in other
-words, using the half-life), it will always extrapolate using the logarithmic
-trapezoidal rule to align with using a half-life calculation for the
-extrapolation.
 }
 \section{Functions}{
 \itemize{
@@ -222,6 +233,38 @@ AUMCinf.obs
 AUMCinf.pred
 
 }}
+\section{Doses bound the profile}{
+When dose times are given, the concentrations used are limited to the dosing
+window around the interval:  measurements from before the last dose at or
+before \code{start} and from after the first dose at or after \code{end} belong to
+other profiles and are neither integrated nor used for
+interpolation/extrapolation into this interval.  A dose within the interval
+does not bound the window -- the interval asks for the profiles on both sides
+of it to be integrated together -- but it does become a point to integrate
+to, so that the profile ending at the dose is not interpolated into the one
+starting at it.
+}
+
+\section{The region after Tlast}{
+Within the dosing window, the region of the interval after the last
+measurable concentration is handled the same way as the matching AUC
+parameter:
+
+\describe{
+\item{\code{AUClast}}{contributes zero.}
+\item{\code{AUCall}}{contributes the triangle from \code{clast} to the first
+below-the-limit-of-quantification measurement and zero after that.}
+\item{\code{AUCinf}}{is extrapolated with \code{lambda.z} (in other words, with the
+half-life), always using the logarithmic trapezoidal rule to align with
+the exponential decay that the half-life describes.  When \code{lambda.z} is
+not estimable and the interval is finite, \code{AUCall} is used instead.}
+}
+
+When the interval ends at or before Tlast, no extrapolation happens and
+\code{lambda.z} is not used at all.  The extrapolation that was used is reported
+in the method (\code{PPANMETH}) column.
+}
+
 \seealso{
 \code{\link[=PKNCA.options]{PKNCA.options()}}, \code{\link[=interp.extrap.conc.dose]{interp.extrap.conc.dose()}}
 

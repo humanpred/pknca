@@ -6,6 +6,40 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Bug fix: the `aucint` and `aumcint` parameters are dose-aware.  The doses on
+  either side of the interval bound the profile being integrated, so a
+  concentration measured after the next dose is no longer interpolated back into
+  the interval.  With the interval covering a whole dosing interval,
+  `aucint.last` and `aucint.all` now equal `auclast` and `aucall`, and
+  `aucint.inf.obs` and `aucint.inf.pred` extrapolate the region after Tlast with
+  the half-life.  When no dosing data are given, the calculation falls back to
+  the previous behavior of interpolating across the whole profile (#508).
+
+* The `.dose` interval parameters (`aucint.last.dose`, `aumcint.inf.pred.dose`,
+  and the rest of the `*int.*.dose` family) are retired now that every `aucint`
+  parameter is dose-aware.  Requesting one gives an error naming the parameter
+  to use instead (#539).
+
+* The method (`PPANMETH`) column for an `aucint` or `aumcint` parameter reports
+  whether the calculation was dose-aware and how the region after Tlast was
+  handled:  with the half-life, with `AUCall` when the half-life is not
+  estimable, or not at all when the interval ends at or before Tlast (#539).
+
+* `aucint.inf.obs` and `aucint.inf.pred` are excluded with the half-life only
+  when they used it.  An interval that ends at or before Tlast is interpolated
+  throughout, so it is calculated and reported even when the half-life is
+  excluded or was not estimable (#270, #450).
+
+* Bug fix: `aucint` parameters use the route and duration of dosing, so an
+  intravenous bolus within the interval is no longer treated as an
+  extravascular dose.
+
+* Bug fix: dose-aware interpolation no longer fails when the concentrations
+  around a dose are all below the limit of quantification, and its `AUCall`
+  extrapolation now finds the first below-the-limit-of-quantification
+  measurement after Tlast instead of stopping at the last measured
+  concentration.
+
 * Secondary parameters can now be calculated by linking intervals with
   `interval_id` and `<parameter>_ref` columns in the interval specification.
   The reference interval supplies the cross-profile input (the plasma AUC for

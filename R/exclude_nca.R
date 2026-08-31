@@ -25,6 +25,38 @@
 #' @family Result exclusions
 NULL
 
+# A parameter that depends on the half-life is excluded with it, but a
+# calculation that could have used the half-life and did not must not be (#270):
+# an AUCint over an interval that ends at or before Tlast is interpolated
+# throughout, so no exclusion of the half-life reaches it.  pk.calc.auxcint()
+# reports the extrapolation it used in the method column, and that is what says
+# whether the half-life entered the result.
+halflife_may_be_used <- function(method) {
+  reports_extrapolation <-
+    grepl(pattern = pknca_extrap_method_prefix, x = method, fixed = TRUE)
+  used_halflife <-
+    grepl(
+      pattern = paste0(pknca_extrap_method_prefix, pknca_extrap_method_halflife),
+      x = method,
+      fixed = TRUE
+    )
+  # A result that reports no extrapolation says nothing either way, so it keeps
+  # the exclusion.
+  !reports_extrapolation | used_halflife
+}
+
+# Wrap an exclusion function that excludes everything depending on the half-life
+# so that it spares the results which did not use it.
+exclude_nca_halflife_dependent <- function(FUN) {
+  function(x, ...) {
+    ret <- FUN(x, ...)
+    if ("PPANMETH" %in% names(x)) {
+      ret[!halflife_may_be_used(x$PPANMETH)] <- NA_character_
+    }
+    ret
+  }
+}
+
 #' @describeIn exclude_nca Exclude based on span.ratio
 #' @export
 exclude_nca_span.ratio <- function(min.span.ratio) {
@@ -32,10 +64,12 @@ exclude_nca_span.ratio <- function(min.span.ratio) {
   if (missing_min.span.ratio) {
     min.span.ratio <- PKNCA.options("min.span.ratio")
   }
-  exclude_nca_by_param(
-    parameter = "span.ratio",
-    min_thr = min.span.ratio,
-    affected_parameters = get.parameter.deps("half.life")
+  exclude_nca_halflife_dependent(
+    exclude_nca_by_param(
+      parameter = "span.ratio",
+      min_thr = min.span.ratio,
+      affected_parameters = get.parameter.deps("half.life")
+    )
   )
 }
 
@@ -110,20 +144,24 @@ exclude_nca_min.hl.r.squared <- function(min.hl.r.squared) {
   if (missing_min.hl.r.squared) {
     min.hl.r.squared <- PKNCA.options("min.hl.r.squared")
   }
-  exclude_nca_by_param(
-    parameter = "r.squared",
-    min_thr = min.hl.r.squared,
-    affected_parameters = get.parameter.deps("half.life")
+  exclude_nca_halflife_dependent(
+    exclude_nca_by_param(
+      parameter = "r.squared",
+      min_thr = min.hl.r.squared,
+      affected_parameters = get.parameter.deps("half.life")
+    )
   )
 }
 
 #' @describeIn exclude_nca Exclude based on half-life adjusted r-squared
 #' @export
 exclude_nca_min.hl.adj.r.squared <- function(min.hl.adj.r.squared = 0.9) {
-  exclude_nca_by_param(
-    parameter = "adj.r.squared",
-    min_thr = min.hl.adj.r.squared,
-    affected_parameters = get.parameter.deps("half.life")
+  exclude_nca_halflife_dependent(
+    exclude_nca_by_param(
+      parameter = "adj.r.squared",
+      min_thr = min.hl.adj.r.squared,
+      affected_parameters = get.parameter.deps("half.life")
+    )
   )
 }
 
