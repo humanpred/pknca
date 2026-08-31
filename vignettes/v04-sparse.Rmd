@@ -17,6 +17,8 @@ Sparse noncompartmental analysis (NCA) is performed when multiple individuals co
 
 Sparse NCA is setup similarly to how normal, dense PK sampling is setup with PKNCA.  The only difference are that you give the `sparse` option to `PKNCAconc()`, and in your interval calculations, you will request the sparse variants of the parameters.  The sparse parameters for calculation are `sparse_auclast` and `sparse_aumclast` (each with an accompanying standard error and degrees of freedom) along with parameters derived from them (described below).  Any of the non-sparse parameters will be calculated based on the mean profile of the animals in a group.
 
+Requesting `auclast` and `aumclast` by their standard names now gives the sparse estimates too, which is the recommended way to ask for them; see "Requesting the Standard Parameter Names" below.
+
 The example below uses data extracted from Holder D. J., Hsuan F., Dixit R. and Soper K. (1999). A method for estimating and testing area under the curve in serial sacrifice, batch, and complete data designs. Journal of Biopharmaceutical Statistics, 9(3):451-464.
 
 ```{r}
@@ -133,6 +135,28 @@ o_data_derived <- PKNCAdata(o_conc_sparse, o_dose, intervals=d_intervals_derived
 o_nca_derived <- pk.nca(o_data_derived)
 as.data.frame(o_nca_derived)
 ```
+
+# Requesting the Standard Parameter Names
+
+The `sparse_*` names above are the original way to ask for sparse calculations.  The recommended way is now to request the standard parameter names.  On sparse data, `auclast` and `aumclast` are estimated with the sparse methods, and their standard error and degrees of freedom come back as `auclast_se`/`auclast_df` and `aumclast_se`/`aumclast_df`:
+
+```{r sparse-unified}
+d_intervals_unified <-
+  data.frame(
+    start=0,
+    end=24,
+    auclast=TRUE,
+    auclast_se=TRUE,
+    auclast_df=TRUE,
+    cl.last=TRUE
+  )
+o_nca_unified <- pk.nca(PKNCAdata(o_conc_sparse, o_dose, intervals=d_intervals_unified))
+as.data.frame(o_nca_unified)
+```
+
+Two things are worth noting.  First, `auclast` here is the same estimate as `sparse_auclast`, so the value is not the trapezoid of the mean profile that `auclast` gave on sparse data before; because the sparse variance theory needs the linear trapezoidal rule, the `auc.method` option does not apply and `pk.nca()` says so when the option asks for something else.  Second, every parameter derived from an AUC now picks the sparse estimate up by name, so `cl.last` above is the sparse clearance -- the whole derived-parameter set is available, not only the five hand-maintained `*.sparse.last` parameters.
+
+The `sparse_*` names still work and give the same numbers, and `auclast_se` and its companions are only calculable from sparse data:  requesting one for dense data is an error.
 
 # Notes on Sparse Calculation Behavior
 

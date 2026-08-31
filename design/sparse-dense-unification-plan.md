@@ -247,11 +247,12 @@ Suggested phases (each a separate release-sized unit):
 4. **Optional additions:** sparse `cmax` SE; sparse AUCtau for multiple-dose
    toxicokinetics.
 
-Decision points to settle before phase 2: companion-name convention
-(`auclast_se` vs `auclast.se`), whether the old names ever hard-error, and
-whether `vz.last`/`kel`-family on sparse data should use the mean-profile
-`lambda.z` (recommended) or preserve the current 1/MRT chain under a named-only
-parameter.
+Decision points settled before phase 2: the companion-name convention is the
+underscore suffix (`auclast_se`, `auclast_df`), matching the `sparse_auc_se`
+precedent rather than `auclast.se`. Still open for phase 3: whether the old
+names ever hard-error, and whether `vz.last`/`kel`-family on sparse data should
+use the mean-profile `lambda.z` (recommended) or preserve the current 1/MRT
+chain under a named-only parameter.
 
 ## Incidental finding (out of scope, fix independently)
 

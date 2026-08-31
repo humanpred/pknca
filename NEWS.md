@@ -6,6 +6,36 @@ the dosing including dose amount and route.
 
 # Development version
 
+* On sparse PK data, `auclast` and `aumclast` are now estimated with the sparse
+  methods (the Bailer point estimate with the Nedelman-Jia/Holder standard
+  error) instead of a trapezoid on the arithmetic-mean profile, and the new
+  `auclast_se`, `auclast_df`, `aumclast_se`, and `aumclast_df` parameters report
+  the standard error and degrees of freedom.  The values match `sparse_auclast`
+  and `sparse_aumclast`, which still work, and every parameter derived from an
+  AUC (`cl.last`, `mrt.last`, `vz.last`, the dose-normalized variants, ...) now
+  picks the sparse estimate up by name.  Because the sparse methods are
+  linear-trapezoidal only, `auclast` on sparse data no longer follows the
+  `auc.method` option; `pk.nca()` says so when the option asks for anything
+  else.  Requesting one of the new `_se`/`_df` parameters for dense data is an
+  error rather than an empty result.
+
+* `add.interval.col()` gains `FUN_sparse` and `formalsmap_sparse` for
+  registering a parameter's sparse-specific estimator.  A parameter without one
+  keeps falling back to `FUN` on the arithmetic-mean profile, which is what
+  sparse data have always done.
+
+* `pk.nca()` calculates the sparse and dense parameters of a group in one pass
+  instead of two.  The exported `pk.nca.interval()` therefore no longer takes a
+  `sparse` argument, and takes `conc.sparse`, `time.sparse`,
+  `conc.sparse.group`, and `time.sparse.group` (the pooled individual samples)
+  alongside the mean profile in `conc`/`time`.  Those four names, and
+  `subject`, can also be named in a `formalsmap`.  The results are unchanged.
+
+* With `verbose = TRUE`, `pk.nca()` reports one "Starting PK NCA calculations."
+  message (condition class `pknca_message_pk_start`) in place of the separate
+  dense and sparse start messages (classes `pknca_message_dense_pk_start` and
+  `pknca_message_sparse_pk_start`), since there is now one pass.
+
 * Secondary parameters can now be calculated by linking intervals with
   `interval_id` and `<parameter>_ref` columns in the interval specification.
   The reference interval supplies the cross-profile input (the plasma AUC for
