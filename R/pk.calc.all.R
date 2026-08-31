@@ -512,8 +512,14 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   } else {
     tmp_imp_method <- character()
   }
-  # Prepare the return value using SDTM names
-  ret <- data.frame(PPTESTCD=NA, PPORRES=NA)[-1,]
+  # Results accumulate as parallel vectors, one element per result row, and
+  # become the returned data.frame (with SDTM names) at the end.  The argument
+  # resolution below reads them for the parameters already calculated in this
+  # interval, so they grow in calculation order.
+  result_testcd <- NULL
+  result_value <- NULL
+  result_method <- NULL
+  result_exclude <- NULL
   # Determine exactly what needs to be calculated in what order. Start with the
   # interval specification and find any dependencies that are not listed for
   # calculation.  Then loop over the calculations in order confirming what needs
@@ -566,13 +572,13 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
             # `dose1` for f), passed through via keep_interval_cols
             call_args[[arg_formal]] <- interval[[arg_formal]]
           } else if (!(target %in% info$own_args) &&
-                     any(mask_arg <- ret$PPTESTCD %in% target)) {
+                     any(mask_arg <- result_testcd %in% target)) {
             # Historical same-interval behavior (e.g. clr with auclast requested
             # in the same interval).  Disallowed when the target is also an own
             # argument, because test and reference would then be the same value
             # and the result degenerate (f would always be 1).
-            call_args[[arg_formal]] <- ret$PPORRES[mask_arg]
-            exclude_from_argument <- c(exclude_from_argument, ret$exclude[mask_arg])
+            call_args[[arg_formal]] <- result_value[mask_arg]
+            exclude_from_argument <- c(exclude_from_argument, result_exclude[mask_arg])
           } else {
             rlang::abort(
               sprintf(
@@ -642,10 +648,10 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           call_args[[arg_formal]] <- interval[[arg_mapped]]
         } else if (arg_mapped == "options") {
           call_args[[arg_formal]] <- options
-        } else if (any(mask_arg <- ret$PPTESTCD %in% arg_mapped)) {
-          call_args[[arg_formal]] <- ret$PPORRES[mask_arg]
+        } else if (any(mask_arg <- result_testcd %in% arg_mapped)) {
+          call_args[[arg_formal]] <- result_value[mask_arg]
           exclude_from_argument <-
-            c(exclude_from_argument, ret$exclude[mask_arg])
+            c(exclude_from_argument, result_exclude[mask_arg])
         } else if (!is.null(interval[[arg_mapped]])) {
           call_args[[arg_formal]] <- interval[[arg_mapped]]
         } else {
@@ -712,15 +718,25 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       } else {
         tmp_testcd <- n
       }
-      single_result <-
-        data.frame(
-          PPTESTCD=tmp_testcd,
-          PPORRES=tmp_result,
-          PPANMETH=paste(tmp_method, collapse=". "),
-          exclude=exclude_reason
-        )
-      ret <- rbind(ret, single_result)
+      # A calculation function returning a data.frame gives one result row per
+      # column of it.  The method and the exclusion belong to the calculation,
+      # so they apply to every row it produced.
+      n_result <- max(length(tmp_testcd), length(tmp_result))
+      result_testcd <- c(result_testcd, rep_len(tmp_testcd, n_result))
+      result_value <- c(result_value, rep_len(tmp_result, n_result))
+      result_method <- c(result_method, rep(paste(tmp_method, collapse=". "), n_result))
+      result_exclude <- c(result_exclude, rep(exclude_reason, n_result))
     }
   }
-  ret
+  if (length(result_testcd) == 0) {
+    # Nothing was calculated for this interval
+    data.frame(PPTESTCD=NA, PPORRES=NA)[-1,]
+  } else {
+    data.frame(
+      PPTESTCD=result_testcd,
+      PPORRES=result_value,
+      PPANMETH=result_method,
+      exclude=result_exclude
+    )
+  }
 }
