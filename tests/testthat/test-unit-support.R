@@ -139,6 +139,14 @@ test_that("pknca_units_add_paren", {
   expect_equal(pknca_units_add_paren("mg*kg"), "(mg*kg)")
 })
 
+test_that("pknca_units_quotient divides one unit by another", {
+  expect_equal(pknca_units_quotient("mg", "hr*ng/mL"), "mg/(hr*ng/mL)")
+  expect_equal(pknca_units_quotient("ng/mL", "mg/L"), "(ng/mL)/(mg/L)")
+  # Units that are not known compose into units that are not known
+  expect_equal(pknca_units_quotient(NA_character_, "mg"), NA_character_)
+  expect_equal(pknca_units_quotient("mg", NA_character_), NA_character_)
+})
+
 test_that("pknca_units_table treats missing, NULL, and NA the same", {
   expect_equal(
     pknca_units_table(),
@@ -372,13 +380,20 @@ test_that("pknca_units_table for PKNCAdata", {
   o_data <- PKNCAdata(o_conc, o_dose)
   units_table <- expect_no_error(pknca_units_table(o_data))
 
+  # A primary parameter is described by one row per stratum, naming no
+  # reference group.  The standardization columns come from the secondary
+  # parameters whose composed units reduce to a fraction.
   expect_equal(
     units_table[units_table$PPTESTCD == "cmax",],
     data.frame(
       specimen = c("blood", "urine", "blood", "urine"),
       analyte = rep(c("A", "B"), each = 2),
       PPORRESU = c("ng/mL", "pg/mL", "ug/mL", "pg/mL"),
-      PPTESTCD = "cmax"
+      PPTESTCD = "cmax",
+      specimen_ref = NA_character_,
+      analyte_ref = NA_character_,
+      PPSTRESU = c("ng/mL", "pg/mL", "ug/mL", "pg/mL"),
+      conversion_factor = 1
     ), ignore_attr = TRUE
   )
 
@@ -394,7 +409,8 @@ test_that("pknca_units_table for PKNCAdata", {
       data.frame(
         treatment = c("drug1", "drug2"),
         PPORRESU = c("mg", "ug"),
-        PPTESTCD = "totdose"
+        PPTESTCD = "totdose",
+        treatment_ref = NA_character_
       ), ignore_attr = TRUE
     )
 

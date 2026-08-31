@@ -94,8 +94,15 @@ as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'c
     }
     # Since we moved the results into PPTESTCD and PPORRES regardless of what
     # they really are in the source data, remove the extra units and unit
-    # conversion columns to allow spread to work.
-    ret <- ret[, setdiff(names(ret), c("PPSTRES", "PPSTRESU", "PPORRESU", "PPANMETH"))]
+    # conversion columns to allow spread to work.  The reference group of a
+    # secondary result (a `<group column>_ref` twin) describes that one
+    # parameter, so keeping it would split its interval's row in two.
+    ref_group_cols <- intersect(paste0(names(ret), "_ref"), names(ret))
+    ret <-
+      ret[, setdiff(
+        names(ret),
+        c("PPSTRES", "PPSTRESU", "PPORRESU", "PPANMETH", ref_group_cols)
+      )]
     ret <- tidyr::spread(ret, key="PPTESTCD", value="PPORRES")
   }
   ret

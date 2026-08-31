@@ -492,20 +492,342 @@ test_that("a linked secondary result is given units", {
   expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/144)
 })
 
-# 17b: group-stratified units that differ between the two sides are announced
-# (PR 4 replaces the warning with conversion of the reference-side value)
-test_that("units differing between the requesting interval and reference groups warn", {
-  d_conc_u <- d_conc_sec
-  d_conc_u$cu <- ifelse(d_conc_u$PCSPEC %in% "plasma", "ng/mL", "mg/L")
-  d_conc_u$tu <- "hr"
-  d_conc_u$au <- "mg"
+# The renal-clearance fixture with units given per group:  the plasma
+# concentrations are reported in `plasma_concu` and the urine collection in
+# mg/L, so the AUC the renal clearance divides by is not in the concentration
+# units of the group the result is reported on.
+# The unit arguments of PKNCAconc() name DATA COLUMNS here (concu = "conc_units"
+# reads each row's units from the conc_units column), which is how units are
+# stratified per group; a value with no matching column is the unit itself.
+o_data_units_sec <- function(plasma_concu, subjects = 1) {
+  d_conc_u <- do.call(rbind, lapply(subjects, function(s) transform(d_conc_sec, subject = s)))
+  d_conc_u$conc_units <- ifelse(d_conc_u$PCSPEC %in% "plasma", plasma_concu, "mg/L")
+  d_conc_u$time_units <- "hr"
+  d_conc_u$amount_units <- "mg"
   o_conc_u <-
     PKNCAconc(
       d_conc_u, conc~time|PCSPEC+subject, volume = "vol",
-      concu = "cu", timeu = "tu", amountu = "au"
+      concu = "conc_units", timeu = "time_units", amountu = "amount_units"
     )
-  o_data_u <- PKNCAdata(o_conc_u, intervals = intervals_sec, options = list(auc.method = "linear"))
-  expect_warning(pk.nca(o_data_u), class = "pknca_warning_secondary_units")
+  PKNCAdata(o_conc_u, intervals = intervals_sec, options = list(auc.method = "linear"))
+}
+
+# 6.4-1: a renal clearance divides a urine amount by a plasma AUC, so its units
+# name the plasma group's concentration and not the urine group's
+test_that("a secondary result takes its units from the groups its values came from", {
+  expect_no_warning(res <- pk.nca(o_data_units_sec("ng/mL")))
+  d_res <- as.data.frame(res)
+  # The value is the raw quotient:  nothing is converted to make one group's
+  # units fit a value that did not come from one group
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/144)
+  expect_equal(d_res$PPORRESU[d_res$PPTESTCD %in% "clr.last"], "mg/(hr*ng/mL)")
+  # The composite is not dimensionless, so it is its own standardized unit
+  expect_equal(d_res$PPSTRESU[d_res$PPTESTCD %in% "clr.last"], "mg/(hr*ng/mL)")
+  expect_equal(d_res$PPSTRES[d_res$PPTESTCD %in% "clr.last"], 350/144)
+  # ... and each source keeps the units of the group it was calculated in
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "auclast"], 144)
+  expect_equal(d_res$PPORRESU[d_res$PPTESTCD %in% "auclast"], "hr*ng/mL")
+  expect_equal(d_res$PPORRESU[d_res$PPTESTCD %in% "ae"], "mg")
+})
+
+# 6.4-6: the reference group is on the result row, which is what the units
+# table keys the composed units on
+test_that("a secondary result names the group its reference came from", {
+  d_res <- as.data.frame(pk.nca(o_data_sec))
+  mask_secondary <- d_res$PPTESTCD %in% "clr.last"
+  expect_equal(d_res$PCSPEC_ref[mask_secondary], "plasma")
+  expect_equal(d_res$subject_ref[mask_secondary], 1)
+  # A result that took nothing from another interval names no reference
+  expect_true(all(is.na(d_res$PCSPEC_ref[!mask_secondary])))
+  expect_true(all(is.na(d_res$subject_ref[!mask_secondary])))
+})
+
+# 6.4-2a: the units table itself, which is where the composition happens
+test_that("pknca_units_table() composes secondary units from both sides", {
+  units_tbl <- o_data_units_sec("ng/mL")$units
+  mask_clr_pair <-
+    units_tbl$PPTESTCD %in% "clr.last" &
+    units_tbl$PCSPEC %in% "urine" & units_tbl$PCSPEC_ref %in% "plasma"
+  expect_equal(units_tbl$PPORRESU[mask_clr_pair], "mg/(hr*ng/mL)")
+  # The row for a renal clearance that names no reference is the single-group
+  # row the table has always had
+  mask_clr_alone <-
+    units_tbl$PPTESTCD %in% "clr.last" &
+    units_tbl$PCSPEC %in% "urine" & is.na(units_tbl$PCSPEC_ref)
+  expect_equal(units_tbl$PPORRESU[mask_clr_alone], "mg/(hr*mg/L)")
+  # A quotient of two convertible concentrations is a pure number:  PPORRES
+  # carries mg/L over ng/mL, and one mg/L is 1000 ng/mL
+  mask_ratio_pair <-
+    units_tbl$PPTESTCD %in% "ratio.cmax" &
+    units_tbl$PCSPEC %in% "urine" & units_tbl$PCSPEC_ref %in% "plasma"
+  expect_equal(units_tbl$PPORRESU[mask_ratio_pair], "(mg/L)/(ng/mL)")
+  expect_equal(units_tbl$PPSTRESU[mask_ratio_pair], "fraction")
+  expect_equal(units_tbl$conversion_factor[mask_ratio_pair], 1000)
+  # A ratio of a group against itself is the fraction it has always been
+  mask_ratio_same <-
+    units_tbl$PPTESTCD %in% "ratio.cmax" &
+    units_tbl$PCSPEC %in% "urine" & units_tbl$PCSPEC_ref %in% "urine"
+  expect_equal(units_tbl$PPORRESU[mask_ratio_same], "fraction")
+  expect_equal(units_tbl$conversion_factor[mask_ratio_same], 1)
+})
+
+# 6.4-2b: a ratio of two analytes reported in different concentration units is
+# the raw quotient in composite units, standardized to the number it is
+test_that("a convertible ratio is reported raw and standardized to a fraction", {
+  d_conc_ratio <-
+    data.frame(
+      subject = 1,
+      Analyte = rep(c("parent", "metabolite"), each = 3),
+      time = rep(c(0, 12, 24), times = 2),
+      conc = c(4, 10, 2, 8000, 20000, 4000),
+      conc_units = rep(c("mg/L", "ng/mL"), each = 3),
+      time_units = "hr"
+    )
+  o_conc_ratio <-
+    PKNCAconc(d_conc_ratio, conc~time|Analyte+subject, concu = "conc_units", timeu = "time_units")
+  intervals_ratio <-
+    data.frame(
+      Analyte = c("parent", "metabolite"),
+      start = 0, end = 24,
+      interval_id = c("parent024", NA),
+      cmax = TRUE,
+      ratio.cmax = c(FALSE, TRUE),
+      ratio.cmax_ref = c(NA, "parent024")
+    )
+  o_data_ratio <-
+    PKNCAdata(
+      o_conc_ratio, intervals = intervals_ratio, options = list(auc.method = "linear")
+    )
+  d_res <- as.data.frame(pk.nca(o_data_ratio))
+  d_ratio <- d_res[d_res$PPTESTCD %in% "ratio.cmax", ]
+  # 20000 ng/mL against 10 mg/L, each side in the units it is reported in
+  expect_equal(d_ratio$PPORRES, 2000)
+  expect_equal(d_ratio$PPORRESU, "(ng/mL)/(mg/L)")
+  expect_equal(d_ratio$Analyte_ref, "parent")
+  # One ng/mL is 0.001 mg/L, so the true ratio is 2000*0.001
+  expect_equal(pknca_unit_reconcile_factor("ng/mL", "mg/L"), 0.001)
+  expect_equal(d_ratio$PPSTRESU, "fraction")
+  expect_equal(d_ratio$PPSTRES, 2)
+})
+
+# 6.4-4: with one set of units for every group there is no reference side to
+# name, and the table is what it has always been
+test_that("uniform units add no reference rows and change no result", {
+  o_conc_u <-
+    PKNCAconc(
+      d_conc_sec, conc~time|PCSPEC+subject, volume = "vol",
+      concu = "ng/mL", timeu = "hr", amountu = "mg"
+    )
+  o_data_u <-
+    PKNCAdata(o_conc_u, intervals = intervals_sec, options = list(auc.method = "linear"))
+  expect_false(any(grepl("_ref$", names(o_data_u$units))))
+  d_united <- as.data.frame(pk.nca(o_data_u))
+  d_unitless <- as.data.frame(pk.nca(o_data_sec))
+  expect_equal(d_united[, names(d_unitless)], d_unitless)
+  expect_equal(d_united$PPORRESU[d_united$PPTESTCD %in% "clr.last"], "mg/(hr*ng/mL)")
+})
+
+# 6.4-3: units that cannot be reconciled are not a failure -- the value is the
+# same quotient it always was, reported in the units it is actually in
+test_that("a secondary result in units that do not reconcile is still reported", {
+  expect_no_warning(res <- pk.nca(o_data_units_sec("IU/mL")))
+  d_res <- as.data.frame(res)
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/144)
+  expect_equal(d_res$PPORRESU[d_res$PPTESTCD %in% "clr.last"], "mg/(hr*IU/mL)")
+  expect_true(is.na(d_res$exclude[d_res$PPTESTCD %in% "clr.last"]))
+  # Nothing in these units reduces to a fraction, so nothing standardizes
+  expect_false("PPSTRESU" %in% names(d_res))
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "ae"], 350)
+})
+
+# 6.4-5: a bioavailability between a dose in mg and a dose in mg/kg is not a
+# fraction, and its units say so instead of calling it one
+test_that("a bioavailability across incompatible dose units keeps composite units", {
+  # The crossover fixture of test 9, with the hand-computable trapezoids
+  # auclast(ref) = 41 and auclast(test) = 24.5
+  d_conc_u <-
+    data.frame(
+      treatment = rep(c("ref", "test"), each = 5),
+      subject = 1,
+      time = rep(c(0, 1, 2, 4, 8), 2),
+      conc = c(0, 10, 8, 5, 2, 0, 6, 5, 3, 1),
+      conc_units = "ng/mL",
+      time_units = "hr"
+    )
+  d_dose_u <-
+    data.frame(
+      treatment = c("ref", "test"), subject = 1, time = 0, dose = c(100, 50),
+      du = c("mg", "mg/kg")
+    )
+  o_conc_u <-
+    PKNCAconc(d_conc_u, conc~time|treatment+subject, concu = "conc_units", timeu = "time_units")
+  o_dose_u <- PKNCAdose(d_dose_u, dose~time|treatment+subject, doseu = "du")
+  intervals_f <-
+    data.frame(
+      treatment = c("ref", "test"),
+      start = 0, end = Inf,
+      interval_id = c("refprofile", NA),
+      auclast = TRUE,
+      totdose = TRUE,
+      f.last = c(FALSE, TRUE),
+      f.last_ref = c(NA, "refprofile")
+    )
+  o_data_f <-
+    PKNCAdata(
+      o_conc_u, o_dose_u, intervals = intervals_f, options = list(auc.method = "linear")
+    )
+  d_res <- as.data.frame(pk.nca(o_data_f))
+  d_f <- d_res[d_res$PPTESTCD %in% "f.last", ]
+  expect_equal(d_f$PPORRES, (24.5/50)/(41/100))
+  expect_equal(d_f$PPORRESU, "((hr*ng/mL)/(mg/kg))/((hr*ng/mL)/mg)")
+  # mg and mg/kg are not the same dimension, so the quotient is not a fraction
+  expect_false("PPSTRESU" %in% names(d_res))
+  expect_equal(d_f$treatment_ref, "ref")
+})
+
+# A preferred unit applies to a composite the same way it applies to any other:
+# each side is standardized and the quotient of those is what the composite
+# standardizes to
+test_that("preferred units reach the composed units of a secondary parameter", {
+  d_conc_u <- d_conc_sec
+  # concu and amountu name data columns (see o_data_units_sec); timeu = "hr"
+  # matches no column and so is the unit itself
+  d_conc_u$conc_units <- ifelse(d_conc_u$PCSPEC %in% "plasma", "ng/mL", "mg/L")
+  d_conc_u$amount_units <- "mg"
+  o_conc_u <-
+    PKNCAconc(
+      d_conc_u, conc~time|PCSPEC+subject, volume = "vol",
+      concu = "conc_units", timeu = "hr", amountu = "amount_units", timeu_pref = "day"
+    )
+  o_data_u <-
+    PKNCAdata(o_conc_u, intervals = intervals_sec, options = list(auc.method = "linear"))
+  d_res <- as.data.frame(pk.nca(o_data_u))
+  mask_clr <- d_res$PPTESTCD %in% "clr.last"
+  expect_equal(d_res$PPORRES[mask_clr], 350/144)
+  expect_equal(d_res$PPORRESU[mask_clr], "mg/(hr*ng/mL)")
+  # A day is 24 hours, so the same clearance per day is 24 times the number
+  expect_equal(d_res$PPSTRESU[mask_clr], "mg/(day*ng/mL)")
+  expect_equal(d_res$PPSTRES[mask_clr], 350/144*24)
+})
+
+# 6.4-7: the units table keys the reference side on the columns its minimal
+# grouping kept, and a group column it dropped stays dropped
+test_that("the reference columns follow the minimal grouping of the units table", {
+  o_data_two <- o_data_units_sec("ng/mL", subjects = 1:2)
+  expect_equal(grep("_ref$", names(o_data_two$units), value = TRUE), "PCSPEC_ref")
+  d_res <- as.data.frame(pk.nca(o_data_two))
+  d_clr <- d_res[d_res$PPTESTCD %in% "clr.last", ]
+  expect_equal(nrow(d_clr), 2L)
+  expect_equal(d_clr$PPORRES, rep(350/144, 2))
+  expect_equal(d_clr$PPORRESU, rep("mg/(hr*ng/mL)", 2))
+  # The results still name every one of the reference's group columns, and the
+  # subject the units table dropped is each result's own
+  expect_equal(d_clr$subject, c(1, 2))
+  expect_equal(d_clr$subject_ref, c(1, 2))
+})
+
+# A stratified units table carries a row for every pair of groups whether or not
+# anything links two intervals.  A renal clearance calculated inside a single
+# interval names no reference group, so it must join the row that names none --
+# matching the pairs as well would report it once per candidate reference.
+test_that("a same-interval secondary result joins the units row that names no reference", {
+  d_conc_leg <-
+    data.frame(
+      subject = 1,
+      PCSPEC = rep(c("urine", "feces"), each = 3),
+      time = rep(c(0, 12, 24), times = 2),
+      conc = c(2, 1, 0.5, 4, 2, 1),
+      vol = c(100, 150, 200, 50, 75, 100),
+      conc_units = rep(c("mg/L", "ng/mL"), each = 3),
+      time_units = "hr",
+      amount_units = "mg"
+    )
+  o_conc_leg <-
+    PKNCAconc(
+      d_conc_leg, conc~time|PCSPEC+subject, volume = "vol",
+      concu = "conc_units", timeu = "time_units", amountu = "amount_units"
+    )
+  o_data_leg <-
+    PKNCAdata(
+      o_conc_leg,
+      intervals = data.frame(start = 0, end = 24, ae = TRUE, auclast = TRUE, clr.last = TRUE),
+      options = list(auc.method = "linear")
+    )
+  expect_true("PCSPEC_ref" %in% names(o_data_leg$units))
+  d_res <- as.data.frame(pk.nca(o_data_leg))
+  expect_false(any(grepl("_ref$", names(d_res))))
+  d_clr <- d_res[d_res$PPTESTCD %in% "clr.last", ]
+  expect_equal(nrow(d_clr), 2L)
+  expect_equal(d_clr$PPORRES[d_clr$PCSPEC %in% "urine"], 450/27)
+  expect_equal(d_clr$PPORRESU[d_clr$PCSPEC %in% "urine"], "mg/(hr*mg/L)")
+  expect_equal(d_clr$PPORRES[d_clr$PCSPEC %in% "feces"], 450/54)
+  expect_equal(d_clr$PPORRESU[d_clr$PCSPEC %in% "feces"], "mg/(hr*ng/mL)")
+})
+
+# 6.4-3': a units table given by hand carries no reference rows and needs none:
+# every result joins by its own group as it always has
+test_that("a units table without reference columns describes results by their own group", {
+  units_flat <-
+    pknca_units_table(
+      concu = "ng/mL", doseu = NA_character_, amountu = "mg", timeu = "hr"
+    )
+  expect_false(any(grepl("_ref$", names(units_flat))))
+  o_data_flat <-
+    PKNCAdata(
+      as_PKNCAconc(o_data_units_sec("ng/mL")), intervals = intervals_sec,
+      units = units_flat, options = list(auc.method = "linear")
+    )
+  d_res <- as.data.frame(pk.nca(o_data_flat))
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/144)
+  expect_equal(d_res$PPORRESU[d_res$PPTESTCD %in% "clr.last"], "mg/(hr*ng/mL)")
+  # The urine group's own concentration units are irrelevant to a table that
+  # does not stratify by group
+  expect_equal(d_res$PPORRESU[d_res$PPTESTCD %in% "auclast"], "hr*ng/mL")
+  # The reference columns are still on the results; the join simply ignores them
+  expect_equal(d_res$PCSPEC_ref[d_res$PPTESTCD %in% "clr.last"], "plasma")
+})
+
+# The reference columns are extra result columns that every reporting path
+# ignores
+test_that("summary() and the CDISC output ignore the reference group columns", {
+  res <- pk.nca(o_data_units_sec("ng/mL"))
+  d_summary <- as.data.frame(summary(res))
+  expect_false(any(grepl("_ref$", names(d_summary))))
+  # The summary heads each column with the parameter's pretty name and units,
+  # which for a secondary parameter are the composed ones
+  clr_column <- "Renal clearance (from AUClast) (mg/(hr*ng/mL))"
+  expect_true(clr_column %in% names(d_summary))
+  expect_equal(d_summary[[clr_column]][d_summary$PCSPEC %in% "urine"], "2.43")
+  d_cdisc <- as.data.frame(res, out_format = "cdisc")
+  expect_true("RENALCL" %in% d_cdisc$PPTESTCD)
+  d_requested <- as.data.frame(res, filter_requested = TRUE)
+  expect_equal(sort(unique(d_requested$PPTESTCD)), c("ae", "auclast", "clr.last"))
+  # The wide layout gives one row per interval, so the reference group cannot be
+  # a row key there:  the urine collection's amount and clearance share a row
+  d_wide <- as.data.frame(res, out_format = "wide")
+  expect_false(any(grepl("_ref$", names(d_wide))))
+  expect_equal(nrow(d_wide), 2L)
+  mask_urine <- d_wide$PCSPEC %in% "urine"
+  expect_equal(d_wide[["ae (mg)"]][mask_urine], 350)
+  expect_equal(d_wide[["clr.last (mg/(hr*ng/mL))"]][mask_urine], 350/144)
+})
+
+# 6.1-4: the factor between two unit strings, or NA when there is not one
+test_that("pknca_unit_reconcile_factor() converts what it can and refuses the rest", {
+  skip_if_not_installed("units")
+  expect_equal(pknca_unit_reconcile_factor("ng/mL", "mg/L"), 0.001)
+  expect_equal(pknca_unit_reconcile_factor("hr*ng/mL", "hr*mg/L"), 0.001)
+  expect_equal(pknca_unit_reconcile_factor("mg/L", "ng/mL"), 1000)
+  # Identical units need no conversion, and are answered without the units package
+  expect_equal(pknca_unit_reconcile_factor("hr*ng/mL", "hr*ng/mL"), 1)
+  # A unit udunits does not know
+  expect_equal(pknca_unit_reconcile_factor("hr*IU/mL", "hr*mg/L"), NA_real_)
+  # Two units it knows, of different dimensions
+  expect_equal(pknca_unit_reconcile_factor("mg", "hr*mg/L"), NA_real_)
+  # A units table that cannot answer gives NA rather than an error
+  expect_equal(pknca_unit_reconcile_factor(NA_character_, "mg"), NA_real_)
+  expect_equal(pknca_unit_reconcile_factor("mg", NA_character_), NA_real_)
+  expect_equal(pknca_unit_reconcile_factor(character(0), "mg"), NA_real_)
 })
 
 # 18: a linked secondary parameter is summarized like any other

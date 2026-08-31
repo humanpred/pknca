@@ -39,7 +39,7 @@ these):
 | 5 | **Explicit links fail loud; automatic links degrade.**  When an explicit link cannot supply a value (missing reference instance or missing source value), `pk.nca()` aborts (`pknca_error_secondary_ref_value_missing`).  When the automatic path fails (no unique reference found, or an auto-linked value is missing), the affected results are `NA` with an `exclude` reason and a warning (`pknca_warning_secondary_auto_reference`). |
 | 6 | Reference-group steering: `PKNCAdata()` gains `group_ref`, a **data.frame** of group values (e.g. `data.frame(PCSPEC = "PLASMA")`) that constrains — and can by itself direct — the automatic finder.  `interval_add_secondary()`'s `reference` argument is likewise a data.frame. |
 | 7 | Ratio starter set: `ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`, `ratio.aucint.last`, `ratio.aucint.all`.  Bioavailability names its AUC basis: `f` is renamed `f.obs` (AUCinf,obs-based) and gains `f.pred`, `f.last`, `f.int.last`, `f.int.all`, `f.int.obs`, `f.int.pred`. |
-| 8 | **Unit reconciliation is in scope** and is the final PR (PR 4): reference-side input values are converted into the home group's units before the calculation; non-convertible units give `NA` + reason + `pknca_warning_secondary_units`.  §6.1; the text to post on issue 76 is Appendix A. |
+| 8 | **Superseded by section 6.4** (maintainer direction, 2026-08-31): secondary units go through the units table and its one join, keyed by `_ref`-suffixed group columns with source-composed unit strings, instead of section 6.1's calculation-time value conversion.  Appendix A's issue text describes the superseded approach; post section 6.4's summary instead. |
 | 9 | Sparse data (`is_sparse_pk(data)` is `TRUE`) with any secondary parameter requested aborts with `pknca_error_secondary_sparse_unsupported`.  Lifting this is a to-do (§8). |
 | 10 | Aggregated (across-subject) references are **not** planned: parallel-design comparisons of that kind are bioavailability-style analyses already served by the existing bioavailability/`be_assess()` calculation methods. |
 
@@ -129,7 +129,6 @@ New condition classes (all follow the existing `pknca_error_*` /
 | `pknca_error_group_ref_value` | error | A `group_ref` column contains a value that appears nowhere in that column of the concentration data. |
 | `pknca_warning_secondary_ref_exists` | warning | `interval_add_secondary()` skips a test row that already has a different pointer. |
 | `pknca_warning_secondary_auto_reference` | warning | The **automatic** path failed for some instances (no unique reference; auto-linked value missing); results are `NA` with reasons. |
-| `pknca_warning_secondary_units` | warning | PR 1–3: group-stratified units differ between home and reference for a source parameter.  PR 4 narrows it to: the units differ and are **not convertible** (result `NA` + reason). |
 | `pknca_message_secondary_ref_created` | message | The finder derived and created/linked a reference interval. |
 | `pknca_message_secondary_created_interval` | message | `interval_add_secondary()` created reference rows / assigned ids (visible). |
 
@@ -137,6 +136,12 @@ There is deliberately **no** message when a source parameter is added to a
 reference interval (either ephemerally by the engine or visibly by the
 helper): silently calculating what a requested parameter depends on is default
 PKNCA behavior.
+
+There is also deliberately **no** condition for units that differ between the
+two profiles.  Sections 6.1/6.3 raised `pknca_warning_secondary_units` when the
+two sides could not be reconciled; section 6.4 removed both the reconciliation
+and the class, because units that differ are not a failure — the result keeps
+the composite units of the values it was calculated from.
 
 ---
 
@@ -1616,6 +1621,250 @@ Tests (extend `test-secondary-parameters.R`):
 5. NEWS: unit-reconciliation and vignette bullets.
 6. Post the Appendix A text as a comment on issue 76 (maintainer action —
    the `gh` credential in this environment is read-only).
+
+### 6.3 As built (PR 4, section 6.1's reconciliation — historical)
+
+**Superseded before merge by section 6.4.**  The reconciliation described here
+was implemented, reviewed, and then replaced on the same branch;
+`secondary_reconcile_units()`, `secondary_units_lookup()`, and
+`pknca_warning_secondary_units` no longer exist.  What survives is
+`pknca_unit_reconcile_factor()` and `pknca_units_conversion_factor()`, which
+the units builder now uses.  The list below is kept as the record of what was
+built and why, not as a description of the code.
+
+PR 4 landed with these differences from the section-6 text above; trust the
+code over the sketches:
+
+* **The exclusion reason and the warning say "this interval"**, not "the home
+  group", following the naming decision of section 5.9.  The reason is
+  `"Units of '<target>' differ between the reference ('<u_ref>') and this
+  interval ('<u_own>') and are not convertible"`.
+* **The fast path is tighter than "the units table has no group columns"**:
+  reconciliation is skipped unless the units table has a group column that the
+  reference *overrides*.  The reference group differs from the requesting
+  interval's own group only in the override columns, so a units table
+  stratified by anything else gives both sides the same row and has nothing to
+  reconcile either.
+* **A units gap is not a linkage failure.**  It gives `NA` with its reason and
+  its own `pknca_warning_secondary_units`, and is deliberately kept out of the
+  `pknca_warning_secondary_auto_reference` count, which is about references
+  that could not be found.  `pk_nca_secondary()` therefore carries two reason
+  variables into one `NA` arm rather than reusing `failed_reason`.
+* `pknca_units_conversion_factor(from, to)` is the extracted
+  `units::set_units()` machinery, kept fail-loud because a `conversions`
+  argument is user-declared and a silent `NA` there would become a conversion
+  factor of 1.  `pknca_unit_reconcile_factor()` wraps it: identical units give
+  1 without consulting the `units` package at all, and anything the package
+  cannot do (a unit outside udunits, two units of different dimensions, a
+  package that is not installed) gives `NA_real_`.
+* Conversion factors are memoized per `<param>|<target>|<u_ref>|<u_own>` key
+  across the whole pass, alongside the set of keys already warned about, so a
+  fixture with many instances converts once and warns once.
+* **The `units`-unavailable branch is `# nocov`.**  The suite has no mocking
+  pattern for optional packages (only `skip_if_not_installed()`), and the
+  package already treats the same `requireNamespace("units")` branch in
+  `pknca_units_table()` that way.
+* **`PPSTRES` needed no change**, and a test pins why:  the reference-side
+  value arrives in the requesting group's `PPORRESU`, so the requesting group's
+  `conversion_factor` — the one the standard join applies — is coherent with
+  it.  The two conversions compose.
+* **The vignette is `vignettes/v09-secondary-parameters.Rmd`.**  Section 6.2's
+  suggested `v22` is taken (`v22-time-to-steady-state.Rmd`); `v09` is the first
+  free number and follows the core series the topic belongs with (`v03`
+  interval selection, `v07` unit conversion, `v08` imputation).
+* The vignette defines a small `kable_intervals()` helper, because
+  `check.interval.specification()` fills in every registered parameter and an
+  interval specification printed whole is a few hundred columns wide.
+  `interval_longer()` would say it better but is not exported.
+* The vignette's bioavailability example uses lower test-treatment
+  concentrations than the section 3.14 test fixture, so that `f.obs` is below
+  1;  a worked example showing 113% bioavailability distracts from the point.
+  Renal clearance keeps the fixture's numbers, which the text derives by hand.
+* Section 6.2's "wrappers (accumulation ratio, metabolite ratio)" are spelled
+  through `interval_add_secondary()` (section 4.6 removed the wrappers):  the
+  accumulation ratio as a `reference` of `start`/`end`, the metabolite ratio
+  through `group_ref`.
+* `_pkgdown.yml` still lists no vignettes or reference index, so it is
+  unchanged as section 6.2 item 3 anticipated.
+* **`as.data.frame(filter_requested = TRUE)` shows the linkage columns, and
+  that is the intended behavior** (maintainer clarification, 2026-08-31):
+  the join deliberately returns the interval-level metadata columns
+  (`impute` and the grouping columns are intentional in that output), and
+  `interval_id` and the pointer columns behave identically -- they describe
+  the interval row, so a pointer also appears beside the row's other
+  parameters (`clr.last_ref` next to `ae`), just as a shared `impute` does.
+  An implementation report initially miscategorized this as a leak; it is
+  not, and there is nothing to fix.  The vignette selects display columns
+  for narrative width only.
+
+### 6.4 Revision: units through reference-suffixed group columns
+
+**Supersedes section 6.1's calculation-time reconciliation** (maintainer
+direction, 2026-08-31): secondary units should work like every other unit in
+PKNCA — declaratively, through the units table and its one join — rather than
+by converting values at calculation time.  The mechanism is the `_ref` suffix
+the linkage already uses, extended to group columns.
+
+#### The mechanism
+
+1. **Secondary result rows carry the reference group.**  `pk_nca_secondary()`
+   adds a `<group column>_ref` column for every result group column to the
+   rows it creates, holding the reference instance's value (it already
+   computes `ref_group`); primary rows hold `NA` in those columns.  This also
+   makes the linkage machine-readable in the results, where `PPANMETH` today
+   is prose (keep `PPANMETH` — it is the human-readable form).
+2. **The units table gains reference-keyed rows for secondary parameters.**
+   For each secondary parameter, `pknca_units_table()` emits one row per
+   (own-group unit set x reference-group unit set) pair, keyed by the group
+   columns plus their `_ref` twins, with `PPORRESU` composed from the correct
+   sides:
+
+   | Family | `PPORRESU` composition |
+   |---|---|
+   | `clr.*` | `amountu_own / (timeu_ref * concu_ref)` (the AUC's units are the reference profile's) |
+   | `ratio.<x>` | `<x>u_own / <x>u_ref` |
+   | `f.*` | `(aucu_own / doseu_own) / (aucu_ref / doseu_ref)` |
+
+   When the composed quotient is dimensionally unitless (convertible sides),
+   also emit `PPSTRESU = "fraction"` with the `conversion_factor` computed by
+   `pknca_unit_reconcile_factor()` (repurposed from PR 4 — it stays; only the
+   calculation-time value conversion goes).  When it is not, the composite
+   string stands as the honest original units and no factor is emitted.
+   Primary parameters' rows carry `NA` in every `_ref` column.
+3. **The join does not change.**  `pknca_unit_conversion()` already joins by
+   the intersection of column names, and `dplyr::left_join()`'s default
+   `na_matches = "na"` pairs primary rows with the `NA`-`_ref` units rows and
+   secondary rows with their pair rows (verified empirically).  A
+   hand-supplied units table without `_ref` columns degrades gracefully: the
+   intersection excludes them and secondary rows join by their own group as
+   every row does today.
+4. **Delete the calculation-time reconciliation** (`secondary_reconcile_units()`
+   and its call): `PPORRES` stays the raw computed value and `PPORRESU`
+   describes it truthfully; `PPSTRES` conversion happens in the join as for
+   every parameter.  `pknca_warning_secondary_units` disappears —
+   non-convertible units are no longer a failure but a result in honest
+   composite units (the standard `allow_partial_missing_units` behavior
+   covers a units row that cannot be built at all).
+
+#### Why this is better than 6.1
+
+- One unit system: same table, same join, same user override (a user can edit
+  or supply the `_ref` rows, the standard PKNCA escape hatch that
+  calculation-time conversion had no equivalent of).
+- The label follows the sources instead of the value being converted to fit a
+  single-group label; nothing is `NA`'d for unit reasons.
+- Dimensional honesty catches real mistakes: a cross-group `f.*` between a
+  `mg` dose and a `mg/kg` dose composes to a non-unitless quotient and shows
+  it, where a blanket `"fraction"` label silently passed.
+
+#### Holes found in review, and their resolutions
+
+- **Composition needs own/ref annotations that `unit_type` alone does not
+  carry** (`renal_clearance` = amount/(time*conc) does not say which side
+  each factor is from).  Resolution: implement the three families above
+  explicitly in the units builder, driven by the registration's `pknca_ref()`
+  arguments; a third-party secondary parameter without a known composition
+  falls back to today's own-group single-side row, and a general registry
+  hook (a declared unit expression with own/ref sides) is a follow-up if
+  demand appears.
+- **`select_minimal_grouping_cols()` interplay**: the minimal-grouping
+  reduction of the units table must keep the columns that distinguish
+  reference unit sets; the builder must run the reduction over own and `_ref`
+  columns together.  Implementation checkpoint with a test (two unit sets
+  distinguished only by a column the reduction would otherwise drop).
+- **Which pairs to emit**: all distinct own x ref unit-set pairs (small in
+  practice; the join selects), because the auto-built table is constructed
+  before links are resolved.
+- **Extra columns in results**: `<group col>_ref` appears on all rows (NA for
+  primary), consistent with the intentional interval-metadata columns;
+  `summary()` and the CDISC translation must be verified to tolerate and
+  ignore them (checkpoint with tests).
+- **Name collisions**: a group column may not be named after a parameter
+  (already enforced), so `<group col>_ref` cannot collide with a
+  `<parameter>_ref` pointer; a user group column that itself ends in `_ref`
+  gets a `_ref_ref` twin — legal, ugly, documented.
+- **`timeu` across groups**: the AUC composition uses the reference group's
+  `timeu`; groups reporting time in different units is rare but real, and the
+  composition above handles it by construction.
+
+#### Migration
+
+The open PR 4 branch carries the 6.1 reconciliation.  Recommended: rework it
+on the same branch before merge (replace the reconciliation commit's engine
+change, keep `pknca_unit_reconcile_factor()`, rewrite the 6.1 unit tests to
+the compositions above, and update the NEWS bullet), so the superseded
+behavior never ships.  Alternative: merge PR 4 as-is and follow with a PR 5 —
+worse, because NEWS would describe convert-then-un-convert behavior across
+two entries of one release.
+
+The recommended path is the one taken: the reconciliation was removed on the
+same branch and replaced with the mechanism above before merge.
+
+#### As built (the 6.4 rework)
+
+Differences from the section-6.4 text above; trust the code over the sketches:
+
+* **`pknca_unit_conversion()` did need one change**, where item 3 above says it
+  needs none.  A results table with *no* `_ref` columns — nothing linked two
+  intervals, either because no secondary parameter was requested or because one
+  was calculated inside a single interval by the legacy same-interval path —
+  would otherwise match every reference-keyed row of a stratified table and be
+  duplicated once per reference group.  The join now drops the units rows that
+  name a reference the results have no column to describe, and then joins
+  exactly as before.  The other direction (a hand-supplied table with no `_ref`
+  columns) needed nothing, as the plan said.
+* **The composition is driven by the calculation function, not by parameter
+  names.**  `secondary_unit_sides()` returns the two sides of the quotient as
+  formal arguments of `pk.calc.clr`, `pk.calc.ratio`, and `pk.calc.f`, and
+  `secondary_param_info()` maps those formals to the parameters whose units they
+  take.  All three families of the table above fall out of one rule
+  (`own side / ref side`, each side itself a quotient for `f.*`); any other
+  secondary parameter keeps the single-sided row of its own group, as the
+  "holes found in review" section anticipated.
+* **`clr.last.dn`, `clr.obs.dn`, and `clr.pred.dn` get no composed row.**  They
+  are secondary only because they depend on `clr.*`, they carry no
+  `pknca_ref()` argument, and `secondary_param_info()` rejects them outright
+  (`pk.calc.dn`'s `dose` is not a parameter result), so no result row for them
+  can exist for a composed row to describe.  Calculating them across a link is
+  §8 work, not units work.
+* **A pair whose two sides compose to the same unit string keeps today's row.**
+  A `ratio.*` or `f.*` within one unit set would otherwise read
+  `(ng/mL)/(ng/mL)` where `fraction` is exact and already right; a `clr.*`
+  within one unit set composes to exactly the string the `renal_clearance` unit
+  type produces anyway.  A side whose units are unknown (`NA` — no dose units,
+  for instance) likewise keeps today's row instead of degrading it to `NA`.
+* **The (own group = reference group) pairs are emitted, not just the
+  off-diagonal ones.**  An accumulation ratio references another interval of the
+  *same* group, and its result row names that group on both sides.
+* **`PPSTRESU`/`conversion_factor` are added to the whole table as soon as any
+  composed quotient standardizes.**  Following `pknca_units_table()`'s own rule,
+  every row without a conversion of its own gets `PPSTRESU = PPORRESU` and a
+  factor of 1.  A stratified analysis whose groups report convertible
+  concentrations therefore gains `PPSTRES`/`PPSTRESU` result columns it did not
+  have before; every value in them equals the original except the standardized
+  quotients.
+* **Preferred units compose too.**  When the table already standardizes (a
+  scalar `timeu` with `timeu_pref` alongside column-based concentration units)
+  and the composed quotient is *not* dimensionless, `PPSTRESU` is composed from
+  the two sides' `PPSTRESU` values and the factor is the conversion between the
+  two composites; where that conversion does not exist the composite is its own
+  standardized unit.
+* **`as.data.frame(out_format = "wide")` had to drop the `_ref` columns.**  The
+  checkpoint above names `summary()` and the CDISC translation as the reporting
+  paths to verify; both ignore the new columns as it expected, but the wide
+  layout makes every remaining column a row key, so a reference group split its
+  interval's row in two (a urine collection's `ae` on one row and its
+  `clr.last` on another).  It now drops them where it already drops `PPANMETH`
+  and the units columns.
+* **The minimal-grouping reduction is run once and applied symmetrically.**  The
+  `_ref` columns are the twins of the columns the reduction kept, not of every
+  group column.  The checkpoint above reads as though a second, wider reduction
+  were needed, but the group-to-unit-set map is the same function on both sides:
+  a column set that determines the own unit set determines the reference unit
+  set as well.  Results still carry `_ref` twins of *every* group column, and
+  the join takes the intersection.  The checkpoint's test earns its place all
+  the same — it pins that a dropped group column stays dropped in the table
+  while both subjects still get the composed units.
 
 ---
 

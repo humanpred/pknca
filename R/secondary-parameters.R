@@ -925,48 +925,22 @@ stop_secondary_value_missing <- function(param, target, ref_id, group_values, si
   )
 }
 
-# The units assigned to `param` for one group, or NA when the units table
-# cannot answer.  Deliberately forgiving: an absent table, an absent parameter
-# row, and an ambiguous match all give NA so that the interim mismatch warning
-# never turns a units gap into an error.
-secondary_units_lookup <- function(units, group_values, param) {
-  if (!is.data.frame(units) || !all(c("PPTESTCD", "PPORRESU") %in% names(units))) {
-    return(NA_character_)
-  }
-  m <- units$PPTESTCD %in% param
-  for (col in intersect(names(units), names(group_values))) {
-    m <- m & (units[[col]] %in% group_values[[col]])
-  }
-  ret <- unique(units$PPORRESU[m])
-  if (length(ret) == 1) as.character(ret) else NA_character_
-}
-
-# Interim warning for group-stratified units that differ between the interval's own group and
-# the reference group.  PR 4 replaces this with reconciliation of the
-# reference-side values; until then a difference means the reported units (which
-# come from the interval's own group) do not describe the reference-side input.
-#
-# `seen` is the set of "<param>|<u_ref>|<u_home>" keys already warned about in
-# this run; the updated set is returned.
-secondary_warn_units <- function(units, param, targets, own_group, ref_group, seen) {
-  for (target in targets) {
-    u_home <- secondary_units_lookup(units, own_group, target)
-    u_ref <- secondary_units_lookup(units, ref_group, target)
-    if (!is.na(u_home) && !is.na(u_ref) && !identical(u_home, u_ref)) {
-      key <- paste(param, u_ref, u_home, sep = "|")
-      if (!(key %in% seen)) {
-        seen <- c(seen, key)
-        rlang::warn(
-          sprintf(
-            "Secondary parameter '%s': the units of '%s' differ between the reference group ('%s') and the interval's own group ('%s'); the reported result uses the interval's own units without converting the reference value.",
-            param, target, u_ref, u_home
-          ),
-          class = "pknca_warning_secondary_units"
-        )
+# The group values a secondary result took its reference side from, as the
+# `<group column>_ref` columns of the result row.  They make the linkage
+# machine-readable (`PPANMETH` says the same thing in prose) and are what the
+# units table keys its reference-side unit strings on.
+secondary_ref_group_cols <- function(template, ref_group, result_group_cols) {
+  for (col in result_group_cols) {
+    template[[paste0(col, "_ref")]] <-
+      if (is.null(ref_group)) {
+        # No reference was found, so there is no reference group to name.  The
+        # NA keeps the column's type and joins to the reference-free units row.
+        template[[col]][NA_integer_]
+      } else {
+        ref_group[[col]]
       }
-    }
   }
-  seen
+  template
 }
 
 # Compute deferred secondary parameters from the combined results and append
@@ -996,7 +970,6 @@ pk_nca_secondary <- function(results, data_calc) {
       c("start", "end", "PPTESTCD", "PPORRES", "PPANMETH", "exclude", keep_cols)
     )
   override_cols <- intersect(names(current_intervals), result_group_cols)
-  units_seen <- character(0)
   # Reasons an automatically linked parameter could not be calculated, by
   # parameter:  one warning per parameter is raised for all of them together.
   auto_reasons <- list()
@@ -1093,23 +1066,19 @@ pk_nca_secondary <- function(results, data_calc) {
           inputs[[formal]] <- found$value
           excludes <- c(excludes, found$exclude)
         }
-        units_seen <-
-          secondary_warn_units(
-            data_calc$units, p, info$ref_args, own_group, ref_group, units_seen
-          )
-        # PR 4 inserts unit reconciliation of the ref-side inputs here.
         if (is.null(failed_reason)) {
           value <- do.call(info$fun, inputs)
           excl <- combine_exclude_reasons(excludes, attr(value, "exclude"))
           value <- as.numeric(value)
         } else {
           # An automatic link with a value missing degrades to NA with the
-          # reason, and is counted into the one warning per parameter below.
+          # reason, and is counted into the one-per-parameter warning below.
           value <- NA_real_
           excl <- combine_exclude_reasons(c(excludes, failed_reason), NULL)
           auto_reasons[[p]] <- c(auto_reasons[[p]], failed_reason)
         }
         template <- secondary_template(results, own_rows, own_group, result_group_cols)
+        template <- secondary_ref_group_cols(template, ref_group, result_group_cols)
         template$PPTESTCD <- p
         template$PPORRES <- value
         template$PPANMETH <-
@@ -1139,6 +1108,7 @@ pk_nca_secondary <- function(results, data_calc) {
           secondary_template(
             results, own_rows, instances[k, , drop = FALSE], result_group_cols
           )
+        template <- secondary_ref_group_cols(template, NULL, result_group_cols)
         template$PPTESTCD <- p
         template$PPORRES <- NA_real_
         template$PPANMETH <- NA_character_
