@@ -24,7 +24,8 @@ PKNCAdata(
   impute = NA_character_,
   intervals,
   units,
-  options = list()
+  options = list(),
+  group_ref = NULL
 )
 ```
 
@@ -81,6 +82,12 @@ PKNCAdata(
   List of changes to the default PKNCA options (see
   [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
 
+- group_ref:
+
+  The reference profiles for automatically-linked secondary parameters,
+  as a data.frame of group values, optionally parameter-specific (see
+  Details). `NULL` (the default) derives the reference from the data.
+
 ## Value
 
 A PKNCAdata object with concentration, dose, interval, and calculation
@@ -91,6 +98,39 @@ a NCA calculations are done to the data).
 
 If `data.dose` is not given or is `NA`, then the `intervals` must be
 given. At least one of `data.dose` and `intervals` must be given.
+
+A secondary parameter is calculated from a result in another interval,
+and the interval specification links the two with an `interval_id`
+column and a `<parameter>_ref` pointer (see
+[`interval_add_secondary()`](https://humanpred.github.io/pknca/reference/interval_add_secondary.md)).
+Where a request has no pointer and could not otherwise be calculated,
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+derives the reference profile from the data: a parameter measured on an
+interval collection whose inputs are spot samples (renal clearance)
+takes the nearest profile with no collection volume, and `group_ref`
+restricts – or, for anything else, supplies – the profiles that may be
+used. The derived reference interval is created for the calculation only
+and is not added to the intervals in the result. When more than one
+profile is equally close, the affected results are `NA` with the reason
+in the `exclude` column and a `pknca_warning_secondary_auto_reference`
+warning.
+
+`group_ref` takes three forms. A data.frame of group values applies to
+every secondary parameter: its columns must be group columns of the
+concentration data, every column must match (and) for at least one of
+its rows (or), and every value must appear in the data – for example,
+with groups crossing `TRTP`, `PCTEST`, and `PCSPEC`,
+`group_ref = data.frame(PCSPEC = "PLASMA")` directs renal-clearance
+references to the plasma profiles and
+`group_ref = data.frame(PCTEST = "midazolam")` directs metabolite ratios
+to the parent analyte. The same data.frame with a `parameter` column
+applies each row only to the secondary parameter it names, and the
+columns a parameter's rows leave `NA` do not apply to it, so one table
+can steer renal clearance by `PCSPEC` and a metabolite ratio by
+`PCTEST`:
+`group_ref = data.frame(parameter = c("clr.obs", "ratio.aucinf.obs"), PCSPEC = c("PLASMA", NA), PCTEST = c(NA, "midazolam"))`.
+A named list of data.frames, one per parameter, says the same thing:
+`group_ref = list(clr.obs = data.frame(PCSPEC = "PLASMA"), ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))`.
 
 ## See also
 

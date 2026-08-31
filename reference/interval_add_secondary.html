@@ -107,7 +107,9 @@ columns are <code>start</code>, <code>end</code>, and/or group columns of the in
 column must match (and) for at least one of its rows (or).  A named list is
 accepted and coerced.  When no interval matches, one is created and the
 creation is reported with a <code>pknca_message_secondary_created_interval</code>
-message.</p></dd>
+message.  <code>NULL</code> (the default) takes the <code>group_ref</code> given to
+<code><a href="PKNCAdata.html">PKNCAdata()</a></code> (resolved for <code>param</code> when it is parameter-specific), or
+derives the reference from the data (see Details).</p></dd>
 
 
 <dt id="arg-target-groups">target_groups<a class="anchor" aria-label="anchor" href="#arg-target-groups"></a></dt>
@@ -140,6 +142,19 @@ announced, as calculating any dependency is.</p>
 <p>An interval that already names a different reference for <code>param</code> is left
 alone with a <code>pknca_warning_secondary_ref_exists</code> warning, so that the
 helper never silently re-points an analysis.</p>
+<p>With <code>reference = NULL</code> the reference is derived from the data, which needs
+a <code>PKNCAdata</code> object (a bare intervals data.frame carries no concentrations
+to derive it from).  The <code>group_ref</code> given to <code><a href="PKNCAdata.html">PKNCAdata()</a></code> is used when it
+is set.  Otherwise the derivation applies where the parameter is measured on
+an interval collection while everything it references is a spot sample
+(renal clearance) and the concentration data declare a collection <code>volume</code>:
+each interval takes the profile with no collection volume that differs from
+its own in the fewest group columns.  This is the same derivation
+<code><a href="pk.nca.html">pk.nca()</a></code> makes on its own, written out into the returned intervals
+instead of being ephemeral.  Anything the derivation cannot resolve is an
+error here (<code>pknca_error_secondary_needs_ref</code>) rather than the <code>NA</code> result
+the automatic path gives, so narrow the request with <code>target_groups</code> when
+some intervals are not meant to calculate <code>param</code>.</p>
 <p>When the parameter pairs an interval collection with spot-sample
 references (renal clearance:  an amount excreted against a plasma AUC)
 and the reference interval is created by the <code>PKNCAdata</code> method, the

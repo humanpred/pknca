@@ -146,8 +146,7 @@ d <- do.call(rbind, lapply(seq_len(nsub), function(i) {
     subject = i, sequence = seqs[i], period = seq_along(trt), treatment = trt,
     PPTESTCD = "auclast",
     PPORRES = exp(log(100) + ifelse(trt == "T", 0.04, 0) + b[i] +
-                    stats::rnorm(length(trt), sd = 0.45)),
-    stringsAsFactors = FALSE
+                    stats::rnorm(length(trt), sd = 0.45))
   )
 }))
 be_assess(d, reference_col = "treatment", reference_value = "R",

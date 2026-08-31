@@ -41,7 +41,10 @@ interval_add_secondary(
   must match (and) for at least one of its rows (or). A named list is
   accepted and coerced. When no interval matches, one is created and the
   creation is reported with a `pknca_message_secondary_created_interval`
-  message.
+  message. `NULL` (the default) takes the `group_ref` given to
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
+  (resolved for `param` when it is parameter-specific), or derives the
+  reference from the data (see Details).
 
 - target_groups:
 
@@ -76,6 +79,23 @@ announced, as calculating any dependency is.
 An interval that already names a different reference for `param` is left
 alone with a `pknca_warning_secondary_ref_exists` warning, so that the
 helper never silently re-points an analysis.
+
+With `reference = NULL` the reference is derived from the data, which
+needs a `PKNCAdata` object (a bare intervals data.frame carries no
+concentrations to derive it from). The `group_ref` given to
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
+is used when it is set. Otherwise the derivation applies where the
+parameter is measured on an interval collection while everything it
+references is a spot sample (renal clearance) and the concentration data
+declare a collection `volume`: each interval takes the profile with no
+collection volume that differs from its own in the fewest group columns.
+This is the same derivation
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+makes on its own, written out into the returned intervals instead of
+being ephemeral. Anything the derivation cannot resolve is an error here
+(`pknca_error_secondary_needs_ref`) rather than the `NA` result the
+automatic path gives, so narrow the request with `target_groups` when
+some intervals are not meant to calculate `param`.
 
 When the parameter pairs an interval collection with spot-sample
 references (renal clearance: an amount excreted against a plasma AUC)
