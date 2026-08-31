@@ -274,7 +274,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       attr(ret, "method") <- "Lambda Z: Manual selection"
       if (nrow(data) > 0) {
         fit <- fit_half_life(data=data, tlast=ret$tlast)
-        ret[, ret_replacements] <- fit[, ret_replacements]
+        ret[, ret_replacements] <- fit[ret_replacements]
         if (ret$half.life <= 0) {
           attr(ret, "exclude") <- "Negative half-life estimated with manually-selected points"
         }
@@ -454,9 +454,11 @@ pknca_concept(pk.calc.half.life) <- "half_life"
 #'   and "time"
 #' @param tlast The time of last observed concentration above the limit
 #'   of quantification.
-#' @return A data.frame with one row and columns named "r.squared",
-#'   "adj.r.squared", "PROB", "lambda.z", "clast.pred",
-#'   "lambda.z.n.points", "half.life", "span.ratio"
+#' @return A named list with one value each for "r.squared", "adj.r.squared",
+#'   "lambda.z.corrxy", "lambda.z", "clast.pred", "lambda.z.time.first",
+#'   "lambda.z.time.last", "lambda.z.n.points", "half.life", and "span.ratio".
+#'   [pk.calc.half.life()] fits one candidate per span of terminal points and
+#'   builds a data.frame from the candidate it selects.
 #' @seealso [pk.calc.half.life()]
 fit_half_life <- function(data, tlast) {
   fit <- stats::.lm.fit(x=cbind(1, data$time), y=data$log_conc)
@@ -465,20 +467,19 @@ fit_half_life <- function(data, tlast) {
   r_squared <- 1 - as.numeric(sum(fit$residuals^2))/as.numeric(sum((data$log_conc - mean(data$log_conc))^2))
   clast_pred <- exp(sum(fit$coefficients*c(1, as.numeric(tlast))))
   lambda_z <- -fit$coefficients[2]
-  ret <-
-    data.frame(
-      r.squared=r_squared,
-      adj.r.squared=adj.r.squared(r_squared, nrow(data)),
-      lambda.z.corrxy=if(nrow(data) > 1) stats::cor(data$time, data$log_conc) else NA,
-      lambda.z=lambda_z,
-      clast.pred=clast_pred,
-      lambda.z.time.first=min(data$time, na.rm=TRUE),
-      lambda.z.time.last=max(data$time, na.rm=TRUE),
-      lambda.z.n.points=nrow(data)
-    )
-  ret$half.life <- log(2)/ret$lambda.z
-  ret$span.ratio <- (max(data$time) - min(data$time))/ret$half.life
-  ret
+  half_life <- log(2)/lambda_z
+  list(
+    r.squared=r_squared,
+    adj.r.squared=adj.r.squared(r_squared, nrow(data)),
+    lambda.z.corrxy=if(nrow(data) > 1) stats::cor(data$time, data$log_conc) else NA_real_,
+    lambda.z=lambda_z,
+    clast.pred=clast_pred,
+    lambda.z.time.first=min(data$time, na.rm=TRUE),
+    lambda.z.time.last=max(data$time, na.rm=TRUE),
+    lambda.z.n.points=nrow(data),
+    half.life=half_life,
+    span.ratio=(max(data$time) - min(data$time))/half_life
+  )
 }
 
 #' Negative log-likelihood for Tobit half-life regression

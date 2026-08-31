@@ -201,6 +201,14 @@ test_that("half-life manual point selection", {
   )
 })
 
+test_that("lambda.z.corrxy stays numeric when a single point gives no correlation", {
+  expect_warning(
+    single_point <- pk.calc.half.life(conc = 5, time = 1, manually.selected.points = TRUE),
+    regexp = "n must be > 2 for adj.r.squared"
+  )
+  expect_identical(single_point$lambda.z.corrxy, NA_real_)
+})
+
 test_that("two-point half-life succeeds (fix #114)", {
   expect_warning(expect_warning(
     expect_equal(

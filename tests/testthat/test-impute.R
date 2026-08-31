@@ -544,8 +544,8 @@ test_that("PKNCA_impute_fun_list", {
 })
 
 test_that("PKNCA_impute_fun_list errors when imputation name resolves to a non-function", {
-  # utils::getAnywhere only searches namespaces and the search path, not local
-  # frames. Assign a non-function object to .GlobalEnv so getAnywhere finds it.
+  # The lookup searches namespaces and the search path, not local frames, so
+  # the non-function object goes in .GlobalEnv where the lookup reaches it.
   nm <- "PKNCA_impute_method_notafun_cov_test"
   assign(nm, 42L, envir = .GlobalEnv)
   on.exit(rm(list = nm, envir = .GlobalEnv), add = TRUE)

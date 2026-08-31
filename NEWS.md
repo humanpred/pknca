@@ -566,6 +566,26 @@ when the issue is due to an excluded point (#310)
   chosen automatically, and `pknca_check_parameter_classification()` reports
   those.
 
+* `pk.nca()` calculates faster without any change to its results, messages, or
+  warnings.  Imputation methods are resolved without scanning the search path,
+  each interval visits only the parameters it requests rather than every
+  registered one, half-life candidate fits are no longer assembled as
+  data.frames, the results of an interval become one data.frame instead of
+  one per parameter, and input validation no longer builds a data.frame that
+  every caller discarded.  How much time this saves depends on the analysis:  a
+  dense single-dose data set spends about half as long as it did, and a
+  multiple-dose one with several intervals per subject about two thirds.
+
+* `lambda.z.corrxy` is now numeric (`NA_real_`) rather than a logical `NA` when
+  the correlation cannot be computed, so the column has the same type whether or
+  not the half-life fit used more than one point.
+
+* A calculation function registered with `add.interval.col()` whose return
+  value has names and values that do not pair up (a data.frame with zero rows
+  or with more than one row) now stops with an error naming the function and
+  both lengths.  Previously a zero-row return was an obscure error, and a
+  multiple-row return silently reported values under the wrong parameter names.
+
 ## Minor changes (unlikely to affect PKNCA use)
 
 * Remove dead code: unused internal functions, commented-out code, unused

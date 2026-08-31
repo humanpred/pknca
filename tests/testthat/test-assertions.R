@@ -85,6 +85,11 @@ test_that("assert_conc_time", {
   )
 })
 
+test_that("assert_conc_time returns NULL invisibly for valid data", {
+  ret <- expect_invisible(assert_conc_time(conc = c(1, 2), time = c(0, 1)))
+  expect_null(ret)
+})
+
 test_that("assert_lambdaz", {
   expect_equal(assert_lambdaz(1), 1)
   expect_equal(assert_lambdaz(NA), NA) # NA is allowed by default

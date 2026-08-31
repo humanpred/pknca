@@ -26,8 +26,8 @@ assert_conc_time(conc, time, any_missing_conc = TRUE, sorted_time = TRUE)
 
 \code{time} or give an informative error
 
-A data.frame with columns named "conc" and "time" or an informative
-error
+\code{NULL}, invisibly, when the data are valid; otherwise an
+informative error
 }
 \description{
 If the concentrations or times are invalid, will provide an error.

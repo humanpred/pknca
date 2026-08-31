@@ -398,6 +398,40 @@ combine_exclude_reasons <- function(from_inputs, from_result) {
   }
 }
 
+# How a parameter's calculation function is called: `arglist` maps each of its
+# formals to the name of the data source or parameter that supplies the value
+# (`...` removed, and the formals that `formalsmap` sets to NULL dropped), and
+# `required` names the formals that have no default, so that an argument which
+# cannot be found can be told from an optional one.
+#
+# Both depend only on the registry entry, so they are worked out on first use
+# and cached there, the same way `requires_*` is (see set_requires_inputs()).
+# Re-registering a parameter replaces its whole entry, cache included.
+parameter_arg_spec <- function(param) {
+  all_intervals <- get.interval.cols()
+  cached <- all_intervals[[param]]$arg_spec
+  if (!is.null(cached)) {
+    return(cached)
+  }
+  fun_formals <- formals(get(all_intervals[[param]]$FUN))
+  formalsmap <- all_intervals[[param]]$formalsmap
+  arg_names <- setdiff(names(fun_formals), "...")
+  arglist <- stats::setNames(object = as.list(arg_names), arg_names)
+  arglist[names(formalsmap)] <- formalsmap
+  # Drop arguments that were set to NULL by the formalsmap
+  arglist <- arglist[!vapply(X = arglist, FUN = is.null, FUN.VALUE = TRUE)]
+  has_no_default <-
+    vapply(
+      X = names(arglist),
+      FUN = function(x) inherits(fun_formals[[x]], "name"),
+      FUN.VALUE = TRUE
+    )
+  ret <- list(arglist = arglist, required = names(arglist)[has_no_default])
+  all_intervals[[param]]$arg_spec <- ret
+  assign("interval.cols", all_intervals, envir = .PKNCAEnv)
+  ret
+}
+
 #' Compute all PK parameters for a single concentration-time data set
 #'
 #' For one subject/time range, compute all available PK parameters. All the
@@ -478,8 +512,17 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   } else {
     tmp_imp_method <- character()
   }
-  # Prepare the return value using SDTM names
-  ret <- data.frame(PPTESTCD=NA, PPORRES=NA)[-1,]
+  # Results accumulate as parallel vectors, one element per result row, and
+  # become the returned data.frame (with SDTM names) at the end.
+  result_testcd <- NULL
+  result_value <- NULL
+  result_method <- NULL
+  result_exclude <- NULL
+  # The same values and exclusions keyed by name.  The argument resolution
+  # below reads them for a parameter already calculated in this interval, so
+  # they grow as the calculations proceed.
+  computed_value <- list()
+  computed_exclude <- list()
   # Determine exactly what needs to be calculated in what order. Start with the
   # interval specification and find any dependencies that are not listed for
   # calculation.  Then loop over the calculations in order confirming what needs
@@ -489,11 +532,19 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   if (length(dose) == 0) {
     rlang::abort("Please report a bug. Length of dose should not be zero.", class = "pknca_error_internal_dose_length_zero")  # nocov
   }
+  # What the interval requests, as a logical vector over the parameters (start
+  # and end are times, not requests).  The expansion below and the calculation
+  # loop after it read it instead of the interval's columns, and an interval
+  # typically requests a handful of the few hundred registered parameters.
+  param_names <- setdiff(names(all_intervals), c("start", "end"))
+  requested <- vapply(X = interval[param_names], FUN = as.logical, FUN.VALUE = TRUE)
   # Make sure that we calculate all of the dependencies.  Do this in
   # reverse order for dependencies of dependencies.
-  for (n in rev(names(all_intervals))) {
-    if (interval[[n]]) {
-      interval[all_intervals[[n]]$depends] <- TRUE
+  for (n in rev(param_names)) {
+    if (requested[[n]]) {
+      depends <- all_intervals[[n]]$depends
+      requested[depends] <- TRUE
+      interval[depends] <- TRUE
     }
   }
   # Parameters linked to a reference interval are calculated across intervals by
@@ -501,24 +552,47 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   # dependencies are still expanded above, because the requesting interval's own half of the
   # calculation (`ae`, `totdose`, ...) is computed here.
   deferred <- interval_deferred_params(interval)
+  # Every data source a calculation function can name, under the name that
+  # add.interval.col() uses for it.  A source that was not given is NULL, which
+  # leaves the argument off the call so that the function's own default
+  # applies.  The interval's own times start at zero, so `time` and `time.dose`
+  # are realigned to the start of the interval; the group times keep the
+  # group's scale.
+  source_map <-
+    list(
+      conc=conc,
+      time=time - interval$start[1],
+      volume=volume,
+      duration.conc=duration.conc,
+      dose=dose,
+      time.dose=time.dose - interval$start[1],
+      duration.dose=duration.dose,
+      route=route,
+      conc.group=conc.group,
+      time.group=time.group,
+      volume.group=volume.group,
+      duration.conc.group=duration.conc.group,
+      dose.group=dose.group,
+      time.dose.group=time.dose.group,
+      duration.dose.group=duration.dose.group,
+      route.group=route.group,
+      # subject is given only for data that have a subject column
+      subject=if (missing(subject)) NULL else subject,
+      lloq=lloq,
+      start=interval[["start"]],
+      end=interval[["end"]],
+      options=options
+    )
   # Do the calculations
-  for (n in names(all_intervals)) {
-    request_to_calculate <- as.logical(interval[[n]])
+  for (n in setdiff(names(requested)[requested], deferred)) {
     has_calculation_function <- !is.na(all_intervals[[n]]$FUN)
     is_correct_sparse_dense <- all_intervals[[n]]$sparse == sparse
-    if (request_to_calculate && has_calculation_function && is_correct_sparse_dense &&
-        !(n %in% deferred)) {
+    if (has_calculation_function && is_correct_sparse_dense) {
       call_args <- list()
       exclude_from_argument <- character(0)
       # Prepare to call the function by setting up its arguments.
-      # Define the required arguments (arglist), and ignore the "..." argument
-      # if it exists.
-      arglist <- setdiff(names(formals(get(all_intervals[[n]]$FUN))),
-                         "...")
-      arglist <- stats::setNames(object=as.list(arglist), arglist)
-      arglist[names(all_intervals[[n]]$formalsmap)] <- all_intervals[[n]]$formalsmap
-      # Drop arguments that were set to NULL by the formalsmap
-      arglist <- arglist[!vapply(X = arglist, FUN = is.null, FUN.VALUE = TRUE)]
+      arg_spec <- parameter_arg_spec(n)
+      arglist <- arg_spec$arglist
       for (arg_formal in names(arglist)) {
         arg_mapped <- arglist[[arg_formal]]
         if (is_pknca_ref(arg_mapped)) {
@@ -532,13 +606,13 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
             # `dose1` for f), passed through via keep_interval_cols
             call_args[[arg_formal]] <- interval[[arg_formal]]
           } else if (!(target %in% info$own_args) &&
-                     any(mask_arg <- ret$PPTESTCD %in% target)) {
+                     target %in% names(computed_value)) {
             # Historical same-interval behavior (e.g. clr with auclast requested
             # in the same interval).  Disallowed when the target is also an own
             # argument, because test and reference would then be the same value
             # and the result degenerate (f would always be 1).
-            call_args[[arg_formal]] <- ret$PPORRES[mask_arg]
-            exclude_from_argument <- c(exclude_from_argument, ret$exclude[mask_arg])
+            call_args[[arg_formal]] <- computed_value[[target]]
+            exclude_from_argument <- c(exclude_from_argument, computed_exclude[[target]])
           } else {
             rlang::abort(
               sprintf(
@@ -552,71 +626,29 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           # An I()-wrapped formalsmap value is the argument itself rather than
           # the name of a data source or another parameter.
           call_args[[arg_formal]] <- unclass(arg_mapped)
-        } else if (arg_mapped == "conc") {
-          call_args[[arg_formal]] <- conc
-        } else if (arg_mapped == "time") {
-          # Realign the time to be relative to the start of the
-          # interval
-          call_args[[arg_formal]] <- time - interval$start[1]
-        } else if (arg_mapped == "volume") {
-          call_args[[arg_formal]] <- volume
-        } else if (arg_mapped == "duration.conc") {
-          call_args[[arg_formal]] <- duration.conc
-        } else if (arg_mapped == "dose") {
-          call_args[[arg_formal]] <- dose
-        } else if (arg_mapped == "time.dose") {
-          # Realign the time to be relative to the start of the
-          # interval
-          call_args[[arg_formal]] <- time.dose - interval$start[1]
-        } else if (arg_mapped == "duration.dose") {
-          call_args[[arg_formal]] <- duration.dose
-        } else if (arg_mapped == "route") {
-          call_args[[arg_formal]] <- route
-        } else if (arg_mapped == "conc.group") {
-          call_args[[arg_formal]] <- conc.group
-        } else if (arg_mapped == "time.group") {
-          # Don't realign the time to be relative to the start of the
-          # interval
-          call_args[[arg_formal]] <- time.group
-        } else if (arg_mapped == "volume.group") {
-          call_args[[arg_formal]] <- volume.group
-        } else if (arg_mapped == "duration.conc.group") {
-          call_args[[arg_formal]] <- duration.conc.group
-        } else if (arg_mapped == "dose.group") {
-          call_args[[arg_formal]] <- dose.group
-        } else if (arg_mapped == "time.dose.group") {
-          # Realign the time to be relative to the start of the
-          # interval
-          call_args[[arg_formal]] <- time.dose.group
-        } else if (arg_mapped == "duration.dose.group") {
-          call_args[[arg_formal]] <- duration.dose.group
-        } else if (arg_mapped == "route.group") {
-          call_args[[arg_formal]] <- route.group
-        } else if (arg_mapped == "subject") {
-          call_args[[arg_formal]] <- subject
-        } else if (arg_mapped == "lloq") {
-          call_args[[arg_formal]] <- lloq
         } else if (arg_mapped == "tau") {
+          # tau is derived from the dose times when the interval does not give
+          # it, and that says so when it cannot be determined, so it is worked
+          # out only for a parameter that asks for it.
           call_args[[arg_formal]] <-
             resolve_dose_tau(
               interval=interval,
               time.dose=time.dose.group,
               options=options
             )
-        } else if (arg_mapped %in% c("start", "end")) {
-          # Provide the start and end of the interval if they are requested
-          call_args[[arg_formal]] <- interval[[arg_mapped]]
-        } else if (arg_mapped == "options") {
-          call_args[[arg_formal]] <- options
-        } else if (any(mask_arg <- ret$PPTESTCD %in% arg_mapped)) {
-          call_args[[arg_formal]] <- ret$PPORRES[mask_arg]
+        } else if (arg_mapped %in% names(source_map)) {
+          call_args[[arg_formal]] <- source_map[[arg_mapped]]
+        } else if (arg_mapped %in% names(computed_value)) {
+          # A parameter calculated earlier in this interval carries its
+          # exclusion into anything calculated from it
+          call_args[[arg_formal]] <- computed_value[[arg_mapped]]
           exclude_from_argument <-
-            c(exclude_from_argument, ret$exclude[mask_arg])
+            c(exclude_from_argument, computed_exclude[[arg_mapped]])
         } else if (!is.null(interval[[arg_mapped]])) {
           call_args[[arg_formal]] <- interval[[arg_mapped]]
         } else {
           # Give an error if there is not a default argument.
-          if (inherits(formals(get(all_intervals[[n]]$FUN))[[arg_formal]], "name")) {
+          if (arg_formal %in% arg_spec$required) {
             arg_text <-
               if (arg_formal == arg_mapped) {
                 sprintf("'%s'", arg_formal)
@@ -678,15 +710,51 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       } else {
         tmp_testcd <- n
       }
-      single_result <-
-        data.frame(
-          PPTESTCD=tmp_testcd,
-          PPORRES=tmp_result,
-          PPANMETH=paste(tmp_method, collapse=". "),
-          exclude=exclude_reason
+      # A calculation function returning a data.frame gives one result row per
+      # column of it.  The method and the exclusion belong to the calculation,
+      # so they apply to every row it produced.
+      n_result <- max(length(tmp_testcd), length(tmp_result))
+      # The names and the values must pair up: equal lengths, or a scalar on
+      # either side that applies to all of the other.  Anything else (an empty
+      # or ragged return) would recycle into misassigned names.
+      if (n_result == 0 ||
+          !(length(tmp_testcd) %in% c(1L, n_result)) ||
+          !(length(tmp_result) %in% c(1L, n_result))) {
+        rlang::abort(
+          sprintf(
+            "The calculation function '%s' returned %g result name(s) and %g value(s); it must return one value per name",
+            all_intervals[[n]]$FUN, length(tmp_testcd), length(tmp_result)
+          ),
+          class = "pknca_error_calc_result_shape"
         )
-      ret <- rbind(ret, single_result)
+      }
+      row_testcd <- rep_len(tmp_testcd, n_result)
+      row_value <- rep_len(tmp_result, n_result)
+      row_exclude <- rep(exclude_reason, n_result)
+      result_testcd <- c(result_testcd, row_testcd)
+      result_value <- c(result_value, row_value)
+      result_method <- c(result_method, rep(paste(tmp_method, collapse=". "), n_result))
+      result_exclude <- c(result_exclude, row_exclude)
+      # Two calculations giving a result the same name contribute both values,
+      # in calculation order, the way a data.frame of results would.
+      for (idx in seq_len(n_result)) {
+        current_testcd <- row_testcd[[idx]]
+        computed_value[[current_testcd]] <-
+          c(computed_value[[current_testcd]], row_value[[idx]])
+        computed_exclude[[current_testcd]] <-
+          c(computed_exclude[[current_testcd]], row_exclude[[idx]])
+      }
     }
   }
-  ret
+  if (length(result_testcd) == 0) {
+    # Nothing was calculated for this interval
+    data.frame(PPTESTCD=NA, PPORRES=NA)[-1,]
+  } else {
+    data.frame(
+      PPTESTCD=result_testcd,
+      PPORRES=result_value,
+      PPANMETH=result_method,
+      exclude=result_exclude
+    )
+  }
 }

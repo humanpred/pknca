@@ -173,15 +173,7 @@ PKNCA_impute_fun_list <- function(x) {
   # Confirm that the functions exist and are functions
   # Sort will ensure that the results are not NA
   all_funs <- sort(unlist(ret))
-  bad_fun <- character()
-  for (idx in seq_along(all_funs)) {
-    found_fun <- utils::getAnywhere(all_funs[[idx]])
-    if (length(found_fun$objs) == 0) {
-      bad_fun <- c(bad_fun, all_funs[[idx]])
-    } else if (!is.function(found_fun$objs[[1]])) {
-      bad_fun <- c(bad_fun, all_funs[[idx]])
-    }
-  }
+  bad_fun <- all_funs[!vapply(X = all_funs, FUN = PKNCA_impute_fun_exists, FUN.VALUE = TRUE)]
   if (length(bad_fun) > 0) {
     rlang::abort(
       sprintf(
@@ -192,6 +184,15 @@ PKNCA_impute_fun_list <- function(x) {
     )
   }
   ret
+}
+
+# A helper for PKNCA_impute_fun_list that reports whether an imputation method
+# name resolves to a function.  The name is looked up starting from PKNCA's
+# namespace and working outward through the imports, base, the global
+# environment, and the attached packages, which is the same search that
+# pk.nca.interval() uses when it calls the method by name.
+PKNCA_impute_fun_exists <- function(x) {
+  exists(x, mode = "function")
 }
 
 # A helper for PKNCA_impute_fun_list that pastes PKNCA_impute_method_ to the
