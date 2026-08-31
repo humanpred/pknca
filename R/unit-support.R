@@ -415,8 +415,13 @@ pknca_units_table_secondary <- function(units, unit_tables, group_values) {
   units[ref_cols] <- NA_character_
   classification <- parameter_classification()
   params <- names(classification$secondary)[classification$secondary]
-  params <-
-    params[vapply(X = params, FUN = function(p) !is.null(secondary_unit_sides(p)), FUN.VALUE = TRUE)]
+  has_composition <-
+    vapply(
+      X = params,
+      FUN = function(p) !is.null(secondary_unit_sides(p)),
+      FUN.VALUE = TRUE
+    )
+  params <- params[has_composition]
   n_sets <- nrow(group_values)
   has_std <- all(c("PPSTRESU", "conversion_factor") %in% names(units))
   # The factor between one pair of unit strings is the same answer for every
