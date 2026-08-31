@@ -183,6 +183,60 @@ pknca_concept <- function(x) {
   x
 }
 
+# Confirm that a calculation function named in an add.interval.col() argument
+# exists and that its formals map only names its formals.  Used for the `FUN`/
+# `formalsmap` pair and for the sparse-estimator pair, so the argument names are
+# given for the error messages.
+assert_fun_formalsmap <- function(FUN, formalsmap, fun_arg = "FUN", formalsmap_arg = "formalsmap") {
+  checkmate::assert_list(x = formalsmap, names = "unique", .var.name = formalsmap_arg)
+  if (length(formalsmap) > 0) {
+    if (is.na(FUN)) {
+      rlang::abort(
+        sprintf("`%s` may not be provided when `%s` is NA", formalsmap_arg, fun_arg),
+        class = "pknca_error_formalsmap_with_na_fun"
+      )
+    }
+    checkmate::assert_character(
+      x = names(formalsmap), min.chars = 1, any.missing = FALSE,
+      .var.name = sprintf("names(%s)", formalsmap_arg)
+    )
+  }
+  if (is.na(FUN)) {
+    return(invisible(NULL))
+  }
+  # getAnywhere() splits a dotted name into generic.class pairs and looks each
+  # one up with an unqualified getS3method() evaluated in this namespace, so
+  # getS3method has to be imported.  Nearly every PKNCA function name has a dot
+  # in it, and utils is not attached in a subprocess (testthat runs test files
+  # in one), where the package would otherwise fail to load.
+  fun_obj <- utils::getAnywhere(FUN)
+  if (length(fun_obj$objs) == 0) {
+    rlang::abort(
+      sprintf(
+        "The function named '%s' is not defined. Please define it before calling add.interval.col().",
+        FUN
+      ),
+      class = "pknca_error_fun_not_found"
+    )
+  }
+  if (length(formalsmap) > 0) {
+    fun_formals <- names(formals(fun_obj$objs[[1]]))
+    invalid_formals <- setdiff(names(formalsmap), fun_formals)
+    if (length(invalid_formals) > 0) {
+      rlang::abort(
+        sprintf(
+          "All names in `%s` must be arguments to the function '%s'. Invalid names: %s",
+          formalsmap_arg,
+          FUN,
+          paste(dQuote(invalid_formals), collapse = ", ")
+        ),
+        class = "pknca_error_formalsmap_invalid_names"
+      )
+    }
+  }
+  invisible(NULL)
+}
+
 # Validate the `selection` argument of add.interval.col().  Every element is
 # optional; an empty or absent selection means "derive everything".
 assert_selection <- function(selection, name) {
@@ -241,10 +295,21 @@ assert_selection <- function(selection, name) {
 #'   column.
 #' @param desc A human-readable description of the parameter.  SDTM requires
 #'   <=40 characters; a longer description is accepted with a warning.
-#' @param sparse Is the calculation for sparse PK?
+#' @param sparse Is the calculation *only* for sparse PK?  A parameter flagged
+#'   this way is calculated for sparse data and silently skipped for dense data.
+#'   To give one parameter a dense calculation and a sparse one, leave `sparse`
+#'   as `FALSE` and give `FUN_sparse`.
 #' @param formalsmap A named list mapping parameter names in the function call
 #'   to NCA parameter names.  See the details for information on use of
 #'   `formalsmap`.
+#' @param FUN_sparse The function to run (as a character string) when the data
+#'   are sparse PK, or `NA` (the default) when the parameter has no
+#'   sparse-specific estimator.  With sparse data, a parameter that has one uses
+#'   it; a parameter that does not falls back to `FUN` applied to the
+#'   arithmetic-mean profile.  See the details.
+#' @param formalsmap_sparse The `formalsmap` for `FUN_sparse`, which usually has
+#'   a different calling convention than `FUN` (a sparse estimator needs
+#'   `subject`, for example).  May only be given with `FUN_sparse`.
 #' @param datatype The data type used for the calculation. The default is
 #'   `"interval"`, which is currently the only supported value. The
 #'   `"individual"` and `"population"` data types are reserved for future
@@ -294,7 +359,18 @@ assert_selection <- function(selection, name) {
 #' @returns NULL (Calling this function has a side effect of changing the
 #'   available intervals for calculations)
 #'
-#' @details The `formalsmap` argument enables mapping some alternate formal
+#' @details `FUN_sparse` gives a parameter a second calculation function for
+#' sparse PK.  With sparse data, a parameter that has one is calculated with it
+#' -- from the pooled individual samples, and with `formalsmap_sparse` in place
+#' of `formalsmap` -- and its result is reported as a sparse result.  A
+#' parameter with no `FUN_sparse` falls back to `FUN` applied to the
+#' arithmetic-mean profile, which is what sparse data have always done.  A
+#' sparse estimator names its concentration inputs `conc`/`time` the way a dense
+#' one does; those draw from the pooled samples rather than the mean profile.
+#' The estimators PKNCA ships are linear-trapezoidal only, so `auc.method` does
+#' not apply to them.
+#'
+#' The `formalsmap` argument enables mapping some alternate formal
 #' argument names to parameters.  It is used to generalize functions that may
 #' use multiple similar arguments (such as the variants of mean residence time).
 #' The names of the list should correspond to function formal parameter names
@@ -382,6 +458,8 @@ add.interval.col <- function(name,
                              desc="",
                              sparse=FALSE,
                              formalsmap=list(),
+                             FUN_sparse=NA_character_,
+                             formalsmap_sparse=list(),
                              datatype=c("interval",
                                         "individual",
                                         "population"),
@@ -449,54 +527,12 @@ add.interval.col <- function(name,
   datatype <- match.arg(datatype)
   checkmate::assert_choice(x = datatype, choices = "interval")
 
-  # Validate formalsmap
-  checkmate::assert_list(x = formalsmap, names = "unique")
-
-  # Validate formalsmap and function compatibility
-  if (length(formalsmap) > 0) {
-    # Ensure FUN exists
-    if (is.na(FUN)) {
-      rlang::abort("`formalsmap` may not be provided when `FUN` is NA", class = "pknca_error_formalsmap_with_na_fun")
-    }
-    # Ensure formalsmap names are unique
-    checkmate::assert_character(x = names(formalsmap), min.chars = 1, any.missing = FALSE)
-  }
-  
-  # Ensure that the function exists
-  if (!is.na(FUN)) {
-    # getAnywhere() splits a dotted name into generic.class pairs and looks each
-    # one up with an unqualified getS3method() evaluated in this namespace, so
-    # getS3method has to be imported.  Nearly every PKNCA function name has a dot
-    # in it, and utils is not attached in a subprocess (testthat runs test files
-    # in one), where the package would otherwise fail to load.
-    fun_obj <- utils::getAnywhere(FUN)
-    if (length(fun_obj$objs) == 0) {
-      rlang::abort(
-        sprintf(
-          "The function named '%s' is not defined. Please define it before calling add.interval.col().",
-          FUN
-        ),
-        class = "pknca_error_fun_not_found"
-      )
-    }
-
-    # Validate formalsmap parameters match function formals
-    if (length(formalsmap) > 0) {
-      fun_formals <- names(formals(fun_obj$objs[[1]]))
-      invalid_formals <- setdiff(names(formalsmap), fun_formals)
-      if (length(invalid_formals) > 0) {
-        rlang::abort(
-          sprintf(
-            "All names in `formalsmap` must be arguments to the function '%s'. Invalid names: %s",
-            FUN,
-            paste(dQuote(invalid_formals), collapse = ", ")
-          ),
-          class = "pknca_error_formalsmap_invalid_names"
-        )
-      }
-    }
-
-  }
+  assert_fun_formalsmap(FUN = FUN, formalsmap = formalsmap)
+  checkmate::assert_character(x = FUN_sparse, len = 1, any.missing = TRUE) # allows NA
+  assert_fun_formalsmap(
+    FUN = FUN_sparse, formalsmap = formalsmap_sparse,
+    fun_arg = "FUN_sparse", formalsmap_arg = "formalsmap_sparse"
+  )
 
   # Default CDISC mappings to name/desc when not provided
   if (is.null(pptestcd_cdisc)) {
@@ -519,12 +555,14 @@ add.interval.col <- function(name,
   current[[name]] <-
     list(
       FUN=FUN,
+      FUN_sparse=FUN_sparse,
       values=values,
       unit_type=unit_type,
       pretty_name=pretty_name,
       desc=desc,
       sparse=sparse,
       formalsmap=formalsmap,
+      formalsmap_sparse=formalsmap_sparse,
       depends=depends,
       datatype=datatype,
       pptestcd_cdisc=pptestcd_cdisc,
@@ -612,6 +650,43 @@ sort_interval_cols <- function() {
 get.interval.cols <- function() {
   sort_interval_cols()
   get("interval.cols", envir=.PKNCAEnv)
+}
+
+# The parameters that have a sparse-specific estimator (see the `FUN_sparse`
+# argument of add.interval.col()).
+fun_sparse_params <- function() {
+  all_intervals <- get.interval.cols()
+  has_fun_sparse <-
+    vapply(
+      X = all_intervals,
+      FUN = function(x) !is.null(x$FUN_sparse) && !is.na(x$FUN_sparse),
+      FUN.VALUE = TRUE
+    )
+  names(all_intervals)[has_fun_sparse]
+}
+
+# The parameters that only sparse data can produce:  a companion registered with
+# `FUN = NA` that is a column of a sparse estimator's returned data.frame (an
+# AUC's standard error and degrees of freedom, say), so every parameter it
+# depends on is calculated by a `FUN_sparse`.  Dense data run the dense `FUN`,
+# which returns the point estimate alone, so requesting one of these on dense
+# data can never give a result and is an error rather than a silent nothing.
+# The `sparse = TRUE` parameters are not included:  those are the older
+# sparse-only registrations, which are skipped rather than refused for dense
+# data.
+sparse_only_params <- function() {
+  all_intervals <- get.interval.cols()
+  with_fun_sparse <- fun_sparse_params()
+  is_companion <-
+    vapply(
+      X = all_intervals,
+      FUN = function(x) {
+        is.na(x$FUN) && !isTRUE(x$sparse) &&
+          (length(x$depends) > 0) && all(x$depends %in% with_fun_sparse)
+      },
+      FUN.VALUE = TRUE
+    )
+  names(all_intervals)[is_companion]
 }
 
 # Add the start and end interval columns

@@ -778,3 +778,47 @@ test_that("pk.calc.auc and wrappers: method attribute is set and propagated", {
     }
   }
 })
+
+test_that("the sparse estimators report under the unified parameter names", {
+  d_sparse <-
+    data.frame(
+      id = c(1L, 2L, 3L, 1L, 2L, 3L, 1L, 2L, 3L, 4L, 5L, 6L, 4L, 5L, 6L, 7L, 8L, 9L, 7L, 8L, 9L),
+      conc = c(0, 0, 0, 1.75, 2.2, 1.58, 4.63, 2.99, 1.52, 3.03, 1.98, 2.22, 3.34, 1.3, 1.22, 3.54, 2.84, 2.55, 0.3, 0.0421, 0.231),
+      time = c(0, 0, 0, 1, 1, 1, 6, 6, 6, 2, 2, 2, 10, 10, 10, 4, 4, 4, 24, 24, 24)
+    )
+  # A serial design (one sample per animal) so that the degrees of freedom are
+  # calculable and no warning is raised
+  subject <- seq_len(nrow(d_sparse))
+
+  auc_unified <- pk.calc.auclast_sparse(conc = d_sparse$conc, time = d_sparse$time, subject = subject)
+  auc_legacy <- pk.calc.sparse_auclast(conc = d_sparse$conc, time = d_sparse$time, subject = subject)
+  expect_equal(names(auc_unified), c("auclast", "auclast_se", "auclast_df"))
+  expect_equal(as.numeric(unlist(auc_unified)), as.numeric(unlist(auc_legacy)))
+  # The method annotation moves onto the data.frame, where pk.nca.interval()
+  # reads it for PPANMETH
+  expect_equal(
+    attr(auc_unified, "method"),
+    c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")
+  )
+  expect_null(attr(auc_unified$auclast, "method"))
+
+  aumc_unified <- pk.calc.aumclast_sparse(conc = d_sparse$conc, time = d_sparse$time, subject = subject)
+  aumc_legacy <- pk.calc.sparse_aumclast(conc = d_sparse$conc, time = d_sparse$time, subject = subject)
+  expect_equal(names(aumc_unified), c("aumclast", "aumclast_se", "aumclast_df"))
+  expect_equal(as.numeric(unlist(aumc_unified)), as.numeric(unlist(aumc_legacy)))
+  expect_equal(
+    attr(aumc_unified, "method"),
+    c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")
+  )
+
+  # The estimators are linear-trapezoidal only, the same as the functions they
+  # wrap
+  expect_error(
+    pk.calc.auclast_sparse(conc = d_sparse$conc, time = d_sparse$time, subject = subject, method = "lin up/log down"),
+    class = "pknca_error_sparse_auc_method"
+  )
+  expect_error(
+    pk.calc.aumclast_sparse(conc = d_sparse$conc, time = d_sparse$time, subject = subject, method = "lin up/log down"),
+    class = "pknca_error_sparse_aumc_method"
+  )
+})

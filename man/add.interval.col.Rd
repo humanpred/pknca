@@ -14,6 +14,8 @@ add.interval.col(
   desc = "",
   sparse = FALSE,
   formalsmap = list(),
+  FUN_sparse = NA_character_,
+  formalsmap_sparse = list(),
   datatype = c("interval", "individual", "population"),
   pptestcd_cdisc = NULL,
   pptest_cdisc = NULL,
@@ -50,11 +52,24 @@ column.}
 \item{desc}{A human-readable description of the parameter.  SDTM requires
 <=40 characters; a longer description is accepted with a warning.}
 
-\item{sparse}{Is the calculation for sparse PK?}
+\item{sparse}{Is the calculation \emph{only} for sparse PK?  A parameter flagged
+this way is calculated for sparse data and silently skipped for dense data.
+To give one parameter a dense calculation and a sparse one, leave \code{sparse}
+as \code{FALSE} and give \code{FUN_sparse}.}
 
 \item{formalsmap}{A named list mapping parameter names in the function call
 to NCA parameter names.  See the details for information on use of
 \code{formalsmap}.}
+
+\item{FUN_sparse}{The function to run (as a character string) when the data
+are sparse PK, or \code{NA} (the default) when the parameter has no
+sparse-specific estimator.  With sparse data, a parameter that has one uses
+it; a parameter that does not falls back to \code{FUN} applied to the
+arithmetic-mean profile.  See the details.}
+
+\item{formalsmap_sparse}{The \code{formalsmap} for \code{FUN_sparse}, which usually has
+a different calling convention than \code{FUN} (a sparse estimator needs
+\code{subject}, for example).  May only be given with \code{FUN_sparse}.}
 
 \item{datatype}{The data type used for the calculation. The default is
 \code{"interval"}, which is currently the only supported value. The
@@ -116,6 +131,17 @@ available intervals for calculations)
 Add columns for calculations within PKNCA intervals
 }
 \details{
+\code{FUN_sparse} gives a parameter a second calculation function for
+sparse PK.  With sparse data, a parameter that has one is calculated with it
+-- from the pooled individual samples, and with \code{formalsmap_sparse} in place
+of \code{formalsmap} -- and its result is reported as a sparse result.  A
+parameter with no \code{FUN_sparse} falls back to \code{FUN} applied to the
+arithmetic-mean profile, which is what sparse data have always done.  A
+sparse estimator names its concentration inputs \code{conc}/\code{time} the way a dense
+one does; those draw from the pooled samples rather than the mean profile.
+The estimators PKNCA ships are linear-trapezoidal only, so \code{auc.method} does
+not apply to them.
+
 The \code{formalsmap} argument enables mapping some alternate formal
 argument names to parameters.  It is used to generalize functions that may
 use multiple similar arguments (such as the variants of mean residence time).

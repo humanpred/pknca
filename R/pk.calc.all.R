@@ -55,6 +55,9 @@ pk.nca <- function(data, verbose=FALSE) {
     # them.  Both are in scope for every interval, and each parameter draws from
     # the one its registration calls for.
     sparse <- is_sparse_pk(data)
+    if (sparse) {
+      inform_sparse_auc_method(data_calc$intervals, options = data$options)
+    }
     if (verbose) {
       rlang::inform("Starting PK NCA calculations.", class = "pknca_message_pk_start")
     }
@@ -191,6 +194,49 @@ any_sparse_dense_in_interval <- function(interval, sparse) {
       FUN.VALUE = TRUE
     ) %in% sparse
   )
+}
+
+# The sparse estimators are defined for the linear trapezoidal rule only (the
+# Nedelman-Jia/Holder variance needs fixed per-time-point weights), so
+# `auc.method` does not reach them.  Say so once per pk.nca() call when the
+# option asks for something else and an estimator is actually going to run,
+# because the same parameter calculated on dense data would have honored it.
+inform_sparse_auc_method <- function(intervals, options) {
+  auc_method <- PKNCA.choose.option("auc.method", options = options)
+  if (identical(auc_method, "linear")) {
+    return(invisible(NULL))
+  }
+  affected <- intersect(fun_sparse_params(), interval_requested_params(intervals))
+  if (length(affected) == 0) {
+    return(invisible(NULL))
+  }
+  rlang::inform(
+    sprintf(
+      "The sparse estimators use the linear trapezoidal rule, so the auc.method option (\"%s\") does not apply to: %s",
+      auc_method, paste(affected, collapse=", ")
+    ),
+    class = "pknca_message_sparse_auc_method"
+  )
+}
+
+# Every parameter an interval specification asks for, including the ones needed
+# only as a dependency of something else.  The registry is sorted so that a
+# parameter comes after everything it depends on, so one reverse pass closes the
+# dependencies of dependencies -- the same expansion pk.nca.interval() does for
+# a single interval, here over the whole specification.
+interval_requested_params <- function(intervals) {
+  all_intervals <- get.interval.cols()
+  param_names <- setdiff(names(all_intervals), c("start", "end"))
+  requested <- stats::setNames(logical(length(param_names)), param_names)
+  for (n in intersect(param_names, names(intervals))) {
+    requested[[n]] <- any(intervals[[n]] %in% TRUE)
+  }
+  for (n in rev(param_names)) {
+    if (requested[[n]]) {
+      requested[all_intervals[[n]]$depends] <- TRUE
+    }
+  }
+  names(requested)[requested]
 }
 
 # The data source a sparse parameter's calculation function reads when its
@@ -491,15 +537,23 @@ combine_exclude_reasons <- function(from_inputs, from_result) {
 #
 # Both depend only on the registry entry, so they are worked out on first use
 # and cached there, the same way `requires_*` is (see set_requires_inputs()).
-# Re-registering a parameter replaces its whole entry, cache included.
-parameter_arg_spec <- function(param) {
+# Re-registering a parameter replaces its whole entry, cache included.  A
+# parameter with a sparse estimator has two specs, one per calling convention,
+# selected and cached by `sparse`.
+parameter_arg_spec <- function(param, sparse = FALSE) {
   all_intervals <- get.interval.cols()
-  cached <- all_intervals[[param]]$arg_spec
+  cache_name <- if (sparse) "arg_spec_sparse" else "arg_spec"
+  cached <- all_intervals[[param]][[cache_name]]
   if (!is.null(cached)) {
     return(cached)
   }
-  fun_formals <- formals(get(all_intervals[[param]]$FUN))
-  formalsmap <- all_intervals[[param]]$formalsmap
+  if (sparse) {
+    fun_formals <- formals(get(all_intervals[[param]]$FUN_sparse))
+    formalsmap <- all_intervals[[param]]$formalsmap_sparse
+  } else {
+    fun_formals <- formals(get(all_intervals[[param]]$FUN))
+    formalsmap <- all_intervals[[param]]$formalsmap
+  }
   arg_names <- setdiff(names(fun_formals), "...")
   arglist <- stats::setNames(object = as.list(arg_names), arg_names)
   arglist[names(formalsmap)] <- formalsmap
@@ -512,7 +566,7 @@ parameter_arg_spec <- function(param) {
       FUN.VALUE = TRUE
     )
   ret <- list(arglist = arglist, required = names(arglist)[has_no_default])
-  all_intervals[[param]]$arg_spec <- ret
+  all_intervals[[param]][[cache_name]] <- ret
   assign("interval.cols", all_intervals, envir = .PKNCAEnv)
   ret
 }
@@ -694,17 +748,24 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     )
   # Do the calculations
   for (n in setdiff(names(requested)[requested], deferred)) {
-    has_calculation_function <- !is.na(all_intervals[[n]]$FUN)
     is_sparse_param <- isTRUE(all_intervals[[n]]$sparse)
-    # A sparse parameter has nothing to calculate from without the pooled
+    # A parameter with a sparse estimator uses it when the pooled samples are
+    # there, and otherwise falls back to its dense function on the mean profile.
+    fun_sparse <- all_intervals[[n]]$FUN_sparse
+    use_fun_sparse <- has_sparse_conc && !is.null(fun_sparse) && !is.na(fun_sparse)
+    current_fun <- if (use_fun_sparse) fun_sparse else all_intervals[[n]]$FUN
+    # Whichever function ran, a result calculated from the pooled samples is a
+    # sparse result
+    from_sparse <- is_sparse_param || use_fun_sparse
+    # A sparse-only parameter has nothing to calculate from without the pooled
     # samples, so it is skipped for dense PK.
-    if (has_calculation_function && (has_sparse_conc || !is_sparse_param)) {
+    if (!is.na(current_fun) && (has_sparse_conc || !is_sparse_param)) {
       call_args <- list()
       exclude_from_argument <- character(0)
       # Prepare to call the function by setting up its arguments.
-      arg_spec <- parameter_arg_spec(n)
+      arg_spec <- parameter_arg_spec(n, sparse = use_fun_sparse)
       arglist <- arg_spec$arglist
-      if (is_sparse_param) {
+      if (from_sparse) {
         arglist <- remap_sparse_sources(arglist)
       }
       for (arg_formal in names(arglist)) {
@@ -777,7 +838,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
             rlang::abort(
               sprintf(
                 "Cannot find argument %s for NCA parameter '%s' (calculated by '%s'); give it as a column in the interval specification",
-                arg_text, n, all_intervals[[n]]$FUN
+                arg_text, n, current_fun
               ),
               class = "pknca_error_missing_nca_argument"
             )
@@ -806,7 +867,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         }
       }
       # Do the calculation
-      tmp_result <- do.call(all_intervals[[n]]$FUN, call_args)
+      tmp_result <- do.call(current_fun, call_args)
       # The handling of the exclude column is documented in the
       # "vignettes/v80-writing-parameter-functions.Rmd" vignette.  Document any
       # changes to this section of code there.
@@ -837,7 +898,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         rlang::abort(
           sprintf(
             "The calculation function '%s' returned %g result name(s) and %g value(s); it must return one value per name",
-            all_intervals[[n]]$FUN, length(tmp_testcd), length(tmp_result)
+            current_fun, length(tmp_testcd), length(tmp_result)
           ),
           class = "pknca_error_calc_result_shape"
         )
@@ -849,7 +910,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       result_value <- c(result_value, row_value)
       result_method <- c(result_method, rep(paste(tmp_method, collapse=". "), n_result))
       result_exclude <- c(result_exclude, row_exclude)
-      result_sparse <- c(result_sparse, rep(is_sparse_param, n_result))
+      result_sparse <- c(result_sparse, rep(from_sparse, n_result))
       # Two calculations giving a result the same name contribute both values,
       # in calculation order, the way a data.frame of results would.
       for (idx in seq_len(n_result)) {

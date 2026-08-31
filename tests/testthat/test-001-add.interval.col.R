@@ -14,7 +14,7 @@ test_that("sparse-derived parameters are each registered exactly once", {
   expect_equal(anyDuplicated(names(cols)), 0L)
   # Pin the registry size so that a lost or accumulating registration is
   # caught; update the value when a parameter is added or removed.
-  expect_length(cols, 221)
+  expect_length(cols, 225)
 })
 
 test_that("add.interval.col", {
@@ -180,12 +180,14 @@ test_that("add.interval.col", {
     },
     list(
       FUN=NA,
+      FUN_sparse=NA_character_,
       values=c(FALSE, TRUE),
       unit_type="conc",
       pretty_name="a",
       desc="test addition",
       sparse=FALSE,
       formalsmap=list(),
+      formalsmap_sparse=list(),
       depends=NULL,
       datatype="interval",
       pptestcd_cdisc="a",
@@ -203,12 +205,14 @@ test_that("add.interval.col", {
     },
     list(
       FUN="mean",
+      FUN_sparse=NA_character_,
       values=c(FALSE, TRUE),
       unit_type="conc",
       pretty_name="a",
       desc="test addition",
       sparse=FALSE,
       formalsmap=list(),
+      formalsmap_sparse=list(),
       depends=NULL,
       datatype="interval",
       pptestcd_cdisc="a",
@@ -226,12 +230,14 @@ test_that("add.interval.col", {
     },
     list(
       FUN="mean",
+      FUN_sparse=NA_character_,
       values=c(FALSE, TRUE),
       unit_type="conc",
       pretty_name="a",
       desc="test addition",
       sparse=FALSE,
       formalsmap=list(x="values"),
+      formalsmap_sparse=list(),
       depends=NULL,
       datatype="interval",
       pptestcd_cdisc="a",
@@ -246,6 +252,66 @@ test_that("add.interval.col", {
 
 # Reset the original state
 assign("interval.cols", original_state, envir=PKNCA:::.PKNCAEnv)
+
+test_that("add.interval.col validates FUN_sparse and formalsmap_sparse", {
+  local_interval_cols()
+  expect_error(
+    add.interval.col(name = "a", FUN = "mean", unit_type = "conc", pretty_name = "a", FUN_sparse = 1),
+    regexp = "Must be of type 'character'"
+  )
+  expect_error(
+    add.interval.col(name = "a", FUN = "mean", unit_type = "conc", pretty_name = "a", FUN_sparse = c("mean", "median")),
+    regexp = "Must have length 1"
+  )
+  expect_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc", pretty_name = "a",
+      FUN_sparse = "this function does not exist"
+    ),
+    class = "pknca_error_fun_not_found"
+  )
+  # formalsmap_sparse needs a FUN_sparse to map onto
+  expect_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc", pretty_name = "a",
+      formalsmap_sparse = list(x = "conc")
+    ),
+    regexp = "`formalsmap_sparse` may not be provided when `FUN_sparse` is NA",
+    class = "pknca_error_formalsmap_with_na_fun"
+  )
+  # and may only name formals of FUN_sparse
+  expect_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc", pretty_name = "a",
+      FUN_sparse = "mean", formalsmap_sparse = list(not_a_formal = "conc")
+    ),
+    regexp = "All names in `formalsmap_sparse` must be arguments to the function 'mean'",
+    class = "pknca_error_formalsmap_invalid_names"
+  )
+  # A valid pair is stored
+  add.interval.col(
+    name = "a", FUN = "mean", unit_type = "conc", pretty_name = "a", desc = "test addition",
+    FUN_sparse = "mean", formalsmap_sparse = list(x = "conc.sparse")
+  )
+  stored <- get.interval.cols()[["a"]]
+  expect_equal(stored$FUN_sparse, "mean")
+  expect_equal(stored$formalsmap_sparse, list(x = "conc.sparse"))
+})
+
+test_that("the sparse estimators and the parameters only they can produce are enumerated", {
+  # Every parameter that ships with a sparse estimator, and every companion that
+  # only such an estimator returns.  A new registration of either kind must be
+  # added here deliberately, because a sparse-only parameter is refused for
+  # dense data (see assert_intervals()).
+  expect_equal(fun_sparse_params(), c("auclast", "aumclast"))
+  expect_setequal(
+    sparse_only_params(),
+    c("auclast_se", "auclast_df", "aumclast_se", "aumclast_df")
+  )
+  # The older sparse-only registrations keep the `sparse` flag and are not
+  # treated as companions
+  expect_false(any(c("sparse_auc_se", "sparse_aumc_se") %in% sparse_only_params()))
+})
 
 test_that("fake parameters", {
   add.interval.col(

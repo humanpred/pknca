@@ -125,3 +125,27 @@ test_that("assert_intervals points a renamed parameter at its new name", {
     )
   expect_match(conditionMessage(err), "'f' is now named 'f.obs'", fixed = TRUE)
 })
+
+test_that("assert_intervals refuses a sparse-only parameter for dense data", {
+  d_conc <- data.frame(id = 1L, conc = c(0, 2, 1, 0.5), time = c(0, 1, 2, 4))
+  o_data_dense <- PKNCAdata(PKNCAconc(d_conc, conc~time|id), intervals = data.frame(start = 0, end = 4, cmax = TRUE))
+  expect_error(
+    assert_intervals(data.frame(start = 0, end = 4, auclast_se = TRUE, auclast_df = TRUE), o_data_dense),
+    regexp = "These parameters are only calculated for sparse PK.*auclast_se, auclast_df",
+    class = "pknca_error_sparse_only_parameter"
+  )
+  # Requesting it as FALSE is not a request
+  expect_no_error(
+    assert_intervals(data.frame(start = 0, end = 4, cmax = TRUE, auclast_se = FALSE), o_data_dense)
+  )
+
+  d_sparse <- data.frame(id = 1:8, conc = c(0, 0, 2, 3, 1, 1.5, 0.4, 0.6), time = rep(c(0, 1, 2, 4), each = 2))
+  o_data_sparse <-
+    PKNCAdata(
+      PKNCAconc(d_sparse, conc~time|id, sparse = TRUE),
+      intervals = data.frame(start = 0, end = 4, cmax = TRUE)
+    )
+  expect_no_error(
+    assert_intervals(data.frame(start = 0, end = 4, auclast_se = TRUE), o_data_sparse)
+  )
+})

@@ -353,6 +353,64 @@ pk.calc.aumc.all <- function(conc, time, ..., options=list()) {
 
 pknca_concept(pk.calc.aumc.all) <- "aumc"
 
+# Move a sparse estimator's result into the unified parameter's namespace:  the
+# point estimate keeps the parameter's own name and the standard error and
+# degrees of freedom take the `_se` and `_df` suffixes.  The method annotation
+# moves from the individual columns onto the data.frame, which is where
+# pk.nca.interval() reads it for PPANMETH.
+unify_sparse_result <- function(x, name, method) {
+  if (!is.data.frame(x) || (ncol(x) != 3)) {
+    rlang::abort(
+      "Please report a bug.  A sparse estimator must return a three-column data.frame of estimate, standard error, and degrees of freedom.",
+      class = "pknca_error_internal_sparse_result_shape"
+    )  # nocov
+  }
+  ret <-
+    stats::setNames(
+      # as.numeric() drops the per-column method attributes
+      data.frame(as.numeric(x[[1]]), as.numeric(x[[2]]), as.numeric(x[[3]])),
+      nm = paste0(name, c("", "_se", "_df"))
+    )
+  attr(ret, "method") <- method
+  ret
+}
+
+#' Sparse estimators for the AUC and AUMC to the last measured concentration
+#'
+#' These are the `FUN_sparse` of `auclast` and `aumclast`:  with sparse PK,
+#' [pk.nca()] estimates those parameters from the pooled individual samples with
+#' the Bailer point estimate and the Nedelman-Jia/Holder standard error rather
+#' than integrating the arithmetic-mean profile.  They wrap
+#' [pk.calc.sparse_auclast()] and [pk.calc.sparse_aumclast()], reporting the
+#' results under the unified parameter names.
+#'
+#' @inheritParams pk.calc.sparse_auc
+#' @returns A data.frame with the point estimate, its standard error, and the
+#'   degrees of freedom, named for the parameter (`auclast`, `auclast_se`, and
+#'   `auclast_df`, or the `aumclast` equivalents)
+#' @details The sparse variance theory is defined for the linear trapezoidal
+#'   rule only, so these ignore the `auc.method` option; [pk.nca()] says so when
+#'   the option is set to anything else.
+#' @family Sparse Methods
+#' @export
+pk.calc.auclast_sparse <- function(conc, time, subject, ..., options=list()) {
+  unify_sparse_result(
+    pk.calc.sparse_auclast(conc=conc, time=time, subject=subject, ..., options=options),
+    name="auclast",
+    method=c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")
+  )
+}
+
+#' @describeIn pk.calc.auclast_sparse Sparse AUMClast
+#' @export
+pk.calc.aumclast_sparse <- function(conc, time, subject, ..., options=list()) {
+  unify_sparse_result(
+    pk.calc.sparse_aumclast(conc=conc, time=time, subject=subject, ..., options=options),
+    name="aumclast",
+    method=c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")
+  )
+}
+
 # Add the columns to the interval specification
 add.interval.col("aucinf.obs",
                  FUN="pk.calc.auc.inf.obs",
@@ -379,6 +437,7 @@ add.interval.col("aucinf.pred",
 
 add.interval.col("auclast",
                  FUN="pk.calc.auc.last",
+                 FUN_sparse="pk.calc.auclast_sparse",
                  values=c(FALSE, TRUE),
                  unit_type="auc",
                  pretty_name="AUClast",
@@ -388,6 +447,30 @@ add.interval.col("auclast",
                  formula="$AUC_{\\text{last}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule (linear-up/log-down by default)",
                  tier = "common")
+
+add.interval.col("auclast_se",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="auc",
+                 pretty_name="AUClast standard error",
+                 desc="SE of AUClast (sparse PK only)",
+                 depends="auclast",
+                 pptestcd_cdisc="SPARSEAS",
+                 pptest_cdisc="Sparse AUClast standard error",
+                 formula="$SE(AUC_{\\text{last}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$",
+                 formula_note="Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001)")
+
+add.interval.col("auclast_df",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="count",
+                 pretty_name="AUClast degrees of freedom",
+                 desc="DF for AUClast (sparse PK only)",
+                 depends="auclast",
+                 pptestcd_cdisc="SPARSEAD",
+                 pptest_cdisc="Sparse AUClast degrees of freedom",
+                 formula="$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$",
+                 formula_note="Satterthwaite approximation (Nedelman et al 1995, eq. 6a)")
 
 add.interval.col("aucall",
                  FUN="pk.calc.auc.all",
@@ -424,6 +507,7 @@ add.interval.col("aumcinf.pred",
 
 add.interval.col("aumclast",
                  FUN="pk.calc.aumc.last",
+                 FUN_sparse="pk.calc.aumclast_sparse",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMC,last",
@@ -432,6 +516,26 @@ add.interval.col("aumclast",
                  pptest_cdisc="AUMC to Last Nonzero Conc",
                  formula="$AUMC_{\\text{last}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule (linear-up/log-down by default)")
+
+add.interval.col("aumclast_se",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="aumc",
+                 pretty_name="AUMC,last standard error",
+                 desc="SE of AUMClast (sparse PK only)",
+                 depends="aumclast",
+                 formula="$SE(AUMC_{\\text{last}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$",
+                 formula_note="Variance from the weighted covariance of the moment curve across subjects")
+
+add.interval.col("aumclast_df",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="count",
+                 pretty_name="AUMC,last degrees of freedom",
+                 desc="DF for AUMClast (sparse PK only)",
+                 depends="aumclast",
+                 formula="$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$",
+                 formula_note="Satterthwaite approximation (Nedelman et al 1995, eq. 6a)")
 
 add.interval.col("aumcall",
                  FUN="pk.calc.aumc.all",
@@ -453,4 +557,11 @@ PKNCA.set.summary(
   description="geometric mean and geometric coefficient of variation",
   point=business.geomean,
   spread=business.geocv
+)
+
+PKNCA.set.summary(
+  name=c("auclast_se", "auclast_df", "aumclast_se", "aumclast_df"),
+  description="arithmetic mean and standard deviation",
+  point=business.mean,
+  spread=business.sd
 )
