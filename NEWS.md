@@ -570,8 +570,9 @@ when the issue is due to an excluded point (#310)
   warnings.  Imputation methods are resolved without scanning the search path,
   each interval visits only the parameters it requests rather than every
   registered one, half-life candidate fits are no longer assembled as
-  data.frames, and the results of an interval become one data.frame instead of
-  one per parameter.  How much time this saves depends on the analysis:  a
+  data.frames, the results of an interval become one data.frame instead of
+  one per parameter, and input validation no longer builds a data.frame that
+  every caller discarded.  How much time this saves depends on the analysis:  a
   dense single-dose data set spends about half as long as it did, and a
   multiple-dose one with several intervals per subject about two thirds.
 
