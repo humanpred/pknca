@@ -106,6 +106,8 @@ A secondary parameter is calculated after every interval has been calculated, fr
 
 Exclusions cross the link with no help from the function.  As for any parameter, the `exclude` reasons of all of the inputs -- from either interval -- are joined with `"; "`, the `exclude` attribute the function set on its own return value is added to them, and `"DO NOT EXCLUDE"` on the return value clears all of them.  An excluded plasma AUC therefore cannot quietly become a reported renal clearance.
 
+Units are the one thing a new secondary parameter does not get for free.  Where units are given per group, the two intervals can report theirs differently, and `pknca_units_table` composes the units of `pk.calc.clr`, `pk.calc.ratio`, and `pk.calc.f` from both sides for that reason.  A parameter built on a calculation function of your own is given the units of its `unit_type` under its own interval's group, as any primary parameter is;  supply a `units` table to `PKNCAdata` if that is not what its two sides mean.
+
 # Tell PKNCA How to Summarize the Parameter
 
 For any parameter, PKNCA needs to know how to summarize it for the `summary` function of the `PKNCAresults` class.  To tell PKNCA how to summarize a parameter, use the `PKNCA.set.summary` function.  It takes at least these four arguments:
