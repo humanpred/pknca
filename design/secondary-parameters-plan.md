@@ -1673,15 +1673,16 @@ code over the sketches:
   through `group_ref`.
 * `_pkgdown.yml` still lists no vignettes or reference index, so it is
   unchanged as section 6.2 item 3 anticipated.
-* **Found while writing the vignette, not fixed here:**
-  `as.data.frame(filter_requested = TRUE)` joins the results against the
-  pivoted intervals and so returns every remaining intervals column, which now
-  includes `interval_id` and the pointer columns.  A urine row's
-  `clr.last_ref` therefore appears beside its `ae` result as if `ae` were
-  linked.  The leak has always applied to `impute` and is a
-  `class-PKNCAresults` concern rather than a secondary-parameter one, so the
-  vignette selects the columns it displays and the fix is left for its own
-  change.
+* **`as.data.frame(filter_requested = TRUE)` shows the linkage columns, and
+  that is the intended behavior** (maintainer clarification, 2026-08-31):
+  the join deliberately returns the interval-level metadata columns
+  (`impute` and the grouping columns are intentional in that output), and
+  `interval_id` and the pointer columns behave identically -- they describe
+  the interval row, so a pointer also appears beside the row's other
+  parameters (`clr.last_ref` next to `ae`), just as a shared `impute` does.
+  An implementation report initially miscategorized this as a leak; it is
+  not, and there is nothing to fix.  The vignette selects display columns
+  for narrative width only.
 
 ---
 
