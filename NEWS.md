@@ -566,6 +566,10 @@ when the issue is due to an excluded point (#310)
   chosen automatically, and `pknca_check_parameter_classification()` reports
   those.
 
+* `lambda.z.corrxy` is now numeric (`NA_real_`) rather than a logical `NA` when
+  the correlation cannot be computed, so the column has the same type whether or
+  not the half-life fit used more than one point.
+
 ## Minor changes (unlikely to affect PKNCA use)
 
 * Remove dead code: unused internal functions, commented-out code, unused
