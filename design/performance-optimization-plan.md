@@ -141,3 +141,53 @@ invalidated the same way.  Readability neutral.
   is dropped, not defended.
 - One item per commit (or pull request, for item 5), so any regression
   bisects to a single optimization.
+
+## As implemented
+
+Items 1, 2, 3, 4, and 6 were implemented on branch
+`claude/performance-optimizations`, one commit each; item 5 was left alone, as
+planned.  Item 2 has a second commit: the argument-resolution ladder that fed
+the calculations was replaced with a per-interval map of data sources, which is
+readability work rather than an optimization and is separately revertible.
+
+Absolute times are environment-noisy — measured on one shared Windows
+workstation whose load varied by more than a factor of two across the
+measurement window — so the ratios are the claim, not the seconds.  Each number
+is the minimum of three `pk.nca()` repetitions on the workload, and the before
+and after runs of a pair were taken back to back on the same machine state.
+
+| Workload | Result rows | Before (s) | After (s) | Ratio |
+|---|---|---|---|---|
+| A — dense single-dose crossover | 6,000 | 20.3 | 7.8 | 0.38 |
+| B — multiple dose, many intervals | 5,400 | 10.4 | 6.3 | 0.61 |
+| C — secondary parameters | 450 | 4.3 | 2.8 | 0.65 |
+
+The table is the least-contended of five paired runs.  Across all five the
+ratios ranged 0.38–0.63 (A), 0.58–0.83 (B), and 0.58–0.78 (C), the high end
+coming from the runs under the heaviest machine load.  The plan's expectation
+of "roughly 40% of engine time on workload A" was met and exceeded.
+
+Each item was measured on top of the ones before it, in the order implemented
+(workload A, minimum of three):
+
+| Item | Workload A | Effect |
+|---|---|---|
+| 1 — imputation lookup | 21.8 → 13.4 s | −38%, above the profiled 28% |
+| 6 — formals cache | 13.4 → 13.4 s | below the measurement noise |
+| 4 — requested-set iteration | 13.4 → 11.9 s | −11% (workload B, −19%) |
+| 3 — half-life fit assembly | 11.9 → 10.5 s | −12% (workload B, −10%) |
+| 2 — result assembly | 10.5 → 9.1 s | −13% (workload B, −19%) |
+
+Three notes on the plan itself:
+
+- Item 6's payoff is real but small: the cached lookup is 18 times cheaper per
+  call than rebuilding the formals, and it runs a few thousand times in
+  workload A, so the saving is a few hundred milliseconds and does not clear
+  the noise floor.  It was kept because it also removes a repeated
+  `formals(get(FUN))` from the argument-resolution fall-through.
+- Item 3's note about `# nocov` markers does not apply:  `R/half.life.R` has
+  none.  `fit_half_life_tobit()` kept its data.frame, because its candidates
+  are combined with `rbind()` and `stats::optim()` dominates that path.
+- Integrity was checked beyond the test suite:  the full
+  `as.data.frame(pk.nca(...))` of all three workloads, and `summary()` of
+  workload A, are `identical()` to the values from before any change.
