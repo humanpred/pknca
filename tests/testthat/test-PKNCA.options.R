@@ -56,6 +56,7 @@ test_that("PKNCA.options", {
     PKNCA.options(),
     list(
       adj.r.squared.factor = 0.0001,
+      r.squared.factor = NA_real_,
       max.missing = 0.5,
       auc.method = "lin up/log down",
       conc.na = "drop",
@@ -108,6 +109,24 @@ test_that("PKNCA.options", {
   expect_equal(v1, 0.9)
   expect_warning(PKNCA.options(adj.r.squared.factor=0.9, check=TRUE),
                  regexp="adj.r.squared.factor is usually <0.01")
+  expect_equal(PKNCA.options(adj.r.squared.factor=NA, check=TRUE), NA_real_)
+
+  # r.squared.factor
+  expect_error(PKNCA.options(r.squared.factor=c(0.1, 0.9), check=TRUE),
+               regexp="Must have length 1")
+  expect_error(PKNCA.options(r.squared.factor=1, check=TRUE),
+               regexp="r.squared.factor must be between 0 and 1, exclusive",
+               class="pknca_error_r.squared.factor_out_of_bounds")
+  expect_error(PKNCA.options(r.squared.factor=0, check=TRUE),
+               regexp="r.squared.factor must be between 0 and 1, exclusive",
+               class="pknca_error_r.squared.factor_out_of_bounds")
+  expect_error(PKNCA.options(r.squared.factor="A", check=TRUE),
+               regexp="Must be of type 'number'")
+  expect_warning(v_r2 <- PKNCA.options(r.squared.factor=0.9, check=TRUE),
+                 regexp="r.squared.factor is usually <0.01",
+                 class="pknca_warning_r2_factor_large")
+  expect_equal(v_r2, 0.9)
+  expect_equal(PKNCA.options(r.squared.factor=NA, check=TRUE), NA_real_)
 
   # max.missing
   expect_error(PKNCA.options(max.missing=c(1, 2), check=TRUE),
@@ -486,4 +505,15 @@ test_that("adj.r.squared.factor description matches the selection rule in the co
   desc <- PKNCA.options.describe("adj.r.squared.factor")
   expect_match(desc, "within adj.r.squared.factor of the best", fixed = TRUE)
   expect_match(desc, "regression using the most data points is selected", fixed = TRUE)
+})
+
+test_that("r.squared.factor is described as the unadjusted counterpart (#337)", {
+  desc <- PKNCA.options.describe("r.squared.factor")
+  expect_match(desc, "with an r^2 within r.squared.factor of the best r^2", fixed = TRUE)
+  expect_match(desc, "regression using the most data points is selected", fixed = TRUE)
+  expect_match(
+    desc,
+    "exactly one of adj.r.squared.factor and r.squared.factor must be NA",
+    fixed = TRUE
+  )
 })

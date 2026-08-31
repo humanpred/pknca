@@ -1,29 +1,63 @@
 # Options for use within the code for setting and getting PKNCA default options. ####
 
+# `adj.r.squared.factor` and `r.squared.factor` are checked identically; only
+# the r-squared they act on and the wording of their messages differ.  `NA`
+# means "do not select on this r-squared" (see `pk.calc.half.life()`).
+check_r_squared_factor_option <- function(x, default=FALSE, description=FALSE, name) {
+  adj <- name == "adj.r.squared.factor"
+  r_squared <- if (adj) "adjusted r^2" else "r^2"
+  if (description) {
+    rationale <-
+      if (adj) {
+        "It allows for more data points to be preferred in the calculation of half-life."
+      } else {
+        paste(
+          "Unlike the adjusted r^2, the r^2 does not reward more data points,",
+          "so it generally selects fewer of them."
+        )
+      }
+    return(paste0(
+      "During the calculation of lambda.z, all candidate regressions with an ",
+      r_squared, " within ", name, " of the best ", r_squared,
+      " are considered acceptable, and the acceptable regression using the",
+      " most data points is selected.  ", rationale,
+      "  Setting it to NA selects on the other r-squared; exactly one of",
+      " adj.r.squared.factor and r.squared.factor must be NA, and setting one",
+      " of them without the other makes every half-life calculation fail."
+    ))
+  }
+  if (default)
+    return(if (adj) 0.0001 else NA_real_)
+  checkmate::assert_number(x, na.ok = TRUE, .var.name = name)
+  if (is.na(x)) {
+    return(NA_real_)
+  }
+  if (x <= 0 || x >= 1) {
+    rlang::abort(
+      paste(name, "must be between 0 and 1, exclusive"),
+      class = paste0("pknca_error_", name, "_out_of_bounds")
+    )
+  }
+
+  if (x > 0.01) {
+    rlang::warn(
+      paste(name, "is usually <0.01"),
+      class = paste0("pknca_warning_", if (adj) "adj_r2" else "r2", "_factor_large")
+    )
+  }
+  x
+}
+
 .PKNCA.option.check <- list(
   adj.r.squared.factor=function(x, default=FALSE, description=FALSE) {
-    if (description)
-      return(paste(
-        "During the calculation of lambda.z, all candidate regressions",
-        "with an adjusted r^2 within adj.r.squared.factor of the best",
-        "adjusted r^2 are considered acceptable, and the acceptable",
-        "regression using the most data points is selected.  It allows",
-        "for more data points to be preferred in the calculation of",
-        "half-life."))
-    if (default)
-      return(0.0001)
-    checkmate::assert_number(x, .var.name = "adj.r.squared.factor")
-    if (x <= 0 || x >= 1) {
-      rlang::abort(
-        "adj.r.squared.factor must be between 0 and 1, exclusive",
-        class = "pknca_error_adj.r.squared.factor_out_of_bounds"
-      )
-    }
-
-    if (x > 0.01) {
-      rlang::warn("adj.r.squared.factor is usually <0.01", class = "pknca_warning_adj_r2_factor_large")
-    }
-    x
+    check_r_squared_factor_option(
+      x, default=default, description=description, name="adj.r.squared.factor"
+    )
+  },
+  r.squared.factor=function(x, default=FALSE, description=FALSE) {
+    check_r_squared_factor_option(
+      x, default=default, description=description, name="r.squared.factor"
+    )
   },
   max.missing=function(x, default=FALSE, description=FALSE) {
     if (description)

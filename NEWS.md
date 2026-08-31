@@ -6,6 +6,14 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Half-life point selection can now use the unadjusted r-squared instead of
+  the adjusted r-squared.  Set the new `r.squared.factor` option (or the
+  `pk.calc.half.life()` argument of the same name) to the allowance and set
+  `adj.r.squared.factor` to `NA`.  Exactly one of the two must be `NA`, so
+  set them together; setting one of them alone is accepted where options are
+  set and then fails every half-life calculation.  The default is unchanged:
+  selection on adjusted r-squared.  Suggested by @cahn88 (#337)
+
 * `as_sparse_pk()` now raises an error when `subject` is `NULL`, has a
   different length than `conc`, or contains missing values.  Previously the
   check was inert and such inputs passed silently into the sparse

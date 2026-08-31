@@ -19,7 +19,8 @@
 #' \itemize{
 #'  \item{At least `min.hl.points` points included}
 #'  \item{A `lambda.z` > 0 and at the same time the best adjusted r-squared
-#'  (within `adj.r.squared.factor`)}
+#'  (within `adj.r.squared.factor`) or, when `adj.r.squared.factor` is `NA`,
+#'  the best r-squared (within `r.squared.factor`)}
 #'  \item{The one with the most points included}
 #' }
 #'
@@ -31,7 +32,7 @@
 #'
 #' If `manually.selected.points` is `TRUE`, the `conc` and `time` data are
 #' used as-is without any form of point selection.  When
-#' `TRUE`, `adj.r.squared.factor`, `min.hl.points`, and
+#' `TRUE`, `adj.r.squared.factor`, `r.squared.factor`, `min.hl.points`, and
 #' `allow.tmax.in.half.life` are ignored.
 #'
 #' @inheritParams assert_conc_time
@@ -54,12 +55,21 @@
 #'   `time`) been manually selected?  The impact of setting this to
 #'   `TRUE` is that no selection for the best points will be done.  When
 #'   `TRUE`, this option causes the options of `adj.r.squared.factor`,
-#'   `min.hl.points`, and `allow.tmax.in.half.life` to be ignored.
+#'   `r.squared.factor`, `min.hl.points`, and `allow.tmax.in.half.life` to be
+#'   ignored.
 #' @param min.hl.points The minimum number of points that must be
 #'   included to calculate the half-life.  For `hl_method = "tobit"` this
 #'   counts only above-LLOQ points.
 #' @param adj.r.squared.factor The allowance in adjusted r-squared for
-#'   adding another point (log-linear method only).
+#'   adding another point (log-linear method only).  Set it to `NA` to select
+#'   points with `r.squared.factor` instead.
+#' @param r.squared.factor The allowance in r-squared for adding another point
+#'   (log-linear method only).  `NA` (the default) selects points with
+#'   `adj.r.squared.factor` instead.  Exactly one of `adj.r.squared.factor` and
+#'   `r.squared.factor` must be `NA`.  Unlike the adjusted r-squared, the
+#'   r-squared does not reward more points, so it generally selects fewer of
+#'   them; with `min.hl.points = 2` the two-point fit has an r-squared of 1 and
+#'   is therefore always selected.
 #' @param tobit_n_points_penalty The penalty exponent on the number of points
 #'   for Tobit window selection.  See [PKNCA.options()].
 #' @param tobit_optim_control A list of control parameters passed to
@@ -121,6 +131,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
                               options=list(),
                               min.hl.points=NULL,
                               adj.r.squared.factor=NULL,
+                              r.squared.factor=NULL,
                               tobit_n_points_penalty=NULL,
                               tobit_optim_control=NULL,
                               conc.blq=NULL,
@@ -150,6 +161,32 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   if (!is_tobit) {
     adj.r.squared.factor <-
       PKNCA.choose.option(name="adj.r.squared.factor", value=adj.r.squared.factor, options=options)
+    r.squared.factor <-
+      PKNCA.choose.option(name="r.squared.factor", value=r.squared.factor, options=options)
+    # Both factors are ignored when the points are given, so only the automatic
+    # selection requires a usable pair.
+    if (!manually.selected.points) {
+      if (is.na(adj.r.squared.factor) == is.na(r.squared.factor)) {
+        rlang::abort(
+          paste(
+            "Exactly one of adj.r.squared.factor and r.squared.factor must be NA;",
+            "set the one that is not in use to NA"
+          ),
+          class = "pknca_error_r_squared_factor_choice"
+        )
+      }
+      # Points are selected on one r-squared or the other; the NA factor is the
+      # one that is not in use.
+      if (is.na(adj.r.squared.factor)) {
+        r_squared_name <- "r.squared"
+        r_squared_label <- "r-squared"
+        r_squared_factor <- r.squared.factor
+      } else {
+        r_squared_name <- "adj.r.squared"
+        r_squared_label <- "adjusted r-squared"
+        r_squared_factor <- adj.r.squared.factor
+      }
+    }
   } else {
     tobit_n_points_penalty <-
       PKNCA.choose.option(name="tobit_n_points_penalty", value=tobit_n_points_penalty, options=options)
@@ -322,8 +359,8 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           rlang::warn("2 points used for half-life calculation", class = "pknca_warning_halflife_2points")
           TRUE
         } else {
-          half_lives_for_selection$adj.r.squared >
-            (max(half_lives_for_selection$adj.r.squared, na.rm=TRUE) - adj.r.squared.factor)
+          half_lives_for_selection[[r_squared_name]] >
+            (max(half_lives_for_selection[[r_squared_name]], na.rm=TRUE) - r_squared_factor)
         }
       mask_best[is.na(mask_best)] <- FALSE
       if (sum(mask_best) > 1) {
@@ -335,10 +372,13 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       if (any(mask_best)) {
         ret[, ret_replacements] <- half_lives_for_selection[mask_best, ret_replacements]
       } else {
-        # A well-fitting span with lambda.z <= 0 can anchor the adjusted
-        # r-squared tolerance so that no span with lambda.z > 0 is within it.
+        # A well-fitting span with lambda.z <= 0 can anchor the r-squared
+        # tolerance so that no span with lambda.z > 0 is within it.
         attr(ret, "exclude") <-
-          "No valid terminal phase: no span with lambda.z > 0 within the adjusted r-squared tolerance of the best fit"
+          sprintf(
+            "No valid terminal phase: no span with lambda.z > 0 within the %s tolerance of the best fit",
+            r_squared_label
+          )
       }
     } else {
       attr(ret, "exclude") <-

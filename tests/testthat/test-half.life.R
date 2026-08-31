@@ -1321,3 +1321,153 @@ test_that("get_halflife_curve validates its arguments", {
   expect_error(get_halflife_curve(o_nca, extrapolate_earlier = "yes"), regexp = "Must be of type 'logical flag'")
   expect_error(get_halflife_curve(o_nca, extrapolate_later = NA), regexp = "May not be NA")
 })
+
+# Theophylline subject 6 is the case that separates the two criteria: the
+# 3-point window has the best r-squared (0.99896) and the 7-point window the
+# best adjusted r-squared, so each criterion picks a different window.
+theoph_6_conc <- c(0, 1.29, 3.08, 6.44, 6.32, 5.53, 4.94, 4.02, 3.46, 2.78, 0.92)
+theoph_6_time <- c(0, 0.27, 0.58, 1.15, 2.03, 3.57, 5, 7, 9.22, 12.1, 23.85)
+
+test_that("r.squared.factor selects on unadjusted r-squared (#337)", {
+  result_adj <- pk.calc.half.life(conc = theoph_6_conc, time = theoph_6_time)
+  expect_equal(result_adj$lambda.z.n.points, 7)
+  expect_equal(result_adj$lambda.z, 0.0877957400561703)
+  expect_equal(result_adj$half.life, 7.89499786796582)
+
+  result_r <-
+    pk.calc.half.life(
+      conc = theoph_6_conc, time = theoph_6_time,
+      adj.r.squared.factor = NA, r.squared.factor = 0.0001
+    )
+  expect_equal(result_r$lambda.z.n.points, 3)
+  expect_equal(result_r$lambda.z, 0.0915758250201391)
+  expect_equal(result_r$half.life, 7.56910658907534)
+  # The unadjusted criterion picks the window with the best r-squared, which is
+  # not the window with the best adjusted r-squared
+  expect_gt(result_r$r.squared, result_adj$r.squared)
+  expect_gt(result_adj$adj.r.squared, result_r$adj.r.squared - 0.0001)
+})
+
+test_that("r.squared.factor works through the options argument and PKNCA.options() (#337)", {
+  expect_equal(
+    pk.calc.half.life(
+      conc = theoph_6_conc, time = theoph_6_time,
+      options = list(adj.r.squared.factor = NA, r.squared.factor = 0.0001)
+    )$lambda.z.n.points,
+    3
+  )
+
+  initial_options <- PKNCA.options()
+  on.exit(assign("options", initial_options, envir = PKNCA:::.PKNCAEnv))
+  PKNCA.options(adj.r.squared.factor = NA, r.squared.factor = 0.0001)
+  expect_equal(
+    pk.calc.half.life(conc = theoph_6_conc, time = theoph_6_time)$lambda.z.n.points,
+    3
+  )
+})
+
+test_that("r.squared.factor selection is used by pk.nca() (#337)", {
+  d_conc <-
+    data.frame(conc = theoph_6_conc, time = theoph_6_time, subject = 6)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_data <-
+    PKNCAdata(
+      o_conc,
+      intervals = data.frame(start = 0, end = Inf, half.life = TRUE),
+      options = list(adj.r.squared.factor = NA, r.squared.factor = 0.0001)
+    )
+  res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+  expect_equal(res$PPORRES[res$PPTESTCD %in% "lambda.z.n.points"], 3)
+  expect_equal(
+    res$PPORRES[res$PPTESTCD %in% "half.life"],
+    7.56910658907534
+  )
+})
+
+test_that("exactly one of adj.r.squared.factor and r.squared.factor may be NA (#337)", {
+  expect_error(
+    pk.calc.half.life(conc = theoph_6_conc, time = theoph_6_time, r.squared.factor = 0.0001),
+    class = "pknca_error_r_squared_factor_choice",
+    regexp = "Exactly one of adj.r.squared.factor and r.squared.factor must be NA"
+  )
+  expect_error(
+    pk.calc.half.life(
+      conc = theoph_6_conc, time = theoph_6_time,
+      adj.r.squared.factor = NA, r.squared.factor = NA
+    ),
+    class = "pknca_error_r_squared_factor_choice"
+  )
+  # The Tobit method uses neither factor, so it is unaffected
+  expect_silent(
+    pk.calc.half.life(
+      conc = theoph_6_conc, time = theoph_6_time, lloq = 0.5,
+      hl_method = "tobit", adj.r.squared.factor = NA, r.squared.factor = NA
+    )
+  )
+  # Neither does manual point selection, which does not select among spans
+  expect_equal(
+    pk.calc.half.life(
+      conc = c(10, 5, 2.5), time = c(0, 1, 2), manually.selected.points = TRUE,
+      adj.r.squared.factor = NA, r.squared.factor = NA
+    )$half.life,
+    1
+  )
+  expect_equal(
+    pk.calc.half.life(
+      conc = c(10, 5, 2.5), time = c(0, 1, 2), manually.selected.points = TRUE,
+      adj.r.squared.factor = 0.0001, r.squared.factor = 0.0001
+    )$half.life,
+    1
+  )
+})
+
+test_that("setting only one of the two factors fails at calculation time (#337)", {
+  # PKNCAdata() and PKNCA.options() validate one option at a time, so the pair
+  # is only checked where it is used
+  d_conc <- data.frame(conc = theoph_6_conc, time = theoph_6_time, subject = 6)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_data <-
+    PKNCAdata(
+      o_conc,
+      intervals = data.frame(start = 0, end = Inf, half.life = TRUE),
+      options = list(r.squared.factor = 0.0001)
+    )
+  expect_error(
+    suppressMessages(pk.nca(o_data)),
+    regexp = "Exactly one of adj.r.squared.factor and r.squared.factor must be NA"
+  )
+})
+
+test_that("a 2-point fit is always the best unadjusted r-squared (#337)", {
+  # The r-squared of a 2-point fit is exactly 1, so it anchors the tolerance and
+  # wins whenever min.hl.points allows it.  The adjusted r-squared is NA for 2
+  # points, which is why the default criterion picks 7 points here instead.
+  expect_equal(
+    suppressWarnings(
+      pk.calc.half.life(
+        conc = theoph_6_conc, time = theoph_6_time, min.hl.points = 2,
+        adj.r.squared.factor = NA, r.squared.factor = 0.0001
+      )
+    )$lambda.z.n.points,
+    2
+  )
+  expect_equal(
+    suppressWarnings(
+      pk.calc.half.life(conc = theoph_6_conc, time = theoph_6_time, min.hl.points = 2)
+    )$lambda.z.n.points,
+    7
+  )
+})
+
+test_that("the no-surviving-span exclude reason names the r-squared in use (#337)", {
+  result <-
+    pk.calc.half.life(
+      conc = c(0, 20, 10, 5, 2, 2.2, 2.42), time = 0:6,
+      adj.r.squared.factor = NA, r.squared.factor = 0.0001
+    )
+  expect_equal(result$half.life, NA_real_)
+  expect_equal(
+    attr(result, "exclude"),
+    "No valid terminal phase: no span with lambda.z > 0 within the r-squared tolerance of the best fit"
+  )
+})
