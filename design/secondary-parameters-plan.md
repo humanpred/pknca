@@ -129,7 +129,6 @@ New condition classes (all follow the existing `pknca_error_*` /
 | `pknca_error_group_ref_value` | error | A `group_ref` column contains a value that appears nowhere in that column of the concentration data. |
 | `pknca_warning_secondary_ref_exists` | warning | `interval_add_secondary()` skips a test row that already has a different pointer. |
 | `pknca_warning_secondary_auto_reference` | warning | The **automatic** path failed for some instances (no unique reference; auto-linked value missing); results are `NA` with reasons. |
-| `pknca_warning_secondary_units` | warning | PR 1–3: group-stratified units differ between home and reference for a source parameter.  PR 4 narrows it to: the units differ and are **not convertible** (result `NA` + reason). |
 | `pknca_message_secondary_ref_created` | message | The finder derived and created/linked a reference interval. |
 | `pknca_message_secondary_created_interval` | message | `interval_add_secondary()` created reference rows / assigned ids (visible). |
 
@@ -137,6 +136,12 @@ There is deliberately **no** message when a source parameter is added to a
 reference interval (either ephemerally by the engine or visibly by the
 helper): silently calculating what a requested parameter depends on is default
 PKNCA behavior.
+
+There is also deliberately **no** condition for units that differ between the
+two profiles.  Sections 6.1/6.3 raised `pknca_warning_secondary_units` when the
+two sides could not be reconciled; section 6.4 removed both the reconciliation
+and the class, because units that differ are not a failure — the result keeps
+the composite units of the values it was calculated from.
 
 ---
 
@@ -1617,7 +1622,15 @@ Tests (extend `test-secondary-parameters.R`):
 6. Post the Appendix A text as a comment on issue 76 (maintainer action —
    the `gh` credential in this environment is read-only).
 
-### 6.3 As built (PR 4)
+### 6.3 As built (PR 4, section 6.1's reconciliation — historical)
+
+**Superseded before merge by section 6.4.**  The reconciliation described here
+was implemented, reviewed, and then replaced on the same branch;
+`secondary_reconcile_units()`, `secondary_units_lookup()`, and
+`pknca_warning_secondary_units` no longer exist.  What survives is
+`pknca_unit_reconcile_factor()` and `pknca_units_conversion_factor()`, which
+the units builder now uses.  The list below is kept as the record of what was
+built and why, not as a description of the code.
 
 PR 4 landed with these differences from the section-6 text above; trust the
 code over the sketches:
@@ -1783,6 +1796,68 @@ the compositions above, and update the NEWS bullet), so the superseded
 behavior never ships.  Alternative: merge PR 4 as-is and follow with a PR 5 —
 worse, because NEWS would describe convert-then-un-convert behavior across
 two entries of one release.
+
+The recommended path is the one taken: the reconciliation was removed on the
+same branch and replaced with the mechanism above before merge.
+
+#### As built (the 6.4 rework)
+
+Differences from the section-6.4 text above; trust the code over the sketches:
+
+* **`pknca_unit_conversion()` did need one change**, where item 3 above says it
+  needs none.  A results table with *no* `_ref` columns — nothing linked two
+  intervals, either because no secondary parameter was requested or because one
+  was calculated inside a single interval by the legacy same-interval path —
+  would otherwise match every reference-keyed row of a stratified table and be
+  duplicated once per reference group.  The join now drops the units rows that
+  name a reference the results have no column to describe, and then joins
+  exactly as before.  The other direction (a hand-supplied table with no `_ref`
+  columns) needed nothing, as the plan said.
+* **The composition is driven by the calculation function, not by parameter
+  names.**  `secondary_unit_sides()` returns the two sides of the quotient as
+  formal arguments of `pk.calc.clr`, `pk.calc.ratio`, and `pk.calc.f`, and
+  `secondary_param_info()` maps those formals to the parameters whose units they
+  take.  All three families of the table above fall out of one rule
+  (`own side / ref side`, each side itself a quotient for `f.*`); any other
+  secondary parameter keeps the single-sided row of its own group, as the
+  "holes found in review" section anticipated.
+* **`clr.last.dn`, `clr.obs.dn`, and `clr.pred.dn` get no composed row.**  They
+  are secondary only because they depend on `clr.*`, they carry no
+  `pknca_ref()` argument, and `secondary_param_info()` rejects them outright
+  (`pk.calc.dn`'s `dose` is not a parameter result), so no result row for them
+  can exist for a composed row to describe.  Calculating them across a link is
+  §8 work, not units work.
+* **A pair whose two sides compose to the same unit string keeps today's row.**
+  A `ratio.*` or `f.*` within one unit set would otherwise read
+  `(ng/mL)/(ng/mL)` where `fraction` is exact and already right; a `clr.*`
+  within one unit set composes to exactly the string the `renal_clearance` unit
+  type produces anyway.  A side whose units are unknown (`NA` — no dose units,
+  for instance) likewise keeps today's row instead of degrading it to `NA`.
+* **The (own group = reference group) pairs are emitted, not just the
+  off-diagonal ones.**  An accumulation ratio references another interval of the
+  *same* group, and its result row names that group on both sides.
+* **`PPSTRESU`/`conversion_factor` are added to the whole table as soon as any
+  composed quotient standardizes.**  Following `pknca_units_table()`'s own rule,
+  every row without a conversion of its own gets `PPSTRESU = PPORRESU` and a
+  factor of 1.  A stratified analysis whose groups report convertible
+  concentrations therefore gains `PPSTRES`/`PPSTRESU` result columns it did not
+  have before; every value in them equals the original except the standardized
+  quotients.
+* **Preferred units compose too.**  When the table already standardizes (a
+  scalar `timeu` with `timeu_pref` alongside column-based concentration units)
+  and the composed quotient is *not* dimensionless, `PPSTRESU` is composed from
+  the two sides' `PPSTRESU` values and the factor is the conversion between the
+  two composites; where that conversion does not exist the composite is its own
+  standardized unit.
+* **The minimal-grouping reduction is run once and applied symmetrically.**  The
+  `_ref` columns are the twins of the columns the reduction kept, not of every
+  group column.  The checkpoint above reads as though a second, wider reduction
+  were needed, but the group-to-unit-set map is the same function on both sides:
+  a column set that determines the own unit set determines the reference unit
+  set as well.  Results still carry `_ref` twins of *every* group column, and
+  the join takes the intersection.  The checkpoint's test earns its place all
+  the same — it pins that a dropped group column stays dropped in the table
+  while both subjects still get the composed units.
 
 ---
 

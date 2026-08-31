@@ -50,8 +50,7 @@ kable(
 Two words are used throughout:
 
 * The **requesting interval** is the intervals row that asks for the parameter.
-  The result is reported there:  on that row's group, that row's times, and in
-  that row's units.
+  The result is reported there:  on that row's group and that row's times.
 * The **reference interval** is the row that supplies the value from the other
   profile.
 
@@ -538,10 +537,10 @@ an excluded input cannot quietly become a reported clearance.
 
 # Units that differ between the two profiles
 
-A secondary result is reported in the units of the interval that requested it.
-The reference value can be measured in different units -- a urine collection
-reported in mg/L against a plasma profile in ng/mL -- and it is converted before
-the calculation so that the reported units describe the result.
+A secondary parameter takes one value from the interval requesting it and
+another from the reference interval, so when units are given per group its units
+are a quotient of the two groups' units.  The urine collection below is reported
+in mg/L and the plasma profile in ng/mL:
 
 ```{r units-data}
 d_conc_u <- d_conc
@@ -558,19 +557,103 @@ o_data_u <-
     o_conc_u, intervals = intervals_linked,
     options = list(auc.method = "linear")
   )
-kable(as.data.frame(pk.nca(o_data_u)))
+d_u <- as.data.frame(pk.nca(o_data_u))
+kable(d_u[, c("PCSPEC", "PCSPEC_ref", "PPTESTCD", "PPORRES", "PPORRESU")])
 ```
 
-The plasma AUC is reported as 144 hr\*ng/mL on its own row.  Feeding the renal
-clearance, it is 0.144 hr\*mg/L, and the clearance is
-$350/0.144 = `r signif(350/(144*0.001), 6)`$ mg/(hr\*mg/L).  Conversion uses the
-`units` package.
+The renal clearance is still $350/144 = `r signif(350/144, 4)`$ -- no value is
+converted -- and its units are `mg/(hr*ng/mL)`:  the `mg` from the urine
+collection that supplied the amount, and the `hr*ng/mL` from the plasma profile
+that supplied the AUC.  Reporting it as `mg/(hr*mg/L)`, the urine group's own
+units, would describe a different number.
 
-When the two units cannot be converted into one another -- outside udunits, or
-of different dimensions -- the result is `NA` with the reason, and a
-`pknca_warning_secondary_units` warning is raised once per parameter and unit
-pair.  A number reported in units that do not describe it would be worse than no
-number.
+Two things make that work.  Each secondary result names the group its reference
+came from in a `<group column>_ref` column (above, `PCSPEC_ref` is `plasma` on
+the renal clearance and `NA` on everything else), and the units table carries a
+row for each pair of groups:
+
+```{r units-table}
+u <- o_data_u$units
+kable(u[u$PPTESTCD %in% c("auclast", "ae", "clr.last"), ], row.names = FALSE)
+```
+
+The rows with `NA` in `PCSPEC_ref` describe results that took nothing from
+another interval;  the rest describe each pair.  The table is an ordinary
+`PKNCAdata(units = )` argument, so these rows can be edited or replaced like any
+other unit assignment.
+
+## A ratio standardizes to a fraction
+
+When both sides of the quotient are convertible into one another the quotient is
+dimensionless, and the table also gives it a `PPSTRESU` of `fraction` with the
+factor that turns the raw quotient into the number it stands for.  Here the
+metabolite is reported in ng/mL and the parent in mg/L:
+
+```{r units-ratio}
+d_conc_r <-
+  data.frame(
+    subject = 1,
+    Analyte = rep(c("parent", "metabolite"), each = 3),
+    time = rep(c(0, 12, 24), times = 2),
+    conc = c(4, 10, 2, 8000, 20000, 4000),
+    cu = rep(c("mg/L", "ng/mL"), each = 3),
+    tu = "hr"
+  )
+intervals_r <-
+  data.frame(
+    Analyte = c("parent", "metabolite"),
+    start = 0, end = 24,
+    interval_id = c("parent024", NA),
+    cmax = TRUE,
+    ratio.cmax = c(FALSE, TRUE),
+    ratio.cmax_ref = c(NA, "parent024")
+  )
+o_data_r <-
+  PKNCAdata(
+    PKNCAconc(d_conc_r, conc~time|Analyte+subject, concu = "cu", timeu = "tu"),
+    intervals = intervals_r,
+    options = list(auc.method = "linear")
+  )
+d_r <- as.data.frame(pk.nca(o_data_r))
+kable(
+  d_r[, c("Analyte", "Analyte_ref", "PPTESTCD", "PPORRES", "PPORRESU",
+          "PPSTRES", "PPSTRESU")]
+)
+```
+
+`PPORRES` is 20000 divided by 10, in `(ng/mL)/(mg/L)`.  One ng/mL is 0.001 mg/L,
+so the ratio those measurements stand for is $20000/10 \times 0.001 = 2$, which
+is `PPSTRES`.
+
+## A quotient that is not a fraction
+
+Calling every ratio a fraction hides a real mistake.  A bioavailability between
+a dose in mg and a dose in mg/kg is not dimensionless, and the units say so
+instead of reporting the number as a `fraction`:
+
+```{r units-bioavailability}
+d_conc_fu <- d_conc_f
+d_conc_fu$cu <- "ng/mL"
+d_conc_fu$tu <- "hr"
+d_dose_fu <- d_dose_f
+d_dose_fu$du <- c("mg", "mg/kg")
+o_data_fu <-
+  PKNCAdata(
+    PKNCAconc(d_conc_fu, conc~time|treatment+subject, concu = "cu", timeu = "tu"),
+    PKNCAdose(d_dose_fu, dose~time|treatment+subject, doseu = "du"),
+    intervals = intervals_f
+  )
+d_fu <- as.data.frame(pk.nca(o_data_fu))
+kable(d_fu[d_fu$PPTESTCD %in% "f.obs", c("treatment", "treatment_ref", "PPORRES", "PPORRESU")])
+```
+
+The number is the same one `pk.calc.f()` has always computed;  the units are now
+what it is a number of.  Dividing a mg/kg dose by a mg dose needs a body weight
+that PKNCA was never given.
+
+Units the `units` package cannot reconcile -- `IU/mL` against `mg/L`, or two
+units of different dimensions -- behave the same way:  the value is reported and
+the composite units stand.  Nothing is `NA` for unit reasons.
 
 # Reporting
 
