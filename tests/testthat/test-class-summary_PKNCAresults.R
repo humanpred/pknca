@@ -56,7 +56,7 @@ test_that("PKNCAresults summary", {
         half.life = c(".", "16.1, n=1"),
         aucinf.obs = c(".", "21.5 [NC]")
       ),
-      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; n: number of measurements included in summary"
+      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; n: number of measurements included in summary; NC: not calculated"
     ),
     info = "summary of PKNCAresults with some missing values results in NA for spread"
   )
@@ -87,7 +87,7 @@ test_that("PKNCAresults summary", {
         half.life = c(".", "NC"),
         aucinf.obs = c(".", "NC")
       ),
-      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects"
+      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; NC: not calculated"
     ),
     info = "summary of PKNCAresults without most results gives NC"
   )
@@ -110,7 +110,7 @@ test_that("PKNCAresults summary", {
         half.life = c("NR", "NoCalc"),
         aucinf.obs = c("NR", "NoCalc")
       ),
-      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects"
+      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; NoCalc: not calculated"
     ),
     info = "Summary respects the not.requested.string and not.calculated.string"
   )
@@ -133,7 +133,7 @@ test_that("PKNCAresults summary", {
         half.life = c("NR", "NoCalc"),
         aucinf.obs = c("NR", "NoCalc")
       ),
-      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation"
+      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; NoCalc: not calculated"
     ),
     info = "N is optionally omitted"
   )
@@ -272,7 +272,7 @@ test_that("summary.PKNCAresults manages exclusions as missing not as non-existen
         half.life = c(".", "14.2 [2.79]"),
         aucinf.obs = c(".", "20.5 [6.84]")
       ),
-      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects"
+      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; NC: not calculated"
     ),
     info = "summary of PKNCAresults correctly excludes all of auclast when requested"
   )
@@ -317,6 +317,42 @@ test_that("print.summary_PKNCAresults supports caption_prefix", {
       "Caption: Summary: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation",
       sep = "\n"
     )
+  )
+})
+
+
+test_that("the not calculated abbreviation is described in the caption only when it is used", {
+  caption_args <-
+    list(
+      param_names = "cmax",
+      pretty_names = FALSE,
+      footnote_N = FALSE,
+      footnote_n = FALSE,
+      not_calculated = "NC",
+      caption_prefix = NULL
+    )
+  expect_equal(
+    do.call(get_summary_PKNCAresults_caption, c(caption_args, footnote_not_calculated = FALSE)),
+    "cmax: geometric mean and geometric coefficient of variation",
+    info = "no value was not calculated, so the abbreviation is omitted"
+  )
+  expect_equal(
+    do.call(get_summary_PKNCAresults_caption, c(caption_args, footnote_not_calculated = TRUE)),
+    "cmax: geometric mean and geometric coefficient of variation; NC: not calculated"
+  )
+  caption_args$not_calculated <- "NoCalc"
+  expect_equal(
+    do.call(get_summary_PKNCAresults_caption, c(caption_args, footnote_not_calculated = TRUE)),
+    "cmax: geometric mean and geometric coefficient of variation; NoCalc: not calculated",
+    info = "the user's not_calculated string is what is described"
+  )
+  caption_args$not_calculated <- "NC"
+  caption_args$footnote_N <- TRUE
+  caption_args$footnote_n <- TRUE
+  expect_equal(
+    do.call(get_summary_PKNCAresults_caption, c(caption_args, footnote_not_calculated = TRUE)),
+    "cmax: geometric mean and geometric coefficient of variation; N: number of subjects; n: number of measurements included in summary; NC: not calculated",
+    info = "the abbreviation comes after the N and n footnotes"
   )
 })
 
