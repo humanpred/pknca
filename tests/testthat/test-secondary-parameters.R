@@ -1339,6 +1339,170 @@ test_that("generating a factor identifier keeps every linkage column comparable"
   expect_no_error(check.interval.specification(intervals_grown))
 })
 
+# group_ref applies per parameter:  a plain data.frame steers everything, a
+# `parameter` column or a named list steers each parameter with its own
+# columns
+test_that("group_ref_for_param() resolves the three group_ref forms", {
+  plain <- data.frame(PCSPEC = "plasma")
+  expect_identical(PKNCA:::group_ref_for_param(plain, "clr.last"), plain)
+  expect_null(PKNCA:::group_ref_for_param(NULL, "clr.last"))
+  by_param <-
+    data.frame(
+      parameter = c("clr.last", "ratio.aucinf.obs"),
+      PCSPEC = c("plasma", NA),
+      Analyte = c(NA, "parent")
+    )
+  expect_identical(
+    PKNCA:::group_ref_for_param(by_param, "clr.last"),
+    data.frame(PCSPEC = "plasma")
+  )
+  expect_identical(
+    PKNCA:::group_ref_for_param(by_param, "ratio.aucinf.obs"),
+    data.frame(Analyte = "parent", row.names = 2L)
+  )
+  expect_null(PKNCA:::group_ref_for_param(by_param, "f.obs"))
+  as_list <- list(clr.last = data.frame(PCSPEC = "plasma"))
+  expect_identical(
+    PKNCA:::group_ref_for_param(as_list, "clr.last"),
+    data.frame(PCSPEC = "plasma")
+  )
+  expect_null(PKNCA:::group_ref_for_param(as_list, "ratio.aucinf.obs"))
+})
+
+test_that("parameter-specific group_ref forms are validated when the object is built", {
+  d_conc_v <- data.frame(
+    subject = 1,
+    PCSPEC = rep(c("plasma", "urine"), times = c(3, 2)),
+    time = c(0, 12, 24, 0, 12),
+    conc = c(10, 6, 2, 2, 1),
+    vol  = c(NA, NA, NA, 100, 150)
+  )
+  o_conc_v <- PKNCAconc(d_conc_v, conc~time|PCSPEC+subject, volume = "vol")
+  intervals_v <- data.frame(PCSPEC = "urine", start = 0, end = 24, ae = TRUE)
+  build <- function(group_ref) {
+    PKNCAdata(o_conc_v, intervals = intervals_v, group_ref = group_ref)
+  }
+  # An unnamed list, a non-secondary parameter, an NA parameter, a list element
+  # with a parameter column, and rows for one parameter filling different
+  # columns all fail loud
+  expect_error(
+    build(list(data.frame(PCSPEC = "plasma"))),
+    class = "pknca_error_group_ref_invalid"
+  )
+  expect_error(
+    build(data.frame(parameter = "cmax", PCSPEC = "plasma")),
+    class = "pknca_error_group_ref_invalid"
+  )
+  expect_error(
+    build(data.frame(parameter = NA_character_, PCSPEC = "plasma")),
+    class = "pknca_error_group_ref_invalid"
+  )
+  expect_error(
+    build(list(clr.last = data.frame(parameter = "clr.last", PCSPEC = "plasma"))),
+    class = "pknca_error_group_ref_invalid"
+  )
+  expect_error(
+    build(
+      data.frame(
+        parameter = c("clr.last", "clr.last"),
+        PCSPEC = c("plasma", NA),
+        subject = c(NA, 1)
+      )
+    ),
+    class = "pknca_error_group_ref_invalid"
+  )
+  # A value check skips the NA cells of a parameter-specific table
+  expect_no_error(
+    build(data.frame(parameter = "clr.last", PCSPEC = "plasma"))
+  )
+})
+
+test_that("a parameter-specific group_ref steers each parameter separately", {
+  d_conc_two_contrasts <-
+    rbind(
+      data.frame(
+        Analyte = rep(c("parent", "metabolite"), each = 5),
+        PCSPEC = "plasma",
+        subject = 1,
+        time = rep(c(0, 1, 2, 4, 8), 2),
+        conc = c(0, 10, 8, 5, 2, 0, 4, 3.5, 2, 0.8),
+        vol = NA_real_,
+        dur = 0
+      ),
+      data.frame(
+        Analyte = rep(c("parent", "metabolite"), each = 2),
+        PCSPEC = "urine",
+        subject = 1,
+        time = rep(c(0, 12), 2),
+        conc = c(2, 1, 1, 0.5),
+        vol = rep(c(100, 150), 2),
+        dur = 12
+      )
+    )
+  o_conc_tc <-
+    PKNCAconc(
+      d_conc_two_contrasts, conc~time|Analyte+PCSPEC+subject,
+      volume = "vol", duration = "dur"
+    )
+  intervals_tc <- data.frame(
+    Analyte = c("parent", "metabolite", "parent", "metabolite"),
+    PCSPEC = c("urine", "urine", "plasma", "plasma"),
+    start = 0,
+    end = c(24, 24, Inf, Inf),
+    ae = c(TRUE, TRUE, FALSE, FALSE),
+    clr.last = c(TRUE, TRUE, FALSE, FALSE),
+    aucinf.obs = c(FALSE, FALSE, TRUE, FALSE),
+    ratio.aucinf.obs = c(FALSE, FALSE, FALSE, TRUE)
+  )
+  group_ref_by_param <-
+    data.frame(
+      parameter = c("clr.last", "ratio.aucinf.obs"),
+      PCSPEC = c("plasma", NA),
+      Analyte = c(NA, "parent")
+    )
+  o_data_tc <-
+    PKNCAdata(
+      o_conc_tc, intervals = intervals_tc,
+      options = list(auc.method = "linear"),
+      group_ref = group_ref_by_param
+    )
+  d_res <- as.data.frame(suppressMessages(pk.nca(o_data_tc)))
+  value_of <- function(param, analyte, spec) {
+    d_res$PPORRES[
+      d_res$PPTESTCD %in% param &
+        d_res$Analyte %in% analyte &
+        d_res$PCSPEC %in% spec
+    ]
+  }
+  # Renal clearance pairs each analyte's urine with its own plasma profile
+  for (current_analyte in c("parent", "metabolite")) {
+    expect_equal(
+      value_of("clr.last", current_analyte, "urine"),
+      value_of("ae", current_analyte, "urine") /
+        value_of("auclast", current_analyte, "plasma"),
+      info = current_analyte
+    )
+  }
+  # The metabolite ratio pairs the metabolite with the parent analyte
+  expect_equal(
+    value_of("ratio.aucinf.obs", "metabolite", "plasma"),
+    value_of("aucinf.obs", "metabolite", "plasma") /
+      value_of("aucinf.obs", "parent", "plasma")
+  )
+  # The named-list form says the same thing
+  o_data_list <-
+    PKNCAdata(
+      o_conc_tc, intervals = intervals_tc,
+      options = list(auc.method = "linear"),
+      group_ref = list(
+        clr.last = data.frame(PCSPEC = "plasma"),
+        ratio.aucinf.obs = data.frame(Analyte = "parent")
+      )
+    )
+  d_res_list <- as.data.frame(suppressMessages(pk.nca(o_data_list)))
+  expect_equal(d_res_list, d_res)
+})
+
 # 20: the extracted exclusion combiner keeps the documented precedence
 test_that("combine_exclude_reasons() combines and clears exclusion reasons", {
   expect_equal(combine_exclude_reasons(NULL, NULL), NA_character_)

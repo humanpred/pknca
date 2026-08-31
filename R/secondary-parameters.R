@@ -87,18 +87,109 @@ secondary_parameter_names <- function() {
 # Validate PKNCAdata(group_ref=) against the concentration data.  A typo in a
 # column or a value would otherwise silently steer the automatic reference
 # finder nowhere, so both are checked when the object is built.
+#
+# Three forms are accepted (see the PKNCAdata() documentation):  a data.frame
+# of group values applying to every secondary parameter; a data.frame with a
+# `parameter` column applying each row to the secondary parameter it names; or
+# a named list of data.frames, one per parameter.
 assert_group_ref <- function(group_ref, o_conc) {
   if (is.null(group_ref)) {
     return(NULL)
   }
-  if (!is.data.frame(group_ref) || nrow(group_ref) < 1 || ncol(group_ref) < 1) {
+  if (is.data.frame(group_ref)) {
+    return(assert_group_ref_frame(group_ref, o_conc))
+  }
+  if (!is.list(group_ref)) {
+    rlang::abort(
+      "`group_ref` must be a data.frame or a named list of data.frames",
+      class = "pknca_error_group_ref_invalid"
+    )
+  }
+  if (!checkmate::test_names(names(group_ref), type = "unique")) {
+    rlang::abort(
+      "`group_ref`, when a list, must have unique names, each the name of a secondary parameter",
+      class = "pknca_error_group_ref_invalid"
+    )
+  }
+  assert_group_ref_parameters(names(group_ref))
+  for (current_param in names(group_ref)) {
+    current <- group_ref[[current_param]]
+    if (!is.data.frame(current) || "parameter" %in% names(current)) {
+      rlang::abort(
+        sprintf(
+          "`group_ref[[\"%s\"]]` must be a data.frame of group values without a `parameter` column",
+          current_param
+        ),
+        class = "pknca_error_group_ref_invalid"
+      )
+    }
+    assert_group_ref_frame(current, o_conc)
+  }
+  group_ref
+}
+
+# The parameters a parameter-specific group_ref names must be secondary
+# parameters, or nothing would ever read their entries
+assert_group_ref_parameters <- function(params) {
+  assert_param_name(params)
+  cls <- parameter_classification()
+  not_secondary <-
+    params[
+      !vapply(X = params, FUN = function(p) isTRUE(cls$secondary[[p]]), FUN.VALUE = TRUE)
+    ]
+  if (length(not_secondary) > 0) {
+    rlang::abort(
+      sprintf(
+        "`group_ref` steers secondary parameters only; not secondary: %s",
+        paste(not_secondary, collapse = ", ")
+      ),
+      class = "pknca_error_group_ref_invalid"
+    )
+  }
+  invisible(params)
+}
+
+# One data.frame of the group_ref, possibly carrying a `parameter` column.  The
+# rows for one parameter must fill the same columns (their non-NA column sets
+# must match), because the columns a parameter's rows leave NA do not apply to
+# it and an NA that applied would match NA group values literally.
+assert_group_ref_frame <- function(group_ref, o_conc) {
+  if (nrow(group_ref) < 1 || ncol(group_ref) < 1) {
     rlang::abort(
       "`group_ref` must be a data.frame with at least one row and one column",
       class = "pknca_error_group_ref_invalid"
     )
   }
+  has_parameter <- "parameter" %in% names(group_ref)
+  if (has_parameter) {
+    if (ncol(group_ref) < 2) {
+      rlang::abort(
+        "`group_ref` must have at least one group column besides `parameter`",
+        class = "pknca_error_group_ref_invalid"
+      )
+    }
+    if (anyNA(group_ref$parameter)) {
+      rlang::abort(
+        "The `parameter` column of `group_ref` may not be NA; drop the `parameter` column to steer every secondary parameter",
+        class = "pknca_error_group_ref_invalid"
+      )
+    }
+    assert_group_ref_parameters(unique(as.character(group_ref$parameter)))
+    for (current_param in unique(as.character(group_ref$parameter))) {
+      resolved <- group_ref_for_param(group_ref, current_param)
+      if (is.null(resolved) || anyNA(resolved)) {
+        rlang::abort(
+          sprintf(
+            "The `group_ref` rows for parameter '%s' must fill the same group column(s)",
+            current_param
+          ),
+          class = "pknca_error_group_ref_invalid"
+        )
+      }
+    }
+  }
   group_cols <- unlist(o_conc$columns$groups)
-  invalid <- setdiff(names(group_ref), group_cols)
+  invalid <- setdiff(setdiff(names(group_ref), "parameter"), group_cols)
   if (length(invalid) > 0) {
     rlang::abort(
       sprintf(
@@ -109,8 +200,12 @@ assert_group_ref <- function(group_ref, o_conc) {
     )
   }
   conc_data <- as.data.frame(o_conc)
-  for (col in names(group_ref)) {
-    unknown <- setdiff(as.character(group_ref[[col]]), as.character(conc_data[[col]]))
+  for (col in setdiff(names(group_ref), "parameter")) {
+    unknown <-
+      setdiff(
+        as.character(stats::na.omit(group_ref[[col]])),
+        as.character(conc_data[[col]])
+      )
     if (length(unknown) > 0) {
       rlang::abort(
         sprintf(
@@ -122,6 +217,36 @@ assert_group_ref <- function(group_ref, o_conc) {
     }
   }
   group_ref
+}
+
+# The group_ref that applies to `param`.  A plain data.frame applies to every
+# secondary parameter; a data.frame with a `parameter` column applies its
+# matching rows, dropping the columns those rows leave all-NA so that one table
+# can carry different columns for different parameters; a named list applies
+# its `param` element.  NULL when nothing steers `param`.
+group_ref_for_param <- function(group_ref, param) {
+  if (is.null(group_ref)) {
+    return(NULL)
+  }
+  if (!is.data.frame(group_ref)) {
+    return(group_ref[[param]])
+  }
+  if (!("parameter" %in% names(group_ref))) {
+    return(group_ref)
+  }
+  ret <-
+    group_ref[
+      group_ref$parameter %in% param,
+      setdiff(names(group_ref), "parameter"),
+      drop = FALSE
+    ]
+  keep <- vapply(X = ret, FUN = function(values) !all(is.na(values)), FUN.VALUE = TRUE)
+  ret <- ret[, keep, drop = FALSE]
+  if (nrow(ret) == 0 || ncol(ret) == 0) {
+    NULL
+  } else {
+    ret
+  }
 }
 
 #' Calculate the ratio of a parameter between two intervals
@@ -350,7 +475,11 @@ expand_secondary_auto <- function(intervals, requested_secondary, conc, group_re
       if (!unlinked || secondary_legacy_resolvable(intervals[r, , drop = FALSE], info)) {
         next
       }
-      found <- find_secondary_reference(intervals, r, p, info, conc, group_ref)
+      found <-
+        find_secondary_reference(
+          intervals, r, p, info, conc,
+          group_ref = group_ref_for_param(group_ref, p)
+        )
       if (is.null(found)) {
         # Not applicable:  the in-interval abort tells the user to give a
         # reference, because there is nothing in the data to derive one from.
@@ -1432,6 +1561,9 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
                                     conc = NULL, group_ref = NULL) {
   assert_secondary_param(intervals, param)
   if (is.null(reference) && !is.null(group_ref)) {
+    group_ref <- group_ref_for_param(group_ref, param)
+  }
+  if (is.null(reference) && !is.null(group_ref)) {
     # `group_ref` steers the engine's finder; naming it here is the same
     # statement, so it describes the reference interval directly.
     reference <- group_ref
@@ -1543,7 +1675,8 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
 #'   accepted and coerced.  When no interval matches, one is created and the
 #'   creation is reported with a `pknca_message_secondary_created_interval`
 #'   message.  `NULL` (the default) takes the `group_ref` given to
-#'   [PKNCAdata()], or derives the reference from the data (see Details).
+#'   [PKNCAdata()] (resolved for `param` when it is parameter-specific), or
+#'   derives the reference from the data (see Details).
 #' @param target_groups A data.frame of group values restricting the parameter
 #'   request to matching intervals, with the same matching rules as `reference`.
 #'   `NULL` (the default) requests it on every interval that is not a reference

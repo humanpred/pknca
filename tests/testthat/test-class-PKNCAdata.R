@@ -152,6 +152,30 @@ test_that("print.PKNCAdata shows group_ref", {
     regexp = "With reference profiles for secondary parameters (group_ref): treatment=Trt 1",
     fixed = TRUE
   )
+  # Parameter-specific forms print one entry per parameter with only the
+  # columns that apply to it
+  obj.data.ref.param <-
+    PKNCAdata(
+      obj.conc,
+      intervals = data.frame(start = 0, end = 24, aucinf.obs = TRUE),
+      group_ref = data.frame(parameter = "clr.obs", treatment = "Trt 1")
+    )
+  expect_output(
+    print(obj.data.ref.param),
+    regexp = "(group_ref): clr.obs: treatment=Trt 1",
+    fixed = TRUE
+  )
+  obj.data.ref.list <-
+    PKNCAdata(
+      obj.conc,
+      intervals = data.frame(start = 0, end = 24, aucinf.obs = TRUE),
+      group_ref = list(clr.obs = data.frame(treatment = "Trt 1"))
+    )
+  expect_output(
+    print(obj.data.ref.list),
+    regexp = "(group_ref): clr.obs: treatment=Trt 1",
+    fixed = TRUE
+  )
 })
 
 test_that("print.PKNCAdata", {

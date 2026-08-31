@@ -25,7 +25,8 @@ column must match (and) for at least one of its rows (or).  A named list is
 accepted and coerced.  When no interval matches, one is created and the
 creation is reported with a \code{pknca_message_secondary_created_interval}
 message.  \code{NULL} (the default) takes the \code{group_ref} given to
-\code{\link[=PKNCAdata]{PKNCAdata()}}, or derives the reference from the data (see Details).}
+\code{\link[=PKNCAdata]{PKNCAdata()}} (resolved for \code{param} when it is parameter-specific), or
+derives the reference from the data (see Details).}
 
 \item{target_groups}{A data.frame of group values restricting the parameter
 request to matching intervals, with the same matching rules as \code{reference}.

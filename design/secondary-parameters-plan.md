@@ -1454,6 +1454,16 @@ finder's rules in the `interval_add_secondary()` and `PKNCAdata()` roxygen.
 PR 3 merged with these differences from the section-5 text above; trust the
 code over the sketches:
 
+* **`group_ref` is optionally parameter-specific** (review comment):  a plain
+  data.frame applies to every secondary parameter; a data.frame with a
+  `parameter` column applies each row only to the parameter it names, and the
+  columns a parameter's rows leave `NA` do not apply to it, so one table can
+  steer renal clearance by `PCSPEC` and a metabolite ratio by `PCTEST`; a
+  named list of data.frames, one per parameter, says the same thing.
+  `group_ref_for_param()` resolves the applicable table wherever the finder or
+  `interval_add_secondary()` reads `group_ref`, and validation additionally
+  requires the named parameters to be secondary and one parameter's rows to
+  fill the same columns.
 * **Naming, from the pull-request review**: the requesting interval's values
   are `own_*` (`own_args`, `own_group`, `own_rows`, `own_idx`,
   `side = "own"`) — never "home", which reads unclearly; interval-row

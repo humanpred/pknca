@@ -57,16 +57,10 @@ automatically chosen by \code{\link[=choose.auc.intervals]{choose.auc.intervals(
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
 
-\item{group_ref}{A data.frame of group values identifying the reference
-profiles for automatically-linked secondary parameters (renal clearance,
-metabolite ratios, and the rest of \code{\link[=pknca_parameter_table]{pknca_parameter_table()}}'s \code{secondary}
-parameters).  Its columns must be group columns of the concentration data,
-every column must match (and) for at least one of its rows (or), and every
-value must appear in the data.  For example, with groups crossing \code{TRTP},
-\code{PCTEST}, and \code{PCSPEC}, \code{group_ref = data.frame(PCSPEC = "PLASMA")}
-directs renal-clearance references to the plasma profiles, and \code{group_ref = data.frame(PCTEST = "midazolam")} directs metabolite ratios to the parent
-analyte.  \code{NULL} (the default) leaves the finder to derive the reference
-from the data.}
+\item{group_ref}{The reference profiles for automatically-linked secondary
+parameters, as a data.frame of group values, optionally
+parameter-specific (see Details).  \code{NULL} (the default) derives the
+reference from the data.}
 }
 \value{
 A PKNCAdata object with concentration, dose, interval, and
@@ -93,6 +87,22 @@ reference interval is created for the calculation only and is not added to
 the intervals in the result.  When more than one profile is equally close,
 the affected results are \code{NA} with the reason in the \code{exclude} column and a
 \code{pknca_warning_secondary_auto_reference} warning.
+
+\code{group_ref} takes three forms.  A data.frame of group values applies to
+every secondary parameter:  its columns must be group columns of the
+concentration data, every column must match (and) for at least one of its
+rows (or), and every value must appear in the data -- for example, with
+groups crossing \code{TRTP}, \code{PCTEST}, and \code{PCSPEC},
+\code{group_ref = data.frame(PCSPEC = "PLASMA")} directs renal-clearance
+references to the plasma profiles and
+\code{group_ref = data.frame(PCTEST = "midazolam")} directs metabolite ratios
+to the parent analyte.  The same data.frame with a \code{parameter} column
+applies each row only to the secondary parameter it names, and the columns
+a parameter's rows leave \code{NA} do not apply to it, so one table can steer
+renal clearance by \code{PCSPEC} and a metabolite ratio by \code{PCTEST}:
+\code{group_ref = data.frame(parameter = c("clr.obs", "ratio.aucinf.obs"), PCSPEC = c("PLASMA", NA), PCTEST = c(NA, "midazolam"))}.  A named list of
+data.frames, one per parameter, says the same thing:
+\code{group_ref = list(clr.obs = data.frame(PCSPEC = "PLASMA"), ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))}.
 }
 \seealso{
 \code{\link[=choose.auc.intervals]{choose.auc.intervals()}}, \code{\link[=pk.nca]{pk.nca()}}, \code{\link[=pknca_units_table]{pknca_units_table()}}
