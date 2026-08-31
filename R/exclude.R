@@ -57,7 +57,7 @@ exclude.default <- function(object, reason, mask, FUN) {
           do.call(
             FUN,
             list(
-              as.data.frame(., stringsAsFactors=FALSE)[.$row_number_XXX %in% row_number_XXX,,drop=FALSE],
+              as.data.frame(.)[.$row_number_XXX %in% row_number_XXX,,drop=FALSE],
               object
             )
           )

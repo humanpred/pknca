@@ -142,8 +142,7 @@ describe("remove_impute_method", {
 describe("interval_match_groups", {
   d_groups <- data.frame(
     analyte = c("A1", "A2", "A1", "A2"),
-    route = c("iv", "iv", "ev", "ev"),
-    stringsAsFactors = FALSE
+    route = c("iv", "iv", "ev", "ev")
   )
 
   it("matches on a single column", {

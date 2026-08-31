@@ -114,8 +114,7 @@ test_that("pk.tss.data.prep", {
     data.frame(
       conc=c(1, 6), time=c(0, 0),
       subject=factor(c("a", "f")),
-      treatment=factor(c("A", "F")),
-      stringsAsFactors=FALSE
+      treatment=factor(c("A", "F"))
     ),
     ignore_attr = TRUE
   )
@@ -137,8 +136,7 @@ test_that("pk.tss.data.prep", {
     data.frame(
       conc=c(1, 6),
       time=c(0, 0),
-      subject=factor(c("a", "f")),
-      stringsAsFactors=FALSE
+      subject=factor(c("a", "f"))
     ),
     ignore_attr = TRUE
   )
@@ -154,14 +152,12 @@ generate.data <- function() {
         subject=factor(1:10),
         css.re=rnorm(10, sd=0.2),
         tss.re=rnorm(10, sd=0.2),
-        treatment=rep(c("A", "B"), each=5),
-        stringsAsFactors=FALSE
+        treatment=rep(c("A", "B"), each=5)
       ),
       data.frame(
         treatment=c("A", "B"),
         css.mean=c(5, 10),
-        tss.mean=5,
-        stringsAsFactors=FALSE
+        tss.mean=5
       )
     )
   tmpdata <- merge(tmpdata, data.frame(time=0:14))
@@ -432,8 +428,7 @@ test_that("pk.tss.monoexponential", {
           3.91269286106442, 4.74475071729459, 3.99341726779716,
           5.08737230904342, 4.50068650719192, 3.4876172020751,
           5.35051537086801),
-        tss.monoexponential.single=4.56067603534,
-        stringsAsFactors=FALSE
+        tss.monoexponential.single=4.56067603534
       ),
       tolerance=1e-4
     )
@@ -479,8 +474,7 @@ test_that("pk.tss.monoexponential without treatment", {
           3.91269286106442, 4.74475071729459, 3.99341726779716,
           5.08737230904342, 4.50068650719192, 3.4876172020751,
           5.35051537086801),
-        tss.monoexponential.single=4.56067603534,
-        stringsAsFactors=FALSE
+        tss.monoexponential.single=4.56067603534
       ),
       tolerance=1e-4
     )
@@ -502,8 +496,7 @@ test_that("pk.tss.monoexponential corner case tests", {
       ),
       data.frame(
         subject=factor(as.character(seq_len(10))),
-        tss.monoexponential.population=4.57618156812974,
-        stringsAsFactors=FALSE
+        tss.monoexponential.population=4.57618156812974
       ),
       tolerance=1e-4
     )
@@ -520,8 +513,7 @@ test_that("pk.tss.monoexponential corner case tests", {
     ),
     data.frame(
       subject=factor(as.character(seq_len(10))),
-      tss.monoexponential.population=4.56157960341961,
-      stringsAsFactors=FALSE
+      tss.monoexponential.population=4.56157960341961
     ),
     tolerance=1e-4
   )

@@ -33,7 +33,7 @@ generate_be_replicate <- function(nsub = 24, seed = 20240501,
       rows[[length(rows) + 1]] <-
         data.frame(
           subject = i, sequence = seq_assign[i], period = p,
-          treatment = trt, PK = exp(logPK), stringsAsFactors = FALSE
+          treatment = trt, PK = exp(logPK)
         )
     }
   }
@@ -51,7 +51,6 @@ be_replicate_long <- function(d, endpoint = "auclast", units = if (endpoint == "
   data.frame(
     subject = d$subject, sequence = d$sequence, period = d$period,
     treatment = d$treatment, PPTESTCD = endpoint, PPORRES = d$PK,
-    PPORRESU = units,
-    stringsAsFactors = FALSE
+    PPORRESU = units
   )
 }

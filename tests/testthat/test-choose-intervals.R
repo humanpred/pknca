@@ -65,8 +65,7 @@ test_that("choose.auc.intervals", {
                  end=c(24, Inf),
                  auclast=c(TRUE, FALSE),
                  aucinf=c(FALSE, TRUE),
-                 half.life=c(FALSE, TRUE),
-                 stringsAsFactors=FALSE))
+                 half.life=c(FALSE, TRUE)))
 
   # Check the inputs
   expect_error(choose.auc.intervals(NA, 1, tmp.single.dose.auc),

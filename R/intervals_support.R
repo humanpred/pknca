@@ -68,7 +68,7 @@ interval_longer <- function(intervals) {
       values_to = "calculate"
     )
   ret <- ret[ret$calculate %in% TRUE, setdiff(names(ret), "calculate"), drop = FALSE]
-  as.data.frame(ret, stringsAsFactors = FALSE)
+  as.data.frame(ret)
 }
 
 #' @rdname interval_longer
@@ -88,7 +88,7 @@ interval_wider <- function(long, template) {
       values_from = "calculate",
       values_fill = FALSE
     )
-  ret <- as.data.frame(ret, stringsAsFactors = FALSE)
+  ret <- as.data.frame(ret)
   # Parameters that are no longer requested anywhere lose their column in the
   # pivot; restore them as FALSE so the caller's columns are preserved.
   for (n in setdiff(interval_param_cols(template), names(ret))) {
@@ -124,7 +124,7 @@ interval_target_rows <- function(long, target_params = NULL, target_groups = NUL
 # Match rows against a data.frame of group values:  all columns must match
 # (AND) for at least one row of `target_groups` (OR).
 interval_match_groups <- function(data, target_groups) {
-  target_groups <- as.data.frame(target_groups, stringsAsFactors = FALSE)
+  target_groups <- as.data.frame(target_groups)
   checkmate::assert_data_frame(target_groups, min.rows = 1, min.cols = 1)
   missing_cols <- setdiff(names(target_groups), names(data))
   if (length(missing_cols) > 0) {

@@ -278,8 +278,7 @@ pknca_parameter_table <- function(param = NULL) {
     dose_normalized = unname(classification$dose_normalized[param]),
     route = vapply(classification$route[param], paste, collapse = ",", FUN.VALUE = ""),
     dosing = vapply(classification$dosing[param], paste, collapse = ",", FUN.VALUE = ""),
-    row.names = NULL,
-    stringsAsFactors = FALSE
+    row.names = NULL
   )
 }
 

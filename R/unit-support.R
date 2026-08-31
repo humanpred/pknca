@@ -311,23 +311,19 @@ pknca_units_table_unitless <- function() {
   rbind(
     data.frame(
       PPORRESU="unitless",
-      PPTESTCD=pknca_find_units_param(unit_type="unitless"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="unitless")
     ),
     data.frame(
       PPORRESU="fraction",
-      PPTESTCD=pknca_find_units_param(unit_type="fraction"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="fraction")
     ),
     data.frame(
       PPORRESU="%",
-      PPTESTCD=pknca_find_units_param(unit_type="%"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="%")
     ),
     data.frame(
       PPORRESU="count",
-      PPTESTCD=pknca_find_units_param(unit_type="count"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="count")
     )
   )
 }
@@ -370,13 +366,11 @@ pknca_units_table_time <- function(timeu) {
   rbind(
     data.frame(
       PPORRESU=timeu,
-      PPTESTCD=pknca_find_units_param(unit_type="time"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="time")
     ),
     data.frame(
       PPORRESU=inverse_timeu,
-      PPTESTCD=pknca_find_units_param(unit_type="inverse_time"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="inverse_time")
     )
   )
 }
@@ -387,8 +381,7 @@ pknca_units_table_conc <- function(concu) {
   }
   data.frame(
     PPORRESU=concu,
-    PPTESTCD=pknca_find_units_param(unit_type="conc"),
-    stringsAsFactors=FALSE
+    PPTESTCD=pknca_find_units_param(unit_type="conc")
   )
 }
 
@@ -398,8 +391,7 @@ pknca_units_table_amount <- function(amountu) {
   }
   data.frame(
     PPORRESU=amountu,
-    PPTESTCD=pknca_find_units_param(unit_type="amount"),
-    stringsAsFactors=FALSE
+    PPTESTCD=pknca_find_units_param(unit_type="amount")
   )
 }
 
@@ -411,8 +403,7 @@ pknca_units_table_amount_dose <- function(amountu, doseu) {
   }
   data.frame(
     PPORRESU=amount_doseu,
-    PPTESTCD=pknca_find_units_param(unit_type="amount_dose"),
-    stringsAsFactors=FALSE
+    PPTESTCD=pknca_find_units_param(unit_type="amount_dose")
   )
 }
 
@@ -422,8 +413,7 @@ pknca_units_table_dose <- function(doseu) {
   }
   data.frame(
     PPORRESU=doseu,
-    PPTESTCD=pknca_find_units_param(unit_type="dose"),
-    stringsAsFactors=FALSE
+    PPTESTCD=pknca_find_units_param(unit_type="dose")
   )
 }
 
@@ -438,14 +428,12 @@ pknca_units_table_conc_dose <- function(concu, doseu) {
   rbind(
     data.frame(
       PPORRESU=conc_dosenorm,
-      PPTESTCD=pknca_find_units_param(unit_type="conc_dosenorm"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="conc_dosenorm")
     ),
     data.frame(
       # Volume units
       PPORRESU=volume,
-      PPTESTCD=pknca_find_units_param(unit_type="volume"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="volume")
     )
   )
 }
@@ -462,14 +450,12 @@ pknca_units_table_conc_time <- function(concu, timeu) {
     data.frame(
       # AUC units
       PPORRESU=auc,
-      PPTESTCD=pknca_find_units_param(unit_type="auc"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="auc")
     ),
     data.frame(
       # AUMC units
       PPORRESU=aumc,
-      PPTESTCD=pknca_find_units_param(unit_type="aumc"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="aumc")
     )
   )
 }
@@ -489,20 +475,17 @@ pknca_units_table_conc_time_dose <- function(concu, timeu, doseu) {
     data.frame(
       # AUC units, dose-normalized
       PPORRESU=auc_dosenorm,
-      PPTESTCD=pknca_find_units_param(unit_type="auc_dosenorm"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="auc_dosenorm")
     ),
     data.frame(
       # AUMC units, dose-normalized
       PPORRESU=aumc_dosenorm,
-      PPTESTCD=pknca_find_units_param(unit_type="aumc_dosenorm"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="aumc_dosenorm")
     ),
     data.frame(
       # Clearance units
       PPORRESU=clearance,
-      PPTESTCD=pknca_find_units_param(unit_type="clearance"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="clearance")
     )
   )
 }
@@ -516,8 +499,7 @@ pknca_units_table_conc_time_amount <- function(concu, timeu, amountu) {
   data.frame(
     # Renal clearance units
     PPORRESU=renal_clearance,
-    PPTESTCD=pknca_find_units_param(unit_type="renal_clearance"),
-    stringsAsFactors=FALSE
+    PPTESTCD=pknca_find_units_param(unit_type="renal_clearance")
   )
 }
 
@@ -529,8 +511,7 @@ pknca_units_table_time_amount <- function(timeu, amountu) {
   }
   data.frame(
     PPORRESU = time_amount,
-    PPTESTCD = pknca_find_units_param(unit_type = "amount_time"),
-    stringsAsFactors = FALSE
+    PPTESTCD = pknca_find_units_param(unit_type = "amount_time")
   )
 }
 
@@ -543,8 +524,7 @@ pknca_units_table_conc_time_amount_dose <- function(concu, timeu, amountu, doseu
   data.frame(
     # Renal clearance, dose-normalized
     PPORRESU=renal_clearance_dosenorm,
-    PPTESTCD=pknca_find_units_param(unit_type="renal_clearance_dosenorm"),
-    stringsAsFactors=FALSE
+    PPTESTCD=pknca_find_units_param(unit_type="renal_clearance_dosenorm")
   )
 }
 

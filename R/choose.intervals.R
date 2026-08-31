@@ -94,8 +94,7 @@ choose.auc.intervals <- function(time.conc, time.dosing,
                 end=max(time.dosing) + tau,
                 cmax=TRUE,
                 tmax=TRUE,
-                auclast=TRUE,
-                stringsAsFactors=FALSE
+                auclast=TRUE
               )
             )
           )

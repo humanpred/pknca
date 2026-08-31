@@ -1733,8 +1733,7 @@ test_that("a missing automatically linked home value degrades to NA", {
       PPTESTCD = c("auclast", "cmax"),
       PPORRES = c(144, 2),
       PPANMETH = "",
-      exclude = NA_character_,
-      stringsAsFactors = FALSE
+      exclude = NA_character_
     )
   data_calc <-
     list(
@@ -1750,11 +1749,11 @@ test_that("a missing automatically linked home value degrades to NA", {
       options = list(),
       secondary_auto =
         list(
-          links = data.frame(param = "clr.last", ref_id = "autoref1", stringsAsFactors = FALSE),
+          links = data.frame(param = "clr.last", ref_id = "autoref1"),
           failures =
             data.frame(
               PCSPEC = character(0), start = numeric(0), end = numeric(0),
-              param = character(0), reason = character(0), stringsAsFactors = FALSE
+              param = character(0), reason = character(0)
             )
         )
     )

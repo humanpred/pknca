@@ -337,7 +337,7 @@ expand_secondary_intervals <- function(data) {
 # ledger carries the reason to pk_nca_secondary(), which reports it as an NA
 # result (decision 5:  explicit links fail loud, automatic links degrade).
 expand_secondary_auto <- function(intervals, requested_secondary, conc, group_ref) {
-  links <- data.frame(param = character(0), ref_id = character(0), stringsAsFactors = FALSE)
+  links <- data.frame(param = character(0), ref_id = character(0))
   failures <- list()
   original_rows <- seq_len(nrow(intervals))
   for (p in requested_secondary) {
@@ -359,7 +359,7 @@ expand_secondary_auto <- function(intervals, requested_secondary, conc, group_re
         failures[[length(failures) + 1L]] <-
           cbind(
             intervals[r, interval_describe_cols(intervals), drop = FALSE],
-            data.frame(param = p, reason = found, stringsAsFactors = FALSE)
+            data.frame(param = p, reason = found)
           )
         intervals[[p]][r] <- FALSE
       } else {
@@ -372,7 +372,7 @@ expand_secondary_auto <- function(intervals, requested_secondary, conc, group_re
           rbind(
             links,
             data.frame(
-              param = p, ref_id = as.character(linked$id), stringsAsFactors = FALSE
+              param = p, ref_id = as.character(linked$id)
             )
           )
         rlang::inform(
@@ -386,7 +386,7 @@ expand_secondary_auto <- function(intervals, requested_secondary, conc, group_re
     if (length(failures) == 0) {
       cbind(
         intervals[0, interval_describe_cols(intervals), drop = FALSE],
-        data.frame(param = character(0), reason = character(0), stringsAsFactors = FALSE)
+        data.frame(param = character(0), reason = character(0))
       )
     } else {
       do.call(rbind, failures)
@@ -403,7 +403,7 @@ secondary_ref_created_text <- function(param, linked) {
     paste(
       c(
         if (length(linked$override) > 0) {
-          name_value_text(as.data.frame(linked$override, stringsAsFactors = FALSE))
+          name_value_text(as.data.frame(linked$override))
         },
         sprintf("%s-%s", format(linked$start), format(linked$end))
       ),
@@ -618,7 +618,7 @@ find_secondary_reference <- function(intervals, row, param, info, conc, group_re
   signatures <-
     vapply(
       X = overrides,
-      FUN = function(x) name_value_text(as.data.frame(x, stringsAsFactors = FALSE)),
+      FUN = function(x) name_value_text(as.data.frame(x)),
       FUN.VALUE = ""
     )
   if (length(unique(signatures)) > 1) {
@@ -661,7 +661,7 @@ interval_link_found_reference <- function(intervals, row, param, override, sourc
   if (created) {
     new_rows <-
       interval_create_reference(
-        intervals, row, as.data.frame(override, stringsAsFactors = FALSE), ends = ref_end
+        intervals, row, as.data.frame(override), ends = ref_end
       )
     new_rows <- interval_complete_reference(new_rows, intervals, source_params)
     intervals <- rbind(intervals, new_rows)
@@ -1345,7 +1345,7 @@ assert_secondary_param <- function(intervals, param) {
 }
 
 interval_secondary_validate <- function(intervals, param, reference, ref_id) {
-  reference <- as.data.frame(reference, stringsAsFactors = FALSE)
+  reference <- as.data.frame(reference)
   checkmate::assert_data_frame(reference, min.rows = 1, min.cols = 1)
   invalid <- setdiff(names(reference), interval_describe_cols(intervals))
   if (length(invalid) > 0) {

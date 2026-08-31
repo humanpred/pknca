@@ -42,8 +42,7 @@ generate.conc <- function(nsub, ntreat, time.points, nstudies=NA, nanalytes=NA, 
                              v=1,
                              ka=1,
                              kel=0.05),
-              analyte=paste("Analyte", k),
-              stringsAsFactors=FALSE
+              analyte=paste("Analyte", k)
             )
           )
         }

@@ -23,8 +23,7 @@ test_that("PKNCAresults summary", {
         cmax = c(".", "0.970 [4.29]"),
         tmax = c(".", "3.00 [2.00, 4.00]"),
         half.life = c(".", "14.2 [2.79]"),
-        aucinf.obs = c(".", "20.5 [6.84]"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c(".", "20.5 [6.84]")
       ),
       caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects"
     ),
@@ -55,8 +54,7 @@ test_that("PKNCAresults summary", {
         cmax = c(".", "1.00 [NC]"),
         tmax = c(".", "4.00, n=1"),
         half.life = c(".", "16.1, n=1"),
-        aucinf.obs = c(".", "21.5 [NC]"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c(".", "21.5 [NC]")
       ),
       caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; n: number of measurements included in summary"
     ),
@@ -87,8 +85,7 @@ test_that("PKNCAresults summary", {
         cmax = c(".", "NC"),
         tmax = c(".", "NC"),
         half.life = c(".", "NC"),
-        aucinf.obs = c(".", "NC"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c(".", "NC")
       ),
       caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects"
     ),
@@ -111,8 +108,7 @@ test_that("PKNCAresults summary", {
         cmax = c("NR", "NoCalc"),
         tmax = c("NR", "NoCalc"),
         half.life = c("NR", "NoCalc"),
-        aucinf.obs = c("NR", "NoCalc"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c("NR", "NoCalc")
       ),
       caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects"
     ),
@@ -135,8 +131,7 @@ test_that("PKNCAresults summary", {
         cmax = c("NR", "NoCalc"),
         tmax = c("NR", "NoCalc"),
         half.life = c("NR", "NoCalc"),
-        aucinf.obs = c("NR", "NoCalc"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c("NR", "NoCalc")
       ),
       caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation"
     ),
@@ -239,8 +234,7 @@ test_that("summary.PKNCAresults manages exclusions as missing not as non-existen
         cmax = c(".", "0.970 [4.29]"),
         tmax = c(".", "3.00 [2.00, 4.00]"),
         half.life = c(".", "14.2 [2.79]"),
-        aucinf.obs = c(".", "20.5 [6.84]"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c(".", "20.5 [6.84]")
       ),
       caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects"
     ),
@@ -258,8 +252,7 @@ test_that("summary.PKNCAresults manages exclusions as missing not as non-existen
         cmax = c(".", "0.970 [4.29]"),
         tmax = c(".", "3.00 [2.00, 4.00]"),
         half.life = c(".", "14.2 [2.79]"),
-        aucinf.obs = c(".", "20.5 [6.84]"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c(".", "20.5 [6.84]")
       ),
       caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; n: number of measurements included in summary"
     ),
@@ -277,8 +270,7 @@ test_that("summary.PKNCAresults manages exclusions as missing not as non-existen
         cmax = c(".", "0.970 [4.29]"),
         tmax = c(".", "3.00 [2.00, 4.00]"),
         half.life = c(".", "14.2 [2.79]"),
-        aucinf.obs = c(".", "20.5 [6.84]"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c(".", "20.5 [6.84]")
       ),
       caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects"
     ),

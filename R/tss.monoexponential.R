@@ -245,8 +245,7 @@ pk.tss.monoexponential.population <- function(data,
       data.frame(
         tss.monoexponential.population=NA,
         tss.monoexponential.popind=NA,
-        subject=unique(data[["subject"]]),
-        stringsAsFactors=FALSE
+        subject=unique(data[["subject"]])
       )
   } else {
     best.model <-
@@ -254,8 +253,7 @@ pk.tss.monoexponential.population <- function(data,
              min(all.model.summary$AIC, na.rm=TRUE)][[1]]$model
     ret <-
       data.frame(
-        tss.monoexponential.population=nlme::fixef(best.model)[["tss"]],
-        stringsAsFactors=FALSE
+        tss.monoexponential.population=nlme::fixef(best.model)[["tss"]]
       )
     best.ranef <- nlme::ranef(best.model)
     if ("tss" %in% names(best.ranef)) {
@@ -265,8 +263,7 @@ pk.tss.monoexponential.population <- function(data,
           data.frame(
             tss.monoexponential.popind=(best.ranef$tss +
                                           ret$tss.monoexponential.population),
-            subject=factor(rownames(best.ranef)),
-            stringsAsFactors=FALSE
+            subject=factor(rownames(best.ranef))
           ),
           all=TRUE
         )
@@ -280,8 +277,7 @@ pk.tss.monoexponential.population <- function(data,
           ret,
           data.frame(
             tss.monoexponential.popind=NA,
-            subject=unique(data$subject),
-            stringsAsFactors=FALSE
+            subject=unique(data$subject)
           ),
           all=TRUE
         )
@@ -358,8 +354,7 @@ pk.tss.monoexponential.individual <- function(data,
           data.frame(
             time=.$time,
             tss.constant=.$tss.constant,
-            conc=.$conc,
-            stringsAsFactors=FALSE
+            conc=.$conc
           )
         )
     )
@@ -381,8 +376,7 @@ pk.tss.monoexponential.individual <- function(data,
             data.frame(
               time=.data$time,
               tss.constant=.data$tss.constant,
-              conc=.data$conc,
-              stringsAsFactors=FALSE
+              conc=.data$conc
             )
           )
       )
@@ -392,7 +386,6 @@ pk.tss.monoexponential.individual <- function(data,
   as.data.frame(
     ret[,c(intersect(names(ret), c("subject", "treatment")),
            paste("tss.monoexponential", output, sep=".")),
-        drop=FALSE],
-    stringsAsFactors=FALSE
+        drop=FALSE]
   )
 }

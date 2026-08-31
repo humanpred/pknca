@@ -454,8 +454,7 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
     .subject = factor(as.character(data[[subject]])),
     .period = factor(as.character(data[[period]])),
     .trt = as.character(data[[treatment]]),
-    .val = data[[value]],
-    stringsAsFactors = FALSE
+    .val = data[[value]]
   )
   work <- work[!is.na(work$.val) & work$.val > 0, , drop = FALSE]
   work$.logval <- log(work$.val)
@@ -1065,8 +1064,7 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
         isc_gmr_percent = isc$gmr_percent, isc_ci_lower = isc$ci_lower, isc_ci_upper = isc$ci_upper,
         swr = wv$ref_var$sw, swt = wv$test_var$sw,
         cvwr_percent = wv$ref_var$cv, cvwt_percent = wv$test_var$cv,
-        df_wr = wv$ref_var$df, df_wt = wv$test_var$df,
-        stringsAsFactors = FALSE
+        df_wr = wv$ref_var$df, df_wt = wv$test_var$df
       )
   }
   out <- do.call(rbind, rows)
@@ -1245,8 +1243,7 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
         gmr_percent = est$gmr_percent, ci_lower = est$ci_lower, ci_upper = est$ci_upper,
         cvwr_percent = p$cvwr_percent, cvwt_percent = p$cvwt_percent, swr = p$swr,
         limit_lower = dec$limit_lower, limit_upper = dec$limit_upper, criterion = dec$criterion,
-        regulator = reg$name, model_type = model_type, pass = dec$pass,
-        stringsAsFactors = FALSE
+        regulator = reg$name, model_type = model_type, pass = dec$pass
       )
   }
   out <- do.call(rbind, rows)
@@ -1458,8 +1455,7 @@ be_fit_models <- function(object, reference_col, reference_value,
 #'     subject = i, sequence = seqs[i], period = seq_along(trt), treatment = trt,
 #'     PPTESTCD = "auclast",
 #'     PPORRES = exp(log(100) + ifelse(trt == "T", 0.04, 0) + b[i] +
-#'                     stats::rnorm(length(trt), sd = 0.45)),
-#'     stringsAsFactors = FALSE
+#'                     stats::rnorm(length(trt), sd = 0.45))
 #'   )
 #' }))
 #' be_assess(d, reference_col = "treatment", reference_value = "R",
@@ -1570,8 +1566,7 @@ print.summary_be_assess <- function(x, ...) {
 #'     subject = i, sequence = seqs[i], period = seq_along(trt), treatment = trt,
 #'     PPTESTCD = "auclast",
 #'     PPORRES = exp(log(100) + ifelse(trt == "T", 0.04, 0) + b[i] +
-#'                     stats::rnorm(length(trt), sd = 0.45)),
-#'     stringsAsFactors = FALSE
+#'                     stats::rnorm(length(trt), sd = 0.45))
 #'   )
 #' }))
 #' be_compare(d, reference_col = "treatment", reference_value = "R",

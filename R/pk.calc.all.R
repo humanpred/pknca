@@ -683,8 +683,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           PPTESTCD=tmp_testcd,
           PPORRES=tmp_result,
           PPANMETH=paste(tmp_method, collapse=". "),
-          exclude=exclude_reason,
-          stringsAsFactors=FALSE
+          exclude=exclude_reason
         )
       ret <- rbind(ret, single_result)
     }
