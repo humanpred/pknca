@@ -21,6 +21,8 @@
   PKNCA](https://humanpred.github.io/pknca/articles/v07-unit-conversion.md):
 - [Data
   Imputation](https://humanpred.github.io/pknca/articles/v08-data-imputation.md):
+- [Secondary Parameters (Renal Clearance, Bioavailability, and
+  Ratios)](https://humanpred.github.io/pknca/articles/v09-secondary-parameters.md):
 - [Superposition of Pharmacokinetic
   Data](https://humanpred.github.io/pknca/articles/v20-superposition.md):
 - [Methods Used for Dose-Aware Concentration

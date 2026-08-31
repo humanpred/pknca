@@ -43,6 +43,7 @@
     <li><a class="dropdown-item" href="../articles/v07-post-processing.html">Post-Processing</a></li>
     <li><a class="dropdown-item" href="../articles/v07-unit-conversion.html">Unit Assignment and Conversion with PKNCA</a></li>
     <li><a class="dropdown-item" href="../articles/v08-data-imputation.html">Data Imputation</a></li>
+    <li><a class="dropdown-item" href="../articles/v09-secondary-parameters.html">Secondary Parameters (Renal Clearance, Bioavailability, and Ratios)</a></li>
     <li><a class="dropdown-item" href="../articles/v20-superposition.html">Superposition of Pharmacokinetic Data</a></li>
     <li><a class="dropdown-item" href="../articles/v21-methods-for-dose-aware-interpolation-and-extrapolation.html">Methods Used for Dose-Aware Concentration Interpolation/Extrapolation</a></li>
     <li><a class="dropdown-item" href="../articles/v22-time-to-steady-state.html">Noncompartmental evaluation of time to steady-state</a></li>
@@ -252,6 +253,74 @@ column of the same name, which is the
 <code>TRUE</code>/<code>FALSE</code> requesting the parameter rather
 than a value.</li>
 </ul>
+</div>
+<div class="section level3">
+<h3 id="parameters-that-need-another-interval">Parameters That Need Another Interval<a class="anchor" aria-label="anchor" href="#parameters-that-need-another-interval"></a>
+</h3>
+<p>A few parameters cannot be calculated from one interval of one
+profile. Renal clearance divides an amount excreted into a urine
+collection by the plasma AUC over the same times, and bioavailability
+compares two administrations. Wrapping a <code>formalsmap</code> value
+in <code>pknca_ref</code> says that the argument takes its value from
+the <em>reference</em> interval – the one named by the
+<code>&lt;parameter&gt;_ref</code> column of the interval specification
+– instead of from the interval being calculated:</p>
+<pre><code><span><span class="fu"><a href="../reference/add.interval.col.html">add.interval.col</a></span><span class="op">(</span><span class="st">"clr.last"</span>,</span>
+<span>                 FUN<span class="op">=</span><span class="st">"pk.calc.clr"</span>,</span>
+<span>                 values<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>                 unit_type<span class="op">=</span><span class="st">"renal_clearance"</span>,</span>
+<span>                 pretty_name<span class="op">=</span><span class="st">"Renal clearance (from AUClast)"</span>,</span>
+<span>                 formalsmap<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>auc<span class="op">=</span><span class="fu"><a href="../reference/pknca_ref.html">pknca_ref</a></span><span class="op">(</span><span class="st">"auclast"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                 depends<span class="op">=</span><span class="st">"ae"</span>,</span>
+<span>                 desc<span class="op">=</span><span class="st">"Renal clearance, AUClast"</span>,</span>
+<span>                 selection <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>secondary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></code></pre>
+<p>A <code>pknca_ref</code> anywhere in the <code>formalsmap</code>
+makes the parameter <em>secondary</em>, whether or not
+<code>selection</code> says so. <code>pknca_parameter_table</code>
+reports which parameters are secondary, and the vignette “Secondary
+Parameters”
+(<code><a href="../articles/v09-secondary-parameters.html">vignette("v09-secondary-parameters", package="PKNCA")</a></code>)
+covers requesting and linking them.</p>
+<p>A secondary parameter is calculated after every interval has been
+calculated, from the results rather than from the concentrations, so its
+function may take only NCA parameter values as inputs. That imposes two
+requirements, which <code>add.interval.col</code> does not check when
+the parameter is registered (the parameters it names may not be
+registered yet) but which are checked, with an error naming the
+parameter, the first time it is calculated:</p>
+<ul>
+<li>Every formal of the function other than <code>...</code> must be
+covered: either it is named in the <code>formalsmap</code>, or it is
+itself the name of a registered NCA parameter and is filled from the
+interval being calculated. A formal that is neither – <code>conc</code>,
+<code>time</code>, <code>options</code>, or a name of your own – cannot
+be filled, because the data and the options are no longer at hand.
+<code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code> constants and <code>NULL</code> mappings work as they
+do for any parameter, since neither needs a value looked up.</li>
+<li>Every argument taken from the interval being calculated must be
+listed in <code>depends</code>, so that it is calculated there before
+the secondary calculation reads it. In the registration above,
+<code>ae</code> is a formal of <code>pk.calc.clr</code> named after a
+parameter, so it is filled from the interval calculating
+<code>clr.last</code> and appears in <code>depends</code>.
+<code>auc</code> comes from the reference interval and does not.</li>
+</ul>
+<p>Exclusions cross the link with no help from the function. As for any
+parameter, the <code>exclude</code> reasons of all of the inputs – from
+either interval – are joined with <code>"; "</code>, the
+<code>exclude</code> attribute the function set on its own return value
+is added to them, and <code>"DO NOT EXCLUDE"</code> on the return value
+clears all of them. An excluded plasma AUC therefore cannot quietly
+become a reported renal clearance.</p>
+<p>Units are the one thing a new secondary parameter does not get for
+free. Where units are given per group, the two intervals can report
+theirs differently, and <code>pknca_units_table</code> composes the
+units of <code>pk.calc.clr</code>, <code>pk.calc.ratio</code>, and
+<code>pk.calc.f</code> from both sides for that reason. A parameter
+built on a calculation function of your own is given the units of its
+<code>unit_type</code> under its own interval’s group, as any primary
+parameter is; supply a <code>units</code> table to
+<code>PKNCAdata</code> if that is not what its two sides mean.</p>
 </div>
 </div>
 <div class="section level2">

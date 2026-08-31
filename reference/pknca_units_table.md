@@ -57,6 +57,27 @@ A unit conversion table with columns for "PPTESTCD" and "PPORRESU" if
 `conversions` is not given, and adding "PPSTRESU" and
 "conversion_factor" if `conversions` is given.
 
+## Secondary parameters and reference groups
+
+A secondary parameter (renal clearance, bioavailability, a ratio; see
+[`vignette("v09-secondary-parameters")`](https://humanpred.github.io/pknca/articles/v09-secondary-parameters.md))
+takes one value from the interval requesting it and another from a
+reference interval, so its units are a quotient of the two groups'
+units. When the `PKNCAdata` method finds more than one set of units
+among the groups, the table therefore gains a `<group column>_ref`
+column for each of its group columns and, for each secondary parameter,
+one row per pair of (own group, reference group) with "PPORRESU"
+composed from the correct side of each. Rows describing a result that
+names no reference – every primary parameter, and a secondary parameter
+calculated without a reference – hold `NA` in the `_ref` columns, and
+results carrying no reference group join to them. A quotient whose two
+sides are convertible into one another is dimensionless, and such a row
+also gets "PPSTRESU" of "fraction" with the "conversion_factor" that
+turns the raw quotient into that number.
+
+With one set of units for every group there is no reference side to name
+and no `_ref` column is added.
+
 ## See also
 
 The `units` argument for

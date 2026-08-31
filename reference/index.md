@@ -617,8 +617,14 @@
 - [`pknca_unit_conversion()`](https://humanpred.github.io/pknca/reference/pknca_unit_conversion.md)
   : Perform unit conversion (if possible) on PKNCA results
 
+- [`pknca_unit_reconcile_factor()`](https://humanpred.github.io/pknca/reference/pknca_unit_reconcile_factor.md)
+  : Find the conversion factor between two units, when there is one
+
 - [`pknca_units_add_paren()`](https://humanpred.github.io/pknca/reference/pknca_units_add_paren.md)
   : Add parentheses to a unit value, if needed
+
+- [`pknca_units_conversion_factor()`](https://humanpred.github.io/pknca/reference/pknca_units_conversion_factor.md)
+  : Find the factor converting a value from one unit to another
 
 - [`pknca_units_table()`](https://humanpred.github.io/pknca/reference/pknca_units_table.md)
   : Create a unit assignment and conversion table

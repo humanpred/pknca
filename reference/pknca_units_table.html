@@ -32,6 +32,7 @@ NA."></head><body>
     <li><a class="dropdown-item" href="../articles/v07-post-processing.html">Post-Processing</a></li>
     <li><a class="dropdown-item" href="../articles/v07-unit-conversion.html">Unit Assignment and Conversion with PKNCA</a></li>
     <li><a class="dropdown-item" href="../articles/v08-data-imputation.html">Data Imputation</a></li>
+    <li><a class="dropdown-item" href="../articles/v09-secondary-parameters.html">Secondary Parameters (Renal Clearance, Bioavailability, and Ratios)</a></li>
     <li><a class="dropdown-item" href="../articles/v20-superposition.html">Superposition of Pharmacokinetic Data</a></li>
     <li><a class="dropdown-item" href="../articles/v21-methods-for-dose-aware-interpolation-and-extrapolation.html">Methods Used for Dose-Aware Concentration Interpolation/Extrapolation</a></li>
     <li><a class="dropdown-item" href="../articles/v22-time-to-steady-state.html">Noncompartmental evaluation of time to steady-state</a></li>
@@ -121,6 +122,28 @@ conversions from <code>concu_pref</code>, <code>doseu_pref</code>, <code>amountu
     <p>A unit conversion table with columns for "PPTESTCD" and "PPORRESU"
 if <code>conversions</code> is not given, and adding "PPSTRESU" and
 "conversion_factor" if <code>conversions</code> is given.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="secondary-parameters-and-reference-groups">Secondary parameters and reference groups<a class="anchor" aria-label="anchor" href="#secondary-parameters-and-reference-groups"></a></h2>
+
+
+
+<p>A secondary parameter (renal clearance, bioavailability, a ratio; see
+<code><a href="../articles/v09-secondary-parameters.html">vignette("v09-secondary-parameters")</a></code>) takes one value from the interval
+requesting it and another from a reference interval, so its units are a
+quotient of the two groups' units.  When the <code>PKNCAdata</code> method finds more
+than one set of units among the groups, the table therefore gains a
+<code>&lt;group column&gt;_ref</code> column for each of its group columns and, for each
+secondary parameter, one row per pair of (own group, reference group) with
+"PPORRESU" composed from the correct side of each.  Rows describing a
+result that names no reference – every primary parameter, and a secondary
+parameter calculated without a reference – hold <code>NA</code> in the <code>_ref</code>
+columns, and results carrying no reference group join to them.  A quotient
+whose two sides are convertible into one another is dimensionless, and such
+a row also gets "PPSTRESU" of "fraction" with the "conversion_factor" that
+turns the raw quotient into that number.</p>
+<p>With one set of units for every group there is no reference side to name
+and no <code>_ref</code> column is added.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

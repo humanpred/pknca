@@ -132,6 +132,72 @@ Two related points:
   and otherwise from the interval column of the same name, which is the
   `TRUE`/`FALSE` requesting the parameter rather than a value.
 
+### Parameters That Need Another Interval
+
+A few parameters cannot be calculated from one interval of one profile.
+Renal clearance divides an amount excreted into a urine collection by
+the plasma AUC over the same times, and bioavailability compares two
+administrations. Wrapping a `formalsmap` value in `pknca_ref` says that
+the argument takes its value from the *reference* interval – the one
+named by the `<parameter>_ref` column of the interval specification –
+instead of from the interval being calculated:
+
+    add.interval.col("clr.last",
+                     FUN="pk.calc.clr",
+                     values=c(FALSE, TRUE),
+                     unit_type="renal_clearance",
+                     pretty_name="Renal clearance (from AUClast)",
+                     formalsmap=list(auc=pknca_ref("auclast")),
+                     depends="ae",
+                     desc="Renal clearance, AUClast",
+                     selection = list(secondary = TRUE))
+
+A `pknca_ref` anywhere in the `formalsmap` makes the parameter
+*secondary*, whether or not `selection` says so. `pknca_parameter_table`
+reports which parameters are secondary, and the vignette “Secondary
+Parameters”
+([`vignette("v09-secondary-parameters", package="PKNCA")`](https://humanpred.github.io/pknca/articles/v09-secondary-parameters.md))
+covers requesting and linking them.
+
+A secondary parameter is calculated after every interval has been
+calculated, from the results rather than from the concentrations, so its
+function may take only NCA parameter values as inputs. That imposes two
+requirements, which `add.interval.col` does not check when the parameter
+is registered (the parameters it names may not be registered yet) but
+which are checked, with an error naming the parameter, the first time it
+is calculated:
+
+- Every formal of the function other than `...` must be covered: either
+  it is named in the `formalsmap`, or it is itself the name of a
+  registered NCA parameter and is filled from the interval being
+  calculated. A formal that is neither – `conc`, `time`, `options`, or a
+  name of your own – cannot be filled, because the data and the options
+  are no longer at hand. [`I()`](https://rdrr.io/r/base/AsIs.html)
+  constants and `NULL` mappings work as they do for any parameter, since
+  neither needs a value looked up.
+- Every argument taken from the interval being calculated must be listed
+  in `depends`, so that it is calculated there before the secondary
+  calculation reads it. In the registration above, `ae` is a formal of
+  `pk.calc.clr` named after a parameter, so it is filled from the
+  interval calculating `clr.last` and appears in `depends`. `auc` comes
+  from the reference interval and does not.
+
+Exclusions cross the link with no help from the function. As for any
+parameter, the `exclude` reasons of all of the inputs – from either
+interval – are joined with `"; "`, the `exclude` attribute the function
+set on its own return value is added to them, and `"DO NOT EXCLUDE"` on
+the return value clears all of them. An excluded plasma AUC therefore
+cannot quietly become a reported renal clearance.
+
+Units are the one thing a new secondary parameter does not get for free.
+Where units are given per group, the two intervals can report theirs
+differently, and `pknca_units_table` composes the units of
+`pk.calc.clr`, `pk.calc.ratio`, and `pk.calc.f` from both sides for that
+reason. A parameter built on a calculation function of your own is given
+the units of its `unit_type` under its own interval’s group, as any
+primary parameter is; supply a `units` table to `PKNCAdata` if that is
+not what its two sides mean.
+
 ## Tell PKNCA How to Summarize the Parameter
 
 For any parameter, PKNCA needs to know how to summarize it for the
