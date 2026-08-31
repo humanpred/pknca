@@ -13,6 +13,11 @@ optimization that needs an unreadable trick is out of scope regardless of its
 payoff.  Each item is a small, independently testable change; do not bundle
 them with unrelated work.
 
+In particular, an `%in%` call keeps its `%in%` form (maintainer requirement):
+a membership test may be sped up by shrinking the set it scans or by being
+called less often, never by swapping the mechanism for `match()`, hashing, or
+an environment lookup.
+
 ## How the numbers were measured (reproduction)
 
 Three workloads against `devtools::load_all()` of the package, each phase
