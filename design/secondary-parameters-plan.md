@@ -1849,6 +1849,13 @@ Differences from the section-6.4 text above; trust the code over the sketches:
   the two sides' `PPSTRESU` values and the factor is the conversion between the
   two composites; where that conversion does not exist the composite is its own
   standardized unit.
+* **`as.data.frame(out_format = "wide")` had to drop the `_ref` columns.**  The
+  checkpoint above names `summary()` and the CDISC translation as the reporting
+  paths to verify; both ignore the new columns as it expected, but the wide
+  layout makes every remaining column a row key, so a reference group split its
+  interval's row in two (a urine collection's `ae` on one row and its
+  `clr.last` on another).  It now drops them where it already drops `PPANMETH`
+  and the units columns.
 * **The minimal-grouping reduction is run once and applied symmetrically.**  The
   `_ref` columns are the twins of the columns the reduction kept, not of every
   group column.  The checkpoint above reads as though a second, wider reduction
