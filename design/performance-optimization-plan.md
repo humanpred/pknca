@@ -196,3 +196,66 @@ Three notes on the plan itself:
 - Integrity was checked beyond the test suite:  the full
   `as.data.frame(pk.nca(...))` of all three workloads, and `summary()` of
   workload A, are `identical()` to the values from before any change.
+
+## Re-profiling after implementation (2026-08-31)
+
+Same methodology (the three workloads under `Rprof(interval = 0.005,
+line.profiling = TRUE)`, percentages of sampled `pk.nca()` time), run at the
+tip of `claude/performance-optimizations`.  The headline: the calculations
+themselves (interpolation, AUC integration, the half-life regression) are now
+the dominant share of the profile, which is where the time belongs.  What
+remains of the engine is a set of smaller items, each 10% or less.  Ranked:
+
+1. **Per-call validation, now the top engine line (plan item 5, unchanged
+   scope but sharpened)**.  `assert_conc_time()`'s closing
+   `data.frame(conc = conc, time = time)` is the largest single self-time
+   line in the package (8% of A, 10% of B) — the cost is as much the
+   data.frame construction as the checks.  The same philosophy applies to
+   `PKNCA.choose.option()`, which re-validates the option value on every
+   read (`check = TRUE` per call; ~5–9% of A in total): options could be
+   validated once when supplied and then chosen without re-checking.  Item 5
+   remains its own pull request and now clearly leads the ranking.
+2. **Provenance is a visible fixed cost per `pk.nca()` call (new)**.
+   `addProvenance()` runs `utils::sessionInfo()` (which reads DESCRIPTION
+   metadata for attached packages — the `gzfile`/`file.exists` samples) and
+   `digest::digest(as.character(object), serialize = FALSE)` (the
+   `as.character.default`/`deparse` samples, converting the whole results
+   frame to character).  Together ~5% of A and B and ~9% of C; the share
+   grows as everything else shrinks and is largest for small or repeated
+   calls.  Possible fixes: memoize `sessionInfo()` per session, or hash a
+   faster serialization of the object.  Changing the hash input changes the
+   stored hash, which affects `checkProvenance()` on previously saved
+   results — a compatibility decision for the maintainer, not a drive-by.
+3. **Sort each group's concentration data once, not once per interval
+   (new)**.  `pk.nca.intervals()` re-sorts the interval's subset
+   (`conc_data_interval[order(conc_data_interval$time), ]`) inside the
+   per-interval loop (2–8% across workloads; largest with many intervals per
+   group).  Sorting the group once before the loop leaves every
+   `filter_interval()` subset already sorted.  Fewer sorts of larger spans —
+   an algorithmic count reduction, readability-neutral.
+4. **The requested-parameters vector costs ~3% to build**.  The item-4 line
+   (`vapply(interval[param_names], as.logical, TRUE)`) subsets a one-row
+   data.frame to ~230 columns per interval.  A cheaper extraction may exist,
+   but the margin is small.
+5. **Interval rows are tibble rows in some paths** (`dplyr::slice` samples,
+   2–4%): `data_intervals[i, , drop = FALSE]` pays tibble subsetting per
+   interval; converting the interval table to a base data.frame before the
+   loop would remove it.
+6. **Half-life candidate scaffold** (4% of A): `pk.calc.half.life()` builds
+   the `half_lives_for_selection` data.frame per invocation.  The
+   selection logic reads naturally on a data.frame, so change this only if a
+   vector form stays as readable (the item-3 constraint).
+7. **AUC point insertion** (auc.R, ~3–4%): the
+   `rbind(data.frame(...), data[...])` that prepends the interval-start
+   point builds a data.frame per AUC call and could assemble vectors
+   instead.
+8. **`name_value_text()`** starts with `as.data.frame(x)` (~3% of C only,
+   via per-instance secondary labeling); a named-list fast path would avoid
+   it.
+
+`%in%` shows ~4% of self time spread across many small-set calls (source-map
+names, deferred parameters, computed-result names); per the hard constraint
+above it keeps its form, and only call-count reductions (chiefly item 5's
+hoisting) would move that number.  No further single change approaches the
+merged items' payoff; items 1–3 here are the only ones worth individual
+pull requests, and 4–8 are opportunistic.
