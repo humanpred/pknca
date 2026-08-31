@@ -78,6 +78,18 @@ the dosing including dose amount and route.
   [pk.nca()].  On a `PKNCAdata` object it uses that object's `group_ref` when
   one is set (#76).
 
+* When units are given per group and the two profiles of a secondary parameter
+  report theirs differently, the reference value is converted into the units of
+  the interval calculating it before the calculation, so that the units assigned
+  to the result describe it.  A plasma AUC in `hr*ng/mL` becomes `hr*mg/L` to
+  divide a urine amount in `mg` into a renal clearance of `mg/(hr*mg/L)`.  This
+  is a behavior change:  such a difference previously gave a
+  `pknca_warning_secondary_units` warning and a number in units that did not
+  describe it.  That warning now means the units are *not* convertible (`IU/mL`
+  against `mg/L`, or units of different dimensions), and the result is then `NA`
+  with the reason in the `exclude` column rather than a misdescribed number
+  (#76).
+
 * Bug fix: requesting `clr.last`, `clr.obs`, or `clr.pred` without its AUC (and
   without a reference interval) silently divided by zero and gave `Inf`.  The
   reference interval is now derived from the data where it can be, and where it

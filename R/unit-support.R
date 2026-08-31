@@ -148,14 +148,9 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
     }
     for (idx in which(is.na(conversions$conversion_factor))) {
       conversions$conversion_factor[idx] <-
-        as.numeric(
-          units::set_units(
-            units::set_units(
-              1,
-              conversions$PPORRESU[idx], mode="standard"
-            ),
-            conversions$PPSTRESU[idx], mode="standard"
-          )
+        pknca_units_conversion_factor(
+          from = conversions$PPORRESU[idx],
+          to = conversions$PPSTRESU[idx]
         )
     }
     unexpected_conversions <- setdiff(conversions$PPORRESU, ret$PPORRESU)
@@ -562,6 +557,58 @@ pknca_find_units_param <- function(unit_type) {
 pknca_units_add_paren <- function(unit) {
   mask_paren <- grepl(x=unit, pattern="[*/]")
   ifelse(mask_paren, yes=paste0("(", unit, ")"), no=unit)
+}
+
+#' Find the factor converting a value from one unit to another
+#'
+#' @param from,to Single unit strings, as they appear in the "PPORRESU" and
+#'   "PPSTRESU" columns of a unit conversion table
+#' @returns The number that a value in `from` units is multiplied by to express
+#'   it in `to` units.  Units that the `units` package cannot convert between
+#'   are an error.
+#' @keywords Internal
+pknca_units_conversion_factor <- function(from, to) {
+  as.numeric(
+    units::set_units(
+      units::set_units(1, from, mode = "standard"),
+      to, mode = "standard"
+    )
+  )
+}
+
+#' Find the factor converting a value from one unit to another, when there is
+#' one
+#'
+#' The conversions of [pknca_units_table()] are requested by the user and so
+#' fail loudly when they cannot be made.  This answers the different question of
+#' whether two units PKNCA derived itself can be reconciled -- units that are
+#' unrelated (a concentration and an amount) or outside udunits (`"IU/mL"`) are
+#' an expected answer of "no" rather than a mistake.
+#'
+#' @inheritParams pknca_units_conversion_factor
+#' @returns The number that a value in `from` units is multiplied by to express
+#'   it in `to` units, or `NA_real_` when the two are not convertible or the
+#'   `units` package is not installed.
+#' @seealso [pknca_units_table()]
+#' @keywords Internal
+pknca_unit_reconcile_factor <- function(from, to) {
+  if (length(from) != 1 || length(to) != 1 || is.na(from) || is.na(to)) {
+    NA_real_
+  } else if (identical(as.character(from), as.character(to))) {
+    # Identical units need no conversion, and answering that without the `units`
+    # package keeps a uniformly-united analysis working without it.
+    1
+  } else if (!requireNamespace("units", quietly = TRUE)) {
+    # Reached only where the Suggests-level `units` package is not installed
+    NA_real_ # nocov
+  } else {
+    ret <- try(pknca_units_conversion_factor(from = from, to = to), silent = TRUE)
+    if (inherits(ret, "try-error") || length(ret) != 1 || !is.finite(ret)) {
+      NA_real_
+    } else {
+      ret
+    }
+  }
 }
 
 #' Perform unit conversion (if possible) on PKNCA results

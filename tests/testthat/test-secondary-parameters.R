@@ -492,11 +492,13 @@ test_that("a linked secondary result is given units", {
   expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/144)
 })
 
-# 17b: group-stratified units that differ between the two sides are announced
-# (PR 4 replaces the warning with conversion of the reference-side value)
-test_that("units differing between the requesting interval and reference groups warn", {
+# The renal-clearance fixture with units given per group:  the plasma
+# concentrations are reported in `plasma_concu` and the urine collection in
+# mg/L, so the reference AUC is not in the units the renal clearance is
+# reported in.
+o_data_units_sec <- function(plasma_concu) {
   d_conc_u <- d_conc_sec
-  d_conc_u$cu <- ifelse(d_conc_u$PCSPEC %in% "plasma", "ng/mL", "mg/L")
+  d_conc_u$cu <- ifelse(d_conc_u$PCSPEC %in% "plasma", plasma_concu, "mg/L")
   d_conc_u$tu <- "hr"
   d_conc_u$au <- "mg"
   o_conc_u <-
@@ -504,8 +506,93 @@ test_that("units differing between the requesting interval and reference groups 
       d_conc_u, conc~time|PCSPEC+subject, volume = "vol",
       concu = "cu", timeu = "tu", amountu = "au"
     )
-  o_data_u <- PKNCAdata(o_conc_u, intervals = intervals_sec, options = list(auc.method = "linear"))
-  expect_warning(pk.nca(o_data_u), class = "pknca_warning_secondary_units")
+  PKNCAdata(o_conc_u, intervals = intervals_sec, options = list(auc.method = "linear"))
+}
+
+# 6.1-1: a reference value in other units is converted before it is used, so
+# that the units assigned to the result describe it
+test_that("a reference value in different units is converted", {
+  expect_no_warning(res <- pk.nca(o_data_units_sec("ng/mL")))
+  d_res <- as.data.frame(res)
+  # 1 ng/mL is 0.001 mg/L, so the plasma auclast of 144 hr*ng/mL divides the
+  # urine amount as 0.144 hr*mg/L
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/(144*0.001))
+  expect_equal(d_res$PPORRESU[d_res$PPTESTCD %in% "clr.last"], "mg/(hr*mg/L)")
+  # The reference result itself is untouched and keeps its own group's units
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "auclast"], 144)
+  expect_equal(d_res$PPORRESU[d_res$PPTESTCD %in% "auclast"], "hr*ng/mL")
+})
+
+# 6.1-2: uniform units are the fast path, giving the values of a run with no
+# units at all
+test_that("uniform units leave every result unchanged", {
+  o_conc_u <-
+    PKNCAconc(
+      d_conc_sec, conc~time|PCSPEC+subject, volume = "vol",
+      concu = "ng/mL", timeu = "hr", amountu = "mg"
+    )
+  o_data_u <-
+    PKNCAdata(o_conc_u, intervals = intervals_sec, options = list(auc.method = "linear"))
+  d_united <- as.data.frame(pk.nca(o_data_u))
+  d_unitless <- as.data.frame(pk.nca(o_data_sec))
+  expect_equal(d_united[, names(d_unitless)], d_unitless)
+})
+
+# 6.1-3: units that cannot be reconciled give no number at all, rather than one
+# whose reported units do not describe it
+test_that("a reference value in units that cannot be converted is not reported", {
+  expect_warning(
+    res <- pk.nca(o_data_units_sec("IU/mL")),
+    class = "pknca_warning_secondary_units"
+  )
+  d_res <- as.data.frame(res)
+  expect_true(is.na(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"]))
+  expect_equal(
+    d_res$exclude[d_res$PPTESTCD %in% "clr.last"],
+    "Units of 'auclast' differ between the reference ('hr*IU/mL') and this interval ('hr*mg/L') and are not convertible"
+  )
+  # The units gap stops the linked parameter and nothing else
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "ae"], 350)
+})
+
+# Reconciling into the reporting interval's units and converting those to the
+# preferred units compose:  the second conversion is the one the units table
+# holds for the group the result is reported on.
+test_that("a converted reference value reaches the standardized units", {
+  o_data_u <- o_data_units_sec("ng/mL")
+  units_pref <- o_data_u$units
+  units_pref$PPSTRESU <- units_pref$PPORRESU
+  units_pref$conversion_factor <- 1
+  mask_clr <- units_pref$PCSPEC %in% "urine" & units_pref$PPTESTCD %in% "clr.last"
+  units_pref$PPSTRESU[mask_clr] <- "mL/hr"
+  units_pref$conversion_factor[mask_clr] <- 1000
+  o_data_pref <-
+    PKNCAdata(
+      o_data_u$conc, intervals = intervals_sec, units = units_pref,
+      options = list(auc.method = "linear")
+    )
+  d_res <- as.data.frame(pk.nca(o_data_pref))
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"], 350/(144*0.001))
+  expect_equal(d_res$PPSTRES[d_res$PPTESTCD %in% "clr.last"], 350/(144*0.001)*1000)
+  expect_equal(d_res$PPSTRESU[d_res$PPTESTCD %in% "clr.last"], "mL/hr")
+})
+
+# 6.1-4: the factor between two unit strings, or NA when there is not one
+test_that("pknca_unit_reconcile_factor() converts what it can and refuses the rest", {
+  skip_if_not_installed("units")
+  expect_equal(pknca_unit_reconcile_factor("ng/mL", "mg/L"), 0.001)
+  expect_equal(pknca_unit_reconcile_factor("hr*ng/mL", "hr*mg/L"), 0.001)
+  expect_equal(pknca_unit_reconcile_factor("mg/L", "ng/mL"), 1000)
+  # Identical units need no conversion, and are answered without the units package
+  expect_equal(pknca_unit_reconcile_factor("hr*ng/mL", "hr*ng/mL"), 1)
+  # A unit udunits does not know
+  expect_equal(pknca_unit_reconcile_factor("hr*IU/mL", "hr*mg/L"), NA_real_)
+  # Two units it knows, of different dimensions
+  expect_equal(pknca_unit_reconcile_factor("mg", "hr*mg/L"), NA_real_)
+  # A units table that cannot answer gives NA rather than an error
+  expect_equal(pknca_unit_reconcile_factor(NA_character_, "mg"), NA_real_)
+  expect_equal(pknca_unit_reconcile_factor("mg", NA_character_), NA_real_)
+  expect_equal(pknca_unit_reconcile_factor(character(0), "mg"), NA_real_)
 })
 
 # 18: a linked secondary parameter is summarized like any other
