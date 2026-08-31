@@ -579,6 +579,12 @@ when the issue is due to an excluded point (#310)
   the correlation cannot be computed, so the column has the same type whether or
   not the half-life fit used more than one point.
 
+* A calculation function registered with `add.interval.col()` whose return
+  value has names and values that do not pair up (a data.frame with zero rows
+  or with more than one row) now stops with an error naming the function and
+  both lengths.  Previously a zero-row return was an obscure error, and a
+  multiple-row return silently reported values under the wrong parameter names.
+
 ## Minor changes (unlikely to affect PKNCA use)
 
 * Remove dead code: unused internal functions, commented-out code, unused
