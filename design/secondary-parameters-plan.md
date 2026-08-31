@@ -39,7 +39,7 @@ these):
 | 5 | **Explicit links fail loud; automatic links degrade.**  When an explicit link cannot supply a value (missing reference instance or missing source value), `pk.nca()` aborts (`pknca_error_secondary_ref_value_missing`).  When the automatic path fails (no unique reference found, or an auto-linked value is missing), the affected results are `NA` with an `exclude` reason and a warning (`pknca_warning_secondary_auto_reference`). |
 | 6 | Reference-group steering: `PKNCAdata()` gains `group_ref`, a **data.frame** of group values (e.g. `data.frame(PCSPEC = "PLASMA")`) that constrains — and can by itself direct — the automatic finder.  `interval_add_secondary()`'s `reference` argument is likewise a data.frame. |
 | 7 | Ratio starter set: `ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`, `ratio.aucint.last`, `ratio.aucint.all`.  Bioavailability names its AUC basis: `f` is renamed `f.obs` (AUCinf,obs-based) and gains `f.pred`, `f.last`, `f.int.last`, `f.int.all`, `f.int.obs`, `f.int.pred`. |
-| 8 | **Unit reconciliation is in scope** and is the final PR (PR 4): reference-side input values are converted into the home group's units before the calculation; non-convertible units give `NA` + reason + `pknca_warning_secondary_units`.  §6.1; the text to post on issue 76 is Appendix A. |
+| 8 | **Superseded by section 6.4** (maintainer direction, 2026-08-31): secondary units go through the units table and its one join, keyed by `_ref`-suffixed group columns with source-composed unit strings, instead of section 6.1's calculation-time value conversion.  Appendix A's issue text describes the superseded approach; post section 6.4's summary instead. |
 | 9 | Sparse data (`is_sparse_pk(data)` is `TRUE`) with any secondary parameter requested aborts with `pknca_error_secondary_sparse_unsupported`.  Lifting this is a to-do (§8). |
 | 10 | Aggregated (across-subject) references are **not** planned: parallel-design comparisons of that kind are bioavailability-style analyses already served by the existing bioavailability/`be_assess()` calculation methods. |
 
@@ -1683,6 +1683,106 @@ code over the sketches:
   An implementation report initially miscategorized this as a leak; it is
   not, and there is nothing to fix.  The vignette selects display columns
   for narrative width only.
+
+### 6.4 Revision: units through reference-suffixed group columns
+
+**Supersedes section 6.1's calculation-time reconciliation** (maintainer
+direction, 2026-08-31): secondary units should work like every other unit in
+PKNCA — declaratively, through the units table and its one join — rather than
+by converting values at calculation time.  The mechanism is the `_ref` suffix
+the linkage already uses, extended to group columns.
+
+#### The mechanism
+
+1. **Secondary result rows carry the reference group.**  `pk_nca_secondary()`
+   adds a `<group column>_ref` column for every result group column to the
+   rows it creates, holding the reference instance's value (it already
+   computes `ref_group`); primary rows hold `NA` in those columns.  This also
+   makes the linkage machine-readable in the results, where `PPANMETH` today
+   is prose (keep `PPANMETH` — it is the human-readable form).
+2. **The units table gains reference-keyed rows for secondary parameters.**
+   For each secondary parameter, `pknca_units_table()` emits one row per
+   (own-group unit set x reference-group unit set) pair, keyed by the group
+   columns plus their `_ref` twins, with `PPORRESU` composed from the correct
+   sides:
+
+   | Family | `PPORRESU` composition |
+   |---|---|
+   | `clr.*` | `amountu_own / (timeu_ref * concu_ref)` (the AUC's units are the reference profile's) |
+   | `ratio.<x>` | `<x>u_own / <x>u_ref` |
+   | `f.*` | `(aucu_own / doseu_own) / (aucu_ref / doseu_ref)` |
+
+   When the composed quotient is dimensionally unitless (convertible sides),
+   also emit `PPSTRESU = "fraction"` with the `conversion_factor` computed by
+   `pknca_unit_reconcile_factor()` (repurposed from PR 4 — it stays; only the
+   calculation-time value conversion goes).  When it is not, the composite
+   string stands as the honest original units and no factor is emitted.
+   Primary parameters' rows carry `NA` in every `_ref` column.
+3. **The join does not change.**  `pknca_unit_conversion()` already joins by
+   the intersection of column names, and `dplyr::left_join()`'s default
+   `na_matches = "na"` pairs primary rows with the `NA`-`_ref` units rows and
+   secondary rows with their pair rows (verified empirically).  A
+   hand-supplied units table without `_ref` columns degrades gracefully: the
+   intersection excludes them and secondary rows join by their own group as
+   every row does today.
+4. **Delete the calculation-time reconciliation** (`secondary_reconcile_units()`
+   and its call): `PPORRES` stays the raw computed value and `PPORRESU`
+   describes it truthfully; `PPSTRES` conversion happens in the join as for
+   every parameter.  `pknca_warning_secondary_units` disappears —
+   non-convertible units are no longer a failure but a result in honest
+   composite units (the standard `allow_partial_missing_units` behavior
+   covers a units row that cannot be built at all).
+
+#### Why this is better than 6.1
+
+- One unit system: same table, same join, same user override (a user can edit
+  or supply the `_ref` rows, the standard PKNCA escape hatch that
+  calculation-time conversion had no equivalent of).
+- The label follows the sources instead of the value being converted to fit a
+  single-group label; nothing is `NA`'d for unit reasons.
+- Dimensional honesty catches real mistakes: a cross-group `f.*` between a
+  `mg` dose and a `mg/kg` dose composes to a non-unitless quotient and shows
+  it, where a blanket `"fraction"` label silently passed.
+
+#### Holes found in review, and their resolutions
+
+- **Composition needs own/ref annotations that `unit_type` alone does not
+  carry** (`renal_clearance` = amount/(time*conc) does not say which side
+  each factor is from).  Resolution: implement the three families above
+  explicitly in the units builder, driven by the registration's `pknca_ref()`
+  arguments; a third-party secondary parameter without a known composition
+  falls back to today's own-group single-side row, and a general registry
+  hook (a declared unit expression with own/ref sides) is a follow-up if
+  demand appears.
+- **`select_minimal_grouping_cols()` interplay**: the minimal-grouping
+  reduction of the units table must keep the columns that distinguish
+  reference unit sets; the builder must run the reduction over own and `_ref`
+  columns together.  Implementation checkpoint with a test (two unit sets
+  distinguished only by a column the reduction would otherwise drop).
+- **Which pairs to emit**: all distinct own x ref unit-set pairs (small in
+  practice; the join selects), because the auto-built table is constructed
+  before links are resolved.
+- **Extra columns in results**: `<group col>_ref` appears on all rows (NA for
+  primary), consistent with the intentional interval-metadata columns;
+  `summary()` and the CDISC translation must be verified to tolerate and
+  ignore them (checkpoint with tests).
+- **Name collisions**: a group column may not be named after a parameter
+  (already enforced), so `<group col>_ref` cannot collide with a
+  `<parameter>_ref` pointer; a user group column that itself ends in `_ref`
+  gets a `_ref_ref` twin — legal, ugly, documented.
+- **`timeu` across groups**: the AUC composition uses the reference group's
+  `timeu`; groups reporting time in different units is rare but real, and the
+  composition above handles it by construction.
+
+#### Migration
+
+The open PR 4 branch carries the 6.1 reconciliation.  Recommended: rework it
+on the same branch before merge (replace the reconciliation commit's engine
+change, keep `pknca_unit_reconcile_factor()`, rewrite the 6.1 unit tests to
+the compositions above, and update the NEWS bullet), so the superseded
+behavior never ships.  Alternative: merge PR 4 as-is and follow with a PR 5 —
+worse, because NEWS would describe convert-then-un-convert behavior across
+two entries of one release.
 
 ---
 
