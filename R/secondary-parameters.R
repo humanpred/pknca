@@ -10,12 +10,12 @@
 #
 # ref_args:  named character vector, formal name -> parameter taken from the
 #            reference interval.
-# home_args: named character vector, formal name -> parameter taken from the
-#            home interval.
+# own_args: named character vector, formal name -> parameter taken from the
+#            requesting interval's own results.
 # Errors (classed) when the registration cannot be computed by the secondary
 # pass: a formal that is neither covered by formalsmap nor named after a
-# parameter, an unregistered ref target, or a home argument not listed in
-# `depends`.
+# parameter, an unregistered ref target, or an own-interval argument not listed
+# in `depends`.
 secondary_param_info <- function(param) {
   all_intervals <- get.interval.cols()
   spec <- all_intervals[[param]]
@@ -27,22 +27,22 @@ secondary_param_info <- function(param) {
   # a parameter result, and pk.nca.interval() handles both the same way.
   plain <- plain[!vapply(X = plain, FUN = inherits, FUN.VALUE = TRUE, what = "AsIs")]
   plain <- plain[!vapply(X = plain, FUN = is.null, FUN.VALUE = TRUE)]
-  home_args <- unlist(plain)   # named character vector (may be empty)
-  if (is.null(home_args)) {
-    home_args <- stats::setNames(character(0), character(0))
+  own_args <- unlist(plain)   # named character vector (may be empty)
+  if (is.null(own_args)) {
+    own_args <- stats::setNames(character(0), character(0))
   }
   # Every formal (minus ...) must resolve to a parameter result so that the pass
   # only ever needs parameter results as inputs.  A formal that formalsmap does
-  # not mention keeps pk.nca.interval()'s identity mapping, so it is a home
+  # not mention keeps pk.nca.interval()'s identity mapping, so it is an own
   # argument when a parameter of the same name is registered (`ae` for `clr.*`).
   fun_formals <- setdiff(names(formals(get(spec$FUN))), "...")
   unmentioned <- setdiff(fun_formals, names(fm))
   implicit <- unmentioned[unmentioned %in% names(all_intervals)]
-  home_args <- c(home_args, stats::setNames(implicit, implicit))
+  own_args <- c(own_args, stats::setNames(implicit, implicit))
   uncovered <-
     unique(c(
       setdiff(unmentioned, implicit),
-      names(home_args)[!(home_args %in% names(all_intervals))]
+      names(own_args)[!(own_args %in% names(all_intervals))]
     ))
   if (length(uncovered) > 0) {
     rlang::abort(
@@ -63,19 +63,19 @@ secondary_param_info <- function(param) {
       class = "pknca_error_secondary_target_unregistered"
     )
   }
-  # The home-interval values are read from what the interval already calculated,
-  # so they have to be calculated first.
-  missing_depends <- setdiff(home_args, spec$depends)
+  # The interval's own values are read from what it already calculated, so they
+  # have to be calculated first.
+  missing_depends <- setdiff(own_args, spec$depends)
   if (length(missing_depends) > 0) {
     rlang::abort(
       sprintf(
-        "The secondary parameter '%s' uses home-interval parameter(s) not listed in `depends`: %s",
+        "The secondary parameter '%s' uses parameter(s) from its own interval not listed in `depends`: %s",
         param, paste(missing_depends, collapse = ", ")
       ),
       class = "pknca_error_secondary_registration"
     )
   }
-  list(fun = spec$FUN, ref_args = ref_args, home_args = home_args)
+  list(fun = spec$FUN, ref_args = ref_args, own_args = own_args)
 }
 
 # Names of all registered secondary parameters
@@ -424,14 +424,14 @@ secondary_ref_created_text <- function(param, linked) {
 
 # The parameters a one-row interval will calculate, including the dependencies
 # that pk.nca.interval() expands before its calculation loop.
-interval_expanded_params <- function(iv_row) {
+interval_expanded_params <- function(interval_row) {
   all_intervals <- get.interval.cols()
   for (n in rev(names(all_intervals))) {
-    if (isTRUE(iv_row[[n]]) && length(all_intervals[[n]]$depends) > 0) {
-      iv_row[all_intervals[[n]]$depends] <- TRUE
+    if (isTRUE(interval_row[[n]]) && length(all_intervals[[n]]$depends) > 0) {
+      interval_row[all_intervals[[n]]$depends] <- TRUE
     }
   }
-  iv_row
+  interval_row
 }
 
 # TRUE when the parameter can be calculated on this row without any
@@ -439,17 +439,17 @@ interval_expanded_params <- function(iv_row) {
 # pk.nca.interval():  a column named after the formal supplies the value
 # directly, or the reference target is calculated in this same interval (the
 # historical same-interval renal clearance), which is disallowed when the target
-# is also a home argument because test and reference would then be one value.
+# is also an own argument because test and reference would then be one value.
 # The finder may only fire where that ladder would abort.
-secondary_legacy_resolvable <- function(iv_row, info) {
-  expanded <- interval_expanded_params(iv_row)
+secondary_legacy_resolvable <- function(interval_row, info) {
+  expanded <- interval_expanded_params(interval_row)
   all(vapply(
     X = seq_along(info$ref_args),
     FUN = function(i) {
       formal <- names(info$ref_args)[i]
       target <- info$ref_args[[i]]
-      !is.null(iv_row[[formal]]) ||
-        (!(target %in% info$home_args) && isTRUE(expanded[[target]]))
+      !is.null(interval_row[[formal]]) ||
+        (!(target %in% info$own_args) && isTRUE(expanded[[target]]))
     },
     FUN.VALUE = TRUE
   ))
@@ -464,7 +464,8 @@ group_row_mask <- function(data, groups, i, group_cols) {
   ret
 }
 
-# The group columns where candidate group `j` differs from home group `i`
+# The group columns where candidate group `j` differs from the requesting
+# group `i`
 group_differing_cols <- function(groups, group_cols, i, j) {
   group_cols[
     !vapply(
@@ -486,7 +487,7 @@ interval_override_values <- function(groups, j, cols) {
   ret
 }
 
-# For one home intervals row and secondary parameter, derive the reference
+# For one requesting intervals row and secondary parameter, derive the reference
 # group's values from the data.  Returns a named list of group-column overrides
 # on success, a character string holding the failure reason when there is no one
 # reference to use, or NULL when the finder does not apply (the caller then
@@ -542,21 +543,21 @@ find_secondary_reference <- function(intervals, row, param, info, conc, group_re
       }
     )
   }
-  home <- rep(TRUE, nrow(groups))
+  own_mask <- rep(TRUE, nrow(groups))
   for (col in intersect(group_cols, names(intervals))) {
-    home <- home & (groups[[col]] %in% intervals[[col]][row])
+    own_mask <- own_mask & (groups[[col]] %in% intervals[[col]][row])
   }
-  home_idx <- which(home)
-  if (length(home_idx) == 0) {
+  own_idx <- which(own_mask)
+  if (length(own_idx) == 0) {
     return("The interval matches no group in the concentration data")
   }
   if (!is.null(group_ref) &&
-      any(interval_match_groups(groups[home_idx, , drop = FALSE], group_ref))) {
+      any(interval_match_groups(groups[own_idx, , drop = FALSE], group_ref))) {
     return("The interval's own group matches `group_ref`, so there is no distinct reference")
   }
   overrides <- list()
   reasons <- character(0)
-  for (i in home_idx) {
+  for (i in own_idx) {
     candidates <- setdiff(which(pool), i)
     if (length(candidates) == 0) {
       reasons <-
@@ -634,7 +635,7 @@ find_secondary_reference <- function(intervals, row, param, info, conc, group_re
 
 # Reuse or create the reference interval the finder derived, give it an
 # identifier, and point `row` at it.  A created interval-over-spot reference
-# spans the home row's collections whole, as a reference created by
+# spans the requesting row's collections whole, as a reference created by
 # interval_add_secondary() does.
 interval_link_found_reference <- function(intervals, row, param, override, source_params,
                                           conc, prefix = "ref") {
@@ -719,7 +720,7 @@ secondary_lookup <- function(results, group_values, start, end, param, group_col
 }
 
 # The distinct group combinations a secondary result is reported for:  one per
-# group with any result in the home selection `mask`.
+# group with any result in the requesting interval's selection `mask`.
 secondary_instances <- function(results, mask, result_group_cols) {
   if (length(result_group_cols) > 0) {
     unique(results[mask, result_group_cols, drop = FALSE])
@@ -733,7 +734,7 @@ secondary_instances <- function(results, mask, result_group_cols) {
   }
 }
 
-# The results row a secondary result is reported on:  the first row of the home
+# The results row a secondary result is reported on:  the first row of the requesting
 # instance, whose group values, times, and kept interval columns it copies.
 secondary_template <- function(results, mask, group_values, result_group_cols) {
   ret <- results[mask, , drop = FALSE]
@@ -742,7 +743,7 @@ secondary_template <- function(results, mask, group_values, result_group_cols) {
       `&`,
       lapply(result_group_cols, function(col) ret[[col]] %in% group_values[[col]]),
       # Ungrouped data has no group columns to match on, and every row of the
-      # home selection is then the instance.
+      # interval's selection is then the instance.
       rep(TRUE, nrow(ret))
     ), ,
     drop = FALSE
@@ -750,20 +751,20 @@ secondary_template <- function(results, mask, group_values, result_group_cols) {
 }
 
 # "Reference interval: PCSPEC=plasma, 0-24" -- how the reference differs from
-# the home instance, and its times.  The interval_id is tracking information
+# the requesting interval's own values, and its times.  The interval_id is tracking information
 # rather than part of the analysis method, so it is not part of PPANMETH.
-secondary_ppanmeth <- function(override_cols, g_home, g_ref, ref_start, ref_end) {
+secondary_ppanmeth <- function(override_cols, own_group, ref_group, ref_start, ref_end) {
   differing <-
     override_cols[
       vapply(
         X = override_cols,
-        FUN = function(col) !(g_ref[[col]] %in% g_home[[col]]),
+        FUN = function(col) !(ref_group[[col]] %in% own_group[[col]]),
         FUN.VALUE = TRUE
       )
     ]
   details <-
     c(
-      if (length(differing) > 0) name_value_text(g_ref[differing]),
+      if (length(differing) > 0) name_value_text(ref_group[differing]),
       sprintf("%s-%s", format(ref_start), format(ref_end))
     )
   sprintf("Reference interval: %s", paste(details, collapse = ", "))
@@ -811,17 +812,17 @@ secondary_units_lookup <- function(units, group_values, param) {
   if (length(ret) == 1) as.character(ret) else NA_character_
 }
 
-# Interim warning for group-stratified units that differ between the home and
+# Interim warning for group-stratified units that differ between the interval's own group and
 # the reference group.  PR 4 replaces this with reconciliation of the
 # reference-side values; until then a difference means the reported units (which
-# come from the home group) do not describe the reference-side input.
+# come from the interval's own group) do not describe the reference-side input.
 #
 # `seen` is the set of "<param>|<u_ref>|<u_home>" keys already warned about in
 # this run; the updated set is returned.
-secondary_warn_units <- function(units, param, targets, g_home, g_ref, seen) {
+secondary_warn_units <- function(units, param, targets, own_group, ref_group, seen) {
   for (target in targets) {
-    u_home <- secondary_units_lookup(units, g_home, target)
-    u_ref <- secondary_units_lookup(units, g_ref, target)
+    u_home <- secondary_units_lookup(units, own_group, target)
+    u_ref <- secondary_units_lookup(units, ref_group, target)
     if (!is.na(u_home) && !is.na(u_ref) && !identical(u_home, u_ref)) {
       key <- paste(param, u_ref, u_home, sep = "|")
       if (!(key %in% seen)) {
@@ -892,47 +893,47 @@ pk_nca_secondary <- function(results, data_calc) {
         )[1]
       # Home instances: distinct group combinations with any result for this
       # row's scope and times
-      m_home <-
+      own_rows <-
         results$start %in% current_intervals$start[r] &
         results$end %in% current_intervals$end[r]
       for (col in override_cols) {
-        m_home <- m_home & (results[[col]] %in% current_intervals[[col]][r])
+        own_rows <- own_rows & (results[[col]] %in% current_intervals[[col]][r])
       }
-      instances <- secondary_instances(results, m_home, result_group_cols)
+      instances <- secondary_instances(results, own_rows, result_group_cols)
       for (k in seq_len(nrow(instances))) {
-        g_home <- instances[k, , drop = FALSE]
-        g_ref <- g_home
+        own_group <- instances[k, , drop = FALSE]
+        ref_group <- own_group
         for (col in override_cols) {
-          g_ref[[col]] <- current_intervals[[col]][ref_row]
+          ref_group[[col]] <- current_intervals[[col]][ref_row]
         }
         inputs <- list()      # formal -> value
         excludes <- character(0)
         failed_reason <- NULL
-        for (formal in names(info$home_args)) {
+        for (formal in names(info$own_args)) {
           found <-
             secondary_lookup(
-              results, g_home,
+              results, own_group,
               current_intervals$start[r], current_intervals$end[r],
-              info$home_args[[formal]], result_group_cols
+              info$own_args[[formal]], result_group_cols
             )
-          if (found$n > 1) stop_secondary_ambiguous(p, info$home_args[[formal]], g_home)
+          if (found$n > 1) stop_secondary_ambiguous(p, info$own_args[[formal]], own_group)
           if (found$n == 0) {
-            # `depends` puts the home-side value in the same interval, so an
-            # instance with no home value has no result rows at all and is not
+            # `depends` puts the interval's own value in the same interval, so an
+            # instance with no own-side value has no result rows at all and is not
             # an instance:  the explicit-link abort defends a results table that
             # no calculation produces, while the automatic reason below is
             # reached through a results table built by hand.
             # nocov start
             if (!is_auto) {
               stop_secondary_value_missing(
-                p, info$home_args[[formal]], ref_id, g_home, side = "home"
+                p, info$own_args[[formal]], ref_id, own_group, side = "own"
               )
             }
             # nocov end
             failed_reason <-
               sprintf(
                 "Value '%s' is not available for the interval",
-                info$home_args[[formal]]
+                info$own_args[[formal]]
               )
           }
           inputs[[formal]] <- found$value
@@ -941,15 +942,15 @@ pk_nca_secondary <- function(results, data_calc) {
         for (formal in names(info$ref_args)) {
           found <-
             secondary_lookup(
-              results, g_ref,
+              results, ref_group,
               current_intervals$start[ref_row], current_intervals$end[ref_row],
               info$ref_args[[formal]], result_group_cols
             )
-          if (found$n > 1) stop_secondary_ambiguous(p, info$ref_args[[formal]], g_ref)
+          if (found$n > 1) stop_secondary_ambiguous(p, info$ref_args[[formal]], ref_group)
           if (found$n == 0) {
             if (!is_auto) {
               stop_secondary_value_missing(
-                p, info$ref_args[[formal]], ref_id, g_home, side = "reference"
+                p, info$ref_args[[formal]], ref_id, own_group, side = "reference"
               )
             }
             # An explicit link aborted just above, so a recorded reason belongs
@@ -965,7 +966,7 @@ pk_nca_secondary <- function(results, data_calc) {
         }
         units_seen <-
           secondary_warn_units(
-            data_calc$units, p, info$ref_args, g_home, g_ref, units_seen
+            data_calc$units, p, info$ref_args, own_group, ref_group, units_seen
           )
         # PR 4 inserts unit reconciliation of the ref-side inputs here.
         if (is.null(failed_reason)) {
@@ -979,12 +980,12 @@ pk_nca_secondary <- function(results, data_calc) {
           excl <- combine_exclude_reasons(c(excludes, failed_reason), NULL)
           auto_reasons[[p]] <- c(auto_reasons[[p]], failed_reason)
         }
-        template <- secondary_template(results, m_home, g_home, result_group_cols)
+        template <- secondary_template(results, own_rows, own_group, result_group_cols)
         template$PPTESTCD <- p
         template$PPORRES <- value
         template$PPANMETH <-
           secondary_ppanmeth(
-            override_cols, g_home, g_ref,
+            override_cols, own_group, ref_group,
             current_intervals$start[ref_row], current_intervals$end[ref_row]
           )
         template$exclude <- excl
@@ -999,15 +1000,15 @@ pk_nca_secondary <- function(results, data_calc) {
       failure <- auto$failures[i, , drop = FALSE]
       p <- failure$param
       auto_reasons[[p]] <- c(auto_reasons[[p]], failure$reason)
-      m_home <- results$start %in% failure$start & results$end %in% failure$end
+      own_rows <- results$start %in% failure$start & results$end %in% failure$end
       for (col in intersect(setdiff(names(failure), c("param", "reason")), result_group_cols)) {
-        m_home <- m_home & (results[[col]] %in% failure[[col]])
+        own_rows <- own_rows & (results[[col]] %in% failure[[col]])
       }
-      instances <- secondary_instances(results, m_home, result_group_cols)
+      instances <- secondary_instances(results, own_rows, result_group_cols)
       for (k in seq_len(nrow(instances))) {
         template <-
           secondary_template(
-            results, m_home, instances[k, , drop = FALSE], result_group_cols
+            results, own_rows, instances[k, , drop = FALSE], result_group_cols
           )
         template$PPTESTCD <- p
         template$PPORRES <- NA_real_

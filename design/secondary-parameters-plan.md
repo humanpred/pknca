@@ -17,7 +17,7 @@ data.frame; it needs the linkage to be plain, editable columns).
 
 | Term | Meaning |
 |---|---|
-| home row / test row | The intervals row that *requests* the secondary parameter.  Results are reported on this row's group and interval. |
+| requesting row | The intervals row that *requests* the secondary parameter; its values are "the interval's own" (code identifiers `own_*`, never "home", which review found unclear).  Results are reported on this row's group and interval.  Older sections of this document say "home row"/"test row"; read both as the requesting row. |
 | reference row | The intervals row that supplies the cross-interval input(s), identified by its `interval_id`. |
 | pointer column | `<param>_ref`, a character column holding the `interval_id` of the reference row (`NA` = no explicit reference). |
 | source parameter | A parameter whose *result* feeds the secondary calculation (e.g. `aucinf.obs` for `clr.obs`, `totdose` for `f`). |
@@ -1453,6 +1453,14 @@ finder's rules in the `interval_add_secondary()` and `PKNCAdata()` roxygen.
 
 PR 3 merged with these differences from the section-5 text above; trust the
 code over the sketches:
+
+* **Naming, from the pull-request review**: the requesting interval's values
+  are `own_*` (`own_args`, `own_group`, `own_rows`, `own_idx`,
+  `side = "own"`) — never "home", which reads unclearly; interval-row
+  arguments are `interval_row` — never `iv_row`, and `iv` means intravenous
+  and nothing else anywhere in the package (test fixtures are
+  `intervals_*`).  `stringsAsFactors = FALSE` is gone from the whole code
+  base (the package depends on R >= 4.4, where it is the default).
 
 * **`find_secondary_reference()` takes the pieces it needs, not the
   `PKNCAdata`**: `find_secondary_reference(intervals, row, param, info, conc,
