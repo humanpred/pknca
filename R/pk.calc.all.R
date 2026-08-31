@@ -523,11 +523,19 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   if (length(dose) == 0) {
     rlang::abort("Please report a bug. Length of dose should not be zero.", class = "pknca_error_internal_dose_length_zero")  # nocov
   }
+  # What the interval requests, as a logical vector over the parameters (start
+  # and end are times, not requests).  The expansion below and the calculation
+  # loop after it read it instead of the interval's columns, and an interval
+  # typically requests a handful of the few hundred registered parameters.
+  param_names <- setdiff(names(all_intervals), c("start", "end"))
+  requested <- vapply(X = interval[param_names], FUN = as.logical, FUN.VALUE = TRUE)
   # Make sure that we calculate all of the dependencies.  Do this in
   # reverse order for dependencies of dependencies.
-  for (n in rev(names(all_intervals))) {
-    if (interval[[n]]) {
-      interval[all_intervals[[n]]$depends] <- TRUE
+  for (n in rev(param_names)) {
+    if (requested[[n]]) {
+      depends <- all_intervals[[n]]$depends
+      requested[depends] <- TRUE
+      interval[depends] <- TRUE
     }
   }
   # Parameters linked to a reference interval are calculated across intervals by
@@ -536,12 +544,10 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   # calculation (`ae`, `totdose`, ...) is computed here.
   deferred <- interval_deferred_params(interval)
   # Do the calculations
-  for (n in names(all_intervals)) {
-    request_to_calculate <- as.logical(interval[[n]])
+  for (n in setdiff(names(requested)[requested], deferred)) {
     has_calculation_function <- !is.na(all_intervals[[n]]$FUN)
     is_correct_sparse_dense <- all_intervals[[n]]$sparse == sparse
-    if (request_to_calculate && has_calculation_function && is_correct_sparse_dense &&
-        !(n %in% deferred)) {
+    if (has_calculation_function && is_correct_sparse_dense) {
       call_args <- list()
       exclude_from_argument <- character(0)
       # Prepare to call the function by setting up its arguments.
