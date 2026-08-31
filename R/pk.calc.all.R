@@ -398,6 +398,40 @@ combine_exclude_reasons <- function(from_inputs, from_result) {
   }
 }
 
+# How a parameter's calculation function is called: `arglist` maps each of its
+# formals to the name of the data source or parameter that supplies the value
+# (`...` removed, and the formals that `formalsmap` sets to NULL dropped), and
+# `required` names the formals that have no default, so that an argument which
+# cannot be found can be told from an optional one.
+#
+# Both depend only on the registry entry, so they are worked out on first use
+# and cached there, the same way `requires_*` is (see set_requires_inputs()).
+# Re-registering a parameter replaces its whole entry, cache included.
+parameter_arg_spec <- function(param) {
+  all_intervals <- get.interval.cols()
+  cached <- all_intervals[[param]]$arg_spec
+  if (!is.null(cached)) {
+    return(cached)
+  }
+  fun_formals <- formals(get(all_intervals[[param]]$FUN))
+  formalsmap <- all_intervals[[param]]$formalsmap
+  arg_names <- setdiff(names(fun_formals), "...")
+  arglist <- stats::setNames(object = as.list(arg_names), arg_names)
+  arglist[names(formalsmap)] <- formalsmap
+  # Drop arguments that were set to NULL by the formalsmap
+  arglist <- arglist[!vapply(X = arglist, FUN = is.null, FUN.VALUE = TRUE)]
+  has_no_default <-
+    vapply(
+      X = names(arglist),
+      FUN = function(x) inherits(fun_formals[[x]], "name"),
+      FUN.VALUE = TRUE
+    )
+  ret <- list(arglist = arglist, required = names(arglist)[has_no_default])
+  all_intervals[[param]]$arg_spec <- ret
+  assign("interval.cols", all_intervals, envir = .PKNCAEnv)
+  ret
+}
+
 #' Compute all PK parameters for a single concentration-time data set
 #'
 #' For one subject/time range, compute all available PK parameters. All the
@@ -511,14 +545,8 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       call_args <- list()
       exclude_from_argument <- character(0)
       # Prepare to call the function by setting up its arguments.
-      # Define the required arguments (arglist), and ignore the "..." argument
-      # if it exists.
-      arglist <- setdiff(names(formals(get(all_intervals[[n]]$FUN))),
-                         "...")
-      arglist <- stats::setNames(object=as.list(arglist), arglist)
-      arglist[names(all_intervals[[n]]$formalsmap)] <- all_intervals[[n]]$formalsmap
-      # Drop arguments that were set to NULL by the formalsmap
-      arglist <- arglist[!vapply(X = arglist, FUN = is.null, FUN.VALUE = TRUE)]
+      arg_spec <- parameter_arg_spec(n)
+      arglist <- arg_spec$arglist
       for (arg_formal in names(arglist)) {
         arg_mapped <- arglist[[arg_formal]]
         if (is_pknca_ref(arg_mapped)) {
@@ -616,7 +644,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           call_args[[arg_formal]] <- interval[[arg_mapped]]
         } else {
           # Give an error if there is not a default argument.
-          if (inherits(formals(get(all_intervals[[n]]$FUN))[[arg_formal]], "name")) {
+          if (arg_formal %in% arg_spec$required) {
             arg_text <-
               if (arg_formal == arg_mapped) {
                 sprintf("'%s'", arg_formal)
