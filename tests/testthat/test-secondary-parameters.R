@@ -496,15 +496,18 @@ test_that("a linked secondary result is given units", {
 # concentrations are reported in `plasma_concu` and the urine collection in
 # mg/L, so the AUC the renal clearance divides by is not in the concentration
 # units of the group the result is reported on.
+# The unit arguments of PKNCAconc() name DATA COLUMNS here (concu = "conc_units"
+# reads each row's units from the conc_units column), which is how units are
+# stratified per group; a value with no matching column is the unit itself.
 o_data_units_sec <- function(plasma_concu, subjects = 1) {
   d_conc_u <- do.call(rbind, lapply(subjects, function(s) transform(d_conc_sec, subject = s)))
-  d_conc_u$cu <- ifelse(d_conc_u$PCSPEC %in% "plasma", plasma_concu, "mg/L")
-  d_conc_u$tu <- "hr"
-  d_conc_u$au <- "mg"
+  d_conc_u$conc_units <- ifelse(d_conc_u$PCSPEC %in% "plasma", plasma_concu, "mg/L")
+  d_conc_u$time_units <- "hr"
+  d_conc_u$amount_units <- "mg"
   o_conc_u <-
     PKNCAconc(
       d_conc_u, conc~time|PCSPEC+subject, volume = "vol",
-      concu = "cu", timeu = "tu", amountu = "au"
+      concu = "conc_units", timeu = "time_units", amountu = "amount_units"
     )
   PKNCAdata(o_conc_u, intervals = intervals_sec, options = list(auc.method = "linear"))
 }
@@ -577,11 +580,11 @@ test_that("a convertible ratio is reported raw and standardized to a fraction", 
       Analyte = rep(c("parent", "metabolite"), each = 3),
       time = rep(c(0, 12, 24), times = 2),
       conc = c(4, 10, 2, 8000, 20000, 4000),
-      cu = rep(c("mg/L", "ng/mL"), each = 3),
-      tu = "hr"
+      conc_units = rep(c("mg/L", "ng/mL"), each = 3),
+      time_units = "hr"
     )
   o_conc_ratio <-
-    PKNCAconc(d_conc_ratio, conc~time|Analyte+subject, concu = "cu", timeu = "tu")
+    PKNCAconc(d_conc_ratio, conc~time|Analyte+subject, concu = "conc_units", timeu = "time_units")
   intervals_ratio <-
     data.frame(
       Analyte = c("parent", "metabolite"),
@@ -648,8 +651,8 @@ test_that("a bioavailability across incompatible dose units keeps composite unit
       subject = 1,
       time = rep(c(0, 1, 2, 4, 8), 2),
       conc = c(0, 10, 8, 5, 2, 0, 6, 5, 3, 1),
-      cu = "ng/mL",
-      tu = "hr"
+      conc_units = "ng/mL",
+      time_units = "hr"
     )
   d_dose_u <-
     data.frame(
@@ -657,7 +660,7 @@ test_that("a bioavailability across incompatible dose units keeps composite unit
       du = c("mg", "mg/kg")
     )
   o_conc_u <-
-    PKNCAconc(d_conc_u, conc~time|treatment+subject, concu = "cu", timeu = "tu")
+    PKNCAconc(d_conc_u, conc~time|treatment+subject, concu = "conc_units", timeu = "time_units")
   o_dose_u <- PKNCAdose(d_dose_u, dose~time|treatment+subject, doseu = "du")
   intervals_f <-
     data.frame(
@@ -687,12 +690,14 @@ test_that("a bioavailability across incompatible dose units keeps composite unit
 # standardizes to
 test_that("preferred units reach the composed units of a secondary parameter", {
   d_conc_u <- d_conc_sec
-  d_conc_u$cu <- ifelse(d_conc_u$PCSPEC %in% "plasma", "ng/mL", "mg/L")
-  d_conc_u$au <- "mg"
+  # concu and amountu name data columns (see o_data_units_sec); timeu = "hr"
+  # matches no column and so is the unit itself
+  d_conc_u$conc_units <- ifelse(d_conc_u$PCSPEC %in% "plasma", "ng/mL", "mg/L")
+  d_conc_u$amount_units <- "mg"
   o_conc_u <-
     PKNCAconc(
       d_conc_u, conc~time|PCSPEC+subject, volume = "vol",
-      concu = "cu", timeu = "hr", amountu = "au", timeu_pref = "day"
+      concu = "conc_units", timeu = "hr", amountu = "amount_units", timeu_pref = "day"
     )
   o_data_u <-
     PKNCAdata(o_conc_u, intervals = intervals_sec, options = list(auc.method = "linear"))
@@ -733,14 +738,14 @@ test_that("a same-interval secondary result joins the units row that names no re
       time = rep(c(0, 12, 24), times = 2),
       conc = c(2, 1, 0.5, 4, 2, 1),
       vol = c(100, 150, 200, 50, 75, 100),
-      cu = rep(c("mg/L", "ng/mL"), each = 3),
-      tu = "hr",
-      au = "mg"
+      conc_units = rep(c("mg/L", "ng/mL"), each = 3),
+      time_units = "hr",
+      amount_units = "mg"
     )
   o_conc_leg <-
     PKNCAconc(
       d_conc_leg, conc~time|PCSPEC+subject, volume = "vol",
-      concu = "cu", timeu = "tu", amountu = "au"
+      concu = "conc_units", timeu = "time_units", amountu = "amount_units"
     )
   o_data_leg <-
     PKNCAdata(
