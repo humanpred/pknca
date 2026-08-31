@@ -2,8 +2,7 @@
 % Please edit documentation in R/unit-support.R
 \name{pknca_unit_reconcile_factor}
 \alias{pknca_unit_reconcile_factor}
-\title{Find the factor converting a value from one unit to another, when there is
-one}
+\title{Find the conversion factor between two units, when there is one}
 \usage{
 pknca_unit_reconcile_factor(from, to)
 }

@@ -576,8 +576,7 @@ pknca_units_conversion_factor <- function(from, to) {
   )
 }
 
-#' Find the factor converting a value from one unit to another, when there is
-#' one
+#' Find the conversion factor between two units, when there is one
 #'
 #' The conversions of [pknca_units_table()] are requested by the user and so
 #' fail loudly when they cannot be made.  This answers the different question of
@@ -595,8 +594,8 @@ pknca_unit_reconcile_factor <- function(from, to) {
   if (length(from) != 1 || length(to) != 1 || is.na(from) || is.na(to)) {
     NA_real_
   } else if (identical(as.character(from), as.character(to))) {
-    # Identical units need no conversion, and answering that without the `units`
-    # package keeps a uniformly-united analysis working without it.
+    # Identical units need no conversion, so an analysis whose two sides already
+    # agree does not need the `units` package installed.
     1
   } else if (!requireNamespace("units", quietly = TRUE)) {
     # Reached only where the Suggests-level `units` package is not installed

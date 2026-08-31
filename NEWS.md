@@ -87,8 +87,7 @@ the dosing including dose amount and route.
   `pknca_warning_secondary_units` warning and a number in units that did not
   describe it.  That warning now means the units are *not* convertible (`IU/mL`
   against `mg/L`, or units of different dimensions), and the result is then `NA`
-  with the reason in the `exclude` column rather than a number in units that do
-  not describe it (#76).
+  with the reason in the `exclude` column instead (#76).
 
 * A new vignette, "Secondary Parameters"
   (`vignette("v09-secondary-parameters")`), works through the parameters that

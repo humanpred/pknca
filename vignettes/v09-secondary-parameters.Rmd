@@ -22,22 +22,6 @@ library(PKNCA)
 library(knitr)
 ```
 
-```{r display-helper}
-# check.interval.specification() fills in every registered parameter as FALSE,
-# so an interval specification that has been through it has a few hundred
-# columns.  Show only the ones saying something:  the times, the groups, the
-# linkage, and the parameters actually requested.
-kable_intervals <- function(intervals) {
-  says_something <-
-    vapply(
-      X = intervals,
-      FUN = function(x) !is.logical(x) || any(x, na.rm = TRUE),
-      FUN.VALUE = TRUE
-    )
-  kable(intervals[, says_something, drop = FALSE])
-}
-```
-
 # What a secondary parameter is
 
 Almost every NCA parameter is calculated from the concentrations and doses
@@ -327,9 +311,14 @@ kable(d_two[d_two$PPTESTCD %in% c("clr.last", "ratio.aucinf.obs"), ])
 A named list of data.frames, one per parameter, says the same thing:
 
 ```{r group-ref-list, eval = FALSE}
-group_ref = list(
-  clr.last = data.frame(PCSPEC = "plasma"),
-  ratio.aucinf.obs = data.frame(Analyte = "parent")
+PKNCAdata(
+  o_conc_two, intervals = intervals_two,
+  options = list(auc.method = "linear"),
+  group_ref =
+    list(
+      clr.last = data.frame(PCSPEC = "plasma"),
+      ratio.aucinf.obs = data.frame(Analyte = "parent")
+    )
 )
 ```
 
@@ -341,6 +330,22 @@ parameter.
 `interval_add_secondary()` writes the same linkage the engine derives, but
 visibly, into the intervals it returns.  Use it to see the linkage, to edit it,
 or to link something the derivation cannot reach.
+
+What it returns has been through `check.interval.specification()`, which fills
+in every registered parameter, so it is a few hundred columns wide.  These
+examples show only the columns that say something:
+
+```{r display-helper}
+kable_intervals <- function(intervals) {
+  says_something <-
+    vapply(
+      X = intervals,
+      FUN = function(x) !is.logical(x) || any(x, na.rm = TRUE),
+      FUN.VALUE = TRUE
+    )
+  kable(intervals[, says_something, drop = FALSE])
+}
+```
 
 ```{r add-secondary}
 intervals_plain <-
