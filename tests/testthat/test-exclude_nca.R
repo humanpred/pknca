@@ -289,3 +289,15 @@ test_that("a result with no extrapolation reported keeps a half-life exclusion (
     "span.ratio < 2"
   )
 })
+
+test_that("a half-life exclusion is kept when the method column is not there (#270)", {
+  # exclude() always passes the method column, but the returned function is
+  # usable on its own, and without the column there is nothing to say that the
+  # half-life was unused
+  expect_equal(
+    exclude_nca_span.ratio(2)(
+      data.frame(PPTESTCD = c("span.ratio", "aucint.inf.obs"), PPORRES = c(1, 5))
+    ),
+    rep("span.ratio < 2", 2)
+  )
+})

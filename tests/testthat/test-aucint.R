@@ -1079,7 +1079,7 @@ test_that("AUCint uses the profile the interval falls in, not the one before it 
   )
 })
 
-test_that("AUCint is NA when nothing was measured between the doses around the interval (#508)", {
+test_that("AUCint is NA when nothing was measured before the dose after the interval (#508)", {
   # Every measurement is after the dose that follows the interval, so none of
   # them belongs to the profile being integrated
   expect_equal(
@@ -1089,7 +1089,123 @@ test_that("AUCint is NA when nothing was measured between the doses around the i
     ),
     structure(
       NA_real_,
-      exclude = "no concentration data between the doses around the interval"
+      exclude = "no concentration data before the dose after the interval"
     )
+  )
+})
+
+test_that("aucint.inf.* is NA over an infinite interval without a half-life (#508)", {
+  conc <- c(8, 4, 2, 1)
+  time <- 0:3
+  # An unbounded tail cannot fall back to AUCall, so there is nothing to report
+  expect_equal(
+    pk.calc.aucint.inf.obs(
+      conc = conc, time = time, start = 0, end = Inf,
+      clast.obs = 1, lambda.z = NA
+    ),
+    structure(NA_real_, exclude = "the half-life is NA")
+  )
+  expect_equal(
+    pk.calc.aucint.inf.pred(
+      conc = conc, time = time, start = 0, end = Inf,
+      clast.pred = NA_real_, lambda.z = NA
+    ),
+    structure(NA_real_, exclude = "the half-life is NA")
+  )
+})
+
+test_that("aucint is zero over an interval that is entirely after Tlast", {
+  auc <-
+    pk.calc.aucint.last(
+      conc = c(0, 8, 4, 2, 0, 0, 0), time = 0:6,
+      start = 4.5, end = 6
+    )
+  expect_equal(as.numeric(auc), 0)
+  expect_true("Extrapolation: AUClast" %in% attr(auc, "method"))
+})
+
+test_that("AUCint over several dosing intervals is the sum of the AUCints over each (#508)", {
+  # q12h with a gap in the terminal part of each profile, so each dose has to be
+  # estimated and each profile has an unmeasured tail
+  d_conc <-
+    data.frame(
+      subject = 1,
+      time = c(0, 1, 2, 6, 13, 14, 18, 25, 26, 30),
+      conc = c(0, 10, 8, 4, 12, 9, 5, 13, 10, 6)
+    )
+  d_dose <- data.frame(subject = 1, time = c(0, 12, 24, 36), dose = 100)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  nca <- function(intervals) {
+    res <- as.data.frame(suppressWarnings(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals))))
+    stats::setNames(as.numeric(res$PPORRES), paste(res$PPTESTCD, res$start, res$end))
+  }
+  for (param in c("aucint.last", "aucint.all")) {
+    pieces <-
+      nca(data.frame(start = c(0, 12, 24), end = c(12, 24, 36), x = TRUE) |>
+            stats::setNames(c("start", "end", param)))
+    spanning <- nca(data.frame(start = 0, end = 36, x = TRUE) |>
+                      stats::setNames(c("start", "end", param)))
+    expect_equal(
+      unname(spanning[paste(param, 0, 36)]),
+      unname(sum(pieces[paste(param, c(0, 12, 24), c(12, 24, 36))])),
+      info = param
+    )
+  }
+})
+
+test_that("each profile in an AUCint keeps its own AUCall triangle (#508)", {
+  # Both profiles end with measurements below the limit of quantification, so
+  # each AUCall triangle has to stay inside the profile that it belongs to
+  d_conc <-
+    data.frame(
+      subject = 1,
+      time = c(0, 1, 2, 6, 10, 12, 13, 14, 18, 22, 24),
+      conc = c(0, 10, 8, 4, 0, 0, 12, 9, 5, 0, 0)
+    )
+  d_dose <- data.frame(subject = 1, time = c(0, 12, 24), dose = 100)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  intervals <-
+    data.frame(
+      start = c(0, 12, 0), end = c(12, 24, 24),
+      auclast = TRUE, aucall = TRUE, aucint.last = TRUE, aucint.all = TRUE
+    )
+  res <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals)))
+  value <- function(param, s, e) {
+    as.numeric(res$PPORRES[res$PPTESTCD %in% param & res$start %in% s & res$end %in% e])
+  }
+  # Each single-dose interval matches the AUC parameter it is named for
+  for (i in seq_len(2)) {
+    s <- c(0, 12)[i]
+    e <- c(12, 24)[i]
+    expect_equal(value("aucint.last", s, e), value("auclast", s, e))
+    expect_equal(value("aucint.all", s, e), value("aucall", s, e))
+  }
+  # And the interval covering both is their sum
+  expect_equal(
+    value("aucint.last", 0, 24),
+    value("auclast", 0, 12) + value("auclast", 12, 24)
+  )
+  expect_equal(
+    value("aucint.all", 0, 24),
+    value("aucall", 0, 12) + value("aucall", 12, 24)
+  )
+})
+
+test_that("the trough before a dose is extrapolated from the profile before it (#508)", {
+  # The second dosing interval, with no pre-dose sample at 24 hr.  The
+  # concentration there comes from the first profile's own Clast, not from the
+  # Clast of the interval being calculated.
+  conc <- c(0, 10, 6, 3, 1.5, 12, 7, 4)
+  time <- c(0, 1, 2, 6, 12, 25, 26, 30)
+  lambda_z <- log(2) / 6
+  expect_equal(
+    interp.extrap.conc.dose(
+      conc = conc, time = time, time.out = 24, time.dose = c(0, 24),
+      route.dose = "extravascular", duration.dose = 0, out.after = FALSE,
+      auc.type = "AUCinf", clast = 4, lambda.z = lambda_z
+    ),
+    structure(1.5 * exp(-lambda_z * (24 - 12)), Method = "Extrapolation")
   )
 })

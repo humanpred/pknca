@@ -6,21 +6,23 @@
 #' @details
 #' # Doses bound the profile
 #'
-#' When dose times are given, the concentrations used are limited to the dosing
-#' window around the interval:  measurements from before the last dose at or
-#' before `start` and from after the first dose at or after `end` belong to
-#' other profiles and are neither integrated nor used for
+#' When dose times are given, the profile being integrated ends at the first
+#' dose at or after `end`:  a concentration measured after that dose belongs to
+#' a later profile and is neither integrated nor used for
 #' interpolation/extrapolation into this interval.  A dose within the interval
-#' does not bound the window -- the interval asks for the profiles on both sides
+#' does not end the profile -- the interval asks for the profiles on both sides
 #' of it to be integrated together -- but it does become a point to integrate
 #' to, so that the profile ending at the dose is not interpolated into the one
-#' starting at it.
+#' starting at it.  Concentrations from before the interval are used to estimate
+#' the concentration at `start`, and that estimate does not interpolate across a
+#' dose either (see [interp.extrap.conc.dose()]).
 #'
 #' # The region after Tlast
 #'
-#' Within the dosing window, the region of the interval after the last
-#' measurable concentration is handled the same way as the matching AUC
-#' parameter:
+#' Each dose within the interval starts a new profile, and the region of each
+#' profile after its last measurable concentration is handled the same way as
+#' the matching AUC parameter, so that an interval spanning several doses gives
+#' the sum of the intervals covering each of them:
 #'
 #' \describe{
 #'   \item{`AUClast`}{contributes zero.}
@@ -97,17 +99,21 @@ pk.calc.auxcint <- function(conc, time,
   }
   interval <- assert_intervaltime_single(interval = interval, start = start, end = end)
   if (dose_aware) {
-    # Doses bound the profile:  a concentration measured after the dose that
-    # follows the interval belongs to a later profile and one measured before
-    # the dose that starts the interval belongs to an earlier one, so neither is
-    # integrated nor interpolated/extrapolated into this interval (#508).
-    # Limiting the data before cleaning also lets clean.conc.blq() see the
-    # trailing BLQ values of this profile as trailing rather than as middle.
-    window <- dose_window(time.dose = time.dose, interval = interval)
-    mask_conc <- window[1] <= time & time <= window[2]
+    # A concentration measured after the dose that follows the interval belongs
+    # to a later profile, so it is neither integrated nor interpolated or
+    # extrapolated into this interval (#508).  Dropping it here is also what
+    # makes Tlast the Tlast of the profile being integrated, which is what
+    # says whether the interval reaches past it.
+    #
+    # The dose that starts the interval is not a bound in the same way:  the
+    # concentration at the start of the interval is estimated from the profile
+    # before it, which interp.extrap.conc.dose() does without interpolating
+    # across the dose.
+    window_end <- dose_window_end(time.dose = time.dose, interval = interval)
+    mask_conc <- time <= window_end
     conc <- conc[mask_conc]
     time <- time[mask_conc]
-    mask_dose <- window[1] <= time.dose & time.dose <= window[2]
+    mask_dose <- time.dose <= window_end
     if (length(route) == length(time.dose)) {
       route <- route[mask_dose]
     }
@@ -117,14 +123,13 @@ pk.calc.auxcint <- function(conc, time,
     time.dose <- time.dose[mask_dose]
   }
   if (length(conc) == 0) {
-    return(structure(NA_real_, exclude = "no concentration data between the doses around the interval"))
+    return(structure(NA_real_, exclude = "no concentration data before the dose after the interval"))
   }
   if (check) {
     data <-
-      clean.conc.blq(
-        conc = conc, time = time,
-        conc.blq = conc.blq, conc.na = conc.na, options = options,
-        check = FALSE
+      clean_conc_blq_by_profile(
+        conc = conc, time = time, time.dose = time.dose,
+        conc.blq = conc.blq, conc.na = conc.na, options = options
       )
   } else {
     data <- data.frame(conc, time)
@@ -273,24 +278,12 @@ pk.calc.auxcint <- function(conc, time,
     time_interp <- data$time[mask_time]
   }
 
-  tlast_integrate <-
-    if (lambda_z_used) {
-      # The extrapolated concentrations are the half-life's description of the
-      # profile after tlast, so they are integrated as though measured.
-      max(time_interp)
-    } else {
-      pk.calc.tlast(conc = conc_interp, time = time_interp, check = FALSE)
-    }
-  if (is.na(tlast_integrate)) {
-    # Every concentration within the interval is zero.  choose_interval_method()
-    # short-circuits to zero integration, but it still requires a number.
-    tlast_integrate <- max(time_interp)
-  }
   interval_method <-
-    choose_interval_method(
+    interval_method_by_profile(
       conc = conc_interp,
       time = time_interp,
-      tlast = tlast_integrate,
+      time.dose = time_dose_interp,
+      lambda_z_used = lambda_z_used,
       method = method,
       auc.type = auc_type_calc,
       options = options
@@ -338,19 +331,112 @@ pknca_interp_method_prefix <- "Interpolation: "
 pknca_extrap_method_prefix <- "Extrapolation: "
 pknca_extrap_method_halflife <- "half-life"
 
-# The concentrations that belong to the profile being integrated:  everything
-# from the last dose at or before the start of the interval through the first
-# dose at or after its end.  A dose within the interval does not bound the
-# window, because the interval asks for the profiles on both sides of it to be
-# integrated together.  A concentration measured at the same time as a dose is
-# taken to be measured before it, matching interp.extrap.conc.dose().
-dose_window <- function(time.dose, interval) {
-  dose_before <- time.dose[time.dose <= interval[1]]
+# The first dose at or after the end of the interval, which is where the profile
+# being integrated ends; `Inf` when there is no such dose.  A dose within the
+# interval does not end it, because the interval asks for the profiles on both
+# sides of that dose to be integrated together.  A concentration measured at the
+# same time as a dose is taken to be measured before it, matching
+# interp.extrap.conc.dose().
+dose_window_end <- function(time.dose, interval) {
   dose_after <- time.dose[time.dose >= interval[2]]
-  c(
-    if (length(dose_before) > 0) max(dose_before) else -Inf,
-    if (length(dose_after) > 0) min(dose_after) else Inf
+  if (length(dose_after) > 0) min(dose_after) else Inf
+}
+
+# Which dosing interval each time belongs to.  A concentration measured at the
+# same time as a dose is taken to be measured before it, matching
+# interp.extrap.conc.dose(), so `left.open = TRUE` puts it with the profile that
+# ends at the dose.
+profile_of_time <- function(time, time.dose) {
+  findInterval(
+    x = time,
+    vec = if (is.null(time.dose)) numeric() else sort(unique(time.dose)),
+    left.open = TRUE
   )
+}
+
+# Clean the concentrations one dosing interval at a time, so that a value below
+# the limit of quantification which trails its own profile is treated as
+# trailing rather than as a middle value of the data as a whole.  Cleaning
+# everything at once would drop it (the default for a middle value), and the
+# AUCall triangle of that profile would then be drawn to the next dose instead
+# of to it.
+clean_conc_blq_by_profile <- function(conc, time, time.dose, conc.blq, conc.na, options) {
+  profile <- profile_of_time(time = time, time.dose = time.dose)
+  ret <- list()
+  for (current in sort(unique(profile))) {
+    mask <- profile == current
+    ret[[length(ret) + 1L]] <-
+      clean.conc.blq(
+        conc = conc[mask], time = time[mask],
+        conc.blq = conc.blq, conc.na = conc.na, options = options,
+        check = FALSE
+      )
+  }
+  do.call(rbind, ret)
+}
+
+# The Tlast that an AU(M)C is integrated against: the last measurable
+# concentration, or the end of the data when the half-life described everything
+# after it (and when nothing is measurable, where choose_interval_method()
+# integrates zero but still wants a number).
+tlast_for_integration <- function(conc, time, lambda_z_used) {
+  ret <-
+    if (lambda_z_used) {
+      max(time)
+    } else {
+      pk.calc.tlast(conc = conc, time = time, check = FALSE)
+    }
+  if (is.na(ret)) max(time) else ret
+}
+
+# How to integrate each pair of concentrations, chosen one profile at a time.
+#
+# Each dose within the interval ends one profile and starts the next, and how
+# the region after a profile's Tlast is integrated is part of what the AUC type
+# means:  AUClast leaves it out, AUCall draws its triangle within it.  Choosing
+# the method once against a single Tlast for the whole interval would instead
+# integrate the area under a concentration extrapolated down to the dose, which
+# is exactly the area that AUClast leaves out, and it would make an AUC over
+# several dosing intervals differ from the sum of the AUCs over each of them.
+#
+# Only the last profile extrapolates past the end of the data, so each earlier
+# profile contributes its integration methods without its extrapolation.
+interval_method_by_profile <- function(conc, time, time.dose, lambda_z_used, method, auc.type, options) {
+  # A time that appears twice is the duplicate at Tlast that AUCinf,pred adds
+  # (clast.obs to end the observed data and clast.pred to start the
+  # extrapolation).  Both points end the same profile, and splitting between
+  # them would leave choose_interval_method() with an ambiguous Tlast.
+  time_once <- time[!(duplicated(time) | duplicated(time, fromLast = TRUE))]
+  # A dose at either end of the data does not split it
+  split_time <-
+    sort(unique(time.dose[time.dose %in% time_once &
+                            time.dose > time[1] &
+                            time.dose < time[length(time)]]))
+  idx_split <- c(1L, match(split_time, time), length(time))
+  n_profile <- length(idx_split) - 1L
+  ret <- character()
+  for (i in seq_len(n_profile)) {
+    idx <- idx_split[i]:idx_split[i + 1]
+    is_last <- i == n_profile
+    profile_method <-
+      choose_interval_method(
+        conc = conc[idx],
+        time = time[idx],
+        tlast =
+          tlast_for_integration(
+            conc = conc[idx], time = time[idx],
+            lambda_z_used = lambda_z_used && is_last
+          ),
+        method = method,
+        auc.type = auc.type,
+        options = options
+      )
+    if (!is_last) {
+      profile_method <- profile_method[-length(profile_method)]
+    }
+    ret <- c(ret, profile_method)
+  }
+  ret
 }
 
 #' @describeIn pk.calc.auxcint Calculate AUC over an interval

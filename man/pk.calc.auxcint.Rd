@@ -234,21 +234,23 @@ AUMCinf.pred
 
 }}
 \section{Doses bound the profile}{
-When dose times are given, the concentrations used are limited to the dosing
-window around the interval:  measurements from before the last dose at or
-before \code{start} and from after the first dose at or after \code{end} belong to
-other profiles and are neither integrated nor used for
+When dose times are given, the profile being integrated ends at the first
+dose at or after \code{end}:  a concentration measured after that dose belongs to
+a later profile and is neither integrated nor used for
 interpolation/extrapolation into this interval.  A dose within the interval
-does not bound the window -- the interval asks for the profiles on both sides
+does not end the profile -- the interval asks for the profiles on both sides
 of it to be integrated together -- but it does become a point to integrate
 to, so that the profile ending at the dose is not interpolated into the one
-starting at it.
+starting at it.  Concentrations from before the interval are used to estimate
+the concentration at \code{start}, and that estimate does not interpolate across a
+dose either (see \code{\link[=interp.extrap.conc.dose]{interp.extrap.conc.dose()}}).
 }
 
 \section{The region after Tlast}{
-Within the dosing window, the region of the interval after the last
-measurable concentration is handled the same way as the matching AUC
-parameter:
+Each dose within the interval starts a new profile, and the region of each
+profile after its last measurable concentration is handled the same way as
+the matching AUC parameter, so that an interval spanning several doses gives
+the sum of the intervals covering each of them:
 
 \describe{
 \item{\code{AUClast}}{contributes zero.}

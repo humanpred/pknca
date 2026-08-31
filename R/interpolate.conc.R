@@ -571,7 +571,13 @@ iecd_extrap_value <- function(data_all, current_idx, lambda.z, ...) {
                  time=tmp_conc$time,
                  time.out=data_all$time[current_idx], lambda.z=lambda.z,
                  ...)
-    if (!("clast" %in% names(args))) {
+    # A `clast` given by the caller (clast.pred, for AUCinf,pred) describes the
+    # end of the whole profile, so it only applies when this run of measurements
+    # ends there.  Extrapolating to a dose partway through the data -- the
+    # trough before a later dose -- uses the last measurement of the run.
+    all_conc <- data_all[data_all$conc_event, ]
+    tlast_all <- pk.calc.tlast(conc=all_conc$conc, time=all_conc$time, check=FALSE)
+    if (!("clast" %in% names(args)) || !isTRUE(last_conc$time == tlast_all)) {
       args$clast <- last_conc$conc
     }
     do.call(extrapolate.conc, args)

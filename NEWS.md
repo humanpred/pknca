@@ -6,14 +6,19 @@ the dosing including dose amount and route.
 
 # Development version
 
-* Bug fix: the `aucint` and `aumcint` parameters are dose-aware.  The doses on
-  either side of the interval bound the profile being integrated, so a
-  concentration measured after the next dose is no longer interpolated back into
-  the interval.  With the interval covering a whole dosing interval,
+* Bug fix: the `aucint` and `aumcint` parameters are dose-aware.  The profile
+  being integrated ends at the first dose at or after the end of the interval,
+  so a concentration measured after that dose is no longer interpolated back
+  into the interval.  With the interval covering a whole dosing interval,
   `aucint.last` and `aucint.all` now equal `auclast` and `aucall`, and
   `aucint.inf.obs` and `aucint.inf.pred` extrapolate the region after Tlast with
   the half-life.  When no dosing data are given, the calculation falls back to
   the previous behavior of interpolating across the whole profile (#508).
+
+* Bug fix: an `aucint` or `aumcint` interval that spans more than one dose is
+  integrated one dosing interval at a time, so the region after each profile's
+  Tlast is handled by the AUC type within that profile.  An AUC over several
+  dosing intervals is now the sum of the AUCs over each of them (#508).
 
 * The `.dose` interval parameters (`aucint.last.dose`, `aumcint.inf.pred.dose`,
   and the rest of the `*int.*.dose` family) are retired now that every `aucint`
@@ -35,10 +40,12 @@ the dosing including dose amount and route.
   extravascular dose.
 
 * Bug fix: dose-aware interpolation no longer fails when the concentrations
-  around a dose are all below the limit of quantification, and its `AUCall`
+  around a dose are all below the limit of quantification, its `AUCall`
   extrapolation now finds the first below-the-limit-of-quantification
   measurement after Tlast instead of stopping at the last measured
-  concentration.
+  concentration, and the trough before a dose is extrapolated from the Clast of
+  the profile before it rather than from the Clast of the interval being
+  calculated.
 
 * Secondary parameters can now be calculated by linking intervals with
   `interval_id` and `<parameter>_ref` columns in the interval specification.
