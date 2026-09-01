@@ -15,7 +15,7 @@ as_sparse_pk <- function(conc, time, subject) {
     conc <- conc$conc
   }
   assert_conc_time(conc = conc, time = time, any_missing_conc = TRUE, sorted_time = FALSE)
-  checkmate::check_vector(subject, any.missing=FALSE, len=length(conc), null.ok=FALSE)
+  checkmate::assert_vector(subject, any.missing=FALSE, len=length(conc), null.ok=FALSE)
   # Drop observations with missing concentrations so that per-timepoint means,
   # variances, and subject counts reflect only available data.
   mask_ok <- !is.na(conc)

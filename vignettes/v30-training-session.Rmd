@@ -944,6 +944,7 @@ o_conc <- PKNCAconc(data=d_before_exclude, conc~time, exclude="not_this")
     * Repeat for all sets of points from there to the first point included.
     * If that 3 points are not available, it is not calculated.
 * Among the fits, select the best adjusted r^2^ (within a tolerance of `adj.r.squared.factor`).
+    * Set `r.squared.factor` to a tolerance to select on the unadjusted r^2^ instead; that takes `adj.r.squared.factor` out of use.
 * Require &lambda;z` > 0`.
 * If more than one fit is available at this point, select the one with the most points included.
 
@@ -1036,7 +1037,7 @@ Very few parameters reach outside of the `start` and `end` of an interval for ad
 
 AUC~int~ may look after the end of the interval to calculate the concentration at `end`.
 
-When dosing data are given, it stops at the doses on either side of the interval, so a concentration measured after the next dose is not interpolated back into the interval (e.g. a dose at 24 hours but the prior sample is around 12 and the next is around 25):
+When dosing data are given, it stops at the first dose at or after the end of the interval, so a concentration measured after that dose is not interpolated back into the interval (e.g. a dose at 24 hours but the prior sample is around 12 and the next is around 25):
 
 ```{r fig.height=3}
 d_prep <-

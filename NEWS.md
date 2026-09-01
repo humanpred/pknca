@@ -6,6 +6,19 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Half-life point selection can now use the unadjusted r-squared instead of
+  the adjusted r-squared:  set the new `r.squared.factor` option, or the
+  `pk.calc.half.life()` argument of the same name, to the allowance.  The two
+  factors are alternatives, so setting either one takes the other out of use
+  and `adj.r.squared.factor` no longer has to be set to `NA` by hand.  Both
+  options now accept `NA`, which selects on the other r-squared.  The default
+  is unchanged:  selection on adjusted r-squared.  Suggested by @cahn88 (#337)
+
+* `as_sparse_pk()` now raises an error when `subject` is `NULL`, has a
+  different length than `conc`, or contains missing values.  Previously the
+  check was inert and such inputs passed silently into the sparse
+  calculations.
+
 * Bug fix: the `aucint` and `aumcint` parameters are dose-aware.  The profile
   being integrated ends at the first dose at or after the end of the interval,
   so a concentration measured after that dose is no longer interpolated back
@@ -627,6 +640,11 @@ when the issue is due to an excluded point (#310)
   or with more than one row) now stops with an error naming the function and
   both lengths.  Previously a zero-row return was an obscure error, and a
   multiple-row return silently reported values under the wrong parameter names.
+
+* The caption from `summary()` on a `PKNCAresults` object describes the
+  not-calculated abbreviation (`"NC"`, by default) when the summary shows it,
+  so the table says what the abbreviation means.  Summaries with nothing
+  not-calculated keep the caption they had (#320).
 
 ## Minor changes (unlikely to affect PKNCA use)
 

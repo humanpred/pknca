@@ -17,6 +17,7 @@ pk.calc.half.life(
   options = list(),
   min.hl.points = NULL,
   adj.r.squared.factor = NULL,
+  r.squared.factor = NULL,
   tobit_n_points_penalty = NULL,
   tobit_optim_control = NULL,
   conc.blq = NULL,
@@ -58,7 +59,8 @@ can be changed via \code{PKNCA.options(hl_method = "tobit")}.}
 \code{time}) been manually selected?  The impact of setting this to
 \code{TRUE} is that no selection for the best points will be done.  When
 \code{TRUE}, this option causes the options of \code{adj.r.squared.factor},
-\code{min.hl.points}, and \code{allow.tmax.in.half.life} to be ignored.}
+\code{r.squared.factor}, \code{min.hl.points}, and \code{allow.tmax.in.half.life} to be
+ignored.}
 
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
@@ -68,7 +70,17 @@ included to calculate the half-life.  For \code{hl_method = "tobit"} this
 counts only above-LLOQ points.}
 
 \item{adj.r.squared.factor}{The allowance in adjusted r-squared for
-adding another point (log-linear method only).}
+adding another point (log-linear method only).  Giving it takes
+\code{r.squared.factor} out of use, and setting it to \code{NA} selects points with
+\code{r.squared.factor} instead.}
+
+\item{r.squared.factor}{The allowance in r-squared for adding another point
+(log-linear method only).  Giving it takes \code{adj.r.squared.factor} out of
+use, so exactly one of the two is ever in use; \code{NA} (the default) selects
+points with \code{adj.r.squared.factor}.  Unlike the adjusted r-squared, the
+r-squared does not reward more points, so it generally selects fewer of
+them; with \code{min.hl.points = 2} the two-point fit has an r-squared of 1 and
+is therefore always selected.}
 
 \item{tobit_n_points_penalty}{The penalty exponent on the number of points
 for Tobit window selection.  See \code{\link[=PKNCA.options]{PKNCA.options()}}.}
@@ -148,7 +160,8 @@ following rules in order:
 \itemize{
 \item{At least \code{min.hl.points} points included}
 \item{A \code{lambda.z} > 0 and at the same time the best adjusted r-squared
-(within \code{adj.r.squared.factor})}
+(within \code{adj.r.squared.factor}) or, when \code{adj.r.squared.factor} is \code{NA},
+the best r-squared (within \code{r.squared.factor})}
 \item{The one with the most points included}
 }
 
@@ -160,7 +173,7 @@ points.  On ties the largest window (most total points) is preferred.
 
 If \code{manually.selected.points} is \code{TRUE}, the \code{conc} and \code{time} data are
 used as-is without any form of point selection.  When
-\code{TRUE}, \code{adj.r.squared.factor}, \code{min.hl.points}, and
+\code{TRUE}, \code{adj.r.squared.factor}, \code{r.squared.factor}, \code{min.hl.points}, and
 \code{allow.tmax.in.half.life} are ignored.
 }
 \references{

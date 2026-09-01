@@ -45,6 +45,24 @@ test_that("as_sparse_pk drops NA concentrations (#563)", {
   expect_equal(sparse_pk[[3]]$subject, 5)
 })
 
+test_that("as_sparse_pk rejects invalid subject vectors", {
+  conc <- c(0, 0, 5, 7, 3, NA)
+  time <- c(0, 0, 4, 4, 24, 24)
+  expect_error(
+    as_sparse_pk(conc = conc, time = time, subject = NULL),
+    regexp = "Must be of type 'vector', not 'NULL'"
+  )
+  # Length is checked against the full input, before NA concentrations drop
+  expect_error(
+    as_sparse_pk(conc = conc, time = time, subject = 1:5),
+    regexp = "Must have length 6, but has length 5"
+  )
+  expect_error(
+    as_sparse_pk(conc = conc, time = time, subject = c(1, 2, 3, 4, 5, NA)),
+    regexp = "Contains missing values"
+  )
+})
+
 test_that("sparse_auc tolerates NA concentrations (#563)", {
   result <- pk.calc.sparse_auc(
     conc    = c(0, 0, 5, 7, 3, NA),
@@ -73,7 +91,7 @@ test_that("sparse_auc_df and sparse_auc_se are in the parameter list (#292)", {
 test_that("sparse_mean", {
   d_sparse <-
     data.frame(
-      id = c(1L, 2L, 3L, 1L, 2L, 3L, 1L, 2L, 3L, 4L, 5L, 6L, 4L, 5L, 6L, 7L, 8L, 9L, 7L, 8L, 9L),
+      subject = c(1L, 2L, 3L, 1L, 2L, 3L, 1L, 2L, 3L, 4L, 5L, 6L, 4L, 5L, 6L, 7L, 8L, 9L, 7L, 8L, 9L),
       conc = c(0, 0, 0, 1.75, 2.2, 1.58, 4.63, 2.99, 1.52, 3.03, 1.98, 2.22, 3.34, 1.3, 1.22, 3.54, 2.84, 2.55, 0.3, 0.0421, 0.231),
       time = c(0, 0, 0, 1, 1, 1, 6, 6, 6, 2, 2, 2, 10, 10, 10, 4, 4, 4, 24, 24, 24),
       dose = c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
@@ -248,7 +266,7 @@ test_that("sparse_aumc_df and sparse_aumc_se are in the parameter list", {
 test_that("moment means are calculated correctly", {
   # Create simple sparse_pk with known values
   d_test <- data.frame(
-    id = c(1, 2, 1, 2),
+    subject = c(1, 2, 1, 2),
     conc = c(10, 12, 8, 6),
     time = c(1, 1, 2, 2)
   )
