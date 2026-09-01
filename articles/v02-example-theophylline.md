@@ -473,6 +473,9 @@ print(results_obj)
     ## $adj.r.squared.factor
     ## [1] 1e-04
     ## 
+    ## $r.squared.factor
+    ## [1] NA
+    ## 
     ## $max.missing
     ## [1] 0.5
     ## 
@@ -663,7 +666,7 @@ print(results_obj)
     ## attr(,"class")
     ## [1] "PKNCAresults" "list"        
     ## attr(,"provenance")
-    ## Provenance hash 1010dd656fa2060bf5d457ba131dbe6d generated on 2026-08-31 20:41:25.488602 with R version 4.6.1 (2026-06-24).
+    ## Provenance hash 1010dd656fa2060bf5d457ba131dbe6d generated on 2026-09-01 00:34:29.679647 with R version 4.6.1 (2026-06-24).
 
 ``` r
 

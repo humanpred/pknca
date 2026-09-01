@@ -134,7 +134,9 @@ T<sub>last</sub>.</li>
 <li>Select the best half-life with the following criteria, in order:
 <ol style="list-style-type: decimal">
 <li>The adjusted r-squared must be within a tolerance factor (typically
-0.0001) of the largest adjusted r-squared.</li>
+0.0001) of the largest adjusted r-squared. Setting the
+<code>r.squared.factor</code> option selects on the unadjusted r-squared
+instead; see the “Half-Life Calculation” vignette.</li>
 <li>The
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
 value (slope for the half-life line) must be positive; in other words,
@@ -158,8 +160,10 @@ semi-log regression with two changes. The first change is that
 concentrations below the LLOQ are retained in the estimate as
 left-censored values. The second change is that the adjusted r-squared
 is not possible to calculate when including points below the LLOQ, so
-the residual standard deviation of the Tobit fit is minimized
-instead.</p>
+the residual standard deviation of the Tobit fit is minimized instead.
+Neither <code>adj.r.squared.factor</code> nor
+<code>r.squared.factor</code> applies to
+<code>hl_method = "tobit"</code>.</p>
 <p>The selection method below results in effectively the same estimates
 for half-life when all points are above the LLOQ and improved estimates
 for half-life when some points are below the LLOQ. Future research may

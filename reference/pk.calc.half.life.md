@@ -22,6 +22,7 @@ pk.calc.half.life(
   options = list(),
   min.hl.points = NULL,
   adj.r.squared.factor = NULL,
+  r.squared.factor = NULL,
   tobit_n_points_penalty = NULL,
   tobit_optim_control = NULL,
   conc.blq = NULL,
@@ -81,8 +82,8 @@ pk.calc.half.life(
   Have the input points (`conc` and `time`) been manually selected? The
   impact of setting this to `TRUE` is that no selection for the best
   points will be done. When `TRUE`, this option causes the options of
-  `adj.r.squared.factor`, `min.hl.points`, and `allow.tmax.in.half.life`
-  to be ignored.
+  `adj.r.squared.factor`, `r.squared.factor`, `min.hl.points`, and
+  `allow.tmax.in.half.life` to be ignored.
 
 - options:
 
@@ -98,7 +99,19 @@ pk.calc.half.life(
 - adj.r.squared.factor:
 
   The allowance in adjusted r-squared for adding another point
-  (log-linear method only).
+  (log-linear method only). Giving it takes `r.squared.factor` out of
+  use, and setting it to `NA` selects points with `r.squared.factor`
+  instead.
+
+- r.squared.factor:
+
+  The allowance in r-squared for adding another point (log-linear method
+  only). Giving it takes `adj.r.squared.factor` out of use, so exactly
+  one of the two is ever in use; `NA` (the default) selects points with
+  `adj.r.squared.factor`. Unlike the adjusted r-squared, the r-squared
+  does not reward more points, so it generally selects fewer of them;
+  with `min.hl.points = 2` the two-point fit has an r-squared of 1 and
+  is therefore always selected.
 
 - tobit_n_points_penalty:
 
@@ -230,7 +243,8 @@ following rules in order:
 - At least `min.hl.points` points included
 
 - A `lambda.z` \> 0 and at the same time the best adjusted r-squared
-  (within `adj.r.squared.factor`)
+  (within `adj.r.squared.factor`) or, when `adj.r.squared.factor` is
+  `NA`, the best r-squared (within `r.squared.factor`)
 
 - The one with the most points included
 
@@ -243,8 +257,8 @@ total points) is preferred.
 
 If `manually.selected.points` is `TRUE`, the `conc` and `time` data are
 used as-is without any form of point selection. When `TRUE`,
-`adj.r.squared.factor`, `min.hl.points`, and `allow.tmax.in.half.life`
-are ignored.
+`adj.r.squared.factor`, `r.squared.factor`, `min.hl.points`, and
+`allow.tmax.in.half.life` are ignored.
 
 ## References
 

@@ -84,6 +84,9 @@ PKNCA.options()
 #> $adj.r.squared.factor
 #> [1] 1e-04
 #> 
+#> $r.squared.factor
+#> [1] NA
+#> 
 #> $max.missing
 #> [1] 0.5
 #> 

@@ -154,18 +154,26 @@ is selected by the following rules:</p>
 <ol style="list-style-type: decimal">
 <li>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>λ</mi><mi>z</mi></msub><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\lambda_z &gt; 0</annotation></semantics></math>
-and at the same time the maximum r-squared must be within an adjusted
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>r</mi><mn>2</mn></msup><annotation encoding="application/x-tex">r^2</annotation></semantics></math>
-factor of the best.
+and at the same time the selection statistic must be within a tolerance
+factor of the best value of that statistic.
 <ol style="list-style-type: decimal">
-<li>The adjusted
+<li>The statistic is the adjusted
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>r</mi><mn>2</mn></msup><annotation encoding="application/x-tex">r^2</annotation></semantics></math>
-factor is controlled by
-<code>PKNCA.options("adj.r.squared.factor")</code> and it defaults to
+by default, and its tolerance is controlled by
+<code>PKNCA.options("adj.r.squared.factor")</code> which defaults to
 10^{-4}.</li>
-<li>These rules must be met simultaneously, so if the maximum adjusted
+<li>Selecting on the unadjusted
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>r</mi><mn>2</mn></msup><annotation encoding="application/x-tex">r^2</annotation></semantics></math>
-is for a line with
+instead needs only <code>PKNCA.options("r.squared.factor")</code> set to
+the tolerance: the two factors are alternatives, so setting either one
+takes the other out of use. Because the unadjusted
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>r</mi><mn>2</mn></msup><annotation encoding="application/x-tex">r^2</annotation></semantics></math>
+does not reward larger windows, it usually selects fewer points than the
+adjusted
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>r</mi><mn>2</mn></msup><annotation encoding="application/x-tex">r^2</annotation></semantics></math>
+does.</li>
+<li>These rules must be met simultaneously, so if the best value of the
+statistic is for a line with
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>λ</mi><mi>z</mi></msub><mo>≤</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\lambda_z \leq 0</annotation></semantics></math>,
 the half-life may end up being unreportable.</li>
 </ol>
@@ -233,8 +241,8 @@ to choose between them and what each one changes.</p>
 <li>Only <code>include_half.life</code> turns off automatic selection.
 <code>exclude_half.life</code> removes the flagged points and then runs
 the usual curve stripping on the rest, so <code>min.hl.points</code>,
-<code>allow.tmax.in.half.life</code>, and
-<code>adj.r.squared.factor</code> still apply to the points that
+<code>allow.tmax.in.half.life</code>, <code>adj.r.squared.factor</code>,
+and <code>r.squared.factor</code> still apply to the points that
 remain.</li>
 <li>The middle band of the tree applies to
 <code>include_half.life</code> as well. Naming a point does not force it

@@ -108,8 +108,24 @@ argument. All options supported by the current version of PKNCA
 adjusted r^2 within adj.r.squared.factor of the best adjusted r^2 are
 considered acceptable, and the acceptable regression using the most data
 points is selected. It allows for more data points to be preferred in
-the calculation of half-life.</p>
+the calculation of half-life. Setting either of adj.r.squared.factor and
+r.squared.factor takes the other out of use, so exactly one of them is
+ever in use; setting this one to NA therefore selects on the other
+r-squared.</p>
 <p>The default value is: 1e-04</p>
+</div>
+<div class="section level3">
+<h3 id="r-squared-factor">r.squared.factor<a class="anchor" aria-label="anchor" href="#r-squared-factor"></a>
+</h3>
+<p>During the calculation of lambda.z, all candidate regressions with an
+r^2 within r.squared.factor of the best r^2 are considered acceptable,
+and the acceptable regression using the most data points is selected.
+Unlike the adjusted r^2, the r^2 does not reward more data points, so it
+generally selects fewer of them. Setting either of adj.r.squared.factor
+and r.squared.factor takes the other out of use, so exactly one of them
+is ever in use; setting this one to NA therefore selects on the other
+r-squared.</p>
+<p>The default value is: NA</p>
 </div>
 <div class="section level3">
 <h3 id="max-missing">max.missing<a class="anchor" aria-label="anchor" href="#max-missing"></a>

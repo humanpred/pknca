@@ -50,13 +50,20 @@ If `PKNCA.options("min.hl.points")` were set to `4`, then the 6, 8, and
 After fitting all points, the best fit among the set of possible fit is
 selected by the following rules:
 
-1.  $`\lambda_z > 0`$ and at the same time the maximum r-squared must be
-    within an adjusted $`r^2`$ factor of the best.
-    1.  The adjusted $`r^2`$ factor is controlled by
-        `PKNCA.options("adj.r.squared.factor")` and it defaults to
+1.  $`\lambda_z > 0`$ and at the same time the selection statistic must
+    be within a tolerance factor of the best value of that statistic.
+    1.  The statistic is the adjusted $`r^2`$ by default, and its
+        tolerance is controlled by
+        `PKNCA.options("adj.r.squared.factor")` which defaults to
         10^{-4}.
-    2.  These rules must be met simultaneously, so if the maximum
-        adjusted $`r^2`$ is for a line with $`\lambda_z \leq 0`$, the
+    2.  Selecting on the unadjusted $`r^2`$ instead needs only
+        `PKNCA.options("r.squared.factor")` set to the tolerance: the
+        two factors are alternatives, so setting either one takes the
+        other out of use. Because the unadjusted $`r^2`$ does not reward
+        larger windows, it usually selects fewer points than the
+        adjusted $`r^2`$ does.
+    3.  These rules must be met simultaneously, so if the best value of
+        the statistic is for a line with $`\lambda_z \leq 0`$, the
         half-life may end up being unreportable.
 2.  If fitting the log-linear concentration-time line fails, then it is
     not the best line.
@@ -128,8 +135,8 @@ Two parts of the tree are easy to overlook:
 - Only `include_half.life` turns off automatic selection.
   `exclude_half.life` removes the flagged points and then runs the usual
   curve stripping on the rest, so `min.hl.points`,
-  `allow.tmax.in.half.life`, and `adj.r.squared.factor` still apply to
-  the points that remain.
+  `allow.tmax.in.half.life`, `adj.r.squared.factor`, and
+  `r.squared.factor` still apply to the points that remain.
 - The middle band of the tree applies to `include_half.life` as well.
   Naming a point does not force it into the fit; BLQ and zero
   concentrations, and points at or before the end of the last dose, are

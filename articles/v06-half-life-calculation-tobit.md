@@ -48,7 +48,9 @@ select concentrations for inclusion in the half-life estimate is to:
     T_(last).
 4.  Select the best half-life with the following criteria, in order:
     1.  The adjusted r-squared must be within a tolerance factor
-        (typically 0.0001) of the largest adjusted r-squared.
+        (typically 0.0001) of the largest adjusted r-squared. Setting
+        the `r.squared.factor` option selects on the unadjusted
+        r-squared instead; see the “Half-Life Calculation” vignette.
     2.  The $`\lambda_z`$ value (slope for the half-life line) must be
         positive; in other words, the half-life slope must be
         decreasing.
@@ -67,7 +69,9 @@ regression with two changes. The first change is that concentrations
 below the LLOQ are retained in the estimate as left-censored values. The
 second change is that the adjusted r-squared is not possible to
 calculate when including points below the LLOQ, so the residual standard
-deviation of the Tobit fit is minimized instead.
+deviation of the Tobit fit is minimized instead. Neither
+`adj.r.squared.factor` nor `r.squared.factor` applies to
+`hl_method = "tobit"`.
 
 The selection method below results in effectively the same estimates for
 half-life when all points are above the LLOQ and improved estimates for

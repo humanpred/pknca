@@ -5833,6 +5833,9 @@ get.interval.cols()
 #> $half.life$arg_spec$arglist$adj.r.squared.factor
 #> [1] "adj.r.squared.factor"
 #> 
+#> $half.life$arg_spec$arglist$r.squared.factor
+#> [1] "r.squared.factor"
+#> 
 #> $half.life$arg_spec$arglist$tobit_n_points_penalty
 #> [1] "tobit_n_points_penalty"
 #> 

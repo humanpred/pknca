@@ -707,6 +707,8 @@ New phone. Who dis?
   - If that 3 points are not available, it is not calculated.
 - Among the fits, select the best adjusted r² (within a tolerance of
   `adj.r.squared.factor`).
+  - Set `r.squared.factor` to a tolerance to select on the unadjusted r²
+    instead; that takes `adj.r.squared.factor` out of use.
 - Require λz`> 0`.
 - If more than one fit is available at this point, select the one with
   the most points included.

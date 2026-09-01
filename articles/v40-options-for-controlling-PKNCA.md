@@ -17,9 +17,25 @@ During the calculation of lambda.z, all candidate regressions with an
 adjusted r^2 within adj.r.squared.factor of the best adjusted r^2 are
 considered acceptable, and the acceptable regression using the most data
 points is selected. It allows for more data points to be preferred in
-the calculation of half-life.
+the calculation of half-life. Setting either of adj.r.squared.factor and
+r.squared.factor takes the other out of use, so exactly one of them is
+ever in use; setting this one to NA therefore selects on the other
+r-squared.
 
 The default value is: 1e-04
+
+### r.squared.factor
+
+During the calculation of lambda.z, all candidate regressions with an
+r^2 within r.squared.factor of the best r^2 are considered acceptable,
+and the acceptable regression using the most data points is selected.
+Unlike the adjusted r^2, the r^2 does not reward more data points, so it
+generally selects fewer of them. Setting either of adj.r.squared.factor
+and r.squared.factor takes the other out of use, so exactly one of them
+is ever in use; setting this one to NA therefore selects on the other
+r-squared.
+
+The default value is: NA
 
 ### max.missing
 
