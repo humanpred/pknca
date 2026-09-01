@@ -4,6 +4,15 @@ will continue until then.  These will be especially noticeable around
 the inclusion of IV NCA parameters and additional specifications of
 the dosing including dose amount and route.
 
+## New features
+
+### `read_pk_file()`
+
+- Loads a single PK file and returns the appropriate PKNCA object:
+  - `PKNCAdata` for concentration and dose data
+  - `PKNCAconc` for concentration-only data
+  - `PKNCAdose` for dose-only data
+
 # Development version
 
 * Half-life point selection can now use the unadjusted r-squared instead of

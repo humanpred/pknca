@@ -18,6 +18,8 @@ Imports:
     purrr,
     rlang,
     stats,
+    rio,
+    janitor,
     tidyr,
     tibble,
     utils,
