@@ -338,8 +338,11 @@ test_that("pk.calc.sparse_auc and pk.calc.sparse_aumc use their options argument
 test_that("per-PKNCAdata options affect sparse_auclast and match the global-option route", {
   o_conc <- PKNCAconc(d_sparse_579, conc ~ time | id, sparse = TRUE)
   d_intervals <- data.frame(start = 0, end = 3, sparse_auclast = TRUE)
-  o_data_default <- PKNCAdata(o_conc, intervals = d_intervals)
-  o_data_keep <- PKNCAdata(o_conc, intervals = d_intervals, options = list(conc.blq = "keep"))
+  o_data_default <- without_sparse_deprecation(PKNCAdata(o_conc, intervals = d_intervals))
+  o_data_keep <-
+    without_sparse_deprecation(
+      PKNCAdata(o_conc, intervals = d_intervals, options = list(conc.blq = "keep"))
+    )
   res_default <- as.data.frame(suppressMessages(pk.nca(o_data_default, verbose = FALSE)))
   res_keep <- as.data.frame(suppressMessages(pk.nca(o_data_keep, verbose = FALSE)))
   expect_equal(
@@ -418,4 +421,105 @@ test_that("sparse AUC and AUMC integrate correctly with PKNCA workflow", {
   # All values should be positive or NA (df is NA for batch design)
   expect_true(all(auc_result > 0 | is.na(auc_result)))
   expect_true(all(aumc_result > 0 | is.na(aumc_result)))
+})
+
+# ============================================================================
+# Deprecation of the sparse_* / *.sparse.* interval-specification names
+# ============================================================================
+test_that("the deprecated sparse parameter names each map to a unified name", {
+  # Every deprecated name must point at a registered replacement, and the
+  # replacement must not itself be deprecated
+  expect_setequal(
+    names(deprecated_sparse_parameters),
+    c("sparse_auclast", "sparse_auc_se", "sparse_auc_df",
+      "sparse_aumclast", "sparse_aumc_se", "sparse_aumc_df",
+      "cl.sparse.last", "mrt.sparse.last", "kel.sparse.last",
+      "vss.sparse.last", "vz.sparse.last")
+  )
+  expect_true(all(deprecated_sparse_parameters %in% names(get.interval.cols())))
+  expect_equal(
+    intersect(deprecated_sparse_parameters, names(deprecated_sparse_parameters)),
+    character()
+  )
+})
+
+test_that("requesting a deprecated sparse parameter warns with its replacement", {
+  d_sparse <- data.frame(id = 1:8, conc = c(0, 0, 2, 3, 1, 1.5, 0.4, 0.6), time = rep(c(0, 1, 2, 4), each = 2))
+  o_conc_sparse <- PKNCAconc(d_sparse, conc~time|id, sparse = TRUE)
+
+  rlang::reset_warning_verbosity("pknca_deprecated_sparse_sparse_auclast")
+  expect_warning(
+    PKNCAdata(o_conc_sparse, intervals = data.frame(start = 0, end = 4, sparse_auclast = TRUE)),
+    regexp = "deprecated and will be an error in the next minor release.*sparse_auclast -> auclast",
+    class = "pknca_warning_deprecated_sparse_parameter"
+  )
+  # Only once per session for the same request
+  expect_no_warning(
+    PKNCAdata(o_conc_sparse, intervals = data.frame(start = 0, end = 4, sparse_auclast = TRUE)),
+    class = "pknca_warning_deprecated_sparse_parameter"
+  )
+
+  # Vz is the one replacement whose value changes, and the warning says so
+  rlang::reset_warning_verbosity("pknca_deprecated_sparse_vz.sparse.last")
+  expect_warning(
+    PKNCAdata(o_conc_sparse, intervals = data.frame(start = 0, end = 4, vz.sparse.last = TRUE)),
+    regexp = "vz[.]sparse[.]last -> vz[.]last [(]which uses the lambda.z fitted on the mean profile",
+    class = "pknca_warning_deprecated_sparse_parameter"
+  )
+
+  # A dependency that the user did not name is not reported:  cl.sparse.last is
+  # calculated from sparse_auclast, but the user wrote only the one column
+  rlang::reset_warning_verbosity("pknca_deprecated_sparse_cl.sparse.last")
+  deprecation <-
+    tryCatch(
+      PKNCAdata(o_conc_sparse, intervals = data.frame(start = 0, end = 4, cl.sparse.last = TRUE)),
+      pknca_warning_deprecated_sparse_parameter = function(w) w
+    )
+  expect_match(conditionMessage(deprecation), "cl.sparse.last -> cl.last", fixed = TRUE)
+  expect_false(grepl("sparse_auclast", conditionMessage(deprecation), fixed = TRUE))
+
+  # The unified names are silent
+  expect_no_warning(
+    PKNCAdata(o_conc_sparse, intervals = data.frame(start = 0, end = 4, auclast = TRUE, vz.last = TRUE)),
+    class = "pknca_warning_deprecated_sparse_parameter"
+  )
+})
+
+test_that("the deprecated names still give the values they always have", {
+  d_sparse <-
+    data.frame(
+      id = c(1L, 2L, 3L, 1L, 2L, 3L, 1L, 2L, 3L, 4L, 5L, 6L, 4L, 5L, 6L, 7L, 8L, 9L, 7L, 8L, 9L),
+      conc = c(0, 0, 0, 1.75, 2.2, 1.58, 4.63, 2.99, 1.52, 3.03, 1.98, 2.22, 3.34, 1.3, 1.22, 3.54, 2.84, 2.55, 0.3, 0.0421, 0.231),
+      time = c(0, 0, 0, 1, 1, 1, 6, 6, 6, 2, 2, 2, 10, 10, 10, 4, 4, 4, 24, 24, 24)
+    )
+  o_conc_sparse <- PKNCAconc(d_sparse, conc~time|id, sparse = TRUE)
+  d_dose <- data.frame(id = unique(d_sparse$id), dose = 100, time = 0)
+  o_dose <- PKNCAdose(d_dose, dose~time|id, route = "intravascular")
+  d_intervals <-
+    data.frame(
+      start = 0, end = 24,
+      sparse_auclast = TRUE, sparse_aumclast = TRUE,
+      cl.sparse.last = TRUE, mrt.sparse.last = TRUE, kel.sparse.last = TRUE,
+      vss.sparse.last = TRUE, vz.sparse.last = TRUE,
+      auclast = TRUE, aumclast = TRUE,
+      cl.last = TRUE, mrt.last = TRUE, kel.last = TRUE, vss.last = TRUE, vz.last = TRUE
+    )
+  o_nca <-
+    suppressMessages(suppressWarnings(
+      pk.nca(PKNCAdata(o_conc_sparse, o_dose, intervals = d_intervals))
+    ))
+  df_result <- as.data.frame(o_nca)
+  value_of <- function(x) df_result$PPORRES[df_result$PPTESTCD %in% x]
+
+  # Every replacement but Vz gives the same number as the name it replaces
+  expect_equal(value_of("auclast"), value_of("sparse_auclast"))
+  expect_equal(value_of("aumclast"), value_of("sparse_aumclast"))
+  expect_equal(value_of("cl.last"), value_of("cl.sparse.last"))
+  expect_equal(value_of("mrt.last"), value_of("mrt.sparse.last"))
+  expect_equal(value_of("kel.last"), value_of("kel.sparse.last"))
+  expect_equal(value_of("vss.last"), value_of("vss.sparse.last"))
+  # vz.sparse.last is cl/(1/MRT), which makes it equal to Vss; vz.last divides
+  # by the lambda.z fitted on the mean profile, which these data cannot fit
+  expect_equal(value_of("vz.sparse.last"), value_of("vss.sparse.last"))
+  expect_equal(value_of("vz.last"), NA_real_)
 })

@@ -421,6 +421,59 @@ add.interval.col(
   formula="$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$",
   formula_note="Satterthwaite approximation (Nedelman et al 1995, eq. 6a)")
 
+# The interval-specification names that the unified sparse parameters replace.
+# They still calculate, and give the same values they always have, but they are
+# deprecated:  see warn_deprecated_sparse_parameters().
+#
+# `kel.sparse.last` maps to `kel.last` because both are 1/MRT.  Only
+# `vz.sparse.last` changes meaning:  `vz.last` divides the clearance by the
+# terminal rate constant fitted on the mean profile rather than by 1/MRT, which
+# is why `vz.sparse.last` equals `vss.sparse.last` and `vz.last` does not equal
+# `vss.last`.
+deprecated_sparse_parameters <- c(
+  sparse_auclast = "auclast",
+  sparse_auc_se = "auclast_se",
+  sparse_auc_df = "auclast_df",
+  sparse_aumclast = "aumclast",
+  sparse_aumc_se = "aumclast_se",
+  sparse_aumc_df = "aumclast_df",
+  cl.sparse.last = "cl.last",
+  mrt.sparse.last = "mrt.last",
+  kel.sparse.last = "kel.last",
+  vss.sparse.last = "vss.last",
+  vz.sparse.last = "vz.last"
+)
+
+# Warn once per session for each set of deprecated parameter names an interval
+# specification requests.  These are interval-specification columns rather than
+# functions, so there is no function call for lifecycle to attach itself to.
+warn_deprecated_sparse_parameters <- function(requested) {
+  deprecated <- intersect(names(deprecated_sparse_parameters), requested)
+  if (length(deprecated) == 0) {
+    return(invisible(NULL))
+  }
+  replacement_note <-
+    ifelse(
+      deprecated %in% "vz.sparse.last",
+      " (which uses the lambda.z fitted on the mean profile rather than 1/MRT, so the value changes)",
+      ""
+    )
+  rlang::warn(
+    sprintf(
+      "%s deprecated and will be an error in the next minor release of PKNCA; use %s instead:\n%s",
+      ngettext(length(deprecated), msg1="This NCA parameter is", msg2="These NCA parameters are"),
+      ngettext(length(deprecated), msg1="the unified name", msg2="the unified names"),
+      paste0(
+        "  ", deprecated, " -> ", deprecated_sparse_parameters[deprecated], replacement_note,
+        collapse = "\n"
+      )
+    ),
+    class = "pknca_warning_deprecated_sparse_parameter",
+    .frequency = "once",
+    .frequency_id = paste(c("pknca_deprecated_sparse", sort(deprecated)), collapse = "_")
+  )
+}
+
 #' Is a PKNCA object used for sparse PK?
 #'
 #' @param object The object to see if it includes sparse PK

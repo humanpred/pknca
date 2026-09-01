@@ -666,7 +666,7 @@ test_that("calculate with sparse data", {
       cmax=TRUE,
       sparse_auclast=TRUE
     )
-  o_data_sparse <- PKNCAdata(o_conc_sparse, intervals=d_intervals)
+  o_data_sparse <- without_sparse_deprecation(PKNCAdata(o_conc_sparse, intervals=d_intervals))
   suppressMessages(
     expect_warning(expect_warning(
       o_nca <- pk.nca(o_data_sparse),
@@ -690,7 +690,7 @@ test_that("calculate with sparse data", {
       cmax=c(TRUE, TRUE, FALSE),
       sparse_auclast=c(FALSE, TRUE, TRUE)
     )
-  o_data_sparse_mixed <- PKNCAdata(o_conc_sparse, intervals=d_intervals_mixed)
+  o_data_sparse_mixed <- without_sparse_deprecation(PKNCAdata(o_conc_sparse, intervals=d_intervals_mixed))
   suppressMessages(
     expect_warning(expect_warning(
       o_nca_sparse_mixed <- pk.nca(o_data_sparse_mixed),
@@ -730,7 +730,10 @@ test_that("calculate with sparse data", {
   d_dose_sparse_multi_trt$time <- 0
   d_dose_sparse_multi_trt$dose_grp <- d_dose_sparse_multi_trt$dose
   o_dose_sparse_multi_trt <- PKNCAdose(d_dose_sparse_multi_trt, dose~time|dose_grp+id)
-  o_data_sparse_multi_trt <- PKNCAdata(o_conc_sparse_multi_trt, o_dose_sparse_multi_trt, intervals=d_intervals_mixed)
+  o_data_sparse_multi_trt <-
+    without_sparse_deprecation(
+      PKNCAdata(o_conc_sparse_multi_trt, o_dose_sparse_multi_trt, intervals=d_intervals_mixed)
+    )
   suppressMessages(
     expect_warning(expect_warning(expect_warning(expect_warning(
       o_nca_sparse_multi_trt <- pk.nca(o_data_sparse_multi_trt),
@@ -750,7 +753,10 @@ test_that("calculate with sparse data", {
   d_dose_sparse_multi_trt_bad_dose_single$dose[1] <- d_dose_sparse_multi_trt_bad_dose_single$dose[1] + 1
   o_conc_sparse_multi_trt_bad_dose_single <- PKNCAconc(d_sparse_multi_trt_bad_dose_single, conc~time|id, sparse=TRUE)
   o_dose_sparse_multi_trt_bad_dose_single <- PKNCAdose(d_dose_sparse_multi_trt_bad_dose_single, dose~time|id)
-  o_data_sparse_multi_trt_bad_dose_single <- PKNCAdata(o_conc_sparse_multi_trt_bad_dose_single, o_dose_sparse_multi_trt_bad_dose_single, intervals=d_intervals_mixed)
+  o_data_sparse_multi_trt_bad_dose_single <-
+    without_sparse_deprecation(
+      PKNCAdata(o_conc_sparse_multi_trt_bad_dose_single, o_dose_sparse_multi_trt_bad_dose_single, intervals=d_intervals_mixed)
+    )
   expect_error(
     pk.nca(o_data_sparse_multi_trt_bad_dose_single),
     regexp="With sparse PK, all subjects in a group must have the same dosing information.*Not all subjects have the same dosing information"
@@ -760,7 +766,10 @@ test_that("calculate with sparse data", {
   d_dose_sparse_multi_trt_bad_dose <- d_dose_sparse_multi_trt
   d_dose_sparse_multi_trt_bad_dose$dose[1] <- d_dose_sparse_multi_trt$dose[1] + 1
   o_dose_sparse_multi_trt_bad_dose <- PKNCAdose(d_dose_sparse_multi_trt_bad_dose, dose~time|dose_grp+id)
-  o_data_sparse_multi_trt_bad_dose <- PKNCAdata(o_conc_sparse_multi_trt, o_dose_sparse_multi_trt_bad_dose, intervals=d_intervals_mixed)
+  o_data_sparse_multi_trt_bad_dose <-
+    without_sparse_deprecation(
+      PKNCAdata(o_conc_sparse_multi_trt, o_dose_sparse_multi_trt_bad_dose, intervals=d_intervals_mixed)
+    )
   expect_error(
     pk.nca(o_data_sparse_multi_trt_bad_dose),
     regexp="With sparse PK, all subjects in a group must have the same dosing information.*Not all subjects have the same dosing information for this group: +dose_grp=100"
@@ -939,9 +948,12 @@ test_that("a parameter only a sparse estimator produces is refused for dense dat
   expect_no_error(
     PKNCAdata(o_conc_sparse, intervals = data.frame(start = 0, end = 4, auclast_se = TRUE))
   )
-  # A legacy sparse-only parameter is still silently skipped rather than refused
+  # A legacy sparse-only parameter is deprecated rather than refused, and is
+  # still skipped for dense data
   expect_no_error(
-    PKNCAdata(o_conc_dense, intervals = data.frame(start = 0, end = 4, sparse_auclast = TRUE))
+    without_sparse_deprecation(
+      PKNCAdata(o_conc_dense, intervals = data.frame(start = 0, end = 4, sparse_auclast = TRUE))
+    )
   )
 })
 
@@ -1422,15 +1434,19 @@ test_that("pk.nca can be run for each parameter independently (#473)", {
       info = paste0("Parameter ", param, " can be calculated independently")
     )
   }
-  
+
   # ── Test sparse params with sparse data ──────────────────────────────────
+  # Several of these are deprecated but must keep calculating; the deprecation
+  # warning itself is tested in test-sparse.R
   for (param in sparse_params) {
     intervals_with_param <- intervals_sparse
     intervals_with_param[[param]] <- TRUE
-    o_data <- PKNCAdata(o_conc_sparse, o_dose_sparse,
-                        intervals = intervals_with_param)
+    o_data <-
+      without_sparse_deprecation(
+        PKNCAdata(o_conc_sparse, o_dose_sparse, intervals = intervals_with_param)
+      )
     expect_no_error(
-      param_res <- pk.nca(o_data)
+      param_res <- without_sparse_auc_method_note(pk.nca(o_data))
     )
     expect_false(
       all(is.na(param_res$result$PPORRES)),

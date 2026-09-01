@@ -219,21 +219,25 @@ inform_sparse_auc_method <- function(intervals, options) {
   )
 }
 
-# Every parameter an interval specification asks for, including the ones needed
-# only as a dependency of something else.  The registry is sorted so that a
-# parameter comes after everything it depends on, so one reverse pass closes the
-# dependencies of dependencies -- the same expansion pk.nca.interval() does for
-# a single interval, here over the whole specification.
-interval_requested_params <- function(intervals) {
+# Every parameter an interval specification asks for.  With `expand`, the ones
+# needed only as a dependency of something else are included:  the registry is
+# sorted so that a parameter comes after everything it depends on, so one
+# reverse pass closes the dependencies of dependencies -- the same expansion
+# pk.nca.interval() does for a single interval, here over the whole
+# specification.  Without it, only what the specification names itself, which is
+# what a message about the request should talk about.
+interval_requested_params <- function(intervals, expand = TRUE) {
   all_intervals <- get.interval.cols()
   param_names <- setdiff(names(all_intervals), c("start", "end"))
   requested <- stats::setNames(logical(length(param_names)), param_names)
   for (n in intersect(param_names, names(intervals))) {
     requested[[n]] <- any(intervals[[n]] %in% TRUE)
   }
-  for (n in rev(param_names)) {
-    if (requested[[n]]) {
-      requested[all_intervals[[n]]$depends] <- TRUE
+  if (expand) {
+    for (n in rev(param_names)) {
+      if (requested[[n]]) {
+        requested[all_intervals[[n]]$depends] <- TRUE
+      }
     }
   }
   names(requested)[requested]
