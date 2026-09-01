@@ -15,10 +15,11 @@ the dosing including dose amount and route.
   the half-life.  When no dosing data are given, the calculation falls back to
   the previous behavior of interpolating across the whole profile (#508).
 
-* Bug fix: an `aucint` or `aumcint` interval that spans more than one dose is
-  integrated one dosing interval at a time, so the region after each profile's
-  Tlast is handled by the AUC type within that profile.  An AUC over several
-  dosing intervals is now the sum of the AUCs over each of them (#508).
+* Only the start and end of an `aucint` or `aumcint` interval are estimated.  A
+  dose within the interval is integrated across using the concentrations
+  measured on either side of it, so no concentration is imputed inside the
+  interval.  This changes the `.dose` parameters' behavior, which estimated a
+  concentration at each dose within the interval (#508).
 
 * The `.dose` interval parameters (`aucint.last.dose`, `aumcint.inf.pred.dose`,
   and the rest of the `*int.*.dose` family) are retired now that every `aucint`
@@ -43,9 +44,9 @@ the dosing including dose amount and route.
   around a dose are all below the limit of quantification, its `AUCall`
   extrapolation now finds the first below-the-limit-of-quantification
   measurement after Tlast instead of stopping at the last measured
-  concentration, and the trough before a dose is extrapolated from the Clast of
-  the profile before it rather than from the Clast of the interval being
-  calculated.
+  concentration, and a concentration estimated before a dose is extrapolated
+  from the Clast of the profile before it rather than from the Clast of the
+  interval being calculated.
 
 * Secondary parameters can now be calculated by linking intervals with
   `interval_id` and `<parameter>_ref` columns in the interval specification.

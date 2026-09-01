@@ -555,31 +555,37 @@ test_that("Volume-related calculations", {
 })
 
 test_that("pk.nca can calculate values with group-level data", {
-  tmpconc_impute <- generate.conc(2, 1, 0:24)
-  # This is what will happen in the imputation
-  tmpconc_observe_05 <- tmpconc_impute[tmpconc_impute$time %in% 0,]
-  tmpconc_observe_05$time <- 0.5
-  tmpconc_observe <- rbind(tmpconc_impute, tmpconc_observe_05)
-  tmpconc_observe <- tmpconc_observe[order(tmpconc_observe$treatment, tmpconc_observe$ID, tmpconc_observe$time),]
-  tmpdose <- generate.dose(tmpconc_impute)
+  tmpconc <- generate.conc(2, 1, 0:24)
+  tmpdose <- generate.dose(tmpconc)
   tmpdose$time <- 0.5
 
-  myconc_impute <- PKNCAconc(tmpconc_impute, formula=conc~time|treatment+ID)
-  myconc_observe <- PKNCAconc(tmpconc_observe, formula=conc~time|treatment+ID)
+  myconc <- PKNCAconc(tmpconc, formula=conc~time|treatment+ID)
   mydose <- PKNCAdose(tmpdose, formula=dose~time|treatment+ID)
-  mydata_impute <-
-    PKNCAdata(myconc_impute, mydose,
+  # aucint reads the group-level concentrations, so an interval ending between
+  # two measurements interpolates the concentration at its end; auclast, which
+  # only sees the interval's own data, stops at the last measurement within it.
+  mydata_part <-
+    PKNCAdata(myconc, mydose,
+              intervals=data.frame(treatment="Trt 1", start=0, end=4.5,
+                                   auclast=TRUE, aucint.last=TRUE))
+  res_part <- as.data.frame(pk.nca(mydata_part))
+  auclast_part <- res_part$PPORRES[res_part$PPTESTCD %in% "auclast"]
+  aucint_part <- res_part$PPORRES[res_part$PPTESTCD %in% "aucint.last"]
+  expect_true(all(aucint_part > auclast_part))
+
+  # Over the whole profile there is nothing outside the interval to look at, and
+  # the dose at 0.5 within the interval is integrated across rather than
+  # estimated at, so the two agree
+  mydata_full <-
+    PKNCAdata(myconc, mydose,
               intervals=data.frame(treatment="Trt 1", start=0, end=24,
-                                   aucint.last=TRUE))
-  mydata_observe <-
-    PKNCAdata(myconc_observe, mydose,
-              intervals=data.frame(treatment="Trt 1", start=0, end=24,
-                                   auclast=TRUE))
-  myres_impute <- pk.nca(mydata_impute)
-  myres_observe <- pk.nca(mydata_observe)
-  expect_equal(as.data.frame(myres_impute)$PPORRES,
-               as.data.frame(myres_observe)$PPORRES,
-               info="Manually imputing values gives the same result as aucint")
+                                   auclast=TRUE, aucint.last=TRUE))
+  res_full <- as.data.frame(pk.nca(mydata_full))
+  expect_equal(
+    res_full$PPORRES[res_full$PPTESTCD %in% "aucint.last"],
+    res_full$PPORRES[res_full$PPTESTCD %in% "auclast"],
+    info="A dose within the interval does not add a point to integrate to"
+  )
 })
 
 test_that("Missing dose info for some subjects gives a warning, not a difficult-to-interpret error", {
