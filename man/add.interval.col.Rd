@@ -77,9 +77,11 @@ a different calling convention than \code{FUN} (a sparse estimator needs
 use and will currently raise an error if selected.}
 
 \item{pptestcd_cdisc}{The CDISC PPTESTCD code for this parameter.  Can be a
-character string for simple mappings, or a named list for route-dependent
+character string for simple mappings, a named list for route-dependent
 mappings with a \code{route} element whose value is itself a named list keyed
-by route (e.g. \code{list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))}).  Defaults to \code{name} if not provided.}
+by route (e.g. \code{list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))}), or a named list with a \code{sparse} element whose value is a list
+named \code{dense} and \code{sparse}, for a parameter with a \code{FUN_sparse} whose
+sparse estimate has a code of its own (e.g. \code{list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL"))}).  Defaults to \code{name} if not provided.}
 
 \item{pptest_cdisc}{The CDISC PPTEST name for this parameter.  Can be a
 character string or a named list (same structure as \code{pptestcd_cdisc}).

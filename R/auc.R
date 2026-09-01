@@ -442,8 +442,10 @@ add.interval.col("auclast",
                  unit_type="auc",
                  pretty_name="AUClast",
                  desc="AUC start to last conc above LOQ",
-                 pptestcd_cdisc="AUCLST",
-                 pptest_cdisc="AUC to Last Nonzero Conc",
+                 pptestcd_cdisc=list(sparse=list(dense="AUCLST", sparse="SPARSEAL")),
+                 pptest_cdisc=list(
+                   sparse=list(dense="AUC to Last Nonzero Conc", sparse="Sparse AUClast")
+                 ),
                  formula="$AUC_{\\text{last}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule (linear-up/log-down by default)",
                  tier = "common")
@@ -512,8 +514,13 @@ add.interval.col("aumclast",
                  unit_type="aumc",
                  pretty_name="AUMC,last",
                  desc="AUMC start to last conc above LOQ",
+                 # CDISC has no separate code for a sparsely estimated AUMClast
+                 # the way SPARSEAL covers the AUC, so only the test name says
+                 # which estimator produced the row
                  pptestcd_cdisc="AUMCLST",
-                 pptest_cdisc="AUMC to Last Nonzero Conc",
+                 pptest_cdisc=list(
+                   sparse=list(dense="AUMC to Last Nonzero Conc", sparse="Sparse AUMClast")
+                 ),
                  formula="$AUMC_{\\text{last}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule (linear-up/log-down by default)")
 

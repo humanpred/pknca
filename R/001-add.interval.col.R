@@ -5,8 +5,10 @@ assign("summary", list(), envir=.PKNCAEnv)
 assign("interval.cols", list(), envir=.PKNCAEnv)
 
 # Validate a CDISC pptestcd/pptest argument: must be a character string, or a
-# named list with a "route" element containing a named list of
-# route-specific values (e.g. list(route = list(extravascular = ...))).
+# named list with either a "route" element containing a named list of
+# route-specific values (e.g. list(route = list(extravascular = ...))) or a
+# "sparse" element containing a list named "dense" and "sparse" (e.g.
+# list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL"))).
 # Not exported -- internal helper shared by add.interval.col().
 #' @param x The CDISC argument value to validate.
 #' @param arg_name The argument name used in error messages.
@@ -24,6 +26,19 @@ validate_cdisc_arg <- function(x, arg_name) {
         class = "pknca_error_cdisc_character_invalid"
       )
     }
+  } else if (is.list(x) && identical(names(x), "sparse")) {
+    # Unlike routes, the keys are a closed set, so both must be given
+    if (!is.list(x$sparse) ||
+        !setequal(names(x$sparse), c("dense", "sparse")) ||
+        (length(x$sparse) != 2)) {
+      rlang::abort(
+        sprintf(
+          "`%s`, when a list with a \"sparse\" element, must have that element be a list named \"dense\" and \"sparse\".",
+          arg_name
+        ),
+        class = "pknca_error_cdisc_sparse_mapping_invalid"
+      )
+    }
   } else if (is.list(x)) {
     # `identical(names(x), "route")` also confirms that x has length 1
     if (!identical(names(x), "route") ||
@@ -31,7 +46,7 @@ validate_cdisc_arg <- function(x, arg_name) {
         !checkmate::test_names(names(x$route), type = "named")) {
       rlang::abort(
         sprintf(
-          "`%s`, when a list, must have exactly one named element, \"route\", whose value is itself a named list mapping route to value.",
+          "`%s`, when a list, must have exactly one named element, \"route\" or \"sparse\", whose value is itself a named list mapping the context to a value.",
           arg_name
         ),
         class = "pknca_error_cdisc_route_mapping_invalid"
@@ -315,10 +330,13 @@ assert_selection <- function(selection, name) {
 #'   `"individual"` and `"population"` data types are reserved for future
 #'   use and will currently raise an error if selected.
 #' @param pptestcd_cdisc The CDISC PPTESTCD code for this parameter.  Can be a
-#'   character string for simple mappings, or a named list for route-dependent
+#'   character string for simple mappings, a named list for route-dependent
 #'   mappings with a `route` element whose value is itself a named list keyed
 #'   by route (e.g. `list(route = list(extravascular = "CLF/FO", intravascular
-#'   = "CLO"))`).  Defaults to `name` if not provided.
+#'   = "CLO"))`), or a named list with a `sparse` element whose value is a list
+#'   named `dense` and `sparse`, for a parameter with a `FUN_sparse` whose
+#'   sparse estimate has a code of its own (e.g. `list(sparse = list(dense =
+#'   "AUCLST", sparse = "SPARSEAL"))`).  Defaults to `name` if not provided.
 #' @param pptest_cdisc The CDISC PPTEST name for this parameter.  Can be a
 #'   character string or a named list (same structure as `pptestcd_cdisc`).
 #'   Defaults to `desc` if not provided.

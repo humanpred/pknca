@@ -313,6 +313,24 @@ test_that("the sparse estimators and the parameters only they can produce are en
   expect_false(any(c("sparse_auc_se", "sparse_aumc_se") %in% sparse_only_params()))
 })
 
+test_that("add.interval.col accepts a sparse-keyed CDISC mapping", {
+  local_interval_cols()
+  add.interval.col(
+    name = "a", FUN = "mean", unit_type = "conc",
+    pretty_name = "a", desc = "test",
+    pptestcd_cdisc = list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL")),
+    pptest_cdisc = list(sparse = list(dense = "AUC to Last", sparse = "Sparse AUClast"))
+  )
+  stored <- get.interval.cols()[["a"]]
+  expect_equal(stored$pptestcd_cdisc$sparse$sparse, "SPARSEAL")
+  expect_equal(stored$pptest_cdisc$sparse$dense, "AUC to Last")
+  # auclast ships with one
+  expect_equal(
+    get.interval.cols()[["auclast"]]$pptestcd_cdisc,
+    list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL"))
+  )
+})
+
 test_that("fake parameters", {
   add.interval.col(
     name="fake_parameter",
@@ -378,6 +396,20 @@ test_that("add.interval.col rejects pptestcd_cdisc types", {
     ),
     class = "pknca_error_cdisc_route_mapping_invalid"
   )
+
+  # invalid sparse mappings: unlike routes, both keys must be given
+  for (bad in list(list(sparse = "SPARSEAL"),
+                   list(sparse = list(sparse = "SPARSEAL")),
+                   list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL", other = "X")))) {
+    expect_error(
+      add.interval.col(
+        name = "a", FUN = "mean", unit_type = "conc",
+        pretty_name = "a", desc = "test",
+        pptestcd_cdisc = bad
+      ),
+      class = "pknca_error_cdisc_sparse_mapping_invalid"
+    )
+  }
 })
 
 
