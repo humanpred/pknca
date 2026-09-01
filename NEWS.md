@@ -67,6 +67,19 @@ the dosing including dose amount and route.
   dense and sparse start messages (classes `pknca_message_dense_pk_start` and
   `pknca_message_sparse_pk_start`), since there is now one pass.
 
+* Half-life point selection can now use the unadjusted r-squared instead of
+  the adjusted r-squared:  set the new `r.squared.factor` option, or the
+  `pk.calc.half.life()` argument of the same name, to the allowance.  The two
+  factors are alternatives, so setting either one takes the other out of use
+  and `adj.r.squared.factor` no longer has to be set to `NA` by hand.  Both
+  options now accept `NA`, which selects on the other r-squared.  The default
+  is unchanged:  selection on adjusted r-squared.  Suggested by @cahn88 (#337)
+
+* `as_sparse_pk()` now raises an error when `subject` is `NULL`, has a
+  different length than `conc`, or contains missing values.  Previously the
+  check was inert and such inputs passed silently into the sparse
+  calculations.
+
 * Secondary parameters can now be calculated by linking intervals with
   `interval_id` and `<parameter>_ref` columns in the interval specification.
   The reference interval supplies the cross-profile input (the plasma AUC for

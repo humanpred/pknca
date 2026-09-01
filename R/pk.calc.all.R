@@ -37,6 +37,11 @@ pk.nca <- function(data, verbose=FALSE) {
     # Merge the options into the default options.
     tmp_options <- PKNCA.options()
     tmp_options[names(data$options)] <- data$options
+    # Requesting one of the r-squared factors here takes the other out of use,
+    # the way PKNCA.options() pairs them when they are set
+    for (n in intersect(names(data$options), c("adj.r.squared.factor", "r.squared.factor"))) {
+      tmp_options <- pair_r_squared_factors(tmp_options, n)
+    }
     data$options <- tmp_options
     # A working copy: reference intervals gain the source parameters their links
     # need.  The PKNCAresults below keeps the user's own `data`, so the
