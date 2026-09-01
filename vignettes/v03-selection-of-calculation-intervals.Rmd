@@ -342,14 +342,15 @@ interval_spec <- get.interval.cols()
 interval_spec <- interval_spec[setdiff(sort(names(interval_spec)), c("start", "end"))]
 
 get_function_for_calc <- function(x) {
-  if (is.na(x$FUN)) {
-    if (is.null(x$depends)) {
-      "(none)"
-    } else {
-      paste("See the parameter name", x$depends)
-    }
-  } else {
+  if (!is.na(x$FUN)) {
     x$FUN
+  } else if (!is.null(x$FUN_sparse) && !is.na(x$FUN_sparse)) {
+    # A sparse-only parameter is calculated by its sparse estimator
+    x$FUN_sparse
+  } else if (is.null(x$depends)) {
+    "(none)"
+  } else {
+    paste("See the parameter name:", paste(x$depends, collapse = ", "))
   }
 }
 
