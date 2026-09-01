@@ -244,6 +244,17 @@ Suggested phases (each a separate release-sized unit):
    registrations with interval-spec translation; move vignette, presets,
    classification, and CDISC mappings; re-run cross-validation comparisons
    (point estimates for AUC/AUMC are unchanged; Vz/Kel change by design).
+
+   As built, two details differ from this sketch. The eleven are deprecated by
+   a classed warning raised where interval requests are validated, not by
+   `lifecycle`: they are interval-specification columns, not functions, so
+   there is no call for `lifecycle` to attach itself to, and no translation
+   happens -- the old names keep calculating and keep their own values until
+   they are removed. And only `vz.last` changes value; `kel.last` is `1/MRT`
+   like the rest of PKNCA's `kel` family, so it matches `kel.sparse.last`.
+   Retiring the `sparse` argument of `add.interval.col()` followed, once
+   `FUN_sparse` made the flag derivable: a parameter is sparse-only exactly
+   when it has a sparse estimator and no dense `FUN`.
 4. **Optional additions:** sparse `cmax` SE; sparse AUCtau for multiple-dose
    toxicokinetics.
 
