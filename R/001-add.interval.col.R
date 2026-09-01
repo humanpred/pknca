@@ -310,10 +310,10 @@ assert_selection <- function(selection, name) {
 #'   column.
 #' @param desc A human-readable description of the parameter.  SDTM requires
 #'   <=40 characters; a longer description is accepted with a warning.
-#' @param sparse Is the calculation *only* for sparse PK?  A parameter flagged
-#'   this way is calculated for sparse data and silently skipped for dense data.
-#'   To give one parameter a dense calculation and a sparse one, leave `sparse`
-#'   as `FALSE` and give `FUN_sparse`.
+#' @param sparse Retired.  `TRUE` is an error:  register a sparse-only
+#'   parameter with `FUN = NA` and a `FUN_sparse` (plus `formalsmap_sparse`)
+#'   instead, which is now what makes a parameter sparse-only.  `FALSE`, the
+#'   default, is accepted and does nothing.
 #' @param formalsmap A named list mapping parameter names in the function call
 #'   to NCA parameter names.  See the details for information on use of
 #'   `formalsmap`.
@@ -503,6 +503,15 @@ add.interval.col <- function(name,
   }
   checkmate::assert_character(x = FUN, len = 1, any.missing = TRUE) # allows NA
   checkmate::assert_logical(x = sparse, len = 1, any.missing=FALSE)
+  if (isTRUE(sparse)) {
+    rlang::abort(
+      sprintf(
+        "The `sparse` argument is retired; a parameter is sparse-only when it has a sparse estimator and no dense function.  Register '%s' with `FUN = NA` and `FUN_sparse = <the calculation function>` (and `formalsmap_sparse` in place of `formalsmap`) instead.",
+        name
+      ),
+      class = "pknca_error_sparse_argument_retired"
+    )
+  }
   checkmate::assert_character(x = pretty_name, len = 1, min.chars = 1, any.missing=FALSE)
   checkmate::assert_character(x = desc, len = 1, any.missing=FALSE)
   if (nchar(desc) > 40) {
@@ -578,7 +587,6 @@ add.interval.col <- function(name,
       unit_type=unit_type,
       pretty_name=pretty_name,
       desc=desc,
-      sparse=sparse,
       formalsmap=formalsmap,
       formalsmap_sparse=formalsmap_sparse,
       depends=depends,
@@ -670,6 +678,34 @@ get.interval.cols <- function() {
   get("interval.cols", envir=.PKNCAEnv)
 }
 
+# Does a registry entry have a dense calculation function?  `start` and `end`
+# have neither, and a parameter registered with `FUN = NA` is either calculated
+# only by its sparse estimator or produced as a column of another parameter's
+# result.
+has_dense_fun <- function(spec) {
+  !is.null(spec$FUN) && !is.na(spec$FUN)
+}
+
+# Is a parameter calculated only from sparse data?  That is exactly a
+# registration with no dense `FUN` and a `FUN_sparse`; there is no separate flag
+# to say so (see the retired `sparse` argument of add.interval.col()).
+spec_is_sparse_only <- function(spec) {
+  !has_dense_fun(spec) && !is.null(spec$FUN_sparse) && !is.na(spec$FUN_sparse)
+}
+
+# The function that calculates a parameter, and the formals map that resolves
+# its arguments.  For a sparse-only parameter these are the sparse estimator and
+# its own formals map, because that is the only way the parameter is ever
+# calculated; everything that reasons about "the function this parameter calls"
+# reads them here rather than from `FUN` directly.
+interval_col_fun <- function(spec) {
+  if (has_dense_fun(spec)) spec$FUN else spec$FUN_sparse %||% NA_character_
+}
+
+interval_col_formalsmap <- function(spec) {
+  if (has_dense_fun(spec)) spec$formalsmap else spec$formalsmap_sparse %||% list()
+}
+
 # The parameters that have a sparse-specific estimator (see the `FUN_sparse`
 # argument of add.interval.col()).
 fun_sparse_params <- function() {
@@ -683,28 +719,29 @@ fun_sparse_params <- function() {
   names(all_intervals)[has_fun_sparse]
 }
 
-# The parameters that only sparse data can produce:  a companion registered with
-# `FUN = NA` that is a column of a sparse estimator's returned data.frame (an
-# AUC's standard error and degrees of freedom, say), so every parameter it
-# depends on is calculated by a `FUN_sparse`.  Dense data run the dense `FUN`,
-# which returns the point estimate alone, so requesting one of these on dense
-# data can never give a result and is an error rather than a silent nothing.
-# The `sparse = TRUE` parameters are not included:  those are the older
-# sparse-only registrations, which are skipped rather than refused for dense
-# data.
+# The parameters that only sparse data can produce.  Two kinds qualify:  one
+# registered with a `FUN_sparse` and no `FUN`, and a companion of such a
+# parameter -- a column of a sparse estimator's returned data.frame (an AUC's
+# standard error and degrees of freedom, say), registered with `FUN = NA` and a
+# dependency on the parameter that produces it.
+#
+# Requesting one of these for dense data can never give a result.  The
+# deprecated names among them are still only skipped, for backward
+# compatibility; assert_intervals() refuses the rest.
 sparse_only_params <- function() {
   all_intervals <- get.interval.cols()
+  own_estimator <- vapply(all_intervals, spec_is_sparse_only, FUN.VALUE = TRUE)
   with_fun_sparse <- fun_sparse_params()
   is_companion <-
     vapply(
       X = all_intervals,
       FUN = function(x) {
-        is.na(x$FUN) && !isTRUE(x$sparse) &&
+        !has_dense_fun(x) && !spec_is_sparse_only(x) &&
           (length(x$depends) > 0) && all(x$depends %in% with_fun_sparse)
       },
       FUN.VALUE = TRUE
     )
-  names(all_intervals)[is_companion]
+  names(all_intervals)[own_estimator | is_companion]
 }
 
 # Add the start and end interval columns

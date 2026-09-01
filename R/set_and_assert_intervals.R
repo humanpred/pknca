@@ -81,10 +81,14 @@ assert_intervals <- function(intervals, data) {
   warn_deprecated_sparse_parameters(interval_requested_params(intervals, expand = FALSE))
 
   # A standard error or degrees of freedom that only a sparse estimator produces
-  # would silently give nothing with dense data, so say so instead
+  # would silently give nothing with dense data, so say so instead.  The
+  # deprecated names are exempt:  they were skipped for dense data before they
+  # were deprecated, and refusing them now would be a second breaking change on
+  # top of the deprecation.
   if (!is_sparse_pk(data)) {
+    refusable <- setdiff(sparse_only_params(), names(deprecated_sparse_parameters))
     requested_sparse_only <-
-      intersect(sparse_only_params(), interval_requested_params(intervals))
+      intersect(refusable, interval_requested_params(intervals))
     if (length(requested_sparse_only) > 0) {
       rlang::abort(
         sprintf(

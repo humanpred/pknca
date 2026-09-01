@@ -8,7 +8,11 @@ test_that("sparse-derived parameters are each registered exactly once", {
       "vss.sparse.last", "vz.sparse.last")
   for (param in sparse_derived) {
     expect_equal(sum(names(cols) == param), 1L, info=param)
-    expect_true(cols[[param]]$sparse, info=param)
+    # Sparse-only is derived from the registration, not stored:  no dense
+    # function, and a sparse estimator
+    expect_true(spec_is_sparse_only(cols[[param]]), info=param)
+    expect_true(is.na(cols[[param]]$FUN), info=param)
+    expect_null(cols[[param]]$sparse, info=param)
   }
   # No parameter name may appear twice in the registry
   expect_equal(anyDuplicated(names(cols)), 0L)
@@ -185,7 +189,6 @@ test_that("add.interval.col", {
       unit_type="conc",
       pretty_name="a",
       desc="test addition",
-      sparse=FALSE,
       formalsmap=list(),
       formalsmap_sparse=list(),
       depends=NULL,
@@ -210,7 +213,6 @@ test_that("add.interval.col", {
       unit_type="conc",
       pretty_name="a",
       desc="test addition",
-      sparse=FALSE,
       formalsmap=list(),
       formalsmap_sparse=list(),
       depends=NULL,
@@ -235,7 +237,6 @@ test_that("add.interval.col", {
       unit_type="conc",
       pretty_name="a",
       desc="test addition",
-      sparse=FALSE,
       formalsmap=list(x="values"),
       formalsmap_sparse=list(),
       depends=NULL,
@@ -299,18 +300,67 @@ test_that("add.interval.col validates FUN_sparse and formalsmap_sparse", {
 })
 
 test_that("the sparse estimators and the parameters only they can produce are enumerated", {
-  # Every parameter that ships with a sparse estimator, and every companion that
-  # only such an estimator returns.  A new registration of either kind must be
+  # Every parameter that ships with a sparse estimator, and every parameter only
+  # such an estimator can produce.  A new registration of either kind must be
   # added here deliberately, because a sparse-only parameter is refused for
   # dense data (see assert_intervals()).
-  expect_equal(fun_sparse_params(), c("auclast", "aumclast"))
+  expect_setequal(
+    fun_sparse_params(),
+    c(
+      # Both a dense function and a sparse estimator
+      "auclast", "aumclast",
+      # A sparse estimator and no dense function
+      "sparse_auclast", "sparse_aumclast", "cl.sparse.last", "mrt.sparse.last",
+      "kel.sparse.last", "vss.sparse.last", "vz.sparse.last"
+    )
+  )
   expect_setequal(
     sparse_only_params(),
+    c(
+      # A sparse estimator and no dense function
+      "sparse_auclast", "sparse_aumclast", "cl.sparse.last", "mrt.sparse.last",
+      "kel.sparse.last", "vss.sparse.last", "vz.sparse.last",
+      # Companions:  columns of a sparse estimator's result
+      "sparse_auc_se", "sparse_auc_df", "sparse_aumc_se", "sparse_aumc_df",
+      "auclast_se", "auclast_df", "aumclast_se", "aumclast_df"
+    )
+  )
+  # A parameter with a dense function as well as an estimator is not sparse-only
+  expect_false(any(c("auclast", "aumclast") %in% sparse_only_params()))
+  # Only the non-deprecated sparse-only parameters are refused for dense data;
+  # the deprecated ones are still skipped
+  expect_setequal(
+    setdiff(sparse_only_params(), names(deprecated_sparse_parameters)),
     c("auclast_se", "auclast_df", "aumclast_se", "aumclast_df")
   )
-  # The older sparse-only registrations keep the `sparse` flag and are not
-  # treated as companions
-  expect_false(any(c("sparse_auc_se", "sparse_aumc_se") %in% sparse_only_params()))
+})
+
+test_that("the retired `sparse` argument of add.interval.col is an error", {
+  local_interval_cols()
+  expect_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc", pretty_name = "a", desc = "test",
+      sparse = TRUE
+    ),
+    regexp = "`sparse` argument is retired.*Register 'a' with `FUN = NA` and `FUN_sparse = ",
+    class = "pknca_error_sparse_argument_retired"
+  )
+  # The default and an explicit FALSE are both accepted, and neither is stored
+  expect_no_error(
+    add.interval.col(
+      name = "a", FUN = "mean", unit_type = "conc", pretty_name = "a", desc = "test",
+      sparse = FALSE
+    )
+  )
+  expect_null(get.interval.cols()[["a"]]$sparse)
+  # The replacement the message points at works
+  expect_no_error(
+    add.interval.col(
+      name = "b", FUN = NA, FUN_sparse = "mean", unit_type = "conc",
+      pretty_name = "b", desc = "test"
+    )
+  )
+  expect_true(spec_is_sparse_only(get.interval.cols()[["b"]]))
 })
 
 test_that("add.interval.col accepts a sparse-keyed CDISC mapping", {

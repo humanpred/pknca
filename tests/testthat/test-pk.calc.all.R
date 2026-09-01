@@ -795,10 +795,12 @@ test_that("sparse data give dense parameters the mean profile and sparse paramet
     pretty_name = "Test: dense sample count",
     desc = "Count of dense concentrations"
   )
+  # No dense function and a sparse estimator is what makes a parameter
+  # sparse-only
   add.interval.col(
     "pknca_test_nconc_sparse_",
-    FUN = fn_sparse,
-    sparse = TRUE,
+    FUN = NA,
+    FUN_sparse = fn_sparse,
     unit_type = "count",
     pretty_name = "Test: sparse sample count",
     desc = "Count of pooled sparse concentrations"
@@ -839,11 +841,18 @@ test_that("sparse data give dense parameters the mean profile and sparse paramet
   )
   expect_equal(df_result$PPORRES, c(7, 21, 9021))
 
-  # The same parameters on dense data: the sparse one has no pooled samples to
-  # calculate from, so it is silently skipped
+  # The same request on dense data: the sparse-only parameter has no pooled
+  # samples to calculate from, and nothing else can produce it, so it is refused
   o_conc_dense <- PKNCAconc(d_sparse, conc~time|id)
   d_intervals_dense <- d_intervals
   d_intervals_dense$pknca_test_nconc_pooled_ <- FALSE
+  expect_error(
+    PKNCAdata(o_conc_dense, intervals = d_intervals_dense),
+    regexp = "only calculated for sparse PK.*pknca_test_nconc_sparse_",
+    class = "pknca_error_sparse_only_parameter"
+  )
+  # Without it, the dense parameter calculates from each subject's own profile
+  d_intervals_dense$pknca_test_nconc_sparse_ <- FALSE
   o_nca_dense <-
     suppressMessages(pk.nca(PKNCAdata(o_conc_dense, intervals = d_intervals_dense)))
   df_dense <- as.data.frame(o_nca_dense)
@@ -932,7 +941,11 @@ test_that("sparse data calculate auclast and aumclast with the sparse estimators
 test_that("a parameter only a sparse estimator produces is refused for dense data", {
   d_conc <- data.frame(id = 1L, conc = c(0, 2, 1, 0.5), time = c(0, 1, 2, 4))
   o_conc_dense <- PKNCAconc(d_conc, conc~time|id)
-  for (param in sparse_only_params()) {
+  # Every sparse-only parameter except the deprecated ones, which were skipped
+  # for dense data before they were deprecated and still are
+  refusable <- setdiff(sparse_only_params(), names(deprecated_sparse_parameters))
+  expect_gt(length(refusable), 0)
+  for (param in refusable) {
     d_intervals <- data.frame(start = 0, end = 4)
     d_intervals[[param]] <- TRUE
     expect_error(

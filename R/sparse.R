@@ -382,8 +382,8 @@ pknca_concept(pk.calc.sparse_auclast) <- "auc"
 
 add.interval.col(
   "sparse_auclast",
-  sparse=TRUE,
-  FUN="pk.calc.sparse_auclast",
+  FUN=NA,
+  FUN_sparse="pk.calc.sparse_auclast",
   values=c(FALSE, TRUE),
   unit_type="auc",
   pretty_name="Sparse AUClast",
@@ -664,8 +664,8 @@ pknca_concept(pk.calc.sparse_aumclast) <- "aumc"
 
 add.interval.col(
   "sparse_aumclast",
-  sparse = TRUE,
-  FUN = "pk.calc.sparse_aumclast",
+  FUN = NA,
+  FUN_sparse = "pk.calc.sparse_aumclast",
   values = c(FALSE, TRUE),
   unit_type = "aumc",
   pretty_name = "Sparse AUMClast",

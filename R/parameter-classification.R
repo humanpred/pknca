@@ -58,7 +58,7 @@ classify_concepts <- function(all_intervals) {
       ret[[n]] <- declared
       next
     }
-    fun_name <- all_intervals[[n]]$FUN
+    fun_name <- interval_col_fun(all_intervals[[n]])
     if (length(fun_name) == 1 && !is.na(fun_name)) {
       fun <- tryCatch(get(fun_name), error = function(e) NULL)
       from_fun <- if (is.null(fun)) NULL else pknca_concept(fun)
@@ -168,28 +168,22 @@ classify_sample_types <- function(all_intervals) {
   )
 }
 
-# Needs sparse data.  Two kinds of parameter do:  the older sparse-only
-# registrations, which carry the registry flag pk.nca() routes on, and the
-# companions that only a sparse estimator returns (see sparse_only_params()).
-# Neither the registry flag nor `FUN = NA` reaches the parameters produced
-# alongside those -- a standard error's own standard error is not a thing, but
-# a clearance calculated from a sparse AUC is -- so anything calculated from
-# either kind is included.
+# Needs sparse data:  the parameters only sparse data can produce (see
+# sparse_only_params()), plus anything calculated from one of them -- a
+# clearance built on a sparse AUC needs sparse data as much as the AUC does.
 #
-# A parameter with a sparse estimator (`auclast`) is *not* sparse:  it is
-# calculated for dense data too, just by a different function.
+# A parameter with a sparse estimator *and* a dense function (`auclast`) is not
+# sparse:  it is calculated for dense data too, just by a different function.
 classify_sparse <- function(all_intervals) {
-  flagged <-
-    names(all_intervals)[
-      vapply(all_intervals, function(x) isTRUE(x$sparse), TRUE)
-    ]
-  # The companions are added on their own rather than through deps_union(),
-  # which also reaches everything sharing a calculation function:  a companion
-  # borrows the function of the parameter it annotates, so that would sweep in
-  # the parameter itself and its whole downstream family.  Nothing is
-  # calculated from a standard error or a degrees of freedom, so there is
-  # nothing downstream of them to reach.
-  from_sparse <- union(deps_union(flagged, all_intervals), sparse_only_params())
+  sparse_only <- sparse_only_params()
+  # Only the parameters with an estimator of their own are followed downstream.
+  # A companion borrows the calculation function of the parameter it annotates,
+  # so get.parameter.deps() would reach that parameter and its whole downstream
+  # family; nothing is calculated from a standard error or a degrees of freedom
+  # anyway, so there is nothing downstream of a companion to find.
+  with_own_estimator <-
+    names(all_intervals)[vapply(all_intervals, spec_is_sparse_only, FUN.VALUE = TRUE)]
+  from_sparse <- union(deps_union(with_own_estimator, all_intervals), sparse_only)
   vapply(
     X = stats::setNames(names(all_intervals), names(all_intervals)),
     FUN = function(n) n %in% from_sparse,
@@ -206,7 +200,7 @@ classify_secondary <- function(all_intervals) {
         all_intervals,
         function(x) {
           isTRUE(x$selection$secondary) ||
-            any(vapply(x$formalsmap, is_pknca_ref, TRUE))
+            any(vapply(interval_col_formalsmap(x), is_pknca_ref, TRUE))
         },
         TRUE
       )

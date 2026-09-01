@@ -57,6 +57,19 @@ the dosing including dose amount and route.
   parameter that needs sparse data:  the `_se` and `_df` companions arrive as
   estimator output without being requested.
 
+* **Breaking for packages that register their own NCA parameters:** the
+  `sparse` argument of `add.interval.col()` is retired.  `sparse = TRUE` is now
+  an error; register a sparse-only parameter with `FUN = NA` and
+  `FUN_sparse = <the calculation function>` (and `formalsmap_sparse` in place
+  of `formalsmap`) instead, which is what now makes a parameter sparse-only.
+  An explicit `sparse = FALSE` is still accepted and does nothing.  Registry
+  entries no longer carry a `sparse` field:  `get.interval.cols()[[<name>]]`
+  has no such element, and `pknca_parameter_table()$sparse` -- which reports
+  whether a parameter needs sparse data -- is derived from the registration.
+  A newly registered sparse-only parameter requested for dense data is refused
+  the way the `_se`/`_df` companions are; the deprecated `sparse_*` names are
+  still only skipped.
+
 * `add.interval.col()` gains `FUN_sparse` and `formalsmap_sparse` for
   registering a parameter's sparse-specific estimator.  A parameter without one
   keeps falling back to `FUN` on the arithmetic-mean profile, which is what

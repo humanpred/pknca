@@ -52,10 +52,10 @@ column.}
 \item{desc}{A human-readable description of the parameter.  SDTM requires
 <=40 characters; a longer description is accepted with a warning.}
 
-\item{sparse}{Is the calculation \emph{only} for sparse PK?  A parameter flagged
-this way is calculated for sparse data and silently skipped for dense data.
-To give one parameter a dense calculation and a sparse one, leave \code{sparse}
-as \code{FALSE} and give \code{FUN_sparse}.}
+\item{sparse}{Retired.  \code{TRUE} is an error:  register a sparse-only
+parameter with \code{FUN = NA} and a \code{FUN_sparse} (plus \code{formalsmap_sparse})
+instead, which is now what makes a parameter sparse-only.  \code{FALSE}, the
+default, is accepted and does nothing.}
 
 \item{formalsmap}{A named list mapping parameter names in the function call
 to NCA parameter names.  See the details for information on use of

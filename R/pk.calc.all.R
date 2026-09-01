@@ -180,6 +180,9 @@ filter_interval <- function(data, start, end, include_na=FALSE, include_end=TRUE
 
 #' Determine if there are any sparse or dense calculations requested within an interval
 #'
+#' A calculation is sparse when only sparse data can produce it, which is a
+#' property of the registration rather than a flag; see [add.interval.col()].
+#'
 #' @param interval An interval specification
 #' @inheritParams PKNCAconc
 #' @return A logical value indicating if the interval requests any sparse (if
@@ -194,8 +197,7 @@ any_sparse_dense_in_interval <- function(interval, sparse) {
   any(
     vapply(
       X=all_intervals[names(requested[requested])],
-      FUN="[[",
-      "sparse",
+      FUN=spec_is_sparse_only,
       FUN.VALUE = TRUE
     ) %in% sparse
   )
@@ -211,7 +213,16 @@ inform_sparse_auc_method <- function(intervals, options) {
   if (identical(auc_method, "linear")) {
     return(invisible(NULL))
   }
-  affected <- intersect(fun_sparse_params(), interval_requested_params(intervals))
+  # Only the areas:  `auc.method` chooses how a curve is integrated, so saying
+  # it does not apply to a clearance or a mean residence time built on one of
+  # them would be noise.
+  all_intervals <- get.interval.cols()
+  integrated <-
+    Filter(
+      f = function(n) all_intervals[[n]]$unit_type %in% c("auc", "aumc"),
+      x = fun_sparse_params()
+    )
+  affected <- intersect(integrated, interval_requested_params(intervals))
   if (length(affected) == 0) {
     return(invisible(NULL))
   }
@@ -322,18 +333,17 @@ interval_calculation_error <- function(e, error_preamble) {
 # imputation has not silently changed what a sparse estimator will see, so that
 # the two cannot disagree about which parameters are calculated sparsely.
 parameter_dispatch <- function(spec, has_sparse_conc) {
-  is_sparse_only <- isTRUE(spec$sparse)
   use_fun_sparse <-
     has_sparse_conc && !is.null(spec$FUN_sparse) && !is.na(spec$FUN_sparse)
   current_fun <- if (use_fun_sparse) spec$FUN_sparse else spec$FUN
   list(
     FUN = current_fun,
-    # Whether `FUN` is the sparse estimator, which selects the formals map to
-    # resolve it with
-    use_fun_sparse = use_fun_sparse,
-    # Whether the result is a sparse result
-    sparse = is_sparse_only || use_fun_sparse,
-    calculable = !is.na(current_fun) && (has_sparse_conc || !is_sparse_only)
+    # The sparse estimator ran, so the result came from the pooled samples and
+    # the sparse formals map is the one that resolves its arguments.  A
+    # sparse-only parameter has no `FUN` to fall back to, which is what makes it
+    # uncalculable for dense data.
+    sparse = use_fun_sparse,
+    calculable = !is.na(current_fun)
   )
 }
 
@@ -820,7 +830,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       call_args <- list()
       exclude_from_argument <- character(0)
       # Prepare to call the function by setting up its arguments.
-      arg_spec <- parameter_arg_spec(n, sparse = dispatch[[n]]$use_fun_sparse)
+      arg_spec <- parameter_arg_spec(n, sparse = dispatch[[n]]$sparse)
       arglist <- arg_spec$arglist
       if (from_sparse) {
         arglist <- remap_sparse_sources(arglist)
