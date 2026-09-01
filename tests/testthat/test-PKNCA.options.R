@@ -511,9 +511,37 @@ test_that("r.squared.factor is described as the unadjusted counterpart (#337)", 
   desc <- PKNCA.options.describe("r.squared.factor")
   expect_match(desc, "with an r^2 within r.squared.factor of the best r^2", fixed = TRUE)
   expect_match(desc, "regression using the most data points is selected", fixed = TRUE)
-  expect_match(
-    desc,
-    "exactly one of adj.r.squared.factor and r.squared.factor must be NA",
-    fixed = TRUE
-  )
+  expect_match(desc, "takes the other out of use", fixed = TRUE)
+})
+
+test_that("setting one r-squared factor takes the other out of use (#337)", {
+  initial_options <- PKNCA.options()
+  on.exit(assign("options", initial_options, envir = PKNCA:::.PKNCAEnv))
+
+  PKNCA.options(r.squared.factor = 0.0002)
+  expect_equal(PKNCA.options("adj.r.squared.factor"), NA_real_)
+  expect_equal(PKNCA.options("r.squared.factor"), 0.0002)
+
+  PKNCA.options(adj.r.squared.factor = 0.0003)
+  expect_equal(PKNCA.options("adj.r.squared.factor"), 0.0003)
+  expect_equal(PKNCA.options("r.squared.factor"), NA_real_)
+
+  # Taking one out of use hands the selection to the other, which picks up the
+  # standard tolerance when it does not have one
+  PKNCA.options(adj.r.squared.factor = NA)
+  expect_equal(PKNCA.options("adj.r.squared.factor"), NA_real_)
+  expect_equal(PKNCA.options("r.squared.factor"), 0.0001)
+
+  PKNCA.options(r.squared.factor = NA)
+  expect_equal(PKNCA.options("adj.r.squared.factor"), 0.0001)
+  expect_equal(PKNCA.options("r.squared.factor"), NA_real_)
+
+  # Setting both in one call is a last-one-wins pair, never a conflict
+  PKNCA.options(adj.r.squared.factor = 0.0005, r.squared.factor = 0.0006)
+  expect_equal(PKNCA.options("adj.r.squared.factor"), NA_real_)
+  expect_equal(PKNCA.options("r.squared.factor"), 0.0006)
+
+  # Checking a value does not set anything, so the pair is untouched
+  expect_equal(PKNCA.options(adj.r.squared.factor = 0.0007, check = TRUE), 0.0007)
+  expect_equal(PKNCA.options("r.squared.factor"), 0.0006)
 })

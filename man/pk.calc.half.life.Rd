@@ -70,13 +70,14 @@ included to calculate the half-life.  For \code{hl_method = "tobit"} this
 counts only above-LLOQ points.}
 
 \item{adj.r.squared.factor}{The allowance in adjusted r-squared for
-adding another point (log-linear method only).  Set it to \code{NA} to select
-points with \code{r.squared.factor} instead.}
+adding another point (log-linear method only).  Giving it takes
+\code{r.squared.factor} out of use, and setting it to \code{NA} selects points with
+\code{r.squared.factor} instead.}
 
 \item{r.squared.factor}{The allowance in r-squared for adding another point
-(log-linear method only).  \code{NA} (the default) selects points with
-\code{adj.r.squared.factor} instead.  Exactly one of \code{adj.r.squared.factor} and
-\code{r.squared.factor} must be \code{NA}.  Unlike the adjusted r-squared, the
+(log-linear method only).  Giving it takes \code{adj.r.squared.factor} out of
+use, so exactly one of the two is ever in use; \code{NA} (the default) selects
+points with \code{adj.r.squared.factor}.  Unlike the adjusted r-squared, the
 r-squared does not reward more points, so it generally selects fewer of
 them; with \code{min.hl.points = 2} the two-point fit has an r-squared of 1 and
 is therefore always selected.}

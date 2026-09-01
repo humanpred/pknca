@@ -61,12 +61,13 @@
 #'   included to calculate the half-life.  For `hl_method = "tobit"` this
 #'   counts only above-LLOQ points.
 #' @param adj.r.squared.factor The allowance in adjusted r-squared for
-#'   adding another point (log-linear method only).  Set it to `NA` to select
-#'   points with `r.squared.factor` instead.
+#'   adding another point (log-linear method only).  Giving it takes
+#'   `r.squared.factor` out of use, and setting it to `NA` selects points with
+#'   `r.squared.factor` instead.
 #' @param r.squared.factor The allowance in r-squared for adding another point
-#'   (log-linear method only).  `NA` (the default) selects points with
-#'   `adj.r.squared.factor` instead.  Exactly one of `adj.r.squared.factor` and
-#'   `r.squared.factor` must be `NA`.  Unlike the adjusted r-squared, the
+#'   (log-linear method only).  Giving it takes `adj.r.squared.factor` out of
+#'   use, so exactly one of the two is ever in use; `NA` (the default) selects
+#'   points with `adj.r.squared.factor`.  Unlike the adjusted r-squared, the
 #'   r-squared does not reward more points, so it generally selects fewer of
 #'   them; with `min.hl.points = 2` the two-point fit has an r-squared of 1 and
 #'   is therefore always selected.
@@ -159,33 +160,39 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   allow.tmax.in.half.life <-
     PKNCA.choose.option(name="allow.tmax.in.half.life", value=allow.tmax.in.half.life, options=options)
   if (!is_tobit) {
-    adj.r.squared.factor <-
-      PKNCA.choose.option(name="adj.r.squared.factor", value=adj.r.squared.factor, options=options)
-    r.squared.factor <-
-      PKNCA.choose.option(name="r.squared.factor", value=r.squared.factor, options=options)
-    # Both factors are ignored when the points are given, so only the automatic
-    # selection requires a usable pair.
-    if (!manually.selected.points) {
-      if (is.na(adj.r.squared.factor) == is.na(r.squared.factor)) {
-        rlang::abort(
-          paste(
-            "Exactly one of adj.r.squared.factor and r.squared.factor must be NA;",
-            "set the one that is not in use to NA"
-          ),
-          class = "pknca_error_r_squared_factor_choice"
-        )
-      }
-      # Points are selected on one r-squared or the other; the NA factor is the
-      # one that is not in use.
-      if (is.na(adj.r.squared.factor)) {
-        r_squared_name <- "r.squared"
-        r_squared_label <- "r-squared"
-        r_squared_factor <- r.squared.factor
-      } else {
-        r_squared_name <- "adj.r.squared"
-        r_squared_label <- "adjusted r-squared"
-        r_squared_factor <- adj.r.squared.factor
-      }
+    factors <-
+      list(
+        adj.r.squared.factor =
+          PKNCA.choose.option(name="adj.r.squared.factor", value=adj.r.squared.factor, options=options),
+        r.squared.factor =
+          PKNCA.choose.option(name="r.squared.factor", value=r.squared.factor, options=options)
+      )
+    # Each factor given here is applied the way PKNCA.options() applies it when
+    # it is set:  it takes the other one out of use, so the last one given wins
+    given <-
+      c(
+        if (!is.null(adj.r.squared.factor) || "adj.r.squared.factor" %in% names(options)) {
+          "adj.r.squared.factor"
+        },
+        if (!is.null(r.squared.factor) || "r.squared.factor" %in% names(options)) {
+          "r.squared.factor"
+        }
+      )
+    requested <- factors
+    for (n in given) {
+      factors[[n]] <- requested[[n]]
+      factors <- pair_r_squared_factors(factors, n)
+    }
+    # Points are selected on one r-squared or the other; the NA factor is the
+    # one that is not in use.
+    if (is.na(factors$adj.r.squared.factor)) {
+      r_squared_name <- "r.squared"
+      r_squared_label <- "r-squared"
+      r_squared_factor <- factors$r.squared.factor
+    } else {
+      r_squared_name <- "adj.r.squared"
+      r_squared_label <- "adjusted r-squared"
+      r_squared_factor <- factors$adj.r.squared.factor
     }
   } else {
     tobit_n_points_penalty <-

@@ -49,7 +49,7 @@ After fitting all points, the best fit among the set of possible fit is selected
 
 1. $\lambda_z > 0$ and at the same time the selection statistic must be within a tolerance factor of the best value of that statistic.
     1. The statistic is the adjusted $r^2$ by default, and its tolerance is controlled by `PKNCA.options("adj.r.squared.factor")` which defaults to `r PKNCA.options("adj.r.squared.factor")`.
-    2. Selecting on the unadjusted $r^2$ instead requires setting `PKNCA.options("adj.r.squared.factor")` to `NA` and `PKNCA.options("r.squared.factor")` to the tolerance.  Exactly one of the two must be `NA`; setting one without the other makes every half-life calculation fail, so set them together.  Because the unadjusted $r^2$ does not reward larger windows, it usually selects fewer points than the adjusted $r^2$ does.
+    2. Selecting on the unadjusted $r^2$ instead needs only `PKNCA.options("r.squared.factor")` set to the tolerance:  the two factors are alternatives, so setting either one takes the other out of use.  Because the unadjusted $r^2$ does not reward larger windows, it usually selects fewer points than the adjusted $r^2$ does.
     3. These rules must be met simultaneously, so if the best value of the statistic is for a line with $\lambda_z \leq 0$, the half-life may end up being unreportable.
 2. If fitting the log-linear concentration-time line fails, then it is not the best line.
 3. If more than one fit still meets the criteria above, then choose the fit with the most points included.

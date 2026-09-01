@@ -21,9 +21,9 @@ check_r_squared_factor_option <- function(x, default=FALSE, description=FALSE, n
       r_squared, " within ", name, " of the best ", r_squared,
       " are considered acceptable, and the acceptable regression using the",
       " most data points is selected.  ", rationale,
-      "  Setting it to NA selects on the other r-squared; exactly one of",
-      " adj.r.squared.factor and r.squared.factor must be NA, and setting one",
-      " of them without the other makes every half-life calculation fail."
+      "  Setting either of adj.r.squared.factor and r.squared.factor takes",
+      " the other out of use, so exactly one of them is ever in use; setting",
+      " this one to NA therefore selects on the other r-squared."
     ))
   }
   if (default)
@@ -44,6 +44,22 @@ check_r_squared_factor_option <- function(x, default=FALSE, description=FALSE, n
       paste(name, "is usually <0.01"),
       class = paste0("pknca_warning_", if (adj) "adj_r2" else "r2", "_factor_large")
     )
+  }
+  x
+}
+
+# adj.r.squared.factor and r.squared.factor are two ways of asking for the same
+# half-life point selection, so exactly one of them is ever in use.  Setting one
+# takes the other out of use, and setting one to NA hands the selection to the
+# other, which takes the standard tolerance when it does not have one.  `x` holds
+# both values and `name` is the one that was just set.
+pair_r_squared_factors <- function(x, name) {
+  other <-
+    if (name == "adj.r.squared.factor") "r.squared.factor" else "adj.r.squared.factor"
+  if (!is.na(x[[name]])) {
+    x[[other]] <- NA_real_
+  } else if (is.na(x[[other]])) {
+    x[[other]] <- .PKNCA.option.check$adj.r.squared.factor(default = TRUE)
   }
   x
 }
@@ -566,6 +582,9 @@ PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
         }
         # Verify and set the option value
         current[[n]] <- .PKNCA.option.check[[n]](args[[n]])
+        if (n %in% c("adj.r.squared.factor", "r.squared.factor")) {
+          current <- pair_r_squared_factors(current, n)
+        }
       }
       # Assign current into the setting environment
       assign("options", current, envir=.PKNCAEnv)
