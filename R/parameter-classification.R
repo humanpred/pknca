@@ -168,16 +168,28 @@ classify_sample_types <- function(all_intervals) {
   )
 }
 
-# Sparse or dense.  The registry flag is set where pk.nca() needs it to route a
-# calculation, which leaves the parameters produced alongside a sparse one --
-# its standard error and degrees of freedom -- unflagged.  A parameter
-# calculated from a sparse parameter is sparse.
+# Needs sparse data.  Two kinds of parameter do:  the older sparse-only
+# registrations, which carry the registry flag pk.nca() routes on, and the
+# companions that only a sparse estimator returns (see sparse_only_params()).
+# Neither the registry flag nor `FUN = NA` reaches the parameters produced
+# alongside those -- a standard error's own standard error is not a thing, but
+# a clearance calculated from a sparse AUC is -- so anything calculated from
+# either kind is included.
+#
+# A parameter with a sparse estimator (`auclast`) is *not* sparse:  it is
+# calculated for dense data too, just by a different function.
 classify_sparse <- function(all_intervals) {
   flagged <-
     names(all_intervals)[
       vapply(all_intervals, function(x) isTRUE(x$sparse), TRUE)
     ]
-  from_sparse <- deps_union(flagged, all_intervals)
+  # The companions are added on their own rather than through deps_union(),
+  # which also reaches everything sharing a calculation function:  a companion
+  # borrows the function of the parameter it annotates, so that would sweep in
+  # the parameter itself and its whole downstream family.  Nothing is
+  # calculated from a standard error or a degrees of freedom, so there is
+  # nothing downstream of them to reach.
+  from_sparse <- union(deps_union(flagged, all_intervals), sparse_only_params())
   vapply(
     X = stats::setNames(names(all_intervals), names(all_intervals)),
     FUN = function(n) n %in% from_sparse,
