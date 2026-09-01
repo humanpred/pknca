@@ -541,3 +541,83 @@ test_that("the deprecated names still give the values they always have", {
   expect_equal(value_of("vz.sparse.last"), value_of("vss.sparse.last"))
   expect_equal(value_of("vz.last"), NA_real_)
 })
+
+# ============================================================================
+# Imputation and the sparse estimators
+# ============================================================================
+test_that("an imputation that changes the pooled samples is refused for a sparse estimator", {
+  # No time-0 sample, so start_conc0 adds a measurement that belongs to no
+  # subject.  The sparse estimators need one subject per measurement.
+  d_sparse <-
+    data.frame(
+      id = 1:9,
+      conc = c(1.75, 2.2, 1.58, 4.63, 2.99, 1.52, 0.3, 0.0421, 0.231),
+      time = rep(c(1, 6, 24), each = 3)
+    )
+  o_conc <- PKNCAconc(d_sparse, conc~time|id, sparse = TRUE)
+  o_data <-
+    PKNCAdata(
+      o_conc,
+      intervals = data.frame(start = 0, end = 24, auclast = TRUE),
+      impute = "start_conc0"
+    )
+  expect_error(
+    suppressMessages(pk.nca(o_data)),
+    regexp = "sparse estimators do not support imputation.*'start_conc0' changed the pooled samples for the interval start=0, end=24.*calculated from the pooled samples: auclast",
+    class = "pknca_error_sparse_impute"
+  )
+  # It is a diagnosed problem, so it does not ask for a bug report
+  expect_false(
+    grepl(
+      "report a bug",
+      conditionMessage(tryCatch(suppressMessages(pk.nca(o_data)), error = function(e) e)),
+      fixed = TRUE
+    )
+  )
+
+  # The same imputation with only mean-profile parameters is fine
+  o_data_dense_params <-
+    PKNCAdata(
+      o_conc,
+      intervals = data.frame(start = 0, end = 24, cmax = TRUE, tmax = TRUE),
+      impute = "start_conc0"
+    )
+  expect_no_error(suppressMessages(suppressWarnings(pk.nca(o_data_dense_params))))
+
+  # And so are the deprecated sparse-only parameters, which are calculated from
+  # the pooled samples just as `auclast` is
+  o_data_legacy <-
+    without_sparse_deprecation(
+      PKNCAdata(
+        o_conc,
+        intervals = data.frame(start = 0, end = 24, sparse_auclast = TRUE),
+        impute = "start_conc0"
+      )
+    )
+  expect_error(
+    suppressMessages(pk.nca(o_data_legacy)),
+    class = "pknca_error_sparse_impute"
+  )
+})
+
+test_that("an imputation that leaves the pooled samples alone still calculates", {
+  # A time-0 sample of 0 already exists, so start_conc0 changes nothing
+  d_sparse <-
+    data.frame(
+      id = 1:12,
+      conc = c(0, 0, 0, 1.75, 2.2, 1.58, 4.63, 2.99, 1.52, 0.3, 0.0421, 0.231),
+      time = rep(c(0, 1, 6, 24), each = 3)
+    )
+  o_conc <- PKNCAconc(d_sparse, conc~time|id, sparse = TRUE)
+  d_intervals <- data.frame(start = 0, end = 24, auclast = TRUE)
+  res_imputed <-
+    as.data.frame(suppressMessages(pk.nca(
+      PKNCAdata(o_conc, intervals = d_intervals, impute = "start_conc0")
+    )))
+  res_plain <-
+    as.data.frame(suppressMessages(pk.nca(PKNCAdata(o_conc, intervals = d_intervals))))
+  # The values match the un-imputed run; only the reported method differs
+  expect_equal(res_imputed$PPTESTCD, res_plain$PPTESTCD)
+  expect_equal(res_imputed$PPORRES, res_plain$PPORRES)
+  expect_true(all(grepl("Imputation: start_conc0", res_imputed$PPANMETH, fixed = TRUE)))
+})

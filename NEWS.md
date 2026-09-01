@@ -19,6 +19,17 @@ the dosing including dose amount and route.
   else.  Requesting one of the new `_se`/`_df` parameters for dense data is an
   error rather than an empty result.
 
+* Imputation combined with a sparse estimator is now a clear error
+  (`pknca_error_sparse_impute`) naming the interval and the imputation method,
+  instead of corrupting the subject bookkeeping silently or, since the
+  `as_sparse_pk()` subject check became a real assertion, dying with an
+  internal assertion failure.  An imputed measurement belongs to no animal, and
+  the sparse standard error depends on which animal contributed which sample.
+  The error is raised only when the imputation actually changes the pooled
+  samples:  an imputation that finds what it would have added -- a
+  concentration already measured at the interval start, say -- still
+  calculates, as does one requested alongside only mean-profile parameters.
+
 * The eleven interval-specification names that requested sparse calculations
   before -- `sparse_auclast`, `sparse_auc_se`, `sparse_auc_df`,
   `sparse_aumclast`, `sparse_aumc_se`, `sparse_aumc_df`, `cl.sparse.last`,

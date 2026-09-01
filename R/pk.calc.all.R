@@ -312,6 +312,31 @@ interval_calculation_error <- function(e, error_preamble) {
   rlang::abort(msg, class = "pknca_error_interval_calculation", parent = e)
 }
 
+# How a parameter is calculated in the interval at hand:  which function runs,
+# whether that function reads the pooled sparse samples, and whether it can run
+# at all.  A parameter with a sparse estimator uses it when the pooled samples
+# are in scope and otherwise falls back to its dense function on the mean
+# profile; a sparse-only parameter has nothing to calculate from without them.
+#
+# Shared by pk.nca.interval()'s calculation loop and its check that an
+# imputation has not silently changed what a sparse estimator will see, so that
+# the two cannot disagree about which parameters are calculated sparsely.
+parameter_dispatch <- function(spec, has_sparse_conc) {
+  is_sparse_only <- isTRUE(spec$sparse)
+  use_fun_sparse <-
+    has_sparse_conc && !is.null(spec$FUN_sparse) && !is.na(spec$FUN_sparse)
+  current_fun <- if (use_fun_sparse) spec$FUN_sparse else spec$FUN
+  list(
+    FUN = current_fun,
+    # Whether `FUN` is the sparse estimator, which selects the formals map to
+    # resolve it with
+    use_fun_sparse = use_fun_sparse,
+    # Whether the result is a sparse result
+    sparse = is_sparse_only || use_fun_sparse,
+    calculable = !is.na(current_fun) && (has_sparse_conc || !is_sparse_only)
+  )
+}
+
 # Subset data down to just the times of interest and then pass it
 # further to the calculation routines.
 #
@@ -651,6 +676,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   # Sparse parameters are calculated from the pooled samples, so those need the
   # same imputation the mean profile gets.
   has_sparse_conc <- !is.null(conc.sparse)
+  sparse_impute_changed <- FALSE
 
   if (!all(is.na(impute_method))) {
     impute_funs <- PKNCA_impute_fun_list(impute_method)
@@ -670,6 +696,14 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           start=interval$start[1], end=interval$end[1],
           conc.group=conc.sparse.group, time.group=time.sparse.group, options=options
         )
+      # An imputation that added or altered a pooled measurement has no subject
+      # to attribute it to, so a sparse estimator cannot use the result.  The
+      # calculation loop below refuses it rather than estimating from a profile
+      # whose subject bookkeeping no longer matches.  An imputation that changed
+      # nothing (a sample already exists at the interval start, say) is fine.
+      sparse_impute_changed <-
+        !isTRUE(all.equal(conc.sparse, impute_sparse$conc)) ||
+        !isTRUE(all.equal(time.sparse, impute_sparse$time))
       conc.sparse <- impute_sparse$conc
       time.sparse <- impute_sparse$time
     }
@@ -719,6 +753,27 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   # dependencies are still expanded above, because the requesting interval's own half of the
   # calculation (`ae`, `totdose`, ...) is computed here.
   deferred <- interval_deferred_params(interval)
+  to_calculate <- setdiff(names(requested)[requested], deferred)
+  dispatch <-
+    lapply(
+      X = stats::setNames(nm = to_calculate),
+      FUN = function(n) parameter_dispatch(all_intervals[[n]], has_sparse_conc = has_sparse_conc)
+    )
+  if (sparse_impute_changed) {
+    calculated_sparsely <-
+      names(dispatch)[vapply(dispatch, function(x) x$calculable && x$sparse, FUN.VALUE = TRUE)]
+    if (length(calculated_sparsely) > 0) {
+      rlang::abort(
+        sprintf(
+          "The sparse estimators do not support imputation, and '%s' changed the pooled samples for the interval %s.  Either drop the imputation for the sparse data, or request only parameters calculated from the mean profile (these are calculated from the pooled samples: %s).",
+          paste(na.omit(impute_method), collapse = ", "),
+          name_value_text(interval[, c("start", "end")]),
+          paste(calculated_sparsely, collapse = ", ")
+        ),
+        class = "pknca_error_sparse_impute"
+      )
+    }
+  }
   # Every data source a calculation function can name, under the name that
   # add.interval.col() uses for it.  A source that was not given is NULL, which
   # leaves the argument off the call so that the function's own default
@@ -756,23 +811,16 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       options=options
     )
   # Do the calculations
-  for (n in setdiff(names(requested)[requested], deferred)) {
-    is_sparse_param <- isTRUE(all_intervals[[n]]$sparse)
-    # A parameter with a sparse estimator uses it when the pooled samples are
-    # there, and otherwise falls back to its dense function on the mean profile.
-    fun_sparse <- all_intervals[[n]]$FUN_sparse
-    use_fun_sparse <- has_sparse_conc && !is.null(fun_sparse) && !is.na(fun_sparse)
-    current_fun <- if (use_fun_sparse) fun_sparse else all_intervals[[n]]$FUN
+  for (n in to_calculate) {
+    current_fun <- dispatch[[n]]$FUN
     # Whichever function ran, a result calculated from the pooled samples is a
     # sparse result
-    from_sparse <- is_sparse_param || use_fun_sparse
-    # A sparse-only parameter has nothing to calculate from without the pooled
-    # samples, so it is skipped for dense PK.
-    if (!is.na(current_fun) && (has_sparse_conc || !is_sparse_param)) {
+    from_sparse <- dispatch[[n]]$sparse
+    if (dispatch[[n]]$calculable) {
       call_args <- list()
       exclude_from_argument <- character(0)
       # Prepare to call the function by setting up its arguments.
-      arg_spec <- parameter_arg_spec(n, sparse = use_fun_sparse)
+      arg_spec <- parameter_arg_spec(n, sparse = dispatch[[n]]$use_fun_sparse)
       arglist <- arg_spec$arglist
       if (from_sparse) {
         arglist <- remap_sparse_sources(arglist)
