@@ -164,6 +164,7 @@ Options are stored in `.PKNCAEnv` (a package-level environment). Validation func
 | `conc.blq` | (list) | BLQ handling strategy |
 | `conc.na` | `"drop"` | NA concentration handling |
 | `adj.r.squared.factor` | `0.0001` | Tolerance for half-life R² selection |
+| `r.squared.factor` | `NA` | Tolerance for half-life unadjusted R² selection |
 | `first.tmax` | `TRUE` | Use first or last tmax when tied |
 | `allow.tmax.in.half.life` | `FALSE` | Allow tmax in terminal slope window |
 | `min.hl.points` | `3` | Minimum points for half-life fit |
