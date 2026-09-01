@@ -19,10 +19,41 @@ the dosing including dose amount and route.
   else.  Requesting one of the new `_se`/`_df` parameters for dense data is an
   error rather than an empty result.
 
+* The eleven interval-specification names that requested sparse calculations
+  before -- `sparse_auclast`, `sparse_auc_se`, `sparse_auc_df`,
+  `sparse_aumclast`, `sparse_aumc_se`, `sparse_aumc_df`, `cl.sparse.last`,
+  `mrt.sparse.last`, `kel.sparse.last`, `vss.sparse.last`, and
+  `vz.sparse.last` -- are deprecated.  They still calculate and still give the
+  values they always gave, warning once per session with the unified name to
+  use instead, **and they will be an error in the next minor release**.  The
+  functions behind them (`pk.calc.sparse_auclast()`, `var_sparse_auc()`,
+  `cov_holder()`, and the rest) are not deprecated:  they are what the unified
+  estimators call.
+
+* `vz.last` on sparse data is not the same quantity as the deprecated
+  `vz.sparse.last`.  `vz.sparse.last` divided the clearance by `1/MRT`, which
+  made Vz numerically identical to Vss; `vz.last` divides by the `lambda.z`
+  fitted on the arithmetic-mean profile, which is the standard toxicokinetic
+  approach and is `NA` when the mean profile has too few points after its peak
+  to fit one.  Re-run any comparison that used `vz.sparse.last`.  The other ten
+  replacements give unchanged values -- `kel.last`, like the rest of PKNCA's
+  `kel` family, is `1/MRT`, so it matches `kel.sparse.last`; ask for
+  `lambda.z` for the terminal rate constant itself.
+
+* `pknca_interval_table()` with `sparse = TRUE` (and the `sparse_single_dose`
+  preset) now gives the same parameters as the matching dense design, with no
+  imputation.  No preset selects a deprecated name, and no context selects a
+  parameter that needs sparse data:  the `_se` and `_df` companions arrive as
+  estimator output without being requested.
+
 * `add.interval.col()` gains `FUN_sparse` and `formalsmap_sparse` for
   registering a parameter's sparse-specific estimator.  A parameter without one
   keeps falling back to `FUN` on the arithmetic-mean profile, which is what
-  sparse data have always done.
+  sparse data have always done.  `pptestcd_cdisc` and `pptest_cdisc` gain a
+  sparse-keyed form (`list(sparse = list(dense = "AUCLST", sparse =
+  "SPARSEAL"))`) alongside the existing route-keyed one, so a sparsely
+  estimated `auclast` is reported to CDISC as `SPARSEAL` and a dense one as
+  `AUCLST`.
 
 * `pk.nca()` calculates the sparse and dense parameters of a group in one pass
   instead of two.  The exported `pk.nca.interval()` therefore no longer takes a
