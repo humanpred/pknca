@@ -283,23 +283,24 @@ check_interval_secondary_cols <- function(x) {
 
 # Helper function to get.parameter.deps to determine the function map
 get.parameter.deps_helper_funmap <- function(x, all_intervals) {
-  if (is.na(x$FUN) &
-      is.null(x$depends)) {
+  own_fun <- interval_col_fun(x)
+  if (!is.na(own_fun)) {
+    # Its own calculation function, which for a sparse-only parameter is its
+    # sparse estimator
+    return(append(list(own_fun), interval_col_formalsmap(x)))
+  }
+  if (is.null(x$depends)) {
     # For columnns like "start" and "end"
     retfun <- NA
-  } else if (is.na(x$FUN)) {
-    if (length(x$depends) == 1) {
-      # When the value is calculated by the same function as
-      # another parameter.
-      retfun <- all_intervals[[x$depends]]$FUN
-    } else {
-      # It would probably take malicious code to get here (an
-      # example of malicious code could be altering the
-      # intervals without using add.interval.col)
-      rlang::abort("Invalid interval definition with no function and multiple dependencies.", class = "pknca_error_interval_invalid_def")  # nocov
-    }
+  } else if (length(x$depends) == 1) {
+    # When the value is calculated by the same function as
+    # another parameter.
+    retfun <- interval_col_fun(all_intervals[[x$depends]])
   } else {
-    retfun <- x$FUN
+    # It would probably take malicious code to get here (an
+    # example of malicious code could be altering the
+    # intervals without using add.interval.col)
+    rlang::abort("Invalid interval definition with no function and multiple dependencies.", class = "pknca_error_interval_invalid_def")  # nocov
   }
   # Define a function call by its function name and the
   # changes to the formal arguments made.
@@ -464,7 +465,9 @@ pknca_source_inputs <- c(
   paste0(
     c("conc", "time", "volume", "duration.conc", "dose", "time.dose", "duration.dose", "route"),
     ".group"
-  )
+  ),
+  # The pooled individual samples for sparse PK
+  "conc.sparse", "time.sparse", "conc.sparse.group", "time.sparse.group"
 )
 
 # Dose inputs a calculation accepts but does not require.  pk.calc.half.life()
@@ -484,17 +487,19 @@ parameter_direct_refs <- function(x, all_intervals, optional_dose) {
   if (is.null(spec)) {
     return(character(0))
   }
-  if (length(spec$FUN) != 1 || is.na(spec$FUN)) {
+  spec_fun <- interval_col_fun(spec)
+  spec_formalsmap <- interval_col_formalsmap(spec)
+  if (length(spec_fun) != 1 || is.na(spec_fun)) {
     return(unique(spec$depends))
   }
-  fun <- tryCatch(get(spec$FUN), error = function(e) NULL)
+  fun <- tryCatch(get(spec_fun), error = function(e) NULL)
   if (is.null(fun)) {
     return(unique(spec$depends))  # nocov
   }
   arg_names <- setdiff(names(formals(fun)), "...")
   args <- stats::setNames(as.list(arg_names), arg_names)
-  if (length(spec$formalsmap) > 0) {
-    args[names(spec$formalsmap)] <- spec$formalsmap
+  if (length(spec_formalsmap) > 0) {
+    args[names(spec_formalsmap)] <- spec_formalsmap
   }
   args <- args[!vapply(X = args, FUN = is.null, FUN.VALUE = TRUE)]
   # I()-wrapped formalsmap values are constants, not references to a data source
@@ -504,7 +509,7 @@ parameter_direct_refs <- function(x, all_intervals, optional_dose) {
   # interval it comes from does not change what the calculation is made of.
   args <- lapply(X = args, FUN = function(a) if (is_pknca_ref(a)) a$param else a)
   if (!optional_dose) {
-    drop_args <- pknca_optional_dose_args[[spec$FUN]]
+    drop_args <- pknca_optional_dose_args[[spec_fun]]
     if (!is.null(drop_args)) {
       args <- args[!(names(args) %in% drop_args)]
     }

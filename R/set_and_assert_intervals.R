@@ -75,6 +75,32 @@ assert_intervals <- function(intervals, data) {
       class = "pknca_error_invalid_interval_columns"
     )
   }
-  
+
+  # Name only what the specification itself asks for, not the dependencies it
+  # drags in, so that the user is told about the columns they wrote
+  warn_deprecated_sparse_parameters(interval_requested_params(intervals, expand = FALSE))
+
+  # A standard error or degrees of freedom that only a sparse estimator produces
+  # would silently give nothing with dense data, so say so instead.  The
+  # deprecated names are exempt:  they were skipped for dense data before they
+  # were deprecated, and refusing them now would be a second breaking change on
+  # top of the deprecation.
+  if (!is_sparse_pk(data)) {
+    refusable <- setdiff(sparse_only_params(), names(deprecated_sparse_parameters))
+    requested_sparse_only <-
+      intersect(refusable, interval_requested_params(intervals))
+    if (length(requested_sparse_only) > 0) {
+      rlang::abort(
+        sprintf(
+          "%s only calculated for sparse PK; give `sparse = TRUE` to `PKNCAconc()` or drop %s from the intervals: %s",
+          ngettext(length(requested_sparse_only), msg1="This parameter is", msg2="These parameters are"),
+          ngettext(length(requested_sparse_only), msg1="it", msg2="them"),
+          paste(requested_sparse_only, collapse=", ")
+        ),
+        class = "pknca_error_sparse_only_parameter"
+      )
+    }
+  }
+
   intervals
 }

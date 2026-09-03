@@ -122,6 +122,10 @@ pknca_cdisc_translate <- function(ret, x) {
   all_intervals <- get.interval.cols()
   # Determine route for each result row
   route_per_row <- pknca_cdisc_get_route(ret, x)
+  # A PKNCAconc is entirely sparse or entirely dense, and a parameter with a
+  # sparse estimator used it throughout a sparse analysis, so sparseness is
+  # settled once for the whole result
+  sparse <- is_sparse_pk(x)
   # Build CDISC PPTESTCD and PPTEST for each row
   cdisc_pptestcd <- character(nrow(ret))
   cdisc_pptest <- character(nrow(ret))
@@ -135,8 +139,8 @@ pknca_cdisc_translate <- function(ret, x) {
       next
     }
     route <- route_per_row[i]
-    cdisc_pptestcd[i] <- resolve_cdisc_value(col_def$pptestcd_cdisc, route)
-    cdisc_pptest[i] <- resolve_cdisc_value(col_def$pptest_cdisc, route)
+    cdisc_pptestcd[i] <- resolve_cdisc_value(col_def$pptestcd_cdisc, route, sparse = sparse)
+    cdisc_pptest[i] <- resolve_cdisc_value(col_def$pptest_cdisc, route, sparse = sparse)
   }
   ret$PPTESTCD <- cdisc_pptestcd
   # Insert PPTEST after PPTESTCD
@@ -289,16 +293,23 @@ pknca_cdisc_get_last_dose_time <- function(ret, x) {
   result
 }
 
-# Resolve a CDISC value that may be a simple string or a route-dependent list
+# Resolve a CDISC value that may be a simple string, a route-dependent list, or
+# a list keyed by whether the analysis is sparse
 #
-# @param value A character string or a list with a "route" element
+# @param value A character string or a list with a "route" or "sparse" element
 # @param route The route for the current row ("extravascular" or "intravascular")
+# @param sparse Is the analysis sparse PK?  A parameter with a sparse estimator
+#   used it for every row of a sparse analysis, so this is a property of the
+#   analysis rather than of the row.
 # @returns A character string with the resolved CDISC value
 # @keywords Internal
 # @noRd
-resolve_cdisc_value <- function(value, route) {
+resolve_cdisc_value <- function(value, route, sparse = FALSE) {
   if (is.character(value)) {
     return(value)
+  }
+  if (is.list(value) && !is.null(value$sparse)) {
+    return(value$sparse[[if (isTRUE(sparse)) "sparse" else "dense"]])
   }
   if (is.list(value) && !is.null(value$route)) {
     route_lower <- tolower(route)

@@ -112,7 +112,15 @@ impute_exclusions <- function(impute, dosing) {
 }
 
 # The parameters a context can calculate, before include/exclude
-context_parameters <- function(dosing, route, sample_type, sparse, tier, auc_basis) {
+#
+# Sparseness is not one of the dimensions.  A sparse analysis reports the same
+# parameters as the dense one it corresponds to:  the ones with a sparse
+# estimator are estimated sparsely under their own names, and the rest are
+# calculated from the arithmetic-mean profile.  What is never chosen is a
+# parameter that *needs* sparse data -- the deprecated `sparse_*` family and
+# the standard errors and degrees of freedom that arrive as estimator output
+# without being asked for.
+context_parameters <- function(dosing, route, sample_type, tier, auc_basis) {
   classification <- parameter_classification()
   params <- names(classification$concept)
   keep <-
@@ -122,7 +130,7 @@ context_parameters <- function(dosing, route, sample_type, sparse, tier, auc_bas
         route %in% classification$route[[n]] &&
           dosing %in% classification$dosing[[n]] &&
           identical(classification$sample_type[[n]], sample_type) &&
-          identical(classification$sparse[[n]], sparse) &&
+          !classification$sparse[[n]] &&
           # A secondary parameter needs inputs from another profile, which one
           # interval cannot supply; it is reached by name through `include`
           !classification$secondary[[n]]
@@ -197,7 +205,10 @@ resolve_selection <- function(x, available, arg_name) {
 #'   in time (`"spot"`, the usual case for blood, plasma, and serum) or in a
 #'   collection over an interval (`"interval"`, the usual case for urine and
 #'   feces)?  See [pknca_sample_types()].
-#' @param sparse Is this a sparse sampling design?
+#' @param sparse Is this a sparse sampling design?  The parameters chosen are
+#'   the same either way -- `auclast` and `aumclast` are estimated with the
+#'   sparse methods when the data are sparse, and the rest are calculated from
+#'   the arithmetic-mean profile -- but a sparse design imputes nothing.
 #' @param tier `"common"` (the default) gives the parameters usually reported
 #'   for the context; `"all"` gives every parameter it can calculate.
 #' @param include,exclude NCA parameters or concepts (see [pknca_concepts()])
@@ -286,12 +297,12 @@ pknca_interval_table <- function(start, end,
   available <-
     context_parameters(
       dosing = dosing, route = route, sample_type = sample_type,
-      sparse = sparse, tier = "all", auc_basis = auc_basis
+      tier = "all", auc_basis = auc_basis
     )
   params <-
     context_parameters(
       dosing = dosing, route = route, sample_type = sample_type,
-      sparse = sparse, tier = tier, auc_basis = auc_basis
+      tier = tier, auc_basis = auc_basis
     )
   params <- union(params, resolve_selection(include, available, "include"))
   params <- setdiff(params, resolve_selection(exclude, available, "exclude"))

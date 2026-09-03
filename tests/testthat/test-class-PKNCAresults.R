@@ -521,6 +521,47 @@ test_that("as.data.frame.PKNCAresults with out_format='cdisc' resolves route-dep
   expect_false("CLF/FO" %in% result_iv$PPTESTCD)
 })
 
+test_that("as.data.frame.PKNCAresults with out_format='cdisc' resolves sparse-dependent params", {
+  d_conc <- data.frame(id = 1:8, conc = c(0, 0, 2, 3, 1, 1.5, 0.4, 0.6), time = rep(c(0, 1, 2, 4), each = 2))
+  d_intervals <- data.frame(start = 0, end = 4, auclast = TRUE, aumclast = TRUE)
+
+  # A dense analysis keeps the dense codes
+  o_data_dense <- PKNCAdata(PKNCAconc(d_conc, conc~time|id), intervals = d_intervals)
+  suppressMessages(suppressWarnings(o_nca_dense <- pk.nca(o_data_dense)))
+  result_dense <- as.data.frame(o_nca_dense, out_format = "cdisc")
+  expect_true(all(c("AUCLST", "AUMCLST") %in% result_dense$PPTESTCD))
+  expect_false("SPARSEAL" %in% result_dense$PPTESTCD)
+  expect_true("AUC to Last Nonzero Conc" %in% result_dense$PPTEST)
+
+  # A sparse analysis used the sparse estimator for every auclast row, so those
+  # rows carry the sparse code
+  o_data_sparse <- PKNCAdata(PKNCAconc(d_conc, conc~time|id, sparse = TRUE), intervals = d_intervals)
+  suppressMessages(suppressWarnings(o_nca_sparse <- pk.nca(o_data_sparse)))
+  result_sparse <- as.data.frame(o_nca_sparse, out_format = "cdisc")
+  expect_true("SPARSEAL" %in% result_sparse$PPTESTCD)
+  expect_false("AUCLST" %in% result_sparse$PPTESTCD)
+  expect_true("Sparse AUClast" %in% result_sparse$PPTEST)
+  # CDISC has no separate code for a sparsely estimated AUMClast, so only the
+  # test name distinguishes it
+  expect_true("AUMCLST" %in% result_sparse$PPTESTCD)
+  expect_true("Sparse AUMClast" %in% result_sparse$PPTEST)
+})
+
+test_that("resolve_cdisc_value picks the sparse or dense value", {
+  keyed <- list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL"))
+  expect_equal(resolve_cdisc_value(keyed, route = "extravascular", sparse = TRUE), "SPARSEAL")
+  expect_equal(resolve_cdisc_value(keyed, route = "extravascular", sparse = FALSE), "AUCLST")
+  # The default is the dense value, and route keying and plain strings are
+  # unaffected
+  expect_equal(resolve_cdisc_value(keyed, route = "intravascular"), "AUCLST")
+  expect_equal(
+    resolve_cdisc_value(list(route = list(extravascular = "CLF/FO", intravascular = "CLO")),
+                        route = "intravascular", sparse = TRUE),
+    "CLO"
+  )
+  expect_equal(resolve_cdisc_value("CMAX", route = "extravascular", sparse = TRUE), "CMAX")
+})
+
 test_that("as.data.frame.PKNCAresults with out_format='cdisc' does not add PPSTINT/PPENINT without INT params", {
   d_conc <- data.frame(
     subject = rep(1, 4),

@@ -14,6 +14,8 @@ add.interval.col(
   desc = "",
   sparse = FALSE,
   formalsmap = list(),
+  FUN_sparse = NA_character_,
+  formalsmap_sparse = list(),
   datatype = c("interval", "individual", "population"),
   pptestcd_cdisc = NULL,
   pptest_cdisc = NULL,
@@ -50,11 +52,24 @@ column.}
 \item{desc}{A human-readable description of the parameter.  SDTM requires
 <=40 characters; a longer description is accepted with a warning.}
 
-\item{sparse}{Is the calculation for sparse PK?}
+\item{sparse}{Retired.  \code{TRUE} is an error:  register a sparse-only
+parameter with \code{FUN = NA} and a \code{FUN_sparse} (plus \code{formalsmap_sparse})
+instead, which is now what makes a parameter sparse-only.  \code{FALSE}, the
+default, is accepted and does nothing.}
 
 \item{formalsmap}{A named list mapping parameter names in the function call
 to NCA parameter names.  See the details for information on use of
 \code{formalsmap}.}
+
+\item{FUN_sparse}{The function to run (as a character string) when the data
+are sparse PK, or \code{NA} (the default) when the parameter has no
+sparse-specific estimator.  With sparse data, a parameter that has one uses
+it; a parameter that does not falls back to \code{FUN} applied to the
+arithmetic-mean profile.  See the details.}
+
+\item{formalsmap_sparse}{The \code{formalsmap} for \code{FUN_sparse}, which usually has
+a different calling convention than \code{FUN} (a sparse estimator needs
+\code{subject}, for example).  May only be given with \code{FUN_sparse}.}
 
 \item{datatype}{The data type used for the calculation. The default is
 \code{"interval"}, which is currently the only supported value. The
@@ -62,9 +77,11 @@ to NCA parameter names.  See the details for information on use of
 use and will currently raise an error if selected.}
 
 \item{pptestcd_cdisc}{The CDISC PPTESTCD code for this parameter.  Can be a
-character string for simple mappings, or a named list for route-dependent
+character string for simple mappings, a named list for route-dependent
 mappings with a \code{route} element whose value is itself a named list keyed
-by route (e.g. \code{list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))}).  Defaults to \code{name} if not provided.}
+by route (e.g. \code{list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))}), or a named list with a \code{sparse} element whose value is a list
+named \code{dense} and \code{sparse}, for a parameter with a \code{FUN_sparse} whose
+sparse estimate has a code of its own (e.g. \code{list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL"))}).  Defaults to \code{name} if not provided.}
 
 \item{pptest_cdisc}{The CDISC PPTEST name for this parameter.  Can be a
 character string or a named list (same structure as \code{pptestcd_cdisc}).
@@ -116,6 +133,17 @@ available intervals for calculations)
 Add columns for calculations within PKNCA intervals
 }
 \details{
+\code{FUN_sparse} gives a parameter a second calculation function for
+sparse PK.  With sparse data, a parameter that has one is calculated with it
+-- from the pooled individual samples, and with \code{formalsmap_sparse} in place
+of \code{formalsmap} -- and its result is reported as a sparse result.  A
+parameter with no \code{FUN_sparse} falls back to \code{FUN} applied to the
+arithmetic-mean profile, which is what sparse data have always done.  A
+sparse estimator names its concentration inputs \code{conc}/\code{time} the way a dense
+one does; those draw from the pooled samples rather than the mean profile.
+The estimators PKNCA ships are linear-trapezoidal only, so \code{auc.method} does
+not apply to them.
+
 The \code{formalsmap} argument enables mapping some alternate formal
 argument names to parameters.  It is used to generalize functions that may
 use multiple similar arguments (such as the variants of mean residence time).
@@ -148,6 +176,15 @@ and the values should be one of the following:
 \item{"time.dose.group"}{Time of dose start associated with the current group (values start at 0 at the beginning of the current interval).}
 \item{"duration.dose.group"}{Duration of dose (typically infusion duration) for doses in the current group.}
 \item{"route.group"}{Route of dosing for the current group.}
+}
+\item{For sparse PK (\code{NULL} with dense PK, so a parameter naming one of
+these is only calculable with a sparse \code{PKNCAconc}):}
+\describe{
+\item{"conc.sparse"}{The pooled individual concentration measurements for the current interval ("conc" is the arithmetic-mean profile built from them).}
+\item{"time.sparse"}{Times associated with the pooled individual concentration measurements for the current interval (values start at 0 at the beginning of the current interval).}
+\item{"conc.sparse.group"}{The pooled individual concentration measurements for the current group.}
+\item{"time.sparse.group"}{Times associated with the pooled individual concentration measurements for the current group.}
+\item{"subject"}{Subject identifiers for the pooled individual concentration measurements for the current interval.}
 }
 \item{Constants:}
 \describe{

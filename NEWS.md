@@ -6,6 +6,91 @@ the dosing including dose amount and route.
 
 # Development version
 
+* On sparse PK data, `auclast` and `aumclast` are now estimated with the sparse
+  methods (the Bailer point estimate with the Nedelman-Jia/Holder standard
+  error) instead of a trapezoid on the arithmetic-mean profile, and the new
+  `auclast_se`, `auclast_df`, `aumclast_se`, and `aumclast_df` parameters report
+  the standard error and degrees of freedom.  The values match `sparse_auclast`
+  and `sparse_aumclast`, which still work, and every parameter derived from an
+  AUC (`cl.last`, `mrt.last`, `vz.last`, the dose-normalized variants, ...) now
+  picks the sparse estimate up by name.  Because the sparse methods are
+  linear-trapezoidal only, `auclast` on sparse data no longer follows the
+  `auc.method` option; `pk.nca()` says so when the option asks for anything
+  else.  Requesting one of the new `_se`/`_df` parameters for dense data is an
+  error rather than an empty result.
+
+* Imputation combined with a sparse estimator is now a clear error
+  (`pknca_error_sparse_impute`) naming the interval and the imputation method,
+  instead of corrupting the subject bookkeeping silently or, since the
+  `as_sparse_pk()` subject check became a real assertion, dying with an
+  internal assertion failure.  An imputed measurement belongs to no animal, and
+  the sparse standard error depends on which animal contributed which sample.
+  The error is raised only when the imputation actually changes the pooled
+  samples:  an imputation that finds what it would have added -- a
+  concentration already measured at the interval start, say -- still
+  calculates, as does one requested alongside only mean-profile parameters.
+
+* The eleven interval-specification names that requested sparse calculations
+  before -- `sparse_auclast`, `sparse_auc_se`, `sparse_auc_df`,
+  `sparse_aumclast`, `sparse_aumc_se`, `sparse_aumc_df`, `cl.sparse.last`,
+  `mrt.sparse.last`, `kel.sparse.last`, `vss.sparse.last`, and
+  `vz.sparse.last` -- are deprecated.  They still calculate and still give the
+  values they always gave, warning once per session with the unified name to
+  use instead, **and they will be an error in the next minor release**.  The
+  functions behind them (`pk.calc.sparse_auclast()`, `var_sparse_auc()`,
+  `cov_holder()`, and the rest) are not deprecated:  they are what the unified
+  estimators call.
+
+* `vz.last` on sparse data is not the same quantity as the deprecated
+  `vz.sparse.last`.  `vz.sparse.last` divided the clearance by `1/MRT`, which
+  made Vz numerically identical to Vss; `vz.last` divides by the `lambda.z`
+  fitted on the arithmetic-mean profile, which is the standard toxicokinetic
+  approach and is `NA` when the mean profile has too few points after its peak
+  to fit one.  Re-run any comparison that used `vz.sparse.last`.  The other ten
+  replacements give unchanged values -- `kel.last`, like the rest of PKNCA's
+  `kel` family, is `1/MRT`, so it matches `kel.sparse.last`; ask for
+  `lambda.z` for the terminal rate constant itself.
+
+* `pknca_interval_table()` with `sparse = TRUE` (and the `sparse_single_dose`
+  preset) now gives the same parameters as the matching dense design, with no
+  imputation.  No preset selects a deprecated name, and no context selects a
+  parameter that needs sparse data:  the `_se` and `_df` companions arrive as
+  estimator output without being requested.
+
+* **Breaking for packages that register their own NCA parameters:** the
+  `sparse` argument of `add.interval.col()` is retired.  `sparse = TRUE` is now
+  an error; register a sparse-only parameter with `FUN = NA` and
+  `FUN_sparse = <the calculation function>` (and `formalsmap_sparse` in place
+  of `formalsmap`) instead, which is what now makes a parameter sparse-only.
+  An explicit `sparse = FALSE` is still accepted and does nothing.  Registry
+  entries no longer carry a `sparse` field:  `get.interval.cols()[[<name>]]`
+  has no such element, and `pknca_parameter_table()$sparse` -- which reports
+  whether a parameter needs sparse data -- is derived from the registration.
+  A newly registered sparse-only parameter requested for dense data is refused
+  the way the `_se`/`_df` companions are; the deprecated `sparse_*` names are
+  still only skipped.
+
+* `add.interval.col()` gains `FUN_sparse` and `formalsmap_sparse` for
+  registering a parameter's sparse-specific estimator.  A parameter without one
+  keeps falling back to `FUN` on the arithmetic-mean profile, which is what
+  sparse data have always done.  `pptestcd_cdisc` and `pptest_cdisc` gain a
+  sparse-keyed form (`list(sparse = list(dense = "AUCLST", sparse =
+  "SPARSEAL"))`) alongside the existing route-keyed one, so a sparsely
+  estimated `auclast` is reported to CDISC as `SPARSEAL` and a dense one as
+  `AUCLST`.
+
+* `pk.nca()` calculates the sparse and dense parameters of a group in one pass
+  instead of two.  The exported `pk.nca.interval()` therefore no longer takes a
+  `sparse` argument, and takes `conc.sparse`, `time.sparse`,
+  `conc.sparse.group`, and `time.sparse.group` (the pooled individual samples)
+  alongside the mean profile in `conc`/`time`.  Those four names, and
+  `subject`, can also be named in a `formalsmap`.  The results are unchanged.
+
+* With `verbose = TRUE`, `pk.nca()` reports one "Starting PK NCA calculations."
+  message (condition class `pknca_message_pk_start`) in place of the separate
+  dense and sparse start messages (classes `pknca_message_dense_pk_start` and
+  `pknca_message_sparse_pk_start`), since there is now one pass.
+
 * Half-life point selection can now use the unadjusted r-squared instead of
   the adjusted r-squared:  set the new `r.squared.factor` option, or the
   `pk.calc.half.life()` argument of the same name, to the allowance.  The two
