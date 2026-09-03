@@ -471,9 +471,22 @@ pknca_source_inputs <- c(
 # refines its point selection with the dose timing when it is available and
 # returns the same answer without it, so treating it as required would report
 # the whole terminal-phase family as uncalculable whenever dosing is absent.
-pknca_optional_dose_args <- list(
-  pk.calc.half.life = c("time.dose", "duration.dose")
-)
+# The AUCint family bounds its interpolation and extrapolation by the doses
+# around the interval when dosing is available and falls back to interpolating
+# across the whole profile when it is not (#539).
+pknca_optional_dose_args <-
+  c(
+    list(pk.calc.half.life = c("time.dose", "duration.dose")),
+    stats::setNames(
+      rep(list(c("time.dose", "route", "duration.dose")), 8),
+      c(
+        "pk.calc.aucint.last", "pk.calc.aucint.all",
+        "pk.calc.aucint.inf.obs", "pk.calc.aucint.inf.pred",
+        "pk.calc.aumcint.last", "pk.calc.aumcint.all",
+        "pk.calc.aumcint.inf.obs", "pk.calc.aumcint.inf.pred"
+      )
+    )
+  )
 
 # What a single parameter is calculated from: its function's formals after the
 # formalsmap is applied, plus the parameters it declares a dependency on.  A

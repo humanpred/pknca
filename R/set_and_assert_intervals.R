@@ -55,7 +55,20 @@ assert_intervals <- function(intervals, data) {
   if (length(invalid_columns) > 0) {
     # A renamed parameter gets a pointer to its new name instead of a bare
     # rejection
-    renamed <- c(f = "f.obs")
+    renamed <-
+      c(
+        f = "f.obs",
+        # The AUCint parameters are all dose-aware now, so the `.dose` variants
+        # calculate what the parameter they were named after calculates (#508)
+        aucint.last.dose = "aucint.last",
+        aucint.all.dose = "aucint.all",
+        aucint.inf.obs.dose = "aucint.inf.obs",
+        aucint.inf.pred.dose = "aucint.inf.pred",
+        aumcint.last.dose = "aumcint.last",
+        aumcint.all.dose = "aumcint.all",
+        aumcint.inf.obs.dose = "aumcint.inf.obs",
+        aumcint.inf.pred.dose = "aumcint.inf.pred"
+      )
     hints <- renamed[intersect(names(renamed), invalid_columns)]
     hint_text <-
       if (length(hints) > 0) {
