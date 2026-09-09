@@ -12,6 +12,10 @@ Named list with patterns for \code{conc}, \code{dose},
 }
 \description{
 Returns a named list of regex patterns used to identify concentration,
-dose, subject, and time columns.
+dose, subject, and time columns. Patterns are deliberately strict:
+columns must clearly and unambiguously indicate their role. We do not
+guess based on partial/mangled names (e.g. a column that merely starts
+with "dose", or a bare "mg"/"ug" unit column), since that risks silently
+picking the wrong column.
 }
 \keyword{internal}

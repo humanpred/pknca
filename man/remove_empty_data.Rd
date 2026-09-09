@@ -7,8 +7,8 @@
 remove_empty_data(df, verbose = FALSE)
 }
 \description{
-Thin wrapper around \code{janitor::remove_empty()} that preserves any
-custom attributes already attached to the data frame (e.g.
-\code{column_mapping}).
+Drops rows and columns that are entirely \code{NA} (or, for character
+columns, entirely blank/whitespace), preserving any custom attributes
+already attached to the data frame (e.g. \code{column_mapping}).
 }
 \keyword{internal}

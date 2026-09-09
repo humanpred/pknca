@@ -4,7 +4,11 @@
 \alias{read_one_pk_file}
 \title{Read a Single PK File}
 \usage{
-read_one_pk_file(filepath, patterns, verbose = TRUE)
+read_one_pk_file(filepath, patterns, verbose = TRUE, ...)
+}
+\arguments{
+\item{...}{Additional arguments passed on to \code{rio::import()} (e.g.
+\code{sheet}, \code{which}, \code{col_types}, encoding options, etc.).}
 }
 \description{
 Uses \code{rio::import()} to read the file, drops entirely empty rows and

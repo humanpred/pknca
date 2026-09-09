@@ -9,10 +9,11 @@ read_pk_file(
   patterns = get_pk_patterns(),
   conc_formula = NULL,
   dose_formula = NULL,
-  intervals = NULL,
-  conc_options = list(),
-  dose_options = list(),
-  verbose = TRUE
+  conc_args = list(),
+  dose_args = list(),
+  data_args = list(),
+  verbose = TRUE,
+  ...
 )
 }
 \arguments{
@@ -36,26 +37,25 @@ from detected columns if omitted (and conc columns are present).}
 \item{dose_formula}{Optional. Formula for \code{PKNCAdose()}. Auto-built
 from detected columns if omitted (and dose columns are present).}
 
-\item{intervals}{Optional. A data frame of AUC intervals, in the
-format \code{PKNCAdata()} expects. Only used when the file has
-concentration columns but \strong{no} dose columns -- in that case
-\code{PKNCAdata()} cannot infer intervals automatically, so supplying
-this lets the function still return a full \code{PKNCAdata} object
-instead of a bare \code{PKNCAconc}. Ignored when dose columns are
-present (intervals are auto-derived from dose times as usual).}
-
-\item{conc_options}{Optional named list of extra arguments passed on to
+\item{conc_args}{Optional named list of extra arguments passed on to
 \code{PKNCAconc()} (e.g. \code{list(exclude = "excl", sparse = TRUE)}).}
 
-\item{dose_options}{Optional named list of extra arguments passed on to
+\item{dose_args}{Optional named list of extra arguments passed on to
 \code{PKNCAdose()} (e.g. \code{list(route = "extravascular")}).}
 
+\item{data_args}{Optional named list of extra arguments passed on to
+\code{PKNCAdata()} (e.g. \code{list(intervals = ...)}). Only relevant
+when the file has concentration columns and no dose columns, since
+otherwise \code{PKNCAdata()} auto-derives intervals from dose times.}
+
 \item{verbose}{Logical. Print progress messages? Default \code{TRUE}.}
+
+\item{...}{Additional arguments passed on to \code{rio::import()}
+for reading the file (e.g. \code{sheet}, \code{col_types}, etc.).}
 }
 \value{
 A \code{PKNCAdata}, \code{PKNCAconc}, or \code{PKNCAdose} object,
-depending on what was found in the file (and whether \code{intervals}
-was supplied for the conc-only case).
+depending on what was found in the file.
 }
 \description{
 Reads \strong{one} file that may contain concentration data, dose data,
@@ -80,23 +80,23 @@ default subject ID is created, and concentration values are used as-is
 \code{conc.blq} options at \code{pk.nca()} time); pre-process the file
 first if needed.
 
-\strong{On the conc-only case:} per \code{PKNCA::PKNCAdata.default()},
-dose is only treated as genuinely absent when the \code{data.dose}
-argument is omitted entirely (not passed as \code{NULL}) -- and in that
-case \code{PKNCAdata()} cannot auto-generate AUC intervals from dose
-times, so \code{intervals} must be supplied by hand. This function
-mirrors that: if the file has no dose columns and you pass
-\code{intervals}, you get a full \code{PKNCAdata} object built by
-calling \code{PKNCAdata(data.conc = <conc>, intervals = intervals)}
-(with \code{data.dose} genuinely omitted from the call, matching
-PKNCA's own \code{missing(data.dose)} branch). If you don't pass
-\code{intervals}, you just get the \code{PKNCAconc} object back.
+\strong{On the conc-only case:} per \code{PKNCAdata.default()}, dose is
+only treated as genuinely absent when the \code{data.dose} argument is
+omitted entirely (not passed as \code{NULL}) -- and in that case
+\code{PKNCAdata()} cannot auto-generate AUC intervals from dose times, so
+\code{intervals} must be supplied by hand (via \code{data_args}). This
+function mirrors that: if the file has no dose columns and you pass
+\code{data_args} (e.g. \code{list(intervals = ...)}), you get a full
+\code{PKNCAdata} object with \code{data.dose} genuinely omitted from the
+call, matching PKNCA's own \code{missing(data.dose)} branch. If you
+don't pass \code{data_args}, you just get the \code{PKNCAconc} object
+back.
 }
 \examples{
 \dontrun{
 # A single file that has both concentration and dose columns
 o_data <- read_pk_file("combined_pk.csv")
-nca_result <- PKNCA::pk.nca(o_data)
+nca_result <- pk.nca(o_data)
 
 # A file with only concentration columns -> PKNCAconc object
 o_conc <- read_pk_file("conc_only.xlsx")
@@ -105,7 +105,7 @@ o_conc <- read_pk_file("conc_only.xlsx")
 # since dose is genuinely absent and PKNCA needs manual intervals
 o_data <- read_pk_file(
   "conc_only.xlsx",
-  intervals = data.frame(start = 0, end = 24, auclast = TRUE)
+  data_args = list(intervals = data.frame(start = 0, end = 24, auclast = TRUE))
 )
 
 # Force custom grouping instead of auto-built "value ~ time | subject"
@@ -122,5 +122,8 @@ p <- get_pk_patterns()
 p$conc <- "Concen"
 p$dose <- "Dosemg"
 o_data <- read_pk_file("odd_headers.csv", patterns = p)
+
+# Read a specific sheet from an Excel file
+o_data <- read_pk_file("data.xlsx", sheet = "Concentration Data")
 }
 }

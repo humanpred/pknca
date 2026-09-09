@@ -19,8 +19,4 @@ Character string -- the matched column name.
 \description{
 Returns the actual column name for a given PK role.
 }
-\examples{
-\dontrun{
-  time_col <- get_mapped_column(df, "time")
-}
-}
+\keyword{internal}

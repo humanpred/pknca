@@ -13,6 +13,11 @@
 # header via regex patterns, and the PKNCA formula(s) are built
 # automatically from those roles unless supplied explicitly.
 #
+# NOTE ON COLUMN NAMING: pattern matching here is intentionally strict.
+# Column headers are expected to be clean and unambiguous (e.g. "conc",
+# "dose", "usubjid") -- we do not try to guess at mangled or partial names
+# (e.g. an R-mangled "Conc..ng.mL." or a bare "mg" column). Clean up column
+# names in your data before calling this function if needed.
 # =============================================================================
 
 
@@ -23,7 +28,11 @@
 #' Get Default PK Column Patterns
 #'
 #' Returns a named list of regex patterns used to identify concentration,
-#' dose, subject, and time columns.
+#' dose, subject, and time columns. Patterns are deliberately strict:
+#' columns must clearly and unambiguously indicate their role. We do not
+#' guess based on partial/mangled names (e.g. a column that merely starts
+#' with "dose", or a bare "mg"/"ug" unit column), since that risks silently
+#' picking the wrong column.
 #'
 #' @return Named list with patterns for \code{conc}, \code{dose},
 #'   \code{subject}, and \code{time}.
@@ -31,83 +40,99 @@
 get_pk_patterns <- function() {
   list(
     conc = c(
-      "^conc$", "^aval$", "^pcstresn$", "^dv$", "^concentration$",
-      "^conc\\b",        # starts with "conc" (e.g. R-mangled "Conc..ng.mL.")
-      "^conc_",          # conc_ prefix (e.g. conc_plasma)
-      "_conc$",          # _conc suffix
-      "\\bconcentration\\b",
-      "\\b(ng|mg|ug)[^a-z0-9]{0,3}ml\\b"  # ng/mL, mg/mL, ug/mL, or with _ . space as separator (e.g. "(ng/mL)" -> "..ng.mL.")
+      "^conc$", "^aval$", "^pcstresn$", "^dv$", "^concentration$"
     ),
     dose = c(
-      "^dose$", "^amount$", "^exdose$", "^amt$",
-      "^dose\\b",        # starts with "dose" (e.g. R-mangled "Dose..mg.")
-      "^dose_",          # dose_ prefix
-      "_dose$",          # _dose suffix
-      "\\b(mg|ug)[^a-z0-9]*$"   # mg or ug, optionally with trailing punctuation (e.g. "..mg.")
+      "^dose$", "^amount$", "^exdose$", "^amt$", "^ecdose$"
     ),
     subject = c(
       "^usubjid$", "^id$", "^subject$", "^subjectid$", "^ptno$",
-      "^subj$", "^subj_id$", "^subject_id$",
-      "^subject\\b",         # starts with "subject" (e.g. R-mangled "Subject.ID.")
-      "^usubjid\\b"          # starts with "usubjid" (e.g. R-mangled "USUBJID.")
+      "^subj$", "^subj_id$", "^subject_id$"
     ),
     time = c(
       "^time$", "^pctptnum$", "^atptn$", "^tad$", "^tafd$", "^hr$",
-      "^hours$", "^time_h$", "^time_hr$",
-      "^time\\b",           # starts with "time" (e.g. R-mangled "Time..hr.")
-      "\\btime\\s*\\(.*\\)"   # e.g. "Time (h)"
+      "^hours$", "^time_h$", "^time_hr$"
     )
   )
 }
 
 
+#' Check Whether Ambiguously-Matched Columns Are Equivalent
+#'
+#' Used to decide whether more than one column matching the same role is
+#' actually a problem. For most roles, "equivalent" means the columns hold
+#' identical values. For the \code{subject} role, two columns are also
+#' considered equivalent if they induce the same grouping of rows once each
+#' is treated as a factor in its observed order (i.e. two different
+#' subject-identifier schemes for the same subjects).
+#'
+#' @param cols_df Data frame containing just the ambiguously-matched columns.
+#' @param role    Character. The role that matched more than one column.
+#' @keywords internal
+columns_equivalent <- function(cols_df, role) {
+  if (ncol(cols_df) < 2) return(TRUE)
+  
+  first <- cols_df[[1]]
+  identical_vals <- vapply(
+    cols_df[-1],
+    function(x) isTRUE(all.equal(x, first)),
+    logical(1)
+  )
+  if (all(identical_vals)) return(TRUE)
+  
+  if (identical(role, "subject")) {
+    first_grp <- as.integer(factor(first, levels = unique(first)))
+    same_grp <- vapply(cols_df[-1], function(x) {
+      isTRUE(all.equal(as.integer(factor(x, levels = unique(x))), first_grp))
+    }, logical(1))
+    return(all(same_grp))
+  }
+  
+  FALSE
+}
+
+
 #' Resolve PK Column Roles
 #'
-#' Matches column names against PK role patterns.
+#' Matches column names against PK role patterns. If more than one column
+#' matches the same role, this is an error -- UNLESS \code{data} is supplied
+#' and the matching columns are equivalent (see \code{\link{columns_equivalent}}).
 #'
-#' @param file              Character. Optional file path for error messages.
-#' @param names_vec         Character vector (or data frame) of column names.
-#' @param patterns          Named list of regex patterns.
-#' @param mode              One of \code{"match"}, \code{"detect"},
-#'   \code{"detect_all"}.
-#' @param stop_on_ambiguous Logical. Abort if multiple columns match one role?
-#'
+#' @param file      Character. Optional file path for error messages.
+#' @param names_vec Character vector of column names (always a plain
+#'   character vector in practice -- every call site passes \code{names(df)}
+#'   -- but may legitimately be length 0 if every column was dropped as
+#'   empty).
+#' @param patterns  Named list of regex patterns.
+#' @param data      Optional data frame used to check whether ambiguous
+#'   matches are actually equivalent columns. If omitted, any role matched
+#'   by more than one column is always an error.
+#' @return Named list with logical vectors indicating matches for each role.
 #' @keywords internal
-resolve_pk_column_roles <- function(file              = NULL,
+resolve_pk_column_roles <- function(file      = NULL,
                                     names_vec,
                                     patterns,
-                                    mode              = c("match", "detect", "detect_all"),
-                                    stop_on_ambiguous = TRUE) {
+                                    data      = NULL) {
   
-  mode <- match.arg(mode)
+  checkmate::assert_list(patterns, names = "named", min.len = 1)
+  checkmate::assert_character(names_vec, null.ok = TRUE)
   
-  if (is.data.frame(names_vec)) {
-    if (is.null(names_vec) || nrow(names_vec) == 0) {
-      return(switch(mode,
-                    detect     = FALSE,
-                    detect_all = FALSE,
-                    lapply(patterns, function(x) logical(0))))
-    }
-    names_vec <- names(names_vec)
+  # No columns to match against -- return the "nothing matched" shape.
+  if (is.null(names_vec) || length(names_vec) == 0) {
+    return(lapply(patterns, function(x) logical(0)))
   }
   
   lower_names <- tolower(names_vec)
   
-  # Duplicate column check
-  dupes <- lower_names[duplicated(lower_names)]
+  # Duplicate column check. Compare case-insensitively, but report the
+  # original (non-lowercased) names so the user sees exactly what to fix.
+  dupes <- names_vec[duplicated(lower_names)]
   if (length(dupes) > 0) {
     rlang::abort(sprintf(
       "%sDuplicate column names (case-insensitive): %s",
       if (!is.null(file)) sprintf("File '%s': ", basename(file)) else "",
-      paste(unique(dupes), collapse = ", ")
+      paste(dupes, collapse = ", ")
     ))
-  }
-  
-  if (length(lower_names) == 0) {
-    return(switch(mode,
-                  detect     = FALSE,
-                  detect_all = FALSE,
-                  lapply(patterns, function(x) logical(0))))
   }
   
   # Match each role
@@ -116,14 +141,20 @@ resolve_pk_column_roles <- function(file              = NULL,
     grepl(combined_pat, lower_names, ignore.case = TRUE, perl = TRUE)
   })
   
-  # Ambiguity check
-  if (stop_on_ambiguous) {
-    ambiguous_roles <- names(role_hits)[vapply(role_hits, sum, integer(1)) > 1L]
-    if (length(ambiguous_roles) > 0) {
-      details <- vapply(ambiguous_roles, function(r) {
-        hits <- which(role_hits[[r]])
-        sprintf("%s \u2190 %s", r, paste(names_vec[hits], collapse = ", "))
-      }, character(1))
+  # Ambiguity check: more than one column matching a role is only
+  # acceptable when those columns are equivalent.
+  ambiguous_roles <- names(role_hits)[vapply(role_hits, sum, integer(1)) > 1L]
+  if (length(ambiguous_roles) > 0) {
+    details <- character(0)
+    for (r in ambiguous_roles) {
+      hits <- which(role_hits[[r]])
+      cols <- names_vec[hits]
+      equivalent <- !is.null(data) && columns_equivalent(data[cols], role = r)
+      if (!equivalent) {
+        details <- c(details, sprintf("%s -> %s", r, paste(cols, collapse = ", ")))
+      }
+    }
+    if (length(details) > 0) {
       rlang::abort(sprintf(
         "%sAmbiguous column matches:\n  %s\n\nFix: Rename columns or supply custom patterns.",
         if (!is.null(file)) sprintf("File '%s': ", basename(file)) else "",
@@ -132,23 +163,21 @@ resolve_pk_column_roles <- function(file              = NULL,
     }
   }
   
-  switch(mode,
-         detect     = any(vapply(role_hits, any, logical(1))),
-         detect_all = vapply(role_hits, any, logical(1)),
-         role_hits   # "match" -- return the full logical list
-  )
+  role_hits
 }
 
 
-#' Create Column Mapping from Column Names
+#' Create Column Mapping from a Data Frame
 #'
+#' @param df       Data frame whose columns are to be mapped to PK roles.
+#' @param patterns Named list of regex patterns.
 #' @keywords internal
-create_column_mapping <- function(original_names, patterns) {
+create_column_mapping <- function(df, patterns) {
+  original_names <- names(df)
   matches <- resolve_pk_column_roles(
-    names_vec         = tolower(original_names),
-    patterns          = patterns,
-    mode              = "match",
-    stop_on_ambiguous = FALSE
+    names_vec = original_names,
+    patterns  = patterns,
+    data      = df
   )
   mapping <- vector("list", length(patterns))
   names(mapping) <- names(patterns)
@@ -170,11 +199,7 @@ create_column_mapping <- function(original_names, patterns) {
 #'   \code{"conc"}, or \code{"dose"}.
 #'
 #' @return Character string -- the matched column name.
-#' @export
-#' @examples
-#' \dontrun{
-#'   time_col <- get_mapped_column(df, "time")
-#' }
+#' @keywords internal
 get_mapped_column <- function(data, role) {
   
   mapping <- attr(data, "column_mapping")
@@ -207,75 +232,11 @@ get_mapped_column <- function(data, role) {
 # 2.  File Reading & Role Detection
 # =============================================================================
 
-#' Read Only Column Names from a File
-#'
-#' Attempts a zero-row or one-row read to obtain column names without loading
-#' the full dataset. Some formats/readers (e.g. XPT, SAS7BDAT) ignore
-#' \code{n_max}; in that case this falls back to a full import just to get
-#' the names. Uses \code{rio::import()} exclusively (which delegates to
-#' \code{haven} internally for XPT/SAS7BDAT), so no direct \code{haven}
-#' dependency is needed here.
-#'
-#' @keywords internal
-read_column_names_only <- function(f, verbose = FALSE) {
-  
-  col_names <- tryCatch({
-    tmp <- rio::import(file = f, which = 1, n_max = 1L)
-    names(tmp)
-  }, error = function(e) {
-    # n_max wasn't honored (or some other read hiccup) -- fall back to a
-    # full import just to get the column names.
-    tryCatch({
-      tmp <- rio::import(file = f, which = 1)
-      names(tmp)
-    }, error = function(e2) {
-      if (verbose) rlang::inform(sprintf("  Could not read columns from '%s': %s", basename(f), e2$message))
-      NULL
-    })
-  })
-  
-  col_names
-}
-
-
-#' Detect the PK Role of a File
-#'
-#' Classifies a file as \code{"conc"}, \code{"dose"}, \code{"combined"}, or
-#' \code{"unknown"} based on which PK column roles are present in its header.
-#'
-#' @keywords internal
-detect_role <- function(f, patterns, verbose = FALSE) {
-  
-  col_names <- read_column_names_only(f, verbose = verbose)
-  if (is.null(col_names)) return("unknown")
-  
-  if (verbose) rlang::inform(sprintf("  Columns in %s: %s", basename(f), paste(col_names, collapse = ", ")))
-  
-  role_matches <- resolve_pk_column_roles(
-    names_vec         = col_names,
-    patterns          = patterns,
-    mode              = "detect_all",
-    stop_on_ambiguous = FALSE
-  )
-  
-  has_conc <- isTRUE(role_matches["conc"])
-  has_dose <- isTRUE(role_matches["dose"])
-  
-  if (has_conc && has_dose) return("combined")
-  if (has_conc)             return("conc")
-  if (has_dose)             return("dose")
-  
-  if (verbose) rlang::inform(sprintf("  %s \u2192 no PK columns found", basename(f)))
-  
-  "unknown"
-}
-
-
 #' Remove Empty Rows and Columns
 #'
-#' Thin wrapper around \code{janitor::remove_empty()} that preserves any
-#' custom attributes already attached to the data frame (e.g.
-#' \code{column_mapping}).
+#' Drops rows and columns that are entirely \code{NA} (or, for character
+#' columns, entirely blank/whitespace), preserving any custom attributes
+#' already attached to the data frame (e.g. \code{column_mapping}).
 #'
 #' @keywords internal
 remove_empty_data <- function(df, verbose = FALSE) {
@@ -283,13 +244,29 @@ remove_empty_data <- function(df, verbose = FALSE) {
   orig_rows <- nrow(df)
   orig_cols <- ncol(df)
   
-  cleaned <- janitor::remove_empty(dat = df, which = c("rows", "cols"))
+  # Check each column for blank/NA cells -- column by column, so character
+  # and non-character columns are each handled with the right rule (avoids
+  # coercing the whole data frame to a matrix, which can silently mangle
+  # mixed-type columns).
+  blank_cols <- lapply(df, function(col) {
+    if (is.character(col)) {
+      is.na(col) | trimws(col) == ""
+    } else {
+      is.na(col)
+    }
+  })
+  blank_mat <- do.call(cbind, blank_cols)
+  
+  row_keep <- rowSums(!blank_mat) > 0
+  col_keep <- colSums(!blank_mat) > 0
+  
+  cleaned <- df[row_keep, col_keep, drop = FALSE]
   
   removed_rows <- orig_rows - nrow(cleaned)
   removed_cols <- orig_cols - ncol(cleaned)
   
   if ((removed_rows > 0 || removed_cols > 0) && verbose) {
-    rlang::inform(sprintf("  \u2022 Removed %d empty row(s), %d empty col(s)", removed_rows, removed_cols))
+    rlang::inform(sprintf("  - Removed %d empty row(s), %d empty col(s)", removed_rows, removed_cols))
   }
   
   # Preserve any custom attributes already present (e.g. column_mapping)
@@ -306,13 +283,15 @@ remove_empty_data <- function(df, verbose = FALSE) {
 #' Uses \code{rio::import()} to read the file, drops entirely empty rows and
 #' columns, and attaches a \code{column_mapping} attribute.
 #'
+#' @param ... Additional arguments passed on to \code{rio::import()} (e.g.
+#'   \code{sheet}, \code{which}, \code{col_types}, encoding options, etc.).
 #' @keywords internal
-read_one_pk_file <- function(filepath, patterns, verbose = TRUE) {
+read_one_pk_file <- function(filepath, patterns, verbose = TRUE, ...) {
   
   if (verbose) rlang::inform(sprintf("Loading: %s", basename(filepath)))
   
   df <- tryCatch(
-    rio::import(file = filepath, which = 1),
+    rio::import(file = filepath, ...),
     error = function(e) rlang::abort(sprintf("Failed to read '%s': %s", filepath, e$message))
   )
   
@@ -320,7 +299,7 @@ read_one_pk_file <- function(filepath, patterns, verbose = TRUE) {
   
   df <- remove_empty_data(df, verbose = verbose)
   
-  mapping <- create_column_mapping(names(df), patterns)
+  mapping <- create_column_mapping(df, patterns)
   attr(df, "column_mapping") <- mapping
   class(df) <- c("pk_data", class(df))
   df
@@ -354,17 +333,17 @@ read_one_pk_file <- function(filepath, patterns, verbose = TRUE) {
 #' \code{conc.blq} options at \code{pk.nca()} time); pre-process the file
 #' first if needed.
 #'
-#' \strong{On the conc-only case:} per \code{PKNCA::PKNCAdata.default()},
-#' dose is only treated as genuinely absent when the \code{data.dose}
-#' argument is omitted entirely (not passed as \code{NULL}) -- and in that
-#' case \code{PKNCAdata()} cannot auto-generate AUC intervals from dose
-#' times, so \code{intervals} must be supplied by hand. This function
-#' mirrors that: if the file has no dose columns and you pass
-#' \code{intervals}, you get a full \code{PKNCAdata} object built by
-#' calling \code{PKNCAdata(data.conc = <conc>, intervals = intervals)}
-#' (with \code{data.dose} genuinely omitted from the call, matching
-#' PKNCA's own \code{missing(data.dose)} branch). If you don't pass
-#' \code{intervals}, you just get the \code{PKNCAconc} object back.
+#' \strong{On the conc-only case:} per \code{PKNCAdata.default()}, dose is
+#' only treated as genuinely absent when the \code{data.dose} argument is
+#' omitted entirely (not passed as \code{NULL}) -- and in that case
+#' \code{PKNCAdata()} cannot auto-generate AUC intervals from dose times, so
+#' \code{intervals} must be supplied by hand (via \code{data_args}). This
+#' function mirrors that: if the file has no dose columns and you pass
+#' \code{data_args} (e.g. \code{list(intervals = ...)}), you get a full
+#' \code{PKNCAdata} object with \code{data.dose} genuinely omitted from the
+#' call, matching PKNCA's own \code{missing(data.dose)} branch. If you
+#' don't pass \code{data_args}, you just get the \code{PKNCAconc} object
+#' back.
 #'
 #' @param path         Path to a single PK file (.xpt, .xlsx, .xls, .csv,
 #'   .txt, .sas7bdat) -- may hold concentration data, dose data, or both.
@@ -382,29 +361,27 @@ read_one_pk_file <- function(filepath, patterns, verbose = TRUE) {
 #'   from detected columns if omitted (and conc columns are present).
 #' @param dose_formula Optional. Formula for \code{PKNCAdose()}. Auto-built
 #'   from detected columns if omitted (and dose columns are present).
-#' @param intervals    Optional. A data frame of AUC intervals, in the
-#'   format \code{PKNCAdata()} expects. Only used when the file has
-#'   concentration columns but \strong{no} dose columns -- in that case
-#'   \code{PKNCAdata()} cannot infer intervals automatically, so supplying
-#'   this lets the function still return a full \code{PKNCAdata} object
-#'   instead of a bare \code{PKNCAconc}. Ignored when dose columns are
-#'   present (intervals are auto-derived from dose times as usual).
-#' @param conc_options Optional named list of extra arguments passed on to
+#' @param conc_args    Optional named list of extra arguments passed on to
 #'   \code{PKNCAconc()} (e.g. \code{list(exclude = "excl", sparse = TRUE)}).
-#' @param dose_options Optional named list of extra arguments passed on to
+#' @param dose_args    Optional named list of extra arguments passed on to
 #'   \code{PKNCAdose()} (e.g. \code{list(route = "extravascular")}).
+#' @param data_args    Optional named list of extra arguments passed on to
+#'   \code{PKNCAdata()} (e.g. \code{list(intervals = ...)}). Only relevant
+#'   when the file has concentration columns and no dose columns, since
+#'   otherwise \code{PKNCAdata()} auto-derives intervals from dose times.
 #' @param verbose      Logical. Print progress messages? Default \code{TRUE}.
+#' @param ...          Additional arguments passed on to \code{rio::import()}
+#'   for reading the file (e.g. \code{sheet}, \code{col_types}, etc.).
 #'
 #' @return A \code{PKNCAdata}, \code{PKNCAconc}, or \code{PKNCAdose} object,
-#'   depending on what was found in the file (and whether \code{intervals}
-#'   was supplied for the conc-only case).
+#'   depending on what was found in the file.
 #'
 #' @export
 #' @examples
 #' \dontrun{
 #' # A single file that has both concentration and dose columns
 #' o_data <- read_pk_file("combined_pk.csv")
-#' nca_result <- PKNCA::pk.nca(o_data)
+#' nca_result <- pk.nca(o_data)
 #'
 #' # A file with only concentration columns -> PKNCAconc object
 #' o_conc <- read_pk_file("conc_only.xlsx")
@@ -413,7 +390,7 @@ read_one_pk_file <- function(filepath, patterns, verbose = TRUE) {
 #' # since dose is genuinely absent and PKNCA needs manual intervals
 #' o_data <- read_pk_file(
 #'   "conc_only.xlsx",
-#'   intervals = data.frame(start = 0, end = 24, auclast = TRUE)
+#'   data_args = list(intervals = data.frame(start = 0, end = 24, auclast = TRUE))
 #' )
 #'
 #' # Force custom grouping instead of auto-built "value ~ time | subject"
@@ -430,23 +407,27 @@ read_one_pk_file <- function(filepath, patterns, verbose = TRUE) {
 #' p$conc <- "Concen"
 #' p$dose <- "Dosemg"
 #' o_data <- read_pk_file("odd_headers.csv", patterns = p)
+#'
+#' # Read a specific sheet from an Excel file
+#' o_data <- read_pk_file("data.xlsx", sheet = "Concentration Data")
 #' }
 read_pk_file <- function(path,
                          patterns     = get_pk_patterns(),
                          conc_formula = NULL,
                          dose_formula = NULL,
-                         intervals    = NULL,
-                         conc_options = list(),
-                         dose_options = list(),
-                         verbose      = TRUE) {
+                         conc_args    = list(),
+                         dose_args    = list(),
+                         data_args    = list(),
+                         verbose      = TRUE,
+                         ...) {
   
   # ---- argument validation --------------------------------------------------
   checkmate::assert_string(path, min.chars = 1)
   checkmate::assert_file_exists(path)
   checkmate::assert_list(patterns, min.len = 1, names = "named")
-  checkmate::assert_data_frame(intervals, null.ok = TRUE, min.rows = 1)
-  checkmate::assert_list(conc_options, names = "named")
-  checkmate::assert_list(dose_options, names = "named")
+  checkmate::assert_list(conc_args, names = "named")
+  checkmate::assert_list(dose_args, names = "named")
+  checkmate::assert_list(data_args, names = "named")
   checkmate::assert_flag(verbose)
   
   required_roles <- c("conc", "dose", "subject", "time")
@@ -462,10 +443,22 @@ read_pk_file <- function(path,
     if (!is.character(p)) rlang::abort("Each entry in `patterns` must be a character vector.")
   })
   
-  # ---- 1. detect what's in the file ------------------------------------------
-  role <- detect_role(path, patterns = patterns, verbose = verbose)
+  # ---- 1. read the file once (columns are mapped as part of this) -----------
+  df <- read_one_pk_file(path, patterns = patterns, verbose = verbose, ...)
   
-  if (role == "unknown") {
+  mapping  <- attr(df, "column_mapping")
+  time_col <- mapping$time
+  
+  # ---- 2. determine what's in the file, from the mapping already built ------
+  # (create_column_mapping() -- via resolve_pk_column_roles() -- already did
+  # the matching, including the ambiguity/equivalence check with access to
+  # the actual data. Re-deriving role from `mapping` avoids re-running that
+  # match a second time without `data`, which would incorrectly re-reject
+  # ambiguous-but-equivalent columns that were already accepted above.)
+  has_conc <- !is.na(mapping$conc)
+  has_dose <- !is.na(mapping$dose)
+  
+  if (!has_conc && !has_dose) {
     rlang::abort(sprintf(
       "Could not detect concentration or dose columns in '%s'.\n%s",
       basename(path),
@@ -473,24 +466,17 @@ read_pk_file <- function(path,
     ))
   }
   
-  has_conc <- role %in% c("conc", "combined")
-  has_dose <- role %in% c("dose", "combined")
+  role <- if (has_conc && has_dose) "combined" else if (has_conc) "conc" else "dose"
   
   if (verbose) {
     rlang::inform(
       sprintf(
-        "  \u2022 %s \u2192 %s (%s)",
+        "  - %s -> %s (%s)",
         basename(path), role,
         paste(c(if (has_conc) "concentration", if (has_dose) "dose"), collapse = " + ")
       )
     )
   }
-  
-  # ---- 2. read the file once and map columns ---------------------------------
-  df <- read_one_pk_file(path, patterns = patterns, verbose = verbose)
-  
-  mapping  <- attr(df, "column_mapping")
-  time_col <- mapping$time
   
   # ---- 3. concentration side --------------------------------------------------
   o_conc <- NULL
@@ -502,10 +488,10 @@ read_pk_file <- function(path,
         rlang::abort("No time column detected -- cannot auto-build `conc_formula`. Supply it explicitly.")
       }
       conc_formula <- stats::as.formula(sprintf("%s ~ %s | %s", conc_col, time_col, subj_col))
-      if (verbose) rlang::inform(sprintf("  \u2022 Auto-built conc_formula: %s", deparse(conc_formula)))
+      if (verbose) rlang::inform(sprintf("  - Auto-built conc_formula: %s", deparse(conc_formula)))
     }
     
-    o_conc <- do.call(PKNCA::PKNCAconc, c(list(data = df, formula = conc_formula), conc_options))
+    o_conc <- do.call(PKNCAconc, c(list(data = df, formula = conc_formula), conc_args))
   }
   
   # ---- 4. dose side -------------------------------------------------------------
@@ -518,10 +504,10 @@ read_pk_file <- function(path,
         rlang::abort("No time column detected -- cannot auto-build `dose_formula`. Supply it explicitly.")
       }
       dose_formula <- stats::as.formula(sprintf("%s ~ %s | %s", dose_col, time_col, subj_col))
-      if (verbose) rlang::inform(sprintf("  \u2022 Auto-built dose_formula: %s", deparse(dose_formula)))
+      if (verbose) rlang::inform(sprintf("  - Auto-built dose_formula: %s", deparse(dose_formula)))
     }
     
-    o_dose <- do.call(PKNCA::PKNCAdose, c(list(data = df, formula = dose_formula), dose_options))
+    o_dose <- do.call(PKNCAdose, c(list(data = df, formula = dose_formula), dose_args))
   }
   
   # ---- 5. return the appropriate object ----------------------------------------
@@ -530,22 +516,22 @@ read_pk_file <- function(path,
     # Both data.conc and data.dose are supplied -- PKNCAdata() auto-derives
     # intervals from the dose times, exactly like PKNCAdata.default's
     # normal (non-missing dose) branch.
-    return(PKNCA::PKNCAdata(o_conc, o_dose))
+    return(do.call(PKNCAdata, c(list(data.conc = o_conc, data.dose = o_dose), data_args)))
   }
   if (has_conc) {
-    if (!is.null(intervals)) {
+    if (length(data_args) > 0) {
       if (verbose) {
         rlang::inform(
-          "No dose columns found; `data.dose` is genuinely omitted from the PKNCAdata() call (per PKNCAdata.default's missing(data.dose) branch), and the supplied `intervals` is used since PKNCA can't auto-derive it without dose times."
+          "No dose columns found; `data.dose` is genuinely omitted from the PKNCAdata() call (per PKNCAdata.default's missing(data.dose) branch), and `data_args` (e.g. intervals) is used since PKNCA can't auto-derive it without dose times."
         )
       }
       # NOTE: data.dose is deliberately NOT passed here (not even as NULL) --
       # PKNCAdata.default() distinguishes missing(data.dose) from an explicit
       # NULL, and only the former triggers its `ret$dose <- NA` branch.
-      return(PKNCA::PKNCAdata(data.conc = o_conc, intervals = intervals))
+      return(do.call(PKNCAdata, c(list(data.conc = o_conc), data_args)))
     }
     if (verbose) {
-      rlang::inform("File has concentration columns only -> returning a PKNCAconc object. Pass `intervals` to get a full PKNCAdata object instead.")
+      rlang::inform("File has concentration columns only -> returning a PKNCAconc object. Pass `data_args` (e.g. intervals) to get a full PKNCAdata object instead.")
     }
     return(o_conc)
   }
@@ -554,4 +540,3 @@ read_pk_file <- function(path,
     return(o_dose)
   }
 }
-

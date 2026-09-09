@@ -4,27 +4,28 @@
 \alias{resolve_pk_column_roles}
 \title{Resolve PK Column Roles}
 \usage{
-resolve_pk_column_roles(
-  file = NULL,
-  names_vec,
-  patterns,
-  mode = c("match", "detect", "detect_all"),
-  stop_on_ambiguous = TRUE
-)
+resolve_pk_column_roles(file = NULL, names_vec, patterns, data = NULL)
 }
 \arguments{
 \item{file}{Character. Optional file path for error messages.}
 
-\item{names_vec}{Character vector (or data frame) of column names.}
+\item{names_vec}{Character vector of column names (always a plain
+character vector in practice -- every call site passes \code{names(df)}
+-- but may legitimately be length 0 if every column was dropped as
+empty).}
 
 \item{patterns}{Named list of regex patterns.}
 
-\item{mode}{One of \code{"match"}, \code{"detect"},
-\code{"detect_all"}.}
-
-\item{stop_on_ambiguous}{Logical. Abort if multiple columns match one role?}
+\item{data}{Optional data frame used to check whether ambiguous
+matches are actually equivalent columns. If omitted, any role matched
+by more than one column is always an error.}
+}
+\value{
+Named list with logical vectors indicating matches for each role.
 }
 \description{
-Matches column names against PK role patterns.
+Matches column names against PK role patterns. If more than one column
+matches the same role, this is an error -- UNLESS \code{data} is supplied
+and the matching columns are equivalent (see \code{\link{columns_equivalent}}).
 }
 \keyword{internal}

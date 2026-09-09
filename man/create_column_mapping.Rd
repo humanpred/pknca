@@ -2,11 +2,16 @@
 % Please edit documentation in R/read_pk_file.R
 \name{create_column_mapping}
 \alias{create_column_mapping}
-\title{Create Column Mapping from Column Names}
+\title{Create Column Mapping from a Data Frame}
 \usage{
-create_column_mapping(original_names, patterns)
+create_column_mapping(df, patterns)
+}
+\arguments{
+\item{df}{Data frame whose columns are to be mapped to PK roles.}
+
+\item{patterns}{Named list of regex patterns.}
 }
 \description{
-Create Column Mapping from Column Names
+Create Column Mapping from a Data Frame
 }
 \keyword{internal}
