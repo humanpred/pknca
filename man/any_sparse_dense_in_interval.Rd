@@ -18,6 +18,7 @@ A logical value indicating if the interval requests any sparse (if
 \code{sparse=TRUE}) or dense (if \code{sparse=FALSE}) calculations.
 }
 \description{
-Determine if there are any sparse or dense calculations requested within an interval
+A calculation is sparse when only sparse data can produce it, which is a
+property of the registration rather than a flag; see \code{\link[=add.interval.col]{add.interval.col()}}.
 }
 \keyword{Internal}

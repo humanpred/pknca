@@ -633,13 +633,13 @@ add.interval.col("kel.ivint.last",
                  depends = "mrt.ivint.last")
 
 add.interval.col("kel.sparse.last",
-                 FUN = "pk.calc.kel",
+                 FUN = NA,
+                 FUN_sparse = "pk.calc.kel",
                  values = c(FALSE, TRUE),
                  unit_type = "inverse_time",
                  pretty_name = "Kel (for sparse data, based on AUClast)",
                  desc = "Elim rate, sparse MRTlast",
-                 sparse = TRUE,
-                 formalsmap = list(mrt = "mrt.sparse.last"),
+                 formalsmap_sparse = list(mrt = "mrt.sparse.last"),
                  depends = "mrt.sparse.last")
 
 
@@ -832,13 +832,13 @@ add.interval.col("cl.ivint.last",
                  formula = "$CL_{\\text{iv,int,last}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,last}}}$")
 
 add.interval.col("cl.sparse.last",
-                 FUN = "pk.calc.cl",
+                 FUN = NA,
+                 FUN_sparse = "pk.calc.cl",
                  values = c(FALSE, TRUE),
                  unit_type = "clearance",
                  pretty_name = "CL (for sparse data, based on AUClast)",
                  desc = "Clearance, sparse AUClast",
-                 sparse = TRUE,
-                 formalsmap = list(auc = "sparse_auclast"),
+                 formalsmap_sparse = list(auc = "sparse_auclast"),
                  depends = "sparse_auclast",
                  formula = "$CL_{\\text{sparse,last}} = \\frac{Dose}{AUC_{\\text{sparse,last}}}$")
 
@@ -1089,13 +1089,13 @@ add.interval.col("mrt.int.last",
                  formula = "$MRT_{\\text{int,last}} = \\frac{AUMC_{\\text{int,last}}}{AUC_{\\text{int,last}}}$")
 
 add.interval.col("mrt.sparse.last",
-                 FUN = "pk.calc.mrt",
+                 FUN = NA,
+                 FUN_sparse = "pk.calc.mrt",
                  values = c(FALSE, TRUE),
                  unit_type = "time",
                  pretty_name = "MRT (for sparse data, based on AUClast)",
                  desc = "MRT, sparse AUClast/AUMClast",
-                 sparse = TRUE,
-                 formalsmap = list(auc = "sparse_auclast", aumc = "sparse_aumclast"),
+                 formalsmap_sparse = list(auc = "sparse_auclast", aumc = "sparse_aumclast"),
                  depends = c("sparse_auclast", "sparse_aumclast"))
 
 
@@ -1452,13 +1452,13 @@ add.interval.col("vz.last",
                  formula = "$V_{z,\\text{last}} = \\frac{CL_{\\text{last}}}{\\lambda_z}$")
 
 add.interval.col("vz.sparse.last",
-                 FUN         = "pk.calc.vz",
+                 FUN         = NA,
+                 FUN_sparse  = "pk.calc.vz",
                  values      = c(FALSE, TRUE),
                  unit_type   = "volume",
                  pretty_name = "Vz (for sparse data, based on AUClast)",
                  desc        = "Vz from sparse sampling",
-                 sparse      = TRUE,
-                 formalsmap  = list(cl = "cl.sparse.last", lambda.z = "kel.sparse.last"),
+                 formalsmap_sparse = list(cl = "cl.sparse.last", lambda.z = "kel.sparse.last"),
                  depends     = c("cl.sparse.last", "kel.sparse.last"),
                  formula = "$V_{z,\\text{sparse,last}} = \\frac{CL_{\\text{sparse,last}}}{\\lambda_z}$")
 
@@ -1673,13 +1673,13 @@ add.interval.col("vss.ivint.last",
                  depends = c("cl.ivint.last", "mrt.ivint.last"))
 
 add.interval.col("vss.sparse.last",
-                 FUN = "pk.calc.vss",
+                 FUN = NA,
+                 FUN_sparse = "pk.calc.vss",
                  values = c(FALSE, TRUE),
                  unit_type = "volume",
                  pretty_name = "Vss (for sparse data, based on AUClast)",
                  desc = "Vss, calc from sparse AUClast",
-                 sparse = TRUE,
-                 formalsmap = list(cl = "cl.sparse.last", mrt = "mrt.sparse.last"),
+                 formalsmap_sparse = list(cl = "cl.sparse.last", mrt = "mrt.sparse.last"),
                  depends = c("cl.sparse.last", "mrt.sparse.last"))
 
 

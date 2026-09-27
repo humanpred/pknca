@@ -12,6 +12,7 @@ AUMClast
 Analyte
 BIP
 BLQ
+Bailer
 Beal's
 Biometrics
 Biopharmaceutical
@@ -50,6 +51,7 @@ NCA
 Nedelman
 Noncompartmental
 ORCID
+PKNCA's
 PKNCAconc
 PKNCAdata
 PKNCAdose
@@ -201,3 +203,4 @@ varIdent
 swR
 swT
 udunits
+toxicokinetic

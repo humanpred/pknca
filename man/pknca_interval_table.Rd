@@ -36,7 +36,10 @@ in time (\code{"spot"}, the usual case for blood, plasma, and serum) or in a
 collection over an interval (\code{"interval"}, the usual case for urine and
 feces)?  See \code{\link[=pknca_sample_types]{pknca_sample_types()}}.}
 
-\item{sparse}{Is this a sparse sampling design?}
+\item{sparse}{Is this a sparse sampling design?  The parameters chosen are
+the same either way -- \code{auclast} and \code{aumclast} are estimated with the
+sparse methods when the data are sparse, and the rest are calculated from
+the arithmetic-mean profile -- but a sparse design imputes nothing.}
 
 \item{tier}{\code{"common"} (the default) gives the parameters usually reported
 for the context; \code{"all"} gives every parameter it can calculate.}

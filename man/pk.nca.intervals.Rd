@@ -8,15 +8,16 @@ pk.nca.intervals(
   data_conc,
   data_dose,
   data_intervals,
-  sparse,
   options,
   impute,
+  data_sparse_conc = NULL,
   verbose = FALSE
 )
 }
 \arguments{
 \item{data_conc}{A data.frame or tibble with standardized column names as
-output from \code{prepare_PKNCAconc()}}
+output from \code{prepare_PKNCAconc()}.  With sparse PK this is the
+arithmetic-mean profile.}
 
 \item{data_dose}{A data.frame or tibble with standardized column names as
 output from \code{prepare_PKNCAdose()}}
@@ -24,18 +25,21 @@ output from \code{prepare_PKNCAdose()}}
 \item{data_intervals}{A data.frame or tibble with standardized column names
 as output from \code{prepare_PKNCAintervals()}}
 
-\item{sparse}{Should only sparse calculations be performed (TRUE) or only
-dense calculations (FALSE)?}
-
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
 
 \item{impute}{The column name in \code{data_intervals} to use for imputation}
 
+\item{data_sparse_conc}{For sparse PK, a data.frame or tibble of the pooled
+individual samples (including a \code{subject} column) as output from
+\code{prepare_PKNCAconc()}; \code{NULL} for dense PK}
+
 \item{verbose}{Indicate, by \code{message()}, the current state of calculation.}
 }
 \value{
-A data.frame with all NCA results
+A list with elements "dense" and "sparse", each a data.frame of the
+NCA results calculated from that concentration representation (or, when no
+calculation was possible at all, the warning condition saying why)
 }
 \description{
 Compute NCA for multiple intervals

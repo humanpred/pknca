@@ -20,14 +20,22 @@ local({
     current_pptestcd_cdisc <- get.interval.cols()[[n]]$pptestcd_cdisc
     current_pptest_cdisc <- get.interval.cols()[[n]]$pptest_cdisc
     current_formula <- get.interval.cols()[[n]]$formula
-    # Derive dose-normalized CDISC codes from the base parameter
+    # Derive dose-normalized CDISC codes from the base parameter.  A
+    # dense/sparse mapping gets the suffix on each code so the dose-normalized
+    # rows stay distinguishable from the base parameter's rows.
     dn_pptestcd <- if (is.character(current_pptestcd_cdisc)) {
       paste0(current_pptestcd_cdisc, "D")
+    } else if (is.list(current_pptestcd_cdisc) &&
+               setequal(names(current_pptestcd_cdisc), c("dense", "sparse"))) {
+      lapply(current_pptestcd_cdisc, paste0, "D")
     } else {
       current_pptestcd_cdisc
     }
     dn_pptest <- if (is.character(current_pptest_cdisc)) {
       paste(current_pptest_cdisc, "by Dose")
+    } else if (is.list(current_pptest_cdisc) &&
+               setequal(names(current_pptest_cdisc), c("dense", "sparse"))) {
+      lapply(current_pptest_cdisc, paste, "by Dose")
     } else {
       current_pptest_cdisc
     }
