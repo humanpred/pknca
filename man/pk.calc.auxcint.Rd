@@ -234,9 +234,10 @@ AUMCinf.pred
 
 }}
 \section{Doses bound the profile}{
-When dose times are given, the profile being integrated ends at the first
-dose at or after \code{end}:  a concentration measured after that dose belongs to
-a later profile and is neither integrated nor used for
+When dose times are given, the concentrations used to extrapolate the
+profile being integrated, if extrapolation is required, end at the first
+dose at or after \code{end}:  a concentration measured after that dose is
+affected by the dose and is neither integrated nor used for
 interpolation/extrapolation into this interval.  Concentrations from before
 the interval are used to estimate the concentration at \code{start}, and that
 estimate does not interpolate across a dose either (see

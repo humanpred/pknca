@@ -975,6 +975,11 @@ test_that("a missing dose time gives NA rather than interpolating at NA (#367, #
     pk.calc.aumcint.last(conc = conc, time = time, start = 0, end = Inf, time.dose = NA_real_),
     pk.calc.aumcint.last(conc = conc, time = time, start = 0, end = Inf)
   )
+  # Several unknown dose times are no more placeable than one
+  expect_equal(
+    pk.calc.aucint.last(conc = conc, time = time, start = 0, end = Inf, time.dose = rep(NA_real_, 3)),
+    pk.calc.aucint.last(conc = conc, time = time, start = 0, end = Inf)
+  )
   # One unknown dose time among known ones is a dose that cannot be placed
   expect_warning(
     auc_partial_na_dose <-
@@ -1201,4 +1206,25 @@ test_that("the trough before a dose is extrapolated from the profile before it (
     ),
     structure(1.5 * exp(-lambda_z * (24 - 12)), Method = "Extrapolation")
   )
+})
+
+test_that("pk.nca is not dose-aware when every dose time is NA (#539)", {
+  # A one-sided dose formula gives dose amounts with no dose times
+  d_conc <- data.frame(subject = 1, time = 0:5, conc = 2^(0:-5))
+  d_dose <- data.frame(subject = 1, dose = 100)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_dose <- PKNCAdose(d_dose, dose ~ . | subject)
+  o_data <-
+    PKNCAdata(
+      o_conc, o_dose,
+      intervals = data.frame(start = 0, end = 5, aucint.last = TRUE)
+    )
+  res <- as.data.frame(suppressMessages(suppressWarnings(pk.nca(o_data))))
+  # lin up/log down (the default) with conc halving every hour: each 1-hour
+  # segment contributes (conc_k - conc_k/2)/log(2)
+  expect_equal(as.numeric(res$PPORRES), sum(2^(-1:-5)) / log(2))
+  expect_true(
+    grepl("Interpolation: not dose-aware (no dosing data)", res$PPANMETH, fixed = TRUE)
+  )
+  expect_equal(res$exclude, NA_character_)
 })

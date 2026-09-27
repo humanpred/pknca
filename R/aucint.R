@@ -6,9 +6,10 @@
 #' @details
 #' # Doses bound the profile
 #'
-#' When dose times are given, the profile being integrated ends at the first
-#' dose at or after `end`:  a concentration measured after that dose belongs to
-#' a later profile and is neither integrated nor used for
+#' When dose times are given, the concentrations used to extrapolate the
+#' profile being integrated, if extrapolation is required, end at the first
+#' dose at or after `end`:  a concentration measured after that dose is
+#' affected by the dose and is neither integrated nor used for
 #' interpolation/extrapolation into this interval.  Concentrations from before
 #' the interval are used to estimate the concentration at `start`, and that
 #' estimate does not interpolate across a dose either (see
@@ -83,7 +84,8 @@ pk.calc.auxcint <- function(conc, time,
   # Check inputs
   auc.type <- match.arg(auc.type)
   method <- PKNCA.choose.option(name="auc.method", value=method, options=options)
-  if (!is.null(time.dose) && all(is.na(time.dose))) {
+  dose_aware <- !is.null(time.dose) && !all(is.na(time.dose))
+  if (!dose_aware) {
     # No dose time is known at all, which is what an analysis without dosing
     # data gives, so the calculation simply is not dose-aware.
     time.dose <- NULL
@@ -93,23 +95,24 @@ pk.calc.auxcint <- function(conc, time,
     rlang::warn("time.dose is NA", class = "pknca_warning_timedose_na")
     return(structure(NA_real_, exclude = "dose time is missing"))
   }
-  dose_aware <- !is.null(time.dose)
   if (check) {
     assert_conc_time(conc, time)
   }
   interval <- assert_intervaltime_single(interval = interval, start = start, end = end)
   if (dose_aware) {
-    # A concentration measured after the dose that follows the interval belongs
-    # to a later profile, so it is neither integrated nor interpolated or
+    # A concentration measured after the dose that follows the interval is
+    # affected by that dose, so it is neither integrated nor interpolated or
     # extrapolated into this interval (#508).  Dropping it here is also what
-    # makes Tlast the Tlast of the profile being integrated, which is what
-    # says whether the interval reaches past it.
+    # makes Tlast the Tlast of the profile being integrated, which is what says
+    # whether the interval reaches past it.
     #
     # The dose that starts the interval is not a bound in the same way:  the
     # concentration at the start of the interval is estimated from the profile
     # before it, which interp.extrap.conc.dose() does without interpolating
-    # across the dose.
-    window_end <- dose_window_end(time.dose = time.dose, interval = interval)
+    # across the dose.  A concentration measured at the same time as a dose is
+    # taken to be measured before it, matching interp.extrap.conc.dose().
+    dose_after <- time.dose[time.dose >= interval[2]]
+    window_end <- if (length(dose_after) > 0) min(dose_after) else Inf
     mask_conc <- time <= window_end
     conc <- conc[mask_conc]
     time <- time[mask_conc]
@@ -280,14 +283,24 @@ pk.calc.auxcint <- function(conc, time,
     time_interp <- data$time[mask_time]
   }
 
+  tlast_integrate <-
+    if (lambda_z_used) {
+      # The extrapolated concentrations are the half-life's description of the
+      # profile after Tlast, so they are integrated as though measured.
+      max(time_interp)
+    } else {
+      pk.calc.tlast(conc = conc_interp, time = time_interp, check = FALSE)
+    }
+  if (is.na(tlast_integrate)) {
+    # Every concentration within the interval is zero.  choose_interval_method()
+    # integrates zero in that case, but it still wants a number.
+    tlast_integrate <- max(time_interp)
+  }
   interval_method <-
     choose_interval_method(
       conc = conc_interp,
       time = time_interp,
-      tlast =
-        tlast_for_integration(
-          conc = conc_interp, time = time_interp, lambda_z_used = lambda_z_used
-        ),
+      tlast = tlast_integrate,
       method = method,
       auc.type = auc_type_calc,
       options = options
@@ -312,7 +325,7 @@ pk.calc.auxcint <- function(conc, time,
     c(
       paste0("AUC: ", method),
       paste0(
-        pknca_interp_method_prefix,
+        "Interpolation: ",
         if (dose_aware) "dose-aware" else "not dose-aware (no dosing data)"
       ),
       paste0(pknca_extrap_method_prefix, extrap_method)
@@ -326,39 +339,13 @@ pk.calc.auxcint <- function(conc, time,
   ret
 }
 
-# How pk.calc.auxcint() names, in the method (PPANMETH) column, whether it knew
-# the dose times (#539) and how it handled the interval after Tlast.  The
-# half-life exclusions in exclude_nca.R read the extrapolation text to tell an
-# AUCint that used the half-life from one that only interpolated (#270), so
-# these are named once here.
-pknca_interp_method_prefix <- "Interpolation: "
+# How pk.calc.auxcint() names, in the method (PPANMETH) column, the way it
+# handled the interval after Tlast.  The half-life exclusions in exclude_nca.R
+# match this text to tell an AUCint that used the half-life from one that only
+# interpolated (#270), so the writer and the reader share it rather than each
+# spelling it out.
 pknca_extrap_method_prefix <- "Extrapolation: "
 pknca_extrap_method_halflife <- "half-life"
-
-# The first dose at or after the end of the interval, which is where the profile
-# being integrated ends; `Inf` when there is no such dose.  A dose within the
-# interval does not end it, because the interval asks for the profiles on both
-# sides of that dose to be integrated together.  A concentration measured at the
-# same time as a dose is taken to be measured before it, matching
-# interp.extrap.conc.dose().
-dose_window_end <- function(time.dose, interval) {
-  dose_after <- time.dose[time.dose >= interval[2]]
-  if (length(dose_after) > 0) min(dose_after) else Inf
-}
-
-# The Tlast that an AU(M)C is integrated against: the last measurable
-# concentration, or the end of the data when the half-life described everything
-# after it (and when nothing is measurable, where choose_interval_method()
-# integrates zero but still wants a number).
-tlast_for_integration <- function(conc, time, lambda_z_used) {
-  ret <-
-    if (lambda_z_used) {
-      max(time)
-    } else {
-      pk.calc.tlast(conc = conc, time = time, check = FALSE)
-    }
-  if (is.na(ret)) max(time) else ret
-}
 
 #' @describeIn pk.calc.auxcint Calculate AUC over an interval
 #' @export
@@ -637,9 +624,6 @@ add.interval.col("aumcint.inf.pred",
                  formula="$AUMC_{\\text{int,}\\infty\\text{,pred}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
-# =============================================================================
-# SET SUMMARY STATISTICS - Count (8)
-# =============================================================================
 PKNCA.set.summary(
   name= c(
     # AUC related

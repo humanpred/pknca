@@ -30,28 +30,21 @@ NULL
 # an AUCint over an interval that ends at or before Tlast is interpolated
 # throughout, so no exclusion of the half-life reaches it.  pk.calc.auxcint()
 # reports the extrapolation it used in the method column, and that is what says
-# whether the half-life entered the result.
-halflife_may_be_used <- function(method) {
-  reports_extrapolation <-
-    grepl(pattern = pknca_extrap_method_prefix, x = method, fixed = TRUE)
-  used_halflife <-
-    grepl(
-      pattern = paste0(pknca_extrap_method_prefix, pknca_extrap_method_halflife),
-      x = method,
-      fixed = TRUE
-    )
-  # A result that reports no extrapolation says nothing either way, so it keeps
-  # the exclusion.
-  !reports_extrapolation | used_halflife
-}
-
-# Wrap an exclusion function that excludes everything depending on the half-life
-# so that it spares the results which did not use it.
+# whether the half-life entered the result.  A result that reports no
+# extrapolation says nothing either way, so it keeps the exclusion.
 exclude_nca_halflife_dependent <- function(FUN) {
   function(x, ...) {
     ret <- FUN(x, ...)
     if ("PPANMETH" %in% names(x)) {
-      ret[!halflife_may_be_used(x$PPANMETH)] <- NA_character_
+      reports_extrapolation <-
+        grepl(pattern = pknca_extrap_method_prefix, x = x$PPANMETH, fixed = TRUE)
+      used_halflife <-
+        grepl(
+          pattern = paste0(pknca_extrap_method_prefix, pknca_extrap_method_halflife),
+          x = x$PPANMETH,
+          fixed = TRUE
+        )
+      ret[reports_extrapolation & !used_halflife] <- NA_character_
     }
     ret
   }
