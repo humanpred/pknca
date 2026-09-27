@@ -262,9 +262,7 @@ PKNCA, partial AUCs are calculated with the interval AUC (`aucint`)
 family of parameters: `aucint.last`, `aucint.all`, `aucint.inf.obs`, and
 `aucint.inf.pred` integrate over the full interval from `start` to `end`
 while handling the region after `tlast` the same way as `auclast`,
-`aucall`, `aucinf.obs`, and `aucinf.pred`, respectively. (The `.dose`
-variants of each, such as `aucint.last.dose`, additionally interpolate
-concentrations at dose times within the interval.)
+`aucall`, `aucinf.obs`, and `aucinf.pred`, respectively.
 
 Request an `aucint` parameter like any other interval parameter with the
 `start` and `end` of the interval defining the range of integration.
@@ -275,6 +273,18 @@ manual data preparation is required. In the example below, the
 concentration at the end time of 1.5 is not in the observed data, and it
 is interpolated automatically during the calculation.
 
+When dosing data are given, the `aucint` parameters are dose-aware: the
+profile being integrated ends at the first dose at or after the end of
+the interval, so a concentration measured after that dose is never
+interpolated back into the interval. Only the start and end of the
+interval are estimated; a dose within the interval is integrated across
+using the concentrations measured on either side of it. The method
+(`PPANMETH`) column reports whether the calculation was dose-aware and
+how the region after `tlast` was handled – with the half-life, with
+`AUCall` (when `aucint.inf.obs` or `aucint.inf.pred` was requested but
+the half-life is not estimable), or not at all when the interval ends at
+or before `tlast`.
+
 ``` r
 
 data_aucint_obj <-
@@ -284,10 +294,10 @@ results_aucint_obj <- pk.nca(data_aucint_obj)
 kable(as.data.frame(results_aucint_obj))
 ```
 
-| subject | start | end | PPTESTCD    | PPORRES | PPANMETH             | exclude |
-|--------:|------:|----:|:------------|--------:|:---------------------|:--------|
-|       1 |     0 | 2.0 | aucint.last |  4.0000 | AUC: lin up/log down | NA      |
-|       1 |     0 | 1.5 | aucint.last |  2.5625 | AUC: lin up/log down | NA      |
+| subject | start | end | PPTESTCD | PPORRES | PPANMETH | exclude |
+|---:|---:|---:|:---|---:|:---|:---|
+| 1 | 0 | 2.0 | aucint.last | 4.0000 | AUC: lin up/log down. Interpolation: not dose-aware (no dosing data). Extrapolation: none | NA |
+| 1 | 0 | 1.5 | aucint.last | 2.5625 | AUC: lin up/log down. Interpolation: not dose-aware (no dosing data). Extrapolation: none | NA |
 
 The area under the first moment curve (AUMC) has matching interval
 parameters (`aumcint.last`, `aumcint.all`, and the other `aumcint*`

@@ -238,77 +238,69 @@ pknca_units_table() # only parameters that are unitless
 #> 148     <NA>               auclast
 #> 149     <NA>                aucall
 #> 150     <NA>           aucint.last
-#> 151     <NA>      aucint.last.dose
-#> 152     <NA>            aucint.all
-#> 153     <NA>       aucint.all.dose
-#> 154     <NA>  aucabove.predose.all
-#> 155     <NA>   aucabove.trough.all
-#> 156     <NA>        sparse_auclast
-#> 157     <NA>         sparse_auc_se
-#> 158     <NA>             aucivlast
-#> 159     <NA>              aucivall
-#> 160     <NA>         aucivint.last
-#> 161     <NA>          aucivint.all
-#> 162     <NA>            aucinf.obs
-#> 163     <NA>           aucinf.pred
-#> 164     <NA>        aucint.inf.obs
-#> 165     <NA>   aucint.inf.obs.dose
-#> 166     <NA>       aucint.inf.pred
-#> 167     <NA>  aucint.inf.pred.dose
-#> 168     <NA>          aucivinf.obs
-#> 169     <NA>         aucivinf.pred
-#> 170     <NA>              aumclast
-#> 171     <NA>               aumcall
-#> 172     <NA>          aumcint.last
-#> 173     <NA>     aumcint.last.dose
-#> 174     <NA>           aumcint.all
-#> 175     <NA>      aumcint.all.dose
-#> 176     <NA>       sparse_aumclast
-#> 177     <NA>        sparse_aumc_se
-#> 178     <NA>            aumcivlast
-#> 179     <NA>             aumcivall
-#> 180     <NA>        aumcivint.last
-#> 181     <NA>         aumcivint.all
-#> 182     <NA>           aumcinf.obs
-#> 183     <NA>          aumcinf.pred
-#> 184     <NA>       aumcint.inf.obs
-#> 185     <NA>  aumcint.inf.obs.dose
-#> 186     <NA>      aumcint.inf.pred
-#> 187     <NA> aumcint.inf.pred.dose
-#> 188     <NA>         aumcivinf.obs
-#> 189     <NA>        aumcivinf.pred
-#> 190     <NA>                 ermax
-#> 191     <NA>                 erint
-#> 192     <NA>                 erlst
-#> 193     <NA>            auclast.dn
-#> 194     <NA>             aucall.dn
-#> 195     <NA>         aucinf.obs.dn
-#> 196     <NA>        aucinf.pred.dn
-#> 197     <NA>           aumclast.dn
-#> 198     <NA>            aumcall.dn
-#> 199     <NA>        aumcinf.obs.dn
-#> 200     <NA>       aumcinf.pred.dn
-#> 201     <NA>               cl.last
-#> 202     <NA>                cl.all
-#> 203     <NA>            cl.int.all
-#> 204     <NA>           cl.int.last
-#> 205     <NA>             cl.iv.all
-#> 206     <NA>            cl.iv.last
-#> 207     <NA>          cl.ivint.all
-#> 208     <NA>         cl.ivint.last
-#> 209     <NA>        cl.sparse.last
-#> 210     <NA>                cl.obs
-#> 211     <NA>               cl.pred
-#> 212     <NA>        cl.int.inf.obs
-#> 213     <NA>       cl.int.inf.pred
-#> 214     <NA>             cl.iv.obs
-#> 215     <NA>            cl.iv.pred
-#> 216     <NA>              clr.last
-#> 217     <NA>               clr.obs
-#> 218     <NA>              clr.pred
-#> 219     <NA>           clr.last.dn
-#> 220     <NA>            clr.obs.dn
-#> 221     <NA>           clr.pred.dn
+#> 151     <NA>            aucint.all
+#> 152     <NA>  aucabove.predose.all
+#> 153     <NA>   aucabove.trough.all
+#> 154     <NA>        sparse_auclast
+#> 155     <NA>         sparse_auc_se
+#> 156     <NA>             aucivlast
+#> 157     <NA>              aucivall
+#> 158     <NA>         aucivint.last
+#> 159     <NA>          aucivint.all
+#> 160     <NA>            aucinf.obs
+#> 161     <NA>           aucinf.pred
+#> 162     <NA>        aucint.inf.obs
+#> 163     <NA>       aucint.inf.pred
+#> 164     <NA>          aucivinf.obs
+#> 165     <NA>         aucivinf.pred
+#> 166     <NA>              aumclast
+#> 167     <NA>               aumcall
+#> 168     <NA>          aumcint.last
+#> 169     <NA>           aumcint.all
+#> 170     <NA>       sparse_aumclast
+#> 171     <NA>        sparse_aumc_se
+#> 172     <NA>            aumcivlast
+#> 173     <NA>             aumcivall
+#> 174     <NA>        aumcivint.last
+#> 175     <NA>         aumcivint.all
+#> 176     <NA>           aumcinf.obs
+#> 177     <NA>          aumcinf.pred
+#> 178     <NA>       aumcint.inf.obs
+#> 179     <NA>      aumcint.inf.pred
+#> 180     <NA>         aumcivinf.obs
+#> 181     <NA>        aumcivinf.pred
+#> 182     <NA>                 ermax
+#> 183     <NA>                 erint
+#> 184     <NA>                 erlst
+#> 185     <NA>            auclast.dn
+#> 186     <NA>             aucall.dn
+#> 187     <NA>         aucinf.obs.dn
+#> 188     <NA>        aucinf.pred.dn
+#> 189     <NA>           aumclast.dn
+#> 190     <NA>            aumcall.dn
+#> 191     <NA>        aumcinf.obs.dn
+#> 192     <NA>       aumcinf.pred.dn
+#> 193     <NA>               cl.last
+#> 194     <NA>                cl.all
+#> 195     <NA>            cl.int.all
+#> 196     <NA>           cl.int.last
+#> 197     <NA>             cl.iv.all
+#> 198     <NA>            cl.iv.last
+#> 199     <NA>          cl.ivint.all
+#> 200     <NA>         cl.ivint.last
+#> 201     <NA>        cl.sparse.last
+#> 202     <NA>                cl.obs
+#> 203     <NA>               cl.pred
+#> 204     <NA>        cl.int.inf.obs
+#> 205     <NA>       cl.int.inf.pred
+#> 206     <NA>             cl.iv.obs
+#> 207     <NA>            cl.iv.pred
+#> 208     <NA>              clr.last
+#> 209     <NA>               clr.obs
+#> 210     <NA>              clr.pred
+#> 211     <NA>           clr.last.dn
+#> 212     <NA>            clr.obs.dn
+#> 213     <NA>           clr.pred.dn
 pknca_units_table(
   concu="ng/mL", doseu="mg/kg", amountu="mg", timeu="hr"
 )
@@ -463,77 +455,69 @@ pknca_units_table(
 #> 148                hr*ng/mL               auclast
 #> 149                hr*ng/mL                aucall
 #> 150                hr*ng/mL           aucint.last
-#> 151                hr*ng/mL      aucint.last.dose
-#> 152                hr*ng/mL            aucint.all
-#> 153                hr*ng/mL       aucint.all.dose
-#> 154                hr*ng/mL  aucabove.predose.all
-#> 155                hr*ng/mL   aucabove.trough.all
-#> 156                hr*ng/mL        sparse_auclast
-#> 157                hr*ng/mL         sparse_auc_se
-#> 158                hr*ng/mL             aucivlast
-#> 159                hr*ng/mL              aucivall
-#> 160                hr*ng/mL         aucivint.last
-#> 161                hr*ng/mL          aucivint.all
-#> 162                hr*ng/mL            aucinf.obs
-#> 163                hr*ng/mL           aucinf.pred
-#> 164                hr*ng/mL        aucint.inf.obs
-#> 165                hr*ng/mL   aucint.inf.obs.dose
-#> 166                hr*ng/mL       aucint.inf.pred
-#> 167                hr*ng/mL  aucint.inf.pred.dose
-#> 168                hr*ng/mL          aucivinf.obs
-#> 169                hr*ng/mL         aucivinf.pred
-#> 170              hr^2*ng/mL              aumclast
-#> 171              hr^2*ng/mL               aumcall
-#> 172              hr^2*ng/mL          aumcint.last
-#> 173              hr^2*ng/mL     aumcint.last.dose
-#> 174              hr^2*ng/mL           aumcint.all
-#> 175              hr^2*ng/mL      aumcint.all.dose
-#> 176              hr^2*ng/mL       sparse_aumclast
-#> 177              hr^2*ng/mL        sparse_aumc_se
-#> 178              hr^2*ng/mL            aumcivlast
-#> 179              hr^2*ng/mL             aumcivall
-#> 180              hr^2*ng/mL        aumcivint.last
-#> 181              hr^2*ng/mL         aumcivint.all
-#> 182              hr^2*ng/mL           aumcinf.obs
-#> 183              hr^2*ng/mL          aumcinf.pred
-#> 184              hr^2*ng/mL       aumcint.inf.obs
-#> 185              hr^2*ng/mL  aumcint.inf.obs.dose
-#> 186              hr^2*ng/mL      aumcint.inf.pred
-#> 187              hr^2*ng/mL aumcint.inf.pred.dose
-#> 188              hr^2*ng/mL         aumcivinf.obs
-#> 189              hr^2*ng/mL        aumcivinf.pred
-#> 190                   mg/hr                 ermax
-#> 191                   mg/hr                 erint
-#> 192                   mg/hr                 erlst
-#> 193      (hr*ng/mL)/(mg/kg)            auclast.dn
-#> 194      (hr*ng/mL)/(mg/kg)             aucall.dn
-#> 195      (hr*ng/mL)/(mg/kg)         aucinf.obs.dn
-#> 196      (hr*ng/mL)/(mg/kg)        aucinf.pred.dn
-#> 197    (hr^2*ng/mL)/(mg/kg)           aumclast.dn
-#> 198    (hr^2*ng/mL)/(mg/kg)            aumcall.dn
-#> 199    (hr^2*ng/mL)/(mg/kg)        aumcinf.obs.dn
-#> 200    (hr^2*ng/mL)/(mg/kg)       aumcinf.pred.dn
-#> 201      (mg/kg)/(hr*ng/mL)               cl.last
-#> 202      (mg/kg)/(hr*ng/mL)                cl.all
-#> 203      (mg/kg)/(hr*ng/mL)            cl.int.all
-#> 204      (mg/kg)/(hr*ng/mL)           cl.int.last
-#> 205      (mg/kg)/(hr*ng/mL)             cl.iv.all
-#> 206      (mg/kg)/(hr*ng/mL)            cl.iv.last
-#> 207      (mg/kg)/(hr*ng/mL)          cl.ivint.all
-#> 208      (mg/kg)/(hr*ng/mL)         cl.ivint.last
-#> 209      (mg/kg)/(hr*ng/mL)        cl.sparse.last
-#> 210      (mg/kg)/(hr*ng/mL)                cl.obs
-#> 211      (mg/kg)/(hr*ng/mL)               cl.pred
-#> 212      (mg/kg)/(hr*ng/mL)        cl.int.inf.obs
-#> 213      (mg/kg)/(hr*ng/mL)       cl.int.inf.pred
-#> 214      (mg/kg)/(hr*ng/mL)             cl.iv.obs
-#> 215      (mg/kg)/(hr*ng/mL)            cl.iv.pred
-#> 216           mg/(hr*ng/mL)              clr.last
-#> 217           mg/(hr*ng/mL)               clr.obs
-#> 218           mg/(hr*ng/mL)              clr.pred
-#> 219 (mg/(hr*ng/mL))/(mg/kg)           clr.last.dn
-#> 220 (mg/(hr*ng/mL))/(mg/kg)            clr.obs.dn
-#> 221 (mg/(hr*ng/mL))/(mg/kg)           clr.pred.dn
+#> 151                hr*ng/mL            aucint.all
+#> 152                hr*ng/mL  aucabove.predose.all
+#> 153                hr*ng/mL   aucabove.trough.all
+#> 154                hr*ng/mL        sparse_auclast
+#> 155                hr*ng/mL         sparse_auc_se
+#> 156                hr*ng/mL             aucivlast
+#> 157                hr*ng/mL              aucivall
+#> 158                hr*ng/mL         aucivint.last
+#> 159                hr*ng/mL          aucivint.all
+#> 160                hr*ng/mL            aucinf.obs
+#> 161                hr*ng/mL           aucinf.pred
+#> 162                hr*ng/mL        aucint.inf.obs
+#> 163                hr*ng/mL       aucint.inf.pred
+#> 164                hr*ng/mL          aucivinf.obs
+#> 165                hr*ng/mL         aucivinf.pred
+#> 166              hr^2*ng/mL              aumclast
+#> 167              hr^2*ng/mL               aumcall
+#> 168              hr^2*ng/mL          aumcint.last
+#> 169              hr^2*ng/mL           aumcint.all
+#> 170              hr^2*ng/mL       sparse_aumclast
+#> 171              hr^2*ng/mL        sparse_aumc_se
+#> 172              hr^2*ng/mL            aumcivlast
+#> 173              hr^2*ng/mL             aumcivall
+#> 174              hr^2*ng/mL        aumcivint.last
+#> 175              hr^2*ng/mL         aumcivint.all
+#> 176              hr^2*ng/mL           aumcinf.obs
+#> 177              hr^2*ng/mL          aumcinf.pred
+#> 178              hr^2*ng/mL       aumcint.inf.obs
+#> 179              hr^2*ng/mL      aumcint.inf.pred
+#> 180              hr^2*ng/mL         aumcivinf.obs
+#> 181              hr^2*ng/mL        aumcivinf.pred
+#> 182                   mg/hr                 ermax
+#> 183                   mg/hr                 erint
+#> 184                   mg/hr                 erlst
+#> 185      (hr*ng/mL)/(mg/kg)            auclast.dn
+#> 186      (hr*ng/mL)/(mg/kg)             aucall.dn
+#> 187      (hr*ng/mL)/(mg/kg)         aucinf.obs.dn
+#> 188      (hr*ng/mL)/(mg/kg)        aucinf.pred.dn
+#> 189    (hr^2*ng/mL)/(mg/kg)           aumclast.dn
+#> 190    (hr^2*ng/mL)/(mg/kg)            aumcall.dn
+#> 191    (hr^2*ng/mL)/(mg/kg)        aumcinf.obs.dn
+#> 192    (hr^2*ng/mL)/(mg/kg)       aumcinf.pred.dn
+#> 193      (mg/kg)/(hr*ng/mL)               cl.last
+#> 194      (mg/kg)/(hr*ng/mL)                cl.all
+#> 195      (mg/kg)/(hr*ng/mL)            cl.int.all
+#> 196      (mg/kg)/(hr*ng/mL)           cl.int.last
+#> 197      (mg/kg)/(hr*ng/mL)             cl.iv.all
+#> 198      (mg/kg)/(hr*ng/mL)            cl.iv.last
+#> 199      (mg/kg)/(hr*ng/mL)          cl.ivint.all
+#> 200      (mg/kg)/(hr*ng/mL)         cl.ivint.last
+#> 201      (mg/kg)/(hr*ng/mL)        cl.sparse.last
+#> 202      (mg/kg)/(hr*ng/mL)                cl.obs
+#> 203      (mg/kg)/(hr*ng/mL)               cl.pred
+#> 204      (mg/kg)/(hr*ng/mL)        cl.int.inf.obs
+#> 205      (mg/kg)/(hr*ng/mL)       cl.int.inf.pred
+#> 206      (mg/kg)/(hr*ng/mL)             cl.iv.obs
+#> 207      (mg/kg)/(hr*ng/mL)            cl.iv.pred
+#> 208           mg/(hr*ng/mL)              clr.last
+#> 209           mg/(hr*ng/mL)               clr.obs
+#> 210           mg/(hr*ng/mL)              clr.pred
+#> 211 (mg/(hr*ng/mL))/(mg/kg)           clr.last.dn
+#> 212 (mg/(hr*ng/mL))/(mg/kg)            clr.obs.dn
+#> 213 (mg/(hr*ng/mL))/(mg/kg)           clr.pred.dn
 pknca_units_table(
   concu="ng/mL", doseu="mg/kg", amountu="mg", timeu="hr",
   # Convert clearance and volume units to more understandable units with
@@ -694,77 +678,69 @@ pknca_units_table(
 #> 148                hr*ng/mL               auclast                hr*ng/mL
 #> 149                hr*ng/mL                aucall                hr*ng/mL
 #> 150                hr*ng/mL           aucint.last                hr*ng/mL
-#> 151                hr*ng/mL      aucint.last.dose                hr*ng/mL
-#> 152                hr*ng/mL            aucint.all                hr*ng/mL
-#> 153                hr*ng/mL       aucint.all.dose                hr*ng/mL
-#> 154                hr*ng/mL  aucabove.predose.all                hr*ng/mL
-#> 155                hr*ng/mL   aucabove.trough.all                hr*ng/mL
-#> 156                hr*ng/mL        sparse_auclast                hr*ng/mL
-#> 157                hr*ng/mL         sparse_auc_se                hr*ng/mL
-#> 158                hr*ng/mL             aucivlast                hr*ng/mL
-#> 159                hr*ng/mL              aucivall                hr*ng/mL
-#> 160                hr*ng/mL         aucivint.last                hr*ng/mL
-#> 161                hr*ng/mL          aucivint.all                hr*ng/mL
-#> 162                hr*ng/mL            aucinf.obs                hr*ng/mL
-#> 163                hr*ng/mL           aucinf.pred                hr*ng/mL
-#> 164                hr*ng/mL        aucint.inf.obs                hr*ng/mL
-#> 165                hr*ng/mL   aucint.inf.obs.dose                hr*ng/mL
-#> 166                hr*ng/mL       aucint.inf.pred                hr*ng/mL
-#> 167                hr*ng/mL  aucint.inf.pred.dose                hr*ng/mL
-#> 168                hr*ng/mL          aucivinf.obs                hr*ng/mL
-#> 169                hr*ng/mL         aucivinf.pred                hr*ng/mL
-#> 170              hr^2*ng/mL              aumclast              hr^2*ng/mL
-#> 171              hr^2*ng/mL               aumcall              hr^2*ng/mL
-#> 172              hr^2*ng/mL          aumcint.last              hr^2*ng/mL
-#> 173              hr^2*ng/mL     aumcint.last.dose              hr^2*ng/mL
-#> 174              hr^2*ng/mL           aumcint.all              hr^2*ng/mL
-#> 175              hr^2*ng/mL      aumcint.all.dose              hr^2*ng/mL
-#> 176              hr^2*ng/mL       sparse_aumclast              hr^2*ng/mL
-#> 177              hr^2*ng/mL        sparse_aumc_se              hr^2*ng/mL
-#> 178              hr^2*ng/mL            aumcivlast              hr^2*ng/mL
-#> 179              hr^2*ng/mL             aumcivall              hr^2*ng/mL
-#> 180              hr^2*ng/mL        aumcivint.last              hr^2*ng/mL
-#> 181              hr^2*ng/mL         aumcivint.all              hr^2*ng/mL
-#> 182              hr^2*ng/mL           aumcinf.obs              hr^2*ng/mL
-#> 183              hr^2*ng/mL          aumcinf.pred              hr^2*ng/mL
-#> 184              hr^2*ng/mL       aumcint.inf.obs              hr^2*ng/mL
-#> 185              hr^2*ng/mL  aumcint.inf.obs.dose              hr^2*ng/mL
-#> 186              hr^2*ng/mL      aumcint.inf.pred              hr^2*ng/mL
-#> 187              hr^2*ng/mL aumcint.inf.pred.dose              hr^2*ng/mL
-#> 188              hr^2*ng/mL         aumcivinf.obs              hr^2*ng/mL
-#> 189              hr^2*ng/mL        aumcivinf.pred              hr^2*ng/mL
-#> 190                   mg/hr                 ermax                   mg/hr
-#> 191                   mg/hr                 erint                   mg/hr
-#> 192                   mg/hr                 erlst                   mg/hr
-#> 193      (hr*ng/mL)/(mg/kg)            auclast.dn      (hr*ng/mL)/(mg/kg)
-#> 194      (hr*ng/mL)/(mg/kg)             aucall.dn      (hr*ng/mL)/(mg/kg)
-#> 195      (hr*ng/mL)/(mg/kg)         aucinf.obs.dn      (hr*ng/mL)/(mg/kg)
-#> 196      (hr*ng/mL)/(mg/kg)        aucinf.pred.dn      (hr*ng/mL)/(mg/kg)
-#> 197    (hr^2*ng/mL)/(mg/kg)           aumclast.dn    (hr^2*ng/mL)/(mg/kg)
-#> 198    (hr^2*ng/mL)/(mg/kg)            aumcall.dn    (hr^2*ng/mL)/(mg/kg)
-#> 199    (hr^2*ng/mL)/(mg/kg)        aumcinf.obs.dn    (hr^2*ng/mL)/(mg/kg)
-#> 200    (hr^2*ng/mL)/(mg/kg)       aumcinf.pred.dn    (hr^2*ng/mL)/(mg/kg)
-#> 201      (mg/kg)/(hr*ng/mL)               cl.last                mL/hr/kg
-#> 202      (mg/kg)/(hr*ng/mL)                cl.all                mL/hr/kg
-#> 203      (mg/kg)/(hr*ng/mL)            cl.int.all                mL/hr/kg
-#> 204      (mg/kg)/(hr*ng/mL)           cl.int.last                mL/hr/kg
-#> 205      (mg/kg)/(hr*ng/mL)             cl.iv.all                mL/hr/kg
-#> 206      (mg/kg)/(hr*ng/mL)            cl.iv.last                mL/hr/kg
-#> 207      (mg/kg)/(hr*ng/mL)          cl.ivint.all                mL/hr/kg
-#> 208      (mg/kg)/(hr*ng/mL)         cl.ivint.last                mL/hr/kg
-#> 209      (mg/kg)/(hr*ng/mL)        cl.sparse.last                mL/hr/kg
-#> 210      (mg/kg)/(hr*ng/mL)                cl.obs                mL/hr/kg
-#> 211      (mg/kg)/(hr*ng/mL)               cl.pred                mL/hr/kg
-#> 212      (mg/kg)/(hr*ng/mL)        cl.int.inf.obs                mL/hr/kg
-#> 213      (mg/kg)/(hr*ng/mL)       cl.int.inf.pred                mL/hr/kg
-#> 214      (mg/kg)/(hr*ng/mL)             cl.iv.obs                mL/hr/kg
-#> 215      (mg/kg)/(hr*ng/mL)            cl.iv.pred                mL/hr/kg
-#> 216           mg/(hr*ng/mL)              clr.last           mg/(hr*ng/mL)
-#> 217           mg/(hr*ng/mL)               clr.obs           mg/(hr*ng/mL)
-#> 218           mg/(hr*ng/mL)              clr.pred           mg/(hr*ng/mL)
-#> 219 (mg/(hr*ng/mL))/(mg/kg)           clr.last.dn (mg/(hr*ng/mL))/(mg/kg)
-#> 220 (mg/(hr*ng/mL))/(mg/kg)            clr.obs.dn (mg/(hr*ng/mL))/(mg/kg)
-#> 221 (mg/(hr*ng/mL))/(mg/kg)           clr.pred.dn (mg/(hr*ng/mL))/(mg/kg)
+#> 151                hr*ng/mL            aucint.all                hr*ng/mL
+#> 152                hr*ng/mL  aucabove.predose.all                hr*ng/mL
+#> 153                hr*ng/mL   aucabove.trough.all                hr*ng/mL
+#> 154                hr*ng/mL        sparse_auclast                hr*ng/mL
+#> 155                hr*ng/mL         sparse_auc_se                hr*ng/mL
+#> 156                hr*ng/mL             aucivlast                hr*ng/mL
+#> 157                hr*ng/mL              aucivall                hr*ng/mL
+#> 158                hr*ng/mL         aucivint.last                hr*ng/mL
+#> 159                hr*ng/mL          aucivint.all                hr*ng/mL
+#> 160                hr*ng/mL            aucinf.obs                hr*ng/mL
+#> 161                hr*ng/mL           aucinf.pred                hr*ng/mL
+#> 162                hr*ng/mL        aucint.inf.obs                hr*ng/mL
+#> 163                hr*ng/mL       aucint.inf.pred                hr*ng/mL
+#> 164                hr*ng/mL          aucivinf.obs                hr*ng/mL
+#> 165                hr*ng/mL         aucivinf.pred                hr*ng/mL
+#> 166              hr^2*ng/mL              aumclast              hr^2*ng/mL
+#> 167              hr^2*ng/mL               aumcall              hr^2*ng/mL
+#> 168              hr^2*ng/mL          aumcint.last              hr^2*ng/mL
+#> 169              hr^2*ng/mL           aumcint.all              hr^2*ng/mL
+#> 170              hr^2*ng/mL       sparse_aumclast              hr^2*ng/mL
+#> 171              hr^2*ng/mL        sparse_aumc_se              hr^2*ng/mL
+#> 172              hr^2*ng/mL            aumcivlast              hr^2*ng/mL
+#> 173              hr^2*ng/mL             aumcivall              hr^2*ng/mL
+#> 174              hr^2*ng/mL        aumcivint.last              hr^2*ng/mL
+#> 175              hr^2*ng/mL         aumcivint.all              hr^2*ng/mL
+#> 176              hr^2*ng/mL           aumcinf.obs              hr^2*ng/mL
+#> 177              hr^2*ng/mL          aumcinf.pred              hr^2*ng/mL
+#> 178              hr^2*ng/mL       aumcint.inf.obs              hr^2*ng/mL
+#> 179              hr^2*ng/mL      aumcint.inf.pred              hr^2*ng/mL
+#> 180              hr^2*ng/mL         aumcivinf.obs              hr^2*ng/mL
+#> 181              hr^2*ng/mL        aumcivinf.pred              hr^2*ng/mL
+#> 182                   mg/hr                 ermax                   mg/hr
+#> 183                   mg/hr                 erint                   mg/hr
+#> 184                   mg/hr                 erlst                   mg/hr
+#> 185      (hr*ng/mL)/(mg/kg)            auclast.dn      (hr*ng/mL)/(mg/kg)
+#> 186      (hr*ng/mL)/(mg/kg)             aucall.dn      (hr*ng/mL)/(mg/kg)
+#> 187      (hr*ng/mL)/(mg/kg)         aucinf.obs.dn      (hr*ng/mL)/(mg/kg)
+#> 188      (hr*ng/mL)/(mg/kg)        aucinf.pred.dn      (hr*ng/mL)/(mg/kg)
+#> 189    (hr^2*ng/mL)/(mg/kg)           aumclast.dn    (hr^2*ng/mL)/(mg/kg)
+#> 190    (hr^2*ng/mL)/(mg/kg)            aumcall.dn    (hr^2*ng/mL)/(mg/kg)
+#> 191    (hr^2*ng/mL)/(mg/kg)        aumcinf.obs.dn    (hr^2*ng/mL)/(mg/kg)
+#> 192    (hr^2*ng/mL)/(mg/kg)       aumcinf.pred.dn    (hr^2*ng/mL)/(mg/kg)
+#> 193      (mg/kg)/(hr*ng/mL)               cl.last                mL/hr/kg
+#> 194      (mg/kg)/(hr*ng/mL)                cl.all                mL/hr/kg
+#> 195      (mg/kg)/(hr*ng/mL)            cl.int.all                mL/hr/kg
+#> 196      (mg/kg)/(hr*ng/mL)           cl.int.last                mL/hr/kg
+#> 197      (mg/kg)/(hr*ng/mL)             cl.iv.all                mL/hr/kg
+#> 198      (mg/kg)/(hr*ng/mL)            cl.iv.last                mL/hr/kg
+#> 199      (mg/kg)/(hr*ng/mL)          cl.ivint.all                mL/hr/kg
+#> 200      (mg/kg)/(hr*ng/mL)         cl.ivint.last                mL/hr/kg
+#> 201      (mg/kg)/(hr*ng/mL)        cl.sparse.last                mL/hr/kg
+#> 202      (mg/kg)/(hr*ng/mL)                cl.obs                mL/hr/kg
+#> 203      (mg/kg)/(hr*ng/mL)               cl.pred                mL/hr/kg
+#> 204      (mg/kg)/(hr*ng/mL)        cl.int.inf.obs                mL/hr/kg
+#> 205      (mg/kg)/(hr*ng/mL)       cl.int.inf.pred                mL/hr/kg
+#> 206      (mg/kg)/(hr*ng/mL)             cl.iv.obs                mL/hr/kg
+#> 207      (mg/kg)/(hr*ng/mL)            cl.iv.pred                mL/hr/kg
+#> 208           mg/(hr*ng/mL)              clr.last           mg/(hr*ng/mL)
+#> 209           mg/(hr*ng/mL)               clr.obs           mg/(hr*ng/mL)
+#> 210           mg/(hr*ng/mL)              clr.pred           mg/(hr*ng/mL)
+#> 211 (mg/(hr*ng/mL))/(mg/kg)           clr.last.dn (mg/(hr*ng/mL))/(mg/kg)
+#> 212 (mg/(hr*ng/mL))/(mg/kg)            clr.obs.dn (mg/(hr*ng/mL))/(mg/kg)
+#> 213 (mg/(hr*ng/mL))/(mg/kg)           clr.pred.dn (mg/(hr*ng/mL))/(mg/kg)
 #>     conversion_factor
 #> 1               1e+00
 #> 2               1e+00
@@ -958,14 +934,14 @@ pknca_units_table(
 #> 190             1e+00
 #> 191             1e+00
 #> 192             1e+00
-#> 193             1e+00
-#> 194             1e+00
-#> 195             1e+00
-#> 196             1e+00
-#> 197             1e+00
-#> 198             1e+00
-#> 199             1e+00
-#> 200             1e+00
+#> 193             1e+06
+#> 194             1e+06
+#> 195             1e+06
+#> 196             1e+06
+#> 197             1e+06
+#> 198             1e+06
+#> 199             1e+06
+#> 200             1e+06
 #> 201             1e+06
 #> 202             1e+06
 #> 203             1e+06
@@ -973,20 +949,12 @@ pknca_units_table(
 #> 205             1e+06
 #> 206             1e+06
 #> 207             1e+06
-#> 208             1e+06
-#> 209             1e+06
-#> 210             1e+06
-#> 211             1e+06
-#> 212             1e+06
-#> 213             1e+06
-#> 214             1e+06
-#> 215             1e+06
-#> 216             1e+00
-#> 217             1e+00
-#> 218             1e+00
-#> 219             1e+00
-#> 220             1e+00
-#> 221             1e+00
+#> 208             1e+00
+#> 209             1e+00
+#> 210             1e+00
+#> 211             1e+00
+#> 212             1e+00
+#> 213             1e+00
 pknca_units_table(
   concu="mg/L", doseu="mg/kg", amountu="mg", timeu="hr",
   # Convert clearance and volume units to molar units (assuming
@@ -1150,77 +1118,69 @@ pknca_units_table(
 #> 148                hr*mg/L               auclast                hr*mg/L
 #> 149                hr*mg/L                aucall                hr*mg/L
 #> 150                hr*mg/L           aucint.last                hr*mg/L
-#> 151                hr*mg/L      aucint.last.dose                hr*mg/L
-#> 152                hr*mg/L            aucint.all                hr*mg/L
-#> 153                hr*mg/L       aucint.all.dose                hr*mg/L
-#> 154                hr*mg/L  aucabove.predose.all                hr*mg/L
-#> 155                hr*mg/L   aucabove.trough.all                hr*mg/L
-#> 156                hr*mg/L        sparse_auclast                hr*mg/L
-#> 157                hr*mg/L         sparse_auc_se                hr*mg/L
-#> 158                hr*mg/L             aucivlast                hr*mg/L
-#> 159                hr*mg/L              aucivall                hr*mg/L
-#> 160                hr*mg/L         aucivint.last                hr*mg/L
-#> 161                hr*mg/L          aucivint.all                hr*mg/L
-#> 162                hr*mg/L            aucinf.obs                hr*mg/L
-#> 163                hr*mg/L           aucinf.pred                hr*mg/L
-#> 164                hr*mg/L        aucint.inf.obs                hr*mg/L
-#> 165                hr*mg/L   aucint.inf.obs.dose                hr*mg/L
-#> 166                hr*mg/L       aucint.inf.pred                hr*mg/L
-#> 167                hr*mg/L  aucint.inf.pred.dose                hr*mg/L
-#> 168                hr*mg/L          aucivinf.obs                hr*mg/L
-#> 169                hr*mg/L         aucivinf.pred                hr*mg/L
-#> 170              hr^2*mg/L              aumclast              hr^2*mg/L
-#> 171              hr^2*mg/L               aumcall              hr^2*mg/L
-#> 172              hr^2*mg/L          aumcint.last              hr^2*mg/L
-#> 173              hr^2*mg/L     aumcint.last.dose              hr^2*mg/L
-#> 174              hr^2*mg/L           aumcint.all              hr^2*mg/L
-#> 175              hr^2*mg/L      aumcint.all.dose              hr^2*mg/L
-#> 176              hr^2*mg/L       sparse_aumclast              hr^2*mg/L
-#> 177              hr^2*mg/L        sparse_aumc_se              hr^2*mg/L
-#> 178              hr^2*mg/L            aumcivlast              hr^2*mg/L
-#> 179              hr^2*mg/L             aumcivall              hr^2*mg/L
-#> 180              hr^2*mg/L        aumcivint.last              hr^2*mg/L
-#> 181              hr^2*mg/L         aumcivint.all              hr^2*mg/L
-#> 182              hr^2*mg/L           aumcinf.obs              hr^2*mg/L
-#> 183              hr^2*mg/L          aumcinf.pred              hr^2*mg/L
-#> 184              hr^2*mg/L       aumcint.inf.obs              hr^2*mg/L
-#> 185              hr^2*mg/L  aumcint.inf.obs.dose              hr^2*mg/L
-#> 186              hr^2*mg/L      aumcint.inf.pred              hr^2*mg/L
-#> 187              hr^2*mg/L aumcint.inf.pred.dose              hr^2*mg/L
-#> 188              hr^2*mg/L         aumcivinf.obs              hr^2*mg/L
-#> 189              hr^2*mg/L        aumcivinf.pred              hr^2*mg/L
-#> 190                  mg/hr                 ermax                  mg/hr
-#> 191                  mg/hr                 erint                  mg/hr
-#> 192                  mg/hr                 erlst                  mg/hr
-#> 193      (hr*mg/L)/(mg/kg)            auclast.dn      (hr*mg/L)/(mg/kg)
-#> 194      (hr*mg/L)/(mg/kg)             aucall.dn      (hr*mg/L)/(mg/kg)
-#> 195      (hr*mg/L)/(mg/kg)         aucinf.obs.dn      (hr*mg/L)/(mg/kg)
-#> 196      (hr*mg/L)/(mg/kg)        aucinf.pred.dn      (hr*mg/L)/(mg/kg)
-#> 197    (hr^2*mg/L)/(mg/kg)           aumclast.dn    (hr^2*mg/L)/(mg/kg)
-#> 198    (hr^2*mg/L)/(mg/kg)            aumcall.dn    (hr^2*mg/L)/(mg/kg)
-#> 199    (hr^2*mg/L)/(mg/kg)        aumcinf.obs.dn    (hr^2*mg/L)/(mg/kg)
-#> 200    (hr^2*mg/L)/(mg/kg)       aumcinf.pred.dn    (hr^2*mg/L)/(mg/kg)
-#> 201      (mg/kg)/(hr*mg/L)               cl.last      (mg/kg)/(hr*mg/L)
-#> 202      (mg/kg)/(hr*mg/L)                cl.all      (mg/kg)/(hr*mg/L)
-#> 203      (mg/kg)/(hr*mg/L)            cl.int.all      (mg/kg)/(hr*mg/L)
-#> 204      (mg/kg)/(hr*mg/L)           cl.int.last      (mg/kg)/(hr*mg/L)
-#> 205      (mg/kg)/(hr*mg/L)             cl.iv.all      (mg/kg)/(hr*mg/L)
-#> 206      (mg/kg)/(hr*mg/L)            cl.iv.last      (mg/kg)/(hr*mg/L)
-#> 207      (mg/kg)/(hr*mg/L)          cl.ivint.all      (mg/kg)/(hr*mg/L)
-#> 208      (mg/kg)/(hr*mg/L)         cl.ivint.last      (mg/kg)/(hr*mg/L)
-#> 209      (mg/kg)/(hr*mg/L)        cl.sparse.last      (mg/kg)/(hr*mg/L)
-#> 210      (mg/kg)/(hr*mg/L)                cl.obs      (mg/kg)/(hr*mg/L)
-#> 211      (mg/kg)/(hr*mg/L)               cl.pred      (mg/kg)/(hr*mg/L)
-#> 212      (mg/kg)/(hr*mg/L)        cl.int.inf.obs      (mg/kg)/(hr*mg/L)
-#> 213      (mg/kg)/(hr*mg/L)       cl.int.inf.pred      (mg/kg)/(hr*mg/L)
-#> 214      (mg/kg)/(hr*mg/L)             cl.iv.obs      (mg/kg)/(hr*mg/L)
-#> 215      (mg/kg)/(hr*mg/L)            cl.iv.pred      (mg/kg)/(hr*mg/L)
-#> 216           mg/(hr*mg/L)              clr.last           mg/(hr*mg/L)
-#> 217           mg/(hr*mg/L)               clr.obs           mg/(hr*mg/L)
-#> 218           mg/(hr*mg/L)              clr.pred           mg/(hr*mg/L)
-#> 219 (mg/(hr*mg/L))/(mg/kg)           clr.last.dn (mg/(hr*mg/L))/(mg/kg)
-#> 220 (mg/(hr*mg/L))/(mg/kg)            clr.obs.dn (mg/(hr*mg/L))/(mg/kg)
-#> 221 (mg/(hr*mg/L))/(mg/kg)           clr.pred.dn (mg/(hr*mg/L))/(mg/kg)
+#> 151                hr*mg/L            aucint.all                hr*mg/L
+#> 152                hr*mg/L  aucabove.predose.all                hr*mg/L
+#> 153                hr*mg/L   aucabove.trough.all                hr*mg/L
+#> 154                hr*mg/L        sparse_auclast                hr*mg/L
+#> 155                hr*mg/L         sparse_auc_se                hr*mg/L
+#> 156                hr*mg/L             aucivlast                hr*mg/L
+#> 157                hr*mg/L              aucivall                hr*mg/L
+#> 158                hr*mg/L         aucivint.last                hr*mg/L
+#> 159                hr*mg/L          aucivint.all                hr*mg/L
+#> 160                hr*mg/L            aucinf.obs                hr*mg/L
+#> 161                hr*mg/L           aucinf.pred                hr*mg/L
+#> 162                hr*mg/L        aucint.inf.obs                hr*mg/L
+#> 163                hr*mg/L       aucint.inf.pred                hr*mg/L
+#> 164                hr*mg/L          aucivinf.obs                hr*mg/L
+#> 165                hr*mg/L         aucivinf.pred                hr*mg/L
+#> 166              hr^2*mg/L              aumclast              hr^2*mg/L
+#> 167              hr^2*mg/L               aumcall              hr^2*mg/L
+#> 168              hr^2*mg/L          aumcint.last              hr^2*mg/L
+#> 169              hr^2*mg/L           aumcint.all              hr^2*mg/L
+#> 170              hr^2*mg/L       sparse_aumclast              hr^2*mg/L
+#> 171              hr^2*mg/L        sparse_aumc_se              hr^2*mg/L
+#> 172              hr^2*mg/L            aumcivlast              hr^2*mg/L
+#> 173              hr^2*mg/L             aumcivall              hr^2*mg/L
+#> 174              hr^2*mg/L        aumcivint.last              hr^2*mg/L
+#> 175              hr^2*mg/L         aumcivint.all              hr^2*mg/L
+#> 176              hr^2*mg/L           aumcinf.obs              hr^2*mg/L
+#> 177              hr^2*mg/L          aumcinf.pred              hr^2*mg/L
+#> 178              hr^2*mg/L       aumcint.inf.obs              hr^2*mg/L
+#> 179              hr^2*mg/L      aumcint.inf.pred              hr^2*mg/L
+#> 180              hr^2*mg/L         aumcivinf.obs              hr^2*mg/L
+#> 181              hr^2*mg/L        aumcivinf.pred              hr^2*mg/L
+#> 182                  mg/hr                 ermax                  mg/hr
+#> 183                  mg/hr                 erint                  mg/hr
+#> 184                  mg/hr                 erlst                  mg/hr
+#> 185      (hr*mg/L)/(mg/kg)            auclast.dn      (hr*mg/L)/(mg/kg)
+#> 186      (hr*mg/L)/(mg/kg)             aucall.dn      (hr*mg/L)/(mg/kg)
+#> 187      (hr*mg/L)/(mg/kg)         aucinf.obs.dn      (hr*mg/L)/(mg/kg)
+#> 188      (hr*mg/L)/(mg/kg)        aucinf.pred.dn      (hr*mg/L)/(mg/kg)
+#> 189    (hr^2*mg/L)/(mg/kg)           aumclast.dn    (hr^2*mg/L)/(mg/kg)
+#> 190    (hr^2*mg/L)/(mg/kg)            aumcall.dn    (hr^2*mg/L)/(mg/kg)
+#> 191    (hr^2*mg/L)/(mg/kg)        aumcinf.obs.dn    (hr^2*mg/L)/(mg/kg)
+#> 192    (hr^2*mg/L)/(mg/kg)       aumcinf.pred.dn    (hr^2*mg/L)/(mg/kg)
+#> 193      (mg/kg)/(hr*mg/L)               cl.last      (mg/kg)/(hr*mg/L)
+#> 194      (mg/kg)/(hr*mg/L)                cl.all      (mg/kg)/(hr*mg/L)
+#> 195      (mg/kg)/(hr*mg/L)            cl.int.all      (mg/kg)/(hr*mg/L)
+#> 196      (mg/kg)/(hr*mg/L)           cl.int.last      (mg/kg)/(hr*mg/L)
+#> 197      (mg/kg)/(hr*mg/L)             cl.iv.all      (mg/kg)/(hr*mg/L)
+#> 198      (mg/kg)/(hr*mg/L)            cl.iv.last      (mg/kg)/(hr*mg/L)
+#> 199      (mg/kg)/(hr*mg/L)          cl.ivint.all      (mg/kg)/(hr*mg/L)
+#> 200      (mg/kg)/(hr*mg/L)         cl.ivint.last      (mg/kg)/(hr*mg/L)
+#> 201      (mg/kg)/(hr*mg/L)        cl.sparse.last      (mg/kg)/(hr*mg/L)
+#> 202      (mg/kg)/(hr*mg/L)                cl.obs      (mg/kg)/(hr*mg/L)
+#> 203      (mg/kg)/(hr*mg/L)               cl.pred      (mg/kg)/(hr*mg/L)
+#> 204      (mg/kg)/(hr*mg/L)        cl.int.inf.obs      (mg/kg)/(hr*mg/L)
+#> 205      (mg/kg)/(hr*mg/L)       cl.int.inf.pred      (mg/kg)/(hr*mg/L)
+#> 206      (mg/kg)/(hr*mg/L)             cl.iv.obs      (mg/kg)/(hr*mg/L)
+#> 207      (mg/kg)/(hr*mg/L)            cl.iv.pred      (mg/kg)/(hr*mg/L)
+#> 208           mg/(hr*mg/L)              clr.last           mg/(hr*mg/L)
+#> 209           mg/(hr*mg/L)               clr.obs           mg/(hr*mg/L)
+#> 210           mg/(hr*mg/L)              clr.pred           mg/(hr*mg/L)
+#> 211 (mg/(hr*mg/L))/(mg/kg)           clr.last.dn (mg/(hr*mg/L))/(mg/kg)
+#> 212 (mg/(hr*mg/L))/(mg/kg)            clr.obs.dn (mg/(hr*mg/L))/(mg/kg)
+#> 213 (mg/(hr*mg/L))/(mg/kg)           clr.pred.dn (mg/(hr*mg/L))/(mg/kg)
 #>     conversion_factor
 #> 1         1.000000000
 #> 2         1.000000000
@@ -1435,14 +1395,6 @@ pknca_units_table(
 #> 211       1.000000000
 #> 212       1.000000000
 #> 213       1.000000000
-#> 214       1.000000000
-#> 215       1.000000000
-#> 216       1.000000000
-#> 217       1.000000000
-#> 218       1.000000000
-#> 219       1.000000000
-#> 220       1.000000000
-#> 221       1.000000000
 
 # This will make all time-related parameters use "day" even though the
 # original units are "hr"
@@ -1601,77 +1553,69 @@ pknca_units_table(
 #> 148                hr*ng/mL               auclast                day*ng/mL
 #> 149                hr*ng/mL                aucall                day*ng/mL
 #> 150                hr*ng/mL           aucint.last                day*ng/mL
-#> 151                hr*ng/mL      aucint.last.dose                day*ng/mL
-#> 152                hr*ng/mL            aucint.all                day*ng/mL
-#> 153                hr*ng/mL       aucint.all.dose                day*ng/mL
-#> 154                hr*ng/mL  aucabove.predose.all                day*ng/mL
-#> 155                hr*ng/mL   aucabove.trough.all                day*ng/mL
-#> 156                hr*ng/mL        sparse_auclast                day*ng/mL
-#> 157                hr*ng/mL         sparse_auc_se                day*ng/mL
-#> 158                hr*ng/mL             aucivlast                day*ng/mL
-#> 159                hr*ng/mL              aucivall                day*ng/mL
-#> 160                hr*ng/mL         aucivint.last                day*ng/mL
-#> 161                hr*ng/mL          aucivint.all                day*ng/mL
-#> 162                hr*ng/mL            aucinf.obs                day*ng/mL
-#> 163                hr*ng/mL           aucinf.pred                day*ng/mL
-#> 164                hr*ng/mL        aucint.inf.obs                day*ng/mL
-#> 165                hr*ng/mL   aucint.inf.obs.dose                day*ng/mL
-#> 166                hr*ng/mL       aucint.inf.pred                day*ng/mL
-#> 167                hr*ng/mL  aucint.inf.pred.dose                day*ng/mL
-#> 168                hr*ng/mL          aucivinf.obs                day*ng/mL
-#> 169                hr*ng/mL         aucivinf.pred                day*ng/mL
-#> 170              hr^2*ng/mL              aumclast              day^2*ng/mL
-#> 171              hr^2*ng/mL               aumcall              day^2*ng/mL
-#> 172              hr^2*ng/mL          aumcint.last              day^2*ng/mL
-#> 173              hr^2*ng/mL     aumcint.last.dose              day^2*ng/mL
-#> 174              hr^2*ng/mL           aumcint.all              day^2*ng/mL
-#> 175              hr^2*ng/mL      aumcint.all.dose              day^2*ng/mL
-#> 176              hr^2*ng/mL       sparse_aumclast              day^2*ng/mL
-#> 177              hr^2*ng/mL        sparse_aumc_se              day^2*ng/mL
-#> 178              hr^2*ng/mL            aumcivlast              day^2*ng/mL
-#> 179              hr^2*ng/mL             aumcivall              day^2*ng/mL
-#> 180              hr^2*ng/mL        aumcivint.last              day^2*ng/mL
-#> 181              hr^2*ng/mL         aumcivint.all              day^2*ng/mL
-#> 182              hr^2*ng/mL           aumcinf.obs              day^2*ng/mL
-#> 183              hr^2*ng/mL          aumcinf.pred              day^2*ng/mL
-#> 184              hr^2*ng/mL       aumcint.inf.obs              day^2*ng/mL
-#> 185              hr^2*ng/mL  aumcint.inf.obs.dose              day^2*ng/mL
-#> 186              hr^2*ng/mL      aumcint.inf.pred              day^2*ng/mL
-#> 187              hr^2*ng/mL aumcint.inf.pred.dose              day^2*ng/mL
-#> 188              hr^2*ng/mL         aumcivinf.obs              day^2*ng/mL
-#> 189              hr^2*ng/mL        aumcivinf.pred              day^2*ng/mL
-#> 190                   mg/hr                 ermax                   mg/day
-#> 191                   mg/hr                 erint                   mg/day
-#> 192                   mg/hr                 erlst                   mg/day
-#> 193      (hr*ng/mL)/(mg/kg)            auclast.dn      (day*ng/mL)/(mg/kg)
-#> 194      (hr*ng/mL)/(mg/kg)             aucall.dn      (day*ng/mL)/(mg/kg)
-#> 195      (hr*ng/mL)/(mg/kg)         aucinf.obs.dn      (day*ng/mL)/(mg/kg)
-#> 196      (hr*ng/mL)/(mg/kg)        aucinf.pred.dn      (day*ng/mL)/(mg/kg)
-#> 197    (hr^2*ng/mL)/(mg/kg)           aumclast.dn    (day^2*ng/mL)/(mg/kg)
-#> 198    (hr^2*ng/mL)/(mg/kg)            aumcall.dn    (day^2*ng/mL)/(mg/kg)
-#> 199    (hr^2*ng/mL)/(mg/kg)        aumcinf.obs.dn    (day^2*ng/mL)/(mg/kg)
-#> 200    (hr^2*ng/mL)/(mg/kg)       aumcinf.pred.dn    (day^2*ng/mL)/(mg/kg)
-#> 201      (mg/kg)/(hr*ng/mL)               cl.last      (mg/kg)/(day*ng/mL)
-#> 202      (mg/kg)/(hr*ng/mL)                cl.all      (mg/kg)/(day*ng/mL)
-#> 203      (mg/kg)/(hr*ng/mL)            cl.int.all      (mg/kg)/(day*ng/mL)
-#> 204      (mg/kg)/(hr*ng/mL)           cl.int.last      (mg/kg)/(day*ng/mL)
-#> 205      (mg/kg)/(hr*ng/mL)             cl.iv.all      (mg/kg)/(day*ng/mL)
-#> 206      (mg/kg)/(hr*ng/mL)            cl.iv.last      (mg/kg)/(day*ng/mL)
-#> 207      (mg/kg)/(hr*ng/mL)          cl.ivint.all      (mg/kg)/(day*ng/mL)
-#> 208      (mg/kg)/(hr*ng/mL)         cl.ivint.last      (mg/kg)/(day*ng/mL)
-#> 209      (mg/kg)/(hr*ng/mL)        cl.sparse.last      (mg/kg)/(day*ng/mL)
-#> 210      (mg/kg)/(hr*ng/mL)                cl.obs      (mg/kg)/(day*ng/mL)
-#> 211      (mg/kg)/(hr*ng/mL)               cl.pred      (mg/kg)/(day*ng/mL)
-#> 212      (mg/kg)/(hr*ng/mL)        cl.int.inf.obs      (mg/kg)/(day*ng/mL)
-#> 213      (mg/kg)/(hr*ng/mL)       cl.int.inf.pred      (mg/kg)/(day*ng/mL)
-#> 214      (mg/kg)/(hr*ng/mL)             cl.iv.obs      (mg/kg)/(day*ng/mL)
-#> 215      (mg/kg)/(hr*ng/mL)            cl.iv.pred      (mg/kg)/(day*ng/mL)
-#> 216           mg/(hr*ng/mL)              clr.last           mg/(day*ng/mL)
-#> 217           mg/(hr*ng/mL)               clr.obs           mg/(day*ng/mL)
-#> 218           mg/(hr*ng/mL)              clr.pred           mg/(day*ng/mL)
-#> 219 (mg/(hr*ng/mL))/(mg/kg)           clr.last.dn (mg/(day*ng/mL))/(mg/kg)
-#> 220 (mg/(hr*ng/mL))/(mg/kg)            clr.obs.dn (mg/(day*ng/mL))/(mg/kg)
-#> 221 (mg/(hr*ng/mL))/(mg/kg)           clr.pred.dn (mg/(day*ng/mL))/(mg/kg)
+#> 151                hr*ng/mL            aucint.all                day*ng/mL
+#> 152                hr*ng/mL  aucabove.predose.all                day*ng/mL
+#> 153                hr*ng/mL   aucabove.trough.all                day*ng/mL
+#> 154                hr*ng/mL        sparse_auclast                day*ng/mL
+#> 155                hr*ng/mL         sparse_auc_se                day*ng/mL
+#> 156                hr*ng/mL             aucivlast                day*ng/mL
+#> 157                hr*ng/mL              aucivall                day*ng/mL
+#> 158                hr*ng/mL         aucivint.last                day*ng/mL
+#> 159                hr*ng/mL          aucivint.all                day*ng/mL
+#> 160                hr*ng/mL            aucinf.obs                day*ng/mL
+#> 161                hr*ng/mL           aucinf.pred                day*ng/mL
+#> 162                hr*ng/mL        aucint.inf.obs                day*ng/mL
+#> 163                hr*ng/mL       aucint.inf.pred                day*ng/mL
+#> 164                hr*ng/mL          aucivinf.obs                day*ng/mL
+#> 165                hr*ng/mL         aucivinf.pred                day*ng/mL
+#> 166              hr^2*ng/mL              aumclast              day^2*ng/mL
+#> 167              hr^2*ng/mL               aumcall              day^2*ng/mL
+#> 168              hr^2*ng/mL          aumcint.last              day^2*ng/mL
+#> 169              hr^2*ng/mL           aumcint.all              day^2*ng/mL
+#> 170              hr^2*ng/mL       sparse_aumclast              day^2*ng/mL
+#> 171              hr^2*ng/mL        sparse_aumc_se              day^2*ng/mL
+#> 172              hr^2*ng/mL            aumcivlast              day^2*ng/mL
+#> 173              hr^2*ng/mL             aumcivall              day^2*ng/mL
+#> 174              hr^2*ng/mL        aumcivint.last              day^2*ng/mL
+#> 175              hr^2*ng/mL         aumcivint.all              day^2*ng/mL
+#> 176              hr^2*ng/mL           aumcinf.obs              day^2*ng/mL
+#> 177              hr^2*ng/mL          aumcinf.pred              day^2*ng/mL
+#> 178              hr^2*ng/mL       aumcint.inf.obs              day^2*ng/mL
+#> 179              hr^2*ng/mL      aumcint.inf.pred              day^2*ng/mL
+#> 180              hr^2*ng/mL         aumcivinf.obs              day^2*ng/mL
+#> 181              hr^2*ng/mL        aumcivinf.pred              day^2*ng/mL
+#> 182                   mg/hr                 ermax                   mg/day
+#> 183                   mg/hr                 erint                   mg/day
+#> 184                   mg/hr                 erlst                   mg/day
+#> 185      (hr*ng/mL)/(mg/kg)            auclast.dn      (day*ng/mL)/(mg/kg)
+#> 186      (hr*ng/mL)/(mg/kg)             aucall.dn      (day*ng/mL)/(mg/kg)
+#> 187      (hr*ng/mL)/(mg/kg)         aucinf.obs.dn      (day*ng/mL)/(mg/kg)
+#> 188      (hr*ng/mL)/(mg/kg)        aucinf.pred.dn      (day*ng/mL)/(mg/kg)
+#> 189    (hr^2*ng/mL)/(mg/kg)           aumclast.dn    (day^2*ng/mL)/(mg/kg)
+#> 190    (hr^2*ng/mL)/(mg/kg)            aumcall.dn    (day^2*ng/mL)/(mg/kg)
+#> 191    (hr^2*ng/mL)/(mg/kg)        aumcinf.obs.dn    (day^2*ng/mL)/(mg/kg)
+#> 192    (hr^2*ng/mL)/(mg/kg)       aumcinf.pred.dn    (day^2*ng/mL)/(mg/kg)
+#> 193      (mg/kg)/(hr*ng/mL)               cl.last      (mg/kg)/(day*ng/mL)
+#> 194      (mg/kg)/(hr*ng/mL)                cl.all      (mg/kg)/(day*ng/mL)
+#> 195      (mg/kg)/(hr*ng/mL)            cl.int.all      (mg/kg)/(day*ng/mL)
+#> 196      (mg/kg)/(hr*ng/mL)           cl.int.last      (mg/kg)/(day*ng/mL)
+#> 197      (mg/kg)/(hr*ng/mL)             cl.iv.all      (mg/kg)/(day*ng/mL)
+#> 198      (mg/kg)/(hr*ng/mL)            cl.iv.last      (mg/kg)/(day*ng/mL)
+#> 199      (mg/kg)/(hr*ng/mL)          cl.ivint.all      (mg/kg)/(day*ng/mL)
+#> 200      (mg/kg)/(hr*ng/mL)         cl.ivint.last      (mg/kg)/(day*ng/mL)
+#> 201      (mg/kg)/(hr*ng/mL)        cl.sparse.last      (mg/kg)/(day*ng/mL)
+#> 202      (mg/kg)/(hr*ng/mL)                cl.obs      (mg/kg)/(day*ng/mL)
+#> 203      (mg/kg)/(hr*ng/mL)               cl.pred      (mg/kg)/(day*ng/mL)
+#> 204      (mg/kg)/(hr*ng/mL)        cl.int.inf.obs      (mg/kg)/(day*ng/mL)
+#> 205      (mg/kg)/(hr*ng/mL)       cl.int.inf.pred      (mg/kg)/(day*ng/mL)
+#> 206      (mg/kg)/(hr*ng/mL)             cl.iv.obs      (mg/kg)/(day*ng/mL)
+#> 207      (mg/kg)/(hr*ng/mL)            cl.iv.pred      (mg/kg)/(day*ng/mL)
+#> 208           mg/(hr*ng/mL)              clr.last           mg/(day*ng/mL)
+#> 209           mg/(hr*ng/mL)               clr.obs           mg/(day*ng/mL)
+#> 210           mg/(hr*ng/mL)              clr.pred           mg/(day*ng/mL)
+#> 211 (mg/(hr*ng/mL))/(mg/kg)           clr.last.dn (mg/(day*ng/mL))/(mg/kg)
+#> 212 (mg/(hr*ng/mL))/(mg/kg)            clr.obs.dn (mg/(day*ng/mL))/(mg/kg)
+#> 213 (mg/(hr*ng/mL))/(mg/kg)           clr.pred.dn (mg/(day*ng/mL))/(mg/kg)
 #>     conversion_factor
 #> 1         1.000000000
 #> 2         1.000000000
@@ -1838,10 +1782,10 @@ pknca_units_table(
 #> 163       0.041666667
 #> 164       0.041666667
 #> 165       0.041666667
-#> 166       0.041666667
-#> 167       0.041666667
-#> 168       0.041666667
-#> 169       0.041666667
+#> 166       0.001736111
+#> 167       0.001736111
+#> 168       0.001736111
+#> 169       0.001736111
 #> 170       0.001736111
 #> 171       0.001736111
 #> 172       0.001736111
@@ -1854,25 +1798,25 @@ pknca_units_table(
 #> 179       0.001736111
 #> 180       0.001736111
 #> 181       0.001736111
-#> 182       0.001736111
-#> 183       0.001736111
-#> 184       0.001736111
-#> 185       0.001736111
-#> 186       0.001736111
-#> 187       0.001736111
-#> 188       0.001736111
+#> 182      24.000000000
+#> 183      24.000000000
+#> 184      24.000000000
+#> 185       0.041666667
+#> 186       0.041666667
+#> 187       0.041666667
+#> 188       0.041666667
 #> 189       0.001736111
-#> 190      24.000000000
-#> 191      24.000000000
-#> 192      24.000000000
-#> 193       0.041666667
-#> 194       0.041666667
-#> 195       0.041666667
-#> 196       0.041666667
-#> 197       0.001736111
-#> 198       0.001736111
-#> 199       0.001736111
-#> 200       0.001736111
+#> 190       0.001736111
+#> 191       0.001736111
+#> 192       0.001736111
+#> 193      24.000000000
+#> 194      24.000000000
+#> 195      24.000000000
+#> 196      24.000000000
+#> 197      24.000000000
+#> 198      24.000000000
+#> 199      24.000000000
+#> 200      24.000000000
 #> 201      24.000000000
 #> 202      24.000000000
 #> 203      24.000000000
@@ -1886,12 +1830,4 @@ pknca_units_table(
 #> 211      24.000000000
 #> 212      24.000000000
 #> 213      24.000000000
-#> 214      24.000000000
-#> 215      24.000000000
-#> 216      24.000000000
-#> 217      24.000000000
-#> 218      24.000000000
-#> 219      24.000000000
-#> 220      24.000000000
-#> 221      24.000000000
 ```

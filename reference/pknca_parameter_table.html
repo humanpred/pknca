@@ -112,20 +112,20 @@ for by name, but it is never selected automatically.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">pknca_parameter_table</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          parameter concept     tier sample_type sparse secondary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          auclast     auc   common        spot  FALSE     FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           aucall     auc uncommon        spot  FALSE     FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3         aumclast    aumc uncommon        spot  FALSE     FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4          aumcall    aumc uncommon        spot  FALSE     FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5      aucint.last     auc   common        spot  FALSE     FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 aucint.last.dose     auc uncommon        spot  FALSE     FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   dose_normalized                                                     route</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     parameter concept     tier sample_type sparse secondary dose_normalized</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     auclast     auc   common        spot  FALSE     FALSE           FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      aucall     auc uncommon        spot  FALSE     FALSE           FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    aumclast    aumc uncommon        spot  FALSE     FALSE           FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     aumcall    aumc uncommon        spot  FALSE     FALSE           FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 aucint.last     auc   common        spot  FALSE     FALSE           FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  aucint.all     auc uncommon        spot  FALSE     FALSE           FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       route</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                         dosing</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 single,multiple,steady_state</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 single,multiple,steady_state</span>

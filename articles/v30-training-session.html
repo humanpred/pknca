@@ -1551,8 +1551,8 @@ PKNCA will calculate other required parameters behind the scenes.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">14</span>     0   <span style="color: #BB0000;">Inf</span> aucinf.obs           0.721  <span style="color: #949494;">"</span>AUC: lin up/log down<span style="color: #949494;">"</span> <span style="color: #BB0000;">NA</span></span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="how-to-select-the-correct-parameters-for-calculations-aka-why-are-there-32-types-of-auc-in-pknca">How to select the correct parameters for calculations (aka, why are
-there 32 types of AUC in PKNCA?)<a class="anchor" aria-label="anchor" href="#how-to-select-the-correct-parameters-for-calculations-aka-why-are-there-32-types-of-auc-in-pknca"></a>
+<h3 id="how-to-select-the-correct-parameters-for-calculations-aka-why-are-there-28-types-of-auc-in-pknca">How to select the correct parameters for calculations (aka, why are
+there 28 types of AUC in PKNCA?)<a class="anchor" aria-label="anchor" href="#how-to-select-the-correct-parameters-for-calculations-aka-why-are-there-28-types-of-auc-in-pknca"></a>
 </h3>
 <p>CDISC has one set of names, but they are not precise (e.g. AUCINT
 doesn’t tell the interpolation/extrapolation method).</p>
@@ -1572,9 +1572,10 @@ being calculated. The only parameters that look outside are the
 <code>aucint</code> and <code>aumcint</code> classes of parameters.</p>
 <p>AUC<sub>int</sub> may look after the end of the interval to calculate
 the concentration at <code>end</code>.</p>
-<p>Note: Watch out for a dose before the next concentration (e.g. a dose
-at 24 hours but the prior sample is around 12 and the next is around
-25):</p>
+<p>When dosing data are given, it stops at the first dose at or after
+the end of the interval, so a concentration measured after that dose is
+not interpolated back into the interval (e.g. a dose at 24 hours but the
+prior sample is around 12 and the next is around 25):</p>
 <p><img src="v30-training-session_files/figure-html/unnamed-chunk-32-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 </div>
@@ -1894,21 +1895,16 @@ basic analysis<a class="anchor" aria-label="anchor" href="#single--and-multiple-
 <span><span class="va">o_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">d_single_multi_dose</span>, <span class="va">Dose</span><span class="op">~</span><span class="va">time</span><span class="op">|</span><span class="va">Study_Part</span><span class="op">+</span><span class="va">Subject</span><span class="op">)</span></span>
 <span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span><span class="op">)</span></span>
 <span><span class="va">o_data</span><span class="op">$</span><span class="va">intervals</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">Subject</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##   start end auclast aucall aumclast aumcall aucint.last aucint.last.dose</span></span>
-<span><span class="co">## 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE            FALSE</span></span>
-<span><span class="co">## 2     0 Inf   FALSE  FALSE    FALSE   FALSE       FALSE            FALSE</span></span>
-<span><span class="co">## 3     0 120    TRUE  FALSE    FALSE   FALSE       FALSE            FALSE</span></span>
-<span><span class="co">## 4   120 144    TRUE  FALSE    FALSE   FALSE       FALSE            FALSE</span></span>
-<span><span class="co">##   aucint.all aucint.all.dose aumcint.last aumcint.last.dose aumcint.all</span></span>
-<span><span class="co">## 1      FALSE           FALSE        FALSE             FALSE       FALSE</span></span>
-<span><span class="co">## 2      FALSE           FALSE        FALSE             FALSE       FALSE</span></span>
-<span><span class="co">## 3      FALSE           FALSE        FALSE             FALSE       FALSE</span></span>
-<span><span class="co">## 4      FALSE           FALSE        FALSE             FALSE       FALSE</span></span>
-<span><span class="co">##   aumcint.all.dose    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last</span></span>
-<span><span class="co">## 1            FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE</span></span>
-<span><span class="co">## 2            FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE</span></span>
-<span><span class="co">## 3            FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE</span></span>
-<span><span class="co">## 4            FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE</span></span>
+<pre><code><span><span class="co">##   start end auclast aucall aumclast aumcall aucint.last aucint.all aumcint.last</span></span>
+<span><span class="co">## 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE</span></span>
+<span><span class="co">## 2     0 Inf   FALSE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE</span></span>
+<span><span class="co">## 3     0 120    TRUE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE</span></span>
+<span><span class="co">## 4   120 144    TRUE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE</span></span>
+<span><span class="co">##   aumcint.all    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last</span></span>
+<span><span class="co">## 1       FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE</span></span>
+<span><span class="co">## 2       FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE</span></span>
+<span><span class="co">## 3       FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE</span></span>
+<span><span class="co">## 4       FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE</span></span>
 <span><span class="co">##   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last</span></span>
 <span><span class="co">## 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE</span></span>
 <span><span class="co">## 2  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE</span></span>
@@ -1999,21 +1995,16 @@ basic analysis<a class="anchor" aria-label="anchor" href="#single--and-multiple-
 <span><span class="co">## 2         FALSE          FALSE           FALSE       TRUE       FALSE</span></span>
 <span><span class="co">## 3         FALSE          FALSE           FALSE      FALSE       FALSE</span></span>
 <span><span class="co">## 4         FALSE          FALSE           FALSE      FALSE       FALSE</span></span>
-<span><span class="co">##   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.obs.dose aucint.inf.pred</span></span>
-<span><span class="co">## 1       FALSE        FALSE          FALSE               FALSE           FALSE</span></span>
-<span><span class="co">## 2       FALSE        FALSE          FALSE               FALSE           FALSE</span></span>
-<span><span class="co">## 3       FALSE        FALSE          FALSE               FALSE           FALSE</span></span>
-<span><span class="co">## 4       FALSE        FALSE          FALSE               FALSE           FALSE</span></span>
-<span><span class="co">##   aucint.inf.pred.dose aumcint.inf.obs aumcint.inf.obs.dose aumcint.inf.pred</span></span>
-<span><span class="co">## 1                FALSE           FALSE                FALSE            FALSE</span></span>
-<span><span class="co">## 2                FALSE           FALSE                FALSE            FALSE</span></span>
-<span><span class="co">## 3                FALSE           FALSE                FALSE            FALSE</span></span>
-<span><span class="co">## 4                FALSE           FALSE                FALSE            FALSE</span></span>
-<span><span class="co">##   aumcint.inf.pred.dose aucivinf.obs aucivinf.pred aucivpbextinf.obs</span></span>
-<span><span class="co">## 1                 FALSE        FALSE         FALSE             FALSE</span></span>
-<span><span class="co">## 2                 FALSE        FALSE         FALSE             FALSE</span></span>
-<span><span class="co">## 3                 FALSE        FALSE         FALSE             FALSE</span></span>
-<span><span class="co">## 4                 FALSE        FALSE         FALSE             FALSE</span></span>
+<span><span class="co">##   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.pred aumcint.inf.obs</span></span>
+<span><span class="co">## 1       FALSE        FALSE          FALSE           FALSE           FALSE</span></span>
+<span><span class="co">## 2       FALSE        FALSE          FALSE           FALSE           FALSE</span></span>
+<span><span class="co">## 3       FALSE        FALSE          FALSE           FALSE           FALSE</span></span>
+<span><span class="co">## 4       FALSE        FALSE          FALSE           FALSE           FALSE</span></span>
+<span><span class="co">##   aumcint.inf.pred aucivinf.obs aucivinf.pred aucivpbextinf.obs</span></span>
+<span><span class="co">## 1            FALSE        FALSE         FALSE             FALSE</span></span>
+<span><span class="co">## 2            FALSE        FALSE         FALSE             FALSE</span></span>
+<span><span class="co">## 3            FALSE        FALSE         FALSE             FALSE</span></span>
+<span><span class="co">## 4            FALSE        FALSE         FALSE             FALSE</span></span>
 <span><span class="co">##   aucivpbextinf.pred aumcivinf.obs aumcivinf.pred aucpext.obs aucpext.pred</span></span>
 <span><span class="co">## 1              FALSE         FALSE          FALSE       FALSE        FALSE</span></span>
 <span><span class="co">## 2              FALSE         FALSE          FALSE       FALSE        FALSE</span></span>

@@ -52,20 +52,20 @@ Other Interval specifications:
 
 ``` r
 head(pknca_parameter_table())
-#>          parameter concept     tier sample_type sparse secondary
-#> 1          auclast     auc   common        spot  FALSE     FALSE
-#> 2           aucall     auc uncommon        spot  FALSE     FALSE
-#> 3         aumclast    aumc uncommon        spot  FALSE     FALSE
-#> 4          aumcall    aumc uncommon        spot  FALSE     FALSE
-#> 5      aucint.last     auc   common        spot  FALSE     FALSE
-#> 6 aucint.last.dose     auc uncommon        spot  FALSE     FALSE
-#>   dose_normalized                                                     route
-#> 1           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion
-#> 2           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion
-#> 3           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion
-#> 4           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion
-#> 5           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion
-#> 6           FALSE extravascular,iv_bolus,iv_infusion,iv_continuous_infusion
+#>     parameter concept     tier sample_type sparse secondary dose_normalized
+#> 1     auclast     auc   common        spot  FALSE     FALSE           FALSE
+#> 2      aucall     auc uncommon        spot  FALSE     FALSE           FALSE
+#> 3    aumclast    aumc uncommon        spot  FALSE     FALSE           FALSE
+#> 4     aumcall    aumc uncommon        spot  FALSE     FALSE           FALSE
+#> 5 aucint.last     auc   common        spot  FALSE     FALSE           FALSE
+#> 6  aucint.all     auc uncommon        spot  FALSE     FALSE           FALSE
+#>                                                       route
+#> 1 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion
+#> 2 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion
+#> 3 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion
+#> 4 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion
+#> 5 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion
+#> 6 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion
 #>                         dosing
 #> 1 single,multiple,steady_state
 #> 2 single,multiple,steady_state

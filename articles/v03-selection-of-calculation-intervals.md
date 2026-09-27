@@ -436,13 +436,9 @@ information about the parameter, see the documentation for the function.
 | aucinf.pred | $`AUC_{\infty,\text{pred}} = AUC_{0-\text{last}} + \frac{C_{\text{last,pred}}}{\lambda_z}`$ |  | auc | AUC start to inf, pred Clast extrap | pk.calc.auc.inf.pred |
 | aucinf.pred.dn | $`AUC_{\infty,\text{pred},dn} = \frac{AUC_{\infty,\text{pred}}}{Dose}`$ |  | auc_dosenorm | Dose normalized aucinf.pred | pk.calc.dn |
 | aucint.all | $`AUC_{\text{int,all}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | auc | AUC from T1 to T2 (AUCall extrap) | pk.calc.aucint.all |
-| aucint.all.dose | $`AUC_{\text{int,all,dose}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | auc | AUC T1 to T2, dose-aware (AUCall) | pk.calc.aucint.all |
 | aucint.inf.obs | $`AUC_{\text{int,}\infty\text{,obs}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | auc | AUC from T1 to T2 (AUCinf,obs extrap) | pk.calc.aucint.inf.obs |
-| aucint.inf.obs.dose | $`AUC_{\text{int,}\infty\text{,obs,dose}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | auc | AUC T1 to T2, dose-aware (AUCinf,obs) | pk.calc.aucint.inf.obs |
 | aucint.inf.pred | $`AUC_{\text{int,}\infty\text{,pred}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | auc | AUC from T1 to T2 (AUCinf,pred extrap) | pk.calc.aucint.inf.pred |
-| aucint.inf.pred.dose | $`AUC_{\text{int,}\infty\text{,pred,dose}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | auc | AUC T1 to T2, dose-aware (AUCinf,pred) | pk.calc.aucint.inf.pred |
 | aucint.last | $`AUC_{\text{int,last}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | auc | AUC from T1 to T2 (zero extrap) | pk.calc.aucint.last |
-| aucint.last.dose | $`AUC_{\text{int,last,dose}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | auc | AUC T1 to T2, dose-aware (zero extrap) | pk.calc.aucint.last |
 | aucivall | $`AUC_{\text{iv,all}} = AUC_{\text{all}} + AUC(C_0, t_1) - AUC(C(0), t_1)`$ |  | auc | AUCall, IV back-extrap C0 | pk.calc.auciv |
 | aucivinf.obs | $`AUC_{\text{iv,}\infty\text{,obs}} = AUC_{\infty,\text{obs}} + AUC(C_0, t_1) - AUC(C(0), t_1)`$ |  | auc | AUCinf.obs, IV back-extrap C0 | pk.calc.auciv |
 | aucivinf.pred | $`AUC_{\text{iv,}\infty\text{,pred}} = AUC_{\infty,\text{pred}} + AUC(C_0, t_1) - AUC(C(0), t_1)`$ |  | auc | AUCinf.pred, IV back-extrap C0 | pk.calc.auciv |
@@ -466,13 +462,9 @@ information about the parameter, see the documentation for the function.
 | aumcinf.pred | $`AUMC_{\infty,\text{pred}} = AUMC_{0-\text{last}} + \frac{C_{\text{last,pred}} T_{\text{last}}}{\lambda_z} + \frac{C_{\text{last,pred}}}{\lambda_z^2}`$ |  | aumc | AUMC start to inf, pred Clast extrap | pk.calc.aumc.inf.pred |
 | aumcinf.pred.dn | $`AUMC_{\infty,\text{pred},dn} = \frac{AUMC_{\infty,\text{pred}}}{Dose}`$ |  | aumc_dosenorm | Dose normalized aumcinf.pred | pk.calc.dn |
 | aumcint.all | $`AUMC_{\text{int,all}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | aumc | AUMC from T1 to T2 (AUMCall extrap) | pk.calc.aumcint.all |
-| aumcint.all.dose | $`AUMC_{\text{int,all,dose}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | aumc | AUMC T1 to T2, dose-aware (AUMCall) | pk.calc.aumcint.all |
 | aumcint.inf.obs | $`AUMC_{\text{int,}\infty\text{,obs}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | aumc | AUMC from T1 to T2 (AUMCinf,obs extrap) | pk.calc.aumcint.inf.obs |
-| aumcint.inf.obs.dose | $`AUMC_{\text{int,}\infty\text{,obs,dose}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | aumc | AUMC T1 to T2, dose-aware (AUMCinf,obs) | pk.calc.aumcint.inf.obs |
 | aumcint.inf.pred | $`AUMC_{\text{int,}\infty\text{,pred}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | aumc | AUMC from T1 to T2 (AUMCinf,pred extrap) | pk.calc.aumcint.inf.pred |
-| aumcint.inf.pred.dose | $`AUMC_{\text{int,}\infty\text{,pred,dose}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | aumc | AUMC T1 to T2, dose-aware (AUMCinf,pred) | pk.calc.aumcint.inf.pred |
 | aumcint.last | $`AUMC_{\text{int,last}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | aumc | AUMC from T1 to T2 (zero extrap) | pk.calc.aumcint.last |
-| aumcint.last.dose | $`AUMC_{\text{int,last,dose}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | aumc | AUMC T1 to T2, dose-aware (zero extrap) | pk.calc.aumcint.last |
 | aumcivall |  |  | aumc | AUMCall, IV back-extrap C0 | pk.calc.aumciv |
 | aumcivinf.obs |  |  | aumc | AUMCinf.obs, IV back-extrap C0 | pk.calc.aumciv |
 | aumcivinf.pred |  |  | aumc | AUMCinf.pred, IV back-extrap C0 | pk.calc.aumciv |

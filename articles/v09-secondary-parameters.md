@@ -537,8 +537,8 @@ kable(as.data.frame(pk.nca(o_data_acc)))
 
 | subject | start | end | PPTESTCD | PPORRES | PPANMETH | exclude | subject_ref |
 |---:|---:|---:|:---|---:|:---|:---|---:|
-| 1 | 0 | 24 | aucint.last | 105.0 | AUC: linear | NA | NA |
-| 1 | 24 | 48 | aucint.last | 168.0 | AUC: linear | NA | NA |
+| 1 | 0 | 24 | aucint.last | 105.0 | AUC: linear. Interpolation: dose-aware. Extrapolation: none | NA | NA |
+| 1 | 24 | 48 | aucint.last | 168.0 | AUC: linear. Interpolation: dose-aware. Extrapolation: none | NA | NA |
 | 1 | 24 | 48 | ratio.aucint.last | 1.6 | Reference interval: 0-24 | NA | 1 |
 
 An interval that already names a different reference is left alone with

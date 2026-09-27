@@ -480,7 +480,13 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last$formalsmap$route</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "route.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last$formalsmap$duration.dose</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "duration.dose.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last$depends</span>
@@ -523,76 +529,6 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$FUN</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aucint.last"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$values</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$unit_type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auc"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUClast extrapolation, dose-aware)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC T1 to T2, dose-aware (zero extrap)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$formalsmap</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$formalsmap$conc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "conc.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$formalsmap$time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$depends</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$datatype</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCINTD"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC from T1 to T2 Normalized by Dose"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$formula</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUC_{\\text{int,last,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$formula_note</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$tier</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$selection</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$requires_dose_amt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$requires_dose_time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$requires_dose_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$requires_volume</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.last.dose$requires_conc_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all$FUN</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aucint.all"</span>
@@ -620,7 +556,13 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all$formalsmap$route</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "route.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all$formalsmap$duration.dose</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "duration.dose.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all$depends</span>
@@ -663,76 +605,6 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$FUN</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aucint.all"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$values</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$unit_type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auc"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUCall extrapolation, dose-aware)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC T1 to T2, dose-aware (AUCall)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$formalsmap</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$formalsmap$conc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "conc.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$formalsmap$time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$depends</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$datatype</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCINTAD"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUCall extrapolation, dose-aware)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$formula</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUC_{\\text{int,all,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$formula_note</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$tier</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$selection</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$requires_dose_amt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$requires_dose_time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$requires_dose_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$requires_volume</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.all.dose$requires_conc_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last$FUN</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumcint.last"</span>
@@ -760,7 +632,13 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last$formalsmap$route</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "route.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last$formalsmap$duration.dose</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "duration.dose.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last$depends</span>
@@ -803,76 +681,6 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$FUN</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumcint.last"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$values</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$unit_type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (based on AUMClast extrapolation, dose-aware)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC T1 to T2, dose-aware (zero extrap)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$formalsmap</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$formalsmap$conc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "conc.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$formalsmap$time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$depends</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$datatype</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.last.dose"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC T1 to T2, dose-aware (zero extrap)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$formula</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUMC_{\\text{int,last,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$formula_note</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$tier</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$selection</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$requires_dose_amt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$requires_dose_time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$requires_dose_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$requires_volume</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last.dose$requires_conc_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$FUN</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumcint.all"</span>
@@ -900,7 +708,13 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$formalsmap$route</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "route.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$formalsmap$duration.dose</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "duration.dose.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$depends</span>
@@ -940,76 +754,6 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$requires_conc_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$FUN</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumcint.all"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$values</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$unit_type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (based on AUMCall extrapolation, dose-aware)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC T1 to T2, dose-aware (AUMCall)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$formalsmap</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$formalsmap$conc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "conc.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$formalsmap$time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$depends</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$datatype</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.all.dose"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC T1 to T2, dose-aware (AUMCall)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$formula</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUMC_{\\text{int,all,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$formula_note</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$tier</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$selection</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$requires_dose_amt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$requires_dose_time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$requires_dose_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$requires_volume</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all.dose$requires_conc_dur</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -9029,7 +8773,13 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs$formalsmap$route</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "route.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs$formalsmap$duration.dose</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "duration.dose.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs$depends</span>
@@ -9072,76 +8822,6 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$FUN</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aucint.inf.obs"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$values</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$unit_type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auc"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUCinf,obs extrapolation, dose-aware)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC T1 to T2, dose-aware (AUCinf,obs)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$formalsmap</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$formalsmap$conc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "conc.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$formalsmap$time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$depends</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "lambda.z"  "clast.obs"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$datatype</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCINTID"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUCinf,obs extrapolation, dose-aware)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$formula</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUC_{\\text{int,}\\infty\\text{,obs,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$formula_note</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$tier</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$selection</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$requires_dose_amt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$requires_dose_time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$requires_dose_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$requires_volume</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs.dose$requires_conc_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred$FUN</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aucint.inf.pred"</span>
@@ -9169,7 +8849,13 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred$formalsmap$route</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "route.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred$formalsmap$duration.dose</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "duration.dose.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred$depends</span>
@@ -9212,76 +8898,6 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$FUN</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aucint.inf.pred"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$values</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$unit_type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auc"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUCinf,pred extrapolation, dose-aware)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC T1 to T2, dose-aware (AUCinf,pred)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$formalsmap</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$formalsmap$conc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "conc.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$formalsmap$time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$depends</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "lambda.z"   "clast.pred"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$datatype</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCINTPD"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUCinf,pred extrapolation, dose-aware)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$formula</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUC_{\\text{int,}\\infty\\text{,pred,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$formula_note</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$tier</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$selection</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$requires_dose_amt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$requires_dose_time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$requires_dose_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$requires_volume</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred.dose$requires_conc_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs$FUN</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumcint.inf.obs"</span>
@@ -9309,7 +8925,13 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs$formalsmap$route</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "route.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs$formalsmap$duration.dose</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "duration.dose.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs$depends</span>
@@ -9352,76 +8974,6 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$FUN</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumcint.inf.obs"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$values</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$unit_type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (based on AUMCinf,obs extrapolation, dose-aware)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC T1 to T2, dose-aware (AUMCinf,obs)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$formalsmap</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$formalsmap$conc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "conc.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$formalsmap$time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$depends</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "lambda.z"  "clast.obs"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$datatype</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.inf.obs.dose"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC T1 to T2, dose-aware (AUMCinf,obs)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$formula</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUMC_{\\text{int,}\\infty\\text{,obs,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$formula_note</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$tier</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$selection</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$requires_dose_amt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$requires_dose_time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$requires_dose_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$requires_volume</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs.dose$requires_conc_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$FUN</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumcint.inf.pred"</span>
@@ -9449,7 +9001,13 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$formalsmap$route</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "route.group"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$formalsmap$duration.dose</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "duration.dose.group"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$depends</span>
@@ -9489,76 +9047,6 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$requires_conc_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$FUN</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumcint.inf.pred"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$values</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$unit_type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (based on AUMCinf,pred extrapolation, dose-aware)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC T1 to T2, dose-aware (AUMCinf,pred)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$formalsmap</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$formalsmap$conc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "conc.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$formalsmap$time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$formalsmap$time.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time.dose.group"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$depends</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "lambda.z"   "clast.pred"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$datatype</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.inf.pred.dose"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC T1 to T2, dose-aware (AUMCinf,pred)"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$formula</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUMC_{\\text{int,}\\infty\\text{,pred,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$formula_note</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Trapezoidal rule with interpolation at interval boundaries"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$tier</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$selection</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$requires_dose_amt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$requires_dose_time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$requires_dose_dur</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$requires_volume</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred.dose$requires_conc_dur</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>

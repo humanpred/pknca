@@ -139,18 +139,16 @@ Other Interval specifications:
 ``` r
 # A single oral dose
 pknca_interval_table(0, 24, dosing = "single", route = "extravascular")
-#>   start end auclast aucall aumclast aumcall aucint.last aucint.last.dose
-#> 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE            FALSE
-#>   aucint.all aucint.all.dose aumcint.last aumcint.last.dose aumcint.all
-#> 1      FALSE           FALSE        FALSE             FALSE       FALSE
-#>   aumcint.all.dose    c0 cmax  cmin tmax  tmin tlast tfirst clast.obs cl.last
-#> 1            FALSE FALSE TRUE FALSE TRUE FALSE FALSE  FALSE     FALSE   FALSE
-#>   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last
-#> 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE
-#>   mrt.iv.last vss.last vss.iv.last vss.all vss.int.all vss.int.last   cav
-#> 1       FALSE    FALSE       FALSE   FALSE       FALSE        FALSE FALSE
-#>   cav.int.last cav.int.all ctrough cstart   ptr tlag deg.fluc swing  ceoi
-#> 1        FALSE       FALSE   FALSE  FALSE FALSE TRUE    FALSE FALSE FALSE
+#>   start end auclast aucall aumclast aumcall aucint.last aucint.all aumcint.last
+#> 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE
+#>   aumcint.all    c0 cmax  cmin tmax  tmin tlast tfirst clast.obs cl.last cl.all
+#> 1       FALSE FALSE TRUE FALSE TRUE FALSE FALSE  FALSE     FALSE   FALSE  FALSE
+#>   cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last mrt.iv.last
+#> 1      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE       FALSE
+#>   vss.last vss.iv.last vss.all vss.int.all vss.int.last   cav cav.int.last
+#> 1    FALSE       FALSE   FALSE       FALSE        FALSE FALSE        FALSE
+#>   cav.int.all ctrough cstart   ptr tlag deg.fluc swing  ceoi
+#> 1       FALSE   FALSE  FALSE FALSE TRUE    FALSE FALSE FALSE
 #>   aucabove.predose.all aucabove.trough.all count_conc count_conc_measured
 #> 1                FALSE               FALSE       TRUE               FALSE
 #>   totdose volpk    ae clr.last clr.obs clr.pred    fe ertlst ermax ertmax erint
@@ -181,12 +179,10 @@ pknca_interval_table(0, 24, dosing = "single", route = "extravascular")
 #> 1     FALSE      FALSE        FALSE         FALSE   FALSE      FALSE
 #>   vss.ivint.all vss.ivint.last vss.sparse.last aucinf.obs aucinf.pred
 #> 1         FALSE          FALSE           FALSE       TRUE       FALSE
-#>   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.obs.dose aucint.inf.pred
-#> 1       FALSE        FALSE          FALSE               FALSE           FALSE
-#>   aucint.inf.pred.dose aumcint.inf.obs aumcint.inf.obs.dose aumcint.inf.pred
-#> 1                FALSE           FALSE                FALSE            FALSE
-#>   aumcint.inf.pred.dose aucivinf.obs aucivinf.pred aucivpbextinf.obs
-#> 1                 FALSE        FALSE         FALSE             FALSE
+#>   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.pred aumcint.inf.obs
+#> 1       FALSE        FALSE          FALSE           FALSE           FALSE
+#>   aumcint.inf.pred aucivinf.obs aucivinf.pred aucivpbextinf.obs
+#> 1            FALSE        FALSE         FALSE             FALSE
 #>   aucivpbextinf.pred aumcivinf.obs aumcivinf.pred aucpext.obs aucpext.pred
 #> 1              FALSE         FALSE          FALSE        TRUE        FALSE
 #>   kel.iv.all kel.ivint.all kel.ivint.last kel.sparse.last cl.obs cl.pred
@@ -222,18 +218,16 @@ pknca_interval_table(
   dosing = "steady_state", route = "extravascular",
   include = "fluctuation"
 )
-#>   start end auclast aucall aumclast aumcall aucint.last aucint.last.dose
-#> 1   144 168   FALSE  FALSE    FALSE   FALSE        TRUE            FALSE
-#>   aucint.all aucint.all.dose aumcint.last aumcint.last.dose aumcint.all
-#> 1      FALSE           FALSE        FALSE             FALSE       FALSE
-#>   aumcint.all.dose    c0 cmax  cmin tmax  tmin tlast tfirst clast.obs cl.last
-#> 1            FALSE FALSE TRUE FALSE TRUE FALSE FALSE  FALSE     FALSE   FALSE
-#>   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last
-#> 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE
-#>   mrt.iv.last vss.last vss.iv.last vss.all vss.int.all vss.int.last   cav
-#> 1       FALSE    FALSE       FALSE   FALSE       FALSE        FALSE FALSE
-#>   cav.int.last cav.int.all ctrough cstart  ptr tlag deg.fluc swing  ceoi
-#> 1        FALSE       FALSE    TRUE  FALSE TRUE TRUE     TRUE  TRUE FALSE
+#>   start end auclast aucall aumclast aumcall aucint.last aucint.all aumcint.last
+#> 1   144 168   FALSE  FALSE    FALSE   FALSE        TRUE      FALSE        FALSE
+#>   aumcint.all    c0 cmax  cmin tmax  tmin tlast tfirst clast.obs cl.last cl.all
+#> 1       FALSE FALSE TRUE FALSE TRUE FALSE FALSE  FALSE     FALSE   FALSE  FALSE
+#>   cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last mrt.iv.last
+#> 1      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE       FALSE
+#>   vss.last vss.iv.last vss.all vss.int.all vss.int.last   cav cav.int.last
+#> 1    FALSE       FALSE   FALSE       FALSE        FALSE FALSE        FALSE
+#>   cav.int.all ctrough cstart  ptr tlag deg.fluc swing  ceoi
+#> 1       FALSE    TRUE  FALSE TRUE TRUE     TRUE  TRUE FALSE
 #>   aucabove.predose.all aucabove.trough.all count_conc count_conc_measured
 #> 1                FALSE               FALSE       TRUE               FALSE
 #>   totdose volpk    ae clr.last clr.obs clr.pred    fe ertlst ermax ertmax erint
@@ -264,12 +258,10 @@ pknca_interval_table(
 #> 1     FALSE      FALSE        FALSE         FALSE   FALSE      FALSE
 #>   vss.ivint.all vss.ivint.last vss.sparse.last aucinf.obs aucinf.pred
 #> 1         FALSE          FALSE           FALSE      FALSE       FALSE
-#>   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.obs.dose aucint.inf.pred
-#> 1       FALSE        FALSE           TRUE               FALSE           FALSE
-#>   aucint.inf.pred.dose aumcint.inf.obs aumcint.inf.obs.dose aumcint.inf.pred
-#> 1                FALSE           FALSE                FALSE            FALSE
-#>   aumcint.inf.pred.dose aucivinf.obs aucivinf.pred aucivpbextinf.obs
-#> 1                 FALSE        FALSE         FALSE             FALSE
+#>   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.pred aumcint.inf.obs
+#> 1       FALSE        FALSE           TRUE           FALSE           FALSE
+#>   aumcint.inf.pred aucivinf.obs aucivinf.pred aucivpbextinf.obs
+#> 1            FALSE        FALSE         FALSE             FALSE
 #>   aucivpbextinf.pred aumcivinf.obs aumcivinf.pred aucpext.obs aucpext.pred
 #> 1              FALSE         FALSE          FALSE       FALSE        FALSE
 #>   kel.iv.all kel.ivint.all kel.ivint.last kel.sparse.last cl.obs cl.pred
@@ -302,12 +294,10 @@ pknca_interval_table(
 # A urine collection
 pknca_interval_table(0, 24, dosing = "single", route = "extravascular",
                      sample_type = "interval")
-#>   start end auclast aucall aumclast aumcall aucint.last aucint.last.dose
-#> 1     0  24   FALSE  FALSE    FALSE   FALSE       FALSE            FALSE
-#>   aucint.all aucint.all.dose aumcint.last aumcint.last.dose aumcint.all
-#> 1      FALSE           FALSE        FALSE             FALSE       FALSE
-#>   aumcint.all.dose    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last
-#> 1            FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE
+#>   start end auclast aucall aumclast aumcall aucint.last aucint.all aumcint.last
+#> 1     0  24   FALSE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE
+#>   aumcint.all    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last
+#> 1       FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE
 #>   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last
 #> 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE
 #>   mrt.iv.last vss.last vss.iv.last vss.all vss.int.all vss.int.last   cav
@@ -344,12 +334,10 @@ pknca_interval_table(0, 24, dosing = "single", route = "extravascular",
 #> 1     FALSE      FALSE        FALSE         FALSE   FALSE      FALSE
 #>   vss.ivint.all vss.ivint.last vss.sparse.last aucinf.obs aucinf.pred
 #> 1         FALSE          FALSE           FALSE      FALSE       FALSE
-#>   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.obs.dose aucint.inf.pred
-#> 1       FALSE        FALSE          FALSE               FALSE           FALSE
-#>   aucint.inf.pred.dose aumcint.inf.obs aumcint.inf.obs.dose aumcint.inf.pred
-#> 1                FALSE           FALSE                FALSE            FALSE
-#>   aumcint.inf.pred.dose aucivinf.obs aucivinf.pred aucivpbextinf.obs
-#> 1                 FALSE        FALSE         FALSE             FALSE
+#>   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.pred aumcint.inf.obs
+#> 1       FALSE        FALSE          FALSE           FALSE           FALSE
+#>   aumcint.inf.pred aucivinf.obs aucivinf.pred aucivpbextinf.obs
+#> 1            FALSE        FALSE         FALSE             FALSE
 #>   aucivpbextinf.pred aumcivinf.obs aumcivinf.pred aucpext.obs aucpext.pred
 #> 1              FALSE         FALSE          FALSE       FALSE        FALSE
 #>   kel.iv.all kel.ivint.all kel.ivint.last kel.sparse.last cl.obs cl.pred

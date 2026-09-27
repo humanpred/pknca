@@ -481,9 +481,7 @@ parameters: <code>aucint.last</code>, <code>aucint.all</code>,
 over the full interval from <code>start</code> to <code>end</code> while
 handling the region after <code>tlast</code> the same way as
 <code>auclast</code>, <code>aucall</code>, <code>aucinf.obs</code>, and
-<code>aucinf.pred</code>, respectively. (The <code>.dose</code> variants
-of each, such as <code>aucint.last.dose</code>, additionally interpolate
-concentrations at dose times within the interval.)</p>
+<code>aucinf.pred</code>, respectively.</p>
 <p>Request an <code>aucint</code> parameter like any other interval
 parameter with the <code>start</code> and <code>end</code> of the
 interval defining the range of integration. When the interval boundaries
@@ -493,6 +491,18 @@ the specific parameter), so no manual data preparation is required. In
 the example below, the concentration at the end time of 1.5 is not in
 the observed data, and it is interpolated automatically during the
 calculation.</p>
+<p>When dosing data are given, the <code>aucint</code> parameters are
+dose-aware: the profile being integrated ends at the first dose at or
+after the end of the interval, so a concentration measured after that
+dose is never interpolated back into the interval. Only the start and
+end of the interval are estimated; a dose within the interval is
+integrated across using the concentrations measured on either side of
+it. The method (<code>PPANMETH</code>) column reports whether the
+calculation was dose-aware and how the region after <code>tlast</code>
+was handled – with the half-life, with <code>AUCall</code> (when
+<code>aucint.inf.obs</code> or <code>aucint.inf.pred</code> was
+requested but the half-life is not estimable), or not at all when the
+interval ends at or before <code>tlast</code>.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data_aucint_obj</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">conc_obj</span>,</span>
@@ -501,13 +511,13 @@ calculation.</p>
 <span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_aucint_obj</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
-<col width="11%">
+<col width="5%">
+<col width="4%">
+<col width="2%">
 <col width="8%">
 <col width="5%">
-<col width="17%">
-<col width="11%">
-<col width="31%">
-<col width="11%">
+<col width="66%">
+<col width="5%">
 </colgroup>
 <thead><tr class="header">
 <th align="right">subject</th>
@@ -525,7 +535,8 @@ calculation.</p>
 <td align="right">2.0</td>
 <td align="left">aucint.last</td>
 <td align="right">4.0000</td>
-<td align="left">AUC: lin up/log down</td>
+<td align="left">AUC: lin up/log down. Interpolation: not dose-aware (no
+dosing data). Extrapolation: none</td>
 <td align="left">NA</td>
 </tr>
 <tr class="even">
@@ -534,7 +545,8 @@ calculation.</p>
 <td align="right">1.5</td>
 <td align="left">aucint.last</td>
 <td align="right">2.5625</td>
-<td align="left">AUC: lin up/log down</td>
+<td align="left">AUC: lin up/log down. Interpolation: not dose-aware (no
+dosing data). Extrapolation: none</td>
 <td align="left">NA</td>
 </tr>
 </tbody>

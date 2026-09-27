@@ -836,7 +836,7 @@ as.data.frame(o_nca)
     ## 13     0   Inf span.ratio           2      ""                     NA     
     ## 14     0   Inf aucinf.obs           0.721  "AUC: lin up/log down" NA
 
-### How to select the correct parameters for calculations (aka, why are there 32 types of AUC in PKNCA?)
+### How to select the correct parameters for calculations (aka, why are there 28 types of AUC in PKNCA?)
 
 CDISC has one set of names, but they are not precise (e.g. AUCINT
 doesn’t tell the interpolation/extrapolation method).
@@ -860,8 +860,10 @@ of parameters.
 AUC_(int) may look after the end of the interval to calculate the
 concentration at `end`.
 
-Note: Watch out for a dose before the next concentration (e.g. a dose at
-24 hours but the prior sample is around 12 and the next is around 25):
+When dosing data are given, it stops at the first dose at or after the
+end of the interval, so a concentration measured after that dose is not
+interpolated back into the interval (e.g. a dose at 24 hours but the
+prior sample is around 12 and the next is around 25):
 
 ![](v30-training-session_files/figure-html/unnamed-chunk-32-1.png)
 
@@ -1192,21 +1194,16 @@ o_data <- PKNCAdata(o_conc, o_dose)
 o_data$intervals %>% select(-Subject) %>% unique() %>% as.data.frame()
 ```
 
-    ##   start end auclast aucall aumclast aumcall aucint.last aucint.last.dose
-    ## 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE            FALSE
-    ## 2     0 Inf   FALSE  FALSE    FALSE   FALSE       FALSE            FALSE
-    ## 3     0 120    TRUE  FALSE    FALSE   FALSE       FALSE            FALSE
-    ## 4   120 144    TRUE  FALSE    FALSE   FALSE       FALSE            FALSE
-    ##   aucint.all aucint.all.dose aumcint.last aumcint.last.dose aumcint.all
-    ## 1      FALSE           FALSE        FALSE             FALSE       FALSE
-    ## 2      FALSE           FALSE        FALSE             FALSE       FALSE
-    ## 3      FALSE           FALSE        FALSE             FALSE       FALSE
-    ## 4      FALSE           FALSE        FALSE             FALSE       FALSE
-    ##   aumcint.all.dose    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last
-    ## 1            FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE
-    ## 2            FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE
-    ## 3            FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE
-    ## 4            FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE
+    ##   start end auclast aucall aumclast aumcall aucint.last aucint.all aumcint.last
+    ## 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE
+    ## 2     0 Inf   FALSE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE
+    ## 3     0 120    TRUE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE
+    ## 4   120 144    TRUE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE
+    ##   aumcint.all    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last
+    ## 1       FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE
+    ## 2       FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE
+    ## 3       FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE
+    ## 4       FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE
     ##   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last
     ## 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE
     ## 2  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE
@@ -1297,21 +1294,16 @@ o_data$intervals %>% select(-Subject) %>% unique() %>% as.data.frame()
     ## 2         FALSE          FALSE           FALSE       TRUE       FALSE
     ## 3         FALSE          FALSE           FALSE      FALSE       FALSE
     ## 4         FALSE          FALSE           FALSE      FALSE       FALSE
-    ##   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.obs.dose aucint.inf.pred
-    ## 1       FALSE        FALSE          FALSE               FALSE           FALSE
-    ## 2       FALSE        FALSE          FALSE               FALSE           FALSE
-    ## 3       FALSE        FALSE          FALSE               FALSE           FALSE
-    ## 4       FALSE        FALSE          FALSE               FALSE           FALSE
-    ##   aucint.inf.pred.dose aumcint.inf.obs aumcint.inf.obs.dose aumcint.inf.pred
-    ## 1                FALSE           FALSE                FALSE            FALSE
-    ## 2                FALSE           FALSE                FALSE            FALSE
-    ## 3                FALSE           FALSE                FALSE            FALSE
-    ## 4                FALSE           FALSE                FALSE            FALSE
-    ##   aumcint.inf.pred.dose aucivinf.obs aucivinf.pred aucivpbextinf.obs
-    ## 1                 FALSE        FALSE         FALSE             FALSE
-    ## 2                 FALSE        FALSE         FALSE             FALSE
-    ## 3                 FALSE        FALSE         FALSE             FALSE
-    ## 4                 FALSE        FALSE         FALSE             FALSE
+    ##   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.pred aumcint.inf.obs
+    ## 1       FALSE        FALSE          FALSE           FALSE           FALSE
+    ## 2       FALSE        FALSE          FALSE           FALSE           FALSE
+    ## 3       FALSE        FALSE          FALSE           FALSE           FALSE
+    ## 4       FALSE        FALSE          FALSE           FALSE           FALSE
+    ##   aumcint.inf.pred aucivinf.obs aucivinf.pred aucivpbextinf.obs
+    ## 1            FALSE        FALSE         FALSE             FALSE
+    ## 2            FALSE        FALSE         FALSE             FALSE
+    ## 3            FALSE        FALSE         FALSE             FALSE
+    ## 4            FALSE        FALSE         FALSE             FALSE
     ##   aucivpbextinf.pred aumcivinf.obs aumcivinf.pred aucpext.obs aucpext.pred
     ## 1              FALSE         FALSE          FALSE       FALSE        FALSE
     ## 2              FALSE         FALSE          FALSE       FALSE        FALSE

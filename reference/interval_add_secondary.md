@@ -145,15 +145,12 @@ interval_add_secondary(
   param = "clr.last",
   reference = data.frame(PCSPEC = "plasma")
 )
-#>   start end auclast aucall aumclast aumcall aucint.last aucint.last.dose
-#> 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE            FALSE
-#> 2     0  24   FALSE  FALSE    FALSE   FALSE       FALSE            FALSE
-#>   aucint.all aucint.all.dose aumcint.last aumcint.last.dose aumcint.all
-#> 1      FALSE           FALSE        FALSE             FALSE       FALSE
-#> 2      FALSE           FALSE        FALSE             FALSE       FALSE
-#>   aumcint.all.dose    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last
-#> 1            FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE
-#> 2            FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE
+#>   start end auclast aucall aumclast aumcall aucint.last aucint.all aumcint.last
+#> 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE
+#> 2     0  24   FALSE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE
+#>   aumcint.all    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last
+#> 1       FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE
+#> 2       FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE
 #>   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last
 #> 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE
 #> 2  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE
@@ -208,15 +205,12 @@ interval_add_secondary(
 #>   vss.ivint.all vss.ivint.last vss.sparse.last aucinf.obs aucinf.pred
 #> 1         FALSE          FALSE           FALSE      FALSE       FALSE
 #> 2         FALSE          FALSE           FALSE      FALSE       FALSE
-#>   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.obs.dose aucint.inf.pred
-#> 1       FALSE        FALSE          FALSE               FALSE           FALSE
-#> 2       FALSE        FALSE          FALSE               FALSE           FALSE
-#>   aucint.inf.pred.dose aumcint.inf.obs aumcint.inf.obs.dose aumcint.inf.pred
-#> 1                FALSE           FALSE                FALSE            FALSE
-#> 2                FALSE           FALSE                FALSE            FALSE
-#>   aumcint.inf.pred.dose aucivinf.obs aucivinf.pred aucivpbextinf.obs
-#> 1                 FALSE        FALSE         FALSE             FALSE
-#> 2                 FALSE        FALSE         FALSE             FALSE
+#>   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.pred aumcint.inf.obs
+#> 1       FALSE        FALSE          FALSE           FALSE           FALSE
+#> 2       FALSE        FALSE          FALSE           FALSE           FALSE
+#>   aumcint.inf.pred aucivinf.obs aucivinf.pred aucivpbextinf.obs
+#> 1            FALSE        FALSE         FALSE             FALSE
+#> 2            FALSE        FALSE         FALSE             FALSE
 #>   aucivpbextinf.pred aumcivinf.obs aumcivinf.pred aucpext.obs aucpext.pred
 #> 1              FALSE         FALSE          FALSE       FALSE        FALSE
 #> 2              FALSE         FALSE          FALSE       FALSE        FALSE

@@ -646,30 +646,12 @@ boundaries</td>
 <td align="left">pk.calc.aucint.all</td>
 </tr>
 <tr class="odd">
-<td align="left">aucint.all.dose</td>
-<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">int,all,dose</mtext></msub><mo>=</mo><msub><mo>∑</mo><mi>k</mi></msub><mi>A</mi><mi>U</mi><msub><mi>C</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mi>k</mi></msub><mo>,</mo><msub><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>t</mi><mi>k</mi></msub><mo>,</mo><msub><mi>t</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUC_{\text{int,all,dose}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})</annotation></semantics></math></td>
-<td align="left">Trapezoidal rule with interpolation at interval
-boundaries</td>
-<td align="left">auc</td>
-<td align="left">AUC T1 to T2, dose-aware (AUCall)</td>
-<td align="left">pk.calc.aucint.all</td>
-</tr>
-<tr class="even">
 <td align="left">aucint.inf.obs</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub><mo>=</mo><msub><mo>∑</mo><mi>k</mi></msub><mi>A</mi><mi>U</mi><msub><mi>C</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mi>k</mi></msub><mo>,</mo><msub><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>t</mi><mi>k</mi></msub><mo>,</mo><msub><mi>t</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUC_{\text{int,}\infty\text{,obs}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})</annotation></semantics></math></td>
 <td align="left">Trapezoidal rule with interpolation at interval
 boundaries</td>
 <td align="left">auc</td>
 <td align="left">AUC from T1 to T2 (AUCinf,obs extrap)</td>
-<td align="left">pk.calc.aucint.inf.obs</td>
-</tr>
-<tr class="odd">
-<td align="left">aucint.inf.obs.dose</td>
-<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs,dose</mtext></mrow></msub><mo>=</mo><msub><mo>∑</mo><mi>k</mi></msub><mi>A</mi><mi>U</mi><msub><mi>C</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mi>k</mi></msub><mo>,</mo><msub><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>t</mi><mi>k</mi></msub><mo>,</mo><msub><mi>t</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUC_{\text{int,}\infty\text{,obs,dose}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})</annotation></semantics></math></td>
-<td align="left">Trapezoidal rule with interpolation at interval
-boundaries</td>
-<td align="left">auc</td>
-<td align="left">AUC T1 to T2, dose-aware (AUCinf,obs)</td>
 <td align="left">pk.calc.aucint.inf.obs</td>
 </tr>
 <tr class="even">
@@ -682,30 +664,12 @@ boundaries</td>
 <td align="left">pk.calc.aucint.inf.pred</td>
 </tr>
 <tr class="odd">
-<td align="left">aucint.inf.pred.dose</td>
-<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred,dose</mtext></mrow></msub><mo>=</mo><msub><mo>∑</mo><mi>k</mi></msub><mi>A</mi><mi>U</mi><msub><mi>C</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mi>k</mi></msub><mo>,</mo><msub><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>t</mi><mi>k</mi></msub><mo>,</mo><msub><mi>t</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUC_{\text{int,}\infty\text{,pred,dose}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})</annotation></semantics></math></td>
-<td align="left">Trapezoidal rule with interpolation at interval
-boundaries</td>
-<td align="left">auc</td>
-<td align="left">AUC T1 to T2, dose-aware (AUCinf,pred)</td>
-<td align="left">pk.calc.aucint.inf.pred</td>
-</tr>
-<tr class="even">
 <td align="left">aucint.last</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">int,last</mtext></msub><mo>=</mo><msub><mo>∑</mo><mi>k</mi></msub><mi>A</mi><mi>U</mi><msub><mi>C</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mi>k</mi></msub><mo>,</mo><msub><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>t</mi><mi>k</mi></msub><mo>,</mo><msub><mi>t</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUC_{\text{int,last}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})</annotation></semantics></math></td>
 <td align="left">Trapezoidal rule with interpolation at interval
 boundaries</td>
 <td align="left">auc</td>
 <td align="left">AUC from T1 to T2 (zero extrap)</td>
-<td align="left">pk.calc.aucint.last</td>
-</tr>
-<tr class="odd">
-<td align="left">aucint.last.dose</td>
-<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">int,last,dose</mtext></msub><mo>=</mo><msub><mo>∑</mo><mi>k</mi></msub><mi>A</mi><mi>U</mi><msub><mi>C</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mi>k</mi></msub><mo>,</mo><msub><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>t</mi><mi>k</mi></msub><mo>,</mo><msub><mi>t</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUC_{\text{int,last,dose}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})</annotation></semantics></math></td>
-<td align="left">Trapezoidal rule with interpolation at interval
-boundaries</td>
-<td align="left">auc</td>
-<td align="left">AUC T1 to T2, dose-aware (zero extrap)</td>
 <td align="left">pk.calc.aucint.last</td>
 </tr>
 <tr class="even">
@@ -894,30 +858,12 @@ boundaries</td>
 <td align="left">pk.calc.aumcint.all</td>
 </tr>
 <tr class="odd">
-<td align="left">aumcint.all.dose</td>
-<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mtext mathvariant="normal">int,all,dose</mtext></msub><mo>=</mo><msub><mo>∑</mo><mi>k</mi></msub><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mi>k</mi></msub><mo>,</mo><msub><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>t</mi><mi>k</mi></msub><mo>,</mo><msub><mi>t</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUMC_{\text{int,all,dose}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})</annotation></semantics></math></td>
-<td align="left">Trapezoidal rule with interpolation at interval
-boundaries</td>
-<td align="left">aumc</td>
-<td align="left">AUMC T1 to T2, dose-aware (AUMCall)</td>
-<td align="left">pk.calc.aumcint.all</td>
-</tr>
-<tr class="even">
 <td align="left">aumcint.inf.obs</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub><mo>=</mo><msub><mo>∑</mo><mi>k</mi></msub><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mi>k</mi></msub><mo>,</mo><msub><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>t</mi><mi>k</mi></msub><mo>,</mo><msub><mi>t</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUMC_{\text{int,}\infty\text{,obs}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})</annotation></semantics></math></td>
 <td align="left">Trapezoidal rule with interpolation at interval
 boundaries</td>
 <td align="left">aumc</td>
 <td align="left">AUMC from T1 to T2 (AUMCinf,obs extrap)</td>
-<td align="left">pk.calc.aumcint.inf.obs</td>
-</tr>
-<tr class="odd">
-<td align="left">aumcint.inf.obs.dose</td>
-<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs,dose</mtext></mrow></msub><mo>=</mo><msub><mo>∑</mo><mi>k</mi></msub><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mi>k</mi></msub><mo>,</mo><msub><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>t</mi><mi>k</mi></msub><mo>,</mo><msub><mi>t</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUMC_{\text{int,}\infty\text{,obs,dose}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})</annotation></semantics></math></td>
-<td align="left">Trapezoidal rule with interpolation at interval
-boundaries</td>
-<td align="left">aumc</td>
-<td align="left">AUMC T1 to T2, dose-aware (AUMCinf,obs)</td>
 <td align="left">pk.calc.aumcint.inf.obs</td>
 </tr>
 <tr class="even">
@@ -930,30 +876,12 @@ boundaries</td>
 <td align="left">pk.calc.aumcint.inf.pred</td>
 </tr>
 <tr class="odd">
-<td align="left">aumcint.inf.pred.dose</td>
-<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred,dose</mtext></mrow></msub><mo>=</mo><msub><mo>∑</mo><mi>k</mi></msub><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mi>k</mi></msub><mo>,</mo><msub><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>t</mi><mi>k</mi></msub><mo>,</mo><msub><mi>t</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUMC_{\text{int,}\infty\text{,pred,dose}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})</annotation></semantics></math></td>
-<td align="left">Trapezoidal rule with interpolation at interval
-boundaries</td>
-<td align="left">aumc</td>
-<td align="left">AUMC T1 to T2, dose-aware (AUMCinf,pred)</td>
-<td align="left">pk.calc.aumcint.inf.pred</td>
-</tr>
-<tr class="even">
 <td align="left">aumcint.last</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mtext mathvariant="normal">int,last</mtext></msub><mo>=</mo><msub><mo>∑</mo><mi>k</mi></msub><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mi>k</mi></msub><mo>,</mo><msub><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>t</mi><mi>k</mi></msub><mo>,</mo><msub><mi>t</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUMC_{\text{int,last}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})</annotation></semantics></math></td>
 <td align="left">Trapezoidal rule with interpolation at interval
 boundaries</td>
 <td align="left">aumc</td>
 <td align="left">AUMC from T1 to T2 (zero extrap)</td>
-<td align="left">pk.calc.aumcint.last</td>
-</tr>
-<tr class="odd">
-<td align="left">aumcint.last.dose</td>
-<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mtext mathvariant="normal">int,last,dose</mtext></msub><mo>=</mo><msub><mo>∑</mo><mi>k</mi></msub><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mi>k</mi></msub><mo>,</mo><msub><mi>C</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>t</mi><mi>k</mi></msub><mo>,</mo><msub><mi>t</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUMC_{\text{int,last,dose}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})</annotation></semantics></math></td>
-<td align="left">Trapezoidal rule with interpolation at interval
-boundaries</td>
-<td align="left">aumc</td>
-<td align="left">AUMC T1 to T2, dose-aware (zero extrap)</td>
 <td align="left">pk.calc.aumcint.last</td>
 </tr>
 <tr class="even">

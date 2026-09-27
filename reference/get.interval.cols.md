@@ -422,7 +422,13 @@ get.interval.cols()
 #> [1] "time.group"
 #> 
 #> $aucint.last$formalsmap$time.dose
-#> NULL
+#> [1] "time.dose.group"
+#> 
+#> $aucint.last$formalsmap$route
+#> [1] "route.group"
+#> 
+#> $aucint.last$formalsmap$duration.dose
+#> [1] "duration.dose.group"
 #> 
 #> 
 #> $aucint.last$depends
@@ -465,76 +471,6 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> 
-#> $aucint.last.dose
-#> $aucint.last.dose$FUN
-#> [1] "pk.calc.aucint.last"
-#> 
-#> $aucint.last.dose$values
-#> [1] FALSE  TRUE
-#> 
-#> $aucint.last.dose$unit_type
-#> [1] "auc"
-#> 
-#> $aucint.last.dose$pretty_name
-#> [1] "AUCint (based on AUClast extrapolation, dose-aware)"
-#> 
-#> $aucint.last.dose$desc
-#> [1] "AUC T1 to T2, dose-aware (zero extrap)"
-#> 
-#> $aucint.last.dose$sparse
-#> [1] FALSE
-#> 
-#> $aucint.last.dose$formalsmap
-#> $aucint.last.dose$formalsmap$conc
-#> [1] "conc.group"
-#> 
-#> $aucint.last.dose$formalsmap$time
-#> [1] "time.group"
-#> 
-#> $aucint.last.dose$formalsmap$time.dose
-#> [1] "time.dose.group"
-#> 
-#> 
-#> $aucint.last.dose$depends
-#> NULL
-#> 
-#> $aucint.last.dose$datatype
-#> [1] "interval"
-#> 
-#> $aucint.last.dose$pptestcd_cdisc
-#> [1] "AUCINTD"
-#> 
-#> $aucint.last.dose$pptest_cdisc
-#> [1] "AUC from T1 to T2 Normalized by Dose"
-#> 
-#> $aucint.last.dose$formula
-#> [1] "$AUC_{\\text{int,last,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
-#> 
-#> $aucint.last.dose$formula_note
-#> [1] "Trapezoidal rule with interpolation at interval boundaries"
-#> 
-#> $aucint.last.dose$tier
-#> [1] "uncommon"
-#> 
-#> $aucint.last.dose$selection
-#> list()
-#> 
-#> $aucint.last.dose$requires_dose_amt
-#> [1] FALSE
-#> 
-#> $aucint.last.dose$requires_dose_time
-#> [1] TRUE
-#> 
-#> $aucint.last.dose$requires_dose_dur
-#> [1] FALSE
-#> 
-#> $aucint.last.dose$requires_volume
-#> [1] FALSE
-#> 
-#> $aucint.last.dose$requires_conc_dur
-#> [1] FALSE
-#> 
-#> 
 #> $aucint.all
 #> $aucint.all$FUN
 #> [1] "pk.calc.aucint.all"
@@ -562,7 +498,13 @@ get.interval.cols()
 #> [1] "time.group"
 #> 
 #> $aucint.all$formalsmap$time.dose
-#> NULL
+#> [1] "time.dose.group"
+#> 
+#> $aucint.all$formalsmap$route
+#> [1] "route.group"
+#> 
+#> $aucint.all$formalsmap$duration.dose
+#> [1] "duration.dose.group"
 #> 
 #> 
 #> $aucint.all$depends
@@ -605,76 +547,6 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> 
-#> $aucint.all.dose
-#> $aucint.all.dose$FUN
-#> [1] "pk.calc.aucint.all"
-#> 
-#> $aucint.all.dose$values
-#> [1] FALSE  TRUE
-#> 
-#> $aucint.all.dose$unit_type
-#> [1] "auc"
-#> 
-#> $aucint.all.dose$pretty_name
-#> [1] "AUCint (based on AUCall extrapolation, dose-aware)"
-#> 
-#> $aucint.all.dose$desc
-#> [1] "AUC T1 to T2, dose-aware (AUCall)"
-#> 
-#> $aucint.all.dose$sparse
-#> [1] FALSE
-#> 
-#> $aucint.all.dose$formalsmap
-#> $aucint.all.dose$formalsmap$conc
-#> [1] "conc.group"
-#> 
-#> $aucint.all.dose$formalsmap$time
-#> [1] "time.group"
-#> 
-#> $aucint.all.dose$formalsmap$time.dose
-#> [1] "time.dose.group"
-#> 
-#> 
-#> $aucint.all.dose$depends
-#> NULL
-#> 
-#> $aucint.all.dose$datatype
-#> [1] "interval"
-#> 
-#> $aucint.all.dose$pptestcd_cdisc
-#> [1] "AUCINTAD"
-#> 
-#> $aucint.all.dose$pptest_cdisc
-#> [1] "AUCint (based on AUCall extrapolation, dose-aware)"
-#> 
-#> $aucint.all.dose$formula
-#> [1] "$AUC_{\\text{int,all,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
-#> 
-#> $aucint.all.dose$formula_note
-#> [1] "Trapezoidal rule with interpolation at interval boundaries"
-#> 
-#> $aucint.all.dose$tier
-#> [1] "uncommon"
-#> 
-#> $aucint.all.dose$selection
-#> list()
-#> 
-#> $aucint.all.dose$requires_dose_amt
-#> [1] FALSE
-#> 
-#> $aucint.all.dose$requires_dose_time
-#> [1] TRUE
-#> 
-#> $aucint.all.dose$requires_dose_dur
-#> [1] FALSE
-#> 
-#> $aucint.all.dose$requires_volume
-#> [1] FALSE
-#> 
-#> $aucint.all.dose$requires_conc_dur
-#> [1] FALSE
-#> 
-#> 
 #> $aumcint.last
 #> $aumcint.last$FUN
 #> [1] "pk.calc.aumcint.last"
@@ -702,7 +574,13 @@ get.interval.cols()
 #> [1] "time.group"
 #> 
 #> $aumcint.last$formalsmap$time.dose
-#> NULL
+#> [1] "time.dose.group"
+#> 
+#> $aumcint.last$formalsmap$route
+#> [1] "route.group"
+#> 
+#> $aumcint.last$formalsmap$duration.dose
+#> [1] "duration.dose.group"
 #> 
 #> 
 #> $aumcint.last$depends
@@ -745,76 +623,6 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> 
-#> $aumcint.last.dose
-#> $aumcint.last.dose$FUN
-#> [1] "pk.calc.aumcint.last"
-#> 
-#> $aumcint.last.dose$values
-#> [1] FALSE  TRUE
-#> 
-#> $aumcint.last.dose$unit_type
-#> [1] "aumc"
-#> 
-#> $aumcint.last.dose$pretty_name
-#> [1] "AUMCint (based on AUMClast extrapolation, dose-aware)"
-#> 
-#> $aumcint.last.dose$desc
-#> [1] "AUMC T1 to T2, dose-aware (zero extrap)"
-#> 
-#> $aumcint.last.dose$sparse
-#> [1] FALSE
-#> 
-#> $aumcint.last.dose$formalsmap
-#> $aumcint.last.dose$formalsmap$conc
-#> [1] "conc.group"
-#> 
-#> $aumcint.last.dose$formalsmap$time
-#> [1] "time.group"
-#> 
-#> $aumcint.last.dose$formalsmap$time.dose
-#> [1] "time.dose.group"
-#> 
-#> 
-#> $aumcint.last.dose$depends
-#> NULL
-#> 
-#> $aumcint.last.dose$datatype
-#> [1] "interval"
-#> 
-#> $aumcint.last.dose$pptestcd_cdisc
-#> [1] "aumcint.last.dose"
-#> 
-#> $aumcint.last.dose$pptest_cdisc
-#> [1] "AUMC T1 to T2, dose-aware (zero extrap)"
-#> 
-#> $aumcint.last.dose$formula
-#> [1] "$AUMC_{\\text{int,last,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
-#> 
-#> $aumcint.last.dose$formula_note
-#> [1] "Trapezoidal rule with interpolation at interval boundaries"
-#> 
-#> $aumcint.last.dose$tier
-#> [1] "uncommon"
-#> 
-#> $aumcint.last.dose$selection
-#> list()
-#> 
-#> $aumcint.last.dose$requires_dose_amt
-#> [1] FALSE
-#> 
-#> $aumcint.last.dose$requires_dose_time
-#> [1] TRUE
-#> 
-#> $aumcint.last.dose$requires_dose_dur
-#> [1] FALSE
-#> 
-#> $aumcint.last.dose$requires_volume
-#> [1] FALSE
-#> 
-#> $aumcint.last.dose$requires_conc_dur
-#> [1] FALSE
-#> 
-#> 
 #> $aumcint.all
 #> $aumcint.all$FUN
 #> [1] "pk.calc.aumcint.all"
@@ -842,7 +650,13 @@ get.interval.cols()
 #> [1] "time.group"
 #> 
 #> $aumcint.all$formalsmap$time.dose
-#> NULL
+#> [1] "time.dose.group"
+#> 
+#> $aumcint.all$formalsmap$route
+#> [1] "route.group"
+#> 
+#> $aumcint.all$formalsmap$duration.dose
+#> [1] "duration.dose.group"
 #> 
 #> 
 #> $aumcint.all$depends
@@ -882,76 +696,6 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> $aumcint.all$requires_conc_dur
-#> [1] FALSE
-#> 
-#> 
-#> $aumcint.all.dose
-#> $aumcint.all.dose$FUN
-#> [1] "pk.calc.aumcint.all"
-#> 
-#> $aumcint.all.dose$values
-#> [1] FALSE  TRUE
-#> 
-#> $aumcint.all.dose$unit_type
-#> [1] "aumc"
-#> 
-#> $aumcint.all.dose$pretty_name
-#> [1] "AUMCint (based on AUMCall extrapolation, dose-aware)"
-#> 
-#> $aumcint.all.dose$desc
-#> [1] "AUMC T1 to T2, dose-aware (AUMCall)"
-#> 
-#> $aumcint.all.dose$sparse
-#> [1] FALSE
-#> 
-#> $aumcint.all.dose$formalsmap
-#> $aumcint.all.dose$formalsmap$conc
-#> [1] "conc.group"
-#> 
-#> $aumcint.all.dose$formalsmap$time
-#> [1] "time.group"
-#> 
-#> $aumcint.all.dose$formalsmap$time.dose
-#> [1] "time.dose.group"
-#> 
-#> 
-#> $aumcint.all.dose$depends
-#> NULL
-#> 
-#> $aumcint.all.dose$datatype
-#> [1] "interval"
-#> 
-#> $aumcint.all.dose$pptestcd_cdisc
-#> [1] "aumcint.all.dose"
-#> 
-#> $aumcint.all.dose$pptest_cdisc
-#> [1] "AUMC T1 to T2, dose-aware (AUMCall)"
-#> 
-#> $aumcint.all.dose$formula
-#> [1] "$AUMC_{\\text{int,all,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
-#> 
-#> $aumcint.all.dose$formula_note
-#> [1] "Trapezoidal rule with interpolation at interval boundaries"
-#> 
-#> $aumcint.all.dose$tier
-#> [1] "uncommon"
-#> 
-#> $aumcint.all.dose$selection
-#> list()
-#> 
-#> $aumcint.all.dose$requires_dose_amt
-#> [1] FALSE
-#> 
-#> $aumcint.all.dose$requires_dose_time
-#> [1] TRUE
-#> 
-#> $aumcint.all.dose$requires_dose_dur
-#> [1] FALSE
-#> 
-#> $aumcint.all.dose$requires_volume
-#> [1] FALSE
-#> 
-#> $aumcint.all.dose$requires_conc_dur
 #> [1] FALSE
 #> 
 #> 
@@ -8971,7 +8715,13 @@ get.interval.cols()
 #> [1] "time.group"
 #> 
 #> $aucint.inf.obs$formalsmap$time.dose
-#> NULL
+#> [1] "time.dose.group"
+#> 
+#> $aucint.inf.obs$formalsmap$route
+#> [1] "route.group"
+#> 
+#> $aucint.inf.obs$formalsmap$duration.dose
+#> [1] "duration.dose.group"
 #> 
 #> 
 #> $aucint.inf.obs$depends
@@ -9014,76 +8764,6 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> 
-#> $aucint.inf.obs.dose
-#> $aucint.inf.obs.dose$FUN
-#> [1] "pk.calc.aucint.inf.obs"
-#> 
-#> $aucint.inf.obs.dose$values
-#> [1] FALSE  TRUE
-#> 
-#> $aucint.inf.obs.dose$unit_type
-#> [1] "auc"
-#> 
-#> $aucint.inf.obs.dose$pretty_name
-#> [1] "AUCint (based on AUCinf,obs extrapolation, dose-aware)"
-#> 
-#> $aucint.inf.obs.dose$desc
-#> [1] "AUC T1 to T2, dose-aware (AUCinf,obs)"
-#> 
-#> $aucint.inf.obs.dose$sparse
-#> [1] FALSE
-#> 
-#> $aucint.inf.obs.dose$formalsmap
-#> $aucint.inf.obs.dose$formalsmap$conc
-#> [1] "conc.group"
-#> 
-#> $aucint.inf.obs.dose$formalsmap$time
-#> [1] "time.group"
-#> 
-#> $aucint.inf.obs.dose$formalsmap$time.dose
-#> [1] "time.dose.group"
-#> 
-#> 
-#> $aucint.inf.obs.dose$depends
-#> [1] "lambda.z"  "clast.obs"
-#> 
-#> $aucint.inf.obs.dose$datatype
-#> [1] "interval"
-#> 
-#> $aucint.inf.obs.dose$pptestcd_cdisc
-#> [1] "AUCINTID"
-#> 
-#> $aucint.inf.obs.dose$pptest_cdisc
-#> [1] "AUCint (based on AUCinf,obs extrapolation, dose-aware)"
-#> 
-#> $aucint.inf.obs.dose$formula
-#> [1] "$AUC_{\\text{int,}\\infty\\text{,obs,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
-#> 
-#> $aucint.inf.obs.dose$formula_note
-#> [1] "Trapezoidal rule with interpolation at interval boundaries"
-#> 
-#> $aucint.inf.obs.dose$tier
-#> [1] "uncommon"
-#> 
-#> $aucint.inf.obs.dose$selection
-#> list()
-#> 
-#> $aucint.inf.obs.dose$requires_dose_amt
-#> [1] FALSE
-#> 
-#> $aucint.inf.obs.dose$requires_dose_time
-#> [1] TRUE
-#> 
-#> $aucint.inf.obs.dose$requires_dose_dur
-#> [1] FALSE
-#> 
-#> $aucint.inf.obs.dose$requires_volume
-#> [1] FALSE
-#> 
-#> $aucint.inf.obs.dose$requires_conc_dur
-#> [1] FALSE
-#> 
-#> 
 #> $aucint.inf.pred
 #> $aucint.inf.pred$FUN
 #> [1] "pk.calc.aucint.inf.pred"
@@ -9111,7 +8791,13 @@ get.interval.cols()
 #> [1] "time.group"
 #> 
 #> $aucint.inf.pred$formalsmap$time.dose
-#> NULL
+#> [1] "time.dose.group"
+#> 
+#> $aucint.inf.pred$formalsmap$route
+#> [1] "route.group"
+#> 
+#> $aucint.inf.pred$formalsmap$duration.dose
+#> [1] "duration.dose.group"
 #> 
 #> 
 #> $aucint.inf.pred$depends
@@ -9154,76 +8840,6 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> 
-#> $aucint.inf.pred.dose
-#> $aucint.inf.pred.dose$FUN
-#> [1] "pk.calc.aucint.inf.pred"
-#> 
-#> $aucint.inf.pred.dose$values
-#> [1] FALSE  TRUE
-#> 
-#> $aucint.inf.pred.dose$unit_type
-#> [1] "auc"
-#> 
-#> $aucint.inf.pred.dose$pretty_name
-#> [1] "AUCint (based on AUCinf,pred extrapolation, dose-aware)"
-#> 
-#> $aucint.inf.pred.dose$desc
-#> [1] "AUC T1 to T2, dose-aware (AUCinf,pred)"
-#> 
-#> $aucint.inf.pred.dose$sparse
-#> [1] FALSE
-#> 
-#> $aucint.inf.pred.dose$formalsmap
-#> $aucint.inf.pred.dose$formalsmap$conc
-#> [1] "conc.group"
-#> 
-#> $aucint.inf.pred.dose$formalsmap$time
-#> [1] "time.group"
-#> 
-#> $aucint.inf.pred.dose$formalsmap$time.dose
-#> [1] "time.dose.group"
-#> 
-#> 
-#> $aucint.inf.pred.dose$depends
-#> [1] "lambda.z"   "clast.pred"
-#> 
-#> $aucint.inf.pred.dose$datatype
-#> [1] "interval"
-#> 
-#> $aucint.inf.pred.dose$pptestcd_cdisc
-#> [1] "AUCINTPD"
-#> 
-#> $aucint.inf.pred.dose$pptest_cdisc
-#> [1] "AUCint (based on AUCinf,pred extrapolation, dose-aware)"
-#> 
-#> $aucint.inf.pred.dose$formula
-#> [1] "$AUC_{\\text{int,}\\infty\\text{,pred,dose}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
-#> 
-#> $aucint.inf.pred.dose$formula_note
-#> [1] "Trapezoidal rule with interpolation at interval boundaries"
-#> 
-#> $aucint.inf.pred.dose$tier
-#> [1] "uncommon"
-#> 
-#> $aucint.inf.pred.dose$selection
-#> list()
-#> 
-#> $aucint.inf.pred.dose$requires_dose_amt
-#> [1] FALSE
-#> 
-#> $aucint.inf.pred.dose$requires_dose_time
-#> [1] TRUE
-#> 
-#> $aucint.inf.pred.dose$requires_dose_dur
-#> [1] FALSE
-#> 
-#> $aucint.inf.pred.dose$requires_volume
-#> [1] FALSE
-#> 
-#> $aucint.inf.pred.dose$requires_conc_dur
-#> [1] FALSE
-#> 
-#> 
 #> $aumcint.inf.obs
 #> $aumcint.inf.obs$FUN
 #> [1] "pk.calc.aumcint.inf.obs"
@@ -9251,7 +8867,13 @@ get.interval.cols()
 #> [1] "time.group"
 #> 
 #> $aumcint.inf.obs$formalsmap$time.dose
-#> NULL
+#> [1] "time.dose.group"
+#> 
+#> $aumcint.inf.obs$formalsmap$route
+#> [1] "route.group"
+#> 
+#> $aumcint.inf.obs$formalsmap$duration.dose
+#> [1] "duration.dose.group"
 #> 
 #> 
 #> $aumcint.inf.obs$depends
@@ -9294,76 +8916,6 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> 
-#> $aumcint.inf.obs.dose
-#> $aumcint.inf.obs.dose$FUN
-#> [1] "pk.calc.aumcint.inf.obs"
-#> 
-#> $aumcint.inf.obs.dose$values
-#> [1] FALSE  TRUE
-#> 
-#> $aumcint.inf.obs.dose$unit_type
-#> [1] "aumc"
-#> 
-#> $aumcint.inf.obs.dose$pretty_name
-#> [1] "AUMCint (based on AUMCinf,obs extrapolation, dose-aware)"
-#> 
-#> $aumcint.inf.obs.dose$desc
-#> [1] "AUMC T1 to T2, dose-aware (AUMCinf,obs)"
-#> 
-#> $aumcint.inf.obs.dose$sparse
-#> [1] FALSE
-#> 
-#> $aumcint.inf.obs.dose$formalsmap
-#> $aumcint.inf.obs.dose$formalsmap$conc
-#> [1] "conc.group"
-#> 
-#> $aumcint.inf.obs.dose$formalsmap$time
-#> [1] "time.group"
-#> 
-#> $aumcint.inf.obs.dose$formalsmap$time.dose
-#> [1] "time.dose.group"
-#> 
-#> 
-#> $aumcint.inf.obs.dose$depends
-#> [1] "lambda.z"  "clast.obs"
-#> 
-#> $aumcint.inf.obs.dose$datatype
-#> [1] "interval"
-#> 
-#> $aumcint.inf.obs.dose$pptestcd_cdisc
-#> [1] "aumcint.inf.obs.dose"
-#> 
-#> $aumcint.inf.obs.dose$pptest_cdisc
-#> [1] "AUMC T1 to T2, dose-aware (AUMCinf,obs)"
-#> 
-#> $aumcint.inf.obs.dose$formula
-#> [1] "$AUMC_{\\text{int,}\\infty\\text{,obs,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
-#> 
-#> $aumcint.inf.obs.dose$formula_note
-#> [1] "Trapezoidal rule with interpolation at interval boundaries"
-#> 
-#> $aumcint.inf.obs.dose$tier
-#> [1] "uncommon"
-#> 
-#> $aumcint.inf.obs.dose$selection
-#> list()
-#> 
-#> $aumcint.inf.obs.dose$requires_dose_amt
-#> [1] FALSE
-#> 
-#> $aumcint.inf.obs.dose$requires_dose_time
-#> [1] TRUE
-#> 
-#> $aumcint.inf.obs.dose$requires_dose_dur
-#> [1] FALSE
-#> 
-#> $aumcint.inf.obs.dose$requires_volume
-#> [1] FALSE
-#> 
-#> $aumcint.inf.obs.dose$requires_conc_dur
-#> [1] FALSE
-#> 
-#> 
 #> $aumcint.inf.pred
 #> $aumcint.inf.pred$FUN
 #> [1] "pk.calc.aumcint.inf.pred"
@@ -9391,7 +8943,13 @@ get.interval.cols()
 #> [1] "time.group"
 #> 
 #> $aumcint.inf.pred$formalsmap$time.dose
-#> NULL
+#> [1] "time.dose.group"
+#> 
+#> $aumcint.inf.pred$formalsmap$route
+#> [1] "route.group"
+#> 
+#> $aumcint.inf.pred$formalsmap$duration.dose
+#> [1] "duration.dose.group"
 #> 
 #> 
 #> $aumcint.inf.pred$depends
@@ -9431,76 +8989,6 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> $aumcint.inf.pred$requires_conc_dur
-#> [1] FALSE
-#> 
-#> 
-#> $aumcint.inf.pred.dose
-#> $aumcint.inf.pred.dose$FUN
-#> [1] "pk.calc.aumcint.inf.pred"
-#> 
-#> $aumcint.inf.pred.dose$values
-#> [1] FALSE  TRUE
-#> 
-#> $aumcint.inf.pred.dose$unit_type
-#> [1] "aumc"
-#> 
-#> $aumcint.inf.pred.dose$pretty_name
-#> [1] "AUMCint (based on AUMCinf,pred extrapolation, dose-aware)"
-#> 
-#> $aumcint.inf.pred.dose$desc
-#> [1] "AUMC T1 to T2, dose-aware (AUMCinf,pred)"
-#> 
-#> $aumcint.inf.pred.dose$sparse
-#> [1] FALSE
-#> 
-#> $aumcint.inf.pred.dose$formalsmap
-#> $aumcint.inf.pred.dose$formalsmap$conc
-#> [1] "conc.group"
-#> 
-#> $aumcint.inf.pred.dose$formalsmap$time
-#> [1] "time.group"
-#> 
-#> $aumcint.inf.pred.dose$formalsmap$time.dose
-#> [1] "time.dose.group"
-#> 
-#> 
-#> $aumcint.inf.pred.dose$depends
-#> [1] "lambda.z"   "clast.pred"
-#> 
-#> $aumcint.inf.pred.dose$datatype
-#> [1] "interval"
-#> 
-#> $aumcint.inf.pred.dose$pptestcd_cdisc
-#> [1] "aumcint.inf.pred.dose"
-#> 
-#> $aumcint.inf.pred.dose$pptest_cdisc
-#> [1] "AUMC T1 to T2, dose-aware (AUMCinf,pred)"
-#> 
-#> $aumcint.inf.pred.dose$formula
-#> [1] "$AUMC_{\\text{int,}\\infty\\text{,pred,dose}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
-#> 
-#> $aumcint.inf.pred.dose$formula_note
-#> [1] "Trapezoidal rule with interpolation at interval boundaries"
-#> 
-#> $aumcint.inf.pred.dose$tier
-#> [1] "uncommon"
-#> 
-#> $aumcint.inf.pred.dose$selection
-#> list()
-#> 
-#> $aumcint.inf.pred.dose$requires_dose_amt
-#> [1] FALSE
-#> 
-#> $aumcint.inf.pred.dose$requires_dose_time
-#> [1] TRUE
-#> 
-#> $aumcint.inf.pred.dose$requires_dose_dur
-#> [1] FALSE
-#> 
-#> $aumcint.inf.pred.dose$requires_volume
-#> [1] FALSE
-#> 
-#> $aumcint.inf.pred.dose$requires_conc_dur
 #> [1] FALSE
 #> 
 #> 

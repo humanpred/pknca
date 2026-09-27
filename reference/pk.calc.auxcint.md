@@ -37,6 +37,8 @@ pk.calc.aucint.last(
   start = NULL,
   end = NULL,
   time.dose,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -47,6 +49,8 @@ pk.calc.aucint.all(
   start = NULL,
   end = NULL,
   time.dose,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -59,6 +63,8 @@ pk.calc.aucint.inf.obs(
   time.dose,
   lambda.z,
   clast.obs,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -71,6 +77,8 @@ pk.calc.aucint.inf.pred(
   time.dose,
   lambda.z,
   clast.pred,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -83,6 +91,8 @@ pk.calc.aumcint.last(
   start = NULL,
   end = NULL,
   time.dose,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -93,6 +103,8 @@ pk.calc.aumcint.all(
   start = NULL,
   end = NULL,
   time.dose,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -105,6 +117,8 @@ pk.calc.aumcint.inf.obs(
   time.dose,
   lambda.z,
   clast.obs,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -117,6 +131,8 @@ pk.calc.aumcint.inf.pred(
   time.dose,
   lambda.z,
   clast.pred,
+  route = "extravascular",
+  duration.dose = 0,
   ...,
   options = list()
 )
@@ -161,10 +177,12 @@ pk.calc.aumcint.inf.pred(
   The time of doses, route of administration, and duration of dose used
   with interpolation and extrapolation of concentration data (see
   [`interp.extrap.conc.dose()`](https://humanpred.github.io/pknca/reference/interp.extrap.conc.md)).
-  If `NULL`,
+  If `NULL` or if every `time.dose` is `NA` (an analysis with no dosing
+  data),
   [`interp.extrap.conc()`](https://humanpred.github.io/pknca/reference/interp.extrap.conc.md)
-  will be used instead. If any `time.dose` is `NA`, the dose-aware
-  result is `NA` because the dose cannot be placed on the timeline.
+  is used instead and the calculation is not dose-aware. If only some
+  `time.dose` values are `NA`, the result is `NA` because that dose
+  cannot be placed on the timeline.
 
 - auc.type:
 
@@ -209,13 +227,6 @@ pk.calc.aumcint.inf.pred(
 
 The AUXC for an interval of time as a number
 
-## Details
-
-When `pk.calc.auxcint()` needs to extrapolate using `lambda.z` (in other
-words, using the half-life), it will always extrapolate using the
-logarithmic trapezoidal rule to align with using a half-life calculation
-for the extrapolation.
-
 ## Functions
 
 - `pk.calc.aucint()`: Calculate AUC over an interval
@@ -245,6 +256,47 @@ for the extrapolation.
 
 - `pk.calc.aumcint.inf.pred()`: Interpolate or extrapolate
   concentrations for AUMCinf.pred
+
+## Doses bound the profile
+
+When dose times are given, the concentrations used to extrapolate the
+profile being integrated, if extrapolation is required, end at the first
+dose at or after `end`: a concentration measured after that dose is
+affected by the dose and is neither integrated nor used for
+interpolation/extrapolation into this interval. Concentrations from
+before the interval are used to estimate the concentration at `start`,
+and that estimate does not interpolate across a dose either (see
+[`interp.extrap.conc.dose()`](https://humanpred.github.io/pknca/reference/interp.extrap.conc.md)).
+
+Only `start` and `end` are estimated. A dose within the interval is
+integrated across using the concentrations measured on either side of
+it, because the interval asks for the profiles on both sides of that
+dose to be integrated together.
+
+## The region after Tlast
+
+The region of the interval after the last measurable concentration is
+handled the same way as the matching AUC parameter:
+
+- `AUClast`:
+
+  contributes zero.
+
+- `AUCall`:
+
+  contributes the triangle from `clast` to the first
+  below-the-limit-of-quantification measurement and zero after that.
+
+- `AUCinf`:
+
+  is extrapolated with `lambda.z` (in other words, with the half-life),
+  always using the logarithmic trapezoidal rule to align with the
+  exponential decay that the half-life describes. When `lambda.z` is not
+  estimable and the interval is finite, `AUCall` is used instead.
+
+When the interval ends at or before Tlast, no extrapolation happens and
+`lambda.z` is not used at all. The extrapolation that was used is
+reported in the method (`PPANMETH`) column.
 
 ## See also
 

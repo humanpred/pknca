@@ -200,15 +200,12 @@ unchanged.</p>
 <span class="r-in"><span>  param <span class="op">=</span> <span class="st">"clr.last"</span>,</span></span>
 <span class="r-in"><span>  reference <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>PCSPEC <span class="op">=</span> <span class="st">"plasma"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   start end auclast aucall aumclast aumcall aucint.last aucint.last.dose</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE            FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     0  24   FALSE  FALSE    FALSE   FALSE       FALSE            FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aucint.all aucint.all.dose aumcint.last aumcint.last.dose aumcint.all</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      FALSE           FALSE        FALSE             FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      FALSE           FALSE        FALSE             FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aumcint.all.dose    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1            FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2            FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   start end auclast aucall aumclast aumcall aucint.last aucint.all aumcint.last</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     0  24   FALSE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   aumcint.all    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE</span>
@@ -263,15 +260,12 @@ unchanged.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vss.ivint.all vss.ivint.last vss.sparse.last aucinf.obs aucinf.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1         FALSE          FALSE           FALSE      FALSE       FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2         FALSE          FALSE           FALSE      FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.obs.dose aucint.inf.pred</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE        FALSE          FALSE               FALSE           FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE        FALSE          FALSE               FALSE           FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aucint.inf.pred.dose aumcint.inf.obs aumcint.inf.obs.dose aumcint.inf.pred</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                FALSE           FALSE                FALSE            FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                FALSE           FALSE                FALSE            FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aumcint.inf.pred.dose aucivinf.obs aucivinf.pred aucivpbextinf.obs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                 FALSE        FALSE         FALSE             FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                 FALSE        FALSE         FALSE             FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.pred aumcint.inf.obs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE        FALSE          FALSE           FALSE           FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE        FALSE          FALSE           FALSE           FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   aumcint.inf.pred aucivinf.obs aucivinf.pred aucivpbextinf.obs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1            FALSE        FALSE         FALSE             FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2            FALSE        FALSE         FALSE             FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   aucivpbextinf.pred aumcivinf.obs aumcivinf.pred aucpext.obs aucpext.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1              FALSE         FALSE          FALSE       FALSE        FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2              FALSE         FALSE          FALSE       FALSE        FALSE</span>

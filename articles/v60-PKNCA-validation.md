@@ -31,7 +31,7 @@ results: Tests were not run because tests are not installed.
 Sys.Date()
 ```
 
-    ## [1] "2026-09-03"
+    ## [1] "2026-09-27"
 
 ``` r
 
@@ -40,7 +40,7 @@ sessionInfo()
 
     ## R version 4.6.1 (2026-06-24)
     ## Platform: x86_64-pc-linux-gnu
-    ## Running under: Ubuntu 24.04.4 LTS
+    ## Running under: Ubuntu 24.04.5 LTS
     ## 
     ## Matrix products: default
     ## BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
@@ -59,7 +59,7 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] dplyr_1.2.1       testthat_3.3.2    knitr_1.51        PKNCA_0.12.1.9000
+    ## [1] dplyr_1.2.1       testthat_3.3.2    knitr_1.52        PKNCA_0.12.1.9000
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] jsonlite_2.0.0    compiler_4.6.1    brio_1.1.5        tidyselect_1.2.1 
@@ -67,7 +67,7 @@ sessionInfo()
     ##  [9] yaml_2.3.12       fastmap_1.2.0     lattice_0.22-9    R6_2.6.1         
     ## [13] generics_0.1.4    tibble_3.3.1      desc_1.4.3        units_1.0-1      
     ## [17] bslib_0.12.0      pillar_1.11.1     rlang_1.3.0       cachem_1.1.0     
-    ## [21] xfun_0.60         fs_2.1.0          sass_0.4.10       otel_0.2.0       
+    ## [21] xfun_0.61         fs_2.1.0          sass_0.4.10       otel_0.2.0       
     ## [25] cli_3.6.6         pkgdown_2.2.1     magrittr_2.0.5    digest_0.6.39    
     ## [29] grid_4.6.1        lifecycle_1.0.5   nlme_3.1-169      vctrs_0.7.3      
     ## [33] evaluate_1.0.5    glue_1.8.1        ragg_1.5.2        rmarkdown_2.32   
