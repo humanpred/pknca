@@ -1037,7 +1037,7 @@ Very few parameters reach outside of the `start` and `end` of an interval for ad
 
 AUC~int~ may look after the end of the interval to calculate the concentration at `end`.
 
-Note: Watch out for a dose before the next concentration (e.g. a dose at 24 hours but the prior sample is around 12 and the next is around 25):
+When dosing data are given, it stops at the first dose at or after the end of the interval, so a concentration measured after that dose is not interpolated back into the interval (e.g. a dose at 24 hours but the prior sample is around 12 and the next is around 25):
 
 ```{r fig.height=3}
 d_prep <-

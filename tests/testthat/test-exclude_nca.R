@@ -232,3 +232,72 @@ test_that("exclude_nca_by_param works as expected", {
     fixed = TRUE
   )
 })
+
+test_that("a half-life exclusion only reaches an AUCint that used the half-life (#270)", {
+  d_conc <-
+    data.frame(
+      subject = 1,
+      time = c(0, 0.5, 1, 2, 4, 8, 12, 24),
+      conc = c(0, 8, 10, 7, 4, 2, 1.2, 0.4)
+    )
+  d_dose <- data.frame(subject = 1, time = 0, dose = 100)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  # The first interval ends before tlast (24), so it only interpolates; the
+  # second reaches past tlast and has to extrapolate with the half-life.
+  intervals <-
+    data.frame(
+      start = c(0, 0),
+      end = c(12, 36),
+      aucint.inf.obs = TRUE,
+      aucint.inf.pred = TRUE,
+      half.life = TRUE,
+      span.ratio = TRUE
+    )
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = intervals)
+  my_result <- pk.nca(o_data)
+  # The span ratio is well below the threshold, so the half-life is excluded in
+  # both intervals
+  excluded <- as.data.frame(exclude(my_result, FUN = exclude_nca_span.ratio(min.span.ratio = 5)))
+  exclusion <- function(param, interval_end) {
+    excluded$exclude[excluded$PPTESTCD %in% param & excluded$end %in% interval_end]
+  }
+  expect_equal(exclusion("half.life", 12), "span.ratio < 5")
+  expect_equal(exclusion("half.life", 36), "span.ratio < 5")
+  expect_equal(exclusion("aucint.inf.obs", 12), NA_character_)
+  expect_equal(exclusion("aucint.inf.pred", 12), NA_character_)
+  expect_equal(exclusion("aucint.inf.obs", 36), "span.ratio < 5")
+  expect_equal(exclusion("aucint.inf.pred", 36), "span.ratio < 5")
+
+  # The same split for the other half-life exclusions
+  for (FUN in list(exclude_nca_min.hl.r.squared(1), exclude_nca_min.hl.adj.r.squared(1))) {
+    excluded <- as.data.frame(exclude(my_result, FUN = FUN))
+    expect_true(is.na(exclusion("aucint.inf.obs", 12)))
+    expect_false(is.na(exclusion("aucint.inf.obs", 36)))
+  }
+})
+
+test_that("a result with no extrapolation reported keeps a half-life exclusion (#270)", {
+  # aucinf.obs and the rest of the half-life family do not report an
+  # extrapolation, so they are excluded with the half-life as they always were
+  my_conc <- PKNCAconc(data.frame(conc = c(1.1^(3:0), 1.1), time = 0:4, subject = 1), conc~time|subject)
+  my_data <- PKNCAdata(my_conc, intervals = data.frame(start = 0, end = Inf, aucinf.obs = TRUE))
+  suppressMessages(my_result <- pk.nca(my_data))
+  excluded <- as.data.frame(exclude(my_result, FUN = exclude_nca_span.ratio()))
+  expect_equal(
+    excluded$exclude[excluded$PPTESTCD %in% "aucinf.obs"],
+    "span.ratio < 2"
+  )
+})
+
+test_that("a half-life exclusion is kept when the method column is not there (#270)", {
+  # exclude() always passes the method column, but the returned function is
+  # usable on its own, and without the column there is nothing to say that the
+  # half-life was unused
+  expect_equal(
+    exclude_nca_span.ratio(2)(
+      data.frame(PPTESTCD = c("span.ratio", "aucint.inf.obs"), PPORRES = c(1, 5))
+    ),
+    rep("span.ratio < 2", 2)
+  )
+})
