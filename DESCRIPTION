@@ -20,6 +20,7 @@ Imports:
     stats,
     tidyr,
     tibble,
+    tools,
     utils,
     lifecycle
 Suggests:

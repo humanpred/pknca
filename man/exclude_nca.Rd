@@ -53,11 +53,14 @@ Exclude NCA parameters based on examining the parameter set.
 }
 \section{Functions}{
 \itemize{
-\item \code{exclude_nca_span.ratio()}: Exclude based on span.ratio
+\item \code{exclude_nca_span.ratio()}: Exclude based on the half-life span ratio
 
-\item \code{exclude_nca_max.aucinf.pext()}: Exclude based on AUC percent extrapolated (both observed and predicted)
+\item \code{exclude_nca_max.aucinf.pext()}: Exclude based on the percent of AUC extrapolated to
+infinity (both observed and predicted)
 
-\item \code{exclude_nca_count_conc_measured()}: Exclude AUC measurements based on count of concentrations measured and not below the lower limit of quantification
+\item \code{exclude_nca_count_conc_measured()}: Exclude based on the count of concentrations measured
+and not below the lower limit of quantification (affects AUC and AUMC
+parameters)
 
 \item \code{exclude_nca_min.hl.r.squared()}: Exclude based on half-life r-squared
 
@@ -84,6 +87,7 @@ as.data.frame(my_result_excluded)
 }
 \seealso{
 Other Result exclusions:
-\code{\link[=exclude]{exclude()}}
+\code{\link[=exclude]{exclude()}},
+\code{\link[=pknca_exclude_rules]{pknca_exclude_rules()}}
 }
 \concept{Result exclusions}

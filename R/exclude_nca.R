@@ -50,7 +50,7 @@ exclude_nca_halflife_dependent <- function(FUN) {
   }
 }
 
-#' @describeIn exclude_nca Exclude based on span.ratio
+#' @describeIn exclude_nca Exclude based on the half-life span ratio
 #' @export
 exclude_nca_span.ratio <- function(min.span.ratio) {
   missing_min.span.ratio <- missing(min.span.ratio)
@@ -66,7 +66,8 @@ exclude_nca_span.ratio <- function(min.span.ratio) {
   )
 }
 
-#' @describeIn exclude_nca Exclude based on AUC percent extrapolated (both observed and predicted)
+#' @describeIn exclude_nca Exclude based on the percent of AUC extrapolated to
+#'   infinity (both observed and predicted)
 #' @export
 exclude_nca_max.aucinf.pext <- function(max.aucinf.pext) {
   missing_max.aucinf.pext <- missing(max.aucinf.pext)
@@ -101,7 +102,9 @@ exclude_nca_max.aucinf.pext <- function(max.aucinf.pext) {
   }
 }
 
-#' @describeIn exclude_nca Exclude AUC measurements based on count of concentrations measured and not below the lower limit of quantification
+#' @describeIn exclude_nca Exclude based on the count of concentrations measured
+#'   and not below the lower limit of quantification (affects AUC and AUMC
+#'   parameters)
 #' @param min_count Minimum number of measured concentrations
 #' @param exclude_param_pattern Character vector of regular expression patterns to exclude
 #' @export
@@ -206,7 +209,7 @@ exclude_nca_tmax_0 <- function() {
 }
 
 
-#' Exclude NCA Results Based on Parameter Thresholds
+#' Exclude based on NCA parameter thresholds
 #'
 #' Exclude rows from NCA results based on specified thresholds for a given parameter.
 #' This function allows users to define minimum and/or maximum acceptable values

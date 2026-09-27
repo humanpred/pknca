@@ -2,7 +2,7 @@
 % Please edit documentation in R/exclude_nca.R
 \name{exclude_nca_by_param}
 \alias{exclude_nca_by_param}
-\title{Exclude NCA Results Based on Parameter Thresholds}
+\title{Exclude based on NCA parameter thresholds}
 \usage{
 exclude_nca_by_param(
   parameter,
