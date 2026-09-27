@@ -127,7 +127,7 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
     conversions_pref <- conversions_pref[conversions_pref$PPORRESU != conversions_pref$PPSTRESU, ]
     # Drop units that are not provided
     conversions_pref <- conversions_pref[!is.na(conversions_pref$PPORRESU), ]
-    conversions_pref$conversion_factor <- NA_real_
+    conversions_pref$conversion_factor <- rep(NA_real_, nrow(conversions_pref))
     for (idx in seq_len(nrow(conversions))) {
       # Use the original conversions argument over `conversions_pref`
       mask_pref <- conversions_pref$PPORRESU %in% conversions$PPORRESU[idx]
