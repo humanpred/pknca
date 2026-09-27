@@ -257,7 +257,10 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
   reference_value <- as.character(reference_value)
   treatments <- sort(unique(as.character(data[[treatment]])))
   if (!(reference_value %in% treatments)) {
-    stop("Reference value, \"", reference_value, "\", not found in column, \"", treatment, "\".")
+    rlang::abort(
+      sprintf("Reference value '%s' not found in column '%s'.", reference_value, treatment),
+      class = "pknca_error_be_design_ref_not_found"
+    )
   }
 
   subj <- as.character(data[[subject]])
@@ -459,7 +462,10 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
   work <- work[!is.na(work$.val) & work$.val > 0, , drop = FALSE]
   work$.logval <- log(work$.val)
   if (!(reference_value %in% work$.trt)) {
-    stop("Reference value, \"", reference_value, "\", not found in column, \"", treatment, "\".")
+    rlang::abort(
+      sprintf("Reference value '%s' not found in data.", reference_value),
+      class = "pknca_error_be_within_var_ref_not_found"
+    )
   }
   test_levels <- setdiff(unique(work$.trt), reference_value)
 
@@ -480,7 +486,10 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
     # only).  Variances come from the model; degrees of freedom are kept from
     # the ANOVA above (the design-based within-subject replication).
     if (is.na(ref_v$sw) || is.na(test_v$sw)) {
-      stop("model_type = \"nlme\" (mixed model) requires a fully replicated design with both formulations replicated; use model_type = \"anova\".")
+      rlang::abort(
+        "model_type = 'nlme' requires a fully replicated design with both formulations replicated; use model_type = 'anova'.",
+        class = "pknca_error_be_within_var_nlme_not_replicated"
+      )
     }
     mixed <- .be_within_var_mixed(work, reference_value, test_levels)
     ref_v$s2w <- mixed$s2wR
@@ -580,7 +589,10 @@ print.be_within_var <- function(x, ...) {
   ilat <- ilat[!is.na(ilat)]
   n <- length(ilat)
   if (n < 2) {
-    stop("The intra-subject contrast estimate needs at least 2 subjects with both formulations.")
+    rlang::abort(
+      "The intra-subject contrast estimate needs at least 2 subjects with both formulations.",
+      class = "pknca_error_be_isc_insufficient"
+    )
   }
   pe_log <- mean(ilat)
   se <- stats::sd(ilat) / sqrt(n)
@@ -623,7 +635,10 @@ print.be_within_var <- function(x, ...) {
 # Average bioequivalence with expanding limits (EMA / HC / GCC).
 .be_abel <- function(est, wv, reg, alpha) {
   if (is.na(wv$swR)) {
-    stop("Reference scaling requires a replicated reference; the reference is not replicated.")
+    rlang::abort(
+      "Reference scaling requires a replicated reference; the reference is not replicated.",
+      class = "pknca_error_be_abel_reference_not_replicated"
+    )
   }
   lim <- be_expand_limits(wv$swR, reg)
   ci_ok <- est$ci_lower >= lim[["lower"]] && est$ci_upper <= lim[["upper"]]
@@ -638,7 +653,10 @@ print.be_within_var <- function(x, ...) {
 # variability (swR < 0.294) it falls back to unscaled average bioequivalence.
 .be_rsabe <- function(est, wv, reg, alpha) {
   if (is.na(wv$swR)) {
-    stop("Reference scaling requires a replicated reference; the reference is not replicated.")
+    rlang::abort(
+      "Reference scaling requires a replicated reference; the reference is not replicated.",
+      class = "pknca_error_be_rsabe_reference_not_replicated"
+    )
   }
   pe_ok <- .be_pe_ok(reg, est$gmr_percent)
   if (!is.na(reg$switch_swr) && wv$swR < reg$switch_swr) {
@@ -662,7 +680,10 @@ print.be_within_var <- function(x, ...) {
 # PowerTOST's power.NTID (BEscABE & BEABE & BEsratio).
 .be_ntid <- function(est, wv, reg, alpha) {
   if (is.na(wv$swT)) {
-    stop("NTID assessment requires a fully replicated design (both formulations replicated).")
+    rlang::abort(
+      "NTID assessment requires a fully replicated design (both formulations replicated).",
+      class = "pknca_error_be_ntid_not_replicated"
+    )
   }
   bound <- .be_rsabe_bound(est$pe_log, est$se, est$df, wv$s2wR, wv$df_wR, reg$r_const)
   list(
@@ -683,7 +704,10 @@ print.be_within_var <- function(x, ...) {
 # NTIDs).  Matches PowerTOST's power.HVNTID (BEABE & BEsratio).
 .be_hvntid <- function(est, wv, reg, alpha) {
   if (is.na(wv$swT)) {
-    stop("HVNTID assessment requires a fully replicated design (both formulations replicated).")
+    rlang::abort(
+      "HVNTID assessment requires a fully replicated design (both formulations replicated).",
+      class = "pknca_error_be_hvntid_not_replicated"
+    )
   }
   list(
     limit_lower = 80, limit_upper = 125, criterion = NA_real_,
@@ -719,9 +743,12 @@ print.be_within_var <- function(x, ...) {
     return(hit[1])
   }
   if (required) {
-    stop(
-      "Could not determine the ", what, " column; supply it explicitly (tried: ",
-      paste(candidates, collapse = ", "), ")."
+    rlang::abort(
+      sprintf(
+        "Could not determine the %s column; supply it explicitly (tried: %s).",
+        what, paste(candidates, collapse = ", ")
+      ),
+      class = paste0("pknca_error_be_", what, "_column_not_found")
     )
   }
   NA_character_
@@ -804,7 +831,10 @@ be_dataset <- function(object, reference_col, reference_value,
   } else if (is.data.frame(object)) {
     data <- as.data.frame(object)
   } else {
-    stop("`object` must be a PKNCAresults object or a data.frame.")
+    rlang::abort(
+      "`object` must be a PKNCAresults object or a data.frame.",
+      class = "pknca_error_be_invalid_object"
+    )
   }
   checkmate::assert_data_frame(data, min.rows = 1)
   checkmate::assert_subset("PPTESTCD", choices = names(data))
@@ -817,7 +847,10 @@ be_dataset <- function(object, reference_col, reference_value,
     } else if ("PPORRES" %in% names(data)) {
       "PPORRES"
     } else {
-      stop("The data must contain a `PPORRES` or `PPSTRES` column of results.")
+      rlang::abort(
+        "The data must contain a `PPORRES` or `PPSTRES` column of results.",
+        class = "pknca_error_be_missing_value_col"
+      )
     }
   # Units column matching the value column (PKNCAresults provides PPSTRESU /
   # PPORRESU).  May be absent, in which case units are unavailable.
@@ -835,7 +868,10 @@ be_dataset <- function(object, reference_col, reference_value,
     .be_find_col(sequence, data, c("sequence", "Sequence", "SEQUENCE", "SEQ", "seq"), "sequence", required = FALSE)
   reference_value <- as.character(reference_value)
   if (!(reference_value %in% as.character(data[[reference_col]]))) {
-    stop("Reference value, \"", reference_value, "\", not found in column, \"", reference_col, "\".")
+    rlang::abort(
+      sprintf("Reference value, \"%s\", not found in column \"%s\".", reference_value, reference_col),
+      class = "pknca_error_be_dataset_ref_not_found"
+    )
   }
 
   data <- data[!is.na(data[[value_col]]) & data[[value_col]] > 0, , drop = FALSE]
@@ -849,22 +885,29 @@ be_dataset <- function(object, reference_col, reference_value,
 
   present <- intersect(endpoints, unique(as.character(data$PPTESTCD)))
   if (length(present) == 0) {
-    stop("None of the requested endpoints were found in the data.")
+    rlang::abort(
+      "None of the requested endpoints were found in the data.",
+      class = "pknca_error_be_no_endpoints"
+    )
   }
   missing_eps <- setdiff(endpoints, present)
   if (length(missing_eps) > 0) {
-    warning("Endpoints not found and skipped: ", paste(missing_eps, collapse = ", "))
+    rlang::warn(
+      sprintf("Endpoints not found and skipped: %s", paste(missing_eps, collapse = ", ")),
+      class = "pknca_warning_be_missing_endpoints"
+    )
   }
   # Bioequivalence assumes log-normal exposure metrics (Cmax, AUC).  Warn for
   # time/rate parameters where the log-normal model is inappropriate (Tmax, for
   # example, uses non-parametric methods).
   flagged <- present[tolower(present) %in% .be_nonlognormal_params]
   if (length(flagged) > 0) {
-    warning(
-      "Endpoint(s) ", paste(flagged, collapse = ", "), " are not log-normal ",
-      "exposure metrics; bioequivalence here log-transforms the value and is ",
-      "appropriate for Cmax/AUC. Time or rate parameters (e.g. Tmax, half-life) ",
-      "require different methods (non-parametric or Fieller)."
+    rlang::warn(
+      sprintf(
+        "Endpoint(s) %s are not log-normal exposure metrics; bioequivalence here log-transforms the value and is appropriate for Cmax/AUC. Time or rate parameters (e.g. Tmax, half-life) require different methods (non-parametric or Fieller).",
+        paste(flagged, collapse = ", ")
+      ),
+      class = "pknca_warning_be_nonlognormal_endpoint"
     )
   }
   structure(
@@ -908,7 +951,10 @@ print.be_dataset <- function(x, ...) {
       design$recommended_model_type
     }
   if (identical(model_type, "nlme") && !(design$replicate_reference && design$replicate_test)) {
-    stop("model_type = \"nlme\" requires a fully replicated design (both formulations replicated).")
+    rlang::abort(
+      "model_type = 'nlme' requires a fully replicated design (both formulations replicated).",
+      class = "pknca_error_be_resolve_model_nlme_not_replicated"
+    )
   }
   model_type
 }
@@ -983,7 +1029,10 @@ be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova", "
 # Internal fitter dispatched by be_fit_model_single().
 be_fit_model_lmer <- function(ds_ep, scaling = TRUE) {
   if (!requireNamespace("lme4", quietly = TRUE) || !requireNamespace("lmerTest", quietly = TRUE)) {
-    stop("The 'lme4' and 'lmerTest' packages are required for model_type = \"lmer\"; install them with install.packages(c(\"lme4\", \"lmerTest\")).")
+    rlang::abort(
+      "The 'lme4' and 'lmerTest' packages are required for model_type = 'lmer'; install them with install.packages(c('lme4', 'lmerTest')).",
+      class = "pknca_error_be_missing_lme4"
+    )
   }
   model <- lmerTest::lmer(.be_model_formula(ds_ep, random = TRUE), data = ds_ep)
   c(list(model = model), .be_fit_within(ds_ep, scaling))
@@ -1000,7 +1049,10 @@ be_fit_model_nlme <- function(ds_ep) {
   reference_value <- levels(ds_ep$.trt)[1]
   test_levels <- setdiff(levels(ds_ep$.trt), reference_value)
   if (length(test_levels) != 1) {
-    stop("model_type = \"nlme\" supports a single test formulation; use \"anova\" or \"lmer\".")
+    rlang::abort(
+      "model_type = 'nlme' supports a single test formulation; use 'anova' or 'lmer'.",
+      class = "pknca_error_be_nlme_multiple_test"
+    )
   }
   model <-
     nlme::lme(
@@ -1132,7 +1184,10 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
 # Internal extractor dispatched by be_extract_param().
 be_extract_param_lmer <- function(fit, alpha = 0.10) {
   if (!requireNamespace("emmeans", quietly = TRUE)) {
-    stop("The 'emmeans' package is required to extract bioequivalence parameters; install it with install.packages(\"emmeans\").")
+    rlang::abort(
+      "The 'emmeans' package is required to extract bioequivalence parameters; install it with install.packages('emmeans').",
+      class = "pknca_error_be_lmer_missing_emmeans"
+    )
   }
   reference_value <- levels(fit$model@frame$.trt)[1]
   test_levels <- setdiff(levels(fit$model@frame$.trt), reference_value)
@@ -1143,7 +1198,10 @@ be_extract_param_lmer <- function(fit, alpha = 0.10) {
 # Internal extractor dispatched by be_extract_param().
 be_extract_param_nlme <- function(fit, alpha = 0.10) {
   if (!requireNamespace("emmeans", quietly = TRUE)) {
-    stop("The 'emmeans' package is required to extract bioequivalence parameters; install it with install.packages(\"emmeans\").")
+    rlang::abort(
+      "The 'emmeans' package is required to extract bioequivalence parameters; install it with install.packages('emmeans').",
+      class = "pknca_error_be_nlme_missing_emmeans"
+    )
   }
   dat <- fit$model$data
   reference_value <- levels(dat$.trt)[1]
@@ -1266,10 +1324,13 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
       } else {
         "both a test and reference formulation"
       }
-    stop(sprintf(
-      "The %s framework requires %s, which the %s design does not provide.",
-      reg$name, need, design$design
-    ))
+    rlang::abort(
+      sprintf(
+        "The %s framework requires %s, which the %s design does not provide.",
+        reg$name, need, design$design
+      ),
+      class = "pknca_error_be_infeasible_design"
+    )
   }
 }
 
@@ -1309,7 +1370,10 @@ be_fit_models <- function(object, reference_col, reference_value,
       ds$columns$treatment, ds$reference_value
     )
   } else if (!inherits(design, "be_design")) {
-    stop("`design` must be a `be_design` object from `be_design()`.")
+    rlang::abort(
+      "`design` must be a `be_design` object from `be_design()`.",
+      class = "pknca_error_be_invalid_design"
+    )
   }
   .be_check_feasible(reg, design)
   model_type <- .be_resolve_model_type(model_type, reg, design)
@@ -1597,7 +1661,10 @@ be_compare <- function(object, reference_col, reference_value,
       }
     )
     if (inherits(res, "try-error")) {
-      warning(sprintf("Skipping %s: %s", rg, conditionMessage(attr(res, "condition"))))
+      rlang::warn(
+        sprintf("Skipping %s: %s", rg, conditionMessage(attr(res, "condition"))),
+        class = "pknca_warning_be_skipped_framework"
+      )
     } else {
       results[[rg]] <- as.data.frame(res)
     }
@@ -1606,7 +1673,10 @@ be_compare <- function(object, reference_col, reference_value,
     .be_warn_units_missing()
   }
   if (length(results) == 0) {
-    stop("No regulatory framework could be assessed for this design.")
+    rlang::abort(
+      "No regulatory framework could be assessed for this design.",
+      class = "pknca_error_be_no_frameworks"
+    )
   }
   out <- do.call(rbind, results)
   rownames(out) <- NULL

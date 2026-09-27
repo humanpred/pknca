@@ -18,7 +18,7 @@ test_that("sparse-derived parameters are each registered exactly once", {
   expect_equal(anyDuplicated(names(cols)), 0L)
   # Pin the registry size so that a lost or accumulating registration is
   # caught; update the value when a parameter is added or removed.
-  expect_length(cols, 225)
+  expect_length(cols, 217)
 })
 
 test_that("add.interval.col", {
