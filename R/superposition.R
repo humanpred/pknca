@@ -51,6 +51,12 @@ superposition <- function(conc, ...) {
 #' @rdname superposition
 #' @export
 superposition.PKNCAconc <- function(conc, ...) {
+  if (is_datetime_time(as.data.frame(conc)[[conc$columns$time]])) {
+    rlang::abort(
+      "superposition() requires numeric times; date-time times become numeric in PKNCAdata(), relative to the first dose.",
+      class = "pknca_error_datetime_superposition"
+    )
+  }
   # Split the data by grouping and extract just the concentration and
   # time columns
   nested_data <- prepare_PKNCAconc(conc)

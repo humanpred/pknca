@@ -3,7 +3,9 @@
 #' @param data A data frame with time and the groups defined in `formula`.
 #' @param formula The formula defining the `dose.amount~time|groups` where
 #'   `time` is the time of the dosing and `dose.amount` is the amount
-#'   administered at that time (see Details).
+#'   administered at that time (see Details).  The `time` may be numeric, or
+#'   it may be a date-time (POSIXct) or a date (Date) when the concentration
+#'   time is too (see the "Date-time input" section of [PKNCAconc()]).
 #' @param route Define the route of administration.  The value may be either a
 #'   column name from the `data` (checked first) or a character string of either
 #'   `"extravascular"` or `"intravascular"` (checked second).  If given as a
@@ -147,6 +149,9 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
       "Some but not all values are missing for the independent variable, please see the help for PKNCAdose for how to specify the formula and confirm that your data has dose times for all doses.",
       class = "pknca_error_partial_missing_indepvar"
     )
+  }
+  if (length(parsed_form$time) == 1 && inherits(data[[parsed_form$time]], "Date")) {
+    pknca_warn_date_midnight(time_col = parsed_form$time, data_type = "dose")
   }
   if (missing(route)) {
     ret <- setRoute(ret)

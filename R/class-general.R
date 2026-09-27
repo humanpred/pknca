@@ -197,9 +197,20 @@ getAttributeColumn <- function(object, attr_name, warn_missing=c("attr", "column
 #' @keywords Internal
 #' @noRd
 duplicate_check <- function(object, data_type) {
-  mask_excluded <- !is.na(object$data[[object$columns$exclude]])
-  mask_dup <- rep(FALSE, nrow(object$data))
-  key_cols <- unique(c(object$columns$time, unlist(object$columns$groups)))
+  # Sparse concentration data are stored in `data_sparse` (named exactly rather
+  # than relying on `$` partially matching `data`)
+  dataname <- getDataName(object)
+  current_data <- object[[dataname]]
+  mask_excluded <- !is.na(current_data[[object$columns$exclude]])
+  mask_dup <- rep(FALSE, nrow(current_data))
+  # For sparse data, the subject need not be a group, and each subject has one
+  # measurement per time within the groups.
+  key_cols <-
+    unique(c(
+      object$columns$time,
+      unlist(object$columns$groups),
+      if (identical(dataname, "data_sparse")) object$columns$subject
+    ))
   if (length(key_cols) == 0) {
     # If there are no key columns, then there can only be one data row that is
     # not excluded.
@@ -207,7 +218,7 @@ duplicate_check <- function(object, data_type) {
   } else {
     # In case an excluded row is the first row of the duplicated set, do not
     # report duplication.
-    mask_dup[!mask_excluded] <- duplicated(object$data[!mask_excluded, key_cols])
+    mask_dup[!mask_excluded] <- duplicated(current_data[!mask_excluded, key_cols, drop = FALSE])
   }
   if (any(mask_dup)) {
     rlang::abort(
@@ -217,7 +228,8 @@ duplicate_check <- function(object, data_type) {
         data_type,
         paste(which(mask_dup), collapse = ", ")
       ),
-      class = "pknca_error_duplicate_rows"
+      class = "pknca_error_duplicate_rows",
+      rows = which(mask_dup)
     )
   }
   object

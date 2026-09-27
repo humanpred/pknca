@@ -6,6 +6,41 @@ the dosing including dose amount and route.
 
 # Development version
 
+* Concentration and dose times may be date-times (POSIXct) or dates (Date).
+  `PKNCAconc()` requires `timeu = "s"` (or no `timeu`) for them, and
+  `PKNCAdata()` converts them to numeric time relative to the first included
+  dose within the grouping variables shared by the concentration and dose
+  formulas (for example, each subject's first dose in each study part), in the
+  `timeu_pref` unit (seconds, with a warning, when no `timeu_pref` is given).
+  Durations follow the times to that unit, manually given intervals are
+  relative to the reference, the reference is kept in the `time_reference`
+  element of the `PKNCAdata` object, and `as.data.frame(out_format = "cdisc")`
+  reports it as PPRFTDTC.  Mixing numeric and date-time times, mixing time
+  zones, and concentrations without a dose time are errors.  (@GITHUB_HANDLE)
+* `pknca_exclude_rules()` lists the automatic exclusion rules (`exclude_nca_*()`)
+  with their descriptions, arguments, defaults, the `PKNCA.options()` entries
+  they fall back to, and the parameters each can exclude.  It is built at call
+  time from the package namespace and documentation, so a new rule appears
+  without further changes.  The rule descriptions now all read "Exclude based
+  on ...".  (@GITHUB_HANDLE)
+* `assert_conc_time()`, `PKNCA_impute_fun_list()`, the new
+  `assert_impute_method()` (which checks an imputation specification the way
+  `PKNCAdata()` and `pk.nca()` resolve it), and the new
+  `pknca_check_conc_data()` (which runs the data checks of `PKNCAconc()`) are
+  exported so that applications can check data before building PKNCA objects.
+  The duplicate-row error (`pknca_error_duplicate_rows`) now carries the
+  duplicated row numbers in its `rows` field.  (@GITHUB_HANDLE)
+* Sparse concentration data whose subject is not a grouping variable (for
+  example, `conc~time|treatment` with `subject = "id"`) are no longer rejected
+  as duplicates when different subjects share a sampling time; for sparse data,
+  duplicates are now the same subject at the same time within a group.
+  (@GITHUB_HANDLE)
+* `pknca_units_table()` no longer errors when every preferred unit equals its
+  original unit.  (@GITHUB_HANDLE)
+* The documentation of the `subject` argument of `PKNCAconc()` now matches the
+  code:  the default subject is the last grouping variable to the left of any
+  `/`.  (@GITHUB_HANDLE)
+
 * On sparse PK data, `auclast` and `aumclast` are now estimated with the sparse
   methods (the Bailer point estimate with the Nedelman-Jia/Holder standard
   error) instead of a trapezoid on the arithmetic-mean profile, and the new

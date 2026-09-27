@@ -272,3 +272,56 @@ o_data <- PKNCAdata(o_conc, o_dose, units=d_units)
 o_nca <- pk.nca(o_data)
 summary(o_nca)
 ```
+
+# Date and time (POSIXct) input
+
+Concentration and dose times may be given as date-times (POSIXct) instead of
+numbers, as they often are in clinical data (for example, the SDTM `--DTC`
+variables after parsing).  Date-times are measured in seconds, so `timeu` must
+be `"s"` or omitted; set `timeu_pref` to the unit for calculations and
+reporting.  `PKNCAdata()` converts the times to numbers relative to the first
+dose in each group:  the groups are the grouping variables shared by the
+concentration and dose formulas, so with `Subject` as the group, time 0 is each
+subject's first dose.  For studies with several parts (or crossover periods),
+add the part (or period) to both formulas, and each subject's first dose in each
+part is time 0.
+
+```{r datetime-input}
+d_conc <- as.data.frame(datasets::Theoph)
+d_dose <- datasets::Theoph[datasets::Theoph$Time == 0, c("Dose", "Time", "Subject")]
+# Each subject was dosed at 08:00 on a different day
+first_dose <- as.POSIXct("2024-01-15 08:00", tz = "UTC") + (as.numeric(as.character(d_dose$Subject)) - 1) * 86400
+names(first_dose) <- as.character(d_dose$Subject)
+d_conc$datetime <- first_dose[as.character(d_conc$Subject)] + d_conc$Time * 3600
+d_dose$datetime <- first_dose[as.character(d_dose$Subject)]
+o_conc <- PKNCAconc(d_conc, conc~datetime|Subject, concu = "mg/L", timeu_pref = "hr")
+o_dose <- PKNCAdose(d_dose, Dose~datetime|Subject, doseu = "mg/kg")
+o_data <- PKNCAdata(o_conc, o_dose)
+# The time reference for each subject
+head(o_data$time_reference)
+# The concentration times are now hours after the first dose
+head(o_data$conc$data[, c("Subject", "datetime", "conc")])
+```
+
+Automatic intervals are chosen as for numeric times, and manually specified
+intervals are numeric times relative to the time reference, in the preferred
+time unit.  Results formatted for CDISC include the time reference as the
+PPRFTDTC column.
+
+```{r datetime-results}
+o_nca <- pk.nca(o_data)
+d_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
+head(d_cdisc[, c("Subject", "PPTESTCD", "PPORRES", "PPORRESU", "PPRFTDTC")])
+```
+
+A few rules keep the conversion unambiguous:
+
+* Concentration and dose times must both be date-times; mixing numeric and
+  date-time times is an error.
+* All date-times must have the same time zone.  Differences are elapsed time,
+  so a daylight saving time change within a named time zone (like
+  `"America/New_York"`) is handled correctly.
+* Dates (Date) are taken as midnight at the start of the date, with a warning.
+* Excluded doses are not used as the time reference, and every group of
+  concentrations must have a dose time.
+* Nominal times (`time.nominal`) are not converted.

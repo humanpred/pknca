@@ -63,6 +63,33 @@
 #'   data.frames, one per parameter, says the same thing:
 #'   `group_ref = list(clr.obs = data.frame(PCSPEC = "PLASMA"),
 #'   ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))`.
+#' @section Date-time input:
+#'
+#'   When the concentration and dose times are date-times (POSIXct) or dates
+#'   (Date), `PKNCAdata()` converts them to numeric time before anything else
+#'   is done:
+#'
+#'   * The time reference is the first dose (ignoring excluded doses) within
+#'     each combination of the grouping variables shared by the concentration
+#'     and dose formulas.  With `dose~time|Part+Subject`, each subject's first
+#'     dose in each study part (or period, for a crossover) is time 0.
+#'   * Numeric time is in the preferred time unit (`timeu_pref` of the
+#'     [PKNCAconc()] object) when one is given, and in seconds (with a warning)
+#'     otherwise.  The original time unit (`timeu`) becomes that unit, and
+#'     concentration collection and dosing durations (given in seconds) are
+#'     converted to it.
+#'   * Manually specified `intervals` are numeric times relative to the time
+#'     reference, in that unit.
+#'   * The time reference of each group is kept in the `time_reference` element
+#'     of the object, and `as.data.frame(results, out_format = "cdisc")` gives it
+#'     in the PPRFTDTC column.
+#'
+#'   Both times must be date-times (or dates), not one numeric and one
+#'   date-time; date-times must have the same time zone; and every group of
+#'   concentrations needs a dose with a time.  Otherwise, it is an error.
+#'   Differences are elapsed time, so a change to or from daylight saving time
+#'   is handled correctly when the time zone is a named zone (like
+#'   `"America/New_York"`).
 #' @family PKNCA objects
 #' @seealso [choose.auc.intervals()], [pk.nca()], [pknca_units_table()]
 #' @export
@@ -124,6 +151,9 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   } else {
     ret$dose <- PKNCAdose(data.dose, formula.dose)
   }
+  # Date-time (POSIXct or Date) times become numeric time relative to the first
+  # dose, before anything uses the times.
+  ret <- pknca_datetime_to_numeric(ret)
   # Check the options
   checkmate::assert_list(
     x = options,
@@ -273,6 +303,13 @@ print.PKNCAdata <- function(x, ...) {
   }
   cat(sprintf("\nWith %d rows of interval specifications.\n",
               nrow(x$intervals)))
+  if (!is.null(x$time_reference)) {
+    group_cols <- setdiff(names(x$time_reference), "time_reference")
+    cat(sprintf(
+      "Times are relative to the first dose%s (date-time input).\n",
+      if (length(group_cols) > 0) paste0(" within each ", paste(group_cols, collapse = "+")) else ""
+    ))
+  }
   if (!is.null(x$units)) {
     cat("With units\n")
   }

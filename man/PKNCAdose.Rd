@@ -33,7 +33,9 @@ PKNCAdose(data, ...)
 
 \item{formula}{The formula defining the \code{dose.amount~time|groups} where
 \code{time} is the time of the dosing and \code{dose.amount} is the amount
-administered at that time (see Details).}
+administered at that time (see Details).  The \code{time} may be numeric, or
+it may be a date-time (POSIXct) or a date (Date) when the concentration
+time is too (see the "Date-time input" section of \code{\link[=PKNCAconc]{PKNCAconc()}}).}
 
 \item{route}{Define the route of administration.  The value may be either a
 column name from the \code{data} (checked first) or a character string of either
@@ -89,6 +91,7 @@ data.
 Other PKNCA objects:
 \code{\link[=PKNCAconc]{PKNCAconc()}},
 \code{\link[=PKNCAdata]{PKNCAdata()}},
-\code{\link[=PKNCAresults]{PKNCAresults()}}
+\code{\link[=PKNCAresults]{PKNCAresults()}},
+\code{\link[=pknca_check_conc_data]{pknca_check_conc_data()}}
 }
 \concept{PKNCA objects}

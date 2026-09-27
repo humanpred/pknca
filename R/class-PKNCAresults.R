@@ -38,7 +38,9 @@ PKNCAresults <- function(result, data, exclude = NULL) {
 #'   When 'cdisc', the PPTESTCD column is translated to CDISC standard codes
 #'   and a PPTEST column with the CDISC test name is added.  Route-dependent
 #'   parameters (e.g. CL, VZ, MRT) are resolved using the route information
-#'   from the dose data.
+#'   from the dose data.  When the concentration and dose times were
+#'   date-times (see [PKNCAdata()]), a PPRFTDTC column gives the ISO 8601
+#'   date-time of the time reference (the first dose of the group).
 #' @param filter_requested Only return rows with parameters that were
 #'   specifically requested?
 #' @param filter_excluded Should excluded values be removed?
@@ -157,6 +159,31 @@ pknca_cdisc_translate <- function(ret, x) {
   if (any(has_int)) {
     ret <- pknca_cdisc_add_interval_columns(ret, x, has_int)
   }
+  ret <- pknca_cdisc_add_reference_datetime(ret, x)
+  ret
+}
+
+# Add the PPRFTDTC column (the date-time of the time reference) when the
+# analysis started from date-time (POSIXct or Date) times
+#
+# @param ret The result data.frame
+# @param x The PKNCAresults object
+# @returns The data.frame, with PPRFTDTC added when there is a time reference
+# @keywords Internal
+# @noRd
+pknca_cdisc_add_reference_datetime <- function(ret, x) {
+  time_reference <- x$data$time_reference
+  if (is.null(time_reference)) {
+    return(ret)
+  }
+  group_cols <- setdiff(names(time_reference), "time_reference")
+  ret$PPRFTDTC <-
+    format_iso8601_datetime(
+      pknca_datetime_match_reference(
+        groups_data = as.data.frame(ret)[, group_cols, drop = FALSE],
+        time_reference = time_reference
+      )
+    )
   ret
 }
 

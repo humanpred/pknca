@@ -104,12 +104,44 @@ renal clearance by \code{PCSPEC} and a metabolite ratio by \code{PCTEST}:
 data.frames, one per parameter, says the same thing:
 \code{group_ref = list(clr.obs = data.frame(PCSPEC = "PLASMA"), ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))}.
 }
+\section{Date-time input}{
+
+
+When the concentration and dose times are date-times (POSIXct) or dates
+(Date), \code{PKNCAdata()} converts them to numeric time before anything else
+is done:
+\itemize{
+\item The time reference is the first dose (ignoring excluded doses) within
+each combination of the grouping variables shared by the concentration
+and dose formulas.  With \code{dose~time|Part+Subject}, each subject's first
+dose in each study part (or period, for a crossover) is time 0.
+\item Numeric time is in the preferred time unit (\code{timeu_pref} of the
+\code{\link[=PKNCAconc]{PKNCAconc()}} object) when one is given, and in seconds (with a warning)
+otherwise.  The original time unit (\code{timeu}) becomes that unit, and
+concentration collection and dosing durations (given in seconds) are
+converted to it.
+\item Manually specified \code{intervals} are numeric times relative to the time
+reference, in that unit.
+\item The time reference of each group is kept in the \code{time_reference} element
+of the object, and \code{as.data.frame(results, out_format = "cdisc")} gives it
+in the PPRFTDTC column.
+}
+
+Both times must be date-times (or dates), not one numeric and one
+date-time; date-times must have the same time zone; and every group of
+concentrations needs a dose with a time.  Otherwise, it is an error.
+Differences are elapsed time, so a change to or from daylight saving time
+is handled correctly when the time zone is a named zone (like
+\code{"America/New_York"}).
+}
+
 \seealso{
 \code{\link[=choose.auc.intervals]{choose.auc.intervals()}}, \code{\link[=pk.nca]{pk.nca()}}, \code{\link[=pknca_units_table]{pknca_units_table()}}
 
 Other PKNCA objects:
 \code{\link[=PKNCAconc]{PKNCAconc()}},
 \code{\link[=PKNCAdose]{PKNCAdose()}},
-\code{\link[=PKNCAresults]{PKNCAresults()}}
+\code{\link[=PKNCAresults]{PKNCAresults()}},
+\code{\link[=pknca_check_conc_data]{pknca_check_conc_data()}}
 }
 \concept{PKNCA objects}

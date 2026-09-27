@@ -6,16 +6,16 @@
 #'   `amount~time|groups` for urine/feces (In the remainder of the
 #'   documentation, "concentration" will be used to describe concentration or
 #'   amount.)  One special aspect of the `groups` part of the formula is that
-#'   the last group is typically assumed to be the `subject`; see the
-#'   documentation for the `subject` argument for exceptions to this assumption.
+#'   the last group to the left of any `/` is assumed to be the `subject`
+#'   unless the `subject` argument is given.  The `time` may be numeric, or it
+#'   may be a date-time (POSIXct) or a date (Date); see the "Date-time input"
+#'   section.
 #' @param subject The column indicating the subject number.  If not provided,
-#'   this defaults to the beginning of the inner groups: For example with
-#'   `concentration~time|Study+Subject/Analyte`, the inner groups start with the
-#'   first grouping variable before a `/`, `Subject`.  If there is only one
-#'   grouping variable, it is assumed to be the subject (e.g.
-#'   `concentration~time|Subject`), and if there are multiple grouping variables
-#'   without a `/`, subject is assumed to be the last one.  For single-subject
-#'   data, it is assigned as `NULL`.
+#'   this defaults to the last grouping variable to the left of a `/` (for
+#'   example, `Subject` with `concentration~time|Study+Subject/Analyte`), or the
+#'   last grouping variable when there is no `/` (for example, `Subject` with
+#'   `concentration~time|Study+Subject`).  When there are no grouping variables
+#'   (single-subject data), no subject column is set.
 #' @param time.nominal (optional) The name of the nominal time column (if the
 #'   main time variable is actual time.  The `time.nominal` is not used during
 #'   calculations; it is available to assist with data summary and checking.
@@ -63,6 +63,22 @@
 #'   PK (commonly used in clinical studies or larger nonclinical species)?
 #' @param ... Ignored.
 #' @returns A PKNCAconc object that can be used for automated NCA.
+#' @section Date-time input:
+#'
+#'   The concentration time (and the dose time in [PKNCAdose()]) may be a
+#'   date-time (POSIXct) or a date (Date; a date is taken as midnight at the
+#'   start of that date, with a warning).  The original time unit of a date-time
+#'   is seconds, so `timeu` must be `"s"` or not given (and it is then set to
+#'   `"s"` when `timeu_pref` is given).  Give `timeu_pref` (for example, `"hr"`
+#'   or `"day"`) for the unit used in calculations and reports; without it,
+#'   calculations are in seconds, with a warning, because times in the
+#'   automatic intervals and options (like `single.dose.aucs`) are then in
+#'   seconds, too.  Any numeric `duration` is in seconds.
+#'
+#'   The times remain date-times in the `PKNCAconc` and `PKNCAdose` objects.
+#'   [PKNCAdata()] converts them to numeric time relative to the first dose
+#'   in each group; see the "Date-time input" section there.  The nominal time
+#'   (`time.nominal`) is not converted and usually stays numeric.
 #' @family PKNCA objects
 #' @export
 PKNCAconc <- function(data, ...) {
@@ -169,9 +185,16 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   # for more than one subject. Disregard points that will be excluded.
   is_excluded <- !is.na(normalize_exclude(ret))
 
+  time_values <- data[[parsed_form$time]]
+  # Date-time values are checked as numbers (for missing values); they become
+  # numeric time relative to the first dose in PKNCAdata().
+  timeu <- pknca_datetime_timeu(time = time_values, timeu = timeu, timeu_pref = timeu_pref, time_col = parsed_form$time)
+  if (is_datetime_time(time_values)) {
+    time_values <- as.numeric(time_values)
+  }
   assert_conc_time(
     conc = data[[parsed_form$concentration]][!is_excluded],
-    time = data[[parsed_form$time]][!is_excluded],
+    time = time_values[!is_excluded],
     sorted_time = FALSE
   )
 
@@ -233,6 +256,37 @@ PKNCAconc.data.frame <- function(data, formula, subject,
       units_pref = list(concu_pref = concu_pref, amountu_pref = amountu_pref, timeu_pref = timeu_pref)
     )
   assert_PKNCAconc(ret)
+}
+
+#' Check concentration-time data before creating a PKNCAconc object
+#'
+#' Runs the checks that [PKNCAconc()] makes on the data:  the data have rows;
+#' every variable in the formula is a column; the concentrations are numeric
+#' and finite, and the times are not missing (see [assert_conc_time()]); and
+#' there is only one measurement per group and time (per subject and time for
+#' sparse data).  Rows with an exclusion reason are not checked.  Checking
+#' before creating the object lets an application report the problem in its
+#' own terms.
+#'
+#' @inheritParams PKNCAconc
+#' @param ... Passed to [PKNCAconc()] (for example, `subject` or `timeu`)
+#' @returns `data`, invisibly, when the data pass the checks; otherwise, the
+#'   same classed error that [PKNCAconc()] raises.  For duplicated rows, the
+#'   error has class `pknca_error_duplicate_rows`, and its `rows` field gives
+#'   the duplicated row numbers.
+#' @examples
+#' d_conc <- data.frame(conc = c(0, 2, 1), time = c(0, 1, 1), subject = 1)
+#' duplicate_error <-
+#'   tryCatch(
+#'     pknca_check_conc_data(d_conc, conc~time|subject),
+#'     pknca_error_duplicate_rows = function(e) e
+#'   )
+#' duplicate_error$rows
+#' @family PKNCA objects
+#' @export
+pknca_check_conc_data <- function(data, formula, exclude = NULL, sparse = FALSE, ...) {
+  PKNCAconc(data = data, formula = formula, exclude = exclude, sparse = sparse, ...)
+  invisible(data)
 }
 
 #' Extract the formula from a PKNCAconc object.

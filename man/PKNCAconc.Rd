@@ -44,17 +44,17 @@ time, and the groups defined in \code{formula}.}
 \code{amount~time|groups} for urine/feces (In the remainder of the
 documentation, "concentration" will be used to describe concentration or
 amount.)  One special aspect of the \code{groups} part of the formula is that
-the last group is typically assumed to be the \code{subject}; see the
-documentation for the \code{subject} argument for exceptions to this assumption.}
+the last group to the left of any \code{/} is assumed to be the \code{subject}
+unless the \code{subject} argument is given.  The \code{time} may be numeric, or it
+may be a date-time (POSIXct) or a date (Date); see the "Date-time input"
+section.}
 
 \item{subject}{The column indicating the subject number.  If not provided,
-this defaults to the beginning of the inner groups: For example with
-\code{concentration~time|Study+Subject/Analyte}, the inner groups start with the
-first grouping variable before a \code{/}, \code{Subject}.  If there is only one
-grouping variable, it is assumed to be the subject (e.g.
-\code{concentration~time|Subject}), and if there are multiple grouping variables
-without a \code{/}, subject is assumed to be the last one.  For single-subject
-data, it is assigned as \code{NULL}.}
+this defaults to the last grouping variable to the left of a \code{/} (for
+example, \code{Subject} with \code{concentration~time|Study+Subject/Analyte}), or the
+last grouping variable when there is no \code{/} (for example, \code{Subject} with
+\code{concentration~time|Study+Subject}).  When there are no grouping variables
+(single-subject data), no subject column is set.}
 
 \item{time.nominal}{(optional) The name of the nominal time column (if the
 main time variable is actual time.  The \code{time.nominal} is not used during
@@ -120,10 +120,30 @@ A PKNCAconc object that can be used for automated NCA.
 \description{
 Create a PKNCAconc object
 }
+\section{Date-time input}{
+
+
+The concentration time (and the dose time in \code{\link[=PKNCAdose]{PKNCAdose()}}) may be a
+date-time (POSIXct) or a date (Date; a date is taken as midnight at the
+start of that date, with a warning).  The original time unit of a date-time
+is seconds, so \code{timeu} must be \code{"s"} or not given (and it is then set to
+\code{"s"} when \code{timeu_pref} is given).  Give \code{timeu_pref} (for example, \code{"hr"}
+or \code{"day"}) for the unit used in calculations and reports; without it,
+calculations are in seconds, with a warning, because times in the
+automatic intervals and options (like \code{single.dose.aucs}) are then in
+seconds, too.  Any numeric \code{duration} is in seconds.
+
+The times remain date-times in the \code{PKNCAconc} and \code{PKNCAdose} objects.
+\code{\link[=PKNCAdata]{PKNCAdata()}} converts them to numeric time relative to the first dose
+in each group; see the "Date-time input" section there.  The nominal time
+(\code{time.nominal}) is not converted and usually stays numeric.
+}
+
 \seealso{
 Other PKNCA objects:
 \code{\link[=PKNCAdata]{PKNCAdata()}},
 \code{\link[=PKNCAdose]{PKNCAdose()}},
-\code{\link[=PKNCAresults]{PKNCAresults()}}
+\code{\link[=PKNCAresults]{PKNCAresults()}},
+\code{\link[=pknca_check_conc_data]{pknca_check_conc_data()}}
 }
 \concept{PKNCA objects}
