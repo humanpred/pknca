@@ -154,14 +154,18 @@ PKNCA_impute_method_end_conc_drop <- function(conc, time, end, ..., options = li
 
 #' Separate out a vector of PKNCA imputation methods into a list of functions
 #'
-#' An error will be raised if the functions are not found.
+#' Each imputation string is split at commas and spaces, and each method name
+#' is expanded to its function name by adding `PKNCA_impute_method_` to the
+#' beginning.  An error will be raised if the functions are not found.
 #'
-#' This function is not for use by users of PKNCA.
-#'
-#' @param x The character vector of PKNCA imputation method functions (without
-#'   the `PKNCA_impute_method_` part)
-#' @return A list of character vectors of functions to run.
-#' @keywords Internal
+#' @param x The character vector of PKNCA imputation method strings (without
+#'   the `PKNCA_impute_method_` part, like `"start_predose,start_conc0"`)
+#' @return A list with one element per element of `x`, each a character vector
+#'   of function names to run in order (or `NA_character_` for no imputation).
+#' @seealso [assert_impute_method()], [PKNCA_impute_method]
+#' @examples
+#' PKNCA_impute_fun_list(c("start_predose,start_conc0", NA))
+#' @export
 PKNCA_impute_fun_list <- function(x) {
   if (all(is.na(x))) {
     x <- rep(NA_character_, length(x))
@@ -184,6 +188,33 @@ PKNCA_impute_fun_list <- function(x) {
     )
   }
   ret
+}
+
+#' Check an imputation specification
+#'
+#' The specification is resolved the way [PKNCAdata()] and [pk.nca()] resolve
+#' it:  the name of a column in `intervals`, `NA` to use the `"impute"` column
+#' of `intervals` when there is one, or otherwise a string of imputation
+#' methods.  Every method named must exist.
+#'
+#' @param impute The imputation specification (a character scalar or `NA`)
+#' @param intervals The intervals data.frame (if the specification may name one
+#'   of its columns)
+#' @returns The resolved imputation strings (one per interval when read from a
+#'   column), invisibly, or an error
+#' @seealso [PKNCA_impute_fun_list()], [PKNCA_impute_method]
+#' @examples
+#' assert_impute_method("start_predose,start_conc0")
+#' assert_impute_method(
+#'   "method",
+#'   intervals = data.frame(start = 0, end = 24, method = "start_conc0")
+#' )
+#' try(assert_impute_method("start_misspelled"))
+#' @export
+assert_impute_method <- function(impute, intervals = data.frame()) {
+  ret <- get_impute_method(intervals = intervals, impute = impute)
+  PKNCA_impute_fun_list(ret)
+  invisible(ret)
 }
 
 # A helper for PKNCA_impute_fun_list that reports whether an imputation method
