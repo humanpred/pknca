@@ -12,15 +12,18 @@ interval, but no animal has the full profile.
 
 ### Sparse NCA Setup
 
-Sparse NCA is setup similarly to how normal, dense PK sampling is setup
-with PKNCA. The only difference are that you give the `sparse` option to
-[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md),
-and in your interval calculations, you will request the sparse variants
-of the parameters. The sparse parameters for calculation are
-`sparse_auclast` and `sparse_aumclast` (each with an accompanying
-standard error and degrees of freedom) along with parameters derived
-from them (described below). Any of the non-sparse parameters will be
-calculated based on the mean profile of the animals in a group.
+Sparse NCA is setup the same way as normal, dense PK sampling is setup
+with PKNCA. The only difference is that you give the `sparse` option to
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md);
+the parameters are requested by their usual names.
+
+Two things happen behind that flag. For `auclast` and `aumclast`, PKNCA
+uses the sparse estimators – the Bailer point estimate with the
+Nedelman-Jia/Holder standard error – calculated from the pooled samples
+of all the animals in a group, and reports the standard error and
+degrees of freedom alongside the estimate as `auclast_se`/`auclast_df`
+and `aumclast_se`/`aumclast_df`. Every other parameter is calculated
+from the arithmetic-mean profile of the animals in the group.
 
 The example below uses data extracted from Holder D. J., Hsuan F., Dixit
 R. and Soper K. (1999). A method for estimating and testing area under
@@ -136,19 +139,34 @@ d_intervals <-
   data.frame(
     start=0,
     end=24,
+    auclast=TRUE,
+    auclast_se=TRUE,
+    auclast_df=TRUE,
     aucinf.obs=TRUE,
-    cmax=TRUE,
-    sparse_auclast=TRUE
+    cmax=TRUE
   )
 o_data_sparse <- PKNCAdata(o_conc_sparse, intervals=d_intervals)
 o_nca <- pk.nca(o_data_sparse)
 ```
 
-    ## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2
-    ## points)
+    ## The sparse estimators use the linear trapezoidal rule, so the auc.method option
+    ## ("lin up/log down") does not apply to: auclast
 
     ## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples
     ## per subject
+
+    ## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2
+    ## points)
+
+[`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md)
+builds the same kind of specification from a description of the study,
+and its `sparse_single_dose` preset is the single-dose set with no
+imputation (there is no individual profile to impute into):
+
+``` r
+
+pknca_interval_table(0, 24, preset="sparse_single_dose")
+```
 
 ## Results
 
@@ -160,10 +178,10 @@ As with any other PKNCA result, the data are available through the
 summary(o_nca)
 ```
 
-    ##  start end cmax sparse_auclast aucinf.obs
-    ##      0  24 3.05           39.5         NC
+    ##  start end auclast auclast_se auclast_df cmax aucinf.obs
+    ##      0  24    39.5       7.31         NC 3.05         NC
     ## 
-    ## Caption: cmax, sparse_auclast, aucinf.obs: geometric mean and geometric coefficient of variation; NC: not calculated
+    ## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; auclast_se, auclast_df: arithmetic mean and standard deviation; NC: not calculated
 
 or individual results are available through the
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) function:
@@ -174,49 +192,38 @@ as.data.frame(o_nca)
 ```
 
     ## # A tibble: 18 × 6
-    ##    start   end PPTESTCD            PPORRES PPANMETH               exclude       
-    ##    <dbl> <dbl> <chr>                 <dbl> <chr>                  <chr>         
-    ##  1     0    24 cmax                  3.05  ""                     NA            
-    ##  2     0    24 tmax                  6     ""                     NA            
-    ##  3     0    24 tlast                24     ""                     NA            
-    ##  4     0    24 clast.obs             0.191 ""                     NA            
-    ##  5     0    24 lambda.z             NA     ""                     Too few point…
-    ##  6     0    24 r.squared            NA     ""                     Too few point…
-    ##  7     0    24 adj.r.squared        NA     ""                     Too few point…
-    ##  8     0    24 lambda.z.corrxy      NA     ""                     Too few point…
-    ##  9     0    24 lambda.z.time.first  NA     ""                     Too few point…
-    ## 10     0    24 lambda.z.time.last   NA     ""                     Too few point…
-    ## 11     0    24 lambda.z.n.points    NA     ""                     Too few point…
-    ## 12     0    24 clast.pred           NA     ""                     Too few point…
-    ## 13     0    24 half.life            NA     ""                     Too few point…
-    ## 14     0    24 span.ratio           NA     ""                     Too few point…
-    ## 15     0    24 aucinf.obs           NA     "AUC: lin up/log down" Too few point…
-    ## 16     0    24 sparse_auclast       39.5   ""                     NA            
-    ## 17     0    24 sparse_auc_se         7.31  ""                     NA            
-    ## 18     0    24 sparse_auc_df        NA     ""                     NA
+    ##    start   end PPTESTCD            PPORRES PPANMETH                      exclude
+    ##    <dbl> <dbl> <chr>                 <dbl> <chr>                         <chr>  
+    ##  1     0    24 cmax                  3.05  ""                            NA     
+    ##  2     0    24 tmax                  6     ""                            NA     
+    ##  3     0    24 tlast                24     ""                            NA     
+    ##  4     0    24 clast.obs             0.191 ""                            NA     
+    ##  5     0    24 lambda.z             NA     ""                            Too fe…
+    ##  6     0    24 r.squared            NA     ""                            Too fe…
+    ##  7     0    24 adj.r.squared        NA     ""                            Too fe…
+    ##  8     0    24 lambda.z.corrxy      NA     ""                            Too fe…
+    ##  9     0    24 lambda.z.time.first  NA     ""                            Too fe…
+    ## 10     0    24 lambda.z.time.last   NA     ""                            Too fe…
+    ## 11     0    24 lambda.z.n.points    NA     ""                            Too fe…
+    ## 12     0    24 clast.pred           NA     ""                            Too fe…
+    ## 13     0    24 half.life            NA     ""                            Too fe…
+    ## 14     0    24 span.ratio           NA     ""                            Too fe…
+    ## 15     0    24 aucinf.obs           NA     "AUC: lin up/log down"        Too fe…
+    ## 16     0    24 auclast              39.5   "AUC: linear. Sparse: arithm… NA     
+    ## 17     0    24 auclast_se            7.31  "AUC: linear. Sparse: arithm… NA     
+    ## 18     0    24 auclast_df           NA     "AUC: linear. Sparse: arithm… NA
 
-## Sparse AUMC and Derived Parameters
+`auclast_se` and `auclast_df` are reported whether or not they were
+requested, because the sparse estimator returns all three together. They
+are only calculable from sparse data: requesting one for a dense
+`PKNCAconc` is an error.
 
-In addition to `sparse_auclast` (with its standard error,
-`sparse_auc_se`, and degrees of freedom, `sparse_auc_df`), the area
-under the first moment curve is available as `sparse_aumclast` (with
-`sparse_aumc_se` and `sparse_aumc_df`). Five parameters derived from the
-sparse AUC and AUMC are also available:
+## Sparse AUC, AUMC, and Derived Parameters
 
-- `mrt.sparse.last`: Mean residence time
-  (`sparse_aumclast`/`sparse_auclast`)
-- `cl.sparse.last`: Clearance (dose/`sparse_auclast`)
-- `kel.sparse.last`: Elimination rate (1/`mrt.sparse.last`)
-- `vss.sparse.last`: Steady-state volume of distribution
-  (`cl.sparse.last`\*`mrt.sparse.last`)
-- `vz.sparse.last`: Terminal volume of distribution
-  (`cl.sparse.last`/`kel.sparse.last`)
-
-The example below calculates all of them from the same data with
-intravenous dose information added. Note that because `kel.sparse.last`
-is calculated as 1/MRT rather than from a terminal log-linear
-($`\lambda_z`$) fit, `vz.sparse.last` is numerically equal to
-`vss.sparse.last`.
+Because the sparse estimate is stored under the standard parameter name,
+every parameter derived from an AUC is available for sparse data with no
+extra work. `cl.last` divides the dose by `auclast`, `mrt.last` divides
+`aumclast` by `auclast`, and so on down the usual derived graph.
 
 ``` r
 
@@ -226,52 +233,110 @@ d_intervals_derived <-
   data.frame(
     start=0,
     end=24,
-    sparse_auclast=TRUE,
-    sparse_aumclast=TRUE,
-    mrt.sparse.last=TRUE,
-    cl.sparse.last=TRUE,
-    kel.sparse.last=TRUE,
-    vss.sparse.last=TRUE,
-    vz.sparse.last=TRUE
+    auclast=TRUE,
+    aumclast=TRUE,
+    mrt.last=TRUE,
+    cl.last=TRUE,
+    kel.last=TRUE,
+    vss.last=TRUE,
+    vz.last=TRUE
   )
 o_data_derived <- PKNCAdata(o_conc_sparse, o_dose, intervals=d_intervals_derived)
 o_nca_derived <- pk.nca(o_data_derived)
 ```
 
+    ## The sparse estimators use the linear trapezoidal rule, so the auc.method option
+    ## ("lin up/log down") does not apply to: auclast, aumclast
+
     ## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples
     ## per subject
 
     ## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples
     ## per subject
+
+    ## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2
+    ## points)
 
 ``` r
 
 as.data.frame(o_nca_derived)
 ```
 
-    ## # A tibble: 11 × 6
-    ##    start   end PPTESTCD        PPORRES PPANMETH exclude
-    ##    <dbl> <dbl> <chr>             <dbl> <chr>    <chr>  
-    ##  1     0    24 sparse_auclast   39.5   ""       NA     
-    ##  2     0    24 sparse_auc_se     7.31  ""       NA     
-    ##  3     0    24 sparse_auc_df    NA     ""       NA     
-    ##  4     0    24 sparse_aumclast 296.    ""       NA     
-    ##  5     0    24 sparse_aumc_se   66.9   ""       NA     
-    ##  6     0    24 sparse_aumc_df   NA     ""       NA     
-    ##  7     0    24 cl.sparse.last    2.53  ""       NA     
-    ##  8     0    24 mrt.sparse.last   7.49  ""       NA     
-    ##  9     0    24 vss.sparse.last  19.0   ""       NA     
-    ## 10     0    24 kel.sparse.last   0.134 ""       NA     
-    ## 11     0    24 vz.sparse.last   19.0   ""       NA
+    ## # A tibble: 23 × 6
+    ##    start   end PPTESTCD            PPORRES PPANMETH exclude                     
+    ##    <dbl> <dbl> <chr>                 <dbl> <chr>    <chr>                       
+    ##  1     0    24 tmax                   6    ""       NA                          
+    ##  2     0    24 tlast                 24    ""       NA                          
+    ##  3     0    24 cl.last                2.53 ""       NA                          
+    ##  4     0    24 mrt.last               7.49 ""       NA                          
+    ##  5     0    24 vss.last              19.0  ""       NA                          
+    ##  6     0    24 lambda.z              NA    ""       Too few points for half-lif…
+    ##  7     0    24 r.squared             NA    ""       Too few points for half-lif…
+    ##  8     0    24 adj.r.squared         NA    ""       Too few points for half-lif…
+    ##  9     0    24 lambda.z.corrxy       NA    ""       Too few points for half-lif…
+    ## 10     0    24 lambda.z.time.first   NA    ""       Too few points for half-lif…
+    ## # ℹ 13 more rows
+
+Note what `vz.last` does here. It is the clearance divided by
+$`\lambda_z`$, the terminal rate constant fitted on the mean profile,
+which is the standard toxicokinetic approach. These data have only two
+time points after the mean profile’s peak, which is too few for a
+terminal fit, so $`\lambda_z`$ and therefore `vz.last` are `NA`. That is
+the honest answer: the retired `vz.sparse.last` divided the clearance by
+`1/MRT` instead, which always produced a number but made Vz numerically
+identical to Vss.
+
+`kel.last`, like the rest of PKNCA’s `kel` family, is `1/MRT`, so it is
+unchanged from the retired `kel.sparse.last`. Ask for `lambda.z` when
+you want the terminal rate constant itself.
+
+## Deprecated Parameter Names
+
+Sparse calculations were originally requested through a parallel set of
+names. All eleven still calculate and still give the values they always
+gave, but each now warns and **will be an error in the next minor
+release of PKNCA**:
+
+| Deprecated        | Use instead   |
+|-------------------|---------------|
+| `sparse_auclast`  | `auclast`     |
+| `sparse_auc_se`   | `auclast_se`  |
+| `sparse_auc_df`   | `auclast_df`  |
+| `sparse_aumclast` | `aumclast`    |
+| `sparse_aumc_se`  | `aumclast_se` |
+| `sparse_aumc_df`  | `aumclast_df` |
+| `cl.sparse.last`  | `cl.last`     |
+| `mrt.sparse.last` | `mrt.last`    |
+| `kel.sparse.last` | `kel.last`    |
+| `vss.sparse.last` | `vss.last`    |
+| `vz.sparse.last`  | `vz.last`     |
+
+Every replacement but the last gives the same number as the name it
+replaces. `vz.last` is $`\lambda_z`$-based, as described above, so it
+differs from `vz.sparse.last` by design.
+
+The functions behind the sparse estimators –
+[`pk.calc.sparse_auc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md),
+[`pk.calc.sparse_auclast()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md),
+[`pk.calc.sparse_aumc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.md),
+[`pk.calc.sparse_aumclast()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.md),
+[`as_sparse_pk()`](https://humanpred.github.io/pknca/reference/as_sparse_pk.md),
+[`sparse_mean()`](https://humanpred.github.io/pknca/reference/sparse_mean.md),
+[`var_sparse_auc()`](https://humanpred.github.io/pknca/reference/var_sparse_auc.md),
+and
+[`cov_holder()`](https://humanpred.github.io/pknca/reference/cov_holder.md)
+– are not deprecated. They are what the unified estimators call, and
+they remain available for calculations outside
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md).
 
 ## Notes on Sparse Calculation Behavior
 
 ### Degrees of freedom with multiple samples per subject
 
-The degrees of freedom (`sparse_auc_df` and `sparse_aumc_df`) can only
-be calculated when each subject contributes a single sample to the
-profile (as in a serial sacrifice design). When any subject contributes
-more than one sample, as in the example data here, PKNCA warns that it
+The degrees of freedom (`auclast_df` and `aumclast_df`) can only be
+calculated when each subject contributes a single sample to the profile
+(as in a serial sacrifice design). When any subject contributes more
+than one sample, as in the example data here, PKNCA warns that it
 “Cannot yet calculate sparse degrees of freedom for multiple samples per
 subject”, and the degrees of freedom are `NA`. That warning is the
 source of the warnings in the results above. The point estimates and
@@ -288,10 +353,15 @@ set to zero. At exactly 50% BLQ, the mean is calculated normally
 
 ### Only the linear trapezoidal method is supported
 
-Sparse AUC and AUMC are only defined with the linear trapezoidal method
-in PKNCA. Calling
+The sparse variance theory is derived for a fixed-weight linear
+combination of the per-time-point means, so the sparse estimators are
+defined with the linear trapezoidal method only. Calling
 [`pk.calc.sparse_auc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md)
-with any other `method` is an error, and sparse calculations within
-[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
-always use the linear method (the `auc.method` option does not apply to
-them).
+with any other `method` is an error, and within
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md) the
+sparse estimators always use the linear method: the `auc.method` option
+does not apply to them, and
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md) says
+so once per run when the option asks for anything else. Parameters that
+fall back to the mean profile, such as `aucinf.obs`, do follow
+`auc.method`.

@@ -41,6 +41,9 @@ get.interval.cols()
 #> $start$FUN
 #> [1] NA
 #> 
+#> $start$FUN_sparse
+#> [1] NA
+#> 
 #> $start$values
 #> function (x, ...)  .Primitive("as.double")
 #> 
@@ -53,10 +56,10 @@ get.interval.cols()
 #> $start$desc
 #> [1] "Starting time of the interval"
 #> 
-#> $start$sparse
-#> [1] FALSE
-#> 
 #> $start$formalsmap
+#> list()
+#> 
+#> $start$formalsmap_sparse
 #> list()
 #> 
 #> $start$depends
@@ -88,6 +91,9 @@ get.interval.cols()
 #> $end$FUN
 #> [1] NA
 #> 
+#> $end$FUN_sparse
+#> [1] NA
+#> 
 #> $end$values
 #> function (x, ...)  .Primitive("as.double")
 #> 
@@ -100,10 +106,10 @@ get.interval.cols()
 #> $end$desc
 #> [1] "End time of interval (may be Inf)"
 #> 
-#> $end$sparse
-#> [1] FALSE
-#> 
 #> $end$formalsmap
+#> list()
+#> 
+#> $end$formalsmap_sparse
 #> list()
 #> 
 #> $end$depends
@@ -135,6 +141,9 @@ get.interval.cols()
 #> $auclast$FUN
 #> [1] "pk.calc.auc.last"
 #> 
+#> $auclast$FUN_sparse
+#> [1] "pk.calc.auclast_sparse"
+#> 
 #> $auclast$values
 #> [1] FALSE  TRUE
 #> 
@@ -147,10 +156,10 @@ get.interval.cols()
 #> $auclast$desc
 #> [1] "AUC start to last conc above LOQ"
 #> 
-#> $auclast$sparse
-#> [1] FALSE
-#> 
 #> $auclast$formalsmap
+#> list()
+#> 
+#> $auclast$formalsmap_sparse
 #> list()
 #> 
 #> $auclast$depends
@@ -160,10 +169,20 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> $auclast$pptestcd_cdisc
+#> $auclast$pptestcd_cdisc$dense
 #> [1] "AUCLST"
 #> 
+#> $auclast$pptestcd_cdisc$sparse
+#> [1] "SPARSEAL"
+#> 
+#> 
 #> $auclast$pptest_cdisc
+#> $auclast$pptest_cdisc$dense
 #> [1] "AUC to Last Nonzero Conc"
+#> 
+#> $auclast$pptest_cdisc$sparse
+#> [1] "Sparse AUClast"
+#> 
 #> 
 #> $auclast$formula
 #> [1] "$AUC_{\\text{last}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
@@ -209,9 +228,142 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $auclast_se
+#> $auclast_se$FUN
+#> [1] NA
+#> 
+#> $auclast_se$FUN_sparse
+#> [1] NA
+#> 
+#> $auclast_se$values
+#> [1] FALSE  TRUE
+#> 
+#> $auclast_se$unit_type
+#> [1] "auc"
+#> 
+#> $auclast_se$pretty_name
+#> [1] "AUClast standard error"
+#> 
+#> $auclast_se$desc
+#> [1] "SE of AUClast (sparse PK only)"
+#> 
+#> $auclast_se$formalsmap
+#> list()
+#> 
+#> $auclast_se$formalsmap_sparse
+#> list()
+#> 
+#> $auclast_se$depends
+#> [1] "auclast"
+#> 
+#> $auclast_se$datatype
+#> [1] "interval"
+#> 
+#> $auclast_se$pptestcd_cdisc
+#> [1] "SPARSEAS"
+#> 
+#> $auclast_se$pptest_cdisc
+#> [1] "Sparse AUClast standard error"
+#> 
+#> $auclast_se$formula
+#> [1] "$SE(AUC_{\\text{last}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$"
+#> 
+#> $auclast_se$formula_note
+#> [1] "Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001)"
+#> 
+#> $auclast_se$tier
+#> [1] "uncommon"
+#> 
+#> $auclast_se$selection
+#> list()
+#> 
+#> $auclast_se$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $auclast_se$requires_dose_time
+#> [1] FALSE
+#> 
+#> $auclast_se$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $auclast_se$requires_volume
+#> [1] FALSE
+#> 
+#> $auclast_se$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $auclast_df
+#> $auclast_df$FUN
+#> [1] NA
+#> 
+#> $auclast_df$FUN_sparse
+#> [1] NA
+#> 
+#> $auclast_df$values
+#> [1] FALSE  TRUE
+#> 
+#> $auclast_df$unit_type
+#> [1] "count"
+#> 
+#> $auclast_df$pretty_name
+#> [1] "AUClast degrees of freedom"
+#> 
+#> $auclast_df$desc
+#> [1] "DF for AUClast (sparse PK only)"
+#> 
+#> $auclast_df$formalsmap
+#> list()
+#> 
+#> $auclast_df$formalsmap_sparse
+#> list()
+#> 
+#> $auclast_df$depends
+#> [1] "auclast"
+#> 
+#> $auclast_df$datatype
+#> [1] "interval"
+#> 
+#> $auclast_df$pptestcd_cdisc
+#> [1] "SPARSEAD"
+#> 
+#> $auclast_df$pptest_cdisc
+#> [1] "Sparse AUClast degrees of freedom"
+#> 
+#> $auclast_df$formula
+#> [1] "$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$"
+#> 
+#> $auclast_df$formula_note
+#> [1] "Satterthwaite approximation (Nedelman et al 1995, eq. 6a)"
+#> 
+#> $auclast_df$tier
+#> [1] "uncommon"
+#> 
+#> $auclast_df$selection
+#> list()
+#> 
+#> $auclast_df$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $auclast_df$requires_dose_time
+#> [1] FALSE
+#> 
+#> $auclast_df$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $auclast_df$requires_volume
+#> [1] FALSE
+#> 
+#> $auclast_df$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
 #> $aucall
 #> $aucall$FUN
 #> [1] "pk.calc.auc.all"
+#> 
+#> $aucall$FUN_sparse
+#> [1] NA
 #> 
 #> $aucall$values
 #> [1] FALSE  TRUE
@@ -225,10 +377,10 @@ get.interval.cols()
 #> $aucall$desc
 #> [1] "AUClast plus triangle, 0 at BLQ"
 #> 
-#> $aucall$sparse
-#> [1] FALSE
-#> 
 #> $aucall$formalsmap
+#> list()
+#> 
+#> $aucall$formalsmap_sparse
 #> list()
 #> 
 #> $aucall$depends
@@ -275,6 +427,9 @@ get.interval.cols()
 #> $aumclast$FUN
 #> [1] "pk.calc.aumc.last"
 #> 
+#> $aumclast$FUN_sparse
+#> [1] "pk.calc.aumclast_sparse"
+#> 
 #> $aumclast$values
 #> [1] FALSE  TRUE
 #> 
@@ -287,10 +442,10 @@ get.interval.cols()
 #> $aumclast$desc
 #> [1] "AUMC start to last conc above LOQ"
 #> 
-#> $aumclast$sparse
-#> [1] FALSE
-#> 
 #> $aumclast$formalsmap
+#> list()
+#> 
+#> $aumclast$formalsmap_sparse
 #> list()
 #> 
 #> $aumclast$depends
@@ -303,7 +458,12 @@ get.interval.cols()
 #> [1] "AUMCLST"
 #> 
 #> $aumclast$pptest_cdisc
+#> $aumclast$pptest_cdisc$dense
 #> [1] "AUMC to Last Nonzero Conc"
+#> 
+#> $aumclast$pptest_cdisc$sparse
+#> [1] "Sparse AUMClast"
+#> 
 #> 
 #> $aumclast$formula
 #> [1] "$AUMC_{\\text{last}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"
@@ -333,9 +493,142 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> 
+#> $aumclast_se
+#> $aumclast_se$FUN
+#> [1] NA
+#> 
+#> $aumclast_se$FUN_sparse
+#> [1] NA
+#> 
+#> $aumclast_se$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumclast_se$unit_type
+#> [1] "aumc"
+#> 
+#> $aumclast_se$pretty_name
+#> [1] "AUMC,last standard error"
+#> 
+#> $aumclast_se$desc
+#> [1] "SE of AUMClast (sparse PK only)"
+#> 
+#> $aumclast_se$formalsmap
+#> list()
+#> 
+#> $aumclast_se$formalsmap_sparse
+#> list()
+#> 
+#> $aumclast_se$depends
+#> [1] "aumclast"
+#> 
+#> $aumclast_se$datatype
+#> [1] "interval"
+#> 
+#> $aumclast_se$pptestcd_cdisc
+#> [1] "aumclast_se"
+#> 
+#> $aumclast_se$pptest_cdisc
+#> [1] "SE of AUMClast (sparse PK only)"
+#> 
+#> $aumclast_se$formula
+#> [1] "$SE(AUMC_{\\text{last}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$"
+#> 
+#> $aumclast_se$formula_note
+#> [1] "Variance from the weighted covariance of the moment curve across subjects"
+#> 
+#> $aumclast_se$tier
+#> [1] "uncommon"
+#> 
+#> $aumclast_se$selection
+#> list()
+#> 
+#> $aumclast_se$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aumclast_se$requires_dose_time
+#> [1] FALSE
+#> 
+#> $aumclast_se$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aumclast_se$requires_volume
+#> [1] FALSE
+#> 
+#> $aumclast_se$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $aumclast_df
+#> $aumclast_df$FUN
+#> [1] NA
+#> 
+#> $aumclast_df$FUN_sparse
+#> [1] NA
+#> 
+#> $aumclast_df$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumclast_df$unit_type
+#> [1] "count"
+#> 
+#> $aumclast_df$pretty_name
+#> [1] "AUMC,last degrees of freedom"
+#> 
+#> $aumclast_df$desc
+#> [1] "DF for AUMClast (sparse PK only)"
+#> 
+#> $aumclast_df$formalsmap
+#> list()
+#> 
+#> $aumclast_df$formalsmap_sparse
+#> list()
+#> 
+#> $aumclast_df$depends
+#> [1] "aumclast"
+#> 
+#> $aumclast_df$datatype
+#> [1] "interval"
+#> 
+#> $aumclast_df$pptestcd_cdisc
+#> [1] "aumclast_df"
+#> 
+#> $aumclast_df$pptest_cdisc
+#> [1] "DF for AUMClast (sparse PK only)"
+#> 
+#> $aumclast_df$formula
+#> [1] "$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$"
+#> 
+#> $aumclast_df$formula_note
+#> [1] "Satterthwaite approximation (Nedelman et al 1995, eq. 6a)"
+#> 
+#> $aumclast_df$tier
+#> [1] "uncommon"
+#> 
+#> $aumclast_df$selection
+#> list()
+#> 
+#> $aumclast_df$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aumclast_df$requires_dose_time
+#> [1] FALSE
+#> 
+#> $aumclast_df$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aumclast_df$requires_volume
+#> [1] FALSE
+#> 
+#> $aumclast_df$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
 #> $aumcall
 #> $aumcall$FUN
 #> [1] "pk.calc.aumc.all"
+#> 
+#> $aumcall$FUN_sparse
+#> [1] NA
 #> 
 #> $aumcall$values
 #> [1] FALSE  TRUE
@@ -349,10 +642,10 @@ get.interval.cols()
 #> $aumcall$desc
 #> [1] "AUMClast plus triangle moment, 0 at BLQ"
 #> 
-#> $aumcall$sparse
-#> [1] FALSE
-#> 
 #> $aumcall$formalsmap
+#> list()
+#> 
+#> $aumcall$formalsmap_sparse
 #> list()
 #> 
 #> $aumcall$depends
@@ -399,6 +692,9 @@ get.interval.cols()
 #> $aucint.last$FUN
 #> [1] "pk.calc.aucint.last"
 #> 
+#> $aucint.last$FUN_sparse
+#> [1] NA
+#> 
 #> $aucint.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -410,9 +706,6 @@ get.interval.cols()
 #> 
 #> $aucint.last$desc
 #> [1] "AUC from T1 to T2 (zero extrap)"
-#> 
-#> $aucint.last$sparse
-#> [1] FALSE
 #> 
 #> $aucint.last$formalsmap
 #> $aucint.last$formalsmap$conc
@@ -430,6 +723,9 @@ get.interval.cols()
 #> $aucint.last$formalsmap$duration.dose
 #> [1] "duration.dose.group"
 #> 
+#> 
+#> $aucint.last$formalsmap_sparse
+#> list()
 #> 
 #> $aucint.last$depends
 #> NULL
@@ -475,6 +771,9 @@ get.interval.cols()
 #> $aucint.all$FUN
 #> [1] "pk.calc.aucint.all"
 #> 
+#> $aucint.all$FUN_sparse
+#> [1] NA
+#> 
 #> $aucint.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -486,9 +785,6 @@ get.interval.cols()
 #> 
 #> $aucint.all$desc
 #> [1] "AUC from T1 to T2 (AUCall extrap)"
-#> 
-#> $aucint.all$sparse
-#> [1] FALSE
 #> 
 #> $aucint.all$formalsmap
 #> $aucint.all$formalsmap$conc
@@ -506,6 +802,9 @@ get.interval.cols()
 #> $aucint.all$formalsmap$duration.dose
 #> [1] "duration.dose.group"
 #> 
+#> 
+#> $aucint.all$formalsmap_sparse
+#> list()
 #> 
 #> $aucint.all$depends
 #> NULL
@@ -551,6 +850,9 @@ get.interval.cols()
 #> $aumcint.last$FUN
 #> [1] "pk.calc.aumcint.last"
 #> 
+#> $aumcint.last$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcint.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -562,9 +864,6 @@ get.interval.cols()
 #> 
 #> $aumcint.last$desc
 #> [1] "AUMC from T1 to T2 (zero extrap)"
-#> 
-#> $aumcint.last$sparse
-#> [1] FALSE
 #> 
 #> $aumcint.last$formalsmap
 #> $aumcint.last$formalsmap$conc
@@ -582,6 +881,9 @@ get.interval.cols()
 #> $aumcint.last$formalsmap$duration.dose
 #> [1] "duration.dose.group"
 #> 
+#> 
+#> $aumcint.last$formalsmap_sparse
+#> list()
 #> 
 #> $aumcint.last$depends
 #> NULL
@@ -627,6 +929,9 @@ get.interval.cols()
 #> $aumcint.all$FUN
 #> [1] "pk.calc.aumcint.all"
 #> 
+#> $aumcint.all$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcint.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -638,9 +943,6 @@ get.interval.cols()
 #> 
 #> $aumcint.all$desc
 #> [1] "AUMC from T1 to T2 (AUMCall extrap)"
-#> 
-#> $aumcint.all$sparse
-#> [1] FALSE
 #> 
 #> $aumcint.all$formalsmap
 #> $aumcint.all$formalsmap$conc
@@ -658,6 +960,9 @@ get.interval.cols()
 #> $aumcint.all$formalsmap$duration.dose
 #> [1] "duration.dose.group"
 #> 
+#> 
+#> $aumcint.all$formalsmap_sparse
+#> list()
 #> 
 #> $aumcint.all$depends
 #> NULL
@@ -703,6 +1008,9 @@ get.interval.cols()
 #> $c0$FUN
 #> [1] "pk.calc.c0"
 #> 
+#> $c0$FUN_sparse
+#> [1] NA
+#> 
 #> $c0$values
 #> [1] FALSE  TRUE
 #> 
@@ -715,10 +1023,10 @@ get.interval.cols()
 #> $c0$desc
 #> [1] "Initial conc after IV bolus"
 #> 
-#> $c0$sparse
-#> [1] FALSE
-#> 
 #> $c0$formalsmap
+#> list()
+#> 
+#> $c0$formalsmap_sparse
 #> list()
 #> 
 #> $c0$depends
@@ -765,6 +1073,9 @@ get.interval.cols()
 #> $cmax$FUN
 #> [1] "pk.calc.cmax"
 #> 
+#> $cmax$FUN_sparse
+#> [1] NA
+#> 
 #> $cmax$values
 #> [1] FALSE  TRUE
 #> 
@@ -777,10 +1088,10 @@ get.interval.cols()
 #> $cmax$desc
 #> [1] "Maximum observed concentration"
 #> 
-#> $cmax$sparse
-#> [1] FALSE
-#> 
 #> $cmax$formalsmap
+#> list()
+#> 
+#> $cmax$formalsmap_sparse
 #> list()
 #> 
 #> $cmax$depends
@@ -840,6 +1151,9 @@ get.interval.cols()
 #> $cmin$FUN
 #> [1] "pk.calc.cmin"
 #> 
+#> $cmin$FUN_sparse
+#> [1] NA
+#> 
 #> $cmin$values
 #> [1] FALSE  TRUE
 #> 
@@ -852,10 +1166,10 @@ get.interval.cols()
 #> $cmin$desc
 #> [1] "Minimum observed concentration"
 #> 
-#> $cmin$sparse
-#> [1] FALSE
-#> 
 #> $cmin$formalsmap
+#> list()
+#> 
+#> $cmin$formalsmap_sparse
 #> list()
 #> 
 #> $cmin$depends
@@ -902,6 +1216,9 @@ get.interval.cols()
 #> $tmax$FUN
 #> [1] "pk.calc.tmax"
 #> 
+#> $tmax$FUN_sparse
+#> [1] NA
+#> 
 #> $tmax$values
 #> [1] FALSE  TRUE
 #> 
@@ -914,10 +1231,10 @@ get.interval.cols()
 #> $tmax$desc
 #> [1] "Time of maximum observed conc"
 #> 
-#> $tmax$sparse
-#> [1] FALSE
-#> 
 #> $tmax$formalsmap
+#> list()
+#> 
+#> $tmax$formalsmap_sparse
 #> list()
 #> 
 #> $tmax$depends
@@ -986,6 +1303,9 @@ get.interval.cols()
 #> $tmin$FUN
 #> [1] "pk.calc.tmin"
 #> 
+#> $tmin$FUN_sparse
+#> [1] NA
+#> 
 #> $tmin$values
 #> [1] FALSE  TRUE
 #> 
@@ -998,10 +1318,10 @@ get.interval.cols()
 #> $tmin$desc
 #> [1] "Time of minimum observed conc"
 #> 
-#> $tmin$sparse
-#> [1] FALSE
-#> 
 #> $tmin$formalsmap
+#> list()
+#> 
+#> $tmin$formalsmap_sparse
 #> list()
 #> 
 #> $tmin$depends
@@ -1048,6 +1368,9 @@ get.interval.cols()
 #> $tlast$FUN
 #> [1] "pk.calc.tlast"
 #> 
+#> $tlast$FUN_sparse
+#> [1] NA
+#> 
 #> $tlast$values
 #> [1] FALSE  TRUE
 #> 
@@ -1060,10 +1383,10 @@ get.interval.cols()
 #> $tlast$desc
 #> [1] "Time of last conc above LOQ"
 #> 
-#> $tlast$sparse
-#> [1] FALSE
-#> 
 #> $tlast$formalsmap
+#> list()
+#> 
+#> $tlast$formalsmap_sparse
 #> list()
 #> 
 #> $tlast$depends
@@ -1126,6 +1449,9 @@ get.interval.cols()
 #> $tfirst$FUN
 #> [1] "pk.calc.tfirst"
 #> 
+#> $tfirst$FUN_sparse
+#> [1] NA
+#> 
 #> $tfirst$values
 #> [1] FALSE  TRUE
 #> 
@@ -1138,10 +1464,10 @@ get.interval.cols()
 #> $tfirst$desc
 #> [1] "Time of first conc above LOQ"
 #> 
-#> $tfirst$sparse
-#> [1] FALSE
-#> 
 #> $tfirst$formalsmap
+#> list()
+#> 
+#> $tfirst$formalsmap_sparse
 #> list()
 #> 
 #> $tfirst$depends
@@ -1188,6 +1514,9 @@ get.interval.cols()
 #> $clast.obs$FUN
 #> [1] "pk.calc.clast.obs"
 #> 
+#> $clast.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $clast.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -1200,10 +1529,10 @@ get.interval.cols()
 #> $clast.obs$desc
 #> [1] "Last conc observed above LOQ"
 #> 
-#> $clast.obs$sparse
-#> [1] FALSE
-#> 
 #> $clast.obs$formalsmap
+#> list()
+#> 
+#> $clast.obs$formalsmap_sparse
 #> list()
 #> 
 #> $clast.obs$depends
@@ -1266,6 +1595,9 @@ get.interval.cols()
 #> $cl.last$FUN
 #> [1] "pk.calc.cl"
 #> 
+#> $cl.last$FUN_sparse
+#> [1] NA
+#> 
 #> $cl.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -1278,13 +1610,13 @@ get.interval.cols()
 #> $cl.last$desc
 #> [1] "Clearance, AUClast"
 #> 
-#> $cl.last$sparse
-#> [1] FALSE
-#> 
 #> $cl.last$formalsmap
 #> $cl.last$formalsmap$auc
 #> [1] "auclast"
 #> 
+#> 
+#> $cl.last$formalsmap_sparse
+#> list()
 #> 
 #> $cl.last$depends
 #> [1] "auclast"
@@ -1344,6 +1676,9 @@ get.interval.cols()
 #> $cl.all$FUN
 #> [1] "pk.calc.cl"
 #> 
+#> $cl.all$FUN_sparse
+#> [1] NA
+#> 
 #> $cl.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -1356,13 +1691,13 @@ get.interval.cols()
 #> $cl.all$desc
 #> [1] "Clearance, AUCall"
 #> 
-#> $cl.all$sparse
-#> [1] FALSE
-#> 
 #> $cl.all$formalsmap
 #> $cl.all$formalsmap$auc
 #> [1] "aucall"
 #> 
+#> 
+#> $cl.all$formalsmap_sparse
+#> list()
 #> 
 #> $cl.all$depends
 #> [1] "aucall"
@@ -1422,6 +1757,9 @@ get.interval.cols()
 #> $cl.int.all$FUN
 #> [1] "pk.calc.cl"
 #> 
+#> $cl.int.all$FUN_sparse
+#> [1] NA
+#> 
 #> $cl.int.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -1434,13 +1772,13 @@ get.interval.cols()
 #> $cl.int.all$desc
 #> [1] "Clearance, AUCint.all"
 #> 
-#> $cl.int.all$sparse
-#> [1] FALSE
-#> 
 #> $cl.int.all$formalsmap
 #> $cl.int.all$formalsmap$auc
 #> [1] "aucint.all"
 #> 
+#> 
+#> $cl.int.all$formalsmap_sparse
+#> list()
 #> 
 #> $cl.int.all$depends
 #> [1] "aucint.all"
@@ -1486,6 +1824,9 @@ get.interval.cols()
 #> $cl.int.last$FUN
 #> [1] "pk.calc.cl"
 #> 
+#> $cl.int.last$FUN_sparse
+#> [1] NA
+#> 
 #> $cl.int.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -1498,13 +1839,13 @@ get.interval.cols()
 #> $cl.int.last$desc
 #> [1] "Clearance, AUCint.last"
 #> 
-#> $cl.int.last$sparse
-#> [1] FALSE
-#> 
 #> $cl.int.last$formalsmap
 #> $cl.int.last$formalsmap$auc
 #> [1] "aucint.last"
 #> 
+#> 
+#> $cl.int.last$formalsmap_sparse
+#> list()
 #> 
 #> $cl.int.last$depends
 #> [1] "aucint.last"
@@ -1550,6 +1891,9 @@ get.interval.cols()
 #> $mrt.last$FUN
 #> [1] "pk.calc.mrt"
 #> 
+#> $mrt.last$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -1562,9 +1906,6 @@ get.interval.cols()
 #> $mrt.last$desc
 #> [1] "MRT, AUClast/AUMClast"
 #> 
-#> $mrt.last$sparse
-#> [1] FALSE
-#> 
 #> $mrt.last$formalsmap
 #> $mrt.last$formalsmap$auc
 #> [1] "auclast"
@@ -1572,6 +1913,9 @@ get.interval.cols()
 #> $mrt.last$formalsmap$aumc
 #> [1] "aumclast"
 #> 
+#> 
+#> $mrt.last$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.last$depends
 #> [1] "auclast"  "aumclast"
@@ -1631,6 +1975,9 @@ get.interval.cols()
 #> $mrt.all$FUN
 #> [1] "pk.calc.mrt"
 #> 
+#> $mrt.all$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -1643,9 +1990,6 @@ get.interval.cols()
 #> $mrt.all$desc
 #> [1] "MRT, AUCall/AUMCall"
 #> 
-#> $mrt.all$sparse
-#> [1] FALSE
-#> 
 #> $mrt.all$formalsmap
 #> $mrt.all$formalsmap$auc
 #> [1] "aucall"
@@ -1653,6 +1997,9 @@ get.interval.cols()
 #> $mrt.all$formalsmap$aumc
 #> [1] "aumcall"
 #> 
+#> 
+#> $mrt.all$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.all$depends
 #> [1] "aucall"  "aumcall"
@@ -1698,6 +2045,9 @@ get.interval.cols()
 #> $mrt.int.all$FUN
 #> [1] "pk.calc.mrt"
 #> 
+#> $mrt.int.all$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.int.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -1710,9 +2060,6 @@ get.interval.cols()
 #> $mrt.int.all$desc
 #> [1] "MRT, interval AUCall/AUMCall"
 #> 
-#> $mrt.int.all$sparse
-#> [1] FALSE
-#> 
 #> $mrt.int.all$formalsmap
 #> $mrt.int.all$formalsmap$auc
 #> [1] "aucint.all"
@@ -1720,6 +2067,9 @@ get.interval.cols()
 #> $mrt.int.all$formalsmap$aumc
 #> [1] "aumcint.all"
 #> 
+#> 
+#> $mrt.int.all$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.int.all$depends
 #> [1] "aucint.all"  "aumcint.all"
@@ -1765,6 +2115,9 @@ get.interval.cols()
 #> $mrt.int.last$FUN
 #> [1] "pk.calc.mrt"
 #> 
+#> $mrt.int.last$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.int.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -1777,9 +2130,6 @@ get.interval.cols()
 #> $mrt.int.last$desc
 #> [1] "MRT, interval AUClast/AUMClast"
 #> 
-#> $mrt.int.last$sparse
-#> [1] FALSE
-#> 
 #> $mrt.int.last$formalsmap
 #> $mrt.int.last$formalsmap$auc
 #> [1] "aucint.last"
@@ -1787,6 +2137,9 @@ get.interval.cols()
 #> $mrt.int.last$formalsmap$aumc
 #> [1] "aumcint.last"
 #> 
+#> 
+#> $mrt.int.last$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.int.last$depends
 #> [1] "aucint.last"  "aumcint.last"
@@ -1832,6 +2185,9 @@ get.interval.cols()
 #> $mrt.iv.last$FUN
 #> [1] "pk.calc.mrt.iv"
 #> 
+#> $mrt.iv.last$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.iv.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -1844,9 +2200,6 @@ get.interval.cols()
 #> $mrt.iv.last$desc
 #> [1] "IV MRT, AUClast/AUMClast"
 #> 
-#> $mrt.iv.last$sparse
-#> [1] FALSE
-#> 
 #> $mrt.iv.last$formalsmap
 #> $mrt.iv.last$formalsmap$auc
 #> [1] "auclast"
@@ -1854,6 +2207,9 @@ get.interval.cols()
 #> $mrt.iv.last$formalsmap$aumc
 #> [1] "aumclast"
 #> 
+#> 
+#> $mrt.iv.last$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.iv.last$depends
 #> [1] "auclast"  "aumclast"
@@ -1899,6 +2255,9 @@ get.interval.cols()
 #> $vss.last$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.last$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -1911,9 +2270,6 @@ get.interval.cols()
 #> $vss.last$desc
 #> [1] "Vss, calc'd through Tlast"
 #> 
-#> $vss.last$sparse
-#> [1] FALSE
-#> 
 #> $vss.last$formalsmap
 #> $vss.last$formalsmap$cl
 #> [1] "cl.last"
@@ -1921,6 +2277,9 @@ get.interval.cols()
 #> $vss.last$formalsmap$mrt
 #> [1] "mrt.last"
 #> 
+#> 
+#> $vss.last$formalsmap_sparse
+#> list()
 #> 
 #> $vss.last$depends
 #> [1] "cl.last"  "mrt.last"
@@ -1980,6 +2339,9 @@ get.interval.cols()
 #> $vss.iv.last$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.iv.last$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.iv.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -1992,9 +2354,6 @@ get.interval.cols()
 #> $vss.iv.last$desc
 #> [1] "IV Vss, calc from AUClast"
 #> 
-#> $vss.iv.last$sparse
-#> [1] FALSE
-#> 
 #> $vss.iv.last$formalsmap
 #> $vss.iv.last$formalsmap$cl
 #> [1] "cl.last"
@@ -2002,6 +2361,9 @@ get.interval.cols()
 #> $vss.iv.last$formalsmap$mrt
 #> [1] "mrt.iv.last"
 #> 
+#> 
+#> $vss.iv.last$formalsmap_sparse
+#> list()
 #> 
 #> $vss.iv.last$depends
 #> [1] "cl.last"     "mrt.iv.last"
@@ -2047,6 +2409,9 @@ get.interval.cols()
 #> $vss.all$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.all$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -2059,9 +2424,6 @@ get.interval.cols()
 #> $vss.all$desc
 #> [1] "Vss, calc from AUCall"
 #> 
-#> $vss.all$sparse
-#> [1] FALSE
-#> 
 #> $vss.all$formalsmap
 #> $vss.all$formalsmap$cl
 #> [1] "cl.all"
@@ -2069,6 +2431,9 @@ get.interval.cols()
 #> $vss.all$formalsmap$mrt
 #> [1] "mrt.all"
 #> 
+#> 
+#> $vss.all$formalsmap_sparse
+#> list()
 #> 
 #> $vss.all$depends
 #> [1] "cl.all"  "mrt.all"
@@ -2114,6 +2479,9 @@ get.interval.cols()
 #> $vss.int.all$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.int.all$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.int.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -2126,9 +2494,6 @@ get.interval.cols()
 #> $vss.int.all$desc
 #> [1] "Vss, calc from interval AUCint.all"
 #> 
-#> $vss.int.all$sparse
-#> [1] FALSE
-#> 
 #> $vss.int.all$formalsmap
 #> $vss.int.all$formalsmap$cl
 #> [1] "cl.int.all"
@@ -2136,6 +2501,9 @@ get.interval.cols()
 #> $vss.int.all$formalsmap$mrt
 #> [1] "mrt.int.all"
 #> 
+#> 
+#> $vss.int.all$formalsmap_sparse
+#> list()
 #> 
 #> $vss.int.all$depends
 #> [1] "cl.int.all"  "mrt.int.all"
@@ -2181,6 +2549,9 @@ get.interval.cols()
 #> $vss.int.last$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.int.last$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.int.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -2193,9 +2564,6 @@ get.interval.cols()
 #> $vss.int.last$desc
 #> [1] "Vss, calc from interval AUCint.last"
 #> 
-#> $vss.int.last$sparse
-#> [1] FALSE
-#> 
 #> $vss.int.last$formalsmap
 #> $vss.int.last$formalsmap$cl
 #> [1] "cl.int.last"
@@ -2203,6 +2571,9 @@ get.interval.cols()
 #> $vss.int.last$formalsmap$mrt
 #> [1] "mrt.int.last"
 #> 
+#> 
+#> $vss.int.last$formalsmap_sparse
+#> list()
 #> 
 #> $vss.int.last$depends
 #> [1] "cl.int.last"  "mrt.int.last"
@@ -2248,6 +2619,9 @@ get.interval.cols()
 #> $cav$FUN
 #> [1] "pk.calc.cav"
 #> 
+#> $cav$FUN_sparse
+#> [1] NA
+#> 
 #> $cav$values
 #> [1] FALSE  TRUE
 #> 
@@ -2260,13 +2634,13 @@ get.interval.cols()
 #> $cav$desc
 #> [1] "Avg conc in interval (AUClast)"
 #> 
-#> $cav$sparse
-#> [1] FALSE
-#> 
 #> $cav$formalsmap
 #> $cav$formalsmap$auc
 #> [1] "auclast"
 #> 
+#> 
+#> $cav$formalsmap_sparse
+#> list()
 #> 
 #> $cav$depends
 #> [1] "auclast"
@@ -2312,6 +2686,9 @@ get.interval.cols()
 #> $cav.int.last$FUN
 #> [1] "pk.calc.cav"
 #> 
+#> $cav.int.last$FUN_sparse
+#> [1] NA
+#> 
 #> $cav.int.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -2324,13 +2701,13 @@ get.interval.cols()
 #> $cav.int.last$desc
 #> [1] "Avg conc in interval (AUCint.last)"
 #> 
-#> $cav.int.last$sparse
-#> [1] FALSE
-#> 
 #> $cav.int.last$formalsmap
 #> $cav.int.last$formalsmap$auc
 #> [1] "aucint.last"
 #> 
+#> 
+#> $cav.int.last$formalsmap_sparse
+#> list()
 #> 
 #> $cav.int.last$depends
 #> [1] "aucint.last"
@@ -2376,6 +2753,9 @@ get.interval.cols()
 #> $cav.int.all$FUN
 #> [1] "pk.calc.cav"
 #> 
+#> $cav.int.all$FUN_sparse
+#> [1] NA
+#> 
 #> $cav.int.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -2388,13 +2768,13 @@ get.interval.cols()
 #> $cav.int.all$desc
 #> [1] "Avg conc in interval (AUCint.all)"
 #> 
-#> $cav.int.all$sparse
-#> [1] FALSE
-#> 
 #> $cav.int.all$formalsmap
 #> $cav.int.all$formalsmap$auc
 #> [1] "aucint.all"
 #> 
+#> 
+#> $cav.int.all$formalsmap_sparse
+#> list()
 #> 
 #> $cav.int.all$depends
 #> [1] "aucint.all"
@@ -2440,6 +2820,9 @@ get.interval.cols()
 #> $ctrough$FUN
 #> [1] "pk.calc.ctrough"
 #> 
+#> $ctrough$FUN_sparse
+#> [1] NA
+#> 
 #> $ctrough$values
 #> [1] FALSE  TRUE
 #> 
@@ -2452,10 +2835,10 @@ get.interval.cols()
 #> $ctrough$desc
 #> [1] "Trough (end of interval) conc"
 #> 
-#> $ctrough$sparse
-#> [1] FALSE
-#> 
 #> $ctrough$formalsmap
+#> list()
+#> 
+#> $ctrough$formalsmap_sparse
 #> list()
 #> 
 #> $ctrough$depends
@@ -2504,6 +2887,9 @@ get.interval.cols()
 #> $cstart$FUN
 #> [1] "pk.calc.cstart"
 #> 
+#> $cstart$FUN_sparse
+#> [1] NA
+#> 
 #> $cstart$values
 #> [1] FALSE  TRUE
 #> 
@@ -2516,10 +2902,10 @@ get.interval.cols()
 #> $cstart$desc
 #> [1] "The predose concentration"
 #> 
-#> $cstart$sparse
-#> [1] FALSE
-#> 
 #> $cstart$formalsmap
+#> list()
+#> 
+#> $cstart$formalsmap_sparse
 #> list()
 #> 
 #> $cstart$depends
@@ -2566,6 +2952,9 @@ get.interval.cols()
 #> $ptr$FUN
 #> [1] "pk.calc.ptr"
 #> 
+#> $ptr$FUN_sparse
+#> [1] NA
+#> 
 #> $ptr$values
 #> [1] FALSE  TRUE
 #> 
@@ -2578,10 +2967,10 @@ get.interval.cols()
 #> $ptr$desc
 #> [1] "Peak-to-trough ratio"
 #> 
-#> $ptr$sparse
-#> [1] FALSE
-#> 
 #> $ptr$formalsmap
+#> list()
+#> 
+#> $ptr$formalsmap_sparse
 #> list()
 #> 
 #> $ptr$depends
@@ -2628,6 +3017,9 @@ get.interval.cols()
 #> $tlag$FUN
 #> [1] "pk.calc.tlag"
 #> 
+#> $tlag$FUN_sparse
+#> [1] NA
+#> 
 #> $tlag$values
 #> [1] FALSE  TRUE
 #> 
@@ -2640,10 +3032,10 @@ get.interval.cols()
 #> $tlag$desc
 #> [1] "Lag time"
 #> 
-#> $tlag$sparse
-#> [1] FALSE
-#> 
 #> $tlag$formalsmap
+#> list()
+#> 
+#> $tlag$formalsmap_sparse
 #> list()
 #> 
 #> $tlag$depends
@@ -2692,6 +3084,9 @@ get.interval.cols()
 #> $deg.fluc$FUN
 #> [1] "pk.calc.deg.fluc"
 #> 
+#> $deg.fluc$FUN_sparse
+#> [1] NA
+#> 
 #> $deg.fluc$values
 #> [1] FALSE  TRUE
 #> 
@@ -2704,10 +3099,10 @@ get.interval.cols()
 #> $deg.fluc$desc
 #> [1] "Degree of fluctuation"
 #> 
-#> $deg.fluc$sparse
-#> [1] FALSE
-#> 
 #> $deg.fluc$formalsmap
+#> list()
+#> 
+#> $deg.fluc$formalsmap_sparse
 #> list()
 #> 
 #> $deg.fluc$depends
@@ -2756,6 +3151,9 @@ get.interval.cols()
 #> $swing$FUN
 #> [1] "pk.calc.swing"
 #> 
+#> $swing$FUN_sparse
+#> [1] NA
+#> 
 #> $swing$values
 #> [1] FALSE  TRUE
 #> 
@@ -2768,10 +3166,10 @@ get.interval.cols()
 #> $swing$desc
 #> [1] "Swing relative to Cmin"
 #> 
-#> $swing$sparse
-#> [1] FALSE
-#> 
 #> $swing$formalsmap
+#> list()
+#> 
+#> $swing$formalsmap_sparse
 #> list()
 #> 
 #> $swing$depends
@@ -2820,6 +3218,9 @@ get.interval.cols()
 #> $ceoi$FUN
 #> [1] "pk.calc.ceoi"
 #> 
+#> $ceoi$FUN_sparse
+#> [1] NA
+#> 
 #> $ceoi$values
 #> [1] FALSE  TRUE
 #> 
@@ -2832,10 +3233,10 @@ get.interval.cols()
 #> $ceoi$desc
 #> [1] "Concentration at the end of infusion"
 #> 
-#> $ceoi$sparse
-#> [1] FALSE
-#> 
 #> $ceoi$formalsmap
+#> list()
+#> 
+#> $ceoi$formalsmap_sparse
 #> list()
 #> 
 #> $ceoi$depends
@@ -2884,6 +3285,9 @@ get.interval.cols()
 #> $aucabove.predose.all$FUN
 #> [1] "pk.calc.aucabove"
 #> 
+#> $aucabove.predose.all$FUN_sparse
+#> [1] NA
+#> 
 #> $aucabove.predose.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -2896,13 +3300,13 @@ get.interval.cols()
 #> $aucabove.predose.all$desc
 #> [1] "AUC above predose, floor at 0"
 #> 
-#> $aucabove.predose.all$sparse
-#> [1] FALSE
-#> 
 #> $aucabove.predose.all$formalsmap
 #> $aucabove.predose.all$formalsmap$conc_above
 #> [1] "cstart"
 #> 
+#> 
+#> $aucabove.predose.all$formalsmap_sparse
+#> list()
 #> 
 #> $aucabove.predose.all$depends
 #> [1] "cstart"
@@ -2948,6 +3352,9 @@ get.interval.cols()
 #> $aucabove.trough.all$FUN
 #> [1] "pk.calc.aucabove"
 #> 
+#> $aucabove.trough.all$FUN_sparse
+#> [1] NA
+#> 
 #> $aucabove.trough.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -2960,13 +3367,13 @@ get.interval.cols()
 #> $aucabove.trough.all$desc
 #> [1] "AUC above trough, floor at 0"
 #> 
-#> $aucabove.trough.all$sparse
-#> [1] FALSE
-#> 
 #> $aucabove.trough.all$formalsmap
 #> $aucabove.trough.all$formalsmap$conc_above
 #> [1] "ctrough"
 #> 
+#> 
+#> $aucabove.trough.all$formalsmap_sparse
+#> list()
 #> 
 #> $aucabove.trough.all$depends
 #> [1] "ctrough"
@@ -3012,6 +3419,9 @@ get.interval.cols()
 #> $count_conc$FUN
 #> [1] "pk.calc.count_conc"
 #> 
+#> $count_conc$FUN_sparse
+#> [1] NA
+#> 
 #> $count_conc$values
 #> [1] FALSE  TRUE
 #> 
@@ -3024,10 +3434,10 @@ get.interval.cols()
 #> $count_conc$desc
 #> [1] "Count of non-missing conc"
 #> 
-#> $count_conc$sparse
-#> [1] FALSE
-#> 
 #> $count_conc$formalsmap
+#> list()
+#> 
+#> $count_conc$formalsmap_sparse
 #> list()
 #> 
 #> $count_conc$depends
@@ -3074,6 +3484,9 @@ get.interval.cols()
 #> $count_conc_measured$FUN
 #> [1] "pk.calc.count_conc_measured"
 #> 
+#> $count_conc_measured$FUN_sparse
+#> [1] NA
+#> 
 #> $count_conc_measured$values
 #> [1] FALSE  TRUE
 #> 
@@ -3086,10 +3499,10 @@ get.interval.cols()
 #> $count_conc_measured$desc
 #> [1] "Count of measured, non-BLQ conc"
 #> 
-#> $count_conc_measured$sparse
-#> [1] FALSE
-#> 
 #> $count_conc_measured$formalsmap
+#> list()
+#> 
+#> $count_conc_measured$formalsmap_sparse
 #> list()
 #> 
 #> $count_conc_measured$depends
@@ -3136,6 +3549,9 @@ get.interval.cols()
 #> $totdose$FUN
 #> [1] "pk.calc.totdose"
 #> 
+#> $totdose$FUN_sparse
+#> [1] NA
+#> 
 #> $totdose$values
 #> [1] FALSE  TRUE
 #> 
@@ -3148,10 +3564,10 @@ get.interval.cols()
 #> $totdose$desc
 #> [1] "Total dose given in interval"
 #> 
-#> $totdose$sparse
-#> [1] FALSE
-#> 
 #> $totdose$formalsmap
+#> list()
+#> 
+#> $totdose$formalsmap_sparse
 #> list()
 #> 
 #> $totdose$depends
@@ -3198,6 +3614,9 @@ get.interval.cols()
 #> $volpk$FUN
 #> [1] "pk.calc.volpk"
 #> 
+#> $volpk$FUN_sparse
+#> [1] NA
+#> 
 #> $volpk$values
 #> [1] FALSE  TRUE
 #> 
@@ -3210,10 +3629,10 @@ get.interval.cols()
 #> $volpk$desc
 #> [1] "Sum of urine volumes for interval"
 #> 
-#> $volpk$sparse
-#> [1] FALSE
-#> 
 #> $volpk$formalsmap
+#> list()
+#> 
+#> $volpk$formalsmap_sparse
 #> list()
 #> 
 #> $volpk$depends
@@ -3260,6 +3679,9 @@ get.interval.cols()
 #> $ae$FUN
 #> [1] "pk.calc.ae"
 #> 
+#> $ae$FUN_sparse
+#> [1] NA
+#> 
 #> $ae$values
 #> [1] FALSE  TRUE
 #> 
@@ -3272,10 +3694,10 @@ get.interval.cols()
 #> $ae$desc
 #> [1] "Amount excreted (urine/feces)"
 #> 
-#> $ae$sparse
-#> [1] FALSE
-#> 
 #> $ae$formalsmap
+#> list()
+#> 
+#> $ae$formalsmap_sparse
 #> list()
 #> 
 #> $ae$depends
@@ -3322,6 +3744,9 @@ get.interval.cols()
 #> $clr.last$FUN
 #> [1] "pk.calc.clr"
 #> 
+#> $clr.last$FUN_sparse
+#> [1] NA
+#> 
 #> $clr.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -3334,9 +3759,6 @@ get.interval.cols()
 #> $clr.last$desc
 #> [1] "Renal clearance, AUClast"
 #> 
-#> $clr.last$sparse
-#> [1] FALSE
-#> 
 #> $clr.last$formalsmap
 #> $clr.last$formalsmap$auc
 #> $param
@@ -3345,6 +3767,9 @@ get.interval.cols()
 #> attr(,"class")
 #> [1] "pknca_ref"
 #> 
+#> 
+#> $clr.last$formalsmap_sparse
+#> list()
 #> 
 #> $clr.last$depends
 #> [1] "ae"
@@ -3392,6 +3817,9 @@ get.interval.cols()
 #> $clr.obs$FUN
 #> [1] "pk.calc.clr"
 #> 
+#> $clr.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $clr.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -3404,9 +3832,6 @@ get.interval.cols()
 #> $clr.obs$desc
 #> [1] "Renal clearance, AUCinf,obs"
 #> 
-#> $clr.obs$sparse
-#> [1] FALSE
-#> 
 #> $clr.obs$formalsmap
 #> $clr.obs$formalsmap$auc
 #> $param
@@ -3415,6 +3840,9 @@ get.interval.cols()
 #> attr(,"class")
 #> [1] "pknca_ref"
 #> 
+#> 
+#> $clr.obs$formalsmap_sparse
+#> list()
 #> 
 #> $clr.obs$depends
 #> [1] "ae"
@@ -3462,6 +3890,9 @@ get.interval.cols()
 #> $clr.pred$FUN
 #> [1] "pk.calc.clr"
 #> 
+#> $clr.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $clr.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -3474,9 +3905,6 @@ get.interval.cols()
 #> $clr.pred$desc
 #> [1] "Renal clearance, AUCinf,pred"
 #> 
-#> $clr.pred$sparse
-#> [1] FALSE
-#> 
 #> $clr.pred$formalsmap
 #> $clr.pred$formalsmap$auc
 #> $param
@@ -3485,6 +3913,9 @@ get.interval.cols()
 #> attr(,"class")
 #> [1] "pknca_ref"
 #> 
+#> 
+#> $clr.pred$formalsmap_sparse
+#> list()
 #> 
 #> $clr.pred$depends
 #> [1] "ae"
@@ -3532,6 +3963,9 @@ get.interval.cols()
 #> $fe$FUN
 #> [1] "pk.calc.fe"
 #> 
+#> $fe$FUN_sparse
+#> [1] NA
+#> 
 #> $fe$values
 #> [1] FALSE  TRUE
 #> 
@@ -3544,10 +3978,10 @@ get.interval.cols()
 #> $fe$desc
 #> [1] "Fraction of dose excreted"
 #> 
-#> $fe$sparse
-#> [1] FALSE
-#> 
 #> $fe$formalsmap
+#> list()
+#> 
+#> $fe$formalsmap_sparse
 #> list()
 #> 
 #> $fe$depends
@@ -3594,6 +4028,9 @@ get.interval.cols()
 #> $ertlst$FUN
 #> [1] "pk.calc.ertlst"
 #> 
+#> $ertlst$FUN_sparse
+#> [1] NA
+#> 
 #> $ertlst$values
 #> [1] FALSE  TRUE
 #> 
@@ -3606,10 +4043,10 @@ get.interval.cols()
 #> $ertlst$desc
 #> [1] "Midpoint time of last excr rate"
 #> 
-#> $ertlst$sparse
-#> [1] FALSE
-#> 
 #> $ertlst$formalsmap
+#> list()
+#> 
+#> $ertlst$formalsmap_sparse
 #> list()
 #> 
 #> $ertlst$depends
@@ -3656,6 +4093,9 @@ get.interval.cols()
 #> $ermax$FUN
 #> [1] "pk.calc.ermax"
 #> 
+#> $ermax$FUN_sparse
+#> [1] NA
+#> 
 #> $ermax$values
 #> [1] FALSE  TRUE
 #> 
@@ -3668,10 +4108,10 @@ get.interval.cols()
 #> $ermax$desc
 #> [1] "Maximum excretion rate"
 #> 
-#> $ermax$sparse
-#> [1] FALSE
-#> 
 #> $ermax$formalsmap
+#> list()
+#> 
+#> $ermax$formalsmap_sparse
 #> list()
 #> 
 #> $ermax$depends
@@ -3718,6 +4158,9 @@ get.interval.cols()
 #> $ertmax$FUN
 #> [1] "pk.calc.ertmax"
 #> 
+#> $ertmax$FUN_sparse
+#> [1] NA
+#> 
 #> $ertmax$values
 #> [1] FALSE  TRUE
 #> 
@@ -3730,10 +4173,10 @@ get.interval.cols()
 #> $ertmax$desc
 #> [1] "Midpoint time of max excr rate"
 #> 
-#> $ertmax$sparse
-#> [1] FALSE
-#> 
 #> $ertmax$formalsmap
+#> list()
+#> 
+#> $ertmax$formalsmap_sparse
 #> list()
 #> 
 #> $ertmax$depends
@@ -3780,6 +4223,9 @@ get.interval.cols()
 #> $erint$FUN
 #> [1] "pk.calc.erint"
 #> 
+#> $erint$FUN_sparse
+#> [1] NA
+#> 
 #> $erint$values
 #> [1] FALSE  TRUE
 #> 
@@ -3792,10 +4238,10 @@ get.interval.cols()
 #> $erint$desc
 #> [1] "Excretion rate from T1 to T2"
 #> 
-#> $erint$sparse
-#> [1] FALSE
-#> 
 #> $erint$formalsmap
+#> list()
+#> 
+#> $erint$formalsmap_sparse
 #> list()
 #> 
 #> $erint$depends
@@ -3842,6 +4288,9 @@ get.interval.cols()
 #> $erlst$FUN
 #> [1] "pk.calc.erlst"
 #> 
+#> $erlst$FUN_sparse
+#> [1] NA
+#> 
 #> $erlst$values
 #> [1] FALSE  TRUE
 #> 
@@ -3854,10 +4303,10 @@ get.interval.cols()
 #> $erlst$desc
 #> [1] "Last measurable excretion rate"
 #> 
-#> $erlst$sparse
-#> [1] FALSE
-#> 
 #> $erlst$formalsmap
+#> list()
+#> 
+#> $erlst$formalsmap_sparse
 #> list()
 #> 
 #> $erlst$depends
@@ -3904,6 +4353,9 @@ get.interval.cols()
 #> $ratio.cmax$FUN
 #> [1] "pk.calc.ratio"
 #> 
+#> $ratio.cmax$FUN_sparse
+#> [1] NA
+#> 
 #> $ratio.cmax$values
 #> [1] FALSE  TRUE
 #> 
@@ -3916,9 +4368,6 @@ get.interval.cols()
 #> $ratio.cmax$desc
 #> [1] "Ratio of Cmax to reference"
 #> 
-#> $ratio.cmax$sparse
-#> [1] FALSE
-#> 
 #> $ratio.cmax$formalsmap
 #> $ratio.cmax$formalsmap$test
 #> [1] "cmax"
@@ -3930,6 +4379,9 @@ get.interval.cols()
 #> attr(,"class")
 #> [1] "pknca_ref"
 #> 
+#> 
+#> $ratio.cmax$formalsmap_sparse
+#> list()
 #> 
 #> $ratio.cmax$depends
 #> [1] "cmax"
@@ -3977,6 +4429,9 @@ get.interval.cols()
 #> $ratio.auclast$FUN
 #> [1] "pk.calc.ratio"
 #> 
+#> $ratio.auclast$FUN_sparse
+#> [1] NA
+#> 
 #> $ratio.auclast$values
 #> [1] FALSE  TRUE
 #> 
@@ -3989,9 +4444,6 @@ get.interval.cols()
 #> $ratio.auclast$desc
 #> [1] "Ratio of AUClast to reference"
 #> 
-#> $ratio.auclast$sparse
-#> [1] FALSE
-#> 
 #> $ratio.auclast$formalsmap
 #> $ratio.auclast$formalsmap$test
 #> [1] "auclast"
@@ -4003,6 +4455,9 @@ get.interval.cols()
 #> attr(,"class")
 #> [1] "pknca_ref"
 #> 
+#> 
+#> $ratio.auclast$formalsmap_sparse
+#> list()
 #> 
 #> $ratio.auclast$depends
 #> [1] "auclast"
@@ -4050,6 +4505,9 @@ get.interval.cols()
 #> $ratio.aucint.last$FUN
 #> [1] "pk.calc.ratio"
 #> 
+#> $ratio.aucint.last$FUN_sparse
+#> [1] NA
+#> 
 #> $ratio.aucint.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -4062,9 +4520,6 @@ get.interval.cols()
 #> $ratio.aucint.last$desc
 #> [1] "Ratio of AUCint,last to reference"
 #> 
-#> $ratio.aucint.last$sparse
-#> [1] FALSE
-#> 
 #> $ratio.aucint.last$formalsmap
 #> $ratio.aucint.last$formalsmap$test
 #> [1] "aucint.last"
@@ -4076,6 +4531,9 @@ get.interval.cols()
 #> attr(,"class")
 #> [1] "pknca_ref"
 #> 
+#> 
+#> $ratio.aucint.last$formalsmap_sparse
+#> list()
 #> 
 #> $ratio.aucint.last$depends
 #> [1] "aucint.last"
@@ -4123,6 +4581,9 @@ get.interval.cols()
 #> $ratio.aucint.all$FUN
 #> [1] "pk.calc.ratio"
 #> 
+#> $ratio.aucint.all$FUN_sparse
+#> [1] NA
+#> 
 #> $ratio.aucint.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -4135,9 +4596,6 @@ get.interval.cols()
 #> $ratio.aucint.all$desc
 #> [1] "Ratio of AUCint,all to reference"
 #> 
-#> $ratio.aucint.all$sparse
-#> [1] FALSE
-#> 
 #> $ratio.aucint.all$formalsmap
 #> $ratio.aucint.all$formalsmap$test
 #> [1] "aucint.all"
@@ -4149,6 +4607,9 @@ get.interval.cols()
 #> attr(,"class")
 #> [1] "pknca_ref"
 #> 
+#> 
+#> $ratio.aucint.all$formalsmap_sparse
+#> list()
 #> 
 #> $ratio.aucint.all$depends
 #> [1] "aucint.all"
@@ -4194,6 +4655,9 @@ get.interval.cols()
 #> 
 #> $sparse_auclast
 #> $sparse_auclast$FUN
+#> [1] NA
+#> 
+#> $sparse_auclast$FUN_sparse
 #> [1] "pk.calc.sparse_auclast"
 #> 
 #> $sparse_auclast$values
@@ -4208,10 +4672,10 @@ get.interval.cols()
 #> $sparse_auclast$desc
 #> [1] "Sparse AUC to last conc above LOQ"
 #> 
-#> $sparse_auclast$sparse
-#> [1] TRUE
-#> 
 #> $sparse_auclast$formalsmap
+#> list()
+#> 
+#> $sparse_auclast$formalsmap_sparse
 #> list()
 #> 
 #> $sparse_auclast$depends
@@ -4258,6 +4722,9 @@ get.interval.cols()
 #> $sparse_auc_se$FUN
 #> [1] NA
 #> 
+#> $sparse_auc_se$FUN_sparse
+#> [1] NA
+#> 
 #> $sparse_auc_se$values
 #> [1] FALSE  TRUE
 #> 
@@ -4270,10 +4737,10 @@ get.interval.cols()
 #> $sparse_auc_se$desc
 #> [1] "SE of sparse AUC to last conc above LOQ"
 #> 
-#> $sparse_auc_se$sparse
-#> [1] FALSE
-#> 
 #> $sparse_auc_se$formalsmap
+#> list()
+#> 
+#> $sparse_auc_se$formalsmap_sparse
 #> list()
 #> 
 #> $sparse_auc_se$depends
@@ -4320,6 +4787,9 @@ get.interval.cols()
 #> $sparse_auc_df$FUN
 #> [1] NA
 #> 
+#> $sparse_auc_df$FUN_sparse
+#> [1] NA
+#> 
 #> $sparse_auc_df$values
 #> [1] FALSE  TRUE
 #> 
@@ -4332,10 +4802,10 @@ get.interval.cols()
 #> $sparse_auc_df$desc
 #> [1] "DF for sparse AUC to last conc above LOQ"
 #> 
-#> $sparse_auc_df$sparse
-#> [1] FALSE
-#> 
 #> $sparse_auc_df$formalsmap
+#> list()
+#> 
+#> $sparse_auc_df$formalsmap_sparse
 #> list()
 #> 
 #> $sparse_auc_df$depends
@@ -4380,6 +4850,9 @@ get.interval.cols()
 #> 
 #> $sparse_aumclast
 #> $sparse_aumclast$FUN
+#> [1] NA
+#> 
+#> $sparse_aumclast$FUN_sparse
 #> [1] "pk.calc.sparse_aumclast"
 #> 
 #> $sparse_aumclast$values
@@ -4394,10 +4867,10 @@ get.interval.cols()
 #> $sparse_aumclast$desc
 #> [1] "Sparse AUMC to last conc above LOQ"
 #> 
-#> $sparse_aumclast$sparse
-#> [1] TRUE
-#> 
 #> $sparse_aumclast$formalsmap
+#> list()
+#> 
+#> $sparse_aumclast$formalsmap_sparse
 #> list()
 #> 
 #> $sparse_aumclast$depends
@@ -4444,6 +4917,9 @@ get.interval.cols()
 #> $sparse_aumc_se$FUN
 #> [1] NA
 #> 
+#> $sparse_aumc_se$FUN_sparse
+#> [1] NA
+#> 
 #> $sparse_aumc_se$values
 #> [1] FALSE  TRUE
 #> 
@@ -4456,10 +4932,10 @@ get.interval.cols()
 #> $sparse_aumc_se$desc
 #> [1] "SE of sparse AUMC to last conc above LOQ"
 #> 
-#> $sparse_aumc_se$sparse
-#> [1] FALSE
-#> 
 #> $sparse_aumc_se$formalsmap
+#> list()
+#> 
+#> $sparse_aumc_se$formalsmap_sparse
 #> list()
 #> 
 #> $sparse_aumc_se$depends
@@ -4506,6 +4982,9 @@ get.interval.cols()
 #> $sparse_aumc_df$FUN
 #> [1] NA
 #> 
+#> $sparse_aumc_df$FUN_sparse
+#> [1] NA
+#> 
 #> $sparse_aumc_df$values
 #> [1] FALSE  TRUE
 #> 
@@ -4518,10 +4997,10 @@ get.interval.cols()
 #> $sparse_aumc_df$desc
 #> [1] "variance DF for sparse AUMC to Tlast"
 #> 
-#> $sparse_aumc_df$sparse
-#> [1] FALSE
-#> 
 #> $sparse_aumc_df$formalsmap
+#> list()
+#> 
+#> $sparse_aumc_df$formalsmap_sparse
 #> list()
 #> 
 #> $sparse_aumc_df$depends
@@ -4568,6 +5047,9 @@ get.interval.cols()
 #> $time_above$FUN
 #> [1] "pk.calc.time_above"
 #> 
+#> $time_above$FUN_sparse
+#> [1] NA
+#> 
 #> $time_above$values
 #> [1] FALSE  TRUE
 #> 
@@ -4580,10 +5062,10 @@ get.interval.cols()
 #> $time_above$desc
 #> [1] "Time above a given concentration"
 #> 
-#> $time_above$sparse
-#> [1] FALSE
-#> 
 #> $time_above$formalsmap
+#> list()
+#> 
+#> $time_above$formalsmap_sparse
 #> list()
 #> 
 #> $time_above$depends
@@ -4630,6 +5112,9 @@ get.interval.cols()
 #> $aucivlast$FUN
 #> [1] "pk.calc.auciv"
 #> 
+#> $aucivlast$FUN_sparse
+#> [1] NA
+#> 
 #> $aucivlast$values
 #> [1] FALSE  TRUE
 #> 
@@ -4641,9 +5126,6 @@ get.interval.cols()
 #> 
 #> $aucivlast$desc
 #> [1] "AUClast, IV back-extrap C0"
-#> 
-#> $aucivlast$sparse
-#> [1] FALSE
 #> 
 #> $aucivlast$formalsmap
 #> $aucivlast$formalsmap$auc
@@ -4658,6 +5140,9 @@ get.interval.cols()
 #> $aucivlast$formalsmap$clast
 #> NULL
 #> 
+#> 
+#> $aucivlast$formalsmap_sparse
+#> list()
 #> 
 #> $aucivlast$depends
 #> [1] "auclast" "c0"     
@@ -4703,6 +5188,9 @@ get.interval.cols()
 #> $aucivall$FUN
 #> [1] "pk.calc.auciv"
 #> 
+#> $aucivall$FUN_sparse
+#> [1] NA
+#> 
 #> $aucivall$values
 #> [1] FALSE  TRUE
 #> 
@@ -4714,9 +5202,6 @@ get.interval.cols()
 #> 
 #> $aucivall$desc
 #> [1] "AUCall, IV back-extrap C0"
-#> 
-#> $aucivall$sparse
-#> [1] FALSE
 #> 
 #> $aucivall$formalsmap
 #> $aucivall$formalsmap$auc
@@ -4731,6 +5216,9 @@ get.interval.cols()
 #> $aucivall$formalsmap$clast
 #> NULL
 #> 
+#> 
+#> $aucivall$formalsmap_sparse
+#> list()
 #> 
 #> $aucivall$depends
 #> [1] "aucall" "c0"    
@@ -4776,6 +5264,9 @@ get.interval.cols()
 #> $aucivint.last$FUN
 #> [1] "pk.calc.auciv"
 #> 
+#> $aucivint.last$FUN_sparse
+#> [1] NA
+#> 
 #> $aucivint.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -4787,9 +5278,6 @@ get.interval.cols()
 #> 
 #> $aucivint.last$desc
 #> [1] "AUCint.last, IV back-extrap C0"
-#> 
-#> $aucivint.last$sparse
-#> [1] FALSE
 #> 
 #> $aucivint.last$formalsmap
 #> $aucivint.last$formalsmap$auc
@@ -4804,6 +5292,9 @@ get.interval.cols()
 #> $aucivint.last$formalsmap$clast
 #> NULL
 #> 
+#> 
+#> $aucivint.last$formalsmap_sparse
+#> list()
 #> 
 #> $aucivint.last$depends
 #> [1] "aucint.last" "c0"         
@@ -4849,6 +5340,9 @@ get.interval.cols()
 #> $aucivint.all$FUN
 #> [1] "pk.calc.auciv"
 #> 
+#> $aucivint.all$FUN_sparse
+#> [1] NA
+#> 
 #> $aucivint.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -4860,9 +5354,6 @@ get.interval.cols()
 #> 
 #> $aucivint.all$desc
 #> [1] "AUCint.all, IV back-extrap C0"
-#> 
-#> $aucivint.all$sparse
-#> [1] FALSE
 #> 
 #> $aucivint.all$formalsmap
 #> $aucivint.all$formalsmap$auc
@@ -4877,6 +5368,9 @@ get.interval.cols()
 #> $aucivint.all$formalsmap$clast
 #> NULL
 #> 
+#> 
+#> $aucivint.all$formalsmap_sparse
+#> list()
 #> 
 #> $aucivint.all$depends
 #> [1] "aucint.all" "c0"        
@@ -4922,6 +5416,9 @@ get.interval.cols()
 #> $aucivpbextlast$FUN
 #> [1] "pk.calc.auciv_pbext"
 #> 
+#> $aucivpbextlast$FUN_sparse
+#> [1] NA
+#> 
 #> $aucivpbextlast$values
 #> [1] FALSE  TRUE
 #> 
@@ -4934,9 +5431,6 @@ get.interval.cols()
 #> $aucivpbextlast$desc
 #> [1] "Back-extrap %, IV, AUClast"
 #> 
-#> $aucivpbextlast$sparse
-#> [1] FALSE
-#> 
 #> $aucivpbextlast$formalsmap
 #> $aucivpbextlast$formalsmap$auc
 #> [1] "auclast"
@@ -4944,6 +5438,9 @@ get.interval.cols()
 #> $aucivpbextlast$formalsmap$auciv
 #> [1] "aucivlast"
 #> 
+#> 
+#> $aucivpbextlast$formalsmap_sparse
+#> list()
 #> 
 #> $aucivpbextlast$depends
 #> [1] "auclast"   "aucivlast"
@@ -4989,6 +5486,9 @@ get.interval.cols()
 #> $aucivpbextall$FUN
 #> [1] "pk.calc.auciv_pbext"
 #> 
+#> $aucivpbextall$FUN_sparse
+#> [1] NA
+#> 
 #> $aucivpbextall$values
 #> [1] FALSE  TRUE
 #> 
@@ -5001,9 +5501,6 @@ get.interval.cols()
 #> $aucivpbextall$desc
 #> [1] "Back-extrap %, IV, AUCall"
 #> 
-#> $aucivpbextall$sparse
-#> [1] FALSE
-#> 
 #> $aucivpbextall$formalsmap
 #> $aucivpbextall$formalsmap$auc
 #> [1] "aucall"
@@ -5011,6 +5508,9 @@ get.interval.cols()
 #> $aucivpbextall$formalsmap$auciv
 #> [1] "aucivall"
 #> 
+#> 
+#> $aucivpbextall$formalsmap_sparse
+#> list()
 #> 
 #> $aucivpbextall$depends
 #> [1] "aucall"   "aucivall"
@@ -5056,6 +5556,9 @@ get.interval.cols()
 #> $aucivpbextint.last$FUN
 #> [1] "pk.calc.auciv_pbext"
 #> 
+#> $aucivpbextint.last$FUN_sparse
+#> [1] NA
+#> 
 #> $aucivpbextint.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -5068,9 +5571,6 @@ get.interval.cols()
 #> $aucivpbextint.last$desc
 #> [1] "Back-extrap %, IV, AUCint.last"
 #> 
-#> $aucivpbextint.last$sparse
-#> [1] FALSE
-#> 
 #> $aucivpbextint.last$formalsmap
 #> $aucivpbextint.last$formalsmap$auc
 #> [1] "aucint.last"
@@ -5078,6 +5578,9 @@ get.interval.cols()
 #> $aucivpbextint.last$formalsmap$auciv
 #> [1] "aucivint.last"
 #> 
+#> 
+#> $aucivpbextint.last$formalsmap_sparse
+#> list()
 #> 
 #> $aucivpbextint.last$depends
 #> [1] "aucint.last"   "aucivint.last"
@@ -5123,6 +5626,9 @@ get.interval.cols()
 #> $aucivpbextint.all$FUN
 #> [1] "pk.calc.auciv_pbext"
 #> 
+#> $aucivpbextint.all$FUN_sparse
+#> [1] NA
+#> 
 #> $aucivpbextint.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -5135,9 +5641,6 @@ get.interval.cols()
 #> $aucivpbextint.all$desc
 #> [1] "Back-extrap %, IV, AUCint.all"
 #> 
-#> $aucivpbextint.all$sparse
-#> [1] FALSE
-#> 
 #> $aucivpbextint.all$formalsmap
 #> $aucivpbextint.all$formalsmap$auc
 #> [1] "aucint.all"
@@ -5145,6 +5648,9 @@ get.interval.cols()
 #> $aucivpbextint.all$formalsmap$auciv
 #> [1] "aucivint.all"
 #> 
+#> 
+#> $aucivpbextint.all$formalsmap_sparse
+#> list()
 #> 
 #> $aucivpbextint.all$depends
 #> [1] "aucint.all"   "aucivint.all"
@@ -5190,6 +5696,9 @@ get.interval.cols()
 #> $aumcivlast$FUN
 #> [1] "pk.calc.aumciv"
 #> 
+#> $aumcivlast$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcivlast$values
 #> [1] FALSE  TRUE
 #> 
@@ -5201,9 +5710,6 @@ get.interval.cols()
 #> 
 #> $aumcivlast$desc
 #> [1] "AUMClast, IV back-extrap C0"
-#> 
-#> $aumcivlast$sparse
-#> [1] FALSE
 #> 
 #> $aumcivlast$formalsmap
 #> $aumcivlast$formalsmap$aumc
@@ -5218,6 +5724,9 @@ get.interval.cols()
 #> $aumcivlast$formalsmap$clast
 #> NULL
 #> 
+#> 
+#> $aumcivlast$formalsmap_sparse
+#> list()
 #> 
 #> $aumcivlast$depends
 #> [1] "aumclast" "c0"      
@@ -5263,6 +5772,9 @@ get.interval.cols()
 #> $aumcivall$FUN
 #> [1] "pk.calc.aumciv"
 #> 
+#> $aumcivall$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcivall$values
 #> [1] FALSE  TRUE
 #> 
@@ -5274,9 +5786,6 @@ get.interval.cols()
 #> 
 #> $aumcivall$desc
 #> [1] "AUMCall, IV back-extrap C0"
-#> 
-#> $aumcivall$sparse
-#> [1] FALSE
 #> 
 #> $aumcivall$formalsmap
 #> $aumcivall$formalsmap$aumc
@@ -5291,6 +5800,9 @@ get.interval.cols()
 #> $aumcivall$formalsmap$clast
 #> NULL
 #> 
+#> 
+#> $aumcivall$formalsmap_sparse
+#> list()
 #> 
 #> $aumcivall$depends
 #> [1] "aumcall" "c0"     
@@ -5336,6 +5848,9 @@ get.interval.cols()
 #> $aumcivint.last$FUN
 #> [1] "pk.calc.aumciv"
 #> 
+#> $aumcivint.last$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcivint.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -5347,9 +5862,6 @@ get.interval.cols()
 #> 
 #> $aumcivint.last$desc
 #> [1] "AUMCint.last, IV back-extrap C0"
-#> 
-#> $aumcivint.last$sparse
-#> [1] FALSE
 #> 
 #> $aumcivint.last$formalsmap
 #> $aumcivint.last$formalsmap$aumc
@@ -5364,6 +5876,9 @@ get.interval.cols()
 #> $aumcivint.last$formalsmap$clast
 #> NULL
 #> 
+#> 
+#> $aumcivint.last$formalsmap_sparse
+#> list()
 #> 
 #> $aumcivint.last$depends
 #> [1] "aumcint.last" "c0"          
@@ -5409,6 +5924,9 @@ get.interval.cols()
 #> $aumcivint.all$FUN
 #> [1] "pk.calc.aumciv"
 #> 
+#> $aumcivint.all$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcivint.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -5420,9 +5938,6 @@ get.interval.cols()
 #> 
 #> $aumcivint.all$desc
 #> [1] "AUMCint.all, IV back-extrap C0"
-#> 
-#> $aumcivint.all$sparse
-#> [1] FALSE
 #> 
 #> $aumcivint.all$formalsmap
 #> $aumcivint.all$formalsmap$aumc
@@ -5437,6 +5952,9 @@ get.interval.cols()
 #> $aumcivint.all$formalsmap$clast
 #> NULL
 #> 
+#> 
+#> $aumcivint.all$formalsmap_sparse
+#> list()
 #> 
 #> $aumcivint.all$depends
 #> [1] "aumcint.all" "c0"         
@@ -5482,6 +6000,9 @@ get.interval.cols()
 #> $half.life$FUN
 #> [1] "pk.calc.half.life"
 #> 
+#> $half.life$FUN_sparse
+#> [1] NA
+#> 
 #> $half.life$values
 #> [1] FALSE  TRUE
 #> 
@@ -5494,10 +6015,10 @@ get.interval.cols()
 #> $half.life$desc
 #> [1] "The (terminal) half-life"
 #> 
-#> $half.life$sparse
-#> [1] FALSE
-#> 
 #> $half.life$formalsmap
+#> list()
+#> 
+#> $half.life$formalsmap_sparse
 #> list()
 #> 
 #> $half.life$depends
@@ -5611,6 +6132,9 @@ get.interval.cols()
 #> $r.squared$FUN
 #> [1] NA
 #> 
+#> $r.squared$FUN_sparse
+#> [1] NA
+#> 
 #> $r.squared$values
 #> [1] FALSE  TRUE
 #> 
@@ -5623,10 +6147,10 @@ get.interval.cols()
 #> $r.squared$desc
 #> [1] "R-squared of half-life fit"
 #> 
-#> $r.squared$sparse
-#> [1] FALSE
-#> 
 #> $r.squared$formalsmap
+#> list()
+#> 
+#> $r.squared$formalsmap_sparse
 #> list()
 #> 
 #> $r.squared$depends
@@ -5673,6 +6197,9 @@ get.interval.cols()
 #> $adj.r.squared$FUN
 #> [1] NA
 #> 
+#> $adj.r.squared$FUN_sparse
+#> [1] NA
+#> 
 #> $adj.r.squared$values
 #> [1] FALSE  TRUE
 #> 
@@ -5685,10 +6212,10 @@ get.interval.cols()
 #> $adj.r.squared$desc
 #> [1] "Adjusted R-sq of half-life fit"
 #> 
-#> $adj.r.squared$sparse
-#> [1] FALSE
-#> 
 #> $adj.r.squared$formalsmap
+#> list()
+#> 
+#> $adj.r.squared$formalsmap_sparse
 #> list()
 #> 
 #> $adj.r.squared$depends
@@ -5735,6 +6262,9 @@ get.interval.cols()
 #> $lambda.z.corrxy$FUN
 #> [1] NA
 #> 
+#> $lambda.z.corrxy$FUN_sparse
+#> [1] NA
+#> 
 #> $lambda.z.corrxy$values
 #> [1] FALSE  TRUE
 #> 
@@ -5747,10 +6277,10 @@ get.interval.cols()
 #> $lambda.z.corrxy$desc
 #> [1] "Corr(time,log-conc) for lambda.z"
 #> 
-#> $lambda.z.corrxy$sparse
-#> [1] FALSE
-#> 
 #> $lambda.z.corrxy$formalsmap
+#> list()
+#> 
+#> $lambda.z.corrxy$formalsmap_sparse
 #> list()
 #> 
 #> $lambda.z.corrxy$depends
@@ -5797,6 +6327,9 @@ get.interval.cols()
 #> $lambda.z$FUN
 #> [1] NA
 #> 
+#> $lambda.z$FUN_sparse
+#> [1] NA
+#> 
 #> $lambda.z$values
 #> [1] FALSE  TRUE
 #> 
@@ -5809,10 +6342,10 @@ get.interval.cols()
 #> $lambda.z$desc
 #> [1] "Terminal elim rate (lambda.z)"
 #> 
-#> $lambda.z$sparse
-#> [1] FALSE
-#> 
 #> $lambda.z$formalsmap
+#> list()
+#> 
+#> $lambda.z$formalsmap_sparse
 #> list()
 #> 
 #> $lambda.z$depends
@@ -5859,6 +6392,9 @@ get.interval.cols()
 #> $lambda.z.time.first$FUN
 #> [1] NA
 #> 
+#> $lambda.z.time.first$FUN_sparse
+#> [1] NA
+#> 
 #> $lambda.z.time.first$values
 #> [1] FALSE  TRUE
 #> 
@@ -5871,10 +6407,10 @@ get.interval.cols()
 #> $lambda.z.time.first$desc
 #> [1] "First time point for lambda.z"
 #> 
-#> $lambda.z.time.first$sparse
-#> [1] FALSE
-#> 
 #> $lambda.z.time.first$formalsmap
+#> list()
+#> 
+#> $lambda.z.time.first$formalsmap_sparse
 #> list()
 #> 
 #> $lambda.z.time.first$depends
@@ -5921,6 +6457,9 @@ get.interval.cols()
 #> $lambda.z.time.last$FUN
 #> [1] NA
 #> 
+#> $lambda.z.time.last$FUN_sparse
+#> [1] NA
+#> 
 #> $lambda.z.time.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -5933,10 +6472,10 @@ get.interval.cols()
 #> $lambda.z.time.last$desc
 #> [1] "Last time point for lambda.z"
 #> 
-#> $lambda.z.time.last$sparse
-#> [1] FALSE
-#> 
 #> $lambda.z.time.last$formalsmap
+#> list()
+#> 
+#> $lambda.z.time.last$formalsmap_sparse
 #> list()
 #> 
 #> $lambda.z.time.last$depends
@@ -5983,6 +6522,9 @@ get.interval.cols()
 #> $lambda.z.n.points$FUN
 #> [1] NA
 #> 
+#> $lambda.z.n.points$FUN_sparse
+#> [1] NA
+#> 
 #> $lambda.z.n.points$values
 #> [1] FALSE  TRUE
 #> 
@@ -5995,10 +6537,10 @@ get.interval.cols()
 #> $lambda.z.n.points$desc
 #> [1] "Number of points used, lambda.z"
 #> 
-#> $lambda.z.n.points$sparse
-#> [1] FALSE
-#> 
 #> $lambda.z.n.points$formalsmap
+#> list()
+#> 
+#> $lambda.z.n.points$formalsmap_sparse
 #> list()
 #> 
 #> $lambda.z.n.points$depends
@@ -6045,6 +6587,9 @@ get.interval.cols()
 #> $clast.pred$FUN
 #> [1] NA
 #> 
+#> $clast.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $clast.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -6057,10 +6602,10 @@ get.interval.cols()
 #> $clast.pred$desc
 #> [1] "Predicted Clast from half-life"
 #> 
-#> $clast.pred$sparse
-#> [1] FALSE
-#> 
 #> $clast.pred$formalsmap
+#> list()
+#> 
+#> $clast.pred$formalsmap_sparse
 #> list()
 #> 
 #> $clast.pred$depends
@@ -6109,6 +6654,9 @@ get.interval.cols()
 #> $span.ratio$FUN
 #> [1] NA
 #> 
+#> $span.ratio$FUN_sparse
+#> [1] NA
+#> 
 #> $span.ratio$values
 #> [1] FALSE  TRUE
 #> 
@@ -6121,10 +6669,10 @@ get.interval.cols()
 #> $span.ratio$desc
 #> [1] "Lambda z time span to half-life ratio"
 #> 
-#> $span.ratio$sparse
-#> [1] FALSE
-#> 
 #> $span.ratio$formalsmap
+#> list()
+#> 
+#> $span.ratio$formalsmap_sparse
 #> list()
 #> 
 #> $span.ratio$depends
@@ -6171,6 +6719,9 @@ get.interval.cols()
 #> $tobit_residual$FUN
 #> [1] NA
 #> 
+#> $tobit_residual$FUN_sparse
+#> [1] NA
+#> 
 #> $tobit_residual$values
 #> [1] FALSE  TRUE
 #> 
@@ -6183,10 +6734,10 @@ get.interval.cols()
 #> $tobit_residual$desc
 #> [1] "Tobit fit residual SD, log-conc"
 #> 
-#> $tobit_residual$sparse
-#> [1] FALSE
-#> 
 #> $tobit_residual$formalsmap
+#> list()
+#> 
+#> $tobit_residual$formalsmap_sparse
 #> list()
 #> 
 #> $tobit_residual$depends
@@ -6233,6 +6784,9 @@ get.interval.cols()
 #> $adj_tobit_residual$FUN
 #> [1] NA
 #> 
+#> $adj_tobit_residual$FUN_sparse
+#> [1] NA
+#> 
 #> $adj_tobit_residual$values
 #> [1] FALSE  TRUE
 #> 
@@ -6245,10 +6799,10 @@ get.interval.cols()
 #> $adj_tobit_residual$desc
 #> [1] "Adjusted Tobit residual SD"
 #> 
-#> $adj_tobit_residual$sparse
-#> [1] FALSE
-#> 
 #> $adj_tobit_residual$formalsmap
+#> list()
+#> 
+#> $adj_tobit_residual$formalsmap_sparse
 #> list()
 #> 
 #> $adj_tobit_residual$depends
@@ -6295,6 +6849,9 @@ get.interval.cols()
 #> $lambda.z.n.points_blq$FUN
 #> [1] NA
 #> 
+#> $lambda.z.n.points_blq$FUN_sparse
+#> [1] NA
+#> 
 #> $lambda.z.n.points_blq$values
 #> [1] FALSE  TRUE
 #> 
@@ -6307,10 +6864,10 @@ get.interval.cols()
 #> $lambda.z.n.points_blq$desc
 #> [1] "BLQ points in Tobit lambda.z"
 #> 
-#> $lambda.z.n.points_blq$sparse
-#> [1] FALSE
-#> 
 #> $lambda.z.n.points_blq$formalsmap
+#> list()
+#> 
+#> $lambda.z.n.points_blq$formalsmap_sparse
 #> list()
 #> 
 #> $lambda.z.n.points_blq$depends
@@ -6357,6 +6914,9 @@ get.interval.cols()
 #> $thalf.eff.last$FUN
 #> [1] "pk.calc.thalf.eff"
 #> 
+#> $thalf.eff.last$FUN_sparse
+#> [1] NA
+#> 
 #> $thalf.eff.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -6369,13 +6929,13 @@ get.interval.cols()
 #> $thalf.eff.last$desc
 #> [1] "Effective half-life, MRTlast"
 #> 
-#> $thalf.eff.last$sparse
-#> [1] FALSE
-#> 
 #> $thalf.eff.last$formalsmap
 #> $thalf.eff.last$formalsmap$mrt
 #> [1] "mrt.last"
 #> 
+#> 
+#> $thalf.eff.last$formalsmap_sparse
+#> list()
 #> 
 #> $thalf.eff.last$depends
 #> [1] "mrt.last"
@@ -6421,6 +6981,9 @@ get.interval.cols()
 #> $thalf.eff.iv.last$FUN
 #> [1] "pk.calc.thalf.eff"
 #> 
+#> $thalf.eff.iv.last$FUN_sparse
+#> [1] NA
+#> 
 #> $thalf.eff.iv.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -6433,13 +6996,13 @@ get.interval.cols()
 #> $thalf.eff.iv.last$desc
 #> [1] "Effective half-life, IV MRTlast"
 #> 
-#> $thalf.eff.iv.last$sparse
-#> [1] FALSE
-#> 
 #> $thalf.eff.iv.last$formalsmap
 #> $thalf.eff.iv.last$formalsmap$mrt
 #> [1] "mrt.iv.last"
 #> 
+#> 
+#> $thalf.eff.iv.last$formalsmap_sparse
+#> list()
 #> 
 #> $thalf.eff.iv.last$depends
 #> [1] "mrt.iv.last"
@@ -6485,6 +7048,9 @@ get.interval.cols()
 #> $kel.last$FUN
 #> [1] "pk.calc.kel"
 #> 
+#> $kel.last$FUN_sparse
+#> [1] NA
+#> 
 #> $kel.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -6497,13 +7063,13 @@ get.interval.cols()
 #> $kel.last$desc
 #> [1] "Elim rate, MRT via AUClast"
 #> 
-#> $kel.last$sparse
-#> [1] FALSE
-#> 
 #> $kel.last$formalsmap
 #> $kel.last$formalsmap$mrt
 #> [1] "mrt.last"
 #> 
+#> 
+#> $kel.last$formalsmap_sparse
+#> list()
 #> 
 #> $kel.last$depends
 #> [1] "mrt.last"
@@ -6549,6 +7115,9 @@ get.interval.cols()
 #> $kel.iv.last$FUN
 #> [1] "pk.calc.kel"
 #> 
+#> $kel.iv.last$FUN_sparse
+#> [1] NA
+#> 
 #> $kel.iv.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -6561,13 +7130,13 @@ get.interval.cols()
 #> $kel.iv.last$desc
 #> [1] "Elim rate, IV MRTlast"
 #> 
-#> $kel.iv.last$sparse
-#> [1] FALSE
-#> 
 #> $kel.iv.last$formalsmap
 #> $kel.iv.last$formalsmap$mrt
 #> [1] "mrt.iv.last"
 #> 
+#> 
+#> $kel.iv.last$formalsmap_sparse
+#> list()
 #> 
 #> $kel.iv.last$depends
 #> [1] "mrt.iv.last"
@@ -6613,6 +7182,9 @@ get.interval.cols()
 #> $kel.all$FUN
 #> [1] "pk.calc.kel"
 #> 
+#> $kel.all$FUN_sparse
+#> [1] NA
+#> 
 #> $kel.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -6625,13 +7197,13 @@ get.interval.cols()
 #> $kel.all$desc
 #> [1] "Elim rate, MRTall"
 #> 
-#> $kel.all$sparse
-#> [1] FALSE
-#> 
 #> $kel.all$formalsmap
 #> $kel.all$formalsmap$mrt
 #> [1] "mrt.all"
 #> 
+#> 
+#> $kel.all$formalsmap_sparse
+#> list()
 #> 
 #> $kel.all$depends
 #> [1] "mrt.all"
@@ -6677,6 +7249,9 @@ get.interval.cols()
 #> $kel.int.all$FUN
 #> [1] "pk.calc.kel"
 #> 
+#> $kel.int.all$FUN_sparse
+#> [1] NA
+#> 
 #> $kel.int.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -6689,13 +7264,13 @@ get.interval.cols()
 #> $kel.int.all$desc
 #> [1] "Elim rate, MRTint.all"
 #> 
-#> $kel.int.all$sparse
-#> [1] FALSE
-#> 
 #> $kel.int.all$formalsmap
 #> $kel.int.all$formalsmap$mrt
 #> [1] "mrt.int.all"
 #> 
+#> 
+#> $kel.int.all$formalsmap_sparse
+#> list()
 #> 
 #> $kel.int.all$depends
 #> [1] "mrt.int.all"
@@ -6741,6 +7316,9 @@ get.interval.cols()
 #> $kel.int.last$FUN
 #> [1] "pk.calc.kel"
 #> 
+#> $kel.int.last$FUN_sparse
+#> [1] NA
+#> 
 #> $kel.int.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -6753,13 +7331,13 @@ get.interval.cols()
 #> $kel.int.last$desc
 #> [1] "Elim rate, MRTint.last"
 #> 
-#> $kel.int.last$sparse
-#> [1] FALSE
-#> 
 #> $kel.int.last$formalsmap
 #> $kel.int.last$formalsmap$mrt
 #> [1] "mrt.int.last"
 #> 
+#> 
+#> $kel.int.last$formalsmap_sparse
+#> list()
 #> 
 #> $kel.int.last$depends
 #> [1] "mrt.int.last"
@@ -6805,6 +7383,9 @@ get.interval.cols()
 #> $cl.iv.all$FUN
 #> [1] "pk.calc.cl"
 #> 
+#> $cl.iv.all$FUN_sparse
+#> [1] NA
+#> 
 #> $cl.iv.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -6817,13 +7398,13 @@ get.interval.cols()
 #> $cl.iv.all$desc
 #> [1] "IV clearance, AUCall"
 #> 
-#> $cl.iv.all$sparse
-#> [1] FALSE
-#> 
 #> $cl.iv.all$formalsmap
 #> $cl.iv.all$formalsmap$auc
 #> [1] "aucivall"
 #> 
+#> 
+#> $cl.iv.all$formalsmap_sparse
+#> list()
 #> 
 #> $cl.iv.all$depends
 #> [1] "aucivall"
@@ -6869,6 +7450,9 @@ get.interval.cols()
 #> $cl.iv.last$FUN
 #> [1] "pk.calc.cl"
 #> 
+#> $cl.iv.last$FUN_sparse
+#> [1] NA
+#> 
 #> $cl.iv.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -6881,13 +7465,13 @@ get.interval.cols()
 #> $cl.iv.last$desc
 #> [1] "IV clearance, AUClast"
 #> 
-#> $cl.iv.last$sparse
-#> [1] FALSE
-#> 
 #> $cl.iv.last$formalsmap
 #> $cl.iv.last$formalsmap$auc
 #> [1] "aucivlast"
 #> 
+#> 
+#> $cl.iv.last$formalsmap_sparse
+#> list()
 #> 
 #> $cl.iv.last$depends
 #> [1] "aucivlast"
@@ -6933,6 +7517,9 @@ get.interval.cols()
 #> $cl.ivint.all$FUN
 #> [1] "pk.calc.cl"
 #> 
+#> $cl.ivint.all$FUN_sparse
+#> [1] NA
+#> 
 #> $cl.ivint.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -6945,13 +7532,13 @@ get.interval.cols()
 #> $cl.ivint.all$desc
 #> [1] "IV clearance, AUCint.all"
 #> 
-#> $cl.ivint.all$sparse
-#> [1] FALSE
-#> 
 #> $cl.ivint.all$formalsmap
 #> $cl.ivint.all$formalsmap$auc
 #> [1] "aucivint.all"
 #> 
+#> 
+#> $cl.ivint.all$formalsmap_sparse
+#> list()
 #> 
 #> $cl.ivint.all$depends
 #> [1] "aucivint.all"
@@ -6997,6 +7584,9 @@ get.interval.cols()
 #> $cl.ivint.last$FUN
 #> [1] "pk.calc.cl"
 #> 
+#> $cl.ivint.last$FUN_sparse
+#> [1] NA
+#> 
 #> $cl.ivint.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -7009,13 +7599,13 @@ get.interval.cols()
 #> $cl.ivint.last$desc
 #> [1] "IV clearance, AUCint.last"
 #> 
-#> $cl.ivint.last$sparse
-#> [1] FALSE
-#> 
 #> $cl.ivint.last$formalsmap
 #> $cl.ivint.last$formalsmap$auc
 #> [1] "aucivint.last"
 #> 
+#> 
+#> $cl.ivint.last$formalsmap_sparse
+#> list()
 #> 
 #> $cl.ivint.last$depends
 #> [1] "aucivint.last"
@@ -7059,6 +7649,9 @@ get.interval.cols()
 #> 
 #> $cl.sparse.last
 #> $cl.sparse.last$FUN
+#> [1] NA
+#> 
+#> $cl.sparse.last$FUN_sparse
 #> [1] "pk.calc.cl"
 #> 
 #> $cl.sparse.last$values
@@ -7073,11 +7666,11 @@ get.interval.cols()
 #> $cl.sparse.last$desc
 #> [1] "Clearance, sparse AUClast"
 #> 
-#> $cl.sparse.last$sparse
-#> [1] TRUE
-#> 
 #> $cl.sparse.last$formalsmap
-#> $cl.sparse.last$formalsmap$auc
+#> list()
+#> 
+#> $cl.sparse.last$formalsmap_sparse
+#> $cl.sparse.last$formalsmap_sparse$auc
 #> [1] "sparse_auclast"
 #> 
 #> 
@@ -7125,6 +7718,9 @@ get.interval.cols()
 #> $f.last$FUN
 #> [1] "pk.calc.f"
 #> 
+#> $f.last$FUN_sparse
+#> [1] NA
+#> 
 #> $f.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -7136,9 +7732,6 @@ get.interval.cols()
 #> 
 #> $f.last$desc
 #> [1] "Bioavailability from AUClast"
-#> 
-#> $f.last$sparse
-#> [1] FALSE
 #> 
 #> $f.last$formalsmap
 #> $f.last$formalsmap$dose1
@@ -7161,6 +7754,9 @@ get.interval.cols()
 #> $f.last$formalsmap$auc2
 #> [1] "auclast"
 #> 
+#> 
+#> $f.last$formalsmap_sparse
+#> list()
 #> 
 #> $f.last$depends
 #> [1] "totdose" "auclast"
@@ -7208,6 +7804,9 @@ get.interval.cols()
 #> $f.int.last$FUN
 #> [1] "pk.calc.f"
 #> 
+#> $f.int.last$FUN_sparse
+#> [1] NA
+#> 
 #> $f.int.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -7219,9 +7818,6 @@ get.interval.cols()
 #> 
 #> $f.int.last$desc
 #> [1] "Bioavailability from AUCint,last"
-#> 
-#> $f.int.last$sparse
-#> [1] FALSE
 #> 
 #> $f.int.last$formalsmap
 #> $f.int.last$formalsmap$dose1
@@ -7244,6 +7840,9 @@ get.interval.cols()
 #> $f.int.last$formalsmap$auc2
 #> [1] "aucint.last"
 #> 
+#> 
+#> $f.int.last$formalsmap_sparse
+#> list()
 #> 
 #> $f.int.last$depends
 #> [1] "totdose"     "aucint.last"
@@ -7291,6 +7890,9 @@ get.interval.cols()
 #> $f.int.all$FUN
 #> [1] "pk.calc.f"
 #> 
+#> $f.int.all$FUN_sparse
+#> [1] NA
+#> 
 #> $f.int.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -7302,9 +7904,6 @@ get.interval.cols()
 #> 
 #> $f.int.all$desc
 #> [1] "Bioavailability from AUCint,all"
-#> 
-#> $f.int.all$sparse
-#> [1] FALSE
 #> 
 #> $f.int.all$formalsmap
 #> $f.int.all$formalsmap$dose1
@@ -7327,6 +7926,9 @@ get.interval.cols()
 #> $f.int.all$formalsmap$auc2
 #> [1] "aucint.all"
 #> 
+#> 
+#> $f.int.all$formalsmap_sparse
+#> list()
 #> 
 #> $f.int.all$depends
 #> [1] "totdose"    "aucint.all"
@@ -7372,6 +7974,9 @@ get.interval.cols()
 #> 
 #> $mrt.sparse.last
 #> $mrt.sparse.last$FUN
+#> [1] NA
+#> 
+#> $mrt.sparse.last$FUN_sparse
 #> [1] "pk.calc.mrt"
 #> 
 #> $mrt.sparse.last$values
@@ -7386,14 +7991,14 @@ get.interval.cols()
 #> $mrt.sparse.last$desc
 #> [1] "MRT, sparse AUClast/AUMClast"
 #> 
-#> $mrt.sparse.last$sparse
-#> [1] TRUE
-#> 
 #> $mrt.sparse.last$formalsmap
-#> $mrt.sparse.last$formalsmap$auc
+#> list()
+#> 
+#> $mrt.sparse.last$formalsmap_sparse
+#> $mrt.sparse.last$formalsmap_sparse$auc
 #> [1] "sparse_auclast"
 #> 
-#> $mrt.sparse.last$formalsmap$aumc
+#> $mrt.sparse.last$formalsmap_sparse$aumc
 #> [1] "sparse_aumclast"
 #> 
 #> 
@@ -7441,6 +8046,9 @@ get.interval.cols()
 #> $mrt.iv.all$FUN
 #> [1] "pk.calc.mrt.iv"
 #> 
+#> $mrt.iv.all$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.iv.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -7453,9 +8061,6 @@ get.interval.cols()
 #> $mrt.iv.all$desc
 #> [1] "IV MRT, AUCall/AUMCall"
 #> 
-#> $mrt.iv.all$sparse
-#> [1] FALSE
-#> 
 #> $mrt.iv.all$formalsmap
 #> $mrt.iv.all$formalsmap$auc
 #> [1] "aucivall"
@@ -7463,6 +8068,9 @@ get.interval.cols()
 #> $mrt.iv.all$formalsmap$aumc
 #> [1] "aumcivall"
 #> 
+#> 
+#> $mrt.iv.all$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.iv.all$depends
 #> [1] "aucivall"  "aumcivall"
@@ -7508,6 +8116,9 @@ get.interval.cols()
 #> $mrt.ivint.all$FUN
 #> [1] "pk.calc.mrt.iv"
 #> 
+#> $mrt.ivint.all$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.ivint.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -7520,9 +8131,6 @@ get.interval.cols()
 #> $mrt.ivint.all$desc
 #> [1] "IV MRT, interval AUC/AUMCall"
 #> 
-#> $mrt.ivint.all$sparse
-#> [1] FALSE
-#> 
 #> $mrt.ivint.all$formalsmap
 #> $mrt.ivint.all$formalsmap$auc
 #> [1] "aucivint.all"
@@ -7530,6 +8138,9 @@ get.interval.cols()
 #> $mrt.ivint.all$formalsmap$aumc
 #> [1] "aumcivint.all"
 #> 
+#> 
+#> $mrt.ivint.all$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.ivint.all$depends
 #> [1] "aucivint.all"  "aumcivint.all"
@@ -7575,6 +8186,9 @@ get.interval.cols()
 #> $mrt.ivint.last$FUN
 #> [1] "pk.calc.mrt.iv"
 #> 
+#> $mrt.ivint.last$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.ivint.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -7587,9 +8201,6 @@ get.interval.cols()
 #> $mrt.ivint.last$desc
 #> [1] "IV MRT, interval AUC/AUMClast"
 #> 
-#> $mrt.ivint.last$sparse
-#> [1] FALSE
-#> 
 #> $mrt.ivint.last$formalsmap
 #> $mrt.ivint.last$formalsmap$auc
 #> [1] "aucivint.last"
@@ -7597,6 +8208,9 @@ get.interval.cols()
 #> $mrt.ivint.last$formalsmap$aumc
 #> [1] "aumcivint.last"
 #> 
+#> 
+#> $mrt.ivint.last$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.ivint.last$depends
 #> [1] "aucivint.last"  "aumcivint.last"
@@ -7642,6 +8256,9 @@ get.interval.cols()
 #> $vz.all$FUN
 #> [1] "pk.calc.vz"
 #> 
+#> $vz.all$FUN_sparse
+#> [1] NA
+#> 
 #> $vz.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -7654,13 +8271,13 @@ get.interval.cols()
 #> $vz.all$desc
 #> [1] "Vz, AUCall-based CL"
 #> 
-#> $vz.all$sparse
-#> [1] FALSE
-#> 
 #> $vz.all$formalsmap
 #> $vz.all$formalsmap$cl
 #> [1] "cl.all"
 #> 
+#> 
+#> $vz.all$formalsmap_sparse
+#> list()
 #> 
 #> $vz.all$depends
 #> [1] "cl.all"   "lambda.z"
@@ -7706,6 +8323,9 @@ get.interval.cols()
 #> $vz.int.all$FUN
 #> [1] "pk.calc.vz"
 #> 
+#> $vz.int.all$FUN_sparse
+#> [1] NA
+#> 
 #> $vz.int.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -7718,13 +8338,13 @@ get.interval.cols()
 #> $vz.int.all$desc
 #> [1] "Vz, interval AUCint.all"
 #> 
-#> $vz.int.all$sparse
-#> [1] FALSE
-#> 
 #> $vz.int.all$formalsmap
 #> $vz.int.all$formalsmap$cl
 #> [1] "cl.int.all"
 #> 
+#> 
+#> $vz.int.all$formalsmap_sparse
+#> list()
 #> 
 #> $vz.int.all$depends
 #> [1] "cl.int.all" "lambda.z"  
@@ -7770,6 +8390,9 @@ get.interval.cols()
 #> $vz.int.last$FUN
 #> [1] "pk.calc.vz"
 #> 
+#> $vz.int.last$FUN_sparse
+#> [1] NA
+#> 
 #> $vz.int.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -7782,13 +8405,13 @@ get.interval.cols()
 #> $vz.int.last$desc
 #> [1] "Vz, interval AUCint.last"
 #> 
-#> $vz.int.last$sparse
-#> [1] FALSE
-#> 
 #> $vz.int.last$formalsmap
 #> $vz.int.last$formalsmap$cl
 #> [1] "cl.int.last"
 #> 
+#> 
+#> $vz.int.last$formalsmap_sparse
+#> list()
 #> 
 #> $vz.int.last$depends
 #> [1] "cl.int.last" "lambda.z"   
@@ -7834,6 +8457,9 @@ get.interval.cols()
 #> $vz.iv.all$FUN
 #> [1] "pk.calc.vz"
 #> 
+#> $vz.iv.all$FUN_sparse
+#> [1] NA
+#> 
 #> $vz.iv.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -7846,13 +8472,13 @@ get.interval.cols()
 #> $vz.iv.all$desc
 #> [1] "IV Vz, AUCall"
 #> 
-#> $vz.iv.all$sparse
-#> [1] FALSE
-#> 
 #> $vz.iv.all$formalsmap
 #> $vz.iv.all$formalsmap$cl
 #> [1] "cl.iv.all"
 #> 
+#> 
+#> $vz.iv.all$formalsmap_sparse
+#> list()
 #> 
 #> $vz.iv.all$depends
 #> [1] "cl.iv.all" "lambda.z" 
@@ -7898,6 +8524,9 @@ get.interval.cols()
 #> $vz.iv.last$FUN
 #> [1] "pk.calc.vz"
 #> 
+#> $vz.iv.last$FUN_sparse
+#> [1] NA
+#> 
 #> $vz.iv.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -7910,13 +8539,13 @@ get.interval.cols()
 #> $vz.iv.last$desc
 #> [1] "IV Vz, AUClast"
 #> 
-#> $vz.iv.last$sparse
-#> [1] FALSE
-#> 
 #> $vz.iv.last$formalsmap
 #> $vz.iv.last$formalsmap$cl
 #> [1] "cl.iv.last"
 #> 
+#> 
+#> $vz.iv.last$formalsmap_sparse
+#> list()
 #> 
 #> $vz.iv.last$depends
 #> [1] "cl.iv.last" "lambda.z"  
@@ -7962,6 +8591,9 @@ get.interval.cols()
 #> $vz.ivint.all$FUN
 #> [1] "pk.calc.vz"
 #> 
+#> $vz.ivint.all$FUN_sparse
+#> [1] NA
+#> 
 #> $vz.ivint.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -7974,13 +8606,13 @@ get.interval.cols()
 #> $vz.ivint.all$desc
 #> [1] "IV Vz, interval AUCint.all"
 #> 
-#> $vz.ivint.all$sparse
-#> [1] FALSE
-#> 
 #> $vz.ivint.all$formalsmap
 #> $vz.ivint.all$formalsmap$cl
 #> [1] "cl.ivint.all"
 #> 
+#> 
+#> $vz.ivint.all$formalsmap_sparse
+#> list()
 #> 
 #> $vz.ivint.all$depends
 #> [1] "cl.ivint.all" "lambda.z"    
@@ -8026,6 +8658,9 @@ get.interval.cols()
 #> $vz.ivint.last$FUN
 #> [1] "pk.calc.vz"
 #> 
+#> $vz.ivint.last$FUN_sparse
+#> [1] NA
+#> 
 #> $vz.ivint.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -8038,13 +8673,13 @@ get.interval.cols()
 #> $vz.ivint.last$desc
 #> [1] "IV Vz, interval AUCint.last"
 #> 
-#> $vz.ivint.last$sparse
-#> [1] FALSE
-#> 
 #> $vz.ivint.last$formalsmap
 #> $vz.ivint.last$formalsmap$cl
 #> [1] "cl.ivint.last"
 #> 
+#> 
+#> $vz.ivint.last$formalsmap_sparse
+#> list()
 #> 
 #> $vz.ivint.last$depends
 #> [1] "cl.ivint.last" "lambda.z"     
@@ -8090,6 +8725,9 @@ get.interval.cols()
 #> $vz.last$FUN
 #> [1] "pk.calc.vz"
 #> 
+#> $vz.last$FUN_sparse
+#> [1] NA
+#> 
 #> $vz.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -8102,13 +8740,13 @@ get.interval.cols()
 #> $vz.last$desc
 #> [1] "Vz, AUClast-based CL"
 #> 
-#> $vz.last$sparse
-#> [1] FALSE
-#> 
 #> $vz.last$formalsmap
 #> $vz.last$formalsmap$cl
 #> [1] "cl.last"
 #> 
+#> 
+#> $vz.last$formalsmap_sparse
+#> list()
 #> 
 #> $vz.last$depends
 #> [1] "cl.last"  "lambda.z"
@@ -8154,6 +8792,9 @@ get.interval.cols()
 #> $vss.iv.all$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.iv.all$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.iv.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -8166,9 +8807,6 @@ get.interval.cols()
 #> $vss.iv.all$desc
 #> [1] "IV Vss, calc from AUCall"
 #> 
-#> $vss.iv.all$sparse
-#> [1] FALSE
-#> 
 #> $vss.iv.all$formalsmap
 #> $vss.iv.all$formalsmap$cl
 #> [1] "cl.iv.all"
@@ -8176,6 +8814,9 @@ get.interval.cols()
 #> $vss.iv.all$formalsmap$mrt
 #> [1] "mrt.iv.all"
 #> 
+#> 
+#> $vss.iv.all$formalsmap_sparse
+#> list()
 #> 
 #> $vss.iv.all$depends
 #> [1] "cl.iv.all"  "mrt.iv.all"
@@ -8221,6 +8862,9 @@ get.interval.cols()
 #> $vss.ivint.all$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.ivint.all$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.ivint.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -8233,9 +8877,6 @@ get.interval.cols()
 #> $vss.ivint.all$desc
 #> [1] "IV Vss, calc from interval AUCint.all"
 #> 
-#> $vss.ivint.all$sparse
-#> [1] FALSE
-#> 
 #> $vss.ivint.all$formalsmap
 #> $vss.ivint.all$formalsmap$cl
 #> [1] "cl.ivint.all"
@@ -8243,6 +8884,9 @@ get.interval.cols()
 #> $vss.ivint.all$formalsmap$mrt
 #> [1] "mrt.ivint.all"
 #> 
+#> 
+#> $vss.ivint.all$formalsmap_sparse
+#> list()
 #> 
 #> $vss.ivint.all$depends
 #> [1] "cl.ivint.all"  "mrt.ivint.all"
@@ -8288,6 +8932,9 @@ get.interval.cols()
 #> $vss.ivint.last$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.ivint.last$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.ivint.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -8300,9 +8947,6 @@ get.interval.cols()
 #> $vss.ivint.last$desc
 #> [1] "IV Vss, calc from interval AUCint.last"
 #> 
-#> $vss.ivint.last$sparse
-#> [1] FALSE
-#> 
 #> $vss.ivint.last$formalsmap
 #> $vss.ivint.last$formalsmap$cl
 #> [1] "cl.ivint.last"
@@ -8310,6 +8954,9 @@ get.interval.cols()
 #> $vss.ivint.last$formalsmap$mrt
 #> [1] "mrt.ivint.last"
 #> 
+#> 
+#> $vss.ivint.last$formalsmap_sparse
+#> list()
 #> 
 #> $vss.ivint.last$depends
 #> [1] "cl.ivint.last"  "mrt.ivint.last"
@@ -8353,6 +9000,9 @@ get.interval.cols()
 #> 
 #> $vss.sparse.last
 #> $vss.sparse.last$FUN
+#> [1] NA
+#> 
+#> $vss.sparse.last$FUN_sparse
 #> [1] "pk.calc.vss"
 #> 
 #> $vss.sparse.last$values
@@ -8367,14 +9017,14 @@ get.interval.cols()
 #> $vss.sparse.last$desc
 #> [1] "Vss, calc from sparse AUClast"
 #> 
-#> $vss.sparse.last$sparse
-#> [1] TRUE
-#> 
 #> $vss.sparse.last$formalsmap
-#> $vss.sparse.last$formalsmap$cl
+#> list()
+#> 
+#> $vss.sparse.last$formalsmap_sparse
+#> $vss.sparse.last$formalsmap_sparse$cl
 #> [1] "cl.sparse.last"
 #> 
-#> $vss.sparse.last$formalsmap$mrt
+#> $vss.sparse.last$formalsmap_sparse$mrt
 #> [1] "mrt.sparse.last"
 #> 
 #> 
@@ -8422,6 +9072,9 @@ get.interval.cols()
 #> $aucinf.obs$FUN
 #> [1] "pk.calc.auc.inf.obs"
 #> 
+#> $aucinf.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $aucinf.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -8434,10 +9087,10 @@ get.interval.cols()
 #> $aucinf.obs$desc
 #> [1] "AUC start to inf, obs Clast extrap"
 #> 
-#> $aucinf.obs$sparse
-#> [1] FALSE
-#> 
 #> $aucinf.obs$formalsmap
+#> list()
+#> 
+#> $aucinf.obs$formalsmap_sparse
 #> list()
 #> 
 #> $aucinf.obs$depends
@@ -8506,6 +9159,9 @@ get.interval.cols()
 #> $aucinf.pred$FUN
 #> [1] "pk.calc.auc.inf.pred"
 #> 
+#> $aucinf.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $aucinf.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -8518,10 +9174,10 @@ get.interval.cols()
 #> $aucinf.pred$desc
 #> [1] "AUC start to inf, pred Clast extrap"
 #> 
-#> $aucinf.pred$sparse
-#> [1] FALSE
-#> 
 #> $aucinf.pred$formalsmap
+#> list()
+#> 
+#> $aucinf.pred$formalsmap_sparse
 #> list()
 #> 
 #> $aucinf.pred$depends
@@ -8568,6 +9224,9 @@ get.interval.cols()
 #> $aumcinf.obs$FUN
 #> [1] "pk.calc.aumc.inf.obs"
 #> 
+#> $aumcinf.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcinf.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -8580,10 +9239,10 @@ get.interval.cols()
 #> $aumcinf.obs$desc
 #> [1] "AUMC start to inf, obs Clast extrap"
 #> 
-#> $aumcinf.obs$sparse
-#> [1] FALSE
-#> 
 #> $aumcinf.obs$formalsmap
+#> list()
+#> 
+#> $aumcinf.obs$formalsmap_sparse
 #> list()
 #> 
 #> $aumcinf.obs$depends
@@ -8630,6 +9289,9 @@ get.interval.cols()
 #> $aumcinf.pred$FUN
 #> [1] "pk.calc.aumc.inf.pred"
 #> 
+#> $aumcinf.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcinf.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -8642,10 +9304,10 @@ get.interval.cols()
 #> $aumcinf.pred$desc
 #> [1] "AUMC start to inf, pred Clast extrap"
 #> 
-#> $aumcinf.pred$sparse
-#> [1] FALSE
-#> 
 #> $aumcinf.pred$formalsmap
+#> list()
+#> 
+#> $aumcinf.pred$formalsmap_sparse
 #> list()
 #> 
 #> $aumcinf.pred$depends
@@ -8692,6 +9354,9 @@ get.interval.cols()
 #> $aucint.inf.obs$FUN
 #> [1] "pk.calc.aucint.inf.obs"
 #> 
+#> $aucint.inf.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $aucint.inf.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -8703,9 +9368,6 @@ get.interval.cols()
 #> 
 #> $aucint.inf.obs$desc
 #> [1] "AUC from T1 to T2 (AUCinf,obs extrap)"
-#> 
-#> $aucint.inf.obs$sparse
-#> [1] FALSE
 #> 
 #> $aucint.inf.obs$formalsmap
 #> $aucint.inf.obs$formalsmap$conc
@@ -8723,6 +9385,9 @@ get.interval.cols()
 #> $aucint.inf.obs$formalsmap$duration.dose
 #> [1] "duration.dose.group"
 #> 
+#> 
+#> $aucint.inf.obs$formalsmap_sparse
+#> list()
 #> 
 #> $aucint.inf.obs$depends
 #> [1] "lambda.z"  "clast.obs"
@@ -8768,6 +9433,9 @@ get.interval.cols()
 #> $aucint.inf.pred$FUN
 #> [1] "pk.calc.aucint.inf.pred"
 #> 
+#> $aucint.inf.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $aucint.inf.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -8779,9 +9447,6 @@ get.interval.cols()
 #> 
 #> $aucint.inf.pred$desc
 #> [1] "AUC from T1 to T2 (AUCinf,pred extrap)"
-#> 
-#> $aucint.inf.pred$sparse
-#> [1] FALSE
 #> 
 #> $aucint.inf.pred$formalsmap
 #> $aucint.inf.pred$formalsmap$conc
@@ -8799,6 +9464,9 @@ get.interval.cols()
 #> $aucint.inf.pred$formalsmap$duration.dose
 #> [1] "duration.dose.group"
 #> 
+#> 
+#> $aucint.inf.pred$formalsmap_sparse
+#> list()
 #> 
 #> $aucint.inf.pred$depends
 #> [1] "lambda.z"   "clast.pred"
@@ -8844,6 +9512,9 @@ get.interval.cols()
 #> $aumcint.inf.obs$FUN
 #> [1] "pk.calc.aumcint.inf.obs"
 #> 
+#> $aumcint.inf.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcint.inf.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -8855,9 +9526,6 @@ get.interval.cols()
 #> 
 #> $aumcint.inf.obs$desc
 #> [1] "AUMC from T1 to T2 (AUMCinf,obs extrap)"
-#> 
-#> $aumcint.inf.obs$sparse
-#> [1] FALSE
 #> 
 #> $aumcint.inf.obs$formalsmap
 #> $aumcint.inf.obs$formalsmap$conc
@@ -8875,6 +9543,9 @@ get.interval.cols()
 #> $aumcint.inf.obs$formalsmap$duration.dose
 #> [1] "duration.dose.group"
 #> 
+#> 
+#> $aumcint.inf.obs$formalsmap_sparse
+#> list()
 #> 
 #> $aumcint.inf.obs$depends
 #> [1] "lambda.z"  "clast.obs"
@@ -8920,6 +9591,9 @@ get.interval.cols()
 #> $aumcint.inf.pred$FUN
 #> [1] "pk.calc.aumcint.inf.pred"
 #> 
+#> $aumcint.inf.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcint.inf.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -8931,9 +9605,6 @@ get.interval.cols()
 #> 
 #> $aumcint.inf.pred$desc
 #> [1] "AUMC from T1 to T2 (AUMCinf,pred extrap)"
-#> 
-#> $aumcint.inf.pred$sparse
-#> [1] FALSE
 #> 
 #> $aumcint.inf.pred$formalsmap
 #> $aumcint.inf.pred$formalsmap$conc
@@ -8951,6 +9622,9 @@ get.interval.cols()
 #> $aumcint.inf.pred$formalsmap$duration.dose
 #> [1] "duration.dose.group"
 #> 
+#> 
+#> $aumcint.inf.pred$formalsmap_sparse
+#> list()
 #> 
 #> $aumcint.inf.pred$depends
 #> [1] "lambda.z"   "clast.pred"
@@ -8996,6 +9670,9 @@ get.interval.cols()
 #> $aucivinf.obs$FUN
 #> [1] "pk.calc.auciv"
 #> 
+#> $aucivinf.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $aucivinf.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -9008,9 +9685,6 @@ get.interval.cols()
 #> $aucivinf.obs$desc
 #> [1] "AUCinf.obs, IV back-extrap C0"
 #> 
-#> $aucivinf.obs$sparse
-#> [1] FALSE
-#> 
 #> $aucivinf.obs$formalsmap
 #> $aucivinf.obs$formalsmap$auc
 #> [1] "aucinf.obs"
@@ -9021,6 +9695,9 @@ get.interval.cols()
 #> $aucivinf.obs$formalsmap$clast
 #> [1] "clast.obs"
 #> 
+#> 
+#> $aucivinf.obs$formalsmap_sparse
+#> list()
 #> 
 #> $aucivinf.obs$depends
 #> [1] "aucinf.obs" "c0"         "lambda.z"   "clast.obs" 
@@ -9066,6 +9743,9 @@ get.interval.cols()
 #> $aucivinf.pred$FUN
 #> [1] "pk.calc.auciv"
 #> 
+#> $aucivinf.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $aucivinf.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -9078,9 +9758,6 @@ get.interval.cols()
 #> $aucivinf.pred$desc
 #> [1] "AUCinf.pred, IV back-extrap C0"
 #> 
-#> $aucivinf.pred$sparse
-#> [1] FALSE
-#> 
 #> $aucivinf.pred$formalsmap
 #> $aucivinf.pred$formalsmap$auc
 #> [1] "aucinf.pred"
@@ -9091,6 +9768,9 @@ get.interval.cols()
 #> $aucivinf.pred$formalsmap$clast
 #> [1] "clast.pred"
 #> 
+#> 
+#> $aucivinf.pred$formalsmap_sparse
+#> list()
 #> 
 #> $aucivinf.pred$depends
 #> [1] "aucinf.pred" "c0"          "lambda.z"    "clast.pred" 
@@ -9136,6 +9816,9 @@ get.interval.cols()
 #> $aucivpbextinf.obs$FUN
 #> [1] "pk.calc.auciv_pbext"
 #> 
+#> $aucivpbextinf.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $aucivpbextinf.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -9148,9 +9831,6 @@ get.interval.cols()
 #> $aucivpbextinf.obs$desc
 #> [1] "Back-extrap %, IV, AUCinf.obs"
 #> 
-#> $aucivpbextinf.obs$sparse
-#> [1] FALSE
-#> 
 #> $aucivpbextinf.obs$formalsmap
 #> $aucivpbextinf.obs$formalsmap$auc
 #> [1] "aucinf.obs"
@@ -9158,6 +9838,9 @@ get.interval.cols()
 #> $aucivpbextinf.obs$formalsmap$auciv
 #> [1] "aucivinf.obs"
 #> 
+#> 
+#> $aucivpbextinf.obs$formalsmap_sparse
+#> list()
 #> 
 #> $aucivpbextinf.obs$depends
 #> [1] "aucinf.obs"   "aucivinf.obs"
@@ -9203,6 +9886,9 @@ get.interval.cols()
 #> $aucivpbextinf.pred$FUN
 #> [1] "pk.calc.auciv_pbext"
 #> 
+#> $aucivpbextinf.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $aucivpbextinf.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -9215,9 +9901,6 @@ get.interval.cols()
 #> $aucivpbextinf.pred$desc
 #> [1] "Back-extrap %, IV, AUCinf.pred"
 #> 
-#> $aucivpbextinf.pred$sparse
-#> [1] FALSE
-#> 
 #> $aucivpbextinf.pred$formalsmap
 #> $aucivpbextinf.pred$formalsmap$auc
 #> [1] "aucinf.pred"
@@ -9225,6 +9908,9 @@ get.interval.cols()
 #> $aucivpbextinf.pred$formalsmap$auciv
 #> [1] "aucivinf.pred"
 #> 
+#> 
+#> $aucivpbextinf.pred$formalsmap_sparse
+#> list()
 #> 
 #> $aucivpbextinf.pred$depends
 #> [1] "aucinf.pred"   "aucivinf.pred"
@@ -9270,6 +9956,9 @@ get.interval.cols()
 #> $aumcivinf.obs$FUN
 #> [1] "pk.calc.aumciv"
 #> 
+#> $aumcivinf.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcivinf.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -9282,9 +9971,6 @@ get.interval.cols()
 #> $aumcivinf.obs$desc
 #> [1] "AUMCinf.obs, IV back-extrap C0"
 #> 
-#> $aumcivinf.obs$sparse
-#> [1] FALSE
-#> 
 #> $aumcivinf.obs$formalsmap
 #> $aumcivinf.obs$formalsmap$aumc
 #> [1] "aumcinf.obs"
@@ -9295,6 +9981,9 @@ get.interval.cols()
 #> $aumcivinf.obs$formalsmap$clast
 #> [1] "clast.obs"
 #> 
+#> 
+#> $aumcivinf.obs$formalsmap_sparse
+#> list()
 #> 
 #> $aumcivinf.obs$depends
 #> [1] "aumcinf.obs" "c0"          "lambda.z"    "clast.obs"  
@@ -9340,6 +10029,9 @@ get.interval.cols()
 #> $aumcivinf.pred$FUN
 #> [1] "pk.calc.aumciv"
 #> 
+#> $aumcivinf.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcivinf.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -9352,9 +10044,6 @@ get.interval.cols()
 #> $aumcivinf.pred$desc
 #> [1] "AUMCinf.pred, IV back-extrap C0"
 #> 
-#> $aumcivinf.pred$sparse
-#> [1] FALSE
-#> 
 #> $aumcivinf.pred$formalsmap
 #> $aumcivinf.pred$formalsmap$aumc
 #> [1] "aumcinf.pred"
@@ -9365,6 +10054,9 @@ get.interval.cols()
 #> $aumcivinf.pred$formalsmap$clast
 #> [1] "clast.pred"
 #> 
+#> 
+#> $aumcivinf.pred$formalsmap_sparse
+#> list()
 #> 
 #> $aumcivinf.pred$depends
 #> [1] "aumcinf.pred" "c0"           "lambda.z"     "clast.pred"  
@@ -9410,6 +10102,9 @@ get.interval.cols()
 #> $aucpext.obs$FUN
 #> [1] "pk.calc.aucpext"
 #> 
+#> $aucpext.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $aucpext.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -9422,13 +10117,13 @@ get.interval.cols()
 #> $aucpext.obs$desc
 #> [1] "% AUCinf extrap after Tlast, obs"
 #> 
-#> $aucpext.obs$sparse
-#> [1] FALSE
-#> 
 #> $aucpext.obs$formalsmap
 #> $aucpext.obs$formalsmap$aucinf
 #> [1] "aucinf.obs"
 #> 
+#> 
+#> $aucpext.obs$formalsmap_sparse
+#> list()
 #> 
 #> $aucpext.obs$depends
 #> [1] "auclast"    "aucinf.obs"
@@ -9487,6 +10182,9 @@ get.interval.cols()
 #> $aucpext.pred$FUN
 #> [1] "pk.calc.aucpext"
 #> 
+#> $aucpext.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $aucpext.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -9499,13 +10197,13 @@ get.interval.cols()
 #> $aucpext.pred$desc
 #> [1] "% AUCinf extrap after Tlast, pred"
 #> 
-#> $aucpext.pred$sparse
-#> [1] FALSE
-#> 
 #> $aucpext.pred$formalsmap
 #> $aucpext.pred$formalsmap$aucinf
 #> [1] "aucinf.pred"
 #> 
+#> 
+#> $aucpext.pred$formalsmap_sparse
+#> list()
 #> 
 #> $aucpext.pred$depends
 #> [1] "auclast"     "aucinf.pred"
@@ -9551,6 +10249,9 @@ get.interval.cols()
 #> $kel.iv.all$FUN
 #> [1] "pk.calc.kel"
 #> 
+#> $kel.iv.all$FUN_sparse
+#> [1] NA
+#> 
 #> $kel.iv.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -9563,13 +10264,13 @@ get.interval.cols()
 #> $kel.iv.all$desc
 #> [1] "Elim rate, IV MRTall"
 #> 
-#> $kel.iv.all$sparse
-#> [1] FALSE
-#> 
 #> $kel.iv.all$formalsmap
 #> $kel.iv.all$formalsmap$mrt
 #> [1] "mrt.iv.all"
 #> 
+#> 
+#> $kel.iv.all$formalsmap_sparse
+#> list()
 #> 
 #> $kel.iv.all$depends
 #> [1] "mrt.iv.all"
@@ -9615,6 +10316,9 @@ get.interval.cols()
 #> $kel.ivint.all$FUN
 #> [1] "pk.calc.kel"
 #> 
+#> $kel.ivint.all$FUN_sparse
+#> [1] NA
+#> 
 #> $kel.ivint.all$values
 #> [1] FALSE  TRUE
 #> 
@@ -9627,13 +10331,13 @@ get.interval.cols()
 #> $kel.ivint.all$desc
 #> [1] "Elim rate, IV MRTint.all"
 #> 
-#> $kel.ivint.all$sparse
-#> [1] FALSE
-#> 
 #> $kel.ivint.all$formalsmap
 #> $kel.ivint.all$formalsmap$mrt
 #> [1] "mrt.ivint.all"
 #> 
+#> 
+#> $kel.ivint.all$formalsmap_sparse
+#> list()
 #> 
 #> $kel.ivint.all$depends
 #> [1] "mrt.ivint.all"
@@ -9679,6 +10383,9 @@ get.interval.cols()
 #> $kel.ivint.last$FUN
 #> [1] "pk.calc.kel"
 #> 
+#> $kel.ivint.last$FUN_sparse
+#> [1] NA
+#> 
 #> $kel.ivint.last$values
 #> [1] FALSE  TRUE
 #> 
@@ -9691,13 +10398,13 @@ get.interval.cols()
 #> $kel.ivint.last$desc
 #> [1] "Elim rate, IV MRTint.last"
 #> 
-#> $kel.ivint.last$sparse
-#> [1] FALSE
-#> 
 #> $kel.ivint.last$formalsmap
 #> $kel.ivint.last$formalsmap$mrt
 #> [1] "mrt.ivint.last"
 #> 
+#> 
+#> $kel.ivint.last$formalsmap_sparse
+#> list()
 #> 
 #> $kel.ivint.last$depends
 #> [1] "mrt.ivint.last"
@@ -9741,6 +10448,9 @@ get.interval.cols()
 #> 
 #> $kel.sparse.last
 #> $kel.sparse.last$FUN
+#> [1] NA
+#> 
+#> $kel.sparse.last$FUN_sparse
 #> [1] "pk.calc.kel"
 #> 
 #> $kel.sparse.last$values
@@ -9755,11 +10465,11 @@ get.interval.cols()
 #> $kel.sparse.last$desc
 #> [1] "Elim rate, sparse MRTlast"
 #> 
-#> $kel.sparse.last$sparse
-#> [1] TRUE
-#> 
 #> $kel.sparse.last$formalsmap
-#> $kel.sparse.last$formalsmap$mrt
+#> list()
+#> 
+#> $kel.sparse.last$formalsmap_sparse
+#> $kel.sparse.last$formalsmap_sparse$mrt
 #> [1] "mrt.sparse.last"
 #> 
 #> 
@@ -9807,6 +10517,9 @@ get.interval.cols()
 #> $cl.obs$FUN
 #> [1] "pk.calc.cl"
 #> 
+#> $cl.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $cl.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -9819,13 +10532,13 @@ get.interval.cols()
 #> $cl.obs$desc
 #> [1] "Clearance, observed Clast"
 #> 
-#> $cl.obs$sparse
-#> [1] FALSE
-#> 
 #> $cl.obs$formalsmap
 #> $cl.obs$formalsmap$auc
 #> [1] "aucinf.obs"
 #> 
+#> 
+#> $cl.obs$formalsmap_sparse
+#> list()
 #> 
 #> $cl.obs$depends
 #> [1] "aucinf.obs"
@@ -9885,6 +10598,9 @@ get.interval.cols()
 #> $cl.pred$FUN
 #> [1] "pk.calc.cl"
 #> 
+#> $cl.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $cl.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -9897,13 +10613,13 @@ get.interval.cols()
 #> $cl.pred$desc
 #> [1] "Clearance, predicted Clast"
 #> 
-#> $cl.pred$sparse
-#> [1] FALSE
-#> 
 #> $cl.pred$formalsmap
 #> $cl.pred$formalsmap$auc
 #> [1] "aucinf.pred"
 #> 
+#> 
+#> $cl.pred$formalsmap_sparse
+#> list()
 #> 
 #> $cl.pred$depends
 #> [1] "aucinf.pred"
@@ -9963,6 +10679,9 @@ get.interval.cols()
 #> $cl.int.inf.obs$FUN
 #> [1] "pk.calc.cl"
 #> 
+#> $cl.int.inf.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $cl.int.inf.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -9975,13 +10694,13 @@ get.interval.cols()
 #> $cl.int.inf.obs$desc
 #> [1] "Clearance, AUCint.inf.obs"
 #> 
-#> $cl.int.inf.obs$sparse
-#> [1] FALSE
-#> 
 #> $cl.int.inf.obs$formalsmap
 #> $cl.int.inf.obs$formalsmap$auc
 #> [1] "aucint.inf.obs"
 #> 
+#> 
+#> $cl.int.inf.obs$formalsmap_sparse
+#> list()
 #> 
 #> $cl.int.inf.obs$depends
 #> [1] "aucint.inf.obs"
@@ -10027,6 +10746,9 @@ get.interval.cols()
 #> $cl.int.inf.pred$FUN
 #> [1] "pk.calc.cl"
 #> 
+#> $cl.int.inf.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $cl.int.inf.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -10039,13 +10761,13 @@ get.interval.cols()
 #> $cl.int.inf.pred$desc
 #> [1] "Clearance, AUCint.inf.pred"
 #> 
-#> $cl.int.inf.pred$sparse
-#> [1] FALSE
-#> 
 #> $cl.int.inf.pred$formalsmap
 #> $cl.int.inf.pred$formalsmap$auc
 #> [1] "aucint.inf.pred"
 #> 
+#> 
+#> $cl.int.inf.pred$formalsmap_sparse
+#> list()
 #> 
 #> $cl.int.inf.pred$depends
 #> [1] "aucint.inf.pred"
@@ -10091,6 +10813,9 @@ get.interval.cols()
 #> $cl.iv.obs$FUN
 #> [1] "pk.calc.cl"
 #> 
+#> $cl.iv.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $cl.iv.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -10103,13 +10828,13 @@ get.interval.cols()
 #> $cl.iv.obs$desc
 #> [1] "IV clearance, AUCinf.obs"
 #> 
-#> $cl.iv.obs$sparse
-#> [1] FALSE
-#> 
 #> $cl.iv.obs$formalsmap
 #> $cl.iv.obs$formalsmap$auc
 #> [1] "aucivinf.obs"
 #> 
+#> 
+#> $cl.iv.obs$formalsmap_sparse
+#> list()
 #> 
 #> $cl.iv.obs$depends
 #> [1] "aucivinf.obs"
@@ -10155,6 +10880,9 @@ get.interval.cols()
 #> $cl.iv.pred$FUN
 #> [1] "pk.calc.cl"
 #> 
+#> $cl.iv.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $cl.iv.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -10167,13 +10895,13 @@ get.interval.cols()
 #> $cl.iv.pred$desc
 #> [1] "IV clearance, AUCinf.pred"
 #> 
-#> $cl.iv.pred$sparse
-#> [1] FALSE
-#> 
 #> $cl.iv.pred$formalsmap
 #> $cl.iv.pred$formalsmap$auc
 #> [1] "aucivinf.pred"
 #> 
+#> 
+#> $cl.iv.pred$formalsmap_sparse
+#> list()
 #> 
 #> $cl.iv.pred$depends
 #> [1] "aucivinf.pred"
@@ -10219,6 +10947,9 @@ get.interval.cols()
 #> $f.obs$FUN
 #> [1] "pk.calc.f"
 #> 
+#> $f.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $f.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -10230,9 +10961,6 @@ get.interval.cols()
 #> 
 #> $f.obs$desc
 #> [1] "Bioavailability from AUCinf,obs"
-#> 
-#> $f.obs$sparse
-#> [1] FALSE
 #> 
 #> $f.obs$formalsmap
 #> $f.obs$formalsmap$dose1
@@ -10255,6 +10983,9 @@ get.interval.cols()
 #> $f.obs$formalsmap$auc2
 #> [1] "aucinf.obs"
 #> 
+#> 
+#> $f.obs$formalsmap_sparse
+#> list()
 #> 
 #> $f.obs$depends
 #> [1] "totdose"    "aucinf.obs"
@@ -10302,6 +11033,9 @@ get.interval.cols()
 #> $f.pred$FUN
 #> [1] "pk.calc.f"
 #> 
+#> $f.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $f.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -10313,9 +11047,6 @@ get.interval.cols()
 #> 
 #> $f.pred$desc
 #> [1] "Bioavailability from AUCinf,pred"
-#> 
-#> $f.pred$sparse
-#> [1] FALSE
 #> 
 #> $f.pred$formalsmap
 #> $f.pred$formalsmap$dose1
@@ -10338,6 +11069,9 @@ get.interval.cols()
 #> $f.pred$formalsmap$auc2
 #> [1] "aucinf.pred"
 #> 
+#> 
+#> $f.pred$formalsmap_sparse
+#> list()
 #> 
 #> $f.pred$depends
 #> [1] "totdose"     "aucinf.pred"
@@ -10385,6 +11119,9 @@ get.interval.cols()
 #> $f.int.obs$FUN
 #> [1] "pk.calc.f"
 #> 
+#> $f.int.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $f.int.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -10396,9 +11133,6 @@ get.interval.cols()
 #> 
 #> $f.int.obs$desc
 #> [1] "Bioavailability from AUCint,inf,obs"
-#> 
-#> $f.int.obs$sparse
-#> [1] FALSE
 #> 
 #> $f.int.obs$formalsmap
 #> $f.int.obs$formalsmap$dose1
@@ -10421,6 +11155,9 @@ get.interval.cols()
 #> $f.int.obs$formalsmap$auc2
 #> [1] "aucint.inf.obs"
 #> 
+#> 
+#> $f.int.obs$formalsmap_sparse
+#> list()
 #> 
 #> $f.int.obs$depends
 #> [1] "totdose"        "aucint.inf.obs"
@@ -10468,6 +11205,9 @@ get.interval.cols()
 #> $f.int.pred$FUN
 #> [1] "pk.calc.f"
 #> 
+#> $f.int.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $f.int.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -10479,9 +11219,6 @@ get.interval.cols()
 #> 
 #> $f.int.pred$desc
 #> [1] "Bioavailability from AUCint,inf,pred"
-#> 
-#> $f.int.pred$sparse
-#> [1] FALSE
 #> 
 #> $f.int.pred$formalsmap
 #> $f.int.pred$formalsmap$dose1
@@ -10504,6 +11241,9 @@ get.interval.cols()
 #> $f.int.pred$formalsmap$auc2
 #> [1] "aucint.inf.pred"
 #> 
+#> 
+#> $f.int.pred$formalsmap_sparse
+#> list()
 #> 
 #> $f.int.pred$depends
 #> [1] "totdose"         "aucint.inf.pred"
@@ -10551,6 +11291,9 @@ get.interval.cols()
 #> $mrt.obs$FUN
 #> [1] "pk.calc.mrt"
 #> 
+#> $mrt.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -10563,9 +11306,6 @@ get.interval.cols()
 #> $mrt.obs$desc
 #> [1] "MRT to inf, observed Clast"
 #> 
-#> $mrt.obs$sparse
-#> [1] FALSE
-#> 
 #> $mrt.obs$formalsmap
 #> $mrt.obs$formalsmap$auc
 #> [1] "aucinf.obs"
@@ -10573,6 +11313,9 @@ get.interval.cols()
 #> $mrt.obs$formalsmap$aumc
 #> [1] "aumcinf.obs"
 #> 
+#> 
+#> $mrt.obs$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.obs$depends
 #> [1] "aucinf.obs"  "aumcinf.obs"
@@ -10632,6 +11375,9 @@ get.interval.cols()
 #> $mrt.pred$FUN
 #> [1] "pk.calc.mrt"
 #> 
+#> $mrt.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -10644,9 +11390,6 @@ get.interval.cols()
 #> $mrt.pred$desc
 #> [1] "MRT to inf, predicted Clast"
 #> 
-#> $mrt.pred$sparse
-#> [1] FALSE
-#> 
 #> $mrt.pred$formalsmap
 #> $mrt.pred$formalsmap$auc
 #> [1] "aucinf.pred"
@@ -10654,6 +11397,9 @@ get.interval.cols()
 #> $mrt.pred$formalsmap$aumc
 #> [1] "aumcinf.pred"
 #> 
+#> 
+#> $mrt.pred$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.pred$depends
 #> [1] "aucinf.pred"  "aumcinf.pred"
@@ -10713,6 +11459,9 @@ get.interval.cols()
 #> $mrt.int.inf.obs$FUN
 #> [1] "pk.calc.mrt"
 #> 
+#> $mrt.int.inf.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.int.inf.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -10725,9 +11474,6 @@ get.interval.cols()
 #> $mrt.int.inf.obs$desc
 #> [1] "MRT, interval AUC/AUMCinf obs"
 #> 
-#> $mrt.int.inf.obs$sparse
-#> [1] FALSE
-#> 
 #> $mrt.int.inf.obs$formalsmap
 #> $mrt.int.inf.obs$formalsmap$auc
 #> [1] "aucint.inf.obs"
@@ -10735,6 +11481,9 @@ get.interval.cols()
 #> $mrt.int.inf.obs$formalsmap$aumc
 #> [1] "aumcint.inf.obs"
 #> 
+#> 
+#> $mrt.int.inf.obs$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.int.inf.obs$depends
 #> [1] "aucint.inf.obs"  "aumcint.inf.obs"
@@ -10780,6 +11529,9 @@ get.interval.cols()
 #> $mrt.int.inf.pred$FUN
 #> [1] "pk.calc.mrt"
 #> 
+#> $mrt.int.inf.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.int.inf.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -10792,9 +11544,6 @@ get.interval.cols()
 #> $mrt.int.inf.pred$desc
 #> [1] "MRT, interval AUC/AUMCinf pred"
 #> 
-#> $mrt.int.inf.pred$sparse
-#> [1] FALSE
-#> 
 #> $mrt.int.inf.pred$formalsmap
 #> $mrt.int.inf.pred$formalsmap$auc
 #> [1] "aucint.inf.pred"
@@ -10802,6 +11551,9 @@ get.interval.cols()
 #> $mrt.int.inf.pred$formalsmap$aumc
 #> [1] "aumcint.inf.pred"
 #> 
+#> 
+#> $mrt.int.inf.pred$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.int.inf.pred$depends
 #> [1] "aucint.inf.pred"  "aumcint.inf.pred"
@@ -10847,6 +11599,9 @@ get.interval.cols()
 #> $mrt.iv.obs$FUN
 #> [1] "pk.calc.mrt.iv"
 #> 
+#> $mrt.iv.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.iv.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -10859,9 +11614,6 @@ get.interval.cols()
 #> $mrt.iv.obs$desc
 #> [1] "IV MRT, AUCinf.obs/AUMCinf.obs"
 #> 
-#> $mrt.iv.obs$sparse
-#> [1] FALSE
-#> 
 #> $mrt.iv.obs$formalsmap
 #> $mrt.iv.obs$formalsmap$auc
 #> [1] "aucinf.obs"
@@ -10869,6 +11621,9 @@ get.interval.cols()
 #> $mrt.iv.obs$formalsmap$aumc
 #> [1] "aumcinf.obs"
 #> 
+#> 
+#> $mrt.iv.obs$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.iv.obs$depends
 #> [1] "aucinf.obs"  "aumcinf.obs"
@@ -10914,6 +11669,9 @@ get.interval.cols()
 #> $mrt.iv.pred$FUN
 #> [1] "pk.calc.mrt.iv"
 #> 
+#> $mrt.iv.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.iv.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -10926,9 +11684,6 @@ get.interval.cols()
 #> $mrt.iv.pred$desc
 #> [1] "IV MRT, AUCinf.pred/AUMCinf.pred"
 #> 
-#> $mrt.iv.pred$sparse
-#> [1] FALSE
-#> 
 #> $mrt.iv.pred$formalsmap
 #> $mrt.iv.pred$formalsmap$auc
 #> [1] "aucinf.pred"
@@ -10936,6 +11691,9 @@ get.interval.cols()
 #> $mrt.iv.pred$formalsmap$aumc
 #> [1] "aumcinf.pred"
 #> 
+#> 
+#> $mrt.iv.pred$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.iv.pred$depends
 #> [1] "aucinf.pred"  "aumcinf.pred"
@@ -10981,6 +11739,9 @@ get.interval.cols()
 #> $mrt.md.obs$FUN
 #> [1] "pk.calc.mrt.md"
 #> 
+#> $mrt.md.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.md.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -10993,9 +11754,6 @@ get.interval.cols()
 #> $mrt.md.obs$desc
 #> [1] "MRT, multi-dose AUCinf.obs/AUMCinf.obs"
 #> 
-#> $mrt.md.obs$sparse
-#> [1] FALSE
-#> 
 #> $mrt.md.obs$formalsmap
 #> $mrt.md.obs$formalsmap$auctau
 #> [1] "auclast"
@@ -11006,6 +11764,9 @@ get.interval.cols()
 #> $mrt.md.obs$formalsmap$aucinf
 #> [1] "aucinf.obs"
 #> 
+#> 
+#> $mrt.md.obs$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.md.obs$depends
 #> [1] "auclast"    "aumclast"   "aucinf.obs"
@@ -11053,6 +11814,9 @@ get.interval.cols()
 #> $mrt.md.pred$FUN
 #> [1] "pk.calc.mrt.md"
 #> 
+#> $mrt.md.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.md.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -11065,9 +11829,6 @@ get.interval.cols()
 #> $mrt.md.pred$desc
 #> [1] "MRT, multi-dose AUCinf.pred/AUMCinf.pred"
 #> 
-#> $mrt.md.pred$sparse
-#> [1] FALSE
-#> 
 #> $mrt.md.pred$formalsmap
 #> $mrt.md.pred$formalsmap$auctau
 #> [1] "auclast"
@@ -11078,6 +11839,9 @@ get.interval.cols()
 #> $mrt.md.pred$formalsmap$aucinf
 #> [1] "aucinf.pred"
 #> 
+#> 
+#> $mrt.md.pred$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.md.pred$depends
 #> [1] "auclast"     "aumclast"    "aucinf.pred"
@@ -11125,6 +11889,9 @@ get.interval.cols()
 #> $mrt.ivmd.obs$FUN
 #> [1] "pk.calc.mrt.md.iv"
 #> 
+#> $mrt.ivmd.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.ivmd.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -11137,9 +11904,6 @@ get.interval.cols()
 #> $mrt.ivmd.obs$desc
 #> [1] "IV MRT, multi-dose, AUCinf.obs"
 #> 
-#> $mrt.ivmd.obs$sparse
-#> [1] FALSE
-#> 
 #> $mrt.ivmd.obs$formalsmap
 #> $mrt.ivmd.obs$formalsmap$auctau
 #> [1] "auclast"
@@ -11150,6 +11914,9 @@ get.interval.cols()
 #> $mrt.ivmd.obs$formalsmap$aucinf
 #> [1] "aucinf.obs"
 #> 
+#> 
+#> $mrt.ivmd.obs$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.ivmd.obs$depends
 #> [1] "auclast"    "aumclast"   "aucinf.obs"
@@ -11197,6 +11964,9 @@ get.interval.cols()
 #> $mrt.ivmd.pred$FUN
 #> [1] "pk.calc.mrt.md.iv"
 #> 
+#> $mrt.ivmd.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $mrt.ivmd.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -11209,9 +11979,6 @@ get.interval.cols()
 #> $mrt.ivmd.pred$desc
 #> [1] "IV MRT, multi-dose, AUCinf.pred"
 #> 
-#> $mrt.ivmd.pred$sparse
-#> [1] FALSE
-#> 
 #> $mrt.ivmd.pred$formalsmap
 #> $mrt.ivmd.pred$formalsmap$auctau
 #> [1] "auclast"
@@ -11222,6 +11989,9 @@ get.interval.cols()
 #> $mrt.ivmd.pred$formalsmap$aucinf
 #> [1] "aucinf.pred"
 #> 
+#> 
+#> $mrt.ivmd.pred$formalsmap_sparse
+#> list()
 #> 
 #> $mrt.ivmd.pred$depends
 #> [1] "auclast"     "aumclast"    "aucinf.pred"
@@ -11269,6 +12039,9 @@ get.interval.cols()
 #> $vz.obs$FUN
 #> [1] "pk.calc.vz"
 #> 
+#> $vz.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $vz.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -11281,13 +12054,13 @@ get.interval.cols()
 #> $vz.obs$desc
 #> [1] "Vz, observed Clast"
 #> 
-#> $vz.obs$sparse
-#> [1] FALSE
-#> 
 #> $vz.obs$formalsmap
 #> $vz.obs$formalsmap$cl
 #> [1] "cl.obs"
 #> 
+#> 
+#> $vz.obs$formalsmap_sparse
+#> list()
 #> 
 #> $vz.obs$depends
 #> [1] "cl.obs"   "lambda.z"
@@ -11347,6 +12120,9 @@ get.interval.cols()
 #> $vz.pred$FUN
 #> [1] "pk.calc.vz"
 #> 
+#> $vz.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $vz.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -11359,13 +12135,13 @@ get.interval.cols()
 #> $vz.pred$desc
 #> [1] "Vz, predicted Clast"
 #> 
-#> $vz.pred$sparse
-#> [1] FALSE
-#> 
 #> $vz.pred$formalsmap
 #> $vz.pred$formalsmap$cl
 #> [1] "cl.pred"
 #> 
+#> 
+#> $vz.pred$formalsmap_sparse
+#> list()
 #> 
 #> $vz.pred$depends
 #> [1] "cl.pred"  "lambda.z"
@@ -11425,6 +12201,9 @@ get.interval.cols()
 #> $vz.int.inf.obs$FUN
 #> [1] "pk.calc.vz"
 #> 
+#> $vz.int.inf.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $vz.int.inf.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -11437,13 +12216,13 @@ get.interval.cols()
 #> $vz.int.inf.obs$desc
 #> [1] "Vz, interval AUCint.inf.obs"
 #> 
-#> $vz.int.inf.obs$sparse
-#> [1] FALSE
-#> 
 #> $vz.int.inf.obs$formalsmap
 #> $vz.int.inf.obs$formalsmap$cl
 #> [1] "cl.int.inf.obs"
 #> 
+#> 
+#> $vz.int.inf.obs$formalsmap_sparse
+#> list()
 #> 
 #> $vz.int.inf.obs$depends
 #> [1] "cl.int.inf.obs" "lambda.z"      
@@ -11489,6 +12268,9 @@ get.interval.cols()
 #> $vz.int.inf.pred$FUN
 #> [1] "pk.calc.vz"
 #> 
+#> $vz.int.inf.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $vz.int.inf.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -11501,13 +12283,13 @@ get.interval.cols()
 #> $vz.int.inf.pred$desc
 #> [1] "Vz, interval AUCint.inf.pred"
 #> 
-#> $vz.int.inf.pred$sparse
-#> [1] FALSE
-#> 
 #> $vz.int.inf.pred$formalsmap
 #> $vz.int.inf.pred$formalsmap$cl
 #> [1] "cl.int.inf.pred"
 #> 
+#> 
+#> $vz.int.inf.pred$formalsmap_sparse
+#> list()
 #> 
 #> $vz.int.inf.pred$depends
 #> [1] "cl.int.inf.pred" "lambda.z"       
@@ -11553,6 +12335,9 @@ get.interval.cols()
 #> $vz.iv.obs$FUN
 #> [1] "pk.calc.vz"
 #> 
+#> $vz.iv.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $vz.iv.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -11565,13 +12350,13 @@ get.interval.cols()
 #> $vz.iv.obs$desc
 #> [1] "IV Vz, observed AUCinf"
 #> 
-#> $vz.iv.obs$sparse
-#> [1] FALSE
-#> 
 #> $vz.iv.obs$formalsmap
 #> $vz.iv.obs$formalsmap$cl
 #> [1] "cl.iv.obs"
 #> 
+#> 
+#> $vz.iv.obs$formalsmap_sparse
+#> list()
 #> 
 #> $vz.iv.obs$depends
 #> [1] "cl.iv.obs" "lambda.z" 
@@ -11617,6 +12402,9 @@ get.interval.cols()
 #> $vz.iv.pred$FUN
 #> [1] "pk.calc.vz"
 #> 
+#> $vz.iv.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $vz.iv.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -11629,13 +12417,13 @@ get.interval.cols()
 #> $vz.iv.pred$desc
 #> [1] "IV Vz, predicted AUCinf"
 #> 
-#> $vz.iv.pred$sparse
-#> [1] FALSE
-#> 
 #> $vz.iv.pred$formalsmap
 #> $vz.iv.pred$formalsmap$cl
 #> [1] "cl.iv.pred"
 #> 
+#> 
+#> $vz.iv.pred$formalsmap_sparse
+#> list()
 #> 
 #> $vz.iv.pred$depends
 #> [1] "cl.iv.pred" "lambda.z"  
@@ -11679,6 +12467,9 @@ get.interval.cols()
 #> 
 #> $vz.sparse.last
 #> $vz.sparse.last$FUN
+#> [1] NA
+#> 
+#> $vz.sparse.last$FUN_sparse
 #> [1] "pk.calc.vz"
 #> 
 #> $vz.sparse.last$values
@@ -11693,14 +12484,14 @@ get.interval.cols()
 #> $vz.sparse.last$desc
 #> [1] "Vz from sparse sampling"
 #> 
-#> $vz.sparse.last$sparse
-#> [1] TRUE
-#> 
 #> $vz.sparse.last$formalsmap
-#> $vz.sparse.last$formalsmap$cl
+#> list()
+#> 
+#> $vz.sparse.last$formalsmap_sparse
+#> $vz.sparse.last$formalsmap_sparse$cl
 #> [1] "cl.sparse.last"
 #> 
-#> $vz.sparse.last$formalsmap$lambda.z
+#> $vz.sparse.last$formalsmap_sparse$lambda.z
 #> [1] "kel.sparse.last"
 #> 
 #> 
@@ -11748,6 +12539,9 @@ get.interval.cols()
 #> $vss.obs$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -11760,9 +12554,6 @@ get.interval.cols()
 #> $vss.obs$desc
 #> [1] "Vss, observed Clast"
 #> 
-#> $vss.obs$sparse
-#> [1] FALSE
-#> 
 #> $vss.obs$formalsmap
 #> $vss.obs$formalsmap$cl
 #> [1] "cl.obs"
@@ -11770,6 +12561,9 @@ get.interval.cols()
 #> $vss.obs$formalsmap$mrt
 #> [1] "mrt.obs"
 #> 
+#> 
+#> $vss.obs$formalsmap_sparse
+#> list()
 #> 
 #> $vss.obs$depends
 #> [1] "cl.obs"  "mrt.obs"
@@ -11829,6 +12623,9 @@ get.interval.cols()
 #> $vss.pred$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -11841,9 +12638,6 @@ get.interval.cols()
 #> $vss.pred$desc
 #> [1] "Vss, predicted Clast"
 #> 
-#> $vss.pred$sparse
-#> [1] FALSE
-#> 
 #> $vss.pred$formalsmap
 #> $vss.pred$formalsmap$cl
 #> [1] "cl.pred"
@@ -11851,6 +12645,9 @@ get.interval.cols()
 #> $vss.pred$formalsmap$mrt
 #> [1] "mrt.pred"
 #> 
+#> 
+#> $vss.pred$formalsmap_sparse
+#> list()
 #> 
 #> $vss.pred$depends
 #> [1] "cl.pred"  "mrt.pred"
@@ -11910,6 +12707,9 @@ get.interval.cols()
 #> $vss.iv.obs$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.iv.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.iv.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -11922,9 +12722,6 @@ get.interval.cols()
 #> $vss.iv.obs$desc
 #> [1] "IV Vss, observed Clast"
 #> 
-#> $vss.iv.obs$sparse
-#> [1] FALSE
-#> 
 #> $vss.iv.obs$formalsmap
 #> $vss.iv.obs$formalsmap$cl
 #> [1] "cl.obs"
@@ -11932,6 +12729,9 @@ get.interval.cols()
 #> $vss.iv.obs$formalsmap$mrt
 #> [1] "mrt.iv.obs"
 #> 
+#> 
+#> $vss.iv.obs$formalsmap_sparse
+#> list()
 #> 
 #> $vss.iv.obs$depends
 #> [1] "cl.obs"     "mrt.iv.obs"
@@ -11977,6 +12777,9 @@ get.interval.cols()
 #> $vss.iv.pred$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.iv.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.iv.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -11989,9 +12792,6 @@ get.interval.cols()
 #> $vss.iv.pred$desc
 #> [1] "IV Vss, predicted Clast"
 #> 
-#> $vss.iv.pred$sparse
-#> [1] FALSE
-#> 
 #> $vss.iv.pred$formalsmap
 #> $vss.iv.pred$formalsmap$cl
 #> [1] "cl.pred"
@@ -11999,6 +12799,9 @@ get.interval.cols()
 #> $vss.iv.pred$formalsmap$mrt
 #> [1] "mrt.iv.pred"
 #> 
+#> 
+#> $vss.iv.pred$formalsmap_sparse
+#> list()
 #> 
 #> $vss.iv.pred$depends
 #> [1] "cl.pred"     "mrt.iv.pred"
@@ -12044,6 +12847,9 @@ get.interval.cols()
 #> $vss.md.obs$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.md.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.md.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -12056,9 +12862,6 @@ get.interval.cols()
 #> $vss.md.obs$desc
 #> [1] "Vss, multi-dose, obs"
 #> 
-#> $vss.md.obs$sparse
-#> [1] FALSE
-#> 
 #> $vss.md.obs$formalsmap
 #> $vss.md.obs$formalsmap$cl
 #> [1] "cl.last"
@@ -12066,6 +12869,9 @@ get.interval.cols()
 #> $vss.md.obs$formalsmap$mrt
 #> [1] "mrt.md.obs"
 #> 
+#> 
+#> $vss.md.obs$formalsmap_sparse
+#> list()
 #> 
 #> $vss.md.obs$depends
 #> [1] "cl.last"    "mrt.md.obs"
@@ -12113,6 +12919,9 @@ get.interval.cols()
 #> $vss.md.pred$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.md.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.md.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -12125,9 +12934,6 @@ get.interval.cols()
 #> $vss.md.pred$desc
 #> [1] "Vss, multi-dose, pred"
 #> 
-#> $vss.md.pred$sparse
-#> [1] FALSE
-#> 
 #> $vss.md.pred$formalsmap
 #> $vss.md.pred$formalsmap$cl
 #> [1] "cl.last"
@@ -12135,6 +12941,9 @@ get.interval.cols()
 #> $vss.md.pred$formalsmap$mrt
 #> [1] "mrt.md.pred"
 #> 
+#> 
+#> $vss.md.pred$formalsmap_sparse
+#> list()
 #> 
 #> $vss.md.pred$depends
 #> [1] "cl.last"     "mrt.md.pred"
@@ -12182,6 +12991,9 @@ get.interval.cols()
 #> $vss.ivmd.obs$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.ivmd.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.ivmd.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -12194,9 +13006,6 @@ get.interval.cols()
 #> $vss.ivmd.obs$desc
 #> [1] "IV Vss, multi-dose, obs"
 #> 
-#> $vss.ivmd.obs$sparse
-#> [1] FALSE
-#> 
 #> $vss.ivmd.obs$formalsmap
 #> $vss.ivmd.obs$formalsmap$cl
 #> [1] "cl.last"
@@ -12204,6 +13013,9 @@ get.interval.cols()
 #> $vss.ivmd.obs$formalsmap$mrt
 #> [1] "mrt.ivmd.obs"
 #> 
+#> 
+#> $vss.ivmd.obs$formalsmap_sparse
+#> list()
 #> 
 #> $vss.ivmd.obs$depends
 #> [1] "cl.last"      "mrt.ivmd.obs"
@@ -12251,6 +13063,9 @@ get.interval.cols()
 #> $vss.ivmd.pred$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.ivmd.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.ivmd.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -12263,9 +13078,6 @@ get.interval.cols()
 #> $vss.ivmd.pred$desc
 #> [1] "IV Vss, multi-dose, pred"
 #> 
-#> $vss.ivmd.pred$sparse
-#> [1] FALSE
-#> 
 #> $vss.ivmd.pred$formalsmap
 #> $vss.ivmd.pred$formalsmap$cl
 #> [1] "cl.last"
@@ -12273,6 +13085,9 @@ get.interval.cols()
 #> $vss.ivmd.pred$formalsmap$mrt
 #> [1] "mrt.ivmd.pred"
 #> 
+#> 
+#> $vss.ivmd.pred$formalsmap_sparse
+#> list()
 #> 
 #> $vss.ivmd.pred$depends
 #> [1] "cl.last"       "mrt.ivmd.pred"
@@ -12320,6 +13135,9 @@ get.interval.cols()
 #> $vss.int.inf.obs$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.int.inf.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.int.inf.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -12332,9 +13150,6 @@ get.interval.cols()
 #> $vss.int.inf.obs$desc
 #> [1] "Vss, calc from interval AUCint.inf.obs"
 #> 
-#> $vss.int.inf.obs$sparse
-#> [1] FALSE
-#> 
 #> $vss.int.inf.obs$formalsmap
 #> $vss.int.inf.obs$formalsmap$cl
 #> [1] "cl.int.inf.obs"
@@ -12342,6 +13157,9 @@ get.interval.cols()
 #> $vss.int.inf.obs$formalsmap$mrt
 #> [1] "mrt.int.inf.obs"
 #> 
+#> 
+#> $vss.int.inf.obs$formalsmap_sparse
+#> list()
 #> 
 #> $vss.int.inf.obs$depends
 #> [1] "cl.int.inf.obs"  "mrt.int.inf.obs"
@@ -12387,6 +13205,9 @@ get.interval.cols()
 #> $vss.int.inf.pred$FUN
 #> [1] "pk.calc.vss"
 #> 
+#> $vss.int.inf.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $vss.int.inf.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -12399,9 +13220,6 @@ get.interval.cols()
 #> $vss.int.inf.pred$desc
 #> [1] "Vss, calc from interval AUCint.inf.pred"
 #> 
-#> $vss.int.inf.pred$sparse
-#> [1] FALSE
-#> 
 #> $vss.int.inf.pred$formalsmap
 #> $vss.int.inf.pred$formalsmap$cl
 #> [1] "cl.int.inf.pred"
@@ -12409,6 +13227,9 @@ get.interval.cols()
 #> $vss.int.inf.pred$formalsmap$mrt
 #> [1] "mrt.int.inf.pred"
 #> 
+#> 
+#> $vss.int.inf.pred$formalsmap_sparse
+#> list()
 #> 
 #> $vss.int.inf.pred$depends
 #> [1] "cl.int.inf.pred"  "mrt.int.inf.pred"
@@ -12454,6 +13275,9 @@ get.interval.cols()
 #> $cav.int.inf.obs$FUN
 #> [1] "pk.calc.cav"
 #> 
+#> $cav.int.inf.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $cav.int.inf.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -12466,13 +13290,13 @@ get.interval.cols()
 #> $cav.int.inf.obs$desc
 #> [1] "Avg conc in interval (AUCint.inf.obs)"
 #> 
-#> $cav.int.inf.obs$sparse
-#> [1] FALSE
-#> 
 #> $cav.int.inf.obs$formalsmap
 #> $cav.int.inf.obs$formalsmap$auc
 #> [1] "aucint.inf.obs"
 #> 
+#> 
+#> $cav.int.inf.obs$formalsmap_sparse
+#> list()
 #> 
 #> $cav.int.inf.obs$depends
 #> [1] "aucint.inf.obs"
@@ -12518,6 +13342,9 @@ get.interval.cols()
 #> $cav.int.inf.pred$FUN
 #> [1] "pk.calc.cav"
 #> 
+#> $cav.int.inf.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $cav.int.inf.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -12530,13 +13357,13 @@ get.interval.cols()
 #> $cav.int.inf.pred$desc
 #> [1] "Avg conc in interval (AUCint.inf.pred)"
 #> 
-#> $cav.int.inf.pred$sparse
-#> [1] FALSE
-#> 
 #> $cav.int.inf.pred$formalsmap
 #> $cav.int.inf.pred$formalsmap$auc
 #> [1] "aucint.inf.pred"
 #> 
+#> 
+#> $cav.int.inf.pred$formalsmap_sparse
+#> list()
 #> 
 #> $cav.int.inf.pred$depends
 #> [1] "aucint.inf.pred"
@@ -12582,6 +13409,9 @@ get.interval.cols()
 #> $ratio.aucinf.obs$FUN
 #> [1] "pk.calc.ratio"
 #> 
+#> $ratio.aucinf.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $ratio.aucinf.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -12594,9 +13424,6 @@ get.interval.cols()
 #> $ratio.aucinf.obs$desc
 #> [1] "Ratio of AUCinf,obs to reference"
 #> 
-#> $ratio.aucinf.obs$sparse
-#> [1] FALSE
-#> 
 #> $ratio.aucinf.obs$formalsmap
 #> $ratio.aucinf.obs$formalsmap$test
 #> [1] "aucinf.obs"
@@ -12608,6 +13435,9 @@ get.interval.cols()
 #> attr(,"class")
 #> [1] "pknca_ref"
 #> 
+#> 
+#> $ratio.aucinf.obs$formalsmap_sparse
+#> list()
 #> 
 #> $ratio.aucinf.obs$depends
 #> [1] "aucinf.obs"
@@ -12655,6 +13485,9 @@ get.interval.cols()
 #> $ratio.aucinf.pred$FUN
 #> [1] "pk.calc.ratio"
 #> 
+#> $ratio.aucinf.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $ratio.aucinf.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -12667,9 +13500,6 @@ get.interval.cols()
 #> $ratio.aucinf.pred$desc
 #> [1] "Ratio of AUCinf,pred to reference"
 #> 
-#> $ratio.aucinf.pred$sparse
-#> [1] FALSE
-#> 
 #> $ratio.aucinf.pred$formalsmap
 #> $ratio.aucinf.pred$formalsmap$test
 #> [1] "aucinf.pred"
@@ -12681,6 +13511,9 @@ get.interval.cols()
 #> attr(,"class")
 #> [1] "pknca_ref"
 #> 
+#> 
+#> $ratio.aucinf.pred$formalsmap_sparse
+#> list()
 #> 
 #> $ratio.aucinf.pred$depends
 #> [1] "aucinf.pred"
@@ -12728,6 +13561,9 @@ get.interval.cols()
 #> $thalf.eff.obs$FUN
 #> [1] "pk.calc.thalf.eff"
 #> 
+#> $thalf.eff.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $thalf.eff.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -12740,13 +13576,13 @@ get.interval.cols()
 #> $thalf.eff.obs$desc
 #> [1] "Effective half-life, MRTobs"
 #> 
-#> $thalf.eff.obs$sparse
-#> [1] FALSE
-#> 
 #> $thalf.eff.obs$formalsmap
 #> $thalf.eff.obs$formalsmap$mrt
 #> [1] "mrt.obs"
 #> 
+#> 
+#> $thalf.eff.obs$formalsmap_sparse
+#> list()
 #> 
 #> $thalf.eff.obs$depends
 #> [1] "mrt.obs"
@@ -12792,6 +13628,9 @@ get.interval.cols()
 #> $thalf.eff.pred$FUN
 #> [1] "pk.calc.thalf.eff"
 #> 
+#> $thalf.eff.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $thalf.eff.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -12804,13 +13643,13 @@ get.interval.cols()
 #> $thalf.eff.pred$desc
 #> [1] "Effective half-life, MRTpred"
 #> 
-#> $thalf.eff.pred$sparse
-#> [1] FALSE
-#> 
 #> $thalf.eff.pred$formalsmap
 #> $thalf.eff.pred$formalsmap$mrt
 #> [1] "mrt.pred"
 #> 
+#> 
+#> $thalf.eff.pred$formalsmap_sparse
+#> list()
 #> 
 #> $thalf.eff.pred$depends
 #> [1] "mrt.pred"
@@ -12856,6 +13695,9 @@ get.interval.cols()
 #> $thalf.eff.iv.obs$FUN
 #> [1] "pk.calc.thalf.eff"
 #> 
+#> $thalf.eff.iv.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $thalf.eff.iv.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -12868,13 +13710,13 @@ get.interval.cols()
 #> $thalf.eff.iv.obs$desc
 #> [1] "Effective half-life, IV MRTobs"
 #> 
-#> $thalf.eff.iv.obs$sparse
-#> [1] FALSE
-#> 
 #> $thalf.eff.iv.obs$formalsmap
 #> $thalf.eff.iv.obs$formalsmap$mrt
 #> [1] "mrt.iv.obs"
 #> 
+#> 
+#> $thalf.eff.iv.obs$formalsmap_sparse
+#> list()
 #> 
 #> $thalf.eff.iv.obs$depends
 #> [1] "mrt.iv.obs"
@@ -12920,6 +13762,9 @@ get.interval.cols()
 #> $thalf.eff.iv.pred$FUN
 #> [1] "pk.calc.thalf.eff"
 #> 
+#> $thalf.eff.iv.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $thalf.eff.iv.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -12932,13 +13777,13 @@ get.interval.cols()
 #> $thalf.eff.iv.pred$desc
 #> [1] "Effective half-life, IV MRTpred"
 #> 
-#> $thalf.eff.iv.pred$sparse
-#> [1] FALSE
-#> 
 #> $thalf.eff.iv.pred$formalsmap
 #> $thalf.eff.iv.pred$formalsmap$mrt
 #> [1] "mrt.iv.pred"
 #> 
+#> 
+#> $thalf.eff.iv.pred$formalsmap_sparse
+#> list()
 #> 
 #> $thalf.eff.iv.pred$depends
 #> [1] "mrt.iv.pred"
@@ -12984,6 +13829,9 @@ get.interval.cols()
 #> $kel.obs$FUN
 #> [1] "pk.calc.kel"
 #> 
+#> $kel.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $kel.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -12996,13 +13844,13 @@ get.interval.cols()
 #> $kel.obs$desc
 #> [1] "Elim rate, MRT w/ obs Clast"
 #> 
-#> $kel.obs$sparse
-#> [1] FALSE
-#> 
 #> $kel.obs$formalsmap
 #> $kel.obs$formalsmap$mrt
 #> [1] "mrt.obs"
 #> 
+#> 
+#> $kel.obs$formalsmap_sparse
+#> list()
 #> 
 #> $kel.obs$depends
 #> [1] "mrt.obs"
@@ -13048,6 +13896,9 @@ get.interval.cols()
 #> $kel.pred$FUN
 #> [1] "pk.calc.kel"
 #> 
+#> $kel.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $kel.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -13060,13 +13911,13 @@ get.interval.cols()
 #> $kel.pred$desc
 #> [1] "Elim rate, MRT w/ pred Clast"
 #> 
-#> $kel.pred$sparse
-#> [1] FALSE
-#> 
 #> $kel.pred$formalsmap
 #> $kel.pred$formalsmap$mrt
 #> [1] "mrt.pred"
 #> 
+#> 
+#> $kel.pred$formalsmap_sparse
+#> list()
 #> 
 #> $kel.pred$depends
 #> [1] "mrt.pred"
@@ -13112,6 +13963,9 @@ get.interval.cols()
 #> $kel.iv.obs$FUN
 #> [1] "pk.calc.kel"
 #> 
+#> $kel.iv.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $kel.iv.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -13124,13 +13978,13 @@ get.interval.cols()
 #> $kel.iv.obs$desc
 #> [1] "Elim rate, IV MRTobs"
 #> 
-#> $kel.iv.obs$sparse
-#> [1] FALSE
-#> 
 #> $kel.iv.obs$formalsmap
 #> $kel.iv.obs$formalsmap$mrt
 #> [1] "mrt.iv.obs"
 #> 
+#> 
+#> $kel.iv.obs$formalsmap_sparse
+#> list()
 #> 
 #> $kel.iv.obs$depends
 #> [1] "mrt.iv.obs"
@@ -13176,6 +14030,9 @@ get.interval.cols()
 #> $kel.iv.pred$FUN
 #> [1] "pk.calc.kel"
 #> 
+#> $kel.iv.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $kel.iv.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -13188,13 +14045,13 @@ get.interval.cols()
 #> $kel.iv.pred$desc
 #> [1] "Elim rate, IV MRTpred"
 #> 
-#> $kel.iv.pred$sparse
-#> [1] FALSE
-#> 
 #> $kel.iv.pred$formalsmap
 #> $kel.iv.pred$formalsmap$mrt
 #> [1] "mrt.iv.pred"
 #> 
+#> 
+#> $kel.iv.pred$formalsmap_sparse
+#> list()
 #> 
 #> $kel.iv.pred$depends
 #> [1] "mrt.iv.pred"
@@ -13240,6 +14097,9 @@ get.interval.cols()
 #> $kel.int.inf.obs$FUN
 #> [1] "pk.calc.kel"
 #> 
+#> $kel.int.inf.obs$FUN_sparse
+#> [1] NA
+#> 
 #> $kel.int.inf.obs$values
 #> [1] FALSE  TRUE
 #> 
@@ -13252,13 +14112,13 @@ get.interval.cols()
 #> $kel.int.inf.obs$desc
 #> [1] "Elim rate, MRTint.inf.obs"
 #> 
-#> $kel.int.inf.obs$sparse
-#> [1] FALSE
-#> 
 #> $kel.int.inf.obs$formalsmap
 #> $kel.int.inf.obs$formalsmap$mrt
 #> [1] "mrt.int.inf.obs"
 #> 
+#> 
+#> $kel.int.inf.obs$formalsmap_sparse
+#> list()
 #> 
 #> $kel.int.inf.obs$depends
 #> [1] "mrt.int.inf.obs"
@@ -13304,6 +14164,9 @@ get.interval.cols()
 #> $kel.int.inf.pred$FUN
 #> [1] "pk.calc.kel"
 #> 
+#> $kel.int.inf.pred$FUN_sparse
+#> [1] NA
+#> 
 #> $kel.int.inf.pred$values
 #> [1] FALSE  TRUE
 #> 
@@ -13316,13 +14179,13 @@ get.interval.cols()
 #> $kel.int.inf.pred$desc
 #> [1] "Elim rate, MRTint.inf.pred"
 #> 
-#> $kel.int.inf.pred$sparse
-#> [1] FALSE
-#> 
 #> $kel.int.inf.pred$formalsmap
 #> $kel.int.inf.pred$formalsmap$mrt
 #> [1] "mrt.int.inf.pred"
 #> 
+#> 
+#> $kel.int.inf.pred$formalsmap_sparse
+#> list()
 #> 
 #> $kel.int.inf.pred$depends
 #> [1] "mrt.int.inf.pred"
@@ -13368,6 +14231,9 @@ get.interval.cols()
 #> $auclast.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $auclast.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $auclast.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -13380,13 +14246,13 @@ get.interval.cols()
 #> $auclast.dn$desc
 #> [1] "Dose normalized auclast"
 #> 
-#> $auclast.dn$sparse
-#> [1] FALSE
-#> 
 #> $auclast.dn$formalsmap
 #> $auclast.dn$formalsmap$parameter
 #> [1] "auclast"
 #> 
+#> 
+#> $auclast.dn$formalsmap_sparse
+#> list()
 #> 
 #> $auclast.dn$depends
 #> [1] "auclast"
@@ -13395,10 +14261,20 @@ get.interval.cols()
 #> [1] "interval"
 #> 
 #> $auclast.dn$pptestcd_cdisc
+#> $auclast.dn$pptestcd_cdisc$dense
 #> [1] "AUCLSTD"
 #> 
+#> $auclast.dn$pptestcd_cdisc$sparse
+#> [1] "SPARSEALD"
+#> 
+#> 
 #> $auclast.dn$pptest_cdisc
+#> $auclast.dn$pptest_cdisc$dense
 #> [1] "AUC to Last Nonzero Conc by Dose"
+#> 
+#> $auclast.dn$pptest_cdisc$sparse
+#> [1] "Sparse AUClast by Dose"
+#> 
 #> 
 #> $auclast.dn$formula
 #> [1] "$AUC_{\\text{last},dn} = \\frac{AUC_{\\text{last}}}{Dose}$"
@@ -13432,6 +14308,9 @@ get.interval.cols()
 #> $aucall.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $aucall.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $aucall.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -13444,13 +14323,13 @@ get.interval.cols()
 #> $aucall.dn$desc
 #> [1] "Dose normalized aucall"
 #> 
-#> $aucall.dn$sparse
-#> [1] FALSE
-#> 
 #> $aucall.dn$formalsmap
 #> $aucall.dn$formalsmap$parameter
 #> [1] "aucall"
 #> 
+#> 
+#> $aucall.dn$formalsmap_sparse
+#> list()
 #> 
 #> $aucall.dn$depends
 #> [1] "aucall"
@@ -13496,6 +14375,9 @@ get.interval.cols()
 #> $aucinf.obs.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $aucinf.obs.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $aucinf.obs.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -13508,13 +14390,13 @@ get.interval.cols()
 #> $aucinf.obs.dn$desc
 #> [1] "Dose normalized aucinf.obs"
 #> 
-#> $aucinf.obs.dn$sparse
-#> [1] FALSE
-#> 
 #> $aucinf.obs.dn$formalsmap
 #> $aucinf.obs.dn$formalsmap$parameter
 #> [1] "aucinf.obs"
 #> 
+#> 
+#> $aucinf.obs.dn$formalsmap_sparse
+#> list()
 #> 
 #> $aucinf.obs.dn$depends
 #> [1] "aucinf.obs"
@@ -13560,6 +14442,9 @@ get.interval.cols()
 #> $aucinf.pred.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $aucinf.pred.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $aucinf.pred.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -13572,13 +14457,13 @@ get.interval.cols()
 #> $aucinf.pred.dn$desc
 #> [1] "Dose normalized aucinf.pred"
 #> 
-#> $aucinf.pred.dn$sparse
-#> [1] FALSE
-#> 
 #> $aucinf.pred.dn$formalsmap
 #> $aucinf.pred.dn$formalsmap$parameter
 #> [1] "aucinf.pred"
 #> 
+#> 
+#> $aucinf.pred.dn$formalsmap_sparse
+#> list()
 #> 
 #> $aucinf.pred.dn$depends
 #> [1] "aucinf.pred"
@@ -13624,6 +14509,9 @@ get.interval.cols()
 #> $aumclast.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $aumclast.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $aumclast.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -13636,13 +14524,13 @@ get.interval.cols()
 #> $aumclast.dn$desc
 #> [1] "Dose normalized aumclast"
 #> 
-#> $aumclast.dn$sparse
-#> [1] FALSE
-#> 
 #> $aumclast.dn$formalsmap
 #> $aumclast.dn$formalsmap$parameter
 #> [1] "aumclast"
 #> 
+#> 
+#> $aumclast.dn$formalsmap_sparse
+#> list()
 #> 
 #> $aumclast.dn$depends
 #> [1] "aumclast"
@@ -13654,7 +14542,12 @@ get.interval.cols()
 #> [1] "AUMCLSTD"
 #> 
 #> $aumclast.dn$pptest_cdisc
+#> $aumclast.dn$pptest_cdisc$dense
 #> [1] "AUMC to Last Nonzero Conc by Dose"
+#> 
+#> $aumclast.dn$pptest_cdisc$sparse
+#> [1] "Sparse AUMClast by Dose"
+#> 
 #> 
 #> $aumclast.dn$formula
 #> [1] "$AUMC_{\\text{last},dn} = \\frac{AUMC_{\\text{last}}}{Dose}$"
@@ -13688,6 +14581,9 @@ get.interval.cols()
 #> $aumcall.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $aumcall.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcall.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -13700,13 +14596,13 @@ get.interval.cols()
 #> $aumcall.dn$desc
 #> [1] "Dose normalized aumcall"
 #> 
-#> $aumcall.dn$sparse
-#> [1] FALSE
-#> 
 #> $aumcall.dn$formalsmap
 #> $aumcall.dn$formalsmap$parameter
 #> [1] "aumcall"
 #> 
+#> 
+#> $aumcall.dn$formalsmap_sparse
+#> list()
 #> 
 #> $aumcall.dn$depends
 #> [1] "aumcall"
@@ -13752,6 +14648,9 @@ get.interval.cols()
 #> $aumcinf.obs.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $aumcinf.obs.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcinf.obs.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -13764,13 +14663,13 @@ get.interval.cols()
 #> $aumcinf.obs.dn$desc
 #> [1] "Dose normalized aumcinf.obs"
 #> 
-#> $aumcinf.obs.dn$sparse
-#> [1] FALSE
-#> 
 #> $aumcinf.obs.dn$formalsmap
 #> $aumcinf.obs.dn$formalsmap$parameter
 #> [1] "aumcinf.obs"
 #> 
+#> 
+#> $aumcinf.obs.dn$formalsmap_sparse
+#> list()
 #> 
 #> $aumcinf.obs.dn$depends
 #> [1] "aumcinf.obs"
@@ -13816,6 +14715,9 @@ get.interval.cols()
 #> $aumcinf.pred.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $aumcinf.pred.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $aumcinf.pred.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -13828,13 +14730,13 @@ get.interval.cols()
 #> $aumcinf.pred.dn$desc
 #> [1] "Dose normalized aumcinf.pred"
 #> 
-#> $aumcinf.pred.dn$sparse
-#> [1] FALSE
-#> 
 #> $aumcinf.pred.dn$formalsmap
 #> $aumcinf.pred.dn$formalsmap$parameter
 #> [1] "aumcinf.pred"
 #> 
+#> 
+#> $aumcinf.pred.dn$formalsmap_sparse
+#> list()
 #> 
 #> $aumcinf.pred.dn$depends
 #> [1] "aumcinf.pred"
@@ -13880,6 +14782,9 @@ get.interval.cols()
 #> $cmax.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $cmax.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $cmax.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -13892,13 +14797,13 @@ get.interval.cols()
 #> $cmax.dn$desc
 #> [1] "Dose normalized cmax"
 #> 
-#> $cmax.dn$sparse
-#> [1] FALSE
-#> 
 #> $cmax.dn$formalsmap
 #> $cmax.dn$formalsmap$parameter
 #> [1] "cmax"
 #> 
+#> 
+#> $cmax.dn$formalsmap_sparse
+#> list()
 #> 
 #> $cmax.dn$depends
 #> [1] "cmax"
@@ -13944,6 +14849,9 @@ get.interval.cols()
 #> $cmin.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $cmin.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $cmin.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -13956,13 +14864,13 @@ get.interval.cols()
 #> $cmin.dn$desc
 #> [1] "Dose normalized cmin"
 #> 
-#> $cmin.dn$sparse
-#> [1] FALSE
-#> 
 #> $cmin.dn$formalsmap
 #> $cmin.dn$formalsmap$parameter
 #> [1] "cmin"
 #> 
+#> 
+#> $cmin.dn$formalsmap_sparse
+#> list()
 #> 
 #> $cmin.dn$depends
 #> [1] "cmin"
@@ -14008,6 +14916,9 @@ get.interval.cols()
 #> $clast.obs.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $clast.obs.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $clast.obs.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -14020,13 +14931,13 @@ get.interval.cols()
 #> $clast.obs.dn$desc
 #> [1] "Dose normalized clast.obs"
 #> 
-#> $clast.obs.dn$sparse
-#> [1] FALSE
-#> 
 #> $clast.obs.dn$formalsmap
 #> $clast.obs.dn$formalsmap$parameter
 #> [1] "clast.obs"
 #> 
+#> 
+#> $clast.obs.dn$formalsmap_sparse
+#> list()
 #> 
 #> $clast.obs.dn$depends
 #> [1] "clast.obs"
@@ -14072,6 +14983,9 @@ get.interval.cols()
 #> $clast.pred.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $clast.pred.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $clast.pred.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -14084,13 +14998,13 @@ get.interval.cols()
 #> $clast.pred.dn$desc
 #> [1] "Dose normalized clast.pred"
 #> 
-#> $clast.pred.dn$sparse
-#> [1] FALSE
-#> 
 #> $clast.pred.dn$formalsmap
 #> $clast.pred.dn$formalsmap$parameter
 #> [1] "clast.pred"
 #> 
+#> 
+#> $clast.pred.dn$formalsmap_sparse
+#> list()
 #> 
 #> $clast.pred.dn$depends
 #> [1] "clast.pred"
@@ -14136,6 +15050,9 @@ get.interval.cols()
 #> $cav.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $cav.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $cav.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -14148,13 +15065,13 @@ get.interval.cols()
 #> $cav.dn$desc
 #> [1] "Dose normalized cav"
 #> 
-#> $cav.dn$sparse
-#> [1] FALSE
-#> 
 #> $cav.dn$formalsmap
 #> $cav.dn$formalsmap$parameter
 #> [1] "cav"
 #> 
+#> 
+#> $cav.dn$formalsmap_sparse
+#> list()
 #> 
 #> $cav.dn$depends
 #> [1] "cav"
@@ -14200,6 +15117,9 @@ get.interval.cols()
 #> $ctrough.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $ctrough.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $ctrough.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -14212,13 +15132,13 @@ get.interval.cols()
 #> $ctrough.dn$desc
 #> [1] "Dose normalized ctrough"
 #> 
-#> $ctrough.dn$sparse
-#> [1] FALSE
-#> 
 #> $ctrough.dn$formalsmap
 #> $ctrough.dn$formalsmap$parameter
 #> [1] "ctrough"
 #> 
+#> 
+#> $ctrough.dn$formalsmap_sparse
+#> list()
 #> 
 #> $ctrough.dn$depends
 #> [1] "ctrough"
@@ -14264,6 +15184,9 @@ get.interval.cols()
 #> $clr.last.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $clr.last.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $clr.last.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -14276,13 +15199,13 @@ get.interval.cols()
 #> $clr.last.dn$desc
 #> [1] "Dose normalized clr.last"
 #> 
-#> $clr.last.dn$sparse
-#> [1] FALSE
-#> 
 #> $clr.last.dn$formalsmap
 #> $clr.last.dn$formalsmap$parameter
 #> [1] "clr.last"
 #> 
+#> 
+#> $clr.last.dn$formalsmap_sparse
+#> list()
 #> 
 #> $clr.last.dn$depends
 #> [1] "clr.last"
@@ -14328,6 +15251,9 @@ get.interval.cols()
 #> $clr.obs.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $clr.obs.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $clr.obs.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -14340,13 +15266,13 @@ get.interval.cols()
 #> $clr.obs.dn$desc
 #> [1] "Dose normalized clr.obs"
 #> 
-#> $clr.obs.dn$sparse
-#> [1] FALSE
-#> 
 #> $clr.obs.dn$formalsmap
 #> $clr.obs.dn$formalsmap$parameter
 #> [1] "clr.obs"
 #> 
+#> 
+#> $clr.obs.dn$formalsmap_sparse
+#> list()
 #> 
 #> $clr.obs.dn$depends
 #> [1] "clr.obs"
@@ -14392,6 +15318,9 @@ get.interval.cols()
 #> $clr.pred.dn$FUN
 #> [1] "pk.calc.dn"
 #> 
+#> $clr.pred.dn$FUN_sparse
+#> [1] NA
+#> 
 #> $clr.pred.dn$values
 #> [1] FALSE  TRUE
 #> 
@@ -14404,13 +15333,13 @@ get.interval.cols()
 #> $clr.pred.dn$desc
 #> [1] "Dose normalized clr.pred"
 #> 
-#> $clr.pred.dn$sparse
-#> [1] FALSE
-#> 
 #> $clr.pred.dn$formalsmap
 #> $clr.pred.dn$formalsmap$parameter
 #> [1] "clr.pred"
 #> 
+#> 
+#> $clr.pred.dn$formalsmap_sparse
+#> list()
 #> 
 #> $clr.pred.dn$depends
 #> [1] "clr.pred"

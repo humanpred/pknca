@@ -74,6 +74,8 @@
 <span>  desc <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  sparse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  formalsmap <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  FUN_sparse <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
+<span>  formalsmap_sparse <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  datatype <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"interval"</span>, <span class="st">"individual"</span>, <span class="st">"population"</span><span class="op">)</span>,</span>
 <span>  pptestcd_cdisc <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  pptest_cdisc <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -129,13 +131,31 @@ column.</p></dd>
 
 
 <dt id="arg-sparse">sparse<a class="anchor" aria-label="anchor" href="#arg-sparse"></a></dt>
-<dd><p>Is the calculation for sparse PK?</p></dd>
+<dd><p>Retired.  <code>TRUE</code> is an error:  register a sparse-only
+parameter with <code>FUN = NA</code> and a <code>FUN_sparse</code> (plus <code>formalsmap_sparse</code>)
+instead, which is now what makes a parameter sparse-only.  <code>FALSE</code>, the
+default, is accepted and does nothing.</p></dd>
 
 
 <dt id="arg-formalsmap">formalsmap<a class="anchor" aria-label="anchor" href="#arg-formalsmap"></a></dt>
 <dd><p>A named list mapping parameter names in the function call
 to NCA parameter names.  See the details for information on use of
 <code>formalsmap</code>.</p></dd>
+
+
+<dt id="arg-fun-sparse">FUN_sparse<a class="anchor" aria-label="anchor" href="#arg-fun-sparse"></a></dt>
+<dd><p>The function to run (as a character string) when the data
+are sparse PK, or <code>NA</code> (the default) when the parameter has no
+sparse-specific estimator.  With sparse data, a parameter that has one uses
+it; a parameter that does not falls back to <code>FUN</code> applied to the
+arithmetic-mean profile.  See the details.</p></dd>
+
+
+<dt id="arg-formalsmap-sparse">formalsmap_sparse<a class="anchor" aria-label="anchor" href="#arg-formalsmap-sparse"></a></dt>
+<dd><p>The <code>formalsmap</code> for <code>FUN_sparse</code>, which usually has
+a different calling convention than <code>FUN</code> (a sparse estimator needs
+<code>subject</code>, for example).  May only be given when <code>FUN_sparse</code> is not
+<code>NA</code>.</p></dd>
 
 
 <dt id="arg-datatype">datatype<a class="anchor" aria-label="anchor" href="#arg-datatype"></a></dt>
@@ -147,9 +167,12 @@ use and will currently raise an error if selected.</p></dd>
 
 <dt id="arg-pptestcd-cdisc">pptestcd_cdisc<a class="anchor" aria-label="anchor" href="#arg-pptestcd-cdisc"></a></dt>
 <dd><p>The CDISC PPTESTCD code for this parameter.  Can be a
-character string for simple mappings, or a named list for route-dependent
+character string for simple mappings, a named list for route-dependent
 mappings with a <code>route</code> element whose value is itself a named list keyed
-by route (e.g. <code>list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))</code>).  Defaults to <code>name</code> if not provided.</p></dd>
+by route (e.g. <code>list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))</code>), or a named list with exactly the elements <code>dense</code> and
+<code>sparse</code>, for a parameter with a <code>FUN_sparse</code> whose sparse estimate has a
+code of its own (e.g. <code>list(dense = "AUCLST", sparse = "SPARSEAL")</code>).
+Defaults to <code>name</code> if not provided.</p></dd>
 
 
 <dt id="arg-pptest-cdisc">pptest_cdisc<a class="anchor" aria-label="anchor" href="#arg-pptest-cdisc"></a></dt>
@@ -218,7 +241,17 @@ available intervals for calculations)</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The <code>formalsmap</code> argument enables mapping some alternate formal
+    <p><code>FUN_sparse</code> gives a parameter a second calculation function for
+sparse PK.  With sparse data, a parameter that has one is calculated with it
+– from the pooled individual samples, and with <code>formalsmap_sparse</code> in place
+of <code>formalsmap</code> – and its result is reported as a sparse result.  A
+parameter with no <code>FUN_sparse</code> falls back to <code>FUN</code> applied to the
+arithmetic-mean profile, which is what sparse data have always done.  A
+sparse estimator names its concentration inputs <code>conc</code>/<code>time</code> the way a dense
+one does; those draw from the pooled samples rather than the mean profile.
+The estimators PKNCA ships are linear-trapezoidal only, so <code>auc.method</code> does
+not apply to them.</p>
+<p>The <code>formalsmap</code> argument enables mapping some alternate formal
 argument names to parameters.  It is used to generalize functions that may
 use multiple similar arguments (such as the variants of mean residence time).
 The names of the list should correspond to function formal parameter names
@@ -284,6 +317,24 @@ and the values should be one of the following:</p>
 
 <dt>"route.group"</dt>
 <dd><p>Route of dosing for the current group.</p></dd>
+
+
+</dl></li>
+<li><p>For sparse PK (<code>NULL</code> with dense PK, so a parameter naming one of
+these is only calculable with a sparse <code>PKNCAconc</code>):</p><dl><dt>"conc.sparse"</dt>
+<dd><p>The pooled individual concentration measurements for the current interval ("conc" is the arithmetic-mean profile built from them).</p></dd>
+
+<dt>"time.sparse"</dt>
+<dd><p>Times associated with the pooled individual concentration measurements for the current interval (values start at 0 at the beginning of the current interval).</p></dd>
+
+<dt>"conc.sparse.group"</dt>
+<dd><p>The pooled individual concentration measurements for the current group.</p></dd>
+
+<dt>"time.sparse.group"</dt>
+<dd><p>Times associated with the pooled individual concentration measurements for the current group.</p></dd>
+
+<dt>"subject"</dt>
+<dd><p>Subject identifiers for the pooled individual concentration measurements for the current interval.</p></dd>
 
 
 </dl></li>

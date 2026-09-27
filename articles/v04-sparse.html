@@ -102,16 +102,19 @@ interval, but no animal has the full profile.</p>
 <div class="section level3">
 <h3 id="sparse-nca-setup">Sparse NCA Setup<a class="anchor" aria-label="anchor" href="#sparse-nca-setup"></a>
 </h3>
-<p>Sparse NCA is setup similarly to how normal, dense PK sampling is
-setup with PKNCA. The only difference are that you give the
-<code>sparse</code> option to <code><a href="../reference/PKNCAconc.html">PKNCAconc()</a></code>, and in your
-interval calculations, you will request the sparse variants of the
-parameters. The sparse parameters for calculation are
-<code>sparse_auclast</code> and <code>sparse_aumclast</code> (each with
-an accompanying standard error and degrees of freedom) along with
-parameters derived from them (described below). Any of the non-sparse
-parameters will be calculated based on the mean profile of the animals
-in a group.</p>
+<p>Sparse NCA is setup the same way as normal, dense PK sampling is
+setup with PKNCA. The only difference is that you give the
+<code>sparse</code> option to <code><a href="../reference/PKNCAconc.html">PKNCAconc()</a></code>; the parameters
+are requested by their usual names.</p>
+<p>Two things happen behind that flag. For <code>auclast</code> and
+<code>aumclast</code>, PKNCA uses the sparse estimators – the Bailer
+point estimate with the Nedelman-Jia/Holder standard error – calculated
+from the pooled samples of all the animals in a group, and reports the
+standard error and degrees of freedom alongside the estimate as
+<code>auclast_se</code>/<code>auclast_df</code> and
+<code>aumclast_se</code>/<code>aumclast_df</code>. Every other parameter
+is calculated from the arithmetic-mean profile of the animals in the
+group.</p>
 <p>The example below uses data extracted from Holder D. J., Hsuan F.,
 Dixit R. and Soper K. (1999). A method for estimating and testing area
 under the curve in serial sacrifice, batch, and complete data designs.
@@ -208,124 +211,207 @@ PKNCA stops with an error identifying the inconsistent group.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    start<span class="op">=</span><span class="fl">0</span>,</span>
 <span>    end<span class="op">=</span><span class="fl">24</span>,</span>
+<span>    auclast<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>    auclast_se<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>    auclast_df<span class="op">=</span><span class="cn">TRUE</span>,</span>
 <span>    aucinf.obs<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>    cmax<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>    sparse_auclast<span class="op">=</span><span class="cn">TRUE</span></span>
+<span>    cmax<span class="op">=</span><span class="cn">TRUE</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">o_data_sparse</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc_sparse</span>, intervals<span class="op">=</span><span class="va">d_intervals</span><span class="op">)</span></span>
 <span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_sparse</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2</span></span>
-<span><span class="co">## points)</span></span></code></pre>
+<pre><code><span><span class="co">## The sparse estimators use the linear trapezoidal rule, so the auc.method option</span></span>
+<span><span class="co">## ("lin up/log down") does not apply to: auclast</span></span></code></pre>
 <pre><code><span><span class="co">## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples</span></span>
 <span><span class="co">## per subject</span></span></code></pre>
+<pre><code><span><span class="co">## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2</span></span>
+<span><span class="co">## points)</span></span></code></pre>
+<p><code><a href="../reference/pknca_interval_table.html">pknca_interval_table()</a></code> builds the same kind of
+specification from a description of the study, and its
+<code>sparse_single_dose</code> preset is the single-dose set with no
+imputation (there is no individual profile to impute into):</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/pknca_interval_table.html">pknca_interval_table</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">24</span>, preset<span class="op">=</span><span class="st">"sparse_single_dose"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="results">Results<a class="anchor" aria-label="anchor" href="#results"></a>
 </h2>
 <p>As with any other PKNCA result, the data are available through the
 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> function:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##  start end cmax sparse_auclast aucinf.obs</span></span>
-<span><span class="co">##      0  24 3.05           39.5         NC</span></span>
+<pre><code><span><span class="co">##  start end auclast auclast_se auclast_df cmax aucinf.obs</span></span>
+<span><span class="co">##      0  24    39.5       7.31         NC 3.05         NC</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Caption: cmax, sparse_auclast, aucinf.obs: geometric mean and geometric coefficient of variation; NC: not calculated</span></span></code></pre>
+<span><span class="co">## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; auclast_se, auclast_df: arithmetic mean and standard deviation; NC: not calculated</span></span></code></pre>
 <p>or individual results are available through the
 <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> function:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 18 × 6</span></span></span>
-<span><span class="co">##    start   end PPTESTCD            PPORRES PPANMETH               exclude       </span></span>
-<span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 1</span>     0    24 cmax                  3.05  <span style="color: #949494;">""</span>                     <span style="color: #BB0000;">NA</span>            </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 2</span>     0    24 tmax                  6     <span style="color: #949494;">""</span>                     <span style="color: #BB0000;">NA</span>            </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 3</span>     0    24 tlast                24     <span style="color: #949494;">""</span>                     <span style="color: #BB0000;">NA</span>            </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 4</span>     0    24 clast.obs             0.191 <span style="color: #949494;">""</span>                     <span style="color: #BB0000;">NA</span>            </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 5</span>     0    24 lambda.z             <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                     Too few point…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 6</span>     0    24 r.squared            <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                     Too few point…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>     0    24 adj.r.squared        <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                     Too few point…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 8</span>     0    24 lambda.z.corrxy      <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                     Too few point…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 9</span>     0    24 lambda.z.time.first  <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                     Too few point…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">10</span>     0    24 lambda.z.time.last   <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                     Too few point…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">11</span>     0    24 lambda.z.n.points    <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                     Too few point…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">12</span>     0    24 clast.pred           <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                     Too few point…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">13</span>     0    24 half.life            <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                     Too few point…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">14</span>     0    24 span.ratio           <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                     Too few point…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">15</span>     0    24 aucinf.obs           <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">"</span>AUC: lin up/log down<span style="color: #949494;">"</span> Too few point…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">16</span>     0    24 sparse_auclast       39.5   <span style="color: #949494;">""</span>                     <span style="color: #BB0000;">NA</span>            </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">17</span>     0    24 sparse_auc_se         7.31  <span style="color: #949494;">""</span>                     <span style="color: #BB0000;">NA</span>            </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">18</span>     0    24 sparse_auc_df        <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                     <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<span><span class="co">##    start   end PPTESTCD            PPORRES PPANMETH                      exclude</span></span>
+<span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 1</span>     0    24 cmax                  3.05  <span style="color: #949494;">""</span>                            <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 2</span>     0    24 tmax                  6     <span style="color: #949494;">""</span>                            <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 3</span>     0    24 tlast                24     <span style="color: #949494;">""</span>                            <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 4</span>     0    24 clast.obs             0.191 <span style="color: #949494;">""</span>                            <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 5</span>     0    24 lambda.z             <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                            Too fe…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 6</span>     0    24 r.squared            <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                            Too fe…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>     0    24 adj.r.squared        <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                            Too fe…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 8</span>     0    24 lambda.z.corrxy      <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                            Too fe…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 9</span>     0    24 lambda.z.time.first  <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                            Too fe…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span>     0    24 lambda.z.time.last   <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                            Too fe…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">11</span>     0    24 lambda.z.n.points    <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                            Too fe…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">12</span>     0    24 clast.pred           <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                            Too fe…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">13</span>     0    24 half.life            <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                            Too fe…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">14</span>     0    24 span.ratio           <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                            Too fe…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">15</span>     0    24 aucinf.obs           <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">"</span>AUC: lin up/log down<span style="color: #949494;">"</span>        Too fe…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">16</span>     0    24 auclast              39.5   <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">17</span>     0    24 auclast_se            7.31  <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">18</span>     0    24 auclast_df           <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<p><code>auclast_se</code> and <code>auclast_df</code> are reported
+whether or not they were requested, because the sparse estimator returns
+all three together. They are only calculable from sparse data:
+requesting one for a dense <code>PKNCAconc</code> is an error.</p>
 </div>
 <div class="section level2">
-<h2 id="sparse-aumc-and-derived-parameters">Sparse AUMC and Derived Parameters<a class="anchor" aria-label="anchor" href="#sparse-aumc-and-derived-parameters"></a>
+<h2 id="sparse-auc-aumc-and-derived-parameters">Sparse AUC, AUMC, and Derived Parameters<a class="anchor" aria-label="anchor" href="#sparse-auc-aumc-and-derived-parameters"></a>
 </h2>
-<p>In addition to <code>sparse_auclast</code> (with its standard error,
-<code>sparse_auc_se</code>, and degrees of freedom,
-<code>sparse_auc_df</code>), the area under the first moment curve is
-available as <code>sparse_aumclast</code> (with
-<code>sparse_aumc_se</code> and <code>sparse_aumc_df</code>). Five
-parameters derived from the sparse AUC and AUMC are also available:</p>
-<ul>
-<li>
-<code>mrt.sparse.last</code>: Mean residence time
-(<code>sparse_aumclast</code>/<code>sparse_auclast</code>)</li>
-<li>
-<code>cl.sparse.last</code>: Clearance
-(dose/<code>sparse_auclast</code>)</li>
-<li>
-<code>kel.sparse.last</code>: Elimination rate
-(1/<code>mrt.sparse.last</code>)</li>
-<li>
-<code>vss.sparse.last</code>: Steady-state volume of distribution
-(<code>cl.sparse.last</code>*<code>mrt.sparse.last</code>)</li>
-<li>
-<code>vz.sparse.last</code>: Terminal volume of distribution
-(<code>cl.sparse.last</code>/<code>kel.sparse.last</code>)</li>
-</ul>
-<p>The example below calculates all of them from the same data with
-intravenous dose information added. Note that because
-<code>kel.sparse.last</code> is calculated as 1/MRT rather than from a
-terminal log-linear
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>)
-fit, <code>vz.sparse.last</code> is numerically equal to
-<code>vss.sparse.last</code>.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<p>Because the sparse estimate is stored under the standard parameter
+name, every parameter derived from an AUC is available for sparse data
+with no extra work. <code>cl.last</code> divides the dose by
+<code>auclast</code>, <code>mrt.last</code> divides
+<code>aumclast</code> by <code>auclast</code>, and so on down the usual
+derived graph.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>id<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">d_sparse</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, dose<span class="op">=</span><span class="fl">100</span>, time<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">o_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span><span class="va">d_dose</span>, <span class="va">dose</span><span class="op">~</span><span class="va">time</span><span class="op">|</span><span class="va">id</span>, route<span class="op">=</span><span class="st">"intravascular"</span><span class="op">)</span></span>
 <span><span class="va">d_intervals_derived</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    start<span class="op">=</span><span class="fl">0</span>,</span>
 <span>    end<span class="op">=</span><span class="fl">24</span>,</span>
-<span>    sparse_auclast<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>    sparse_aumclast<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>    mrt.sparse.last<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>    cl.sparse.last<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>    kel.sparse.last<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>    vss.sparse.last<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>    vz.sparse.last<span class="op">=</span><span class="cn">TRUE</span></span>
+<span>    auclast<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>    aumclast<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>    mrt.last<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>    cl.last<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>    kel.last<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>    vss.last<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>    vz.last<span class="op">=</span><span class="cn">TRUE</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">o_data_derived</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc_sparse</span>, <span class="va">o_dose</span>, intervals<span class="op">=</span><span class="va">d_intervals_derived</span><span class="op">)</span></span>
 <span><span class="va">o_nca_derived</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_derived</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## The sparse estimators use the linear trapezoidal rule, so the auc.method option</span></span>
+<span><span class="co">## ("lin up/log down") does not apply to: auclast, aumclast</span></span></code></pre>
 <pre><code><span><span class="co">## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples</span></span>
 <span><span class="co">## per subject</span></span></code></pre>
 <pre><code><span><span class="co">## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples</span></span>
 <span><span class="co">## per subject</span></span></code></pre>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2</span></span>
+<span><span class="co">## points)</span></span></code></pre>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">o_nca_derived</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 11 × 6</span></span></span>
-<span><span class="co">##    start   end PPTESTCD        PPORRES PPANMETH exclude</span></span>
-<span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 1</span>     0    24 sparse_auclast   39.5   <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 2</span>     0    24 sparse_auc_se     7.31  <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 3</span>     0    24 sparse_auc_df    <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 4</span>     0    24 sparse_aumclast 296.    <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 5</span>     0    24 sparse_aumc_se   66.9   <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 6</span>     0    24 sparse_aumc_df   <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>     0    24 cl.sparse.last    2.53  <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 8</span>     0    24 mrt.sparse.last   7.49  <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 9</span>     0    24 vss.sparse.last  19.0   <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">10</span>     0    24 kel.sparse.last   0.134 <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">11</span>     0    24 vz.sparse.last   19.0   <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 23 × 6</span></span></span>
+<span><span class="co">##    start   end PPTESTCD            PPORRES PPANMETH exclude                     </span></span>
+<span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 1</span>     0    24 tmax                   6    <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>                          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 2</span>     0    24 tlast                 24    <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>                          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 3</span>     0    24 cl.last                2.53 <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>                          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 4</span>     0    24 mrt.last               7.49 <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>                          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 5</span>     0    24 vss.last              19.0  <span style="color: #949494;">""</span>       <span style="color: #BB0000;">NA</span>                          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 6</span>     0    24 lambda.z              <span style="color: #BB0000;">NA</span>    <span style="color: #949494;">""</span>       Too few points for half-lif…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>     0    24 r.squared             <span style="color: #BB0000;">NA</span>    <span style="color: #949494;">""</span>       Too few points for half-lif…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 8</span>     0    24 adj.r.squared         <span style="color: #BB0000;">NA</span>    <span style="color: #949494;">""</span>       Too few points for half-lif…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 9</span>     0    24 lambda.z.corrxy       <span style="color: #BB0000;">NA</span>    <span style="color: #949494;">""</span>       Too few points for half-lif…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span>     0    24 lambda.z.time.first   <span style="color: #BB0000;">NA</span>    <span style="color: #949494;">""</span>       Too few points for half-lif…</span></span>
+<span><span class="co">## <span style="color: #949494;"># ℹ 13 more rows</span></span></span></code></pre>
+<p>Note what <code>vz.last</code> does here. It is the clearance divided
+by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>,
+the terminal rate constant fitted on the mean profile, which is the
+standard toxicokinetic approach. These data have only two time points
+after the mean profile’s peak, which is too few for a terminal fit, so
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
+and therefore <code>vz.last</code> are <code>NA</code>. That is the
+honest answer: the retired <code>vz.sparse.last</code> divided the
+clearance by <code>1/MRT</code> instead, which always produced a number
+but made Vz numerically identical to Vss.</p>
+<p><code>kel.last</code>, like the rest of PKNCA’s <code>kel</code>
+family, is <code>1/MRT</code>, so it is unchanged from the retired
+<code>kel.sparse.last</code>. Ask for <code>lambda.z</code> when you
+want the terminal rate constant itself.</p>
+</div>
+<div class="section level2">
+<h2 id="deprecated-parameter-names">Deprecated Parameter Names<a class="anchor" aria-label="anchor" href="#deprecated-parameter-names"></a>
+</h2>
+<p>Sparse calculations were originally requested through a parallel set
+of names. All eleven still calculate and still give the values they
+always gave, but each now warns and <strong>will be an error in the next
+minor release of PKNCA</strong>:</p>
+<table class="table">
+<thead><tr class="header">
+<th>Deprecated</th>
+<th>Use instead</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>sparse_auclast</code></td>
+<td><code>auclast</code></td>
+</tr>
+<tr class="even">
+<td><code>sparse_auc_se</code></td>
+<td><code>auclast_se</code></td>
+</tr>
+<tr class="odd">
+<td><code>sparse_auc_df</code></td>
+<td><code>auclast_df</code></td>
+</tr>
+<tr class="even">
+<td><code>sparse_aumclast</code></td>
+<td><code>aumclast</code></td>
+</tr>
+<tr class="odd">
+<td><code>sparse_aumc_se</code></td>
+<td><code>aumclast_se</code></td>
+</tr>
+<tr class="even">
+<td><code>sparse_aumc_df</code></td>
+<td><code>aumclast_df</code></td>
+</tr>
+<tr class="odd">
+<td><code>cl.sparse.last</code></td>
+<td><code>cl.last</code></td>
+</tr>
+<tr class="even">
+<td><code>mrt.sparse.last</code></td>
+<td><code>mrt.last</code></td>
+</tr>
+<tr class="odd">
+<td><code>kel.sparse.last</code></td>
+<td><code>kel.last</code></td>
+</tr>
+<tr class="even">
+<td><code>vss.sparse.last</code></td>
+<td><code>vss.last</code></td>
+</tr>
+<tr class="odd">
+<td><code>vz.sparse.last</code></td>
+<td><code>vz.last</code></td>
+</tr>
+</tbody>
+</table>
+<p>Every replacement but the last gives the same number as the name it
+replaces. <code>vz.last</code> is
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>-based,
+as described above, so it differs from <code>vz.sparse.last</code> by
+design.</p>
+<p>The functions behind the sparse estimators –
+<code><a href="../reference/pk.calc.sparse_auc.html">pk.calc.sparse_auc()</a></code>,
+<code><a href="../reference/pk.calc.sparse_auc.html">pk.calc.sparse_auclast()</a></code>,
+<code><a href="../reference/pk.calc.sparse_aumc.html">pk.calc.sparse_aumc()</a></code>,
+<code><a href="../reference/pk.calc.sparse_aumc.html">pk.calc.sparse_aumclast()</a></code>, <code><a href="../reference/as_sparse_pk.html">as_sparse_pk()</a></code>,
+<code><a href="../reference/sparse_mean.html">sparse_mean()</a></code>, <code><a href="../reference/var_sparse_auc.html">var_sparse_auc()</a></code>, and
+<code><a href="../reference/cov_holder.html">cov_holder()</a></code> – are not deprecated. They are what the
+unified estimators call, and they remain available for calculations
+outside <code><a href="../reference/pk.nca.html">pk.nca()</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="notes-on-sparse-calculation-behavior">Notes on Sparse Calculation Behavior<a class="anchor" aria-label="anchor" href="#notes-on-sparse-calculation-behavior"></a>
@@ -333,8 +419,8 @@ fit, <code>vz.sparse.last</code> is numerically equal to
 <div class="section level3">
 <h3 id="degrees-of-freedom-with-multiple-samples-per-subject">Degrees of freedom with multiple samples per subject<a class="anchor" aria-label="anchor" href="#degrees-of-freedom-with-multiple-samples-per-subject"></a>
 </h3>
-<p>The degrees of freedom (<code>sparse_auc_df</code> and
-<code>sparse_aumc_df</code>) can only be calculated when each subject
+<p>The degrees of freedom (<code>auclast_df</code> and
+<code>aumclast_df</code>) can only be calculated when each subject
 contributes a single sample to the profile (as in a serial sacrifice
 design). When any subject contributes more than one sample, as in the
 example data here, PKNCA warns that it “Cannot yet calculate sparse
@@ -356,11 +442,15 @@ the mean is calculated normally (including the BLQ values as zero).</p>
 <div class="section level3">
 <h3 id="only-the-linear-trapezoidal-method-is-supported">Only the linear trapezoidal method is supported<a class="anchor" aria-label="anchor" href="#only-the-linear-trapezoidal-method-is-supported"></a>
 </h3>
-<p>Sparse AUC and AUMC are only defined with the linear trapezoidal
-method in PKNCA. Calling <code><a href="../reference/pk.calc.sparse_auc.html">pk.calc.sparse_auc()</a></code> with any
-other <code>method</code> is an error, and sparse calculations within
-<code><a href="../reference/pk.nca.html">pk.nca()</a></code> always use the linear method (the
-<code>auc.method</code> option does not apply to them).</p>
+<p>The sparse variance theory is derived for a fixed-weight linear
+combination of the per-time-point means, so the sparse estimators are
+defined with the linear trapezoidal method only. Calling
+<code><a href="../reference/pk.calc.sparse_auc.html">pk.calc.sparse_auc()</a></code> with any other <code>method</code> is
+an error, and within <code><a href="../reference/pk.nca.html">pk.nca()</a></code> the sparse estimators always
+use the linear method: the <code>auc.method</code> option does not apply
+to them, and <code><a href="../reference/pk.nca.html">pk.nca()</a></code> says so once per run when the option
+asks for anything else. Parameters that fall back to the mean profile,
+such as <code>aucinf.obs</code>, do follow <code>auc.method</code>.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

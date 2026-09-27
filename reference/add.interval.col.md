@@ -15,6 +15,8 @@ add.interval.col(
   desc = "",
   sparse = FALSE,
   formalsmap = list(),
+  FUN_sparse = NA_character_,
+  formalsmap_sparse = list(),
   datatype = c("interval", "individual", "population"),
   pptestcd_cdisc = NULL,
   pptest_cdisc = NULL,
@@ -68,13 +70,30 @@ add.interval.col(
 
 - sparse:
 
-  Is the calculation for sparse PK?
+  Retired. `TRUE` is an error: register a sparse-only parameter with
+  `FUN = NA` and a `FUN_sparse` (plus `formalsmap_sparse`) instead,
+  which is now what makes a parameter sparse-only. `FALSE`, the default,
+  is accepted and does nothing.
 
 - formalsmap:
 
   A named list mapping parameter names in the function call to NCA
   parameter names. See the details for information on use of
   `formalsmap`.
+
+- FUN_sparse:
+
+  The function to run (as a character string) when the data are sparse
+  PK, or `NA` (the default) when the parameter has no sparse-specific
+  estimator. With sparse data, a parameter that has one uses it; a
+  parameter that does not falls back to `FUN` applied to the
+  arithmetic-mean profile. See the details.
+
+- formalsmap_sparse:
+
+  The `formalsmap` for `FUN_sparse`, which usually has a different
+  calling convention than `FUN` (a sparse estimator needs `subject`, for
+  example). May only be given when `FUN_sparse` is not `NA`.
 
 - datatype:
 
@@ -86,11 +105,14 @@ add.interval.col(
 - pptestcd_cdisc:
 
   The CDISC PPTESTCD code for this parameter. Can be a character string
-  for simple mappings, or a named list for route-dependent mappings with
-  a `route` element whose value is itself a named list keyed by route
+  for simple mappings, a named list for route-dependent mappings with a
+  `route` element whose value is itself a named list keyed by route
   (e.g.
-  `list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))`).
-  Defaults to `name` if not provided.
+  `list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))`),
+  or a named list with exactly the elements `dense` and `sparse`, for a
+  parameter with a `FUN_sparse` whose sparse estimate has a code of its
+  own (e.g. `list(dense = "AUCLST", sparse = "SPARSEAL")`). Defaults to
+  `name` if not provided.
 
 - pptest_cdisc:
 
@@ -162,6 +184,17 @@ NULL (Calling this function has a side effect of changing the available
 intervals for calculations)
 
 ## Details
+
+`FUN_sparse` gives a parameter a second calculation function for sparse
+PK. With sparse data, a parameter that has one is calculated with it –
+from the pooled individual samples, and with `formalsmap_sparse` in
+place of `formalsmap` – and its result is reported as a sparse result. A
+parameter with no `FUN_sparse` falls back to `FUN` applied to the
+arithmetic-mean profile, which is what sparse data have always done. A
+sparse estimator names its concentration inputs `conc`/`time` the way a
+dense one does; those draw from the pooled samples rather than the mean
+profile. The estimators PKNCA ships are linear-trapezoidal only, so
+`auc.method` does not apply to them.
 
 The `formalsmap` argument enables mapping some alternate formal argument
 names to parameters. It is used to generalize functions that may use
@@ -263,6 +296,35 @@ parameter names and the values should be one of the following:
   - "route.group":
 
     Route of dosing for the current group.
+
+- For sparse PK (`NULL` with dense PK, so a parameter naming one of
+  these is only calculable with a sparse `PKNCAconc`):
+
+  - "conc.sparse":
+
+    The pooled individual concentration measurements for the current
+    interval ("conc" is the arithmetic-mean profile built from them).
+
+  - "time.sparse":
+
+    Times associated with the pooled individual concentration
+    measurements for the current interval (values start at 0 at the
+    beginning of the current interval).
+
+  - "conc.sparse.group":
+
+    The pooled individual concentration measurements for the current
+    group.
+
+  - "time.sparse.group":
+
+    Times associated with the pooled individual concentration
+    measurements for the current group.
+
+  - "subject":
+
+    Subject identifiers for the pooled individual concentration
+    measurements for the current interval.
 
 - Constants:
 

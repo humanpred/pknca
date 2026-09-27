@@ -68,9 +68,9 @@
 <span>  <span class="va">data_conc</span>,</span>
 <span>  <span class="va">data_dose</span>,</span>
 <span>  <span class="va">data_intervals</span>,</span>
-<span>  <span class="va">sparse</span>,</span>
 <span>  <span class="va">options</span>,</span>
 <span>  <span class="va">impute</span>,</span>
+<span>  data_sparse_conc <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -81,7 +81,8 @@
 
 <dl><dt id="arg-data-conc">data_conc<a class="anchor" aria-label="anchor" href="#arg-data-conc"></a></dt>
 <dd><p>A data.frame or tibble with standardized column names as
-output from <code>prepare_PKNCAconc()</code></p></dd>
+output from <code>prepare_PKNCAconc()</code>.  With sparse PK this is the
+arithmetic-mean profile.</p></dd>
 
 
 <dt id="arg-data-dose">data_dose<a class="anchor" aria-label="anchor" href="#arg-data-dose"></a></dt>
@@ -94,11 +95,6 @@ output from <code>prepare_PKNCAdose()</code></p></dd>
 as output from <code>prepare_PKNCAintervals()</code></p></dd>
 
 
-<dt id="arg-sparse">sparse<a class="anchor" aria-label="anchor" href="#arg-sparse"></a></dt>
-<dd><p>Should only sparse calculations be performed (TRUE) or only
-dense calculations (FALSE)?</p></dd>
-
-
 <dt id="arg-options">options<a class="anchor" aria-label="anchor" href="#arg-options"></a></dt>
 <dd><p>List of changes to the default PKNCA options (see
 <code><a href="PKNCA.options.html">PKNCA.options()</a></code>)</p></dd>
@@ -108,13 +104,21 @@ dense calculations (FALSE)?</p></dd>
 <dd><p>The column name in <code>data_intervals</code> to use for imputation</p></dd>
 
 
+<dt id="arg-data-sparse-conc">data_sparse_conc<a class="anchor" aria-label="anchor" href="#arg-data-sparse-conc"></a></dt>
+<dd><p>For sparse PK, a data.frame or tibble of the pooled
+individual samples (including a <code>subject</code> column) as output from
+<code>prepare_PKNCAconc()</code>; <code>NULL</code> for dense PK</p></dd>
+
+
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>Indicate, by <code><a href="https://rdrr.io/r/base/message.html" class="external-link">message()</a></code>, the current state of calculation.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A data.frame with all NCA results</p>
+    <p>A list with elements "dense" and "sparse", each a data.frame of the
+NCA results calculated from that concentration representation (or, when no
+calculation was possible at all, the warning condition saying why)</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

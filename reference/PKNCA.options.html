@@ -202,114 +202,117 @@ options (<code>vignette("Options-for-Controlling-PKNCA", package="PKNCA")</code>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $single.dose.aucs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   start end auclast aucall aumclast aumcall aucint.last aucint.all aumcint.last</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     0  24    TRUE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     0 Inf   FALSE  FALSE    FALSE   FALSE       FALSE      FALSE        FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aumcint.all    c0  cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE FALSE FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE        FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.iv.last vss.last vss.iv.last vss.all vss.int.all vss.int.last   cav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE    FALSE       FALSE   FALSE       FALSE        FALSE FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE    FALSE       FALSE   FALSE       FALSE        FALSE FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   cav.int.last cav.int.all ctrough cstart   ptr  tlag deg.fluc swing  ceoi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1        FALSE       FALSE   FALSE  FALSE FALSE FALSE    FALSE FALSE FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2        FALSE       FALSE   FALSE  FALSE FALSE FALSE    FALSE FALSE FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aucabove.predose.all aucabove.trough.all count_conc count_conc_measured</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                FALSE               FALSE      FALSE               FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                FALSE               FALSE      FALSE               FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   totdose volpk    ae clr.last clr.obs clr.pred    fe ertlst ermax ertmax erint</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   FALSE FALSE FALSE    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   erlst ratio.cmax ratio.auclast ratio.aucint.last ratio.aucint.all</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 FALSE      FALSE         FALSE             FALSE            FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 FALSE      FALSE         FALSE             FALSE            FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   sparse_auclast sparse_auc_se sparse_auc_df sparse_aumclast sparse_aumc_se</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE         FALSE         FALSE           FALSE          FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          FALSE         FALSE         FALSE           FALSE          FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   sparse_aumc_df time_above aucivlast aucivall aucivint.last aucivint.all</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE      FALSE     FALSE    FALSE         FALSE        FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          FALSE      FALSE     FALSE    FALSE         FALSE        FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aucivpbextlast aucivpbextall aucivpbextint.last aucivpbextint.all aumcivlast</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE         FALSE              FALSE             FALSE      FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          FALSE         FALSE              FALSE             FALSE      FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aumcivall aumcivint.last aumcivint.all half.life r.squared adj.r.squared</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     FALSE          FALSE         FALSE     FALSE     FALSE         FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     FALSE          FALSE         FALSE      TRUE     FALSE         FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lambda.z.corrxy lambda.z lambda.z.time.first lambda.z.time.last</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           FALSE    FALSE               FALSE              FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           FALSE    FALSE               FALSE              FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lambda.z.n.points clast.pred span.ratio tobit_residual adj_tobit_residual</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1             FALSE      FALSE      FALSE          FALSE              FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2             FALSE      FALSE      FALSE          FALSE              FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lambda.z.n.points_blq thalf.eff.last thalf.eff.iv.last kel.last kel.iv.last</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                 FALSE          FALSE             FALSE    FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                 FALSE          FALSE             FALSE    FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   kel.all kel.int.all kel.int.last cl.iv.all cl.iv.last cl.ivint.all</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   FALSE       FALSE        FALSE     FALSE      FALSE        FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   FALSE       FALSE        FALSE     FALSE      FALSE        FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.ivint.last cl.sparse.last f.last f.int.last f.int.all mrt.sparse.last</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1         FALSE          FALSE  FALSE      FALSE     FALSE           FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2         FALSE          FALSE  FALSE      FALSE     FALSE           FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.iv.all mrt.ivint.all mrt.ivint.last vz.all vz.int.all vz.int.last</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      FALSE         FALSE          FALSE  FALSE      FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      FALSE         FALSE          FALSE  FALSE      FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vz.iv.all vz.iv.last vz.ivint.all vz.ivint.last vz.last vss.iv.all</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     FALSE      FALSE        FALSE         FALSE   FALSE      FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     FALSE      FALSE        FALSE         FALSE   FALSE      FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vss.ivint.all vss.ivint.last vss.sparse.last aucinf.obs aucinf.pred</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1         FALSE          FALSE           FALSE      FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2         FALSE          FALSE           FALSE       TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aumcinf.obs aumcinf.pred aucint.inf.obs aucint.inf.pred aumcint.inf.obs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE        FALSE          FALSE           FALSE           FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE        FALSE          FALSE           FALSE           FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aumcint.inf.pred aucivinf.obs aucivinf.pred aucivpbextinf.obs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1            FALSE        FALSE         FALSE             FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2            FALSE        FALSE         FALSE             FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aucivpbextinf.pred aumcivinf.obs aumcivinf.pred aucpext.obs aucpext.pred</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1              FALSE         FALSE          FALSE       FALSE        FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2              FALSE         FALSE          FALSE       FALSE        FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   kel.iv.all kel.ivint.all kel.ivint.last kel.sparse.last cl.obs cl.pred</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      FALSE         FALSE          FALSE           FALSE  FALSE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      FALSE         FALSE          FALSE           FALSE  FALSE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred f.obs f.pred f.int.obs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE           FALSE     FALSE      FALSE FALSE  FALSE     FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          FALSE           FALSE     FALSE      FALSE FALSE  FALSE     FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   f.int.pred mrt.obs mrt.pred mrt.int.inf.obs mrt.int.inf.pred mrt.iv.obs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      FALSE   FALSE    FALSE           FALSE            FALSE      FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      FALSE   FALSE    FALSE           FALSE            FALSE      FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.iv.pred mrt.md.obs mrt.md.pred mrt.ivmd.obs mrt.ivmd.pred vz.obs vz.pred</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE      FALSE       FALSE        FALSE         FALSE  FALSE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE      FALSE       FALSE        FALSE         FALSE  FALSE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vz.int.inf.obs vz.int.inf.pred vz.iv.obs vz.iv.pred vz.sparse.last vss.obs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE           FALSE     FALSE      FALSE          FALSE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          FALSE           FALSE     FALSE      FALSE          FALSE   FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vss.pred vss.iv.obs vss.iv.pred vss.md.obs vss.md.pred vss.ivmd.obs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    FALSE      FALSE       FALSE      FALSE       FALSE        FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2    FALSE      FALSE       FALSE      FALSE       FALSE        FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vss.ivmd.pred vss.int.inf.obs vss.int.inf.pred cav.int.inf.obs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1         FALSE           FALSE            FALSE           FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2         FALSE           FALSE            FALSE           FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   cav.int.inf.pred ratio.aucinf.obs ratio.aucinf.pred thalf.eff.obs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1            FALSE            FALSE             FALSE         FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2            FALSE            FALSE             FALSE         FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   thalf.eff.pred thalf.eff.iv.obs thalf.eff.iv.pred kel.obs kel.pred kel.iv.obs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE            FALSE             FALSE   FALSE    FALSE      FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          FALSE            FALSE             FALSE   FALSE    FALSE      FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   kel.iv.pred kel.int.inf.obs kel.int.inf.pred auclast.dn aucall.dn</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE           FALSE            FALSE      FALSE     FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE           FALSE            FALSE      FALSE     FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aucinf.obs.dn aucinf.pred.dn aumclast.dn aumcall.dn aumcinf.obs.dn</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1         FALSE          FALSE       FALSE      FALSE          FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2         FALSE          FALSE       FALSE      FALSE          FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aumcinf.pred.dn cmax.dn cmin.dn clast.obs.dn clast.pred.dn cav.dn ctrough.dn</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           FALSE   FALSE   FALSE        FALSE         FALSE  FALSE      FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           FALSE   FALSE   FALSE        FALSE         FALSE  FALSE      FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   clr.last.dn clr.obs.dn clr.pred.dn</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE      FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE      FALSE       FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   start end auclast auclast_se auclast_df aucall aumclast aumclast_se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     0  24    TRUE      FALSE      FALSE  FALSE    FALSE       FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     0 Inf   FALSE      FALSE      FALSE  FALSE    FALSE       FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   aumclast_df aumcall aucint.last aucint.all aumcint.last aumcint.all    c0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE   FALSE       FALSE      FALSE        FALSE       FALSE FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE   FALSE       FALSE      FALSE        FALSE       FALSE FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    cmax  cmin  tmax  tmin tlast tfirst clast.obs cl.last cl.all cl.int.all</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 FALSE FALSE FALSE FALSE FALSE  FALSE     FALSE   FALSE  FALSE      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  TRUE FALSE  TRUE FALSE FALSE  FALSE     FALSE   FALSE  FALSE      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.int.last mrt.last mrt.all mrt.int.all mrt.int.last mrt.iv.last vss.last</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE    FALSE   FALSE       FALSE        FALSE       FALSE    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE    FALSE   FALSE       FALSE        FALSE       FALSE    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vss.iv.last vss.all vss.int.all vss.int.last   cav cav.int.last cav.int.all</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE   FALSE       FALSE        FALSE FALSE        FALSE       FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE   FALSE       FALSE        FALSE FALSE        FALSE       FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ctrough cstart   ptr  tlag deg.fluc swing  ceoi aucabove.predose.all</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   FALSE  FALSE FALSE FALSE    FALSE FALSE FALSE                FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   FALSE  FALSE FALSE FALSE    FALSE FALSE FALSE                FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   aucabove.trough.all count_conc count_conc_measured totdose volpk    ae</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1               FALSE      FALSE               FALSE   FALSE FALSE FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2               FALSE      FALSE               FALSE   FALSE FALSE FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   clr.last clr.obs clr.pred    fe ertlst ermax ertmax erint erlst ratio.cmax</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE FALSE FALSE      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    FALSE   FALSE    FALSE FALSE  FALSE FALSE  FALSE FALSE FALSE      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ratio.auclast ratio.aucint.last ratio.aucint.all sparse_auclast sparse_auc_se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         FALSE             FALSE            FALSE          FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         FALSE             FALSE            FALSE          FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   sparse_auc_df sparse_aumclast sparse_aumc_se sparse_aumc_df time_above</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         FALSE           FALSE          FALSE          FALSE      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         FALSE           FALSE          FALSE          FALSE      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   aucivlast aucivall aucivint.last aucivint.all aucivpbextlast aucivpbextall</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     FALSE    FALSE         FALSE        FALSE          FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     FALSE    FALSE         FALSE        FALSE          FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   aucivpbextint.last aucivpbextint.all aumcivlast aumcivall aumcivint.last</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1              FALSE             FALSE      FALSE     FALSE          FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2              FALSE             FALSE      FALSE     FALSE          FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   aumcivint.all half.life r.squared adj.r.squared lambda.z.corrxy lambda.z</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         FALSE     FALSE     FALSE         FALSE           FALSE    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         FALSE      TRUE     FALSE         FALSE           FALSE    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   lambda.z.time.first lambda.z.time.last lambda.z.n.points clast.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1               FALSE              FALSE             FALSE      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2               FALSE              FALSE             FALSE      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   span.ratio tobit_residual adj_tobit_residual lambda.z.n.points_blq</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      FALSE          FALSE              FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      FALSE          FALSE              FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   thalf.eff.last thalf.eff.iv.last kel.last kel.iv.last kel.all kel.int.all</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE             FALSE    FALSE       FALSE   FALSE       FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          FALSE             FALSE    FALSE       FALSE   FALSE       FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   kel.int.last cl.iv.all cl.iv.last cl.ivint.all cl.ivint.last cl.sparse.last</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        FALSE     FALSE      FALSE        FALSE         FALSE          FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2        FALSE     FALSE      FALSE        FALSE         FALSE          FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   f.last f.int.last f.int.all mrt.sparse.last mrt.iv.all mrt.ivint.all</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  FALSE      FALSE     FALSE           FALSE      FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  FALSE      FALSE     FALSE           FALSE      FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.ivint.last vz.all vz.int.all vz.int.last vz.iv.all vz.iv.last</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE  FALSE      FALSE       FALSE     FALSE      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          FALSE  FALSE      FALSE       FALSE     FALSE      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vz.ivint.all vz.ivint.last vz.last vss.iv.all vss.ivint.all vss.ivint.last</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        FALSE         FALSE   FALSE      FALSE         FALSE          FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2        FALSE         FALSE   FALSE      FALSE         FALSE          FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vss.sparse.last aucinf.obs aucinf.pred aumcinf.obs aumcinf.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           FALSE      FALSE       FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           FALSE       TRUE       FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   aucint.inf.obs aucint.inf.pred aumcint.inf.obs aumcint.inf.pred aucivinf.obs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE           FALSE           FALSE            FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          FALSE           FALSE           FALSE            FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   aucivinf.pred aucivpbextinf.obs aucivpbextinf.pred aumcivinf.obs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         FALSE             FALSE              FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         FALSE             FALSE              FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   aumcivinf.pred aucpext.obs aucpext.pred kel.iv.all kel.ivint.all</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE       FALSE        FALSE      FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          FALSE       FALSE        FALSE      FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   kel.ivint.last kel.sparse.last cl.obs cl.pred cl.int.inf.obs cl.int.inf.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE           FALSE  FALSE   FALSE          FALSE           FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          FALSE           FALSE  FALSE   FALSE          FALSE           FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   cl.iv.obs cl.iv.pred f.obs f.pred f.int.obs f.int.pred mrt.obs mrt.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     FALSE      FALSE FALSE  FALSE     FALSE      FALSE   FALSE    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     FALSE      FALSE FALSE  FALSE     FALSE      FALSE   FALSE    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.int.inf.obs mrt.int.inf.pred mrt.iv.obs mrt.iv.pred mrt.md.obs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           FALSE            FALSE      FALSE       FALSE      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           FALSE            FALSE      FALSE       FALSE      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   mrt.md.pred mrt.ivmd.obs mrt.ivmd.pred vz.obs vz.pred vz.int.inf.obs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE        FALSE         FALSE  FALSE   FALSE          FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE        FALSE         FALSE  FALSE   FALSE          FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vz.int.inf.pred vz.iv.obs vz.iv.pred vz.sparse.last vss.obs vss.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           FALSE     FALSE      FALSE          FALSE   FALSE    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           FALSE     FALSE      FALSE          FALSE   FALSE    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vss.iv.obs vss.iv.pred vss.md.obs vss.md.pred vss.ivmd.obs vss.ivmd.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      FALSE       FALSE      FALSE       FALSE        FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      FALSE       FALSE      FALSE       FALSE        FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vss.int.inf.obs vss.int.inf.pred cav.int.inf.obs cav.int.inf.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           FALSE            FALSE           FALSE            FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           FALSE            FALSE           FALSE            FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ratio.aucinf.obs ratio.aucinf.pred thalf.eff.obs thalf.eff.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1            FALSE             FALSE         FALSE          FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2            FALSE             FALSE         FALSE          FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   thalf.eff.iv.obs thalf.eff.iv.pred kel.obs kel.pred kel.iv.obs kel.iv.pred</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1            FALSE             FALSE   FALSE    FALSE      FALSE       FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2            FALSE             FALSE   FALSE    FALSE      FALSE       FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   kel.int.inf.obs kel.int.inf.pred auclast.dn aucall.dn aucinf.obs.dn</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           FALSE            FALSE      FALSE     FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           FALSE            FALSE      FALSE     FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   aucinf.pred.dn aumclast.dn aumcall.dn aumcinf.obs.dn aumcinf.pred.dn cmax.dn</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          FALSE       FALSE      FALSE          FALSE           FALSE   FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          FALSE       FALSE      FALSE          FALSE           FALSE   FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   cmin.dn clast.obs.dn clast.pred.dn cav.dn ctrough.dn clr.last.dn clr.obs.dn</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   FALSE        FALSE         FALSE  FALSE      FALSE       FALSE      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   FALSE        FALSE         FALSE  FALSE      FALSE       FALSE      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   clr.pred.dn</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $allow_partial_missing_units</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>

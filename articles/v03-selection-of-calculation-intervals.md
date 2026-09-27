@@ -424,8 +424,8 @@ information about the parameter, see the documentation for the function.
 
 | Parameter Name | Formula | Formula Note | Unit Type | Parameter Description | Function for Calculation |
 |:---|:---|:---|:---|:---|:---|
-| adj_tobit_residual |  |  | unitless | Adjusted Tobit residual SD | See the parameter name half.life |
-| adj.r.squared | $`r^2_{adj} = 1 - (1 - r^2) \frac{n-1}{n-2}`$ |  | unitless | Adjusted R-sq of half-life fit | See the parameter name half.life |
+| adj_tobit_residual |  |  | unitless | Adjusted Tobit residual SD | See the parameter name: half.life |
+| adj.r.squared | $`r^2_{adj} = 1 - (1 - r^2) \frac{n-1}{n-2}`$ |  | unitless | Adjusted R-sq of half-life fit | See the parameter name: half.life |
 | ae | $`AE = \sum_i C_i V_i`$ |  | amount | Amount excreted (urine/feces) | pk.calc.ae |
 | aucabove.predose.all | $`AUC_{\text{above,predose}} = \int \max(C(t) - C_{\text{start}},\; 0)\; dt`$ |  | auc | AUC above predose, floor at 0 | pk.calc.aucabove |
 | aucabove.trough.all | $`AUC_{\text{above,trough}} = \int \max(C(t) - C_{\text{trough}},\; 0)\; dt`$ |  | auc | AUC above trough, floor at 0 | pk.calc.aucabove |
@@ -452,6 +452,8 @@ information about the parameter, see the documentation for the function.
 | aucivpbextint.last | $`\%AUC_{\text{bext,int,last}} = 100 \cdot \left(1 - \frac{AUC_{\text{int,last}}}{AUC_{\text{iv,int,last}}}\right)`$ |  | % | Back-extrap %, IV, AUCint.last | pk.calc.auciv_pbext |
 | aucivpbextlast | $`\%AUC_{\text{bext,last}} = 100 \cdot \left(1 - \frac{AUC_{\text{last}}}{AUC_{\text{iv,last}}}\right)`$ |  | % | Back-extrap %, IV, AUClast | pk.calc.auciv_pbext |
 | auclast | $`AUC_{\text{last}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule (linear-up/log-down by default) | auc | AUC start to last conc above LOQ | pk.calc.auc.last |
+| auclast_df | $`df = \frac{\left(\sum w_i^2 \hat{\sigma}_{ii}/n_i\right)^2}{\sum w_i^4 \hat{\sigma}_{ii}^2 / (n_i^2(n_i-1))}`$ | Satterthwaite approximation (Nedelman et al 1995, eq. 6a) | count | DF for AUClast (sparse PK only) | See the parameter name: auclast |
+| auclast_se | $`SE(AUC_{\text{last}}) = \sqrt{\sum_{i,j} w_i w_j \hat{\sigma}_{ij} / n}`$ | Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001) | auc | SE of AUClast (sparse PK only) | See the parameter name: auclast |
 | auclast.dn | $`AUC_{\text{last},dn} = \frac{AUC_{\text{last}}}{Dose}`$ |  | auc_dosenorm | Dose normalized auclast | pk.calc.dn |
 | aucpext.obs | $`\%AUC_{\text{ext,obs}} = 100 \cdot \left(1 - \frac{AUC_{\text{last}}}{AUC_{\infty,\text{obs}}}\right)`$ |  | % | % AUCinf extrap after Tlast, obs | pk.calc.aucpext |
 | aucpext.pred | $`\%AUC_{\text{ext,pred}} = 100 \cdot \left(1 - \frac{AUC_{\text{last}}}{AUC_{\infty,\text{pred}}}\right)`$ |  | % | % AUCinf extrap after Tlast, pred | pk.calc.aucpext |
@@ -472,6 +474,8 @@ information about the parameter, see the documentation for the function.
 | aumcivint.last |  |  | aumc | AUMCint.last, IV back-extrap C0 | pk.calc.aumciv |
 | aumcivlast |  |  | aumc | AUMClast, IV back-extrap C0 | pk.calc.aumciv |
 | aumclast | $`AUMC_{\text{last}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule (linear-up/log-down by default) | aumc | AUMC start to last conc above LOQ | pk.calc.aumc.last |
+| aumclast_df | $`df = \frac{\left(\sum w_i^2 \hat{\sigma}_{ii}/n_i\right)^2}{\sum w_i^4 \hat{\sigma}_{ii}^2 / (n_i^2(n_i-1))}`$ | Satterthwaite approximation (Nedelman et al 1995, eq. 6a) | count | DF for AUMClast (sparse PK only) | See the parameter name: aumclast |
+| aumclast_se | $`SE(AUMC_{\text{last}}) = \sqrt{\sum_{i,j} w_i w_j \hat{\sigma}_{ij} / n}`$ | Variance from the weighted covariance of the moment curve across subjects | aumc | SE of AUMClast (sparse PK only) | See the parameter name: aumclast |
 | aumclast.dn | $`AUMC_{\text{last},dn} = \frac{AUMC_{\text{last}}}{Dose}`$ |  | aumc_dosenorm | Dose normalized aumclast | pk.calc.dn |
 | c0 | $`C_0 = \text{if measured, } C_{t=0}; \text{ else, } C_0 = C_1 \exp\left(-\frac{\ln(C_2) - \ln(C_1)}{t_2-t_1} (t_1 - t_{\text{dose}})\right)`$ | Methods are tried in order: c0, logslope, c1, cmin, set0; the formula shows c0 and logslope | conc | Initial conc after IV bolus | pk.calc.c0 |
 | cav | $`C_{av} = \frac{AUC_{\text{last}}}{t_{end} - t_{start}}`$ |  | conc | Avg conc in interval (AUClast) | pk.calc.cav |
@@ -498,7 +502,7 @@ information about the parameter, see the documentation for the function.
 | cl.sparse.last | $`CL_{\text{sparse,last}} = \frac{Dose}{AUC_{\text{sparse,last}}}`$ |  | clearance | Clearance, sparse AUClast | pk.calc.cl |
 | clast.obs | $`C_{\text{last,obs}} = C_{i: t_i = T_{\text{last}}}`$ |  | conc | Last conc observed above LOQ | pk.calc.clast.obs |
 | clast.obs.dn | $`C_{\text{last,obs},dn} = \frac{C_{\text{last,obs}}}{Dose}`$ |  | conc_dosenorm | Dose normalized clast.obs | pk.calc.dn |
-| clast.pred | $`C_{\text{last,pred}} = e^{\text{intercept} - \lambda_z \cdot t_{\text{last}}}`$ |  | conc | Predicted Clast from half-life | See the parameter name half.life |
+| clast.pred | $`C_{\text{last,pred}} = e^{\text{intercept} - \lambda_z \cdot t_{\text{last}}}`$ |  | conc | Predicted Clast from half-life | See the parameter name: half.life |
 | clast.pred.dn | $`C_{\text{last,pred},dn} = \frac{C_{\text{last,pred}}}{Dose}`$ |  | conc_dosenorm | Dose normalized clast.pred | pk.calc.dn |
 | clr.last | $`CL_{R,\text{last}} = \frac{AE}{AUC_{\text{last}}}`$ |  | renal_clearance | Renal clearance, AUClast | pk.calc.clr |
 | clr.last.dn | $`CL_{R,\text{last},dn} = \frac{CL_{R,\text{last}}}{Dose}`$ |  | renal_clearance_dosenorm | Dose normalized clr.last | pk.calc.dn |
@@ -545,12 +549,12 @@ information about the parameter, see the documentation for the function.
 | kel.obs | $`k_{el,\text{obs}} = \frac{1}{MRT_{\text{obs}}}`$ |  | inverse_time | Elim rate, MRT w/ obs Clast | pk.calc.kel |
 | kel.pred | $`k_{el,\text{pred}} = \frac{1}{MRT_{\text{pred}}}`$ |  | inverse_time | Elim rate, MRT w/ pred Clast | pk.calc.kel |
 | kel.sparse.last |  |  | inverse_time | Elim rate, sparse MRTlast | pk.calc.kel |
-| lambda.z | $`\lambda_z = -\text{slope of } \log(C) \text{ vs } t`$ |  | inverse_time | Terminal elim rate (lambda.z) | See the parameter name half.life |
-| lambda.z.corrxy | $`r_{t,\log C} = \text{cor}(t_{\lambda_z}, \log C_{\lambda_z})`$ |  | unitless | Corr(time,log-conc) for lambda.z | See the parameter name half.life |
-| lambda.z.n.points | \$n\_{\lambda_z} = \left&#124; t\_{\lambda_z} \right&#124;\$ |  | count | Number of points used, lambda.z | See the parameter name half.life |
-| lambda.z.n.points_blq |  |  | count | BLQ points in Tobit lambda.z | See the parameter name half.life |
-| lambda.z.time.first | $`\lambda_z t_{\text{first}} = \min\left(t_{\lambda_z}\right)`$ |  | time | First time point for lambda.z | See the parameter name half.life |
-| lambda.z.time.last | $`\lambda_z t_{\text{last}} = \max\left(t_{\lambda_z}\right)`$ |  | time | Last time point for lambda.z | See the parameter name half.life |
+| lambda.z | $`\lambda_z = -\text{slope of } \log(C) \text{ vs } t`$ |  | inverse_time | Terminal elim rate (lambda.z) | See the parameter name: half.life |
+| lambda.z.corrxy | $`r_{t,\log C} = \text{cor}(t_{\lambda_z}, \log C_{\lambda_z})`$ |  | unitless | Corr(time,log-conc) for lambda.z | See the parameter name: half.life |
+| lambda.z.n.points | \$n\_{\lambda_z} = \left&#124; t\_{\lambda_z} \right&#124;\$ |  | count | Number of points used, lambda.z | See the parameter name: half.life |
+| lambda.z.n.points_blq |  |  | count | BLQ points in Tobit lambda.z | See the parameter name: half.life |
+| lambda.z.time.first | $`\lambda_z t_{\text{first}} = \min\left(t_{\lambda_z}\right)`$ |  | time | First time point for lambda.z | See the parameter name: half.life |
+| lambda.z.time.last | $`\lambda_z t_{\text{last}} = \max\left(t_{\lambda_z}\right)`$ |  | time | Last time point for lambda.z | See the parameter name: half.life |
 | mrt.all | $`MRT_{\text{all}} = \frac{AUMC_{\text{all}}}{AUC_{\text{all}}}`$ |  | time | MRT, AUCall/AUMCall | pk.calc.mrt |
 | mrt.int.all | $`MRT_{\text{int,all}} = \frac{AUMC_{\text{int,all}}}{AUC_{\text{int,all}}}`$ |  | time | MRT, interval AUCall/AUMCall | pk.calc.mrt |
 | mrt.int.inf.obs | $`MRT_{\text{int,}\infty\text{,obs}} = \frac{AUMC_{\text{int,}\infty\text{,obs}}}{AUC_{\text{int,}\infty\text{,obs}}}`$ |  | time | MRT, interval AUC/AUMCinf obs | pk.calc.mrt |
@@ -571,19 +575,19 @@ information about the parameter, see the documentation for the function.
 | mrt.pred | $`MRT_{\text{pred}} = \frac{AUMC_{\infty,\text{pred}}}{AUC_{\infty,\text{pred}}}`$ |  | time | MRT to inf, predicted Clast | pk.calc.mrt |
 | mrt.sparse.last |  |  | time | MRT, sparse AUClast/AUMClast | pk.calc.mrt |
 | ptr | $`PTR = \frac{C_{\max}}{C_{\text{trough}}}`$ |  | fraction | Peak-to-trough ratio | pk.calc.ptr |
-| r.squared | $`r^2 = 1 - \frac{\sum_{i \in \lambda_z} (y_i - \hat{y}_i)^2}{\sum_{i \in \lambda_z} (y_i - \bar{y})^2}`$ | Regression of $`y = \log C`$ on time over the terminal points | unitless | R-squared of half-life fit | See the parameter name half.life |
+| r.squared | $`r^2 = 1 - \frac{\sum_{i \in \lambda_z} (y_i - \hat{y}_i)^2}{\sum_{i \in \lambda_z} (y_i - \bar{y})^2}`$ | Regression of $`y = \log C`$ on time over the terminal points | unitless | R-squared of half-life fit | See the parameter name: half.life |
 | ratio.aucinf.obs |  |  | fraction | Ratio of AUCinf,obs to reference | pk.calc.ratio |
 | ratio.aucinf.pred |  |  | fraction | Ratio of AUCinf,pred to reference | pk.calc.ratio |
 | ratio.aucint.all |  |  | fraction | Ratio of AUCint,all to reference | pk.calc.ratio |
 | ratio.aucint.last |  |  | fraction | Ratio of AUCint,last to reference | pk.calc.ratio |
 | ratio.auclast |  |  | fraction | Ratio of AUClast to reference | pk.calc.ratio |
 | ratio.cmax |  |  | fraction | Ratio of Cmax to reference | pk.calc.ratio |
-| span.ratio | $`\text{span ratio} = \frac{t_{\lambda_z,\text{last}} - t_{\lambda_z,\text{first}}}{t_{1/2}}`$ |  | fraction | Lambda z time span to half-life ratio | See the parameter name half.life |
-| sparse_auc_df | $`df = \frac{\left(\sum w_i^2 \hat{\sigma}_{ii}/n_i\right)^2}{\sum w_i^4 \hat{\sigma}_{ii}^2 / (n_i^2(n_i-1))}`$ | Satterthwaite approximation (Nedelman et al 1995, eq. 6a) | count | DF for sparse AUC to last conc above LOQ | See the parameter name sparse_auclast |
-| sparse_auc_se | $`SE(AUC_{\text{sparse}}) = \sqrt{\sum_{i,j} w_i w_j \hat{\sigma}_{ij} / n}`$ | Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001) | auc | SE of sparse AUC to last conc above LOQ | See the parameter name sparse_auclast |
+| span.ratio | $`\text{span ratio} = \frac{t_{\lambda_z,\text{last}} - t_{\lambda_z,\text{first}}}{t_{1/2}}`$ |  | fraction | Lambda z time span to half-life ratio | See the parameter name: half.life |
+| sparse_auc_df | $`df = \frac{\left(\sum w_i^2 \hat{\sigma}_{ii}/n_i\right)^2}{\sum w_i^4 \hat{\sigma}_{ii}^2 / (n_i^2(n_i-1))}`$ | Satterthwaite approximation (Nedelman et al 1995, eq. 6a) | count | DF for sparse AUC to last conc above LOQ | See the parameter name: sparse_auclast |
+| sparse_auc_se | $`SE(AUC_{\text{sparse}}) = \sqrt{\sum_{i,j} w_i w_j \hat{\sigma}_{ij} / n}`$ | Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001) | auc | SE of sparse AUC to last conc above LOQ | See the parameter name: sparse_auclast |
 | sparse_auclast | $`AUC_{\text{sparse}} = \sum_k \frac{\bar{C}_k + \bar{C}_{k+1}}{2} \Delta t_k`$ | Linear trapezoidal using population mean concentrations | auc | Sparse AUC to last conc above LOQ | pk.calc.sparse_auclast |
-| sparse_aumc_df |  |  | count | variance DF for sparse AUMC to Tlast | See the parameter name sparse_aumclast |
-| sparse_aumc_se |  |  | aumc | SE of sparse AUMC to last conc above LOQ | See the parameter name sparse_aumclast |
+| sparse_aumc_df |  |  | count | variance DF for sparse AUMC to Tlast | See the parameter name: sparse_aumclast |
+| sparse_aumc_se |  |  | aumc | SE of sparse AUMC to last conc above LOQ | See the parameter name: sparse_aumclast |
 | sparse_aumclast |  |  | aumc | Sparse AUMC to last conc above LOQ | pk.calc.sparse_aumclast |
 | swing | $`Swing = 100 \cdot \frac{C_{\max} - C_{\min}}{C_{\min}}`$ |  | % | Swing relative to Cmin | pk.calc.swing |
 | tfirst | $`T_{\text{first}} = t_{i: C_i > 0, i = \min}`$ |  | time | Time of first conc above LOQ | pk.calc.tfirst |
@@ -598,7 +602,7 @@ information about the parameter, see the documentation for the function.
 | tlast | $`T_{\text{last}} = t_{i: C_i > 0, i = \max}`$ |  | time | Time of last conc above LOQ | pk.calc.tlast |
 | tmax | $`T_{\max} = t_{i: C_i = C_{\max}}`$ |  | time | Time of maximum observed conc | pk.calc.tmax |
 | tmin |  |  | time | Time of minimum observed conc | pk.calc.tmin |
-| tobit_residual |  |  | unitless | Tobit fit residual SD, log-conc | See the parameter name half.life |
+| tobit_residual |  |  | unitless | Tobit fit residual SD, log-conc | See the parameter name: half.life |
 | totdose | $`Dose_{\text{total}} = \sum_i Dose_i`$ |  | dose | Total dose given in interval | pk.calc.totdose |
 | volpk | $`V_{\text{urine}} = \sum_i V_i`$ |  | volume | Sum of urine volumes for interval | pk.calc.volpk |
 | vss.all | $`V_{ss,\text{all}} = CL_{\text{all}} \cdot MRT_{\text{all}}`$ |  | volume | Vss, calc from AUCall | pk.calc.vss |

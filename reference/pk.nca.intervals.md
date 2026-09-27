@@ -9,9 +9,9 @@ pk.nca.intervals(
   data_conc,
   data_dose,
   data_intervals,
-  sparse,
   options,
   impute,
+  data_sparse_conc = NULL,
   verbose = FALSE
 )
 ```
@@ -21,7 +21,8 @@ pk.nca.intervals(
 - data_conc:
 
   A data.frame or tibble with standardized column names as output from
-  `prepare_PKNCAconc()`
+  `prepare_PKNCAconc()`. With sparse PK this is the arithmetic-mean
+  profile.
 
 - data_dose:
 
@@ -33,11 +34,6 @@ pk.nca.intervals(
   A data.frame or tibble with standardized column names as output from
   `prepare_PKNCAintervals()`
 
-- sparse:
-
-  Should only sparse calculations be performed (TRUE) or only dense
-  calculations (FALSE)?
-
 - options:
 
   List of changes to the default PKNCA options (see
@@ -47,6 +43,12 @@ pk.nca.intervals(
 
   The column name in `data_intervals` to use for imputation
 
+- data_sparse_conc:
+
+  For sparse PK, a data.frame or tibble of the pooled individual samples
+  (including a `subject` column) as output from `prepare_PKNCAconc()`;
+  `NULL` for dense PK
+
 - verbose:
 
   Indicate, by [`message()`](https://rdrr.io/r/base/message.html), the
@@ -54,4 +56,6 @@ pk.nca.intervals(
 
 ## Value
 
-A data.frame with all NCA results
+A list with elements "dense" and "sparse", each a data.frame of the NCA
+results calculated from that concentration representation (or, when no
+calculation was possible at all, the warning condition saying why)

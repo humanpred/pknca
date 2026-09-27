@@ -26,12 +26,15 @@ pk.nca.interval(
   time.dose.group = NULL,
   duration.dose.group = NULL,
   route.group = NULL,
+  conc.sparse = NULL,
+  time.sparse = NULL,
+  conc.sparse.group = NULL,
+  time.sparse.group = NULL,
   impute_method = NA_character_,
   include_half.life = NULL,
   exclude_half.life = NULL,
   lloq = NULL,
-  subject,
-  sparse,
+  subject = NULL,
   interval,
   options = list()
 )
@@ -97,6 +100,17 @@ pk.nca.interval(
   (typically zero for extravascular and intravascular bolus and nonzero
   for intravascular infusion)
 
+- conc.sparse, time.sparse:
+
+  The pooled individual concentrations and their times for the current
+  interval with sparse PK (`conc` and `time` are the arithmetic-mean
+  profile built from them). `NULL` for dense PK.
+
+- conc.sparse.group, time.sparse.group:
+
+  The pooled individual concentrations and their times for all data for
+  the group with sparse PK. `NULL` for dense PK.
+
 - impute_method:
 
   The method to use for imputation as a character string
@@ -129,12 +143,7 @@ pk.nca.interval(
 
 - subject:
 
-  Subject identifiers (used for sparse calculations)
-
-- sparse:
-
-  Should only sparse calculations be performed (TRUE) or only dense
-  calculations (FALSE)?
+  Subject identifiers for the pooled sparse samples
 
 - interval:
 
@@ -149,8 +158,10 @@ pk.nca.interval(
 
 ## Value
 
-A data frame with the start and end time along with all PK parameters
-for the `interval`
+A data frame with one row per result, with columns `PPTESTCD`,
+`PPORRES`, `PPANMETH`, and `exclude`. Its "sparse" attribute is a
+logical vector saying, for each row, whether the parameter that produced
+it is registered as a sparse PK parameter.
 
 ## See also
 

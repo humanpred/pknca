@@ -1,7 +1,8 @@
 # Determine if there are any sparse or dense calculations requested within an interval
 
-Determine if there are any sparse or dense calculations requested within
-an interval
+A calculation is sparse when only sparse data can produce it, which is a
+property of the registration rather than a flag; see
+[`add.interval.col()`](https://humanpred.github.io/pknca/reference/add.interval.col.md).
 
 ## Usage
 

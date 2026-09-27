@@ -386,6 +386,11 @@
 - [`pk.calc.aucabove()`](https://humanpred.github.io/pknca/reference/pk.calc.aucabove.md)
   : Calculate the AUC above a given concentration
 
+- [`pk.calc.auclast_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.auclast_sparse.md)
+  [`pk.calc.aumclast_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.auclast_sparse.md)
+  : Sparse estimators for the AUC and AUMC to the last measured
+  concentration
+
 - [`pk.calc.aucpext()`](https://humanpred.github.io/pknca/reference/pk.calc.aucpext.md)
   : Calculate the AUC percent extrapolated
 

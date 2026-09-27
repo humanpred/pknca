@@ -90,12 +90,15 @@ and <code>time</code>.</p>
 <span>  time.dose.group <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  duration.dose.group <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  route.group <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  conc.sparse <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  time.sparse <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  conc.sparse.group <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  time.sparse.group <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  impute_method <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  include_half.life <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  exclude_half.life <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  lloq <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">subject</span>,</span>
-<span>  <span class="va">sparse</span>,</span>
+<span>  subject <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">interval</span>,</span>
 <span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -165,6 +168,18 @@ data for the group (typically zero for extravascular and intravascular
 bolus and nonzero for intravascular infusion)</p></dd>
 
 
+<dt id="arg-conc-sparse-time-sparse">conc.sparse, time.sparse<a class="anchor" aria-label="anchor" href="#arg-conc-sparse-time-sparse"></a></dt>
+<dd><p>The pooled individual concentrations and their
+times for the current interval with sparse PK (<code>conc</code> and <code>time</code> are the
+arithmetic-mean profile built from them).  <code>NULL</code> for dense PK.</p></dd>
+
+
+<dt id="arg-conc-sparse-group-time-sparse-group">conc.sparse.group, time.sparse.group<a class="anchor" aria-label="anchor" href="#arg-conc-sparse-group-time-sparse-group"></a></dt>
+<dd><p>The pooled individual
+concentrations and their times for all data for the group with sparse PK.
+<code>NULL</code> for dense PK.</p></dd>
+
+
 <dt id="arg-impute-method">impute_method<a class="anchor" aria-label="anchor" href="#arg-impute-method"></a></dt>
 <dd><p>The method to use for imputation as a character string</p></dd>
 
@@ -194,12 +209,7 @@ half-life method.</p></dd>
 
 
 <dt id="arg-subject">subject<a class="anchor" aria-label="anchor" href="#arg-subject"></a></dt>
-<dd><p>Subject identifiers (used for sparse calculations)</p></dd>
-
-
-<dt id="arg-sparse">sparse<a class="anchor" aria-label="anchor" href="#arg-sparse"></a></dt>
-<dd><p>Should only sparse calculations be performed (TRUE) or only
-dense calculations (FALSE)?</p></dd>
+<dd><p>Subject identifiers for the pooled sparse samples</p></dd>
 
 
 <dt id="arg-interval">interval<a class="anchor" aria-label="anchor" href="#arg-interval"></a></dt>
@@ -214,8 +224,10 @@ dense calculations (FALSE)?</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A data frame with the start and end time along with all PK
-parameters for the <code>interval</code></p>
+    <p>A data frame with one row per result, with columns <code>PPTESTCD</code>,
+<code>PPORRES</code>, <code>PPANMETH</code>, and <code>exclude</code>.  Its "sparse" attribute is a logical
+vector saying, for each row, whether the parameter that produced it is
+registered as a sparse PK parameter.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

@@ -554,7 +554,7 @@ function.</p>
 <td align="left"></td>
 <td align="left">unitless</td>
 <td align="left">Adjusted Tobit residual SD</td>
-<td align="left">See the parameter name half.life</td>
+<td align="left">See the parameter name: half.life</td>
 </tr>
 <tr class="even">
 <td align="left">adj.r.squared</td>
@@ -562,7 +562,7 @@ function.</p>
 <td align="left"></td>
 <td align="left">unitless</td>
 <td align="left">Adjusted R-sq of half-life fit</td>
-<td align="left">See the parameter name half.life</td>
+<td align="left">See the parameter name: half.life</td>
 </tr>
 <tr class="odd">
 <td align="left">ae</td>
@@ -777,6 +777,24 @@ boundaries</td>
 <td align="left">pk.calc.auc.last</td>
 </tr>
 <tr class="odd">
+<td align="left">auclast_df</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mi>f</mi><mo>=</mo><mfrac><msup><mrow><mo stretchy="true" form="prefix">(</mo><mo>∑</mo><msubsup><mi>w</mi><mi>i</mi><mn>2</mn></msubsup><msub><mover><mi>σ</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mi>i</mi></mrow></msub><mi>/</mi><msub><mi>n</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mrow><mo>∑</mo><msubsup><mi>w</mi><mi>i</mi><mn>4</mn></msubsup><msubsup><mover><mi>σ</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mi>i</mi></mrow><mn>2</mn></msubsup><mi>/</mi><mo stretchy="false" form="prefix">(</mo><msubsup><mi>n</mi><mi>i</mi><mn>2</mn></msubsup><mo stretchy="false" form="prefix">(</mo><msub><mi>n</mi><mi>i</mi></msub><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">)</mo></mrow></mfrac></mrow><annotation encoding="application/x-tex">df = \frac{\left(\sum w_i^2 \hat{\sigma}_{ii}/n_i\right)^2}{\sum w_i^4 \hat{\sigma}_{ii}^2 / (n_i^2(n_i-1))}</annotation></semantics></math></td>
+<td align="left">Satterthwaite approximation (Nedelman et al 1995, eq.
+6a)</td>
+<td align="left">count</td>
+<td align="left">DF for AUClast (sparse PK only)</td>
+<td align="left">See the parameter name: auclast</td>
+</tr>
+<tr class="even">
+<td align="left">auclast_se</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mi>E</mi><mo stretchy="false" form="prefix">(</mo><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msqrt><mrow><msub><mo>∑</mo><mrow><mi>i</mi><mo>,</mo><mi>j</mi></mrow></msub><msub><mi>w</mi><mi>i</mi></msub><msub><mi>w</mi><mi>j</mi></msub><msub><mover><mi>σ</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mi>j</mi></mrow></msub><mi>/</mi><mi>n</mi></mrow></msqrt></mrow><annotation encoding="application/x-tex">SE(AUC_{\text{last}}) = \sqrt{\sum_{i,j} w_i w_j \hat{\sigma}_{ij} / n}</annotation></semantics></math></td>
+<td align="left">Variance from weighted covariance across subjects
+(Nedelman and Jia 1998, Holder 2001)</td>
+<td align="left">auc</td>
+<td align="left">SE of AUClast (sparse PK only)</td>
+<td align="left">See the parameter name: auclast</td>
+</tr>
+<tr class="odd">
 <td align="left">auclast.dn</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">last</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">AUC_{\text{last},dn} = \frac{AUC_{\text{last}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
@@ -939,6 +957,24 @@ boundaries</td>
 <td align="left">aumc</td>
 <td align="left">AUMC start to last conc above LOQ</td>
 <td align="left">pk.calc.aumc.last</td>
+</tr>
+<tr class="odd">
+<td align="left">aumclast_df</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mi>f</mi><mo>=</mo><mfrac><msup><mrow><mo stretchy="true" form="prefix">(</mo><mo>∑</mo><msubsup><mi>w</mi><mi>i</mi><mn>2</mn></msubsup><msub><mover><mi>σ</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mi>i</mi></mrow></msub><mi>/</mi><msub><mi>n</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mrow><mo>∑</mo><msubsup><mi>w</mi><mi>i</mi><mn>4</mn></msubsup><msubsup><mover><mi>σ</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mi>i</mi></mrow><mn>2</mn></msubsup><mi>/</mi><mo stretchy="false" form="prefix">(</mo><msubsup><mi>n</mi><mi>i</mi><mn>2</mn></msubsup><mo stretchy="false" form="prefix">(</mo><msub><mi>n</mi><mi>i</mi></msub><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">)</mo></mrow></mfrac></mrow><annotation encoding="application/x-tex">df = \frac{\left(\sum w_i^2 \hat{\sigma}_{ii}/n_i\right)^2}{\sum w_i^4 \hat{\sigma}_{ii}^2 / (n_i^2(n_i-1))}</annotation></semantics></math></td>
+<td align="left">Satterthwaite approximation (Nedelman et al 1995, eq.
+6a)</td>
+<td align="left">count</td>
+<td align="left">DF for AUMClast (sparse PK only)</td>
+<td align="left">See the parameter name: aumclast</td>
+</tr>
+<tr class="even">
+<td align="left">aumclast_se</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mi>E</mi><mo stretchy="false" form="prefix">(</mo><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msqrt><mrow><msub><mo>∑</mo><mrow><mi>i</mi><mo>,</mo><mi>j</mi></mrow></msub><msub><mi>w</mi><mi>i</mi></msub><msub><mi>w</mi><mi>j</mi></msub><msub><mover><mi>σ</mi><mo accent="true">̂</mo></mover><mrow><mi>i</mi><mi>j</mi></mrow></msub><mi>/</mi><mi>n</mi></mrow></msqrt></mrow><annotation encoding="application/x-tex">SE(AUMC_{\text{last}}) = \sqrt{\sum_{i,j} w_i w_j \hat{\sigma}_{ij} / n}</annotation></semantics></math></td>
+<td align="left">Variance from the weighted covariance of the moment
+curve across subjects</td>
+<td align="left">aumc</td>
+<td align="left">SE of AUMClast (sparse PK only)</td>
+<td align="left">See the parameter name: aumclast</td>
 </tr>
 <tr class="odd">
 <td align="left">aumclast.dn</td>
@@ -1155,7 +1191,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"></td>
 <td align="left">conc</td>
 <td align="left">Predicted Clast from half-life</td>
-<td align="left">See the parameter name half.life</td>
+<td align="left">See the parameter name: half.life</td>
 </tr>
 <tr class="even">
 <td align="left">clast.pred.dn</td>
@@ -1533,7 +1569,7 @@ ordered by collection midpoint</td>
 <td align="left"></td>
 <td align="left">inverse_time</td>
 <td align="left">Terminal elim rate (lambda.z)</td>
-<td align="left">See the parameter name half.life</td>
+<td align="left">See the parameter name: half.life</td>
 </tr>
 <tr class="odd">
 <td align="left">lambda.z.corrxy</td>
@@ -1541,7 +1577,7 @@ ordered by collection midpoint</td>
 <td align="left"></td>
 <td align="left">unitless</td>
 <td align="left">Corr(time,log-conc) for lambda.z</td>
-<td align="left">See the parameter name half.life</td>
+<td align="left">See the parameter name: half.life</td>
 </tr>
 <tr class="even">
 <td align="left">lambda.z.n.points</td>
@@ -1550,7 +1586,7 @@ ordered by collection midpoint</td>
 <td align="left"></td>
 <td align="left">count</td>
 <td align="left">Number of points used, lambda.z</td>
-<td align="left">See the parameter name half.life</td>
+<td align="left">See the parameter name: half.life</td>
 </tr>
 <tr class="odd">
 <td align="left">lambda.z.n.points_blq</td>
@@ -1558,7 +1594,7 @@ ordered by collection midpoint</td>
 <td align="left"></td>
 <td align="left">count</td>
 <td align="left">BLQ points in Tobit lambda.z</td>
-<td align="left">See the parameter name half.life</td>
+<td align="left">See the parameter name: half.life</td>
 </tr>
 <tr class="even">
 <td align="left">lambda.z.time.first</td>
@@ -1566,7 +1602,7 @@ ordered by collection midpoint</td>
 <td align="left"></td>
 <td align="left">time</td>
 <td align="left">First time point for lambda.z</td>
-<td align="left">See the parameter name half.life</td>
+<td align="left">See the parameter name: half.life</td>
 </tr>
 <tr class="odd">
 <td align="left">lambda.z.time.last</td>
@@ -1574,7 +1610,7 @@ ordered by collection midpoint</td>
 <td align="left"></td>
 <td align="left">time</td>
 <td align="left">Last time point for lambda.z</td>
-<td align="left">See the parameter name half.life</td>
+<td align="left">See the parameter name: half.life</td>
 </tr>
 <tr class="even">
 <td align="left">mrt.all</td>
@@ -1744,7 +1780,7 @@ ordered by collection midpoint</td>
 on time over the terminal points</td>
 <td align="left">unitless</td>
 <td align="left">R-squared of half-life fit</td>
-<td align="left">See the parameter name half.life</td>
+<td align="left">See the parameter name: half.life</td>
 </tr>
 <tr class="odd">
 <td align="left">ratio.aucinf.obs</td>
@@ -1800,7 +1836,7 @@ on time over the terminal points</td>
 <td align="left"></td>
 <td align="left">fraction</td>
 <td align="left">Lambda z time span to half-life ratio</td>
-<td align="left">See the parameter name half.life</td>
+<td align="left">See the parameter name: half.life</td>
 </tr>
 <tr class="even">
 <td align="left">sparse_auc_df</td>
@@ -1809,7 +1845,7 @@ on time over the terminal points</td>
 6a)</td>
 <td align="left">count</td>
 <td align="left">DF for sparse AUC to last conc above LOQ</td>
-<td align="left">See the parameter name sparse_auclast</td>
+<td align="left">See the parameter name: sparse_auclast</td>
 </tr>
 <tr class="odd">
 <td align="left">sparse_auc_se</td>
@@ -1818,7 +1854,7 @@ on time over the terminal points</td>
 (Nedelman and Jia 1998, Holder 2001)</td>
 <td align="left">auc</td>
 <td align="left">SE of sparse AUC to last conc above LOQ</td>
-<td align="left">See the parameter name sparse_auclast</td>
+<td align="left">See the parameter name: sparse_auclast</td>
 </tr>
 <tr class="even">
 <td align="left">sparse_auclast</td>
@@ -1835,7 +1871,7 @@ concentrations</td>
 <td align="left"></td>
 <td align="left">count</td>
 <td align="left">variance DF for sparse AUMC to Tlast</td>
-<td align="left">See the parameter name sparse_aumclast</td>
+<td align="left">See the parameter name: sparse_aumclast</td>
 </tr>
 <tr class="even">
 <td align="left">sparse_aumc_se</td>
@@ -1843,7 +1879,7 @@ concentrations</td>
 <td align="left"></td>
 <td align="left">aumc</td>
 <td align="left">SE of sparse AUMC to last conc above LOQ</td>
-<td align="left">See the parameter name sparse_aumclast</td>
+<td align="left">See the parameter name: sparse_aumclast</td>
 </tr>
 <tr class="odd">
 <td align="left">sparse_aumclast</td>
@@ -1964,7 +2000,7 @@ concentrations</td>
 <td align="left"></td>
 <td align="left">unitless</td>
 <td align="left">Tobit fit residual SD, log-conc</td>
-<td align="left">See the parameter name half.life</td>
+<td align="left">See the parameter name: half.life</td>
 </tr>
 <tr class="even">
 <td align="left">totdose</td>
