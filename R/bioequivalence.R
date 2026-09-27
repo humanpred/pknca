@@ -228,6 +228,12 @@ be_expand_limits <- function(swR, regulator) {
   c(lower = exp(-reg$r_const * swr_eff) * 100, upper = exp(reg$r_const * swr_eff) * 100)
 }
 
+# Median, over subjects, of the number of times a subject received `level`.
+# Subjects who never received it count as zero.
+.be_median_reps <- function(level, trt, subj) {
+  as.numeric(stats::median(tapply(!is.na(trt) & trt == level, subj, sum)))
+}
+
 # Build a subject's treatment pattern (for example "TRTR"), ordering the
 # subject's rows by period.  `idx` are the subject's row indices into the
 # period (`per`) and treatment (`trt`) vectors.
@@ -257,7 +263,12 @@ be_expand_limits <- function(swR, regulator) {
 #'   `n_sequences`, `n_periods`, `n_treatments`, `n_subjects`, `sequences`,
 #'   `treatments`, `reference`, `replicate_reference`, `replicate_test`,
 #'   `reps_reference`, `reps_test`, `balanced`, and `feasible` (a named logical
-#'   vector for `abe`, `abel`, `rsabe`, `ntid`, `hvntid`).
+#'   vector for `abe`, `abel`, `rsabe`, `ntid`, `hvntid`).  `reps_reference` is
+#'   the median, over subjects, of the number of times a subject received the
+#'   reference.  `reps_test` is the same median computed separately for each
+#'   test formulation; with several test formulations it is the smallest of
+#'   those medians, so `replicate_test` is `TRUE` only when every test
+#'   formulation is replicated.
 #' @family Bioequivalence
 #' @seealso [be_assess()]
 #' @examples
@@ -293,9 +304,8 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
   per <- data[[period]]
   # Per-subject treatment pattern, ordered by period -- the realized sequence.
   patterns <- tapply(seq_len(nrow(data)), subj, .be_subject_pattern, per = per, trt = trt)
-  # Per-subject replication counts of each formulation.
+  # Per-subject replication counts of the reference.
   reps_ref_by_subj <- tapply(trt == reference_value, subj, sum)
-  reps_test_by_subj <- tapply(!is.na(trt) & trt != reference_value, subj, sum)
 
   n_subjects <- length(unique(subj))
   n_periods <- length(unique(per))
@@ -309,7 +319,11 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
   n_sequences <- length(seq_values)
 
   reps_reference <- as.numeric(stats::median(reps_ref_by_subj, na.rm = TRUE))
-  reps_test <- as.numeric(stats::median(reps_test_by_subj, na.rm = TRUE))
+  # Replication is counted per test formulation: pooling the test formulations
+  # would read a three-treatment crossover (each given once) as test-replicated.
+  test_levels <- setdiff(treatments, reference_value)
+  reps_test_each <- vapply(test_levels, .be_median_reps, numeric(1), trt = trt, subj = subj)
+  reps_test <- if (length(test_levels) == 0) 0 else min(reps_test_each)
   replicate_reference <- reps_reference >= 2
   replicate_test <- reps_test >= 2
 

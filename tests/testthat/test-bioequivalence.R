@@ -571,3 +571,40 @@ test_that("an intra-subject-contrast regulator errors when no subject has both f
   p$endpoint <- "auclast"
   expect_error(be_table(p, "FDA"), class = "pknca_error_be_isc_insufficient")
 })
+
+test_that("be_design counts test replication per test formulation", {
+  # Each subject receives R, T1, and T2 once: no formulation is replicated,
+  # although every subject received a test formulation twice in total.
+  w <- be_design(generate_be_williams(), "subject", "sequence", "period", "treatment", "R")
+  expect_identical(w$design, "other")
+  expect_identical(w$reps_reference, 1)
+  expect_identical(w$reps_test, 1)
+  expect_false(w$replicate_reference)
+  expect_false(w$replicate_test)
+  expect_identical(
+    w$feasible,
+    c(abe = TRUE, abel = FALSE, rsabe = FALSE, ntid = FALSE, hvntid = FALSE)
+  )
+  expect_identical(w$recommended_model_type, "lmer")
+  # One test formulation replicated and the other not: the test is not
+  # replicated as a whole, and reps_test is the smaller per-formulation median.
+  d <- data.frame(
+    subject = rep(1:6, each = 5), period = rep(1:5, 6),
+    treatment = rep(c("R", "T1", "R", "T1", "T2"), 6)
+  )
+  m <- be_design(d, "subject", NA_character_, "period", "treatment", "R")
+  expect_identical(m$reps_reference, 2)
+  expect_identical(m$reps_test, 1)
+  expect_false(m$replicate_test)
+  expect_identical(m$feasible[["abel"]], TRUE)
+  expect_identical(m$feasible[["ntid"]], FALSE)
+  # Both test formulations replicated.
+  d2 <- data.frame(
+    subject = rep(1:6, each = 6), period = rep(1:6, 6),
+    treatment = rep(c("R", "T1", "T2", "R", "T1", "T2"), 6)
+  )
+  f <- be_design(d2, "subject", NA_character_, "period", "treatment", "R")
+  expect_identical(f$reps_test, 2)
+  expect_true(f$replicate_test)
+  expect_identical(f$feasible[["ntid"]], TRUE)
+})

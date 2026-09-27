@@ -34,6 +34,13 @@ the dosing including dose amount and route.
   within-subject variances now carry the design-based degrees of freedom, so
   the NTID variance-ratio bound is available with `model_type = "nlme"`.
 
+* `be_design()` now counts test replication separately for each test
+  formulation, so `replicate_test` is `TRUE` only when every test formulation
+  is replicated.  Before, all test formulations were pooled, so a
+  three-treatment crossover in which each formulation is given once was
+  reported as test-replicated and the NTID and HVNTID frameworks were marked
+  feasible.  `reps_test` is now the smallest of the per-formulation medians.
+
 * On sparse PK data, `auclast` and `aumclast` are now estimated with the sparse
   methods (the Bailer point estimate with the Nedelman-Jia/Holder standard
   error) instead of a trapezoid on the arithmetic-mean profile, and the new
