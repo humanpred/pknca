@@ -6,6 +6,34 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `be_assess()`, `be_compare()`, and `be_fit_models()` gain three options for
+  treatment comparisons beyond a bioequivalence decision:
+  * `heteroscedastic = TRUE` estimates a separate residual variance for each
+    treatment, with `nlme::lme()` and `varIdent(~ 1 | treatment)` for crossover
+    and replicate designs and with `nlme::gls()` and the same variance
+    structure (new `model_type = "gls"`) for parallel designs.  Without
+    reference scaling the `nlme` model now accepts non-replicated designs and
+    several test formulations.  `lme4::lmer()` cannot estimate
+    treatment-specific residual variances, so `heteroscedastic = TRUE` with
+    `model_type = "lmer"` is an error.
+  * `covariates` adds columns to every model as additive fixed effects;
+    `be_dataset()` carries them as `.cov_<name>` columns.  Missing, constant,
+    or aliased covariates are errors.
+  * `regulator = "descriptive"` reports the geometric means, their ratio, and
+    its confidence interval with no acceptance limits and no `pass` column, for
+    food-effect and drug-drug interaction comparisons.  The caption states that
+    no regulatory decision was applied.
+
+* `be_assess()` now works on parallel designs.  The fixed-effects ratio no
+  longer includes subject as a fixed effect when each subject has one
+  observation, and the intra-subject contrasts, which do not exist there, are
+  reported as missing instead of stopping the analysis.  With several test
+  formulations, each test's contrast is now matched by its exact name; before,
+  a test level whose name appears inside another level's name (`"T"` inside
+  `"AT"`) could be reported with the other level's ratio.  The `nlme`
+  within-subject variances now carry the design-based degrees of freedom, so
+  the NTID variance-ratio bound is available with `model_type = "nlme"`.
+
 * On sparse PK data, `auclast` and `aumclast` are now estimated with the sparse
   methods (the Bailer point estimate with the Nedelman-Jia/Holder standard
   error) instead of a trapezoid on the arithmetic-mean profile, and the new

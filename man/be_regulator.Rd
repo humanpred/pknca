@@ -4,17 +4,20 @@
 \alias{be_regulator}
 \title{Regulatory framework constants for bioequivalence assessment}
 \usage{
-be_regulator(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVNTID"))
+be_regulator(
+  name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVNTID", "descriptive")
+)
 }
 \arguments{
 \item{name}{The regulatory framework, one of \code{"ABE"}, \code{"EMA"}, \code{"HC"},
-\code{"GCC"}, \code{"FDA"}, \code{"NTID"}, or \code{"HVNTID"}.}
+\code{"GCC"}, \code{"FDA"}, \code{"NTID"}, \code{"HVNTID"}, or \code{"descriptive"}.}
 }
 \value{
 An object of class \code{be_regulator}: a list with elements \code{name},
 \code{scaling} (one of \code{"none"}, \code{"abel"}, \code{"rsabe"}, \code{"ntid"}, \code{"hvntid"}),
 \code{cvswitch}, \code{r_const}, \code{cvcap}, \code{switch_swr}, \code{pe_constr}, \code{est_method}
-(\code{"anova"} or \code{"isc"}), and \code{switch_basis}.
+(\code{"anova"} or \code{"isc"}), \code{decision} (\code{FALSE} only for \code{"descriptive"}), and
+\code{switch_basis}.
 }
 \description{
 \code{be_regulator()} returns the scaling type, switching and capping rules, and
@@ -50,14 +53,20 @@ criterion (a fully replicated design is required).
 \item \strong{HVNTID} -- FDA highly variable narrow therapeutic index drugs; the
 RSABE-style scaled criterion with the NTID constant and the within-subject
 standard deviation ratio constraint.
+\item \strong{descriptive} -- no regulatory decision.  The geometric means, their
+ratio, and its confidence interval are estimated exactly as for ABE, but no
+acceptance limits are applied and no pass/fail is reported.  Use it for
+comparisons that are estimated rather than judged, such as food effect and
+drug-drug interaction studies.
 }
 
-All frameworks additionally impose the point-estimate constraint that the
-geometric mean ratio fall within 80.00-125.00\%.
+All decision frameworks additionally impose the point-estimate constraint
+that the geometric mean ratio fall within 80.00-125.00\%.
 }
 \examples{
 be_regulator("EMA")
 be_regulator("FDA")
+be_regulator("descriptive")
 }
 \seealso{
 \code{\link[=be_expand_limits]{be_expand_limits()}} for the ABEL acceptance limits and \code{\link[=be_assess]{be_assess()}}

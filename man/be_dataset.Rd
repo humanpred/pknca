@@ -11,7 +11,8 @@ be_dataset(
   endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
   subject = NULL,
   sequence = NULL,
-  period = NULL
+  period = NULL,
+  covariates = NULL
 )
 }
 \arguments{
@@ -30,12 +31,21 @@ formulation.}
 \item{subject, sequence, period}{Column names for the subject, randomization
 sequence, and period.  When \code{NULL} they are taken from the \code{PKNCAresults}
 object or detected from common column names.  \code{sequence} may be absent.}
+
+\item{covariates}{An optional character vector of column names added to
+every model as additive fixed effects (numeric columns as linear terms,
+character or factor columns as factors).  They must not be missing in any
+analyzed row.  For a \code{PKNCAresults} object they must be columns of
+\code{as.data.frame(object)}, which means grouping columns.  The within-subject
+variances used for reference scaling and the intra-subject contrasts do not
+use covariates.}
 }
 \value{
 An object of class \code{be_dataset}: a list with \code{data} (the
-standardized long frame, including a \code{.units} column), \code{columns} (the
-resolved column names, including \code{units}), \code{reference_value}, \code{test_levels},
-and \code{endpoints} (those present).
+standardized long frame, including a \code{.units} column and one \verb{.cov_<name>}
+column per covariate), \code{columns} (the resolved column names, including
+\code{units} and \code{covariates}), \code{reference_value}, \code{test_levels}, and
+\code{endpoints} (those present).
 }
 \description{
 \code{be_dataset()} prepares a noncompartmental result for bioequivalence
@@ -54,6 +64,11 @@ object provides automatically; a plain data.frame supplies units the same way
 by including the corresponding \code{PPSTRESU}/\code{PPORRESU} column.  When no units
 column is present, units are unavailable and the \code{units} column is omitted
 from the assessment table.
+
+Each covariate is copied to a standardized column named \verb{.cov_<name>}
+(character columns become factors).  A covariate may not be one of the
+subject, sequence, period, treatment, or value columns, and it may not be
+missing in any row that is analyzed.
 }
 \seealso{
 Other Bioequivalence:

@@ -15,7 +15,9 @@ be_fit_models(
   subject = NULL,
   sequence = NULL,
   period = NULL,
-  design = NULL
+  design = NULL,
+  covariates = NULL,
+  heteroscedastic = FALSE
 )
 }
 \arguments{
@@ -32,13 +34,17 @@ formulation.}
 \code{PPTESTCD}) to assess.}
 
 \item{regulator}{The regulatory framework (see \code{\link[=be_regulator]{be_regulator()}}); one of
-\code{"ABE"}, \code{"EMA"}, \code{"HC"}, \code{"GCC"}, \code{"FDA"}, \code{"NTID"}, or \code{"HVNTID"}.}
+\code{"ABE"}, \code{"EMA"}, \code{"HC"}, \code{"GCC"}, \code{"FDA"}, \code{"NTID"}, \code{"HVNTID"}, or
+\code{"descriptive"} (no acceptance limits or pass/fail).}
 
 \item{model_type}{The model for the average-BE point estimate, one of
 \code{"lmer"} (mixed model, for crossover/replicate designs), \code{"anova"}
 (fixed-effects, for parallel designs), \code{"isc"} (intra-subject contrasts, the
-FDA reference-scaled path), or \code{"nlme"} (treatment-specific mixed model).
-When \code{NULL} (default) it is chosen from the design and regulator.}
+FDA reference-scaled path), \code{"nlme"} (mixed model with treatment-specific
+residual variances, for crossover/replicate designs), or \code{"gls"}
+(generalized least squares with treatment-specific residual variances, for
+parallel designs).  When \code{NULL} (default) it is chosen from the design,
+the regulator, and \code{heteroscedastic}.}
 
 \item{alpha}{The significance level; the confidence interval has level
 \code{1 - alpha} (default \code{0.10} gives the 90\% interval).}
@@ -49,6 +55,17 @@ object or detected from common column names.  \code{sequence} may be absent.}
 
 \item{design}{An optional \code{\link[=be_design]{be_design()}} object; computed from the data when
 \code{NULL}.}
+
+\item{covariates}{An optional character vector of column names added to
+every model as additive fixed effects (numeric columns as linear terms,
+character or factor columns as factors).  They must not be missing in any
+analyzed row.  For a \code{PKNCAresults} object they must be columns of
+\code{as.data.frame(object)}, which means grouping columns.  The within-subject
+variances used for reference scaling and the intra-subject contrasts do not
+use covariates.}
+
+\item{heteroscedastic}{Logical.  When \code{TRUE}, estimate a separate residual
+variance for each treatment (see Details).}
 }
 \value{
 A data.frame with one row per endpoint and test formulation (the
