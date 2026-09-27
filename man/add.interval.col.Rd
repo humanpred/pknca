@@ -69,7 +69,8 @@ arithmetic-mean profile.  See the details.}
 
 \item{formalsmap_sparse}{The \code{formalsmap} for \code{FUN_sparse}, which usually has
 a different calling convention than \code{FUN} (a sparse estimator needs
-\code{subject}, for example).  May only be given with \code{FUN_sparse}.}
+\code{subject}, for example).  May only be given when \code{FUN_sparse} is not
+\code{NA}.}
 
 \item{datatype}{The data type used for the calculation. The default is
 \code{"interval"}, which is currently the only supported value. The
@@ -79,9 +80,12 @@ use and will currently raise an error if selected.}
 \item{pptestcd_cdisc}{The CDISC PPTESTCD code for this parameter.  Can be a
 character string for simple mappings, a named list for route-dependent
 mappings with a \code{route} element whose value is itself a named list keyed
-by route (e.g. \code{list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))}), or a named list with a \code{sparse} element whose value is a list
-named \code{dense} and \code{sparse}, for a parameter with a \code{FUN_sparse} whose
-sparse estimate has a code of its own (e.g. \code{list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL"))}).  Defaults to \code{name} if not provided.}
+by route (e.g. \code{list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))}), or a named list with a \code{sparse} element for a parameter with
+a \code{FUN_sparse} whose sparse estimate has a code of its own.  As in the
+route-keyed form, the outer element names what the mapping is keyed by,
+and its value is itself a named list giving the code for each kind of
+analysis: \code{list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL"))}.
+Defaults to \code{name} if not provided.}
 
 \item{pptest_cdisc}{The CDISC PPTEST name for this parameter.  Can be a
 character string or a named list (same structure as \code{pptestcd_cdisc}).

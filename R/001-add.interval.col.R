@@ -324,7 +324,8 @@ assert_selection <- function(selection, name) {
 #'   arithmetic-mean profile.  See the details.
 #' @param formalsmap_sparse The `formalsmap` for `FUN_sparse`, which usually has
 #'   a different calling convention than `FUN` (a sparse estimator needs
-#'   `subject`, for example).  May only be given with `FUN_sparse`.
+#'   `subject`, for example).  May only be given when `FUN_sparse` is not
+#'   `NA`.
 #' @param datatype The data type used for the calculation. The default is
 #'   `"interval"`, which is currently the only supported value. The
 #'   `"individual"` and `"population"` data types are reserved for future
@@ -333,10 +334,12 @@ assert_selection <- function(selection, name) {
 #'   character string for simple mappings, a named list for route-dependent
 #'   mappings with a `route` element whose value is itself a named list keyed
 #'   by route (e.g. `list(route = list(extravascular = "CLF/FO", intravascular
-#'   = "CLO"))`), or a named list with a `sparse` element whose value is a list
-#'   named `dense` and `sparse`, for a parameter with a `FUN_sparse` whose
-#'   sparse estimate has a code of its own (e.g. `list(sparse = list(dense =
-#'   "AUCLST", sparse = "SPARSEAL"))`).  Defaults to `name` if not provided.
+#'   = "CLO"))`), or a named list with a `sparse` element for a parameter with
+#'   a `FUN_sparse` whose sparse estimate has a code of its own.  As in the
+#'   route-keyed form, the outer element names what the mapping is keyed by,
+#'   and its value is itself a named list giving the code for each kind of
+#'   analysis: `list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL"))`.
+#'   Defaults to `name` if not provided.
 #' @param pptest_cdisc The CDISC PPTEST name for this parameter.  Can be a
 #'   character string or a named list (same structure as `pptestcd_cdisc`).
 #'   Defaults to `desc` if not provided.
@@ -503,6 +506,9 @@ add.interval.col <- function(name,
   }
   checkmate::assert_character(x = FUN, len = 1, any.missing = TRUE) # allows NA
   checkmate::assert_logical(x = sparse, len = 1, any.missing=FALSE)
+  # Retired in 0.12.1.9000, so the error first ships in the release after
+  # 0.12.1; the argument can be removed entirely in the next minor release
+  # after that.
   if (isTRUE(sparse)) {
     rlang::abort(
       sprintf(
