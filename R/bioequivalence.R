@@ -1098,8 +1098,8 @@ print.be_dataset <- function(x, ...) {
       class = "pknca_error_be_gls_repeated"
     )
   }
-  if (identical(model_type, "nlme") && reg$scaling != "none" &&
-      !(design$replicate_reference && design$replicate_test)) {
+  full_replicate <- design$replicate_reference && design$replicate_test
+  if (identical(model_type, "nlme") && reg$scaling != "none" && !full_replicate) {
     rlang::abort(
       "model_type = 'nlme' with reference scaling requires a fully replicated design (both formulations replicated).",
       class = "pknca_error_be_resolve_model_nlme_not_replicated"
@@ -1709,17 +1709,15 @@ be_fit_models <- function(object, reference_col, reference_value,
   decision <-
     switch(
       reg$scaling,
-      none =
-        if (reg$decision) {
-          "Bioequivalence requires the confidence interval within 80.00-125.00%."
-        } else {
-          "No regulatory decision was applied: there are no acceptance limits and no pass/fail."
-        },
+      none = "Bioequivalence requires the confidence interval within 80.00-125.00%.",
       abel = "Acceptance limits are widened by the within-reference variability (ABEL) and capped per the regulator.",
       rsabe = "Reference scaling uses the linearized (Howe/Hyslop) criterion with a one-sided 95% upper bound.",
       ntid = "Narrow therapeutic index scaling requires the scaled bound, the conventional 90% CI within 80.00-125.00%, and the swT/swR ratio bound.",
       hvntid = "Highly variable NTID scaling requires the scaled bound and the swT/swR ratio bound."
     )
+  if (!reg$decision) {
+    decision <- "No regulatory decision was applied: there are no acceptance limits and no pass/fail."
+  }
   within <-
     if (identical(reg$scaling, "none")) {
       ""
