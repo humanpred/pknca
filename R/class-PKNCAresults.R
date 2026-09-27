@@ -296,7 +296,8 @@ pknca_cdisc_get_last_dose_time <- function(ret, x) {
 # Resolve a CDISC value that may be a simple string, a route-dependent list, or
 # a list keyed by whether the analysis is sparse
 #
-# @param value A character string or a list with a "route" or "sparse" element
+# @param value A character string, a list with a "route" element, or a list
+#   with exactly the elements "dense" and "sparse"
 # @param route The route for the current row ("extravascular" or "intravascular")
 # @param sparse Is the analysis sparse PK?  A parameter with a sparse estimator
 #   used it for every row of a sparse analysis, so this is a property of the
@@ -308,8 +309,8 @@ resolve_cdisc_value <- function(value, route, sparse = FALSE) {
   if (is.character(value)) {
     return(value)
   }
-  if (is.list(value) && !is.null(value$sparse)) {
-    return(value$sparse[[if (isTRUE(sparse)) "sparse" else "dense"]])
+  if (is.list(value) && setequal(names(value), c("dense", "sparse"))) {
+    return(value[[if (isTRUE(sparse)) "sparse" else "dense"]])
   }
   if (is.list(value) && !is.null(value$route)) {
     route_lower <- tolower(route)

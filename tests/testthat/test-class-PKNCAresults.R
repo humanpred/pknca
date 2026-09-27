@@ -548,7 +548,7 @@ test_that("as.data.frame.PKNCAresults with out_format='cdisc' resolves sparse-de
 })
 
 test_that("resolve_cdisc_value picks the sparse or dense value", {
-  keyed <- list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL"))
+  keyed <- list(dense = "AUCLST", sparse = "SPARSEAL")
   expect_equal(resolve_cdisc_value(keyed, route = "extravascular", sparse = TRUE), "SPARSEAL")
   expect_equal(resolve_cdisc_value(keyed, route = "extravascular", sparse = FALSE), "AUCLST")
   # The default is the dense value, and route keying and plain strings are

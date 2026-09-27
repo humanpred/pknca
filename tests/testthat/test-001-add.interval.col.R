@@ -363,21 +363,21 @@ test_that("the retired `sparse` argument of add.interval.col is an error", {
   expect_true(spec_is_sparse_only(get.interval.cols()[["b"]]))
 })
 
-test_that("add.interval.col accepts a sparse-keyed CDISC mapping", {
+test_that("add.interval.col accepts a dense/sparse CDISC mapping", {
   local_interval_cols()
   add.interval.col(
     name = "a", FUN = "mean", unit_type = "conc",
     pretty_name = "a", desc = "test",
-    pptestcd_cdisc = list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL")),
-    pptest_cdisc = list(sparse = list(dense = "AUC to Last", sparse = "Sparse AUClast"))
+    pptestcd_cdisc = list(dense = "AUCLST", sparse = "SPARSEAL"),
+    pptest_cdisc = list(dense = "AUC to Last", sparse = "Sparse AUClast")
   )
   stored <- get.interval.cols()[["a"]]
-  expect_equal(stored$pptestcd_cdisc$sparse$sparse, "SPARSEAL")
-  expect_equal(stored$pptest_cdisc$sparse$dense, "AUC to Last")
+  expect_equal(stored$pptestcd_cdisc$sparse, "SPARSEAL")
+  expect_equal(stored$pptest_cdisc$dense, "AUC to Last")
   # auclast ships with one
   expect_equal(
     get.interval.cols()[["auclast"]]$pptestcd_cdisc,
-    list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL"))
+    list(dense = "AUCLST", sparse = "SPARSEAL")
   )
 })
 
@@ -447,10 +447,15 @@ test_that("add.interval.col rejects pptestcd_cdisc types", {
     class = "pknca_error_cdisc_route_mapping_invalid"
   )
 
-  # invalid sparse mappings: unlike routes, both keys must be given
+  # invalid dense/sparse mappings: unlike routes, both keys must be given,
+  # each a single code, with nothing else -- including the wrapped
+  # list(sparse = list(...)) form that the flat mapping replaced
   for (bad in list(list(sparse = "SPARSEAL"),
-                   list(sparse = list(sparse = "SPARSEAL")),
-                   list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL", other = "X")))) {
+                   list(dense = "AUCLST"),
+                   list(dense = "AUCLST", sparse = NA_character_),
+                   list(dense = "AUCLST", sparse = list("SPARSEAL")),
+                   list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL")),
+                   list(dense = "AUCLST", sparse = "SPARSEAL", other = "X"))) {
     expect_error(
       add.interval.col(
         name = "a", FUN = "mean", unit_type = "conc",

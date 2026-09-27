@@ -4,11 +4,11 @@ assign("options", NULL, envir=.PKNCAEnv)
 assign("summary", list(), envir=.PKNCAEnv)
 assign("interval.cols", list(), envir=.PKNCAEnv)
 
-# Validate a CDISC pptestcd/pptest argument: must be a character string, or a
-# named list with either a "route" element containing a named list of
-# route-specific values (e.g. list(route = list(extravascular = ...))) or a
-# "sparse" element containing a list named "dense" and "sparse" (e.g.
-# list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL"))).
+# Validate a CDISC pptestcd/pptest argument: must be a character string, a
+# named list with a "route" element containing a named list of route-specific
+# values (e.g. list(route = list(extravascular = ...))), or a named list with
+# exactly the elements "dense" and "sparse" giving the code for each kind of
+# analysis (e.g. list(dense = "AUCLST", sparse = "SPARSEAL")).
 # Not exported -- internal helper shared by add.interval.col().
 #' @param x The CDISC argument value to validate.
 #' @param arg_name The argument name used in error messages.
@@ -26,14 +26,16 @@ validate_cdisc_arg <- function(x, arg_name) {
         class = "pknca_error_cdisc_character_invalid"
       )
     }
-  } else if (is.list(x) && identical(names(x), "sparse")) {
-    # Unlike routes, the keys are a closed set, so both must be given
-    if (!is.list(x$sparse) ||
-        !setequal(names(x$sparse), c("dense", "sparse")) ||
-        (length(x$sparse) != 2)) {
+  } else if (is.list(x) && any(c("dense", "sparse") %in% names(x))) {
+    # A dense/sparse mapping is flat.  Unlike routes, the keys are a closed
+    # set, so both must be given, each a single code.
+    if (!setequal(names(x), c("dense", "sparse")) ||
+        (length(x) != 2) ||
+        !checkmate::test_string(x$dense, na.ok = FALSE) ||
+        !checkmate::test_string(x$sparse, na.ok = FALSE)) {
       rlang::abort(
         sprintf(
-          "`%s`, when a list with a \"sparse\" element, must have that element be a list named \"dense\" and \"sparse\".",
+          "`%s`, when a list mapping dense and sparse analyses to codes, must have exactly the elements \"dense\" and \"sparse\", each a single non-missing character string.",
           arg_name
         ),
         class = "pknca_error_cdisc_sparse_mapping_invalid"
@@ -46,7 +48,7 @@ validate_cdisc_arg <- function(x, arg_name) {
         !checkmate::test_names(names(x$route), type = "named")) {
       rlang::abort(
         sprintf(
-          "`%s`, when a list, must have exactly one named element, \"route\" or \"sparse\", whose value is itself a named list mapping the context to a value.",
+          "`%s`, when a list, must have exactly one named element, \"route\", whose value is itself a named list mapping route to value, or exactly the elements \"dense\" and \"sparse\".",
           arg_name
         ),
         class = "pknca_error_cdisc_route_mapping_invalid"
@@ -334,11 +336,9 @@ assert_selection <- function(selection, name) {
 #'   character string for simple mappings, a named list for route-dependent
 #'   mappings with a `route` element whose value is itself a named list keyed
 #'   by route (e.g. `list(route = list(extravascular = "CLF/FO", intravascular
-#'   = "CLO"))`), or a named list with a `sparse` element for a parameter with
-#'   a `FUN_sparse` whose sparse estimate has a code of its own.  As in the
-#'   route-keyed form, the outer element names what the mapping is keyed by,
-#'   and its value is itself a named list giving the code for each kind of
-#'   analysis: `list(sparse = list(dense = "AUCLST", sparse = "SPARSEAL"))`.
+#'   = "CLO"))`), or a named list with exactly the elements `dense` and
+#'   `sparse`, for a parameter with a `FUN_sparse` whose sparse estimate has a
+#'   code of its own (e.g. `list(dense = "AUCLST", sparse = "SPARSEAL")`).
 #'   Defaults to `name` if not provided.
 #' @param pptest_cdisc The CDISC PPTEST name for this parameter.  Can be a
 #'   character string or a named list (same structure as `pptestcd_cdisc`).

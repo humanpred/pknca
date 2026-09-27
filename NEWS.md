@@ -74,10 +74,10 @@ the dosing including dose amount and route.
   registering a parameter's sparse-specific estimator.  A parameter without one
   keeps falling back to `FUN` on the arithmetic-mean profile, which is what
   sparse data have always done.  `pptestcd_cdisc` and `pptest_cdisc` gain a
-  sparse-keyed form (`list(sparse = list(dense = "AUCLST", sparse =
-  "SPARSEAL"))`) alongside the existing route-keyed one, so a sparsely
-  estimated `auclast` is reported to CDISC as `SPARSEAL` and a dense one as
-  `AUCLST`.
+  form keyed by whether the analysis is sparse (`list(dense = "AUCLST",
+  sparse = "SPARSEAL")`) alongside the existing route-keyed one, so a
+  sparsely estimated `auclast` is reported to CDISC as `SPARSEAL` and a dense
+  one as `AUCLST`.
 
 * `pk.nca()` calculates the sparse and dense parameters of a group in one pass
   instead of two.  The exported `pk.nca.interval()` therefore no longer takes a
