@@ -835,7 +835,18 @@ print.be_within_var <- function(x, ...) {
     } else {
       c(".subject", ".trt")
     }
-  fit_formula <- stats::reformulate(c(design_terms, .be_covariate_terms(w)), response = ".logval")
+  covariate_terms <- .be_covariate_terms(w)
+  if (length(covariate_terms) > 0) {
+    # A covariate estimable across all arms can be aliased within one pair; lm()
+    # would then drop it for this test level only.  A subject-level covariate is
+    # absorbed by the subject fixed effect, which still adjusts for it, so the
+    # check leaves the subject term out.
+    .be_check_covariates_estimable(
+      w, c(setdiff(design_terms, ".subject"), covariate_terms),
+      context = sprintf("comparing test '%s' with reference '%s'", test_level, reference_value)
+    )
+  }
+  fit_formula <- stats::reformulate(c(design_terms, covariate_terms), response = ".logval")
   model <- stats::lm(fit_formula, data = w)
   cf <- summary(model)$coefficients
   term <- paste0(".trt", test_level)
@@ -1148,11 +1159,16 @@ print.be_dataset <- function(x, ...) {
 # Error when the fixed effects, including covariates, are aliased (for example a
 # covariate that duplicates the treatment).  Without this, lm() and lmer() drop
 # a column silently and lme() and gls() fail with a singularity error.
-.be_check_covariates_estimable <- function(ds_ep, terms) {
+# `context`, when given, names the comparison in the message.
+.be_check_covariates_estimable <- function(ds_ep, terms, context = NULL) {
   mm <- stats::model.matrix(stats::reformulate(terms), data = droplevels(ds_ep))
   if (qr(mm)$rank < ncol(mm)) {
     rlang::abort(
-      "The covariates are aliased with the treatment, sequence, or period terms or with each other, so the model is not estimable.",
+      paste0(
+        "The covariates are aliased with the treatment, sequence, or period terms or with each other",
+        if (is.null(context)) "" else paste0(" when ", context),
+        ", so the model is not estimable."
+      ),
       class = "pknca_error_be_covariate_aliased"
     )
   }

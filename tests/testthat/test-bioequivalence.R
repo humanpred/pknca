@@ -608,3 +608,20 @@ test_that("be_design counts test replication per test formulation", {
   expect_true(f$replicate_test)
   expect_identical(f$feasible[["ntid"]], TRUE)
 })
+
+test_that("a covariate aliased with treatment in only one reference-test pair is an error", {
+  d <- generate_be_parallel()
+  # Site C appears only in T1 among the R/T1 pair, so within that pair it is the
+  # treatment, but T2 has sites A and C, so the three-arm model is estimable.
+  d$SITE <- NA_character_
+  d$SITE[d$treatment == "R"] <- rep(c("A", "B"), length.out = sum(d$treatment == "R"))
+  d$SITE[d$treatment == "T1"] <- "C"
+  d$SITE[d$treatment == "T2"] <- rep(c("A", "C"), length.out = sum(d$treatment == "T2"))
+  ds <- be_dataset(d, "treatment", "R", "auclast", covariates = "SITE")
+  expect_s3_class(be_fit_model_single(ds$data, "anova", scaling = FALSE)$model, "lm")
+  expect_error(
+    be_assess(d, "treatment", "R", "auclast", covariates = "SITE"),
+    regexp = "when comparing test 'T1' with reference 'R'",
+    class = "pknca_error_be_covariate_aliased"
+  )
+})
