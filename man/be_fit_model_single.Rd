@@ -6,7 +6,7 @@
 \usage{
 be_fit_model_single(
   ds_ep,
-  model_type = c("lmer", "nlme", "anova", "isc"),
+  model_type = c("lmer", "nlme", "anova", "isc", "gls"),
   scaling = TRUE
 )
 }
@@ -14,8 +14,10 @@ be_fit_model_single(
 \item{ds_ep}{The standardized single-endpoint data.frame from \code{\link[=be_dataset]{be_dataset()}}
 (\code{be_dataset(...)$data} filtered to one endpoint).}
 
-\item{model_type}{One of \code{"lmer"}, \code{"nlme"}, \code{"anova"}, or \code{"isc"} (the
-intra-subject-contrast path, fit like \code{"anova"}).}
+\item{model_type}{One of \code{"lmer"}, \code{"nlme"}, \code{"anova"}, \code{"isc"} (the
+intra-subject-contrast path, fit like \code{"anova"}), or \code{"gls"} (generalized
+least squares with treatment-specific residual variances, for parallel
+designs).}
 
 \item{scaling}{Logical; whether reference scaling is needed (controls whether
 the within-formulation variances are estimated).}
@@ -29,10 +31,11 @@ attribute (\code{NULL} when not provided).
 \description{
 \code{be_fit_model_single()} fits the average-BE model for a single endpoint and
 dispatches on \code{model_type} to \code{be_fit_model_lmer()}, \code{be_fit_model_nlme()},
-or \code{be_fit_model_anova()}.  This is the only place model fitting happens.  For
-the \code{"lmer"}, \code{"anova"}, and \code{"isc"} types the within-formulation ANOVA
-variances are also fit here; for \code{"nlme"} they come from the single mixed
-model.
+\code{be_fit_model_gls()}, or \code{be_fit_model_anova()}.  This is the only place
+model fitting happens.  For the \code{"lmer"}, \code{"anova"}, and \code{"isc"} types the
+within-formulation ANOVA variances are also fit here; for \code{"nlme"} they come
+from the single mixed model.  Covariate columns carried by \code{\link[=be_dataset]{be_dataset()}}
+(\verb{.cov_<name>}) enter every model as additive fixed effects.
 }
 \seealso{
 Other Bioequivalence:

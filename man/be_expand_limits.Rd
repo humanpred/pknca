@@ -12,7 +12,8 @@ endpoint (for example from \code{\link[=be_within_var]{be_within_var()}}).}
 
 \item{regulator}{A regulator name (see \code{\link[=be_regulator]{be_regulator()}}) or a \code{be_regulator}
 object.  Only the ABEL frameworks (\code{"EMA"}, \code{"HC"}, \code{"GCC"}) widen; \code{"ABE"}
-always returns 80.00-125.00\%.}
+always returns 80.00-125.00\%, and \code{"descriptive"} (which has no limits) is
+an error.}
 }
 \value{
 A named numeric vector \code{c(lower, upper)} of acceptance limits as
