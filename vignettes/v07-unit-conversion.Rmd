@@ -322,6 +322,13 @@ A few rules keep the conversion unambiguous:
   so a daylight saving time change within a named time zone (like
   `"America/New_York"`) is handled correctly.
 * Dates (Date) are taken as midnight at the start of the date, with a warning.
-* Excluded doses are not used as the time reference, and every group of
-  concentrations must have a dose time.
+* The dose formula must include the subject (as with `Subject` above), so that
+  each subject has its own reference.  Sparse data are the exception:  every
+  subject in a sparse group shares the group's dosing, so the reference is per
+  group.
+* Excluded doses are not used as the time reference.  A subject without an
+  included dose time uses its first (not excluded) concentration instead, with
+  a warning, and without dosing data every subject uses its first
+  concentration.  The `time_reference_type` column of `time_reference` says
+  which kind of reference each group has (`"first_dose"` or `"first_conc"`).
 * Nominal times (`time.nominal`) are not converted.

@@ -15,8 +15,13 @@ the dosing including dose amount and route.
   Durations follow the times to that unit, manually given intervals are
   relative to the reference, the reference is kept in the `time_reference`
   element of the `PKNCAdata` object, and `as.data.frame(out_format = "cdisc")`
-  reports it as PPRFTDTC.  Mixing numeric and date-time times, mixing time
-  zones, and concentrations without a dose time are errors.  (@GITHUB_HANDLE)
+  reports it as PPRFTDTC.  A subject without an included dose time (or all
+  subjects, without dosing data) uses its first concentration as the reference
+  instead, with a warning when dosing data exist, and the `time_reference_type`
+  column records which kind of reference each group has.  Mixing numeric and
+  date-time times, mixing time zones, and a dose formula without the subject of
+  dense data are errors; sparse data use one reference per group.
+  (@GITHUB_HANDLE)
 * `pknca_exclude_rules()` lists the automatic exclusion rules (`exclude_nca_*()`)
   with their descriptions, arguments, defaults, the `PKNCA.options()` entries
   they fall back to, and the parameters each can exclude.  It is built at call

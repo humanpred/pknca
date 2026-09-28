@@ -112,9 +112,20 @@ When the concentration and dose times are date-times (POSIXct) or dates
 is done:
 \itemize{
 \item The time reference is the first dose (ignoring excluded doses) within
-each combination of the grouping variables shared by the concentration
-and dose formulas.  With \code{dose~time|Part+Subject}, each subject's first
-dose in each study part (or period, for a crossover) is time 0.
+each combination of the grouping variables (and the subject) shared by
+the concentration and dose formulas.  With \code{dose~time|Part+Subject},
+each subject's first dose in each study part (or period, for a
+crossover) is time 0; with \code{dose~time|Subject}, each subject's first
+dose of the study is time 0.  The dose formula must include the subject,
+so that one reference is never shared by several subjects.
+\item A subject (group) without an included dose time uses its first
+concentration (the first one not excluded) as the reference, with a
+warning.  Without dosing data, every reference is the first
+concentration, within each combination of the concentration grouping
+variables to the left of any \code{/} (so analytes share their subject's
+reference).
+\item Sparse data use one reference per group rather than per subject, because
+every subject in a sparse group shares the group's dosing.
 \item Numeric time is in the preferred time unit (\code{timeu_pref} of the
 \code{\link[=PKNCAconc]{PKNCAconc()}} object) when one is given, and in seconds (with a warning)
 otherwise.  The original time unit (\code{timeu}) becomes that unit, and
@@ -123,13 +134,15 @@ converted to it.
 \item Manually specified \code{intervals} are numeric times relative to the time
 reference, in that unit.
 \item The time reference of each group is kept in the \code{time_reference} element
-of the object, and \code{as.data.frame(results, out_format = "cdisc")} gives it
-in the PPRFTDTC column.
+of the object, with the \code{time_reference_type} column saying whether it
+is the \code{"first_dose"} or the \code{"first_conc"}, and
+\code{as.data.frame(results, out_format = "cdisc")} gives it in the PPRFTDTC
+column.
 }
 
 Both times must be date-times (or dates), not one numeric and one
-date-time; date-times must have the same time zone; and every group of
-concentrations needs a dose with a time.  Otherwise, it is an error.
+date-time; date-times must have the same time zone; and the dose formula
+must include the subject of dense data.  Otherwise, it is an error.
 Differences are elapsed time, so a change to or from daylight saving time
 is handled correctly when the time zone is a named zone (like
 \code{"America/New_York"}).

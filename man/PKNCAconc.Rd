@@ -134,9 +134,10 @@ automatic intervals and options (like \code{single.dose.aucs}) are then in
 seconds, too.  Any numeric \code{duration} is in seconds.
 
 The times remain date-times in the \code{PKNCAconc} and \code{PKNCAdose} objects.
-\code{\link[=PKNCAdata]{PKNCAdata()}} converts them to numeric time relative to the first dose
-in each group; see the "Date-time input" section there.  The nominal time
-(\code{time.nominal}) is not converted and usually stays numeric.
+\code{\link[=PKNCAdata]{PKNCAdata()}} converts them to numeric time relative to the first dose (or
+first concentration) in each group; see the "Date-time input" section
+there.  The nominal time (\code{time.nominal}) is not converted and usually
+stays numeric.
 }
 
 \seealso{

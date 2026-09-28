@@ -31,7 +31,7 @@ test_that("POSIXct times become numeric time relative to each subject's first do
   expect_equal(o_data$conc$units$timeu_pref, "hr", ignore_attr = TRUE)
   expect_equal(
     o_data$time_reference,
-    data.frame(part = "A", subject = 1:2, time_reference = d$dose$time)
+    data.frame(part = "A", subject = 1:2, time_reference = d$dose$time, time_reference_type = "first_dose")
   )
   # Automatic intervals are in the preferred time unit
   expect_equal(o_data$intervals$start, c(0, 0, 0, 0))
@@ -129,30 +129,112 @@ test_that("Date-times with different time zones are an error", {
   )
 })
 
-test_that("Date-time concentrations need dose times for the reference", {
+test_that("Without dose data, each subject's first concentration is the reference", {
+  skip_if_not_installed("units")
   d <- datetime_test_data()
-  o_conc <- PKNCAconc(d$conc, conc~time|part+subject)
-  expect_error(
-    PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 24, cmax = TRUE)),
-    class = "pknca_error_datetime_no_dose_time"
+  # The first sample of subject 2 is excluded, so its reference is its second
+  d$conc$excl <- NA_character_
+  d$conc$excl[7] <- "Sample hemolyzed"
+  o_conc <- PKNCAconc(d$conc, conc~time|part+subject, exclude = "excl", timeu_pref = "hr")
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 24, cmax = TRUE))
+  expect_equal(
+    o_data$time_reference,
+    data.frame(
+      part = "A", subject = 1:2,
+      time_reference = d$conc$time[c(1, 8)],
+      time_reference_type = "first_conc"
+    )
   )
-  expect_error(
-    PKNCAdata(o_conc, PKNCAdose(d$dose, dose~.|part+subject)),
-    class = "pknca_error_datetime_no_dose_time"
+  expect_equal(o_data$conc$data$time, c(0, 1, 2, 4, 8, 24, -1, 0, 1, 3, 7, 23))
+  expect_output(
+    print(o_data),
+    regexp = "; 2 of 2 groups have no dose and use the first concentration.",
+    fixed = TRUE
   )
-  # A subject without a dose has no reference
-  expect_error(
-    PKNCAdata(o_conc, PKNCAdose(d$dose[1, ], dose~time|part+subject)),
+  # Analytes (groups right of the "/") share their subject's reference
+  d_conc_analyte <- rbind(cbind(d$conc, analyte = "parent"), cbind(d$conc, analyte = "metabolite"))
+  o_data_analyte <-
+    PKNCAdata(
+      PKNCAconc(d_conc_analyte, conc~time|part+subject/analyte, exclude = "excl", timeu_pref = "hr"),
+      intervals = data.frame(start = 0, end = 24, cmax = TRUE)
+    )
+  expect_equal(o_data_analyte$time_reference, o_data$time_reference)
+  # A subject whose concentrations are all excluded uses its first one
+  d$conc$excl[1:6] <- "Not dosed"
+  o_data_all_excl <-
+    PKNCAdata(
+      PKNCAconc(d$conc, conc~time|part+subject, exclude = "excl", timeu_pref = "hr"),
+      intervals = data.frame(start = 0, end = 24, cmax = TRUE)
+    )
+  expect_equal(o_data_all_excl$time_reference$time_reference, d$conc$time[c(1, 8)])
+})
+
+test_that("Subjects without an included dose use their first concentration, with a warning", {
+  skip_if_not_installed("units")
+  d <- datetime_test_data()
+  o_conc <- PKNCAconc(d$conc, conc~time|part+subject, concu = "ng/mL", timeu_pref = "hr")
+  expected_reference <-
+    data.frame(
+      part = "A", subject = 1:2,
+      time_reference = d$conc$time[c(1, 7)],
+      time_reference_type = c("first_dose", "first_conc")
+    )
+  # Automatic intervals need a dose for every subject, so they are given
+  intervals <- data.frame(start = 0, end = 24, cmax = TRUE)
+  expect_warning(
+    o_data <- PKNCAdata(o_conc, PKNCAdose(d$dose[1, ], dose~time|part+subject), intervals = intervals),
     regexp = "part=A, subject=2",
-    class = "pknca_error_datetime_no_reference"
+    class = "pknca_warning_datetime_first_conc_reference"
   )
-  # Nor does a subject whose only dose is excluded
+  expect_equal(o_data$time_reference, expected_reference)
+  # A subject whose only dose is excluded
   d_dose_excl <- d$dose
   d_dose_excl$excl <- c(NA, "Not given")
-  expect_error(
-    PKNCAdata(o_conc, PKNCAdose(d_dose_excl, dose~time|part+subject, exclude = "excl")),
-    class = "pknca_error_datetime_no_reference"
+  expect_warning(
+    o_data_excl <-
+      PKNCAdata(o_conc, PKNCAdose(d_dose_excl, dose~time|part+subject, exclude = "excl"), intervals = intervals),
+    class = "pknca_warning_datetime_first_conc_reference"
   )
+  expect_equal(o_data_excl$time_reference, expected_reference)
+  # Subject 2's first sample was at its (excluded) dose time
+  expect_equal(o_data_excl$dose$data$time, c(0, 0))
+  # Dose data without dose times give every subject its first concentration
+  expect_warning(
+    o_data_no_time <-
+      PKNCAdata(
+        o_conc, PKNCAdose(d$dose, dose~.|part+subject),
+        intervals = data.frame(start = 0, end = 24, cmax = TRUE)
+      ),
+    regexp = "subject=1; part=A, subject=2",
+    class = "pknca_warning_datetime_first_conc_reference"
+  )
+  expect_equal(o_data_no_time$time_reference$time_reference_type, c("first_conc", "first_conc"))
+  # CDISC results carry the first-concentration reference as PPRFTDTC
+  o_nca <- suppressWarnings(pk.nca(o_data))
+  d_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
+  expect_equal(
+    unique(d_cdisc$PPRFTDTC[d_cdisc$subject == 2]),
+    format_iso8601_datetime(d$conc$time[7])
+  )
+})
+
+test_that("Without doses, the reference is per period in a crossover", {
+  skip_if_not_installed("units")
+  t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
+  d_conc <-
+    data.frame(
+      subject = rep(1:2, each = 4),
+      period = rep(rep(1:2, each = 2), 2),
+      time = t0 + c(0, 2, 168, 170, 1, 3, 169, 171) * 3600,
+      conc = c(0, 5, 0, 4, 0, 6, 0, 3)
+    )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|period+subject, timeu_pref = "hr"),
+      intervals = data.frame(start = 0, end = 24, cmax = TRUE)
+    )
+  expect_equal(o_data$conc$data$time, rep(c(0, 2), 4))
+  expect_equal(o_data$time_reference$time_reference_type, rep("first_conc", 4))
 })
 
 test_that("The reference is the first included dose within the shared groups", {
@@ -184,7 +266,10 @@ test_that("The reference is the first included dose within the shared groups", {
   expect_equal(o_data$dose$data$time, c(0, 12, -12, 0))
   expect_equal(
     o_data$time_reference,
-    data.frame(part = c("MAD", "SAD"), subject = 1, time_reference = t0 + c(180, 0) * 3600)
+    data.frame(
+      part = c("MAD", "SAD"), subject = 1, time_reference = t0 + c(180, 0) * 3600,
+      time_reference_type = "first_dose"
+    )
   )
   # Manually-given intervals are relative to the reference:  0 to 12 hours holds
   # only the concentration 1 hour after the MAD reference and the concentrations
@@ -195,27 +280,113 @@ test_that("The reference is the first included dose within the shared groups", {
   expect_equal(d_nca$PPORRES[d_nca$PPTESTCD == "cmax"], c(4, 3))
 })
 
-test_that("A dose grouping without the subject gives one reference per shared group", {
+test_that("A dose formula without the subject is an error, not a pooled reference", {
+  t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
+  # Crossover:  pooling one reference per period would put every subject's
+  # times relative to whichever subject was dosed first.
+  d_conc <-
+    data.frame(
+      subject = rep(1:2, each = 2),
+      period = 1,
+      time = t0 + c(0, 3600, 1800, 5400),
+      conc = c(0, 2, 0, 2.5)
+    )
+  d_dose <- data.frame(subject = 1:2, period = 1, time = t0 + c(0, 1800), dose = 1)
+  expect_error(
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|period+subject),
+      PKNCAdose(d_dose, dose~time|period)
+    ),
+    regexp = "conc ~ time | period + subject; dose formula: dose ~ time | period",
+    fixed = TRUE,
+    class = "pknca_error_datetime_subject_not_grouped"
+  )
+  # A subject given by name rather than as a group is required, too
+  expect_error(
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|period, subject = "subject"),
+      PKNCAdose(d_dose, dose~time|period)
+    ),
+    class = "pknca_error_datetime_subject_not_grouped"
+  )
+})
+
+test_that("Each crossover subject's reference is its own dose", {
+  skip_if_not_installed("units")
+  t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
+  # Subject 2 is dosed 30 minutes after subject 1 in each period; periods are
+  # one week apart.
+  d_conc <-
+    data.frame(
+      subject = rep(1:2, each = 4),
+      period = rep(rep(1:2, each = 2), 2),
+      time = t0 + c(0, 2, 168, 170, 0.5, 2.5, 168.5, 170.5) * 3600,
+      conc = c(0, 5, 0, 4, 0, 6, 0, 3)
+    )
+  d_dose <-
+    data.frame(
+      subject = rep(1:2, each = 2),
+      period = rep(1:2, 2),
+      time = t0 + c(0, 168, 0.5, 168.5) * 3600,
+      dose = 1
+    )
+  # With the period in the dose formula, the reference is per period
+  o_data_period <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|period+subject, timeu_pref = "hr"),
+      PKNCAdose(d_dose, dose~time|period+subject)
+    )
+  expect_equal(o_data_period$conc$data$time, rep(c(0, 2), 4))
+  expect_equal(o_data_period$time_reference$time_reference, t0 + c(0, 0.5, 168, 168.5) * 3600)
+  # With only the subject in the dose formula, the reference is each subject's
+  # period-1 dose
+  o_data_subject <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|period+subject, timeu_pref = "hr"),
+      PKNCAdose(d_dose, dose~time|subject),
+      intervals = data.frame(start = c(0, 168), end = c(24, 192), cmax = TRUE)
+    )
+  expect_equal(o_data_subject$conc$data$time, rep(c(0, 2, 168, 170), 2))
+  expect_equal(
+    o_data_subject$time_reference,
+    data.frame(subject = 1:2, time_reference = t0 + c(0, 0.5) * 3600, time_reference_type = "first_dose")
+  )
+})
+
+test_that("Sparse date-time data take one reference per group", {
+  # PKNCA requires every subject in a sparse group to share the group's dosing,
+  # so the reference is the group's dose, or without doses the group's first
+  # sample (not each animal's first sample).
   t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
   d_conc <-
     data.frame(
-      treatment = "A",
-      id = rep(1:2, each = 2),
-      time = t0 + c(0, 3600, 1800, 5400),
-      conc = c(1, 2, 1.5, 2.5)
+      treatment = rep(c("A", "B"), each = 4),
+      id = rep(1:4, each = 2),
+      time = t0 + c(0, 3600, 1800, 5400, 7200, 10800, 9000, 12600),
+      conc = c(0, 2, 1, 2.5, 0, 2, 1, 2.5)
     )
-  d_dose <- data.frame(treatment = "A", time = t0, dose = 1)
+  d_dose <- data.frame(treatment = c("A", "B"), time = t0 + c(0, 7200), dose = 1)
+  o_conc <- PKNCAconc(d_conc, conc~time|treatment, subject = "id", sparse = TRUE)
   expect_warning(
     o_data <-
       PKNCAdata(
-        PKNCAconc(d_conc, conc~time|treatment, subject = "id", sparse = TRUE),
-        PKNCAdose(d_dose, dose~time|treatment),
+        o_conc, PKNCAdose(d_dose, dose~time|treatment),
         intervals = data.frame(start = 0, end = 7200, cmax = TRUE)
       ),
     class = "pknca_warning_datetime_seconds"
   )
-  expect_equal(o_data$conc$data_sparse$time, c(0, 3600, 1800, 5400))
-  expect_equal(o_data$time_reference, data.frame(treatment = "A", time_reference = t0))
+  expect_equal(o_data$conc$data_sparse$time, rep(c(0, 3600, 1800, 5400), 2))
+  expect_equal(
+    o_data$time_reference,
+    data.frame(treatment = c("A", "B"), time_reference = t0 + c(0, 7200), time_reference_type = "first_dose")
+  )
+  expect_warning(
+    o_data_no_dose <-
+      PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 7200, cmax = TRUE)),
+    class = "pknca_warning_datetime_seconds"
+  )
+  expect_equal(o_data_no_dose$conc$data_sparse$time, rep(c(0, 3600, 1800, 5400), 2))
+  expect_equal(o_data_no_dose$time_reference$time_reference_type, c("first_conc", "first_conc"))
 })
 
 test_that("Ungrouped date-time data use the single first dose", {
@@ -230,7 +401,7 @@ test_that("Ungrouped date-time data use the single first dose", {
     class = "pknca_warning_datetime_seconds"
   )
   expect_equal(o_data$conc$data$time, c(-60, 0, 60))
-  expect_equal(o_data$time_reference, data.frame(time_reference = t0 + 60))
+  expect_equal(o_data$time_reference, data.frame(time_reference = t0 + 60, time_reference_type = "first_dose"))
 })
 
 test_that("Durations follow the time to the preferred unit", {

@@ -70,9 +70,20 @@
 #'   is done:
 #'
 #'   * The time reference is the first dose (ignoring excluded doses) within
-#'     each combination of the grouping variables shared by the concentration
-#'     and dose formulas.  With `dose~time|Part+Subject`, each subject's first
-#'     dose in each study part (or period, for a crossover) is time 0.
+#'     each combination of the grouping variables (and the subject) shared by
+#'     the concentration and dose formulas.  With `dose~time|Part+Subject`,
+#'     each subject's first dose in each study part (or period, for a
+#'     crossover) is time 0; with `dose~time|Subject`, each subject's first
+#'     dose of the study is time 0.  The dose formula must include the subject,
+#'     so that one reference is never shared by several subjects.
+#'   * A subject (group) without an included dose time uses its first
+#'     concentration (the first one not excluded) as the reference, with a
+#'     warning.  Without dosing data, every reference is the first
+#'     concentration, within each combination of the concentration grouping
+#'     variables to the left of any `/` (so analytes share their subject's
+#'     reference).
+#'   * Sparse data use one reference per group rather than per subject, because
+#'     every subject in a sparse group shares the group's dosing.
 #'   * Numeric time is in the preferred time unit (`timeu_pref` of the
 #'     [PKNCAconc()] object) when one is given, and in seconds (with a warning)
 #'     otherwise.  The original time unit (`timeu`) becomes that unit, and
@@ -81,12 +92,14 @@
 #'   * Manually specified `intervals` are numeric times relative to the time
 #'     reference, in that unit.
 #'   * The time reference of each group is kept in the `time_reference` element
-#'     of the object, and `as.data.frame(results, out_format = "cdisc")` gives it
-#'     in the PPRFTDTC column.
+#'     of the object, with the `time_reference_type` column saying whether it
+#'     is the `"first_dose"` or the `"first_conc"`, and
+#'     `as.data.frame(results, out_format = "cdisc")` gives it in the PPRFTDTC
+#'     column.
 #'
 #'   Both times must be date-times (or dates), not one numeric and one
-#'   date-time; date-times must have the same time zone; and every group of
-#'   concentrations needs a dose with a time.  Otherwise, it is an error.
+#'   date-time; date-times must have the same time zone; and the dose formula
+#'   must include the subject of dense data.  Otherwise, it is an error.
 #'   Differences are elapsed time, so a change to or from daylight saving time
 #'   is handled correctly when the time zone is a named zone (like
 #'   `"America/New_York"`).
@@ -304,10 +317,19 @@ print.PKNCAdata <- function(x, ...) {
   cat(sprintf("\nWith %d rows of interval specifications.\n",
               nrow(x$intervals)))
   if (!is.null(x$time_reference)) {
-    group_cols <- setdiff(names(x$time_reference), "time_reference")
+    group_cols <- setdiff(names(x$time_reference), c("time_reference", "time_reference_type"))
+    n_first_conc <- sum(x$time_reference$time_reference_type %in% "first_conc")
     cat(sprintf(
-      "Times are relative to the first dose%s (date-time input).\n",
-      if (length(group_cols) > 0) paste0(" within each ", paste(group_cols, collapse = "+")) else ""
+      "Times are relative to the first dose%s (date-time input)%s.\n",
+      if (length(group_cols) > 0) paste0(" within each ", paste(group_cols, collapse = "+")) else "",
+      if (n_first_conc > 0) {
+        sprintf(
+          "; %d of %d groups have no dose and use the first concentration",
+          n_first_conc, nrow(x$time_reference)
+        )
+      } else {
+        ""
+      }
     ))
   }
   if (!is.null(x$units)) {

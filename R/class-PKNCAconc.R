@@ -76,9 +76,10 @@
 #'   seconds, too.  Any numeric `duration` is in seconds.
 #'
 #'   The times remain date-times in the `PKNCAconc` and `PKNCAdose` objects.
-#'   [PKNCAdata()] converts them to numeric time relative to the first dose
-#'   in each group; see the "Date-time input" section there.  The nominal time
-#'   (`time.nominal`) is not converted and usually stays numeric.
+#'   [PKNCAdata()] converts them to numeric time relative to the first dose (or
+#'   first concentration) in each group; see the "Date-time input" section
+#'   there.  The nominal time (`time.nominal`) is not converted and usually
+#'   stays numeric.
 #' @family PKNCA objects
 #' @export
 PKNCAconc <- function(data, ...) {

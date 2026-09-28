@@ -176,7 +176,7 @@ pknca_cdisc_add_reference_datetime <- function(ret, x) {
   if (is.null(time_reference)) {
     return(ret)
   }
-  group_cols <- setdiff(names(time_reference), "time_reference")
+  group_cols <- setdiff(names(time_reference), c("time_reference", "time_reference_type"))
   ret$PPRFTDTC <-
     format_iso8601_datetime(
       pknca_datetime_match_reference(
