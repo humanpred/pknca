@@ -40,6 +40,11 @@ the dosing including dose amount and route.
 * The documentation of the `subject` argument of `PKNCAconc()` now matches the
   code:  the default subject is the last grouping variable to the left of any
   `/`.  (@GITHUB_HANDLE)
+* In `as.data.frame(out_format = "cdisc")`, PPSTINT and PPENINT are now
+  converted to the preferred time unit (`timeu_pref`) that labels them;
+  previously, interval times in the original unit were labelled with the
+  preferred unit (60 minutes reported as `"PT60H"` with `timeu_pref = "hr"`).
+  (@GITHUB_HANDLE)
 
 * On sparse PK data, `auclast` and `aumclast` are now estimated with the sparse
   methods (the Bailer point estimate with the Nedelman-Jia/Holder standard
