@@ -57,6 +57,10 @@ the dosing including dose amount and route.
   whose 0 to 24 window is written for hours, and the time unit is a recognized
   time unit other than hours (the window would be 24 minutes or 24 days).  The
   default option is unchanged.  (@GITHUB_HANDLE)
+* `check.interval.specification()` (and so `PKNCAdata()`) rejects date-time or
+  date `start` and `end` with a clear error (`pknca_error_interval_datetime`);
+  intervals are numeric times, relative to the time reference for date-time
+  data.  (@GITHUB_HANDLE)
 * `PKNCA.options.defaults()` returns the default value of one or more options
   (or all of them) without changing the current options, unlike
   `PKNCA.options(default = TRUE)`, which resets them.  (@GITHUB_HANDLE)

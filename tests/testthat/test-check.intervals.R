@@ -445,3 +445,26 @@ test_that("re-registering a parameter drops every cached requirement (#194)", {
   expect_false(cached("ae"))
   expect_true(set_requires_inputs("ae")[["ae"]]$requires_volume)
 })
+
+test_that("check.interval.specification rejects date-time start and end", {
+  t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
+  expect_error(
+    check.interval.specification(data.frame(start = t0, end = t0 + 3600, cmax = TRUE)),
+    regexp = "Interval 'start' and 'end' must be numeric times",
+    class = "pknca_error_interval_datetime"
+  )
+  expect_error(
+    check.interval.specification(data.frame(start = 0, end = as.Date("2024-03-02"), cmax = TRUE)),
+    regexp = "Interval 'end' must be numeric times",
+    class = "pknca_error_interval_datetime"
+  )
+  # The same error reaches users of PKNCAdata() with date-time data
+  d_conc <- data.frame(subject = 1, time = t0 + c(0, 3600), conc = c(0, 1))
+  expect_error(
+    suppressWarnings(PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject),
+      intervals = data.frame(start = t0, end = t0 + 3600, cmax = TRUE)
+    )),
+    class = "pknca_error_interval_datetime"
+  )
+})

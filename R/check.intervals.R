@@ -47,6 +47,18 @@ check.interval.specification <- function(x) {
       class = "pknca_error_interval_missing_cols"
     )
   }
+  # Interval times are numeric; date-time data are converted to numeric time
+  # relative to a reference in PKNCAdata(), and intervals use that time.
+  datetime_cols <- c("start", "end")[vapply(X = x[c("start", "end")], FUN = is_datetime_time, FUN.VALUE = TRUE)]
+  if (length(datetime_cols) > 0) {
+    rlang::abort(
+      sprintf(
+        "Interval %s must be numeric times (relative to the time reference for date-time data; see the \"Date-time input\" section of ?PKNCAdata), not date-times.",
+        paste0("'", datetime_cols, "'", collapse = " and ")
+      ),
+      class = "pknca_error_interval_datetime"
+    )
+  }
   interval_cols <- get.interval.cols()
   # Check the edit of each column
   for (n in names(interval_cols)) {
