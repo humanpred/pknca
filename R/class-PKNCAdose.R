@@ -16,7 +16,9 @@
 #'   column from the `data`, and if given as a number, it is the value for all
 #'   doses.  Only one may be given, and if neither is given, then the dose is
 #'   assumed to be a bolus (`duration=0`).  If `rate` is given, then the dose
-#'   amount must be given (the left hand side of the `formula`).
+#'   amount must be given (the left hand side of the `formula`).  A numeric
+#'   duration is in the time unit of the analysis; a difftime duration is
+#'   converted to that unit in [PKNCAdata()].
 #' @param time.nominal (optional) The name of the nominal time column (if the
 #'   main time variable is actual time.  The `time.nominal` is not used during
 #'   calculations; it is available to assist with data summary and checking.
@@ -249,7 +251,7 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
     duration <- tmpdose$data[[tmpdose$name]]/tmprate$data[[tmprate$name]]
     object <- setAttributeColumn(object=object, attr_name="duration", col_or_value=duration)
   }
-  duration.val <- getAttributeColumn(object=object, attr_name="duration")[[1]]
+  duration.val <- pknca_duration_check_values(getAttributeColumn(object=object, attr_name="duration")[[1]])
   if (is.numeric(duration.val) &&
       !anyNA(duration.val) &&
       !any(is.infinite(duration.val)) &&

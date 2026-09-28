@@ -19,11 +19,11 @@ datetime_test_data <- function(tz = "UTC") {
 test_that("POSIXct times become numeric time relative to each subject's first dose", {
   skip_if_not_installed("units")
   d <- datetime_test_data()
-  o_conc <- PKNCAconc(d$conc, conc~time|part+subject, concu = "ng/mL", timeu = "s", timeu_pref = "hr")
+  o_conc <- PKNCAconc(d$conc, conc~time|part+subject, concu = "ng/mL", timeu_pref = "hr")
   o_dose <- PKNCAdose(d$dose, dose~time|part+subject, doseu = "mg")
   # The objects keep the date-times
   expect_s3_class(o_conc$data$time, "POSIXct")
-  expect_equal(o_conc$units$timeu, "s", ignore_attr = TRUE)
+  expect_equal(o_conc$units$timeu, "hr", ignore_attr = TRUE)
   o_data <- PKNCAdata(o_conc, o_dose)
   expect_equal(o_data$conc$data$time, d$conc$time_hr)
   expect_equal(o_data$dose$data$time, c(0, 0))
@@ -49,38 +49,55 @@ test_that("POSIXct times become numeric time relative to each subject's first do
   )
 })
 
-test_that("Without timeu_pref, POSIXct times are in seconds, with a warning", {
+test_that("Without units, POSIXct times are in hours", {
   d <- datetime_test_data()
-  # Without any units, no time unit is set
   o_conc <- PKNCAconc(d$conc, conc~time|part+subject)
+  # No time unit is set, so the analysis has no units
   expect_null(o_conc$units$timeu)
-  expect_warning(
-    o_data <- PKNCAdata(o_conc, PKNCAdose(d$dose, dose~time|part+subject)),
-    class = "pknca_warning_datetime_seconds"
-  )
-  expect_equal(o_data$conc$data$time, d$conc$time_hr * 3600)
+  expect_no_warning(o_data <- PKNCAdata(o_conc, PKNCAdose(d$dose, dose~time|part+subject)))
+  expect_equal(o_data$conc$data$time, d$conc$time_hr)
   expect_null(o_data$conc$units$timeu)
-  # The default single-dose interval (0 to 24) is in seconds
+  # The default single-dose intervals are the usual 0 to 24 hours
   expect_equal(o_data$intervals$end, c(24, Inf, 24, Inf))
-  # With timeu = "s", the unit is kept
-  o_conc_s <- PKNCAconc(d$conc, conc~time|part+subject, timeu = "s")
-  # With a known time unit of seconds, the default single-dose intervals are
-  # flagged, too
-  expect_warning(
-    expect_warning(
-      o_data_s <- PKNCAdata(o_conc_s, PKNCAdose(d$dose, dose~time|part+subject)),
-      class = "pknca_warning_datetime_seconds"
-    ),
-    class = "pknca_warning_single_dose_aucs_unit"
-  )
-  expect_equal(o_data_s$conc$units$timeu, "s", ignore_attr = TRUE)
 })
 
-test_that("A date-time time column requires timeu = 's'", {
+test_that("timeu alone gives the unit for date-time input", {
   d <- datetime_test_data()
+  o_conc <- PKNCAconc(d$conc, conc~time|part+subject, timeu = "min")
+  expect_equal(o_conc$units$timeu, "min", ignore_attr = TRUE)
+  expect_warning(
+    o_data <- PKNCAdata(o_conc, PKNCAdose(d$dose, dose~time|part+subject)),
+    class = "pknca_warning_single_dose_aucs_unit"
+  )
+  expect_equal(o_data$conc$data$time, d$conc$time_hr * 60)
+  expect_equal(o_data$conc$units$timeu, "min", ignore_attr = TRUE)
+})
+
+test_that("timeu_pref takes precedence over timeu for date-time input", {
+  skip_if_not_installed("units")
+  d <- datetime_test_data()
+  o_conc <- PKNCAconc(d$conc, conc~time|part+subject, concu = "ng/mL", timeu = "min", timeu_pref = "hr")
+  # Date-times have no original unit to convert from, so timeu becomes timeu_pref
+  expect_equal(o_conc$units$timeu, "hr", ignore_attr = TRUE)
+  expect_equal(o_conc$units$timeu_pref, "hr", ignore_attr = TRUE)
+  o_data <- PKNCAdata(o_conc, PKNCAdose(d$dose, dose~time|part+subject, doseu = "mg"))
+  expect_equal(o_data$conc$data$time, d$conc$time_hr)
+  d_nca <- as.data.frame(pk.nca(o_data))
+  expect_equal(unique(d_nca$PPORRESU[d_nca$PPTESTCD == "tmax"]), "hr")
+  expect_equal(d_nca$PPORRES[d_nca$PPTESTCD == "tmax"], c(2, 2))
+})
+
+test_that("The unit for date-time input must be one time unit value", {
+  d <- datetime_test_data()
+  d$conc$timeu_col <- "hr"
   expect_error(
-    PKNCAconc(d$conc, conc~time|part+subject, timeu = "hr"),
+    PKNCAconc(d$conc, conc~time|part+subject, timeu = "timeu_col"),
     class = "pknca_error_datetime_timeu"
+  )
+  expect_error(
+    PKNCAconc(d$conc, conc~time|part+subject, timeu_pref = "mg"),
+    regexp = "must be a time unit",
+    class = "pknca_error_datetime_time_unit"
   )
   # A numeric time is unaffected
   expect_equal(PKNCAconc(d$conc, conc~time_hr|part+subject, timeu = "hr")$units$timeu, "hr", ignore_attr = TRUE)
@@ -379,57 +396,95 @@ test_that("Sparse date-time data take one reference per group", {
     )
   d_dose <- data.frame(treatment = c("A", "B"), time = t0 + c(0, 7200), dose = 1)
   o_conc <- PKNCAconc(d_conc, conc~time|treatment, subject = "id", sparse = TRUE)
-  expect_warning(
-    o_data <-
-      PKNCAdata(
-        o_conc, PKNCAdose(d_dose, dose~time|treatment),
-        intervals = data.frame(start = 0, end = 7200, cmax = TRUE)
-      ),
-    class = "pknca_warning_datetime_seconds"
-  )
-  expect_equal(o_data$conc$data_sparse$time, rep(c(0, 3600, 1800, 5400), 2))
+  o_data <-
+    PKNCAdata(
+      o_conc, PKNCAdose(d_dose, dose~time|treatment),
+      intervals = data.frame(start = 0, end = 2, cmax = TRUE)
+    )
+  expect_equal(o_data$conc$data_sparse$time, rep(c(0, 1, 0.5, 1.5), 2))
   expect_equal(
     o_data$time_reference,
     data.frame(treatment = c("A", "B"), time_reference = t0 + c(0, 7200), time_reference_type = "first_dose")
   )
-  expect_warning(
-    o_data_no_dose <-
-      PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 7200, cmax = TRUE)),
-    class = "pknca_warning_datetime_seconds"
-  )
-  expect_equal(o_data_no_dose$conc$data_sparse$time, rep(c(0, 3600, 1800, 5400), 2))
+  o_data_no_dose <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 2, cmax = TRUE))
+  expect_equal(o_data_no_dose$conc$data_sparse$time, rep(c(0, 1, 0.5, 1.5), 2))
   expect_equal(o_data_no_dose$time_reference$time_reference_type, c("first_conc", "first_conc"))
 })
 
 test_that("Ungrouped date-time data use the single first dose", {
   t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
-  expect_warning(
-    o_data <-
-      PKNCAdata(
-        PKNCAconc(data.frame(time = t0 + c(0, 60, 120), conc = c(0, 2, 1)), conc~time),
-        PKNCAdose(data.frame(time = t0 + 60, dose = 1), dose~time),
-        intervals = data.frame(start = 0, end = 60, cmax = TRUE)
-      ),
-    class = "pknca_warning_datetime_seconds"
-  )
-  expect_equal(o_data$conc$data$time, c(-60, 0, 60))
-  expect_equal(o_data$time_reference, data.frame(time_reference = t0 + 60, time_reference_type = "first_dose"))
-})
-
-test_that("Durations follow the time to the preferred unit", {
-  skip_if_not_installed("units")
-  t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
-  d_conc <-
-    data.frame(subject = 1, time = t0 + c(0, 6, 12) * 3600, conc = c(0, 5, 2), dur = c(6, 6, 12) * 3600, vol = 1)
-  d_dose <- data.frame(subject = 1, time = t0, dose = 10, dur = 1800)
   o_data <-
     PKNCAdata(
-      PKNCAconc(d_conc, conc~time|subject, duration = "dur", volume = "vol", timeu_pref = "hr"),
+      PKNCAconc(data.frame(time = t0 + c(0, 1, 2) * 3600, conc = c(0, 2, 1)), conc~time),
+      PKNCAdose(data.frame(time = t0 + 3600, dose = 1), dose~time),
+      intervals = data.frame(start = 0, end = 1, cmax = TRUE)
+    )
+  expect_equal(o_data$conc$data$time, c(-1, 0, 1))
+  expect_equal(o_data$time_reference, data.frame(time_reference = t0 + 3600, time_reference_type = "first_dose"))
+})
+
+test_that("Numeric durations are in the time unit; difftime durations are converted", {
+  t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
+  d_conc <-
+    data.frame(subject = 1, time = t0 + c(0, 6, 12) * 3600, conc = c(0, 5, 2), dur = c(6, 6, 12), vol = 1)
+  d_dose <- data.frame(subject = 1, time = t0, dose = 10, dur = 0.5)
+  intervals <- data.frame(start = 0, end = 24, cmax = TRUE)
+  # Numeric durations are already in the unit of the analysis (hours here)
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject, duration = "dur", volume = "vol"),
       PKNCAdose(d_dose, dose~time|subject, route = "intravascular", duration = "dur"),
-      intervals = data.frame(start = 0, end = 24, cmax = TRUE)
+      intervals = intervals
     )
   expect_equal(o_data$conc$data$dur, c(6, 6, 12))
   expect_equal(o_data$dose$data$dur, 0.5)
+  # difftime durations are converted exactly, here to days
+  d_conc$dur <- as.difftime(c(6, 6, 12), units = "hours")
+  d_dose$dur <- as.difftime(30, units = "mins")
+  expect_no_warning(
+    o_data_day <-
+      PKNCAdata(
+        PKNCAconc(d_conc, conc~time|subject, duration = "dur", volume = "vol", timeu_pref = "day"),
+        PKNCAdose(d_dose, dose~time|subject, route = "intravascular", duration = "dur"),
+        intervals = intervals
+      )
+  )
+  expect_equal(o_data_day$conc$data$time, c(0, 0.25, 0.5))
+  expect_equal(o_data_day$conc$data$dur, c(0.25, 0.25, 0.5))
+  expect_equal(o_data_day$dose$data$dur, 0.5 / 24)
+  # A scalar difftime duration works, too
+  o_data_scalar <-
+    PKNCAdata(
+      PKNCAconc(d_conc[, c("subject", "time", "conc")], conc~time|subject),
+      PKNCAdose(d_dose, dose~time|subject, route = "intravascular", duration = as.difftime(15, units = "mins")),
+      intervals = intervals
+    )
+  expect_equal(o_data_scalar$dose$data$duration, 0.25)
+  # Negative difftime durations are still invalid
+  d_dose$dur <- as.difftime(-30, units = "mins")
+  expect_error(
+    PKNCAdose(d_dose, dose~time|subject, route = "intravascular", duration = "dur"),
+    class = "pknca_error_dose_invalid_duration"
+  )
+})
+
+test_that("difftime durations with numeric time need a time unit", {
+  d_conc <- data.frame(subject = 1, time = c(0, 6, 12), conc = c(0, 5, 2))
+  d_dose <- data.frame(subject = 1, time = 0, dose = 10, dur = as.difftime(30, units = "mins"))
+  o_dose <- PKNCAdose(d_dose, dose~time|subject, route = "intravascular", duration = "dur")
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject, timeu = "hr"), o_dose,
+      intervals = data.frame(start = 0, end = 12, cmax = TRUE)
+    )
+  expect_equal(o_data$dose$data$dur, 0.5)
+  expect_error(
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject), o_dose,
+      intervals = data.frame(start = 0, end = 12, cmax = TRUE)
+    ),
+    class = "pknca_error_difftime_duration_unit"
+  )
 })
 
 test_that("Elapsed time crosses a daylight saving time change correctly", {
@@ -450,28 +505,13 @@ test_that("Elapsed time crosses a daylight saving time change correctly", {
   expect_equal(o_data$conc$data$time, c(0, 23))
 })
 
-test_that("A preferred time unit that is not a time is an error", {
-  skip_if_not_installed("units")
-  d <- datetime_test_data()
-  expect_error(
-    PKNCAdata(
-      PKNCAconc(d$conc, conc~time|part+subject, timeu_pref = "mg"),
-      PKNCAdose(d$dose, dose~time|part+subject)
-    ),
-    class = "pknca_error_datetime_timeu_pref"
-  )
-})
-
 test_that("The nominal time is not converted", {
   d <- datetime_test_data()
-  expect_warning(
-    o_data <-
-      PKNCAdata(
-        PKNCAconc(d$conc, conc~time|part+subject, time.nominal = "time_hr"),
-        PKNCAdose(d$dose, dose~time|part+subject)
-      ),
-    class = "pknca_warning_datetime_seconds"
-  )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d$conc, conc~time|part+subject, time.nominal = "time_hr"),
+      PKNCAdose(d$dose, dose~time|part+subject)
+    )
   expect_equal(o_data$conc$data$time_hr, d$conc$time_hr)
 })
 

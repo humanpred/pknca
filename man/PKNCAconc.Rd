@@ -74,7 +74,9 @@ interval \code{end} contributes its full amount to that interval, so for the
 simplest interpretation of results, align collection start and end times
 with interval boundaries.  A \code{duration} column is added to the data only
 when this is given; requesting an excretion rate parameter (\code{ermax},
-\code{ertmax}, \code{ertlst}) without it is an error.}
+\code{ertmax}, \code{ertlst}) without it is an error.  A numeric duration is in the
+time unit of the analysis; a difftime duration is converted to that unit
+in \code{\link[=PKNCAdata]{PKNCAdata()}}.}
 
 \item{volume}{(optional) The volume (or mass) of collection as is typically
 used for urine or feces measurements.  A \code{volume} column is added to the
@@ -109,10 +111,13 @@ small nonclinical species or with terminal or difficult sampling) or dense
 PK (commonly used in clinical studies or larger nonclinical species)?}
 
 \item{concu, amountu, timeu}{Either unit values (e.g. "ng/mL") or column names
-within the data where units are provided.}
+within the data where units are provided.  For a date-time (POSIXct or
+Date) time column, \code{timeu} must be a unit value, and \code{timeu_pref} takes
+precedence over it (see the "Date-time input" section).}
 
 \item{concu_pref, amountu_pref, timeu_pref}{Preferred units for reporting (not
-column names)}
+column names).  For a date-time time column, the times are converted
+directly to \code{timeu_pref}, which then is also \code{timeu}.}
 }
 \value{
 A PKNCAconc object that can be used for automated NCA.
@@ -125,13 +130,14 @@ Create a PKNCAconc object
 
 The concentration time (and the dose time in \code{\link[=PKNCAdose]{PKNCAdose()}}) may be a
 date-time (POSIXct) or a date (Date; a date is taken as midnight at the
-start of that date, with a warning).  The original time unit of a date-time
-is seconds, so \code{timeu} must be \code{"s"} or not given (and it is then set to
-\code{"s"} when \code{timeu_pref} is given).  Give \code{timeu_pref} (for example, \code{"hr"}
-or \code{"day"}) for the unit used in calculations and reports; without it,
-calculations are in seconds, with a warning, because times in the
-automatic intervals and options (like \code{single.dose.aucs}) are then in
-seconds, too.  Any numeric \code{duration} is in seconds.
+start of that date, with a warning).  Date-times have no numeric unit, so
+they are converted directly to the time unit used for calculations and
+reports:  \code{timeu_pref} when given (it takes precedence over \code{timeu}, and
+\code{timeu} is set to it), otherwise \code{timeu}, otherwise hours (without
+units).  The unit must be a single time unit value (like \code{"hr"} or
+\code{"day"}), not a column name.  A numeric \code{duration} (here or in
+\code{\link[=PKNCAdose]{PKNCAdose()}}) is in that unit, and a difftime \code{duration} is converted to
+it exactly.
 
 The times remain date-times in the \code{PKNCAconc} and \code{PKNCAdose} objects.
 \code{\link[=PKNCAdata]{PKNCAdata()}} converts them to numeric time relative to the first dose (or

@@ -7,12 +7,13 @@ the dosing including dose amount and route.
 # Development version
 
 * Concentration and dose times may be date-times (POSIXct) or dates (Date).
-  `PKNCAconc()` requires `timeu = "s"` (or no `timeu`) for them, and
   `PKNCAdata()` converts them to numeric time relative to the first included
   dose within the grouping variables shared by the concentration and dose
-  formulas (for example, each subject's first dose in each study part), in the
-  `timeu_pref` unit (seconds, with a warning, when no `timeu_pref` is given).
-  Durations follow the times to that unit, manually given intervals are
+  formulas (for example, each subject's first dose in each study part),
+  directly in the preferred time unit:  `timeu_pref` (which takes precedence
+  over `timeu`), otherwise `timeu`, otherwise hours.  Numeric durations are in
+  that unit and difftime durations are converted to it, manually given
+  intervals are
   relative to the reference, the reference is kept in the `time_reference`
   element of the `PKNCAdata` object, and `as.data.frame(out_format = "cdisc")`
   reports it as PPRFTDTC.  A subject without an included dose time (or all

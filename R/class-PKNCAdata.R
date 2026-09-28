@@ -84,11 +84,10 @@
 #'     reference).
 #'   * Sparse data use one reference per group rather than per subject, because
 #'     every subject in a sparse group shares the group's dosing.
-#'   * Numeric time is in the preferred time unit (`timeu_pref` of the
-#'     [PKNCAconc()] object) when one is given, and in seconds (with a warning)
-#'     otherwise.  The original time unit (`timeu`) becomes that unit, and
-#'     concentration collection and dosing durations (given in seconds) are
-#'     converted to it.
+#'   * Numeric time is in the time unit of the [PKNCAconc()] object:
+#'     `timeu_pref` when given, otherwise `timeu`, otherwise hours (without
+#'     units).  Numeric concentration collection and dosing durations are in
+#'     that unit, and difftime durations are converted to it.
 #'   * Manually specified `intervals` are numeric times relative to the time
 #'     reference, in that unit.
 #'   * The time reference of each group is kept in the `time_reference` element
@@ -167,6 +166,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   # Date-time (POSIXct or Date) times become numeric time relative to the first
   # dose, before anything uses the times.
   ret <- pknca_datetime_to_numeric(ret)
+  ret <- pknca_duration_to_numeric(ret)
   # Check the options
   checkmate::assert_list(
     x = options,

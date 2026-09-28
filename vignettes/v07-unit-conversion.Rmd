@@ -277,9 +277,11 @@ summary(o_nca)
 
 Concentration and dose times may be given as date-times (POSIXct) instead of
 numbers, as they often are in clinical data (for example, the SDTM `--DTC`
-variables after parsing).  Date-times are measured in seconds, so `timeu` must
-be `"s"` or omitted; set `timeu_pref` to the unit for calculations and
-reporting.  `PKNCAdata()` converts the times to numbers relative to the first
+variables after parsing).  Date-times are converted directly to the time unit
+for calculations and reporting:  `timeu_pref` when given (it takes precedence
+over `timeu`), otherwise `timeu`, otherwise hours.  Numeric durations are in
+that unit, and durations given as difftime are converted to it.
+`PKNCAdata()` converts the times to numbers relative to the first
 dose in each group:  the groups are the grouping variables shared by the
 concentration and dose formulas, so with `Subject` as the group, time 0 is each
 subject's first dose.  For studies with several parts (or crossover periods),

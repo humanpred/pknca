@@ -8,41 +8,81 @@ is_datetime_time <- function(x) {
   inherits(x, c("POSIXct", "Date"))
 }
 
-#' Check and default the time unit for a date-time time column
+#' Check and choose the time unit for a date-time time column
 #'
-#' Date-time (POSIXct) differences are measured in seconds, so the original time
-#' unit of a date-time column is seconds.  A Date column is midnight of that
-#' date, and the user is told so.
+#' Date-times have no numeric unit of their own, so they are converted directly
+#' to the unit used for calculations and reports:  `timeu_pref` when given
+#' (it takes precedence over `timeu`), otherwise `timeu`, otherwise hours.  A
+#' Date column is midnight of that date, and the user is told so.
 #'
 #' @param time The time vector from the data
 #' @param timeu,timeu_pref The `timeu` and `timeu_pref` arguments given to
 #'   [PKNCAconc()]
 #' @param time_col The name of the time column (for messages)
-#' @returns `timeu`, set to `"s"` when it was not given and `timeu_pref` was
-#'   (without `timeu_pref`, the analysis may have no units at all)
+#' @param data The concentration data (to reject a column name as `timeu`)
+#' @returns `timeu`, set to `timeu_pref` when that was given.  When neither was
+#'   given, it stays `NULL`, and the time is in hours without units.
 #' @keywords Internal
 #' @noRd
-pknca_datetime_timeu <- function(time, timeu, timeu_pref, time_col) {
+pknca_datetime_timeu <- function(time, timeu, timeu_pref, time_col, data) {
   if (!is_datetime_time(time)) {
     return(timeu)
   }
   if (inherits(time, "Date")) {
     pknca_warn_date_midnight(time_col = time_col, data_type = "concentration")
   }
-  if (is.null(timeu)) {
-    if (!is.null(timeu_pref)) {
-      timeu <- "s"
+  if (!is.null(timeu_pref)) {
+    timeu <- timeu_pref
+  }
+  if (!is.null(timeu)) {
+    if (!is.character(timeu) || length(timeu) != 1 || is.na(timeu) || timeu %in% names(data)) {
+      rlang::abort(
+        sprintf(
+          "When the time column ('%s') is a date-time (POSIXct) or Date, `timeu` and `timeu_pref` must be a single time unit (not a column name).",
+          time_col
+        ),
+        class = "pknca_error_datetime_timeu"
+      )
     }
-  } else if (!identical(timeu, "s")) {
-    rlang::abort(
-      sprintf(
-        "When the time column ('%s') is a date-time (POSIXct) or Date, `timeu` must be \"s\" (or not given); use `timeu_pref` to choose the reporting unit.",
-        time_col
-      ),
-      class = "pknca_error_datetime_timeu"
-    )
+    if (is.na(pknca_hours_factor(timeu))) {
+      rlang::abort(
+        sprintf(
+          "The time unit for the date-time column ('%s') must be a time unit (like \"hr\" or \"day\"), not '%s'.",
+          time_col, timeu
+        ),
+        class = "pknca_error_datetime_time_unit"
+      )
+    }
   }
   timeu
+}
+
+#' Get duration values to check
+#'
+#' A difftime duration is checked by its length in seconds; it becomes a number
+#' in the time unit of the analysis in [PKNCAdata()].
+#'
+#' @param x The duration values
+#' @returns `x` as a number
+#' @keywords Internal
+#' @noRd
+pknca_duration_check_values <- function(x) {
+  if (inherits(x, "difftime")) {
+    as.numeric(x, units = "secs")
+  } else {
+    x
+  }
+}
+
+#' Convert a difftime to a number in a time unit
+#'
+#' @param x A difftime vector
+#' @param unit A time unit recognized by `pknca_hours_factor()`
+#' @returns A numeric vector
+#' @keywords Internal
+#' @noRd
+pknca_difftime_to_unit <- function(x, unit) {
+  as.numeric(x, units = "secs") / (3600 * pknca_hours_factor(unit))
 }
 
 pknca_warn_date_midnight <- function(time_col, data_type) {
@@ -91,10 +131,8 @@ pknca_as_posixct <- function(x, tz) {
 #' Convert date-time concentration and dose times to numeric time
 #'
 #' Numeric time is relative to the time reference of each group (see
-#' `pknca_datetime_reference()`).  The
-#' numeric time is in `timeu_pref` when given, otherwise in seconds; the
-#' collection durations of the concentration data and the dosing durations are
-#' rescaled to the same unit.
+#' `pknca_datetime_reference()`), in the time unit of the concentration data
+#' (see `pknca_datetime_timeu()`), or hours when there are no units.
 #'
 #' @param data A PKNCAdata object under construction (with `conc` and `dose`)
 #' @returns `data` with numeric times and a `time_reference` element (a
@@ -161,54 +199,81 @@ pknca_datetime_to_numeric <- function(data) {
       pknca_datetime_match_reference(o_dose$data[, ref_groups, drop = FALSE], time_reference)
     }
 
-  # The numeric time unit is the preferred time unit (so that intervals are
-  # given in the reporting unit), or seconds.
-  # Date-time differences are in seconds whether or not units were given
-  timeu_orig <- choose_first(o_conc$units$timeu, "s")
-  timeu_new <- choose_first(o_conc$units$timeu_pref, timeu_orig)
-  if (identical(as.vector(timeu_new), "s")) {
-    rlang::warn(
-      paste(
-        "Date-time times were converted to seconds after the first dose because no preferred time unit (`timeu_pref`) was given.",
-        "Times in automatic intervals and options (like `single.dose.aucs`) are in seconds, too; set `timeu_pref` (for example, \"hr\") in PKNCAconc() to use another unit."
-      ),
-      class = "pknca_warning_datetime_seconds"
-    )
-  }
-  time_factor <- pknca_unit_reconcile_factor(from = timeu_orig, to = timeu_new)
-  if (is.na(time_factor)) {
-    rlang::abort(
-      sprintf(
-        "Cannot convert date-time differences from '%s' to the preferred time unit '%s'%s.",
-        timeu_orig, timeu_new,
-        if (requireNamespace("units", quietly = TRUE)) "" else " (the units package is required)"
-      ),
-      class = "pknca_error_datetime_timeu_pref"
-    )
-  }
+  # Date-times are converted directly to the unit of the analysis (the unit
+  # PKNCAconc() chose from timeu_pref and timeu), or to hours when there are no
+  # units.
+  time_unit <- choose_first(o_conc$units$timeu, "hr")
   o_conc[[conc_dataname]][[conc_time_col]] <-
-    as.numeric(difftime(conc_time, conc_ref, units = "secs")) * time_factor
+    pknca_difftime_to_unit(difftime(conc_time, conc_ref, units = "secs"), unit = time_unit)
   if (has_dose_time) {
     o_dose$data[[dose_time_col]] <-
-      as.numeric(difftime(dose_time, dose_ref, units = "secs")) * time_factor
-  }
-  # Durations were given in the original time unit (seconds), so they follow the
-  # times to the new unit.
-  if (time_factor != 1) {
-    for (duration_col in o_conc$columns$duration) {
-      o_conc[[conc_dataname]][[duration_col]] <-
-        o_conc[[conc_dataname]][[duration_col]] * time_factor
-    }
-    for (duration_col in if (identical(o_dose, NA)) NULL else o_dose$columns$duration) {
-      o_dose$data[[duration_col]] <- o_dose$data[[duration_col]] * time_factor
-    }
-  }
-  if (!is.null(o_conc$units$timeu)) {
-    o_conc$units$timeu <- timeu_new
+      pknca_difftime_to_unit(difftime(dose_time, dose_ref, units = "secs"), unit = time_unit)
   }
   data$conc <- o_conc
   data$dose <- o_dose
   data$time_reference <- time_reference
+  data
+}
+
+#' Convert difftime durations to numbers in the time unit of the analysis
+#'
+#' Numeric durations are already in the time unit of the analysis.  Durations
+#' given as difftime are converted exactly to that unit:  the unit of the
+#' concentration data, or hours for date-time data without units.
+#'
+#' @param data A PKNCAdata object under construction, after any date-time
+#'   conversion
+#' @returns `data` with numeric durations
+#' @keywords Internal
+#' @noRd
+pknca_duration_to_numeric <- function(data) {
+  o_conc <- data$conc
+  o_dose <- data$dose
+  conc_dataname <- getDataName(o_conc)
+  duration_cols <-
+    list(
+      conc = o_conc$columns$duration,
+      dose = if (identical(o_dose, NA)) NULL else o_dose$columns$duration
+    )
+  is_difftime <-
+    c(
+      conc = any(vapply(X = o_conc[[conc_dataname]][duration_cols$conc], FUN = inherits, FUN.VALUE = TRUE, what = "difftime")),
+      dose =
+        length(duration_cols$dose) > 0 &&
+          any(vapply(X = o_dose$data[duration_cols$dose], FUN = inherits, FUN.VALUE = TRUE, what = "difftime"))
+    )
+  if (!any(is_difftime)) {
+    return(data)
+  }
+  time_unit <-
+    if (!is.null(data$time_reference)) {
+      choose_first(o_conc$units$timeu, "hr")
+    } else if (!is.null(o_conc$units$timeu)) {
+      as.vector(o_conc$units$timeu)
+    } else if (!is.null(o_conc$columns$timeu)) {
+      unique(as.character(o_conc[[conc_dataname]][[o_conc$columns$timeu]]))
+    } else {
+      NA_character_
+    }
+  if (length(time_unit) != 1 || is.na(time_unit) || is.na(pknca_hours_factor(time_unit))) {
+    rlang::abort(
+      "Durations given as difftime need date-time times or a single time unit (`timeu`) for the concentration data, to know the unit to convert them to.",
+      class = "pknca_error_difftime_duration_unit"
+    )
+  }
+  for (duration_col in duration_cols$conc) {
+    if (inherits(o_conc[[conc_dataname]][[duration_col]], "difftime")) {
+      o_conc[[conc_dataname]][[duration_col]] <-
+        pknca_difftime_to_unit(o_conc[[conc_dataname]][[duration_col]], unit = time_unit)
+    }
+  }
+  for (duration_col in duration_cols$dose) {
+    if (inherits(o_dose$data[[duration_col]], "difftime")) {
+      o_dose$data[[duration_col]] <- pknca_difftime_to_unit(o_dose$data[[duration_col]], unit = time_unit)
+    }
+  }
+  data$conc <- o_conc
+  data$dose <- o_dose
   data
 }
 

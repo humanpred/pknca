@@ -126,11 +126,10 @@ variables to the left of any \code{/} (so analytes share their subject's
 reference).
 \item Sparse data use one reference per group rather than per subject, because
 every subject in a sparse group shares the group's dosing.
-\item Numeric time is in the preferred time unit (\code{timeu_pref} of the
-\code{\link[=PKNCAconc]{PKNCAconc()}} object) when one is given, and in seconds (with a warning)
-otherwise.  The original time unit (\code{timeu}) becomes that unit, and
-concentration collection and dosing durations (given in seconds) are
-converted to it.
+\item Numeric time is in the time unit of the \code{\link[=PKNCAconc]{PKNCAconc()}} object:
+\code{timeu_pref} when given, otherwise \code{timeu}, otherwise hours (without
+units).  Numeric concentration collection and dosing durations are in
+that unit, and difftime durations are converted to it.
 \item Manually specified \code{intervals} are numeric times relative to the time
 reference, in that unit.
 \item The time reference of each group is kept in the \code{time_reference} element

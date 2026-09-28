@@ -36,7 +36,9 @@
 #'   simplest interpretation of results, align collection start and end times
 #'   with interval boundaries.  A `duration` column is added to the data only
 #'   when this is given; requesting an excretion rate parameter (`ermax`,
-#'   `ertmax`, `ertlst`) without it is an error.
+#'   `ertmax`, `ertlst`) without it is an error.  A numeric duration is in the
+#'   time unit of the analysis; a difftime duration is converted to that unit
+#'   in [PKNCAdata()].
 #' @param exclude_half.life,include_half.life Manual half-life point selection,
 #'   given as a logical value per concentration measurement (or, in
 #'   [PKNCAconc()], the name of such a column in the data).  `exclude_half.life`
@@ -67,13 +69,14 @@
 #'
 #'   The concentration time (and the dose time in [PKNCAdose()]) may be a
 #'   date-time (POSIXct) or a date (Date; a date is taken as midnight at the
-#'   start of that date, with a warning).  The original time unit of a date-time
-#'   is seconds, so `timeu` must be `"s"` or not given (and it is then set to
-#'   `"s"` when `timeu_pref` is given).  Give `timeu_pref` (for example, `"hr"`
-#'   or `"day"`) for the unit used in calculations and reports; without it,
-#'   calculations are in seconds, with a warning, because times in the
-#'   automatic intervals and options (like `single.dose.aucs`) are then in
-#'   seconds, too.  Any numeric `duration` is in seconds.
+#'   start of that date, with a warning).  Date-times have no numeric unit, so
+#'   they are converted directly to the time unit used for calculations and
+#'   reports:  `timeu_pref` when given (it takes precedence over `timeu`, and
+#'   `timeu` is set to it), otherwise `timeu`, otherwise hours (without
+#'   units).  The unit must be a single time unit value (like `"hr"` or
+#'   `"day"`), not a column name.  A numeric `duration` (here or in
+#'   [PKNCAdose()]) is in that unit, and a difftime `duration` is converted to
+#'   it exactly.
 #'
 #'   The times remain date-times in the `PKNCAconc` and `PKNCAdose` objects.
 #'   [PKNCAdata()] converts them to numeric time relative to the first dose (or
@@ -99,9 +102,12 @@ PKNCAconc.tbl_df <- function(data, ...) {
 
 #' @rdname PKNCAconc
 #' @param concu,amountu,timeu Either unit values (e.g. "ng/mL") or column names
-#'   within the data where units are provided.
+#'   within the data where units are provided.  For a date-time (POSIXct or
+#'   Date) time column, `timeu` must be a unit value, and `timeu_pref` takes
+#'   precedence over it (see the "Date-time input" section).
 #' @param concu_pref,amountu_pref,timeu_pref Preferred units for reporting (not
-#'   column names)
+#'   column names).  For a date-time time column, the times are converted
+#'   directly to `timeu_pref`, which then is also `timeu`.
 #' @export
 PKNCAconc.data.frame <- function(data, formula, subject,
                                  time.nominal, exclude = NULL, duration, volume,
@@ -189,7 +195,7 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   time_values <- data[[parsed_form$time]]
   # Date-time values are checked as numbers (for missing values); they become
   # numeric time relative to the first dose in PKNCAdata().
-  timeu <- pknca_datetime_timeu(time = time_values, timeu = timeu, timeu_pref = timeu_pref, time_col = parsed_form$time)
+  timeu <- pknca_datetime_timeu(time = time_values, timeu = timeu, timeu_pref = timeu_pref, time_col = parsed_form$time, data = data)
   if (is_datetime_time(time_values)) {
     time_values <- as.numeric(time_values)
   }
@@ -402,7 +408,7 @@ setDuration.PKNCAconc <- function(object, duration, ...) {
     object <-
       setAttributeColumn(object=object, attr_name="duration", col_or_value=duration)
   }
-  duration.val <- getAttributeColumn(object=object, attr_name="duration")[[1]]
+  duration.val <- pknca_duration_check_values(getAttributeColumn(object=object, attr_name="duration")[[1]])
   if (is.numeric(duration.val) &&
       !anyNA(duration.val) &&
       !any(is.infinite(duration.val)) &&
