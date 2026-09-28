@@ -2,17 +2,20 @@
 
 `be_fit_model_single()` fits the average-BE model for a single endpoint
 and dispatches on `model_type` to `be_fit_model_lmer()`,
-`be_fit_model_nlme()`, or `be_fit_model_anova()`. This is the only place
-model fitting happens. For the `"lmer"`, `"anova"`, and `"isc"` types
-the within-formulation ANOVA variances are also fit here; for `"nlme"`
-they come from the single mixed model.
+`be_fit_model_nlme()`, `be_fit_model_gls()`, or `be_fit_model_anova()`.
+This is the only place model fitting happens. For the `"lmer"`,
+`"anova"`, and `"isc"` types the within-formulation ANOVA variances are
+also fit here; for `"nlme"` they come from the single mixed model.
+Covariate columns carried by
+[`be_dataset()`](https://humanpred.github.io/pknca/reference/be_dataset.md)
+(`.cov_<name>`) enter every model as additive fixed effects.
 
 ## Usage
 
 ``` r
 be_fit_model_single(
   ds_ep,
-  model_type = c("lmer", "nlme", "anova", "isc"),
+  model_type = c("lmer", "nlme", "anova", "isc", "gls"),
   scaling = TRUE
 )
 ```
@@ -27,8 +30,10 @@ be_fit_model_single(
 
 - model_type:
 
-  One of `"lmer"`, `"nlme"`, `"anova"`, or `"isc"` (the
-  intra-subject-contrast path, fit like `"anova"`).
+  One of `"lmer"`, `"nlme"`, `"anova"`, `"isc"` (the
+  intra-subject-contrast path, fit like `"anova"`), or `"gls"`
+  (generalized least squares with treatment-specific residual variances,
+  for parallel designs).
 
 - scaling:
 

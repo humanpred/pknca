@@ -25,7 +25,9 @@ be_assess(
   subject = NULL,
   sequence = NULL,
   period = NULL,
-  design = NULL
+  design = NULL,
+  covariates = NULL,
+  heteroscedastic = FALSE
 )
 ```
 
@@ -54,16 +56,19 @@ be_assess(
 
   The regulatory framework (see
   [`be_regulator()`](https://humanpred.github.io/pknca/reference/be_regulator.md));
-  one of `"ABE"`, `"EMA"`, `"HC"`, `"GCC"`, `"FDA"`, `"NTID"`, or
-  `"HVNTID"`.
+  one of `"ABE"`, `"EMA"`, `"HC"`, `"GCC"`, `"FDA"`, `"NTID"`,
+  `"HVNTID"`, or `"descriptive"` (no acceptance limits or pass/fail).
 
 - model_type:
 
   The model for the average-BE point estimate, one of `"lmer"` (mixed
   model, for crossover/replicate designs), `"anova"` (fixed-effects, for
   parallel designs), `"isc"` (intra-subject contrasts, the FDA
-  reference-scaled path), or `"nlme"` (treatment-specific mixed model).
-  When `NULL` (default) it is chosen from the design and regulator.
+  reference-scaled path), `"nlme"` (mixed model with treatment-specific
+  residual variances, for crossover/replicate designs), or `"gls"`
+  (generalized least squares with treatment-specific residual variances,
+  for parallel designs). When `NULL` (default) it is chosen from the
+  design, the regulator, and `heteroscedastic`.
 
 - alpha:
 
@@ -82,6 +87,21 @@ be_assess(
   [`be_design()`](https://humanpred.github.io/pknca/reference/be_design.md)
   object; computed from the data when `NULL`.
 
+- covariates:
+
+  An optional character vector of column names added to every model as
+  additive fixed effects (numeric columns as linear terms, character or
+  factor columns as factors). They must not be missing in any analyzed
+  row. For a `PKNCAresults` object they must be columns of
+  `as.data.frame(object)`, which means grouping columns. The
+  within-subject variances used for reference scaling and the
+  intra-subject contrasts do not use covariates.
+
+- heteroscedastic:
+
+  Logical. When `TRUE`, estimate a separate residual variance for each
+  treatment (see Details).
+
 ## Value
 
 An object of class `be_assess` (a data.frame), ordered by endpoint (in
@@ -95,8 +115,11 @@ on the measurement scale (`gm_reference`, `gm_reference_lower`,
 `gmr_percent`, `ci_lower`, `ci_upper`, `cvwr_percent`, `cvwt_percent`,
 `swr`, `limit_lower`, `limit_upper`, `criterion`, `regulator`,
 `model_type`, and `pass`. `limit_*` are `NA` for the RSABE criterion and
-`criterion` is `NA` for the limit-based frameworks. A `caption`
-attribute documents the model and the decision rule.
+`criterion` is `NA` for the limit-based frameworks. For
+`regulator = "descriptive"` the `limit_lower`, `limit_upper`,
+`criterion`, and `pass` columns are omitted. A `caption` attribute
+documents the model and the decision rule, or states that no regulatory
+decision was applied.
 
 ## Details
 
@@ -108,9 +131,28 @@ for the geometric mean ratio and its confidence interval. The FDA
 reference-scaled frameworks (FDA RSABE, NTID, HVNTID) always use
 intra-subject contrasts (`"isc"`), as the guidances specify, regardless
 of design. Pass `model_type` to override (`"lmer"`, `"anova"`, `"isc"`,
-or `"nlme"`). Within-subject variability uses the regulatory ANOVA
-estimator for the `"lmer"`/`"anova"`/`"isc"` paths and the
+`"nlme"`, or `"gls"`). Within-subject variability uses the regulatory
+ANOVA estimator for the `"lmer"`/`"anova"`/`"isc"` paths and the
 treatment-specific mixed-model estimator for `"nlme"`.
+
+With `heteroscedastic = TRUE` the residual variance is estimated
+separately for each treatment: a crossover or replicate study uses
+[`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) with
+`varIdent(~ 1 | treatment)` (`"nlme"`), and a parallel study uses
+[`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) with the same
+variance structure (`"gls"`).
+[`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) cannot estimate
+treatment-specific residual variances (its `weights` are fixed prior
+weights), so `heteroscedastic = TRUE` with `model_type = "lmer"` is an
+error. Without reference scaling, `"nlme"` accepts non-replicated
+designs and several test formulations; with reference scaling it needs a
+fully replicated design and one test formulation, because the
+per-formulation variances are then used as the within-subject variances.
+
+`regulator = "descriptive"` estimates the geometric means, their ratio,
+and its confidence interval exactly as for `"ABE"` but applies no
+acceptance limits and reports no pass/fail, for comparisons such as food
+effect and drug-drug interaction studies.
 
 ## See also
 

@@ -26,7 +26,8 @@ be_expand_limits(swR, regulator)
   A regulator name (see
   [`be_regulator()`](https://humanpred.github.io/pknca/reference/be_regulator.md))
   or a `be_regulator` object. Only the ABEL frameworks (`"EMA"`, `"HC"`,
-  `"GCC"`) widen; `"ABE"` always returns 80.00-125.00%.
+  `"GCC"`) widen; `"ABE"` always returns 80.00-125.00%, and
+  `"descriptive"` (which has no limits) is an error.
 
 ## Value
 

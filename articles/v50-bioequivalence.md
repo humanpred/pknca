@@ -33,22 +33,25 @@ which runs these stages in order:
 
 1.  **[`be_dataset()`](https://humanpred.github.io/pknca/reference/be_dataset.md)**
     – validate the data, resolve the value column, drop excluded rows,
-    detect the subject/sequence/period columns, and set the reference as
-    the first factor level.
+    detect the subject/sequence/period columns, set the reference as the
+    first factor level, and carry any covariates.
 2.  **[`be_design()`](https://humanpred.github.io/pknca/reference/be_design.md)**
     – classify the design (parallel, 2x2x2 crossover, full or partial
     replicate) and report which frameworks it can support.
 3.  **[`be_fit_model_single()`](https://humanpred.github.io/pknca/reference/be_fit_model_single.md)**
     – fit the average-BE model (this is the only place models are fit),
     dispatching on the model type to `be_fit_model_lmer()`,
-    `be_fit_model_nlme()`, or `be_fit_model_anova()`.
+    `be_fit_model_nlme()`, `be_fit_model_gls()`, or
+    `be_fit_model_anova()`.
 4.  **[`be_extract_param()`](https://humanpred.github.io/pknca/reference/be_extract_param.md)**
     – extract the geometric means, the GMR and its confidence interval,
     and the within-formulation standard deviations.
 5.  **[`be_table()`](https://humanpred.github.io/pknca/reference/be_table.md)**
     – apply the regulatory limits or criterion and decide pass/fail
     (using the constants from
-    [`be_regulator()`](https://humanpred.github.io/pknca/reference/be_regulator.md)).
+    [`be_regulator()`](https://humanpred.github.io/pknca/reference/be_regulator.md)),
+    or, for the `"descriptive"` framework, report the estimates without
+    a decision.
 
 The model type is selected automatically from the **design and the
 regulator**; pass `model_type` to
@@ -66,6 +69,8 @@ regardless of design.
 | `FDA` (RSABE) | replicated reference | `isc` | intra-subject contrasts + linearized bound |
 | `NTID` / `HVNTID` | full replicate (test & reference) | `isc` | adds a swT/swR ratio constraint |
 | *(override)* | full replicate | `nlme` | treatment-specific variances from one mixed model |
+| any, with `heteroscedastic = TRUE` | any (full replicate if scaling) | `nlme` (crossover/replicate) / `gls` (parallel) | treatment-specific residual variances |
+| `descriptive` | any (test & reference) | as for `ABE` | no acceptance limits and no pass/fail |
 
 The table also reports, on the measurement scale, the reference and test
 geometric means with their 90% confidence intervals
@@ -382,6 +387,83 @@ match those in `PowerTOST`’s `power.NTID()` / `power.HVNTID()`.
 > and sample-size *planning* for these designs is not in PKNCA; the
 > [`PowerTOST`](https://cran.r-project.org/package=PowerTOST) package
 > covers that complementary need.
+
+## Unequal variances, covariates, and descriptive comparisons
+
+Three options extend the same calculation path beyond a regulatory
+bioequivalence decision.
+
+- **`heteroscedastic = TRUE`** estimates a separate residual variance
+  for each treatment. Crossover and replicate studies use
+  [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) with
+  `varIdent(~ 1 | treatment)`, and parallel studies use
+  [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) with the same
+  variance structure and Satterthwaite degrees of freedom. The `lmer`
+  model cannot do this, because
+  [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) fits a single
+  residual variance, so `heteroscedastic = TRUE` with
+  `model_type = "lmer"` is an error. Without reference scaling the
+  `nlme` model accepts non-replicated crossovers and several test
+  formulations; with reference scaling it needs a fully replicated
+  design.
+- **`covariates`** names columns added to every model as additive fixed
+  effects. The least-squares means are then at the mean of numeric
+  covariates. The intra-subject contrasts used by the FDA frameworks and
+  the within-subject variances used for reference scaling do not use
+  covariates.
+- **`regulator = "descriptive"`** estimates the geometric means, their
+  ratio, and its confidence interval exactly as `"ABE"` does, but
+  applies no acceptance limits and reports no pass/fail. It is meant for
+  comparisons that are estimated rather than judged, such as food effect
+  and drug-drug interaction studies. The caption states that no
+  regulatory decision was applied.
+
+As an example, a fed/fasted food-effect crossover, where the fed state
+is more variable than the fasted state, is summarized descriptively with
+treatment-specific variances and body weight as a covariate.
+
+``` r
+
+simulate_food_effect <- function(nsub = 20, seed = 20260927) {
+  set.seed(seed)
+  sequence <- rep(c("FastedFed", "FedFasted"), length.out = nsub)
+  weight <- round(stats::rnorm(nsub, mean = 75, sd = 12))
+  subj <- stats::rnorm(nsub, sd = 0.3)
+  rows <- list()
+  for (i in seq_len(nsub)) {
+    states <- if (sequence[i] == "FastedFed") c("Fasted", "Fed") else c("Fed", "Fasted")
+    sw <- ifelse(states == "Fed", 0.35, 0.15)
+    rows[[i]] <- data.frame(
+      subject = i, sequence = sequence[i], period = 1:2, state = states,
+      weight = weight[i], PPTESTCD = "cmax", PPORRESU = "ng/mL",
+      PPORRES = exp(log(50) + ifelse(states == "Fed", log(1.4), 0) +
+                      0.01 * (weight[i] - 75) + subj[i] + stats::rnorm(2, sd = sw))
+    )
+  }
+  do.call(rbind, rows)
+}
+
+food <- be_assess(
+  simulate_food_effect(),
+  reference_col = "state", reference_value = "Fasted", endpoints = "cmax",
+  regulator = "descriptive", heteroscedastic = TRUE, covariates = "weight"
+)
+knitr::kable(as.data.frame(food), digits = 2)
+```
+
+| endpoint | test | n | design | units | gm_reference | gm_reference_lower | gm_reference_upper | gm_test | gm_test_lower | gm_test_upper | gmr_percent | ci_lower | ci_upper | cvwr_percent | cvwt_percent | swr | regulator | model_type |
+|:---|:---|---:|:---|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---|:---|
+| cmax | Fed | 20 | 2x2x2 | ng/mL | 49.13 | 42.27 | 57.1 | 64.88 | 53.89 | 78.12 | 132.07 | 111.68 | 156.18 | NA | NA | NA | descriptive | nlme |
+
+The table has no `limit_lower`, `limit_upper`, `criterion`, or `pass`
+columns. Its caption records the model and states that no decision was
+applied:
+
+``` r
+
+attr(food, "caption")
+#> [1] "Descriptive treatment comparison (90% CI). Geometric means and the geometric mean ratio are least-squares means from a mixed-effects model with treatment-specific residual variances (nlme::lme); the 90% CI comes from exponentiated least-squares-mean differences (emmeans). No regulatory decision was applied: there are no acceptance limits and no pass/fail. The model includes weight as additive covariate(s); least-squares means are at the mean of numeric covariates and averaged over the levels of factor covariates."
+```
 
 ## Reporting checklist
 

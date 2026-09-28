@@ -47,7 +47,9 @@ be_table(
 ## Value
 
 A data.frame with one row per endpoint and test formulation and the
-pass/fail decision columns.
+pass/fail decision columns. For the `"descriptive"` framework the
+decision columns (`limit_lower`, `limit_upper`, `criterion`, and `pass`)
+are omitted.
 
 ## See also
 

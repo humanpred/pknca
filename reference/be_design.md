@@ -38,7 +38,11 @@ An object of class `be_design`: a list with elements `design` (one of
 `sequences`, `treatments`, `reference`, `replicate_reference`,
 `replicate_test`, `reps_reference`, `reps_test`, `balanced`, and
 `feasible` (a named logical vector for `abe`, `abel`, `rsabe`, `ntid`,
-`hvntid`).
+`hvntid`). `reps_reference` is the median, over subjects, of the number
+of times a subject received the reference. `reps_test` is the same
+median computed separately for each test formulation; with several test
+formulations it is the smallest of those medians, so `replicate_test` is
+`TRUE` only when every test formulation is replicated.
 
 ## See also
 

@@ -5,7 +5,8 @@
 under several regulatory frameworks and stacks the results, so the same
 study can be judged side by side under the different reference-scaling
 rules. Frameworks that the design does not support (for example NTID on
-a partial replicate) are skipped with a warning.
+a partial replicate) are skipped with a warning. Rows for the
+`"descriptive"` framework have `NA` in the decision columns.
 
 ## Usage
 
@@ -21,7 +22,9 @@ be_compare(
   subject = NULL,
   sequence = NULL,
   period = NULL,
-  design = NULL
+  design = NULL,
+  covariates = NULL,
+  heteroscedastic = FALSE
 )
 ```
 
@@ -56,8 +59,11 @@ be_compare(
   The model for the average-BE point estimate, one of `"lmer"` (mixed
   model, for crossover/replicate designs), `"anova"` (fixed-effects, for
   parallel designs), `"isc"` (intra-subject contrasts, the FDA
-  reference-scaled path), or `"nlme"` (treatment-specific mixed model).
-  When `NULL` (default) it is chosen from the design and regulator.
+  reference-scaled path), `"nlme"` (mixed model with treatment-specific
+  residual variances, for crossover/replicate designs), or `"gls"`
+  (generalized least squares with treatment-specific residual variances,
+  for parallel designs). When `NULL` (default) it is chosen from the
+  design, the regulator, and `heteroscedastic`.
 
 - alpha:
 
@@ -75,6 +81,21 @@ be_compare(
   An optional
   [`be_design()`](https://humanpred.github.io/pknca/reference/be_design.md)
   object; computed from the data when `NULL`.
+
+- covariates:
+
+  An optional character vector of column names added to every model as
+  additive fixed effects (numeric columns as linear terms, character or
+  factor columns as factors). They must not be missing in any analyzed
+  row. For a `PKNCAresults` object they must be columns of
+  `as.data.frame(object)`, which means grouping columns. The
+  within-subject variances used for reference scaling and the
+  intra-subject contrasts do not use covariates.
+
+- heteroscedastic:
+
+  Logical. When `TRUE`, estimate a separate residual variance for each
+  treatment (see Details).
 
 ## Value
 

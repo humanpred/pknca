@@ -32,7 +32,9 @@ be_fit_models(
   subject = NULL,
   sequence = NULL,
   period = NULL,
-  design = NULL
+  design = NULL,
+  covariates = NULL,
+  heteroscedastic = FALSE
 )
 ```
 
@@ -61,16 +63,19 @@ be_fit_models(
 
   The regulatory framework (see
   [`be_regulator()`](https://humanpred.github.io/pknca/reference/be_regulator.md));
-  one of `"ABE"`, `"EMA"`, `"HC"`, `"GCC"`, `"FDA"`, `"NTID"`, or
-  `"HVNTID"`.
+  one of `"ABE"`, `"EMA"`, `"HC"`, `"GCC"`, `"FDA"`, `"NTID"`,
+  `"HVNTID"`, or `"descriptive"` (no acceptance limits or pass/fail).
 
 - model_type:
 
   The model for the average-BE point estimate, one of `"lmer"` (mixed
   model, for crossover/replicate designs), `"anova"` (fixed-effects, for
   parallel designs), `"isc"` (intra-subject contrasts, the FDA
-  reference-scaled path), or `"nlme"` (treatment-specific mixed model).
-  When `NULL` (default) it is chosen from the design and regulator.
+  reference-scaled path), `"nlme"` (mixed model with treatment-specific
+  residual variances, for crossover/replicate designs), or `"gls"`
+  (generalized least squares with treatment-specific residual variances,
+  for parallel designs). When `NULL` (default) it is chosen from the
+  design, the regulator, and `heteroscedastic`.
 
 - alpha:
 
@@ -88,6 +93,21 @@ be_fit_models(
   An optional
   [`be_design()`](https://humanpred.github.io/pknca/reference/be_design.md)
   object; computed from the data when `NULL`.
+
+- covariates:
+
+  An optional character vector of column names added to every model as
+  additive fixed effects (numeric columns as linear terms, character or
+  factor columns as factors). They must not be missing in any analyzed
+  row. For a `PKNCAresults` object they must be columns of
+  `as.data.frame(object)`, which means grouping columns. The
+  within-subject variances used for reference scaling and the
+  intra-subject contrasts do not use covariates.
+
+- heteroscedastic:
+
+  Logical. When `TRUE`, estimate a separate residual variance for each
+  treatment (see Details).
 
 ## Value
 

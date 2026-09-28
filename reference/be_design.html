@@ -107,7 +107,12 @@ of <code>"parallel"</code>, <code>"2x2x2"</code>, <code>"full_replicate"</code>,
 <code>n_sequences</code>, <code>n_periods</code>, <code>n_treatments</code>, <code>n_subjects</code>, <code>sequences</code>,
 <code>treatments</code>, <code>reference</code>, <code>replicate_reference</code>, <code>replicate_test</code>,
 <code>reps_reference</code>, <code>reps_test</code>, <code>balanced</code>, and <code>feasible</code> (a named logical
-vector for <code>abe</code>, <code>abel</code>, <code>rsabe</code>, <code>ntid</code>, <code>hvntid</code>).</p>
+vector for <code>abe</code>, <code>abel</code>, <code>rsabe</code>, <code>ntid</code>, <code>hvntid</code>).  <code>reps_reference</code> is
+the median, over subjects, of the number of times a subject received the
+reference.  <code>reps_test</code> is the same median computed separately for each
+test formulation; with several test formulations it is the smallest of
+those medians, so <code>replicate_test</code> is <code>TRUE</code> only when every test
+formulation is replicated.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

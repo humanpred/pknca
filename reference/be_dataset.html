@@ -89,7 +89,8 @@ by the downstream fitters.</p>
 <span>  endpoints <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cmax"</span>, <span class="st">"aucinf.obs"</span>, <span class="st">"aucinf.pred"</span>, <span class="st">"auclast"</span><span class="op">)</span>,</span>
 <span>  subject <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sequence <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  period <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  period <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  covariates <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -122,13 +123,24 @@ formulation.</p></dd>
 sequence, and period.  When <code>NULL</code> they are taken from the <code>PKNCAresults</code>
 object or detected from common column names.  <code>sequence</code> may be absent.</p></dd>
 
+
+<dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
+<dd><p>An optional character vector of column names added to
+every model as additive fixed effects (numeric columns as linear terms,
+character or factor columns as factors).  They must not be missing in any
+analyzed row.  For a <code>PKNCAresults</code> object they must be columns of
+<code>as.data.frame(object)</code>, which means grouping columns.  The within-subject
+variances used for reference scaling and the intra-subject contrasts do not
+use covariates.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An object of class <code>be_dataset</code>: a list with <code>data</code> (the
-standardized long frame, including a <code>.units</code> column), <code>columns</code> (the
-resolved column names, including <code>units</code>), <code>reference_value</code>, <code>test_levels</code>,
-and <code>endpoints</code> (those present).</p>
+standardized long frame, including a <code>.units</code> column and one <code>.cov_&lt;name&gt;</code>
+column per covariate), <code>columns</code> (the resolved column names, including
+<code>units</code> and <code>covariates</code>), <code>reference_value</code>, <code>test_levels</code>, and
+<code>endpoints</code> (those present).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -139,6 +151,10 @@ object provides automatically; a plain data.frame supplies units the same way
 by including the corresponding <code>PPSTRESU</code>/<code>PPORRESU</code> column.  When no units
 column is present, units are unavailable and the <code>units</code> column is omitted
 from the assessment table.</p>
+<p>Each covariate is copied to a standardized column named <code>.cov_&lt;name&gt;</code>
+(character columns become factors).  A covariate may not be one of the
+subject, sequence, period, treatment, or value columns, and it may not be
+missing in any row that is analyzed.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

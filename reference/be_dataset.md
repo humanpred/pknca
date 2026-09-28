@@ -18,7 +18,8 @@ be_dataset(
   endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
   subject = NULL,
   sequence = NULL,
-  period = NULL
+  period = NULL,
+  covariates = NULL
 )
 ```
 
@@ -49,12 +50,23 @@ be_dataset(
   `NULL` they are taken from the `PKNCAresults` object or detected from
   common column names. `sequence` may be absent.
 
+- covariates:
+
+  An optional character vector of column names added to every model as
+  additive fixed effects (numeric columns as linear terms, character or
+  factor columns as factors). They must not be missing in any analyzed
+  row. For a `PKNCAresults` object they must be columns of
+  `as.data.frame(object)`, which means grouping columns. The
+  within-subject variances used for reference scaling and the
+  intra-subject contrasts do not use covariates.
+
 ## Value
 
 An object of class `be_dataset`: a list with `data` (the standardized
-long frame, including a `.units` column), `columns` (the resolved column
-names, including `units`), `reference_value`, `test_levels`, and
-`endpoints` (those present).
+long frame, including a `.units` column and one `.cov_<name>` column per
+covariate), `columns` (the resolved column names, including `units` and
+`covariates`), `reference_value`, `test_levels`, and `endpoints` (those
+present).
 
 ## Details
 
@@ -65,6 +77,11 @@ which a `PKNCAresults` object provides automatically; a plain data.frame
 supplies units the same way by including the corresponding
 `PPSTRESU`/`PPORRESU` column. When no units column is present, units are
 unavailable and the `units` column is omitted from the assessment table.
+
+Each covariate is copied to a standardized column named `.cov_<name>`
+(character columns become factors). A covariate may not be one of the
+subject, sequence, period, treatment, or value columns, and it may not
+be missing in any row that is analyzed.
 
 ## See also
 

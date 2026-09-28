@@ -10,7 +10,9 @@ than hard-coding it.
 ## Usage
 
 ``` r
-be_regulator(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVNTID"))
+be_regulator(
+  name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVNTID", "descriptive")
+)
 ```
 
 ## Arguments
@@ -18,14 +20,15 @@ be_regulator(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVNTID"))
 - name:
 
   The regulatory framework, one of `"ABE"`, `"EMA"`, `"HC"`, `"GCC"`,
-  `"FDA"`, `"NTID"`, or `"HVNTID"`.
+  `"FDA"`, `"NTID"`, `"HVNTID"`, or `"descriptive"`.
 
 ## Value
 
 An object of class `be_regulator`: a list with elements `name`,
 `scaling` (one of `"none"`, `"abel"`, `"rsabe"`, `"ntid"`, `"hvntid"`),
 `cvswitch`, `r_const`, `cvcap`, `switch_swr`, `pe_constr`, `est_method`
-(`"anova"` or `"isc"`), and `switch_basis`.
+(`"anova"` or `"isc"`), `decision` (`FALSE` only for `"descriptive"`),
+and `switch_basis`.
 
 ## Details
 
@@ -62,8 +65,14 @@ The supported frameworks and their constants are:
   RSABE-style scaled criterion with the NTID constant and the
   within-subject standard deviation ratio constraint.
 
-All frameworks additionally impose the point-estimate constraint that
-the geometric mean ratio fall within 80.00-125.00%.
+- **descriptive** – no regulatory decision. The geometric means, their
+  ratio, and its confidence interval are estimated exactly as for ABE,
+  but no acceptance limits are applied and no pass/fail is reported. Use
+  it for comparisons that are estimated rather than judged, such as food
+  effect and drug-drug interaction studies.
+
+All decision frameworks additionally impose the point-estimate
+constraint that the geometric mean ratio fall within 80.00-125.00%.
 
 ## See also
 
@@ -103,4 +112,10 @@ be_regulator("FDA")
 #>   Regulatory const.:  0.8925742
 #>   PE constraint:      80.00-125.00%
 #>   Point estimate:     isc
+be_regulator("descriptive")
+#> Bioequivalence regulator: descriptive
+#>   Scaling:            none
+#>   PE constraint:      none
+#>   Point estimate:     anova
+#>   Decision:           none (descriptive; no acceptance limits or pass/fail)
 ```

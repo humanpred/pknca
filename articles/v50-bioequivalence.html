@@ -81,7 +81,7 @@
                         <h4 data-toc-skip class="author">Bill
 Denney</h4>
             
-            <h4 data-toc-skip class="date">2026-09-27</h4>
+            <h4 data-toc-skip class="date">2026-09-28</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/humanpred/pknca/blob/main/vignettes/v50-bioequivalence.Rmd" class="external-link"><code>vignettes/v50-bioequivalence.Rmd</code></a></small>
       <div class="d-none name"><code>v50-bioequivalence.Rmd</code></div>
@@ -120,8 +120,8 @@ verbs over a single calculation path, the coordinator
 <li>
 <strong><code><a href="../reference/be_dataset.html">be_dataset()</a></code></strong> – validate the data,
 resolve the value column, drop excluded rows, detect the
-subject/sequence/period columns, and set the reference as the first
-factor level.</li>
+subject/sequence/period columns, set the reference as the first factor
+level, and carry any covariates.</li>
 <li>
 <strong><code><a href="../reference/be_design.html">be_design()</a></code></strong> – classify the design
 (parallel, 2x2x2 crossover, full or partial replicate) and report which
@@ -130,7 +130,7 @@ frameworks it can support.</li>
 <strong><code><a href="../reference/be_fit_model_single.html">be_fit_model_single()</a></code></strong> – fit the
 average-BE model (this is the only place models are fit), dispatching on
 the model type to <code>be_fit_model_lmer()</code>,
-<code>be_fit_model_nlme()</code>, or
+<code>be_fit_model_nlme()</code>, <code>be_fit_model_gls()</code>, or
 <code>be_fit_model_anova()</code>.</li>
 <li>
 <strong><code><a href="../reference/be_extract_param.html">be_extract_param()</a></code></strong> – extract the
@@ -139,7 +139,8 @@ within-formulation standard deviations.</li>
 <li>
 <strong><code><a href="../reference/be_table.html">be_table()</a></code></strong> – apply the regulatory
 limits or criterion and decide pass/fail (using the constants from
-<code><a href="../reference/be_regulator.html">be_regulator()</a></code>).</li>
+<code><a href="../reference/be_regulator.html">be_regulator()</a></code>), or, for the <code>"descriptive"</code>
+framework, report the estimates without a decision.</li>
 </ol>
 <p>The model type is selected automatically from the <strong>design and
 the regulator</strong>; pass <code>model_type</code> to
@@ -199,6 +200,22 @@ contrasts (<code>"isc"</code>) regardless of design.</p>
 <td>full replicate</td>
 <td><code>nlme</code></td>
 <td>treatment-specific variances from one mixed model</td>
+</tr>
+<tr class="even">
+<td>any, with <code>heteroscedastic = TRUE</code>
+</td>
+<td>any (full replicate if scaling)</td>
+<td>
+<code>nlme</code> (crossover/replicate) / <code>gls</code>
+(parallel)</td>
+<td>treatment-specific residual variances</td>
+</tr>
+<tr class="odd">
+<td><code>descriptive</code></td>
+<td>any (test &amp; reference)</td>
+<td>as for <code>ABE</code>
+</td>
+<td>no acceptance limits and no pass/fail</td>
 </tr>
 </tbody>
 </table>
@@ -812,6 +829,141 @@ designs is not in PKNCA; the <a href="https://cran.r-project.org/package=PowerTO
 package covers that complementary need.</p>
 </blockquote>
 </div>
+</div>
+<div class="section level2">
+<h2 id="unequal-variances-covariates-and-descriptive-comparisons">Unequal variances, covariates, and descriptive comparisons<a class="anchor" aria-label="anchor" href="#unequal-variances-covariates-and-descriptive-comparisons"></a>
+</h2>
+<p>Three options extend the same calculation path beyond a regulatory
+bioequivalence decision.</p>
+<ul>
+<li>
+<strong><code>heteroscedastic = TRUE</code></strong> estimates a
+separate residual variance for each treatment. Crossover and replicate
+studies use <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code> with
+<code>varIdent(~ 1 | treatment)</code>, and parallel studies use
+<code><a href="https://rdrr.io/pkg/nlme/man/gls.html" class="external-link">nlme::gls()</a></code> with the same variance structure and
+Satterthwaite degrees of freedom. The <code>lmer</code> model cannot do
+this, because <code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer()</a></code> fits a single residual variance,
+so <code>heteroscedastic = TRUE</code> with
+<code>model_type = "lmer"</code> is an error. Without reference scaling
+the <code>nlme</code> model accepts non-replicated crossovers and
+several test formulations; with reference scaling it needs a fully
+replicated design.</li>
+<li>
+<strong><code>covariates</code></strong> names columns added to
+every model as additive fixed effects. The least-squares means are then
+at the mean of numeric covariates. The intra-subject contrasts used by
+the FDA frameworks and the within-subject variances used for reference
+scaling do not use covariates.</li>
+<li>
+<strong><code>regulator = "descriptive"</code></strong> estimates
+the geometric means, their ratio, and its confidence interval exactly as
+<code>"ABE"</code> does, but applies no acceptance limits and reports no
+pass/fail. It is meant for comparisons that are estimated rather than
+judged, such as food effect and drug-drug interaction studies. The
+caption states that no regulatory decision was applied.</li>
+</ul>
+<p>As an example, a fed/fasted food-effect crossover, where the fed
+state is more variable than the fasted state, is summarized
+descriptively with treatment-specific variances and body weight as a
+covariate.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">simulate_food_effect</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">nsub</span> <span class="op">=</span> <span class="fl">20</span>, <span class="va">seed</span> <span class="op">=</span> <span class="fl">20260927</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span>
+<span>  <span class="va">sequence</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"FastedFed"</span>, <span class="st">"FedFasted"</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="va">nsub</span><span class="op">)</span></span>
+<span>  <span class="va">weight</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">nsub</span>, mean <span class="op">=</span> <span class="fl">75</span>, sd <span class="op">=</span> <span class="fl">12</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">subj</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">nsub</span>, sd <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
+<span>  <span class="va">rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">nsub</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">states</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">sequence</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">==</span> <span class="st">"FastedFed"</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Fasted"</span>, <span class="st">"Fed"</span><span class="op">)</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Fed"</span>, <span class="st">"Fasted"</span><span class="op">)</span></span>
+<span>    <span class="va">sw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">states</span> <span class="op">==</span> <span class="st">"Fed"</span>, <span class="fl">0.35</span>, <span class="fl">0.15</span><span class="op">)</span></span>
+<span>    <span class="va">rows</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>      subject <span class="op">=</span> <span class="va">i</span>, sequence <span class="op">=</span> <span class="va">sequence</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, period <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, state <span class="op">=</span> <span class="va">states</span>,</span>
+<span>      weight <span class="op">=</span> <span class="va">weight</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, PPTESTCD <span class="op">=</span> <span class="st">"cmax"</span>, PPORRESU <span class="op">=</span> <span class="st">"ng/mL"</span>,</span>
+<span>      PPORRES <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">states</span> <span class="op">==</span> <span class="st">"Fed"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1.4</span><span class="op">)</span>, <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
+<span>                      <span class="fl">0.01</span> <span class="op">*</span> <span class="op">(</span><span class="va">weight</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">-</span> <span class="fl">75</span><span class="op">)</span> <span class="op">+</span> <span class="va">subj</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">2</span>, sd <span class="op">=</span> <span class="va">sw</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">rows</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">food</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/be_assess.html">be_assess</a></span><span class="op">(</span></span>
+<span>  <span class="fu">simulate_food_effect</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  reference_col <span class="op">=</span> <span class="st">"state"</span>, reference_value <span class="op">=</span> <span class="st">"Fasted"</span>, endpoints <span class="op">=</span> <span class="st">"cmax"</span>,</span>
+<span>  regulator <span class="op">=</span> <span class="st">"descriptive"</span>, heteroscedastic <span class="op">=</span> <span class="cn">TRUE</span>, covariates <span class="op">=</span> <span class="st">"weight"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">food</span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="4%">
+<col width="2%">
+<col width="1%">
+<col width="3%">
+<col width="3%">
+<col width="6%">
+<col width="9%">
+<col width="9%">
+<col width="4%">
+<col width="7%">
+<col width="7%">
+<col width="6%">
+<col width="4%">
+<col width="4%">
+<col width="6%">
+<col width="6%">
+<col width="2%">
+<col width="6%">
+<col width="5%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">endpoint</th>
+<th align="left">test</th>
+<th align="right">n</th>
+<th align="left">design</th>
+<th align="left">units</th>
+<th align="right">gm_reference</th>
+<th align="right">gm_reference_lower</th>
+<th align="right">gm_reference_upper</th>
+<th align="right">gm_test</th>
+<th align="right">gm_test_lower</th>
+<th align="right">gm_test_upper</th>
+<th align="right">gmr_percent</th>
+<th align="right">ci_lower</th>
+<th align="right">ci_upper</th>
+<th align="right">cvwr_percent</th>
+<th align="right">cvwt_percent</th>
+<th align="right">swr</th>
+<th align="left">regulator</th>
+<th align="left">model_type</th>
+</tr></thead>
+<tbody><tr class="odd">
+<td align="left">cmax</td>
+<td align="left">Fed</td>
+<td align="right">20</td>
+<td align="left">2x2x2</td>
+<td align="left">ng/mL</td>
+<td align="right">49.13</td>
+<td align="right">42.27</td>
+<td align="right">57.1</td>
+<td align="right">64.88</td>
+<td align="right">53.89</td>
+<td align="right">78.12</td>
+<td align="right">132.07</td>
+<td align="right">111.68</td>
+<td align="right">156.18</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">descriptive</td>
+<td align="left">nlme</td>
+</tr></tbody>
+</table>
+<p>The table has no <code>limit_lower</code>, <code>limit_upper</code>,
+<code>criterion</code>, or <code>pass</code> columns. Its caption
+records the model and states that no decision was applied:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">food</span>, <span class="st">"caption"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "Descriptive treatment comparison (90% CI). Geometric means and the geometric mean ratio are least-squares means from a mixed-effects model with treatment-specific residual variances (nlme::lme); the 90% CI comes from exponentiated least-squares-mean differences (emmeans). No regulatory decision was applied: there are no acceptance limits and no pass/fail. The model includes weight as additive covariate(s); least-squares means are at the mean of numeric covariates and averaged over the levels of factor covariates."</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="reporting-checklist">Reporting checklist<a class="anchor" aria-label="anchor" href="#reporting-checklist"></a>
