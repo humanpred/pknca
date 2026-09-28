@@ -534,11 +534,8 @@ PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
         "Cannot set default and set new options at the same time.",
         class = "pknca_error_default_with_options"
       )
-    # Extract all the default values
-    defaults <- lapply(.PKNCA.option.check,
-                       FUN=function(x) x(default=TRUE))
     # Set the default options
-    assign("options", defaults, envir=.PKNCAEnv)
+    assign("options", PKNCA.options.defaults(), envir=.PKNCAEnv)
   } else if (check) {
     # Check an option for accuracy, but don't set it
     if (length(args) != 1) {
@@ -613,6 +610,44 @@ PKNCA.choose.option <- function(name, value=NULL, options=list()) {
     PKNCA.options(name=name, value=options[[name]], check=TRUE)
   } else {
     PKNCA.options(name)
+  }
+}
+
+#' Get the default values of PKNCA options without changing them
+#'
+#' Unlike `PKNCA.options(default = TRUE)`, which resets the current options to
+#' their defaults, this only reads the default values.
+#'
+#' @param name The option name(s) requested, or `NULL` for all options.
+#' @returns For one `name`, the default value of that option; otherwise, a
+#'   named list of default values (all options when `name` is `NULL`).
+#' @family PKNCA calculation and summary settings
+#' @seealso [PKNCA.options()], [PKNCA.options.describe()]
+#' @examples
+#' PKNCA.options.defaults("min.span.ratio")
+#' # The current options are not changed
+#' PKNCA.options(min.span.ratio = 3)
+#' PKNCA.options.defaults("min.span.ratio")
+#' PKNCA.options("min.span.ratio")
+#' PKNCA.options(default = TRUE)
+#' @export
+PKNCA.options.defaults <- function(name = NULL) {
+  checkmate::assert_character(name, any.missing = FALSE, min.len = 1, null.ok = TRUE)
+  if (is.null(name)) {
+    name <- names(.PKNCA.option.check)
+  }
+  bad_name <- setdiff(name, names(.PKNCA.option.check))
+  if (length(bad_name) > 0) {
+    rlang::abort(
+      sprintf("PKNCA.options does not have value(s) for %s.", paste(bad_name, collapse = ", ")),
+      class = "pknca_error_unknown_options"
+    )
+  }
+  ret <- lapply(X = .PKNCA.option.check[name], FUN = function(x) x(default = TRUE))
+  if (length(name) == 1) {
+    ret[[1]]
+  } else {
+    ret
   }
 }
 

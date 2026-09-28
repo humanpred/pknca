@@ -47,6 +47,9 @@ the dosing including dose amount and route.
   (@GITHUB_HANDLE)
 * Printing a `PKNCAdata` object no longer reports "With imputation: NA" when no
   imputation was requested.  (@GITHUB_HANDLE)
+* `PKNCA.options.defaults()` returns the default value of one or more options
+  (or all of them) without changing the current options, unlike
+  `PKNCA.options(default = TRUE)`, which resets them.  (@GITHUB_HANDLE)
 
 * On sparse PK data, `auclast` and `aumclast` are now estimated with the sparse
   methods (the Bailer point estimate with the Nedelman-Jia/Holder standard
