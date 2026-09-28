@@ -1404,13 +1404,15 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
 # the reference geometric mean (with confidence interval) and, per test level,
 # the test geometric mean (with confidence interval) and the geometric mean
 # ratio with its confidence interval.  `data` is passed to emmeans for models
-# that do not keep their data (gls).  Contrasts are named by test level, so each
-# test level's row is found by exact name.
+# that do not keep their data (gls), and `emm_mode` is the emmeans
+# degrees-of-freedom `mode` for models that take one (gls).  Contrasts are named
+# by test level, so each test level's row is found by exact name.
 .be_emmeans_part <- function(model, reference_value, test_levels, alpha, lmer_df = NULL, ref_var, test_var,
-                             data = NULL) {
+                             data = NULL, emm_mode = NULL) {
   emm_args <- list(object = model, specs = ".trt")
   if (!is.null(lmer_df)) emm_args$lmer.df <- lmer_df
   if (!is.null(data)) emm_args$data <- data
+  if (!is.null(emm_mode)) emm_args$mode <- emm_mode
   emm <- do.call(emmeans::emmeans, emm_args)
   arm <- .be_arm_gm_from_emm(emm, alpha)
   ctr_coef <-
@@ -1490,14 +1492,18 @@ be_extract_param_nlme <- function(fit, alpha = 0.10) {
 }
 
 # Internal extractor dispatched by be_extract_param().  gls does not keep its
-# data, so the endpoint data are passed to emmeans (Satterthwaite degrees of
-# freedom, which allow for the unequal arm variances).
+# data, so the endpoint data are passed to emmeans.  Satterthwaite degrees of
+# freedom are requested explicitly: the emmeans default for gls ("auto") falls
+# back to residual degrees of freedom when the variance-parameter covariance is
+# unavailable, while an explicit "satterthwaite" errors instead.  With
+# treatment as the only fixed effect they match the Welch degrees of freedom.
 be_extract_param_gls <- function(fit, ds_ep, alpha = 0.10) {
   .be_require_emmeans("gls")
   reference_value <- levels(ds_ep$.trt)[1]
   test_levels <- setdiff(levels(ds_ep$.trt), reference_value)
   .be_emmeans_part(fit$model, reference_value, test_levels, alpha,
-                   ref_var = fit$ref_var, test_var = fit$test_var, data = ds_ep)
+                   ref_var = fit$ref_var, test_var = fit$test_var, data = ds_ep,
+                   emm_mode = "satterthwaite")
 }
 
 # Internal extractor dispatched by be_extract_param().
@@ -1714,7 +1720,7 @@ be_fit_models <- function(object, reference_col, reference_value,
       model_type,
       lmer = "a mixed-effects model (lmerTest::lmer, Satterthwaite degrees of freedom)",
       nlme = "a mixed-effects model with treatment-specific residual variances (nlme::lme)",
-      gls = "a generalized least-squares model with treatment-specific residual variances (nlme::gls, Satterthwaite degrees of freedom)",
+      gls = "a generalized least-squares model with treatment-specific residual variances (nlme::gls, Satterthwaite degrees of freedom from emmeans)",
       anova = ,
       isc = "a fixed-effects ANOVA"
     )
