@@ -54,3 +54,47 @@ be_replicate_long <- function(d, endpoint = "auclast", units = if (endpoint == "
     PPORRESU = units
   )
 }
+
+# Deterministic parallel-design data (one observation per subject) with
+# arm-specific log-scale means and standard deviations and a body-weight
+# covariate with a known log-linear effect (`wt_slope` per kg from 70 kg).
+generate_be_parallel <- function(n_per_arm = 20, seed = 20260927,
+                                 effect = c(R = 0, T1 = log(1.10), T2 = log(0.90)),
+                                 sd = c(R = 0.20, T1 = 0.50, T2 = 0.30),
+                                 wt_slope = 0.01, mu = log(100)) {
+  set.seed(seed)
+  arm <- rep(names(effect), each = n_per_arm)
+  wt <- round(stats::rnorm(length(arm), mean = 70, sd = 10))
+  data.frame(
+    subject = seq_along(arm), period = 1L, treatment = arm, WT = wt,
+    PPTESTCD = "auclast",
+    PPORRES = exp(mu + effect[arm] + wt_slope * (wt - 70) + stats::rnorm(length(arm), sd = sd[arm])),
+    PPORRESU = "h*ng/mL"
+  )
+}
+
+# Deterministic three-period, three-treatment Williams-type crossover (each
+# subject receives R, T1, and T2 once) with treatment-specific within-subject
+# standard deviations.
+generate_be_williams <- function(nsub = 18, seed = 20260928,
+                                 effect = c(R = 0, T1 = log(1.05), T2 = log(0.85)),
+                                 sd = c(R = 0.15, T1 = 0.35, T2 = 0.25),
+                                 bsv = 0.3, mu = log(100)) {
+  set.seed(seed)
+  seqs <- list(
+    c("R", "T1", "T2"), c("T1", "T2", "R"), c("T2", "R", "T1"),
+    c("R", "T2", "T1"), c("T1", "R", "T2"), c("T2", "T1", "R")
+  )
+  b <- stats::rnorm(nsub, sd = bsv)
+  rows <- list()
+  for (i in seq_len(nsub)) {
+    trts <- seqs[[(i - 1) %% length(seqs) + 1]]
+    rows[[i]] <- data.frame(
+      subject = i, sequence = paste(trts, collapse = "-"), period = seq_along(trts),
+      treatment = trts, PPTESTCD = "auclast",
+      PPORRES = exp(mu + effect[trts] + b[i] + stats::rnorm(length(trts), sd = sd[trts])),
+      PPORRESU = "h*ng/mL"
+    )
+  }
+  do.call(rbind, rows)
+}
