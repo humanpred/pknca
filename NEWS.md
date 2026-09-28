@@ -45,6 +45,8 @@ the dosing including dose amount and route.
   previously, interval times in the original unit were labelled with the
   preferred unit (60 minutes reported as `"PT60H"` with `timeu_pref = "hr"`).
   (@GITHUB_HANDLE)
+* Printing a `PKNCAdata` object no longer reports "With imputation: NA" when no
+  imputation was requested.  (@GITHUB_HANDLE)
 
 * On sparse PK data, `auclast` and `aumclast` are now estimated with the sparse
   methods (the Bailer point estimate with the Nedelman-Jia/Holder standard

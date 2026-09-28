@@ -313,7 +313,8 @@ print.PKNCAdata <- function(x, ...) {
   if (!is.null(x$units)) {
     cat("With units\n")
   }
-  if (!is.null(x$impute)) {
+  # PKNCAdata() stores NA_character_ when no imputation is requested
+  if (!is.null(x$impute) && !all(is.na(x$impute))) {
     cat(sprintf("With imputation: %s\n", x$impute))
   }
   if (!is.null(x$group_ref)) {

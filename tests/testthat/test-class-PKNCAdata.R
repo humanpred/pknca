@@ -464,3 +464,16 @@ test_that("group_vars.PKNCAdata", {
 
   expect_equal(dplyr::group_vars(o_data_nogroup), character(0))
 })
+
+test_that("print.PKNCAdata reports imputation only when it is requested", {
+  o_conc <- PKNCAconc(data.frame(conc = c(1, 2, 1), time = 0:2, subject = 1), conc~time|subject)
+  intervals <- data.frame(start = 0, end = 2, auclast = TRUE)
+  # PKNCAdata() stores NA_character_ when no imputation is given
+  o_data_none <- PKNCAdata(o_conc, intervals = intervals)
+  expect_equal(o_data_none$impute, NA_character_)
+  output_none <- capture.output(print(o_data_none))
+  expect_false(any(grepl("With imputation", output_none, fixed = TRUE)))
+  o_data_impute <- PKNCAdata(o_conc, intervals = intervals, impute = "start_conc0")
+  output_impute <- capture.output(print(o_data_impute))
+  expect_equal(sum(output_impute == "With imputation: start_conc0"), 1)
+})
