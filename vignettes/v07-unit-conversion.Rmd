@@ -305,7 +305,11 @@ head(o_data$conc$data[, c("Subject", "datetime", "conc")])
 
 Automatic intervals are chosen as for numeric times, and manually specified
 intervals are numeric times relative to the time reference, in the preferred
-time unit.  Results formatted for CDISC include the time reference as the
+time unit.  The default single-dose intervals (the `single.dose.aucs` option,
+0 to 24 and 0 to infinity) are written for hours, so with a preferred time unit
+such as `"day"` or `"min"` they would end at 24 days or 24 minutes; PKNCA warns
+when that happens, and you should give `intervals` or set `single.dose.aucs`
+for that unit.  Results formatted for CDISC include the time reference as the
 PPRFTDTC column.
 
 ```{r datetime-results}

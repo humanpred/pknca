@@ -64,9 +64,14 @@ test_that("Without timeu_pref, POSIXct times are in seconds, with a warning", {
   expect_equal(o_data$intervals$end, c(24, Inf, 24, Inf))
   # With timeu = "s", the unit is kept
   o_conc_s <- PKNCAconc(d$conc, conc~time|part+subject, timeu = "s")
+  # With a known time unit of seconds, the default single-dose intervals are
+  # flagged, too
   expect_warning(
-    o_data_s <- PKNCAdata(o_conc_s, PKNCAdose(d$dose, dose~time|part+subject)),
-    class = "pknca_warning_datetime_seconds"
+    expect_warning(
+      o_data_s <- PKNCAdata(o_conc_s, PKNCAdose(d$dose, dose~time|part+subject)),
+      class = "pknca_warning_datetime_seconds"
+    ),
+    class = "pknca_warning_single_dose_aucs_unit"
   )
   expect_equal(o_data_s$conc$units$timeu, "s", ignore_attr = TRUE)
 })
@@ -93,14 +98,21 @@ test_that("Date times are midnight, with a warning", {
     o_dose <- PKNCAdose(d_dose, dose~time|subject),
     class = "pknca_warning_date_midnight"
   )
-  o_data <- PKNCAdata(o_conc, o_dose)
+  expect_warning(
+    o_data <- PKNCAdata(o_conc, o_dose),
+    class = "pknca_warning_single_dose_aucs_unit"
+  )
   expect_equal(o_data$conc$data$time, 0:3)
   expect_equal(o_data$time_reference$time_reference, as.POSIXct("2024-01-01", tz = "UTC"))
 
   # A Date takes the time zone of the date-times it is paired with, so midnight
   # is local midnight.
   d_dose_dt <- data.frame(subject = 1, time = as.POSIXct("2024-01-01 06:00", tz = "America/New_York"), dose = 1)
-  o_data_tz <- PKNCAdata(o_conc, PKNCAdose(d_dose_dt, dose~time|subject))
+  o_data_tz <-
+    PKNCAdata(
+      o_conc, PKNCAdose(d_dose_dt, dose~time|subject),
+      intervals = data.frame(start = 0, end = 3, cmax = TRUE)
+    )
   expect_equal(o_data_tz$conc$data$time, c(-0.25, 0.75, 1.75, 2.75))
 })
 

@@ -52,6 +52,11 @@ the dosing including dose amount and route.
   (@GITHUB_HANDLE)
 * Printing a `PKNCAdata` object no longer reports "With imputation: NA" when no
   imputation was requested.  (@GITHUB_HANDLE)
+* `PKNCAdata()` warns (`pknca_warning_single_dose_aucs_unit`) when it
+  generates single-dose intervals from the default `single.dose.aucs` option,
+  whose 0 to 24 window is written for hours, and the time unit is a recognized
+  time unit other than hours (the window would be 24 minutes or 24 days).  The
+  default option is unchanged.  (@GITHUB_HANDLE)
 * `PKNCA.options.defaults()` returns the default value of one or more options
   (or all of them) without changing the current options, unlike
   `PKNCA.options(default = TRUE)`, which resets them.  (@GITHUB_HANDLE)

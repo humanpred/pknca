@@ -208,6 +208,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
         o_dose = ret$dose
       )
     n_conc_dose$data_intervals <- rep(list(NULL), nrow(n_conc_dose))
+    used_single_dose_aucs <- FALSE
     for (idx in seq_len(nrow(n_conc_dose))) {
       current_conc <- n_conc_dose$data_conc[[idx]]
       current_dose <- n_conc_dose$data_dose[[idx]]
@@ -233,6 +234,9 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
             current_dose$time,
             options=options
           )
+        # choose.auc.intervals() uses single.dose.aucs for one dose time
+        used_single_dose_aucs <-
+          used_single_dose_aucs || length(unique(current_dose$time)) == 1
         if (nrow(generated_intervals) > 0) {
           n_conc_dose$data_intervals[[idx]] <- generated_intervals
         } else {
@@ -259,6 +263,9 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
         n_conc_dose[, setdiff(names(n_conc_dose), c("data_conc", "data_dose")), drop=FALSE],
         cols="data_intervals"
       )
+    if (used_single_dose_aucs) {
+      pknca_warn_single_dose_aucs_unit(o_conc = ret$conc, options = options)
+    }
   }
   ret <- set_intervals(data = ret, intervals = intervals)
   ret$intervals <- check.interval.specification(intervals)
@@ -296,6 +303,72 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   ret
 }
 
+
+#' Warn when the default single-dose intervals are used with a time unit that is
+#' not hours
+#'
+#' The default `single.dose.aucs` option is written for hours (0 to 24 and 0 to
+#' infinity), so with another time unit its 24 means 24 of that unit.
+#'
+#' @param o_conc The PKNCAconc object (after any date-time conversion)
+#' @param options The `options` argument given to [PKNCAdata()]
+#' @returns `NULL`, invisibly (after a warning, when it applies)
+#' @keywords Internal
+#' @noRd
+pknca_warn_single_dose_aucs_unit <- function(o_conc, options) {
+  single_dose_aucs <- PKNCA.choose.option(name = "single.dose.aucs", options = options)
+  if (!identical(single_dose_aucs, PKNCA.options.defaults("single.dose.aucs"))) {
+    return(invisible(NULL))
+  }
+  timeu <-
+    if (!is.null(o_conc$units$timeu)) {
+      as.vector(o_conc$units$timeu)
+    } else if (!is.null(o_conc$columns$timeu)) {
+      unique(as.character(as.data.frame(o_conc)[[o_conc$columns$timeu]]))
+    }
+  timeu <- timeu[!is.na(timeu)]
+  # Units that are not recognizable as time units cannot be judged
+  hours_factor <- vapply(X = timeu, FUN = pknca_hours_factor, FUN.VALUE = 1)
+  not_hours <- timeu[!is.na(hours_factor) & abs(hours_factor - 1) > 1e-8]
+  if (length(not_hours) > 0) {
+    rlang::warn(
+      sprintf(
+        paste(
+          "The default single-dose intervals (the `single.dose.aucs` option, from 0 to 24 and 0 to Inf) assume hours, but the time unit is %s, so they end at 24 %s.",
+          "Give `intervals` or set the `single.dose.aucs` option for this time unit."
+        ),
+        paste0("'", not_hours, "'", collapse = ", "),
+        not_hours[1]
+      ),
+      class = "pknca_warning_single_dose_aucs_unit"
+    )
+  }
+  invisible(NULL)
+}
+
+#' Find the number of hours in a time unit
+#'
+#' @param unit A time unit string
+#' @returns The number of hours in one `unit` (1 for hours), or `NA_real_` when
+#'   `unit` is not recognized as a time unit.  The units package decides when it
+#'   is installed; otherwise, common spellings are recognized.
+#' @keywords Internal
+#' @noRd
+pknca_hours_factor <- function(unit) {
+  factor <- pknca_unit_reconcile_factor(from = unit, to = "hr")
+  if (is.na(factor)) {
+    hours <-
+      c(
+        s = 1/3600, sec = 1/3600, second = 1/3600, seconds = 1/3600,
+        min = 1/60, minute = 1/60, minutes = 1/60,
+        h = 1, hr = 1, hrs = 1, hour = 1, hours = 1,
+        d = 24, day = 24, days = 24,
+        wk = 168, week = 168, weeks = 168
+      )
+    factor <- unname(hours[tolower(unit)])
+  }
+  factor
+}
 
 #' @rdname is_sparse_pk
 #' @export
