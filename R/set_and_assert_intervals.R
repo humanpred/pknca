@@ -4,6 +4,10 @@
 #'  It will then check that the intervals are valid, given the data object.
 #'  If the intervals are valid, it will set them in the object.
 #'  It will return the data object with the intervals set.
+#'
+#'  With date-time data, date-time `start` and `end` are first converted to
+#'  numeric time relative to each group's time reference (see the "Date-time
+#'  input" section of [PKNCAdata()]).
 #'  
 #' @param data PKNCAdata object
 #' @param intervals Proposed intervals
@@ -11,6 +15,8 @@
 #'   
 #' @export
 set_intervals <- function(data, intervals) {
+  # Date-time bounds become numeric time relative to each group's reference
+  intervals <- pknca_interval_times_to_numeric(intervals, data)
   valid_intervals <- assert_intervals(intervals, data)
   
   data$intervals <- valid_intervals
@@ -45,6 +51,7 @@ assert_intervals <- function(intervals, data) {
       "impute",
       "tau",
       "interval_id",
+      "interval_time_kind",
       paste0(secondary_parameter_names(), "_ref"),
       # If not used, data$options$keep_interval_cols will be NULL
       data$options$keep_interval_cols

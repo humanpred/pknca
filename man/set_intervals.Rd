@@ -20,3 +20,8 @@ It will then check that the intervals are valid, given the data object.
 If the intervals are valid, it will set them in the object.
 It will return the data object with the intervals set.
 }
+\details{
+With date-time data, date-time \code{start} and \code{end} are first converted to
+numeric time relative to each group's time reference (see the "Date-time
+input" section of \code{\link[=PKNCAdata]{PKNCAdata()}}).
+}

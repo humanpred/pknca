@@ -19,7 +19,9 @@
 #'   if `data.dose` is a `PKNCAdose` object.
 #' @param intervals A data frame with the AUC interval specifications as defined
 #'   in [check.interval.specification()].  If missing, this will be
-#'   automatically chosen by [choose.auc.intervals()]. (see details)
+#'   automatically chosen by [choose.auc.intervals()]. (see details)  With
+#'   date-time data, `start` and `end` may be date-times (see the "Date-time
+#'   input" section).
 #' @param units A data.frame of unit assignments and conversions as created by
 #'   [pknca_units_table()]
 #' @param group_ref The reference profiles for automatically-linked secondary
@@ -88,8 +90,22 @@
 #'     `timeu_pref` when given, otherwise `timeu`, otherwise hours (without
 #'     units).  Numeric concentration collection and dosing durations are in
 #'     that unit, and difftime durations are converted to it.
-#'   * Manually specified `intervals` are numeric times relative to the time
-#'     reference, in that unit.
+#'   * Manually specified `intervals` may be numeric times relative to the
+#'     time reference, in that unit, or date-times.  Date-time `start` and
+#'     `end` (POSIXct, or Date for midnight, with a warning) are converted
+#'     relative to the reference of the group each row applies to.  A row that
+#'     does not name every reference group (for example, a row without
+#'     `Subject`) applies to every matching group and becomes one row per
+#'     group, because one absolute window is a different relative window for
+#'     each subject.  A date-time `start` may pair with `end = Inf` (or a
+#'     POSIXct `Inf`), which stays infinite; the start must be finite, both
+#'     bounds must otherwise be date-times, and the time zone must match the
+#'     data.  Converted intervals have an `interval_time_kind` column
+#'     (`"datetime"`, or `"relative"` for numeric rows added later).  The
+#'     conversion happens in `PKNCAdata()`, [set_intervals()], and [pk.nca()]
+#'     (for intervals assigned directly), and it gives the window only:  a
+#'     window starting before a subject's first measurement still needs an
+#'     imputation rule (`impute`) for a concentration at its start.
 #'   * The time reference of each group is kept in the `time_reference` element
 #'     of the object, with the `time_reference_type` column saying whether it
 #'     is the `"first_dose"` or the `"first_conc"`, and
@@ -267,8 +283,9 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
       pknca_warn_single_dose_aucs_unit(o_conc = ret$conc, options = options)
     }
   }
+  # set_intervals() converts date-time interval bounds to numeric time
   ret <- set_intervals(data = ret, intervals = intervals)
-  ret$intervals <- check.interval.specification(intervals)
+  ret$intervals <- check.interval.specification(ret$intervals)
   # Verify that either everything or nothing is using units
   units_interval_start <- inherits(ret$intervals$start, "units")
   units_interval_end <- inherits(ret$intervals$end, "units")

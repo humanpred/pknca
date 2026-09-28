@@ -49,7 +49,9 @@ the \code{intervals} data.frame.  See
 
 \item{intervals}{A data frame with the AUC interval specifications as defined
 in \code{\link[=check.interval.specification]{check.interval.specification()}}.  If missing, this will be
-automatically chosen by \code{\link[=choose.auc.intervals]{choose.auc.intervals()}}. (see details)}
+automatically chosen by \code{\link[=choose.auc.intervals]{choose.auc.intervals()}}. (see details)  With
+date-time data, \code{start} and \code{end} may be date-times (see the "Date-time
+input" section).}
 
 \item{units}{A data.frame of unit assignments and conversions as created by
 \code{\link[=pknca_units_table]{pknca_units_table()}}}
@@ -130,8 +132,22 @@ every subject in a sparse group shares the group's dosing.
 \code{timeu_pref} when given, otherwise \code{timeu}, otherwise hours (without
 units).  Numeric concentration collection and dosing durations are in
 that unit, and difftime durations are converted to it.
-\item Manually specified \code{intervals} are numeric times relative to the time
-reference, in that unit.
+\item Manually specified \code{intervals} may be numeric times relative to the
+time reference, in that unit, or date-times.  Date-time \code{start} and
+\code{end} (POSIXct, or Date for midnight, with a warning) are converted
+relative to the reference of the group each row applies to.  A row that
+does not name every reference group (for example, a row without
+\code{Subject}) applies to every matching group and becomes one row per
+group, because one absolute window is a different relative window for
+each subject.  A date-time \code{start} may pair with \code{end = Inf} (or a
+POSIXct \code{Inf}), which stays infinite; the start must be finite, both
+bounds must otherwise be date-times, and the time zone must match the
+data.  Converted intervals have an \code{interval_time_kind} column
+(\code{"datetime"}, or \code{"relative"} for numeric rows added later).  The
+conversion happens in \code{PKNCAdata()}, \code{\link[=set_intervals]{set_intervals()}}, and \code{\link[=pk.nca]{pk.nca()}}
+(for intervals assigned directly), and it gives the window only:  a
+window starting before a subject's first measurement still needs an
+imputation rule (\code{impute}) for a concentration at its start.
 \item The time reference of each group is kept in the \code{time_reference} element
 of the object, with the \code{time_reference_type} column saying whether it
 is the \code{"first_dose"} or the \code{"first_conc"}, and

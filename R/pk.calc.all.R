@@ -29,6 +29,11 @@
 #' @export
 pk.nca <- function(data, verbose=FALSE) {
   assert_PKNCAdata(data)
+  # Intervals assigned after PKNCAdata() may still have date-time bounds
+  intervals_numeric <- pknca_interval_times_to_numeric(data$intervals, data)
+  if (!identical(intervals_numeric, data$intervals)) {
+    data$intervals <- check.interval.specification(intervals_numeric)
+  }
   results <- data.frame()
   if (nrow(data$intervals) > 0) {
     if (verbose) {

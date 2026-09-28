@@ -305,9 +305,33 @@ head(o_data$time_reference)
 head(o_data$conc$data[, c("Subject", "datetime", "conc")])
 ```
 
-Automatic intervals are chosen as for numeric times, and manually specified
-intervals are numeric times relative to the time reference, in the preferred
-time unit.  The default single-dose intervals (the `single.dose.aucs` option,
+Automatic intervals are chosen as for numeric times.  Manually specified
+intervals may be numeric times relative to the time reference, in the preferred
+time unit, or date-times.  A date-time window is converted relative to the
+reference of each group it applies to, so a window without a `Subject` column
+becomes one row per subject, each with that subject's relative start and end,
+and the converted intervals are marked with `interval_time_kind = "datetime"`.
+An `end` of `Inf` stays infinite.  The conversion supplies the window, not
+concentrations at its edges:  a window that starts before a subject's first
+measurement still needs an imputation rule (the `impute` argument) to give a
+concentration at its start.
+
+```{r datetime-intervals}
+# 12:00 to 20:00 on each subject's dosing day, one row per subject
+intervals_dt <-
+  data.frame(
+    Subject = d_dose$Subject,
+    start = first_dose[as.character(d_dose$Subject)] + 4 * 3600,
+    end = first_dose[as.character(d_dose$Subject)] + 12 * 3600,
+    aucint.last = TRUE
+  )
+o_data_dt <- PKNCAdata(o_conc, o_dose, intervals = intervals_dt)
+head(o_data_dt$intervals[, c("Subject", "start", "end", "interval_time_kind")], 3)
+o_nca_dt <- pk.nca(o_data_dt)
+head(as.data.frame(o_nca_dt)[, c("Subject", "start", "end", "PPTESTCD", "PPORRES")], 3)
+```
+
+The default single-dose intervals (the `single.dose.aucs` option,
 0 to 24 and 0 to infinity) are written for hours, so with a preferred time unit
 such as `"day"` or `"min"` they would end at 24 days or 24 minutes; PKNCA warns
 when that happens, and you should give `intervals` or set `single.dose.aucs`

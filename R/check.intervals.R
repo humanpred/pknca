@@ -53,7 +53,7 @@ check.interval.specification <- function(x) {
   if (length(datetime_cols) > 0) {
     rlang::abort(
       sprintf(
-        "Interval %s must be numeric times (relative to the time reference for date-time data; see the \"Date-time input\" section of ?PKNCAdata), not date-times.",
+        "Interval %s must be numeric times here; date-time bounds are converted relative to each group's time reference by PKNCAdata(), set_intervals(), and pk.nca() (see the \"Date-time input\" section of ?PKNCAdata).",
         paste0("'", datetime_cols, "'", collapse = " and ")
       ),
       class = "pknca_error_interval_datetime"

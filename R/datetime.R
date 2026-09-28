@@ -202,7 +202,7 @@ pknca_datetime_to_numeric <- function(data) {
   # Date-times are converted directly to the unit of the analysis (the unit
   # PKNCAconc() chose from timeu_pref and timeu), or to hours when there are no
   # units.
-  time_unit <- choose_first(o_conc$units$timeu, "hr")
+  time_unit <- pknca_datetime_time_unit(o_conc)
   o_conc[[conc_dataname]][[conc_time_col]] <-
     pknca_difftime_to_unit(difftime(conc_time, conc_ref, units = "secs"), unit = time_unit)
   if (has_dose_time) {
@@ -247,7 +247,7 @@ pknca_duration_to_numeric <- function(data) {
   }
   time_unit <-
     if (!is.null(data$time_reference)) {
-      choose_first(o_conc$units$timeu, "hr")
+      pknca_datetime_time_unit(o_conc)
     } else if (!is.null(o_conc$units$timeu)) {
       as.vector(o_conc$units$timeu)
     } else if (!is.null(o_conc$columns$timeu)) {
@@ -275,6 +275,155 @@ pknca_duration_to_numeric <- function(data) {
   data$conc <- o_conc
   data$dose <- o_dose
   data
+}
+
+#' Convert date-time interval bounds to numeric time
+#'
+#' Rows whose `start` and `end` are date-times (POSIXct, or Date for midnight)
+#' become numeric times relative to the time reference of the group they apply
+#' to, in the time unit of the analysis, the same way concentration and dose
+#' times are converted.  A row that does not give every reference group column
+#' applies to all the matching groups, so it becomes one row per group, each
+#' relative to that group's own reference.  An `end` of `Inf` (numeric, or a
+#' POSIXct `Inf`) stays `Inf`.  Numeric intervals are returned unchanged, so
+#' converting twice is harmless.
+#'
+#' @param intervals The intervals data.frame
+#' @param data The PKNCAdata object (after its own date-time conversion)
+#' @returns `intervals` with numeric `start` and `end`; when date-time bounds
+#'   were converted, an `interval_time_kind` column is `"datetime"` for the
+#'   converted rows and `"relative"` for rows that were already numeric
+#' @keywords Internal
+#' @noRd
+pknca_interval_times_to_numeric <- function(intervals, data) {
+  if (!is.data.frame(intervals) || !all(c("start", "end") %in% names(intervals))) {
+    # Other checks report malformed intervals
+    return(intervals)
+  }
+  dt_start <- is_datetime_time(intervals$start)
+  dt_end <- is_datetime_time(intervals$end)
+  if (!dt_start && !dt_end) {
+    if ("interval_time_kind" %in% names(intervals)) {
+      intervals$interval_time_kind[is.na(intervals$interval_time_kind)] <- "relative"
+    }
+    return(intervals)
+  }
+  # A date-time bound with a numeric bound:  only an open end (Inf) can pair
+  # with a date-time start.
+  if (!dt_start || (!dt_end && !all(is.infinite(intervals$end) & intervals$end > 0))) {
+    rlang::abort(
+      "Interval `start` and `end` must both be date-times or both be numeric; the only numeric bound allowed with a date-time `start` is `end = Inf`.",
+      class = "pknca_error_interval_datetime_mixed"
+    )
+  }
+  time_reference <- data$time_reference
+  if (is.null(time_reference)) {
+    rlang::abort(
+      "Intervals given as date-times need date-time concentration and dose times to be relative to; with numeric times, give numeric intervals.",
+      class = "pknca_error_interval_datetime_numeric_data"
+    )
+  }
+  tz_ref <- pknca_datetime_tz(time_reference$time_reference)
+  for (bound in c("start", "end")) {
+    if (is_datetime_time(intervals[[bound]])) {
+      tz_bound <- pknca_datetime_tz(intervals[[bound]])
+      if (!is.na(tz_bound) && !identical(tz_bound, tz_ref)) {
+        rlang::abort(
+          sprintf(
+            "Interval date-times must have the same time zone (UTC offset) as the concentration and dose date-times; the time zones are: '%s', '%s'",
+            tz_bound, tz_ref
+          ),
+          class = "pknca_error_datetime_mixed_tz"
+        )
+      }
+      if (inherits(intervals[[bound]], "Date")) {
+        pknca_warn_date_midnight(time_col = bound, data_type = "interval")
+      }
+    }
+  }
+  start_abs <- pknca_as_posixct(intervals$start, tz = tz_ref)
+  if (any(!is.finite(as.numeric(start_abs)))) {
+    rlang::abort(
+      "Interval `start` date-times must be finite (not NA or infinite).",
+      class = "pknca_error_interval_datetime_start_infinite"
+    )
+  }
+  end_abs <-
+    if (dt_end) {
+      pknca_as_posixct(intervals$end, tz = tz_ref)
+    } else {
+      intervals$end
+    }
+  ref_groups <- setdiff(names(time_reference), c("time_reference", "time_reference_type"))
+  conc_groups <- names(getGroups(data$conc))
+  if (length(setdiff(ref_groups, conc_groups)) > 0) {
+    rlang::abort(
+      sprintf(
+        "Date-time intervals need the time reference groups to be concentration groups; add %s to the concentration formula groups.",
+        paste0("'", setdiff(ref_groups, conc_groups), "'", collapse = ", ")
+      ),
+      class = "pknca_error_interval_datetime_groups"
+    )
+  }
+  # Each row gets the reference of every group it applies to
+  intervals$row_XXX <- seq_len(nrow(intervals))
+  intervals$start <- NULL
+  intervals$end <- NULL
+  join_groups <- intersect(names(intervals), ref_groups)
+  ret <-
+    if (length(join_groups) > 0) {
+      dplyr::inner_join(
+        intervals, time_reference[, c(ref_groups, "time_reference"), drop = FALSE],
+        by = join_groups, relationship = "many-to-many"
+      )
+    } else {
+      dplyr::cross_join(intervals, time_reference[, c(ref_groups, "time_reference"), drop = FALSE])
+    }
+  missing_rows <- setdiff(seq_along(start_abs), ret$row_XXX)
+  if (length(missing_rows) > 0) {
+    rlang::abort(
+      sprintf(
+        "Date-time interval rows %s match no group with a time reference.",
+        paste(missing_rows, collapse = ", ")
+      ),
+      class = "pknca_error_interval_datetime_no_reference"
+    )
+  }
+  ret <- as.data.frame(ret)
+  ret <- ret[order(ret$row_XXX), , drop = FALSE]
+  time_unit <- pknca_datetime_time_unit(data$conc)
+  ret$start <-
+    pknca_difftime_to_unit(
+      difftime(start_abs[ret$row_XXX], ret$time_reference, units = "secs"),
+      unit = time_unit
+    )
+  current_end <- end_abs[ret$row_XXX]
+  # An infinite end (numeric, or a POSIXct Inf) stays infinite
+  end_num <- as.numeric(current_end)
+  mask_finite_end <- is.finite(end_num)
+  end_num[mask_finite_end] <-
+    pknca_difftime_to_unit(
+      difftime(current_end[mask_finite_end], ret$time_reference[mask_finite_end], units = "secs"),
+      unit = time_unit
+    )
+  ret$end <- end_num
+  ret$interval_time_kind <- "datetime"
+  ret$row_XXX <- NULL
+  ret$time_reference <- NULL
+  # Keep the original column order, with start and end first as usual
+  ret <- ret[, unique(c("start", "end", setdiff(names(ret), c("start", "end")))), drop = FALSE]
+  rownames(ret) <- NULL
+  ret
+}
+
+#' Get the time unit that date-time input is converted to
+#'
+#' @param o_conc A PKNCAconc object
+#' @returns The time unit of the concentration data, or `"hr"` without units
+#' @keywords Internal
+#' @noRd
+pknca_datetime_time_unit <- function(o_conc) {
+  as.vector(choose_first(o_conc$units$timeu, "hr"))
 }
 
 #' Find the date-time reference of each group

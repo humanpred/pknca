@@ -58,10 +58,17 @@ the dosing including dose amount and route.
   whose 0 to 24 window is written for hours, and the time unit is a recognized
   time unit other than hours (the window would be 24 minutes or 24 days).  The
   default option is unchanged.  (@GITHUB_HANDLE)
-* `check.interval.specification()` (and so `PKNCAdata()`) rejects date-time or
-  date `start` and `end` with a clear error (`pknca_error_interval_datetime`);
-  intervals are numeric times, relative to the time reference for date-time
-  data.  (@GITHUB_HANDLE)
+* With date-time data, intervals may be given as date-times (POSIXct, or Date
+  for midnight).  `PKNCAdata()`, `set_intervals()`, and `pk.nca()` convert each
+  row relative to the time reference of the group it applies to; a row that
+  does not name every reference group becomes one row per group, since an
+  absolute window is a different relative window for each subject.  An `end`
+  of `Inf` (numeric or POSIXct) stays infinite, and converted intervals are
+  marked with `interval_time_kind`.  Date-time bounds mixed with finite
+  numeric bounds, an infinite start, date-time intervals for numeric data, and
+  a different time zone are errors.  `check.interval.specification()` itself,
+  which has no time reference, still requires numeric bounds.
+  (@GITHUB_HANDLE)
 * `PKNCA.options.defaults()` returns the default value of one or more options
   (or all of them) without changing the current options, unlike
   `PKNCA.options(default = TRUE)`, which resets them.  (@GITHUB_HANDLE)

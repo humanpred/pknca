@@ -567,3 +567,180 @@ test_that("format_iso8601_datetime keeps missing values missing", {
     c("2024-01-02T03:04:05", NA)
   )
 })
+
+# Two subjects without dosing data; each subject's reference is its first
+# sample (08:00 and 09:00), with samples 0, 1, 2, 4, and 8 hours later.
+datetime_interval_data <- function() {
+  t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
+  rel <- c(0, 1, 2, 4, 8)
+  d_conc <-
+    data.frame(
+      subject = rep(1:2, each = 5),
+      time = t0 + c(rel, rel + 1) * 3600,
+      conc = rep(c(1, 4, 6, 3, 1), 2)
+    )
+  list(
+    t0 = t0,
+    o_conc = PKNCAconc(d_conc, conc~time|subject, concu = "ng/mL", timeu_pref = "hr")
+  )
+}
+
+test_that("An absolute date-time window gives each subject its own relative interval", {
+  skip_if_not_installed("units")
+  d <- datetime_interval_data()
+  intervals <- data.frame(start = d$t0 + 2 * 3600, end = d$t0 + 4 * 3600, aucint.last = TRUE)
+  o_data <- PKNCAdata(d$o_conc, intervals = intervals)
+  # One row per subject:  10:00 to 12:00 is 2 to 4 hours after subject 1's
+  # reference and 1 to 3 hours after subject 2's
+  expect_equal(o_data$intervals$subject, 1:2)
+  expect_equal(o_data$intervals$start, c(2, 1))
+  expect_equal(o_data$intervals$end, c(4, 3))
+  expect_equal(o_data$intervals$interval_time_kind, c("datetime", "datetime"))
+  d_nca <- as.data.frame(pk.nca(o_data))
+  # Linear-up/log-down by hand.  Subject 1:  6 to 3 over 2 to 4 hours (log).
+  # Subject 2:  4 to 6 over 1 to 2 hours (linear), then 6 at 2 hours to the
+  # log-interpolated concentration at 3 hours (log).
+  conc_3 <- 6 * (3/6)^(1/2)
+  expected <-
+    c(
+      (6 - 3) * 2 / log(6/3),
+      (4 + 6) / 2 + (6 - conc_3) / log(6/conc_3)
+    )
+  expect_equal(d_nca$PPORRES[d_nca$PPTESTCD == "aucint.last"], expected, tolerance = 1e-10)
+})
+
+test_that("Grouped date-time interval rows use their group's reference", {
+  d <- datetime_interval_data()
+  intervals <-
+    data.frame(
+      subject = 1:2,
+      start = d$t0 + c(2, 3) * 3600,
+      end = d$t0 + c(4, 5) * 3600,
+      cmax = TRUE
+    )
+  o_data <- PKNCAdata(d$o_conc, intervals = intervals)
+  expect_equal(o_data$intervals$subject, 1:2)
+  expect_equal(o_data$intervals$start, c(2, 2))
+  expect_equal(o_data$intervals$end, c(4, 4))
+  # A row for a group with no time reference is an error
+  expect_error(
+    PKNCAdata(d$o_conc, intervals = data.frame(subject = 3L, start = d$t0, end = d$t0 + 3600, cmax = TRUE)),
+    regexp = "rows 1 match no group",
+    class = "pknca_error_interval_datetime_no_reference"
+  )
+})
+
+test_that("Date interval bounds are midnight, with a warning", {
+  d <- datetime_interval_data()
+  intervals <- data.frame(start = as.Date("2024-03-01"), end = as.Date("2024-03-02"), cmax = TRUE)
+  expect_warning(
+    expect_warning(
+      o_data <- PKNCAdata(d$o_conc, intervals = intervals),
+      regexp = "The interval time column ('start') is a Date",
+      fixed = TRUE,
+      class = "pknca_warning_date_midnight"
+    ),
+    regexp = "The interval time column ('end') is a Date",
+    fixed = TRUE,
+    class = "pknca_warning_date_midnight"
+  )
+  expect_equal(o_data$intervals$start, c(-8, -9))
+  expect_equal(o_data$intervals$end, c(16, 15))
+})
+
+test_that("An infinite interval end stays infinite; an infinite start is an error", {
+  d <- datetime_interval_data()
+  start <- d$t0 + 2 * 3600
+  o_data_num <- PKNCAdata(d$o_conc, intervals = data.frame(start = start, end = Inf, cmax = TRUE))
+  expect_equal(o_data_num$intervals$start, c(2, 1))
+  expect_equal(o_data_num$intervals$end, c(Inf, Inf))
+  # A POSIXct Inf end behaves exactly like a numeric Inf end
+  o_data_posix <-
+    PKNCAdata(d$o_conc, intervals = data.frame(start = start, end = as.POSIXct(Inf, tz = "UTC"), cmax = TRUE))
+  expect_equal(o_data_posix$intervals, o_data_num$intervals)
+  expect_equal(as.data.frame(pk.nca(o_data_posix)), as.data.frame(pk.nca(o_data_num)))
+  expect_error(
+    PKNCAdata(
+      d$o_conc,
+      intervals = data.frame(start = as.POSIXct(-Inf, tz = "UTC"), end = d$t0, cmax = TRUE)
+    ),
+    class = "pknca_error_interval_datetime_start_infinite"
+  )
+})
+
+test_that("Date-time intervals must pair with date-time bounds and date-time data", {
+  d <- datetime_interval_data()
+  expect_error(
+    PKNCAdata(d$o_conc, intervals = data.frame(start = d$t0, end = 24, cmax = TRUE)),
+    class = "pknca_error_interval_datetime_mixed"
+  )
+  expect_error(
+    PKNCAdata(d$o_conc, intervals = data.frame(start = 0, end = d$t0 + 3600, cmax = TRUE)),
+    class = "pknca_error_interval_datetime_mixed"
+  )
+  o_conc_num <- PKNCAconc(data.frame(subject = 1, time = 0:2, conc = c(1, 2, 1)), conc~time|subject)
+  expect_error(
+    PKNCAdata(o_conc_num, intervals = data.frame(start = d$t0, end = d$t0 + 3600, cmax = TRUE)),
+    class = "pknca_error_interval_datetime_numeric_data"
+  )
+  expect_error(
+    PKNCAdata(
+      d$o_conc,
+      intervals =
+        data.frame(
+          start = as.POSIXct("2024-03-01 10:00", tz = "America/New_York"),
+          end = as.POSIXct("2024-03-01 12:00", tz = "America/New_York"),
+          cmax = TRUE
+        )
+    ),
+    class = "pknca_error_datetime_mixed_tz"
+  )
+  # A subject named outside the groups cannot carry its reference into the
+  # intervals
+  t0 <- d$t0
+  d_conc_ungrouped <- data.frame(id = 1:2, period = 1, time = t0 + c(0, 3600), conc = 1)
+  expect_error(
+    PKNCAdata(
+      PKNCAconc(d_conc_ungrouped, conc~time|period, subject = "id", timeu_pref = "hr"),
+      intervals = data.frame(start = t0, end = t0 + 3600, cmax = TRUE)
+    ),
+    class = "pknca_error_interval_datetime_groups"
+  )
+})
+
+test_that("Date-time intervals set after PKNCAdata() are converted", {
+  skip_if_not_installed("units")
+  d <- datetime_interval_data()
+  intervals_dt <- data.frame(start = d$t0 + 2 * 3600, end = d$t0 + 4 * 3600, aucint.last = TRUE)
+  o_data_constructed <- PKNCAdata(d$o_conc, intervals = intervals_dt)
+  expected <- as.data.frame(pk.nca(o_data_constructed))
+  o_data <- PKNCAdata(d$o_conc, intervals = data.frame(start = 0, end = 1, cmax = TRUE))
+  # Through set_intervals()
+  o_data_set <- set_intervals(o_data, intervals_dt)
+  expect_equal(check.interval.specification(o_data_set$intervals), o_data_constructed$intervals)
+  # Through direct assignment, converted by pk.nca()
+  o_data_direct <- o_data
+  o_data_direct$intervals <- intervals_dt
+  o_nca_direct <- pk.nca(o_data_direct)
+  expect_equal(as.data.frame(o_nca_direct), expected)
+  expect_equal(o_nca_direct$data$intervals$start, c(2, 1))
+})
+
+test_that("Converting intervals is idempotent and marks relative rows", {
+  d <- datetime_interval_data()
+  o_data <-
+    PKNCAdata(d$o_conc, intervals = data.frame(start = d$t0, end = d$t0 + 3600, cmax = TRUE))
+  expect_equal(pknca_interval_times_to_numeric(o_data$intervals, o_data), o_data$intervals)
+  # Numeric intervals without a kind column are unchanged
+  numeric_intervals <- data.frame(start = 0, end = 1, cmax = TRUE)
+  expect_equal(pknca_interval_times_to_numeric(numeric_intervals, o_data), numeric_intervals)
+  # Rows added later without a kind are relative
+  added <- rbind(o_data$intervals, o_data$intervals[1, ])
+  added$interval_time_kind[3] <- NA
+  expect_equal(
+    pknca_interval_times_to_numeric(added, o_data)$interval_time_kind,
+    c("datetime", "datetime", "relative")
+  )
+  # Malformed intervals are left for the other checks
+  expect_equal(pknca_interval_times_to_numeric(data.frame(start = 0), o_data), data.frame(start = 0))
+})
