@@ -388,8 +388,11 @@ add.interval.col(
   unit_type="auc",
   pretty_name="Sparse AUClast",
   desc="Sparse AUC to last conc above LOQ",
-  pptestcd_cdisc="SPARSEAL",
-  pptest_cdisc="Sparse AUClast",
+  # Deprecated in favor of auclast's own sparse estimator (see
+  # deprecated_sparse_parameters below), and computes the identical value;
+  # shares its CT code (CDISC has no sparse-specific AUClast code).
+  pptestcd_cdisc="AUCLST",
+  pptest_cdisc="AUC to Last Nonzero Conc",
   formula="$AUC_{\\text{sparse}} = \\sum_k \\frac{\\bar{C}_k + \\bar{C}_{k+1}}{2} \\Delta t_k$",
   formula_note="Linear trapezoidal using population mean concentrations",
   tier = "common")
@@ -402,6 +405,10 @@ add.interval.col(
   pretty_name="Sparse AUClast standard error",
   desc="SE of sparse AUC to last conc above LOQ",
   depends="sparse_auclast",
+  # No CDISC PKPARMCD code exists for the standard error of a PK parameter
+  # (real submissions carry this in SUPPPP, not as its own PP record); kept
+  # as a sponsor-defined code despite the "common" tier -- see the
+  # pknca_cdisc_codes() gap list.
   pptestcd_cdisc="SPARSEAS",
   pptest_cdisc="Sparse AUClast standard error",
   formula="$SE(AUC_{\\text{sparse}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$",
@@ -670,7 +677,11 @@ add.interval.col(
   unit_type = "aumc",
   pretty_name = "Sparse AUMClast",
   desc = "Sparse AUMC to last conc above LOQ",
-  depends     = "sparse_auclast"
+  depends     = "sparse_auclast",
+  # CDISC has no code for a sparse AUMC estimate (only SPARSEAL/AS/AD cover
+  # sparse AUC); sponsor-defined, consistent with those.
+  pptestcd_cdisc = "SPARSEML",
+  pptest_cdisc = "Sparse AUMClast"
 )
 
 add.interval.col(
@@ -680,7 +691,9 @@ add.interval.col(
   unit_type = "aumc",
   pretty_name = "Sparse AUMC standard error",
   desc = "SE of sparse AUMC to last conc above LOQ",
-  depends = "sparse_aumclast"
+  depends = "sparse_aumclast",
+  pptestcd_cdisc = "SPARSEMS",
+  pptest_cdisc = "Sparse AUMClast standard error"
 )
 
 add.interval.col(
@@ -690,7 +703,9 @@ add.interval.col(
   unit_type = "count",
   pretty_name = "Sparse AUMC degrees of freedom",
   desc = "variance DF for sparse AUMC to Tlast",
-  depends = "sparse_aumclast"
+  depends = "sparse_aumclast",
+  pptestcd_cdisc = "SPARSEMD",
+  pptest_cdisc = "Sparse AUMClast degrees of freedom"
 )
 
 PKNCA.set.summary(

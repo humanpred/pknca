@@ -277,6 +277,7 @@ add.interval.col("ratio.cmax",
                  formalsmap=list(test="cmax",
                                  reference=pknca_ref("cmax")),
                  depends="cmax",
+                 pptestcd_cdisc="RCMAX",
                  pptest_cdisc="Ratio of Cmax to Reference",
                  selection = list(concept = "parameter_ratio"))
 
@@ -289,6 +290,7 @@ add.interval.col("ratio.auclast",
                  formalsmap=list(test="auclast",
                                  reference=pknca_ref("auclast")),
                  depends="auclast",
+                 pptestcd_cdisc="RAUCLST",
                  pptest_cdisc="Ratio of AUClast to Reference",
                  selection = list(concept = "parameter_ratio"))
 
@@ -301,6 +303,7 @@ add.interval.col("ratio.aucinf.obs",
                  formalsmap=list(test="aucinf.obs",
                                  reference=pknca_ref("aucinf.obs")),
                  depends="aucinf.obs",
+                 pptestcd_cdisc="RAUCIFO",
                  pptest_cdisc="Ratio of AUCinf,obs to Reference",
                  selection = list(concept = "parameter_ratio"))
 
@@ -313,6 +316,7 @@ add.interval.col("ratio.aucinf.pred",
                  formalsmap=list(test="aucinf.pred",
                                  reference=pknca_ref("aucinf.pred")),
                  depends="aucinf.pred",
+                 pptestcd_cdisc="RAUCIFP",
                  pptest_cdisc="Ratio of AUCinf,pred to Reference",
                  selection = list(concept = "parameter_ratio"))
 
@@ -325,6 +329,7 @@ add.interval.col("ratio.aucint.last",
                  formalsmap=list(test="aucint.last",
                                  reference=pknca_ref("aucint.last")),
                  depends="aucint.last",
+                 pptestcd_cdisc="RAUCINL",
                  pptest_cdisc="Ratio of AUCint,last to Reference",
                  selection = list(concept = "parameter_ratio"))
 
@@ -337,6 +342,7 @@ add.interval.col("ratio.aucint.all",
                  formalsmap=list(test="aucint.all",
                                  reference=pknca_ref("aucint.all")),
                  depends="aucint.all",
+                 pptestcd_cdisc="RAUCINA",
                  pptest_cdisc="Ratio of AUCint,all to Reference",
                  selection = list(concept = "parameter_ratio"))
 

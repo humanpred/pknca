@@ -940,8 +940,16 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       # changes to this section of code there.
       exclude_reason <-
         combine_exclude_reasons(exclude_from_argument, attr(tmp_result, "exclude"))
-      # The handling of the method column (PPANMETH)
-      tmp_method <- c(tmp_imp_method, attr(tmp_result, "method"))
+      # The handling of the method column (PPANMETH).  Not every calculation
+      # function sets a "method" attribute at run time; when one does not, but
+      # the parameter's own registration documents a `formula_note` (e.g.
+      # c0's method-selection order), that falls back into PPANMETH so the
+      # documented metadata is not silently lost.
+      calc_method <- attr(tmp_result, "method")
+      if (is.null(calc_method)) {
+        calc_method <- all_intervals[[n]]$formula_note
+      }
+      tmp_method <- c(tmp_imp_method, calc_method)
       attr(tmp_result, "method") <- NULL
 
       # If the function returns a data frame, save all the returned values,

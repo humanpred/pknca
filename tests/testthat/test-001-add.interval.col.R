@@ -374,10 +374,12 @@ test_that("add.interval.col accepts a dense/sparse CDISC mapping", {
   stored <- get.interval.cols()[["a"]]
   expect_equal(stored$pptestcd_cdisc$sparse, "SPARSEAL")
   expect_equal(stored$pptest_cdisc$dense, "AUC to Last")
-  # auclast ships with one
+  # aumclast ships with a dense/sparse pptest_cdisc mapping (CDISC has no
+  # separate code for a sparsely estimated AUMClast, so only the test name
+  # distinguishes it; see R/auc.R)
   expect_equal(
-    get.interval.cols()[["auclast"]]$pptestcd_cdisc,
-    list(dense = "AUCLST", sparse = "SPARSEAL")
+    get.interval.cols()[["aumclast"]]$pptest_cdisc,
+    list(dense = "AUMC to Last Nonzero Conc", sparse = "Sparse AUMClast")
   )
 })
 

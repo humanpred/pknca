@@ -6,6 +6,53 @@ the dosing including dose amount and route.
 
 # Development version
 
+* CDISC PP metadata fixes, all `pptestcd_cdisc`/`pptest_cdisc` (no calculation
+  changes):
+  * Every `"common"` tier parameter now has a `pptestcd_cdisc` that is a real
+    CDISC PKPARMCD code and a `pptest_cdisc` matching its decode text exactly,
+    with three documented exceptions that have no CDISC PP parameter code at
+    all (`count_conc`, `sparse_auc_se`, `cl.int.inf.obs`) -- see their
+    `add.interval.col()` registrations. `tmax` and `tlag` had decode-text
+    mismatches; `aucint.inf.obs` now shares `auclast`'s AUCINT code (CDISC has
+    one "AUC from T1 to T2" code regardless of extrapolation basis, which
+    `PPANMETH` records); `ceoi` now uses the real `CONCEINF` code.
+  * A recurring bug -- an invalid `"F/F"` CDISC code, e.g. `"CLF/FO"` instead
+    of `"CLFO"` -- was copy-pasted across the CL/VZ/VSS "by F" route-dependent
+    registrations in `R/pk.calc.simple.R`; all instances are fixed.
+  * Every registered `pptestcd_cdisc` is now <=8 characters and `pptest_cdisc`
+    <=40 characters (`count_conc_measured`, registered in `R/exclude_nca.R`,
+    is out of scope for this change and still exceeds 8). A prior CDISC-code
+    fix ("key a parameter's CDISC codes by whether the analysis is sparse")
+    had claimed CDISC PKPARMCD distinguishes a sparsely estimated `AUClast`
+    (`"SPARSEAL"`) from one integrated per subject
+    (`"AUCLST"`); no such code exists in the current CDISC SDTM CT, so
+    `auclast`, `sparse_auclast`, and their sparse-specific companions now
+    share the dense code and rely on `PPANMETH` (already set by the sparse
+    calculation) to record the estimation method.
+  * New exported `pknca_cdisc_codes()`, generated from the parameter registry
+    at call time, listing every registered `pptestcd_cdisc`/`pptest_cdisc`
+    (expanded across route/dense-sparse variants) with whether each code is
+    in the bundled CDISC PKPARMCD snapshot (`data-raw/pknca_ct_pkparmcd.R`,
+    generated from `cdiscdata`; CT version recorded there).
+  * `PPANMETH` now falls back to a parameter's registered `formula_note` when
+    its calculation function sets no dynamic method attribute at run time
+    (previously only `c0`, whose `formula_note` documents the method-selection
+    order, was affected).
+  * `as.data.frame(out_format = "cdisc")` was verified to already carry
+    `PPORRESU`/`PPSTRESU` when the results have units; no fix was needed.
+
+* Fixed `print.PKNCAdata()` tests in `test-class-PKNCAdata.R`: their
+  `expect_output()` regular expressions had an unescaped `|` (and other
+  unescaped regex metacharacters) in literal text like
+  `"conc ~ time | treatment + ID"`, so they matched almost any output. Pinning
+  the real text surfaced that the expected output had drifted (an
+  `"With imputation: NA"` line and a `"Data are dense PK."` line were never
+  captured, and `obj.data.dose`'s interval count was stale). It also surfaced
+  that `print(formula)` (via `print.PKNCAconc()`, out of scope for this
+  change) emits a volatile `<environment: 0x...>` tag when the package is
+  loaded via `devtools::load_all()`/tested via `devtools::test()`; the fixed
+  tests wildcard that address rather than pin it.
+
 * On sparse PK data, `auclast` and `aumclast` are now estimated with the sparse
   methods (the Bailer point estimate with the Nedelman-Jia/Holder standard
   error) instead of a trapezoid on the arithmetic-mean profile, and the new

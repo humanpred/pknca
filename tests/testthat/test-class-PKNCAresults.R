@@ -507,7 +507,7 @@ test_that("as.data.frame.PKNCAresults with out_format='cdisc' resolves route-dep
   ))
   suppressMessages(suppressWarnings(o_nca_ev <- pk.nca(o_data_ev)))
   result_ev <- as.data.frame(o_nca_ev, out_format = "cdisc")
-  expect_true("CLF/FO" %in% result_ev$PPTESTCD)
+  expect_true("CLFO" %in% result_ev$PPTESTCD)
   expect_false("CLO" %in% result_ev$PPTESTCD)
 
   # Intravascular
@@ -518,38 +518,37 @@ test_that("as.data.frame.PKNCAresults with out_format='cdisc' resolves route-dep
   suppressMessages(suppressWarnings(o_nca_iv <- pk.nca(o_data_iv)))
   result_iv <- as.data.frame(o_nca_iv, out_format = "cdisc")
   expect_true("CLO" %in% result_iv$PPTESTCD)
-  expect_false("CLF/FO" %in% result_iv$PPTESTCD)
+  expect_false("CLFO" %in% result_iv$PPTESTCD)
 })
 
 test_that("as.data.frame.PKNCAresults with out_format='cdisc' resolves sparse-dependent params", {
   d_conc <- data.frame(id = 1:8, conc = c(0, 0, 2, 3, 1, 1.5, 0.4, 0.6), time = rep(c(0, 1, 2, 4), each = 2))
   d_intervals <- data.frame(start = 0, end = 4, auclast = TRUE, aumclast = TRUE)
 
-  # A dense analysis keeps the dense codes
+  # A dense analysis
   o_data_dense <- PKNCAdata(PKNCAconc(d_conc, conc~time|id), intervals = d_intervals)
   suppressMessages(suppressWarnings(o_nca_dense <- pk.nca(o_data_dense)))
   result_dense <- as.data.frame(o_nca_dense, out_format = "cdisc")
   expect_true(all(c("AUCLST", "AUMCLST") %in% result_dense$PPTESTCD))
-  expect_false("SPARSEAL" %in% result_dense$PPTESTCD)
   expect_true("AUC to Last Nonzero Conc" %in% result_dense$PPTEST)
+  expect_false(any(grepl("Sparse:", result_dense$PPANMETH[result_dense$PPTESTCD %in% "AUCLST"], fixed = TRUE)))
 
-  # A sparse analysis used the sparse estimator for every auclast row, so those
-  # rows carry the sparse code
+  # A sparse analysis used the sparse estimator for every auclast row.  CDISC
+  # PKPARMCD has no code distinguishing a sparse AUClast from one integrated
+  # per subject, so both share AUCLST/AUMCLST; PPANMETH records the sparse
+  # estimation method instead.
   o_data_sparse <- PKNCAdata(PKNCAconc(d_conc, conc~time|id, sparse = TRUE), intervals = d_intervals)
   suppressMessages(suppressWarnings(o_nca_sparse <- pk.nca(o_data_sparse)))
   result_sparse <- as.data.frame(o_nca_sparse, out_format = "cdisc")
-  expect_true("SPARSEAL" %in% result_sparse$PPTESTCD)
-  expect_false("AUCLST" %in% result_sparse$PPTESTCD)
-  expect_true("Sparse AUClast" %in% result_sparse$PPTEST)
-  # CDISC has no separate code for a sparsely estimated AUMClast, so only the
-  # test name distinguishes it
-  expect_true("AUMCLST" %in% result_sparse$PPTESTCD)
+  expect_true(all(c("AUCLST", "AUMCLST") %in% result_sparse$PPTESTCD))
+  expect_true("AUC to Last Nonzero Conc" %in% result_sparse$PPTEST)
   expect_true("Sparse AUMClast" %in% result_sparse$PPTEST)
+  expect_true(any(grepl("Sparse:", result_sparse$PPANMETH[result_sparse$PPTESTCD %in% "AUCLST"], fixed = TRUE)))
 })
 
 test_that("resolve_cdisc_value picks the sparse or dense value", {
-  keyed <- list(dense = "AUCLST", sparse = "SPARSEAL")
-  expect_equal(resolve_cdisc_value(keyed, route = "extravascular", sparse = TRUE), "SPARSEAL")
+  keyed <- list(dense = "AUCLST", sparse = "AUCLSTS")
+  expect_equal(resolve_cdisc_value(keyed, route = "extravascular", sparse = TRUE), "AUCLSTS")
   expect_equal(resolve_cdisc_value(keyed, route = "extravascular", sparse = FALSE), "AUCLST")
   # The default is the dense value, and route keying and plain strings are
   # unaffected

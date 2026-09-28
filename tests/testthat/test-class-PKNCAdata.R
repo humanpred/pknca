@@ -194,9 +194,23 @@ test_that("print.PKNCAdata", {
                                intervals=data.frame(start=0, end=24, aucinf.obs=TRUE))
   obj.data.units$units <- "mg"
 
-  expect_output(print.PKNCAdata(obj.data.nodose),
-                regexp="Formula for concentration:
- conc ~ time | treatment + ID
+  # These were previously matched with unescaped regexp text (an unescaped
+  # "|", among other regex metacharacters, in "conc ~ time | treatment + ID"
+  # is alternation, not a literal pipe), so the test passed against nearly
+  # any output.  print(formula) also emits an "<environment: 0x...>" tag
+  # whenever the formula's enclosing environment prints as more than
+  # `<environment: R_GlobalEnv>` (as it does when the package is loaded via
+  # `devtools::load_all()`/tested via `devtools::test()`, the documented dev
+  # workflow for this package -- see R/class-PKNCAconc.R, out of scope for
+  # this change), so it is matched with a wildcard rather than pinned to a
+  # specific address.
+  escape_regex <- function(x) gsub("([.\\|()\\[\\]{}^$*+?])", "\\\\\\1", x, perl = TRUE)
+  optional_env_tag <- "(<environment: 0x[0-9a-f]+>\n)?"
+  conc_block <- paste0(
+    escape_regex("Formula for concentration:\n conc ~ time | treatment + ID\n"),
+    optional_env_tag,
+    escape_regex(
+"Data are dense PK.
 With 2 subjects defined in the 'ID' column.
 Nominal time column is not specified.
 
@@ -208,26 +222,30 @@ First 6 rows of concentration data:
      Trt 1  1    3 0.8596094    <NA>
      Trt 1  1    4 0.9998126    <NA>
      Trt 1  1    5 0.7651474    <NA>
-No dosing information.
+"
+    )
+  )
+
+  expect_output(
+    print.PKNCAdata(obj.data.nodose),
+    regexp = paste0(
+      conc_block,
+      escape_regex(
+"No dosing information.
 
 With 1 rows of interval specifications.
-No options are set differently than default.",
-                info="Generic print.PKNCAdata works with no dosing")
-  expect_output(print.PKNCAdata(obj.data.dose),
-                regexp="Formula for concentration:
- conc ~ time | treatment + ID
-With 2 subjects defined in the 'ID' column.
-Nominal time column is not specified.
-
-First 6 rows of concentration data:
- treatment ID time      conc exclude
-     Trt 1  1    0 0.0000000    <NA>
-     Trt 1  1    1 0.7052248    <NA>
-     Trt 1  1    2 0.7144320    <NA>
-     Trt 1  1    3 0.8596094    <NA>
-     Trt 1  1    4 0.9998126    <NA>
-     Trt 1  1    5 0.7651474    <NA>
-Formula for dosing:
+With imputation: NA
+No options are set differently than default."
+      )
+    ),
+    info="Generic print.PKNCAdata works with no dosing"
+  )
+  expect_output(
+    print.PKNCAdata(obj.data.dose),
+    regexp = paste0(
+      conc_block,
+      escape_regex(
+"Formula for dosing:
  dose ~ time | treatment + ID
 Nominal time column is not specified.
 
@@ -237,50 +255,46 @@ Data for dosing:
      Trt 1  2    1    0    <NA> extravascular        0
      Trt 2  1    2    0    <NA> extravascular        0
      Trt 2  2    2    0    <NA> extravascular        0
-With 1 rows of interval specifications.
-No options are set differently than default.",
-                info="Generic print.PKNCAdata works with dosing")
 
-  expect_output(print.PKNCAdata(obj.data.nodose.opt),
-                regexp="Formula for concentration:
- conc ~ time | treatment + ID
-With 2 subjects defined in the 'ID' column.
-Nominal time column is not specified.
+With 8 rows of interval specifications.
+With imputation: NA
+No options are set differently than default."
+      )
+    ),
+    info="Generic print.PKNCAdata works with dosing"
+  )
 
-First 6 rows of concentration data:
- treatment ID time      conc exclude
-     Trt 1  1    0 0.0000000    <NA>
-     Trt 1  1    1 0.7052248    <NA>
-     Trt 1  1    2 0.7144320    <NA>
-     Trt 1  1    3 0.8596094    <NA>
-     Trt 1  1    4 0.9998126    <NA>
-     Trt 1  1    5 0.7651474    <NA>
-No dosing information.
+  expect_output(
+    print.PKNCAdata(obj.data.nodose.opt),
+    regexp = paste0(
+      conc_block,
+      escape_regex(
+"No dosing information.
 
 With 1 rows of interval specifications.
+With imputation: NA
 Options changed from default are:
 $min.hl.r.squared
-[1] 0.95",
-                info="Generic print.PKNCAdata works with no dosing and with options changed")
-  expect_output(print.PKNCAdata(obj.data.units),
-                regexp="Formula for concentration:
- conc ~ time | treatment + ID
-With 2 subjects defined in the 'ID' column.
-Nominal time column is not specified.
+[1] 0.95"
+      )
+    ),
+    info="Generic print.PKNCAdata works with no dosing and with options changed"
+  )
+  expect_output(
+    print.PKNCAdata(obj.data.units),
+    regexp = paste0(
+      conc_block,
+      escape_regex(
+"No dosing information.
 
-First 6 rows of concentration data:
- treatment ID time      conc exclude
-     Trt 1  1    0 0.0000000    <NA>
-     Trt 1  1    1 0.7052248    <NA>
-     Trt 1  1    2 0.7144320    <NA>
-     Trt 1  1    3 0.8596094    <NA>
-     Trt 1  1    4 0.9998126    <NA>
-     Trt 1  1    5 0.7651474    <NA>
-No dosing information.
-With units
 With 1 rows of interval specifications.
-No options are set differently than default.",
-                info="Generic print.PKNCAdata works with no dosing")
+With units
+With imputation: NA
+No options are set differently than default."
+      )
+    ),
+    info="Generic print.PKNCAdata works with units"
+  )
 })
 
 test_that("summary.PKNCAdata", {

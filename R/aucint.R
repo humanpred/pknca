@@ -469,8 +469,12 @@ add.interval.col("aucint.inf.obs",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group",
                                  route="route.group", duration.dose="duration.dose.group"),
                  depends=c("lambda.z", "clast.obs"),
-                 pptestcd_cdisc="AUCINTIS",
-                 pptest_cdisc="AUCint (based on AUCinf,obs extrapolation)",
+                 # CDISC PKPARMCD has one code for "AUC from T1 to T2"
+                 # regardless of the extrapolation basis used past Tlast;
+                 # PPANMETH (set dynamically in pk.calc.auxcint()) records
+                 # which basis a given row used.
+                 pptestcd_cdisc="AUCINT",
+                 pptest_cdisc="AUC from T1 to T2",
                  formula="$AUC_{\\text{int,}\\infty\\text{,obs}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule with interpolation at interval boundaries",
                  tier = "common")
@@ -485,7 +489,7 @@ add.interval.col("aucint.inf.pred",
                                  route="route.group", duration.dose="duration.dose.group"),
                  depends=c("lambda.z", "clast.pred"),
                  pptestcd_cdisc="AUCINTIP",
-                 pptest_cdisc="AUCint (based on AUCinf,pred extrapolation)",
+                 pptest_cdisc="AUCint (AUCinf,pred extrapolation)",
                  formula="$AUC_{\\text{int,}\\infty\\text{,pred}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule with interpolation at interval boundaries")
 
@@ -587,7 +591,9 @@ add.interval.col("aumcint.last",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group",
                                  route="route.group", duration.dose="duration.dose.group"),
                  formula="$AUMC_{\\text{int,last}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries",
+                 pptestcd_cdisc="AUMCINTL",
+                 pptest_cdisc="AUMCint (AUMClast extrapolation)")
 
 add.interval.col("aumcint.all",
                  FUN="pk.calc.aumcint.all",
@@ -598,7 +604,9 @@ add.interval.col("aumcint.all",
                  formalsmap=list(conc="conc.group", time="time.group", time.dose="time.dose.group",
                                  route="route.group", duration.dose="duration.dose.group"),
                  formula="$AUMC_{\\text{int,all}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries",
+                 pptestcd_cdisc="AUMCINTA",
+                 pptest_cdisc="AUMCint (AUMCall extrapolation)")
 
 add.interval.col("aumcint.inf.obs",
                  FUN="pk.calc.aumcint.inf.obs",
@@ -610,7 +618,9 @@ add.interval.col("aumcint.inf.obs",
                                  route="route.group", duration.dose="duration.dose.group"),
                  depends=c("lambda.z", "clast.obs"),
                  formula="$AUMC_{\\text{int,}\\infty\\text{,obs}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries",
+                 pptestcd_cdisc="AUMCINTS",
+                 pptest_cdisc="AUMCint (AUMCinf,obs extrapolation)")
 
 add.interval.col("aumcint.inf.pred",
                  FUN="pk.calc.aumcint.inf.pred",
@@ -622,7 +632,9 @@ add.interval.col("aumcint.inf.pred",
                                  route="route.group", duration.dose="duration.dose.group"),
                  depends=c("lambda.z", "clast.pred"),
                  formula="$AUMC_{\\text{int,}\\infty\\text{,pred}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
-                 formula_note="Trapezoidal rule with interpolation at interval boundaries")
+                 formula_note="Trapezoidal rule with interpolation at interval boundaries",
+                 pptestcd_cdisc="AUMCINTP",
+                 pptest_cdisc="AUMCint (AUMCinf,pred extrapolation)")
 
 PKNCA.set.summary(
   name= c(

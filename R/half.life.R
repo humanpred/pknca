@@ -844,7 +844,11 @@ add.interval.col("tobit_residual",
                  unit_type="unitless",
                  pretty_name="Tobit residual SD",
                  desc="Tobit fit residual SD, log-conc",
-                 depends="half.life")
+                 depends="half.life",
+                 # No CDISC PKPARMCD code exists for a Tobit-model diagnostic;
+                 # sponsor-defined.
+                 pptestcd_cdisc="TOBITRSD",
+                 pptest_cdisc="Tobit residual SD")
 PKNCA.set.summary(
   name="tobit_residual",
   description="arithmetic mean and standard deviation",
@@ -857,7 +861,9 @@ add.interval.col("adj_tobit_residual",
                  unit_type="unitless",
                  pretty_name="Adjusted Tobit residual SD",
                  desc="Adjusted Tobit residual SD",
-                 depends="half.life")
+                 depends="half.life",
+                 pptestcd_cdisc="ATOBITRD",
+                 pptest_cdisc="Adjusted Tobit residual SD")
 PKNCA.set.summary(
   name="adj_tobit_residual",
   description="arithmetic mean and standard deviation",
@@ -870,7 +876,9 @@ add.interval.col("lambda.z.n.points_blq",
                  unit_type="count",
                  pretty_name="Number of BLQ points for lambda_z (Tobit)",
                  desc="BLQ points in Tobit lambda.z",
-                 depends="half.life")
+                 depends="half.life",
+                 pptestcd_cdisc="LAMZNBLQ",
+                 pptest_cdisc="Number of BLQ Points for Lambda z")
 PKNCA.set.summary(
   name="lambda.z.n.points_blq",
   description="median and range",
