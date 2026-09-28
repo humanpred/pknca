@@ -633,3 +633,32 @@ test_that("a covariate aliased with treatment in only one reference-test pair is
     class = "pknca_error_be_covariate_aliased"
   )
 })
+
+test_that("be_compare raises input errors directly instead of skipping every framework", {
+  d <- generate_be_parallel()
+  regs <- c("ABE", "descriptive")
+  expect_no_warning(
+    expect_error(be_compare(d, "treatment", "R", "auclast", regulators = regs, covariates = "AGE"), "AGE")
+  )
+  expect_no_warning(
+    expect_error(
+      be_compare(d, "treatment", "R", "auclast", regulators = regs, heteroscedastic = "yes"),
+      "heteroscedastic"
+    )
+  )
+  expect_no_warning(
+    expect_error(be_compare(d, "treatment", "R", "auclast", regulators = c("ABE", "XYZ")), "XYZ")
+  )
+  expect_no_warning(
+    expect_error(be_compare(d, "treatment", "R", "auclast", regulators = regs, model_type = "glm"), "glm")
+  )
+  expect_no_warning(
+    expect_error(be_compare(d, "treatment", "R", "auclast", regulators = regs, alpha = 2), "alpha")
+  )
+  expect_no_warning(
+    expect_error(
+      be_compare(d, "treatment", "Z", "auclast", regulators = regs),
+      class = "pknca_error_be_dataset_ref_not_found"
+    )
+  )
+})

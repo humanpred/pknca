@@ -2018,7 +2018,20 @@ be_compare <- function(object, reference_col, reference_value,
                        model_type = NULL, alpha = 0.10,
                        subject = NULL, sequence = NULL, period = NULL, design = NULL,
                        covariates = NULL, heteroscedastic = FALSE) {
+  # Input errors are raised here, once; inside the per-framework loop below they
+  # would be reported as every framework being skipped.  The choices come from
+  # be_regulator() and be_fit_model_single() so there is one list of each.
   checkmate::assert_character(regulators, min.len = 1, any.missing = FALSE)
+  checkmate::assert_subset(regulators, choices = eval(formals(be_regulator)$name))
+  checkmate::assert_choice(model_type, choices = eval(formals(be_fit_model_single)$model_type), null.ok = TRUE)
+  assert_numeric_between(alpha, lower = 0, upper = 1)
+  checkmate::assert_flag(heteroscedastic)
+  # be_dataset() validates the data, columns, and covariates; be_assess()
+  # repeats its warnings for each framework, so they are not shown twice.
+  suppressWarnings(
+    be_dataset(object, reference_col, reference_value, endpoints, subject, sequence, period,
+               covariates = covariates)
+  )
   results <- list()
   units_missing <- FALSE
   for (rg in regulators) {
