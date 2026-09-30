@@ -24,13 +24,16 @@ the dosing including dose amount and route.
   formula without the subject of dense data are errors; sparse data use one
   reference per group.  (@GITHUB_HANDLE)
 * `pknca_exclude_rules()` lists the automatic exclusion rules (`exclude_nca_*()`)
-  with their descriptions, arguments, defaults, the `PKNCA.options()` entries
-  they fall back to, and the parameters each can exclude.  Each rule is
-  registered next to its definition (as interval columns are with
-  `add.interval.col()`), and tests require every exported rule to be
-  registered, its documentation to match the registered description, and its
-  registered parameters to be exactly those it excludes.  The rule
-  descriptions now all read "Exclude based on ...".  (@GITHUB_HANDLE)
+  with their descriptions, arguments and defaults, the `PKNCA.options()`
+  entries they use, and the parameters each can exclude.  Each rule is
+  registered with its description next to its definition (as interval columns
+  are with `add.interval.col()`); the options and parameters come from the
+  function the rule returns, which records them in its
+  `pknca_affected_parameters` and `pknca_options` attributes, so they are
+  stated in one place only.  Tests require every exported rule to be
+  registered, its documentation to match the registered description, and each
+  rule to exclude exactly the parameters it records.  The rule descriptions
+  now all read "Exclude based on ...".  (@GITHUB_HANDLE)
 * `assert_conc_time()`, `PKNCA_impute_fun_list()`, and the new
   `assert_impute_method()` (which checks an imputation specification the way
   `PKNCAdata()` and `pk.nca()` resolve it) are exported so that applications

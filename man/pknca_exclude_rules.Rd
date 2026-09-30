@@ -12,21 +12,24 @@ A tibble with one row per rule and the columns:
 \item{rule}{The function name (for example, \code{"exclude_nca_span.ratio"})}
 \item{description}{The one-line description}
 \item{arguments}{A list column of data.frames with one row per argument and
-the columns \code{argument}, \code{default} (the deparsed default, or \code{NA} when there
-is none), and \code{option} (the \code{PKNCA.options()} name used when the argument
-is not given, or \code{NA})}
+the columns \code{argument} and \code{default} (the deparsed default, or \code{NA} when
+there is none)}
 \item{callable_with_defaults}{Can the rule be created without giving any
 arguments?}
+\item{options}{A list column of the \code{PKNCA.options()} names that the rule
+uses when created with its defaults, or \code{NULL} when it cannot be}
 \item{affected_parameters}{A list column of the NCA parameters that the
-rule (created with its defaults) can exclude, or \code{NULL} when they depend
-on an argument without a default}
+rule, created with its defaults, can exclude, or \code{NULL} when it cannot be
+created without arguments}
 }
 }
 \description{
-Every \verb{exclude_nca_*()} rule is registered with its description, the
-\code{\link[=PKNCA.options]{PKNCA.options()}} entries its arguments fall back to, and the parameters it
-can exclude; the arguments and their defaults come from the functions
-themselves.
+Every \verb{exclude_nca_*()} rule is registered with its description.  Its
+arguments and their defaults come from the factory function, and the
+parameters it can exclude and the \code{\link[=PKNCA.options]{PKNCA.options()}} entries it uses come
+from the exclusion function that the factory returns when called with its
+defaults (an argument without a default falls back to its option, as it
+does in use).
 }
 \examples{
 rules <- pknca_exclude_rules()

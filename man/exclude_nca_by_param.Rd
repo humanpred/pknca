@@ -24,6 +24,8 @@ By default is the defined parameter.}
 \value{
 A function that can be used with \code{PKNCA::exclude} to mark through the 'exclude'  column
 the rows in the PKNCA results based on the specified thresholds for a parameter.
+Its \code{pknca_affected_parameters} attribute lists the parameters it can mark
+(see \code{\link[=pknca_exclude_rules]{pknca_exclude_rules()}}).
 }
 \description{
 Exclude rows from NCA results based on specified thresholds for a given parameter.

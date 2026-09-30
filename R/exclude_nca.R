@@ -8,6 +8,10 @@
 #'   (uses `PKNCA.options("min.hl.r.squared")` if not provided).
 #' @param min.hl.adj.r.squared The minimum acceptable adjusted r-squared for half-life
 #'   (uses 0.9 if not provided).
+#' @returns A function to give to [exclude()] as `FUN`.  Its
+#'   `pknca_affected_parameters` attribute lists the parameters it can exclude,
+#'   and its `pknca_options` attribute lists the [PKNCA.options()] entries its
+#'   thresholds came from (see [pknca_exclude_rules()]).
 #' @examples
 #' my_conc <- PKNCAconc(data.frame(conc=1.1^(3:0),
 #'                                 time=0:3,
@@ -27,66 +31,74 @@ NULL
 
 #' Register an automatic NCA result exclusion rule
 #'
-#' Each `exclude_nca_*()` factory is registered right after its definition
-#' (so this is defined first in the file),
-#' the way interval columns are registered with [add.interval.col()], so that
-#' [pknca_exclude_rules()] can describe every rule without reading code or
-#' documentation.
+#' Each `exclude_nca_*()` factory is registered right after its definition (so
+#' this is defined first in the file), the way interval columns are registered
+#' with [add.interval.col()].  The registry holds only what the factory cannot
+#' say about itself, its one-line description; the parameters a rule can
+#' exclude and the options it uses are read from the function the factory
+#' returns (see `exclude_nca_describe()`).
 #'
 #' @param name The name of the exported factory function
 #' @param description The one-line description (the same text as the
 #'   factory's documentation, "Exclude based on ...")
-#' @param option A named character vector:  the names are factory arguments,
-#'   and the values are the [PKNCA.options()] entries they use when not given
-#' @param affects A function returning the NCA parameters the rule can
-#'   exclude.  Its arguments, if any, are factory arguments and receive the
-#'   factory's defaults.  `NULL` when the parameters depend on an argument
-#'   without a default.
 #' @returns `NULL`, invisibly
 #' @keywords Internal
 #' @noRd
-pknca_register_exclude_rule <- function(name, description, option = character(), affects = NULL) {
+pknca_register_exclude_rule <- function(name, description) {
   checkmate::assert_string(name, pattern = "^exclude_nca_")
   checkmate::assert_string(description, pattern = "^Exclude based on ")
-  checkmate::assert_character(option, any.missing = FALSE, names = if (length(option) > 0) "unique" else NULL)
-  checkmate::assert_function(affects, null.ok = TRUE)
   current <- get("exclude_rules", envir = .PKNCAEnv)
-  current[[name]] <- list(description = description, option = option, affects = affects)
+  current[[name]] <- list(description = description)
   assign("exclude_rules", current, envir = .PKNCAEnv)
   invisible(NULL)
 }
 
-# The parameters that exclusion rules can exclude.  The factories and their
-# registrations share these, so the registry cannot drift from the rules.
-exclude_nca_affected_halflife <- function() {
-  get.parameter.deps("half.life")
+#' Get a threshold from PKNCA.options(), remembering which option it came from
+#'
+#' @param name The option name
+#' @returns The option value, with the option name in its `pknca_option`
+#'   attribute, which [exclude_nca_by_param()] records on the exclusion
+#'   function
+#' @keywords Internal
+#' @noRd
+exclude_nca_option <- function(name) {
+  structure(PKNCA.options(name), pknca_option = name)
 }
 
-exclude_nca_affected_aucinf <- function() {
-  sort(unique(c(get.parameter.deps("aucinf.obs"), get.parameter.deps("aucinf.pred"))))
+#' Record what an exclusion function can exclude and the options it uses
+#'
+#' @param fun The exclusion function that a factory returns
+#' @param affected The parameters it can exclude
+#' @param options The `PKNCA.options()` names its thresholds came from
+#' @returns `fun` with the attributes `pknca_affected_parameters` and
+#'   `pknca_options`
+#' @keywords Internal
+#' @noRd
+exclude_nca_describe <- function(fun, affected, options = character()) {
+  attr(fun, "pknca_affected_parameters") <- sort(unique(as.character(affected)))
+  attr(fun, "pknca_options") <- sort(unique(as.character(options)))
+  fun
 }
 
-exclude_nca_affected_count_conc <- function(exclude_param_pattern) {
-  all_parameters <- names(get.interval.cols())
-  affected_parameters_base <-
-    sort(unique(unlist(
-      lapply(
-        X = exclude_param_pattern,
-        FUN = grep,
-        x = all_parameters,
-        value = TRUE
-      )
-    )))
-  sort(unique(unlist(
-    lapply(
-      X = affected_parameters_base,
-      FUN = get.parameter.deps
-    )
-  )))
+#' The parameters an exclusion function can exclude
+#'
+#' @param fun A function returned by an `exclude_nca_*()` factory
+#' @returns A sorted character vector of parameter names
+#' @keywords Internal
+#' @noRd
+exclude_nca_affected_parameters <- function(fun) {
+  attr(fun, "pknca_affected_parameters", exact = TRUE)
 }
 
-exclude_nca_affected_all <- function() {
-  setdiff(names(get.interval.cols()), c("start", "end"))
+#' The PKNCA options that an exclusion function's thresholds came from
+#'
+#' @inheritParams exclude_nca_affected_parameters
+#' @returns A sorted character vector of option names (empty when every
+#'   threshold was given)
+#' @keywords Internal
+#' @noRd
+exclude_nca_options_used <- function(fun) {
+  attr(fun, "pknca_options", exact = TRUE)
 }
 
 # A parameter that depends on the half-life is excluded with it, but a
@@ -97,7 +109,7 @@ exclude_nca_affected_all <- function() {
 # whether the half-life entered the result.  A result that reports no
 # extrapolation says nothing either way, so it keeps the exclusion.
 exclude_nca_halflife_dependent <- function(FUN) {
-  function(x, ...) {
+  ret_fun <- function(x, ...) {
     ret <- FUN(x, ...)
     if ("PPANMETH" %in% names(x)) {
       reports_extrapolation <-
@@ -112,50 +124,55 @@ exclude_nca_halflife_dependent <- function(FUN) {
     }
     ret
   }
+  exclude_nca_describe(
+    ret_fun,
+    affected = exclude_nca_affected_parameters(FUN),
+    options = exclude_nca_options_used(FUN)
+  )
 }
 
 #' @describeIn exclude_nca Exclude based on the half-life span ratio
 #' @export
 exclude_nca_span.ratio <- function(min.span.ratio) {
-  missing_min.span.ratio <- missing(min.span.ratio)
-  if (missing_min.span.ratio) {
-    min.span.ratio <- PKNCA.options("min.span.ratio")
+  if (missing(min.span.ratio)) {
+    min.span.ratio <- exclude_nca_option("min.span.ratio")
   }
   exclude_nca_halflife_dependent(
     exclude_nca_by_param(
       parameter = "span.ratio",
       min_thr = min.span.ratio,
-      affected_parameters = exclude_nca_affected_halflife()
+      affected_parameters = get.parameter.deps("half.life")
     )
   )
 }
 pknca_register_exclude_rule(
   name = "exclude_nca_span.ratio",
-  description = "Exclude based on the half-life span ratio",
-  option = c(min.span.ratio = "min.span.ratio"),
-  affects = exclude_nca_affected_halflife
+  description = "Exclude based on the half-life span ratio"
 )
 
 #' @describeIn exclude_nca Exclude based on the percent of AUC extrapolated to
 #'   infinity (both observed and predicted)
 #' @export
 exclude_nca_max.aucinf.pext <- function(max.aucinf.pext) {
-  missing_max.aucinf.pext <- missing(max.aucinf.pext)
-  if (missing_max.aucinf.pext) {
-    max.aucinf.pext <- PKNCA.options("max.aucinf.pext")
+  if (missing(max.aucinf.pext)) {
+    max.aucinf.pext <- exclude_nca_option("max.aucinf.pext")
   }
   # Exclude for both obs and pred
-  function(x, ...) {
-    res_obs <- exclude_nca_by_param(
+  exc_obs <-
+    exclude_nca_by_param(
       parameter = "aucpext.obs",
       max_thr = max.aucinf.pext,
       affected_parameters = get.parameter.deps("aucinf.obs")
-    )(x, ...)
-    res_pred <- exclude_nca_by_param(
+    )
+  exc_pred <-
+    exclude_nca_by_param(
       parameter = "aucpext.pred",
       max_thr = max.aucinf.pext,
       affected_parameters = get.parameter.deps("aucinf.pred")
-    )(x, ...)
+    )
+  ret_fun <- function(x, ...) {
+    res_obs <- exc_obs(x, ...)
+    res_pred <- exc_pred(x, ...)
     # Combine results, prioritizing non-NA from either
     is.obs <- grepl(paste0("aucpext.obs > ", max.aucinf.pext), res_obs)
     is.pred <- grepl(paste0("aucpext.pred > ", max.aucinf.pext), res_pred)
@@ -170,12 +187,15 @@ exclude_nca_max.aucinf.pext <- function(max.aucinf.pext) {
     )
     ret
   }
+  exclude_nca_describe(
+    ret_fun,
+    affected = c(exclude_nca_affected_parameters(exc_obs), exclude_nca_affected_parameters(exc_pred)),
+    options = c(exclude_nca_options_used(exc_obs), exclude_nca_options_used(exc_pred))
+  )
 }
 pknca_register_exclude_rule(
   name = "exclude_nca_max.aucinf.pext",
-  description = "Exclude based on the percent of AUC extrapolated to infinity (both observed and predicted)",
-  option = c(max.aucinf.pext = "max.aucinf.pext"),
-  affects = exclude_nca_affected_aucinf
+  description = "Exclude based on the percent of AUC extrapolated to infinity (both observed and predicted)"
 )
 
 #' @describeIn exclude_nca Exclude based on the count of concentrations measured
@@ -185,38 +205,51 @@ pknca_register_exclude_rule(
 #' @param exclude_param_pattern Character vector of regular expression patterns to exclude
 #' @export
 exclude_nca_count_conc_measured <- function(min_count, exclude_param_pattern = c("^aucall", "^aucinf", "^aucint", "^auciv", "^auclast", "^aumc", "^sparse_auc")) {
+  all_parameters <- names(get.interval.cols())
+  affected_parameters_base <-
+    sort(unique(unlist(
+      lapply(
+        X = exclude_param_pattern,
+        FUN = grep,
+        x = all_parameters,
+        value = TRUE
+      )
+    )))
+  affected_parameters <-
+    sort(unique(unlist(
+      lapply(
+        X = affected_parameters_base,
+        FUN = get.parameter.deps
+      )
+    )))
   exclude_nca_by_param(
     parameter = "count_conc_measured",
     min_thr = min_count,
-    affected_parameters = exclude_nca_affected_count_conc(exclude_param_pattern)
+    affected_parameters = affected_parameters
   )
 }
 pknca_register_exclude_rule(
   name = "exclude_nca_count_conc_measured",
-  description = "Exclude based on the count of concentrations measured and not below the lower limit of quantification (affects AUC and AUMC parameters)",
-  affects = exclude_nca_affected_count_conc
+  description = "Exclude based on the count of concentrations measured and not below the lower limit of quantification (affects AUC and AUMC parameters)"
 )
 
 #' @describeIn exclude_nca Exclude based on half-life r-squared
 #' @export
 exclude_nca_min.hl.r.squared <- function(min.hl.r.squared) {
-  missing_min.hl.r.squared <- missing(min.hl.r.squared)
-  if (missing_min.hl.r.squared) {
-    min.hl.r.squared <- PKNCA.options("min.hl.r.squared")
+  if (missing(min.hl.r.squared)) {
+    min.hl.r.squared <- exclude_nca_option("min.hl.r.squared")
   }
   exclude_nca_halflife_dependent(
     exclude_nca_by_param(
       parameter = "r.squared",
       min_thr = min.hl.r.squared,
-      affected_parameters = exclude_nca_affected_halflife()
+      affected_parameters = get.parameter.deps("half.life")
     )
   )
 }
 pknca_register_exclude_rule(
   name = "exclude_nca_min.hl.r.squared",
-  description = "Exclude based on half-life r-squared",
-  option = c(min.hl.r.squared = "min.hl.r.squared"),
-  affects = exclude_nca_affected_halflife
+  description = "Exclude based on half-life r-squared"
 )
 
 #' @describeIn exclude_nca Exclude based on half-life adjusted r-squared
@@ -226,28 +259,28 @@ exclude_nca_min.hl.adj.r.squared <- function(min.hl.adj.r.squared = 0.9) {
     exclude_nca_by_param(
       parameter = "adj.r.squared",
       min_thr = min.hl.adj.r.squared,
-      affected_parameters = exclude_nca_affected_halflife()
+      affected_parameters = get.parameter.deps("half.life")
     )
   )
 }
 pknca_register_exclude_rule(
   name = "exclude_nca_min.hl.adj.r.squared",
-  description = "Exclude based on half-life adjusted r-squared",
-  affects = exclude_nca_affected_halflife
+  description = "Exclude based on half-life adjusted r-squared"
 )
 
 #' @describeIn exclude_nca Exclude based on implausibly early Tmax (often used for extravascular dosing with a Tmax value of 0)
 #' @param tmax_early The time for Tmax which is considered too early to be a valid NCA result
 #' @export
 exclude_nca_tmax_early <- function(tmax_early = 0) {
-    
+
     exc_fun <- exclude_nca_by_param(
       parameter = "tmax",
       min_thr = tmax_early,
-      affected_parameters = exclude_nca_affected_all()
+      # start and end are interval columns, never result parameters
+      affected_parameters = setdiff(names(get.interval.cols()), c("start", "end"))
     )
 
-    function(x, ...) {
+    ret_fun <- function(x, ...) {
     # Get the exclusion messages
     ret <- exc_fun(x, ...)
     # Add the special annotation for tmax_early cases (if not already annotated)
@@ -264,18 +297,22 @@ exclude_nca_tmax_early <- function(tmax_early = 0) {
       )
     ret
     }
+    exclude_nca_describe(
+      ret_fun,
+      affected = exclude_nca_affected_parameters(exc_fun),
+      options = exclude_nca_options_used(exc_fun)
+    )
 }
 pknca_register_exclude_rule(
   name = "exclude_nca_tmax_early",
-  description = "Exclude based on implausibly early Tmax (often used for extravascular dosing with a Tmax value of 0)",
-  affects = exclude_nca_affected_all
+  description = "Exclude based on implausibly early Tmax (often used for extravascular dosing with a Tmax value of 0)"
 )
 
 #' @describeIn exclude_nca Exclude based on implausibly early Tmax (special case for `tmax_early = 0`)
 #' @export
 exclude_nca_tmax_0 <- function() {
   exc_fun <- exclude_nca_tmax_early(1e-99)
-  function(x, ...) {
+  ret_fun <- function(x, ...) {
     ret <- exc_fun(x, ...)
 
     # Replace the messages
@@ -286,11 +323,15 @@ exclude_nca_tmax_0 <- function() {
     )
     ret
   }
+  exclude_nca_describe(
+    ret_fun,
+    affected = exclude_nca_affected_parameters(exc_fun),
+    options = exclude_nca_options_used(exc_fun)
+  )
 }
 pknca_register_exclude_rule(
   name = "exclude_nca_tmax_0",
-  description = "Exclude based on implausibly early Tmax (special case for tmax_early = 0)",
-  affects = exclude_nca_affected_all
+  description = "Exclude based on implausibly early Tmax (special case for tmax_early = 0)"
 )
 
 
@@ -307,6 +348,8 @@ pknca_register_exclude_rule(
 #'                            By default is the defined parameter.
 #' @returns A function that can be used with `PKNCA::exclude` to mark through the 'exclude'  column
 #'          the rows in the PKNCA results based on the specified thresholds for a parameter.
+#'          Its `pknca_affected_parameters` attribute lists the parameters it can mark
+#'          (see [pknca_exclude_rules()]).
 #' @examples
 #' # Example dataset
 #' my_data <- PKNCA::PKNCAdata(
@@ -342,7 +385,7 @@ exclude_nca_by_param <- function(
     rlang::abort("if both defined min_thr must be less than max_thr", class = "pknca_error_min_thr_gt_max_thr")
   }
 
-  function(x, ...) {
+  ret_fun <- function(x, ...) {
     ret <- rep(NA_character_, nrow(x))
     idx_param <- which(x$PPTESTCD == parameter)
     idx_aff_params <- which(x$PPTESTCD %in% affected_parameters)
@@ -368,6 +411,11 @@ exclude_nca_by_param <- function(
     }
     ret
   }
+  exclude_nca_describe(
+    ret_fun,
+    affected = affected_parameters,
+    options = c(attr(min_thr, "pknca_option", exact = TRUE), attr(max_thr, "pknca_option", exact = TRUE))
+  )
 }
 pknca_register_exclude_rule(
   name = "exclude_nca_by_param",

@@ -4,7 +4,7 @@ test_that("every exported exclusion rule is registered, and only those", {
   expect_equal(rules$rule, exported_rules)
   expect_named(
     rules,
-    c("rule", "description", "arguments", "callable_with_defaults", "affected_parameters")
+    c("rule", "description", "arguments", "callable_with_defaults", "options", "affected_parameters")
   )
   for (idx in seq_len(nrow(rules))) {
     current_rule <- rules$rule[idx]
@@ -14,10 +14,14 @@ test_that("every exported exclusion rule is registered, and only those", {
       as.character(names(formals(getExportedValue("PKNCA", current_rule)))),
       info = current_rule
     )
-    # Every registered option is a real option and a real argument
-    registered_options <- stats::na.omit(rules$arguments[[idx]]$option)
-    expect_true(all(registered_options %in% names(PKNCA.options())), info = current_rule)
+    # Every option a rule uses is a real option
+    expect_true(all(rules$options[[idx]] %in% names(PKNCA.options())), info = current_rule)
   }
+  # Exactly these rules need an argument to be created
+  expect_equal(
+    rules$rule[!rules$callable_with_defaults],
+    c("exclude_nca_by_param", "exclude_nca_count_conc_measured")
+  )
 })
 
 test_that("pknca_exclude_rules gives arguments, defaults, and options", {
@@ -26,49 +30,61 @@ test_that("pknca_exclude_rules gives arguments, defaults, and options", {
 
   span_ratio <- get_rule("exclude_nca_span.ratio")
   expect_equal(span_ratio$description, "Exclude based on the half-life span ratio")
-  expect_equal(
-    span_ratio$arguments[[1]],
-    data.frame(argument = "min.span.ratio", default = NA_character_, option = "min.span.ratio")
-  )
+  expect_equal(span_ratio$arguments[[1]], data.frame(argument = "min.span.ratio", default = NA_character_))
   expect_true(span_ratio$callable_with_defaults)
+  # The threshold falls back to its option, as it does in use
+  expect_equal(span_ratio$options[[1]], "min.span.ratio")
   expect_equal(span_ratio$affected_parameters[[1]], sort(get.parameter.deps("half.life")))
 
+  pext <- get_rule("exclude_nca_max.aucinf.pext")
+  expect_equal(pext$options[[1]], "max.aucinf.pext")
+  expect_equal(
+    pext$affected_parameters[[1]],
+    sort(unique(c(get.parameter.deps("aucinf.obs"), get.parameter.deps("aucinf.pred"))))
+  )
+
+  # A default in the function is not an option
   adj_r_squared <- get_rule("exclude_nca_min.hl.adj.r.squared")
   expect_equal(adj_r_squared$arguments[[1]]$default, "0.9")
-  expect_equal(adj_r_squared$arguments[[1]]$option, NA_character_)
+  expect_equal(adj_r_squared$options[[1]], character())
 
-  # A rule whose parameters depend on an argument without a default
+  # Rules that need an argument have no defaults to describe
   by_param <- get_rule("exclude_nca_by_param")
   expect_equal(by_param$arguments[[1]]$argument, c("parameter", "min_thr", "max_thr", "affected_parameters"))
   expect_equal(by_param$arguments[[1]]$default, c(NA, "NULL", "NULL", "parameter"))
   expect_false(by_param$callable_with_defaults)
+  expect_null(by_param$options[[1]])
   expect_null(by_param$affected_parameters[[1]])
-
-  # The affected parameters use the factory's defaults, even when the rule
-  # itself needs an argument
   count_conc <- get_rule("exclude_nca_count_conc_measured")
   expect_equal(
     count_conc$arguments[[1]]$default[2],
     'c("^aucall", "^aucinf", "^aucint", "^auciv", "^auclast", "^aumc", "^sparse_auc")'
   )
-  expect_false(count_conc$callable_with_defaults)
-  expect_true(all(c("auclast", "aucinf.obs", "aumclast") %in% count_conc$affected_parameters[[1]]))
-  expect_false("cmax" %in% count_conc$affected_parameters[[1]])
+  expect_null(count_conc$affected_parameters[[1]])
 
   tmax_0 <- get_rule("exclude_nca_tmax_0")
   expect_equal(nrow(tmax_0$arguments[[1]]), 0)
 })
 
+test_that("the exclusion function describes itself", {
+  # A threshold given by the user is not an option
+  fun_given <- exclude_nca_span.ratio(min.span.ratio = 3)
+  expect_equal(exclude_nca_options_used(fun_given), character())
+  expect_equal(exclude_nca_affected_parameters(fun_given), sort(get.parameter.deps("half.life")))
+  fun_by_param <- exclude_nca_by_param("cmax", max_thr = 10, affected_parameters = c("tmax", "cmax"))
+  expect_equal(exclude_nca_affected_parameters(fun_by_param), c("cmax", "tmax"))
+  fun_count <- exclude_nca_count_conc_measured(min_count = 3, exclude_param_pattern = "^auclast$")
+  expect_true("auclast" %in% exclude_nca_affected_parameters(fun_count))
+  expect_false("aumclast" %in% exclude_nca_affected_parameters(fun_count))
+})
+
 test_that("pknca_register_exclude_rule checks what it registers", {
   expect_error(pknca_register_exclude_rule(name = "not_a_rule", description = "Exclude based on x"))
   expect_error(pknca_register_exclude_rule(name = "exclude_nca_x", description = "Removes x"))
-  expect_error(
-    pknca_register_exclude_rule(name = "exclude_nca_x", description = "Exclude based on x", affects = "cmax")
-  )
 })
 
 # A PKNCAresults object with one row for every NCA parameter, used to confirm
-# that each rule excludes exactly the parameters registered for it
+# that each rule excludes exactly the parameters it says it can
 exclude_rules_fixture <- function() {
   o_conc <- PKNCAconc(data.frame(conc = c(1, 2, 1), time = 0:2, subject = 1), conc ~ time | subject)
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = Inf, cmax = TRUE))
@@ -81,21 +97,48 @@ exclude_rules_fixture <- function() {
   PKNCAresults(result = result, data = o_data, exclude = "exclude")
 }
 
-test_that("each rule excludes exactly its registered parameters", {
+# The parameters an exclusion function actually excludes on the fixture.  Every
+# rule compares a parameter to a threshold, so an extremely low or an extremely
+# high value of every parameter triggers it.
+excluded_on_fixture <- function(rule_fun, fixture) {
+  excluded <- character()
+  for (current_value in c(-1e300, 1e300)) {
+    current_fixture <- fixture
+    current_fixture$result$PPORRES <- current_value
+    current_excluded <- exclude(current_fixture, FUN = rule_fun)
+    excluded <- c(excluded, current_excluded$result$PPTESTCD[!is.na(current_excluded$result$exclude)])
+  }
+  sort(unique(excluded))
+}
+
+test_that("each rule created with its defaults excludes exactly its listed parameters", {
   rules <- pknca_exclude_rules()
   fixture <- exclude_rules_fixture()
   for (idx in which(rules$callable_with_defaults)) {
     rule_fun <- getExportedValue("PKNCA", rules$rule[idx])()
-    excluded <- character()
-    # Every rule compares a parameter to a threshold, so an extremely low or an
-    # extremely high value of every parameter triggers it.
-    for (current_value in c(-1e300, 1e300)) {
-      current_fixture <- fixture
-      current_fixture$result$PPORRES <- current_value
-      current_excluded <- exclude(current_fixture, FUN = rule_fun)
-      excluded <- c(excluded, current_excluded$result$PPTESTCD[!is.na(current_excluded$result$exclude)])
-    }
-    expect_equal(sort(unique(excluded)), rules$affected_parameters[[idx]], info = rules$rule[idx])
+    expect_equal(excluded_on_fixture(rule_fun, fixture), rules$affected_parameters[[idx]], info = rules$rule[idx])
+  }
+})
+
+test_that("every rule's affected-parameter attribute is what it excludes", {
+  # Rules that need arguments are created with them here, so that every
+  # registered rule is checked
+  arguments <-
+    list(
+      exclude_nca_by_param = list(parameter = "span.ratio", min_thr = 2, affected_parameters = c("span.ratio", "half.life")),
+      exclude_nca_count_conc_measured = list(min_count = 3)
+    )
+  fixture <- exclude_rules_fixture()
+  registered <- names(get("exclude_rules", envir = .PKNCAEnv))
+  expect_true(all(names(arguments) %in% registered))
+  for (rule in registered) {
+    rule_args <- if (is.null(arguments[[rule]])) list() else arguments[[rule]]
+    rule_fun <- do.call(getExportedValue("PKNCA", rule), rule_args)
+    expect_equal(
+      excluded_on_fixture(rule_fun, fixture),
+      exclude_nca_affected_parameters(rule_fun),
+      info = rule
+    )
   }
 })
 

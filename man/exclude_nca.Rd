@@ -48,6 +48,12 @@ exclude_nca_tmax_0()
 
 \item{tmax_early}{The time for Tmax which is considered too early to be a valid NCA result}
 }
+\value{
+A function to give to \code{\link[=exclude]{exclude()}} as \code{FUN}.  Its
+\code{pknca_affected_parameters} attribute lists the parameters it can exclude,
+and its \code{pknca_options} attribute lists the \code{\link[=PKNCA.options]{PKNCA.options()}} entries its
+thresholds came from (see \code{\link[=pknca_exclude_rules]{pknca_exclude_rules()}}).
+}
 \description{
 Exclude NCA parameters based on examining the parameter set.
 }
