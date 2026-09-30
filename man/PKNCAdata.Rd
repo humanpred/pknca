@@ -134,7 +134,7 @@ units).  Numeric concentration collection and dosing durations are in
 that unit, and difftime durations are converted to it.
 \item Manually specified \code{intervals} may be numeric times relative to the
 time reference, in that unit, or date-times.  Date-time \code{start} and
-\code{end} (POSIXct, or Date for midnight, with a warning) are converted
+\code{end} (POSIXct, or Date for 08:00, with a warning) are converted
 relative to the reference of the group each row applies to.  A row that
 does not name every reference group (for example, a row without
 \code{Subject}) applies to every matching group and becomes one row per

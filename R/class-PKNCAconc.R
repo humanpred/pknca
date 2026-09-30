@@ -68,8 +68,8 @@
 #' @section Date-time input:
 #'
 #'   The concentration time (and the dose time in [PKNCAdose()]) may be a
-#'   date-time (POSIXct) or a date (Date; a date is taken as midnight at the
-#'   start of that date, with a warning).  Date-times have no numeric unit, so
+#'   date-time (POSIXct) or a date (Date; a date is taken as 08:00 on that
+#'   date, a typical time of a first PK sample, with a warning).  Date-times have no numeric unit, so
 #'   they are converted directly to the time unit used for calculations and
 #'   reports:  `timeu_pref` when given (it takes precedence over `timeu`, and
 #'   `timeu` is set to it), otherwise `timeu`, otherwise hours (without
@@ -196,7 +196,7 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   # Date-time values are checked as numbers (for missing values); they become
   # numeric time relative to the first dose in PKNCAdata().
   timeu <- pknca_datetime_timeu(time = time_values, timeu = timeu, timeu_pref = timeu_pref, time_col = parsed_form$time, data = data)
-  if (is_datetime_time(time_values)) {
+  if (is_datetime_date(time_values)) {
     time_values <- as.numeric(time_values)
   }
   assert_conc_time(

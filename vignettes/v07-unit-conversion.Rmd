@@ -351,7 +351,8 @@ A few rules keep the conversion unambiguous:
 * All date-times must have the same time zone.  Differences are elapsed time,
   so a daylight saving time change within a named time zone (like
   `"America/New_York"`) is handled correctly.
-* Dates (Date) are taken as midnight at the start of the date, with a warning.
+* Dates (Date) are taken as 08:00 on that date (a typical time of a first PK
+  sample), with a warning.
 * The dose formula must include the subject (as with `Subject` above), so that
   each subject has its own reference.  Sparse data are the exception:  every
   subject in a sparse group shares the group's dosing, so the reference is per

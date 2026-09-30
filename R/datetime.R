@@ -4,7 +4,7 @@
 #' @returns `TRUE` for POSIXct and Date vectors, `FALSE` otherwise
 #' @keywords Internal
 #' @noRd
-is_datetime_time <- function(x) {
+is_datetime_date <- function(x) {
   inherits(x, c("POSIXct", "Date"))
 }
 
@@ -13,7 +13,7 @@ is_datetime_time <- function(x) {
 #' Date-times have no numeric unit of their own, so they are converted directly
 #' to the unit used for calculations and reports:  `timeu_pref` when given
 #' (it takes precedence over `timeu`), otherwise `timeu`, otherwise hours.  A
-#' Date column is midnight of that date, and the user is told so.
+#' Date column is 08:00 on that date, and the user is told so.
 #'
 #' @param time The time vector from the data
 #' @param timeu,timeu_pref The `timeu` and `timeu_pref` arguments given to
@@ -25,11 +25,11 @@ is_datetime_time <- function(x) {
 #' @keywords Internal
 #' @noRd
 pknca_datetime_timeu <- function(time, timeu, timeu_pref, time_col, data) {
-  if (!is_datetime_time(time)) {
+  if (!is_datetime_date(time)) {
     return(timeu)
   }
   if (inherits(time, "Date")) {
-    pknca_warn_date_midnight(time_col = time_col, data_type = "concentration")
+    pknca_warn_date_time(time_col = time_col, data_type = "concentration")
   }
   if (!is.null(timeu_pref)) {
     timeu <- timeu_pref
@@ -74,6 +74,24 @@ pknca_duration_check_values <- function(x) {
   }
 }
 
+#' Find the number of hours in a time unit
+#'
+#' @param unit A time unit string
+#' @returns The number of hours in one `unit` (1 for `"hr"`), or `NA_real_`
+#'   when the units package does not recognize `unit` as a time unit
+#' @keywords Internal
+#' @noRd
+pknca_hours_factor <- function(unit) {
+  if (identical(as.character(unit), "hr")) {
+    return(1)
+  }
+  rlang::check_installed("units", reason = "to convert times to units other than hours")
+  tryCatch(
+    pknca_units_conversion_factor(from = unit, to = "hr"),
+    error = function(e) NA_real_
+  )
+}
+
 #' Convert a difftime to a number in a time unit
 #'
 #' @param x A difftime vector
@@ -85,13 +103,13 @@ pknca_difftime_to_unit <- function(x, unit) {
   as.numeric(x, units = "secs") / (3600 * pknca_hours_factor(unit))
 }
 
-pknca_warn_date_midnight <- function(time_col, data_type) {
+pknca_warn_date_time <- function(time_col, data_type) {
   rlang::warn(
     sprintf(
-      "The %s time column ('%s') is a Date; each time is taken as midnight at the start of that date.",
+      "The %s time column ('%s') is a Date; each time is taken as 08:00 on that date.",
       data_type, time_col
     ),
-    class = "pknca_warning_date_midnight"
+    class = "pknca_warning_date_assumed_time"
   )
 }
 
@@ -114,15 +132,16 @@ pknca_datetime_tz <- function(x) {
 #' Convert a date-time or Date vector to POSIXct in a time zone
 #'
 #' @param x A POSIXct or Date vector
-#' @param tz The time zone for a Date's midnight
+#' @param tz The time zone for a Date's 08:00
 #' @returns A POSIXct vector
 #' @keywords Internal
 #' @noRd
 pknca_as_posixct <- function(x, tz) {
   if (inherits(x, "Date")) {
-    # Midnight of the date in the time zone of the analysis (not UTC midnight,
-    # which is a different instant for any other time zone)
-    as.POSIXct(format(x, "%Y-%m-%d"), tz = tz, format = "%Y-%m-%d")
+    # 08:00 is the usual time of a first PK sample when only the date is known.
+    # It is 08:00 in the time zone of the analysis (not UTC 08:00, which is a
+    # different instant for any other time zone).
+    as.POSIXct(paste(format(x, "%Y-%m-%d"), "08:00:00"), tz = tz, format = "%Y-%m-%d %H:%M:%S")
   } else {
     x
   }
@@ -150,8 +169,8 @@ pknca_datetime_to_numeric <- function(data) {
   has_dose_time <- !identical(o_dose, NA) && length(o_dose$columns$time) == 1
   dose_time_col <- if (has_dose_time) o_dose$columns$time else NA_character_
   dose_time <- if (has_dose_time) o_dose$data[[dose_time_col]] else NULL
-  conc_is_dt <- is_datetime_time(conc_time)
-  dose_is_dt <- has_dose_time && is_datetime_time(dose_time)
+  conc_is_dt <- is_datetime_date(conc_time)
+  dose_is_dt <- has_dose_time && is_datetime_date(dose_time)
   if (!conc_is_dt && !dose_is_dt) {
     return(data)
   }
@@ -166,7 +185,7 @@ pknca_datetime_to_numeric <- function(data) {
     )
   }
   # Time zones:  the instant of a POSIXct value does not depend on its time
-  # zone, but the report of the reference (PPRFTDTC) and the midnight of a Date
+  # zone, but the report of the reference (PPRFTDTC) and the 08:00 of a Date
   # do, so the two must agree.
   tz_all <- c(pknca_datetime_tz(conc_time), if (has_dose_time) pknca_datetime_tz(dose_time))
   tz_known <- unique(tz_all[!is.na(tz_all)])
@@ -279,7 +298,7 @@ pknca_duration_to_numeric <- function(data) {
 
 #' Convert date-time interval bounds to numeric time
 #'
-#' Rows whose `start` and `end` are date-times (POSIXct, or Date for midnight)
+#' Rows whose `start` and `end` are date-times (POSIXct, or Date for 08:00)
 #' become numeric times relative to the time reference of the group they apply
 #' to, in the time unit of the analysis, the same way concentration and dose
 #' times are converted.  A row that does not give every reference group column
@@ -300,8 +319,8 @@ pknca_interval_times_to_numeric <- function(intervals, data) {
     # Other checks report malformed intervals
     return(intervals)
   }
-  dt_start <- is_datetime_time(intervals$start)
-  dt_end <- is_datetime_time(intervals$end)
+  dt_start <- is_datetime_date(intervals$start)
+  dt_end <- is_datetime_date(intervals$end)
   if (!dt_start && !dt_end) {
     if ("interval_time_kind" %in% names(intervals)) {
       intervals$interval_time_kind[is.na(intervals$interval_time_kind)] <- "relative"
@@ -325,7 +344,7 @@ pknca_interval_times_to_numeric <- function(intervals, data) {
   }
   tz_ref <- pknca_datetime_tz(time_reference$time_reference)
   for (bound in c("start", "end")) {
-    if (is_datetime_time(intervals[[bound]])) {
+    if (is_datetime_date(intervals[[bound]])) {
       tz_bound <- pknca_datetime_tz(intervals[[bound]])
       if (!is.na(tz_bound) && !identical(tz_bound, tz_ref)) {
         rlang::abort(
@@ -337,7 +356,7 @@ pknca_interval_times_to_numeric <- function(intervals, data) {
         )
       }
       if (inherits(intervals[[bound]], "Date")) {
-        pknca_warn_date_midnight(time_col = bound, data_type = "interval")
+        pknca_warn_date_time(time_col = bound, data_type = "interval")
       }
     }
   }
@@ -423,7 +442,7 @@ pknca_interval_times_to_numeric <- function(intervals, data) {
 #' @keywords Internal
 #' @noRd
 pknca_datetime_time_unit <- function(o_conc) {
-  as.vector(choose_first(o_conc$units$timeu, "hr"))
+  choose_first(o_conc$units$timeu, "hr")
 }
 
 #' Find the date-time reference of each group

@@ -103,34 +103,34 @@ test_that("The unit for date-time input must be one time unit value", {
   expect_equal(PKNCAconc(d$conc, conc~time_hr|part+subject, timeu = "hr")$units$timeu, "hr", ignore_attr = TRUE)
 })
 
-test_that("Date times are midnight, with a warning", {
+test_that("Date times are 08:00, with a warning", {
   skip_if_not_installed("units")
   d_conc <- data.frame(subject = 1, time = as.Date("2024-01-01") + 0:3, conc = c(0, 4, 2, 1))
   d_dose <- data.frame(subject = 1, time = as.Date("2024-01-01"), dose = 1)
   expect_warning(
     o_conc <- PKNCAconc(d_conc, conc~time|subject, timeu_pref = "day"),
-    class = "pknca_warning_date_midnight"
+    class = "pknca_warning_date_assumed_time"
   )
   expect_warning(
     o_dose <- PKNCAdose(d_dose, dose~time|subject),
-    class = "pknca_warning_date_midnight"
+    class = "pknca_warning_date_assumed_time"
   )
   expect_warning(
     o_data <- PKNCAdata(o_conc, o_dose),
     class = "pknca_warning_single_dose_aucs_unit"
   )
   expect_equal(o_data$conc$data$time, 0:3)
-  expect_equal(o_data$time_reference$time_reference, as.POSIXct("2024-01-01", tz = "UTC"))
+  expect_equal(o_data$time_reference$time_reference, as.POSIXct("2024-01-01 08:00", tz = "UTC"))
 
-  # A Date takes the time zone of the date-times it is paired with, so midnight
-  # is local midnight.
+  # A Date takes the time zone of the date-times it is paired with, so 08:00
+  # is local 08:00:  2 hours after a 06:00 dose.
   d_dose_dt <- data.frame(subject = 1, time = as.POSIXct("2024-01-01 06:00", tz = "America/New_York"), dose = 1)
   o_data_tz <-
     PKNCAdata(
       o_conc, PKNCAdose(d_dose_dt, dose~time|subject),
       intervals = data.frame(start = 0, end = 3, cmax = TRUE)
     )
-  expect_equal(o_data_tz$conc$data$time, c(-0.25, 0.75, 1.75, 2.75))
+  expect_equal(o_data_tz$conc$data$time, 0:3 + 2/24)
 })
 
 test_that("Numeric and date-time times cannot be mixed", {
@@ -630,7 +630,7 @@ test_that("Grouped date-time interval rows use their group's reference", {
   )
 })
 
-test_that("Date interval bounds are midnight, with a warning", {
+test_that("Date interval bounds are 08:00, with a warning", {
   d <- datetime_interval_data()
   intervals <- data.frame(start = as.Date("2024-03-01"), end = as.Date("2024-03-02"), cmax = TRUE)
   expect_warning(
@@ -638,14 +638,15 @@ test_that("Date interval bounds are midnight, with a warning", {
       o_data <- PKNCAdata(d$o_conc, intervals = intervals),
       regexp = "The interval time column ('start') is a Date",
       fixed = TRUE,
-      class = "pknca_warning_date_midnight"
+      class = "pknca_warning_date_assumed_time"
     ),
     regexp = "The interval time column ('end') is a Date",
     fixed = TRUE,
-    class = "pknca_warning_date_midnight"
+    class = "pknca_warning_date_assumed_time"
   )
-  expect_equal(o_data$intervals$start, c(-8, -9))
-  expect_equal(o_data$intervals$end, c(16, 15))
+  # 08:00 on each date, relative to references at 08:00 and 09:00
+  expect_equal(o_data$intervals$start, c(0, -1))
+  expect_equal(o_data$intervals$end, c(24, 23))
 })
 
 test_that("An infinite interval end stays infinite; an infinite start is an error", {

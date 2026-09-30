@@ -92,7 +92,7 @@
 #'     that unit, and difftime durations are converted to it.
 #'   * Manually specified `intervals` may be numeric times relative to the
 #'     time reference, in that unit, or date-times.  Date-time `start` and
-#'     `end` (POSIXct, or Date for midnight, with a warning) are converted
+#'     `end` (POSIXct, or Date for 08:00, with a warning) are converted
 #'     relative to the reference of the group each row applies to.  A row that
 #'     does not name every reference group (for example, a row without
 #'     `Subject`) applies to every matching group and becomes one row per
@@ -344,6 +344,10 @@ pknca_warn_single_dose_aucs_unit <- function(o_conc, options) {
       unique(as.character(as.data.frame(o_conc)[[o_conc$columns$timeu]]))
     }
   timeu <- timeu[!is.na(timeu)]
+  if (!requireNamespace("units", quietly = TRUE)) {
+    # Without the units package, only "hr" is recognized, which never warns
+    return(invisible(NULL)) # nocov
+  }
   # Units that are not recognizable as time units cannot be judged
   hours_factor <- vapply(X = timeu, FUN = pknca_hours_factor, FUN.VALUE = 1)
   not_hours <- timeu[!is.na(hours_factor) & abs(hours_factor - 1) > 1e-8]
@@ -361,30 +365,6 @@ pknca_warn_single_dose_aucs_unit <- function(o_conc, options) {
     )
   }
   invisible(NULL)
-}
-
-#' Find the number of hours in a time unit
-#'
-#' @param unit A time unit string
-#' @returns The number of hours in one `unit` (1 for hours), or `NA_real_` when
-#'   `unit` is not recognized as a time unit.  The units package decides when it
-#'   is installed; otherwise, common spellings are recognized.
-#' @keywords Internal
-#' @noRd
-pknca_hours_factor <- function(unit) {
-  factor <- pknca_unit_reconcile_factor(from = unit, to = "hr")
-  if (is.na(factor)) {
-    hours <-
-      c(
-        s = 1/3600, sec = 1/3600, second = 1/3600, seconds = 1/3600,
-        min = 1/60, minute = 1/60, minutes = 1/60,
-        h = 1, hr = 1, hrs = 1, hour = 1, hours = 1,
-        d = 24, day = 24, days = 24,
-        wk = 168, week = 168, weeks = 168
-      )
-    factor <- unname(hours[tolower(unit)])
-  }
-  factor
 }
 
 #' @rdname is_sparse_pk

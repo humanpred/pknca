@@ -49,7 +49,7 @@ check.interval.specification <- function(x) {
   }
   # Interval times are numeric; date-time data are converted to numeric time
   # relative to a reference in PKNCAdata(), and intervals use that time.
-  datetime_cols <- c("start", "end")[vapply(X = x[c("start", "end")], FUN = is_datetime_time, FUN.VALUE = TRUE)]
+  datetime_cols <- c("start", "end")[vapply(X = x[c("start", "end")], FUN = is_datetime_date, FUN.VALUE = TRUE)]
   if (length(datetime_cols) > 0) {
     rlang::abort(
       sprintf(

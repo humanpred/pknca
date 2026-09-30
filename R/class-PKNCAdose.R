@@ -153,7 +153,7 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
     )
   }
   if (length(parsed_form$time) == 1 && inherits(data[[parsed_form$time]], "Date")) {
-    pknca_warn_date_midnight(time_col = parsed_form$time, data_type = "dose")
+    pknca_warn_date_time(time_col = parsed_form$time, data_type = "dose")
   }
   if (missing(route)) {
     ret <- setRoute(ret)

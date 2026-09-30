@@ -515,16 +515,11 @@ test_that("The default single-dose intervals warn for a time unit other than hou
   )
 })
 
-test_that("pknca_hours_factor recognizes time units with or without the units package", {
-  skip_if_not_installed("units")
+test_that("pknca_hours_factor converts time units with the units package", {
+  # "hr" needs no conversion (and no units package)
   expect_equal(pknca_hours_factor("hr"), 1)
+  skip_if_not_installed("units")
   expect_equal(pknca_hours_factor("min"), 1/60)
   expect_equal(pknca_hours_factor("day"), 24)
-  expect_equal(pknca_hours_factor("not_a_unit"), NA_real_)
-  # Without a conversion from the units package, common spellings are known
-  local_mocked_bindings(pknca_unit_reconcile_factor = function(from, to) NA_real_)
-  expect_equal(pknca_hours_factor("Hours"), 1)
-  expect_equal(pknca_hours_factor("min"), 1/60)
-  expect_equal(pknca_hours_factor("d"), 24)
   expect_equal(pknca_hours_factor("not_a_unit"), NA_real_)
 })

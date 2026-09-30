@@ -129,8 +129,8 @@ Create a PKNCAconc object
 
 
 The concentration time (and the dose time in \code{\link[=PKNCAdose]{PKNCAdose()}}) may be a
-date-time (POSIXct) or a date (Date; a date is taken as midnight at the
-start of that date, with a warning).  Date-times have no numeric unit, so
+date-time (POSIXct) or a date (Date; a date is taken as 08:00 on that
+date, a typical time of a first PK sample, with a warning).  Date-times have no numeric unit, so
 they are converted directly to the time unit used for calculations and
 reports:  \code{timeu_pref} when given (it takes precedence over \code{timeu}, and
 \code{timeu} is set to it), otherwise \code{timeu}, otherwise hours (without

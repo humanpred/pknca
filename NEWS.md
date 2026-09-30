@@ -59,7 +59,7 @@ the dosing including dose amount and route.
   time unit other than hours (the window would be 24 minutes or 24 days).  The
   default option is unchanged.  (@GITHUB_HANDLE)
 * With date-time data, intervals may be given as date-times (POSIXct, or Date
-  for midnight).  `PKNCAdata()`, `set_intervals()`, and `pk.nca()` convert each
+  for 08:00 on that date).  `PKNCAdata()`, `set_intervals()`, and `pk.nca()` convert each
   row relative to the time reference of the group it applies to; a row that
   does not name every reference group becomes one row per group, since an
   absolute window is a different relative window for each subject.  An `end`
