@@ -29,10 +29,16 @@
 #' @export
 pk.nca <- function(data, verbose=FALSE) {
   assert_PKNCAdata(data)
-  # Intervals assigned after PKNCAdata() may still have date-time bounds
-  intervals_numeric <- pknca_interval_times_to_numeric(data$intervals, data)
-  if (!identical(intervals_numeric, data$intervals)) {
-    data$intervals <- check.interval.specification(intervals_numeric)
+  # Date-time times and intervals and difftime durations become numbers here,
+  # so that intervals can change after PKNCAdata().  The results keep the
+  # converted data, which is the data the calculations used.
+  if (nrow(data$intervals) > 0) {
+    assert_intervals(data$intervals, data)
+  }
+  intervals_before <- data$intervals
+  data <- pknca_datetime_convert(data)
+  if (!identical(intervals_before, data$intervals)) {
+    data$intervals <- check.interval.specification(data$intervals)
   }
   results <- data.frame()
   if (nrow(data$intervals) > 0) {

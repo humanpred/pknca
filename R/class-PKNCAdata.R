@@ -67,9 +67,10 @@
 #'   ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))`.
 #' @section Date-time input:
 #'
-#'   When the concentration and dose times are date-times (POSIXct) or dates
-#'   (Date), `PKNCAdata()` converts them to numeric time before anything else
-#'   is done:
+#'   The concentration and dose times may be date-times (POSIXct) or dates
+#'   (Date).  `PKNCAdata()` checks them and keeps them as they are, and
+#'   [pk.nca()] converts them to numeric time before it calculates, so the
+#'   intervals can still be changed after `PKNCAdata()`:
 #'
 #'   * The time reference is the first dose (ignoring excluded doses) within
 #'     each combination of the grouping variables (and the subject) shared by
@@ -100,17 +101,18 @@
 #'     each subject.  A date-time `start` may pair with `end = Inf` (or a
 #'     POSIXct `Inf`), which stays infinite; the start must be finite, both
 #'     bounds must otherwise be date-times, and the time zone must match the
-#'     data.  Converted intervals have an `interval_time_kind` column
-#'     (`"datetime"`, or `"relative"` for numeric rows added later).  The
-#'     conversion happens in `PKNCAdata()`, [set_intervals()], and [pk.nca()]
-#'     (for intervals assigned directly), and it gives the window only:  a
-#'     window starting before a subject's first measurement still needs an
+#'     data.  `PKNCAdata()` and [set_intervals()] check date-time intervals,
+#'     and [pk.nca()] converts them; converted intervals have an
+#'     `interval_time_kind` column (`"datetime"`, or `"relative"` for numeric
+#'     rows added later).  The conversion gives the window only:  a window
+#'     starting before a subject's first measurement still needs an
 #'     imputation rule (`impute`) for a concentration at its start.
-#'   * The time reference of each group is kept in the `time_reference` element
-#'     of the object, with the `time_reference_type` column saying whether it
-#'     is the `"first_dose"` or the `"first_conc"`, and
-#'     `as.data.frame(results, out_format = "cdisc")` gives it in the PPRFTDTC
-#'     column.
+#'   * The results of [pk.nca()] keep the converted data that the calculation
+#'     used (`results$data`), with the time reference of each group in its
+#'     `time_reference` element and the `time_reference_type` column saying
+#'     whether it is the `"first_dose"` or the `"first_conc"`;
+#'     `as.data.frame(results, out_format = "cdisc")` gives the reference in
+#'     the PPRFTDTC column.
 #'
 #'   Both times must be date-times (or dates), not one numeric and one
 #'   date-time; date-times must have the same time zone; and the dose formula
@@ -179,10 +181,6 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   } else {
     ret$dose <- PKNCAdose(data.dose, formula.dose)
   }
-  # Date-time (POSIXct or Date) times become numeric time relative to the first
-  # dose, before anything uses the times.
-  ret <- pknca_datetime_to_numeric(ret)
-  ret <- pknca_duration_to_numeric(ret)
   # Check the options
   checkmate::assert_list(
     x = options,
@@ -206,6 +204,11 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   # Assign the class and give it all back to the user.
   class(ret) <- c("PKNCAdata", class(ret))
 
+  # The object keeps date-time times and difftime durations, and pk.nca()
+  # converts them to numbers.  Converting a copy here checks them now and gives
+  # the numeric times that automatic intervals are chosen from.
+  ret_numeric <- pknca_datetime_convert(ret, warn = FALSE)
+
   # Check the intervals
   if (missing(intervals) && identical(ret$dose, NA)) {
     rlang::abort("If data.dose is not given, intervals must be given", class = "pknca_error_missing_intervals")
@@ -220,8 +223,8 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
     }
     n_conc_dose <-
       full_join_PKNCAconc_PKNCAdose(
-        o_conc = ret$conc,
-        o_dose = ret$dose
+        o_conc = as_PKNCAconc(ret_numeric),
+        o_dose = as_PKNCAdose(ret_numeric)
       )
     n_conc_dose$data_intervals <- rep(list(NULL), nrow(n_conc_dose))
     used_single_dose_aucs <- FALSE
@@ -283,7 +286,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
       pknca_warn_single_dose_aucs_unit(o_conc = ret$conc, options = options)
     }
   }
-  # set_intervals() converts date-time interval bounds to numeric time
+  # Date-time interval bounds are checked here and converted by pk.nca()
   ret <- set_intervals(data = ret, intervals = intervals)
   ret$intervals <- check.interval.specification(ret$intervals)
   # Verify that either everything or nothing is using units
@@ -386,7 +389,18 @@ print.PKNCAdata <- function(x, ...) {
   }
   cat(sprintf("\nWith %d rows of interval specifications.\n",
               nrow(x$intervals)))
-  if (!is.null(x$time_reference)) {
+  times <- pknca_datetime_times(x)
+  if (times$is_datetime) {
+    group_cols <-
+      pknca_datetime_ref_groups(
+        as_PKNCAconc(x), as_PKNCAdose(x),
+        has_dose_time = !is.null(times$dose_time)
+      )
+    cat(sprintf(
+      "Times are date-times; pk.nca() makes them relative to the first dose (or first concentration)%s.\n",
+      if (length(group_cols) > 0) paste0(" within each ", paste(group_cols, collapse = "+")) else ""
+    ))
+  } else if (!is.null(x$time_reference)) {
     group_cols <- setdiff(names(x$time_reference), c("time_reference", "time_reference_type"))
     n_first_conc <- sum(x$time_reference$time_reference_type %in% "first_conc")
     cat(sprintf(

@@ -446,19 +446,32 @@ test_that("re-registering a parameter drops every cached requirement (#194)", {
   expect_true(set_requires_inputs("ae")[["ae"]]$requires_volume)
 })
 
-test_that("check.interval.specification requires numeric start and end", {
-  # Date-time bounds are converted where the time reference is known
-  # (PKNCAdata(), set_intervals(), pk.nca(); see test-datetime.R), so this
-  # validator, which has no reference, still requires numbers.
+test_that("check.interval.specification accepts date-time start and end", {
+  # Date-time bounds are checked against the data by assert_intervals() and
+  # converted by pk.nca(); here they only need to be ordered.
   t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
-  expect_error(
-    check.interval.specification(data.frame(start = t0, end = t0 + 3600, cmax = TRUE)),
-    regexp = "Interval 'start' and 'end' must be numeric times",
-    class = "pknca_error_interval_datetime"
+  checked <- check.interval.specification(data.frame(start = t0, end = t0 + 3600, cmax = TRUE))
+  expect_equal(checked$start, t0)
+  expect_equal(checked$end, t0 + 3600)
+  expect_equal(
+    check.interval.specification(data.frame(start = t0, end = Inf, cmax = TRUE))$end,
+    Inf
   )
   expect_error(
-    check.interval.specification(data.frame(start = 0, end = as.Date("2024-03-02"), cmax = TRUE)),
-    regexp = "Interval 'end' must be numeric times",
-    class = "pknca_error_interval_datetime"
+    check.interval.specification(data.frame(start = t0 + 3600, end = t0, cmax = TRUE)),
+    class = "pknca_error_interval_start_gte_end"
+  )
+  # A Date is 08:00, so the same date as a 07:00 start comes after it
+  expect_error(
+    check.interval.specification(
+      data.frame(start = as.POSIXct("2024-03-01 09:00", tz = "UTC"), end = as.Date("2024-03-01"), cmax = TRUE)
+    ),
+    class = "pknca_error_interval_start_gte_end"
+  )
+  expect_equal(
+    nrow(check.interval.specification(
+      data.frame(start = as.POSIXct("2024-03-01 07:00", tz = "UTC"), end = as.Date("2024-03-01"), cmax = TRUE)
+    )),
+    1
   )
 })

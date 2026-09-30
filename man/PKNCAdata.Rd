@@ -109,9 +109,10 @@ data.frames, one per parameter, says the same thing:
 \section{Date-time input}{
 
 
-When the concentration and dose times are date-times (POSIXct) or dates
-(Date), \code{PKNCAdata()} converts them to numeric time before anything else
-is done:
+The concentration and dose times may be date-times (POSIXct) or dates
+(Date).  \code{PKNCAdata()} checks them and keeps them as they are, and
+\code{\link[=pk.nca]{pk.nca()}} converts them to numeric time before it calculates, so the
+intervals can still be changed after \code{PKNCAdata()}:
 \itemize{
 \item The time reference is the first dose (ignoring excluded doses) within
 each combination of the grouping variables (and the subject) shared by
@@ -142,17 +143,18 @@ group, because one absolute window is a different relative window for
 each subject.  A date-time \code{start} may pair with \code{end = Inf} (or a
 POSIXct \code{Inf}), which stays infinite; the start must be finite, both
 bounds must otherwise be date-times, and the time zone must match the
-data.  Converted intervals have an \code{interval_time_kind} column
-(\code{"datetime"}, or \code{"relative"} for numeric rows added later).  The
-conversion happens in \code{PKNCAdata()}, \code{\link[=set_intervals]{set_intervals()}}, and \code{\link[=pk.nca]{pk.nca()}}
-(for intervals assigned directly), and it gives the window only:  a
-window starting before a subject's first measurement still needs an
+data.  \code{PKNCAdata()} and \code{\link[=set_intervals]{set_intervals()}} check date-time intervals,
+and \code{\link[=pk.nca]{pk.nca()}} converts them; converted intervals have an
+\code{interval_time_kind} column (\code{"datetime"}, or \code{"relative"} for numeric
+rows added later).  The conversion gives the window only:  a window
+starting before a subject's first measurement still needs an
 imputation rule (\code{impute}) for a concentration at its start.
-\item The time reference of each group is kept in the \code{time_reference} element
-of the object, with the \code{time_reference_type} column saying whether it
-is the \code{"first_dose"} or the \code{"first_conc"}, and
-\code{as.data.frame(results, out_format = "cdisc")} gives it in the PPRFTDTC
-column.
+\item The results of \code{\link[=pk.nca]{pk.nca()}} keep the converted data that the calculation
+used (\code{results$data}), with the time reference of each group in its
+\code{time_reference} element and the \code{time_reference_type} column saying
+whether it is the \code{"first_dose"} or the \code{"first_conc"};
+\code{as.data.frame(results, out_format = "cdisc")} gives the reference in
+the PPRFTDTC column.
 }
 
 Both times must be date-times (or dates), not one numeric and one

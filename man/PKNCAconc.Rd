@@ -139,10 +139,10 @@ units).  The unit must be a single time unit value (like \code{"hr"} or
 \code{\link[=PKNCAdose]{PKNCAdose()}}) is in that unit, and a difftime \code{duration} is converted to
 it exactly.
 
-The times remain date-times in the \code{PKNCAconc} and \code{PKNCAdose} objects.
-\code{\link[=PKNCAdata]{PKNCAdata()}} converts them to numeric time relative to the first dose (or
-first concentration) in each group; see the "Date-time input" section
-there.  The nominal time (\code{time.nominal}) is not converted and usually
+The times remain date-times in the \code{PKNCAconc}, \code{PKNCAdose}, and
+\code{PKNCAdata} objects.  \code{\link[=pk.nca]{pk.nca()}} converts them to numeric time relative to
+the first dose (or first concentration) in each group; see the "Date-time
+input" section of \code{\link[=PKNCAdata]{PKNCAdata()}}.  The nominal time (\code{time.nominal}) is not converted and usually
 stays numeric.
 }
 

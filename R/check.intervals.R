@@ -47,18 +47,6 @@ check.interval.specification <- function(x) {
       class = "pknca_error_interval_missing_cols"
     )
   }
-  # Interval times are numeric; date-time data are converted to numeric time
-  # relative to a reference in PKNCAdata(), and intervals use that time.
-  datetime_cols <- c("start", "end")[vapply(X = x[c("start", "end")], FUN = is_datetime_date, FUN.VALUE = TRUE)]
-  if (length(datetime_cols) > 0) {
-    rlang::abort(
-      sprintf(
-        "Interval %s must be numeric times here; date-time bounds are converted relative to each group's time reference by PKNCAdata(), set_intervals(), and pk.nca() (see the \"Date-time input\" section of ?PKNCAdata).",
-        paste0("'", datetime_cols, "'", collapse = " and ")
-      ),
-      class = "pknca_error_interval_datetime"
-    )
-  }
   interval_cols <- get.interval.cols()
   # Check the edit of each column
   for (n in names(interval_cols)) {
@@ -112,7 +100,9 @@ check.interval.specification <- function(x) {
   if (any(is.infinite(x$start))) {
     rlang::abort("start may not be infinite", class = "pknca_error_interval_infinite_start")
   }
-  if (any(x$start >= x$end)) {
+  # Date-time bounds (checked by assert_intervals()) compare as instants;
+  # pk.nca() checks again after converting them.
+  if (any(pknca_interval_bound_number(x$start) >= pknca_interval_bound_number(x$end))) {
     rlang::abort("start must be < end", class = "pknca_error_interval_start_gte_end")
   }
   # interval_id and the <parameter>_ref pointers that link a secondary parameter
@@ -603,4 +593,19 @@ get.parameter.deps <- function(x, recursive = FALSE) {
       all_intervals=all_intervals
     )
   sort(get.parameter.deps_helper_searchdeps(x, funmap, all_intervals))
+}
+
+#' Get interval bounds as numbers for comparison
+#'
+#' @param x An interval `start` or `end` column
+#' @returns `x` for numbers, or the seconds since the epoch for date-times (a
+#'   Date at 08:00 UTC)
+#' @keywords Internal
+#' @noRd
+pknca_interval_bound_number <- function(x) {
+  if (is_datetime_date(x)) {
+    as.numeric(pknca_as_posixct(x, tz = "UTC"))
+  } else {
+    x
+  }
 }

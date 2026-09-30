@@ -6,23 +6,23 @@ the dosing including dose amount and route.
 
 # Development version
 
-* Concentration and dose times may be date-times (POSIXct) or dates (Date).
-  `PKNCAdata()` converts them to numeric time relative to the first included
-  dose within the grouping variables shared by the concentration and dose
-  formulas (for example, each subject's first dose in each study part),
-  directly in the preferred time unit:  `timeu_pref` (which takes precedence
-  over `timeu`), otherwise `timeu`, otherwise hours.  Numeric durations are in
-  that unit and difftime durations are converted to it, manually given
-  intervals are
-  relative to the reference, the reference is kept in the `time_reference`
-  element of the `PKNCAdata` object, and `as.data.frame(out_format = "cdisc")`
-  reports it as PPRFTDTC (formatted by lubridate, which PKNCA now imports).  A subject without an included dose time (or all
-  subjects, without dosing data) uses its first concentration as the reference
-  instead, with a warning when dosing data exist, and the `time_reference_type`
-  column records which kind of reference each group has.  Mixing numeric and
-  date-time times, mixing time zones, and a dose formula without the subject of
-  dense data are errors; sparse data use one reference per group.
-  (@GITHUB_HANDLE)
+* Concentration and dose times may be date-times (POSIXct) or dates (Date,
+  taken as 08:00).  `PKNCAdata()` checks them and keeps them, and `pk.nca()`
+  converts them to numeric time relative to the first included dose within
+  the grouping variables shared by the concentration and dose formulas (for
+  example, each subject's first dose in each study part), directly in the
+  preferred time unit:  `timeu_pref` (which takes precedence over `timeu`),
+  otherwise `timeu`, otherwise hours.  Numeric durations are in that unit and
+  difftime durations are converted to it.  The results keep the converted
+  data, with the reference of each group in `results$data$time_reference`, and
+  `as.data.frame(out_format = "cdisc")` reports it as PPRFTDTC (formatted by
+  lubridate, which PKNCA now imports).  A subject without an included dose
+  time (or all subjects, without dosing data) uses its first concentration as
+  the reference instead, with a warning when dosing data exist, and the
+  `time_reference_type` column records which kind of reference each group
+  has.  Mixing numeric and date-time times, mixing time zones, and a dose
+  formula without the subject of dense data are errors; sparse data use one
+  reference per group.  (@GITHUB_HANDLE)
 * `pknca_exclude_rules()` lists the automatic exclusion rules (`exclude_nca_*()`)
   with their descriptions, arguments, defaults, the `PKNCA.options()` entries
   they fall back to, and the parameters each can exclude.  Each rule is
@@ -59,15 +59,15 @@ the dosing including dose amount and route.
   time unit other than hours (the window would be 24 minutes or 24 days).  The
   default option is unchanged.  (@GITHUB_HANDLE)
 * With date-time data, intervals may be given as date-times (POSIXct, or Date
-  for 08:00 on that date).  `PKNCAdata()`, `set_intervals()`, and `pk.nca()` convert each
-  row relative to the time reference of the group it applies to; a row that
+  for 08:00 on that date).  `PKNCAdata()` and `set_intervals()` check them, and
+  `pk.nca()` converts each row relative to the time reference of the group it
+  applies to, so intervals can change after `PKNCAdata()`; a row that
   does not name every reference group becomes one row per group, since an
   absolute window is a different relative window for each subject.  An `end`
   of `Inf` (numeric or POSIXct) stays infinite, and converted intervals are
   marked with `interval_time_kind`.  Date-time bounds mixed with finite
   numeric bounds, an infinite start, date-time intervals for numeric data, and
-  a different time zone are errors.  `check.interval.specification()` itself,
-  which has no time reference, still requires numeric bounds.
+  a different time zone are errors (checked by `assert_intervals()`).
   (@GITHUB_HANDLE)
 * `PKNCA_options_defaults()` returns the default value of one or more options
   (or all of them) without changing the current options, unlike

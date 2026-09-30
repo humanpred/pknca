@@ -281,8 +281,8 @@ variables after parsing).  Date-times are converted directly to the time unit
 for calculations and reporting:  `timeu_pref` when given (it takes precedence
 over `timeu`), otherwise `timeu`, otherwise hours.  Numeric durations are in
 that unit, and durations given as difftime are converted to it.
-`PKNCAdata()` converts the times to numbers relative to the first
-dose in each group:  the groups are the grouping variables shared by the
+`PKNCAdata()` checks the times and keeps them, and `pk.nca()` converts them to
+numbers relative to the first dose in each group:  the groups are the grouping variables shared by the
 concentration and dose formulas, so with `Subject` as the group, time 0 is each
 subject's first dose.  For studies with several parts (or crossover periods),
 add the part (or period) to both formulas, and each subject's first dose in each
@@ -299,10 +299,11 @@ d_dose$datetime <- first_dose[as.character(d_dose$Subject)]
 o_conc <- PKNCAconc(d_conc, conc~datetime|Subject, concu = "mg/L", timeu_pref = "hr")
 o_dose <- PKNCAdose(d_dose, Dose~datetime|Subject, doseu = "mg/kg")
 o_data <- PKNCAdata(o_conc, o_dose)
-# The time reference for each subject
-head(o_data$time_reference)
-# The concentration times are now hours after the first dose
-head(o_data$conc$data[, c("Subject", "datetime", "conc")])
+o_nca <- pk.nca(o_data)
+# The results keep the converted data, with the time reference for each subject
+head(o_nca$data$time_reference)
+# The concentration times the calculation used are hours after the first dose
+head(o_nca$data$conc$data[, c("Subject", "datetime", "conc")])
 ```
 
 Automatic intervals are chosen as for numeric times.  Manually specified
@@ -326,8 +327,9 @@ intervals_dt <-
     aucint.last = TRUE
   )
 o_data_dt <- PKNCAdata(o_conc, o_dose, intervals = intervals_dt)
-head(o_data_dt$intervals[, c("Subject", "start", "end", "interval_time_kind")], 3)
 o_nca_dt <- pk.nca(o_data_dt)
+# The intervals the calculation used, relative to each subject's first dose
+head(o_nca_dt$data$intervals[, c("Subject", "start", "end", "interval_time_kind")], 3)
 head(as.data.frame(o_nca_dt)[, c("Subject", "start", "end", "PPTESTCD", "PPORRES")], 3)
 ```
 

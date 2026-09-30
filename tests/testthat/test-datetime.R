@@ -1,3 +1,9 @@
+# PKNCAdata() keeps date-time inputs, and pk.nca() converts them; this is that
+# conversion, without its warnings (tested where they are expected)
+converted <- function(o_data) {
+  pknca_datetime_convert(o_data, warn = FALSE)
+}
+
 # Two subjects in one study part, the second dosed 30 minutes after the first,
 # with the same relative sampling times (0, 1, 2, 4, 8, 24 hours)
 datetime_test_data <- function(tz = "UTC") {
@@ -25,17 +31,17 @@ test_that("POSIXct times become numeric time relative to each subject's first do
   expect_s3_class(o_conc$data$time, "POSIXct")
   expect_equal(o_conc$units$timeu, "hr", ignore_attr = TRUE)
   o_data <- PKNCAdata(o_conc, o_dose)
-  expect_equal(o_data$conc$data$time, d$conc$time_hr)
-  expect_equal(o_data$dose$data$time, c(0, 0))
-  expect_equal(o_data$conc$units$timeu, "hr", ignore_attr = TRUE)
-  expect_equal(o_data$conc$units$timeu_pref, "hr", ignore_attr = TRUE)
+  expect_equal(converted(o_data)$conc$data$time, d$conc$time_hr)
+  expect_equal(converted(o_data)$dose$data$time, c(0, 0))
+  expect_equal(converted(o_data)$conc$units$timeu, "hr", ignore_attr = TRUE)
+  expect_equal(converted(o_data)$conc$units$timeu_pref, "hr", ignore_attr = TRUE)
   expect_equal(
-    o_data$time_reference,
+    converted(o_data)$time_reference,
     data.frame(part = "A", subject = 1:2, time_reference = d$dose$time, time_reference_type = "first_dose")
   )
   # Automatic intervals are in the preferred time unit
-  expect_equal(o_data$intervals$start, c(0, 0, 0, 0))
-  expect_equal(o_data$intervals$end, c(24, Inf, 24, Inf))
+  expect_equal(converted(o_data)$intervals$start, c(0, 0, 0, 0))
+  expect_equal(converted(o_data)$intervals$end, c(24, Inf, 24, Inf))
 
   # The results are those of the equivalent numeric-time analysis
   o_conc_num <- PKNCAconc(d$conc, conc~time_hr|part+subject, concu = "ng/mL", timeu = "hr")
@@ -55,10 +61,10 @@ test_that("Without units, POSIXct times are in hours", {
   # No time unit is set, so the analysis has no units
   expect_null(o_conc$units$timeu)
   expect_no_warning(o_data <- PKNCAdata(o_conc, PKNCAdose(d$dose, dose~time|part+subject)))
-  expect_equal(o_data$conc$data$time, d$conc$time_hr)
-  expect_null(o_data$conc$units$timeu)
+  expect_equal(converted(o_data)$conc$data$time, d$conc$time_hr)
+  expect_null(converted(o_data)$conc$units$timeu)
   # The default single-dose intervals are the usual 0 to 24 hours
-  expect_equal(o_data$intervals$end, c(24, Inf, 24, Inf))
+  expect_equal(converted(o_data)$intervals$end, c(24, Inf, 24, Inf))
 })
 
 test_that("timeu alone gives the unit for date-time input", {
@@ -69,8 +75,8 @@ test_that("timeu alone gives the unit for date-time input", {
     o_data <- PKNCAdata(o_conc, PKNCAdose(d$dose, dose~time|part+subject)),
     class = "pknca_warning_single_dose_aucs_unit"
   )
-  expect_equal(o_data$conc$data$time, d$conc$time_hr * 60)
-  expect_equal(o_data$conc$units$timeu, "min", ignore_attr = TRUE)
+  expect_equal(converted(o_data)$conc$data$time, d$conc$time_hr * 60)
+  expect_equal(converted(o_data)$conc$units$timeu, "min", ignore_attr = TRUE)
 })
 
 test_that("timeu_pref takes precedence over timeu for date-time input", {
@@ -81,7 +87,7 @@ test_that("timeu_pref takes precedence over timeu for date-time input", {
   expect_equal(o_conc$units$timeu, "hr", ignore_attr = TRUE)
   expect_equal(o_conc$units$timeu_pref, "hr", ignore_attr = TRUE)
   o_data <- PKNCAdata(o_conc, PKNCAdose(d$dose, dose~time|part+subject, doseu = "mg"))
-  expect_equal(o_data$conc$data$time, d$conc$time_hr)
+  expect_equal(converted(o_data)$conc$data$time, d$conc$time_hr)
   d_nca <- as.data.frame(pk.nca(o_data))
   expect_equal(unique(d_nca$PPORRESU[d_nca$PPTESTCD == "tmax"]), "hr")
   expect_equal(d_nca$PPORRES[d_nca$PPTESTCD == "tmax"], c(2, 2))
@@ -119,8 +125,8 @@ test_that("Date times are 08:00, with a warning", {
     o_data <- PKNCAdata(o_conc, o_dose),
     class = "pknca_warning_single_dose_aucs_unit"
   )
-  expect_equal(o_data$conc$data$time, 0:3)
-  expect_equal(o_data$time_reference$time_reference, as.POSIXct("2024-01-01 08:00", tz = "UTC"))
+  expect_equal(converted(o_data)$conc$data$time, 0:3)
+  expect_equal(converted(o_data)$time_reference$time_reference, as.POSIXct("2024-01-01 08:00", tz = "UTC"))
 
   # A Date takes the time zone of the date-times it is paired with, so 08:00
   # is local 08:00:  2 hours after a 06:00 dose.
@@ -130,7 +136,7 @@ test_that("Date times are 08:00, with a warning", {
       o_conc, PKNCAdose(d_dose_dt, dose~time|subject),
       intervals = data.frame(start = 0, end = 3, cmax = TRUE)
     )
-  expect_equal(o_data_tz$conc$data$time, 0:3 + 2/24)
+  expect_equal(converted(o_data_tz)$conc$data$time, 0:3 + 2/24)
 })
 
 test_that("Numeric and date-time times cannot be mixed", {
@@ -167,16 +173,16 @@ test_that("Without dose data, each subject's first concentration is the referenc
   o_conc <- PKNCAconc(d$conc, conc~time|part+subject, exclude = "excl", timeu_pref = "hr")
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 24, cmax = TRUE))
   expect_equal(
-    o_data$time_reference,
+    converted(o_data)$time_reference,
     data.frame(
       part = "A", subject = 1:2,
       time_reference = d$conc$time[c(1, 8)],
       time_reference_type = "first_conc"
     )
   )
-  expect_equal(o_data$conc$data$time, c(0, 1, 2, 4, 8, 24, -1, 0, 1, 3, 7, 23))
+  expect_equal(converted(o_data)$conc$data$time, c(0, 1, 2, 4, 8, 24, -1, 0, 1, 3, 7, 23))
   expect_output(
-    print(o_data),
+    print(converted(o_data)),
     regexp = "; 2 of 2 groups have no dose and use the first concentration.",
     fixed = TRUE
   )
@@ -187,7 +193,7 @@ test_that("Without dose data, each subject's first concentration is the referenc
       PKNCAconc(d_conc_analyte, conc~time|part+subject/analyte, exclude = "excl", timeu_pref = "hr"),
       intervals = data.frame(start = 0, end = 24, cmax = TRUE)
     )
-  expect_equal(o_data_analyte$time_reference, o_data$time_reference)
+  expect_equal(converted(o_data_analyte)$time_reference, converted(o_data)$time_reference)
   # A subject whose concentrations are all excluded uses its first one
   d$conc$excl[1:6] <- "Not dosed"
   o_data_all_excl <-
@@ -195,7 +201,7 @@ test_that("Without dose data, each subject's first concentration is the referenc
       PKNCAconc(d$conc, conc~time|part+subject, exclude = "excl", timeu_pref = "hr"),
       intervals = data.frame(start = 0, end = 24, cmax = TRUE)
     )
-  expect_equal(o_data_all_excl$time_reference$time_reference, d$conc$time[c(1, 8)])
+  expect_equal(converted(o_data_all_excl)$time_reference$time_reference, d$conc$time[c(1, 8)])
 })
 
 test_that("Subjects without an included dose use their first concentration, with a warning", {
@@ -210,34 +216,45 @@ test_that("Subjects without an included dose use their first concentration, with
     )
   # Automatic intervals need a dose for every subject, so they are given
   intervals <- data.frame(start = 0, end = 24, cmax = TRUE)
+  # PKNCAdata() only checks the data; the warning comes with the conversion in
+  # pk.nca()
+  expect_no_warning(
+    o_data <- PKNCAdata(o_conc, PKNCAdose(d$dose[1, ], dose~time|part+subject), intervals = intervals)
+  )
   expect_warning(
-    o_data <- PKNCAdata(o_conc, PKNCAdose(d$dose[1, ], dose~time|part+subject), intervals = intervals),
+    pknca_datetime_convert(o_data),
     regexp = "part=A, subject=2",
     class = "pknca_warning_datetime_first_conc_reference"
   )
-  expect_equal(o_data$time_reference, expected_reference)
+  expect_warning(
+    pk.nca(o_data),
+    class = "pknca_warning_datetime_first_conc_reference"
+  )
+  expect_equal(converted(o_data)$time_reference, expected_reference)
   # A subject whose only dose is excluded
   d_dose_excl <- d$dose
   d_dose_excl$excl <- c(NA, "Not given")
+  o_data_excl <-
+    PKNCAdata(o_conc, PKNCAdose(d_dose_excl, dose~time|part+subject, exclude = "excl"), intervals = intervals)
   expect_warning(
-    o_data_excl <-
-      PKNCAdata(o_conc, PKNCAdose(d_dose_excl, dose~time|part+subject, exclude = "excl"), intervals = intervals),
+    pknca_datetime_convert(o_data_excl),
     class = "pknca_warning_datetime_first_conc_reference"
   )
-  expect_equal(o_data_excl$time_reference, expected_reference)
+  expect_equal(converted(o_data_excl)$time_reference, expected_reference)
   # Subject 2's first sample was at its (excluded) dose time
-  expect_equal(o_data_excl$dose$data$time, c(0, 0))
+  expect_equal(converted(o_data_excl)$dose$data$time, c(0, 0))
   # Dose data without dose times give every subject its first concentration
+  o_data_no_time <-
+    PKNCAdata(
+      o_conc, PKNCAdose(d$dose, dose~.|part+subject),
+      intervals = data.frame(start = 0, end = 24, cmax = TRUE)
+    )
   expect_warning(
-    o_data_no_time <-
-      PKNCAdata(
-        o_conc, PKNCAdose(d$dose, dose~.|part+subject),
-        intervals = data.frame(start = 0, end = 24, cmax = TRUE)
-      ),
+    pknca_datetime_convert(o_data_no_time),
     regexp = "subject=1; part=A, subject=2",
     class = "pknca_warning_datetime_first_conc_reference"
   )
-  expect_equal(o_data_no_time$time_reference$time_reference_type, c("first_conc", "first_conc"))
+  expect_equal(converted(o_data_no_time)$time_reference$time_reference_type, c("first_conc", "first_conc"))
   # CDISC results carry the first-concentration reference as PPRFTDTC
   o_nca <- suppressWarnings(pk.nca(o_data))
   d_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
@@ -262,8 +279,8 @@ test_that("Without doses, the reference is per period in a crossover", {
       PKNCAconc(d_conc, conc~time|period+subject, timeu_pref = "hr"),
       intervals = data.frame(start = 0, end = 24, cmax = TRUE)
     )
-  expect_equal(o_data$conc$data$time, rep(c(0, 2), 4))
-  expect_equal(o_data$time_reference$time_reference_type, rep("first_conc", 4))
+  expect_equal(converted(o_data)$conc$data$time, rep(c(0, 2), 4))
+  expect_equal(converted(o_data)$time_reference$time_reference_type, rep("first_conc", 4))
 })
 
 test_that("The reference is the first included dose within the shared groups", {
@@ -291,10 +308,10 @@ test_that("The reference is the first included dose within the shared groups", {
       PKNCAdose(d_dose, dose~time|part+subject, exclude = "excl"),
       intervals = data.frame(start = 0, end = 12, cmax = TRUE)
     )
-  expect_equal(o_data$conc$data$time, c(0, 1, 13, -12, -11, 1))
-  expect_equal(o_data$dose$data$time, c(0, 12, -12, 0))
+  expect_equal(converted(o_data)$conc$data$time, c(0, 1, 13, -12, -11, 1))
+  expect_equal(converted(o_data)$dose$data$time, c(0, 12, -12, 0))
   expect_equal(
-    o_data$time_reference,
+    converted(o_data)$time_reference,
     data.frame(
       part = c("MAD", "SAD"), subject = 1, time_reference = t0 + c(180, 0) * 3600,
       time_reference_type = "first_dose"
@@ -365,8 +382,8 @@ test_that("Each crossover subject's reference is its own dose", {
       PKNCAconc(d_conc, conc~time|period+subject, timeu_pref = "hr"),
       PKNCAdose(d_dose, dose~time|period+subject)
     )
-  expect_equal(o_data_period$conc$data$time, rep(c(0, 2), 4))
-  expect_equal(o_data_period$time_reference$time_reference, t0 + c(0, 0.5, 168, 168.5) * 3600)
+  expect_equal(converted(o_data_period)$conc$data$time, rep(c(0, 2), 4))
+  expect_equal(converted(o_data_period)$time_reference$time_reference, t0 + c(0, 0.5, 168, 168.5) * 3600)
   # With only the subject in the dose formula, the reference is each subject's
   # period-1 dose
   o_data_subject <-
@@ -375,9 +392,9 @@ test_that("Each crossover subject's reference is its own dose", {
       PKNCAdose(d_dose, dose~time|subject),
       intervals = data.frame(start = c(0, 168), end = c(24, 192), cmax = TRUE)
     )
-  expect_equal(o_data_subject$conc$data$time, rep(c(0, 2, 168, 170), 2))
+  expect_equal(converted(o_data_subject)$conc$data$time, rep(c(0, 2, 168, 170), 2))
   expect_equal(
-    o_data_subject$time_reference,
+    converted(o_data_subject)$time_reference,
     data.frame(subject = 1:2, time_reference = t0 + c(0, 0.5) * 3600, time_reference_type = "first_dose")
   )
 })
@@ -401,14 +418,14 @@ test_that("Sparse date-time data take one reference per group", {
       o_conc, PKNCAdose(d_dose, dose~time|treatment),
       intervals = data.frame(start = 0, end = 2, cmax = TRUE)
     )
-  expect_equal(o_data$conc$data_sparse$time, rep(c(0, 1, 0.5, 1.5), 2))
+  expect_equal(converted(o_data)$conc$data_sparse$time, rep(c(0, 1, 0.5, 1.5), 2))
   expect_equal(
-    o_data$time_reference,
+    converted(o_data)$time_reference,
     data.frame(treatment = c("A", "B"), time_reference = t0 + c(0, 7200), time_reference_type = "first_dose")
   )
   o_data_no_dose <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 2, cmax = TRUE))
-  expect_equal(o_data_no_dose$conc$data_sparse$time, rep(c(0, 1, 0.5, 1.5), 2))
-  expect_equal(o_data_no_dose$time_reference$time_reference_type, c("first_conc", "first_conc"))
+  expect_equal(converted(o_data_no_dose)$conc$data_sparse$time, rep(c(0, 1, 0.5, 1.5), 2))
+  expect_equal(converted(o_data_no_dose)$time_reference$time_reference_type, c("first_conc", "first_conc"))
 })
 
 test_that("Ungrouped date-time data use the single first dose", {
@@ -419,8 +436,8 @@ test_that("Ungrouped date-time data use the single first dose", {
       PKNCAdose(data.frame(time = t0 + 3600, dose = 1), dose~time),
       intervals = data.frame(start = 0, end = 1, cmax = TRUE)
     )
-  expect_equal(o_data$conc$data$time, c(-1, 0, 1))
-  expect_equal(o_data$time_reference, data.frame(time_reference = t0 + 3600, time_reference_type = "first_dose"))
+  expect_equal(converted(o_data)$conc$data$time, c(-1, 0, 1))
+  expect_equal(converted(o_data)$time_reference, data.frame(time_reference = t0 + 3600, time_reference_type = "first_dose"))
 })
 
 test_that("Numeric durations are in the time unit; difftime durations are converted", {
@@ -436,8 +453,8 @@ test_that("Numeric durations are in the time unit; difftime durations are conver
       PKNCAdose(d_dose, dose~time|subject, route = "intravascular", duration = "dur"),
       intervals = intervals
     )
-  expect_equal(o_data$conc$data$dur, c(6, 6, 12))
-  expect_equal(o_data$dose$data$dur, 0.5)
+  expect_equal(converted(o_data)$conc$data$dur, c(6, 6, 12))
+  expect_equal(converted(o_data)$dose$data$dur, 0.5)
   # difftime durations are converted exactly, here to days
   d_conc$dur <- as.difftime(c(6, 6, 12), units = "hours")
   d_dose$dur <- as.difftime(30, units = "mins")
@@ -449,9 +466,9 @@ test_that("Numeric durations are in the time unit; difftime durations are conver
         intervals = intervals
       )
   )
-  expect_equal(o_data_day$conc$data$time, c(0, 0.25, 0.5))
-  expect_equal(o_data_day$conc$data$dur, c(0.25, 0.25, 0.5))
-  expect_equal(o_data_day$dose$data$dur, 0.5 / 24)
+  expect_equal(converted(o_data_day)$conc$data$time, c(0, 0.25, 0.5))
+  expect_equal(converted(o_data_day)$conc$data$dur, c(0.25, 0.25, 0.5))
+  expect_equal(converted(o_data_day)$dose$data$dur, 0.5 / 24)
   # A scalar difftime duration works, too
   o_data_scalar <-
     PKNCAdata(
@@ -459,7 +476,7 @@ test_that("Numeric durations are in the time unit; difftime durations are conver
       PKNCAdose(d_dose, dose~time|subject, route = "intravascular", duration = as.difftime(15, units = "mins")),
       intervals = intervals
     )
-  expect_equal(o_data_scalar$dose$data$duration, 0.25)
+  expect_equal(converted(o_data_scalar)$dose$data$duration, 0.25)
   # Negative difftime durations are still invalid
   d_dose$dur <- as.difftime(-30, units = "mins")
   expect_error(
@@ -477,7 +494,7 @@ test_that("difftime durations with numeric time need a time unit", {
       PKNCAconc(d_conc, conc~time|subject, timeu = "hr"), o_dose,
       intervals = data.frame(start = 0, end = 12, cmax = TRUE)
     )
-  expect_equal(o_data$dose$data$dur, 0.5)
+  expect_equal(converted(o_data)$dose$data$dur, 0.5)
   expect_error(
     PKNCAdata(
       PKNCAconc(d_conc, conc~time|subject), o_dose,
@@ -502,7 +519,7 @@ test_that("Elapsed time crosses a daylight saving time change correctly", {
       PKNCAconc(d_conc, conc~time|subject, timeu_pref = "hr"),
       PKNCAdose(data.frame(subject = 1, time = t0, dose = 1), dose~time|subject)
     )
-  expect_equal(o_data$conc$data$time, c(0, 23))
+  expect_equal(converted(o_data)$conc$data$time, c(0, 23))
 })
 
 test_that("The nominal time is not converted", {
@@ -512,7 +529,7 @@ test_that("The nominal time is not converted", {
       PKNCAconc(d$conc, conc~time|part+subject, time.nominal = "time_hr"),
       PKNCAdose(d$dose, dose~time|part+subject)
     )
-  expect_equal(o_data$conc$data$time_hr, d$conc$time_hr)
+  expect_equal(converted(o_data)$conc$data$time_hr, d$conc$time_hr)
 })
 
 test_that("CDISC results carry the reference date-time as PPRFTDTC", {
@@ -548,6 +565,12 @@ test_that("print.PKNCAdata reports the date-time reference", {
     ))
   expect_output(
     print(o_data),
+    regexp = "Times are date-times; pk.nca() makes them relative to the first dose (or first concentration) within each part+subject.",
+    fixed = TRUE
+  )
+  # The data the calculation used are numeric, with the reference
+  expect_output(
+    print(converted(o_data)),
     regexp = "Times are relative to the first dose within each part+subject (date-time input).",
     fixed = TRUE
   )
@@ -597,10 +620,10 @@ test_that("An absolute date-time window gives each subject its own relative inte
   o_data <- PKNCAdata(d$o_conc, intervals = intervals)
   # One row per subject:  10:00 to 12:00 is 2 to 4 hours after subject 1's
   # reference and 1 to 3 hours after subject 2's
-  expect_equal(o_data$intervals$subject, 1:2)
-  expect_equal(o_data$intervals$start, c(2, 1))
-  expect_equal(o_data$intervals$end, c(4, 3))
-  expect_equal(o_data$intervals$interval_time_kind, c("datetime", "datetime"))
+  expect_equal(converted(o_data)$intervals$subject, 1:2)
+  expect_equal(converted(o_data)$intervals$start, c(2, 1))
+  expect_equal(converted(o_data)$intervals$end, c(4, 3))
+  expect_equal(converted(o_data)$intervals$interval_time_kind, c("datetime", "datetime"))
   d_nca <- as.data.frame(pk.nca(o_data))
   # Linear-up/log-down by hand.  Subject 1:  6 to 3 over 2 to 4 hours (log).
   # Subject 2:  4 to 6 over 1 to 2 hours (linear), then 6 at 2 hours to the
@@ -624,9 +647,9 @@ test_that("Grouped date-time interval rows use their group's reference", {
       cmax = TRUE
     )
   o_data <- PKNCAdata(d$o_conc, intervals = intervals)
-  expect_equal(o_data$intervals$subject, 1:2)
-  expect_equal(o_data$intervals$start, c(2, 2))
-  expect_equal(o_data$intervals$end, c(4, 4))
+  expect_equal(converted(o_data)$intervals$subject, 1:2)
+  expect_equal(converted(o_data)$intervals$start, c(2, 2))
+  expect_equal(converted(o_data)$intervals$end, c(4, 4))
   # A row for a group with no time reference is an error
   expect_error(
     PKNCAdata(d$o_conc, intervals = data.frame(subject = 3L, start = d$t0, end = d$t0 + 3600, cmax = TRUE)),
@@ -638,9 +661,12 @@ test_that("Grouped date-time interval rows use their group's reference", {
 test_that("Date interval bounds are 08:00, with a warning", {
   d <- datetime_interval_data()
   intervals <- data.frame(start = as.Date("2024-03-01"), end = as.Date("2024-03-02"), cmax = TRUE)
+  o_data <- PKNCAdata(d$o_conc, intervals = intervals)
+  # The object keeps the Dates, and the conversion warns
+  expect_s3_class(o_data$intervals$start, "Date")
   expect_warning(
     expect_warning(
-      o_data <- PKNCAdata(d$o_conc, intervals = intervals),
+      pknca_datetime_convert(o_data),
       regexp = "The interval time column ('start') is a Date",
       fixed = TRUE,
       class = "pknca_warning_date_assumed_time"
@@ -650,20 +676,20 @@ test_that("Date interval bounds are 08:00, with a warning", {
     class = "pknca_warning_date_assumed_time"
   )
   # 08:00 on each date, relative to references at 08:00 and 09:00
-  expect_equal(o_data$intervals$start, c(0, -1))
-  expect_equal(o_data$intervals$end, c(24, 23))
+  expect_equal(converted(o_data)$intervals$start, c(0, -1))
+  expect_equal(converted(o_data)$intervals$end, c(24, 23))
 })
 
 test_that("An infinite interval end stays infinite; an infinite start is an error", {
   d <- datetime_interval_data()
   start <- d$t0 + 2 * 3600
   o_data_num <- PKNCAdata(d$o_conc, intervals = data.frame(start = start, end = Inf, cmax = TRUE))
-  expect_equal(o_data_num$intervals$start, c(2, 1))
-  expect_equal(o_data_num$intervals$end, c(Inf, Inf))
+  expect_equal(converted(o_data_num)$intervals$start, c(2, 1))
+  expect_equal(converted(o_data_num)$intervals$end, c(Inf, Inf))
   # A POSIXct Inf end behaves exactly like a numeric Inf end
   o_data_posix <-
     PKNCAdata(d$o_conc, intervals = data.frame(start = start, end = as.POSIXct(Inf, tz = "UTC"), cmax = TRUE))
-  expect_equal(o_data_posix$intervals, o_data_num$intervals)
+  expect_equal(converted(o_data_posix)$intervals, converted(o_data_num)$intervals)
   expect_equal(as.data.frame(pk.nca(o_data_posix)), as.data.frame(pk.nca(o_data_num)))
   expect_error(
     PKNCAdata(
@@ -714,39 +740,66 @@ test_that("Date-time intervals must pair with date-time bounds and date-time dat
   )
 })
 
-test_that("Date-time intervals set after PKNCAdata() are converted", {
+test_that("PKNCAdata() keeps date-times, and pk.nca() converts them", {
   skip_if_not_installed("units")
   d <- datetime_interval_data()
   intervals_dt <- data.frame(start = d$t0 + 2 * 3600, end = d$t0 + 4 * 3600, aucint.last = TRUE)
   o_data_constructed <- PKNCAdata(d$o_conc, intervals = intervals_dt)
-  expected <- as.data.frame(pk.nca(o_data_constructed))
+  # The object keeps the date-times and has no time reference
+  expect_s3_class(o_data_constructed$conc$data$time, "POSIXct")
+  expect_s3_class(o_data_constructed$intervals$start, "POSIXct")
+  expect_null(o_data_constructed$time_reference)
+  o_nca_constructed <- pk.nca(o_data_constructed)
+  expected <- as.data.frame(o_nca_constructed)
+  # The results keep the converted data that the calculation used
+  expect_equal(o_nca_constructed$data$conc$data$time, rep(c(0, 1, 2, 4, 8), 2))
+  expect_equal(o_nca_constructed$data$intervals$start, c(2, 1))
+  expect_equal(o_nca_constructed$data$time_reference$time_reference_type, c("first_conc", "first_conc"))
   o_data <- PKNCAdata(d$o_conc, intervals = data.frame(start = 0, end = 1, cmax = TRUE))
-  # Through set_intervals()
+  # Through set_intervals(), which keeps the date-times
   o_data_set <- set_intervals(o_data, intervals_dt)
-  expect_equal(check.interval.specification(o_data_set$intervals), o_data_constructed$intervals)
-  # Through direct assignment, converted by pk.nca()
+  expect_s3_class(o_data_set$intervals$start, "POSIXct")
+  expect_equal(as.data.frame(pk.nca(o_data_set)), expected)
+  # Through direct assignment
   o_data_direct <- o_data
   o_data_direct$intervals <- intervals_dt
   o_nca_direct <- pk.nca(o_data_direct)
   expect_equal(as.data.frame(o_nca_direct), expected)
-  expect_equal(o_nca_direct$data$intervals$start, c(2, 1))
+  # Rerunning the calculation on the results' (converted) data changes nothing
+  expect_equal(as.data.frame(pk.nca(o_nca_direct$data)), expected)
+  # Directly assigned intervals are checked, too
+  o_data_bad <- o_data
+  o_data_bad$intervals <- data.frame(start = d$t0, end = 24, cmax = TRUE)
+  expect_error(pk.nca(o_data_bad), class = "pknca_error_interval_datetime_mixed")
 })
 
 test_that("Converting intervals is idempotent and marks relative rows", {
   d <- datetime_interval_data()
   o_data <-
     PKNCAdata(d$o_conc, intervals = data.frame(start = d$t0, end = d$t0 + 3600, cmax = TRUE))
-  expect_equal(pknca_interval_times_to_numeric(o_data$intervals, o_data), o_data$intervals)
+  o_data_numeric <- converted(o_data)
+  expect_equal(converted(o_data_numeric), o_data_numeric)
+  expect_equal(
+    pknca_interval_times_to_numeric(o_data_numeric$intervals, o_data_numeric),
+    o_data_numeric$intervals
+  )
   # Numeric intervals without a kind column are unchanged
   numeric_intervals <- data.frame(start = 0, end = 1, cmax = TRUE)
-  expect_equal(pknca_interval_times_to_numeric(numeric_intervals, o_data), numeric_intervals)
+  expect_equal(pknca_interval_times_to_numeric(numeric_intervals, o_data_numeric), numeric_intervals)
   # Rows added later without a kind are relative
-  added <- rbind(o_data$intervals, o_data$intervals[1, ])
+  added <- rbind(o_data_numeric$intervals, o_data_numeric$intervals[1, ])
   added$interval_time_kind[3] <- NA
   expect_equal(
-    pknca_interval_times_to_numeric(added, o_data)$interval_time_kind,
+    pknca_interval_times_to_numeric(added, o_data_numeric)$interval_time_kind,
     c("datetime", "datetime", "relative")
   )
-  # Malformed intervals are left for the other checks
-  expect_equal(pknca_interval_times_to_numeric(data.frame(start = 0), o_data), data.frame(start = 0))
+})
+
+test_that("Temporary columns do not collide with interval columns", {
+  d <- datetime_interval_data()
+  # "tau" is the last allowed column name alphabetically here
+  intervals <- data.frame(start = d$t0, end = d$t0 + 3600, cmax = TRUE, tau = 24)
+  o_data_numeric <- converted(PKNCAdata(d$o_conc, intervals = intervals))
+  expect_equal(o_data_numeric$intervals$tau, c(24, 24))
+  expect_false(any(grepl("X$", names(o_data_numeric$intervals))))
 })

@@ -78,10 +78,10 @@
 #'   [PKNCAdose()]) is in that unit, and a difftime `duration` is converted to
 #'   it exactly.
 #'
-#'   The times remain date-times in the `PKNCAconc` and `PKNCAdose` objects.
-#'   [PKNCAdata()] converts them to numeric time relative to the first dose (or
-#'   first concentration) in each group; see the "Date-time input" section
-#'   there.  The nominal time (`time.nominal`) is not converted and usually
+#'   The times remain date-times in the `PKNCAconc`, `PKNCAdose`, and
+#'   `PKNCAdata` objects.  [pk.nca()] converts them to numeric time relative to
+#'   the first dose (or first concentration) in each group; see the "Date-time
+#'   input" section of [PKNCAdata()].  The nominal time (`time.nominal`) is not converted and usually
 #'   stays numeric.
 #' @family PKNCA objects
 #' @export

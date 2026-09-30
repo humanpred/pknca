@@ -147,32 +147,31 @@ pknca_as_posixct <- function(x, tz) {
   }
 }
 
-#' Convert date-time concentration and dose times to numeric time
+#' Get and check the date-time concentration and dose times
 #'
-#' Numeric time is relative to the time reference of each group (see
-#' `pknca_datetime_reference()`), in the time unit of the concentration data
-#' (see `pknca_datetime_timeu()`), or hours when there are no units.
+#' Concentration and dose times must both be numeric or both be date-times, and
+#' date-times must share a time zone:  the instant of a POSIXct value does not
+#' depend on its time zone, but the report of the reference (PPRFTDTC) and the
+#' 08:00 of a Date do.
 #'
-#' @param data A PKNCAdata object under construction (with `conc` and `dose`)
-#' @returns `data` with numeric times and a `time_reference` element (a
-#'   data.frame with the reference group columns, a POSIXct `time_reference`
-#'   column, and a `time_reference_type` column), or `data` unchanged when the
-#'   times are numeric
+#' @param data A PKNCAdata object
+#' @returns A list with `is_datetime` (`FALSE` for numeric times) and, for
+#'   date-times, `conc_time` and `dose_time` (POSIXct; `dose_time` is `NULL`
+#'   without dose times) and `tz`
 #' @keywords Internal
 #' @noRd
-pknca_datetime_to_numeric <- function(data) {
-  o_conc <- data$conc
-  o_dose <- data$dose
-  conc_dataname <- getDataName(o_conc)
+pknca_datetime_times <- function(data) {
+  o_conc <- as_PKNCAconc(data)
+  o_dose <- as_PKNCAdose(data)
   conc_time_col <- o_conc$columns$time
-  conc_time <- o_conc[[conc_dataname]][[conc_time_col]]
+  conc_time <- as.data.frame(o_conc)[[conc_time_col]]
   has_dose_time <- !identical(o_dose, NA) && length(o_dose$columns$time) == 1
   dose_time_col <- if (has_dose_time) o_dose$columns$time else NA_character_
-  dose_time <- if (has_dose_time) o_dose$data[[dose_time_col]] else NULL
+  dose_time <- if (has_dose_time) as.data.frame(o_dose)[[dose_time_col]]
   conc_is_dt <- is_datetime_date(conc_time)
   dose_is_dt <- has_dose_time && is_datetime_date(dose_time)
   if (!conc_is_dt && !dose_is_dt) {
-    return(data)
+    return(list(is_datetime = FALSE))
   }
   if (has_dose_time && conc_is_dt != dose_is_dt) {
     rlang::abort(
@@ -184,9 +183,6 @@ pknca_datetime_to_numeric <- function(data) {
       class = "pknca_error_datetime_mixed"
     )
   }
-  # Time zones:  the instant of a POSIXct value does not depend on its time
-  # zone, but the report of the reference (PPRFTDTC) and the 08:00 of a Date
-  # do, so the two must agree.
   tz_all <- c(pknca_datetime_tz(conc_time), if (has_dose_time) pknca_datetime_tz(dose_time))
   tz_known <- unique(tz_all[!is.na(tz_all)])
   if (length(tz_known) > 1) {
@@ -199,39 +195,97 @@ pknca_datetime_to_numeric <- function(data) {
     )
   }
   tz <- if (length(tz_known) == 0) "UTC" else tz_known
-  conc_time <- pknca_as_posixct(conc_time, tz = tz)
-  dose_time <- pknca_as_posixct(dose_time, tz = tz)
+  list(
+    is_datetime = TRUE,
+    conc_time = pknca_as_posixct(conc_time, tz = tz),
+    dose_time = if (has_dose_time) pknca_as_posixct(dose_time, tz = tz),
+    tz = tz
+  )
+}
 
-  time_reference <-
-    pknca_datetime_reference(
-      o_conc = o_conc, conc_time = conc_time,
-      o_dose = o_dose, dose_time = if (has_dose_time) dose_time else NULL
-    )
-  ref_groups <- setdiff(names(time_reference), c("time_reference", "time_reference_type"))
-  conc_ref <-
-    pknca_datetime_match_reference(
-      o_conc[[conc_dataname]][, ref_groups, drop = FALSE],
-      time_reference
-    )
-  dose_ref <-
-    if (has_dose_time) {
-      pknca_datetime_match_reference(o_dose$data[, ref_groups, drop = FALSE], time_reference)
+#' Replace the data within a PKNCAconc or PKNCAdose object
+#'
+#' @param object A PKNCAconc or PKNCAdose object
+#' @param value The new data.frame
+#' @returns `object` with `value` as its data
+#' @keywords Internal
+#' @noRd
+pknca_replace_data <- function(object, value) {
+  object[[getDataName(object)]] <- value
+  object
+}
+
+#' Convert date-time and difftime inputs of a PKNCAdata object to numbers
+#'
+#' Date-time concentration and dose times become numeric times relative to the
+#' time reference of each group (see `pknca_datetime_reference()`), in the time
+#' unit of the concentration data (see `pknca_datetime_timeu()`), or hours when
+#' there are no units; difftime durations become numbers in the same unit; and
+#' date-time interval bounds become numeric times relative to the same
+#' references (see `pknca_interval_times_to_numeric()`).  [pk.nca()] calls
+#' this, so the PKNCAdata object keeps the date-times and its intervals can
+#' change until the calculation.  Numeric inputs are unchanged, so converting
+#' twice is harmless.
+#'
+#' @param data A PKNCAdata object
+#' @param warn Give the warnings of the conversion (a group using its first
+#'   concentration as the reference, Date interval bounds)?  [PKNCAdata()]
+#'   converts a copy only to check the data and to choose automatic intervals,
+#'   and leaves the warnings to [pk.nca()].
+#' @returns `data` with numeric times, durations, and intervals, and, for
+#'   date-time data, a `time_reference` element (a data.frame with the
+#'   reference group columns, a POSIXct `time_reference` column, and a
+#'   `time_reference_type` column)
+#' @keywords Internal
+#' @noRd
+pknca_datetime_convert <- function(data, warn = TRUE) {
+  times <- pknca_datetime_times(data)
+  if (times$is_datetime) {
+    time_reference <- pknca_datetime_quietly(pknca_datetime_reference(data, times), warn = warn)
+    ref_groups <- setdiff(names(time_reference), c("time_reference", "time_reference_type"))
+    time_unit <- pknca_datetime_time_unit(as_PKNCAconc(data))
+
+    o_conc <- as_PKNCAconc(data)
+    conc_data <- as.data.frame(o_conc)
+    conc_ref <- pknca_datetime_match_reference(conc_data[, ref_groups, drop = FALSE], time_reference)
+    conc_data[[o_conc$columns$time]] <-
+      pknca_difftime_to_unit(difftime(times$conc_time, conc_ref, units = "secs"), unit = time_unit)
+    data$conc <- pknca_replace_data(o_conc, conc_data)
+
+    if (!is.null(times$dose_time)) {
+      o_dose <- as_PKNCAdose(data)
+      dose_data <- as.data.frame(o_dose)
+      dose_ref <- pknca_datetime_match_reference(dose_data[, ref_groups, drop = FALSE], time_reference)
+      dose_data[[o_dose$columns$time]] <-
+        pknca_difftime_to_unit(difftime(times$dose_time, dose_ref, units = "secs"), unit = time_unit)
+      data$dose <- pknca_replace_data(o_dose, dose_data)
     }
-
-  # Date-times are converted directly to the unit of the analysis (the unit
-  # PKNCAconc() chose from timeu_pref and timeu), or to hours when there are no
-  # units.
-  time_unit <- pknca_datetime_time_unit(o_conc)
-  o_conc[[conc_dataname]][[conc_time_col]] <-
-    pknca_difftime_to_unit(difftime(conc_time, conc_ref, units = "secs"), unit = time_unit)
-  if (has_dose_time) {
-    o_dose$data[[dose_time_col]] <-
-      pknca_difftime_to_unit(difftime(dose_time, dose_ref, units = "secs"), unit = time_unit)
+    data$time_reference <- time_reference
   }
-  data$conc <- o_conc
-  data$dose <- o_dose
-  data$time_reference <- time_reference
+  data <- pknca_duration_to_numeric(data)
+  if (!is.null(data$intervals)) {
+    data$intervals <- pknca_interval_times_to_numeric(data$intervals, data, warn = warn)
+  }
   data
+}
+
+#' Evaluate an expression, optionally without the conversion's warnings
+#'
+#' @param expr The expression
+#' @param warn Keep the warnings?
+#' @returns The value of `expr`
+#' @keywords Internal
+#' @noRd
+pknca_datetime_quietly <- function(expr, warn) {
+  if (warn) {
+    expr
+  } else {
+    withCallingHandlers(
+      expr,
+      pknca_warning_datetime_first_conc_reference = function(w) rlang::cnd_muffle(w),
+      pknca_warning_date_assumed_time = function(w) rlang::cnd_muffle(w)
+    )
+  }
 }
 
 #' Convert difftime durations to numbers in the time unit of the analysis
@@ -240,37 +294,31 @@ pknca_datetime_to_numeric <- function(data) {
 #' given as difftime are converted exactly to that unit:  the unit of the
 #' concentration data, or hours for date-time data without units.
 #'
-#' @param data A PKNCAdata object under construction, after any date-time
-#'   conversion
+#' @param data A PKNCAdata object, after any date-time conversion
 #' @returns `data` with numeric durations
 #' @keywords Internal
 #' @noRd
 pknca_duration_to_numeric <- function(data) {
-  o_conc <- data$conc
-  o_dose <- data$dose
-  conc_dataname <- getDataName(o_conc)
-  duration_cols <-
-    list(
-      conc = o_conc$columns$duration,
-      dose = if (identical(o_dose, NA)) NULL else o_dose$columns$duration
-    )
-  is_difftime <-
-    c(
-      conc = any(vapply(X = o_conc[[conc_dataname]][duration_cols$conc], FUN = inherits, FUN.VALUE = TRUE, what = "difftime")),
-      dose =
-        length(duration_cols$dose) > 0 &&
-          any(vapply(X = o_dose$data[duration_cols$dose], FUN = inherits, FUN.VALUE = TRUE, what = "difftime"))
-    )
-  if (!any(is_difftime)) {
+  o_conc <- as_PKNCAconc(data)
+  o_dose <- as_PKNCAdose(data)
+  conc_data <- as.data.frame(o_conc)
+  dose_data <- if (!identical(o_dose, NA)) as.data.frame(o_dose)
+  conc_cols <- o_conc$columns$duration
+  dose_cols <- if (!identical(o_dose, NA)) o_dose$columns$duration
+  is_difftime <- function(cols, current_data) {
+    length(cols) > 0 &&
+      any(vapply(X = current_data[cols], FUN = inherits, FUN.VALUE = TRUE, what = "difftime"))
+  }
+  if (!is_difftime(conc_cols, conc_data) && !is_difftime(dose_cols, dose_data)) {
     return(data)
   }
   time_unit <-
     if (!is.null(data$time_reference)) {
       pknca_datetime_time_unit(o_conc)
     } else if (!is.null(o_conc$units$timeu)) {
-      as.vector(o_conc$units$timeu)
+      o_conc$units$timeu
     } else if (!is.null(o_conc$columns$timeu)) {
-      unique(as.character(o_conc[[conc_dataname]][[o_conc$columns$timeu]]))
+      unique(as.character(conc_data[[o_conc$columns$timeu]]))
     } else {
       NA_character_
     }
@@ -280,19 +328,20 @@ pknca_duration_to_numeric <- function(data) {
       class = "pknca_error_difftime_duration_unit"
     )
   }
-  for (duration_col in duration_cols$conc) {
-    if (inherits(o_conc[[conc_dataname]][[duration_col]], "difftime")) {
-      o_conc[[conc_dataname]][[duration_col]] <-
-        pknca_difftime_to_unit(o_conc[[conc_dataname]][[duration_col]], unit = time_unit)
+  for (duration_col in conc_cols) {
+    if (inherits(conc_data[[duration_col]], "difftime")) {
+      conc_data[[duration_col]] <- pknca_difftime_to_unit(conc_data[[duration_col]], unit = time_unit)
     }
   }
-  for (duration_col in duration_cols$dose) {
-    if (inherits(o_dose$data[[duration_col]], "difftime")) {
-      o_dose$data[[duration_col]] <- pknca_difftime_to_unit(o_dose$data[[duration_col]], unit = time_unit)
+  data$conc <- pknca_replace_data(o_conc, conc_data)
+  if (!is.null(dose_data)) {
+    for (duration_col in dose_cols) {
+      if (inherits(dose_data[[duration_col]], "difftime")) {
+        dose_data[[duration_col]] <- pknca_difftime_to_unit(dose_data[[duration_col]], unit = time_unit)
+      }
     }
+    data$dose <- pknca_replace_data(o_dose, dose_data)
   }
-  data$conc <- o_conc
-  data$dose <- o_dose
   data
 }
 
@@ -305,20 +354,19 @@ pknca_duration_to_numeric <- function(data) {
 #' applies to all the matching groups, so it becomes one row per group, each
 #' relative to that group's own reference.  An `end` of `Inf` (numeric, or a
 #' POSIXct `Inf`) stays `Inf`.  Numeric intervals are returned unchanged, so
-#' converting twice is harmless.
+#' converting twice is harmless.  The intervals are checked by
+#' [assert_intervals()] before this is called.
 #'
 #' @param intervals The intervals data.frame
-#' @param data The PKNCAdata object (after its own date-time conversion)
+#' @param data The PKNCAdata object, after its own date-time conversion (with
+#'   `time_reference`)
+#' @param warn Warn for Date bounds?
 #' @returns `intervals` with numeric `start` and `end`; when date-time bounds
 #'   were converted, an `interval_time_kind` column is `"datetime"` for the
 #'   converted rows and `"relative"` for rows that were already numeric
 #' @keywords Internal
 #' @noRd
-pknca_interval_times_to_numeric <- function(intervals, data) {
-  if (!is.data.frame(intervals) || !all(c("start", "end") %in% names(intervals))) {
-    # Other checks report malformed intervals
-    return(intervals)
-  }
+pknca_interval_times_to_numeric <- function(intervals, data, warn = TRUE) {
   dt_start <- is_datetime_date(intervals$start)
   dt_end <- is_datetime_date(intervals$end)
   if (!dt_start && !dt_end) {
@@ -327,54 +375,107 @@ pknca_interval_times_to_numeric <- function(intervals, data) {
     }
     return(intervals)
   }
-  # A date-time bound with a numeric bound:  only an open end (Inf) can pair
-  # with a date-time start.
+  if (warn) {
+    for (bound in c("start", "end")[c(dt_start, dt_end)]) {
+      if (inherits(intervals[[bound]], "Date")) {
+        pknca_warn_date_time(time_col = bound, data_type = "interval")
+      }
+    }
+  }
+  time_reference <- data$time_reference
+  tz_ref <- pknca_datetime_tz(time_reference$time_reference)
+  start_abs <- pknca_as_posixct(intervals$start, tz = tz_ref)
+  end_abs <- if (dt_end) pknca_as_posixct(intervals$end, tz = tz_ref) else intervals$end
+  ref_groups <- setdiff(names(time_reference), c("time_reference", "time_reference_type"))
+  # Temporary column names that cannot collide with the user's columns
+  row_col <- paste0(max(colnames(intervals)), "X")
+  ref_col <- paste0(max(c(colnames(intervals), row_col)), "X")
+  ref_table <- time_reference[, c(ref_groups, "time_reference"), drop = FALSE]
+  names(ref_table)[names(ref_table) == "time_reference"] <- ref_col
+  intervals[[row_col]] <- seq_len(nrow(intervals))
+  intervals$start <- NULL
+  intervals$end <- NULL
+  # Each row gets the reference of every group it applies to
+  join_groups <- intersect(names(intervals), ref_groups)
+  ret <-
+    if (length(join_groups) > 0) {
+      dplyr::inner_join(intervals, ref_table, by = join_groups, relationship = "many-to-many")
+    } else {
+      dplyr::cross_join(intervals, ref_table)
+    }
+  ret <- as.data.frame(ret)
+  ret <- ret[order(ret[[row_col]]), , drop = FALSE]
+  time_unit <- pknca_datetime_time_unit(as_PKNCAconc(data))
+  ret$start <-
+    pknca_difftime_to_unit(
+      difftime(start_abs[ret[[row_col]]], ret[[ref_col]], units = "secs"),
+      unit = time_unit
+    )
+  current_end <- end_abs[ret[[row_col]]]
+  # An infinite end (numeric, or a POSIXct Inf) stays infinite
+  end_num <- as.numeric(current_end)
+  mask_finite_end <- is.finite(end_num)
+  end_num[mask_finite_end] <-
+    pknca_difftime_to_unit(
+      difftime(current_end[mask_finite_end], ret[[ref_col]][mask_finite_end], units = "secs"),
+      unit = time_unit
+    )
+  ret$end <- end_num
+  ret$interval_time_kind <- "datetime"
+  ret[[row_col]] <- NULL
+  ret[[ref_col]] <- NULL
+  # start and end first, as usual
+  ret <- ret[, unique(c("start", "end", setdiff(names(ret), c("start", "end")))), drop = FALSE]
+  rownames(ret) <- NULL
+  ret
+}
+
+#' Check date-time interval bounds
+#'
+#' @param intervals The intervals data.frame (with a date-time `start` or
+#'   `end`)
+#' @param data The PKNCAdata object (with date-time times)
+#' @returns `intervals`, invisibly, or an error
+#' @keywords Internal
+#' @noRd
+assert_interval_times_datetime <- function(intervals, data) {
+  dt_start <- is_datetime_date(intervals$start)
+  dt_end <- is_datetime_date(intervals$end)
+  # Only an open end (Inf) can pair a numeric bound with a date-time start
   if (!dt_start || (!dt_end && !all(is.infinite(intervals$end) & intervals$end > 0))) {
     rlang::abort(
       "Interval `start` and `end` must both be date-times or both be numeric; the only numeric bound allowed with a date-time `start` is `end = Inf`.",
       class = "pknca_error_interval_datetime_mixed"
     )
   }
-  time_reference <- data$time_reference
-  if (is.null(time_reference)) {
+  times <- pknca_datetime_times(data)
+  if (!times$is_datetime) {
     rlang::abort(
       "Intervals given as date-times need date-time concentration and dose times to be relative to; with numeric times, give numeric intervals.",
       class = "pknca_error_interval_datetime_numeric_data"
     )
   }
-  tz_ref <- pknca_datetime_tz(time_reference$time_reference)
-  for (bound in c("start", "end")) {
-    if (is_datetime_date(intervals[[bound]])) {
-      tz_bound <- pknca_datetime_tz(intervals[[bound]])
-      if (!is.na(tz_bound) && !identical(tz_bound, tz_ref)) {
-        rlang::abort(
-          sprintf(
-            "Interval date-times must have the same time zone (UTC offset) as the concentration and dose date-times; the time zones are: '%s', '%s'",
-            tz_bound, tz_ref
-          ),
-          class = "pknca_error_datetime_mixed_tz"
-        )
-      }
-      if (inherits(intervals[[bound]], "Date")) {
-        pknca_warn_date_time(time_col = bound, data_type = "interval")
-      }
+  for (bound in c("start", "end")[c(dt_start, dt_end)]) {
+    tz_bound <- pknca_datetime_tz(intervals[[bound]])
+    if (!is.na(tz_bound) && !identical(tz_bound, times$tz)) {
+      rlang::abort(
+        sprintf(
+          "Interval date-times must have the same time zone (UTC offset) as the concentration and dose date-times; the time zones are: '%s', '%s'",
+          tz_bound, times$tz
+        ),
+        class = "pknca_error_datetime_mixed_tz"
+      )
     }
   }
-  start_abs <- pknca_as_posixct(intervals$start, tz = tz_ref)
-  if (any(!is.finite(as.numeric(start_abs)))) {
+  if (any(!is.finite(as.numeric(pknca_as_posixct(intervals$start, tz = times$tz))))) {
     rlang::abort(
       "Interval `start` date-times must be finite (not NA or infinite).",
       class = "pknca_error_interval_datetime_start_infinite"
     )
   }
-  end_abs <-
-    if (dt_end) {
-      pknca_as_posixct(intervals$end, tz = tz_ref)
-    } else {
-      intervals$end
-    }
+  time_reference <- pknca_datetime_quietly(pknca_datetime_reference(data, times), warn = FALSE)
   ref_groups <- setdiff(names(time_reference), c("time_reference", "time_reference_type"))
-  conc_groups <- names(getGroups(data$conc))
+  conc_groups <- names(getGroups(as_PKNCAconc(data)))
   if (length(setdiff(ref_groups, conc_groups)) > 0) {
     rlang::abort(
       sprintf(
@@ -384,55 +485,40 @@ pknca_interval_times_to_numeric <- function(intervals, data) {
       class = "pknca_error_interval_datetime_groups"
     )
   }
-  # Each row gets the reference of every group it applies to
-  intervals$row_XXX <- seq_len(nrow(intervals))
-  intervals$start <- NULL
-  intervals$end <- NULL
   join_groups <- intersect(names(intervals), ref_groups)
-  ret <-
-    if (length(join_groups) > 0) {
-      dplyr::inner_join(
-        intervals, time_reference[, c(ref_groups, "time_reference"), drop = FALSE],
-        by = join_groups, relationship = "many-to-many"
+  if (length(join_groups) > 0) {
+    # A temporary column name that cannot collide with the user's columns
+    matched_col <- paste0(max(colnames(intervals)), "X")
+    reference_groups <- unique(time_reference[, join_groups, drop = FALSE])
+    reference_groups[[matched_col]] <- TRUE
+    matched <-
+      !is.na(dplyr::left_join(
+        intervals[, join_groups, drop = FALSE], reference_groups,
+        by = join_groups
+      )[[matched_col]])
+    if (!all(matched)) {
+      rlang::abort(
+        sprintf(
+          "Date-time interval rows %s match no group with a time reference.",
+          paste(which(!matched), collapse = ", ")
+        ),
+        class = "pknca_error_interval_datetime_no_reference"
       )
-    } else {
-      dplyr::cross_join(intervals, time_reference[, c(ref_groups, "time_reference"), drop = FALSE])
     }
-  missing_rows <- setdiff(seq_along(start_abs), ret$row_XXX)
-  if (length(missing_rows) > 0) {
-    rlang::abort(
-      sprintf(
-        "Date-time interval rows %s match no group with a time reference.",
-        paste(missing_rows, collapse = ", ")
-      ),
-      class = "pknca_error_interval_datetime_no_reference"
-    )
   }
-  ret <- as.data.frame(ret)
-  ret <- ret[order(ret$row_XXX), , drop = FALSE]
-  time_unit <- pknca_datetime_time_unit(data$conc)
-  ret$start <-
-    pknca_difftime_to_unit(
-      difftime(start_abs[ret$row_XXX], ret$time_reference, units = "secs"),
-      unit = time_unit
-    )
-  current_end <- end_abs[ret$row_XXX]
-  # An infinite end (numeric, or a POSIXct Inf) stays infinite
-  end_num <- as.numeric(current_end)
-  mask_finite_end <- is.finite(end_num)
-  end_num[mask_finite_end] <-
-    pknca_difftime_to_unit(
-      difftime(current_end[mask_finite_end], ret$time_reference[mask_finite_end], units = "secs"),
-      unit = time_unit
-    )
-  ret$end <- end_num
-  ret$interval_time_kind <- "datetime"
-  ret$row_XXX <- NULL
-  ret$time_reference <- NULL
-  # Keep the original column order, with start and end first as usual
-  ret <- ret[, unique(c("start", "end", setdiff(names(ret), c("start", "end")))), drop = FALSE]
-  rownames(ret) <- NULL
-  ret
+  invisible(intervals)
+}
+
+#' Check numeric interval bounds
+#'
+#' @param intervals The intervals data.frame (with numeric `start` and `end`)
+#' @returns `intervals`, invisibly, or an error
+#' @keywords Internal
+#' @noRd
+assert_interval_times_numeric <- function(intervals) {
+  checkmate::assert_numeric(intervals$start, .var.name = "intervals$start")
+  checkmate::assert_numeric(intervals$end, .var.name = "intervals$end")
+  invisible(intervals)
 }
 
 #' Get the time unit that date-time input is converted to
@@ -445,57 +531,68 @@ pknca_datetime_time_unit <- function(o_conc) {
   choose_first(o_conc$units$timeu, "hr")
 }
 
-#' Find the date-time reference of each group
+#' Find the groups that date-time references are computed within
 #'
 #' With dose times, the groups are the concentration grouping columns and the
 #' subject that the dose formula shares, and for dense data the subject must be
-#' one of them (otherwise one reference would be pooled across subjects).  The
-#' reference is the first included dose of the group (`"first_dose"`); a group
-#' of concentrations without an included dose uses its first concentration
-#' (`"first_conc"`), with a warning.  Without dose times, the groups are the
-#' concentration grouping columns to the left of any `/` and, for dense data,
-#' the subject, and every reference is the first concentration.  The first
-#' concentration is the first included (not excluded) one, or the first one
-#' when all are excluded.
-#'
-#' Sparse data are the exception to per-subject references:  PKNCA requires
-#' every subject in a sparse group to share the group's dosing, so the
-#' reference is per group, and each animal's first sample is not its own
-#' reference.
+#' one of them (otherwise one reference would be pooled across subjects).
+#' Without dose times, the groups are the concentration grouping columns to the
+#' left of any `/` and, for dense data, the subject.  Sparse data use one
+#' reference per group rather than per subject, because PKNCA requires every
+#' subject in a sparse group to share the group's dosing.
 #'
 #' @param o_conc,o_dose The PKNCAconc and PKNCAdose (or `NA`) objects
-#' @param conc_time,dose_time The POSIXct concentration and dose times
-#'   (`dose_time` is `NULL` without dose times)
+#' @param has_dose_time Are there dose times?
+#' @returns A character vector of column names
+#' @keywords Internal
+#' @noRd
+pknca_datetime_ref_groups <- function(o_conc, o_dose, has_dose_time) {
+  subject_col <- if (is_sparse_pk(o_conc)) character() else o_conc$columns$subject
+  if (!has_dose_time) {
+    return(unique(c(o_conc$columns$groups$group_vars, subject_col)))
+  }
+  conc_keys <- unique(c(unlist(o_conc$columns$groups), subject_col))
+  ref_groups <- intersect(conc_keys, unlist(o_dose$columns$groups))
+  if (length(subject_col) == 1 && !(subject_col %in% ref_groups)) {
+    rlang::abort(
+      sprintf(
+        paste(
+          "With date-time times, the dose formula must include the subject column ('%s') so that each subject has its own time reference.",
+          "Concentration formula: %s; dose formula: %s"
+        ),
+        subject_col,
+        paste(deparse(stats::formula(o_conc)), collapse = " "),
+        paste(deparse(stats::formula(o_dose)), collapse = " ")
+      ),
+      class = "pknca_error_datetime_subject_not_grouped"
+    )
+  }
+  ref_groups
+}
+
+#' Find the date-time reference of each group
+#'
+#' The groups are those of `pknca_datetime_ref_groups()`.  The reference is the
+#' first included dose of the group (`"first_dose"`); a group of concentrations
+#' without an included dose uses its first concentration (`"first_conc"`), with
+#' a warning, and without dose times every reference is the first
+#' concentration.  The first concentration is the first included (not
+#' excluded) one, or the first one when all are excluded.
+#'
+#' @param data A PKNCAdata object
+#' @param times The result of `pknca_datetime_times(data)`
 #' @returns A data.frame with the reference group columns, `time_reference`
 #'   (POSIXct), and `time_reference_type` (`"first_dose"` or `"first_conc"`)
 #' @keywords Internal
 #' @noRd
-pknca_datetime_reference <- function(o_conc, conc_time, o_dose, dose_time) {
-  conc_data <- as.data.frame(o_conc)
-  subject_col <- if (is_sparse_pk(o_conc)) character() else o_conc$columns$subject
-  has_dose_time <- !is.null(dose_time)
-  if (has_dose_time) {
-    conc_keys <- unique(c(unlist(o_conc$columns$groups), subject_col))
-    ref_groups <- intersect(conc_keys, unlist(o_dose$columns$groups))
-    if (length(subject_col) == 1 && !(subject_col %in% ref_groups)) {
-      rlang::abort(
-        sprintf(
-          paste(
-            "With date-time times, the dose formula must include the subject column ('%s') so that each subject has its own time reference.",
-            "Concentration formula: %s; dose formula: %s"
-          ),
-          subject_col,
-          paste(deparse(stats::formula(o_conc)), collapse = " "),
-          paste(deparse(stats::formula(o_dose)), collapse = " ")
-        ),
-        class = "pknca_error_datetime_subject_not_grouped"
-      )
-    }
-  } else {
-    ref_groups <- unique(c(o_conc$columns$groups$group_vars, subject_col))
-  }
+pknca_datetime_reference <- function(data, times) {
+  o_conc <- as_PKNCAconc(data)
+  o_dose <- as_PKNCAdose(data)
+  has_dose_time <- !is.null(times$dose_time)
+  ref_groups <- pknca_datetime_ref_groups(o_conc, o_dose, has_dose_time = has_dose_time)
+  conc_time <- times$conc_time
   conc_excluded <- !is.na(normalize_exclude(o_conc))
-  conc_ref_data <- conc_data[, ref_groups, drop = FALSE]
+  conc_ref_data <- as.data.frame(o_conc)[, ref_groups, drop = FALSE]
   conc_ref_data$time_reference <- conc_time
   conc_ref_data <- conc_ref_data[!is.na(conc_time), , drop = FALSE]
   conc_included <- !conc_excluded[!is.na(conc_time)]
@@ -515,8 +612,9 @@ pknca_datetime_reference <- function(o_conc, conc_time, o_dose, dose_time) {
     }
     return(first_conc)
   }
+  dose_time <- times$dose_time
   dose_excluded <- !is.na(normalize_exclude(o_dose))
-  dose_ref_data <- o_dose$data[, ref_groups, drop = FALSE]
+  dose_ref_data <- as.data.frame(o_dose)[, ref_groups, drop = FALSE]
   dose_ref_data$time_reference <- dose_time
   first_dose <-
     pknca_datetime_first(
