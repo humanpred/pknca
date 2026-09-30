@@ -147,5 +147,11 @@ test_that("registered descriptions match the documentation", {
       exclude_nca_by_param = rd_text(rd_tagged(rd[["exclude_nca_by_param.Rd"]], "\\title"))
     )
   rules <- pknca_exclude_rules()
-  expect_equal(documented[rules$rule], stats::setNames(rules$description, rules$rule))
+  # The installed Rd keeps words but not always the spaces at line breaks, so
+  # the comparison ignores white space.
+  squish <- function(x) gsub(pattern = "\\s+", replacement = "", x = x)
+  expect_equal(
+    squish(documented[rules$rule]),
+    stats::setNames(squish(rules$description), rules$rule)
+  )
 })

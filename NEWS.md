@@ -48,7 +48,7 @@ the dosing including dose amount and route.
   `/`.  (@GITHUB_HANDLE)
 * In `as.data.frame(out_format = "cdisc")`, PPSTINT and PPENINT are now
   converted to the preferred time unit (`timeu_pref`) that labels them;
-  previously, interval times in the original unit were labelled with the
+  previously, interval times in the original unit were labeled with the
   preferred unit (60 minutes reported as `"PT60H"` with `timeu_pref = "hr"`).
   (@GITHUB_HANDLE)
 * Printing a `PKNCAdata` object no longer reports "With imputation: NA" when no
