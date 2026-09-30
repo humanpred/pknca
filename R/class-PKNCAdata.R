@@ -334,7 +334,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
 #' @noRd
 pknca_warn_single_dose_aucs_unit <- function(o_conc, options) {
   single_dose_aucs <- PKNCA.choose.option(name = "single.dose.aucs", options = options)
-  if (!identical(single_dose_aucs, PKNCA.options.defaults("single.dose.aucs"))) {
+  if (!identical(single_dose_aucs, PKNCA_options_defaults("single.dose.aucs"))) {
     return(invisible(NULL))
   }
   timeu <-

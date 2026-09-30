@@ -69,7 +69,7 @@ the dosing including dose amount and route.
   a different time zone are errors.  `check.interval.specification()` itself,
   which has no time reference, still requires numeric bounds.
   (@GITHUB_HANDLE)
-* `PKNCA.options.defaults()` returns the default value of one or more options
+* `PKNCA_options_defaults()` returns the default value of one or more options
   (or all of them) without changing the current options, unlike
   `PKNCA.options(default = TRUE)`, which resets them.  (@GITHUB_HANDLE)
 

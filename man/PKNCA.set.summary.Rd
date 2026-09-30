@@ -60,6 +60,6 @@ PKNCA.set.summary(
 Other PKNCA calculation and summary settings:
 \code{\link[=PKNCA.choose.option]{PKNCA.choose.option()}},
 \code{\link[=PKNCA.options]{PKNCA.options()}},
-\code{\link[=PKNCA.options.defaults]{PKNCA.options.defaults()}}
+\code{\link[=PKNCA_options_defaults]{PKNCA_options_defaults()}}
 }
 \concept{PKNCA calculation and summary settings}

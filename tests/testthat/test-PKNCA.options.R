@@ -546,25 +546,25 @@ test_that("setting one r-squared factor takes the other out of use (#337)", {
   expect_equal(PKNCA.options("r.squared.factor"), 0.0006)
 })
 
-test_that("PKNCA.options.defaults reads defaults without changing the current options", {
+test_that("PKNCA_options_defaults reads defaults without changing the current options", {
   withr::defer(PKNCA.options(default = TRUE))
   PKNCA.options(default = TRUE)
   all_defaults <- PKNCA.options()
   PKNCA.options(min.span.ratio = 3, auc.method = "linear")
-  expect_equal(PKNCA.options.defaults(), all_defaults)
-  expect_equal(PKNCA.options.defaults("min.span.ratio"), all_defaults$min.span.ratio)
+  expect_equal(PKNCA_options_defaults(), all_defaults)
+  expect_equal(PKNCA_options_defaults("min.span.ratio"), all_defaults$min.span.ratio)
   expect_equal(
-    PKNCA.options.defaults(c("min.span.ratio", "auc.method")),
+    PKNCA_options_defaults(c("min.span.ratio", "auc.method")),
     all_defaults[c("min.span.ratio", "auc.method")]
   )
   # The current options are unchanged
   expect_equal(PKNCA.options("min.span.ratio"), 3)
   expect_equal(PKNCA.options("auc.method"), "linear")
   expect_error(
-    PKNCA.options.defaults(c("min.span.ratio", "not_an_option")),
+    PKNCA_options_defaults(c("min.span.ratio", "not_an_option")),
     regexp = "not_an_option",
     class = "pknca_error_unknown_options"
   )
-  expect_error(PKNCA.options.defaults(NA_character_), regexp = "missing")
-  expect_error(PKNCA.options.defaults(character()), regexp = "length >= 1")
+  expect_error(PKNCA_options_defaults(NA_character_), regexp = "missing")
+  expect_error(PKNCA_options_defaults(character()), regexp = "length >= 1")
 })

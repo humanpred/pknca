@@ -57,7 +57,7 @@ PKNCA.options(auc.method="lin up/log down", min.hl.points=3)
 
 Other PKNCA calculation and summary settings:
 \code{\link[=PKNCA.choose.option]{PKNCA.choose.option()}},
-\code{\link[=PKNCA.options.defaults]{PKNCA.options.defaults()}},
-\code{\link[=PKNCA.set.summary]{PKNCA.set.summary()}}
+\code{\link[=PKNCA.set.summary]{PKNCA.set.summary()}},
+\code{\link[=PKNCA_options_defaults]{PKNCA_options_defaults()}}
 }
 \concept{PKNCA calculation and summary settings}

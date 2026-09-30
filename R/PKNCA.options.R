@@ -535,7 +535,7 @@ PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
         class = "pknca_error_default_with_options"
       )
     # Set the default options
-    assign("options", PKNCA.options.defaults(), envir=.PKNCAEnv)
+    assign("options", PKNCA_options_defaults(), envir=.PKNCAEnv)
   } else if (check) {
     # Check an option for accuracy, but don't set it
     if (length(args) != 1) {
@@ -624,14 +624,14 @@ PKNCA.choose.option <- function(name, value=NULL, options=list()) {
 #' @family PKNCA calculation and summary settings
 #' @seealso [PKNCA.options()], [PKNCA.options.describe()]
 #' @examples
-#' PKNCA.options.defaults("min.span.ratio")
+#' PKNCA_options_defaults("min.span.ratio")
 #' # The current options are not changed
 #' PKNCA.options(min.span.ratio = 3)
-#' PKNCA.options.defaults("min.span.ratio")
+#' PKNCA_options_defaults("min.span.ratio")
 #' PKNCA.options("min.span.ratio")
 #' PKNCA.options(default = TRUE)
 #' @export
-PKNCA.options.defaults <- function(name = NULL) {
+PKNCA_options_defaults <- function(name = NULL) {
   checkmate::assert_character(name, any.missing = FALSE, min.len = 1, null.ok = TRUE)
   if (is.null(name)) {
     name <- names(.PKNCA.option.check)
