@@ -9,46 +9,82 @@ the dosing including dose amount and route.
 ## Changes to automatically generated calculation intervals
 
 When `PKNCAdata()` is given no `intervals`, the intervals it generates now take
-their parameters from `pknca_interval_table()` rather than the hard-coded set
-of AUClast, Cmax, Tmax, and half-life.  Each interval gets the parameters and
-the imputation that suit its context: a single dose, a dosing interval, or the
-last dose at steady state.  For single-dose data this replaces the 0 to 24 hour
-window plus a window to infinity with one interval from the dose to infinity,
-so the interval no longer assumes that time is measured in hours.  To calculate
-the intervals as before, set the option:
+their parameters from `pknca_interval_table()` rather than the hard-coded set of
+AUClast, Cmax, Tmax, and half-life.  Each interval gets the parameters and the
+imputation that suit its context: a single dose, a dosing interval, or the last
+dose at steady state.  Set the new `auto.interval.method` option to go back to
+the previous parameter lists:
 
 ``` r
-PKNCA.options(single.dose.aucs = PKNCA.options("single.dose.aucs"))
+PKNCA.options(auto.interval.method = "legacy")
 ```
 
-Setting `single.dose.aucs` to anything other than its default keeps using that
-table for single-dose data, exactly as before.
+**Default results change.**  Three things differ for an analysis that relied on
+the generated intervals:
+
+* Single-dose data gets one interval from the dose to infinity instead of a 0 to
+  24 hour window plus a window to infinity, so the interval no longer assumes
+  that time is measured in hours.  There is no longer a separate AUClast over 0
+  to 24.
+* The single-dose interval now carries `start_predose_conc0` imputation, and a
+  dosing interval carries `start_cmin` or `start_predose`.  **AUC values change
+  when no sample sits at the start of the interval**, because the concentration
+  at the start is now imputed rather than the AUC starting at the first sample.
+  For a profile sampled at 0.25, 1, 2, 4, 8, and 24 hours after a dose at time
+  0, AUClast used to be integrated from 0.25 hours and is now integrated from 0
+  hours with a concentration of 0 imputed there.
+* The default set of parameters gains `tlag`, `count_conc`, `aucpext.obs`, and
+  `cl.obs`.  Parameters that were already calculated are unchanged.
+
+`auto.interval.method = "legacy"` restores all three.
 
 * `choose.auc.intervals()` and `find.tau()` match times within a tolerance
-  rather than exactly.  A sample drawn off its nominal time, such as a trough at
-  167.5 hours or a predose sample at -0.05 hours, now bounds the interval it
-  belongs to, and dose times that floating point cannot hold exactly, such as dosing
-  three times a day with time measured in days, are recognized as evenly spaced.
-  The window for a boundary sample is the new `auto.interval.tolerance` option,
-  a fraction of the interval's length that defaults to 0.05.
+  rather than exactly.  A sample drawn a little before its nominal time, such as
+  a trough at 167.5 hours or a predose sample at -0.05 hours, now bounds the
+  interval it belongs to, and dose times that floating point cannot hold
+  exactly, such as dosing three times a day with time measured in days, are
+  recognized as evenly spaced.  The window is the new `auto.interval.tolerance`
+  option, a fraction of the interval's length that defaults to 0.05.  It only
+  reaches backward, so a concentration drawn after a dose no longer stands in
+  for the predose sample.
 * `find.tau()` no longer reports an interval that matches no real dose spacing.
   Dose times are sorted first and the ones that repeat are dropped, so the order
-  they arrive in and
-  a dose recorded twice no longer change the answer.  Doses spaced as though one
-  was missed give the underlying interval with a new
+  they arrive in and a dose recorded twice no longer change the answer.  An
+  interval that the whole pattern of doses repeats over is looked for before
+  anything is read as a missed dose, so a regimen with a regular gap in it, such
+  as dosing three times a day at 0, 6, and 12 hours, is reported as a daily
+  interval rather than a 6 hour one with doses missing overnight.  Doses spaced
+  as though one was missed give the underlying interval with a new
   `"pknca_warning_tau_irregular_dosing"` warning that names the gaps, rather
   than being passed silently into `mrt.md.*` and `vss.md.*`.
+* The interval generated for the last dose now starts at the first dose of the
+  last complete dosing cycle, so a regimen giving more than one dose per
+  interval no longer gets an interval that contains a dose that was never
+  recorded.  Twice-daily doses ending at 106 hours give 96 to 120 hours rather
+  than 106 to 130.
 * `choose.auc.intervals()` gains `route` and `sparse` arguments, and
   `PKNCAdata()` passes the route recorded with the doses, so an intravenous
-  bolus is back-extrapolated to `c0` and a sparse design imputes nothing.
+  bolus is back-extrapolated to `c0` and a sparse design imputes nothing.  A
+  group giving more than one route gives a new
+  `"pknca_warning_multiple_dose_routes"` warning and uses the first dose's
+  route.
 * `choose.auc.intervals()` passes `options` to `find.tau()`, so `tau.choices`
   given to `PKNCAdata(options = )` is honored when intervals are chosen.
 * A concentration group with no dose rows gives no intervals with a
   `"pknca_warning_no_dose_times_for_group"` warning instead of aborting, and a
   group with no samples after its dose gives no intervals rather than intervals
-  that cannot be calculated.
+  that cannot be calculated.  When the dosing interval cannot be determined, the
+  interval that would have been generated for the last dose is reported as
+  dropped with a new `"pknca_warning_no_tau_for_intervals"` warning.
 * Two doses separated by a washout, such as two treatment periods in one group,
   give an interval for each dose instead of one AUClast spanning the washout.
+* `PKNCAdata()` no longer aborts when sparse concentration data are given
+  without intervals; the sparse concentrations were passed through to the
+  interval specification, where they were rejected as an unknown column.
+
+(Reported by @GITHUB_HANDLE, #ISSUE)
+
+## Other changes
 
 * `be_assess()`, `be_compare()`, and `be_fit_models()` gain three options for
   treatment comparisons beyond a bioequivalence decision:

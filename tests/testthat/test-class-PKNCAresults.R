@@ -40,7 +40,12 @@ test_that("PKNCAresults generation", {
   # rather than the single.dose.aucs option, so a single dose gives one
   # interval to infinity instead of a 0 to 24 window plus one to infinity, and
   # the interval carries the imputation and the parameters that context gives.
-  # The values the two versions share are unchanged.
+  # Every value the two versions share is unchanged:  these data have a
+  # concentration at the time of the dose, so imputing one there changes
+  # nothing.  Two expectations are written to more digits than before
+  # (lambda.z.corrxy -0.9521 to -0.9525 and clast.obs 0.3148 to 0.3149); both
+  # were already within the test's tolerance of the value the calculation
+  # gives, and neither value moved.
   verify.result <-
     tibble::tibble(
       treatment="Trt 1",

@@ -76,15 +76,35 @@ test_that("find.tau reports a missed dose rather than the length of the gap", {
     class="pknca_warning_tau_irregular_dosing"
   )
   expect_equal(tau, 24)
-  # Every gap that is longer than the interval is named
+  # Every gap that is longer than the interval is named.  The gaps here fall
+  # after 48 and 168 hours, which is not itself a repeating pattern; doses at
+  # 0, 24, 48, 96, 120, 144, 192, 216, and 240 hours are three days on and one
+  # day off, and that repeats over 96 hours, so it is reported as the regimen
+  # it is rather than as missed doses.
   expect_warning(
-    tau_two <- find.tau(c(0, 24, 48, 96, 120, 144, 192, 216, 240)),
-    regexp="missing after times 48, 144",
+    tau_two <- find.tau(c(0, 24, 48, 96, 120, 144, 168, 216)),
+    regexp="missing after times 48, 168",
     class="pknca_warning_tau_irregular_dosing"
   )
   expect_equal(tau_two, 24)
+  expect_equal(find.tau(c(0, 24, 48, 96, 120, 144, 192, 216, 240)), 96)
   # A gap that is not a whole number of intervals is not a missed dose
   expect_equal(find.tau(c(0, 24, 48, 60, 84, 108), tau.choices=24), NA)
+})
+
+test_that("find.tau prefers a repeating pattern to a missed dose", {
+  # Three times a day with an overnight gap:  the doses repeat daily, and the
+  # 12 hour overnight gap is the regimen rather than two doses that were not
+  # given.  Reading it as a 6 hour interval with missed doses would put the
+  # multiple-dose parameters on the wrong interval.
+  expect_equal(find.tau(c(0, 6, 12, 24, 30, 36, 48, 54, 60)), 24)
+  # Every four hours during the day, with the same overnight gap
+  expect_equal(find.tau(c(0, 4, 8, 24, 28, 32, 48, 52, 56)), 24)
+  # Neither gives the irregular-dosing warning, because nothing is missing
+  expect_no_warning(find.tau(c(0, 6, 12, 24, 30, 36, 48, 54, 60)))
+  expect_no_warning(find.tau(c(0, 4, 8, 24, 28, 32, 48, 52, 56)))
+  # Twice a day at 0 and 10 hours, which repeats daily
+  expect_equal(find.tau(c(0, 10, 24, 34, 48, 58)), 24)
 })
 
 test_that("find.tau sorts and de-duplicates the dose times", {
@@ -198,34 +218,67 @@ test_that("choose.auc.intervals builds the single-dose interval from the builder
   )
 })
 
-test_that("choose.auc.intervals keeps single.dose.aucs when it is set", {
-  # Setting the option is the documented way back to the previous intervals
+test_that("auto.interval.method chooses the parameter lists", {
+  # "legacy" gives the parameter lists PKNCA used before pknca_interval_table()
+  # was available, which is the documented way back to them.
+  legacy <- list(auto.interval.method="legacy")
+  expect_equal(
+    choose.auc.intervals(c(0, 1, 2, 4, 8, 24, 48), 0, options=legacy),
+    check.interval.specification(PKNCA.options("single.dose.aucs"))
+  )
+  # The single-dose table is offset by the dose time
+  expect_equal(
+    choose.auc.intervals(c(5, 6, 7, 9, 13, 29), 5, options=legacy)$end,
+    c(29, Inf)
+  )
+  # A user-supplied single.dose.aucs is used under "legacy"
   tmp_single_dose_auc <-
     check.interval.specification(
       data.frame(start=0,
-                 end=c(24, Inf),
+                 end=c(12, Inf),
                  auclast=c(TRUE, FALSE),
                  aucinf.obs=c(FALSE, TRUE),
                  half.life=c(FALSE, TRUE)))
   expect_equal(
-    choose.auc.intervals(c(1, 2, 3), 1, single.dose.aucs=tmp_single_dose_auc),
+    choose.auc.intervals(c(1, 2, 3), 1,
+                         single.dose.aucs=tmp_single_dose_auc, options=legacy),
     check.interval.specification(
       data.frame(start=1,
-                 end=c(25, Inf),
+                 end=c(13, Inf),
                  auclast=c(TRUE, FALSE),
                  aucinf.obs=c(FALSE, TRUE),
                  half.life=c(FALSE, TRUE)))
   )
-  # And through the options list
+  # Multiple-dose intervals get AUClast, Cmax, and Tmax under "legacy"
+  dense <- c(0, 0.5, 1, 2, 4, 8, 12, 24)
+  conc <- sort(unique(c(dense, 48, 72, 96, 120, 144 + dense, 144 + c(48, 72, 96))))
+  ret_legacy <- choose.auc.intervals(conc, seq(0, 144, by=24), options=legacy)
+  expect_equal(ret_legacy$start, c(0, 144, 144))
+  expect_equal(ret_legacy$end, c(24, 168, Inf))
+  expect_equal(ret_legacy$auclast, c(TRUE, TRUE, FALSE))
+  expect_equal(ret_legacy$cmax, c(TRUE, TRUE, FALSE))
+  expect_equal(ret_legacy$tmax, c(TRUE, TRUE, FALSE))
+  expect_equal(ret_legacy$half.life, c(FALSE, FALSE, TRUE))
+  expect_false("aucint.last" %in% names(ret_legacy)[vapply(ret_legacy, isTRUE, TRUE)])
+  # "builder" is the default and is unaffected by single.dose.aucs being set to
+  # the value the package ships with
   expect_equal(
-    choose.auc.intervals(c(1, 2, 3), 1, options=list(single.dose.aucs=tmp_single_dose_auc)),
-    check.interval.specification(
-      data.frame(start=1,
-                 end=c(25, Inf),
-                 auclast=c(TRUE, FALSE),
-                 aucinf.obs=c(FALSE, TRUE),
-                 half.life=c(FALSE, TRUE)))
+    choose.auc.intervals(c(0, 1, 2, 4, 8, 24, 48), 0,
+                         single.dose.aucs=PKNCA.options("single.dose.aucs")),
+    pknca_interval_table(0, Inf, dosing="single")
   )
+  expect_equal(
+    choose.auc.intervals(c(0, 1, 2, 4, 8, 24, 48), 0,
+                         options=list(auto.interval.method="builder")),
+    pknca_interval_table(0, Inf, dosing="single")
+  )
+})
+
+test_that("auto.interval.method is a documented option", {
+  expect_equal(PKNCA.options("auto.interval.method"), "builder")
+  expect_true(grepl("legacy", PKNCA.options.describe("auto.interval.method")))
+  expect_error(PKNCA.options(auto.interval.method="nope"))
+  expect_error(PKNCA.options(auto.interval.method=1))
 })
 
 test_that("choose.auc.intervals finds the intervals between doses", {
@@ -363,24 +416,56 @@ test_that("choose.auc.intervals reports irregular dosing while still choosing in
   # An irregular gap that is not a whole number of intervals gives no tau, so
   # no interval is anchored on the last dose
   doses_gap <- c(0, 24, 48, 80, 96, 120, 144)
-  ret_gap <- choose.auc.intervals(sort(unique(c(doses_gap, 144 + dense, 192, 216))), doses_gap)
+  expect_warning(
+    ret_gap <- choose.auc.intervals(sort(unique(c(doses_gap, 144 + dense, 192, 216))), doses_gap),
+    class="pknca_warning_no_tau_for_intervals"
+  )
   expect_false(any(is.infinite(ret_gap$end) & ret_gap$start == 144 & ret_gap$aucint.last))
   expect_equal(ret_gap$start, 144)
   expect_equal(ret_gap$end, Inf)
+  # Dropping the steady-state interval is reported, with its own class so that
+  # it is not confused with resolve_dose_tau()'s warning
+  expect_warning(
+    choose.auc.intervals(sort(unique(c(doses_gap, 144 + dense, 192, 216))), doses_gap),
+    regexp="dosing interval could not be determined",
+    class="pknca_warning_no_tau_for_intervals"
+  )
 })
 
 test_that("choose.auc.intervals uses tau.choices from the options", {
-  # The option reaches find.tau(), which anchors the last dose's interval
+  # The option reaches find.tau(), which sets the last dose's interval.  Twice
+  # daily at 0 and 10 hours repeats every 24 hours, and also every 48, so
+  # naming 48 selects the longer one.
   doses <- c(0, 10, 24, 34, 48, 58, 72, 82, 96, 106)
-  conc <- sort(unique(c(doses, 106 + c(1, 2, 4, 8, 12, 24, 48), 106 + 72)))
-  expect_equal(
-    choose.auc.intervals(conc, doses)$end,
-    c(130, Inf)
-  )
+  conc <- sort(unique(c(doses, 96 + c(1, 2, 4, 8, 12, 24, 36, 48, 72))))
+  # The first row is the dosing interval between the two doses of the last
+  # cycle; the second is the cycle itself, which the option moves.
+  expect_equal(choose.auc.intervals(conc, doses)$end, c(106, 120, Inf))
   expect_equal(
     choose.auc.intervals(conc, doses, options=list(tau.choices=48))$end,
-    c(154, Inf)
+    c(106, 144, Inf)
   )
+})
+
+test_that("choose.auc.intervals gives the last dose a whole dosing cycle", {
+  # Twice-daily dosing that stops at 106 hours has its last complete cycle
+  # running from 96 to 120 hours.  An interval from 106 to 130 would span one
+  # tau but would contain the dose at 120 that was never recorded.
+  doses <- c(0, 10, 24, 34, 48, 58, 72, 82, 96, 106)
+  conc <- sort(unique(c(doses, 96 + c(1, 2, 4, 8, 12, 24, 36, 48, 72))))
+  ret <- choose.auc.intervals(conc, doses)
+  # The 10 hour span between the last two doses is a dosing interval in its own
+  # right; the cycle it belongs to runs from 96 to 120.
+  expect_equal(ret$start, c(96, 96, 106))
+  expect_equal(ret$end, c(106, 120, Inf))
+  # One dose per interval already starts the cycle at the last dose
+  dense <- c(0, 0.5, 1, 2, 4, 8, 12, 24)
+  ret_qd <-
+    choose.auc.intervals(
+      sort(unique(c(dense, 48, 72, 96, 120, 144 + dense, 144 + c(48, 72)))),
+      seq(0, 144, by=24)
+    )
+  expect_equal(ret_qd$start, c(0, 144, 144))
 })
 
 test_that("choose.auc.intervals gives the last dose a profile when tau ends nothing", {
@@ -560,5 +645,177 @@ test_that("dose_route_for_intervals maps the recorded route to the parameter rou
   expect_equal(dose_route_for_intervals("intravascular", 2), "iv_infusion")
   # Case and a group giving more than one route
   expect_equal(dose_route_for_intervals("Intravascular", 0), "iv_bolus")
-  expect_equal(dose_route_for_intervals(c("intravascular", "extravascular"), c(0, 0)), "iv_bolus")
+  expect_warning(
+    mixed <- dose_route_for_intervals(c("intravascular", "extravascular"), c(0, 0)),
+    regexp="More than one dosing route",
+    class="pknca_warning_multiple_dose_routes"
+  )
+  expect_equal(mixed, "iv_bolus")
+})
+
+test_that("choose.auc.intervals needs a sample at or before each boundary", {
+  # Every two weeks, with the profile starting at the Cmax sample and no
+  # predose sample.  A sample 4 hours after the dose is not the sample at the
+  # dose, even though it falls inside a window that is 5% of 336 hours.
+  ret_no_predose <-
+    choose.auc.intervals(c(4, 8, 24, 48, 72, 336 + c(4, 8, 24, 48)), c(0, 336))
+  expect_equal(ret_no_predose$start, 336)
+  expect_equal(ret_no_predose$end, Inf)
+  # The same design with a predose sample does get the first dose's interval
+  ret_predose <-
+    choose.auc.intervals(c(0, 4, 8, 24, 48, 72, 336 + c(0, 4, 8, 24, 48)), c(0, 336))
+  expect_equal(ret_predose$start, c(0, 336))
+  expect_equal(ret_predose$end, c(336, Inf))
+  # Daily dosing whose first sample is an hour after the dose, with no predose
+  # sample anywhere
+  expect_equal(
+    nrow(choose.auc.intervals(c(1, 2, 4, 8, 12, 25, 26, 28, 48), c(0, 24, 48))),
+    0
+  )
+  # A trough drawn after the next dose is contaminated by it, so it does not
+  # end the interval; one drawn a little early does
+  dense <- c(0, 0.5, 1, 2, 4, 8, 12)
+  doses <- seq(0, 144, by=24)
+  conc_late <- sort(unique(c(dense, 24, 48, 72, 96, 120, 144 + dense, 168.05, 192)))
+  ret_late <- choose.auc.intervals(conc_late, doses)
+  expect_equal(ret_late$start, c(0, 144))
+  expect_equal(ret_late$end, c(24, Inf))
+  conc_early <- sort(unique(c(dense, 24, 48, 72, 96, 120, 144 + dense, 167.5, 192)))
+  ret_early <- choose.auc.intervals(conc_early, doses)
+  expect_equal(ret_early$start, c(0, 144, 144))
+  expect_equal(ret_early$end, c(24, 168, Inf))
+  # A predose sample drawn at -0.05 hours starts the interval at the dose
+  ret_predose_early <-
+    choose.auc.intervals(c(-0.05, 2, 23.95, 26, 47.95, 50, 72, 100), c(0, 24, 48))
+  expect_equal(ret_predose_early$start, c(0, 24, 48, 48))
+  expect_equal(ret_predose_early$end, c(24, 48, 72, Inf))
+})
+
+test_that("choose.auc.intervals reads a long empty stretch as a washout", {
+  dense <- c(0, 0.5, 1, 2, 4, 8, 12, 24)
+  # A steady-state profile whose last sample before the trough is at 8 hours is
+  # still a dosing interval; two thirds of the interval with no samples in it
+  # is ordinary for a daily regimen.
+  conc_sparse <- sort(unique(c(outer(seq(0, 96, by=24), c(0, 1, 2, 4, 8), FUN="+"), 120, 144)))
+  ret_sparse <- choose.auc.intervals(conc_sparse, seq(0, 96, by=24))
+  expect_equal(ret_sparse$start, c(0, 24, 48, 72, 96, 96))
+  expect_equal(ret_sparse$end, c(24, 48, 72, 96, 120, Inf))
+  expect_equal(ret_sparse$aucint.last, c(rep(TRUE, 5), FALSE))
+  # The last sample at exactly half the interval
+  ret_half <-
+    choose.auc.intervals(sort(unique(c(0, 1, 2, 4, 8, 12, 24, 25, 26, 28, 36, 48, 72))), c(0, 24, 48))
+  expect_true(ret_half$aucint.last[1])
+  # Twice daily with the last sample at 6 hours of a 12 hour interval
+  ret_bid <-
+    choose.auc.intervals(sort(unique(c(0, 1, 2, 4, 6, 12, 13, 14, 16, 18, 24, 36))), c(0, 12, 24))
+  expect_true(ret_bid$aucint.last[1])
+  # Two treatment periods, where nearly four fifths of the span is empty
+  ret_washout <-
+    choose.auc.intervals(sort(c(dense, 48, 72, 336 + dense, 336 + c(48, 72))), c(0, 336))
+  expect_equal(ret_washout$auclast, c(TRUE, TRUE))
+  expect_equal(ret_washout$aucint.last, c(FALSE, FALSE))
+})
+
+test_that("find.tau matches at the edges of its tolerance", {
+  # Spacings that differ only in the last bits are the same spacing
+  spacing <- 1/3
+  doses <- c(0, spacing, 2*spacing, 3*spacing, 4*spacing)
+  expect_equal(find.tau(doses), spacing)
+  expect_equal(find.tau(cumsum(c(0, rep(spacing, 4)))), spacing)
+  # A difference far larger than the tolerance is a different spacing
+  nudged <- c(0, 24, 48, 72.5, 96.5)
+  expect_equal(find.tau(nudged), NA)
+  # A difference within the tolerance is not
+  eps <- sqrt(.Machine$double.eps)
+  expect_equal(find.tau(c(0, 24, 48 + 24*eps/2, 72)), 24)
+  # Large times, where the representable spacing is coarser
+  expect_equal(find.tau(c(0, 1e6, 2e6, 3e6)), 1e6)
+  # Very small times
+  expect_equal(find.tau(c(0, 1e-6, 2e-6, 3e-6)), 1e-6)
+})
+
+test_that("find.tau gives no interval for a missed dose in a short history", {
+  # Two spacings, one of them twice the other, is not enough to say that a dose
+  # was missed rather than that the regimen changed
+  expect_equal(find.tau(c(0, 24, 72)), NA)
+  expect_warning(
+    tau <- resolve_dose_tau(interval=data.frame(start=48, end=72), time.dose=c(0, 24, 72)),
+    class="pknca_warning_tau_undetermined"
+  )
+  expect_equal(tau, NA_real_)
+  # Seeing the interval twice in a row is what makes the longer gap read as a
+  # missed dose rather than a different regimen
+  expect_warning(
+    tau_ok <- resolve_dose_tau(interval=data.frame(start=48, end=72),
+                               time.dose=c(0, 24, 48, 96)),
+    class="pknca_warning_tau_irregular_dosing"
+  )
+  expect_equal(tau_ok, 24)
+})
+
+test_that("choose.auc.intervals handles a sparse design", {
+  ret <- choose.auc.intervals(c(0, 1, 2, 4, 8, 24), 0, sparse=TRUE)
+  expect_equal(ret$start, 0)
+  expect_equal(ret$end, Inf)
+  # A sparse design imputes nothing, so there is no impute column at all
+  expect_false("impute" %in% names(ret))
+  expect_equal(ret, pknca_interval_table(0, Inf, dosing="single", sparse=TRUE))
+  # The dense version of the same design does impute
+  expect_true("impute" %in% names(choose.auc.intervals(c(0, 1, 2, 4, 8, 24), 0)))
+})
+
+test_that("PKNCAdata passes an infusion route and sparseness into the intervals", {
+  d_conc <- data.frame(time=c(0, 1, 2, 4, 8, 24), conc=c(0, 5, 4, 3, 2, 1))
+  d_dose_inf <- data.frame(time=0, dose=1, rt="intravascular", dur=2)
+  ret_inf <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time),
+      PKNCAdose(d_dose_inf, dose~time, route="rt", duration="dur")
+    )
+  # An infusion is not back-extrapolated to C0, but a bolus is
+  expect_false(any(ret_inf$intervals$c0))
+  d_dose_bolus <- data.frame(time=0, dose=1, rt="intravascular", dur=0)
+  ret_bolus <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time),
+      PKNCAdose(d_dose_bolus, dose~time, route="rt", duration="dur")
+    )
+  expect_true(any(ret_bolus$intervals$c0))
+  # A sparse design imputes nothing
+  d_conc_sparse <-
+    data.frame(
+      id=rep(1:3, each=6),
+      time=rep(c(0, 1, 2, 4, 8, 24), 3),
+      conc=c(0, 5, 4, 3, 2, 1, 0, 6, 5, 3, 2, 1, 0, 4, 4, 2, 1, 0.5)
+    )
+  d_dose_sparse <- data.frame(id=1:3, time=0, dose=1)
+  ret_sparse <-
+    PKNCAdata(
+      PKNCAconc(d_conc_sparse, conc~time|id, sparse=TRUE),
+      PKNCAdose(d_dose_sparse, dose~time|id)
+    )
+  expect_false("impute" %in% names(ret_sparse$intervals))
+})
+
+test_that("a two-day twice-daily regimen gives the intervals it should", {
+  # Doses at 0, 12, 24, and 36 hours with a profile on the first and last
+  # interval and troughs between
+  doses <- c(0, 12, 24, 36)
+  conc <-
+    sort(unique(c(
+      c(0, 0.5, 1, 2, 4, 8, 12),
+      24, 36,
+      36 + c(0, 0.5, 1, 2, 4, 8, 12),
+      36 + c(24, 36)
+    )))
+  ret <- choose.auc.intervals(conc, doses)
+  expect_equal(ret$start, c(0, 36, 36))
+  expect_equal(ret$end, c(12, 48, Inf))
+  # The first interval is a dosing interval, the last is at steady state, and
+  # the terminal phase gives the half-life
+  expect_equal(ret$aucint.last, c(TRUE, TRUE, FALSE))
+  expect_equal(ret$impute, c("start_cmin", "start_predose", NA_character_))
+  expect_equal(ret$half.life, c(TRUE, TRUE, TRUE))
+  # The 12 to 24 and 24 to 36 intervals have no samples between their doses
+  expect_false(any(ret$start %in% c(12, 24)))
 })

@@ -76,6 +76,7 @@ test_that("PKNCA.options", {
       min.hl.r.squared = 0.9,
       progress = TRUE,
       tau.choices = NA,
+      auto.interval.method = "builder",
       auto.interval.tolerance = 0.05,
       single.dose.aucs = check.interval.specification(
         data.frame(

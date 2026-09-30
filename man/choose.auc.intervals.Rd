@@ -40,18 +40,19 @@ Intervals are selected by the following metrics:
 \code{"pknca_warning_no_dose_times_for_group"} warning is given.
 \item If only one dose is administered and any sample follows it, the
 interval runs from the dose to infinity with the parameters
-\code{\link[=pknca_interval_table]{pknca_interval_table()}} gives for a single dose.  Setting the
-\code{single.dose.aucs} option to anything other than its default uses
-that table instead, offset by the time of the dose.
+\code{\link[=pknca_interval_table]{pknca_interval_table()}} gives for a single dose.
 \item If more than one dose is administered, an interval is generated
 between any two consecutive doses that have samples at both dose
 times and at least one sample between them.  It is a dosing interval
 when the samples run up to the next dose, and a single-dose profile
 bounded by the next dose when they stop partway and leave a washout.
 \item For the final dose, the dosing interval (\eqn{\tau}) is found with
-\code{\link[=find.tau]{find.tau()}} and an interval one \eqn{\tau} long is generated when a
+\code{\link[=find.tau]{find.tau()}}.  An interval one \eqn{\tau} long is generated when a
 sample was taken at its end, with the parameters for a dose at steady
-state.
+state.  It starts at the first dose of the last complete cycle, which
+is the last dose itself unless the regimen gives more than one dose
+per \eqn{\tau}, so that the interval never contains a dose that was
+not recorded.
 \item If samples continue beyond \eqn{\tau} after the last dose, the
 half-life is calculated from the last dose onward.  If the last dose
 has samples after it but gets neither of these, its profile is
@@ -59,9 +60,18 @@ calculated to infinity as a single dose.
 }
 }
 \details{
-Times are matched within a tolerance rather than exactly, so a sample drawn
-off its nominal time still bounds the interval it belongs to.  The window is
-the \code{auto.interval.tolerance} option as a fraction of the interval's length.
+Times are matched within a tolerance rather than exactly, so a sample drawn a
+little before its nominal time still bounds the interval it belongs to.  The
+window is the \code{auto.interval.tolerance} option as a fraction of the
+interval's length, and it only reaches backward:  a sample drawn after a
+boundary belongs to what follows that boundary, so a concentration drawn
+after a dose cannot stand in for the predose sample.
+
+Setting the \code{auto.interval.method} option to \code{"legacy"} calculates the
+parameter lists PKNCA used before \code{\link[=pknca_interval_table]{pknca_interval_table()}} was available:
+the \code{single.dose.aucs} option for single-dose data, and AUClast, Cmax, and
+Tmax for each interval of multiple-dose data.  The intervals themselves are
+found the same way either way.
 }
 \examples{
 # A single dose gives one profile to infinity

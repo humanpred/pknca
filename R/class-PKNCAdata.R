@@ -171,7 +171,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
       current_group <-
         n_conc_dose[
           idx,
-          setdiff(names(n_conc_dose), c("data_conc", "data_dose")),
+          setdiff(names(n_conc_dose), c("data_conc", "data_dose", "data_sparse_conc")),
           drop=FALSE
         ]
       warning_prefix <-
@@ -219,7 +219,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
     }
     intervals <-
       tidyr::unnest(
-        n_conc_dose[, setdiff(names(n_conc_dose), c("data_conc", "data_dose")), drop=FALSE],
+        n_conc_dose[, setdiff(names(n_conc_dose), c("data_conc", "data_dose", "data_sparse_conc")), drop=FALSE],
         cols="data_intervals"
       )
   }

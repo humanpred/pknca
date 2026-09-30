@@ -24,24 +24,33 @@ fits the doses.
 \description{
 The dose times are sorted and times that repeat are dropped, so the order
 they arrive in and a dose recorded twice do not change the answer.  The
-interval is then found from the spacings between consecutive doses:
+interval is then found in this order:
 \enumerate{
 \item If all values are \code{NA}, or there are no values, \code{NA} is returned.
 \item If all values are the same, then 0 is returned.
 \item If all doses are equally spaced, that spacing is returned.  Two doses
 give the spacing between them.
-\item If every spacing is a whole number of the smallest spacing and most
-of the doses have the smallest spacing, the smallest spacing is
-returned with a \code{"pknca_warning_tau_irregular_dosing"} warning naming
-the longer gaps, which are what a missed dose looks like.
-\item Otherwise each of \code{tau.choices} is tested, smallest first, and the
-first one the whole pattern of doses repeats over is returned.  The
-pattern must repeat over at least two complete intervals, so a
-regimen giving more than one dose per interval is found while a
-length that merely spans the doses is not.
-\item If none of them fits, \code{NA} is returned.  \code{\link[=resolve_dose_tau]{resolve_dose_tau()}} turns
+\item Otherwise each candidate interval is tested, smallest first, and the
+first one that the whole pattern of doses repeats over is returned.
+The candidates are \code{tau.choices} when it is given and every spacing
+between two doses when it is \code{NA}.  The pattern must repeat over at
+least two complete intervals, so a regimen giving more than one dose
+per interval is found while a length that merely spans the doses is
+not.
+\item If nothing repeats, and every spacing is a whole number of the
+smallest spacing, and the smallest spacing is seen twice in a row,
+the smallest spacing is returned with a
+\code{"pknca_warning_tau_irregular_dosing"} warning naming the longer
+gaps, which are what a missed dose looks like.
+\item If none of that fits, \code{NA} is returned.  \code{\link[=resolve_dose_tau]{resolve_dose_tau()}} turns
 that into a warning where a dosing interval is required.
 }
+}
+\details{
+Looking for a repeating pattern before reading anything as a missed dose is
+what keeps a regimen with a regular gap in it, such as dosing three times a
+day at 0, 6, and 12 hours, from being reported as a 6 hour interval with a
+dose missing overnight.
 }
 \examples{
 # Equally spaced doses give their spacing
