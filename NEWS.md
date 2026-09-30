@@ -54,13 +54,13 @@ the dosing including dose amount and route.
   `expect_output()` regular expressions had an unescaped `|` (and other
   unescaped regex metacharacters) in literal text like
   `"conc ~ time | treatment + ID"`, so they matched almost any output. Pinning
-  the real text surfaced that the expected output had drifted (an
-  `"With imputation: NA"` line and a `"Data are dense PK."` line were never
-  captured, and `obj.data.dose`'s interval count was stale). It also surfaced
-  that `print(formula)` (via `print.PKNCAconc()`, out of scope for this
-  change) emits a volatile `<environment: 0x...>` tag when the package is
-  loaded via `devtools::load_all()`/tested via `devtools::test()`; the fixed
-  tests wildcard that address rather than pin it.
+  the real text surfaced that the expected output had drifted (a
+  `"Data are dense PK."` line was never captured, and `obj.data.dose`'s
+  interval count was stale). It also surfaced that `print(formula)` (via
+  `print.PKNCAconc()`, out of scope for this change) emits a volatile
+  `<environment: 0x...>` tag when the package is loaded via
+  `devtools::load_all()`/tested via `devtools::test()`; the fixed tests
+  wildcard that address rather than pin it.
 
 * Concentration and dose times may be date-times (POSIXct) or dates (Date,
   taken as 08:00).  `PKNCAdata()` checks them and keeps them, and `pk.nca()`
