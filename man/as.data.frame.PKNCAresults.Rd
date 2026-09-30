@@ -20,10 +20,16 @@ data.frame.}
 \item{...}{Ignored (for compatibility with generic \code{\link[=as.data.frame]{as.data.frame()}})}
 
 \item{out_format}{Should the output be 'long' (default), 'wide', or 'cdisc'?
-When 'cdisc', the PPTESTCD column is translated to CDISC standard codes
-and a PPTEST column with the CDISC test name is added.  Route-dependent
-parameters (e.g. CL, VZ, MRT) are resolved using the route information
-from the dose data.}
+When 'cdisc', the original PKNCA parameter name is kept in a new
+\code{pknca_parameter} column (lowercase so it cannot be mistaken for an SDTM
+PP variable; drop it before submission), the PPTESTCD column is
+translated to CDISC standard codes, and a PPTEST column with the CDISC
+test name is added.  The translation is many-to-one -- several PKNCA
+parameters can resolve to the same PPTESTCD (every AUCint variant to
+"AUCINT", for example) -- so \code{pknca_parameter} is the only column that
+still identifies which PKNCA calculation produced a row.
+Route-dependent parameters (e.g. CL, VZ, MRT) are resolved using the
+route information from the dose data.}
 
 \item{filter_requested}{Only return rows with parameters that were
 specifically requested?}

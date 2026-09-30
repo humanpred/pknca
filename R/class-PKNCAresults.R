@@ -35,10 +35,16 @@ PKNCAresults <- function(result, data, exclude = NULL) {
 #' @param x The object to extract results from
 #' @param ... Ignored (for compatibility with generic [as.data.frame()])
 #' @param out_format Should the output be 'long' (default), 'wide', or 'cdisc'?
-#'   When 'cdisc', the PPTESTCD column is translated to CDISC standard codes
-#'   and a PPTEST column with the CDISC test name is added.  Route-dependent
-#'   parameters (e.g. CL, VZ, MRT) are resolved using the route information
-#'   from the dose data.
+#'   When 'cdisc', the original PKNCA parameter name is kept in a new
+#'   `pknca_parameter` column (lowercase so it cannot be mistaken for an SDTM
+#'   PP variable; drop it before submission), the PPTESTCD column is
+#'   translated to CDISC standard codes, and a PPTEST column with the CDISC
+#'   test name is added.  The translation is many-to-one -- several PKNCA
+#'   parameters can resolve to the same PPTESTCD (every AUCint variant to
+#'   "AUCINT", for example) -- so `pknca_parameter` is the only column that
+#'   still identifies which PKNCA calculation produced a row.
+#'   Route-dependent parameters (e.g. CL, VZ, MRT) are resolved using the
+#'   route information from the dose data.
 #' @param filter_requested Only return rows with parameters that were
 #'   specifically requested?
 #' @param filter_excluded Should excluded values be removed?
@@ -110,12 +116,23 @@ as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'c
 
 # Translate PPTESTCD to CDISC standard codes and add PPTEST column
 #
-# Also adds PPSTINT and PPENINT columns (ISO 8601 durations relative to the
-# last dose time) when any resolved PPTESTCD contains "INT".
+# Also adds a `pknca_parameter` column carrying the original PKNCA interval
+# column name (the CDISC translation is many-to-one -- several PKNCA
+# parameters can resolve to the same PPTESTCD, e.g. every AUCint variant to
+# "AUCINT" -- so this is the only column that still identifies which PKNCA
+# calculation produced a row), and PPSTINT and PPENINT columns (ISO 8601
+# durations relative to the last dose time) when any resolved PPTESTCD
+# contains "INT".
+#
+# `pknca_parameter` is lowercase and snake_case specifically so it cannot be
+# mistaken for an SDTM PP variable (which are always uppercase); it is a
+# PKNCA-internal column, not part of the CDISC standard, and downstream
+# datasets built from this output should drop it before submission.
 #
 # @param ret The long-format result data.frame
 # @param x The PKNCAresults object (for accessing dose/route data)
-# @returns The data.frame with PPTESTCD translated and PPTEST added
+# @returns The data.frame with `pknca_parameter` added, PPTESTCD translated,
+#   and PPTEST added
 # @keywords Internal
 # @noRd
 pknca_cdisc_translate <- function(ret, x) {
@@ -127,6 +144,7 @@ pknca_cdisc_translate <- function(ret, x) {
   # settled once for the whole result
   sparse <- is_sparse_pk(x)
   # Build CDISC PPTESTCD and PPTEST for each row
+  pknca_parameter <- ret$PPTESTCD
   cdisc_pptestcd <- character(nrow(ret))
   cdisc_pptest <- character(nrow(ret))
   for (i in seq_len(nrow(ret))) {
@@ -143,13 +161,14 @@ pknca_cdisc_translate <- function(ret, x) {
     cdisc_pptest[i] <- resolve_cdisc_value(col_def$pptest_cdisc, route, sparse = sparse)
   }
   ret$PPTESTCD <- cdisc_pptestcd
-  # Insert PPTEST after PPTESTCD
+  # Insert pknca_parameter before PPTESTCD and PPTEST after it
   pptestcd_pos <- which(names(ret) == "PPTESTCD")
   if (length(pptestcd_pos) == 1) {
-    before <- ret[, seq_len(pptestcd_pos), drop = FALSE]
+    before <- ret[, seq_len(pptestcd_pos - 1), drop = FALSE]
     after <- ret[, seq(pptestcd_pos + 1, ncol(ret)), drop = FALSE]
-    ret <- cbind(before, PPTEST = cdisc_pptest, after)
+    ret <- cbind(before, pknca_parameter = pknca_parameter, ret[, "PPTESTCD", drop = FALSE], PPTEST = cdisc_pptest, after)
   } else {
+    ret$pknca_parameter <- pknca_parameter
     ret$PPTEST <- cdisc_pptest
   }
   # Add PPSTINT/PPENINT if any PPTESTCD contains "INT"

@@ -491,6 +491,41 @@ test_that("as.data.frame.PKNCAresults with out_format='cdisc' adds PPTESTCD and 
   expect_equal(cmax_row$PPTEST, "Max Conc")
 })
 
+test_that("as.data.frame.PKNCAresults with out_format='cdisc' keeps the PKNCA parameter name", {
+  d_conc <- data.frame(
+    subject = rep(1, 4),
+    time = 0:3,
+    conc = c(0, 1, 0.5, 0.25)
+  )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  d_dose <- data.frame(subject = 1, time = 0, dose = 10)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(
+    start = 0, end = 3, cmax = TRUE,
+    aucint.last = TRUE, aucint.inf.obs = TRUE, half.life = TRUE
+  ))
+  suppressWarnings(suppressMessages(o_nca <- pk.nca(o_data)))
+  result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
+
+  expect_true("pknca_parameter" %in% names(result_cdisc))
+  # pknca_parameter sits right before PPTESTCD, PPTEST right after
+  pknca_parameter_pos <- which(names(result_cdisc) == "pknca_parameter")
+  pptestcd_pos <- which(names(result_cdisc) == "PPTESTCD")
+  pptest_pos <- which(names(result_cdisc) == "PPTEST")
+  expect_equal(pptestcd_pos, pknca_parameter_pos + 1)
+  expect_equal(pptest_pos, pptestcd_pos + 1)
+
+  cmax_row <- result_cdisc[result_cdisc$pknca_parameter == "cmax", ]
+  expect_equal(cmax_row$PPTESTCD, "CMAX")
+
+  # aucint.last and aucint.inf.obs both resolve to the CDISC code AUCINT
+  # (CDISC has one "AUC from T1 to T2" code regardless of extrapolation
+  # basis); pknca_parameter is what still distinguishes which PKNCA
+  # calculation produced each row.
+  aucint_rows <- result_cdisc[result_cdisc$PPTESTCD == "AUCINT", ]
+  expect_setequal(aucint_rows$pknca_parameter, c("aucint.last", "aucint.inf.obs"))
+})
+
 test_that("as.data.frame.PKNCAresults with out_format='cdisc' resolves route-dependent params", {
   d_conc <- data.frame(
     subject = rep(1, 5),

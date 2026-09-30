@@ -34,6 +34,14 @@ the dosing including dose amount and route.
     (expanded across route/dense-sparse variants) with whether each code is
     in the bundled CDISC PKPARMCD snapshot (`data-raw/pknca_ct_pkparmcd.R`,
     generated from `cdiscdata`; CT version recorded there).
+  * `as.data.frame(out_format = "cdisc")` keeps the original PKNCA parameter
+    name in a new `pknca_parameter` column, placed just before `PPTESTCD`. The
+    CDISC translation is many-to-one -- several PKNCA parameters can resolve
+    to the same `PPTESTCD` (every `AUCint` variant now resolves to `AUCINT`,
+    for example) -- so `pknca_parameter` is the only column that still
+    identifies which PKNCA calculation produced a row; it is lowercase so it
+    cannot be mistaken for an SDTM PP variable and should be dropped before
+    submission.
   * `PPANMETH` now falls back to a parameter's registered `formula_note` when
     its calculation function sets no dynamic method attribute at run time
     (previously only `c0`, whose `formula_note` documents the method-selection
