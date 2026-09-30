@@ -10,8 +10,9 @@ pknca_cdisc_codes()
 A data.frame with one row per parameter/variant and columns
 \code{parameter}, \code{tier}, \code{variant} (\code{"single"}, a route, or \code{"dense"}/
 \code{"sparse"}), \code{pptestcd_cdisc}, \code{pptest_cdisc}, and \code{in_ct} (whether
-\code{pptestcd_cdisc} is a code in the bundled CDISC PKPARMCD snapshot; see
-\code{data-raw/pknca_ct_pkparmcd.R} for its source and version).
+\code{pptestcd_cdisc} is a code in the CDISC PKPARMCD codelist, checked
+against the installed cdiscdata package; \code{NA} for every row, with a
+message, if cdiscdata is not installed).
 }
 \description{
 Enumerates the \code{pptestcd_cdisc}/\code{pptest_cdisc} values registered on every

@@ -27,8 +27,9 @@ cdisc_value_variants <- function(x) {
 #' @returns A data.frame with one row per parameter/variant and columns
 #'   `parameter`, `tier`, `variant` (`"single"`, a route, or `"dense"`/
 #'   `"sparse"`), `pptestcd_cdisc`, `pptest_cdisc`, and `in_ct` (whether
-#'   `pptestcd_cdisc` is a code in the bundled CDISC PKPARMCD snapshot; see
-#'   `data-raw/pknca_ct_pkparmcd.R` for its source and version).
+#'   `pptestcd_cdisc` is a code in the CDISC PKPARMCD codelist, checked
+#'   against the installed cdiscdata package; `NA` for every row, with a
+#'   message, if cdiscdata is not installed).
 #' @details A parameter with no CDISC PKPARMCD equivalent (for example a
 #'   sample count or a standard error, neither of which CDISC assigns its own
 #'   PP parameter code) keeps a sponsor-defined code with `in_ct` `FALSE`;
@@ -62,7 +63,37 @@ pknca_cdisc_codes <- function() {
     }
   )
   ret <- do.call(rbind, rows)
-  ret$in_ct <- ret$pptestcd_cdisc %in% pknca_ct_pkparmcd$pptestcd_cdisc
+  ret$in_ct <- pknca_cdisc_in_ct(ret$pptestcd_cdisc)
   rownames(ret) <- NULL
   ret
+}
+
+# Whether each pptestcd_cdisc value is a real CDISC PKPARMCD code, checked
+# against the installed cdiscdata package's controlled terminology.  NA for
+# every value, with a message, when cdiscdata is not installed.
+pknca_cdisc_in_ct <- function(codes) {
+  if (!requireNamespace("cdiscdata", quietly = TRUE)) {
+    rlang::inform(
+      paste(
+        "cdiscdata is not installed; `in_ct` in pknca_cdisc_codes() will be NA.",
+        "Install cdiscdata to check CDISC PPTESTCD codes against the current",
+        "PKPARMCD controlled terminology."
+      ),
+      class = "pknca_message_cdiscdata_unavailable"
+    )
+    return(rep(NA, length(codes)))
+  }
+  # cdiscdata 0.1.0's get_ct() resolves its dataset catalogue through a
+  # reference that only exists once the package is attached, not merely
+  # namespace-loaded (a packaging quirk expected to be fixed upstream).
+  # attachNamespace()/detach() attach it for this call only, without altering
+  # the caller's search path the way a bare library() call would.
+  already_attached <- "package:cdiscdata" %in% search()
+  if (!already_attached) {
+    attachNamespace(asNamespace("cdiscdata"))
+    on.exit(try(detach("package:cdiscdata"), silent = TRUE), add = TRUE)
+  }
+  ct <- cdiscdata::get_ct(type = "sdtm")
+  pkparmcd_codes <- ct$term[ct$codelist_code %in% "C85839"]
+  codes %in% pkparmcd_codes
 }

@@ -23,7 +23,7 @@ Imports:
     utils,
     lifecycle
 Suggests:
-    cdiscdata,
+    cdiscdata (>= 0.1.0),
     covr,
     cowplot,
     emmeans,
