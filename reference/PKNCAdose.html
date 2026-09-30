@@ -102,7 +102,9 @@
 <dt id="arg-formula">formula<a class="anchor" aria-label="anchor" href="#arg-formula"></a></dt>
 <dd><p>The formula defining the <code>dose.amount~time|groups</code> where
 <code>time</code> is the time of the dosing and <code>dose.amount</code> is the amount
-administered at that time (see Details).</p></dd>
+administered at that time (see Details).  The <code>time</code> may be numeric, or
+it may be a date-time (POSIXct) or a date (Date) when the concentration
+time is too (see the "Date-time input" section of <code><a href="PKNCAconc.html">PKNCAconc()</a></code>).</p></dd>
 
 
 <dt id="arg-route">route<a class="anchor" aria-label="anchor" href="#arg-route"></a></dt>
@@ -119,7 +121,9 @@ duration of dosing.  If given as a character string, it is the name of a
 column from the <code>data</code>, and if given as a number, it is the value for all
 doses.  Only one may be given, and if neither is given, then the dose is
 assumed to be a bolus (<code>duration=0</code>).  If <code>rate</code> is given, then the dose
-amount must be given (the left hand side of the <code>formula</code>).</p></dd>
+amount must be given (the left hand side of the <code>formula</code>).  A numeric
+duration is in the time unit of the analysis; a difftime duration is
+converted to that unit in <code><a href="PKNCAdata.html">PKNCAdata()</a></code>.</p></dd>
 
 
 <dt id="arg-time-nominal">time.nominal<a class="anchor" aria-label="anchor" href="#arg-time-nominal"></a></dt>

@@ -56,3 +56,11 @@ Some cases may generate warnings but allow the data to proceed.
 
 - A negative concentration is often but not always an error; it will
   generate a warning.
+
+## Examples
+
+``` r
+assert_conc_time(conc = c(0, 2, 1), time = 0:2)
+# Unsorted times are allowed when `sorted_time = FALSE`
+assert_conc_time(conc = c(0, 2, 1), time = c(2, 0, 1), sorted_time = FALSE)
+```

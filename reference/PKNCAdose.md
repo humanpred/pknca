@@ -42,7 +42,10 @@ PKNCAdose(
 
   The formula defining the `dose.amount~time|groups` where `time` is the
   time of the dosing and `dose.amount` is the amount administered at
-  that time (see Details).
+  that time (see Details). The `time` may be numeric, or it may be a
+  date-time (POSIXct) or a date (Date) when the concentration time is
+  too (see the "Date-time input" section of
+  [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)).
 
 - route:
 
@@ -59,7 +62,10 @@ PKNCAdose(
   from the `data`, and if given as a number, it is the value for all
   doses. Only one may be given, and if neither is given, then the dose
   is assumed to be a bolus (`duration=0`). If `rate` is given, then the
-  dose amount must be given (the left hand side of the `formula`).
+  dose amount must be given (the left hand side of the `formula`). A
+  numeric duration is in the time unit of the analysis; a difftime
+  duration is converted to that unit in
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md).
 
 - time.nominal:
 

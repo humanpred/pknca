@@ -465,7 +465,6 @@ print(results_obj)
     ##        6    0    <NA> extravascular        0
     ## 
     ## With 2 rows of interval specifications.
-    ## With imputation: NA
     ## Options changed from default are:
     ## $adj.r.squared.factor
     ## [1] 1e-04
@@ -660,7 +659,7 @@ print(results_obj)
     ## attr(,"class")
     ## [1] "PKNCAresults" "list"        
     ## attr(,"provenance")
-    ## Provenance hash 1010dd656fa2060bf5d457ba131dbe6d generated on 2026-09-30 22:38:53.467125 with R version 4.6.1 (2026-06-24).
+    ## Provenance hash 1010dd656fa2060bf5d457ba131dbe6d generated on 2026-09-30 23:15:07.355694 with R version 4.6.1 (2026-06-24).
 
 ``` r
 

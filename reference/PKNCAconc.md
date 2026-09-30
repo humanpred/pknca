@@ -53,20 +53,19 @@ PKNCAconc(
   `amount~time|groups` for urine/feces (In the remainder of the
   documentation, "concentration" will be used to describe concentration
   or amount.) One special aspect of the `groups` part of the formula is
-  that the last group is typically assumed to be the `subject`; see the
-  documentation for the `subject` argument for exceptions to this
-  assumption.
+  that the last group to the left of any `/` is assumed to be the
+  `subject` unless the `subject` argument is given. The `time` may be
+  numeric, or it may be a date-time (POSIXct) or a date (Date); see the
+  "Date-time input" section.
 
 - subject:
 
   The column indicating the subject number. If not provided, this
-  defaults to the beginning of the inner groups: For example with
-  `concentration~time|Study+Subject/Analyte`, the inner groups start
-  with the first grouping variable before a `/`, `Subject`. If there is
-  only one grouping variable, it is assumed to be the subject (e.g.
-  `concentration~time|Subject`), and if there are multiple grouping
-  variables without a `/`, subject is assumed to be the last one. For
-  single-subject data, it is assigned as `NULL`.
+  defaults to the last grouping variable to the left of a `/` (for
+  example, `Subject` with `concentration~time|Study+Subject/Analyte`),
+  or the last grouping variable when there is no `/` (for example,
+  `Subject` with `concentration~time|Study+Subject`). When there are no
+  grouping variables (single-subject data), no subject column is set.
 
 - time.nominal:
 
@@ -93,7 +92,10 @@ PKNCAconc(
   so for the simplest interpretation of results, align collection start
   and end times with interval boundaries. A `duration` column is added
   to the data only when this is given; requesting an excretion rate
-  parameter (`ermax`, `ertmax`, `ertlst`) without it is an error.
+  parameter (`ermax`, `ertmax`, `ertlst`) without it is an error. A
+  numeric duration is in the time unit of the analysis; a difftime
+  duration is converted to that unit in
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md).
 
 - volume:
 
@@ -139,15 +141,43 @@ PKNCAconc(
 - concu, amountu, timeu:
 
   Either unit values (e.g. "ng/mL") or column names within the data
-  where units are provided.
+  where units are provided. For a date-time (POSIXct or Date) time
+  column, `timeu` must be a unit value, and `timeu_pref` takes
+  precedence over it (see the "Date-time input" section).
 
 - concu_pref, amountu_pref, timeu_pref:
 
-  Preferred units for reporting (not column names)
+  Preferred units for reporting (not column names). For a date-time time
+  column, the times are converted directly to `timeu_pref`, which then
+  is also `timeu`.
 
 ## Value
 
 A PKNCAconc object that can be used for automated NCA.
+
+## Date-time input
+
+The concentration time (and the dose time in
+[`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md))
+may be a date-time (POSIXct) or a date (Date; a date is taken as 08:00
+on that date, a typical time of a first PK sample, with a warning).
+Date-times have no numeric unit, so they are converted directly to the
+time unit used for calculations and reports: `timeu_pref` when given (it
+takes precedence over `timeu`, and `timeu` is set to it), otherwise
+`timeu`, otherwise hours (without units). The unit must be a single time
+unit value (like `"hr"` or `"day"`), not a column name. A numeric
+`duration` (here or in
+[`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md))
+is in that unit, and a difftime `duration` is converted to it exactly.
+
+The times remain date-times in the `PKNCAconc`, `PKNCAdose`, and
+`PKNCAdata` objects.
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+converts them to numeric time relative to the first dose (or first
+concentration) in each group; see the "Date-time input" section of
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md).
+The nominal time (`time.nominal`) is not converted and usually stays
+numeric.
 
 ## See also
 

@@ -70,7 +70,8 @@ PKNCAdata(
   [`check.interval.specification()`](https://humanpred.github.io/pknca/reference/check.interval.specification.md).
   If missing, this will be automatically chosen by
   [`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md).
-  (see details)
+  (see details) With date-time data, `start` and `end` may be date-times
+  (see the "Date-time input" section).
 
 - units:
 
@@ -131,6 +132,74 @@ can steer renal clearance by `PCSPEC` and a metabolite ratio by
 `group_ref = data.frame(parameter = c("clr.obs", "ratio.aucinf.obs"), PCSPEC = c("PLASMA", NA), PCTEST = c(NA, "midazolam"))`.
 A named list of data.frames, one per parameter, says the same thing:
 `group_ref = list(clr.obs = data.frame(PCSPEC = "PLASMA"), ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))`.
+
+## Date-time input
+
+The concentration and dose times may be date-times (POSIXct) or dates
+(Date). `PKNCAdata()` checks them and keeps them as they are, and
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+converts them to numeric time before it calculates, so the intervals can
+still be changed after `PKNCAdata()`:
+
+- The time reference is the first dose (ignoring excluded doses) within
+  each combination of the grouping variables (and the subject) shared by
+  the concentration and dose formulas. With `dose~time|Part+Subject`,
+  each subject's first dose in each study part (or period, for a
+  crossover) is time 0; with `dose~time|Subject`, each subject's first
+  dose of the study is time 0. The dose formula must include the
+  subject, so that one reference is never shared by several subjects.
+
+- A subject (group) without an included dose time uses its first
+  concentration (the first one not excluded) as the reference, with a
+  warning. Without dosing data, every reference is the first
+  concentration, within each combination of the concentration grouping
+  variables to the left of any `/` (so analytes share their subject's
+  reference).
+
+- Sparse data use one reference per group rather than per subject,
+  because every subject in a sparse group shares the group's dosing.
+
+- Numeric time is in the time unit of the
+  [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
+  object: `timeu_pref` when given, otherwise `timeu`, otherwise hours
+  (without units). Numeric concentration collection and dosing durations
+  are in that unit, and difftime durations are converted to it.
+
+- Manually specified `intervals` may be numeric times relative to the
+  time reference, in that unit, or date-times. Date-time `start` and
+  `end` (POSIXct, or Date for 08:00, with a warning) are converted
+  relative to the reference of the group each row applies to. A row that
+  does not name every reference group (for example, a row without
+  `Subject`) applies to every matching group and becomes one row per
+  group, because one absolute window is a different relative window for
+  each subject. A date-time `start` may pair with `end = Inf` (or a
+  POSIXct `Inf`), which stays infinite; the start must be finite, both
+  bounds must otherwise be date-times, and the time zone must match the
+  data. `PKNCAdata()` and
+  [`set_intervals()`](https://humanpred.github.io/pknca/reference/set_intervals.md)
+  check date-time intervals, and
+  [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+  converts them; converted intervals have an `interval_time_kind` column
+  (`"datetime"`, or `"relative"` for numeric rows added later). The
+  conversion gives the window only: a window starting before a subject's
+  first measurement still needs an imputation rule (`impute`) for a
+  concentration at its start.
+
+- The results of
+  [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+  keep the converted data that the calculation used (`results$data`),
+  with the time reference of each group in its `time_reference` element
+  and the `time_reference_type` column saying whether it is the
+  `"first_dose"` or the `"first_conc"`;
+  `as.data.frame(results, out_format = "cdisc")` gives the reference in
+  the PPRFTDTC column.
+
+Both times must be date-times (or dates), not one numeric and one
+date-time; date-times must have the same time zone; and the dose formula
+must include the subject of dense data. Otherwise, it is an error.
+Differences are elapsed time, so a change to or from daylight saving
+time is handled correctly when the time zone is a named zone (like
+`"America/New_York"`).
 
 ## See also
 

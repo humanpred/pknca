@@ -129,7 +129,9 @@ the <code>intervals</code> data.frame.  See
 <dt id="arg-intervals">intervals<a class="anchor" aria-label="anchor" href="#arg-intervals"></a></dt>
 <dd><p>A data frame with the AUC interval specifications as defined
 in <code><a href="check.interval.specification.html">check.interval.specification()</a></code>.  If missing, this will be
-automatically chosen by <code><a href="choose.auc.intervals.html">choose.auc.intervals()</a></code>. (see details)</p></dd>
+automatically chosen by <code><a href="choose.auc.intervals.html">choose.auc.intervals()</a></code>. (see details)  With
+date-time data, <code>start</code> and <code>end</code> may be date-times (see the "Date-time
+input" section).</p></dd>
 
 
 <dt id="arg-units">units<a class="anchor" aria-label="anchor" href="#arg-units"></a></dt>
@@ -186,6 +188,62 @@ renal clearance by <code>PCSPEC</code> and a metabolite ratio by <code>PCTEST</c
 <code>group_ref = data.frame(parameter = c("clr.obs", "ratio.aucinf.obs"), PCSPEC = c("PLASMA", NA), PCTEST = c(NA, "midazolam"))</code>.  A named list of
 data.frames, one per parameter, says the same thing:
 <code>group_ref = list(clr.obs = data.frame(PCSPEC = "PLASMA"), ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="date-time-input">Date-time input<a class="anchor" aria-label="anchor" href="#date-time-input"></a></h2>
+
+
+
+<p>The concentration and dose times may be date-times (POSIXct) or dates
+(Date).  <code>PKNCAdata()</code> checks them and keeps them as they are, and
+<code><a href="pk.nca.html">pk.nca()</a></code> converts them to numeric time before it calculates, so the
+intervals can still be changed after <code>PKNCAdata()</code>:</p><ul><li><p>The time reference is the first dose (ignoring excluded doses) within
+each combination of the grouping variables (and the subject) shared by
+the concentration and dose formulas.  With <code>dose~time|Part+Subject</code>,
+each subject's first dose in each study part (or period, for a
+crossover) is time 0; with <code>dose~time|Subject</code>, each subject's first
+dose of the study is time 0.  The dose formula must include the subject,
+so that one reference is never shared by several subjects.</p></li>
+<li><p>A subject (group) without an included dose time uses its first
+concentration (the first one not excluded) as the reference, with a
+warning.  Without dosing data, every reference is the first
+concentration, within each combination of the concentration grouping
+variables to the left of any <code>/</code> (so analytes share their subject's
+reference).</p></li>
+<li><p>Sparse data use one reference per group rather than per subject, because
+every subject in a sparse group shares the group's dosing.</p></li>
+<li><p>Numeric time is in the time unit of the <code><a href="PKNCAconc.html">PKNCAconc()</a></code> object:
+<code>timeu_pref</code> when given, otherwise <code>timeu</code>, otherwise hours (without
+units).  Numeric concentration collection and dosing durations are in
+that unit, and difftime durations are converted to it.</p></li>
+<li><p>Manually specified <code>intervals</code> may be numeric times relative to the
+time reference, in that unit, or date-times.  Date-time <code>start</code> and
+<code>end</code> (POSIXct, or Date for 08:00, with a warning) are converted
+relative to the reference of the group each row applies to.  A row that
+does not name every reference group (for example, a row without
+<code>Subject</code>) applies to every matching group and becomes one row per
+group, because one absolute window is a different relative window for
+each subject.  A date-time <code>start</code> may pair with <code>end = Inf</code> (or a
+POSIXct <code>Inf</code>), which stays infinite; the start must be finite, both
+bounds must otherwise be date-times, and the time zone must match the
+data.  <code>PKNCAdata()</code> and <code><a href="set_intervals.html">set_intervals()</a></code> check date-time intervals,
+and <code><a href="pk.nca.html">pk.nca()</a></code> converts them; converted intervals have an
+<code>interval_time_kind</code> column (<code>"datetime"</code>, or <code>"relative"</code> for numeric
+rows added later).  The conversion gives the window only:  a window
+starting before a subject's first measurement still needs an
+imputation rule (<code>impute</code>) for a concentration at its start.</p></li>
+<li><p>The results of <code><a href="pk.nca.html">pk.nca()</a></code> keep the converted data that the calculation
+used (<code>results$data</code>), with the time reference of each group in its
+<code>time_reference</code> element and the <code>time_reference_type</code> column saying
+whether it is the <code>"first_dose"</code> or the <code>"first_conc"</code>;
+<code>as.data.frame(results, out_format = "cdisc")</code> gives the reference in
+the PPRFTDTC column.</p></li>
+</ul><p>Both times must be date-times (or dates), not one numeric and one
+date-time; date-times must have the same time zone; and the dose formula
+must include the subject of dense data.  Otherwise, it is an error.
+Differences are elapsed time, so a change to or from daylight saving time
+is handled correctly when the time zone is a named zone (like
+<code>"America/New_York"</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

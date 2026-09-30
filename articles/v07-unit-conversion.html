@@ -409,6 +409,129 @@ object.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
 </div>
+<div class="section level2">
+<h2 id="date-and-time-posixct-input">Date and time (POSIXct) input<a class="anchor" aria-label="anchor" href="#date-and-time-posixct-input"></a>
+</h2>
+<p>Concentration and dose times may be given as date-times (POSIXct)
+instead of numbers, as they often are in clinical data (for example, the
+SDTM <code>--DTC</code> variables after parsing). Date-times are
+converted directly to the time unit for calculations and reporting:
+<code>timeu_pref</code> when given (it takes precedence over
+<code>timeu</code>), otherwise <code>timeu</code>, otherwise hours.
+Numeric durations are in that unit, and durations given as difftime are
+converted to it. <code><a href="../reference/PKNCAdata.html">PKNCAdata()</a></code> checks the times and keeps
+them, and <code><a href="../reference/pk.nca.html">pk.nca()</a></code> converts them to numbers relative to the
+first dose in each group: the groups are the grouping variables shared
+by the concentration and dose formulas, so with <code>Subject</code> as
+the group, time 0 is each subject’s first dose. For studies with several
+parts (or crossover periods), add the part (or period) to both formulas,
+and each subject’s first dose in each part is time 0.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">d_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span><span class="op">)</span></span>
+<span><span class="va">d_dose</span> <span class="op">&lt;-</span> <span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span><span class="op">[</span><span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/Theoph.html" class="external-link">Theoph</a></span><span class="op">$</span><span class="va">Time</span> <span class="op">==</span> <span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Dose"</span>, <span class="st">"Time"</span>, <span class="st">"Subject"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co"># Each subject was dosed at 08:00 on a different day</span></span>
+<span><span class="va">first_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="st">"2024-01-15 08:00"</span>, tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">d_dose</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="fl">86400</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">first_dose</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">d_dose</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span></span>
+<span><span class="va">d_conc</span><span class="op">$</span><span class="va">datetime</span> <span class="op">&lt;-</span> <span class="va">first_dose</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">d_conc</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span><span class="op">]</span> <span class="op">+</span> <span class="va">d_conc</span><span class="op">$</span><span class="va">Time</span> <span class="op">*</span> <span class="fl">3600</span></span>
+<span><span class="va">d_dose</span><span class="op">$</span><span class="va">datetime</span> <span class="op">&lt;-</span> <span class="va">first_dose</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">d_dose</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">o_conc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc</span>, <span class="va">conc</span><span class="op">~</span><span class="va">datetime</span><span class="op">|</span><span class="va">Subject</span>, concu <span class="op">=</span> <span class="st">"mg/L"</span>, timeu_pref <span class="op">=</span> <span class="st">"hr"</span><span class="op">)</span></span>
+<span><span class="va">o_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span><span class="va">d_dose</span>, <span class="va">Dose</span><span class="op">~</span><span class="va">datetime</span><span class="op">|</span><span class="va">Subject</span>, doseu <span class="op">=</span> <span class="st">"mg/kg"</span><span class="op">)</span></span>
+<span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span><span class="op">)</span></span>
+<span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
+<span><span class="co"># The results keep the converted data, with the time reference for each subject</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">time_reference</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   Subject      time_reference time_reference_type</span></span>
+<span><span class="co">#&gt; 1       6 2024-01-20 08:00:00          first_dose</span></span>
+<span><span class="co">#&gt; 2       7 2024-01-21 08:00:00          first_dose</span></span>
+<span><span class="co">#&gt; 3       8 2024-01-22 08:00:00          first_dose</span></span>
+<span><span class="co">#&gt; 4      11 2024-01-25 08:00:00          first_dose</span></span>
+<span><span class="co">#&gt; 5       3 2024-01-17 08:00:00          first_dose</span></span>
+<span><span class="co">#&gt; 6       2 2024-01-16 08:00:00          first_dose</span></span>
+<span><span class="co"># The concentration times the calculation used are hours after the first dose</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">conc</span><span class="op">$</span><span class="va">data</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Subject"</span>, <span class="st">"datetime"</span>, <span class="st">"conc"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   Subject datetime  conc</span></span>
+<span><span class="co">#&gt; 1       1     0.00  0.74</span></span>
+<span><span class="co">#&gt; 2       1     0.25  2.84</span></span>
+<span><span class="co">#&gt; 3       1     0.57  6.57</span></span>
+<span><span class="co">#&gt; 4       1     1.12 10.50</span></span>
+<span><span class="co">#&gt; 5       1     2.02  9.66</span></span>
+<span><span class="co">#&gt; 6       1     3.82  8.58</span></span></code></pre></div>
+<p>Automatic intervals are chosen as for numeric times. Manually
+specified intervals may be numeric times relative to the time reference,
+in the preferred time unit, or date-times. A date-time window is
+converted relative to the reference of each group it applies to, so a
+window without a <code>Subject</code> column becomes one row per
+subject, each with that subject’s relative start and end, and the
+converted intervals are marked with
+<code>interval_time_kind = "datetime"</code>. An <code>end</code> of
+<code>Inf</code> stays infinite. The conversion supplies the window, not
+concentrations at its edges: a window that starts before a subject’s
+first measurement still needs an imputation rule (the
+<code>impute</code> argument) to give a concentration at its start.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># 12:00 to 20:00 on each subject's dosing day, one row per subject</span></span>
+<span><span class="va">intervals_dt</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    Subject <span class="op">=</span> <span class="va">d_dose</span><span class="op">$</span><span class="va">Subject</span>,</span>
+<span>    start <span class="op">=</span> <span class="va">first_dose</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">d_dose</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span><span class="op">]</span> <span class="op">+</span> <span class="fl">4</span> <span class="op">*</span> <span class="fl">3600</span>,</span>
+<span>    end <span class="op">=</span> <span class="va">first_dose</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">d_dose</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span><span class="op">]</span> <span class="op">+</span> <span class="fl">12</span> <span class="op">*</span> <span class="fl">3600</span>,</span>
+<span>    aucint.last <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">o_data_dt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span>, intervals <span class="op">=</span> <span class="va">intervals_dt</span><span class="op">)</span></span>
+<span><span class="va">o_nca_dt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_dt</span><span class="op">)</span></span>
+<span><span class="co"># The intervals the calculation used, relative to each subject's first dose</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">o_nca_dt</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">intervals</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Subject"</span>, <span class="st">"start"</span>, <span class="st">"end"</span>, <span class="st">"interval_time_kind"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   Subject start end interval_time_kind</span></span>
+<span><span class="co">#&gt; 1       1     4  12           datetime</span></span>
+<span><span class="co">#&gt; 2       2     4  12           datetime</span></span>
+<span><span class="co">#&gt; 3       3     4  12           datetime</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">o_nca_dt</span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Subject"</span>, <span class="st">"start"</span>, <span class="st">"end"</span>, <span class="st">"PPTESTCD"</span>, <span class="st">"PPORRES"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 5</span></span></span>
+<span><span class="co">#&gt;   Subject start   end PPTESTCD    PPORRES</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;ord&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1           4    12 aucint.last    58.0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2           4    12 aucint.last    38.9</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3           4    12 aucint.last    41.3</span></span></code></pre></div>
+<p>The default single-dose intervals (the <code>single.dose.aucs</code>
+option, 0 to 24 and 0 to infinity) are written for hours, so with a
+preferred time unit such as <code>"day"</code> or <code>"min"</code>
+they would end at 24 days or 24 minutes; PKNCA warns when that happens,
+and you should give <code>intervals</code> or set
+<code>single.dose.aucs</code> for that unit. Results formatted for CDISC
+include the time reference as the PPRFTDTC column.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
+<span><span class="va">d_cdisc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">o_nca</span>, out_format <span class="op">=</span> <span class="st">"cdisc"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">d_cdisc</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Subject"</span>, <span class="st">"PPTESTCD"</span>, <span class="st">"PPORRES"</span>, <span class="st">"PPORRESU"</span>, <span class="st">"PPRFTDTC"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   Subject PPTESTCD   PPORRES PPORRESU            PPRFTDTC</span></span>
+<span><span class="co">#&gt; 1       1   AUCLST 92.365442  hr*mg/L 2024-01-15T08:00:00</span></span>
+<span><span class="co">#&gt; 2       1     CMAX 10.500000     mg/L 2024-01-15T08:00:00</span></span>
+<span><span class="co">#&gt; 3       1     TMAX  1.120000       hr 2024-01-15T08:00:00</span></span>
+<span><span class="co">#&gt; 4       1     TLST 24.370000       hr 2024-01-15T08:00:00</span></span>
+<span><span class="co">#&gt; 5       1     CLST  3.280000     mg/L 2024-01-15T08:00:00</span></span>
+<span><span class="co">#&gt; 6       1     LAMZ  0.048457     1/hr 2024-01-15T08:00:00</span></span></code></pre></div>
+<p>A few rules keep the conversion unambiguous:</p>
+<ul>
+<li>Concentration and dose times must both be date-times; mixing numeric
+and date-time times is an error.</li>
+<li>All date-times must have the same time zone. Differences are elapsed
+time, so a daylight saving time change within a named time zone (like
+<code>"America/New_York"</code>) is handled correctly.</li>
+<li>Dates (Date) are taken as 08:00 on that date (a typical time of a
+first PK sample), with a warning.</li>
+<li>The dose formula must include the subject (as with
+<code>Subject</code> above), so that each subject has its own reference.
+Sparse data are the exception: every subject in a sparse group shares
+the group’s dosing, so the reference is per group.</li>
+<li>Excluded doses are not used as the time reference. A subject without
+an included dose time uses its first (not excluded) concentration
+instead, with a warning, and without dosing data every subject uses its
+first concentration. The <code>time_reference_type</code> column of
+<code>time_reference</code> says which kind of reference each group has
+(<code>"first_dose"</code> or <code>"first_conc"</code>).</li>
+<li>Nominal times (<code>time.nominal</code>) are not converted.</li>
+</ul>
+</div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>

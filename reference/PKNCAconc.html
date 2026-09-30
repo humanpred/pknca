@@ -113,19 +113,19 @@ time, and the groups defined in <code>formula</code>.</p></dd>
 <code>amount~time|groups</code> for urine/feces (In the remainder of the
 documentation, "concentration" will be used to describe concentration or
 amount.)  One special aspect of the <code>groups</code> part of the formula is that
-the last group is typically assumed to be the <code>subject</code>; see the
-documentation for the <code>subject</code> argument for exceptions to this assumption.</p></dd>
+the last group to the left of any <code>/</code> is assumed to be the <code>subject</code>
+unless the <code>subject</code> argument is given.  The <code>time</code> may be numeric, or it
+may be a date-time (POSIXct) or a date (Date); see the "Date-time input"
+section.</p></dd>
 
 
 <dt id="arg-subject">subject<a class="anchor" aria-label="anchor" href="#arg-subject"></a></dt>
 <dd><p>The column indicating the subject number.  If not provided,
-this defaults to the beginning of the inner groups: For example with
-<code>concentration~time|Study+Subject/Analyte</code>, the inner groups start with the
-first grouping variable before a <code>/</code>, <code>Subject</code>.  If there is only one
-grouping variable, it is assumed to be the subject (e.g.
-<code>concentration~time|Subject</code>), and if there are multiple grouping variables
-without a <code>/</code>, subject is assumed to be the last one.  For single-subject
-data, it is assigned as <code>NULL</code>.</p></dd>
+this defaults to the last grouping variable to the left of a <code>/</code> (for
+example, <code>Subject</code> with <code>concentration~time|Study+Subject/Analyte</code>), or the
+last grouping variable when there is no <code>/</code> (for example, <code>Subject</code> with
+<code>concentration~time|Study+Subject</code>).  When there are no grouping variables
+(single-subject data), no subject column is set.</p></dd>
 
 
 <dt id="arg-time-nominal">time.nominal<a class="anchor" aria-label="anchor" href="#arg-time-nominal"></a></dt>
@@ -151,7 +151,9 @@ interval <code>end</code> contributes its full amount to that interval, so for t
 simplest interpretation of results, align collection start and end times
 with interval boundaries.  A <code>duration</code> column is added to the data only
 when this is given; requesting an excretion rate parameter (<code>ermax</code>,
-<code>ertmax</code>, <code>ertlst</code>) without it is an error.</p></dd>
+<code>ertmax</code>, <code>ertlst</code>) without it is an error.  A numeric duration is in the
+time unit of the analysis; a difftime duration is converted to that unit
+in <code><a href="PKNCAdata.html">PKNCAdata()</a></code>.</p></dd>
 
 
 <dt id="arg-volume">volume<a class="anchor" aria-label="anchor" href="#arg-volume"></a></dt>
@@ -196,17 +198,41 @@ PK (commonly used in clinical studies or larger nonclinical species)?</p></dd>
 
 <dt id="arg-concu-amountu-timeu">concu, amountu, timeu<a class="anchor" aria-label="anchor" href="#arg-concu-amountu-timeu"></a></dt>
 <dd><p>Either unit values (e.g. "ng/mL") or column names
-within the data where units are provided.</p></dd>
+within the data where units are provided.  For a date-time (POSIXct or
+Date) time column, <code>timeu</code> must be a unit value, and <code>timeu_pref</code> takes
+precedence over it (see the "Date-time input" section).</p></dd>
 
 
 <dt id="arg-concu-pref-amountu-pref-timeu-pref">concu_pref, amountu_pref, timeu_pref<a class="anchor" aria-label="anchor" href="#arg-concu-pref-amountu-pref-timeu-pref"></a></dt>
 <dd><p>Preferred units for reporting (not
-column names)</p></dd>
+column names).  For a date-time time column, the times are converted
+directly to <code>timeu_pref</code>, which then is also <code>timeu</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A PKNCAconc object that can be used for automated NCA.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="date-time-input">Date-time input<a class="anchor" aria-label="anchor" href="#date-time-input"></a></h2>
+
+
+
+<p>The concentration time (and the dose time in <code><a href="PKNCAdose.html">PKNCAdose()</a></code>) may be a
+date-time (POSIXct) or a date (Date; a date is taken as 08:00 on that
+date, a typical time of a first PK sample, with a warning).  Date-times have no numeric unit, so
+they are converted directly to the time unit used for calculations and
+reports:  <code>timeu_pref</code> when given (it takes precedence over <code>timeu</code>, and
+<code>timeu</code> is set to it), otherwise <code>timeu</code>, otherwise hours (without
+units).  The unit must be a single time unit value (like <code>"hr"</code> or
+<code>"day"</code>), not a column name.  A numeric <code>duration</code> (here or in
+<code><a href="PKNCAdose.html">PKNCAdose()</a></code>) is in that unit, and a difftime <code>duration</code> is converted to
+it exactly.</p>
+<p>The times remain date-times in the <code>PKNCAconc</code>, <code>PKNCAdose</code>, and
+<code>PKNCAdata</code> objects.  <code><a href="pk.nca.html">pk.nca()</a></code> converts them to numeric time relative to
+the first dose (or first concentration) in each group; see the "Date-time
+input" section of <code><a href="PKNCAdata.html">PKNCAdata()</a></code>.  The nominal time (<code>time.nominal</code>) is not converted and usually
+stays numeric.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

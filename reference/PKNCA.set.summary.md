@@ -63,7 +63,8 @@ All current summary settings (invisibly)
 
 Other PKNCA calculation and summary settings:
 [`PKNCA.choose.option()`](https://humanpred.github.io/pknca/reference/PKNCA.choose.option.md),
-[`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md)
+[`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md),
+[`PKNCA_options_defaults()`](https://humanpred.github.io/pknca/reference/PKNCA_options_defaults.md)
 
 ## Examples
 

@@ -59,16 +59,26 @@ exclude_nca_tmax_0()
   The time for Tmax which is considered too early to be a valid NCA
   result
 
+## Value
+
+A function to give to
+[`exclude()`](https://humanpred.github.io/pknca/reference/exclude.md) as
+`FUN`. Its `pknca_affected_parameters` attribute lists the parameters it
+can exclude, and its `pknca_options` attribute lists the
+[`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md)
+entries its thresholds came from (see
+[`pknca_exclude_rules()`](https://humanpred.github.io/pknca/reference/pknca_exclude_rules.md)).
+
 ## Functions
 
-- `exclude_nca_span.ratio()`: Exclude based on span.ratio
+- `exclude_nca_span.ratio()`: Exclude based on the half-life span ratio
 
-- `exclude_nca_max.aucinf.pext()`: Exclude based on AUC percent
-  extrapolated (both observed and predicted)
+- `exclude_nca_max.aucinf.pext()`: Exclude based on the percent of AUC
+  extrapolated to infinity (both observed and predicted)
 
-- `exclude_nca_count_conc_measured()`: Exclude AUC measurements based on
-  count of concentrations measured and not below the lower limit of
-  quantification
+- `exclude_nca_count_conc_measured()`: Exclude based on the count of
+  concentrations measured and not below the lower limit of
+  quantification (affects AUC and AUMC parameters)
 
 - `exclude_nca_min.hl.r.squared()`: Exclude based on half-life r-squared
 
@@ -84,7 +94,8 @@ exclude_nca_tmax_0()
 ## See also
 
 Other Result exclusions:
-[`exclude()`](https://humanpred.github.io/pknca/reference/exclude.md)
+[`exclude()`](https://humanpred.github.io/pknca/reference/exclude.md),
+[`pknca_exclude_rules()`](https://humanpred.github.io/pknca/reference/pknca_exclude_rules.md)
 
 ## Examples
 

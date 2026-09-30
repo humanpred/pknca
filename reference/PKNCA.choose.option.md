@@ -34,4 +34,5 @@ there then from the current settings.
 
 Other PKNCA calculation and summary settings:
 [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md),
-[`PKNCA.set.summary()`](https://humanpred.github.io/pknca/reference/PKNCA.set.summary.md)
+[`PKNCA.set.summary()`](https://humanpred.github.io/pknca/reference/PKNCA.set.summary.md),
+[`PKNCA_options_defaults()`](https://humanpred.github.io/pknca/reference/PKNCA_options_defaults.md)

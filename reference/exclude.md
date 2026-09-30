@@ -55,7 +55,8 @@ the data should be included (for the current exclusion test).
 ## See also
 
 Other Result exclusions:
-[`exclude_nca`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
+[`exclude_nca`](https://humanpred.github.io/pknca/reference/exclude_nca.md),
+[`pknca_exclude_rules()`](https://humanpred.github.io/pknca/reference/pknca_exclude_rules.md)
 
 ## Examples
 
@@ -69,7 +70,7 @@ exclude(myconc,
         mask=c(TRUE, rep(FALSE, 6)))
 #> Formula for concentration:
 #>  conc ~ time | subject
-#> <environment: 0x55603f5c4550>
+#> <environment: 0x5629bd182020>
 #> Data are dense PK.
 #> With 1 subjects defined in the 'subject' column.
 #> Nominal time column is not specified.

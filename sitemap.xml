@@ -37,6 +37,7 @@
 <url><loc>https://humanpred.github.io/pknca/reference/PKNCA.set.summary.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/PKNCA_impute_fun_list.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/PKNCA_impute_method.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/PKNCA_options_defaults.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/PKNCAconc.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/PKNCAdata.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/PKNCAdose.html</loc></url>
@@ -53,6 +54,7 @@
 <url><loc>https://humanpred.github.io/pknca/reference/assert_aucmethod.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/assert_conc_time.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/assert_dosetau.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/assert_impute_method.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/assert_intervals.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/assert_intervaltime_single.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/assert_lambdaz.html</loc></url>
@@ -180,6 +182,7 @@
 <url><loc>https://humanpred.github.io/pknca/reference/pknca_check_parameter_classification.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pknca_concept.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pknca_concepts.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/pknca_exclude_rules.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pknca_find_units_param.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pknca_interval_table.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pknca_parameter_table.html</loc></url>

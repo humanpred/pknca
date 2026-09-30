@@ -1,4 +1,4 @@
-# Exclude NCA Results Based on Parameter Thresholds
+# Exclude based on NCA parameter thresholds
 
 Exclude rows from NCA results based on specified thresholds for a given
 parameter. This function allows users to define minimum and/or maximum
@@ -42,7 +42,10 @@ exclude_nca_by_param(
 A function that can be used with
 [`PKNCA::exclude`](https://humanpred.github.io/pknca/reference/exclude.md)
 to mark through the 'exclude' column the rows in the PKNCA results based
-on the specified thresholds for a parameter.
+on the specified thresholds for a parameter. Its
+`pknca_affected_parameters` attribute lists the parameters it can mark
+(see
+[`pknca_exclude_rules()`](https://humanpred.github.io/pknca/reference/pknca_exclude_rules.md)).
 
 ## Examples
 

@@ -389,3 +389,136 @@ summary(o_nca)
 #> 
 #> Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects
 ```
+
+## Date and time (POSIXct) input
+
+Concentration and dose times may be given as date-times (POSIXct)
+instead of numbers, as they often are in clinical data (for example, the
+SDTM `--DTC` variables after parsing). Date-times are converted directly
+to the time unit for calculations and reporting: `timeu_pref` when given
+(it takes precedence over `timeu`), otherwise `timeu`, otherwise hours.
+Numeric durations are in that unit, and durations given as difftime are
+converted to it.
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
+checks the times and keeps them, and
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+converts them to numbers relative to the first dose in each group: the
+groups are the grouping variables shared by the concentration and dose
+formulas, so with `Subject` as the group, time 0 is each subject’s first
+dose. For studies with several parts (or crossover periods), add the
+part (or period) to both formulas, and each subject’s first dose in each
+part is time 0.
+
+``` r
+
+d_conc <- as.data.frame(datasets::Theoph)
+d_dose <- datasets::Theoph[datasets::Theoph$Time == 0, c("Dose", "Time", "Subject")]
+# Each subject was dosed at 08:00 on a different day
+first_dose <- as.POSIXct("2024-01-15 08:00", tz = "UTC") + (as.numeric(as.character(d_dose$Subject)) - 1) * 86400
+names(first_dose) <- as.character(d_dose$Subject)
+d_conc$datetime <- first_dose[as.character(d_conc$Subject)] + d_conc$Time * 3600
+d_dose$datetime <- first_dose[as.character(d_dose$Subject)]
+o_conc <- PKNCAconc(d_conc, conc~datetime|Subject, concu = "mg/L", timeu_pref = "hr")
+o_dose <- PKNCAdose(d_dose, Dose~datetime|Subject, doseu = "mg/kg")
+o_data <- PKNCAdata(o_conc, o_dose)
+o_nca <- pk.nca(o_data)
+# The results keep the converted data, with the time reference for each subject
+head(o_nca$data$time_reference)
+#>   Subject      time_reference time_reference_type
+#> 1       6 2024-01-20 08:00:00          first_dose
+#> 2       7 2024-01-21 08:00:00          first_dose
+#> 3       8 2024-01-22 08:00:00          first_dose
+#> 4      11 2024-01-25 08:00:00          first_dose
+#> 5       3 2024-01-17 08:00:00          first_dose
+#> 6       2 2024-01-16 08:00:00          first_dose
+# The concentration times the calculation used are hours after the first dose
+head(o_nca$data$conc$data[, c("Subject", "datetime", "conc")])
+#>   Subject datetime  conc
+#> 1       1     0.00  0.74
+#> 2       1     0.25  2.84
+#> 3       1     0.57  6.57
+#> 4       1     1.12 10.50
+#> 5       1     2.02  9.66
+#> 6       1     3.82  8.58
+```
+
+Automatic intervals are chosen as for numeric times. Manually specified
+intervals may be numeric times relative to the time reference, in the
+preferred time unit, or date-times. A date-time window is converted
+relative to the reference of each group it applies to, so a window
+without a `Subject` column becomes one row per subject, each with that
+subject’s relative start and end, and the converted intervals are marked
+with `interval_time_kind = "datetime"`. An `end` of `Inf` stays
+infinite. The conversion supplies the window, not concentrations at its
+edges: a window that starts before a subject’s first measurement still
+needs an imputation rule (the `impute` argument) to give a concentration
+at its start.
+
+``` r
+
+# 12:00 to 20:00 on each subject's dosing day, one row per subject
+intervals_dt <-
+  data.frame(
+    Subject = d_dose$Subject,
+    start = first_dose[as.character(d_dose$Subject)] + 4 * 3600,
+    end = first_dose[as.character(d_dose$Subject)] + 12 * 3600,
+    aucint.last = TRUE
+  )
+o_data_dt <- PKNCAdata(o_conc, o_dose, intervals = intervals_dt)
+o_nca_dt <- pk.nca(o_data_dt)
+# The intervals the calculation used, relative to each subject's first dose
+head(o_nca_dt$data$intervals[, c("Subject", "start", "end", "interval_time_kind")], 3)
+#>   Subject start end interval_time_kind
+#> 1       1     4  12           datetime
+#> 2       2     4  12           datetime
+#> 3       3     4  12           datetime
+head(as.data.frame(o_nca_dt)[, c("Subject", "start", "end", "PPTESTCD", "PPORRES")], 3)
+#> # A tibble: 3 × 5
+#>   Subject start   end PPTESTCD    PPORRES
+#>   <ord>   <dbl> <dbl> <chr>         <dbl>
+#> 1 1           4    12 aucint.last    58.0
+#> 2 2           4    12 aucint.last    38.9
+#> 3 3           4    12 aucint.last    41.3
+```
+
+The default single-dose intervals (the `single.dose.aucs` option, 0 to
+24 and 0 to infinity) are written for hours, so with a preferred time
+unit such as `"day"` or `"min"` they would end at 24 days or 24 minutes;
+PKNCA warns when that happens, and you should give `intervals` or set
+`single.dose.aucs` for that unit. Results formatted for CDISC include
+the time reference as the PPRFTDTC column.
+
+``` r
+
+o_nca <- pk.nca(o_data)
+d_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
+head(d_cdisc[, c("Subject", "PPTESTCD", "PPORRES", "PPORRESU", "PPRFTDTC")])
+#>   Subject PPTESTCD   PPORRES PPORRESU            PPRFTDTC
+#> 1       1   AUCLST 92.365442  hr*mg/L 2024-01-15T08:00:00
+#> 2       1     CMAX 10.500000     mg/L 2024-01-15T08:00:00
+#> 3       1     TMAX  1.120000       hr 2024-01-15T08:00:00
+#> 4       1     TLST 24.370000       hr 2024-01-15T08:00:00
+#> 5       1     CLST  3.280000     mg/L 2024-01-15T08:00:00
+#> 6       1     LAMZ  0.048457     1/hr 2024-01-15T08:00:00
+```
+
+A few rules keep the conversion unambiguous:
+
+- Concentration and dose times must both be date-times; mixing numeric
+  and date-time times is an error.
+- All date-times must have the same time zone. Differences are elapsed
+  time, so a daylight saving time change within a named time zone (like
+  `"America/New_York"`) is handled correctly.
+- Dates (Date) are taken as 08:00 on that date (a typical time of a
+  first PK sample), with a warning.
+- The dose formula must include the subject (as with `Subject` above),
+  so that each subject has its own reference. Sparse data are the
+  exception: every subject in a sparse group shares the group’s dosing,
+  so the reference is per group.
+- Excluded doses are not used as the time reference. A subject without
+  an included dose time uses its first (not excluded) concentration
+  instead, with a warning, and without dosing data every subject uses
+  its first concentration. The `time_reference_type` column of
+  `time_reference` says which kind of reference each group has
+  (`"first_dose"` or `"first_conc"`).
+- Nominal times (`time.nominal`) are not converted.

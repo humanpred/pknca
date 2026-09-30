@@ -78,7 +78,6 @@ PKNCAdata(d_conc_multi_obj, intervals=intervals_manual)
     ## No dosing information.
     ## 
     ## With 1 rows of interval specifications.
-    ## With imputation: NA
     ## No options are set differently than default.
 
 ## Group Matching
