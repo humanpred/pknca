@@ -653,9 +653,31 @@ test_that("PPSTINT/PPENINT uses timeu_pref when available", {
 
   result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
   int_rows <- grepl("INT", result_cdisc$PPTESTCD, fixed = TRUE)
-  # timeu_pref is "min", so durations should use M designator
+  # timeu_pref is "min", so the 4-hour interval end is 240 minutes
   expect_equal(result_cdisc$PPSTINT[int_rows][1], "PT0M")
-  expect_equal(result_cdisc$PPENINT[int_rows][1], "PT4M")
+  expect_equal(result_cdisc$PPENINT[int_rows][1], "PT240M")
+})
+
+test_that("PPSTINT/PPENINT convert interval times from timeu to timeu_pref", {
+  skip_if_not_installed("units")
+  # Times in minutes with reporting in hours:  a dose at 60 minutes and an
+  # interval from 60 to 180 minutes is 0 to 2 hours after the dose.
+  d_conc <- data.frame(subject = 1, time = c(60, 90, 120, 180), conc = c(0, 2, 1, 0.5))
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject, concu = "ng/mL", timeu = "min", timeu_pref = "hr")
+  o_dose <- PKNCAdose(data.frame(subject = 1, time = 60, dose = 10), dose ~ time | subject)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(start = 60, end = 180, aucint.last = TRUE))
+  result_cdisc <- as.data.frame(pk.nca(o_data), out_format = "cdisc")
+  int_rows <- grepl("INT", result_cdisc$PPTESTCD, fixed = TRUE)
+  expect_equal(result_cdisc$PPSTINT[int_rows], "PT0H")
+  expect_equal(result_cdisc$PPENINT[int_rows], "PT2H")
+  # The interval columns themselves stay in the original unit
+  expect_equal(result_cdisc$end[int_rows], 180)
+
+  # A preferred unit that cannot be converted falls back to the original unit
+  o_nca_bad <- pk.nca(o_data)
+  o_nca_bad$data$conc$units$timeu_pref <- "mg"
+  result_bad <- as.data.frame(o_nca_bad, out_format = "cdisc")
+  expect_equal(result_bad$PPENINT[int_rows], "PT120M")
 })
 
 test_that("PPSTINT/PPENINT computes relative to last dose time", {
@@ -775,7 +797,7 @@ test_that("format_iso8601_duration falls back to hours for unknown unit", {
 test_that("pknca_cdisc_get_timeu returns NA when no conc data", {
   # Minimal PKNCAresults with no conc object
   minimal <- PKNCAresults(data.frame(a = 1), data = list())
-  expect_true(is.na(PKNCA:::pknca_cdisc_get_timeu(minimal)))
+  expect_equal(PKNCA:::pknca_cdisc_get_timeu(minimal), list(unit = NA_character_, factor = 1))
 })
 
 test_that("pknca_cdisc_get_last_dose_time returns NA when no dose data", {

@@ -21,7 +21,8 @@ Imports:
     tidyr,
     tibble,
     utils,
-    lifecycle
+    lifecycle,
+    lubridate
 Suggests:
     covr,
     cowplot,
@@ -36,6 +37,7 @@ Suggests:
     rmarkdown,
     spelling,
     testthat (>= 3.0.0),
+    tools,
     units,
     withr
 Description: Compute standard Non-Compartmental Analysis (NCA) parameters for

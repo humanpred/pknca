@@ -27,6 +27,7 @@ option.
 \seealso{
 Other PKNCA calculation and summary settings:
 \code{\link[=PKNCA.options]{PKNCA.options()}},
-\code{\link[=PKNCA.set.summary]{PKNCA.set.summary()}}
+\code{\link[=PKNCA.set.summary]{PKNCA.set.summary()}},
+\code{\link[=PKNCA_options_defaults]{PKNCA_options_defaults()}}
 }
 \concept{PKNCA calculation and summary settings}

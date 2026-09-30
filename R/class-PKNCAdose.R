@@ -3,7 +3,9 @@
 #' @param data A data frame with time and the groups defined in `formula`.
 #' @param formula The formula defining the `dose.amount~time|groups` where
 #'   `time` is the time of the dosing and `dose.amount` is the amount
-#'   administered at that time (see Details).
+#'   administered at that time (see Details).  The `time` may be numeric, or
+#'   it may be a date-time (POSIXct) or a date (Date) when the concentration
+#'   time is too (see the "Date-time input" section of [PKNCAconc()]).
 #' @param route Define the route of administration.  The value may be either a
 #'   column name from the `data` (checked first) or a character string of either
 #'   `"extravascular"` or `"intravascular"` (checked second).  If given as a
@@ -14,7 +16,9 @@
 #'   column from the `data`, and if given as a number, it is the value for all
 #'   doses.  Only one may be given, and if neither is given, then the dose is
 #'   assumed to be a bolus (`duration=0`).  If `rate` is given, then the dose
-#'   amount must be given (the left hand side of the `formula`).
+#'   amount must be given (the left hand side of the `formula`).  A numeric
+#'   duration is in the time unit of the analysis; a difftime duration is
+#'   converted to that unit in [PKNCAdata()].
 #' @param time.nominal (optional) The name of the nominal time column (if the
 #'   main time variable is actual time.  The `time.nominal` is not used during
 #'   calculations; it is available to assist with data summary and checking.
@@ -148,6 +152,9 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
       class = "pknca_error_partial_missing_indepvar"
     )
   }
+  if (length(parsed_form$time) == 1 && inherits(data[[parsed_form$time]], "Date")) {
+    pknca_warn_date_time(time_col = parsed_form$time, data_type = "dose")
+  }
   if (missing(route)) {
     ret <- setRoute(ret)
   } else {
@@ -244,7 +251,7 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
     duration <- tmpdose$data[[tmpdose$name]]/tmprate$data[[tmprate$name]]
     object <- setAttributeColumn(object=object, attr_name="duration", col_or_value=duration)
   }
-  duration.val <- getAttributeColumn(object=object, attr_name="duration")[[1]]
+  duration.val <- pknca_duration_check_values(getAttributeColumn(object=object, attr_name="duration")[[1]])
   if (is.numeric(duration.val) &&
       !anyNA(duration.val) &&
       !any(is.infinite(duration.val)) &&

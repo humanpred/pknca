@@ -107,6 +107,11 @@ assert_time <- function(time, sorted_time = TRUE) {
 #'
 #' @returns `NULL`, invisibly, when the data are valid; otherwise an
 #'   informative error
+#' @examples
+#' assert_conc_time(conc = c(0, 2, 1), time = 0:2)
+#' # Unsorted times are allowed when `sorted_time = FALSE`
+#' assert_conc_time(conc = c(0, 2, 1), time = c(2, 0, 1), sorted_time = FALSE)
+#' @export
 assert_conc_time <- function(conc, time, any_missing_conc = TRUE, sorted_time = TRUE) {
   assert_conc(conc, any_missing_conc = any_missing_conc)
   assert_time(time, sorted_time = sorted_time)

@@ -26,6 +26,7 @@ Cmax
 Cmin
 CodeFactor
 Codecov
+difftime
 DL
 Dixit
 ERTmax
@@ -42,6 +43,7 @@ Kel
 Kirkwood
 LLOQ
 LOQ
+lubridate
 MRT
 Maes
 Maganti
@@ -56,7 +58,9 @@ PKNCAconc
 PKNCAdata
 PKNCAdose
 PKNCAresults
+POSIXct
 PPORRESU
+PPRFTDTC
 PPSTRESU
 PPTESTCD
 Panebianco

@@ -23,7 +23,9 @@ data.frame.}
 When 'cdisc', the PPTESTCD column is translated to CDISC standard codes
 and a PPTEST column with the CDISC test name is added.  Route-dependent
 parameters (e.g. CL, VZ, MRT) are resolved using the route information
-from the dose data.}
+from the dose data.  When the concentration and dose times were
+date-times (see \code{\link[=PKNCAdata]{PKNCAdata()}}), a PPRFTDTC column gives the ISO 8601
+date-time of the time reference (the first dose of the group).}
 
 \item{filter_requested}{Only return rows with parameters that were
 specifically requested?}

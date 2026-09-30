@@ -19,7 +19,9 @@
 #'   if `data.dose` is a `PKNCAdose` object.
 #' @param intervals A data frame with the AUC interval specifications as defined
 #'   in [check.interval.specification()].  If missing, this will be
-#'   automatically chosen by [choose.auc.intervals()]. (see details)
+#'   automatically chosen by [choose.auc.intervals()]. (see details)  With
+#'   date-time data, `start` and `end` may be date-times (see the "Date-time
+#'   input" section).
 #' @param units A data.frame of unit assignments and conversions as created by
 #'   [pknca_units_table()]
 #' @param group_ref The reference profiles for automatically-linked secondary
@@ -63,6 +65,61 @@
 #'   data.frames, one per parameter, says the same thing:
 #'   `group_ref = list(clr.obs = data.frame(PCSPEC = "PLASMA"),
 #'   ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))`.
+#' @section Date-time input:
+#'
+#'   The concentration and dose times may be date-times (POSIXct) or dates
+#'   (Date).  `PKNCAdata()` checks them and keeps them as they are, and
+#'   [pk.nca()] converts them to numeric time before it calculates, so the
+#'   intervals can still be changed after `PKNCAdata()`:
+#'
+#'   * The time reference is the first dose (ignoring excluded doses) within
+#'     each combination of the grouping variables (and the subject) shared by
+#'     the concentration and dose formulas.  With `dose~time|Part+Subject`,
+#'     each subject's first dose in each study part (or period, for a
+#'     crossover) is time 0; with `dose~time|Subject`, each subject's first
+#'     dose of the study is time 0.  The dose formula must include the subject,
+#'     so that one reference is never shared by several subjects.
+#'   * A subject (group) without an included dose time uses its first
+#'     concentration (the first one not excluded) as the reference, with a
+#'     warning.  Without dosing data, every reference is the first
+#'     concentration, within each combination of the concentration grouping
+#'     variables to the left of any `/` (so analytes share their subject's
+#'     reference).
+#'   * Sparse data use one reference per group rather than per subject, because
+#'     every subject in a sparse group shares the group's dosing.
+#'   * Numeric time is in the time unit of the [PKNCAconc()] object:
+#'     `timeu_pref` when given, otherwise `timeu`, otherwise hours (without
+#'     units).  Numeric concentration collection and dosing durations are in
+#'     that unit, and difftime durations are converted to it.
+#'   * Manually specified `intervals` may be numeric times relative to the
+#'     time reference, in that unit, or date-times.  Date-time `start` and
+#'     `end` (POSIXct, or Date for 08:00, with a warning) are converted
+#'     relative to the reference of the group each row applies to.  A row that
+#'     does not name every reference group (for example, a row without
+#'     `Subject`) applies to every matching group and becomes one row per
+#'     group, because one absolute window is a different relative window for
+#'     each subject.  A date-time `start` may pair with `end = Inf` (or a
+#'     POSIXct `Inf`), which stays infinite; the start must be finite, both
+#'     bounds must otherwise be date-times, and the time zone must match the
+#'     data.  `PKNCAdata()` and [set_intervals()] check date-time intervals,
+#'     and [pk.nca()] converts them; converted intervals have an
+#'     `interval_time_kind` column (`"datetime"`, or `"relative"` for numeric
+#'     rows added later).  The conversion gives the window only:  a window
+#'     starting before a subject's first measurement still needs an
+#'     imputation rule (`impute`) for a concentration at its start.
+#'   * The results of [pk.nca()] keep the converted data that the calculation
+#'     used (`results$data`), with the time reference of each group in its
+#'     `time_reference` element and the `time_reference_type` column saying
+#'     whether it is the `"first_dose"` or the `"first_conc"`;
+#'     `as.data.frame(results, out_format = "cdisc")` gives the reference in
+#'     the PPRFTDTC column.
+#'
+#'   Both times must be date-times (or dates), not one numeric and one
+#'   date-time; date-times must have the same time zone; and the dose formula
+#'   must include the subject of dense data.  Otherwise, it is an error.
+#'   Differences are elapsed time, so a change to or from daylight saving time
+#'   is handled correctly when the time zone is a named zone (like
+#'   `"America/New_York"`).
 #' @family PKNCA objects
 #' @seealso [choose.auc.intervals()], [pk.nca()], [pknca_units_table()]
 #' @export
@@ -147,6 +204,11 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   # Assign the class and give it all back to the user.
   class(ret) <- c("PKNCAdata", class(ret))
 
+  # The object keeps date-time times and difftime durations, and pk.nca()
+  # converts them to numbers.  Converting a copy here checks them now and gives
+  # the numeric times that automatic intervals are chosen from.
+  ret_numeric <- pknca_datetime_convert(ret, warn = FALSE)
+
   # Check the intervals
   if (missing(intervals) && identical(ret$dose, NA)) {
     rlang::abort("If data.dose is not given, intervals must be given", class = "pknca_error_missing_intervals")
@@ -161,10 +223,16 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
     }
     n_conc_dose <-
       full_join_PKNCAconc_PKNCAdose(
-        o_conc = ret$conc,
-        o_dose = ret$dose
+        o_conc = as_PKNCAconc(ret_numeric),
+        o_dose = as_PKNCAdose(ret_numeric)
       )
     n_conc_dose$data_intervals <- rep(list(NULL), nrow(n_conc_dose))
+    # The single.dose.aucs option is only consulted by the legacy method; the
+    # builder gives a single dose one interval to infinity, with no 24 in it to
+    # be in the wrong unit.
+    auto_interval_method <-
+      PKNCA.choose.option(name = "auto.interval.method", options = options)
+    used_single_dose_aucs <- FALSE
     for (idx in seq_len(nrow(n_conc_dose))) {
       current_conc <- n_conc_dose$data_conc[[idx]]
       current_dose <- n_conc_dose$data_dose[[idx]]
@@ -196,6 +264,11 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
               ),
             sparse=is_sparse_pk(ret$conc)
           )
+        # choose.auc.intervals() uses single.dose.aucs for one dose time
+        used_single_dose_aucs <-
+          used_single_dose_aucs ||
+          (identical(auto_interval_method, "legacy") &&
+             length(unique(current_dose$time)) == 1)
         if (nrow(generated_intervals) > 0) {
           n_conc_dose$data_intervals[[idx]] <- generated_intervals
         } else {
@@ -222,9 +295,13 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
         n_conc_dose[, setdiff(names(n_conc_dose), c("data_conc", "data_dose", "data_sparse_conc")), drop=FALSE],
         cols="data_intervals"
       )
+    if (used_single_dose_aucs) {
+      pknca_warn_single_dose_aucs_unit(o_conc = ret$conc, options = options)
+    }
   }
+  # Date-time interval bounds are checked here and converted by pk.nca()
   ret <- set_intervals(data = ret, intervals = intervals)
-  ret$intervals <- check.interval.specification(intervals)
+  ret$intervals <- check.interval.specification(ret$intervals)
   # Verify that either everything or nothing is using units
   units_interval_start <- inherits(ret$intervals$start, "units")
   units_interval_end <- inherits(ret$intervals$end, "units")
@@ -260,6 +337,55 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
 }
 
 
+#' Warn when the default single-dose intervals are used with a time unit that is
+#' not hours
+#'
+#' The default `single.dose.aucs` option is written for hours (0 to 24 and 0 to
+#' infinity), so with another time unit its 24 means 24 of that unit.  Only the
+#' `"legacy"` value of the `auto.interval.method` option consults that table;
+#' the intervals built for a single dose otherwise run from the dose to
+#' infinity and assume no time unit.
+#'
+#' @param o_conc The PKNCAconc object (after any date-time conversion)
+#' @param options The `options` argument given to [PKNCAdata()]
+#' @returns `NULL`, invisibly (after a warning, when it applies)
+#' @keywords Internal
+#' @noRd
+pknca_warn_single_dose_aucs_unit <- function(o_conc, options) {
+  single_dose_aucs <- PKNCA.choose.option(name = "single.dose.aucs", options = options)
+  if (!identical(single_dose_aucs, PKNCA_options_defaults("single.dose.aucs"))) {
+    return(invisible(NULL))
+  }
+  timeu <-
+    if (!is.null(o_conc$units$timeu)) {
+      as.vector(o_conc$units$timeu)
+    } else if (!is.null(o_conc$columns$timeu)) {
+      unique(as.character(as.data.frame(o_conc)[[o_conc$columns$timeu]]))
+    }
+  timeu <- timeu[!is.na(timeu)]
+  if (!requireNamespace("units", quietly = TRUE)) {
+    # Without the units package, only "hr" is recognized, which never warns
+    return(invisible(NULL)) # nocov
+  }
+  # Units that are not recognizable as time units cannot be judged
+  hours_factor <- vapply(X = timeu, FUN = pknca_hours_factor, FUN.VALUE = 1)
+  not_hours <- timeu[!is.na(hours_factor) & abs(hours_factor - 1) > 1e-8]
+  if (length(not_hours) > 0) {
+    rlang::warn(
+      sprintf(
+        paste(
+          "The default single-dose intervals (the `single.dose.aucs` option, from 0 to 24 and 0 to Inf) assume hours, but the time unit is %s, so they end at 24 %s.",
+          "Give `intervals` or set the `single.dose.aucs` option for this time unit."
+        ),
+        paste0("'", not_hours, "'", collapse = ", "),
+        not_hours[1]
+      ),
+      class = "pknca_warning_single_dose_aucs_unit"
+    )
+  }
+  invisible(NULL)
+}
+
 #' @rdname is_sparse_pk
 #' @export
 is_sparse_pk.PKNCAdata <- function(object) {
@@ -279,10 +405,38 @@ print.PKNCAdata <- function(x, ...) {
   }
   cat(sprintf("\nWith %d rows of interval specifications.\n",
               nrow(x$intervals)))
+  times <- pknca_datetime_times(x)
+  if (times$is_datetime) {
+    group_cols <-
+      pknca_datetime_ref_groups(
+        as_PKNCAconc(x), as_PKNCAdose(x),
+        has_dose_time = !is.null(times$dose_time)
+      )
+    cat(sprintf(
+      "Times are date-times; pk.nca() makes them relative to the first dose (or first concentration)%s.\n",
+      if (length(group_cols) > 0) paste0(" within each ", paste(group_cols, collapse = "+")) else ""
+    ))
+  } else if (!is.null(x$time_reference)) {
+    group_cols <- setdiff(names(x$time_reference), c("time_reference", "time_reference_type"))
+    n_first_conc <- sum(x$time_reference$time_reference_type %in% "first_conc")
+    cat(sprintf(
+      "Times are relative to the first dose%s (date-time input)%s.\n",
+      if (length(group_cols) > 0) paste0(" within each ", paste(group_cols, collapse = "+")) else "",
+      if (n_first_conc > 0) {
+        sprintf(
+          "; %d of %d groups have no dose and use the first concentration",
+          n_first_conc, nrow(x$time_reference)
+        )
+      } else {
+        ""
+      }
+    ))
+  }
   if (!is.null(x$units)) {
     cat("With units\n")
   }
-  if (!is.null(x$impute)) {
+  # PKNCAdata() stores NA_character_ when no imputation is requested
+  if (!is.null(x$impute) && !all(is.na(x$impute))) {
     cat(sprintf("With imputation: %s\n", x$impute))
   }
   if (!is.null(x$group_ref)) {
