@@ -467,12 +467,20 @@ assert_interval_times_datetime <- function(intervals, data) {
       )
     }
   }
-  if (any(!is.finite(as.numeric(pknca_as_posixct(intervals$start, tz = times$tz))))) {
+  start_seconds <- as.numeric(pknca_as_posixct(intervals$start, tz = times$tz))
+  if (any(!is.finite(start_seconds))) {
     rlang::abort(
       "Interval `start` date-times must be finite (not NA or infinite).",
       class = "pknca_error_interval_datetime_start_infinite"
     )
   }
+  end_seconds <-
+    if (dt_end) {
+      as.numeric(pknca_as_posixct(intervals$end, tz = times$tz))
+    } else {
+      intervals$end
+    }
+  assert_interval_end_after_start(start = start_seconds, end = end_seconds)
   time_reference <- pknca_datetime_quietly(pknca_datetime_reference(data, times), warn = FALSE)
   ref_groups <- setdiff(names(time_reference), c("time_reference", "time_reference_type"))
   conc_groups <- names(getGroups(as_PKNCAconc(data)))
@@ -516,9 +524,46 @@ assert_interval_times_datetime <- function(intervals, data) {
 #' @keywords Internal
 #' @noRd
 assert_interval_times_numeric <- function(intervals) {
-  checkmate::assert_numeric(intervals$start, .var.name = "intervals$start")
+  checkmate::assert_numeric(intervals$start, any.missing = FALSE, finite = TRUE, .var.name = "intervals$start")
   checkmate::assert_numeric(intervals$end, .var.name = "intervals$end")
+  assert_interval_end_after_start(start = intervals$start, end = intervals$end)
   invisible(intervals)
+}
+
+#' Check that every interval end is a number after its start
+#'
+#' An end may be `Inf` (an interval to infinity, as for AUCinf), but not
+#' missing, `NaN`, or `-Inf`.
+#'
+#' @param start,end The interval starts and ends as numbers (for date-times,
+#'   seconds since the epoch, with an infinite end kept infinite)
+#' @returns `NULL`, invisibly, or an error naming the offending rows
+#' @keywords Internal
+#' @noRd
+assert_interval_end_after_start <- function(start, end) {
+  end <- as.numeric(end)
+  start <- as.numeric(start)
+  mask_invalid <- is.na(end) | end == -Inf
+  if (any(mask_invalid)) {
+    rlang::abort(
+      sprintf(
+        "Interval `end` must not be missing, NaN, or -Inf (Inf is allowed); rows: %s",
+        paste(which(mask_invalid), collapse = ", ")
+      ),
+      class = "pknca_error_interval_end_invalid"
+    )
+  }
+  mask_order <- end <= start
+  if (any(mask_order)) {
+    rlang::abort(
+      sprintf(
+        "Interval `end` must be after `start`; rows: %s",
+        paste(which(mask_order), collapse = ", ")
+      ),
+      class = "pknca_error_interval_end_not_after_start"
+    )
+  }
+  invisible(NULL)
 }
 
 #' Get the time unit that date-time input is converted to

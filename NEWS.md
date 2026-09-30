@@ -72,6 +72,12 @@ the dosing including dose amount and route.
   numeric bounds, an infinite start, date-time intervals for numeric data, and
   a different time zone are errors (checked by `assert_intervals()`).
   (@GITHUB_HANDLE)
+* `assert_intervals()` (and so `PKNCAdata()` and `set_intervals()`) requires
+  every interval `start` to be a finite, non-missing number (or date-time) and
+  every `end` to be after its `start`; an `end` may be `Inf` but not missing,
+  `NaN`, or `-Inf`.  The errors (`pknca_error_interval_end_invalid`,
+  `pknca_error_interval_end_not_after_start`) name the offending rows.
+  (@GITHUB_HANDLE)
 * `PKNCA_options_defaults()` returns the default value of one or more options
   (or all of them) without changing the current options, unlike
   `PKNCA.options(default = TRUE)`, which resets them.  (@GITHUB_HANDLE)

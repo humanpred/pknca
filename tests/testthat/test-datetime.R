@@ -803,3 +803,61 @@ test_that("Temporary columns do not collide with interval columns", {
   expect_equal(o_data_numeric$intervals$tau, c(24, 24))
   expect_false(any(grepl("X$", names(o_data_numeric$intervals))))
 })
+
+test_that("Numeric interval starts must be finite and ends must follow them", {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(data.frame(subject = 1, time = 0:2, conc = c(1, 2, 1)), conc~time|subject),
+      intervals = data.frame(start = 0, end = 2, cmax = TRUE)
+    )
+  check <- function(start, end) {
+    assert_intervals(data.frame(start = start, end = end, cmax = TRUE), o_data)
+  }
+  # An infinite end is how an interval to infinity is given
+  expect_equal(check(start = 0, end = Inf)$end, Inf)
+  expect_error(check(start = NA_real_, end = 1), regexp = "intervals$start", fixed = TRUE)
+  expect_error(check(start = Inf, end = Inf), regexp = "intervals$start", fixed = TRUE)
+  expect_error(check(start = -Inf, end = 1), regexp = "intervals$start", fixed = TRUE)
+  expect_error(check(start = NaN, end = 1), regexp = "intervals$start", fixed = TRUE)
+  expect_error(check(start = "0", end = 1), regexp = "intervals$start", fixed = TRUE)
+  expect_error(check(start = 0, end = "1"), regexp = "intervals$end", fixed = TRUE)
+  expect_error(
+    check(start = c(0, 0, 0), end = c(1, NA, NaN)),
+    regexp = "rows: 2, 3",
+    class = "pknca_error_interval_end_invalid"
+  )
+  expect_error(check(start = 0, end = -Inf), class = "pknca_error_interval_end_invalid")
+  expect_error(
+    check(start = c(0, 2, 3), end = c(1, 2, 1)),
+    regexp = "rows: 2, 3",
+    class = "pknca_error_interval_end_not_after_start"
+  )
+})
+
+test_that("Date-time interval ends follow the same rules as numeric ones", {
+  d <- datetime_interval_data()
+  o_data <- PKNCAdata(d$o_conc, intervals = data.frame(start = d$t0, end = d$t0 + 3600, cmax = TRUE))
+  check <- function(start, end) {
+    assert_intervals(data.frame(start = start, end = end, cmax = TRUE), o_data)
+  }
+  expect_equal(check(start = d$t0, end = as.POSIXct(Inf, tz = "UTC"))$end, as.POSIXct(Inf, tz = "UTC"))
+  expect_equal(check(start = d$t0, end = Inf)$end, Inf)
+  expect_error(
+    check(start = d$t0, end = as.POSIXct(NA, tz = "UTC")),
+    class = "pknca_error_interval_end_invalid"
+  )
+  expect_error(
+    check(start = d$t0, end = as.POSIXct(-Inf, tz = "UTC")),
+    class = "pknca_error_interval_end_invalid"
+  )
+  expect_error(
+    check(start = d$t0 + c(0, 3600), end = d$t0 + c(3600, 3600)),
+    regexp = "rows: 2",
+    class = "pknca_error_interval_end_not_after_start"
+  )
+  # A Date is 08:00, so the date of a 09:00 start ends before it
+  expect_error(
+    check(start = d$t0 + 3600, end = as.Date("2024-03-01")),
+    class = "pknca_error_interval_end_not_after_start"
+  )
+})
