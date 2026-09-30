@@ -612,15 +612,3 @@ pknca_datetime_match_reference <- function(groups_data, time_reference) {
     )$time_reference
   }
 }
-
-#' Format a date-time as an ISO 8601 date-time for CDISC --DTC variables
-#'
-#' @param x A POSIXct vector
-#' @returns A character vector like `"2024-01-01T08:00:00"`
-#' @keywords Internal
-#' @noRd
-format_iso8601_datetime <- function(x) {
-  ret <- format(x, format = "%Y-%m-%dT%H:%M:%S", tz = pknca_datetime_tz(x))
-  ret[is.na(x)] <- NA_character_
-  ret
-}

@@ -243,7 +243,7 @@ test_that("Subjects without an included dose use their first concentration, with
   d_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
   expect_equal(
     unique(d_cdisc$PPRFTDTC[d_cdisc$subject == 2]),
-    format_iso8601_datetime(d$conc$time[7])
+    lubridate::format_ISO8601(d$conc$time[7], precision = "ymdhms")
   )
 })
 
@@ -561,11 +561,16 @@ test_that("superposition() requires numeric times", {
   )
 })
 
-test_that("format_iso8601_datetime keeps missing values missing", {
-  expect_equal(
-    format_iso8601_datetime(as.POSIXct(c("2024-01-02 03:04:05", NA), tz = "UTC")),
-    c("2024-01-02T03:04:05", NA)
-  )
+test_that("PPRFTDTC is an ISO 8601 date-time in the data's time zone", {
+  # The reference 08:00 in New York is reported as 08:00, without an offset
+  d <- datetime_test_data(tz = "America/New_York")
+  o_nca <-
+    pk.nca(PKNCAdata(
+      PKNCAconc(d$conc, conc~time|part+subject),
+      PKNCAdose(d$dose, dose~time|part+subject)
+    ))
+  d_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
+  expect_equal(sort(unique(d_cdisc$PPRFTDTC)), c("2024-03-01T08:00:00", "2024-03-01T08:30:00"))
 })
 
 # Two subjects without dosing data; each subject's reference is its first

@@ -178,11 +178,12 @@ pknca_cdisc_add_reference_datetime <- function(ret, x) {
   }
   group_cols <- setdiff(names(time_reference), c("time_reference", "time_reference_type"))
   ret$PPRFTDTC <-
-    format_iso8601_datetime(
+    lubridate::format_ISO8601(
       pknca_datetime_match_reference(
         groups_data = as.data.frame(ret)[, group_cols, drop = FALSE],
         time_reference = time_reference
-      )
+      ),
+      precision = "ymdhms"
     )
   ret
 }
