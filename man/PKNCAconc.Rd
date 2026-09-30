@@ -44,17 +44,17 @@ time, and the groups defined in \code{formula}.}
 \code{amount~time|groups} for urine/feces (In the remainder of the
 documentation, "concentration" will be used to describe concentration or
 amount.)  One special aspect of the \code{groups} part of the formula is that
-the last group is typically assumed to be the \code{subject}; see the
-documentation for the \code{subject} argument for exceptions to this assumption.}
+the last group to the left of any \code{/} is assumed to be the \code{subject}
+unless the \code{subject} argument is given.  The \code{time} may be numeric, or it
+may be a date-time (POSIXct) or a date (Date); see the "Date-time input"
+section.}
 
 \item{subject}{The column indicating the subject number.  If not provided,
-this defaults to the beginning of the inner groups: For example with
-\code{concentration~time|Study+Subject/Analyte}, the inner groups start with the
-first grouping variable before a \code{/}, \code{Subject}.  If there is only one
-grouping variable, it is assumed to be the subject (e.g.
-\code{concentration~time|Subject}), and if there are multiple grouping variables
-without a \code{/}, subject is assumed to be the last one.  For single-subject
-data, it is assigned as \code{NULL}.}
+this defaults to the last grouping variable to the left of a \code{/} (for
+example, \code{Subject} with \code{concentration~time|Study+Subject/Analyte}), or the
+last grouping variable when there is no \code{/} (for example, \code{Subject} with
+\code{concentration~time|Study+Subject}).  When there are no grouping variables
+(single-subject data), no subject column is set.}
 
 \item{time.nominal}{(optional) The name of the nominal time column (if the
 main time variable is actual time.  The \code{time.nominal} is not used during
@@ -74,7 +74,9 @@ interval \code{end} contributes its full amount to that interval, so for the
 simplest interpretation of results, align collection start and end times
 with interval boundaries.  A \code{duration} column is added to the data only
 when this is given; requesting an excretion rate parameter (\code{ermax},
-\code{ertmax}, \code{ertlst}) without it is an error.}
+\code{ertmax}, \code{ertlst}) without it is an error.  A numeric duration is in the
+time unit of the analysis; a difftime duration is converted to that unit
+in \code{\link[=PKNCAdata]{PKNCAdata()}}.}
 
 \item{volume}{(optional) The volume (or mass) of collection as is typically
 used for urine or feces measurements.  A \code{volume} column is added to the
@@ -109,10 +111,13 @@ small nonclinical species or with terminal or difficult sampling) or dense
 PK (commonly used in clinical studies or larger nonclinical species)?}
 
 \item{concu, amountu, timeu}{Either unit values (e.g. "ng/mL") or column names
-within the data where units are provided.}
+within the data where units are provided.  For a date-time (POSIXct or
+Date) time column, \code{timeu} must be a unit value, and \code{timeu_pref} takes
+precedence over it (see the "Date-time input" section).}
 
 \item{concu_pref, amountu_pref, timeu_pref}{Preferred units for reporting (not
-column names)}
+column names).  For a date-time time column, the times are converted
+directly to \code{timeu_pref}, which then is also \code{timeu}.}
 }
 \value{
 A PKNCAconc object that can be used for automated NCA.
@@ -120,6 +125,27 @@ A PKNCAconc object that can be used for automated NCA.
 \description{
 Create a PKNCAconc object
 }
+\section{Date-time input}{
+
+
+The concentration time (and the dose time in \code{\link[=PKNCAdose]{PKNCAdose()}}) may be a
+date-time (POSIXct) or a date (Date; a date is taken as 08:00 on that
+date, a typical time of a first PK sample, with a warning).  Date-times have no numeric unit, so
+they are converted directly to the time unit used for calculations and
+reports:  \code{timeu_pref} when given (it takes precedence over \code{timeu}, and
+\code{timeu} is set to it), otherwise \code{timeu}, otherwise hours (without
+units).  The unit must be a single time unit value (like \code{"hr"} or
+\code{"day"}), not a column name.  A numeric \code{duration} (here or in
+\code{\link[=PKNCAdose]{PKNCAdose()}}) is in that unit, and a difftime \code{duration} is converted to
+it exactly.
+
+The times remain date-times in the \code{PKNCAconc}, \code{PKNCAdose}, and
+\code{PKNCAdata} objects.  \code{\link[=pk.nca]{pk.nca()}} converts them to numeric time relative to
+the first dose (or first concentration) in each group; see the "Date-time
+input" section of \code{\link[=PKNCAdata]{PKNCAdata()}}.  The nominal time (\code{time.nominal}) is not converted and usually
+stays numeric.
+}
+
 \seealso{
 Other PKNCA objects:
 \code{\link[=PKNCAdata]{PKNCAdata()}},

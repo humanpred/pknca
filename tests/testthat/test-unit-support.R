@@ -528,3 +528,11 @@ test_that("select_minimal_grouping_cols", {
   result <- select_minimal_grouping_cols(data, "d")
   expect_equal(result, data["d"])
 })
+
+test_that("A preferred unit equal to the original unit needs no conversion (and no units package)", {
+  # Only preferred units that differ from the original ones become conversions,
+  # so when none differ there is no conversion at all.
+  units_same <- pknca_units_table(concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr", timeu_pref = "hr")
+  units_none <- pknca_units_table(concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr")
+  expect_equal(units_same, units_none)
+})

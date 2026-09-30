@@ -48,16 +48,25 @@ exclude_nca_tmax_0()
 
 \item{tmax_early}{The time for Tmax which is considered too early to be a valid NCA result}
 }
+\value{
+A function to give to \code{\link[=exclude]{exclude()}} as \code{FUN}.  Its
+\code{pknca_affected_parameters} attribute lists the parameters it can exclude,
+and its \code{pknca_options} attribute lists the \code{\link[=PKNCA.options]{PKNCA.options()}} entries its
+thresholds came from (see \code{\link[=pknca_exclude_rules]{pknca_exclude_rules()}}).
+}
 \description{
 Exclude NCA parameters based on examining the parameter set.
 }
 \section{Functions}{
 \itemize{
-\item \code{exclude_nca_span.ratio()}: Exclude based on span.ratio
+\item \code{exclude_nca_span.ratio()}: Exclude based on the half-life span ratio
 
-\item \code{exclude_nca_max.aucinf.pext()}: Exclude based on AUC percent extrapolated (both observed and predicted)
+\item \code{exclude_nca_max.aucinf.pext()}: Exclude based on the percent of AUC extrapolated to
+infinity (both observed and predicted)
 
-\item \code{exclude_nca_count_conc_measured()}: Exclude AUC measurements based on count of concentrations measured and not below the lower limit of quantification
+\item \code{exclude_nca_count_conc_measured()}: Exclude based on the count of concentrations measured
+and not below the lower limit of quantification (affects AUC and AUMC
+parameters)
 
 \item \code{exclude_nca_min.hl.r.squared()}: Exclude based on half-life r-squared
 
@@ -84,6 +93,7 @@ as.data.frame(my_result_excluded)
 }
 \seealso{
 Other Result exclusions:
-\code{\link[=exclude]{exclude()}}
+\code{\link[=exclude]{exclude()}},
+\code{\link[=pknca_exclude_rules]{pknca_exclude_rules()}}
 }
 \concept{Result exclusions}

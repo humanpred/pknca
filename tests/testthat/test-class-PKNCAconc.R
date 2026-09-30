@@ -703,3 +703,39 @@ test_that("exclude_half.life and include_half.life column names must exist in th
   o_excl <- PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_lgl")
   expect_equal(o_excl$columns$exclude_half.life, "excl_lgl")
 })
+
+test_that("The duplicate-row error from PKNCAconc() gives the row numbers", {
+  d_conc <- data.frame(conc = c(0, 2, 1, 3), time = c(0, 1, 1, 2), subject = 1)
+  duplicate_error <-
+    tryCatch(
+      PKNCAconc(d_conc, conc~time|subject),
+      pknca_error_duplicate_rows = function(e) e
+    )
+  expect_s3_class(duplicate_error, "pknca_error_duplicate_rows")
+  expect_equal(duplicate_error$rows, 3L)
+  # Excluded rows are not checked
+  d_conc$excl <- c(NA, NA, "Duplicate", NA)
+  expect_s3_class(PKNCAconc(d_conc, conc~time|subject, exclude = "excl"), "PKNCAconc")
+})
+
+test_that("Sparse concentration data are checked for duplicates per subject and time", {
+  d_sparse <-
+    data.frame(
+      treatment = "A",
+      id = c(1, 2, 3, 1),
+      time = c(0, 0, 1, 1),
+      conc = c(0, 0, 2, 3)
+    )
+  # Different subjects at the same time are the point of sparse sampling
+  expect_s3_class(
+    PKNCAconc(d_sparse, conc~time|treatment, subject = "id", sparse = TRUE),
+    "PKNCAconc"
+  )
+  # The same subject twice at one time is not
+  d_sparse_dup <- rbind(d_sparse, d_sparse[4, ])
+  expect_error(
+    PKNCAconc(d_sparse_dup, conc~time|treatment, subject = "id", sparse = TRUE),
+    regexp = "Row numbers: 5",
+    class = "pknca_error_duplicate_rows"
+  )
+})

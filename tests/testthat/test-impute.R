@@ -708,3 +708,45 @@ test_that("start_predose_conc0 falls back to 0 within pk.nca when there is no pr
   }
   expect_equal(get_auclast("start_predose_conc0"), get_auclast("start_conc0"))
 })
+
+test_that("PKNCA_impute_fun_list splits and expands imputation strings", {
+  expect_equal(
+    PKNCA_impute_fun_list(c("start_predose,start_conc0", "start_cmin end_conc_drop", NA, "")),
+    list(
+      c("PKNCA_impute_method_start_predose", "PKNCA_impute_method_start_conc0"),
+      c("PKNCA_impute_method_start_cmin", "PKNCA_impute_method_end_conc_drop"),
+      NA_character_,
+      NA_character_
+    )
+  )
+  expect_error(
+    PKNCA_impute_fun_list("start_misspelled"),
+    regexp = "PKNCA_impute_method_start_misspelled",
+    class = "pknca_error_impute_funs_not_found"
+  )
+})
+
+test_that("assert_impute_method resolves and validates imputation specifications", {
+  # A string of methods
+  expect_equal(assert_impute_method("start_predose,start_conc0"), "start_predose,start_conc0")
+  expect_invisible(assert_impute_method("start_conc0"))
+  # No imputation
+  expect_equal(assert_impute_method(NA_character_), NA_character_)
+  # A column of the intervals
+  intervals <- data.frame(start = 0, end = c(24, 48), method = c("start_conc0", NA))
+  expect_equal(assert_impute_method("method", intervals = intervals), c("start_conc0", NA))
+  # The "impute" column of the intervals is used for NA
+  intervals_impute <- data.frame(start = 0, end = 24, impute = "start_cmin")
+  expect_equal(assert_impute_method(NA, intervals = intervals_impute), "start_cmin")
+  # Unknown methods, including within a column, are an error
+  expect_error(
+    assert_impute_method("start_misspelled"),
+    class = "pknca_error_impute_funs_not_found"
+  )
+  expect_error(
+    assert_impute_method("method", intervals = data.frame(start = 0, end = 24, method = "bad_method")),
+    class = "pknca_error_impute_funs_not_found"
+  )
+  # Specifications must be scalars
+  expect_error(assert_impute_method(c("start_conc0", "start_cmin")), regexp = "impute")
+})

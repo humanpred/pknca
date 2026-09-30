@@ -47,3 +47,8 @@ Some cases may generate warnings but allow the data to proceed.
 error; it will generate a warning.
 }
 }
+\examples{
+assert_conc_time(conc = c(0, 2, 1), time = 0:2)
+# Unsorted times are allowed when `sorted_time = FALSE`
+assert_conc_time(conc = c(0, 2, 1), time = c(2, 0, 1), sorted_time = FALSE)
+}

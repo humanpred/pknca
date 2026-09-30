@@ -464,3 +464,62 @@ test_that("group_vars.PKNCAdata", {
 
   expect_equal(dplyr::group_vars(o_data_nogroup), character(0))
 })
+
+test_that("print.PKNCAdata reports imputation only when it is requested", {
+  o_conc <- PKNCAconc(data.frame(conc = c(1, 2, 1), time = 0:2, subject = 1), conc~time|subject)
+  intervals <- data.frame(start = 0, end = 2, auclast = TRUE)
+  # PKNCAdata() stores NA_character_ when no imputation is given
+  o_data_none <- PKNCAdata(o_conc, intervals = intervals)
+  expect_equal(o_data_none$impute, NA_character_)
+  output_none <- capture.output(print(o_data_none))
+  expect_false(any(grepl("With imputation", output_none, fixed = TRUE)))
+  o_data_impute <- PKNCAdata(o_conc, intervals = intervals, impute = "start_conc0")
+  output_impute <- capture.output(print(o_data_impute))
+  expect_equal(sum(output_impute == "With imputation: start_conc0"), 1)
+})
+
+test_that("The default single-dose intervals warn for a time unit other than hours", {
+  d_conc <- data.frame(subject = 1, time = c(0, 30, 60, 120), conc = c(0, 2, 1, 0.5))
+  d_dose <- data.frame(subject = 1, time = 0, dose = 1)
+  o_dose <- PKNCAdose(d_dose, dose~time|subject)
+  o_conc_min <- PKNCAconc(d_conc, conc~time|subject, timeu = "min")
+  expect_warning(
+    o_data_min <- PKNCAdata(o_conc_min, o_dose),
+    regexp = "the time unit is 'min', so they end at 24 min",
+    class = "pknca_warning_single_dose_aucs_unit"
+  )
+  # The default table is not changed
+  expect_equal(o_data_min$intervals$end, c(24, Inf))
+  # No warning for hours, an unknown unit, no unit, manual intervals, a
+  # non-default single.dose.aucs, or multiple doses
+  expect_no_warning(PKNCAdata(PKNCAconc(d_conc, conc~time|subject, timeu = "hr"), o_dose))
+  expect_no_warning(PKNCAdata(PKNCAconc(d_conc, conc~time|subject, timeu = "not_a_unit"), o_dose))
+  expect_no_warning(PKNCAdata(PKNCAconc(d_conc, conc~time|subject), o_dose))
+  expect_no_warning(
+    PKNCAdata(o_conc_min, o_dose, intervals = data.frame(start = 0, end = 120, cmax = TRUE))
+  )
+  expect_no_warning(
+    PKNCAdata(
+      o_conc_min, o_dose,
+      options = list(single.dose.aucs = data.frame(start = 0, end = 120, auclast = TRUE))
+    )
+  )
+  o_dose_multi <- PKNCAdose(data.frame(subject = 1, time = c(0, 60), dose = 1), dose~time|subject)
+  expect_no_warning(PKNCAdata(o_conc_min, o_dose_multi))
+  # A time unit given as a column is checked, too
+  d_conc$timeu_col <- "day"
+  expect_warning(
+    PKNCAdata(PKNCAconc(d_conc, conc~time|subject, timeu = "timeu_col"), o_dose),
+    regexp = "'day'",
+    class = "pknca_warning_single_dose_aucs_unit"
+  )
+})
+
+test_that("pknca_hours_factor converts time units with the units package", {
+  # "hr" needs no conversion (and no units package)
+  expect_equal(pknca_hours_factor("hr"), 1)
+  skip_if_not_installed("units")
+  expect_equal(pknca_hours_factor("min"), 1/60)
+  expect_equal(pknca_hours_factor("day"), 24)
+  expect_equal(pknca_hours_factor("not_a_unit"), NA_real_)
+})
