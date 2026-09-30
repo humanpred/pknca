@@ -29,7 +29,6 @@ summarization.
 Other PKNCA objects:
 \code{\link[=PKNCAconc]{PKNCAconc()}},
 \code{\link[=PKNCAdata]{PKNCAdata()}},
-\code{\link[=PKNCAdose]{PKNCAdose()}},
-\code{\link[=pknca_check_conc_data]{pknca_check_conc_data()}}
+\code{\link[=PKNCAdose]{PKNCAdose()}}
 }
 \concept{PKNCA objects}

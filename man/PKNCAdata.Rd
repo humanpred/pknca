@@ -169,7 +169,6 @@ is handled correctly when the time zone is a named zone (like
 Other PKNCA objects:
 \code{\link[=PKNCAconc]{PKNCAconc()}},
 \code{\link[=PKNCAdose]{PKNCAdose()}},
-\code{\link[=PKNCAresults]{PKNCAresults()}},
-\code{\link[=pknca_check_conc_data]{pknca_check_conc_data()}}
+\code{\link[=PKNCAresults]{PKNCAresults()}}
 }
 \concept{PKNCA objects}

@@ -265,37 +265,6 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   assert_PKNCAconc(ret)
 }
 
-#' Check concentration-time data before creating a PKNCAconc object
-#'
-#' Runs the checks that [PKNCAconc()] makes on the data:  the data have rows;
-#' every variable in the formula is a column; the concentrations are numeric
-#' and finite, and the times are not missing (see [assert_conc_time()]); and
-#' there is only one measurement per group and time (per subject and time for
-#' sparse data).  Rows with an exclusion reason are not checked.  Checking
-#' before creating the object lets an application report the problem in its
-#' own terms.
-#'
-#' @inheritParams PKNCAconc
-#' @param ... Passed to [PKNCAconc()] (for example, `subject` or `timeu`)
-#' @returns `data`, invisibly, when the data pass the checks; otherwise, the
-#'   same classed error that [PKNCAconc()] raises.  For duplicated rows, the
-#'   error has class `pknca_error_duplicate_rows`, and its `rows` field gives
-#'   the duplicated row numbers.
-#' @examples
-#' d_conc <- data.frame(conc = c(0, 2, 1), time = c(0, 1, 1), subject = 1)
-#' duplicate_error <-
-#'   tryCatch(
-#'     pknca_check_conc_data(d_conc, conc~time|subject),
-#'     pknca_error_duplicate_rows = function(e) e
-#'   )
-#' duplicate_error$rows
-#' @family PKNCA objects
-#' @export
-pknca_check_conc_data <- function(data, formula, exclude = NULL, sparse = FALSE, ...) {
-  PKNCAconc(data = data, formula = formula, exclude = exclude, sparse = sparse, ...)
-  invisible(data)
-}
-
 #' Extract the formula from a PKNCAconc object.
 #'
 #' @param x The object to extract the formula from.

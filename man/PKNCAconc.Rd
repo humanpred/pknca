@@ -150,7 +150,6 @@ stays numeric.
 Other PKNCA objects:
 \code{\link[=PKNCAdata]{PKNCAdata()}},
 \code{\link[=PKNCAdose]{PKNCAdose()}},
-\code{\link[=PKNCAresults]{PKNCAresults()}},
-\code{\link[=pknca_check_conc_data]{pknca_check_conc_data()}}
+\code{\link[=PKNCAresults]{PKNCAresults()}}
 }
 \concept{PKNCA objects}

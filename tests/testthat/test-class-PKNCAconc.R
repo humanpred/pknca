@@ -704,32 +704,18 @@ test_that("exclude_half.life and include_half.life column names must exist in th
   expect_equal(o_excl$columns$exclude_half.life, "excl_lgl")
 })
 
-test_that("pknca_check_conc_data reports the checks PKNCAconc makes", {
+test_that("The duplicate-row error from PKNCAconc() gives the row numbers", {
   d_conc <- data.frame(conc = c(0, 2, 1, 3), time = c(0, 1, 1, 2), subject = 1)
   duplicate_error <-
     tryCatch(
-      pknca_check_conc_data(d_conc, conc~time|subject),
+      PKNCAconc(d_conc, conc~time|subject),
       pknca_error_duplicate_rows = function(e) e
     )
   expect_s3_class(duplicate_error, "pknca_error_duplicate_rows")
   expect_equal(duplicate_error$rows, 3L)
   # Excluded rows are not checked
   d_conc$excl <- c(NA, NA, "Duplicate", NA)
-  expect_invisible(pknca_check_conc_data(d_conc, conc~time|subject, exclude = "excl"))
-  expect_equal(pknca_check_conc_data(d_conc, conc~time|subject, exclude = "excl"), d_conc)
-  # Other data problems raise the same errors as PKNCAconc()
-  expect_error(
-    pknca_check_conc_data(d_conc, conc~time_missing|subject),
-    class = "pknca_error_formula_missing_vars"
-  )
-  expect_error(
-    pknca_check_conc_data(data.frame(conc = "a", time = 0, subject = 1), conc~time|subject),
-    regexp = "conc"
-  )
-  expect_error(
-    pknca_check_conc_data(data.frame(conc = 1, time = NA_real_, subject = 1), conc~time|subject),
-    regexp = "time"
-  )
+  expect_s3_class(PKNCAconc(d_conc, conc~time|subject, exclude = "excl"), "PKNCAconc")
 })
 
 test_that("Sparse concentration data are checked for duplicates per subject and time", {

@@ -31,12 +31,10 @@ the dosing including dose amount and route.
   registered, its documentation to match the registered description, and its
   registered parameters to be exactly those it excludes.  The rule
   descriptions now all read "Exclude based on ...".  (@GITHUB_HANDLE)
-* `assert_conc_time()`, `PKNCA_impute_fun_list()`, the new
+* `assert_conc_time()`, `PKNCA_impute_fun_list()`, and the new
   `assert_impute_method()` (which checks an imputation specification the way
-  `PKNCAdata()` and `pk.nca()` resolve it), and the new
-  `pknca_check_conc_data()` (which runs the data checks of `PKNCAconc()`) are
-  exported so that applications can check data before building PKNCA objects.
-  The duplicate-row error (`pknca_error_duplicate_rows`) now carries the
+  `PKNCAdata()` and `pk.nca()` resolve it) are exported so that applications
+  can check data before building PKNCA objects.  The duplicate-row error (`pknca_error_duplicate_rows`) now carries the
   duplicated row numbers in its `rows` field.  (@GITHUB_HANDLE)
 * Sparse concentration data whose subject is not a grouping variable (for
   example, `conc~time|treatment` with `subject = "id"`) are no longer rejected
