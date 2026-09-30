@@ -4,6 +4,11 @@
 #'  It will then check that the intervals are valid, given the data object.
 #'  If the intervals are valid, it will set them in the object.
 #'  It will return the data object with the intervals set.
+#'
+#'  With date-time data, `start` and `end` may be date-times; they are kept
+#'  as given and converted to numeric time relative to each group's time
+#'  reference by [pk.nca()] (see the "Date-time input" section of
+#'  [PKNCAdata()]).
 #'  
 #' @param data PKNCAdata object
 #' @param intervals Proposed intervals
@@ -45,6 +50,7 @@ assert_intervals <- function(intervals, data) {
       "impute",
       "tau",
       "interval_id",
+      "interval_time_kind",
       paste0(secondary_parameter_names(), "_ref"),
       # If not used, data$options$keep_interval_cols will be NULL
       data$options$keep_interval_cols
@@ -87,6 +93,15 @@ assert_intervals <- function(intervals, data) {
       ),
       class = "pknca_error_invalid_interval_columns"
     )
+  }
+
+  # Interval times are numbers, or date-times for date-time data
+  if (all(c("start", "end") %in% names(intervals))) {
+    if (is_datetime_date(intervals$start) || is_datetime_date(intervals$end)) {
+      assert_interval_times_datetime(intervals, data)
+    } else {
+      assert_interval_times_numeric(intervals)
+    }
   }
 
   # Name only what the specification itself asks for, not the dependencies it

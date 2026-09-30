@@ -6,16 +6,16 @@
 #'   `amount~time|groups` for urine/feces (In the remainder of the
 #'   documentation, "concentration" will be used to describe concentration or
 #'   amount.)  One special aspect of the `groups` part of the formula is that
-#'   the last group is typically assumed to be the `subject`; see the
-#'   documentation for the `subject` argument for exceptions to this assumption.
+#'   the last group to the left of any `/` is assumed to be the `subject`
+#'   unless the `subject` argument is given.  The `time` may be numeric, or it
+#'   may be a date-time (POSIXct) or a date (Date); see the "Date-time input"
+#'   section.
 #' @param subject The column indicating the subject number.  If not provided,
-#'   this defaults to the beginning of the inner groups: For example with
-#'   `concentration~time|Study+Subject/Analyte`, the inner groups start with the
-#'   first grouping variable before a `/`, `Subject`.  If there is only one
-#'   grouping variable, it is assumed to be the subject (e.g.
-#'   `concentration~time|Subject`), and if there are multiple grouping variables
-#'   without a `/`, subject is assumed to be the last one.  For single-subject
-#'   data, it is assigned as `NULL`.
+#'   this defaults to the last grouping variable to the left of a `/` (for
+#'   example, `Subject` with `concentration~time|Study+Subject/Analyte`), or the
+#'   last grouping variable when there is no `/` (for example, `Subject` with
+#'   `concentration~time|Study+Subject`).  When there are no grouping variables
+#'   (single-subject data), no subject column is set.
 #' @param time.nominal (optional) The name of the nominal time column (if the
 #'   main time variable is actual time.  The `time.nominal` is not used during
 #'   calculations; it is available to assist with data summary and checking.
@@ -36,7 +36,9 @@
 #'   simplest interpretation of results, align collection start and end times
 #'   with interval boundaries.  A `duration` column is added to the data only
 #'   when this is given; requesting an excretion rate parameter (`ermax`,
-#'   `ertmax`, `ertlst`) without it is an error.
+#'   `ertmax`, `ertlst`) without it is an error.  A numeric duration is in the
+#'   time unit of the analysis; a difftime duration is converted to that unit
+#'   in [PKNCAdata()].
 #' @param exclude_half.life,include_half.life Manual half-life point selection,
 #'   given as a logical value per concentration measurement (or, in
 #'   [PKNCAconc()], the name of such a column in the data).  `exclude_half.life`
@@ -63,6 +65,24 @@
 #'   PK (commonly used in clinical studies or larger nonclinical species)?
 #' @param ... Ignored.
 #' @returns A PKNCAconc object that can be used for automated NCA.
+#' @section Date-time input:
+#'
+#'   The concentration time (and the dose time in [PKNCAdose()]) may be a
+#'   date-time (POSIXct) or a date (Date; a date is taken as 08:00 on that
+#'   date, a typical time of a first PK sample, with a warning).  Date-times have no numeric unit, so
+#'   they are converted directly to the time unit used for calculations and
+#'   reports:  `timeu_pref` when given (it takes precedence over `timeu`, and
+#'   `timeu` is set to it), otherwise `timeu`, otherwise hours (without
+#'   units).  The unit must be a single time unit value (like `"hr"` or
+#'   `"day"`), not a column name.  A numeric `duration` (here or in
+#'   [PKNCAdose()]) is in that unit, and a difftime `duration` is converted to
+#'   it exactly.
+#'
+#'   The times remain date-times in the `PKNCAconc`, `PKNCAdose`, and
+#'   `PKNCAdata` objects.  [pk.nca()] converts them to numeric time relative to
+#'   the first dose (or first concentration) in each group; see the "Date-time
+#'   input" section of [PKNCAdata()].  The nominal time (`time.nominal`) is not converted and usually
+#'   stays numeric.
 #' @family PKNCA objects
 #' @export
 PKNCAconc <- function(data, ...) {
@@ -82,9 +102,12 @@ PKNCAconc.tbl_df <- function(data, ...) {
 
 #' @rdname PKNCAconc
 #' @param concu,amountu,timeu Either unit values (e.g. "ng/mL") or column names
-#'   within the data where units are provided.
+#'   within the data where units are provided.  For a date-time (POSIXct or
+#'   Date) time column, `timeu` must be a unit value, and `timeu_pref` takes
+#'   precedence over it (see the "Date-time input" section).
 #' @param concu_pref,amountu_pref,timeu_pref Preferred units for reporting (not
-#'   column names)
+#'   column names).  For a date-time time column, the times are converted
+#'   directly to `timeu_pref`, which then is also `timeu`.
 #' @export
 PKNCAconc.data.frame <- function(data, formula, subject,
                                  time.nominal, exclude = NULL, duration, volume,
@@ -169,9 +192,16 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   # for more than one subject. Disregard points that will be excluded.
   is_excluded <- !is.na(normalize_exclude(ret))
 
+  time_values <- data[[parsed_form$time]]
+  # Date-time values are checked as numbers (for missing values); they become
+  # numeric time relative to the first dose in PKNCAdata().
+  timeu <- pknca_datetime_timeu(time = time_values, timeu = timeu, timeu_pref = timeu_pref, time_col = parsed_form$time, data = data)
+  if (is_datetime_date(time_values)) {
+    time_values <- as.numeric(time_values)
+  }
   assert_conc_time(
     conc = data[[parsed_form$concentration]][!is_excluded],
-    time = data[[parsed_form$time]][!is_excluded],
+    time = time_values[!is_excluded],
     sorted_time = FALSE
   )
 
@@ -347,7 +377,7 @@ setDuration.PKNCAconc <- function(object, duration, ...) {
     object <-
       setAttributeColumn(object=object, attr_name="duration", col_or_value=duration)
   }
-  duration.val <- getAttributeColumn(object=object, attr_name="duration")[[1]]
+  duration.val <- pknca_duration_check_values(getAttributeColumn(object=object, attr_name="duration")[[1]])
   if (is.numeric(duration.val) &&
       !anyNA(duration.val) &&
       !any(is.infinite(duration.val)) &&

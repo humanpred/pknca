@@ -62,6 +62,117 @@ the dosing including dose amount and route.
   loaded via `devtools::load_all()`/tested via `devtools::test()`; the fixed
   tests wildcard that address rather than pin it.
 
+* Concentration and dose times may be date-times (POSIXct) or dates (Date,
+  taken as 08:00).  `PKNCAdata()` checks them and keeps them, and `pk.nca()`
+  converts them to numeric time relative to the first included dose within
+  the grouping variables shared by the concentration and dose formulas (for
+  example, each subject's first dose in each study part), directly in the
+  preferred time unit:  `timeu_pref` (which takes precedence over `timeu`),
+  otherwise `timeu`, otherwise hours.  Numeric durations are in that unit and
+  difftime durations are converted to it.  The results keep the converted
+  data, with the reference of each group in `results$data$time_reference`, and
+  `as.data.frame(out_format = "cdisc")` reports it as PPRFTDTC (formatted by
+  lubridate, which PKNCA now imports).  A subject without an included dose
+  time (or all subjects, without dosing data) uses its first concentration as
+  the reference instead, with a warning when dosing data exist, and the
+  `time_reference_type` column records which kind of reference each group
+  has.  Mixing numeric and date-time times, mixing time zones, and a dose
+  formula without the subject of dense data are errors; sparse data use one
+  reference per group.  (@GITHUB_HANDLE)
+* `pknca_exclude_rules()` lists the automatic exclusion rules (`exclude_nca_*()`)
+  with their descriptions, arguments and defaults, the `PKNCA.options()`
+  entries they use, and the parameters each can exclude.  Each rule is
+  registered with its description next to its definition (as interval columns
+  are with `add.interval.col()`); the options and parameters come from the
+  function the rule returns, which records them in its
+  `pknca_affected_parameters` and `pknca_options` attributes, so they are
+  stated in one place only.  Tests require every exported rule to be
+  registered, its documentation to match the registered description, and each
+  rule to exclude exactly the parameters it records.  The rule descriptions
+  now all read "Exclude based on ...".  (@GITHUB_HANDLE)
+* `assert_conc_time()`, `PKNCA_impute_fun_list()`, and the new
+  `assert_impute_method()` (which checks an imputation specification the way
+  `PKNCAdata()` and `pk.nca()` resolve it) are exported so that applications
+  can check data before building PKNCA objects.  The duplicate-row error (`pknca_error_duplicate_rows`) now carries the
+  duplicated row numbers in its `rows` field.  (@GITHUB_HANDLE)
+* Sparse concentration data whose subject is not a grouping variable (for
+  example, `conc~time|treatment` with `subject = "id"`) are no longer rejected
+  as duplicates when different subjects share a sampling time; for sparse data,
+  duplicates are now the same subject at the same time within a group.
+  (@GITHUB_HANDLE)
+* `pknca_units_table()` no longer errors when every preferred unit equals its
+  original unit.  (@GITHUB_HANDLE)
+* The documentation of the `subject` argument of `PKNCAconc()` now matches the
+  code:  the default subject is the last grouping variable to the left of any
+  `/`.  (@GITHUB_HANDLE)
+* In `as.data.frame(out_format = "cdisc")`, PPSTINT and PPENINT are now
+  converted to the preferred time unit (`timeu_pref`) that labels them;
+  previously, interval times in the original unit were labeled with the
+  preferred unit (60 minutes reported as `"PT60H"` with `timeu_pref = "hr"`).
+  (@GITHUB_HANDLE)
+* Printing a `PKNCAdata` object no longer reports "With imputation: NA" when no
+  imputation was requested.  (@GITHUB_HANDLE)
+* `PKNCAdata()` warns (`pknca_warning_single_dose_aucs_unit`) when it
+  generates single-dose intervals from the default `single.dose.aucs` option,
+  whose 0 to 24 window is written for hours, and the time unit is a recognized
+  time unit other than hours (the window would be 24 minutes or 24 days).  The
+  default option is unchanged.  (@GITHUB_HANDLE)
+* With date-time data, intervals may be given as date-times (POSIXct, or Date
+  for 08:00 on that date).  `PKNCAdata()` and `set_intervals()` check them, and
+  `pk.nca()` converts each row relative to the time reference of the group it
+  applies to, so intervals can change after `PKNCAdata()`; a row that
+  does not name every reference group becomes one row per group, since an
+  absolute window is a different relative window for each subject.  An `end`
+  of `Inf` (numeric or POSIXct) stays infinite, and converted intervals are
+  marked with `interval_time_kind`.  Date-time bounds mixed with finite
+  numeric bounds, an infinite start, date-time intervals for numeric data, and
+  a different time zone are errors (checked by `assert_intervals()`).
+  (@GITHUB_HANDLE)
+* `assert_intervals()` (and so `PKNCAdata()` and `set_intervals()`) requires
+  every interval `start` to be a finite, non-missing number (or date-time) and
+  every `end` to be after its `start`; an `end` may be `Inf` but not missing,
+  `NaN`, or `-Inf`.  The errors (`pknca_error_interval_end_invalid`,
+  `pknca_error_interval_end_not_after_start`) name the offending rows.
+  (@GITHUB_HANDLE)
+* `PKNCA_options_defaults()` returns the default value of one or more options
+  (or all of them) without changing the current options, unlike
+  `PKNCA.options(default = TRUE)`, which resets them.  (@GITHUB_HANDLE)
+
+* `be_assess()`, `be_compare()`, and `be_fit_models()` gain three options for
+  treatment comparisons beyond a bioequivalence decision:
+  * `heteroscedastic = TRUE` estimates a separate residual variance for each
+    treatment, with `nlme::lme()` and `varIdent(~ 1 | treatment)` for crossover
+    and replicate designs and with `nlme::gls()` and the same variance
+    structure (new `model_type = "gls"`) for parallel designs.  Without
+    reference scaling the `nlme` model now accepts non-replicated designs and
+    several test formulations.  `lme4::lmer()` cannot estimate
+    treatment-specific residual variances, so `heteroscedastic = TRUE` with
+    `model_type = "lmer"` is an error.
+  * `covariates` adds columns to every model as additive fixed effects;
+    `be_dataset()` carries them as `.cov_<name>` columns.  Missing, constant,
+    or aliased covariates are errors.
+  * `regulator = "descriptive"` reports the geometric means, their ratio, and
+    its confidence interval with no acceptance limits and no `pass` column, for
+    food-effect and drug-drug interaction comparisons.  The caption states that
+    no regulatory decision was applied.
+
+* `be_assess()` now works on parallel designs.  The fixed-effects ratio no
+  longer includes subject as a fixed effect when each subject has one
+  observation, and the intra-subject contrasts, which do not exist there, are
+  reported as missing instead of stopping the analysis.  With several test
+  formulations, each test's contrast is now matched by its exact name; before,
+  a test level whose name appears inside another level's name (`"T"` inside
+  `"AT"`) could be reported with the other level's ratio.  The `nlme`
+  within-subject variances now carry the design-based degrees of freedom, so
+  the NTID variance-ratio bound is available with `model_type = "nlme"`.
+
+* `be_design()` now counts test replication separately for each test
+  formulation, so `replicate_test` is `TRUE` only when every test formulation
+  is replicated.  Before, all test formulations were pooled, so a
+  three-treatment crossover in which each formulation is given once was
+  reported as test-replicated and the NTID and HVNTID frameworks were marked
+  feasible.  `reps_test` is now the smallest of the per-formulation medians.
+
 * On sparse PK data, `auclast` and `aumclast` are now estimated with the sparse
   methods (the Bailer point estimate with the Nedelman-Jia/Holder standard
   error) instead of a trapezoid on the arithmetic-mean profile, and the new

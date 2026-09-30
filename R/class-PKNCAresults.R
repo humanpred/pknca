@@ -44,7 +44,9 @@ PKNCAresults <- function(result, data, exclude = NULL) {
 #'   "AUCINT", for example) -- so `pknca_parameter` is the only column that
 #'   still identifies which PKNCA calculation produced a row.
 #'   Route-dependent parameters (e.g. CL, VZ, MRT) are resolved using the
-#'   route information from the dose data.
+#'   route information from the dose data.  When the concentration and dose
+#'   times were date-times (see [PKNCAdata()]), a PPRFTDTC column gives the
+#'   ISO 8601 date-time of the time reference (the first dose of the group).
 #' @param filter_requested Only return rows with parameters that were
 #'   specifically requested?
 #' @param filter_excluded Should excluded values be removed?
@@ -176,6 +178,32 @@ pknca_cdisc_translate <- function(ret, x) {
   if (any(has_int)) {
     ret <- pknca_cdisc_add_interval_columns(ret, x, has_int)
   }
+  ret <- pknca_cdisc_add_reference_datetime(ret, x)
+  ret
+}
+
+# Add the PPRFTDTC column (the date-time of the time reference) when the
+# analysis started from date-time (POSIXct or Date) times
+#
+# @param ret The result data.frame
+# @param x The PKNCAresults object
+# @returns The data.frame, with PPRFTDTC added when there is a time reference
+# @keywords Internal
+# @noRd
+pknca_cdisc_add_reference_datetime <- function(ret, x) {
+  time_reference <- x$data$time_reference
+  if (is.null(time_reference)) {
+    return(ret)
+  }
+  group_cols <- setdiff(names(time_reference), c("time_reference", "time_reference_type"))
+  ret$PPRFTDTC <-
+    lubridate::format_ISO8601(
+      pknca_datetime_match_reference(
+        groups_data = as.data.frame(ret)[, group_cols, drop = FALSE],
+        time_reference = time_reference
+      ),
+      precision = "ymdhms"
+    )
   ret
 }
 
@@ -191,15 +219,18 @@ pknca_cdisc_translate <- function(ret, x) {
 # @keywords Internal
 # @noRd
 pknca_cdisc_add_interval_columns <- function(ret, x, has_int) {
-  timeu <- pknca_cdisc_get_timeu(x)
+  # Interval times are in the original time unit; report them in the preferred
+  # one.
+  timeu_report <- pknca_cdisc_get_timeu(x)
+  timeu <- timeu_report$unit
   last_dose_times <- pknca_cdisc_get_last_dose_time(ret, x)
   ppstint <- rep(NA_character_, nrow(ret))
   ppenint <- rep(NA_character_, nrow(ret))
   for (i in which(has_int)) {
     dose_time <- last_dose_times[i]
     if (is.na(dose_time)) next
-    start_rel <- ret$start[i] - dose_time
-    end_rel <- ret$end[i] - dose_time
+    start_rel <- (ret$start[i] - dose_time) * timeu_report$factor
+    end_rel <- (ret$end[i] - dose_time) * timeu_report$factor
     ppstint[i] <- format_iso8601_duration(start_rel, timeu)
     ppenint[i] <- format_iso8601_duration(end_rel, timeu)
   }
@@ -208,27 +239,48 @@ pknca_cdisc_add_interval_columns <- function(ret, x, has_int) {
   ret
 }
 
-# Get the time unit string for ISO 8601 formatting
+# Get the time unit for ISO 8601 formatting and the factor converting interval
+# times (which are in the original time unit, timeu) to it
 #
-# Uses timeu_pref if available, otherwise timeu.
+# The unit is timeu_pref when it is set and timeu can be converted to it, and
+# otherwise timeu.
 #
 # @param x The PKNCAresults object
-# @returns A character string with the time unit (e.g. "hr", "min", "day"),
-#   or NA_character_ if not set
+# @returns A list with `unit`, a character string with the time unit (e.g.
+#   "hr", "min", "day") or NA_character_ if not set, and `factor`, the number
+#   that interval times are multiplied by to express them in `unit`
 # @keywords Internal
 # @noRd
 pknca_cdisc_get_timeu <- function(x) {
+  timeu <- pknca_cdisc_get_timeu_orig(x)
+  timeu_pref <- x$data$conc$units$timeu_pref
+  factor <-
+    if (is.null(timeu_pref) || is.na(timeu_pref)) {
+      NA_real_
+    } else {
+      pknca_unit_reconcile_factor(from = timeu, to = timeu_pref)
+    }
+  if (is.na(factor)) {
+    list(unit = timeu, factor = 1)
+  } else {
+    list(unit = as.vector(timeu_pref), factor = factor)
+  }
+}
+
+# Get the original time unit (timeu) of the concentration data
+#
+# @param x The PKNCAresults object
+# @returns A character string with the time unit or NA_character_ if not set
+#   (or not the same for all concentration data)
+# @keywords Internal
+# @noRd
+pknca_cdisc_get_timeu_orig <- function(x) {
   if (is.null(x$data$conc) || !inherits(x$data$conc, "PKNCAconc")) {
     return(NA_character_)
   }
-  # Prefer timeu_pref, fall back to timeu
-  timeu_pref <- x$data$conc$units$timeu_pref
-  if (!is.null(timeu_pref) && !is.na(timeu_pref)) {
-    return(timeu_pref)
-  }
   timeu <- x$data$conc$units$timeu
   if (!is.null(timeu) && !is.na(timeu)) {
-    return(timeu)
+    return(as.vector(timeu))
   }
   # Check if timeu is stored as a column attribute
   timeu_col <- x$data$conc$columns$timeu

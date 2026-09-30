@@ -49,7 +49,9 @@ the \code{intervals} data.frame.  See
 
 \item{intervals}{A data frame with the AUC interval specifications as defined
 in \code{\link[=check.interval.specification]{check.interval.specification()}}.  If missing, this will be
-automatically chosen by \code{\link[=choose.auc.intervals]{choose.auc.intervals()}}. (see details)}
+automatically chosen by \code{\link[=choose.auc.intervals]{choose.auc.intervals()}}. (see details)  With
+date-time data, \code{start} and \code{end} may be date-times (see the "Date-time
+input" section).}
 
 \item{units}{A data.frame of unit assignments and conversions as created by
 \code{\link[=pknca_units_table]{pknca_units_table()}}}
@@ -104,6 +106,65 @@ renal clearance by \code{PCSPEC} and a metabolite ratio by \code{PCTEST}:
 data.frames, one per parameter, says the same thing:
 \code{group_ref = list(clr.obs = data.frame(PCSPEC = "PLASMA"), ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))}.
 }
+\section{Date-time input}{
+
+
+The concentration and dose times may be date-times (POSIXct) or dates
+(Date).  \code{PKNCAdata()} checks them and keeps them as they are, and
+\code{\link[=pk.nca]{pk.nca()}} converts them to numeric time before it calculates, so the
+intervals can still be changed after \code{PKNCAdata()}:
+\itemize{
+\item The time reference is the first dose (ignoring excluded doses) within
+each combination of the grouping variables (and the subject) shared by
+the concentration and dose formulas.  With \code{dose~time|Part+Subject},
+each subject's first dose in each study part (or period, for a
+crossover) is time 0; with \code{dose~time|Subject}, each subject's first
+dose of the study is time 0.  The dose formula must include the subject,
+so that one reference is never shared by several subjects.
+\item A subject (group) without an included dose time uses its first
+concentration (the first one not excluded) as the reference, with a
+warning.  Without dosing data, every reference is the first
+concentration, within each combination of the concentration grouping
+variables to the left of any \code{/} (so analytes share their subject's
+reference).
+\item Sparse data use one reference per group rather than per subject, because
+every subject in a sparse group shares the group's dosing.
+\item Numeric time is in the time unit of the \code{\link[=PKNCAconc]{PKNCAconc()}} object:
+\code{timeu_pref} when given, otherwise \code{timeu}, otherwise hours (without
+units).  Numeric concentration collection and dosing durations are in
+that unit, and difftime durations are converted to it.
+\item Manually specified \code{intervals} may be numeric times relative to the
+time reference, in that unit, or date-times.  Date-time \code{start} and
+\code{end} (POSIXct, or Date for 08:00, with a warning) are converted
+relative to the reference of the group each row applies to.  A row that
+does not name every reference group (for example, a row without
+\code{Subject}) applies to every matching group and becomes one row per
+group, because one absolute window is a different relative window for
+each subject.  A date-time \code{start} may pair with \code{end = Inf} (or a
+POSIXct \code{Inf}), which stays infinite; the start must be finite, both
+bounds must otherwise be date-times, and the time zone must match the
+data.  \code{PKNCAdata()} and \code{\link[=set_intervals]{set_intervals()}} check date-time intervals,
+and \code{\link[=pk.nca]{pk.nca()}} converts them; converted intervals have an
+\code{interval_time_kind} column (\code{"datetime"}, or \code{"relative"} for numeric
+rows added later).  The conversion gives the window only:  a window
+starting before a subject's first measurement still needs an
+imputation rule (\code{impute}) for a concentration at its start.
+\item The results of \code{\link[=pk.nca]{pk.nca()}} keep the converted data that the calculation
+used (\code{results$data}), with the time reference of each group in its
+\code{time_reference} element and the \code{time_reference_type} column saying
+whether it is the \code{"first_dose"} or the \code{"first_conc"};
+\code{as.data.frame(results, out_format = "cdisc")} gives the reference in
+the PPRFTDTC column.
+}
+
+Both times must be date-times (or dates), not one numeric and one
+date-time; date-times must have the same time zone; and the dose formula
+must include the subject of dense data.  Otherwise, it is an error.
+Differences are elapsed time, so a change to or from daylight saving time
+is handled correctly when the time zone is a named zone (like
+\code{"America/New_York"}).
+}
+
 \seealso{
 \code{\link[=choose.auc.intervals]{choose.auc.intervals()}}, \code{\link[=pk.nca]{pk.nca()}}, \code{\link[=pknca_units_table]{pknca_units_table()}}
 

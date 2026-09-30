@@ -29,7 +29,9 @@ parameters can resolve to the same PPTESTCD (every AUCint variant to
 "AUCINT", for example) -- so \code{pknca_parameter} is the only column that
 still identifies which PKNCA calculation produced a row.
 Route-dependent parameters (e.g. CL, VZ, MRT) are resolved using the
-route information from the dose data.}
+route information from the dose data.  When the concentration and dose
+times were date-times (see \code{\link[=PKNCAdata]{PKNCAdata()}}), a PPRFTDTC column gives the
+ISO 8601 date-time of the time reference (the first dose of the group).}
 
 \item{filter_requested}{Only return rows with parameters that were
 specifically requested?}
