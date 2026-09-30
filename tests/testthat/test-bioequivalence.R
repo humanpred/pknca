@@ -519,12 +519,17 @@ test_that("the heteroscedastic parallel design uses gls with a Welch-type interv
   expect_true(all(is.na(res$swr)))
   expect_match(attr(res, "caption"), "nlme::gls, Satterthwaite degrees of freedom from emmeans", fixed = TRUE)
   # The model degrees of freedom are Satterthwaite, which here match Welch.
+  # emmeans takes them from the gls model's apVar, nlme's finite-difference
+  # approximation to the covariance of the variance parameters, so they agree
+  # with the exact Welch value only to that approximation, which differs by
+  # platform (a relative difference of about 3e-5 on Windows and 1.3e-4 on
+  # macOS); 1e-3 is the tolerance of the interval check below.
   ds <- be_dataset(d, "treatment", "R", "auclast")
   p <- be_extract_param(be_fit_model_single(ds$data, "gls"), ds$data)
   expect_identical(p$test, c("T1", "T2"))
   for (i in seq_along(p$test)) {
     welch <- stats::t.test(log(d$PPORRES[d$treatment == p$test[i]]), log(d$PPORRES[d$treatment == "R"]))
-    expect_equal(p$model_df[i], unname(welch$parameter), tolerance = 1e-4)
+    expect_equal(p$model_df[i], unname(welch$parameter), tolerance = 1e-3)
   }
   # With treatment as the only fixed effect, gls with varIdent estimates each
   # arm mean and variance separately, so the ratio is the ratio of geometric
