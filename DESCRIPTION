@@ -20,7 +20,6 @@ Imports:
     stats,
     tidyr,
     tibble,
-    tools,
     utils,
     lifecycle
 Suggests:
@@ -37,6 +36,7 @@ Suggests:
     rmarkdown,
     spelling,
     testthat (>= 3.0.0),
+    tools,
     units,
     withr
 Description: Compute standard Non-Compartmental Analysis (NCA) parameters for

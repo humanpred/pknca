@@ -3,6 +3,7 @@
 assign("options", NULL, envir=.PKNCAEnv)
 assign("summary", list(), envir=.PKNCAEnv)
 assign("interval.cols", list(), envir=.PKNCAEnv)
+assign("exclude_rules", list(), envir=.PKNCAEnv)
 
 # Validate a CDISC pptestcd/pptest argument: must be a character string, a
 # named list with a "route" element containing a named list of route-specific

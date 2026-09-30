@@ -10,26 +10,23 @@ pknca_exclude_rules()
 A tibble with one row per rule and the columns:
 \describe{
 \item{rule}{The function name (for example, \code{"exclude_nca_span.ratio"})}
-\item{description}{The one-line description from the documentation}
+\item{description}{The one-line description}
 \item{arguments}{A list column of data.frames with one row per argument and
 the columns \code{argument}, \code{default} (the deparsed default, or \code{NA} when there
-is none), \code{option} (the \code{PKNCA.options()} name used when the argument is
-not given, or \code{NA}), and \code{description}}
+is none), and \code{option} (the \code{PKNCA.options()} name used when the argument
+is not given, or \code{NA})}
 \item{callable_with_defaults}{Can the rule be created without giving any
 arguments?}
 \item{affected_parameters}{A list column of the NCA parameters that the
-rule (created with its defaults) can exclude, or \code{NULL} when the rule
-cannot be created without arguments}
+rule (created with its defaults) can exclude, or \code{NULL} when they depend
+on an argument without a default}
 }
 }
 \description{
-The list is built when called from the package itself:  every exported
-function whose name starts with \code{exclude_nca_} is a rule; its arguments and
-defaults come from \code{\link[=formals]{formals()}}, the \code{\link[=PKNCA.options]{PKNCA.options()}} entry that a missing
-argument falls back to comes from the function body, the descriptions come
-from the installed documentation, and the parameters that a rule can exclude
-come from applying the rule to a small synthetic result.  A new rule
-therefore appears here without any change to this function.
+Every \verb{exclude_nca_*()} rule is registered with its description, the
+\code{\link[=PKNCA.options]{PKNCA.options()}} entries its arguments fall back to, and the parameters it
+can exclude; the arguments and their defaults come from the functions
+themselves.
 }
 \examples{
 rules <- pknca_exclude_rules()

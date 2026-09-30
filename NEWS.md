@@ -25,10 +25,12 @@ the dosing including dose amount and route.
   (@GITHUB_HANDLE)
 * `pknca_exclude_rules()` lists the automatic exclusion rules (`exclude_nca_*()`)
   with their descriptions, arguments, defaults, the `PKNCA.options()` entries
-  they fall back to, and the parameters each can exclude.  It is built at call
-  time from the package namespace and documentation, so a new rule appears
-  without further changes.  The rule descriptions now all read "Exclude based
-  on ...".  (@GITHUB_HANDLE)
+  they fall back to, and the parameters each can exclude.  Each rule is
+  registered next to its definition (as interval columns are with
+  `add.interval.col()`), and tests require every exported rule to be
+  registered, its documentation to match the registered description, and its
+  registered parameters to be exactly those it excludes.  The rule
+  descriptions now all read "Exclude based on ...".  (@GITHUB_HANDLE)
 * `assert_conc_time()`, `PKNCA_impute_fun_list()`, the new
   `assert_impute_method()` (which checks an imputation specification the way
   `PKNCAdata()` and `pk.nca()` resolve it), and the new
