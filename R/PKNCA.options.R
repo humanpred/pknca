@@ -388,6 +388,20 @@ pair_r_squared_factors <- function(x, name) {
     }
     x
   },
+  auto.interval.tolerance=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return(paste(
+        "When automatically determining the intervals, how far from the",
+        "boundary of an interval may a sample be drawn and still count as the",
+        "sample at that boundary?  It is given as a fraction of the interval's",
+        "length (the dosing interval, tau, for a dosing interval), so that a",
+        "trough drawn at 167.5 hours still ends an interval nominally ending",
+        "at 168 hours.  See 'choose.auc.intervals' for more information."))
+    if (default)
+      return(0.05)
+    checkmate::assert_number(x, lower = 0, upper = 1, .var.name = "auto.interval.tolerance")
+    x
+  },
   single.dose.aucs=function(x, default=FALSE, description=FALSE) {
     if (description)
       return("When data is single-dose, what intervals should be used?")

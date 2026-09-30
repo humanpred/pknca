@@ -188,7 +188,13 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
           choose.auc.intervals(
             current_conc$time,
             current_dose$time,
-            options=options
+            options=options,
+            route=
+              dose_route_for_intervals(
+                route=current_dose$route,
+                duration=current_dose$duration
+              ),
+            sparse=is_sparse_pk(ret$conc)
           )
         if (nrow(generated_intervals) > 0) {
           n_conc_dose$data_intervals[[idx]] <- generated_intervals

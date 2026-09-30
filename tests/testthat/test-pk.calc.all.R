@@ -28,10 +28,17 @@ test_that("pk.nca", {
   myconc <- PKNCAconc(tmpconc, formula=conc~time|treatment+ID)
   mydose.nodose <- PKNCAdose(tmpdose, formula=~time|treatment+ID)
   mydata.nodose <- PKNCAdata(myconc, mydose.nodose)
+  # The automatically generated interval now asks for a clearance, which needs
+  # the dose; everything that does not need the dose is unaffected.
+  result.nodose <- suppressMessages(pk.nca(mydata.nodose)$result)
   expect_equal(
-    pk.nca(mydata.nodose)$result,
-    myresult$result,
+    result.nodose[!result.nodose$PPTESTCD %in% "cl.obs", ],
+    myresult$result[!myresult$result$PPTESTCD %in% "cl.obs", ],
     info="missing dose information is handled without an issue"
+  )
+  expect_true(
+    all(is.na(result.nodose$PPORRES[result.nodose$PPTESTCD %in% "cl.obs"])),
+    info="a parameter that needs the dose is NA rather than an error"
   )
 
   # Test each of the pieces for myresult for accuracy
@@ -43,36 +50,40 @@ test_that("pk.nca", {
     tmp
   }, info="The data is just a copy of the input data plus an instantiation of the PKNCA.options")
 
+  # Automatically generated intervals now come from pknca_interval_table()
+  # rather than the single.dose.aucs option, so a single dose gives one
+  # interval to infinity instead of a 0 to 24 window plus one to infinity, and
+  # the interval carries the imputation and the parameters that context gives.
+  # The values the two versions share are unchanged.
   verify.result <-
     tibble::tibble(
       treatment="Trt 1",
-      ID=rep(c(1, 2), each=16),
+      ID=rep(c(1, 2), each=20),
       start=0,
-      end=c(24, rep(Inf, 15),
-            24, rep(Inf, 15)),
+      end=Inf,
       PPTESTCD=rep(c("auclast", "cmax", "tmax", "tlast", "clast.obs",
+                     "tlag", "count_conc",
                      "lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy",
                      "lambda.z.time.first", "lambda.z.time.last",
                      "lambda.z.n.points", "clast.pred", "half.life",
-                     "span.ratio", "aucinf.obs"),
+                     "span.ratio", "aucinf.obs", "aucpext.obs", "cl.obs"),
                    times=2),
       PPORRES=c(13.54, 0.9998, 4.000, 24.00, 0.3441,
+                0.000, 25.00,
                 0.04297, 0.9072, 0.9021, -0.952, 5.000, 24.00,
                 20.00, 0.3356, 16.13, 1.178,
-                21.55, 14.03, 0.9410, 2.000,
-                24.00, 0.3148, 0.05689, 0.9000, 0.8944, -0.952,
+                21.55, 37.16, 0.04640,
+                14.03, 0.9410, 2.000, 24.00, 0.3149,
+                0.000, 25.00,
+                0.05689, 0.9000, 0.8944, -0.952,
                 5.000, 24.00, 20.00, 0.3011, 12.18,
-                1.560, 19.56),
-      PPANMETH = c(
-        "AUC: lin up/log down",
-        rep("", 4),
-        rep("", 10),
-        "AUC: lin up/log down",
-        "AUC: lin up/log down",
-        rep("", 4),
-        rep("", 10),
-        "AUC: lin up/log down"
-      ),
+                1.560, 19.56, 28.29, 0.05111),
+      PPANMETH =
+        ifelse(
+          PPTESTCD %in% c("auclast", "aucinf.obs"),
+          "Imputation: start_predose_conc0. AUC: lin up/log down",
+          "Imputation: start_predose_conc0"
+        ),
       exclude=NA_character_
     )
   expect_equal(

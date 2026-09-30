@@ -101,6 +101,39 @@ Intervals are defined by `data.frame`s with one row per interval, zero or more c
 
 Selection of points within an interval occurs by choosing any point at or after the `start` and at or before the `end`.
 
+## Automatic Selection of Intervals
+
+When `PKNCAdata()` is given no `intervals`, it chooses them for each group from the concentration and dose times with `choose.auc.intervals()`.  The parameters within each interval come from `pknca_interval_table()`, so each interval is given the parameters and the imputation that suit its context (see `?pknca_interval_table` for how that table is built).
+
+The rules are:
+
+* A group with no dose times gives no intervals, with a warning.
+* A single dose with any sample after it gives one interval from the dose to infinity, calculated as a single dose.
+* Between two consecutive doses with samples at both dose times and at least one sample between them, an interval is generated.  It is calculated as a dosing interval when the samples run up to the next dose, and as a single-dose profile bounded by the next dose when they stop partway and leave a washout.  This is what distinguishes two treatment periods recorded in one group from repeated dosing.
+* For the last dose, the dosing interval `tau` is found from the dose times with `find.tau()`.  When a sample was taken one `tau` after the last dose, an interval that long is generated and calculated as a dose at steady state.  When samples continue beyond it, the half-life is calculated from the last dose onward.
+
+Sample and dose times are matched within a tolerance rather than exactly, so a trough drawn at 167.5 hours still ends an interval that nominally ends at 168 hours, and a predose sample drawn at -0.05 hours still starts the interval at the dose.  The width of that window is the `auto.interval.tolerance` option, given as a fraction of the interval's length.
+
+```{r auto_interval_example}
+# Daily dosing with a dense profile on the first and last day
+choose.auc.intervals(
+  time.conc = c(0, 1, 2, 4, 8, 12, 24, 48, 72, 96, 120,
+                144, 145, 146, 148, 152, 156, 168, 192, 216),
+  time.dosing = seq(0, 144, by = 24)
+)[, c("start", "end", "aucint.last", "cmax", "half.life", "impute")]
+```
+
+Setting the `single.dose.aucs` option to anything other than its default uses that table for single-dose data instead of the builder, offset by the time of the dose.  That is how to keep the intervals PKNCA generated before this was added.
+
+### Finding the Dosing Interval
+
+`find.tau()` sorts the dose times and drops the ones that repeat, then looks at the spacings between consecutive doses.  If they are all the same, that spacing is `tau`.  If every spacing is a whole number of the smallest spacing and the smallest spacing is seen twice in a row, the smallest spacing is `tau` and a warning names the longer gaps, which are what a missed dose looks like.  Otherwise each of the `tau.choices` option's values is tested, smallest first, and the first one that the whole pattern of doses repeats over is used; the pattern must repeat over at least two complete intervals, so a regimen giving more than one dose per interval is found while a length that merely spans the doses is not.  If none of them fits, no dosing interval is reported.
+
+```{r find_tau_example}
+# Twice-daily dosing repeats daily although no two doses are a day apart
+find.tau(c(0, 10, 24, 34, 48, 58, 72, 82))
+```
+
 ## To Infinity
 
 The end of an interval may be infinity.  An interval to infinity works the same as any other interval in that points are selected by being at or after the `start` and at or before the `end` of the interval.  Selecting `Inf` or any value at or after the maximum time yields no difference in effect, but `Inf` is simpler when scripting to ensure that all points are selected.

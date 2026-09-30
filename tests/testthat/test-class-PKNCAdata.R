@@ -51,14 +51,20 @@ test_that("PKNCAdata", {
                regexp="Invalid setting for PKNCA.*foo",
                info="Option names")
 
-  # Single dose AUCs are appropriately selected
+  # Single dose intervals are appropriately selected.  They come from
+  # pknca_interval_table() rather than the single.dose.aucs option now, so a
+  # single dose gives one interval to infinity.
   expect_equal(
     PKNCAdata(obj.conc, obj.dose),
     {
-      tmp.intervals <- tibble::as_tibble(merge(PKNCA.options("single.dose.aucs"), tmp.dose))
+      tmp.intervals <-
+        tibble::as_tibble(merge(pknca_interval_table(0, Inf, dosing="single"), tmp.dose))
       tmp.intervals <- tmp.intervals[order(tmp.intervals$treatment, tmp.intervals$ID),]
       tmp.intervals$time <- NULL
       tmp.intervals$dose <- NULL
+      # The group columns come before the impute column in what is generated
+      tmp.intervals <-
+        tmp.intervals[, c(setdiff(names(tmp.intervals), "impute"), "impute")]
       tmp <- list(
         conc=obj.conc,
         dose=obj.dose,
@@ -333,32 +339,45 @@ test_that("no intervals auto-determined (Fix GitHub issue #84)", {
       Dose=1
     )
 
-  interval_1 <- PKNCA.options("single.dose.aucs")[c(1:2, 1:2),]
-  interval_1$start <- rep(0:1, each=2)
-  interval_1$end <- c(interval_1$end[1:2], interval_1$end[3:4] + 1)
-  interval_1 <- cbind(interval_1, data.frame(Treatment=rep(1:2, each=2), Subject=1))
-  two_single_dose_treatments <-
-    PKNCAdata(
-      PKNCAconc(data=tmp_conc, Conc~Time|Treatment+Subject),
-      PKNCAdose(data=tmp_dose, Dose~Time|Treatment+Subject)
+  # Treatment 1 has its only concentration at the time of its dose, so there is
+  # nothing after the dose to calculate and it gets no interval at all; it used
+  # to be given the single.dose.aucs intervals regardless.  Treatment 2 has a
+  # profile after its dose at time 1.
+  interval_1 <- pknca_interval_table(1, Inf, dosing="single")
+  interval_1 <-
+    cbind(
+      interval_1[, setdiff(names(interval_1), "impute")],
+      data.frame(Treatment=2, Subject=1),
+      interval_1[, "impute", drop=FALSE]
     )
+  expect_warning(
+    two_single_dose_treatments <-
+      PKNCAdata(
+        PKNCAconc(data=tmp_conc, Conc~Time|Treatment+Subject),
+        PKNCAdose(data=tmp_dose, Dose~Time|Treatment+Subject)
+      ),
+    regexp="No intervals generated"
+  )
   expect_equal(
     two_single_dose_treatments$intervals,
     interval_1,
     ignore_attr=TRUE
   )
+  # Grouping the doses by subject alone puts both doses in one group, so the
+  # last dose gets an interval one tau long and the half-life beyond it.  The
+  # boundaries are unchanged; the parameters within them come from
+  # pknca_interval_table() now.
+  interval_2_ss <- pknca_interval_table(1, 2, dosing="steady_state")
   interval_2 <-
     check.interval.specification(
-      tibble::tibble(
-        start=1, end=c(2, Inf),
-        auclast=c(TRUE, FALSE),
-        cmax=c(TRUE, FALSE),
-        tmax=c(TRUE, FALSE),
-        half.life=c(FALSE, TRUE),
-        Treatment=2,
-        Subject=1
+      dplyr::bind_rows(
+        interval_2_ss[, setdiff(names(interval_2_ss), "impute")],
+        check.interval.specification(data.frame(start=1, end=Inf, half.life=TRUE))
       )
     )
+  interval_2$Treatment <- 2
+  interval_2$Subject <- 1
+  interval_2$impute <- c(interval_2_ss$impute, NA_character_)
   expect_warning(
     two_multiple_dose_treatments <-
       PKNCAdata(
@@ -369,7 +388,8 @@ test_that("no intervals auto-determined (Fix GitHub issue #84)", {
   )
   expect_equal(
     two_multiple_dose_treatments$intervals,
-    interval_2
+    interval_2,
+    ignore_attr=TRUE
   )
 })
 
@@ -402,7 +422,12 @@ test_that("intervals may be a tibble", {
 
 test_that("PKNCAdata units (#336)", {
   # Typical use
-  d_conc <- data.frame(conc = 1, time = 0, concu_x = "A", timeu_x = "B", amountu_x = "C")
+  # More than one concentration, and one of them after the dose, so that an
+  # interval can be generated at all; this test is about the units.
+  d_conc <-
+    data.frame(
+      conc = c(1, 2, 1), time = 0:2, concu_x = "A", timeu_x = "B", amountu_x = "C"
+    )
   d_dose <- data.frame(dose = 1, time = 0, doseu_x = "D")
 
   o_conc <- PKNCAconc(data = d_conc, conc~time, concu = "concu_x", timeu = "timeu_x")

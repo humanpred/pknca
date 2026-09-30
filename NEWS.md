@@ -6,6 +6,50 @@ the dosing including dose amount and route.
 
 # Development version
 
+## Changes to automatically generated calculation intervals
+
+When `PKNCAdata()` is given no `intervals`, the intervals it generates now take
+their parameters from `pknca_interval_table()` rather than the hard-coded set
+of AUClast, Cmax, Tmax, and half-life.  Each interval gets the parameters and
+the imputation that suit its context: a single dose, a dosing interval, or the
+last dose at steady state.  For single-dose data this replaces the 0 to 24 hour
+window plus a window to infinity with one interval from the dose to infinity,
+so the interval no longer assumes that time is measured in hours.  To calculate
+the intervals as before, set the option:
+
+``` r
+PKNCA.options(single.dose.aucs = PKNCA.options("single.dose.aucs"))
+```
+
+Setting `single.dose.aucs` to anything other than its default keeps using that
+table for single-dose data, exactly as before.
+
+* `choose.auc.intervals()` and `find.tau()` match times within a tolerance
+  rather than exactly.  A sample drawn off its nominal time, such as a trough at
+  167.5 hours or a predose sample at -0.05 hours, now bounds the interval it
+  belongs to, and dose times that floating point cannot hold exactly, such as dosing
+  three times a day with time measured in days, are recognized as evenly spaced.
+  The window for a boundary sample is the new `auto.interval.tolerance` option,
+  a fraction of the interval's length that defaults to 0.05.
+* `find.tau()` no longer reports an interval that matches no real dose spacing.
+  Dose times are sorted first and the ones that repeat are dropped, so the order
+  they arrive in and
+  a dose recorded twice no longer change the answer.  Doses spaced as though one
+  was missed give the underlying interval with a new
+  `"pknca_warning_tau_irregular_dosing"` warning that names the gaps, rather
+  than being passed silently into `mrt.md.*` and `vss.md.*`.
+* `choose.auc.intervals()` gains `route` and `sparse` arguments, and
+  `PKNCAdata()` passes the route recorded with the doses, so an intravenous
+  bolus is back-extrapolated to `c0` and a sparse design imputes nothing.
+* `choose.auc.intervals()` passes `options` to `find.tau()`, so `tau.choices`
+  given to `PKNCAdata(options = )` is honored when intervals are chosen.
+* A concentration group with no dose rows gives no intervals with a
+  `"pknca_warning_no_dose_times_for_group"` warning instead of aborting, and a
+  group with no samples after its dose gives no intervals rather than intervals
+  that cannot be calculated.
+* Two doses separated by a washout, such as two treatment periods in one group,
+  give an interval for each dose instead of one AUClast spanning the washout.
+
 * `be_assess()`, `be_compare()`, and `be_fit_models()` gain three options for
   treatment comparisons beyond a bioequivalence decision:
   * `heteroscedastic = TRUE` estimates a separate residual variance for each
