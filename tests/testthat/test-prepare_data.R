@@ -68,7 +68,9 @@ test_that("full_join for PKNCAconc, PKNCAdose, and PKNCAdata", {
         prepare_PKNCAdose(o_dose, sparse=FALSE, subject_col=""),
         by=c("treatment", "ID")
       ),
-      data_intervals=list(tibble::as_tibble(PKNCA.options("single.dose.aucs")))
+      # PKNCAdata() now generates this interval rather than the one from the
+      # single.dose.aucs option
+      data_intervals=list(tibble::as_tibble(pknca_interval_table(0, Inf, dosing="single")))
     )
   )
   # When intervals have no groups

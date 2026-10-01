@@ -388,6 +388,36 @@ pair_r_squared_factors <- function(x, name) {
     }
     x
   },
+  auto.interval.method=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return(paste(
+        "When automatically determining the intervals, where do the parameters",
+        "to calculate come from?  'builder' asks 'pknca_interval_table' for the",
+        "parameters that suit each interval's context.  'legacy' uses the",
+        "parameter lists PKNCA used before that was available:  the",
+        "'single.dose.aucs' option for single-dose data, and AUClast, Cmax, and",
+        "Tmax for each interval of multiple-dose data.  Only the choice of",
+        "parameters differs; the intervals themselves are found the same way",
+        "either way.  See 'choose.auc.intervals' for more information."))
+    if (default)
+      return("builder")
+    checkmate::assert_string(x, .var.name = "auto.interval.method")
+    match.arg(x, choices = c("builder", "legacy"))
+  },
+  auto.interval.tolerance=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return(paste(
+        "When automatically determining the intervals, how far from the",
+        "boundary of an interval may a sample be drawn and still count as the",
+        "sample at that boundary?  It is given as a fraction of the interval's",
+        "length (the dosing interval, tau, for a dosing interval), so that a",
+        "trough drawn at 167.5 hours still ends an interval nominally ending",
+        "at 168 hours.  See 'choose.auc.intervals' for more information."))
+    if (default)
+      return(0.05)
+    checkmate::assert_number(x, lower = 0, upper = 1, .var.name = "auto.interval.tolerance")
+    x
+  },
   single.dose.aucs=function(x, default=FALSE, description=FALSE) {
     if (description)
       return("When data is single-dose, what intervals should be used?")

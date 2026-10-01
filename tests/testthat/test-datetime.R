@@ -39,9 +39,36 @@ test_that("POSIXct times become numeric time relative to each subject's first do
     converted(o_data)$time_reference,
     data.frame(part = "A", subject = 1:2, time_reference = d$dose$time, time_reference_type = "first_dose")
   )
-  # Automatic intervals are in the preferred time unit
-  expect_equal(converted(o_data)$intervals$start, c(0, 0, 0, 0))
-  expect_equal(converted(o_data)$intervals$end, c(24, Inf, 24, Inf))
+  # The automatic single-dose interval runs from the dose to infinity, so
+  # neither bound is a time that could be in the wrong unit
+  expect_equal(converted(o_data)$intervals$start, c(0, 0))
+  expect_equal(converted(o_data)$intervals$end, c(Inf, Inf))
+  # With a second dose a day later, the automatic bounds are finite, and they
+  # are in the preferred time unit rather than the seconds the date-times
+  # differ by
+  # The 24 hour sample is the second day's predose sample, so the second day
+  # adds only the times after it
+  rel_day2 <- c(25, 26, 28, 32, 48)
+  d_conc_md <-
+    rbind(
+      d$conc,
+      data.frame(
+        part = "A",
+        subject = rep(1:2, each = length(rel_day2)),
+        time = d$t0 + rep(rel_day2 * 3600, 2) + rep(c(0, 1800), each = length(rel_day2)),
+        time_hr = rep(rel_day2, 2),
+        conc = c(4, 7, 5, 2, 0.5, 3, 6, 4, 1.5, 0.4)
+      )
+    )
+  d_dose_md <-
+    rbind(d$dose, transform(d$dose, time = time + 24*3600, time_hr = 24))
+  o_data_md <-
+    PKNCAdata(
+      PKNCAconc(d_conc_md, conc~time|part+subject, concu = "ng/mL", timeu_pref = "hr"),
+      PKNCAdose(d_dose_md, dose~time|part+subject, doseu = "mg")
+    )
+  expect_equal(converted(o_data_md)$intervals$start, c(0, 24, 0, 24))
+  expect_equal(converted(o_data_md)$intervals$end, c(24, 48, 24, 48))
 
   # The results are those of the equivalent numeric-time analysis
   o_conc_num <- PKNCAconc(d$conc, conc~time_hr|part+subject, concu = "ng/mL", timeu = "hr")
@@ -63,17 +90,21 @@ test_that("Without units, POSIXct times are in hours", {
   expect_no_warning(o_data <- PKNCAdata(o_conc, PKNCAdose(d$dose, dose~time|part+subject)))
   expect_equal(converted(o_data)$conc$data$time, d$conc$time_hr)
   expect_null(converted(o_data)$conc$units$timeu)
-  # The default single-dose intervals are the usual 0 to 24 hours
-  expect_equal(converted(o_data)$intervals$end, c(24, Inf, 24, Inf))
+  # One automatic interval per subject, from the dose to infinity.  The
+  # conversion to hours is the concentration times just above; the interval
+  # bounds are 0 and infinity in any unit.
+  expect_equal(converted(o_data)$intervals$start, c(0, 0))
+  expect_equal(converted(o_data)$intervals$end, c(Inf, Inf))
 })
 
 test_that("timeu alone gives the unit for date-time input", {
   d <- datetime_test_data()
   o_conc <- PKNCAconc(d$conc, conc~time|part+subject, timeu = "min")
   expect_equal(o_conc$units$timeu, "min", ignore_attr = TRUE)
-  expect_warning(
-    o_data <- PKNCAdata(o_conc, PKNCAdose(d$dose, dose~time|part+subject)),
-    class = "pknca_warning_single_dose_aucs_unit"
+  # The generated interval runs from the dose to infinity, so it assumes no
+  # time unit and there is nothing to warn about
+  expect_no_warning(
+    o_data <- PKNCAdata(o_conc, PKNCAdose(d$dose, dose~time|part+subject))
   )
   expect_equal(converted(o_data)$conc$data$time, d$conc$time_hr * 60)
   expect_equal(converted(o_data)$conc$units$timeu, "min", ignore_attr = TRUE)
@@ -121,10 +152,7 @@ test_that("Date times are 08:00, with a warning", {
     o_dose <- PKNCAdose(d_dose, dose~time|subject),
     class = "pknca_warning_date_assumed_time"
   )
-  expect_warning(
-    o_data <- PKNCAdata(o_conc, o_dose),
-    class = "pknca_warning_single_dose_aucs_unit"
-  )
+  expect_no_warning(o_data <- PKNCAdata(o_conc, o_dose))
   expect_equal(converted(o_data)$conc$data$time, 0:3)
   expect_equal(converted(o_data)$time_reference$time_reference, as.POSIXct("2024-01-01 08:00", tz = "UTC"))
 
@@ -535,10 +563,12 @@ test_that("The nominal time is not converted", {
 test_that("CDISC results carry the reference date-time as PPRFTDTC", {
   skip_if_not_installed("units")
   d <- datetime_test_data(tz = "America/New_York")
+  # The dose unit is needed because the automatic interval asks for a
+  # clearance, which is dose over time times concentration
   o_nca <-
     pk.nca(PKNCAdata(
       PKNCAconc(d$conc, conc~time|part+subject, concu = "ng/mL", timeu_pref = "hr"),
-      PKNCAdose(d$dose, dose~time|part+subject)
+      PKNCAdose(d$dose, dose~time|part+subject, doseu = "mg")
     ))
   d_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
   expect_equal(

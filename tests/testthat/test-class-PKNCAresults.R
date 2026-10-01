@@ -36,35 +36,44 @@ test_that("PKNCAresults generation", {
     }, info="The data is just a copy of the input data plus an instantiation of the PKNCA.options"
   )
 
+  # Automatically generated intervals now come from pknca_interval_table()
+  # rather than the single.dose.aucs option, so a single dose gives one
+  # interval to infinity instead of a 0 to 24 window plus one to infinity, and
+  # the interval carries the imputation and the parameters that context gives.
+  # Every value the two versions share is unchanged:  these data have a
+  # concentration at the time of the dose, so imputing one there changes
+  # nothing.  Two expectations are written to more digits than before
+  # (lambda.z.corrxy -0.9521 to -0.9525 and clast.obs 0.3148 to 0.3149); both
+  # were already within the test's tolerance of the value the calculation
+  # gives, and neither value moved.
   verify.result <-
     tibble::tibble(
       treatment="Trt 1",
-      ID=as.integer(rep(c(1, 2), each=16)),
+      ID=as.integer(rep(c(1, 2), each=20)),
       start=0,
-      end=c(24, rep(Inf, 15),
-            24, rep(Inf, 15)),
+      end=Inf,
       PPTESTCD=rep(c("auclast", "cmax", "tmax", "tlast", "clast.obs",
+                     "tlag", "count_conc",
                      "lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy",
                      "lambda.z.time.first", "lambda.z.time.last", "lambda.z.n.points",
-                     "clast.pred", "half.life", "span.ratio", "aucinf.obs"),
+                     "clast.pred", "half.life", "span.ratio", "aucinf.obs",
+                     "aucpext.obs", "cl.obs"),
                    times=2),
       PPORRES=c(13.54, 0.9998, 4.000, 24.00, 0.3441,
-                0.04297, 0.9072, 0.9021, -0.9521, 5.000, 24.00,
+                0.000, 25.00,
+                0.04297, 0.9072, 0.9021, -0.9525, 5.000, 24.00,
                 20.00, 0.3356, 16.13, 1.178,
-                21.55, 14.03, 0.9410, 2.000,
-                24.00, 0.3148, 0.05689, 0.9000,
-                0.8944, -0.9487, 5.000, 24.00, 20.00, 0.3011,
-                12.18, 1.560, 19.56),
-      PPANMETH=c(
-        "AUC: lin up/log down",
-        rep("", 4),
-        rep("", 10),
-        "AUC: lin up/log down",
-        "AUC: lin up/log down",
-        rep("", 4),
-        rep("", 10),
-        "AUC: lin up/log down"
-      ),
+                21.55, 37.16, 0.04640,
+                14.03, 0.9410, 2.000, 24.00, 0.3149,
+                0.000, 25.00,
+                0.05689, 0.9000, 0.8944, -0.9487, 5.000, 24.00, 20.00, 0.3011,
+                12.18, 1.560, 19.56, 28.29, 0.05111),
+      PPANMETH=
+        ifelse(
+          PPTESTCD %in% c("auclast", "aucinf.obs"),
+          "Imputation: start_predose_conc0. AUC: lin up/log down",
+          "Imputation: start_predose_conc0"
+        ),
       exclude=NA_character_
     )
   expect_equal(
@@ -136,7 +145,10 @@ test_that("PKNCAresults has exclude, when applicable", {
             "adj.r.squared", "lambda.z.corrxy", "aucinf.obs", "auclast", "clast.obs",
             "clast.pred", "cmax", "half.life", "lambda.z", "lambda.z.n.points",
             "lambda.z.time.first", "lambda.z.time.last", "r.squared",
-            "span.ratio", "tlast", "tmax"
+            "span.ratio", "tlast", "tmax",
+            # The automatically generated single-dose interval comes from
+            # pknca_interval_table(), which gives these as well
+            "tlag", "count_conc", "aucpext.obs", "cl.obs"
           )
     ),
     info="verify that only expected results are present"
@@ -299,13 +311,15 @@ test_that("units work for calculations and summaries with one set of units acros
     summary(o_result_units_std) %>% dplyr::select(-`Cmax (mg/mL)`)
   )
   # The units are converted to standard units, if requested
+  # One automatically generated interval per group, so one summary row; it used
+  # to be two rows with cmax absent ("." ) from the 0 to 24 hour one.
   expect_equal(
     summary(o_result_units_orig)$`Cmax (ng/mL)`,
-    c(".", "0.970 [4.29]")
+    "0.970 [4.29]"
   )
   expect_equal(
     summary(o_result_units_std)$`Cmax (mg/mL)`,
-    c(".", "9.70e-7 [4.29]")
+    "9.70e-7 [4.29]"
   )
   # Wide conversion works for original and standardized units
   df_wide_orig <- as.data.frame(o_result_units_orig, out_format="wide")
@@ -364,16 +378,17 @@ test_that("units work for calculations and summaries with one set of units acros
   o_result_units_std <- pk.nca(o_data_std)
   summary_o_result_units_std <- summary(o_result_units_std)
   # Everything is the same between analytes except for "cmax"
+  # One row per analyte now that a single dose gives one interval
   for (nm in setdiff(names(summary_o_result_units_std), c("analyte", "Cmax"))) {
     expect_equal(
-      summary_o_result_units_std[[nm]][1:2],
-      summary_o_result_units_std[[nm]][3:4]
+      summary_o_result_units_std[[nm]][1],
+      summary_o_result_units_std[[nm]][2]
     )
   }
   # Different units in the same column are shown in the cell
   expect_equal(
     summary_o_result_units_std$Cmax,
-    c(".", "9.70e-7 [4.29] mg/mL", ".", "1.94 [4.29] mmol/L")
+    c("9.70e-7 [4.29] mg/mL", "1.94 [4.29] mmol/L")
   )
 
   # I can't think of a way to trigger this error without explicit manipulation.
