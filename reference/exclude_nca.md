@@ -111,7 +111,6 @@ my_data <- PKNCAdata(my_conc,
 my_result <- pk.nca(my_data)
 my_result_excluded <- exclude(my_result,
                               FUN=exclude_nca_max.aucinf.pext())
-#> Loading required namespace: testthat
 as.data.frame(my_result_excluded)
 #> # A tibble: 16 × 7
 #>    subject start   end PPTESTCD            PPORRES PPANMETH              exclude

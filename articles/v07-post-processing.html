@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PKNCA</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.12.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.12.1.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -172,10 +172,9 @@ returns its own reason text (as the built-in functions do), that text is
 used as the reason for exclusion, overriding the <code>reason</code>
 argument to <code><a href="../reference/exclude.html">exclude()</a></code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">results_excl_span</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exclude.html">exclude</a></span><span class="op">(</span><span class="va">results_obj</span>, FUN<span class="op">=</span><span class="fu"><a href="../reference/exclude_nca.html">exclude_nca_span.ratio</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Loading required namespace: testthat</span></span></code></pre>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Without any exclusions applied, the 'exclude' column is all NA.</span></span>
+<code class="sourceCode R"><span><span class="va">results_excl_span</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exclude.html">exclude</a></span><span class="op">(</span><span class="va">results_obj</span>, FUN<span class="op">=</span><span class="fu"><a href="../reference/exclude_nca.html">exclude_nca_span.ratio</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Without any exclusions applied, the 'exclude' column is all NA.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 20 × 7</span></span></span>
@@ -201,7 +200,7 @@ argument to <code><a href="../reference/exclude.html">exclude()</a></code>.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">18</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.obs          31.5    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.obs                0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… <span style="color: #BB0000;">NA</span></span></span></code></pre>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># With exclusions applied, the 'exclude' column has the reason for exclusion.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_excl_span</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
@@ -242,7 +241,7 @@ described in the details section of <code><a href="../reference/exclude.html">?e
 provided. But, excluding specific points allows for errors to also enter
 the analysis because parameters that depend on the excluded parameter
 will not be excluded.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mask_exclude_cmax</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">results_obj</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -284,7 +283,7 @@ will not be excluded.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">18</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.obs          31.5    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.obs                0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… <span style="color: #BB0000;">NA</span></span></span></code></pre>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># With exclusions applied, the 'exclude' column has the reason for exclusion.</span></span>
 <span><span class="va">results_excl_specific</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -318,7 +317,7 @@ will not be excluded.</p>
 </h4>
 <p>More than one exclusion can be applied sequentially to results as in
 the example below.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mask_exclude_lz</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">results_obj</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -387,7 +386,7 @@ PKNCAresults object. You can also specify the unit as another column in
 the concentration data or as a constant value.</p>
 <p>Suppose your concentration data includes a column for body weight,
 and you want to normalize Cmax by each subject’s weight:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Add a weight column to the concentration data</span></span>
 <span><span class="va">d_conc2</span> <span class="op">&lt;-</span> <span class="va">d_conc</span></span>
 <span><span class="va">d_conc2</span><span class="op">$</span><span class="va">weight</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fl">60</span><span class="op">:</span><span class="fl">71</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">12</span><span class="op">)</span><span class="op">[</span><span class="va">d_conc2</span><span class="op">$</span><span class="va">Subject</span><span class="op">]</span><span class="op">)</span></span>
@@ -440,7 +439,7 @@ can perform the same normalization using the <code><a href="../reference/normali
 function by providing a normalization table. Below, we use the same
 subject weights as above to normalize Cmax, but without adding the
 weight column to the concentration data:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Use the same subject_weights as above</span></span>
 <span><span class="va">norm_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Subject <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">d_conc</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span>, normalization <span class="op">=</span> <span class="fl">60</span><span class="op">:</span><span class="fl">71</span>, unit <span class="op">=</span> <span class="st">"kg"</span><span class="op">)</span></span>
 <span><span class="va">results_norm_custom</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/normalize.html">normalize</a></span><span class="op">(</span></span>
@@ -492,7 +491,7 @@ requested, it will not be shown in the summary.</p>
 <p>The summary will have one column for each grouping variable other
 than the subject grouping variable; one column each for the start and
 end time; and one column per parameter calculated.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax                 tlag</span></span>
 <span><span class="co">##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]</span></span>
@@ -503,7 +502,7 @@ end time; and one column per parameter calculated.</p>
 <p>When values are excluded as described above, the excluded values are
 not included in the summary (note that half.life and aucinf.obs
 differ).</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_excl_span</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax                 tlag</span></span>
 <span><span class="co">##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]</span></span>
@@ -519,7 +518,7 @@ differ).</p>
 </h3>
 <p>A listing of all calculated values is available using
 <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 20 × 7</span></span></span>
@@ -546,7 +545,7 @@ differ).</p>
 <span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.obs          31.5    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.obs                0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… <span style="color: #BB0000;">NA</span></span></span></code></pre>
 <p>Excluded values remain in the listing.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_excl_span</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 20 × 7</span></span></span>
@@ -587,7 +586,7 @@ interval (or if the row is excluded from all calculations). It accepts
 either a PKNCAresults or a PKNCAdata object (with a PKNCAdata object,
 the half-life is calculated first), and the intervals do not need to
 start at time 0.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_conc_hl</span> <span class="op">&lt;-</span> <span class="va">d_conc</span></span>
 <span><span class="va">d_conc_hl</span><span class="op">$</span><span class="va">hl_used</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_halflife_points.html">get_halflife_points</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span>
 <span><span class="co"># The points used for the half-life fit are the later time points</span></span>
@@ -613,7 +612,7 @@ start at time 0.</p>
 row per group and interval, as the slope and intercept of
 <code>log(conc) = intercept + slope*time</code>. The slope is
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><msub><mi>λ</mi><mi>z</mi></msub></mrow><annotation encoding="application/x-tex">-\lambda_z</annotation></semantics></math>.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_halflife_fit.html">get_halflife_fit</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##    Subject start end intercept       slope time_first time_last</span></span>
 <span><span class="co">## 1        1     0 Inf  2.368785 -0.04845700       9.05     24.37</span></span>
@@ -646,7 +645,7 @@ Concentrations are returned as concentrations, not
 log-concentrations.</p>
 <p>With <code>n</code>, the times span the concentrations used for the
 fit:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_halflife_curve.html">get_halflife_curve</a></span><span class="op">(</span><span class="va">results_obj</span>, n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   Subject start end  time     conc</span></span>
@@ -659,7 +658,7 @@ fit:</p>
 after the last concentration used for the fit is done by default, and
 extrapolation before the first is not, so early times give
 <code>NA</code>:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_halflife_curve.html">get_halflife_curve</a></span><span class="op">(</span><span class="va">results_obj</span>, tout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">12</span>, <span class="fl">48</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   Subject start end time     conc</span></span>
@@ -669,7 +668,7 @@ extrapolation before the first is not, so early times give
 <p>Both defaults can be changed with the
 <code>extrapolate_earlier</code> and <code>extrapolate_later</code>
 arguments:</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_halflife_curve.html">get_halflife_curve</a></span><span class="op">(</span></span>
 <span>  <span class="va">results_obj</span>,</span>
 <span>  tout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">12</span>, <span class="fl">48</span><span class="op">)</span>,</span>

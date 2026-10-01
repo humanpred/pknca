@@ -914,12 +914,6 @@ excluded.
 o_nca_excluded <-
   o_nca %>%
   exclude(FUN=exclude_nca_span.ratio(3))
-```
-
-    ## Loading required namespace: testthat
-
-``` r
-
 as.data.frame(o_nca_excluded)
 ```
 

@@ -90,11 +90,6 @@ exclusion, overriding the `reason` argument to
 ``` r
 
 results_excl_span <- exclude(results_obj, FUN=exclude_nca_span.ratio())
-```
-
-    ## Loading required namespace: testthat
-
-``` r
 
 # Without any exclusions applied, the 'exclude' column is all NA.
 as.data.frame(results_obj) %>%
