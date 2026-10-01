@@ -618,6 +618,9 @@
 - [`pknca_find_units_param()`](https://humanpred.github.io/pknca/reference/pknca_find_units_param.md)
   : Find NCA parameters with a given unit type
 
+- [`pknca_impute_methods()`](https://humanpred.github.io/pknca/reference/pknca_impute_methods.md)
+  : List the imputation methods
+
 - [`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md)
   : Build an interval specification from a description of the analysis
 

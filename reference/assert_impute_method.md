@@ -34,6 +34,11 @@ column), invisibly, or an error
 [`PKNCA_impute_fun_list()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_fun_list.md),
 [PKNCA_impute_method](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md)
 
+Other Imputation:
+[`PKNCA_impute_fun_list()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_fun_list.md),
+[`PKNCA_impute_method`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md),
+[`pknca_impute_methods()`](https://humanpred.github.io/pknca/reference/pknca_impute_methods.md)
+
 ## Examples
 
 ``` r

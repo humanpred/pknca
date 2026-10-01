@@ -119,3 +119,13 @@ one column named time with the times.
   exactly at the end of the interval, if one is present (usually used
   with multiple-dose data when a point at the interval boundary belongs
   to the next dose, e.g. an imputed C0)
+
+## See also
+
+[`pknca_impute_methods()`](https://humanpred.github.io/pknca/reference/pknca_impute_methods.md)
+lists the methods.
+
+Other Imputation:
+[`PKNCA_impute_fun_list()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_fun_list.md),
+[`assert_impute_method()`](https://humanpred.github.io/pknca/reference/assert_impute_method.md),
+[`pknca_impute_methods()`](https://humanpred.github.io/pknca/reference/pknca_impute_methods.md)
