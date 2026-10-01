@@ -32,4 +32,10 @@ try(assert_impute_method("start_misspelled"))
 }
 \seealso{
 \code{\link[=PKNCA_impute_fun_list]{PKNCA_impute_fun_list()}}, \link{PKNCA_impute_method}
+
+Other Imputation:
+\code{\link[=PKNCA_impute_fun_list]{PKNCA_impute_fun_list()}},
+\code{\link{PKNCA_impute_method}},
+\code{\link[=pknca_impute_methods]{pknca_impute_methods()}}
 }
+\concept{Imputation}

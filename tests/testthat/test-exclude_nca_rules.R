@@ -143,56 +143,16 @@ test_that("every rule's affected-parameter attribute is what it excludes", {
 })
 
 # The registered description and the "Exclude based on ..." documentation are
-# the same text.  The Rd is read from the installed help, which load_all()
-# does not provide.
-rd_text <- function(x) {
-  raw <-
-    if (identical(attr(x, "Rd_tag"), "COMMENT")) {
-      ""
-    } else if (is.list(x)) {
-      paste(vapply(X = x, FUN = rd_text, FUN.VALUE = ""), collapse = "")
-    } else {
-      paste(x, collapse = "")
-    }
-  trimws(gsub(pattern = "\\s+", replacement = " ", x = raw))
-}
-
-rd_tagged <- function(x, tag) {
-  x[vapply(X = x, FUN = function(el) identical(attr(el, "Rd_tag"), tag), FUN.VALUE = TRUE)]
-}
-
-rd_function_descriptions <- function(page) {
-  ret <- character()
-  for (section in rd_tagged(page, "\\section")) {
-    if (identical(rd_text(section[[1]]), "Functions")) {
-      for (itemize in rd_tagged(section[[2]], "\\itemize")) {
-        is_item <- vapply(X = itemize, FUN = function(el) identical(attr(el, "Rd_tag"), "\\item"), FUN.VALUE = TRUE)
-        item_id <- cumsum(is_item)
-        for (current_id in unique(item_id[item_id > 0])) {
-          item_text <- rd_text(itemize[item_id == current_id & !is_item])
-          ret[sub("\\(\\):.*$", "", item_text)] <- sub("^[^:]*:\\s*", "", item_text)
-        }
-      }
-    }
-  }
-  ret
-}
-
+# the same text (see helper-rd.R for reading the installed help).
 test_that("registered descriptions match the documentation", {
-  skip_if(
-    dir.exists(file.path(getNamespaceInfo("PKNCA", "path"), "man")),
-    "The installed help is needed (run under R CMD check, not devtools::load_all())"
-  )
-  rd <- tools::Rd_db(package = "PKNCA", lib.loc = dirname(getNamespaceInfo("PKNCA", "path")))
+  skip_without_installed_help()
+  rd <- installed_rd()
   documented <-
     c(
       rd_function_descriptions(rd[["exclude_nca.Rd"]]),
       exclude_nca_by_param = rd_text(rd_tagged(rd[["exclude_nca_by_param.Rd"]], "\\title"))
     )
   rules <- pknca_exclude_rules()
-  # The installed Rd keeps words but not always the spaces at line breaks, so
-  # the comparison ignores white space.
-  squish <- function(x) gsub(pattern = "\\s+", replacement = "", x = x)
   expect_equal(
     squish(documented[rules$rule]),
     stats::setNames(squish(rules$description), rules$rule)
