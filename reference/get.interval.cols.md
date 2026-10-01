@@ -3070,6 +3070,19 @@ get.interval.cols()
 #> $tlag$requires_conc_dur
 #> [1] FALSE
 #> 
+#> $tlag$arg_spec
+#> $tlag$arg_spec$arglist
+#> $tlag$arg_spec$arglist$conc
+#> [1] "conc"
+#> 
+#> $tlag$arg_spec$arglist$time
+#> [1] "time"
+#> 
+#> 
+#> $tlag$arg_spec$required
+#> [1] "conc" "time"
+#> 
+#> 
 #> 
 #> $deg.fluc
 #> $deg.fluc$FUN
@@ -3469,6 +3482,19 @@ get.interval.cols()
 #> 
 #> $count_conc$requires_conc_dur
 #> [1] FALSE
+#> 
+#> $count_conc$arg_spec
+#> $count_conc$arg_spec$arglist
+#> $count_conc$arg_spec$arglist$conc
+#> [1] "conc"
+#> 
+#> $count_conc$arg_spec$arglist$check
+#> [1] "check"
+#> 
+#> 
+#> $count_conc$arg_spec$required
+#> [1] "conc"
+#> 
 #> 
 #> 
 #> $count_conc_measured
@@ -10583,6 +10609,19 @@ get.interval.cols()
 #> 
 #> $cl.obs$requires_conc_dur
 #> [1] FALSE
+#> 
+#> $cl.obs$arg_spec
+#> $cl.obs$arg_spec$arglist
+#> $cl.obs$arg_spec$arglist$dose
+#> [1] "dose"
+#> 
+#> $cl.obs$arg_spec$arglist$auc
+#> [1] "aucinf.obs"
+#> 
+#> 
+#> $cl.obs$arg_spec$required
+#> [1] "dose" "auc" 
+#> 
 #> 
 #> 
 #> $cl.pred

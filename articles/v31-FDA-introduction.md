@@ -212,14 +212,14 @@ Quarto/Rmarkdown report or another file for reporting.
 pander::pander(summary(o_result), split.tables = Inf)
 ```
 
-| Interval Start | Interval End | AUClast (hr\*mg/L) | Cmax (mg/L) | Tmax (hr) | Half-life (hr) | AUCinf,obs (hr\*mg/L) |
-|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-| 0 | 24 | 92.4 | . | . | . | . |
-| 0 | Inf | . | 10.5 | 1.12 | 14.3 | 215 |
+| Interval Start | Interval End | AUClast (hr\*mg/L) | Cmax (mg/L) | Tmax (hr) | Tlag (hr) | Concentration count (count) | Half-life (hr) | AUCinf,obs (hr\*mg/L) | AUCpext (based on AUCinf,obs) (%) | CL (based on AUCinf,obs) (mg/(hr\*mg/L)) |
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| 0 | Inf | 147 | 10.5 | 1.12 | 0.000 | 11.0 | 14.3 | 215 | 31.5 | 0.0187 |
 
-AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of
-variation; Tmax: median and range; Half-life: arithmetic mean and
-standard deviation {.table}
+AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric mean and
+geometric coefficient of variation; Tmax, Tlag, Concentration count:
+median and range; Half-life, AUCpext (based on AUCinf,obs): arithmetic
+mean and standard deviation {.table}
 
 ### How do I do a simple calculation? Get individual results
 
@@ -235,11 +235,11 @@ pander::pander(head(
 ), split.tables = Inf)
 ```
 
-| start | end | PPTESTCD | PPORRES |       PPANMETH       | exclude | PPORRESU |
-|:-----:|:---:|:--------:|:-------:|:--------------------:|:-------:|:--------:|
-|   0   | 24  | auclast  |  92.37  | AUC: lin up/log down |   NA    | hr\*mg/L |
-|   0   | Inf |   cmax   |  10.5   |                      |   NA    |   mg/L   |
-|   0   | Inf |   tmax   |  1.12   |                      |   NA    |    hr    |
+| start | end | PPTESTCD | PPORRES | PPANMETH | exclude | PPORRESU |
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| 0 | Inf | auclast | 147.2 | Imputation: start_predose_conc0. AUC: lin up/log down | NA | hr\*mg/L |
+| 0 | Inf | cmax | 10.5 | Imputation: start_predose_conc0 | NA | mg/L |
+| 0 | Inf | tmax | 1.12 | Imputation: start_predose_conc0 | NA | hr |
 
 ## PKNCA datasets
 
@@ -292,14 +292,14 @@ NCA results makes a listing.
 pander::pander(summary(o_result), split.tables = Inf)
 ```
 
-| Interval Start | Interval End | AUClast (hr\*mg/L) | Cmax (mg/L) | Tmax (hr) | Half-life (hr) | AUCinf,obs (hr\*mg/L) |
-|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-| 0 | 24 | 92.4 | . | . | . | . |
-| 0 | Inf | . | 10.5 | 1.12 | 14.3 | 215 |
+| Interval Start | Interval End | AUClast (hr\*mg/L) | Cmax (mg/L) | Tmax (hr) | Tlag (hr) | Concentration count (count) | Half-life (hr) | AUCinf,obs (hr\*mg/L) | AUCpext (based on AUCinf,obs) (%) | CL (based on AUCinf,obs) (mg/(hr\*mg/L)) |
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| 0 | Inf | 147 | 10.5 | 1.12 | 0.000 | 11.0 | 14.3 | 215 | 31.5 | 0.0187 |
 
-AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of
-variation; Tmax: median and range; Half-life: arithmetic mean and
-standard deviation {.table}
+AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric mean and
+geometric coefficient of variation; Tmax, Tlag, Concentration count:
+median and range; Half-life, AUCpext (based on AUCinf,obs): arithmetic
+mean and standard deviation {.table}
 
 ``` r
 

@@ -156,11 +156,12 @@ workflow without running. For another complete example, please see <a href="v02-
 <span></span>
 <span><span class="co">## Summarize the results</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax   half.life aucinf.obs</span></span>
-<span><span class="co">##      0  24 12 74.6 [24.3]           .                  .           .          .</span></span>
-<span><span class="co">##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]</span></span>
+<pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax                 tlag</span></span>
+<span><span class="co">##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]</span></span>
+<span><span class="co">##         count_conc   half.life aucinf.obs aucpext.obs        cl.obs</span></span>
+<span><span class="co">##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4] 13.8 [6.34] 0.0398 [29.4]</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
+<span><span class="co">## Caption: auclast, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
 <p>Note that <code><a href="../reference/PKNCAdose.html">PKNCAdose()</a></code> also accepts a <code>route</code>
 argument (<code>"extravascular"</code> or <code>"intravascular"</code>);
 when it is not given, extravascular administration is assumed.</p>
@@ -260,6 +261,12 @@ no arguments:</p>
 <span><span class="co">## </span></span>
 <span><span class="co">## $tau.choices</span></span>
 <span><span class="co">## [1] NA</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## $auto.interval.method</span></span>
+<span><span class="co">## [1] "builder"</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## $auto.interval.tolerance</span></span>
+<span><span class="co">## [1] 0.05</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $single.dose.aucs</span></span>
 <span><span class="co">##   start end auclast auclast_se auclast_df aucall aumclast aumclast_se</span></span>
@@ -1582,11 +1589,12 @@ new <code>PKNCAdata</code> object you want to use.</p>
 <span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span><span class="op">)</span></span>
 <span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax   half.life aucinf.obs</span></span>
-<span><span class="co">##      0  24 12 74.6 [24.3]           .                  .           .          .</span></span>
-<span><span class="co">##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]</span></span>
+<pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax                 tlag</span></span>
+<span><span class="co">##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]</span></span>
+<span><span class="co">##         count_conc   half.life aucinf.obs aucpext.obs        cl.obs</span></span>
+<span><span class="co">##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4] 13.8 [6.34] 0.0398 [29.4]</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
+<span><span class="co">## Caption: auclast, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
 <p>In these data, some participants have a nonzero predose
 concentration. Assume that we want to manually change those
 concentrations to zero and then recalculate. You can change the
@@ -1599,11 +1607,12 @@ for the changed participants.</p>
 <span><span class="va">o_data_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc_update</span>, <span class="va">o_dose</span><span class="op">)</span></span>
 <span><span class="va">o_nca_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">o_nca</span>, <span class="va">o_data_update</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca_update</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax   half.life aucinf.obs</span></span>
-<span><span class="co">##      0  24 12 74.6 [24.2]           .                  .           .          .</span></span>
-<span><span class="co">##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]</span></span>
+<pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax                 tlag</span></span>
+<span><span class="co">##      0 Inf 12 98.6 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]</span></span>
+<span><span class="co">##         count_conc   half.life aucinf.obs aucpext.obs        cl.obs</span></span>
+<span><span class="co">##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4] 13.8 [6.34] 0.0398 [29.3]</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
+<span><span class="co">## Caption: auclast, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
 <p>Only the participants whose concentration data changed are
 recalculated; results for all other participants are carried over
 unchanged.</p>
@@ -1622,14 +1631,14 @@ change the intervals to create a new <code>PKNCAdata</code> object:</p>
 <span><span class="co">## concentration or dose data</span></span></code></pre>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca_update</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##  start end  N        cmax               tmax   half.life aucinf.obs</span></span>
-<span><span class="co">##      0  24 12           .                  .           .          .</span></span>
-<span><span class="co">##      0 Inf 12 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]</span></span>
-<span><span class="co">##  aucint.inf.obs</span></span>
-<span><span class="co">##     98.4 [22.5]</span></span>
-<span><span class="co">##               .</span></span>
+<pre><code><span><span class="co">##  start end  N        cmax               tmax                 tlag</span></span>
+<span><span class="co">##      0 Inf 12 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]</span></span>
+<span><span class="co">##         count_conc   half.life aucinf.obs aucint.inf.obs aucpext.obs</span></span>
+<span><span class="co">##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4]     115 [28.4] 13.8 [6.34]</span></span>
+<span><span class="co">##         cl.obs</span></span>
+<span><span class="co">##  0.0398 [29.4]</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Caption: cmax, aucinf.obs, aucint.inf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
+<span><span class="co">## Caption: cmax, aucinf.obs, aucint.inf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -3,11 +3,13 @@
 detection so that designs where only the steady-state dose is present in the
 dosing data (nothing repeats, so nothing can be detected) can still be
 calculated.  Otherwise tau is detected from the group's dose times with
-find.tau()."><meta property="og:description" content="A tau column in the interval specification takes precedence over
+find.tau(), which gives a &quot;pknca_warning_tau_irregular_dosing&quot; warning
+when the doses are spaced as though one was missed."><meta property="og:description" content="A tau column in the interval specification takes precedence over
 detection so that designs where only the steady-state dose is present in the
 dosing data (nothing repeats, so nothing can be detected) can still be
 calculated.  Otherwise tau is detected from the group's dose times with
-find.tau()."></head><body>
+find.tau(), which gives a &quot;pknca_warning_tau_irregular_dosing&quot; warning
+when the doses are spaced as though one was missed."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -71,7 +73,8 @@ find.tau()."></head><body>
 detection so that designs where only the steady-state dose is present in the
 dosing data (nothing repeats, so nothing can be detected) can still be
 calculated.  Otherwise <code>tau</code> is detected from the group's dose times with
-<code><a href="find.tau.html">find.tau()</a></code>.</p>
+<code><a href="find.tau.html">find.tau()</a></code>, which gives a <code>"pknca_warning_tau_irregular_dosing"</code> warning
+when the doses are spaced as though one was missed.</p>
     </div>
 
     <div class="section level2">

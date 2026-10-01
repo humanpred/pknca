@@ -59,13 +59,15 @@ o_data <- PKNCAdata(o_conc, o_dose)
 o_nca <- pk.nca(o_data)
 summary(o_nca)
 #>  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)
-#>               0           24 12       74.6 [24.3]           .
-#>               0          Inf 12                 . 8.65 [17.0]
-#>           Tmax (hr) Half-life (hr) AUCinf,obs (hr*mg/L)
-#>                   .              .                    .
-#>  1.14 [0.630, 3.55]    8.18 [2.12]           115 [28.4]
+#>               0          Inf 12       98.7 [22.5] 8.65 [17.0]
+#>           Tmax (hr)            Tlag (hr) Concentration count (count)
+#>  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]
+#>  Half-life (hr) AUCinf,obs (hr*mg/L) AUCpext (based on AUCinf,obs) (%)
+#>     8.18 [2.12]           115 [28.4]                       13.8 [6.34]
+#>  CL (based on AUCinf,obs) ((mg/kg)/(hr*mg/L))
+#>                                 0.0398 [29.4]
 #> 
-#> Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects
+#> Caption: AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric mean and geometric coefficient of variation; Tmax, Tlag, Concentration count: median and range; Half-life, AUCpext (based on AUCinf,obs): arithmetic mean and standard deviation; N: number of subjects
 ```
 
 When units are provided through
@@ -94,13 +96,15 @@ o_data <- PKNCAdata(o_conc, o_dose)
 o_nca <- pk.nca(o_data)
 summary(o_nca)
 #>  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)
-#>               0           24 12       74.6 [24.3]           .
-#>               0          Inf 12                 . 8.65 [17.0]
-#>           Tmax (hr) Half-life (hr) AUCinf,obs (hr*mg/L)
-#>                   .              .                    .
-#>  1.14 [0.630, 3.55]    8.18 [2.12]           115 [28.4]
+#>               0          Inf 12       98.7 [22.5] 8.65 [17.0]
+#>           Tmax (hr)            Tlag (hr) Concentration count (count)
+#>  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]
+#>  Half-life (hr) AUCinf,obs (hr*mg/L) AUCpext (based on AUCinf,obs) (%)
+#>     8.18 [2.12]           115 [28.4]                       13.8 [6.34]
+#>  CL (based on AUCinf,obs) ((mg/kg)/(hr*mg/L))
+#>                                 0.0398 [29.4]
 #> 
-#> Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects
+#> Caption: AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric mean and geometric coefficient of variation; Tmax, Tlag, Concentration count: median and range; Half-life, AUCpext (based on AUCinf,obs): arithmetic mean and standard deviation; N: number of subjects
 ```
 
 And, you can perform automatic unit conversions as long as the unit
@@ -118,13 +122,15 @@ o_data <- PKNCAdata(o_conc, o_dose)
 o_nca <- pk.nca(o_data)
 summary(o_nca)
 #>  Interval Start Interval End  N AUClast (day*ug/L) Cmax (ug/L)
-#>               0           24 12        3110 [24.3]           .
-#>               0          Inf 12                  . 8650 [17.0]
-#>              Tmax (day) Half-life (day) AUCinf,obs (day*ug/L)
-#>                       .               .                     .
-#>  0.0473 [0.0262, 0.148]  0.341 [0.0881]           4780 [28.4]
+#>               0          Inf 12        4110 [22.5] 8650 [17.0]
+#>              Tmax (day)           Tlag (day) Concentration count (count)
+#>  0.0473 [0.0262, 0.148] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]
+#>  Half-life (day) AUCinf,obs (day*ug/L) AUCpext (based on AUCinf,obs) (%)
+#>   0.341 [0.0881]           4780 [28.4]                       13.8 [6.34]
+#>  CL (based on AUCinf,obs) ((mg/kg)/(day*ug/L))
+#>                                0.000955 [29.4]
 #> 
-#> Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects
+#> Caption: AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric mean and geometric coefficient of variation; Tmax, Tlag, Concentration count: median and range; Half-life, AUCpext (based on AUCinf,obs): arithmetic mean and standard deviation; N: number of subjects
 ```
 
 ### Steps to manually add units to an NCA analysis
@@ -166,13 +172,15 @@ o_data <- PKNCAdata(o_conc, o_dose, units=d_units)
 o_nca <- pk.nca(o_data)
 summary(o_nca)
 #>  Interval Start Interval End  N AUClast (hr*mmol/L) Cmax (mmol/L)
-#>               0           24 12        0.414 [24.3]             .
-#>               0          Inf 12                   . 0.0480 [17.0]
-#>           Tmax (hr) Half-life (hr) AUCinf,obs (hr*mmol/L)
-#>                   .              .                      .
-#>  1.14 [0.630, 3.55]    8.18 [2.12]           0.637 [28.4]
+#>               0          Inf 12        0.548 [22.5] 0.0480 [17.0]
+#>           Tmax (hr)            Tlag (hr) Concentration count (count)
+#>  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]
+#>  Half-life (hr) AUCinf,obs (hr*mmol/L) AUCpext (based on AUCinf,obs) (%)
+#>     8.18 [2.12]           0.637 [28.4]                       13.8 [6.34]
+#>  CL (based on AUCinf,obs) (L/hr/kg)
+#>                       0.0398 [29.4]
 #> 
-#> Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects
+#> Caption: AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric mean and geometric coefficient of variation; Tmax, Tlag, Concentration count: median and range; Half-life, AUCpext (based on AUCinf,obs): arithmetic mean and standard deviation; N: number of subjects
 ```
 
 ## Prepare a Unit Assignment and Conversion Table
@@ -297,13 +305,15 @@ o_nca_partial <- pk.nca(o_data_partial)
 #> Warning: Units are provided for some but not all parameters; missing for: tmax
 summary(o_nca_partial)
 #>  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)
-#>               0           24 12       74.6 [24.3]           .
-#>               0          Inf 12                 . 8.65 [17.0]
-#>                Tmax Half-life (hr) AUCinf,obs (hr*mg/L)
-#>                   .              .                    .
-#>  1.14 [0.630, 3.55]    8.18 [2.12]           115 [28.4]
+#>               0          Inf 12       98.7 [22.5] 8.65 [17.0]
+#>                Tmax            Tlag (hr) Concentration count (count)
+#>  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]
+#>  Half-life (hr) AUCinf,obs (hr*mg/L) AUCpext (based on AUCinf,obs) (%)
+#>     8.18 [2.12]           115 [28.4]                       13.8 [6.34]
+#>  CL (based on AUCinf,obs) ((mg/kg)/(hr*mg/L))
+#>                                 0.0398 [29.4]
 #> 
-#> Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects
+#> Caption: AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric mean and geometric coefficient of variation; Tmax, Tlag, Concentration count: median and range; Half-life, AUCpext (based on AUCinf,obs): arithmetic mean and standard deviation; N: number of subjects
 ```
 
 ## How do I add different unit conversions for different analytes?
@@ -377,17 +387,19 @@ o_data <- PKNCAdata(o_conc, o_dose, units=d_units)
 o_nca <- pk.nca(o_data)
 summary(o_nca)
 #>  Interval Start Interval End      Analyte  N AUClast (hr*mmol/L)  Cmax (mmol/L)
-#>               0           24 Theophylline 12        0.414 [24.3]              .
-#>               0          Inf Theophylline 12                   .  0.0480 [17.0]
-#>               0           24     Caffeine 12       0.0231 [24.3]              .
-#>               0          Inf     Caffeine 12                   . 0.00267 [17.0]
-#>           Tmax (hr) Half-life (hr) AUCinf,obs (hr*mmol/L)
-#>                   .              .                      .
-#>  1.14 [0.630, 3.55]    8.18 [2.12]           0.637 [28.4]
-#>                   .              .                      .
-#>  1.14 [0.630, 3.55]    8.18 [2.12]          0.0355 [28.4]
+#>               0          Inf Theophylline 12        0.548 [22.5]  0.0480 [17.0]
+#>               0          Inf     Caffeine 12       0.0305 [22.5] 0.00267 [17.0]
+#>           Tmax (hr)            Tlag (hr) Concentration count (count)
+#>  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]
+#>  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]
+#>  Half-life (hr) AUCinf,obs (hr*mmol/L) AUCpext (based on AUCinf,obs) (%)
+#>     8.18 [2.12]           0.637 [28.4]                       13.8 [6.34]
+#>     8.18 [2.12]          0.0355 [28.4]                       13.8 [6.34]
+#>  CL (based on AUCinf,obs) (L/hr/kg)
+#>                       0.0398 [29.4]
+#>                        0.663 [29.4]
 #> 
-#> Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects
+#> Caption: AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric mean and geometric coefficient of variation; Tmax, Tlag, Concentration count: median and range; Half-life, AUCpext (based on AUCinf,obs): arithmetic mean and standard deviation; N: number of subjects
 ```
 
 ## Date and time (POSIXct) input
@@ -493,13 +505,13 @@ the time reference as the PPRFTDTC column.
 o_nca <- pk.nca(o_data)
 d_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
 head(d_cdisc[, c("Subject", "PPTESTCD", "PPORRES", "PPORRESU", "PPRFTDTC")])
-#>   Subject PPTESTCD   PPORRES PPORRESU            PPRFTDTC
-#> 1       1   AUCLST 92.365442  hr*mg/L 2024-01-15T08:00:00
-#> 2       1     CMAX 10.500000     mg/L 2024-01-15T08:00:00
-#> 3       1     TMAX  1.120000       hr 2024-01-15T08:00:00
-#> 4       1     TLST 24.370000       hr 2024-01-15T08:00:00
-#> 5       1     CLST  3.280000     mg/L 2024-01-15T08:00:00
-#> 6       1     LAMZ  0.048457     1/hr 2024-01-15T08:00:00
+#>   Subject PPTESTCD  PPORRES PPORRESU            PPRFTDTC
+#> 1       1   AUCLST 147.2347  hr*mg/L 2024-01-15T08:00:00
+#> 2       1     CMAX  10.5000     mg/L 2024-01-15T08:00:00
+#> 3       1     TMAX   1.1200       hr 2024-01-15T08:00:00
+#> 4       1     TLST  24.3700       hr 2024-01-15T08:00:00
+#> 5       1     CLST   3.2800     mg/L 2024-01-15T08:00:00
+#> 6       1     TLAG   0.0000       hr 2024-01-15T08:00:00
 ```
 
 A few rules keep the conversion unambiguous:

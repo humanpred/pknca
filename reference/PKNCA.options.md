@@ -141,6 +141,12 @@ PKNCA.options()
 #> $tau.choices
 #> [1] NA
 #> 
+#> $auto.interval.method
+#> [1] "builder"
+#> 
+#> $auto.interval.tolerance
+#> [1] 0.05
+#> 
 #> $single.dose.aucs
 #>   start end auclast auclast_se auclast_df aucall aumclast aumclast_se
 #> 1     0  24    TRUE      FALSE      FALSE  FALSE    FALSE       FALSE

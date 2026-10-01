@@ -128,13 +128,15 @@ have units.</p>
 <span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)</span></span>
-<span><span class="co">#&gt;               0           24 12       74.6 [24.3]           .</span></span>
-<span><span class="co">#&gt;               0          Inf 12                 . 8.65 [17.0]</span></span>
-<span><span class="co">#&gt;           Tmax (hr) Half-life (hr) AUCinf,obs (hr*mg/L)</span></span>
-<span><span class="co">#&gt;                   .              .                    .</span></span>
-<span><span class="co">#&gt;  1.14 [0.630, 3.55]    8.18 [2.12]           115 [28.4]</span></span>
+<span><span class="co">#&gt;               0          Inf 12       98.7 [22.5] 8.65 [17.0]</span></span>
+<span><span class="co">#&gt;           Tmax (hr)            Tlag (hr) Concentration count (count)</span></span>
+<span><span class="co">#&gt;  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]</span></span>
+<span><span class="co">#&gt;  Half-life (hr) AUCinf,obs (hr*mg/L) AUCpext (based on AUCinf,obs) (%)</span></span>
+<span><span class="co">#&gt;     8.18 [2.12]           115 [28.4]                       13.8 [6.34]</span></span>
+<span><span class="co">#&gt;  CL (based on AUCinf,obs) ((mg/kg)/(hr*mg/L))</span></span>
+<span><span class="co">#&gt;                                 0.0398 [29.4]</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
+<span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric mean and geometric coefficient of variation; Tmax, Tlag, Concentration count: median and range; Half-life, AUCpext (based on AUCinf,obs): arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
 <p>When units are provided through <code><a href="../reference/PKNCAconc.html">PKNCAconc()</a></code> and
 <code><a href="../reference/PKNCAdose.html">PKNCAdose()</a></code> like this, <code><a href="../reference/PKNCAdata.html">PKNCAdata()</a></code> builds the
 units table automatically during construction by calling
@@ -153,13 +155,15 @@ columns in the data.</p>
 <span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)</span></span>
-<span><span class="co">#&gt;               0           24 12       74.6 [24.3]           .</span></span>
-<span><span class="co">#&gt;               0          Inf 12                 . 8.65 [17.0]</span></span>
-<span><span class="co">#&gt;           Tmax (hr) Half-life (hr) AUCinf,obs (hr*mg/L)</span></span>
-<span><span class="co">#&gt;                   .              .                    .</span></span>
-<span><span class="co">#&gt;  1.14 [0.630, 3.55]    8.18 [2.12]           115 [28.4]</span></span>
+<span><span class="co">#&gt;               0          Inf 12       98.7 [22.5] 8.65 [17.0]</span></span>
+<span><span class="co">#&gt;           Tmax (hr)            Tlag (hr) Concentration count (count)</span></span>
+<span><span class="co">#&gt;  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]</span></span>
+<span><span class="co">#&gt;  Half-life (hr) AUCinf,obs (hr*mg/L) AUCpext (based on AUCinf,obs) (%)</span></span>
+<span><span class="co">#&gt;     8.18 [2.12]           115 [28.4]                       13.8 [6.34]</span></span>
+<span><span class="co">#&gt;  CL (based on AUCinf,obs) ((mg/kg)/(hr*mg/L))</span></span>
+<span><span class="co">#&gt;                                 0.0398 [29.4]</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
+<span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric mean and geometric coefficient of variation; Tmax, Tlag, Concentration count: median and range; Half-life, AUCpext (based on AUCinf,obs): arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
 <p>And, you can perform automatic unit conversions as long as the unit
 conversions are defined without more information (e.g. convert between
 mass or time units). For more complex conversions, see the information
@@ -173,13 +177,15 @@ below.</p>
 <span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Interval Start Interval End  N AUClast (day*ug/L) Cmax (ug/L)</span></span>
-<span><span class="co">#&gt;               0           24 12        3110 [24.3]           .</span></span>
-<span><span class="co">#&gt;               0          Inf 12                  . 8650 [17.0]</span></span>
-<span><span class="co">#&gt;              Tmax (day) Half-life (day) AUCinf,obs (day*ug/L)</span></span>
-<span><span class="co">#&gt;                       .               .                     .</span></span>
-<span><span class="co">#&gt;  0.0473 [0.0262, 0.148]  0.341 [0.0881]           4780 [28.4]</span></span>
+<span><span class="co">#&gt;               0          Inf 12        4110 [22.5] 8650 [17.0]</span></span>
+<span><span class="co">#&gt;              Tmax (day)           Tlag (day) Concentration count (count)</span></span>
+<span><span class="co">#&gt;  0.0473 [0.0262, 0.148] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]</span></span>
+<span><span class="co">#&gt;  Half-life (day) AUCinf,obs (day*ug/L) AUCpext (based on AUCinf,obs) (%)</span></span>
+<span><span class="co">#&gt;   0.341 [0.0881]           4780 [28.4]                       13.8 [6.34]</span></span>
+<span><span class="co">#&gt;  CL (based on AUCinf,obs) ((mg/kg)/(day*ug/L))</span></span>
+<span><span class="co">#&gt;                                0.000955 [29.4]</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
+<span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric mean and geometric coefficient of variation; Tmax, Tlag, Concentration count: median and range; Half-life, AUCpext (based on AUCinf,obs): arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="steps-to-manually-add-units-to-an-nca-analysis">Steps to manually add units to an NCA analysis<a class="anchor" aria-label="anchor" href="#steps-to-manually-add-units-to-an-nca-analysis"></a>
@@ -214,13 +220,15 @@ the <code>PKNCAdata</code> object. You will add the units with the
 <span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Interval Start Interval End  N AUClast (hr*mmol/L) Cmax (mmol/L)</span></span>
-<span><span class="co">#&gt;               0           24 12        0.414 [24.3]             .</span></span>
-<span><span class="co">#&gt;               0          Inf 12                   . 0.0480 [17.0]</span></span>
-<span><span class="co">#&gt;           Tmax (hr) Half-life (hr) AUCinf,obs (hr*mmol/L)</span></span>
-<span><span class="co">#&gt;                   .              .                      .</span></span>
-<span><span class="co">#&gt;  1.14 [0.630, 3.55]    8.18 [2.12]           0.637 [28.4]</span></span>
+<span><span class="co">#&gt;               0          Inf 12        0.548 [22.5] 0.0480 [17.0]</span></span>
+<span><span class="co">#&gt;           Tmax (hr)            Tlag (hr) Concentration count (count)</span></span>
+<span><span class="co">#&gt;  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]</span></span>
+<span><span class="co">#&gt;  Half-life (hr) AUCinf,obs (hr*mmol/L) AUCpext (based on AUCinf,obs) (%)</span></span>
+<span><span class="co">#&gt;     8.18 [2.12]           0.637 [28.4]                       13.8 [6.34]</span></span>
+<span><span class="co">#&gt;  CL (based on AUCinf,obs) (L/hr/kg)</span></span>
+<span><span class="co">#&gt;                       0.0398 [29.4]</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
+<span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric mean and geometric coefficient of variation; Tmax, Tlag, Concentration count: median and range; Half-life, AUCpext (based on AUCinf,obs): arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -328,13 +336,15 @@ argument to <code><a href="../reference/PKNCAdata.html">PKNCAdata()</a></code> (
 <span><span class="co">#&gt; Warning: Units are provided for some but not all parameters; missing for: tmax</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca_partial</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)</span></span>
-<span><span class="co">#&gt;               0           24 12       74.6 [24.3]           .</span></span>
-<span><span class="co">#&gt;               0          Inf 12                 . 8.65 [17.0]</span></span>
-<span><span class="co">#&gt;                Tmax Half-life (hr) AUCinf,obs (hr*mg/L)</span></span>
-<span><span class="co">#&gt;                   .              .                    .</span></span>
-<span><span class="co">#&gt;  1.14 [0.630, 3.55]    8.18 [2.12]           115 [28.4]</span></span>
+<span><span class="co">#&gt;               0          Inf 12       98.7 [22.5] 8.65 [17.0]</span></span>
+<span><span class="co">#&gt;                Tmax            Tlag (hr) Concentration count (count)</span></span>
+<span><span class="co">#&gt;  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]</span></span>
+<span><span class="co">#&gt;  Half-life (hr) AUCinf,obs (hr*mg/L) AUCpext (based on AUCinf,obs) (%)</span></span>
+<span><span class="co">#&gt;     8.18 [2.12]           115 [28.4]                       13.8 [6.34]</span></span>
+<span><span class="co">#&gt;  CL (based on AUCinf,obs) ((mg/kg)/(hr*mg/L))</span></span>
+<span><span class="co">#&gt;                                 0.0398 [29.4]</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
+<span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric mean and geometric coefficient of variation; Tmax, Tlag, Concentration count: median and range; Half-life, AUCpext (based on AUCinf,obs): arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="how-do-i-add-different-unit-conversions-for-different-analytes">How do I add different unit conversions for different analytes?<a class="anchor" aria-label="anchor" href="#how-do-i-add-different-unit-conversions-for-different-analytes"></a>
@@ -397,17 +407,19 @@ object.</p>
 <span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Interval Start Interval End      Analyte  N AUClast (hr*mmol/L)  Cmax (mmol/L)</span></span>
-<span><span class="co">#&gt;               0           24 Theophylline 12        0.414 [24.3]              .</span></span>
-<span><span class="co">#&gt;               0          Inf Theophylline 12                   .  0.0480 [17.0]</span></span>
-<span><span class="co">#&gt;               0           24     Caffeine 12       0.0231 [24.3]              .</span></span>
-<span><span class="co">#&gt;               0          Inf     Caffeine 12                   . 0.00267 [17.0]</span></span>
-<span><span class="co">#&gt;           Tmax (hr) Half-life (hr) AUCinf,obs (hr*mmol/L)</span></span>
-<span><span class="co">#&gt;                   .              .                      .</span></span>
-<span><span class="co">#&gt;  1.14 [0.630, 3.55]    8.18 [2.12]           0.637 [28.4]</span></span>
-<span><span class="co">#&gt;                   .              .                      .</span></span>
-<span><span class="co">#&gt;  1.14 [0.630, 3.55]    8.18 [2.12]          0.0355 [28.4]</span></span>
+<span><span class="co">#&gt;               0          Inf Theophylline 12        0.548 [22.5]  0.0480 [17.0]</span></span>
+<span><span class="co">#&gt;               0          Inf     Caffeine 12       0.0305 [22.5] 0.00267 [17.0]</span></span>
+<span><span class="co">#&gt;           Tmax (hr)            Tlag (hr) Concentration count (count)</span></span>
+<span><span class="co">#&gt;  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]</span></span>
+<span><span class="co">#&gt;  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]</span></span>
+<span><span class="co">#&gt;  Half-life (hr) AUCinf,obs (hr*mmol/L) AUCpext (based on AUCinf,obs) (%)</span></span>
+<span><span class="co">#&gt;     8.18 [2.12]           0.637 [28.4]                       13.8 [6.34]</span></span>
+<span><span class="co">#&gt;     8.18 [2.12]          0.0355 [28.4]                       13.8 [6.34]</span></span>
+<span><span class="co">#&gt;  CL (based on AUCinf,obs) (L/hr/kg)</span></span>
+<span><span class="co">#&gt;                       0.0398 [29.4]</span></span>
+<span><span class="co">#&gt;                        0.663 [29.4]</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs: geometric mean and geometric coefficient of variation; Tmax: median and range; Half-life: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
+<span><span class="co">#&gt; Caption: AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric mean and geometric coefficient of variation; Tmax, Tlag, Concentration count: median and range; Half-life, AUCpext (based on AUCinf,obs): arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="date-and-time-posixct-input">Date and time (POSIXct) input<a class="anchor" aria-label="anchor" href="#date-and-time-posixct-input"></a>
@@ -503,13 +515,13 @@ include the time reference as the PPRFTDTC column.</p>
 <code class="sourceCode R"><span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
 <span><span class="va">d_cdisc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">o_nca</span>, out_format <span class="op">=</span> <span class="st">"cdisc"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">d_cdisc</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Subject"</span>, <span class="st">"PPTESTCD"</span>, <span class="st">"PPORRES"</span>, <span class="st">"PPORRESU"</span>, <span class="st">"PPRFTDTC"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Subject PPTESTCD   PPORRES PPORRESU            PPRFTDTC</span></span>
-<span><span class="co">#&gt; 1       1   AUCLST 92.365442  hr*mg/L 2024-01-15T08:00:00</span></span>
-<span><span class="co">#&gt; 2       1     CMAX 10.500000     mg/L 2024-01-15T08:00:00</span></span>
-<span><span class="co">#&gt; 3       1     TMAX  1.120000       hr 2024-01-15T08:00:00</span></span>
-<span><span class="co">#&gt; 4       1     TLST 24.370000       hr 2024-01-15T08:00:00</span></span>
-<span><span class="co">#&gt; 5       1     CLST  3.280000     mg/L 2024-01-15T08:00:00</span></span>
-<span><span class="co">#&gt; 6       1     LAMZ  0.048457     1/hr 2024-01-15T08:00:00</span></span></code></pre></div>
+<span><span class="co">#&gt;   Subject PPTESTCD  PPORRES PPORRESU            PPRFTDTC</span></span>
+<span><span class="co">#&gt; 1       1   AUCLST 147.2347  hr*mg/L 2024-01-15T08:00:00</span></span>
+<span><span class="co">#&gt; 2       1     CMAX  10.5000     mg/L 2024-01-15T08:00:00</span></span>
+<span><span class="co">#&gt; 3       1     TMAX   1.1200       hr 2024-01-15T08:00:00</span></span>
+<span><span class="co">#&gt; 4       1     TLST  24.3700       hr 2024-01-15T08:00:00</span></span>
+<span><span class="co">#&gt; 5       1     CLST   3.2800     mg/L 2024-01-15T08:00:00</span></span>
+<span><span class="co">#&gt; 6       1     TLAG   0.0000       hr 2024-01-15T08:00:00</span></span></code></pre></div>
 <p>A few rules keep the conversion unambiguous:</p>
 <ul>
 <li>Concentration and dose times must both be date-times; mixing numeric

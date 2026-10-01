@@ -81,11 +81,12 @@ o_nca <- pk.nca(o_data)
 summary(o_nca)
 ```
 
-    ##  start end  N     auclast        cmax               tmax   half.life aucinf.obs
-    ##      0  24 12 74.6 [24.3]           .                  .           .          .
-    ##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]
+    ##  start end  N     auclast        cmax               tmax                 tlag
+    ##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]
+    ##         count_conc   half.life aucinf.obs aucpext.obs        cl.obs
+    ##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4] 13.8 [6.34] 0.0398 [29.4]
     ## 
-    ## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects
+    ## Caption: auclast, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects
 
 Note that
 [`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md)
@@ -199,6 +200,12 @@ PKNCA.options()
     ## 
     ## $tau.choices
     ## [1] NA
+    ## 
+    ## $auto.interval.method
+    ## [1] "builder"
+    ## 
+    ## $auto.interval.tolerance
+    ## [1] 0.05
     ## 
     ## $single.dose.aucs
     ##   start end auclast auclast_se auclast_df aucall aumclast aumclast_se
@@ -700,11 +707,12 @@ o_nca <- pk.nca(o_data)
 summary(o_nca)
 ```
 
-    ##  start end  N     auclast        cmax               tmax   half.life aucinf.obs
-    ##      0  24 12 74.6 [24.3]           .                  .           .          .
-    ##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]
+    ##  start end  N     auclast        cmax               tmax                 tlag
+    ##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]
+    ##         count_conc   half.life aucinf.obs aucpext.obs        cl.obs
+    ##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4] 13.8 [6.34] 0.0398 [29.4]
     ## 
-    ## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects
+    ## Caption: auclast, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects
 
 In these data, some participants have a nonzero predose concentration.
 Assume that we want to manually change those concentrations to zero and
@@ -722,11 +730,12 @@ o_nca_update <- update(o_nca, o_data_update)
 summary(o_nca_update)
 ```
 
-    ##  start end  N     auclast        cmax               tmax   half.life aucinf.obs
-    ##      0  24 12 74.6 [24.2]           .                  .           .          .
-    ##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]
+    ##  start end  N     auclast        cmax               tmax                 tlag
+    ##      0 Inf 12 98.6 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]
+    ##         count_conc   half.life aucinf.obs aucpext.obs        cl.obs
+    ##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4] 13.8 [6.34] 0.0398 [29.3]
     ## 
-    ## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects
+    ## Caption: auclast, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects
 
 Only the participants whose concentration data changed are recalculated;
 results for all other participants are carried over unchanged.
@@ -758,11 +767,11 @@ o_nca_update <- update(o_nca, o_data_update)
 summary(o_nca_update)
 ```
 
-    ##  start end  N        cmax               tmax   half.life aucinf.obs
-    ##      0  24 12           .                  .           .          .
-    ##      0 Inf 12 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]
-    ##  aucint.inf.obs
-    ##     98.4 [22.5]
-    ##               .
+    ##  start end  N        cmax               tmax                 tlag
+    ##      0 Inf 12 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]
+    ##         count_conc   half.life aucinf.obs aucint.inf.obs aucpext.obs
+    ##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4]     115 [28.4] 13.8 [6.34]
+    ##         cl.obs
+    ##  0.0398 [29.4]
     ## 
-    ## Caption: cmax, aucinf.obs, aucint.inf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects
+    ## Caption: cmax, aucinf.obs, aucint.inf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects

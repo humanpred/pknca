@@ -139,6 +139,120 @@ results.
 Selection of points within an interval occurs by choosing any point at
 or after the `start` and at or before the `end`.
 
+### Automatic Selection of Intervals
+
+When
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
+is given no `intervals`, it chooses them for each group from the
+concentration and dose times with
+[`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md).
+The parameters within each interval come from
+[`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md),
+so each interval is given the parameters and the imputation that suit
+its context (see
+[`?pknca_interval_table`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md)
+for how that table is built).
+
+The rules are:
+
+- A group with no dose times gives no intervals, with a warning.
+- A single dose with any sample after it gives one interval from the
+  dose to infinity, calculated as a single dose.
+- Between two consecutive doses with samples at both dose times and at
+  least one sample between them, an interval is generated. It is
+  calculated as a dosing interval when the samples run up to the next
+  dose, and as a single-dose profile bounded by the next dose when they
+  stop partway and leave a washout. This is what distinguishes two
+  treatment periods recorded in one group from repeated dosing.
+- For the last dose, the dosing interval `tau` is found from the dose
+  times with
+  [`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md).
+  When a sample ends it, an interval one `tau` long is generated and
+  calculated as a dose at steady state. It starts at the first dose of
+  the last complete cycle, which is the last dose itself unless the
+  regimen gives more than one dose per `tau`, so the interval never
+  contains a dose that was not recorded. When samples continue beyond
+  it, the half-life is calculated from the last dose onward.
+
+Sample and dose times are matched within a tolerance rather than
+exactly, so a trough drawn at 167.5 hours still ends an interval that
+nominally ends at 168 hours, and a predose sample drawn at -0.05 hours
+still starts the interval at the dose. The width of that window is the
+`auto.interval.tolerance` option, given as a fraction of the interval’s
+length. The window only reaches backward: a sample drawn after a
+boundary belongs to what follows it, so a concentration drawn after a
+dose cannot stand in for the predose sample, and a trough drawn after
+the next dose cannot end the interval before it.
+
+``` r
+
+# Daily dosing with a dense profile on the first and last day
+choose.auc.intervals(
+  time.conc = c(0, 1, 2, 4, 8, 12, 24, 48, 72, 96, 120,
+                144, 145, 146, 148, 152, 156, 168, 192, 216),
+  time.dosing = seq(0, 144, by = 24)
+)[, c("start", "end", "aucint.last", "cmax", "half.life", "impute")]
+```
+
+    ##   start end aucint.last  cmax half.life        impute
+    ## 1     0  24        TRUE  TRUE      TRUE    start_cmin
+    ## 2   144 168        TRUE  TRUE      TRUE start_predose
+    ## 3   144 Inf       FALSE FALSE      TRUE          <NA>
+
+Setting the `auto.interval.method` option to `"legacy"` calculates the
+parameter lists PKNCA used before this was added: the `single.dose.aucs`
+option for single-dose data, and AUClast, Cmax, and Tmax for each
+interval of multiple-dose data. The intervals themselves are found the
+same way either way.
+
+``` r
+
+PKNCA.options(auto.interval.method = "legacy")
+choose.auc.intervals(
+  time.conc = c(0, 1, 2, 4, 8, 24, 48),
+  time.dosing = 0
+)[, c("start", "end", "auclast", "aucinf.obs", "half.life")]
+```
+
+    ##   start end auclast aucinf.obs half.life
+    ## 1     0  24    TRUE      FALSE     FALSE
+    ## 2     0 Inf   FALSE       TRUE      TRUE
+
+``` r
+
+PKNCA.options(default = TRUE)
+```
+
+#### Finding the Dosing Interval
+
+[`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md)
+sorts the dose times and drops the ones that repeat, then looks at the
+spacings between consecutive doses. If they are all the same, that
+spacing is `tau`. Otherwise each candidate interval is tested, smallest
+first, and the first one that the whole pattern of doses repeats over is
+used; the candidates are the `tau.choices` option’s values when it is
+given and every spacing between two doses when it is `NA`. The pattern
+must repeat over at least two complete intervals, so a regimen giving
+more than one dose per interval is found while a length that merely
+spans the doses is not. Only if nothing repeats is a gap read as a
+missed dose: if every spacing is then a whole number of the smallest
+spacing and the smallest spacing is seen twice in a row, the smallest
+spacing is `tau` and a warning names the longer gaps. If none of that
+fits, no dosing interval is reported.
+
+Looking for a repeating pattern first is what keeps a regimen with a
+regular gap in it from being misread. Dosing three times a day at 0, 6,
+and 12 hours repeats daily; the 12 hour overnight gap is the regimen,
+not two doses that were never given.
+
+``` r
+
+# Twice-daily dosing repeats daily although no two doses are a day apart
+find.tau(c(0, 10, 24, 34, 48, 58, 72, 82))
+```
+
+    ## [1] 24
+
 ### To Infinity
 
 The end of an interval may be infinity. An interval to infinity works

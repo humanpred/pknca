@@ -67,23 +67,27 @@ excluded_result <- PKNCA::exclude(
   FUN = exclude_nca_by_param("span.ratio", min_thr = 2)
 )
 as.data.frame(excluded_result)
-#> # A tibble: 16 × 7
+#> # A tibble: 20 × 7
 #>    subject start   end PPTESTCD            PPORRES PPANMETH              exclude
 #>      <dbl> <dbl> <dbl> <chr>                 <dbl> <chr>                 <chr>  
-#>  1       1     0    24 auclast              11.9   "AUC: lin up/log dow… NA     
-#>  2       1     0   Inf cmax                  5     ""                    NA     
-#>  3       1     0   Inf tmax                  0     ""                    NA     
-#>  4       1     0   Inf tlast                 4     ""                    NA     
-#>  5       1     0   Inf clast.obs             1     ""                    NA     
-#>  6       1     0   Inf lambda.z              0.549 ""                    NA     
-#>  7       1     0   Inf r.squared             0.978 ""                    NA     
-#>  8       1     0   Inf adj.r.squared         0.955 ""                    NA     
-#>  9       1     0   Inf lambda.z.corrxy      -0.989 ""                    NA     
-#> 10       1     0   Inf lambda.z.time.first   2     ""                    NA     
-#> 11       1     0   Inf lambda.z.time.last    4     ""                    NA     
-#> 12       1     0   Inf lambda.z.n.points     3     ""                    NA     
-#> 13       1     0   Inf clast.pred            1.05  ""                    NA     
-#> 14       1     0   Inf half.life             1.26  ""                    NA     
-#> 15       1     0   Inf span.ratio            1.58  ""                    span.r…
-#> 16       1     0   Inf aucinf.obs           13.7   "AUC: lin up/log dow… NA     
+#>  1       1     0   Inf auclast              11.9   Imputation: start_pr… NA     
+#>  2       1     0   Inf cmax                  5     Imputation: start_pr… NA     
+#>  3       1     0   Inf tmax                  0     Imputation: start_pr… NA     
+#>  4       1     0   Inf tlast                 4     Imputation: start_pr… NA     
+#>  5       1     0   Inf clast.obs             1     Imputation: start_pr… NA     
+#>  6       1     0   Inf tlag                 NA     Imputation: start_pr… NA     
+#>  7       1     0   Inf count_conc            5     Imputation: start_pr… NA     
+#>  8       1     0   Inf lambda.z              0.549 Imputation: start_pr… NA     
+#>  9       1     0   Inf r.squared             0.978 Imputation: start_pr… NA     
+#> 10       1     0   Inf adj.r.squared         0.955 Imputation: start_pr… NA     
+#> 11       1     0   Inf lambda.z.corrxy      -0.989 Imputation: start_pr… NA     
+#> 12       1     0   Inf lambda.z.time.first   2     Imputation: start_pr… NA     
+#> 13       1     0   Inf lambda.z.time.last    4     Imputation: start_pr… NA     
+#> 14       1     0   Inf lambda.z.n.points     3     Imputation: start_pr… NA     
+#> 15       1     0   Inf clast.pred            1.05  Imputation: start_pr… NA     
+#> 16       1     0   Inf half.life             1.26  Imputation: start_pr… NA     
+#> 17       1     0   Inf span.ratio            1.58  Imputation: start_pr… span.r…
+#> 18       1     0   Inf aucinf.obs           13.7   Imputation: start_pr… NA     
+#> 19       1     0   Inf aucpext.obs          13.3   Imputation: start_pr… NA     
+#> 20       1     0   Inf cl.obs                7.31  Imputation: start_pr… NA     
 ```

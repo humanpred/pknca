@@ -538,17 +538,22 @@ Quarto/Rmarkdown report or another file for reporting.</p>
 <code class="sourceCode R"><span><span class="co"># Look at summarized results</span></span>
 <span><span class="fu">pander</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pander/man/pander.html" class="external-link">pander</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_result</span><span class="op">)</span>, split.tables <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
-<caption>AUClast, Cmax, AUCinf,obs: geometric mean and geometric
-coefficient of variation; Tmax: median and range; Half-life: arithmetic
-mean and standard deviation</caption>
+<caption>AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric
+mean and geometric coefficient of variation; Tmax, Tlag, Concentration
+count: median and range; Half-life, AUCpext (based on AUCinf,obs):
+arithmetic mean and standard deviation</caption>
 <colgroup>
-<col width="14%">
-<col width="12%">
-<col width="16%">
-<col width="11%">
+<col width="7%">
+<col width="6%">
+<col width="9%">
+<col width="6%">
+<col width="5%">
+<col width="5%">
+<col width="13%">
+<col width="7%">
 <col width="10%">
 <col width="14%">
-<col width="19%">
+<col width="12%">
 </colgroup>
 <thead><tr class="header">
 <th align="center">Interval Start</th>
@@ -556,29 +561,26 @@ mean and standard deviation</caption>
 <th align="center">AUClast (hr*mg/L)</th>
 <th align="center">Cmax (mg/L)</th>
 <th align="center">Tmax (hr)</th>
+<th align="center">Tlag (hr)</th>
+<th align="center">Concentration count (count)</th>
 <th align="center">Half-life (hr)</th>
 <th align="center">AUCinf,obs (hr*mg/L)</th>
+<th align="center">AUCpext (based on AUCinf,obs) (%)</th>
+<th align="center">CL (based on AUCinf,obs) (mg/(hr*mg/L))</th>
 </tr></thead>
-<tbody>
-<tr class="odd">
-<td align="center">0</td>
-<td align="center">24</td>
-<td align="center">92.4</td>
-<td align="center">.</td>
-<td align="center">.</td>
-<td align="center">.</td>
-<td align="center">.</td>
-</tr>
-<tr class="even">
+<tbody><tr class="odd">
 <td align="center">0</td>
 <td align="center">Inf</td>
-<td align="center">.</td>
+<td align="center">147</td>
 <td align="center">10.5</td>
 <td align="center">1.12</td>
+<td align="center">0.000</td>
+<td align="center">11.0</td>
 <td align="center">14.3</td>
 <td align="center">215</td>
-</tr>
-</tbody>
+<td align="center">31.5</td>
+<td align="center">0.0187</td>
+</tr></tbody>
 </table>
 </div>
 <div class="section level3">
@@ -595,13 +597,13 @@ results.</p>
 <span><span class="op">)</span>, split.tables <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
-<col width="10%">
-<col width="7%">
-<col width="13%">
+<col width="9%">
+<col width="6%">
 <col width="12%">
-<col width="29%">
+<col width="11%">
+<col width="36%">
+<col width="11%">
 <col width="12%">
-<col width="13%">
 </colgroup>
 <thead><tr class="header">
 <th align="center">start</th>
@@ -615,10 +617,11 @@ results.</p>
 <tbody>
 <tr class="odd">
 <td align="center">0</td>
-<td align="center">24</td>
+<td align="center">Inf</td>
 <td align="center">auclast</td>
-<td align="center">92.37</td>
-<td align="center">AUC: lin up/log down</td>
+<td align="center">147.2</td>
+<td align="center">Imputation: start_predose_conc0. AUC: lin up/log
+down</td>
 <td align="center">NA</td>
 <td align="center">hr*mg/L</td>
 </tr>
@@ -627,7 +630,7 @@ results.</p>
 <td align="center">Inf</td>
 <td align="center">cmax</td>
 <td align="center">10.5</td>
-<td align="center"></td>
+<td align="center">Imputation: start_predose_conc0</td>
 <td align="center">NA</td>
 <td align="center">mg/L</td>
 </tr>
@@ -636,7 +639,7 @@ results.</p>
 <td align="center">Inf</td>
 <td align="center">tmax</td>
 <td align="center">1.12</td>
-<td align="center"></td>
+<td align="center">Imputation: start_predose_conc0</td>
 <td align="center">NA</td>
 <td align="center">hr</td>
 </tr>
@@ -697,17 +700,22 @@ knitr/Quarto<a class="anchor" aria-label="anchor" href="#best-practices-for-data
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pander</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pander/man/pander.html" class="external-link">pander</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_result</span><span class="op">)</span>, split.tables <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
-<caption>AUClast, Cmax, AUCinf,obs: geometric mean and geometric
-coefficient of variation; Tmax: median and range; Half-life: arithmetic
-mean and standard deviation</caption>
+<caption>AUClast, Cmax, AUCinf,obs, CL (based on AUCinf,obs): geometric
+mean and geometric coefficient of variation; Tmax, Tlag, Concentration
+count: median and range; Half-life, AUCpext (based on AUCinf,obs):
+arithmetic mean and standard deviation</caption>
 <colgroup>
-<col width="14%">
-<col width="12%">
-<col width="16%">
-<col width="11%">
+<col width="7%">
+<col width="6%">
+<col width="9%">
+<col width="6%">
+<col width="5%">
+<col width="5%">
+<col width="13%">
+<col width="7%">
 <col width="10%">
 <col width="14%">
-<col width="19%">
+<col width="12%">
 </colgroup>
 <thead><tr class="header">
 <th align="center">Interval Start</th>
@@ -715,29 +723,26 @@ mean and standard deviation</caption>
 <th align="center">AUClast (hr*mg/L)</th>
 <th align="center">Cmax (mg/L)</th>
 <th align="center">Tmax (hr)</th>
+<th align="center">Tlag (hr)</th>
+<th align="center">Concentration count (count)</th>
 <th align="center">Half-life (hr)</th>
 <th align="center">AUCinf,obs (hr*mg/L)</th>
+<th align="center">AUCpext (based on AUCinf,obs) (%)</th>
+<th align="center">CL (based on AUCinf,obs) (mg/(hr*mg/L))</th>
 </tr></thead>
-<tbody>
-<tr class="odd">
-<td align="center">0</td>
-<td align="center">24</td>
-<td align="center">92.4</td>
-<td align="center">.</td>
-<td align="center">.</td>
-<td align="center">.</td>
-<td align="center">.</td>
-</tr>
-<tr class="even">
+<tbody><tr class="odd">
 <td align="center">0</td>
 <td align="center">Inf</td>
-<td align="center">.</td>
+<td align="center">147</td>
 <td align="center">10.5</td>
 <td align="center">1.12</td>
+<td align="center">0.000</td>
+<td align="center">11.0</td>
 <td align="center">14.3</td>
 <td align="center">215</td>
-</tr>
-</tbody>
+<td align="center">31.5</td>
+<td align="center">0.0187</td>
+</tr></tbody>
 </table>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pander</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pander/man/pander.html" class="external-link">pander</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">o_result</span><span class="op">)</span>, split.tables <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span></code></pre></div>

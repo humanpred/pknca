@@ -101,25 +101,29 @@ as.data.frame(results_obj) %>%
   filter(Subject == 1)
 ```
 
-    ## # A tibble: 16 × 7
+    ## # A tibble: 20 × 7
     ##    Subject start   end PPTESTCD             PPORRES PPANMETH             exclude
     ##      <dbl> <dbl> <dbl> <chr>                  <dbl> <chr>                <chr>  
-    ##  1       1     0    24 auclast              92.4    "AUC: lin up/log do… NA     
-    ##  2       1     0   Inf cmax                 10.5    ""                   NA     
-    ##  3       1     0   Inf tmax                  1.12   ""                   NA     
-    ##  4       1     0   Inf tlast                24.4    ""                   NA     
-    ##  5       1     0   Inf clast.obs             3.28   ""                   NA     
-    ##  6       1     0   Inf lambda.z              0.0485 ""                   NA     
-    ##  7       1     0   Inf r.squared             1.000  ""                   NA     
-    ##  8       1     0   Inf adj.r.squared         1.000  ""                   NA     
-    ##  9       1     0   Inf lambda.z.corrxy      -1.000  ""                   NA     
-    ## 10       1     0   Inf lambda.z.time.first   9.05   ""                   NA     
-    ## 11       1     0   Inf lambda.z.time.last   24.4    ""                   NA     
-    ## 12       1     0   Inf lambda.z.n.points     3      ""                   NA     
-    ## 13       1     0   Inf clast.pred            3.28   ""                   NA     
-    ## 14       1     0   Inf half.life            14.3    ""                   NA     
-    ## 15       1     0   Inf span.ratio            1.07   ""                   NA     
-    ## 16       1     0   Inf aucinf.obs          215.     "AUC: lin up/log do… NA
+    ##  1       1     0   Inf auclast             147.     Imputation: start_p… NA     
+    ##  2       1     0   Inf cmax                 10.5    Imputation: start_p… NA     
+    ##  3       1     0   Inf tmax                  1.12   Imputation: start_p… NA     
+    ##  4       1     0   Inf tlast                24.4    Imputation: start_p… NA     
+    ##  5       1     0   Inf clast.obs             3.28   Imputation: start_p… NA     
+    ##  6       1     0   Inf tlag                  0      Imputation: start_p… NA     
+    ##  7       1     0   Inf count_conc           11      Imputation: start_p… NA     
+    ##  8       1     0   Inf lambda.z              0.0485 Imputation: start_p… NA     
+    ##  9       1     0   Inf r.squared             1.000  Imputation: start_p… NA     
+    ## 10       1     0   Inf adj.r.squared         1.000  Imputation: start_p… NA     
+    ## 11       1     0   Inf lambda.z.corrxy      -1.000  Imputation: start_p… NA     
+    ## 12       1     0   Inf lambda.z.time.first   9.05   Imputation: start_p… NA     
+    ## 13       1     0   Inf lambda.z.time.last   24.4    Imputation: start_p… NA     
+    ## 14       1     0   Inf lambda.z.n.points     3      Imputation: start_p… NA     
+    ## 15       1     0   Inf clast.pred            3.28   Imputation: start_p… NA     
+    ## 16       1     0   Inf half.life            14.3    Imputation: start_p… NA     
+    ## 17       1     0   Inf span.ratio            1.07   Imputation: start_p… NA     
+    ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… NA     
+    ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… NA     
+    ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… NA
 
 ``` r
 
@@ -128,25 +132,29 @@ as.data.frame(results_excl_span) %>%
   filter(Subject == 1)
 ```
 
-    ## # A tibble: 16 × 7
+    ## # A tibble: 20 × 7
     ##    Subject start   end PPTESTCD             PPORRES PPANMETH             exclude
     ##      <dbl> <dbl> <dbl> <chr>                  <dbl> <chr>                <chr>  
-    ##  1       1     0    24 auclast              92.4    "AUC: lin up/log do… NA     
-    ##  2       1     0   Inf cmax                 10.5    ""                   NA     
-    ##  3       1     0   Inf tmax                  1.12   ""                   NA     
-    ##  4       1     0   Inf tlast                24.4    ""                   NA     
-    ##  5       1     0   Inf clast.obs             3.28   ""                   NA     
-    ##  6       1     0   Inf lambda.z              0.0485 ""                   span.r…
-    ##  7       1     0   Inf r.squared             1.000  ""                   span.r…
-    ##  8       1     0   Inf adj.r.squared         1.000  ""                   span.r…
-    ##  9       1     0   Inf lambda.z.corrxy      -1.000  ""                   span.r…
-    ## 10       1     0   Inf lambda.z.time.first   9.05   ""                   span.r…
-    ## 11       1     0   Inf lambda.z.time.last   24.4    ""                   span.r…
-    ## 12       1     0   Inf lambda.z.n.points     3      ""                   span.r…
-    ## 13       1     0   Inf clast.pred            3.28   ""                   span.r…
-    ## 14       1     0   Inf half.life            14.3    ""                   span.r…
-    ## 15       1     0   Inf span.ratio            1.07   ""                   span.r…
-    ## 16       1     0   Inf aucinf.obs          215.     "AUC: lin up/log do… span.r…
+    ##  1       1     0   Inf auclast             147.     Imputation: start_p… NA     
+    ##  2       1     0   Inf cmax                 10.5    Imputation: start_p… NA     
+    ##  3       1     0   Inf tmax                  1.12   Imputation: start_p… NA     
+    ##  4       1     0   Inf tlast                24.4    Imputation: start_p… NA     
+    ##  5       1     0   Inf clast.obs             3.28   Imputation: start_p… NA     
+    ##  6       1     0   Inf tlag                  0      Imputation: start_p… NA     
+    ##  7       1     0   Inf count_conc           11      Imputation: start_p… NA     
+    ##  8       1     0   Inf lambda.z              0.0485 Imputation: start_p… span.r…
+    ##  9       1     0   Inf r.squared             1.000  Imputation: start_p… span.r…
+    ## 10       1     0   Inf adj.r.squared         1.000  Imputation: start_p… span.r…
+    ## 11       1     0   Inf lambda.z.corrxy      -1.000  Imputation: start_p… span.r…
+    ## 12       1     0   Inf lambda.z.time.first   9.05   Imputation: start_p… span.r…
+    ## 13       1     0   Inf lambda.z.time.last   24.4    Imputation: start_p… span.r…
+    ## 14       1     0   Inf lambda.z.n.points     3      Imputation: start_p… span.r…
+    ## 15       1     0   Inf clast.pred            3.28   Imputation: start_p… span.r…
+    ## 16       1     0   Inf half.life            14.3    Imputation: start_p… span.r…
+    ## 17       1     0   Inf span.ratio            1.07   Imputation: start_p… span.r…
+    ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… span.r…
+    ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… span.r…
+    ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… span.r…
 
 You may also write your own exclusion function. The exclusion functions
 built-into PKNCA are a bit more complex than required because they
@@ -185,25 +193,29 @@ results_obj %>%
   filter(Subject == 1)
 ```
 
-    ## # A tibble: 16 × 7
+    ## # A tibble: 20 × 7
     ##    Subject start   end PPTESTCD             PPORRES PPANMETH             exclude
     ##      <dbl> <dbl> <dbl> <chr>                  <dbl> <chr>                <chr>  
-    ##  1       1     0    24 auclast              92.4    "AUC: lin up/log do… NA     
-    ##  2       1     0   Inf cmax                 10.5    ""                   NA     
-    ##  3       1     0   Inf tmax                  1.12   ""                   NA     
-    ##  4       1     0   Inf tlast                24.4    ""                   NA     
-    ##  5       1     0   Inf clast.obs             3.28   ""                   NA     
-    ##  6       1     0   Inf lambda.z              0.0485 ""                   NA     
-    ##  7       1     0   Inf r.squared             1.000  ""                   NA     
-    ##  8       1     0   Inf adj.r.squared         1.000  ""                   NA     
-    ##  9       1     0   Inf lambda.z.corrxy      -1.000  ""                   NA     
-    ## 10       1     0   Inf lambda.z.time.first   9.05   ""                   NA     
-    ## 11       1     0   Inf lambda.z.time.last   24.4    ""                   NA     
-    ## 12       1     0   Inf lambda.z.n.points     3      ""                   NA     
-    ## 13       1     0   Inf clast.pred            3.28   ""                   NA     
-    ## 14       1     0   Inf half.life            14.3    ""                   NA     
-    ## 15       1     0   Inf span.ratio            1.07   ""                   NA     
-    ## 16       1     0   Inf aucinf.obs          215.     "AUC: lin up/log do… NA
+    ##  1       1     0   Inf auclast             147.     Imputation: start_p… NA     
+    ##  2       1     0   Inf cmax                 10.5    Imputation: start_p… NA     
+    ##  3       1     0   Inf tmax                  1.12   Imputation: start_p… NA     
+    ##  4       1     0   Inf tlast                24.4    Imputation: start_p… NA     
+    ##  5       1     0   Inf clast.obs             3.28   Imputation: start_p… NA     
+    ##  6       1     0   Inf tlag                  0      Imputation: start_p… NA     
+    ##  7       1     0   Inf count_conc           11      Imputation: start_p… NA     
+    ##  8       1     0   Inf lambda.z              0.0485 Imputation: start_p… NA     
+    ##  9       1     0   Inf r.squared             1.000  Imputation: start_p… NA     
+    ## 10       1     0   Inf adj.r.squared         1.000  Imputation: start_p… NA     
+    ## 11       1     0   Inf lambda.z.corrxy      -1.000  Imputation: start_p… NA     
+    ## 12       1     0   Inf lambda.z.time.first   9.05   Imputation: start_p… NA     
+    ## 13       1     0   Inf lambda.z.time.last   24.4    Imputation: start_p… NA     
+    ## 14       1     0   Inf lambda.z.n.points     3      Imputation: start_p… NA     
+    ## 15       1     0   Inf clast.pred            3.28   Imputation: start_p… NA     
+    ## 16       1     0   Inf half.life            14.3    Imputation: start_p… NA     
+    ## 17       1     0   Inf span.ratio            1.07   Imputation: start_p… NA     
+    ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… NA     
+    ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… NA     
+    ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… NA
 
 ``` r
 
@@ -213,25 +225,29 @@ results_excl_specific %>%
   filter(Subject == 1)
 ```
 
-    ## # A tibble: 16 × 7
+    ## # A tibble: 20 × 7
     ##    Subject start   end PPTESTCD             PPORRES PPANMETH             exclude
     ##      <dbl> <dbl> <dbl> <chr>                  <dbl> <chr>                <chr>  
-    ##  1       1     0    24 auclast              92.4    "AUC: lin up/log do… NA     
-    ##  2       1     0   Inf cmax                 10.5    ""                   Cmax w…
-    ##  3       1     0   Inf tmax                  1.12   ""                   NA     
-    ##  4       1     0   Inf tlast                24.4    ""                   NA     
-    ##  5       1     0   Inf clast.obs             3.28   ""                   NA     
-    ##  6       1     0   Inf lambda.z              0.0485 ""                   NA     
-    ##  7       1     0   Inf r.squared             1.000  ""                   NA     
-    ##  8       1     0   Inf adj.r.squared         1.000  ""                   NA     
-    ##  9       1     0   Inf lambda.z.corrxy      -1.000  ""                   NA     
-    ## 10       1     0   Inf lambda.z.time.first   9.05   ""                   NA     
-    ## 11       1     0   Inf lambda.z.time.last   24.4    ""                   NA     
-    ## 12       1     0   Inf lambda.z.n.points     3      ""                   NA     
-    ## 13       1     0   Inf clast.pred            3.28   ""                   NA     
-    ## 14       1     0   Inf half.life            14.3    ""                   NA     
-    ## 15       1     0   Inf span.ratio            1.07   ""                   NA     
-    ## 16       1     0   Inf aucinf.obs          215.     "AUC: lin up/log do… NA
+    ##  1       1     0   Inf auclast             147.     Imputation: start_p… NA     
+    ##  2       1     0   Inf cmax                 10.5    Imputation: start_p… Cmax w…
+    ##  3       1     0   Inf tmax                  1.12   Imputation: start_p… NA     
+    ##  4       1     0   Inf tlast                24.4    Imputation: start_p… NA     
+    ##  5       1     0   Inf clast.obs             3.28   Imputation: start_p… NA     
+    ##  6       1     0   Inf tlag                  0      Imputation: start_p… NA     
+    ##  7       1     0   Inf count_conc           11      Imputation: start_p… NA     
+    ##  8       1     0   Inf lambda.z              0.0485 Imputation: start_p… NA     
+    ##  9       1     0   Inf r.squared             1.000  Imputation: start_p… NA     
+    ## 10       1     0   Inf adj.r.squared         1.000  Imputation: start_p… NA     
+    ## 11       1     0   Inf lambda.z.corrxy      -1.000  Imputation: start_p… NA     
+    ## 12       1     0   Inf lambda.z.time.first   9.05   Imputation: start_p… NA     
+    ## 13       1     0   Inf lambda.z.time.last   24.4    Imputation: start_p… NA     
+    ## 14       1     0   Inf lambda.z.n.points     3      Imputation: start_p… NA     
+    ## 15       1     0   Inf clast.pred            3.28   Imputation: start_p… NA     
+    ## 16       1     0   Inf half.life            14.3    Imputation: start_p… NA     
+    ## 17       1     0   Inf span.ratio            1.07   Imputation: start_p… NA     
+    ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… NA     
+    ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… NA     
+    ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… NA
 
 #### Multiple Exclusions
 
@@ -270,25 +286,29 @@ results_excl_multi %>%
   filter(Subject == 1)
 ```
 
-    ## # A tibble: 16 × 7
+    ## # A tibble: 20 × 7
     ##    Subject start   end PPTESTCD             PPORRES PPANMETH             exclude
     ##      <dbl> <dbl> <dbl> <chr>                  <dbl> <chr>                <chr>  
-    ##  1       1     0    24 auclast              92.4    "AUC: lin up/log do… NA     
-    ##  2       1     0   Inf cmax                 10.5    ""                   Cmax w…
-    ##  3       1     0   Inf tmax                  1.12   ""                   NA     
-    ##  4       1     0   Inf tlast                24.4    ""                   NA     
-    ##  5       1     0   Inf clast.obs             3.28   ""                   NA     
-    ##  6       1     0   Inf lambda.z              0.0485 ""                   span.r…
-    ##  7       1     0   Inf r.squared             1.000  ""                   span.r…
-    ##  8       1     0   Inf adj.r.squared         1.000  ""                   span.r…
-    ##  9       1     0   Inf lambda.z.corrxy      -1.000  ""                   span.r…
-    ## 10       1     0   Inf lambda.z.time.first   9.05   ""                   span.r…
-    ## 11       1     0   Inf lambda.z.time.last   24.4    ""                   span.r…
-    ## 12       1     0   Inf lambda.z.n.points     3      ""                   span.r…
-    ## 13       1     0   Inf clast.pred            3.28   ""                   span.r…
-    ## 14       1     0   Inf half.life            14.3    ""                   span.r…
-    ## 15       1     0   Inf span.ratio            1.07   ""                   span.r…
-    ## 16       1     0   Inf aucinf.obs          215.     "AUC: lin up/log do… span.r…
+    ##  1       1     0   Inf auclast             147.     Imputation: start_p… NA     
+    ##  2       1     0   Inf cmax                 10.5    Imputation: start_p… Cmax w…
+    ##  3       1     0   Inf tmax                  1.12   Imputation: start_p… NA     
+    ##  4       1     0   Inf tlast                24.4    Imputation: start_p… NA     
+    ##  5       1     0   Inf clast.obs             3.28   Imputation: start_p… NA     
+    ##  6       1     0   Inf tlag                  0      Imputation: start_p… NA     
+    ##  7       1     0   Inf count_conc           11      Imputation: start_p… NA     
+    ##  8       1     0   Inf lambda.z              0.0485 Imputation: start_p… span.r…
+    ##  9       1     0   Inf r.squared             1.000  Imputation: start_p… span.r…
+    ## 10       1     0   Inf adj.r.squared         1.000  Imputation: start_p… span.r…
+    ## 11       1     0   Inf lambda.z.corrxy      -1.000  Imputation: start_p… span.r…
+    ## 12       1     0   Inf lambda.z.time.first   9.05   Imputation: start_p… span.r…
+    ## 13       1     0   Inf lambda.z.time.last   24.4    Imputation: start_p… span.r…
+    ## 14       1     0   Inf lambda.z.n.points     3      Imputation: start_p… span.r…
+    ## 15       1     0   Inf clast.pred            3.28   Imputation: start_p… span.r…
+    ## 16       1     0   Inf half.life            14.3    Imputation: start_p… span.r…
+    ## 17       1     0   Inf span.ratio            1.07   Imputation: start_p… span.r…
+    ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… span.r…
+    ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… span.r…
+    ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… span.r…
 
 ## Normalizing Results
 
@@ -339,20 +359,20 @@ as.data.frame(results_norm_by_col) %>% filter(PPTESTCD == "cmax.wn")
 ```
 
     ## # A tibble: 12 × 7
-    ##    Subject start   end PPTESTCD PPORRES PPANMETH exclude
-    ##      <dbl> <dbl> <dbl> <chr>      <dbl> <chr>    <chr>  
-    ##  1       1     0   Inf cmax.wn   0.175  ""       NA     
-    ##  2       2     0   Inf cmax.wn   0.137  ""       NA     
-    ##  3       3     0   Inf cmax.wn   0.132  ""       NA     
-    ##  4       4     0   Inf cmax.wn   0.137  ""       NA     
-    ##  5       5     0   Inf cmax.wn   0.178  ""       NA     
-    ##  6       6     0   Inf cmax.wn   0.0991 ""       NA     
-    ##  7       7     0   Inf cmax.wn   0.107  ""       NA     
-    ##  8       8     0   Inf cmax.wn   0.113  ""       NA     
-    ##  9       9     0   Inf cmax.wn   0.133  ""       NA     
-    ## 10      10     0   Inf cmax.wn   0.148  ""       NA     
-    ## 11      11     0   Inf cmax.wn   0.114  ""       NA     
-    ## 12      12     0   Inf cmax.wn   0.137  ""       NA
+    ##    Subject start   end PPTESTCD PPORRES PPANMETH                        exclude
+    ##      <dbl> <dbl> <dbl> <chr>      <dbl> <chr>                           <chr>  
+    ##  1       1     0   Inf cmax.wn   0.175  Imputation: start_predose_conc0 NA     
+    ##  2       2     0   Inf cmax.wn   0.137  Imputation: start_predose_conc0 NA     
+    ##  3       3     0   Inf cmax.wn   0.132  Imputation: start_predose_conc0 NA     
+    ##  4       4     0   Inf cmax.wn   0.137  Imputation: start_predose_conc0 NA     
+    ##  5       5     0   Inf cmax.wn   0.178  Imputation: start_predose_conc0 NA     
+    ##  6       6     0   Inf cmax.wn   0.0991 Imputation: start_predose_conc0 NA     
+    ##  7       7     0   Inf cmax.wn   0.107  Imputation: start_predose_conc0 NA     
+    ##  8       8     0   Inf cmax.wn   0.113  Imputation: start_predose_conc0 NA     
+    ##  9       9     0   Inf cmax.wn   0.133  Imputation: start_predose_conc0 NA     
+    ## 10      10     0   Inf cmax.wn   0.148  Imputation: start_predose_conc0 NA     
+    ## 11      11     0   Inf cmax.wn   0.114  Imputation: start_predose_conc0 NA     
+    ## 12      12     0   Inf cmax.wn   0.137  Imputation: start_predose_conc0 NA
 
 ### Doing custom normalizations
 
@@ -377,20 +397,20 @@ as.data.frame(results_norm_custom) %>% filter(PPTESTCD == "cmax.wn")
 ```
 
     ## # A tibble: 12 × 7
-    ##    Subject start   end PPTESTCD PPORRES PPANMETH exclude
-    ##      <dbl> <dbl> <dbl> <chr>      <dbl> <chr>    <chr>  
-    ##  1       1     0   Inf cmax.wn   0.175  ""       NA     
-    ##  2       2     0   Inf cmax.wn   0.137  ""       NA     
-    ##  3       3     0   Inf cmax.wn   0.132  ""       NA     
-    ##  4       4     0   Inf cmax.wn   0.137  ""       NA     
-    ##  5       5     0   Inf cmax.wn   0.178  ""       NA     
-    ##  6       6     0   Inf cmax.wn   0.0991 ""       NA     
-    ##  7       7     0   Inf cmax.wn   0.107  ""       NA     
-    ##  8       8     0   Inf cmax.wn   0.113  ""       NA     
-    ##  9       9     0   Inf cmax.wn   0.133  ""       NA     
-    ## 10      10     0   Inf cmax.wn   0.148  ""       NA     
-    ## 11      11     0   Inf cmax.wn   0.114  ""       NA     
-    ## 12      12     0   Inf cmax.wn   0.137  ""       NA
+    ##    Subject start   end PPTESTCD PPORRES PPANMETH                        exclude
+    ##      <dbl> <dbl> <dbl> <chr>      <dbl> <chr>                           <chr>  
+    ##  1       1     0   Inf cmax.wn   0.175  Imputation: start_predose_conc0 NA     
+    ##  2       2     0   Inf cmax.wn   0.137  Imputation: start_predose_conc0 NA     
+    ##  3       3     0   Inf cmax.wn   0.132  Imputation: start_predose_conc0 NA     
+    ##  4       4     0   Inf cmax.wn   0.137  Imputation: start_predose_conc0 NA     
+    ##  5       5     0   Inf cmax.wn   0.178  Imputation: start_predose_conc0 NA     
+    ##  6       6     0   Inf cmax.wn   0.0991 Imputation: start_predose_conc0 NA     
+    ##  7       7     0   Inf cmax.wn   0.107  Imputation: start_predose_conc0 NA     
+    ##  8       8     0   Inf cmax.wn   0.113  Imputation: start_predose_conc0 NA     
+    ##  9       9     0   Inf cmax.wn   0.133  Imputation: start_predose_conc0 NA     
+    ## 10      10     0   Inf cmax.wn   0.148  Imputation: start_predose_conc0 NA     
+    ## 11      11     0   Inf cmax.wn   0.114  Imputation: start_predose_conc0 NA     
+    ## 12      12     0   Inf cmax.wn   0.137  Imputation: start_predose_conc0 NA
 
 ## Extracting Results
 
@@ -423,11 +443,12 @@ time; and one column per parameter calculated.
 summary(results_obj)
 ```
 
-    ##  start end  N     auclast        cmax               tmax   half.life aucinf.obs
-    ##      0  24 12 74.6 [24.3]           .                  .           .          .
-    ##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]
+    ##  start end  N     auclast        cmax               tmax                 tlag
+    ##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]
+    ##         count_conc   half.life aucinf.obs aucpext.obs        cl.obs
+    ##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4] 13.8 [6.34] 0.0398 [29.4]
     ## 
-    ## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects
+    ## Caption: auclast, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects
 
 When values are excluded as described above, the excluded values are not
 included in the summary (note that half.life and aucinf.obs differ).
@@ -437,14 +458,14 @@ included in the summary (note that half.life and aucinf.obs differ).
 summary(results_excl_span)
 ```
 
-    ##  start end  N     auclast        cmax               tmax         half.life
-    ##      0  24 12 74.6 [24.3]           .                  .                 .
-    ##      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 7.36 [0.742], n=9
-    ##       aucinf.obs
-    ##                .
-    ##  105 [16.4], n=9
+    ##  start end  N     auclast        cmax               tmax                 tlag
+    ##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]
+    ##         count_conc         half.life      aucinf.obs      aucpext.obs
+    ##  11.0 [11.0, 11.0] 7.36 [0.742], n=9 105 [16.4], n=9 11.3 [2.28], n=9
+    ##              cl.obs
+    ##  0.0453 [11.2], n=9
     ## 
-    ## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; n: number of measurements included in summary
+    ## Caption: auclast, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects; n: number of measurements included in summary
 
 ### Listing of Results
 
@@ -460,26 +481,26 @@ as.data.frame(results_obj) %>%
     ## # A tibble: 20 × 7
     ##    Subject start   end PPTESTCD             PPORRES PPANMETH             exclude
     ##      <dbl> <dbl> <dbl> <chr>                  <dbl> <chr>                <chr>  
-    ##  1       1     0    24 auclast              92.4    "AUC: lin up/log do… NA     
-    ##  2       1     0   Inf cmax                 10.5    ""                   NA     
-    ##  3       1     0   Inf tmax                  1.12   ""                   NA     
-    ##  4       1     0   Inf tlast                24.4    ""                   NA     
-    ##  5       1     0   Inf clast.obs             3.28   ""                   NA     
-    ##  6       1     0   Inf lambda.z              0.0485 ""                   NA     
-    ##  7       1     0   Inf r.squared             1.000  ""                   NA     
-    ##  8       1     0   Inf adj.r.squared         1.000  ""                   NA     
-    ##  9       1     0   Inf lambda.z.corrxy      -1.000  ""                   NA     
-    ## 10       1     0   Inf lambda.z.time.first   9.05   ""                   NA     
-    ## 11       1     0   Inf lambda.z.time.last   24.4    ""                   NA     
-    ## 12       1     0   Inf lambda.z.n.points     3      ""                   NA     
-    ## 13       1     0   Inf clast.pred            3.28   ""                   NA     
-    ## 14       1     0   Inf half.life            14.3    ""                   NA     
-    ## 15       1     0   Inf span.ratio            1.07   ""                   NA     
-    ## 16       1     0   Inf aucinf.obs          215.     "AUC: lin up/log do… NA     
-    ## 17       2     0    24 auclast              67.2    "AUC: lin up/log do… NA     
-    ## 18       2     0   Inf cmax                  8.33   ""                   NA     
-    ## 19       2     0   Inf tmax                  1.92   ""                   NA     
-    ## 20       2     0   Inf tlast                24.3    ""                   NA
+    ##  1       1     0   Inf auclast             147.     Imputation: start_p… NA     
+    ##  2       1     0   Inf cmax                 10.5    Imputation: start_p… NA     
+    ##  3       1     0   Inf tmax                  1.12   Imputation: start_p… NA     
+    ##  4       1     0   Inf tlast                24.4    Imputation: start_p… NA     
+    ##  5       1     0   Inf clast.obs             3.28   Imputation: start_p… NA     
+    ##  6       1     0   Inf tlag                  0      Imputation: start_p… NA     
+    ##  7       1     0   Inf count_conc           11      Imputation: start_p… NA     
+    ##  8       1     0   Inf lambda.z              0.0485 Imputation: start_p… NA     
+    ##  9       1     0   Inf r.squared             1.000  Imputation: start_p… NA     
+    ## 10       1     0   Inf adj.r.squared         1.000  Imputation: start_p… NA     
+    ## 11       1     0   Inf lambda.z.corrxy      -1.000  Imputation: start_p… NA     
+    ## 12       1     0   Inf lambda.z.time.first   9.05   Imputation: start_p… NA     
+    ## 13       1     0   Inf lambda.z.time.last   24.4    Imputation: start_p… NA     
+    ## 14       1     0   Inf lambda.z.n.points     3      Imputation: start_p… NA     
+    ## 15       1     0   Inf clast.pred            3.28   Imputation: start_p… NA     
+    ## 16       1     0   Inf half.life            14.3    Imputation: start_p… NA     
+    ## 17       1     0   Inf span.ratio            1.07   Imputation: start_p… NA     
+    ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… NA     
+    ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… NA     
+    ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… NA
 
 Excluded values remain in the listing.
 
@@ -492,26 +513,26 @@ as.data.frame(results_excl_span) %>%
     ## # A tibble: 20 × 7
     ##    Subject start   end PPTESTCD             PPORRES PPANMETH             exclude
     ##      <dbl> <dbl> <dbl> <chr>                  <dbl> <chr>                <chr>  
-    ##  1       1     0    24 auclast              92.4    "AUC: lin up/log do… NA     
-    ##  2       1     0   Inf cmax                 10.5    ""                   NA     
-    ##  3       1     0   Inf tmax                  1.12   ""                   NA     
-    ##  4       1     0   Inf tlast                24.4    ""                   NA     
-    ##  5       1     0   Inf clast.obs             3.28   ""                   NA     
-    ##  6       1     0   Inf lambda.z              0.0485 ""                   span.r…
-    ##  7       1     0   Inf r.squared             1.000  ""                   span.r…
-    ##  8       1     0   Inf adj.r.squared         1.000  ""                   span.r…
-    ##  9       1     0   Inf lambda.z.corrxy      -1.000  ""                   span.r…
-    ## 10       1     0   Inf lambda.z.time.first   9.05   ""                   span.r…
-    ## 11       1     0   Inf lambda.z.time.last   24.4    ""                   span.r…
-    ## 12       1     0   Inf lambda.z.n.points     3      ""                   span.r…
-    ## 13       1     0   Inf clast.pred            3.28   ""                   span.r…
-    ## 14       1     0   Inf half.life            14.3    ""                   span.r…
-    ## 15       1     0   Inf span.ratio            1.07   ""                   span.r…
-    ## 16       1     0   Inf aucinf.obs          215.     "AUC: lin up/log do… span.r…
-    ## 17       2     0    24 auclast              67.2    "AUC: lin up/log do… NA     
-    ## 18       2     0   Inf cmax                  8.33   ""                   NA     
-    ## 19       2     0   Inf tmax                  1.92   ""                   NA     
-    ## 20       2     0   Inf tlast                24.3    ""                   NA
+    ##  1       1     0   Inf auclast             147.     Imputation: start_p… NA     
+    ##  2       1     0   Inf cmax                 10.5    Imputation: start_p… NA     
+    ##  3       1     0   Inf tmax                  1.12   Imputation: start_p… NA     
+    ##  4       1     0   Inf tlast                24.4    Imputation: start_p… NA     
+    ##  5       1     0   Inf clast.obs             3.28   Imputation: start_p… NA     
+    ##  6       1     0   Inf tlag                  0      Imputation: start_p… NA     
+    ##  7       1     0   Inf count_conc           11      Imputation: start_p… NA     
+    ##  8       1     0   Inf lambda.z              0.0485 Imputation: start_p… span.r…
+    ##  9       1     0   Inf r.squared             1.000  Imputation: start_p… span.r…
+    ## 10       1     0   Inf adj.r.squared         1.000  Imputation: start_p… span.r…
+    ## 11       1     0   Inf lambda.z.corrxy      -1.000  Imputation: start_p… span.r…
+    ## 12       1     0   Inf lambda.z.time.first   9.05   Imputation: start_p… span.r…
+    ## 13       1     0   Inf lambda.z.time.last   24.4    Imputation: start_p… span.r…
+    ## 14       1     0   Inf lambda.z.n.points     3      Imputation: start_p… span.r…
+    ## 15       1     0   Inf clast.pred            3.28   Imputation: start_p… span.r…
+    ## 16       1     0   Inf half.life            14.3    Imputation: start_p… span.r…
+    ## 17       1     0   Inf span.ratio            1.07   Imputation: start_p… span.r…
+    ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… span.r…
+    ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… span.r…
+    ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… span.r…
 
 ### Concentrations Used for Half-Life Estimation
 

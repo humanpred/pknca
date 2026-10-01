@@ -5,7 +5,9 @@ detection so that designs where only the steady-state dose is present in
 the dosing data (nothing repeats, so nothing can be detected) can still
 be calculated. Otherwise `tau` is detected from the group's dose times
 with
-[`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md).
+[`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md),
+which gives a `"pknca_warning_tau_irregular_dosing"` warning when the
+doses are spaced as though one was missed.
 
 ## Usage
 

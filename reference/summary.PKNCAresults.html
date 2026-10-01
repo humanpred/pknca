@@ -163,11 +163,12 @@ summarization settings.</p>
 <span class="r-in"><span><span class="va">results_obj_automatic</span> <span class="op">&lt;-</span> <span class="fu"><a href="pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">data_obj_automatic</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># To get standard results run summary</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_obj_automatic</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  start end  N     auclast        cmax               tmax   half.life aucinf.obs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      0  24 12 74.6 [24.3]           .                  .           .          .</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      0 Inf 12           . 8.65 [17.0] 1.14 [0.630, 3.55] 8.18 [2.12] 115 [28.4]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  start end  N     auclast        cmax               tmax                 tlag</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         count_conc   half.life aucinf.obs aucpext.obs        cl.obs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4] 13.8 [6.34] 0.0398 [29.4]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Caption: auclast, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="co"># To enable numeric conversion and extraction, do not give a spread function</span></span></span>
 <span class="r-in"><span><span class="co"># and subsequently run as.numeric on the result columns.</span></span></span>
@@ -182,11 +183,12 @@ summarization settings.</p>
 <span class="r-in"><span>  description <span class="op">=</span> <span class="st">"median"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_obj_automatic</span>, not_requested <span class="op">=</span> <span class="st">"NA"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  start end  N auclast cmax tmax half.life aucinf.obs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      0  24 12    74.6   NA   NA        NA         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      0 Inf 12      NA 8.65 1.14      7.99        115</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  start end  N auclast cmax tmax                 tlag        count_conc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      0 Inf 12    98.7 8.65 1.14 0.000 [0.000, 0.000] 11.0 [11.0, 11.0]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  half.life aucinf.obs aucpext.obs        cl.obs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       7.99        115 13.8 [6.34] 0.0398 [29.4]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Caption: auclast, cmax, half.life, aucinf.obs: geometric mean; tmax: median; N: number of subjects</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Caption: auclast, cmax, half.life, aucinf.obs: geometric mean; tmax: median; tlag, count_conc: median and range; aucpext.obs: arithmetic mean and standard deviation; cl.obs: geometric mean and geometric coefficient of variation; N: number of subjects</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>
