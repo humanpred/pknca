@@ -6,6 +6,14 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `pk.tss.stepwise.linear()` without subjects no longer returns `NA` silently on
+  R < 4.4 without the MASS package:  `confint()` on a `glm` needed MASS before
+  R 4.4, and its error was swallowed.  The interval is now the Wald interval
+  (`confint.default()`), which for this Gaussian model equals the profile
+  interval `confint()` gives.  When steady state is not found and some model
+  fits failed, a `pknca_warning_tss_stepwise_fit_failed` warning names the
+  failures instead of the `NA` being silent.  (@GITHUB_HANDLE)
+
 * PKNCA requires only R 4.1 again (it had required R 4.4).  `%||%`, which base
   R provides only from R 4.4, is imported from rlang, and continuous
   integration checks R 4.1.  The bioequivalence functions that use `lme4` still
