@@ -1,3 +1,10 @@
+# These tests are about how results are summarized, so the intervals are given
+# explicitly as the single.dose.aucs option:  that is what PKNCAdata() used to
+# generate automatically for single-dose data, and it keeps the two-interval
+# layout these expectations were written for.  The intervals PKNCAdata() now
+# generates come from pknca_interval_table() and are tested in
+# test-choose-intervals.R and test-class-PKNCAresults.R.
+
 test_that("PKNCAresults summary", {
   # Note that generate.conc sets the random seed, so it doesn't have
   # to happen here.
@@ -5,7 +12,7 @@ test_that("PKNCAresults summary", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   myresult <- pk.nca(mydata)
 
   # Testing the summarization
@@ -35,7 +42,7 @@ test_that("PKNCAresults summary", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   # Not capturing the warning due to R bug
   # https://bugs.r-project.org/bugzilla3/show_bug.cgi?id=17122
   # expect_warning(myresult <- pk.nca(mydata),
@@ -66,7 +73,7 @@ test_that("PKNCAresults summary", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   # Not capturing the warning due to R bug
   # https://bugs.r-project.org/bugzilla3/show_bug.cgi?id=17122
   # expect_warning(myresult <- pk.nca(mydata),
@@ -181,7 +188,7 @@ test_that("dropping `start` and `end` from groups is allowed with a warning.", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   myresult <- pk.nca(mydata)
 
   expect_warning(
@@ -198,7 +205,7 @@ test_that("summary.PKNCAresults manages exclusions as missing not as non-existen
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   myresult <- pk.nca(mydata)
   myresult_excluded <-
     exclude(
@@ -283,7 +290,7 @@ test_that("print.summary_PKNCAresults works", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   myresult <- pk.nca(mydata)
 
   expect_output(
@@ -304,7 +311,7 @@ test_that("print.summary_PKNCAresults supports caption_prefix", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   myresult <- pk.nca(mydata)
   
   expect_output(
@@ -362,7 +369,7 @@ test_that("summary pretty_name control", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   myresult <- pk.nca(mydata)
 
   d_units_orig <- pknca_units_table(concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr")
@@ -371,7 +378,8 @@ test_that("summary pretty_name control", {
       concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr",
       conversions = data.frame(PPORRESU = "ng/mL", PPSTRESU = "mg/mL")
     )
-  mydata_orig <- PKNCAdata(myconc, mydose, units = d_units_orig)
+  mydata_orig <- PKNCAdata(myconc, mydose, units = d_units_orig,
+                           intervals = PKNCA.options("single.dose.aucs"))
   myresult_units_orig <- pk.nca(mydata_orig)
 
   s_plain <- summary(myresult)
@@ -448,7 +456,7 @@ test_that("PKNCAresults summary counts N and n", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   suppressWarnings(
     myresult <- pk.nca(mydata)
   )
@@ -465,7 +473,7 @@ test_that("summary.PKNCAresults drop_param argument works", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   suppressWarnings(
     myresult <- pk.nca(mydata)
   )

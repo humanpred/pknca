@@ -227,6 +227,11 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
         o_dose = as_PKNCAdose(ret_numeric)
       )
     n_conc_dose$data_intervals <- rep(list(NULL), nrow(n_conc_dose))
+    # The single.dose.aucs option is only consulted by the legacy method; the
+    # builder gives a single dose one interval to infinity, with no 24 in it to
+    # be in the wrong unit.
+    auto_interval_method <-
+      PKNCA.choose.option(name = "auto.interval.method", options = options)
     used_single_dose_aucs <- FALSE
     for (idx in seq_len(nrow(n_conc_dose))) {
       current_conc <- n_conc_dose$data_conc[[idx]]
@@ -234,7 +239,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
       current_group <-
         n_conc_dose[
           idx,
-          setdiff(names(n_conc_dose), c("data_conc", "data_dose")),
+          setdiff(names(n_conc_dose), c("data_conc", "data_dose", "data_sparse_conc")),
           drop=FALSE
         ]
       warning_prefix <-
@@ -251,11 +256,19 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
           choose.auc.intervals(
             current_conc$time,
             current_dose$time,
-            options=options
+            options=options,
+            route=
+              dose_route_for_intervals(
+                route=current_dose$route,
+                duration=current_dose$duration
+              ),
+            sparse=is_sparse_pk(ret$conc)
           )
         # choose.auc.intervals() uses single.dose.aucs for one dose time
         used_single_dose_aucs <-
-          used_single_dose_aucs || length(unique(current_dose$time)) == 1
+          used_single_dose_aucs ||
+          (identical(auto_interval_method, "legacy") &&
+             length(unique(current_dose$time)) == 1)
         if (nrow(generated_intervals) > 0) {
           n_conc_dose$data_intervals[[idx]] <- generated_intervals
         } else {
@@ -279,7 +292,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
     }
     intervals <-
       tidyr::unnest(
-        n_conc_dose[, setdiff(names(n_conc_dose), c("data_conc", "data_dose")), drop=FALSE],
+        n_conc_dose[, setdiff(names(n_conc_dose), c("data_conc", "data_dose", "data_sparse_conc")), drop=FALSE],
         cols="data_intervals"
       )
     if (used_single_dose_aucs) {
@@ -328,7 +341,10 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
 #' not hours
 #'
 #' The default `single.dose.aucs` option is written for hours (0 to 24 and 0 to
-#' infinity), so with another time unit its 24 means 24 of that unit.
+#' infinity), so with another time unit its 24 means 24 of that unit.  Only the
+#' `"legacy"` value of the `auto.interval.method` option consults that table;
+#' the intervals built for a single dose otherwise run from the dose to
+#' infinity and assume no time unit.
 #'
 #' @param o_conc The PKNCAconc object (after any date-time conversion)
 #' @param options The `options` argument given to [PKNCAdata()]

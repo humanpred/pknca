@@ -25,7 +25,8 @@ A \code{tau} column in the interval specification takes precedence over
 detection so that designs where only the steady-state dose is present in the
 dosing data (nothing repeats, so nothing can be detected) can still be
 calculated.  Otherwise \code{tau} is detected from the group's dose times with
-\code{\link[=find.tau]{find.tau()}}.
+\code{\link[=find.tau]{find.tau()}}, which gives a \code{"pknca_warning_tau_irregular_dosing"} warning
+when the doses are spaced as though one was missed.
 }
 \seealso{
 Other Interval determination:

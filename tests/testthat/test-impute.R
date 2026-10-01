@@ -480,7 +480,11 @@ test_that("pk.nca with imputation", {
   d_dose <- unique(datasets::Theoph[datasets::Theoph$Time == 0,
                                     c("Dose", "Time", "Subject")])
   dose_obj <- PKNCAdose(d_dose, Dose~Time|Subject)
-  data_obj_noimpute <- PKNCAdata(conc_obj, dose_obj)
+  # Automatically generated intervals now carry the imputation that
+  # pknca_interval_table() chooses for their context, so the interval is given
+  # explicitly here to have one with no imputation at all to compare against.
+  data_obj_noimpute <-
+    PKNCAdata(conc_obj, dose_obj, intervals = data.frame(start = 0, end = 24, auclast = TRUE))
   data_obj_impute <- PKNCAdata(conc_obj, dose_obj, impute = "start_predose,start_conc0")
   suppressWarnings(nca_obj_noimpute <- pk.nca(data_obj_noimpute))
   nca_obj_impute <- pk.nca(data_obj_impute)
