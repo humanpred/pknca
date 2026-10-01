@@ -377,9 +377,10 @@ exclude_nca_by_param <- function(
   max_thr = NULL,
   affected_parameters = parameter
 ) {
-  # Check that defined thresholds are single numeric objects
-  checkmate::expect_number(min_thr, finite = TRUE, null.ok = TRUE)
-  checkmate::expect_number(max_thr, finite = TRUE, null.ok = TRUE)
+  # Check that defined thresholds are single numeric objects (assert_*, not
+  # expect_*:  checkmate's expect_* functions are testthat expectations)
+  checkmate::assert_number(min_thr, finite = TRUE, null.ok = TRUE)
+  checkmate::assert_number(max_thr, finite = TRUE, null.ok = TRUE)
 
   if (isTRUE(min_thr > max_thr)) {
     rlang::abort("if both defined min_thr must be less than max_thr", class = "pknca_error_min_thr_gt_max_thr")
