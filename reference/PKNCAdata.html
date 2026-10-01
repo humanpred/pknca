@@ -236,8 +236,10 @@ imputation rule (<code>impute</code>) for a concentration at its start.</p></li>
 used (<code>results$data</code>), with the time reference of each group in its
 <code>time_reference</code> element and the <code>time_reference_type</code> column saying
 whether it is the <code>"first_dose"</code> or the <code>"first_conc"</code>;
-<code>as.data.frame(results, out_format = "cdisc")</code> gives the reference in
-the PPRFTDTC column.</p></li>
+<code>as.data.frame(results, out_format = "cdisc")</code> gives, in the PPRFTDTC
+column, the date-time of the reference of each row:  the dose that
+starts its interval, or the first concentration for a <code>"first_conc"</code>
+group (see <code><a href="as.data.frame.PKNCAresults.html">as.data.frame.PKNCAresults()</a></code>).</p></li>
 </ul><p>Both times must be date-times (or dates), not one numeric and one
 date-time; date-times must have the same time zone; and the dose formula
 must include the subject of dense data.  Otherwise, it is an error.

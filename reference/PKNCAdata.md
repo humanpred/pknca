@@ -191,8 +191,11 @@ still be changed after `PKNCAdata()`:
   with the time reference of each group in its `time_reference` element
   and the `time_reference_type` column saying whether it is the
   `"first_dose"` or the `"first_conc"`;
-  `as.data.frame(results, out_format = "cdisc")` gives the reference in
-  the PPRFTDTC column.
+  `as.data.frame(results, out_format = "cdisc")` gives, in the PPRFTDTC
+  column, the date-time of the reference of each row: the dose that
+  starts its interval, or the first concentration for a `"first_conc"`
+  group (see
+  [`as.data.frame.PKNCAresults()`](https://humanpred.github.io/pknca/reference/as.data.frame.PKNCAresults.md)).
 
 Both times must be date-times (or dates), not one numeric and one
 date-time; date-times must have the same time zone; and the dose formula

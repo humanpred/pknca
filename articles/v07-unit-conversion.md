@@ -497,21 +497,30 @@ The default single-dose intervals (the `single.dose.aucs` option, 0 to
 24 and 0 to infinity) are written for hours, so with a preferred time
 unit such as `"day"` or `"min"` they would end at 24 days or 24 minutes;
 PKNCA warns when that happens, and you should give `intervals` or set
-`single.dose.aucs` for that unit. Results formatted for CDISC include
-the time reference as the PPRFTDTC column.
+`single.dose.aucs` for that unit. Results formatted for CDISC give each
+row its time point reference: PPTPTREF names it (the dose that starts
+the interval), PPRFTDTC is its date-time, and PPSTINT and PPENINT are
+the interval start and end relative to it, in the preferred time unit.
 
 ``` r
 
 o_nca <- pk.nca(o_data)
 d_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
-head(d_cdisc[, c("Subject", "PPTESTCD", "PPORRES", "PPORRESU", "PPRFTDTC")])
-#>   Subject PPTESTCD  PPORRES PPORRESU            PPRFTDTC
-#> 1       1   AUCLST 147.2347  hr*mg/L 2024-01-15T08:00:00
-#> 2       1     CMAX  10.5000     mg/L 2024-01-15T08:00:00
-#> 3       1     TMAX   1.1200       hr 2024-01-15T08:00:00
-#> 4       1     TLST  24.3700       hr 2024-01-15T08:00:00
-#> 5       1     CLST   3.2800     mg/L 2024-01-15T08:00:00
-#> 6       1     TLAG   0.0000       hr 2024-01-15T08:00:00
+head(d_cdisc[, c("Subject", "PPTESTCD", "PPORRES", "PPORRESU", "PPSTINT", "PPENINT", "PPTPTREF", "PPRFTDTC")])
+#>   Subject PPTESTCD  PPORRES PPORRESU PPSTINT PPENINT
+#> 1       1   AUCLST 147.2347  hr*mg/L    PT0H    <NA>
+#> 2       1     CMAX  10.5000     mg/L    PT0H    <NA>
+#> 3       1     TMAX   1.1200       hr    PT0H    <NA>
+#> 4       1     TLST  24.3700       hr    PT0H    <NA>
+#> 5       1     CLST   3.2800     mg/L    PT0H    <NA>
+#> 6       1     TLAG   0.0000       hr    PT0H    <NA>
+#>                      PPTPTREF            PPRFTDTC
+#> 1 LAST DOSE PRIOR TO INTERVAL 2024-01-15T08:00:00
+#> 2 LAST DOSE PRIOR TO INTERVAL 2024-01-15T08:00:00
+#> 3 LAST DOSE PRIOR TO INTERVAL 2024-01-15T08:00:00
+#> 4 LAST DOSE PRIOR TO INTERVAL 2024-01-15T08:00:00
+#> 5 LAST DOSE PRIOR TO INTERVAL 2024-01-15T08:00:00
+#> 6 LAST DOSE PRIOR TO INTERVAL 2024-01-15T08:00:00
 ```
 
 A few rules keep the conversion unambiguous:
