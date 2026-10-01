@@ -9,6 +9,7 @@ AUMC
 AUMCall
 AUMCinf
 AUMClast
+AUXC
 Analyte
 BIP
 BLQ
@@ -53,6 +54,7 @@ NCA
 Nedelman
 Noncompartmental
 ORCID
+OpenSSF
 PKNCA's
 PKNCAconc
 PKNCAdata
@@ -65,6 +67,7 @@ PPORRESU
 PPRFTDTC
 PPSTINT
 PPSTRESU
+PPTEST
 PPTESTCD
 PPTPTREF
 Panebianco
@@ -104,11 +107,14 @@ aucinf
 aucint
 auclast
 aucpext
+aumclast
 bioavailability
 bioequivalence
 bioequivalent
 calc
+catchable
 cav
+cdisc
 cdiscdata
 clast
 clr
@@ -145,6 +151,7 @@ interp
 intra
 intravascular
 ivmd
+kel
 knitr
 leq
 lin
@@ -163,9 +170,11 @@ pharmacokinetic
 pharmacokinetics
 pknca
 popind
+pre
 pred
 predose
 ptr
+rlang
 roundString
 scriptable
 sd
@@ -179,7 +188,9 @@ signifString
 spacings
 splitByData
 splitList
+subprocess
 summarization
+testthat
 th
 thalf
 theophylline
@@ -190,6 +201,7 @@ tlast
 tmax
 totdose
 tss
+unclassed
 unescaped
 unforseen
 ungroup
