@@ -92,12 +92,18 @@ data.frame.</p>
 
 <dt id="arg-out-format">out_format<a class="anchor" aria-label="anchor" href="#arg-out-format"></a></dt>
 <dd><p>Should the output be 'long' (default), 'wide', or 'cdisc'?
-When 'cdisc', the PPTESTCD column is translated to CDISC standard codes
-and a PPTEST column with the CDISC test name is added.  Route-dependent
-parameters (e.g. CL, VZ, MRT) are resolved using the route information
-from the dose data.  When the concentration and dose times were
-date-times (see <code><a href="PKNCAdata.html">PKNCAdata()</a></code>), a PPRFTDTC column gives the ISO 8601
-date-time of the time reference (the first dose of the group).</p></dd>
+When 'cdisc', the original PKNCA parameter name is kept in a new
+<code>pknca_parameter</code> column (lowercase so it cannot be mistaken for an SDTM
+PP variable; drop it before submission), the PPTESTCD column is
+translated to CDISC standard codes, and a PPTEST column with the CDISC
+test name is added.  The translation is many-to-one – several PKNCA
+parameters can resolve to the same PPTESTCD (every AUCint variant to
+"AUCINT", for example) – so <code>pknca_parameter</code> is the only column that
+still identifies which PKNCA calculation produced a row.
+Route-dependent parameters (e.g. CL, VZ, MRT) are resolved using the
+route information from the dose data.  When the concentration and dose
+times were date-times (see <code><a href="PKNCAdata.html">PKNCAdata()</a></code>), a PPRFTDTC column gives the
+ISO 8601 date-time of the time reference (the first dose of the group).</p></dd>
 
 
 <dt id="arg-filter-requested">filter_requested<a class="anchor" aria-label="anchor" href="#arg-filter-requested"></a></dt>

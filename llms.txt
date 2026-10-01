@@ -701,6 +701,9 @@ and bug reports.
   : Convert the grouping info and list of results for each group into a
   results data.frame
 
+- [`pknca_cdisc_codes()`](https://humanpred.github.io/pknca/reference/pknca_cdisc_codes.md)
+  : Every registered CDISC PPTESTCD/PPTEST code, with CT membership
+
 - [`pknca_check_parameter_classification()`](https://humanpred.github.io/pknca/reference/pknca_check_parameter_classification.md)
   : Report parameters that PKNCA cannot classify for automatic selection
 

@@ -84,6 +84,7 @@ Calculation Intervals"</p>
 <code><a href="interval_add_impute.html">interval_add_impute()</a></code>,
 <code><a href="interval_add_param.html">interval_add_param()</a></code>,
 <code><a href="interval_add_secondary.html">interval_add_secondary()</a></code>,
+<code><a href="pknca_cdisc_codes.html">pknca_cdisc_codes()</a></code>,
 <code><a href="pknca_check_parameter_classification.html">pknca_check_parameter_classification()</a></code>,
 <code><a href="pknca_concepts.html">pknca_concepts()</a></code>,
 <code><a href="pknca_interval_table.html">pknca_interval_table()</a></code>,
@@ -227,20 +228,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $auclast$pptestcd_cdisc$dense</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCLST"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $auclast$pptestcd_cdisc$sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SPARSEAL"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $auclast$pptest_cdisc$dense</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC to Last Nonzero Conc"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $auclast$pptest_cdisc$sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUClast"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUC_{\\text{last}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
@@ -583,10 +574,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast_se$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumclast_se"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCLSES"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast_se$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of AUMClast (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMClast standard error"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast_se$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$SE(AUMC_{\\text{last}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$"</span>
@@ -648,10 +639,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast_df$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumclast_df"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCLSED"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast_df$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DF for AUMClast (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMClast degrees of freedom"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast_df$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$"</span>
@@ -950,10 +941,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCINTL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC from T1 to T2 (zero extrap)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (AUMClast extrapolation)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUMC_{\\text{int,last}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
@@ -1029,10 +1020,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCINTA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC from T1 to T2 (AUMCall extrap)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (AUMCall extrapolation)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUMC_{\\text{int,all}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
@@ -1305,7 +1296,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "TMAX"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tmax$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time of CMAX"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time of CMAX Observation"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tmax$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$T_{\\max} = t_{i: C_i = C_{\\max}}$"</span>
@@ -1685,7 +1676,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.last$pptestcd_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.last$pptestcd_cdisc$route</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.last$pptestcd_cdisc$route$extravascular</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLF/FLST"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLFLST"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.last$pptestcd_cdisc$route$intravascular</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLLST"</span>
@@ -1766,7 +1757,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.all$pptestcd_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.all$pptestcd_cdisc$route</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.all$pptestcd_cdisc$route$extravascular</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLF/FALL"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLFALL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.all$pptestcd_cdisc$route$intravascular</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLALL"</span>
@@ -1845,10 +1836,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.int.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLIA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$CL_{\\text{int,all}} = \\frac{Dose}{AUC_{\\text{int,all}}}$"</span>
@@ -1912,10 +1903,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.int.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLIL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$CL_{\\text{int,last}} = \\frac{Dose}{AUC_{\\text{int,last}}}$"</span>
@@ -2136,10 +2127,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.int.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRTIA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUCall/AUMCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$MRT_{\\text{int,all}} = \\frac{AUMC_{\\text{int,all}}}{AUC_{\\text{int,all}}}$"</span>
@@ -2206,10 +2197,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.int.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRTIL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUClast/AUMClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$MRT_{\\text{int,last}} = \\frac{AUMC_{\\text{int,last}}}{AUC_{\\text{int,last}}}$"</span>
@@ -2348,7 +2339,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.last$pptestcd_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.last$pptestcd_cdisc$route</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.last$pptestcd_cdisc$route$extravascular</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSF/FLST"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSFLST"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.last$pptestcd_cdisc$route$intravascular</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSLST"</span>
@@ -2570,10 +2561,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.int.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSIA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{ss,\\text{int,all}} = CL_{\\text{int,all}} \\cdot MRT_{\\text{int,all}}$"</span>
@@ -2640,10 +2631,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.int.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSIL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{ss,\\text{int,last}} = CL_{\\text{int,last}} \\cdot MRT_{\\text{int,last}}$"</span>
@@ -3106,7 +3097,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "TLAG"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tlag$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time to First Nonzero Conc"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time Until First Nonzero Conc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tlag$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$T_{\\text{lag}} = t_{i: C_{i+1} &gt; C_i, i = \\min}$"</span>
@@ -3304,10 +3295,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ceoi$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CEOI"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CONCEINF"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ceoi$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ceoi"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Concentration at End Infusion"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ceoi$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$C_{\\text{eoi}} = C(t = T_{\\text{inf}})$"</span>
@@ -4448,7 +4439,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ratio.cmax"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "RCMAX"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.cmax$pptest_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of Cmax to Reference"</span>
@@ -4524,7 +4515,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ratio.auclast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "RAUCLST"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.auclast$pptest_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUClast to Reference"</span>
@@ -4600,7 +4591,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ratio.aucint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "RAUCINL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.last$pptest_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCint,last to Reference"</span>
@@ -4676,7 +4667,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ratio.aucint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "RAUCINA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucint.all$pptest_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCint,all to Reference"</span>
@@ -4743,10 +4734,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auclast$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SPARSEAL"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCLST"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auclast$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC to Last Nonzero Conc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_auclast$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUC_{\\text{sparse}} = \\sum_k \\frac{\\bar{C}_k + \\bar{C}_{k+1}}{2} \\Delta t_k$"</span>
@@ -4938,10 +4929,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumclast$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "sparse_aumclast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SPARSEML"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumclast$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMC to last conc above LOQ"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumclast$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -5003,10 +4994,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_se$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "sparse_aumc_se"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SPARSEMS"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_se$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of sparse AUMC to last conc above LOQ"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMClast standard error"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_se$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -5068,10 +5059,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_df$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "sparse_aumc_df"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SPARSEMD"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_df$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "variance DF for sparse AUMC to Tlast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMClast degrees of freedom"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_df$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -5793,10 +5784,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivlast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCIVL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMClast, IV back-extrap C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMClast (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -5869,10 +5860,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCIVA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCall, IV back-extrap C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCall (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -5945,10 +5936,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCIVIL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint.last, IV back-extrap C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint,last (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -6021,10 +6012,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCIVIA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint.all, IV back-extrap C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint,all (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -6805,10 +6796,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tobit_residual$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "tobit_residual"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "TOBITRSD"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tobit_residual$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Tobit fit residual SD, log-conc"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Tobit residual SD"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tobit_residual$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -6870,7 +6861,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $adj_tobit_residual$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "adj_tobit_residual"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ATOBITRD"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $adj_tobit_residual$pptest_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Adjusted Tobit residual SD"</span>
@@ -6935,10 +6926,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points_blq$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "lambda.z.n.points_blq"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "LAMZNBLQ"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points_blq$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "BLQ points in Tobit lambda.z"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of BLQ Points for Lambda z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points_blq$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -7072,7 +7063,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "EFFIVLHL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective Half-Life (for IV dosing, based on AUClast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective HL (IV dosing, MRT last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$t_{1/2,\\text{eff,iv,last}} = \\ln(2) \\cdot MRT_{\\text{iv,last}}$"</span>
@@ -7337,10 +7328,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.int.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "KELIA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$k_{el,\\text{int,all}} = \\frac{1}{MRT_{\\text{int,all}}}$"</span>
@@ -7404,10 +7395,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.int.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "KELIL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$k_{el,\\text{int,last}} = \\frac{1}{MRT_{\\text{int,last}}}$"</span>
@@ -7471,10 +7462,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.iv.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLVA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing, AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$CL_{\\text{iv,all}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,all}}}$"</span>
@@ -7538,10 +7529,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.iv.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLVL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing, AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$CL_{\\text{iv,last}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,last}}}$"</span>
@@ -7605,10 +7596,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.ivint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLWA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (IV dose interval, AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$CL_{\\text{iv,int,all}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,all}}}$"</span>
@@ -7672,10 +7663,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.ivint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLWL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (IV dose interval, AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$CL_{\\text{iv,int,last}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,last}}}$"</span>
@@ -7739,10 +7730,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.sparse.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.sparse.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLSL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.sparse.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, sparse AUClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for sparse data, AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.sparse.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$CL_{\\text{sparse,last}} = \\frac{Dose}{AUC_{\\text{sparse,last}}}$"</span>
@@ -8067,10 +8058,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.sparse.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.sparse.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRTSL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.sparse.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, sparse AUClast/AUMClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for sparse data, AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.sparse.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -8137,10 +8128,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.iv.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRTVA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, AUCall/AUMCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for IV dosing, AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -8207,10 +8198,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.ivint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRTWA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, interval AUC/AUMCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (IV dose interval, AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -8277,10 +8268,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.ivint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRTWL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, interval AUC/AUMClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (IV dose interval, AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -8411,10 +8402,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.int.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZIA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{z,\\text{int,all}} = \\frac{CL_{\\text{int,all}}}{\\lambda_z}$"</span>
@@ -8478,10 +8469,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.int.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZIL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{z,\\text{int,last}} = \\frac{CL_{\\text{int,last}}}{\\lambda_z}$"</span>
@@ -8545,10 +8536,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.iv.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZVA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, AUCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing, AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{z,\\text{iv,all}} = \\frac{CL_{\\text{iv,all}}}{\\lambda_z}$"</span>
@@ -8612,10 +8603,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.iv.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZVL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, AUClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing, AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{z,\\text{iv,last}} = \\frac{CL_{\\text{iv,last}}}{\\lambda_z}$"</span>
@@ -8679,10 +8670,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.ivint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZWA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, interval AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (IV dose interval, AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{z,\\text{iv,int,all}} = \\frac{CL_{\\text{iv,int,all}}}{\\lambda_z}$"</span>
@@ -8746,10 +8737,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.ivint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZWL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, interval AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (IV dose interval, AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{z,\\text{iv,int,last}} = \\frac{CL_{\\text{iv,int,last}}}{\\lambda_z}$"</span>
@@ -8883,10 +8874,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.iv.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSVA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from AUCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for IV dosing, AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -8953,10 +8944,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.ivint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSWA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from interval AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (IV dose interval, AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -9023,10 +9014,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.ivint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSWL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from interval AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (IV dose interval, AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -9093,10 +9084,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.sparse.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.sparse.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSSL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.sparse.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from sparse AUClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for sparse data, AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.sparse.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -9454,10 +9445,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCINTIS"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCINT"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUCinf,obs extrapolation)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC from T1 to T2"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUC_{\\text{int,}\\infty\\text{,obs}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
@@ -9536,7 +9527,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCINTIP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (based on AUCinf,pred extrapolation)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint (AUCinf,pred extrapolation)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucint.inf.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUC_{\\text{int,}\\infty\\text{,pred}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
@@ -9612,10 +9603,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCINTS"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC from T1 to T2 (AUMCinf,obs extrap)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (AUMCinf,obs extrapolation)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUMC_{\\text{int,}\\infty\\text{,obs}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
@@ -9691,10 +9682,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCINTP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC from T1 to T2 (AUMCinf,pred extrap)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint (AUMCinf,pred extrapolation)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcint.inf.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUMC_{\\text{int,}\\infty\\text{,pred}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$"</span>
@@ -10050,10 +10041,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCIVIS"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf.obs, IV back-extrap C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,obs (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -10123,10 +10114,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.pred$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCIVIP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf.pred, IV back-extrap C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,pred (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -10337,10 +10328,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.iv.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "KELVA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (for IV dosing, AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -10404,10 +10395,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.ivint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "KELWA"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (IV dose interval, AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -10471,10 +10462,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.ivint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "KELWL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (IV dose interval, AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -10538,10 +10529,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.sparse.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.sparse.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "KELSL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.sparse.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, sparse MRTlast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (for sparse data, AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.sparse.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -10607,7 +10598,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.obs$pptestcd_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.obs$pptestcd_cdisc$route</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.obs$pptestcd_cdisc$route$extravascular</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLF/FO"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLFO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.obs$pptestcd_cdisc$route$intravascular</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLO"</span>
@@ -10688,7 +10679,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.pred$pptestcd_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.pred$pptestcd_cdisc$route</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.pred$pptestcd_cdisc$route$extravascular</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLF/FP"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLFP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.pred$pptestcd_cdisc$route$intravascular</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLP"</span>
@@ -10767,10 +10758,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.int.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLIO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint,inf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$CL_{\\text{int,}\\infty\\text{,obs}} = \\frac{Dose}{AUC_{\\text{int,}\\infty\\text{,obs}}}$"</span>
@@ -10834,10 +10825,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.int.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLIP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint,inf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$CL_{\\text{int,}\\infty\\text{,pred}} = \\frac{Dose}{AUC_{\\text{int,}\\infty\\text{,pred}}}$"</span>
@@ -10901,10 +10892,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.iv.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLVO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing, AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$CL_{\\text{iv,obs}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,}\\infty\\text{,obs}}}$"</span>
@@ -10968,10 +10959,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cl.iv.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CLVP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing, AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$CL_{\\text{iv,pred}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,}\\infty\\text{,pred}}}$"</span>
@@ -11550,10 +11541,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.int.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRTIO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUC/AUMCinf obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint,inf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$MRT_{\\text{int,}\\infty\\text{,obs}} = \\frac{AUMC_{\\text{int,}\\infty\\text{,obs}}}{AUC_{\\text{int,}\\infty\\text{,obs}}}$"</span>
@@ -11620,10 +11611,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.int.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRTIP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUC/AUMCinf pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint,inf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$MRT_{\\text{int,}\\infty\\text{,pred}} = \\frac{AUMC_{\\text{int,}\\infty\\text{,pred}}}{AUC_{\\text{int,}\\infty\\text{,pred}}}$"</span>
@@ -11836,7 +11827,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRTMDO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for multiple dosing, based on AUCinf,obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (multiple dosing, AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$MRT_{\\text{md,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}}$"</span>
@@ -11911,7 +11902,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRTMDP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for multiple dosing, based on AUCinf,pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (multiple dosing, AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$MRT_{\\text{md,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}}$"</span>
@@ -11983,10 +11974,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivmd.obs$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.ivmd.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRTMO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivmd.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, multi-dose, AUCinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (IV infusion, MD, AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivmd.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$MRT_{\\text{ivmd,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$"</span>
@@ -12058,10 +12049,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivmd.pred$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mrt.ivmd.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRTMP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivmd.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, multi-dose, AUCinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (IV infusion, MD, AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivmd.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$MRT_{\\text{ivmd,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$"</span>
@@ -12129,7 +12120,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.obs$pptestcd_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.obs$pptestcd_cdisc$route</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.obs$pptestcd_cdisc$route$extravascular</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZF/FO"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZFO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.obs$pptestcd_cdisc$route$intravascular</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZO"</span>
@@ -12210,7 +12201,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.pred$pptestcd_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.pred$pptestcd_cdisc$route</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.pred$pptestcd_cdisc$route$extravascular</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZF/FP"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZFP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.pred$pptestcd_cdisc$route$intravascular</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZP"</span>
@@ -12289,10 +12280,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.int.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZIO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint,inf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{z,\\text{int,}\\infty\\text{,obs}} = \\frac{CL_{\\text{int,}\\infty\\text{,obs}}}{\\lambda_z}$"</span>
@@ -12356,10 +12347,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.int.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZIP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint,inf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{z,\\text{int,}\\infty\\text{,pred}} = \\frac{CL_{\\text{int,}\\infty\\text{,pred}}}{\\lambda_z}$"</span>
@@ -12423,10 +12414,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.obs$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.iv.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZVO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, observed AUCinf"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing, AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{z,\\text{iv,obs}} = \\frac{CL_{\\text{iv,obs}}}{\\lambda_z}$"</span>
@@ -12490,10 +12481,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.pred$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.iv.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZVP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, predicted AUCinf"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing, AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{z,\\text{iv,pred}} = \\frac{CL_{\\text{iv,pred}}}{\\lambda_z}$"</span>
@@ -12560,10 +12551,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.sparse.last$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vz.sparse.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VZSL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.sparse.last$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz from sparse sampling"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for sparse data, AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.sparse.last$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{z,\\text{sparse,last}} = \\frac{CL_{\\text{sparse,last}}}{\\lambda_z}$"</span>
@@ -12632,7 +12623,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.obs$pptestcd_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.obs$pptestcd_cdisc$route</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.obs$pptestcd_cdisc$route$extravascular</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSF/FO"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSFO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.obs$pptestcd_cdisc$route$intravascular</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSO"</span>
@@ -12716,7 +12707,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.pred$pptestcd_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.pred$pptestcd_cdisc$route</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.pred$pptestcd_cdisc$route$extravascular</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSF/FP"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSFP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.pred$pptestcd_cdisc$route$intravascular</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSP"</span>
@@ -12871,7 +12862,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSIVP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for IV dosing, based on AUCinf,pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for IV dosing, AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{ss,\\text{iv,pred}} = CL_{\\text{pred}} \\cdot MRT_{\\text{iv,pred}}$"</span>
@@ -12941,7 +12932,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSMDO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for multiple-dose, based on AUCinf,obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (multiple-dose, AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{ss,\\text{md,obs}} = CL_{\\text{last}} \\cdot MRT_{\\text{md,obs}}$"</span>
@@ -13013,7 +13004,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSMDP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for multiple-dose, based on AUCinf,pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (multiple-dose, AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{ss,\\text{md,pred}} = CL_{\\text{last}} \\cdot MRT_{\\text{md,pred}}$"</span>
@@ -13082,10 +13073,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivmd.obs$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.ivmd.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSMO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivmd.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, multi-dose, obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (IV infusion, MD, AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivmd.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{ss,\\text{ivmd,obs}} = CL_{\\text{last}} \\cdot MRT_{\\text{ivmd,obs}}$"</span>
@@ -13154,10 +13145,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivmd.pred$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.ivmd.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSMP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivmd.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, multi-dose, pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (IV infusion, MD, AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivmd.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{ss,\\text{ivmd,pred}} = CL_{\\text{last}} \\cdot MRT_{\\text{ivmd,pred}}$"</span>
@@ -13226,10 +13217,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.int.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSIO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint,inf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{ss,\\text{int,}\\infty\\text{,obs}} = CL_{\\text{int,}\\infty\\text{,obs}} \\cdot MRT_{\\text{int,}\\infty\\text{,obs}}$"</span>
@@ -13296,10 +13287,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "vss.int.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "VSSIP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint,inf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$V_{ss,\\text{int,}\\infty\\text{,pred}} = CL_{\\text{int,}\\infty\\text{,pred}} \\cdot MRT_{\\text{int,}\\infty\\text{,pred}}$"</span>
@@ -13504,7 +13495,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ratio.aucinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "RAUCIFO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.obs$pptest_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCinf,obs to Reference"</span>
@@ -13580,7 +13571,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ratio.aucinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "RAUCIFP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ratio.aucinf.pred$pptest_cdisc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of AUCinf,pred to Reference"</span>
@@ -13786,7 +13777,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "EFFIVOHL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective Half-Life (for IV dosing, based on MRT Obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective HL (IV dosing, MRT Obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$t_{1/2,\\text{eff,iv,obs}} = \\ln(2) \\cdot MRT_{\\text{iv,obs}}$"</span>
@@ -13853,7 +13844,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "EFFIVPHL"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective Half-Life (for IV dosing, based on MRT Pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective HL (IV dosing, MRT Pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.iv.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$t_{1/2,\\text{eff,iv,pred}} = \\ln(2) \\cdot MRT_{\\text{iv,pred}}$"</span>
@@ -14121,7 +14112,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "KELIVP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (for IV dosing, based on AUCinf,pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (for IV dosing, AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$k_{el,\\text{iv,pred}} = \\frac{1}{MRT_{\\text{iv,pred}}}$"</span>
@@ -14185,10 +14176,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.int.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "KELIO"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint,inf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$k_{el,\\text{int,}\\infty\\text{,obs}} = \\frac{1}{MRT_{\\text{int,}\\infty\\text{,obs}}}$"</span>
@@ -14252,10 +14243,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "kel.int.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "KELIP"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint,inf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$k_{el,\\text{int,}\\infty\\text{,pred}} = \\frac{1}{MRT_{\\text{int,}\\infty\\text{,pred}}}$"</span>
@@ -14319,20 +14310,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn$pptestcd_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn$pptestcd_cdisc$dense</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCLSTD"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn$pptestcd_cdisc$sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SPARSEALD"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn$pptest_cdisc$dense</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC to Last Nonzero Conc by Dose"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn$pptest_cdisc$sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUClast by Dose"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$AUC_{\\text{last},dn} = \\frac{AUC_{\\text{last}}}{Dose}$"</span>
