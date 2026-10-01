@@ -18,8 +18,7 @@ exclude_nca_by_param(
 
 \item{max_thr}{The maximum acceptable value for the parameter. If not provided, is not applied.}
 
-\item{affected_parameters}{Character vector of PKNCA parameters that will be marked as excluded.
-By default is the defined parameter.}
+\item{affected_parameters}{Character vector of PKNCA parameters that will be marked as excluded. By default is the defined parameter.}
 }
 \value{
 A function that can be used with \code{PKNCA::exclude} to mark through the 'exclude'  column

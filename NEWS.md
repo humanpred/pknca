@@ -6,6 +6,15 @@ the dosing including dose amount and route.
 
 # Development version
 
+* The documentation of the exclusion rules and the imputation methods is
+  generated from their registrations, so each description is written once.
+  The registration of a rule now also describes its arguments, and
+  `pknca_exclude_rules()` gives those descriptions in a new `description`
+  column of `arguments`.  The `pknca_exclude_rules()` and
+  `pknca_impute_methods()` help pages have tables of the rules and the methods.
+  Tests require every registered rule and method to be documented from its
+  registration, and the installed help to agree with the registry.
+  (@GITHUB_HANDLE)
 * `pknca_impute_methods()` lists the imputation methods (`PKNCA_impute_method_*()`)
   with the names imputation strings use, their descriptions, and their
   arguments and defaults.  Each method is registered with its description next

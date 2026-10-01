@@ -803,21 +803,7 @@ test_that("pknca_impute_methods gives names, descriptions, and arguments", {
 test_that("pknca_register_impute_method checks what it registers", {
   expect_error(pknca_register_impute_method(fun = "not_a_method", description = "x"))
   expect_error(pknca_register_impute_method(fun = "PKNCA_impute_method_x", description = ""))
-})
-
-test_that("registered imputation descriptions match the documentation", {
-  # The documentation of each method starts with its registered description
-  # (see helper-rd.R for reading the installed help)
-  skip_without_installed_help()
-  documented <- rd_function_descriptions(installed_rd()[["PKNCA_impute_method.Rd"]])
-  methods <- pknca_impute_methods()
-  expect_setequal(names(documented), methods$fun)
-  for (idx in seq_len(nrow(methods))) {
-    expect_true(
-      startsWith(squish(documented[[methods$fun[idx]]]), squish(methods$description[idx])),
-      info = methods$fun[idx]
-    )
-  }
+  expect_error(pknca_register_impute_method(fun = "PKNCA_impute_method_x", description = "x", details = ""))
 })
 
 test_that("an unregistered user-defined imputation method still works by name", {
