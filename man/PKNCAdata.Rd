@@ -153,8 +153,10 @@ imputation rule (\code{impute}) for a concentration at its start.
 used (\code{results$data}), with the time reference of each group in its
 \code{time_reference} element and the \code{time_reference_type} column saying
 whether it is the \code{"first_dose"} or the \code{"first_conc"};
-\code{as.data.frame(results, out_format = "cdisc")} gives the reference in
-the PPRFTDTC column.
+\code{as.data.frame(results, out_format = "cdisc")} gives, in the PPRFTDTC
+column, the date-time of the reference of each row:  the dose that
+starts its interval, or the first concentration for a \code{"first_conc"}
+group (see \code{\link[=as.data.frame.PKNCAresults]{as.data.frame.PKNCAresults()}}).
 }
 
 Both times must be date-times (or dates), not one numeric and one
