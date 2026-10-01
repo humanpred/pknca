@@ -7,24 +7,10 @@
 # accepted.
 known_cdisc_gap_common <- c("count_conc", "sparse_auc_se", "cl.int.inf.obs")
 
-# cdiscdata 0.1.0's get_ct() resolves its dataset catalogue through a
-# reference that only exists once the package is attached, not merely
-# namespace-loaded; attachNamespace()/detach() attach it for this call only.
-# (pknca_cdisc_in_ct(), the non-exported helper behind pknca_cdisc_codes()'s
-# `in_ct` column, does the same thing for the same reason.)
-local_cdiscdata_ct <- function() {
-  already_attached <- "package:cdiscdata" %in% search()
-  if (!already_attached) {
-    attachNamespace(asNamespace("cdiscdata"))
-    on.exit(try(detach("package:cdiscdata"), silent = TRUE))
-  }
-  cdiscdata::get_ct(type = "sdtm")
-}
-
 test_that("common-tier CDISC codes are valid PKPARMCD codes with matching decode text", {
   skip_if_not_installed("cdiscdata")
 
-  ct <- local_cdiscdata_ct()
+  ct <- cdiscdata::get_ct(type = "sdtm")
   pkparmcd <- ct[ct$codelist_code %in% "C85839", c("term_code", "term")]
   pkparm <- ct[ct$codelist_code %in% "C85493", c("term_code", "term")]
   ct_map <- merge(pkparmcd, pkparm, by = "term_code", suffixes = c("_cd", "_parm"))
