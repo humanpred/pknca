@@ -350,7 +350,9 @@ add.interval.col(
   depends = c("aumclast", "c0"),
   desc = "AUMClast, IV back-extrap C0",
   sparse = FALSE,
-  formalsmap = list(aumc = "aumclast", auc.type = I("AUClast"), lambda.z = NULL, clast = NULL)
+  formalsmap = list(aumc = "aumclast", auc.type = I("AUClast"), lambda.z = NULL, clast = NULL),
+  pptestcd_cdisc = "AUMCIVL",
+  pptest_cdisc = "AUMClast (IV dosing)"
 )
 
 add.interval.col(
@@ -361,7 +363,9 @@ add.interval.col(
   depends = c("aumcall", "c0"),
   desc = "AUMCall, IV back-extrap C0",
   sparse = FALSE,
-  formalsmap = list(aumc = "aumcall", auc.type = I("AUCall"), lambda.z = NULL, clast = NULL)
+  formalsmap = list(aumc = "aumcall", auc.type = I("AUCall"), lambda.z = NULL, clast = NULL),
+  pptestcd_cdisc = "AUMCIVA",
+  pptest_cdisc = "AUMCall (IV dosing)"
 )
 
 add.interval.col(
@@ -372,7 +376,9 @@ add.interval.col(
   depends = c("aumcint.last", "c0"),
   desc = "AUMCint.last, IV back-extrap C0",
   sparse = FALSE,
-  formalsmap = list(aumc = "aumcint.last", auc.type = NULL, lambda.z = NULL, clast = NULL)
+  formalsmap = list(aumc = "aumcint.last", auc.type = NULL, lambda.z = NULL, clast = NULL),
+  pptestcd_cdisc = "AUMCIVIL",
+  pptest_cdisc = "AUMCint,last (IV dosing)"
 )
 
 add.interval.col(
@@ -383,7 +389,9 @@ add.interval.col(
   depends = c("aumcint.all", "c0"),
   desc = "AUMCint.all, IV back-extrap C0",
   sparse = FALSE,
-  formalsmap = list(aumc = "aumcint.all", auc.type = NULL, lambda.z = NULL, clast = NULL)
+  formalsmap = list(aumc = "aumcint.all", auc.type = NULL, lambda.z = NULL, clast = NULL),
+  pptestcd_cdisc = "AUMCIVIA",
+  pptest_cdisc = "AUMCint,all (IV dosing)"
 )
 
 add.interval.col(
@@ -394,7 +402,9 @@ add.interval.col(
   depends = c("aumcinf.obs", "c0", "lambda.z", "clast.obs"),
   desc = "AUMCinf.obs, IV back-extrap C0",
   sparse = FALSE,
-  formalsmap = list(aumc = "aumcinf.obs", auc.type = I("AUCinf"), clast = "clast.obs")
+  formalsmap = list(aumc = "aumcinf.obs", auc.type = I("AUCinf"), clast = "clast.obs"),
+  pptestcd_cdisc = "AUMCIVIS",
+  pptest_cdisc = "AUMCinf,obs (IV dosing)"
 )
 
 add.interval.col(
@@ -405,7 +415,9 @@ add.interval.col(
   depends = c("aumcinf.pred", "c0", "lambda.z", "clast.pred"),
   desc = "AUMCinf.pred, IV back-extrap C0",
   sparse = FALSE,
-  formalsmap = list(aumc = "aumcinf.pred", auc.type = I("AUCinf"), clast = "clast.pred")
+  formalsmap = list(aumc = "aumcinf.pred", auc.type = I("AUCinf"), clast = "clast.pred"),
+  pptestcd_cdisc = "AUMCIVIP",
+  pptest_cdisc = "AUMCinf,pred (IV dosing)"
 )
 
 

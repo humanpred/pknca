@@ -442,8 +442,12 @@ add.interval.col("auclast",
                  unit_type="auc",
                  pretty_name="AUClast",
                  desc="AUC start to last conc above LOQ",
-                 pptestcd_cdisc=list(dense="AUCLST", sparse="SPARSEAL"),
-                 pptest_cdisc=list(dense="AUC to Last Nonzero Conc", sparse="Sparse AUClast"),
+                 # CDISC PKPARMCD has no code distinguishing a sparsely
+                 # estimated AUClast from one integrated per subject; both use
+                 # AUCLST, and PPANMETH (set at calculation time; see
+                 # pk.calc.sparse_auc()) records the sparse estimation method.
+                 pptestcd_cdisc="AUCLST",
+                 pptest_cdisc="AUC to Last Nonzero Conc",
                  formula="$AUC_{\\text{last}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule (linear-up/log-down by default)",
                  tier = "common")
@@ -527,6 +531,8 @@ add.interval.col("aumclast_se",
                  pretty_name="AUMC,last standard error",
                  desc="SE of AUMClast (sparse PK only)",
                  depends="aumclast",
+                 pptestcd_cdisc="AUMCLSES",
+                 pptest_cdisc="Sparse AUMClast standard error",
                  formula="$SE(AUMC_{\\text{last}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$",
                  formula_note="Variance from the weighted covariance of the moment curve across subjects")
 
@@ -537,6 +543,8 @@ add.interval.col("aumclast_df",
                  pretty_name="AUMC,last degrees of freedom",
                  desc="DF for AUMClast (sparse PK only)",
                  depends="aumclast",
+                 pptestcd_cdisc="AUMCLSED",
+                 pptest_cdisc="Sparse AUMClast degrees of freedom",
                  formula="$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$",
                  formula_note="Satterthwaite approximation (Nedelman et al 1995, eq. 6a)")
 

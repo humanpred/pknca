@@ -24,6 +24,7 @@ Imports:
     lifecycle,
     lubridate
 Suggests:
+    cdiscdata (>= 0.1.0),
     covr,
     cowplot,
     emmeans,

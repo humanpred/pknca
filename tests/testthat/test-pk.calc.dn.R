@@ -24,16 +24,22 @@ test_that("pk.calc.cmax", {
 })
 
 test_that("dose-normalized CDISC codes derive from dense/sparse mappings elementwise", {
-  # auclast carries a dense/sparse code mapping; the derived auclast.dn codes
-  # must stay distinguishable from auclast's own (AUCLST/SPARSEAL)
-  expect_equal(
-    get.interval.cols()[["auclast.dn"]]$pptestcd_cdisc,
-    list(dense = "AUCLSTD", sparse = "SPARSEALD")
-  )
+  # auclast's own pptestcd_cdisc/pptest_cdisc are plain strings (CDISC has no
+  # code distinguishing a sparse AUClast from one integrated per subject), so
+  # auclast.dn gets the simple suffix behavior on both.
+  expect_equal(get.interval.cols()[["auclast.dn"]]$pptestcd_cdisc, "AUCLSTD")
   expect_equal(
     get.interval.cols()[["auclast.dn"]]$pptest_cdisc,
-    list(dense = "AUC to Last Nonzero Conc by Dose", sparse = "Sparse AUClast by Dose")
+    "AUC to Last Nonzero Conc by Dose"
   )
-  # A plain-string code keeps the simple suffix behavior
+  # aumclast carries a dense/sparse *test name* mapping (CDISC has no separate
+  # code for a sparsely estimated AUMClast, so only the test name
+  # distinguishes it); the derived aumclast.dn test name must stay
+  # elementwise distinguishable, while its code keeps the simple suffix
+  # behavior.
   expect_equal(get.interval.cols()[["aumclast.dn"]]$pptestcd_cdisc, "AUMCLSTD")
+  expect_equal(
+    get.interval.cols()[["aumclast.dn"]]$pptest_cdisc,
+    list(dense = "AUMC to Last Nonzero Conc by Dose", sparse = "Sparse AUMClast by Dose")
+  )
 })
