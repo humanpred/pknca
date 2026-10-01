@@ -83,16 +83,6 @@ pknca_cdisc_in_ct <- function(codes) {
     )
     return(rep(NA, length(codes)))
   }
-  # cdiscdata 0.1.0's get_ct() resolves its dataset catalogue through a
-  # reference that only exists once the package is attached, not merely
-  # namespace-loaded (a packaging quirk expected to be fixed upstream).
-  # attachNamespace()/detach() attach it for this call only, without altering
-  # the caller's search path the way a bare library() call would.
-  already_attached <- "package:cdiscdata" %in% search()
-  if (!already_attached) {
-    attachNamespace(asNamespace("cdiscdata"))
-    on.exit(try(detach("package:cdiscdata"), silent = TRUE), add = TRUE)
-  }
   ct <- cdiscdata::get_ct(type = "sdtm")
   pkparmcd_codes <- ct$term[ct$codelist_code %in% "C85839"]
   codes %in% pkparmcd_codes

@@ -33,8 +33,11 @@ the dosing including dose amount and route.
     at call time, listing every registered `pptestcd_cdisc`/`pptest_cdisc`
     (expanded across route/dense-sparse variants) with whether each code is a
     real CDISC PKPARMCD term. `in_ct` is checked live against the installed
-    `cdiscdata` package (Suggests, `>= 0.1.0`) and is `NA`, with a message,
-    when `cdiscdata` is not installed.
+    `cdiscdata` package (Suggests, `>= 0.2.0`, which fixed a packaging bug in
+    0.1.0 where `get_ct()` needed the package attached) and is `NA`, with a
+    message, when `cdiscdata` is not installed. CI installs `cdiscdata` from
+    `humanpred/cdiscdata` on GitHub until its 0.2.0 release (submitted to
+    CRAN) is accepted.
   * `as.data.frame(out_format = "cdisc")` keeps the original PKNCA parameter
     name in a new `pknca_parameter` column, placed just before `PPTESTCD`. The
     CDISC translation is many-to-one -- several PKNCA parameters can resolve
