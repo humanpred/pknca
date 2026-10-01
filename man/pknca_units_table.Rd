@@ -76,6 +76,8 @@ pknca_units_table() # only parameters that are unitless
 pknca_units_table(
   concu="ng/mL", doseu="mg/kg", amountu="mg", timeu="hr"
 )
+\dontshow{if (requireNamespace("units", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# Automatic unit conversion needs the units package
 pknca_units_table(
   concu="ng/mL", doseu="mg/kg", amountu="mg", timeu="hr",
   # Convert clearance and volume units to more understandable units with
@@ -103,7 +105,7 @@ pknca_units_table(
   concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
   timeu_pref = "day"
 )
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 The \code{units} argument for \code{\link[=PKNCAdata]{PKNCAdata()}}

@@ -515,6 +515,7 @@ o_data_units_sec <- function(plasma_concu, subjects = 1) {
 # 6.4-1: a renal clearance divides a urine amount by a plasma AUC, so its units
 # name the plasma group's concentration and not the urine group's
 test_that("a secondary result takes its units from the groups its values came from", {
+  skip_if_not_installed("units")
   expect_no_warning(res <- pk.nca(o_data_units_sec("ng/mL")))
   d_res <- as.data.frame(res)
   # The value is the raw quotient:  nothing is converted to make one group's
@@ -544,6 +545,7 @@ test_that("a secondary result names the group its reference came from", {
 
 # 6.4-2a: the units table itself, which is where the composition happens
 test_that("pknca_units_table() composes secondary units from both sides", {
+  skip_if_not_installed("units")
   units_tbl <- o_data_units_sec("ng/mL")$units
   mask_clr_pair <-
     units_tbl$PPTESTCD %in% "clr.last" &
@@ -574,6 +576,7 @@ test_that("pknca_units_table() composes secondary units from both sides", {
 # 6.4-2b: a ratio of two analytes reported in different concentration units is
 # the raw quotient in composite units, standardized to the number it is
 test_that("a convertible ratio is reported raw and standardized to a fraction", {
+  skip_if_not_installed("units")
   d_conc_ratio <-
     data.frame(
       subject = 1,
@@ -689,6 +692,7 @@ test_that("a bioavailability across incompatible dose units keeps composite unit
 # each side is standardized and the quotient of those is what the composite
 # standardizes to
 test_that("preferred units reach the composed units of a secondary parameter", {
+  skip_if_not_installed("units")
   d_conc_u <- d_conc_sec
   # concu and amountu name data columns (see o_data_units_sec); timeu = "hr"
   # matches no column and so is the unit itself

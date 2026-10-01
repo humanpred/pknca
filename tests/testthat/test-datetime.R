@@ -98,6 +98,7 @@ test_that("Without units, POSIXct times are in hours", {
 })
 
 test_that("timeu alone gives the unit for date-time input", {
+  skip_if_not_installed("units")
   d <- datetime_test_data()
   o_conc <- PKNCAconc(d$conc, conc~time|part+subject, timeu = "min")
   expect_equal(o_conc$units$timeu, "min", ignore_attr = TRUE)
@@ -125,6 +126,7 @@ test_that("timeu_pref takes precedence over timeu for date-time input", {
 })
 
 test_that("The unit for date-time input must be one time unit value", {
+  skip_if_not_installed("units")
   d <- datetime_test_data()
   d$conc$timeu_col <- "hr"
   expect_error(
@@ -469,6 +471,7 @@ test_that("Ungrouped date-time data use the single first dose", {
 })
 
 test_that("Numeric durations are in the time unit; difftime durations are converted", {
+  skip_if_not_installed("units")
   t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
   d_conc <-
     data.frame(subject = 1, time = t0 + c(0, 6, 12) * 3600, conc = c(0, 5, 2), dur = c(6, 6, 12), vol = 1)

@@ -281,6 +281,7 @@ test_that("single subject, ungrouped data works (#74)", {
 })
 
 test_that("units work for calculations and summaries with one set of units across all analytes", {
+  skip_if_not_installed("units")
   d_conc <- generate.conc(2, 1, 0:24)
   d_dose <- generate.dose(d_conc)
   o_conc <- PKNCAconc(d_conc, formula=conc~time|treatment+ID)
@@ -349,6 +350,7 @@ test_that("units work for calculations and summaries with one set of units acros
 })
 
 test_that("units work for calculations and summaries with one set of units across all analytes", {
+  skip_if_not_installed("units")
   d_conc1 <- generate.conc(2, 1, 0:24)
   d_conc1$analyte <- "drug1"
   d_conc2 <- d_conc1
@@ -669,6 +671,7 @@ test_that("as.data.frame.PKNCAresults with out_format='cdisc' adds PPSTINT/PPENI
 })
 
 test_that("PPSTINT/PPENINT uses timeu_pref when available", {
+  skip_if_not_installed("units")
   d_conc <- data.frame(
     subject = rep(1, 5),
     time = 0:4,
