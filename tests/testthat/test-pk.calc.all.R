@@ -1318,14 +1318,20 @@ test_that("pk.nca produces the PPANMETH column", {
   )
 
   # --- PPANMETH specifies if an imputation method was used in the interval ---
+  # c0's calculation function sets no "method" attribute at run time, so
+  # PPANMETH falls back to the registered formula_note (documenting the
+  # method-selection order) instead of being empty.
+  c0_formula_note <- get.interval.cols()[["c0"]]$formula_note
   o_data <- PKNCAdata(myconc, mydose, intervals=data.frame(start=0, end=24, c0=TRUE))
   o_data_impute <- PKNCAdata(myconc, mydose, intervals=data.frame(start=0, end=24, c0=TRUE), impute="start_conc0")
   res <- pk.nca(o_data)
   res_impute <- pk.nca(o_data_impute)
-  expect_equal(res$result$PPANMETH, "")
   expect_true("PPANMETH" %in% names(res$result))
-  expect_equal(res$result$PPANMETH, "")
-  expect_equal(res_impute$result$PPANMETH, "Imputation: start_conc0")
+  expect_equal(res$result$PPANMETH, c0_formula_note)
+  expect_equal(
+    res_impute$result$PPANMETH,
+    paste0("Imputation: start_conc0. ", c0_formula_note)
+  )
 
   # --- PPANMETH reports based on the parameter dependencies ---
   mydata <- PKNCAdata(
@@ -1336,7 +1342,7 @@ test_that("pk.nca produces the PPANMETH column", {
   res <- pk.nca(mydata)
   expect_equal(
     res$result$PPANMETH[res$result$PPTESTCD == "c0"],
-    "Imputation: start_conc0"
+    paste0("Imputation: start_conc0. ", c0_formula_note)
   )
   expect_equal(
     res$result$PPANMETH[res$result$PPTESTCD == "half.life"],

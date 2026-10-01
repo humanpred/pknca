@@ -35,6 +35,7 @@ Other Interval specifications:
 \code{\link[=interval_add_impute]{interval_add_impute()}},
 \code{\link[=interval_add_param]{interval_add_param()}},
 \code{\link[=interval_add_secondary]{interval_add_secondary()}},
+\code{\link[=pknca_cdisc_codes]{pknca_cdisc_codes()}},
 \code{\link[=pknca_concepts]{pknca_concepts()}},
 \code{\link[=pknca_interval_table]{pknca_interval_table()}},
 \code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
