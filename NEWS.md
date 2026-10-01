@@ -6,6 +6,11 @@ the dosing including dose amount and route.
 
 # Development version
 
+* PKNCA requires only R 4.1 again (it had required R 4.4).  `%||%`, which base
+  R provides only from R 4.4, is imported from rlang, and continuous
+  integration checks R 4.1.  The bioequivalence functions that use `lme4` still
+  need the R version that `lme4` and `Matrix` need.  (@GITHUB_HANDLE)
+
 * `pknca_exclude_rules()` and `exclude_nca_by_param()` (and so the
   `exclude_nca_*()` rules built on it) no longer need testthat:  the
   threshold checks used checkmate's testthat expectations
@@ -679,10 +684,11 @@ the generated intervals:
   returns what `x` is calculated from, following each dependency back to raw
   inputs such as `conc`, `time`, and `dose`.
 
-* PKNCA now declares a minimum R version of 4.4 in DESCRIPTION, and
-  continuous integration tests it.  The floor comes from `Matrix`, which
-  requires R >= 4.4 and is needed by `lme4` and so by the bioequivalence
-  functions; the rest of the package would run on R 4.1.
+* PKNCA declares a minimum R version in DESCRIPTION, and continuous
+  integration tests it.  The minimum is R 4.1:  the current `Matrix`, which
+  `lme4` needs, requires R >= 4.4, but `lme4`, `lmerTest`, and `emmeans` are
+  suggested packages used only by the bioequivalence functions, so the rest of
+  PKNCA does not need R 4.4.
 
 * Breaking change: The `exclude_half.life` and `include_half.life` columns must
   now be logical (`TRUE`/`FALSE`/`NA`).  A non-logical column (e.g. character

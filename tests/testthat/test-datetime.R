@@ -718,13 +718,13 @@ test_that("An infinite interval end stays infinite; an infinite start is an erro
   expect_equal(converted(o_data_num)$intervals$end, c(Inf, Inf))
   # A POSIXct Inf end behaves exactly like a numeric Inf end
   o_data_posix <-
-    PKNCAdata(d$o_conc, intervals = data.frame(start = start, end = as.POSIXct(Inf, tz = "UTC"), cmax = TRUE))
+    PKNCAdata(d$o_conc, intervals = data.frame(start = start, end = .POSIXct(Inf, tz = "UTC"), cmax = TRUE))
   expect_equal(converted(o_data_posix)$intervals, converted(o_data_num)$intervals)
   expect_equal(as.data.frame(pk.nca(o_data_posix)), as.data.frame(pk.nca(o_data_num)))
   expect_error(
     PKNCAdata(
       d$o_conc,
-      intervals = data.frame(start = as.POSIXct(-Inf, tz = "UTC"), end = d$t0, cmax = TRUE)
+      intervals = data.frame(start = .POSIXct(-Inf, tz = "UTC"), end = d$t0, cmax = TRUE)
     ),
     class = "pknca_error_interval_datetime_start_infinite"
   )
@@ -870,14 +870,14 @@ test_that("Date-time interval ends follow the same rules as numeric ones", {
   check <- function(start, end) {
     assert_intervals(data.frame(start = start, end = end, cmax = TRUE), o_data)
   }
-  expect_equal(check(start = d$t0, end = as.POSIXct(Inf, tz = "UTC"))$end, as.POSIXct(Inf, tz = "UTC"))
+  expect_equal(check(start = d$t0, end = .POSIXct(Inf, tz = "UTC"))$end, .POSIXct(Inf, tz = "UTC"))
   expect_equal(check(start = d$t0, end = Inf)$end, Inf)
   expect_error(
     check(start = d$t0, end = as.POSIXct(NA, tz = "UTC")),
     class = "pknca_error_interval_end_invalid"
   )
   expect_error(
-    check(start = d$t0, end = as.POSIXct(-Inf, tz = "UTC")),
+    check(start = d$t0, end = .POSIXct(-Inf, tz = "UTC")),
     class = "pknca_error_interval_end_invalid"
   )
   expect_error(

@@ -307,7 +307,7 @@ pk.tss.monoexponential.population <- function(data,
 #'   provided) or one row per subject (if `popind` is provided).  The columns
 #'   will be named `tss.monoexponential.population` and/or
 #'   `tss.monoexponential.popind`.
-#' @importFrom rlang .data
+#' @importFrom rlang .data %||%
 pk.tss.monoexponential.individual <- function(data,
                                               output=c(
                                                 "individual",
