@@ -748,3 +748,56 @@ test_that("tss Monoexponential no models converged with verbose = TRUE", {
   expect_warning(pk.tss.monoexponential.population(data = bad_data, output = "population", verbose = TRUE),
                  regexp = "No population model for monoexponential Tss converged, no results given")
 })
+
+test_that("pk.tss.stepwise.linear's Wald interval equals the profile interval of confint()", {
+  # Before R 4.4, confint() on a glm needs MASS; the Wald interval does not,
+  # and for this Gaussian identity-link model the two are the same
+  skip_if(getRversion() < "4.4", "confint() on a glm needs MASS before R 4.4")
+  tmpdata <- generate.data()
+  for (start_time in 0:10) {
+    current_data <- tmpdata[tmpdata$time >= start_time, ]
+    fit <- stats::glm(conc ~ time + treatment, data = current_data)
+    for (level in c(0.9, 0.95, 0.99)) {
+      expected <- as.vector(suppressMessages(stats::confint(fit, "time", level = level)))
+      interval <-
+        pk.tss.stepwise.linear_interval(
+          modeldata = current_data[, c("conc", "time", "treatment")],
+          formula.to.fit = conc ~ time + treatment,
+          level = level
+        )
+      expect_equal(interval[c(1, 3)], expected, tolerance = 1e-10)
+      expect_equal(interval[2], unname(stats::coef(fit)[["time"]]))
+    }
+  }
+})
+
+test_that("pk.tss.stepwise.linear warns when model failures may explain no steady state", {
+  tmpdata <- generate.data()
+  local_mocked_bindings(
+    pk.tss.stepwise.linear_interval = function(...) stop("the model did not converge")
+  )
+  expect_warning(
+    res <-
+      pk.tss.stepwise.linear(
+        conc = tmpdata$conc, time = tmpdata$time, treatment = tmpdata$treatment,
+        time.dosing = 0:14, verbose = FALSE
+      ),
+    regexp = "from time 0: the model did not converge",
+    class = "pknca_warning_tss_stepwise_fit_failed"
+  )
+  expect_equal(res, data.frame(tss.stepwise.linear = NA))
+})
+
+test_that("pk.tss.stepwise.linear does not warn for failures when steady state is found", {
+  # The early start times of the mixed-effects model do not converge with
+  # these data, and the later ones find steady state
+  tmpdata <- generate.data()
+  expect_no_warning(
+    res <-
+      pk.tss.stepwise.linear(
+        conc = tmpdata$conc, time = tmpdata$time, subject = tmpdata$subject,
+        treatment = tmpdata$treatment, time.dosing = 0:14, verbose = FALSE
+      )
+  )
+  expect_equal(res, data.frame(tss.stepwise.linear = 7))
+})

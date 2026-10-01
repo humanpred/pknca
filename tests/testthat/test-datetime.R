@@ -98,6 +98,7 @@ test_that("Without units, POSIXct times are in hours", {
 })
 
 test_that("timeu alone gives the unit for date-time input", {
+  skip_if_not_installed("units")
   d <- datetime_test_data()
   o_conc <- PKNCAconc(d$conc, conc~time|part+subject, timeu = "min")
   expect_equal(o_conc$units$timeu, "min", ignore_attr = TRUE)
@@ -125,6 +126,7 @@ test_that("timeu_pref takes precedence over timeu for date-time input", {
 })
 
 test_that("The unit for date-time input must be one time unit value", {
+  skip_if_not_installed("units")
   d <- datetime_test_data()
   d$conc$timeu_col <- "hr"
   expect_error(
@@ -469,6 +471,7 @@ test_that("Ungrouped date-time data use the single first dose", {
 })
 
 test_that("Numeric durations are in the time unit; difftime durations are converted", {
+  skip_if_not_installed("units")
   t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
   d_conc <-
     data.frame(subject = 1, time = t0 + c(0, 6, 12) * 3600, conc = c(0, 5, 2), dur = c(6, 6, 12), vol = 1)
@@ -718,13 +721,13 @@ test_that("An infinite interval end stays infinite; an infinite start is an erro
   expect_equal(converted(o_data_num)$intervals$end, c(Inf, Inf))
   # A POSIXct Inf end behaves exactly like a numeric Inf end
   o_data_posix <-
-    PKNCAdata(d$o_conc, intervals = data.frame(start = start, end = as.POSIXct(Inf, tz = "UTC"), cmax = TRUE))
+    PKNCAdata(d$o_conc, intervals = data.frame(start = start, end = .POSIXct(Inf, tz = "UTC"), cmax = TRUE))
   expect_equal(converted(o_data_posix)$intervals, converted(o_data_num)$intervals)
   expect_equal(as.data.frame(pk.nca(o_data_posix)), as.data.frame(pk.nca(o_data_num)))
   expect_error(
     PKNCAdata(
       d$o_conc,
-      intervals = data.frame(start = as.POSIXct(-Inf, tz = "UTC"), end = d$t0, cmax = TRUE)
+      intervals = data.frame(start = .POSIXct(-Inf, tz = "UTC"), end = d$t0, cmax = TRUE)
     ),
     class = "pknca_error_interval_datetime_start_infinite"
   )
@@ -870,14 +873,14 @@ test_that("Date-time interval ends follow the same rules as numeric ones", {
   check <- function(start, end) {
     assert_intervals(data.frame(start = start, end = end, cmax = TRUE), o_data)
   }
-  expect_equal(check(start = d$t0, end = as.POSIXct(Inf, tz = "UTC"))$end, as.POSIXct(Inf, tz = "UTC"))
+  expect_equal(check(start = d$t0, end = .POSIXct(Inf, tz = "UTC"))$end, .POSIXct(Inf, tz = "UTC"))
   expect_equal(check(start = d$t0, end = Inf)$end, Inf)
   expect_error(
     check(start = d$t0, end = as.POSIXct(NA, tz = "UTC")),
     class = "pknca_error_interval_end_invalid"
   )
   expect_error(
-    check(start = d$t0, end = as.POSIXct(-Inf, tz = "UTC")),
+    check(start = d$t0, end = .POSIXct(-Inf, tz = "UTC")),
     class = "pknca_error_interval_end_invalid"
   )
   expect_error(

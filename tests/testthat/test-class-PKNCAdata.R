@@ -514,6 +514,7 @@ test_that("print.PKNCAdata reports imputation only when it is requested", {
 })
 
 test_that("The legacy single-dose intervals warn for a time unit other than hours", {
+  skip_if_not_installed("units")
   d_conc <- data.frame(subject = 1, time = c(0, 30, 60, 120), conc = c(0, 2, 1, 0.5))
   d_dose <- data.frame(subject = 1, time = 0, dose = 1)
   o_dose <- PKNCAdose(d_dose, dose~time|subject)

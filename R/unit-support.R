@@ -43,6 +43,8 @@
 #' pknca_units_table(
 #'   concu="ng/mL", doseu="mg/kg", amountu="mg", timeu="hr"
 #' )
+#' @examplesIf requireNamespace("units", quietly = TRUE)
+#' # Automatic unit conversion needs the units package
 #' pknca_units_table(
 #'   concu="ng/mL", doseu="mg/kg", amountu="mg", timeu="hr",
 #'   # Convert clearance and volume units to more understandable units with
