@@ -592,6 +592,7 @@ and no <code>_ref</code> column is added.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 215 (mg/(hr*ng/mL))/(mg/kg)           clr.last.dn</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 216 (mg/(hr*ng/mL))/(mg/kg)            clr.obs.dn</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 217 (mg/(hr*ng/mL))/(mg/kg)           clr.pred.dn</span>
+<span class="r-in"><span><span class="co"># Automatic unit conversion needs the units package</span></span></span>
 <span class="r-in"><span><span class="fu">pknca_units_table</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  concu<span class="op">=</span><span class="st">"ng/mL"</span>, doseu<span class="op">=</span><span class="st">"mg/kg"</span>, amountu<span class="op">=</span><span class="st">"mg"</span>, timeu<span class="op">=</span><span class="st">"hr"</span>,</span></span>
 <span class="r-in"><span>  <span class="co"># Convert clearance and volume units to more understandable units with</span></span></span>
@@ -1928,7 +1929,6 @@ and no <code>_ref</code> column is added.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 215      24.000000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 216      24.000000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 217      24.000000000</span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

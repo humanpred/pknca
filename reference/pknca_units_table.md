@@ -526,6 +526,7 @@ pknca_units_table(
 #> 215 (mg/(hr*ng/mL))/(mg/kg)           clr.last.dn
 #> 216 (mg/(hr*ng/mL))/(mg/kg)            clr.obs.dn
 #> 217 (mg/(hr*ng/mL))/(mg/kg)           clr.pred.dn
+# Automatic unit conversion needs the units package
 pknca_units_table(
   concu="ng/mL", doseu="mg/kg", amountu="mg", timeu="hr",
   # Convert clearance and volume units to more understandable units with
