@@ -586,19 +586,27 @@ pknca_datetime_time_unit <- function(o_conc) {
 #' reference per group rather than per subject, because PKNCA requires every
 #' subject in a sparse group to share the group's dosing.
 #'
+#' The same groups locate the time point reference of each CDISC result row
+#' (see `pknca_cdisc_interval_reference()`), for numeric times too.  Numeric
+#' times have no per-subject reference to protect, so a dose formula without
+#' the subject is allowed there (`check_subject = FALSE`):  every subject of a
+#' group then shares the group's doses.
+#'
 #' @param o_conc,o_dose The PKNCAconc and PKNCAdose (or `NA`) objects
 #' @param has_dose_time Are there dose times?
+#' @param check_subject Require the subject among the groups (as date-time
+#'   references need)?
 #' @returns A character vector of column names
 #' @keywords Internal
 #' @noRd
-pknca_datetime_ref_groups <- function(o_conc, o_dose, has_dose_time) {
+pknca_datetime_ref_groups <- function(o_conc, o_dose, has_dose_time, check_subject = TRUE) {
   subject_col <- if (is_sparse_pk(o_conc)) character() else o_conc$columns$subject
   if (!has_dose_time) {
     return(unique(c(o_conc$columns$groups$group_vars, subject_col)))
   }
   conc_keys <- unique(c(unlist(o_conc$columns$groups), subject_col))
   ref_groups <- intersect(conc_keys, unlist(o_dose$columns$groups))
-  if (length(subject_col) == 1 && !(subject_col %in% ref_groups)) {
+  if (check_subject && length(subject_col) == 1 && !(subject_col %in% ref_groups)) {
     rlang::abort(
       sprintf(
         paste(
@@ -641,14 +649,7 @@ pknca_datetime_reference <- function(data, times) {
   conc_ref_data$time_reference <- conc_time
   conc_ref_data <- conc_ref_data[!is.na(conc_time), , drop = FALSE]
   conc_included <- !conc_excluded[!is.na(conc_time)]
-  first_conc <- pknca_datetime_first(conc_ref_data[conc_included, , drop = FALSE], ref_groups)
-  # Groups whose concentrations are all excluded still need a reference
-  first_conc_excluded <- pknca_datetime_first(conc_ref_data, ref_groups)
-  first_conc <-
-    rbind(
-      first_conc,
-      first_conc_excluded[is.na(pknca_datetime_match_reference(first_conc_excluded[, ref_groups, drop = FALSE], first_conc)), , drop = FALSE]
-    )
+  first_conc <- pknca_datetime_first_included(conc_ref_data, ref_groups, included = conc_included)
   first_conc <- pknca_datetime_sort_groups(first_conc, ref_groups)
   first_conc$time_reference_type <- rep("first_conc", nrow(first_conc))
   if (!has_dose_time) {
@@ -731,6 +732,28 @@ pknca_datetime_first <- function(data, groups) {
       .groups = "drop"
     ))
   }
+}
+
+#' Find the first included time within each group
+#'
+#' A group whose times are all excluded still needs a reference, so it uses its
+#' first time regardless of exclusion.
+#'
+#' @param data A data.frame with the group columns and `time_reference` (with
+#'   no missing times)
+#' @param groups The group column names (possibly none)
+#' @param included A logical vector, one per row of `data`:  is the time
+#'   included (not excluded)?
+#' @returns A data.frame with one row per group, the group columns, and
+#'   `time_reference`
+#' @keywords Internal
+#' @noRd
+pknca_datetime_first_included <- function(data, groups, included) {
+  first <- pknca_datetime_first(data[included, , drop = FALSE], groups)
+  first_any <- pknca_datetime_first(data, groups)
+  mask_all_excluded <-
+    is.na(pknca_datetime_match_reference(first_any[, groups, drop = FALSE], first))
+  rbind(first, first_any[mask_all_excluded, , drop = FALSE])
 }
 
 #' Find the time reference for each row of group values
