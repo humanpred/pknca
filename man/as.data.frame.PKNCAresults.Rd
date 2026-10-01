@@ -29,9 +29,23 @@ parameters can resolve to the same PPTESTCD (every AUCint variant to
 "AUCINT", for example) -- so \code{pknca_parameter} is the only column that
 still identifies which PKNCA calculation produced a row.
 Route-dependent parameters (e.g. CL, VZ, MRT) are resolved using the
-route information from the dose data.  When the concentration and dose
-times were date-times (see \code{\link[=PKNCAdata]{PKNCAdata()}}), a PPRFTDTC column gives the
-ISO 8601 date-time of the time reference (the first dose of the group).}
+route information from the dose data.
+
+Each row also gets its time point reference, as SDTMIG 3.4 defines it:
+PPSTINT and PPENINT give the interval start and end as ISO 8601
+durations relative to the reference named in PPTPTREF, and PPRFTDTC gives
+that reference's date-time.  The reference is the dose that starts the
+interval:  the last included dose at or before the interval start for
+that subject and group (PPTPTREF \code{"LAST DOSE PRIOR TO INTERVAL"}), so a
+steady-state dosing interval reads \code{"PT0H"} to \code{"PT24H"}.  A subject (or
+group) without an included dose uses its first concentration instead
+(PPTPTREF \code{"FIRST OBSERVATION"}), as the date-time references of
+\code{\link[=PKNCAdata]{PKNCAdata()}} do.  The durations are in the preferred time unit
+(\code{timeu_pref}) when it is given; PPENINT is \code{NA} for an interval to
+infinity, and PPSTINT, PPENINT, and PPTPTREF are \code{NA} when the subject
+has doses but none at or before the interval start.  PPRFTDTC is only
+given when the concentration and dose times were date-times (see
+\code{\link[=PKNCAdata]{PKNCAdata()}}), and it can differ between the intervals of one subject.}
 
 \item{filter_requested}{Only return rows with parameters that were
 specifically requested?}
