@@ -261,7 +261,7 @@ Data for dosing:
      Trt 2  1    2    0    <NA> extravascular        0
      Trt 2  2    2    0    <NA> extravascular        0
 
-With 8 rows of interval specifications.
+With 4 rows of interval specifications.
 No options are set differently than default."
       )
     ),
