@@ -613,7 +613,7 @@ test_that("resolve_cdisc_value picks the sparse or dense value", {
   expect_equal(resolve_cdisc_value("CMAX", route = "extravascular", sparse = TRUE), "CMAX")
 })
 
-test_that("as.data.frame.PKNCAresults with out_format='cdisc' does not add PPSTINT/PPENINT without INT params", {
+test_that("as.data.frame.PKNCAresults with out_format='cdisc' adds the interval reference for every parameter", {
   d_conc <- data.frame(
     subject = rep(1, 4),
     time = 0:3,
@@ -627,9 +627,13 @@ test_that("as.data.frame.PKNCAresults with out_format='cdisc' does not add PPSTI
   ))
   suppressMessages(o_nca <- pk.nca(o_data))
 
+  # SDTMIG defines PPSTINT/PPENINT for any parameter with an interval, not
+  # only the "INT" family
   result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
-  expect_false("PPSTINT" %in% names(result_cdisc))
-  expect_false("PPENINT" %in% names(result_cdisc))
+  expect_equal(result_cdisc$PPTESTCD, "CMAX")
+  expect_equal(result_cdisc$PPSTINT, "PT0H")
+  expect_equal(result_cdisc$PPENINT, "PT3H")
+  expect_equal(result_cdisc$PPTPTREF, "LAST DOSE PRIOR TO INTERVAL")
 })
 
 test_that("as.data.frame.PKNCAresults with out_format='cdisc' adds PPSTINT/PPENINT for INT params", {
@@ -651,23 +655,11 @@ test_that("as.data.frame.PKNCAresults with out_format='cdisc' adds PPSTINT/PPENI
 
   result_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
 
-  # PPSTINT and PPENINT columns should exist
-  expect_true("PPSTINT" %in% names(result_cdisc))
-  expect_true("PPENINT" %in% names(result_cdisc))
-
-  # INT rows should have values, non-INT rows should be NA
-  int_rows <- grepl("INT", result_cdisc$PPTESTCD, fixed = TRUE)
-  expect_true(any(int_rows), info = "At least one INT parameter should be present")
-  expect_true(all(!is.na(result_cdisc$PPSTINT[int_rows])))
-  expect_true(all(!is.na(result_cdisc$PPENINT[int_rows])))
-  expect_true(all(is.na(result_cdisc$PPSTINT[!int_rows])))
-  expect_true(all(is.na(result_cdisc$PPENINT[!int_rows])))
-
-  # Values should be ISO 8601 durations relative to dose time (0)
-  # start=0, dose_time=0 -> PT0H; end=4, dose_time=0 -> PT4H
-  int_result <- result_cdisc[int_rows, ]
-  expect_equal(int_result$PPSTINT[1], "PT0H")
-  expect_equal(int_result$PPENINT[1], "PT4H")
+  # Every row, INT or not, is relative to the dose at time 0:  start=0 ->
+  # PT0H; end=4 -> PT4H
+  expect_setequal(result_cdisc$PPTESTCD, c("CMAX", "AUCINT"))
+  expect_equal(result_cdisc$PPSTINT, c("PT0H", "PT0H"))
+  expect_equal(result_cdisc$PPENINT, c("PT4H", "PT4H"))
 })
 
 test_that("PPSTINT/PPENINT uses timeu_pref when available", {
@@ -702,11 +694,15 @@ test_that("PPSTINT/PPENINT convert interval times from timeu to timeu_pref", {
   d_conc <- data.frame(subject = 1, time = c(60, 90, 120, 180), conc = c(0, 2, 1, 0.5))
   o_conc <- PKNCAconc(d_conc, conc ~ time | subject, concu = "ng/mL", timeu = "min", timeu_pref = "hr")
   o_dose <- PKNCAdose(data.frame(subject = 1, time = 60, dose = 10), dose ~ time | subject)
-  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(start = 60, end = 180, aucint.last = TRUE))
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(start = 60, end = 180, aucint.last = TRUE, cmax = TRUE))
   result_cdisc <- as.data.frame(pk.nca(o_data), out_format = "cdisc")
   int_rows <- grepl("INT", result_cdisc$PPTESTCD, fixed = TRUE)
   expect_equal(result_cdisc$PPSTINT[int_rows], "PT0H")
   expect_equal(result_cdisc$PPENINT[int_rows], "PT2H")
+  # Every parameter of the interval, not only the INT family, is converted
+  expect_equal(result_cdisc$PPSTINT, c("PT0H", "PT0H"))
+  expect_equal(result_cdisc$PPENINT, c("PT2H", "PT2H"))
+  expect_equal(result_cdisc$PPTPTREF, rep("LAST DOSE PRIOR TO INTERVAL", 2))
   # The interval columns themselves stay in the original unit
   expect_equal(result_cdisc$end[int_rows], 180)
 
@@ -782,6 +778,15 @@ test_that("format_iso8601_duration handles edge cases", {
   expect_equal(PKNCA:::format_iso8601_duration(7, "day"), "P7D")
   expect_true(is.na(PKNCA:::format_iso8601_duration(NA, "hr")))
   expect_true(is.na(PKNCA:::format_iso8601_duration(Inf, "hr")))
+  # An interval starting before its reference has a negative duration, with
+  # the sign before the "P" (ISO 8601-2, as SDTM uses it)
+  expect_equal(PKNCA:::format_iso8601_duration(-0.5, "hr"), "-PT0.5H")
+  expect_equal(PKNCA:::format_iso8601_duration(-2, "day"), "-P2D")
+  # Large values are not written in scientific notation, and unit-conversion
+  # noise does not reach the text
+  expect_equal(PKNCA:::format_iso8601_duration(100000, "s"), "PT100000S")
+  expect_equal(PKNCA:::format_iso8601_duration(120 * (1 / 60), "hr"), "PT2H")
+  expect_equal(PKNCA:::format_iso8601_duration(0.1 + 0.2, "hr"), "PT0.3H")
 })
 
 test_that("as.data.frame.PKNCAresults default format does not include PPSTINT/PPENINT", {
@@ -837,14 +842,256 @@ test_that("pknca_cdisc_get_timeu returns NA when no conc data", {
   expect_equal(PKNCA:::pknca_cdisc_get_timeu(minimal), list(unit = NA_character_, factor = 1))
 })
 
-test_that("pknca_cdisc_get_last_dose_time returns NA when no dose data", {
+test_that("pknca_cdisc_interval_reference uses the first observation without dose data", {
   d_conc <- data.frame(subject = rep(1, 4), time = 0:3, conc = c(0, 1, 0.5, 0.25))
   o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 3, cmax = TRUE))
   suppressMessages(o_nca <- pk.nca(o_data))
 
   ret <- as.data.frame(o_nca)
-  result <- PKNCA:::pknca_cdisc_get_last_dose_time(ret, o_nca)
-  expect_true(all(is.na(result)))
+  expect_equal(
+    PKNCA:::pknca_cdisc_interval_reference(ret, o_nca),
+    data.frame(time = 0, type = "first_conc")
+  )
+})
+
+# CDISC time point reference (PPTPTREF, PPRFTDTC, PPSTINT, PPENINT) ####
+
+# One subject dosed every 24 hours (at 0, 24, and 48), sampled across all three
+# dosing intervals
+cdisc_multidose_conc <- function() {
+  data.frame(
+    subject = 1,
+    time = c(0, 1, 2, 12, 24, 25, 26, 36, 48, 49, 50, 60, 72),
+    conc = c(0, 5, 4, 2, 1, 6, 5, 3, 1.5, 6, 5, 3, 1.5)
+  )
+}
+
+test_that("CDISC interval reference: a single dose", {
+  d_conc <- data.frame(subject = 1, time = c(0, 1, 2, 4, 8, 12, 24), conc = c(0, 5, 4, 3, 2, 1, 0.5))
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject),
+      PKNCAdose(data.frame(subject = 1, time = 0, dose = 10), dose~time|subject),
+      intervals =
+        data.frame(start = 0, end = c(24, Inf), cmax = c(TRUE, FALSE), aucinf.obs = c(FALSE, TRUE))
+    )
+  d_cdisc <- as.data.frame(pk.nca(o_data), out_format = "cdisc")
+  cmax_row <- d_cdisc[d_cdisc$PPTESTCD %in% "CMAX", ]
+  expect_equal(cmax_row$PPSTINT, "PT0H")
+  expect_equal(cmax_row$PPENINT, "PT24H")
+  expect_equal(cmax_row$PPTPTREF, "LAST DOSE PRIOR TO INTERVAL")
+  # An interval to infinity has no end
+  aucinf_row <- d_cdisc[d_cdisc$PPTESTCD %in% "AUCIFO", ]
+  expect_equal(aucinf_row$PPSTINT, "PT0H")
+  expect_equal(aucinf_row$PPENINT, NA_character_)
+  expect_equal(aucinf_row$PPTPTREF, "LAST DOSE PRIOR TO INTERVAL")
+  expect_true(all(is.na(d_cdisc$PPENINT[is.infinite(d_cdisc$end)])))
+  expect_true(all(!is.na(d_cdisc$PPSTINT)))
+})
+
+test_that("CDISC interval reference: the dose that starts the interval, not the first dose", {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(cdisc_multidose_conc(), conc~time|subject),
+      PKNCAdose(data.frame(subject = 1, time = c(0, 24, 48), dose = 10), dose~time|subject),
+      # A steady-state dosing interval starting at the third dose, and an
+      # interval starting between the first and second doses
+      intervals = data.frame(start = c(48, 12), end = c(72, 36), cmax = TRUE)
+    )
+  d_cdisc <- as.data.frame(pk.nca(o_data), out_format = "cdisc")
+  steady_state <- d_cdisc[d_cdisc$start == 48, ]
+  expect_equal(steady_state$PPSTINT, "PT0H")
+  expect_equal(steady_state$PPENINT, "PT24H")
+  expect_equal(steady_state$PPTPTREF, "LAST DOSE PRIOR TO INTERVAL")
+  # Between doses, the reference is the last dose before the start (at 0)
+  between <- d_cdisc[d_cdisc$start == 12, ]
+  expect_equal(between$PPSTINT, "PT12H")
+  expect_equal(between$PPENINT, "PT36H")
+  expect_equal(between$PPTPTREF, "LAST DOSE PRIOR TO INTERVAL")
+})
+
+test_that("CDISC interval reference: excluded doses and intervals before the first dose", {
+  d_conc <- data.frame(subject = 1, time = c(-2, -1, 0, 1, 2, 24, 25, 26), conc = c(0, 0, 0, 5, 4, 1, 6, 5))
+  # The dose at 24 was not given, so the interval starting at 24 is still
+  # relative to the dose at 0
+  d_dose <- data.frame(subject = 1, time = c(0, 24), dose = 10, excl = c(NA, "Not given"))
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject),
+      PKNCAdose(d_dose, dose~time|subject, exclude = "excl"),
+      intervals = data.frame(start = c(-2, 24), end = c(-1, 26), cmax = TRUE)
+    )
+  d_cdisc <- as.data.frame(pk.nca(o_data), out_format = "cdisc")
+  after_excluded <- d_cdisc[d_cdisc$start == 24, ]
+  expect_equal(after_excluded$PPSTINT, "PT24H")
+  expect_equal(after_excluded$PPENINT, "PT26H")
+  expect_equal(after_excluded$PPTPTREF, "LAST DOSE PRIOR TO INTERVAL")
+  # A subject with doses, but none at or before the interval start, has no
+  # reference
+  before_dosing <- d_cdisc[d_cdisc$start == -2, ]
+  expect_equal(before_dosing$PPSTINT, NA_character_)
+  expect_equal(before_dosing$PPENINT, NA_character_)
+  expect_equal(before_dosing$PPTPTREF, NA_character_)
+})
+
+test_that("CDISC interval reference: a subject without doses uses its first observation", {
+  # Subject 2 has no dose; its first sample is at 0.5 hours, so an interval
+  # starting at 0 starts half an hour before its reference
+  d_conc <-
+    data.frame(
+      subject = rep(1:2, each = 4),
+      time = c(0, 1, 2, 4, 0.5, 1, 2, 4),
+      conc = c(0, 5, 4, 3, 1, 5, 4, 3)
+    )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject),
+      PKNCAdose(data.frame(subject = 1, time = 0, dose = 10), dose~time|subject),
+      intervals = data.frame(start = 0, end = 4, cmax = TRUE)
+    )
+  d_cdisc <- as.data.frame(suppressWarnings(pk.nca(o_data)), out_format = "cdisc")
+  expect_equal(d_cdisc$PPTPTREF, c("LAST DOSE PRIOR TO INTERVAL", "FIRST OBSERVATION"))
+  expect_equal(d_cdisc$PPSTINT, c("PT0H", "-PT0.5H"))
+  expect_equal(d_cdisc$PPENINT, c("PT4H", "PT3.5H"))
+  # The first included observation, not an excluded earlier one
+  d_conc$excl <- c(rep(NA, 4), "Bad sample", NA, NA, NA)
+  o_data_excl <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject, exclude = "excl"),
+      PKNCAdose(data.frame(subject = 1, time = 0, dose = 10), dose~time|subject),
+      intervals = data.frame(start = 0, end = 4, cmax = TRUE)
+    )
+  d_cdisc_excl <- as.data.frame(suppressWarnings(pk.nca(o_data_excl)), out_format = "cdisc")
+  expect_equal(d_cdisc_excl$PPSTINT, c("PT0H", "-PT1H"))
+})
+
+test_that("CDISC interval reference: subjects share the doses of a group without the subject", {
+  # Numeric times allow a dose formula without the subject (every subject of
+  # the treatment gets the doses of the treatment), unlike date-time
+  # references
+  d_conc <-
+    data.frame(
+      trt = "A", subject = rep(1:2, each = 5),
+      time = rep(c(24, 25, 26, 36, 48), 2), conc = rep(c(1, 6, 5, 3, 1.5), 2)
+    )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|trt+subject),
+      PKNCAdose(data.frame(trt = "A", time = c(0, 24), dose = 10), dose~time|trt),
+      intervals = data.frame(start = 24, end = 48, cmax = TRUE)
+    )
+  d_cdisc <- as.data.frame(pk.nca(o_data), out_format = "cdisc")
+  expect_equal(d_cdisc$subject, 1:2)
+  expect_equal(d_cdisc$PPSTINT, c("PT0H", "PT0H"))
+  expect_equal(d_cdisc$PPENINT, c("PT24H", "PT24H"))
+})
+
+test_that("CDISC interval reference: sparse data use the doses of each group", {
+  d_sparse <-
+    data.frame(
+      id = rep(1:8, 2), trt = rep(c("A", "B"), each = 8),
+      time = rep(rep(c(0, 1, 2, 4), each = 2), 2) + rep(c(0, 24), each = 8),
+      conc = rep(c(0, 0, 2, 3, 1, 1.5, 0.4, 0.6), 2)
+    )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_sparse, conc~time|trt+id, sparse = TRUE),
+      PKNCAdose(data.frame(trt = c("A", "B"), time = c(0, 24), dose = 10), dose~time|trt),
+      intervals = data.frame(trt = c("A", "B"), start = c(0, 24), end = c(4, 28), auclast = TRUE)
+    )
+  d_cdisc <- as.data.frame(suppressMessages(pk.nca(o_data)), out_format = "cdisc")
+  # Treatment B is dosed at 24, so its interval from 24 to 28 is 0 to 4 hours
+  # after its own dose
+  expect_equal(
+    unique(d_cdisc[, c("trt", "PPSTINT", "PPENINT", "PPTPTREF")]),
+    data.frame(
+      trt = c("A", "B"), PPSTINT = "PT0H", PPENINT = "PT4H",
+      PPTPTREF = "LAST DOSE PRIOR TO INTERVAL"
+    ),
+    ignore_attr = TRUE
+  )
+})
+
+test_that("CDISC interval reference: PPRFTDTC is the date-time of the reference of each row", {
+  t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
+  d_multi <- cdisc_multidose_conc()
+  d_multi <- d_multi[d_multi$time <= 48, ]
+  # Subject 2 has no dose; its first sample is at 09:00
+  d_conc <-
+    rbind(
+      data.frame(subject = 1, time = t0 + d_multi$time * 3600, conc = d_multi$conc),
+      data.frame(subject = 2, time = t0 + c(1, 2, 3, 5) * 3600, conc = c(1, 5, 4, 3))
+    )
+  d_dose <- data.frame(subject = 1, time = t0 + c(0, 24) * 3600, dose = 10)
+  o_data <-
+    PKNCAdata(
+      # Date-time input without units is converted to hours
+      PKNCAconc(d_conc, conc~time|subject),
+      PKNCAdose(d_dose, dose~time|subject),
+      intervals =
+        data.frame(subject = c(1, 1, 1, 2), start = c(0, 24, 12, 0), end = c(24, 48, 36, 4), cmax = TRUE)
+    )
+  expect_warning(
+    o_nca <- pk.nca(o_data),
+    class = "pknca_warning_datetime_first_conc_reference"
+  )
+  d_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
+  expect_equal(
+    d_cdisc[, c("subject", "start", "PPSTINT", "PPENINT", "PPTPTREF", "PPRFTDTC")],
+    data.frame(
+      subject = c(1, 1, 1, 2),
+      start = c(0, 24, 12, 0),
+      PPSTINT = c("PT0H", "PT0H", "PT12H", "PT0H"),
+      PPENINT = c("PT24H", "PT24H", "PT36H", "PT4H"),
+      PPTPTREF = c(rep("LAST DOSE PRIOR TO INTERVAL", 3), "FIRST OBSERVATION"),
+      # The second dosing interval is relative to the second dose, a day after
+      # the first; the subject without doses is relative to its first sample
+      PPRFTDTC =
+        c("2024-03-01T08:00:00", "2024-03-02T08:00:00", "2024-03-01T08:00:00", "2024-03-01T09:00:00")
+    ),
+    ignore_attr = TRUE
+  )
+  # The reference type agrees with the date-time reference of each subject
+  expect_equal(
+    o_nca$data$time_reference$time_reference_type,
+    c("first_dose", "first_conc")
+  )
+})
+
+test_that("CDISC interval reference: column order", {
+  d_conc <- data.frame(subject = 1, time = 0:4, conc = c(0, 2, 1, 0.5, 0.25))
+  d_dose <- data.frame(subject = 1, time = 0, dose = 10)
+  o_nca <-
+    pk.nca(PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject),
+      PKNCAdose(d_dose, dose~time|subject),
+      intervals = data.frame(start = 0, end = 4, cmax = TRUE)
+    ))
+  expect_equal(
+    names(as.data.frame(o_nca, out_format = "cdisc")),
+    c(
+      "subject", "start", "end", "pknca_parameter", "PPTESTCD", "PPTEST",
+      "PPORRES", "PPANMETH", "exclude", "PPSTINT", "PPENINT", "PPTPTREF"
+    )
+  )
+  # With date-time input, PPRFTDTC follows PPTPTREF
+  t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
+  d_conc$time <- t0 + d_conc$time * 3600
+  d_dose$time <- t0
+  o_nca_dt <-
+    pk.nca(PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject),
+      PKNCAdose(d_dose, dose~time|subject),
+      intervals = data.frame(start = 0, end = 4, cmax = TRUE)
+    ))
+  expect_equal(
+    names(as.data.frame(o_nca_dt, out_format = "cdisc")),
+    c(
+      "subject", "start", "end", "pknca_parameter", "PPTESTCD", "PPTEST",
+      "PPORRES", "PPANMETH", "exclude", "PPSTINT", "PPENINT", "PPTPTREF",
+      "PPRFTDTC"
+    )
+  )
 })
 

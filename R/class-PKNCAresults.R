@@ -44,9 +44,23 @@ PKNCAresults <- function(result, data, exclude = NULL) {
 #'   "AUCINT", for example) -- so `pknca_parameter` is the only column that
 #'   still identifies which PKNCA calculation produced a row.
 #'   Route-dependent parameters (e.g. CL, VZ, MRT) are resolved using the
-#'   route information from the dose data.  When the concentration and dose
-#'   times were date-times (see [PKNCAdata()]), a PPRFTDTC column gives the
-#'   ISO 8601 date-time of the time reference (the first dose of the group).
+#'   route information from the dose data.
+#'
+#'   Each row also gets its time point reference, as SDTMIG 3.4 defines it:
+#'   PPSTINT and PPENINT give the interval start and end as ISO 8601
+#'   durations relative to the reference named in PPTPTREF, and PPRFTDTC gives
+#'   that reference's date-time.  The reference is the dose that starts the
+#'   interval:  the last included dose at or before the interval start for
+#'   that subject and group (PPTPTREF `"LAST DOSE PRIOR TO INTERVAL"`), so a
+#'   steady-state dosing interval reads `"PT0H"` to `"PT24H"`.  A subject (or
+#'   group) without an included dose uses its first concentration instead
+#'   (PPTPTREF `"FIRST OBSERVATION"`), as the date-time references of
+#'   [PKNCAdata()] do.  The durations are in the preferred time unit
+#'   (`timeu_pref`) when it is given; PPENINT is `NA` for an interval to
+#'   infinity, and PPSTINT, PPENINT, and PPTPTREF are `NA` when the subject
+#'   has doses but none at or before the interval start.  PPRFTDTC is only
+#'   given when the concentration and dose times were date-times (see
+#'   [PKNCAdata()]), and it can differ between the intervals of one subject.
 #' @param filter_requested Only return rows with parameters that were
 #'   specifically requested?
 #' @param filter_excluded Should excluded values be removed?
@@ -122,9 +136,8 @@ as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'c
 # column name (the CDISC translation is many-to-one -- several PKNCA
 # parameters can resolve to the same PPTESTCD, e.g. every AUCint variant to
 # "AUCINT" -- so this is the only column that still identifies which PKNCA
-# calculation produced a row), and PPSTINT and PPENINT columns (ISO 8601
-# durations relative to the last dose time) when any resolved PPTESTCD
-# contains "INT".
+# calculation produced a row), and the time point reference columns of each
+# row (see pknca_cdisc_add_interval_reference()).
 #
 # `pknca_parameter` is lowercase and snake_case specifically so it cannot be
 # mistaken for an SDTM PP variable (which are always uppercase); it is a
@@ -173,70 +186,135 @@ pknca_cdisc_translate <- function(ret, x) {
     ret$pknca_parameter <- pknca_parameter
     ret$PPTEST <- cdisc_pptest
   }
-  # Add PPSTINT/PPENINT if any PPTESTCD contains "INT"
-  has_int <- grepl("INT", cdisc_pptestcd, fixed = TRUE)
-  if (any(has_int)) {
-    ret <- pknca_cdisc_add_interval_columns(ret, x, has_int)
-  }
-  ret <- pknca_cdisc_add_reference_datetime(ret, x)
-  ret
+  pknca_cdisc_add_interval_reference(ret, x)
 }
 
-# Add the PPRFTDTC column (the date-time of the time reference) when the
-# analysis started from date-time (POSIXct or Date) times
-#
-# @param ret The result data.frame
-# @param x The PKNCAresults object
-# @returns The data.frame, with PPRFTDTC added when there is a time reference
-# @keywords Internal
-# @noRd
-pknca_cdisc_add_reference_datetime <- function(ret, x) {
-  time_reference <- x$data$time_reference
-  if (is.null(time_reference)) {
-    return(ret)
-  }
-  group_cols <- setdiff(names(time_reference), c("time_reference", "time_reference_type"))
-  ret$PPRFTDTC <-
-    lubridate::format_ISO8601(
-      pknca_datetime_match_reference(
-        groups_data = as.data.frame(ret)[, group_cols, drop = FALSE],
-        time_reference = time_reference
-      ),
-      precision = "ymdhms"
-    )
-  ret
-}
+# The PPTPTREF text for each kind of time point reference (see
+# pknca_cdisc_interval_reference())
+pknca_cdisc_tptref <- c(
+  dose = "LAST DOSE PRIOR TO INTERVAL",
+  first_conc = "FIRST OBSERVATION"
+)
 
-# Add PPSTINT and PPENINT columns for interval-based parameters
+# Add the time point reference columns:  PPSTINT, PPENINT, PPTPTREF, and (for
+# date-time input) PPRFTDTC
 #
-# These columns express the interval start and end as ISO 8601 durations
-# relative to the last dose time for each subject/group.
+# SDTMIG 3.4 defines PPSTINT and PPENINT as the start and end of the interval
+# relative to the time point reference named by PPTPTREF, whose date-time is
+# PPRFTDTC.  The reference of each row is the dose that starts its interval
+# (see pknca_cdisc_interval_reference()), so all four columns describe the
+# same reference and a steady-state interval reads PT0H to PT24H.
+#
+# PPSTINT and PPENINT are ISO 8601 durations in the preferred time unit
+# (`timeu_pref`, when it can be converted to); PPENINT is NA for an interval to
+# infinity, and both are NA for a row without a reference.  PPRFTDTC is only
+# added when the concentration and dose times were date-times, because numeric
+# times have no date-time to report.
 #
 # @param ret The result data.frame (already has PPTESTCD translated)
 # @param x The PKNCAresults object
-# @param has_int Logical vector indicating which rows have INT parameters
-# @returns The data.frame with PPSTINT and PPENINT columns added
+# @returns The data.frame with the reference columns added
 # @keywords Internal
 # @noRd
-pknca_cdisc_add_interval_columns <- function(ret, x, has_int) {
-  # Interval times are in the original time unit; report them in the preferred
-  # one.
+pknca_cdisc_add_interval_reference <- function(ret, x) {
+  ref <- pknca_cdisc_interval_reference(ret, x)
+  # Interval times are in the time unit of the analysis; report them in the
+  # preferred one.
   timeu_report <- pknca_cdisc_get_timeu(x)
-  timeu <- timeu_report$unit
-  last_dose_times <- pknca_cdisc_get_last_dose_time(ret, x)
-  ppstint <- rep(NA_character_, nrow(ret))
-  ppenint <- rep(NA_character_, nrow(ret))
-  for (i in which(has_int)) {
-    dose_time <- last_dose_times[i]
-    if (is.na(dose_time)) next
-    start_rel <- (ret$start[i] - dose_time) * timeu_report$factor
-    end_rel <- (ret$end[i] - dose_time) * timeu_report$factor
-    ppstint[i] <- format_iso8601_duration(start_rel, timeu)
-    ppenint[i] <- format_iso8601_duration(end_rel, timeu)
+  start_rel <- (ret$start - ref$time) * timeu_report$factor
+  end_rel <- (ret$end - ref$time) * timeu_report$factor
+  ret$PPSTINT <- vapply(X = start_rel, FUN = format_iso8601_duration, FUN.VALUE = "", timeu = timeu_report$unit)
+  ret$PPENINT <- vapply(X = end_rel, FUN = format_iso8601_duration, FUN.VALUE = "", timeu = timeu_report$unit)
+  ret$PPTPTREF <- unname(pknca_cdisc_tptref[ref$type])
+  time_reference <- x$data$time_reference
+  if (!is.null(time_reference)) {
+    # Date-time times were converted to the time unit of the analysis relative
+    # to each group's time reference, so the date-time of a row's reference is
+    # the group's time reference plus the reference's converted time.
+    ref_groups <- setdiff(names(time_reference), c("time_reference", "time_reference_type"))
+    group_reference <-
+      pknca_datetime_match_reference(
+        groups_data = as.data.frame(ret)[, ref_groups, drop = FALSE],
+        time_reference = time_reference
+      )
+    seconds_per_unit <- 3600 * pknca_hours_factor(pknca_datetime_time_unit(as_PKNCAconc(x)))
+    # Rounding drops the floating-point noise of the unit conversion (a second
+    # dose 24 hours later must not print as 23:59:59).
+    ret$PPRFTDTC <-
+      lubridate::format_ISO8601(
+        group_reference + round(ref$time * seconds_per_unit, 6),
+        precision = "ymdhms"
+      )
   }
-  ret$PPSTINT <- ppstint
-  ret$PPENINT <- ppenint
   ret
+}
+
+# Find the time point reference of each result row
+#
+# The reference of a row is the dose that starts its interval:  the last
+# included dose at or before the interval start, within the row's groups.  A
+# row whose groups have no included dose (including all rows when there are no
+# dose times) uses the first concentration of its groups instead:  the first
+# included one, or the first one when all are excluded.  The groups and the
+# fallback are those of the date-time references (pknca_datetime_ref_groups()
+# and pknca_datetime_reference()), so for date-time input a row's reference
+# type agrees with its group's `time_reference_type`.  A row whose groups have
+# doses, but none at or before its start, has no reference.
+#
+# @param ret The result data.frame
+# @param x The PKNCAresults object
+# @returns A data.frame with one row per row of `ret`:  `time`, the time of the
+#   reference on the same scale as `ret$start` (NA without a reference), and
+#   `type`, `"dose"`, `"first_conc"`, or NA (the names of
+#   `pknca_cdisc_tptref`)
+# @keywords Internal
+# @noRd
+pknca_cdisc_interval_reference <- function(ret, x) {
+  o_conc <- as_PKNCAconc(x)
+  o_dose <- as_PKNCAdose(x)
+  has_dose_time <-
+    !is.null(o_dose) && !identical(o_dose, NA) && length(o_dose$columns$time) == 1
+  groups <-
+    intersect(
+      pknca_datetime_ref_groups(o_conc, o_dose, has_dose_time = has_dose_time, check_subject = FALSE),
+      names(ret)
+    )
+  rows <- as.data.frame(ret)[, groups, drop = FALSE]
+  rows$.row_id <- seq_len(nrow(rows))
+  rows$.start <- ret$start
+  ref <- data.frame(time = rep(NA_real_, nrow(rows)), type = rep(NA_character_, nrow(rows)))
+  has_dose <- rep(FALSE, nrow(rows))
+  if (has_dose_time) {
+    dose_data <- as.data.frame(o_dose)
+    doses <- dose_data[, groups, drop = FALSE]
+    doses$.dose_time <- dose_data[[o_dose$columns$time]]
+    doses <- doses[is.na(normalize_exclude(o_dose)) & !is.na(doses$.dose_time), , drop = FALSE]
+    # merge() with no groups pairs every row with every dose
+    row_doses <- merge(rows, doses, by = groups)
+    has_dose[row_doses$.row_id] <- TRUE
+    prior_doses <- row_doses[row_doses$.dose_time <= row_doses$.start, , drop = FALSE]
+    if (nrow(prior_doses) > 0) {
+      last_dose <- stats::aggregate(.dose_time ~ .row_id, data = prior_doses, FUN = max)
+      ref$time[last_dose$.row_id] <- last_dose$.dose_time
+      ref$type[last_dose$.row_id] <- "dose"
+    }
+  }
+  if (!all(has_dose)) {
+    conc_data <- as.data.frame(o_conc)
+    concs <- conc_data[, groups, drop = FALSE]
+    concs$time_reference <- conc_data[[o_conc$columns$time]]
+    mask_time <- !is.na(concs$time_reference)
+    first_conc <-
+      pknca_datetime_first_included(
+        concs[mask_time, , drop = FALSE],
+        groups,
+        included = is.na(normalize_exclude(o_conc))[mask_time]
+      )
+    ref$time[!has_dose] <-
+      pknca_datetime_match_reference(rows[!has_dose, groups, drop = FALSE], first_conc)
+    ref$type[!has_dose & !is.na(ref$time)] <- "first_conc"
+  }
+  ref
 }
 
 # Get the time unit for ISO 8601 formatting and the factor converting interval
@@ -295,6 +373,10 @@ pknca_cdisc_get_timeu_orig <- function(x) {
 
 # Format a numeric duration as an ISO 8601 duration string
 #
+# A negative duration (an interval that starts before its time point
+# reference, as one can before a first observation) takes a leading minus sign,
+# the ISO 8601-2 form SDTM uses ("-PT0.5H").
+#
 # @param value Numeric duration value
 # @param timeu The time unit (e.g. "hr", "h", "min", "day", "d", "s", "sec")
 # @returns An ISO 8601 duration string (e.g. "PT0H", "PT24H", "P1D")
@@ -302,6 +384,12 @@ pknca_cdisc_get_timeu_orig <- function(x) {
 # @noRd
 format_iso8601_duration <- function(value, timeu) {
   if (is.na(value) || is.infinite(value)) return(NA_character_)
+  # Unit conversion leaves floating-point noise (120 minutes as
+  # 1.9999999999999998 hours) that must not reach the text.
+  value <- round(value, 10)
+  sign <- if (value < 0) "-" else ""
+  # format() rather than as.character(), which writes 100000 as "1e+05"
+  value <- format(abs(value), scientific = FALSE, digits = 15, trim = TRUE)
   timeu_lower <- tolower(timeu)
   if (is.na(timeu_lower)) {
     # No unit info: assume hours
@@ -309,59 +397,17 @@ format_iso8601_duration <- function(value, timeu) {
   }
   # Map time unit to ISO 8601 designator
   if (timeu_lower %in% c("hr", "h", "hour", "hours")) {
-    paste0("PT", value, "H")
+    paste0(sign, "PT", value, "H")
   } else if (timeu_lower %in% c("min", "minute", "minutes")) {
-    paste0("PT", value, "M")
+    paste0(sign, "PT", value, "M")
   } else if (timeu_lower %in% c("s", "sec", "second", "seconds")) {
-    paste0("PT", value, "S")
+    paste0(sign, "PT", value, "S")
   } else if (timeu_lower %in% c("day", "days", "d")) {
-    paste0("P", value, "D")
+    paste0(sign, "P", value, "D")
   } else {
     # Unknown unit: default to hours
-    paste0("PT", value, "H")
+    paste0(sign, "PT", value, "H")
   }
-}
-
-# Get the last dose time for each row in the results
-#
-# For each result row, finds the most recent dose time that is <= the interval
-# start, matching on group variables.
-#
-# @param ret The result data.frame
-# @param x The PKNCAresults object
-# @returns A numeric vector of last dose times, one per row (NA if unavailable)
-# @keywords Internal
-# @noRd
-pknca_cdisc_get_last_dose_time <- function(ret, x) {
-  result <- rep(NA_real_, nrow(ret))
-  if (is.null(x$data$dose) || identical(x$data$dose, NA) ||
-      !inherits(x$data$dose, "PKNCAdose")) {
-    return(result)
-  }
-  dose_df <- x$data$dose$data
-  time_col <- x$data$dose$columns$time
-  if (length(time_col) == 0) return(result)
-  group_cols <- unlist(x$data$dose$columns$groups)
-  merge_cols <- intersect(group_cols, names(ret))
-  for (i in seq_len(nrow(ret))) {
-    interval_start <- ret$start[i]
-    # Filter dose data to matching groups
-    dose_subset <- dose_df
-    if (length(merge_cols) > 0) {
-      mask <- rep(TRUE, nrow(dose_subset))
-      for (gc in merge_cols) {
-        mask <- mask & (dose_subset[[gc]] == ret[[gc]][i])
-      }
-      dose_subset <- dose_subset[mask, , drop = FALSE]
-    }
-    # Find the last dose time <= interval start
-    dose_times <- dose_subset[[time_col]]
-    valid_times <- dose_times[!is.na(dose_times) & dose_times <= interval_start]
-    if (length(valid_times) > 0) {
-      result[i] <- max(valid_times)
-    }
-  }
-  result
 }
 
 # Resolve a CDISC value that may be a simple string, a route-dependent list, or

@@ -18,6 +18,25 @@ the dosing including dose amount and route.
   R provides only from R 4.4, is imported from rlang, and continuous
   integration checks R 4.1.  The bioequivalence functions that use `lme4` still
   need the R version that `lme4` and `Matrix` need.  (@GITHUB_HANDLE)
+* `as.data.frame(out_format = "cdisc")` now gives every result row its time
+  point reference as SDTMIG 3.4 defines it:  PPSTINT and PPENINT relative to
+  the reference named in the new PPTPTREF column, and PPRFTDTC as that
+  reference's date-time.  Before, PPSTINT and PPENINT were given only for the
+  "INT" parameters and were measured from the last dose, while PPRFTDTC was
+  the first dose of the subject and nothing named the reference, so the
+  columns of one row could describe different references.  Now, for every
+  parameter, the reference is the dose that starts the interval (the last
+  included dose at or before the interval start for that subject and group;
+  PPTPTREF `"LAST DOSE PRIOR TO INTERVAL"`), so a steady-state dosing interval
+  reads `"PT0H"` to `"PT24H"` and its PPRFTDTC is the date-time of that dose,
+  which can differ between the intervals of one subject.  A subject without an
+  included dose uses its first concentration (PPTPTREF `"FIRST OBSERVATION"`),
+  as the date-time references of `PKNCAdata()` do.  PPENINT is `NA` for an
+  interval to infinity; an interval starting before its reference (possible
+  with a first-observation reference) has a negative duration such as
+  `"-PT0.5H"`, and durations are no longer written in scientific notation.
+  PKNCA is the source of truth for these columns, so downstream SDTM writers
+  (such as nca.reporter) no longer need to recompute them.  (@GITHUB_HANDLE)
 
 * `pknca_exclude_rules()` and `exclude_nca_by_param()` (and so the
   `exclude_nca_*()` rules built on it) no longer need testthat:  the

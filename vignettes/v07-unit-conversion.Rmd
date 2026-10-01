@@ -337,13 +337,15 @@ The default single-dose intervals (the `single.dose.aucs` option,
 0 to 24 and 0 to infinity) are written for hours, so with a preferred time unit
 such as `"day"` or `"min"` they would end at 24 days or 24 minutes; PKNCA warns
 when that happens, and you should give `intervals` or set `single.dose.aucs`
-for that unit.  Results formatted for CDISC include the time reference as the
-PPRFTDTC column.
+for that unit.  Results formatted for CDISC give each row its time point
+reference:  PPTPTREF names it (the dose that starts the interval), PPRFTDTC is
+its date-time, and PPSTINT and PPENINT are the interval start and end relative
+to it, in the preferred time unit.
 
 ```{r datetime-results}
 o_nca <- pk.nca(o_data)
 d_cdisc <- as.data.frame(o_nca, out_format = "cdisc")
-head(d_cdisc[, c("Subject", "PPTESTCD", "PPORRES", "PPORRESU", "PPRFTDTC")])
+head(d_cdisc[, c("Subject", "PPTESTCD", "PPORRES", "PPORRESU", "PPSTINT", "PPENINT", "PPTPTREF", "PPRFTDTC")])
 ```
 
 A few rules keep the conversion unambiguous:
