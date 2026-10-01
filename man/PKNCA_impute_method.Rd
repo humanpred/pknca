@@ -104,3 +104,12 @@ when a point at the interval boundary belongs to the next dose, e.g. an
 imputed C0)
 
 }}
+\seealso{
+\code{\link[=pknca_impute_methods]{pknca_impute_methods()}} lists the methods.
+
+Other Imputation:
+\code{\link[=PKNCA_impute_fun_list]{PKNCA_impute_fun_list()}},
+\code{\link[=assert_impute_method]{assert_impute_method()}},
+\code{\link[=pknca_impute_methods]{pknca_impute_methods()}}
+}
+\concept{Imputation}

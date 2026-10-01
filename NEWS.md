@@ -6,6 +6,13 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `pknca_impute_methods()` lists the imputation methods (`PKNCA_impute_method_*()`)
+  with the names imputation strings use, their descriptions, and their
+  arguments and defaults.  Each method is registered with its description next
+  to its definition, as the exclusion rules are for `pknca_exclude_rules()`, and
+  tests require every exported method to be registered and its documentation
+  to begin with the registered description.  (@GITHUB_HANDLE)
+
 * `pknca_exclude_rules()` and `exclude_nca_by_param()` (and so the
   `exclude_nca_*()` rules built on it) no longer need testthat:  the
   threshold checks used checkmate's testthat expectations

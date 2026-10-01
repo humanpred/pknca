@@ -35,7 +35,7 @@ pknca_exclude_rules <- function() {
   tibble::tibble(
     rule = rule_names,
     description = vapply(X = registry[rule_names], FUN = "[[", "description", FUN.VALUE = "", USE.NAMES = FALSE),
-    arguments = lapply(X = rule_names, FUN = pknca_exclude_rule_arguments),
+    arguments = lapply(X = rule_names, FUN = pknca_function_arguments),
     callable_with_defaults = !vapply(X = rule_funs, FUN = is.null, FUN.VALUE = TRUE),
     options = lapply(X = rule_funs, FUN = function(x) if (!is.null(x)) exclude_nca_options_used(x)),
     affected_parameters = lapply(X = rule_funs, FUN = function(x) if (!is.null(x)) exclude_nca_affected_parameters(x))
@@ -52,7 +52,7 @@ pknca_exclude_rules <- function() {
 #' @noRd
 pknca_exclude_rule_default <- function(rule) {
   factory <- getExportedValue("PKNCA", rule)
-  arguments <- pknca_exclude_rule_arguments(rule)
+  arguments <- pknca_function_arguments(rule)
   # An argument without a default either falls back to a PKNCA option inside
   # the factory or is required; only calling the factory can tell.
   tryCatch(
@@ -64,32 +64,5 @@ pknca_exclude_rule_default <- function(rule) {
         stop(e) # nocov
       }
     }
-  )
-}
-
-#' Describe the arguments of an exclusion rule
-#'
-#' @param rule The rule (factory) name
-#' @returns A data.frame with the columns `argument` and `default`
-#' @keywords Internal
-#' @noRd
-pknca_exclude_rule_arguments <- function(rule) {
-  fmls <- formals(getExportedValue("PKNCA", rule))
-  arg_names <- as.character(names(fmls))
-  data.frame(
-    argument = arg_names,
-    default =
-      vapply(
-        X = arg_names,
-        FUN = function(nm) {
-          if (identical(fmls[[nm]], quote(expr = ))) {
-            NA_character_
-          } else {
-            paste(trimws(deparse(fmls[[nm]])), collapse = " ")
-          }
-        },
-        FUN.VALUE = "",
-        USE.NAMES = FALSE
-      )
   )
 }

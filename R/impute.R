@@ -23,7 +23,31 @@ get_impute_method <- function(intervals, impute) {
 #' @name PKNCA_impute_method
 #' @return A data.frame with one column named conc with imputed concentrations
 #'   and one column named time with the times.
+#' @seealso [pknca_impute_methods()] lists the methods.
+#' @family Imputation
 NULL
+
+#' Register an imputation method
+#'
+#' Each `PKNCA_impute_method_*()` function is registered right after its
+#' definition (so this is defined first in the file), the way interval columns
+#' are registered with [add.interval.col()], so that [pknca_impute_methods()]
+#' describes every method without reading the documentation.
+#'
+#' @param fun The name of the exported method function
+#' @param description The one-line description (the first sentence of the
+#'   function's documentation)
+#' @returns `NULL`, invisibly
+#' @keywords Internal
+#' @noRd
+pknca_register_impute_method <- function(fun, description) {
+  checkmate::assert_string(fun, pattern = "^PKNCA_impute_method_")
+  checkmate::assert_string(description, min.chars = 1)
+  current <- get("impute_methods", envir = .PKNCAEnv)
+  current[[fun]] <- list(description = description)
+  assign("impute_methods", current, envir = .PKNCAEnv)
+  invisible(NULL)
+}
 
 #' @describeIn PKNCA_impute_method Set the concentration at the start time to
 #'   0, even if a nonzero concentration exists at that time (usually used with
@@ -50,6 +74,10 @@ PKNCA_impute_method_start_conc0 <- function(conc, time, start=0, ..., options = 
   }
   ret
 }
+pknca_register_impute_method(
+  fun = "PKNCA_impute_method_start_conc0",
+  description = "Set the concentration at the start time to 0, even if a nonzero concentration exists at that time (usually used with single-dose data)."
+)
 
 #' @describeIn PKNCA_impute_method Add a new concentration of the minimum during
 #'   the interval at the start time (usually used with multiple-dose data)
@@ -67,6 +95,10 @@ PKNCA_impute_method_start_cmin <- function(conc, time, start, end, ..., options 
   }
   ret
 }
+pknca_register_impute_method(
+  fun = "PKNCA_impute_method_start_cmin",
+  description = "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data)"
+)
 
 #' @describeIn PKNCA_impute_method Shift a predose concentration to become the
 #'   time zero concentration (only if a time zero concentration does not exist).
@@ -109,6 +141,10 @@ PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group
   }
   ret
 }
+pknca_register_impute_method(
+  fun = "PKNCA_impute_method_start_predose",
+  description = "Shift a predose concentration to become the time zero concentration (only if a time zero concentration does not exist)."
+)
 
 #' @describeIn PKNCA_impute_method Use a predose concentration as the start
 #'   concentration when one is available and 0 when it is not.  A concentration
@@ -137,6 +173,10 @@ PKNCA_impute_method_start_predose_conc0 <- function(conc, time, start, end,
   }
   ret
 }
+pknca_register_impute_method(
+  fun = "PKNCA_impute_method_start_predose_conc0",
+  description = "Use a predose concentration as the start concentration when one is available and 0 when it is not."
+)
 
 #' @describeIn PKNCA_impute_method Drop a concentration measured exactly at the
 #'   end of the interval, if one is present (usually used with multiple-dose data
@@ -150,6 +190,75 @@ PKNCA_impute_method_end_conc_drop <- function(conc, time, end, ..., options = li
     ret <- ret[!mask_end, , drop = FALSE]
   }
   ret
+}
+pknca_register_impute_method(
+  fun = "PKNCA_impute_method_end_conc_drop",
+  description = "Drop a concentration measured exactly at the end of the interval, if one is present (usually used with multiple-dose data when a point at the interval boundary belongs to the next dose, e.g. an imputed C0)"
+)
+
+#' List the imputation methods
+#'
+#' Every `PKNCA_impute_method_*()` function is registered with its
+#' description; its arguments and their defaults come from the function
+#' itself.  The `method` names are what imputation strings use (see
+#' [PKNCA_impute_fun_list()] and the `impute` argument of [PKNCAdata()]).
+#'
+#' @returns A tibble with one row per method, sorted by method, and the
+#'   columns:
+#' \describe{
+#'   \item{method}{The name used in imputation strings (for example,
+#'   `"start_conc0"`)}
+#'   \item{fun}{The function name (for example,
+#'   `"PKNCA_impute_method_start_conc0"`)}
+#'   \item{description}{The one-line description}
+#'   \item{arguments}{A list column of data.frames with one row per argument
+#'   and the columns `argument` and `default` (the deparsed default, or `NA`
+#'   when there is none)}
+#' }
+#' @examples
+#' pknca_impute_methods()[, c("method", "description")]
+#' @family Imputation
+#' @export
+pknca_impute_methods <- function() {
+  registry <- get("impute_methods", envir = .PKNCAEnv)
+  funs <- names(registry)
+  methods <- sub(pattern = "^PKNCA_impute_method_", replacement = "", x = funs)
+  ord <- order(methods)
+  funs <- funs[ord]
+  tibble::tibble(
+    method = methods[ord],
+    fun = funs,
+    description = vapply(X = registry[funs], FUN = "[[", "description", FUN.VALUE = "", USE.NAMES = FALSE),
+    arguments = lapply(X = funs, FUN = pknca_function_arguments)
+  )
+}
+
+#' Describe the arguments of an exported PKNCA function
+#'
+#' @param fun The function name
+#' @returns A data.frame with the columns `argument` and `default` (the
+#'   deparsed default, or `NA` when there is none)
+#' @keywords Internal
+#' @noRd
+pknca_function_arguments <- function(fun) {
+  fmls <- formals(getExportedValue("PKNCA", fun))
+  arg_names <- as.character(names(fmls))
+  data.frame(
+    argument = arg_names,
+    default =
+      vapply(
+        X = arg_names,
+        FUN = function(nm) {
+          if (identical(fmls[[nm]], quote(expr = ))) {
+            NA_character_
+          } else {
+            paste(trimws(deparse(fmls[[nm]])), collapse = " ")
+          }
+        },
+        FUN.VALUE = "",
+        USE.NAMES = FALSE
+      )
+  )
 }
 
 #' Separate out a vector of PKNCA imputation methods into a list of functions
@@ -165,6 +274,7 @@ PKNCA_impute_method_end_conc_drop <- function(conc, time, end, ..., options = li
 #' @seealso [assert_impute_method()], [PKNCA_impute_method]
 #' @examples
 #' PKNCA_impute_fun_list(c("start_predose,start_conc0", NA))
+#' @family Imputation
 #' @export
 PKNCA_impute_fun_list <- function(x) {
   if (all(is.na(x))) {
@@ -210,6 +320,7 @@ PKNCA_impute_fun_list <- function(x) {
 #'   intervals = data.frame(start = 0, end = 24, method = "start_conc0")
 #' )
 #' try(assert_impute_method("start_misspelled"))
+#' @family Imputation
 #' @export
 assert_impute_method <- function(impute, intervals = data.frame()) {
   ret <- get_impute_method(intervals = intervals, impute = impute)

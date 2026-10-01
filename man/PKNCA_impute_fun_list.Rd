@@ -24,4 +24,10 @@ PKNCA_impute_fun_list(c("start_predose,start_conc0", NA))
 }
 \seealso{
 \code{\link[=assert_impute_method]{assert_impute_method()}}, \link{PKNCA_impute_method}
+
+Other Imputation:
+\code{\link{PKNCA_impute_method}},
+\code{\link[=assert_impute_method]{assert_impute_method()}},
+\code{\link[=pknca_impute_methods]{pknca_impute_methods()}}
 }
+\concept{Imputation}
