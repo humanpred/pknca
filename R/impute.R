@@ -203,6 +203,12 @@ pknca_register_impute_method(
 #' itself.  The `method` names are what imputation strings use (see
 #' [PKNCA_impute_fun_list()] and the `impute` argument of [PKNCAdata()]).
 #'
+#' Registration only describes PKNCA's own methods.  A method is still found by
+#' its function name:  a user-defined `PKNCA_impute_method_<name>()` function
+#' that PKNCA can see (for example, in the global environment) is used by the
+#' imputation string `"<name>"` without being registered, and it is not listed
+#' here.
+#'
 #' @returns A tibble with one row per method, sorted by method, and the
 #'   columns:
 #' \describe{

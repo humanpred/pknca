@@ -819,3 +819,48 @@ test_that("registered imputation descriptions match the documentation", {
     )
   }
 })
+
+test_that("an unregistered user-defined imputation method still works by name", {
+  # Registration describes PKNCA's own methods; a user's method is found by
+  # its function name, as before, wherever PKNCA can see it (here, the global
+  # environment)
+  user_method <- function(conc, time, start, ..., options = list()) {
+    ret <- data.frame(conc = conc, time = time)
+    if (!any(time %in% start)) {
+      ret <- rbind(data.frame(conc = 10, time = start), ret)
+    }
+    ret
+  }
+  assign("PKNCA_impute_method_start_user10", user_method, envir = globalenv())
+  withr::defer(rm("PKNCA_impute_method_start_user10", envir = globalenv()))
+
+  # It is not in the registry, and the registry still lists only PKNCA's own
+  # exported methods
+  methods <- pknca_impute_methods()
+  expect_false("start_user10" %in% methods$method)
+  expect_equal(
+    sort(methods$fun),
+    sort(grep("^PKNCA_impute_method_", getNamespaceExports("PKNCA"), value = TRUE))
+  )
+  # It resolves by name, alone or chained with a registered method
+  expect_equal(PKNCA_impute_fun_list("start_user10"), list("PKNCA_impute_method_start_user10"))
+  expect_equal(
+    PKNCA_impute_fun_list("start_user10,end_conc_drop"),
+    list(c("PKNCA_impute_method_start_user10", "PKNCA_impute_method_end_conc_drop"))
+  )
+  expect_equal(assert_impute_method("start_user10"), "start_user10")
+  # pk.nca() uses it
+  o_conc <- PKNCAconc(data.frame(conc = c(4, 2), time = 1:2, subject = 1), conc~time|subject)
+  o_data <-
+    PKNCAdata(
+      o_conc,
+      intervals = data.frame(start = 0, end = 2, auclast = TRUE),
+      impute = "start_user10"
+    )
+  d_nca <- as.data.frame(pk.nca(o_data))
+  expect_equal(
+    d_nca$PPORRES[d_nca$PPTESTCD == "auclast"],
+    pk.calc.auc.last(conc = c(10, 4, 2), time = 0:2),
+    ignore_attr = TRUE
+  )
+})

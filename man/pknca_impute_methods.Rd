@@ -26,6 +26,13 @@ description; its arguments and their defaults come from the function
 itself.  The \code{method} names are what imputation strings use (see
 \code{\link[=PKNCA_impute_fun_list]{PKNCA_impute_fun_list()}} and the \code{impute} argument of \code{\link[=PKNCAdata]{PKNCAdata()}}).
 }
+\details{
+Registration only describes PKNCA's own methods.  A method is still found by
+its function name:  a user-defined \verb{PKNCA_impute_method_<name>()} function
+that PKNCA can see (for example, in the global environment) is used by the
+imputation string \code{"<name>"} without being registered, and it is not listed
+here.
+}
 \examples{
 pknca_impute_methods()[, c("method", "description")]
 }
