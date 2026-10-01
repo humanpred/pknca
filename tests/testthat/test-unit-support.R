@@ -26,6 +26,7 @@ test_that("pknca_find_units_param", {
 })
 
 test_that("unit conversion tables are created correctly", {
+  skip_if_not_installed("units")
   expect_true(
     all(
       pknca_units_table(
@@ -90,6 +91,7 @@ test_that("unit conversion tables are created correctly", {
 })
 
 test_that("pknca_units_table", {
+  skip_if_not_installed("units")
   expect_warning(
       pknca_units_table(
         concu="ng/mL", doseu="mg/kg", amountu="mg", timeu="hr",
@@ -191,6 +193,7 @@ test_that("pknca_units_table treats missing, NULL, and NA the same", {
 })
 
 test_that("allow duplicate PPSTRESU units", {
+  skip_if_not_installed("units")
   d_conversion <-
     data.frame(
       PPORRESU = c("ng/mL", "(ng/mL)/(mg/kg)", "(mg/kg)/(hr*ng/mL)", "(mg/kg)/(ng/mL)"),
@@ -203,6 +206,7 @@ test_that("allow duplicate PPSTRESU units", {
 })
 
 test_that("Use preferred units (#197)", {
+  skip_if_not_installed("units")
   prep <-
     pknca_units_table(
       concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
@@ -341,6 +345,7 @@ test_that("pknca_unit_conversion", {
 
 # Tests for pknca_units_table for PKNCAdata
 test_that("pknca_units_table for PKNCAdata", {
+  skip_if_not_installed("units")
 
   # Subset the data to only include USUBJID 8 (2 analytes, A & B)
   d_conc <- data.frame(

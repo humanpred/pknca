@@ -8,15 +8,19 @@ test_that("normalize.data.frame works for basic normalization", {
 })
 
 
-# Create a basic PKNCAresults object for use in tests
-d_conc <- data.frame(ID = c(1, 1, 2, 2), analyte = c("A", "B"), time = 0:1, conc = c(10, 20, 30, 40))
-o_conc <- PKNCAconc(d_conc, conc ~ time | ID / analyte, concu = "ng/mL", concu_pref = "g/mL")
-d_dose <- data.frame(ID = c(1, 2), dose = c(100, 200), time = 0, doseu = "mg")
-o_dose <- PKNCAdose(d_dose, dose ~ time | ID)
-o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(cmax = TRUE, start = 0, end = 1))
-o_nca <- pk.nca(o_data)
+# Create a basic PKNCAresults object for use in tests (its preferred units
+# need the units package)
+if (requireNamespace("units", quietly = TRUE)) {
+  d_conc <- data.frame(ID = c(1, 1, 2, 2), analyte = c("A", "B"), time = 0:1, conc = c(10, 20, 30, 40))
+  o_conc <- PKNCAconc(d_conc, conc ~ time | ID / analyte, concu = "ng/mL", concu_pref = "g/mL")
+  d_dose <- data.frame(ID = c(1, 2), dose = c(100, 200), time = 0, doseu = "mg")
+  o_dose <- PKNCAdose(d_dose, dose ~ time | ID)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(cmax = TRUE, start = 0, end = 1))
+  o_nca <- pk.nca(o_data)
+}
 
 test_that("normalize.PKNCAresults appends normalized parameters", {
+  skip_if_not_installed("units")
   norm_table <- data.frame(ID = 1:2, normalization = 2, unit = "kg")
   res <- normalize(o_nca, norm_table, parameters = "cmax", suffix = ".wn")
   expect_true(any(res$result$PPTESTCD == "cmax.wn"))
@@ -35,6 +39,7 @@ test_that("normalize.PKNCAresults appends normalized parameters", {
 })
 
 test_that("normalize.data.frame errors for missing group", {
+  skip_if_not_installed("units")
   o_nca2 <- o_nca
   o_nca2$result <- o_nca$result[o_nca$result$ID == 1, , drop = FALSE]
   norm_table <- data.frame(ID = 2, normalization = 2, unit = "kg")
@@ -71,22 +76,25 @@ test_that("normalize.data.frame errors for ungrouped data with multiple norm row
   )
 })
 
-# Create a basic PKNCAresults object for use in tests
-d_conc <- data.frame(
-  ID = c(1, 1, 2, 2),
-  weight = c(2, 2, 4, 4),
-  analyte = c("A", "B", "A", "B"),
-  analyte_mw = c(200, 300, 200, 300),
-  analyte_mw_unit = c("g/mol", "kg/mol", "g/mol", "kg/mol"),
-  time = 0:1,
-  conc = c(10, 20, 30, 40),
-  weight = c(2, 2, 4, 4), weight_unit = c("kg", "kg", "kg", "kg")
-)
-o_conc <- PKNCAconc(d_conc, conc ~ time | ID / analyte, concu = "ng/mL", concu_pref = "g/mL")
-d_dose <- data.frame(ID = c(1, 2), dose = c(100, 200), time = 0, doseu = "mg")
-o_dose <- PKNCAdose(d_dose, dose ~ time | ID)
-o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(cmax = TRUE, start = 0, end = 1))
-o_nca <- pk.nca(o_data)
+# Create a basic PKNCAresults object for use in tests (its preferred units
+# need the units package)
+if (requireNamespace("units", quietly = TRUE)) {
+  d_conc <- data.frame(
+    ID = c(1, 1, 2, 2),
+    weight = c(2, 2, 4, 4),
+    analyte = c("A", "B", "A", "B"),
+    analyte_mw = c(200, 300, 200, 300),
+    analyte_mw_unit = c("g/mol", "kg/mol", "g/mol", "kg/mol"),
+    time = 0:1,
+    conc = c(10, 20, 30, 40),
+    weight = c(2, 2, 4, 4), weight_unit = c("kg", "kg", "kg", "kg")
+  )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | ID / analyte, concu = "ng/mL", concu_pref = "g/mL")
+  d_dose <- data.frame(ID = c(1, 2), dose = c(100, 200), time = 0, doseu = "mg")
+  o_dose <- PKNCAdose(d_dose, dose ~ time | ID)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = data.frame(cmax = TRUE, start = 0, end = 1))
+  o_nca <- pk.nca(o_data)
+}
 
 
 test_that("normalize_by_col errors when object is not PKNCAresults", {
@@ -97,6 +105,7 @@ test_that("normalize_by_col errors when object is not PKNCAresults", {
 })
 
 test_that("normalize_by_col normalizes by a numeric column in PKNCAconc data", {
+  skip_if_not_installed("units")
   res <- normalize_by_col(o_nca, col = "weight", unit = "kg", parameters = "cmax", suffix = ".wn")
   
   cmax_rows <- res$result[res$result$PPTESTCD == "cmax", ]
@@ -114,6 +123,7 @@ test_that("normalize_by_col normalizes by a numeric column in PKNCAconc data", {
 })
 
 test_that("normalize_by_col normalizes by a unit column in PKNCAconc data", {
+  skip_if_not_installed("units")
   # Use the highlighted d_conc/o_conc/o_nca objects
   # Normalize by the 'analyte_mw' column, unit = 'analyte_mw_unit', parameter = 'cmax', suffix = '.mwn'
   res <- normalize_by_col(o_nca, col = "analyte_mw", unit = "analyte_mw_unit", parameters = "cmax", suffix = ".mwn")
@@ -123,6 +133,7 @@ test_that("normalize_by_col normalizes by a unit column in PKNCAconc data", {
 })
 
 test_that("normalize_by_col errors for missing normalization column in PKNCAconc data", {
+  skip_if_not_installed("units")
   expect_error(
     normalize_by_col(o_nca, col = "not_a_column", unit = "kg", parameters = "cmax", suffix = ".wn"),
     "Column not_a_column not found"
@@ -130,6 +141,7 @@ test_that("normalize_by_col errors for missing normalization column in PKNCAconc
 })
 
 test_that("normalize_by_col errors for duplicate normalizations per PKNCAconc group", {
+  skip_if_not_installed("units")
   # Duplicate group: all rows have same ID and weight
   d_conc_dup <- d_conc
   d_conc_dup$analyte <- "A"

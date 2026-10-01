@@ -24,12 +24,24 @@ jobs:
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,   r: 'release'}
           - {os: ubuntu-latest,   r: 'oldrel-1'}
-          # The minimum R version declared in DESCRIPTION
+          # The minimum R version declared in DESCRIPTION. Only the hard
+          # dependencies (plus testthat and rcmdcheck) are installed, because
+          # several suggested packages need a newer R; tests that use a
+          # suggested package skip when it is absent, and R CMD check runs with
+          # _R_CHECK_FORCE_SUGGESTS_ off and without the vignettes.
+          - {os: ubuntu-latest,   r: '4.1',
+             deps: '"hard"',
+             extra: 'any::rcmdcheck, any::testthat',
+             force-suggests: 'false',
+             check-args: 'c("--no-manual", "--as-cran", "--ignore-vignettes")',
+             build-args: 'c("--no-manual", "--no-build-vignettes")'}
+          # The minimum R version of the current Matrix (needed by lme4)
           - {os: ubuntu-latest,   r: '4.4'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      _R_CHECK_FORCE_SUGGESTS_: ${{ matrix.config.force-suggests || 'true' }}
 
     steps:
       - uses: actions/checkout@v6
@@ -43,10 +55,12 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, humanpred/cdiscdata
+          dependencies: ${{ matrix.config.deps || '"all"' }}
+          extra-packages: ${{ matrix.config.extra || 'any::rcmdcheck, humanpred/cdiscdata' }}
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
-          build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+          args: ${{ matrix.config.check-args || 'c("--no-manual", "--as-cran")' }}
+          build_args: ${{ matrix.config.build-args || 'c("--no-manual","--compact-vignettes=gs+qpdf")' }}

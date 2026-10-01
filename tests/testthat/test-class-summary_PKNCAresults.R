@@ -365,6 +365,7 @@ test_that("the not calculated abbreviation is described in the caption only when
 
 
 test_that("summary pretty_name control", {
+  skip_if_not_installed("units")
   tmpconc <- generate.conc(2, 1, 0:24)
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)

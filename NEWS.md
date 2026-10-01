@@ -6,6 +6,18 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `pk.tss.stepwise.linear()` without subjects no longer returns `NA` silently on
+  R < 4.4 without the MASS package:  `confint()` on a `glm` needed MASS before
+  R 4.4, and its error was swallowed.  The interval is now the Wald interval
+  (`confint.default()`), which for this Gaussian model equals the profile
+  interval `confint()` gives.  When steady state is not found and some model
+  fits failed, a `pknca_warning_tss_stepwise_fit_failed` warning names the
+  failures instead of the `NA` being silent.  (@GITHUB_HANDLE)
+
+* PKNCA requires only R 4.1 again (it had required R 4.4).  `%||%`, which base
+  R provides only from R 4.4, is imported from rlang, and continuous
+  integration checks R 4.1.  The bioequivalence functions that use `lme4` still
+  need the R version that `lme4` and `Matrix` need.  (@GITHUB_HANDLE)
 * `as.data.frame(out_format = "cdisc")` now gives every result row its time
   point reference as SDTMIG 3.4 defines it:  PPSTINT and PPENINT relative to
   the reference named in the new PPTPTREF column, and PPRFTDTC as that
@@ -699,10 +711,11 @@ the generated intervals:
   returns what `x` is calculated from, following each dependency back to raw
   inputs such as `conc`, `time`, and `dose`.
 
-* PKNCA now declares a minimum R version of 4.4 in DESCRIPTION, and
-  continuous integration tests it.  The floor comes from `Matrix`, which
-  requires R >= 4.4 and is needed by `lme4` and so by the bioequivalence
-  functions; the rest of the package would run on R 4.1.
+* PKNCA declares a minimum R version in DESCRIPTION, and continuous
+  integration tests it.  The minimum is R 4.1:  the current `Matrix`, which
+  `lme4` needs, requires R >= 4.4, but `lme4`, `lmerTest`, and `emmeans` are
+  suggested packages used only by the bioequivalence functions, so the rest of
+  PKNCA does not need R 4.4.
 
 * Breaking change: The `exclude_half.life` and `include_half.life` columns must
   now be logical (`TRUE`/`FALSE`/`NA`).  A non-logical column (e.g. character
