@@ -6,6 +6,12 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `pknca_exclude_rules()` and `exclude_nca_by_param()` (and so the
+  `exclude_nca_*()` rules built on it) no longer need testthat:  the
+  threshold checks used checkmate's testthat expectations
+  (`expect_number()`), which loaded testthat and failed when it was not
+  installed.  They now use `assert_number()`.  (@GITHUB_HANDLE)
+
 ## Changes to automatically generated calculation intervals
 
 When `PKNCAdata()` is given no `intervals`, the intervals it generates now take

@@ -183,13 +183,13 @@ test_that("exclude_nca_by_param works as expected", {
   # throws an error for invalid min_thr
   expect_error(
     exclude_nca_by_param("span.ratio", min_thr = "invalid"),
-    "Check on 'min_thr' failed: Must be of type 'number'"
+    "Assertion on 'min_thr' failed: Must be of type 'number'"
   )
 
   # throws an error for invalid max_thr
   expect_error(
     exclude_nca_by_param(parameter = "span.ratio", max_thr = c(1, 2)),
-    "Check on 'max_thr' failed: Must have length 1"
+    "Assertion on 'max_thr' failed: Must have length 1"
   )
 
   # throws an error when min_thr is greater than max_thr
@@ -300,4 +300,29 @@ test_that("a half-life exclusion is kept when the method column is not there (#2
     ),
     rep("span.ratio < 2", 2)
   )
+})
+
+test_that("exclude_nca_by_param() checks thresholds without testthat", {
+  # A bad threshold is an ordinary error, not a failed testthat expectation
+  err <- tryCatch(exclude_nca_by_param("cmax", min_thr = "a"), error = function(e) e)
+  expect_s3_class(err, "error")
+  expect_false(inherits(err, "expectation"))
+  expect_match(conditionMessage(err), "Assertion on 'min_thr' failed", fixed = TRUE)
+})
+
+test_that("exclusion rules do not load testthat", {
+  # A separate R session with the installed package, where testthat is not
+  # already loaded
+  pknca_path <- getNamespaceInfo("PKNCA", "path")
+  skip_if(
+    dir.exists(file.path(pknca_path, "man")),
+    "The installed package is needed (run under R CMD check, not devtools::load_all())"
+  )
+  code <-
+    sprintf(
+      "suppressMessages(library(PKNCA, lib.loc = '%s')); invisible(pknca_exclude_rules()); invisible(exclude_nca_by_param('cmax', min_thr = 1)); cat(isNamespaceLoaded('testthat'))",
+      normalizePath(dirname(pknca_path), winslash = "/")
+    )
+  out <- system2(file.path(R.home("bin"), "Rscript"), args = c("-e", shQuote(code)), stdout = TRUE, stderr = TRUE)
+  expect_equal(utils::tail(out, 1), "FALSE")
 })
