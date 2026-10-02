@@ -9,12 +9,19 @@ pknca_concepts()
 
 pknca_tiers()
 
-pknca_routes()
+pknca_routes(synonyms = FALSE)
 
 pknca_dosing()
 
 pknca_sample_types()
 ```
+
+## Arguments
+
+- synonyms:
+
+  If `TRUE`, `pknca_routes()` returns the table of spellings that data
+  may use for a route instead of the route names (see Route synonyms).
 
 ## Value
 
@@ -29,6 +36,30 @@ A `tier` of `"common"` marks a parameter that belongs in a default
 report for at least one context; `"uncommon"` marks one that is
 calculated only when asked for by name. `"uncommon"` is the default, so
 a parameter registered without a tier is never selected automatically.
+
+## Route synonyms
+
+`pknca_routes(synonyms = TRUE)` returns a data.frame with one row per
+spelling and the columns
+
+- `synonym`: The spelling, in lower case with single spaces, as it may
+  appear in data (for example `"po"`, `"intravenous bolus"`). It
+  includes the common abbreviations and the CDISC SDTM `ROUTE`
+  controlled terminology terms that are extravascular or intravascular
+  routes.
+
+- `route`: One of `pknca_routes()`, or `"iv"` when the spelling is
+  intravascular but does not say which intravascular route it is (for
+  example `"intravenous"` does not say bolus or infusion). `"iv"` is not
+  a value of `pknca_routes()` without `synonyms`, because PKNCA cannot
+  calculate with a route that does not say how the drug entered.
+
+- `dose_route`: `"extravascular"` or `"intravascular"`, the values that
+  [`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md)
+  accepts for `route`.
+
+[`pknca_match_route()`](https://humanpred.github.io/pknca/reference/pknca_match_route.md)
+looks spellings up in this table.
 
 ## See also
 
@@ -47,6 +78,7 @@ Other Interval specifications:
 [`pknca_cdisc_codes()`](https://humanpred.github.io/pknca/reference/pknca_cdisc_codes.md),
 [`pknca_check_parameter_classification()`](https://humanpred.github.io/pknca/reference/pknca_check_parameter_classification.md),
 [`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md),
+[`pknca_match_route()`](https://humanpred.github.io/pknca/reference/pknca_match_route.md),
 [`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md),
 [`pknca_presets()`](https://humanpred.github.io/pknca/reference/pknca_presets.md),
 [`pknca_ref()`](https://humanpred.github.io/pknca/reference/pknca_ref.md)

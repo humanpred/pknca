@@ -68,13 +68,23 @@
 <span></span>
 <span><span class="fu">pknca_tiers</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">pknca_routes</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">pknca_routes</span><span class="op">(</span>synonyms <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">pknca_dosing</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">pknca_sample_types</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
+
+
+<dl><dt id="arg-synonyms">synonyms<a class="anchor" aria-label="anchor" href="#arg-synonyms"></a></dt>
+<dd><p>If <code>TRUE</code>, <code>pknca_routes()</code> returns the table of spellings
+that data may use for a route instead of the route names (see Route
+synonyms).</p></dd>
+
+</dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code>pknca_concepts()</code> gives the concept names PKNCA uses,
@@ -88,6 +98,24 @@ administration, <code>pknca_dosing()</code> the dosing patterns, and
 report for at least one context; <code>"uncommon"</code> marks one that is calculated
 only when asked for by name.  <code>"uncommon"</code> is the default, so a parameter
 registered without a tier is never selected automatically.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="route-synonyms">Route synonyms<a class="anchor" aria-label="anchor" href="#route-synonyms"></a></h2>
+
+
+<p><code>pknca_routes(synonyms = TRUE)</code> returns a data.frame with one row per
+spelling and the columns</p><ul><li><p><code>synonym</code>:  The spelling, in lower case with single spaces, as it may
+appear in data (for example <code>"po"</code>, <code>"intravenous bolus"</code>).  It includes
+the common abbreviations and the CDISC SDTM <code>ROUTE</code> controlled
+terminology terms that are extravascular or intravascular routes.</p></li>
+<li><p><code>route</code>:  One of <code>pknca_routes()</code>, or <code>"iv"</code> when the spelling is
+intravascular but does not say which intravascular route it is (for
+example <code>"intravenous"</code> does not say bolus or infusion).  <code>"iv"</code> is not a
+value of <code>pknca_routes()</code> without <code>synonyms</code>, because PKNCA cannot
+calculate with a route that does not say how the drug entered.</p></li>
+<li><p><code>dose_route</code>:  <code>"extravascular"</code> or <code>"intravascular"</code>, the values that
+<code><a href="PKNCAdose.html">PKNCAdose()</a></code> accepts for <code>route</code>.</p></li>
+</ul><p><code><a href="pknca_match_route.html">pknca_match_route()</a></code> looks spellings up in this table.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -104,6 +132,7 @@ registered without a tier is never selected automatically.</p>
 <code><a href="pknca_cdisc_codes.html">pknca_cdisc_codes()</a></code>,
 <code><a href="pknca_check_parameter_classification.html">pknca_check_parameter_classification()</a></code>,
 <code><a href="pknca_interval_table.html">pknca_interval_table()</a></code>,
+<code><a href="pknca_match_route.html">pknca_match_route()</a></code>,
 <code><a href="pknca_parameter_table.html">pknca_parameter_table()</a></code>,
 <code><a href="pknca_presets.html">pknca_presets()</a></code>,
 <code><a href="pknca_ref.html">pknca_ref()</a></code></p></div>

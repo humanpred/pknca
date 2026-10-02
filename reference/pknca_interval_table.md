@@ -134,6 +134,7 @@ Other Interval specifications:
 [`pknca_cdisc_codes()`](https://humanpred.github.io/pknca/reference/pknca_cdisc_codes.md),
 [`pknca_check_parameter_classification()`](https://humanpred.github.io/pknca/reference/pknca_check_parameter_classification.md),
 [`pknca_concepts()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md),
+[`pknca_match_route()`](https://humanpred.github.io/pknca/reference/pknca_match_route.md),
 [`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md),
 [`pknca_presets()`](https://humanpred.github.io/pknca/reference/pknca_presets.md),
 [`pknca_ref()`](https://humanpred.github.io/pknca/reference/pknca_ref.md)
