@@ -12,11 +12,16 @@ pknca_concepts()
 
 pknca_tiers()
 
-pknca_routes()
+pknca_routes(synonyms = FALSE)
 
 pknca_dosing()
 
 pknca_sample_types()
+}
+\arguments{
+\item{synonyms}{If \code{TRUE}, \code{pknca_routes()} returns the table of spellings
+that data may use for a route instead of the route names (see Route
+synonyms).}
 }
 \value{
 \code{pknca_concepts()} gives the concept names PKNCA uses,
@@ -33,6 +38,27 @@ report for at least one context; \code{"uncommon"} marks one that is calculated
 only when asked for by name.  \code{"uncommon"} is the default, so a parameter
 registered without a tier is never selected automatically.
 }
+\section{Route synonyms}{
+
+\code{pknca_routes(synonyms = TRUE)} returns a data.frame with one row per
+spelling and the columns
+\itemize{
+\item \code{synonym}:  The spelling, in lower case with single spaces, as it may
+appear in data (for example \code{"po"}, \code{"intravenous bolus"}).  It includes
+the common abbreviations and the CDISC SDTM \code{ROUTE} controlled
+terminology terms that are extravascular or intravascular routes.
+\item \code{route}:  One of \code{pknca_routes()}, or \code{"iv"} when the spelling is
+intravascular but does not say which intravascular route it is (for
+example \code{"intravenous"} does not say bolus or infusion).  \code{"iv"} is not a
+value of \code{pknca_routes()} without \code{synonyms}, because PKNCA cannot
+calculate with a route that does not say how the drug entered.
+\item \code{dose_route}:  \code{"extravascular"} or \code{"intravascular"}, the values that
+\code{\link[=PKNCAdose]{PKNCAdose()}} accepts for \code{route}.
+}
+
+\code{pknca_match_route()} looks spellings up in this table.
+}
+
 \examples{
 pknca_concepts()
 }
@@ -51,6 +77,7 @@ Other Interval specifications:
 \code{\link[=pknca_cdisc_codes]{pknca_cdisc_codes()}},
 \code{\link[=pknca_check_parameter_classification]{pknca_check_parameter_classification()}},
 \code{\link[=pknca_interval_table]{pknca_interval_table()}},
+\code{\link[=pknca_match_route]{pknca_match_route()}},
 \code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
 \code{\link[=pknca_presets]{pknca_presets()}},
 \code{\link[=pknca_ref]{pknca_ref()}}

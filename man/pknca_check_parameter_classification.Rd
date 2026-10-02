@@ -38,6 +38,7 @@ Other Interval specifications:
 \code{\link[=pknca_cdisc_codes]{pknca_cdisc_codes()}},
 \code{\link[=pknca_concepts]{pknca_concepts()}},
 \code{\link[=pknca_interval_table]{pknca_interval_table()}},
+\code{\link[=pknca_match_route]{pknca_match_route()}},
 \code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
 \code{\link[=pknca_presets]{pknca_presets()}},
 \code{\link[=pknca_ref]{pknca_ref()}}
