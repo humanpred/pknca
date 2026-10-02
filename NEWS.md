@@ -6,6 +6,13 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `pknca_routes(synonyms = TRUE)` lists the spellings that data uses for a route
+  of administration ("po", "intravenous bolus", CDISC `ROUTE` terms, ...) with
+  the route PKNCA uses for each and the `PKNCAdose(route=)` value it implies,
+  and `pknca_match_route()` looks character vectors up in that table, giving
+  `NA` for spellings it does not know.  Packages that detect a route column no
+  longer need their own synonym lists.  `pknca_routes()` without arguments is
+  unchanged.  (@GITHUB_HANDLE)
 * `pknca_impute_methods()` lists the imputation methods (`PKNCA_impute_method_*()`)
   with the names imputation strings use, their descriptions, and their
   arguments and defaults.  Each method is registered with its description next
