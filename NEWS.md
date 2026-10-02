@@ -12,7 +12,7 @@ the dosing including dose amount and route.
   and `pknca_match_route()` looks character vectors up in that table, giving
   `NA` for spellings it does not know.  Packages that detect a route column no
   longer need their own synonym lists.  `pknca_routes()` without arguments is
-  unchanged.  (@GITHUB_HANDLE)
+  unchanged.  (@billdenney)
 * `pknca_impute_methods()` lists the imputation methods (`PKNCA_impute_method_*()`)
   with the names imputation strings use, their descriptions, and their
   arguments and defaults.  Each method is registered with its description next
