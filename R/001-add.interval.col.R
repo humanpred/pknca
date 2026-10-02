@@ -161,8 +161,11 @@ pknca_tiers <- function() {
 #'     appear in data (for example `"po"`, `"intravenous bolus"`).  It includes
 #'     the common abbreviations and the CDISC SDTM `ROUTE` controlled
 #'     terminology terms that are extravascular or intravascular routes.
-#'   * `route`:  One of `pknca_routes()`, or `NA` when the spelling does not say
-#'     which intravascular route it is (`"iv"` does not say bolus or infusion).
+#'   * `route`:  One of `pknca_routes()`, or `"iv"` when the spelling is
+#'     intravascular but does not say which intravascular route it is (for
+#'     example `"intravenous"` does not say bolus or infusion).  `"iv"` is not a
+#'     value of `pknca_routes()` without `synonyms`, because PKNCA cannot
+#'     calculate with a route that does not say how the drug entered.
 #'   * `dose_route`:  `"extravascular"` or `"intravascular"`, the values that
 #'     [PKNCAdose()] accepts for `route`.
 #'
@@ -176,8 +179,8 @@ pknca_routes <- function(synonyms = FALSE) {
   c("extravascular", "iv_bolus", "iv_infusion", "iv_continuous_infusion")
 }
 
-# The spellings are grouped by the route they resolve to, with `NA` standing for
-# an intravascular spelling that does not say which intravascular route.  The
+# The spellings are grouped by the route they resolve to, with `iv` for an
+# intravascular spelling that does not say which intravascular route.  The
 # CDISC terms are those of the SDTM ROUTE codelist (C66729) that are given
 # outside or inside the vascular system; lower case is how the table stores
 # them.
@@ -207,16 +210,14 @@ pknca_route_synonym_table <- function() {
         "iv_continuous_infusion", "iv continuous infusion",
         "intravenous continuous infusion", "continuous infusion"
       ),
-      `NA` = c(
+      iv = c(
         "intravascular", "iv", "intravenous", "intra-arterial", "intraarterial"
       )
     )
-  route <- names(spellings)
-  route[route == "NA"] <- NA_character_
   ret <-
     data.frame(
       synonym = unlist(spellings, use.names = FALSE),
-      route = rep(route, lengths(spellings)),
+      route = rep(names(spellings), lengths(spellings)),
       stringsAsFactors = FALSE
     )
   ret$dose_route <- ifelse(ret$route %in% "extravascular", "extravascular", "intravascular")
@@ -229,8 +230,8 @@ pknca_route_synonym_table <- function() {
 #'   or `"INTRAVENOUS BOLUS"`.  Matching ignores case and leading, trailing,
 #'   and repeated white space.
 #' @returns A data.frame with one row for each element of `x` and the columns
-#'   `route` (one of [pknca_routes()], or `NA` when the spelling does not say
-#'   which intravascular route it is) and `dose_route` (`"extravascular"` or
+#'   `route` (one of [pknca_routes()], or `"iv"` when the spelling is
+#'   intravascular but does not say which intravascular route it is) and `dose_route` (`"extravascular"` or
 #'   `"intravascular"`, the values [PKNCAdose()] accepts for `route`).  Both
 #'   are `NA` when the spelling is not known or `x` is `NA`.
 #' @seealso The Route synonyms section of [pknca_routes()] for the spellings

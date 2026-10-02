@@ -13,8 +13,8 @@ and repeated white space.}
 }
 \value{
 A data.frame with one row for each element of \code{x} and the columns
-\code{route} (one of \code{\link[=pknca_routes]{pknca_routes()}}, or \code{NA} when the spelling does not say
-which intravascular route it is) and \code{dose_route} (\code{"extravascular"} or
+\code{route} (one of \code{\link[=pknca_routes]{pknca_routes()}}, or \code{"iv"} when the spelling is
+intravascular but does not say which intravascular route it is) and \code{dose_route} (\code{"extravascular"} or
 \code{"intravascular"}, the values \code{\link[=PKNCAdose]{PKNCAdose()}} accepts for \code{route}).  Both
 are \code{NA} when the spelling is not known or \code{x} is \code{NA}.
 }

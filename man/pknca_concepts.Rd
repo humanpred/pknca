@@ -47,8 +47,11 @@ spelling and the columns
 appear in data (for example \code{"po"}, \code{"intravenous bolus"}).  It includes
 the common abbreviations and the CDISC SDTM \code{ROUTE} controlled
 terminology terms that are extravascular or intravascular routes.
-\item \code{route}:  One of \code{pknca_routes()}, or \code{NA} when the spelling does not say
-which intravascular route it is (\code{"iv"} does not say bolus or infusion).
+\item \code{route}:  One of \code{pknca_routes()}, or \code{"iv"} when the spelling is
+intravascular but does not say which intravascular route it is (for
+example \code{"intravenous"} does not say bolus or infusion).  \code{"iv"} is not a
+value of \code{pknca_routes()} without \code{synonyms}, because PKNCA cannot
+calculate with a route that does not say how the drug entered.
 \item \code{dose_route}:  \code{"extravascular"} or \code{"intravascular"}, the values that
 \code{\link[=PKNCAdose]{PKNCAdose()}} accepts for \code{route}.
 }

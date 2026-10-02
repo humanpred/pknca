@@ -8,7 +8,8 @@ the dosing including dose amount and route.
 
 * `pknca_routes(synonyms = TRUE)` lists the spellings that data uses for a route
   of administration ("po", "intravenous bolus", CDISC `ROUTE` terms, ...) with
-  the route PKNCA uses for each and the `PKNCAdose(route=)` value it implies,
+  the route PKNCA uses for each (`"iv"` when the spelling does not say bolus or
+  infusion) and the `PKNCAdose(route=)` value it implies,
   and `pknca_match_route()` looks character vectors up in that table, giving
   `NA` for spellings it does not know.  Packages that detect a route column no
   longer need their own synonym lists.  `pknca_routes()` without arguments is

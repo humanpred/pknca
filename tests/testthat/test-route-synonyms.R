@@ -17,22 +17,23 @@ test_that("the synonym table is well formed", {
   expect_false(anyDuplicated(tbl$synonym) > 0)
   # Stored as the matcher normalizes its input
   expect_equal(tbl$synonym, gsub("[[:space:]]+", " ", trimws(tolower(tbl$synonym))))
-  expect_true(all(tbl$route %in% c(pknca_routes(), NA_character_)))
+  expect_false(anyNA(tbl$route))
+  expect_true(all(tbl$route %in% c(pknca_routes(), "iv")))
+  expect_false("iv" %in% pknca_routes())
   expect_false(anyNA(tbl$dose_route))
   expect_true(all(tbl$dose_route %in% c("extravascular", "intravascular")))
   # The canonical route decides the dose route when it is known
-  known <- !is.na(tbl$route)
   expect_equal(
-    tbl$dose_route[known],
-    ifelse(tbl$route[known] == "extravascular", "extravascular", "intravascular")
+    tbl$dose_route,
+    ifelse(tbl$route == "extravascular", "extravascular", "intravascular")
   )
   # Every canonical route has a spelling, including its own name
   for (r in pknca_routes()) {
     expect_true(r %in% tbl$synonym[tbl$route %in% r], info = r)
   }
   # Both PKNCAdose values are reachable, including the unresolved IV spellings
-  expect_true(all(c("intravascular", "iv", "intravenous") %in% tbl$synonym[is.na(tbl$route)]))
-  expect_equal(unique(tbl$dose_route[is.na(tbl$route)]), "intravascular")
+  expect_true(all(c("intravascular", "iv", "intravenous") %in% tbl$synonym[tbl$route == "iv"]))
+  expect_equal(unique(tbl$dose_route[tbl$route == "iv"]), "intravascular")
 })
 
 test_that("every dose_route in the table is accepted by PKNCAdose", {
@@ -57,7 +58,7 @@ test_that("pknca_match_route() resolves spellings and abbreviations", {
   expect_equal(
     pknca_match_route(c("iv", "intravenous", "intravascular")),
     data.frame(
-      route = rep(NA_character_, 3),
+      route = rep("iv", 3),
       dose_route = rep("intravascular", 3)
     )
   )
