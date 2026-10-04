@@ -150,6 +150,27 @@ test_that("assert_intervals refuses a sparse-only parameter for dense data", {
   )
 })
 
+test_that("rows of one interval may point at different references", {
+  intervals_pointers <-
+    data.frame(
+      interval_id = c("a", "a", "r1", "r2"),
+      start = c(0, 0, 100, 150), end = c(24, 24, 124, 174),
+      cmax = TRUE, ratio.cmax = c(TRUE, TRUE, FALSE, FALSE),
+      ratio.cmax_ref = c("r1", "r2", NA, NA)
+    )
+  expect_no_error(check.interval.specification(intervals_pointers))
+  expect_identical(
+    check.interval.specification(intervals_pointers)$ratio.cmax_ref,
+    c("r1", "r2", NA, NA)
+  )
+  # The same id with another window is still a conflict
+  intervals_pointers$end[2] <- 48
+  expect_error(
+    check.interval.specification(intervals_pointers),
+    class = "pknca_error_secondary_id_conflict"
+  )
+})
+
 test_that("one interval_id identifies one interval in every entry point", {
   d_conc <- data.frame(id = 1L, conc = c(0, 2, 1, 0.5), time = c(0, 1, 2, 4))
   o_conc <- PKNCAconc(d_conc, conc~time|id)

@@ -194,7 +194,8 @@ check_interval_id_classes <- function(x, ref_cols) {
 }
 
 # An `interval_id` names one logical interval, so rows sharing it may differ
-# only in what they calculate:  the parameter request columns and `impute`.
+# only in what they calculate:  the parameter request columns, the reference
+# pointers, and `impute`.
 # Rows with the same start, end, and groups but different ids are different
 # intervals, and an id on rows with different times or groups is an error.
 # Called by assert_intervals() and, through check_interval_secondary_cols(), by
@@ -203,9 +204,14 @@ assert_interval_ids_identify_one <- function(x) {
   if (!("interval_id" %in% names(x))) {
     return(invisible(x))
   }
-  request_cols <-
-    setdiff(intersect(names(x), names(get.interval.cols())), c("start", "end"))
-  compare_cols <- setdiff(names(x), c(request_cols, "impute"))
+  interval_cols <- names(get.interval.cols())
+  request_cols <- setdiff(intersect(names(x), interval_cols), c("start", "end"))
+  # The rows of one interval may point at different references
+  pointer_cols <-
+    grep(pattern = "_ref$", x = names(x), value = TRUE)
+  pointer_cols <-
+    pointer_cols[sub(pattern = "_ref$", replacement = "", x = pointer_cols) %in% interval_cols]
+  compare_cols <- setdiff(names(x), c(request_cols, pointer_cols, "impute"))
   for (current_id in unique(stats::na.omit(x$interval_id))) {
     rows <- which(x$interval_id %in% current_id)
     if (!all(duplicated(x[rows, compare_cols, drop = FALSE])[-1])) {
