@@ -12,7 +12,7 @@ data.frame.}
   filter_requested = FALSE,
   filter_excluded = FALSE,
   grpid_cols = NULL,
-  grpid_numeric = character(),
+  grpid_numeric = NULL,
   out.format = deprecated()
 )
 }
@@ -81,8 +81,10 @@ interval-only identifier regardless of that default.}
 \item{grpid_numeric}{For \code{out_format = "cdisc"}, the names of columns in
 \code{grpid_cols} whose values are whole numbers of at least 1 (such as the
 period), which are written as that number, so \code{"01"} becomes \code{1}.  A value
-that is not a finite whole number of at least 1 is an error.  The default
-is no columns.}
+that is not a finite whole number of at least 1 is an error.  \code{NULL} (the
+default) uses the \code{grpid_numeric} of the \code{\link[=PKNCAdata]{PKNCAdata()}} object for the
+columns of \code{grpid_cols} that it names, and \code{character()} means no
+columns regardless of that default.}
 
 \item{out.format}{Deprecated in favor of \code{out_format}}
 }

@@ -24,7 +24,8 @@ PKNCAdata(data.conc, data.dose, ...)
   units,
   options = list(),
   group_ref = NULL,
-  grpid_cols = NULL
+  grpid_cols = NULL,
+  grpid_numeric = NULL
 )
 }
 \arguments{
@@ -72,6 +73,11 @@ subject and analyte), each with the text written before its value (see
 \code{\link[=as.data.frame.PKNCAresults]{as.data.frame.PKNCAresults()}}).  It is the default for the \code{grpid_cols}
 argument there, so every output of one analysis agrees.  \code{NULL} (the
 default) gives an interval-only identifier.}
+
+\item{grpid_numeric}{The names of the columns in \code{grpid_cols} whose values
+are whole numbers of at least 1, such as the period, written as that
+number in PPGRPID.  It is the default for the \code{grpid_numeric} argument of
+\code{\link[=as.data.frame.PKNCAresults]{as.data.frame.PKNCAresults()}}.  \code{NULL} (the default) names no columns.}
 }
 \value{
 A PKNCAdata object with concentration, dose, interval, and

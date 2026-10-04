@@ -282,3 +282,48 @@ test_that("the numbering and width come from every interval of the results", {
     "A.I02"
   )
 })
+
+test_that("grpid_numeric of PKNCAdata is the default and as.data.frame overrides it", {
+  o_nca <-
+    grpid_results(
+      periods = c("01", "02"),
+      grpid_cols = c(Part = "", Period = "P"),
+      grpid_numeric = "Period"
+    )
+  expect_equal(o_nca$data$grpid_numeric, "Period")
+  expected <- rep(c("A.P1.I01", "A.P1.I02", "A.P2.I01", "A.P2.I02"), each = 2)
+  expect_equal(grpid_text(o_nca), c("A.P1.I01", "A.P1.I01", "A.P1.I02", "A.P1.I02", "A.P2.I01", "A.P2.I01", "A.P2.I02", "A.P2.I02"))
+  expect_equal(grpid_text(o_nca), expected)
+  # character() turns the default off, so the text is kept as it is
+  expect_equal(
+    grpid_text(o_nca, grpid_numeric = character()),
+    rep(c("A.P01.I01", "A.P01.I02", "A.P02.I01", "A.P02.I02"), each = 2)
+  )
+  # The default applies to the columns that are in use
+  expect_equal(
+    grpid_text(o_nca, grpid_cols = c(Part = "S")),
+    rep(c("SA.I01", "SA.I02"), each = 2, times = 2)
+  )
+  expect_equal(
+    grpid_text(o_nca, grpid_cols = c(Period = "Q")),
+    rep(c("Q1.I01", "Q1.I02", "Q2.I01", "Q2.I02"), each = 2)
+  )
+  # An explicit value must be in the grpid_cols that are in use
+  expect_error(
+    as.data.frame(o_nca, out_format = "cdisc", grpid_cols = c(Part = ""), grpid_numeric = "Period"),
+    class = "pknca_error_grpid_numeric_invalid"
+  )
+  # Without a default, the PKNCAdata object has none
+  expect_null(grpid_results(periods = 1)$data$grpid_numeric)
+})
+
+test_that("PKNCAdata checks grpid_numeric against grpid_cols", {
+  expect_error(
+    grpid_results(grpid_cols = c(Part = ""), grpid_numeric = "Period"),
+    class = "pknca_error_grpid_numeric_invalid"
+  )
+  expect_error(
+    grpid_results(grpid_numeric = "Period"),
+    class = "pknca_error_grpid_numeric_invalid"
+  )
+})

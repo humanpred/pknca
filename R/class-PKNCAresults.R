@@ -90,12 +90,14 @@ PKNCAresults <- function(result, data, exclude = NULL) {
 #' @param grpid_numeric For `out_format = "cdisc"`, the names of columns in
 #'   `grpid_cols` whose values are whole numbers of at least 1 (such as the
 #'   period), which are written as that number, so `"01"` becomes `1`.  A value
-#'   that is not a finite whole number of at least 1 is an error.  The default
-#'   is no columns.
+#'   that is not a finite whole number of at least 1 is an error.  `NULL` (the
+#'   default) uses the `grpid_numeric` of the [PKNCAdata()] object for the
+#'   columns of `grpid_cols` that it names, and `character()` means no
+#'   columns regardless of that default.
 #' @param out.format Deprecated in favor of `out_format`
 #' @returns A data.frame (or usually a tibble) of results
 #' @export
-as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'cdisc'), filter_requested = FALSE, filter_excluded = FALSE, grpid_cols = NULL, grpid_numeric = character(), out.format = deprecated()) {
+as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'cdisc'), filter_requested = FALSE, filter_excluded = FALSE, grpid_cols = NULL, grpid_numeric = NULL, out.format = deprecated()) {
   if (!filter_excluded) {
     ret <- x$result
   } else {
@@ -180,7 +182,7 @@ as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'c
 #   PPTEST added, the time point reference columns, and PPGRPID
 # @keywords Internal
 # @noRd
-pknca_cdisc_translate <- function(ret, x, grpid_cols = NULL, grpid_numeric = character()) {
+pknca_cdisc_translate <- function(ret, x, grpid_cols = NULL, grpid_numeric = NULL) {
   all_intervals <- get.interval.cols()
   # Determine route for each result row
   route_per_row <- pknca_cdisc_get_route(ret, x)

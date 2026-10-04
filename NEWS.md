@@ -11,7 +11,8 @@ the dosing including dose amount and route.
   grouping columns that the new `grpid_cols` argument names and the number of the
   row's interval within each combination of the grouping columns.  `PKNCAdata()` takes
   `grpid_cols` too, as the default for every output of one analysis, and
-  `grpid_numeric` writes columns such as the period as whole numbers.
+  `grpid_numeric` (also a `PKNCAdata()` argument) writes columns such as the period as
+  whole numbers.
   (@billdenney)
 * `pknca_routes(synonyms = TRUE)` lists the spellings that data uses for a route
   of administration ("po", "intravenous bolus", CDISC `ROUTE` terms, ...) with

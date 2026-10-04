@@ -11,12 +11,16 @@
 # are written as whole numbers.
 #
 # @param grpid_cols `NULL`, or a named character vector (see above)
-# @param grpid_numeric A character vector of names in `grpid_cols`
+# @param grpid_numeric `NULL`, or a character vector of names in `grpid_cols`
 # @param o_conc The PKNCAconc object that defines the grouping columns
-# @returns `grpid_cols`, unchanged (`NULL` stays `NULL`)
+# @returns `grpid_cols`, unchanged (`NULL` stays `NULL`); an error when an
+#   argument is invalid
 # @keywords Internal
 # @noRd
-assert_grpid_cols <- function(grpid_cols, o_conc, grpid_numeric = character()) {
+assert_grpid_cols <- function(grpid_cols, o_conc, grpid_numeric = NULL) {
+  if (is.null(grpid_numeric)) {
+    grpid_numeric <- character()
+  }
   if (!is.null(grpid_cols)) {
     if (
       !is.character(grpid_cols) ||
@@ -211,6 +215,10 @@ pknca_cdisc_add_grpid <- function(ret, x, grpid_cols, grpid_numeric) {
   o_conc <- as_PKNCAconc(x)
   if (is.null(grpid_cols)) {
     grpid_cols <- x$data$grpid_cols
+  }
+  if (is.null(grpid_numeric)) {
+    # The columns that PKNCAdata() marked numeric apply to the columns in use
+    grpid_numeric <- intersect(x$data$grpid_numeric, names(grpid_cols))
   }
   assert_grpid_cols(grpid_cols, o_conc, grpid_numeric)
   group_cols <- intersect(unlist(o_conc$columns$groups), names(ret))
