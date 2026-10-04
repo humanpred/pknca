@@ -23,7 +23,8 @@ PKNCAdata(data.conc, data.dose, ...)
   intervals,
   units,
   options = list(),
-  group_ref = NULL
+  group_ref = NULL,
+  grpid_cols = NULL
 )
 }
 \arguments{
@@ -63,6 +64,14 @@ input" section).}
 parameters, as a data.frame of group values, optionally
 parameter-specific (see Details).  \code{NULL} (the default) derives the
 reference from the data.}
+
+\item{grpid_cols}{The grouping columns that prefix the interval number in
+the PPGRPID column of \code{as.data.frame(results, out_format = "cdisc")}, as a
+named character vector of \code{\link[=PKNCAconc]{PKNCAconc()}} grouping columns (other than the
+subject and analyte), each with the text written before its value (see
+\code{\link[=as.data.frame.PKNCAresults]{as.data.frame.PKNCAresults()}}).  It is the default for the \code{grpid_cols}
+argument there, so every output of one analysis agrees.  \code{NULL} (the
+default) gives an interval-only identifier.}
 }
 \value{
 A PKNCAdata object with concentration, dose, interval, and

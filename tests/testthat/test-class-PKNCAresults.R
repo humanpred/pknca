@@ -1072,10 +1072,10 @@ test_that("CDISC interval reference: column order", {
     names(as.data.frame(o_nca, out_format = "cdisc")),
     c(
       "subject", "start", "end", "pknca_parameter", "PPTESTCD", "PPTEST",
-      "PPORRES", "PPANMETH", "exclude", "PPSTINT", "PPENINT", "PPTPTREF"
+      "PPORRES", "PPANMETH", "exclude", "PPSTINT", "PPENINT", "PPTPTREF", "PPGRPID"
     )
   )
-  # With date-time input, PPRFTDTC follows PPTPTREF
+  # With date-time input, PPRFTDTC follows PPTPTREF, and PPGRPID is last
   t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
   d_conc$time <- t0 + d_conc$time * 3600
   d_dose$time <- t0
@@ -1090,7 +1090,7 @@ test_that("CDISC interval reference: column order", {
     c(
       "subject", "start", "end", "pknca_parameter", "PPTESTCD", "PPTEST",
       "PPORRES", "PPANMETH", "exclude", "PPSTINT", "PPENINT", "PPTPTREF",
-      "PPRFTDTC"
+      "PPRFTDTC", "PPGRPID"
     )
   )
 })

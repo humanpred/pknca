@@ -6,6 +6,13 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `as.data.frame(results, out_format = "cdisc")` gives the record group identifier `PPGRPID`,
+  `"<prefix1><value1>.<prefix2><value2>.I<nn>"` (such as `"A.P1.I01"`), from the
+  grouping columns that the new `grpid_cols` argument names and the number of the
+  row's interval within each combination of the grouping columns.  `PKNCAdata()` takes
+  `grpid_cols` too, as the default for every output of one analysis, and
+  `grpid_numeric` writes columns such as the period as whole numbers.
+  (@billdenney)
 * `pknca_routes(synonyms = TRUE)` lists the spellings that data uses for a route
   of administration ("po", "intravenous bolus", CDISC `ROUTE` terms, ...) with
   the route PKNCA uses for each (`"iv"` when the spelling does not say bolus or
