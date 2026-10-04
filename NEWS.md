@@ -6,6 +6,12 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `filter()` on a `PKNCAresults` object whose expressions use only group columns
+  (the columns after the `|` in the formula) now also filters the concentration
+  data, the dose data, and the intervals in `$data`, so that a filtered result
+  is consistent with its data.  Filters that use other result columns
+  (`PPTESTCD`, `PPORRES`, `exclude`) filter the result table only, as before.
+  A data slot that lacks a referenced column is left unfiltered.  (@billdenney)
 * `pknca_routes(synonyms = TRUE)` lists the spellings that data uses for a route
   of administration ("po", "intravenous bolus", CDISC `ROUTE` terms, ...) with
   the route PKNCA uses for each (`"iv"` when the spelling does not say bolus or

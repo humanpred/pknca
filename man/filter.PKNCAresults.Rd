@@ -28,7 +28,27 @@ or dropped (for \code{filter_out()}).}
 resulting data, otherwise the grouping is kept as is.}
 }
 \description{
-dplyr filtering for PKNCA
+Filtering a \code{PKNCAconc} or \code{PKNCAdose} object filters its data.  Filtering a
+\code{PKNCAresults} object filters the result table and, when the filter only
+uses group columns (the columns after the \code{|} in the \code{PKNCAconc} formula), the
+concentration data, the dose data, and the intervals of \code{x$data} as well, so
+that the filtered results are consistent with their data.  A filter that uses
+any other column of the result table (such as \code{PPTESTCD}, \code{PPORRES}, or
+\code{exclude}), or that uses no column of the result table, filters the result
+table only.
+}
+\details{
+Each of the concentration data, the dose data, and the intervals is filtered
+by the same rule: it is filtered when it has every column that the filter
+uses, and it is left unfiltered otherwise.  For example, with a filter on
+\code{part} and dose data that were not grouped by \code{part}, the dose data remain
+whole; rows are never dropped by a column that the data do not have.
+Symbols that are not columns of the result table (such as variables in the
+calling environment) are not treated as references to the data.  The
+expressions are evaluated separately for each table, so a filter that
+depends on row position (such as \code{row_number()}) is not applied to the data
+slots unless it also names group columns, and then it acts within each
+table.
 }
 \seealso{
 Other dplyr verbs:
