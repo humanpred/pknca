@@ -66,14 +66,18 @@ PKNCAresults <- function(result, data, exclude = NULL) {
 #'   named in `grpid_cols` and the number of the row's interval, as
 #'   `"<prefix1><value1>.<prefix2><value2>.I<nn>"` (for example `"A.P1.I01"`,
 #'   `"P2.I01"`, or just `"I01"` without `grpid_cols`).  Within each
-#'   combination of the concentration grouping columns (the subject, the
-#'   analyte, and the `grpid_cols`), the intervals are numbered from 1 by start
-#'   and then end; the rows of one interval (one per parameter) share the
-#'   number.  The number is written with at least two digits, and with as many
-#'   as the largest interval number needs, so that the text sorts in time
-#'   order.  The numbers and the width come from every interval of the results,
-#'   so `filter_requested` and `filter_excluded` never renumber an interval.
-#'   The grouping columns also remain in the output.
+#'   combination of the subject, the analyte, and the `grpid_cols` columns, the
+#'   intervals are numbered from 1 by start and then end; the rows of one
+#'   interval (one per parameter) share the number.  Other grouping columns
+#'   (a treatment or a matrix, for example) do not enter PPGRPID:  they stay
+#'   as their own output columns, and intervals with the same window in
+#'   different values of them share a number.  The number is written with at
+#'   least two digits, and with as many as the largest interval number needs,
+#'   so that the text sorts in time order.  The numbers, the width, and the
+#'   checks of the values use every row of the results, so `filter_requested`
+#'   and `filter_excluded` never renumber an interval or hide a bad value;
+#'   an interval with no rows in the results has no number.  The grouping
+#'   columns also remain in the output.
 #' @param filter_requested Only return rows with parameters that were
 #'   specifically requested?
 #' @param filter_excluded Should excluded values be removed?

@@ -9,7 +9,8 @@ the dosing including dose amount and route.
 * `as.data.frame(results, out_format = "cdisc")` gives the record group identifier `PPGRPID`,
   `"<prefix1><value1>.<prefix2><value2>.I<nn>"` (such as `"A.P1.I01"`), from the
   grouping columns that the new `grpid_cols` argument names and the number of the
-  row's interval within each combination of the grouping columns.  `PKNCAdata()` takes
+  row's interval within each combination of the subject, analyte, and `grpid_cols`
+  columns (an interval with no result rows has no number).  `PKNCAdata()` takes
   `grpid_cols` too, as the default for every output of one analysis, and
   `grpid_numeric` (also a `PKNCAdata()` argument) writes columns such as the period as
   whole numbers.

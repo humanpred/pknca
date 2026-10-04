@@ -11,8 +11,8 @@
 # are written as whole numbers.
 #
 # @param grpid_cols `NULL`, or a named character vector (see above)
-# @param grpid_numeric `NULL`, or a character vector of names in `grpid_cols`
 # @param o_conc The PKNCAconc object that defines the grouping columns
+# @param grpid_numeric `NULL`, or a character vector of names in `grpid_cols`
 # @returns `grpid_cols`, unchanged (`NULL` stays `NULL`); an error when an
 #   argument is invalid
 # @keywords Internal
@@ -22,22 +22,7 @@ assert_grpid_cols <- function(grpid_cols, o_conc, grpid_numeric = NULL) {
     grpid_numeric <- character()
   }
   if (!is.null(grpid_cols)) {
-    if (
-      !is.character(grpid_cols) ||
-        anyNA(grpid_cols) ||
-        (length(grpid_cols) > 0 && !checkmate::test_names(names(grpid_cols), type = "unique"))
-    ) {
-      rlang::abort(
-        "`grpid_cols` must be NULL or a character vector with a unique name for each value: the grouping column names, with the text written before each column's value as the values",
-        class = "pknca_error_grpid_cols_invalid"
-      )
-    }
-    if (any(grepl(pattern = ".", x = grpid_cols, fixed = TRUE))) {
-      rlang::abort(
-        "The text written before a value in `grpid_cols` may not contain '.', because '.' separates the parts of the group identifier",
-        class = "pknca_error_grpid_cols_invalid"
-      )
-    }
+    assert_grpid_cols_form(grpid_cols)
     subject_analyte <- c(o_conc$columns$subject, o_conc$columns$groups$group_analyte)
     mask_subject_analyte <- names(grpid_cols) %in% subject_analyte
     if (any(mask_subject_analyte)) {
@@ -62,7 +47,7 @@ assert_grpid_cols <- function(grpid_cols, o_conc, grpid_numeric = NULL) {
   }
   if (!is.character(grpid_numeric) || anyNA(grpid_numeric)) {
     rlang::abort(
-      "`grpid_numeric` must be a character vector of column names",
+      "`grpid_numeric` must be a character vector of column names without missing values",
       class = "pknca_error_grpid_numeric_invalid"
     )
   }
@@ -79,11 +64,117 @@ assert_grpid_cols <- function(grpid_cols, o_conc, grpid_numeric = NULL) {
   grpid_cols
 }
 
+# The form of `grpid_cols` (not yet checked against the data): a character
+# vector with a unique, non-empty name and text without '.' for every column
+#
+# @param grpid_cols The argument
+# @returns `NULL`, invisibly, or an error
+# @keywords Internal
+# @noRd
+assert_grpid_cols_form <- function(grpid_cols) {
+  if (!is.character(grpid_cols)) {
+    rlang::abort(
+      sprintf(
+        "`grpid_cols` must be NULL or a character vector (a named one:  column names as the names, the text before each value as the values), not %s",
+        paste(class(grpid_cols), collapse = "/")
+      ),
+      class = "pknca_error_grpid_cols_invalid"
+    )
+  }
+  if (anyNA(grpid_cols)) {
+    rlang::abort(
+      sprintf(
+        "`grpid_cols` has a missing value (the text before the values) for column(s): %s",
+        paste(names(grpid_cols)[is.na(grpid_cols)], collapse = ", ")
+      ),
+      class = "pknca_error_grpid_cols_invalid"
+    )
+  }
+  if (length(grpid_cols) > 0) {
+    col_names <- names(grpid_cols)
+    if (is.null(col_names) || anyNA(col_names) || any(!nzchar(col_names))) {
+      rlang::abort(
+        sprintf(
+          "`grpid_cols` must have a column name for every value; the names are: %s",
+          if (is.null(col_names)) "none" else paste0("'", col_names, "'", collapse = ", ")
+        ),
+        class = "pknca_error_grpid_cols_invalid"
+      )
+    }
+    if (anyDuplicated(col_names)) {
+      rlang::abort(
+        sprintf(
+          "`grpid_cols` must name each column once; repeated: %s",
+          paste(unique(col_names[duplicated(col_names)]), collapse = ", ")
+        ),
+        class = "pknca_error_grpid_cols_invalid"
+      )
+    }
+  }
+  mask_dot <- grepl(pattern = ".", x = grpid_cols, fixed = TRUE)
+  if (any(mask_dot)) {
+    rlang::abort(
+      sprintf(
+        "The text written before the values in `grpid_cols` may not contain '.', because '.' separates the parts of the group identifier; column '%s' has '%s'",
+        names(grpid_cols)[mask_dot][1], grpid_cols[mask_dot][1]
+      ),
+      class = "pknca_error_grpid_cols_invalid"
+    )
+  }
+  invisible(NULL)
+}
+
+# Text that identifies a value in a key, with missing values distinct from any
+# text (including "NA")
+#
+# @param values A vector
+# @returns A character vector
+# @keywords Internal
+# @noRd
+pknca_grpid_key_text <- function(values) {
+  text <- as.character(values)
+  text[is.na(values)] <- "\001NA\001"
+  text
+}
+
+# The key of the group combination of each row
+#
+# @param data A data.frame
+# @param group_cols The names of the grouping columns in `data`
+# @returns A character vector with one key per row of `data`
+# @keywords Internal
+# @noRd
+pknca_interval_group_key <- function(data, group_cols) {
+  if (length(group_cols) == 0) {
+    return(rep("", nrow(data)))
+  }
+  do.call(
+    paste,
+    c(unname(lapply(data[, group_cols, drop = FALSE], pknca_grpid_key_text)), sep = "\r")
+  )
+}
+
+# The key of the interval window (group combination, start, and end) of each
+# row; 17 significant digits tell apart every pair of different doubles
+#
+# @inheritParams pknca_interval_group_key
+# @returns A character vector with one key per row of `data`
+# @keywords Internal
+# @noRd
+pknca_interval_window_key <- function(data, group_cols) {
+  paste(
+    pknca_interval_group_key(data, group_cols),
+    sprintf("%.17g", as.numeric(data$start)),
+    sprintf("%.17g", as.numeric(data$end)),
+    sep = "\r"
+  )
+}
+
 # Number the intervals of every combination of the grouping columns
 #
 # Within each combination of the grouping columns, the distinct intervals are
-# numbered from 1 by numeric start and then end, so rows of one interval (one
-# per parameter) share a number.  The numbering only uses the interval windows,
+# numbered from 1 by start and then end, so rows of one interval (one per
+# parameter) share a number.  The numbering only uses the interval windows,
 # so it does not need an `interval_id`.
 #
 # @param data A data.frame with the grouping columns, `start`, and `end`
@@ -103,18 +194,9 @@ pknca_interval_number <- function(data, group_cols) {
       class = "pknca_error_grpid_interval_missing"
     )
   }
-  # One integer per distinct group combination, in order of first appearance
-  group_id <-
-    if (length(group_cols) == 0) {
-      rep(1L, nrow(data))
-    } else {
-      group_key <- do.call(paste, c(lapply(data[, group_cols, drop = FALSE], as.character), sep = "\r"))
-      match(group_key, unique(group_key))
-    }
-  # Integer ids, not the numbers' text, identify a window so that windows never
-  # collide through text rounding
-  window_key <- paste(group_id, match(start, unique(start)), match(end, unique(end)))
-  windows <- data.frame(group_id = group_id, start = start, end = end)
+  group_key <- pknca_interval_group_key(data, group_cols)
+  window_key <- pknca_interval_window_key(data, group_cols)
+  windows <- data.frame(group_id = match(group_key, unique(group_key)), start = start, end = end)
   first <- !duplicated(window_key)
   distinct <- windows[first, , drop = FALSE]
   distinct_key <- window_key[first]
@@ -129,9 +211,9 @@ pknca_interval_number <- function(data, group_cols) {
 #
 # A numeric column (named in `grpid_numeric`) must hold finite whole numbers of
 # at least 1, and is written as the number, so "01" becomes "1".  Any other
-# column is written as its text, which may not be empty or contain the '.' that
-# separates the parts of the identifier.  Distinct values of a column must be
-# distinguishable in the text.
+# column is written as its text (a number without an exponent), which may not
+# be empty or contain the '.' that separates the parts of the identifier.
+# Distinct values of a column must be distinguishable in the text.
 #
 # @param values The values of one grouping column
 # @param col The name of the column (for the messages)
@@ -141,14 +223,15 @@ pknca_interval_number <- function(data, group_cols) {
 # @noRd
 pknca_grpid_value_text <- function(values, col, numeric) {
   distinct <- unique(values)
-  text <- as.character(distinct)
+  text <- pknca_grpid_value_as_text(distinct)
   if (numeric) {
     number <- suppressWarnings(as.numeric(text))
-    if (anyNA(number) || any(!is.finite(number)) || any(number < 1) || any(number != round(number))) {
+    mask_bad <- is.na(number) | !is.finite(number) | number < 1 | number != round(number)
+    if (any(mask_bad)) {
       rlang::abort(
         sprintf(
-          "Column '%s' is in `grpid_numeric`, so its values must be whole numbers of at least 1; the values are: %s",
-          col, paste(text, collapse = ", ")
+          "Column '%s' is in `grpid_numeric`, so its values must be whole numbers of at least 1; not whole numbers of at least 1: %s",
+          col, paste(encodeString(text[mask_bad], quote = "\"", na.encode = TRUE), collapse = ", ")
         ),
         class = "pknca_error_grpid_numeric_invalid"
       )
@@ -157,15 +240,19 @@ pknca_grpid_value_text <- function(values, col, numeric) {
   } else {
     if (anyNA(text) || any(!nzchar(text))) {
       rlang::abort(
-        sprintf("Column '%s' has an empty or missing value, which cannot be part of a group identifier", col),
+        sprintf(
+          "Column '%s' has an empty or missing value, which cannot be part of a group identifier; its distinct values are: %s",
+          col, paste(encodeString(text, quote = "\"", na.encode = TRUE), collapse = ", ")
+        ),
         class = "pknca_error_grpid_value_invalid"
       )
     }
-    if (any(grepl(pattern = ".", x = text, fixed = TRUE))) {
+    mask_dot <- grepl(pattern = ".", x = text, fixed = TRUE)
+    if (any(mask_dot)) {
       rlang::abort(
         sprintf(
           "Column '%s' has a value containing '.', which separates the parts of a group identifier; values: %s",
-          col, paste(text[grepl(pattern = ".", x = text, fixed = TRUE)], collapse = ", ")
+          col, paste(encodeString(text[mask_dot], quote = "\""), collapse = ", ")
         ),
         class = "pknca_error_grpid_value_invalid"
       )
@@ -181,6 +268,22 @@ pknca_grpid_value_text <- function(values, col, numeric) {
     )
   }
   text[match(values, distinct)]
+}
+
+# The text of each value, with numbers written in full (never "1e+05"), and
+# NA for a missing value
+#
+# @param values A vector
+# @returns A character vector
+# @keywords Internal
+# @noRd
+pknca_grpid_value_as_text <- function(values) {
+  if (!is.numeric(values)) {
+    return(as.character(values))
+  }
+  text <- vapply(X = values, FUN = format, FUN.VALUE = "", scientific = FALSE, trim = TRUE, digits = 15)
+  text[is.na(values)] <- NA_character_
+  text
 }
 
 # Assemble PPGRPID text from its parts
@@ -200,12 +303,16 @@ pknca_grpid_format <- function(group_text, number, width) {
 
 # Add the PPGRPID column
 #
-# The interval numbers and their width come from every row of the results, not
-# only the rows in the output, so that filtering the output does not renumber
-# an interval.  The width is at least 2 digits, and grows with the largest
-# interval number so that the text sorts in time order.
+# The interval numbers, their width, and the checks of the values use every row
+# of the results (`x$result`), not only the rows in the output, so filtering
+# the output never renumbers an interval or hides a bad value.  An interval
+# that produced no rows has no number.  The numbers count within each
+# combination of the subject, the analyte, and the `grpid_cols` columns; other
+# grouping columns do not enter PPGRPID.  The width is at least 2 digits, and
+# grows with the largest interval number so that the text sorts in time order.
 #
-# @param ret The cdisc result data.frame (with `start` and the grouping columns)
+# @param ret The cdisc result data.frame (with `start` and `end` and the
+#   grouping columns)
 # @param x The PKNCAresults object
 # @param grpid_cols,grpid_numeric See [as.data.frame.PKNCAresults()]
 # @returns `ret` with the PPGRPID column added last
@@ -221,25 +328,45 @@ pknca_cdisc_add_grpid <- function(ret, x, grpid_cols, grpid_numeric) {
     grpid_numeric <- intersect(x$data$grpid_numeric, names(grpid_cols))
   }
   assert_grpid_cols(grpid_cols, o_conc, grpid_numeric)
-  group_cols <- intersect(unlist(o_conc$columns$groups), names(ret))
-  key_cols <- c(group_cols, "start", "end")
-  all_rows <- as.data.frame(x$result)[, key_cols, drop = FALSE]
-  rows <- as.data.frame(ret)[, key_cols, drop = FALSE]
-  number_all <- pknca_interval_number(rbind(all_rows, rows), group_cols)
-  number <- number_all[length(number_all) - nrow(rows) + seq_len(nrow(rows))]
-  width <- max(2L, nchar(as.character(max(number_all, 1L))))
+  all_rows <- as.data.frame(x$result)
+  if (nrow(all_rows) == 0) {
+    ret$PPGRPID <- character()
+    return(ret)
+  }
+  # The subject is not a grouping column of sparse data, and a sparse result
+  # has no subject column
+  number_cols <-
+    intersect(
+      c(o_conc$columns$subject, o_conc$columns$groups$group_analyte, names(grpid_cols)),
+      names(all_rows)
+    )
+  number <- pknca_interval_number(all_rows, number_cols)
+  width <- max(2L, nchar(as.character(max(number))))
   group_text <- list()
   for (col in names(grpid_cols)) {
     group_text[[col]] <-
       paste0(
         grpid_cols[[col]],
         pknca_grpid_value_text(
-          values = as.data.frame(ret)[[col]],
+          values = all_rows[[col]],
           col = col,
           numeric = col %in% grpid_numeric
         )
       )
   }
-  ret$PPGRPID <- pknca_grpid_format(group_text, number, width)
+  grpid_all <- pknca_grpid_format(group_text, number, width)
+  # Every returned row is a row of the results, so it finds its own window
+  row_match <-
+    match(
+      pknca_interval_window_key(as.data.frame(ret), number_cols),
+      pknca_interval_window_key(all_rows, number_cols)
+    )
+  if (anyNA(row_match)) {
+    rlang::abort( # nocov start
+      "A row of the output is not a row of the results, so its interval cannot be numbered.  This is likely a bug.",
+      class = "pknca_error_internal_grpid_row"
+    ) # nocov end
+  }
+  ret$PPGRPID <- grpid_all[row_match]
   ret
 }
