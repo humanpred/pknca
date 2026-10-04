@@ -1261,6 +1261,19 @@ interval_assign_ref_ids <- function(intervals, ref_groups, ref_id, prefix = "ref
         stats::na.omit(intervals$interval_id[ref_groups[[i]]])
       }
     if (!is.null(ref_id)) {
+      # Rows of one reference group that already carry different identifiers
+      # are different intervals sharing a window; giving them all `ref_id`
+      # would merge them.
+      found <- unique(as.character(current))
+      if (length(found) > 1) {
+        rlang::abort(
+          sprintf(
+            "`reference` matched rows of more than one interval ('%s'), so `ref_id` cannot name a single reference interval. Leave `ref_id` unset, or narrow `reference` to the rows of one interval.",
+            paste(found, collapse = "', '")
+          ),
+          class = "pknca_error_secondary_ref_ambiguous_spec"
+        )
+      }
       ids[[i]] <- ref_id
     } else if (length(current) > 0) {
       ids[[i]] <- current[1]
@@ -1660,6 +1673,9 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
 #' @param ref_id The `interval_id` to give the reference interval.  The default
 #'   of `NULL` keeps an identifier the reference rows already have and
 #'   otherwise generates one matching the class of the `interval_id` column.
+#'   Reference rows that already carry more than one `interval_id` are an error
+#'   (`pknca_error_secondary_ref_ambiguous_spec`) when `ref_id` is given, as it
+#'   cannot name more than one interval.
 #' @returns The input with the parameter requested and the linkage columns set,
 #'   after [check.interval.specification()].
 #' @details The reference interval gains whatever the linked calculation reads

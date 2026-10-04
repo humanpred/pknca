@@ -6,6 +6,11 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `interval_add_secondary()` with a `ref_id` no longer merges intervals:  when the
+  `reference` rows carry more than one `interval_id` (two intervals sharing a
+  window and groups), every one of them used to be renamed to `ref_id`.  It now
+  stops with a `pknca_error_secondary_ref_ambiguous_spec` error naming the
+  identifiers found.  (@billdenney)
 * `pknca_routes(synonyms = TRUE)` lists the spellings that data uses for a route
   of administration ("po", "intravenous bolus", CDISC `ROUTE` terms, ...) with
   the route PKNCA uses for each (`"iv"` when the spelling does not say bolus or
