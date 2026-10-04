@@ -79,7 +79,10 @@ given.  At least one of \code{data.dose} and \code{intervals} must be given.
 
 A secondary parameter is calculated from a result in another interval, and
 the interval specification links the two with an \code{interval_id} column and a
-\verb{<parameter>_ref} pointer (see \code{\link[=interval_add_secondary]{interval_add_secondary()}}).  Where a request
+\verb{<parameter>_ref} pointer (see \code{\link[=interval_add_secondary]{interval_add_secondary()}}).  An
+\code{interval_id} identifies one interval:  rows that share it (an interval
+split by imputation, for example) may differ only in the parameters they
+request, never in \code{start}, \code{end}, or the groups.  Where a request
 has no pointer and could not otherwise be calculated, \code{\link[=pk.nca]{pk.nca()}} derives the
 reference profile from the data:  a parameter measured on an interval
 collection whose inputs are spot samples (renal clearance) takes the nearest

@@ -1238,59 +1238,115 @@ test_that("interval_add_secondary() rejects what it cannot link", {
   expect_identical(intervals_unchanged, intervals_sec_bare)
 })
 
-# Identifiers may be of any comparable class, so a generated one has to match
-# what the intervals already use
 # Two intervals sharing a window and groups are told apart only by their
 # interval_id, which a single `ref_id` cannot do.
+intervals_shared_window <- function(ids, last = "ss") {
+  data.frame(
+    interval_id = c(ids, last),
+    start = c(rep(0, length(ids)), 144), end = c(rep(24, length(ids)), 168),
+    cmax = TRUE
+  )
+}
+add_ratio_cmax <- function(intervals, ...) {
+  interval_add_secondary(
+    intervals, param = "ratio.cmax",
+    reference = data.frame(start = 0, end = 24),
+    target_groups = data.frame(start = 144, end = 168), ...
+  )
+}
+
 test_that("interval_add_secondary() will not merge intervals under one ref_id", {
-  intervals_window <- function(ids) {
-    data.frame(
-      interval_id = ids, start = c(0, 0, 144), end = c(24, 24, 168), cmax = TRUE
-    )
-  }
-  add_ratio <- function(intervals, ...) {
-    interval_add_secondary(
-      intervals, param = "ratio.cmax",
-      reference = data.frame(start = 0, end = 24),
-      target_groups = data.frame(start = 144, end = 168), ...
-    )
-  }
   # The reference rows carry two different interval_ids
   expect_error(
-    add_ratio(intervals_window(c("a", "b", "ss")), ref_id = "a"),
+    add_ratio_cmax(intervals_shared_window(c("a", "b")), ref_id = "a"),
+    class = "pknca_error_secondary_ref_ambiguous_spec",
+    regexp = "'a', 'b'"
+  )
+  # ... of any comparable class
+  intervals_factor_ids <- intervals_shared_window(c("a", "b"))
+  intervals_factor_ids$interval_id <- factor(intervals_factor_ids$interval_id)
+  expect_error(
+    add_ratio_cmax(intervals_factor_ids, ref_id = "a"),
     class = "pknca_error_secondary_ref_ambiguous_spec",
     regexp = "'a', 'b'"
   )
   expect_error(
-    add_ratio(intervals_window(factor(c("a", "b", "ss"))), ref_id = "a"),
+    add_ratio_cmax(intervals_shared_window(c(1, 2), last = 5), ref_id = 1),
+    class = "pknca_error_secondary_ref_ambiguous_spec",
+    regexp = "'1', '2'"
+  )
+  # A blank identifier is an identifier like any other
+  expect_error(
+    add_ratio_cmax(intervals_shared_window(c("", "a")), ref_id = "a"),
+    class = "pknca_error_secondary_ref_ambiguous_spec",
+    regexp = "'', 'a'"
+  )
+  # Missing identifiers are not counted among the ones found
+  expect_error(
+    add_ratio_cmax(intervals_shared_window(c("a", NA, "b")), ref_id = "a"),
     class = "pknca_error_secondary_ref_ambiguous_spec",
     regexp = "'a', 'b'"
+  )
+  # Every identifier is named, in the order the rows give them
+  expect_error(
+    add_ratio_cmax(intervals_shared_window(c("c", "a", "b")), ref_id = "a"),
+    class = "pknca_error_secondary_ref_ambiguous_spec",
+    regexp = "('c', 'a', 'b')",
+    fixed = TRUE
   )
   # Without ref_id the existing identifiers are kept, so nothing is merged
   expect_equal(
-    add_ratio(intervals_window(c("a", "b", "ss")))$interval_id,
+    add_ratio_cmax(intervals_shared_window(c("a", "b")))$interval_id,
     c("a", "b", "ss")
   )
+})
+
+test_that("interval_add_secondary() gives one reference interval the ref_id", {
   # One existing identifier, repeated on the rows of one (split) interval
   expect_equal(
-    add_ratio(intervals_window(c("a", "a", "ss")), ref_id = "a")$interval_id,
+    add_ratio_cmax(intervals_shared_window(c("a", "a")), ref_id = "a")$interval_id,
     c("a", "a", "ss")
   )
   # Rows without an identifier join the one identifier the other rows have
   # (a single interval spanning several rows), as they do without ref_id
-  with_blank <- add_ratio(intervals_window(c("a", NA, "ss")), ref_id = "a")
+  with_blank <- add_ratio_cmax(intervals_shared_window(c("a", NA)), ref_id = "a")
   expect_equal(with_blank$interval_id, c("a", "a", "ss"))
   expect_equal(with_blank$ratio.cmax_ref, c(NA, NA, "a"))
   expect_equal(
-    add_ratio(intervals_window(c("a", NA, "ss")))$interval_id,
+    add_ratio_cmax(intervals_shared_window(c("a", NA)))$interval_id,
     c("a", "a", "ss")
   )
   # No reference row has an identifier yet
-  no_ids <- add_ratio(intervals_window(c(NA, NA, "ss")), ref_id = "a")
+  no_ids <- add_ratio_cmax(intervals_shared_window(c(NA, NA)), ref_id = "a")
   expect_equal(no_ids$interval_id, c("a", "a", "ss"))
   expect_equal(no_ids$ratio.cmax_ref, c(NA, NA, "a"))
+  # A different ref_id renames the reference interval ...
+  expect_equal(
+    add_ratio_cmax(intervals_shared_window(c("a", NA)), ref_id = "z")$interval_id,
+    c("z", "z", "ss")
+  )
+  # ... which another interval's pointer to the old identifier cannot survive
+  intervals_pointed <-
+    data.frame(
+      interval_id = c("a", "t2", "ss"),
+      start = c(0, 48, 144), end = c(24, 72, 168), cmax = TRUE,
+      ratio.cmax = c(FALSE, TRUE, FALSE), ratio.cmax_ref = c(NA, "a", NA)
+    )
+  expect_error(
+    add_ratio_cmax(intervals_pointed, ref_id = "z"),
+    class = "pknca_error_secondary_ref_unknown",
+    regexp = "ratio.cmax_ref"
+  )
+  # ... and a ref_id that another interval already has would merge the two
+  expect_error(
+    add_ratio_cmax(intervals_shared_window("a"), ref_id = "ss"),
+    class = "pknca_error_secondary_id_conflict",
+    regexp = "ss"
+  )
 })
 
+# Identifiers may be of any comparable class, so a generated one has to match
+# what the intervals already use
 test_that("interval_add_secondary() generates ids matching the existing class", {
   intervals_numeric <- intervals_sec_bare
   intervals_numeric$interval_id <- c(7, NA)

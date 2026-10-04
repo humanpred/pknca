@@ -193,6 +193,34 @@ check_interval_id_classes <- function(x, ref_cols) {
   x
 }
 
+# An `interval_id` names one logical interval, so rows sharing it may differ
+# only in what they calculate:  the parameter request columns and `impute`.
+# Rows with the same start, end, and groups but different ids are different
+# intervals, and an id on rows with different times or groups is an error.
+# Called by assert_intervals() and, through check_interval_secondary_cols(), by
+# check.interval.specification().  Returns `x` invisibly.
+assert_interval_ids_identify_one <- function(x) {
+  if (!("interval_id" %in% names(x))) {
+    return(invisible(x))
+  }
+  request_cols <-
+    setdiff(intersect(names(x), names(get.interval.cols())), c("start", "end"))
+  compare_cols <- setdiff(names(x), c(request_cols, "impute"))
+  for (current_id in unique(stats::na.omit(x$interval_id))) {
+    rows <- which(x$interval_id %in% current_id)
+    if (!all(duplicated(x[rows, compare_cols, drop = FALSE])[-1])) {
+      rlang::abort(
+        sprintf(
+          "Rows sharing interval_id '%s' must describe the same interval; they differ outside the parameter and impute columns",
+          current_id
+        ),
+        class = "pknca_error_secondary_id_conflict"
+      )
+    }
+  }
+  invisible(x)
+}
+
 # Validate the cross-interval linkage columns of an interval specification:
 # `interval_id` and the `<parameter>_ref` pointers naming it.  Called from
 # check.interval.specification() after every registered parameter column exists.
@@ -230,22 +258,7 @@ check_interval_secondary_cols <- function(x) {
     # factor levels) so it stays comparable.
     x$interval_id <- x[[ref_cols[1]]][rep(NA_integer_, nrow(x))]
   }
-  # An id names one logical interval, so rows sharing it may differ only in what
-  # they calculate:  the parameter request columns and `impute`.
-  request_cols <- setdiff(intersect(names(x), names(interval_cols)), c("start", "end"))
-  compare_cols <- setdiff(names(x), c(request_cols, "impute"))
-  for (current_id in unique(stats::na.omit(x$interval_id))) {
-    rows <- which(x$interval_id %in% current_id)
-    if (!all(duplicated(x[rows, compare_cols, drop = FALSE])[-1])) {
-      rlang::abort(
-        sprintf(
-          "Rows sharing interval_id '%s' must describe the same interval; they differ outside the parameter and impute columns",
-          current_id
-        ),
-        class = "pknca_error_secondary_id_conflict"
-      )
-    }
-  }
+  assert_interval_ids_identify_one(x)
   for (col in ref_cols) {
     prefix <- sub(pattern = "_ref$", replacement = "", x = col)
     unknown <- setdiff(stats::na.omit(x[[col]]), stats::na.omit(x$interval_id))

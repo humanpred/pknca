@@ -36,7 +36,10 @@ interval.}
 \item{ref_id}{The \code{interval_id} to give the reference interval.  The default
 of \code{NULL} keeps an identifier the reference rows already have and
 otherwise generates one matching the class of the \code{interval_id} column.
-Reference rows that already carry more than one \code{interval_id} are an error
+A \code{ref_id} that differs from the identifier the reference rows already
+have renames that interval, which is an error when another interval points
+at the old identifier or already has \code{ref_id}.  Reference rows that
+already carry more than one \code{interval_id} are an error
 (\code{pknca_error_secondary_ref_ambiguous_spec}) when \code{ref_id} is given, as it
 cannot name more than one interval.}
 

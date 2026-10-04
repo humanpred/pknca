@@ -10,7 +10,11 @@ the dosing including dose amount and route.
   `reference` rows carry more than one `interval_id` (two intervals sharing a
   window and groups), every one of them used to be renamed to `ref_id`.  It now
   stops with a `pknca_error_secondary_ref_ambiguous_spec` error naming the
-  identifiers found.  (@billdenney)
+  identifiers found.  An `interval_id` identifies one interval:  `assert_intervals()`
+  (so `set_intervals()`, `PKNCAdata(intervals=)`, and `pk.nca()`) now also raises
+  the `pknca_error_secondary_id_conflict` error that `check.interval.specification()`
+  already raised when rows sharing an `interval_id` differ in `start`, `end`, or
+  the groups.  (@billdenney)
 * `pknca_routes(synonyms = TRUE)` lists the spellings that data uses for a route
   of administration ("po", "intravenous bolus", CDISC `ROUTE` terms, ...) with
   the route PKNCA uses for each (`"iv"` when the spelling does not say bolus or
