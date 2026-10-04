@@ -36,9 +36,9 @@ addProvenance <- function(object, replace=FALSE) {
 #' When `object` differs from `original`, the hash is replaced with
 #' `"<verb> from <previous hash>"`, which never matches the hash of an object's
 #' contents, so [checkProvenance()] gives `FALSE`.  An operation that leaves the
-#' object identical keeps its provenance.  Repeated modifications nest (`"mutated from filtered from <hash>"`)
-#' so the history of verbs is kept.  An object without provenance is returned
-#' unchanged (its [checkProvenance()] remains `NA`).
+#' object identical keeps its provenance.  Repeated modifications nest
+#' (`"mutated from filtered from <hash>"`) so the history of verbs is kept.  An
+#' object without provenance is returned unchanged (its [checkProvenance()] remains `NA`).
 #'
 #' @param object The object after the operation
 #' @param original The object before the operation

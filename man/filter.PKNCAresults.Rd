@@ -6,11 +6,11 @@
 \alias{filter.PKNCAdose}
 \title{dplyr filtering for PKNCA}
 \usage{
-\method{filter}{PKNCAresults}(.data, ..., .preserve = FALSE)
+\method{filter}{PKNCAresults}(.data, ..., .by = NULL, .preserve = FALSE)
 
-\method{filter}{PKNCAconc}(.data, ..., .preserve = FALSE)
+\method{filter}{PKNCAconc}(.data, ..., .by = NULL, .preserve = FALSE)
 
-\method{filter}{PKNCAdose}(.data, ..., .preserve = FALSE)
+\method{filter}{PKNCAdose}(.data, ..., .by = NULL, .preserve = FALSE)
 }
 \arguments{
 \item{.data}{A data frame, data frame extension (e.g. a tibble), or a
@@ -24,6 +24,10 @@ To combine expressions using \code{|} instead, wrap them in \code{\link[dplyr:wh
 rows for which all expressions evaluate to \code{TRUE} are kept (for \code{filter()})
 or dropped (for \code{filter_out()}).}
 
+\item{.by}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}> Optionally, a selection of columns to
+group by for just this operation, functioning as an alternative to \code{\link[dplyr:group_by]{group_by()}}. For
+details and examples, see \link[dplyr:dplyr_by]{?dplyr_by}.}
+
 \item{.preserve}{Relevant when the \code{.data} input is grouped. If \code{.preserve = FALSE} (the default), the grouping structure is recalculated based on the
 resulting data, otherwise the grouping is kept as is.}
 }
@@ -32,23 +36,29 @@ Filtering a \code{PKNCAconc} or \code{PKNCAdose} object filters its data.  Filte
 \code{PKNCAresults} object filters the result table and, when the filter only
 uses group columns (the columns after the \code{|} in the \code{PKNCAconc} formula), the
 concentration data, the dose data, and the intervals of \code{x$data} as well, so
-that the filtered results are consistent with their data.  A filter that uses
-any other column of the result table (such as \code{PPTESTCD}, \code{PPORRES}, or
-\code{exclude}), or that uses no column of the result table, filters the result
-table only.
+that the filtered results are consistent with their data.  Only those three
+are filtered; \code{group_ref} and \code{units} of the \code{PKNCAdata} are not.
 }
 \details{
-Each of the concentration data, the dose data, and the intervals is filtered
-by the same rule: it is filtered when it has every column that the filter
-uses, and it is left unfiltered otherwise.  For example, with a filter on
-\code{part} and dose data that were not grouped by \code{part}, the dose data remain
-whole; rows are never dropped by a column that the data do not have.
-Symbols that are not columns of the result table (such as variables in the
-calling environment) are not treated as references to the data.  The
-expressions are evaluated separately for each table, so a filter that
-depends on row position (such as \code{row_number()}) is not applied to the data
-slots unless it also names group columns, and then it acts within each
+The filter is evaluated once, on the result table.  The groups that remain
+there are the groups kept: the rows of the concentration data, dose data, and
+intervals are kept when their values in the group columns that they share
+with the result table match a remaining group.  A table that has none of
+those group columns (for example, intervals with no group columns) is left
+whole, and groups that have no rows in the result table are dropped from the
+data.  Because the filter is evaluated only on the results, any filter that
+aggregates over rows (such as \code{ID == max(ID)}) keeps the same groups in every
 table.
+
+A filter that uses any other column of the result table (such as \code{PPTESTCD},
+\code{PPORRES}, or \code{exclude}), or that uses no column of the result table, filters
+the result table only.  Columns are recognized when the expressions name them
+(\code{part == "SAD"}, \code{.data$part == "SAD"}, and the columns of \code{.by}).
+Variables of the calling environment are not treated as columns.  Filters
+that choose columns without naming them (\code{.data[[var]]}, \code{across()},
+\code{if_any()}, \code{if_all()}, \code{pick()}, and tidyselect helpers such as \code{all_of()}
+or \code{starts_with()}) filter the result table only, with a message that the
+data were not filtered.
 
 A \code{PKNCAresults} object that a PKNCA dplyr verb changes (\code{filter()},
 \code{mutate()}, \code{group_by()}, \code{ungroup()}, and the joins) no longer matches the

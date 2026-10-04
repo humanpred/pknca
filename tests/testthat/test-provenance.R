@@ -152,8 +152,12 @@ test_that("every PKNCAresults method is classified as modifying or read-only", {
     "as_PKNCAresults", "get_halflife_fit", "get_halflife_points",
     "getDataName", "getGroups", "group_vars", "is_sparse_pk", "summary"
   )
-  generics <- attr(utils::methods(class = "PKNCAresults"), "info")$generic
+  # Methods that other attached packages register for the class are not ours
+  info <- attr(utils::methods(class = "PKNCAresults"), "info")
+  generics <- info$generic[info$from == "PKNCA"]
   expect_equal(setdiff(generics, c(modifying, read_only)), character(0))
+  # A stale entry in either list is caught
+  expect_equal(setdiff(c(modifying, read_only), generics), character(0))
   # exclude() dispatches to its default method, so it is not in the method list
   # and is tested in modifying_results_operations only.  update() recalculates
   # and stamps a new provenance, so it is not a marking operation.
