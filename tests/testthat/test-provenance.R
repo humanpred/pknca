@@ -152,17 +152,11 @@ test_that("every PKNCAresults method is classified as modifying or read-only", {
     "as_PKNCAresults", "get_halflife_fit", "get_halflife_points",
     "getDataName", "getGroups", "group_vars", "is_sparse_pk", "summary"
   )
-  # Methods that other attached packages register for the class are not ours
-  all_generics <- attr(utils::methods(class = "PKNCAresults"), "info")$generic
-  is_ours <- vapply(
-    all_generics,
-    function(generic) {
-      method <- utils::getS3method(generic, "PKNCAresults")
-      environmentName(topenv(environment(method))) == "PKNCA"
-    },
-    FUN.VALUE = TRUE
-  )
-  generics <- all_generics[is_ours]
+  # The methods that PKNCA registers for the class; methods that other
+  # packages register are not ours, and the namespace table lists the generics
+  # whether or not they are attached or exported.
+  s3_methods <- getNamespaceInfo("PKNCA", "S3methods")
+  generics <- s3_methods[s3_methods[, 2] == "PKNCAresults", 1]
   expect_equal(setdiff(generics, c(modifying, read_only)), character(0))
   # A stale entry in either list is caught
   expect_equal(setdiff(c(modifying, read_only), generics), character(0))
