@@ -152,6 +152,17 @@ test_that("dplyr filter on a result-only column leaves the data slots whole", {
   expect_equal(filtered$data, myresult$data)
 })
 
+test_that("dplyr filter on start or end filters the result table only", {
+  myresult <- make_part_results()
+  myresult$result$end[myresult$result$ID > 2] <- 12
+  filtered <- filter(myresult, end == 12)
+  expect_equal(unique(filtered$result$ID), 3:4)
+  expect_equal(filtered$data, myresult$data)
+  filtered <- filter(myresult, part == "MAD", start == 0)
+  expect_equal(unique(filtered$result$ID), 3:4)
+  expect_equal(filtered$data, myresult$data)
+})
+
 test_that("dplyr filter that references no column changes nothing", {
   myresult <- make_part_results()
   expect_identical(filter(myresult, TRUE), myresult)

@@ -227,7 +227,11 @@ full_join.PKNCAdose <- join_maker_PKNCA(dplyr::full_join, "full-joined")
 #' that choose columns without naming them (`.data[[var]]`, `across()`,
 #' `if_any()`, `if_all()`, `pick()`, and tidyselect helpers such as `all_of()`
 #' or `starts_with()`) filter the result table only, with a message that the
-#' data were not filtered.
+#' data were not filtered.  The columns `start` and `end` belong to the result
+#' table, so a filter on them leaves the data unchanged.
+#'
+#' `mutate()` and the joins change only the result table; assigning into the
+#' object directly is the caller's responsibility and is not tracked.
 #'
 #' A `PKNCAresults` object that a PKNCA dplyr verb changes (`filter()`,
 #' `mutate()`, `group_by()`, `ungroup()`, and the joins) no longer matches the

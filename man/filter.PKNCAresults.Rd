@@ -58,7 +58,11 @@ Variables of the calling environment are not treated as columns.  Filters
 that choose columns without naming them (\code{.data[[var]]}, \code{across()},
 \code{if_any()}, \code{if_all()}, \code{pick()}, and tidyselect helpers such as \code{all_of()}
 or \code{starts_with()}) filter the result table only, with a message that the
-data were not filtered.
+data were not filtered.  The columns \code{start} and \code{end} belong to the result
+table, so a filter on them leaves the data unchanged.
+
+\code{mutate()} and the joins change only the result table; assigning into the
+object directly is the caller's responsibility and is not tracked.
 
 A \code{PKNCAresults} object that a PKNCA dplyr verb changes (\code{filter()},
 \code{mutate()}, \code{group_by()}, \code{ungroup()}, and the joins) no longer matches the
