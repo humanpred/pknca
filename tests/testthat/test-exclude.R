@@ -213,6 +213,7 @@ test_that("exclude.default", {
   # Check exclusion for PKNCAresults class
   result_obj_not_1 <- result_obj
   result_obj_not_1$result$exclude[result_obj_not_1$result$ID == 1] <- "Not 1"
+  result_obj_not_1 <- set_provenance_marker(result_obj_not_1, "excluded", result_obj)
   expect_equal(
     exclude(result_obj, reason="Not 1", FUN=function(x, ...) x$ID == 1),
     result_obj_not_1,

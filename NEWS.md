@@ -12,6 +12,11 @@ the dosing including dose amount and route.
   is consistent with its data.  Filters that use other result columns
   (`PPTESTCD`, `PPORRES`, `exclude`) filter the result table only, as before.
   A data slot that lacks a referenced column is left unfiltered.  (@billdenney)
+* A `PKNCAresults` object that `filter()`, `mutate()`, `group_by()`,
+  `ungroup()`, the joins, `exclude()`, or `normalize()` changes after the run
+  no longer vouches for itself: its provenance hash becomes a marker such as
+  `"filtered from <hash>"` and `checkProvenance()` returns `FALSE`.  Calls that
+  leave the object identical keep its provenance.  (@billdenney)
 * `pknca_routes(synonyms = TRUE)` lists the spellings that data uses for a route
   of administration ("po", "intravenous bolus", CDISC `ROUTE` terms, ...) with
   the route PKNCA uses for each (`"iv"` when the spelling does not say bolus or

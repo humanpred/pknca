@@ -31,11 +31,40 @@ addProvenance <- function(object, replace=FALSE) {
   object
 }
 
+#' Mark that an object's provenance no longer applies because it was modified
+#'
+#' When `object` differs from `original`, the hash is replaced with
+#' `"<verb> from <previous hash>"`, which never matches the hash of an object's
+#' contents, so [checkProvenance()] gives `FALSE`.  An operation that leaves the
+#' object identical keeps its provenance.  Repeated modifications nest (`"mutated from filtered from <hash>"`)
+#' so the history of verbs is kept.  An object without provenance is returned
+#' unchanged (its [checkProvenance()] remains `NA`).
+#'
+#' @param object The object after the operation
+#' @param original The object before the operation
+#' @param verb The past-tense verb for the modification (for example
+#'   `"filtered"`)
+#' @returns `object` with the provenance hash marked
+#' @noRd
+mark_provenance_modified <- function(object, original, verb) {
+  prov <- attr(object, "provenance", exact=TRUE)
+  if (!is.null(prov) && !identical(object, original)) {
+    prov$hash <- paste(verb, "from", prov$hash)
+    attr(object, "provenance") <- prov
+  }
+  object
+}
+
 #' Check the hash of an object to confirm its provenance.
 #'
 #' @param object The object to check provenance for
 #' @returns `TRUE` if the provenance is confirmed to be consistent, `FALSE` if
 #'   the provenance is not consistent, or `NA` if provenance is not present.
+#'   An object that was modified after it was created by a PKNCA function that
+#'   marks provenance (for example [dplyr::filter()], [dplyr::mutate()],
+#'   [exclude()], or [normalize()] on a `PKNCAresults` object) has a hash such
+#'   as `"filtered from <hash>"` instead of the original hash and always gives
+#'   `FALSE`.
 #' @seealso [addProvenance()]
 #' @export
 checkProvenance <- function(object) {

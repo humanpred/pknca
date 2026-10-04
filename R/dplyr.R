@@ -27,17 +27,19 @@ dplyr::ungroup
 #' @export
 dplyr::mutate
 
-join_maker_PKNCA <- function(join_fun) {
+join_maker_PKNCA <- function(join_fun, verb) {
   function(x, y, by = NULL, copy = FALSE, suffix = c(".x", ".y"), ..., keep = FALSE) { # nocov start
     dataname <- getDataName(x)
-    x[[dataname]] <- join_fun(x=x[[dataname]], y=y, by = by, copy = copy, suffix = suffix, ..., keep = keep)
-    x
+    ret <- x
+    ret[[dataname]] <- join_fun(x=x[[dataname]], y=y, by = by, copy = copy, suffix = suffix, ..., keep = keep)
+    mark_provenance_modified(ret, x, verb)
   } # nocov end
 }
 filter_PKNCA <- function(.data, ..., .preserve=FALSE) {
   dataname <- getDataName(.data)
-  .data[[dataname]] <- dplyr::filter(.data[[dataname]], ..., .preserve=.preserve)
-  .data
+  ret <- .data
+  ret[[dataname]] <- dplyr::filter(.data[[dataname]], ..., .preserve=.preserve)
+  mark_provenance_modified(ret, .data, "filtered")
 }
 
 # Columns that the expressions of a dplyr verb name and that the table has.
@@ -63,38 +65,41 @@ filter_PKNCAresults <- function(.data, ..., .preserve=FALSE) {
   quos <- rlang::enquos(...)
   referenced <- filter_referenced_columns(quos, .data$result)
   group_cols <- dplyr::group_vars(.data$data$conc)
-  .data$result <- dplyr::filter(.data$result, !!!quos, .preserve = .preserve)
+  ret <- .data
+  ret$result <- dplyr::filter(.data$result, !!!quos, .preserve = .preserve)
   # Expressions that reference a column only the result table has (or no
   # column at all) cannot be applied to the data slots.
-  if (length(referenced) == 0 || !all(referenced %in% group_cols)) {
-    return(.data)
+  if (length(referenced) > 0 && all(referenced %in% group_cols)) {
+    ret$data$conc <-
+      filter_results_slot(.data$data$conc, quos, referenced, .preserve)
+    if (inherits(.data$data$dose, "PKNCAdose")) {
+      ret$data$dose <-
+        filter_results_slot(.data$data$dose, quos, referenced, .preserve)
+    }
+    if (is.data.frame(.data$data$intervals)) {
+      ret$data$intervals <-
+        filter_results_slot(.data$data$intervals, quos, referenced, .preserve)
+    }
   }
-  .data$data$conc <-
-    filter_results_slot(.data$data$conc, quos, referenced, .preserve)
-  if (inherits(.data$data$dose, "PKNCAdose")) {
-    .data$data$dose <-
-      filter_results_slot(.data$data$dose, quos, referenced, .preserve)
-  }
-  if (is.data.frame(.data$data$intervals)) {
-    .data$data$intervals <-
-      filter_results_slot(.data$data$intervals, quos, referenced, .preserve)
-  }
-  .data
+  mark_provenance_modified(ret, .data, "filtered")
 }
 mutate_PKNCA <- function(.data, ...) {
   dataname <- getDataName(.data)
-  .data[[dataname]] <- dplyr::mutate(.data[[dataname]], ...)
-  .data
+  ret <- .data
+  ret[[dataname]] <- dplyr::mutate(.data[[dataname]], ...)
+  mark_provenance_modified(ret, .data, "mutated")
 }
 group_by_PKNCA <- function(.data, ..., .add = FALSE, .drop = dplyr::group_by_drop_default(.data)) {
   dataname <- getDataName(.data)
-  .data[[dataname]] <- dplyr::group_by(.data[[dataname]], ..., .add = FALSE, .drop = .drop)
-  .data
+  ret <- .data
+  ret[[dataname]] <- dplyr::group_by(.data[[dataname]], ..., .add = FALSE, .drop = .drop)
+  mark_provenance_modified(ret, .data, "grouped")
 }
 ungroup_PKNCA <- function(x, ...) {
   dataname <- getDataName(x)
-  x[[dataname]] <- dplyr::ungroup(x[[dataname]], ...)
-  x
+  ret <- x
+  ret[[dataname]] <- dplyr::ungroup(x[[dataname]], ...)
+  mark_provenance_modified(ret, x, "ungrouped")
 }
 
 #' dplyr joins for PKNCA
@@ -102,42 +107,42 @@ ungroup_PKNCA <- function(x, ...) {
 #' @inheritParams dplyr::inner_join
 #' @family dplyr verbs
 #' @export
-inner_join.PKNCAresults <- join_maker_PKNCA(dplyr::inner_join)
+inner_join.PKNCAresults <- join_maker_PKNCA(dplyr::inner_join, "inner-joined")
 #' @rdname inner_join.PKNCAresults
 #' @export
-left_join.PKNCAresults <- join_maker_PKNCA(dplyr::left_join)
+left_join.PKNCAresults <- join_maker_PKNCA(dplyr::left_join, "left-joined")
 #' @rdname inner_join.PKNCAresults
 #' @export
-right_join.PKNCAresults <- join_maker_PKNCA(dplyr::right_join)
+right_join.PKNCAresults <- join_maker_PKNCA(dplyr::right_join, "right-joined")
 #' @rdname inner_join.PKNCAresults
 #' @export
-full_join.PKNCAresults <- join_maker_PKNCA(dplyr::full_join)
+full_join.PKNCAresults <- join_maker_PKNCA(dplyr::full_join, "full-joined")
 
 #' @rdname inner_join.PKNCAresults
 #' @export
-inner_join.PKNCAconc <- join_maker_PKNCA(dplyr::inner_join)
+inner_join.PKNCAconc <- join_maker_PKNCA(dplyr::inner_join, "inner-joined")
 #' @rdname inner_join.PKNCAresults
 #' @export
-left_join.PKNCAconc <- join_maker_PKNCA(dplyr::left_join)
+left_join.PKNCAconc <- join_maker_PKNCA(dplyr::left_join, "left-joined")
 #' @rdname inner_join.PKNCAresults
 #' @export
-right_join.PKNCAconc <- join_maker_PKNCA(dplyr::right_join)
+right_join.PKNCAconc <- join_maker_PKNCA(dplyr::right_join, "right-joined")
 #' @rdname inner_join.PKNCAresults
 #' @export
-full_join.PKNCAconc <- join_maker_PKNCA(dplyr::full_join)
+full_join.PKNCAconc <- join_maker_PKNCA(dplyr::full_join, "full-joined")
 
 #' @rdname inner_join.PKNCAresults
 #' @export
-inner_join.PKNCAdose <- join_maker_PKNCA(dplyr::inner_join)
+inner_join.PKNCAdose <- join_maker_PKNCA(dplyr::inner_join, "inner-joined")
 #' @rdname inner_join.PKNCAresults
 #' @export
-left_join.PKNCAdose <- join_maker_PKNCA(dplyr::left_join)
+left_join.PKNCAdose <- join_maker_PKNCA(dplyr::left_join, "left-joined")
 #' @rdname inner_join.PKNCAresults
 #' @export
-right_join.PKNCAdose <- join_maker_PKNCA(dplyr::right_join)
+right_join.PKNCAdose <- join_maker_PKNCA(dplyr::right_join, "right-joined")
 #' @rdname inner_join.PKNCAresults
 #' @export
-full_join.PKNCAdose <- join_maker_PKNCA(dplyr::full_join)
+full_join.PKNCAdose <- join_maker_PKNCA(dplyr::full_join, "full-joined")
 
 #' dplyr filtering for PKNCA
 #'
@@ -161,6 +166,12 @@ full_join.PKNCAdose <- join_maker_PKNCA(dplyr::full_join)
 #' depends on row position (such as `row_number()`) is not applied to the data
 #' slots unless it also names group columns, and then it acts within each
 #' table.
+#'
+#' A `PKNCAresults` object that a PKNCA dplyr verb changes (`filter()`,
+#' `mutate()`, `group_by()`, `ungroup()`, and the joins) no longer matches the
+#' hash that [checkProvenance()] verifies: the hash is replaced by a marker such
+#' as `"filtered from <hash>"` and [checkProvenance()] returns `FALSE`.  A call
+#' that leaves the object identical keeps its provenance.
 #'
 #' @inheritParams dplyr::filter
 #' @family dplyr verbs

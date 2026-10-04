@@ -20,6 +20,7 @@ test_that("dplyr filter", {
   filtered <- filter(myresult, PPTESTCD == "auclast")
   filtered_manual <- myresult
   filtered_manual$result <- filtered_manual$result[filtered_manual$result$PPTESTCD == "auclast", ]
+  filtered_manual <- set_provenance_marker(filtered_manual, "filtered", myresult)
   expect_equal(filtered, filtered_manual)
 
   filtered <- filter(myconc, ID == 1)
@@ -49,6 +50,7 @@ test_that("dplyr left_join", {
     msg_join_id,
     fixed = TRUE
   )
+  joined_manual <- set_provenance_marker(joined_manual, "left-joined", myresult)
   expect_equal(joined, joined_manual)
 
   expect_message(
@@ -76,6 +78,7 @@ test_that("dplyr mutate", {
   mutated <- mutate(myresult, foo="bar")
   mutated_manual <- myresult
   mutated_manual$result <- mutate(mutated_manual$result, foo="bar")
+  mutated_manual <- set_provenance_marker(mutated_manual, "mutated", myresult)
   expect_equal(mutated, mutated_manual)
 
   mutated <- mutate(myconc, foo="bar")
@@ -98,34 +101,6 @@ test_that("dplyr group_by and ungroup", {
   expect_false("grouped_df" %in% class(ungrouped$data))
   expect_s3_class(ungrouped$data, "data.frame")
 })
-
-# Two study parts with two subjects each; subject ids are unique across parts.
-make_part_results <- function(dose_groups = c("part", "ID"), intervals_part = TRUE) {
-  d_conc <- generate.conc(4, 1, 0:24)
-  d_conc$part <- ifelse(d_conc$ID <= 2, "SAD", "MAD")
-  d_dose <- generate.dose(d_conc)
-  d_dose$part <- ifelse(d_dose$ID <= 2, "SAD", "MAD")
-  if (!("part" %in% dose_groups)) {
-    d_dose$part <- NULL
-  }
-  intervals <- data.frame(
-    part = rep(c("SAD", "MAD"), each = 2),
-    ID = 1:4,
-    start = 0,
-    end = 24,
-    cmax = TRUE,
-    auclast = TRUE
-  )
-  if (!intervals_part) {
-    intervals$part <- NULL
-  }
-  my_conc <- PKNCAconc(d_conc, conc~time|part+ID)
-  my_dose <- PKNCAdose(
-    d_dose,
-    stats::as.formula(sprintf("dose~time|%s", paste(dose_groups, collapse = "+")))
-  )
-  pk.nca(PKNCAdata(my_conc, my_dose, intervals = intervals))
-}
 
 test_that("dplyr filter on a group column filters the data slots of PKNCAresults", {
   myresult <- make_part_results()
@@ -174,11 +149,13 @@ test_that("dplyr filter on a result-only column leaves the data slots whole", {
 
 test_that("dplyr filter that references no column changes nothing", {
   myresult <- make_part_results()
-  expect_equal(filter(myresult, TRUE), myresult)
+  expect_identical(filter(myresult, TRUE), myresult)
+  expect_true(checkProvenance(filter(myresult, TRUE)))
   # Position-based filters do not name a column and are not applied to the data
   filtered <- filter(myresult, dplyr::row_number() <= 2)
   expect_equal(nrow(filtered$result), 2)
   expect_equal(filtered$data, myresult$data)
+  expect_false(checkProvenance(filtered))
 })
 
 test_that("dplyr filter leaves data slots without the referenced column whole", {

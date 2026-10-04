@@ -49,6 +49,12 @@ expressions are evaluated separately for each table, so a filter that
 depends on row position (such as \code{row_number()}) is not applied to the data
 slots unless it also names group columns, and then it acts within each
 table.
+
+A \code{PKNCAresults} object that a PKNCA dplyr verb changes (\code{filter()},
+\code{mutate()}, \code{group_by()}, \code{ungroup()}, and the joins) no longer matches the
+hash that \code{\link[=checkProvenance]{checkProvenance()}} verifies: the hash is replaced by a marker such
+as \code{"filtered from <hash>"} and \code{\link[=checkProvenance]{checkProvenance()}} returns \code{FALSE}.  A call
+that leaves the object identical keeps its provenance.
 }
 \seealso{
 Other dplyr verbs:
