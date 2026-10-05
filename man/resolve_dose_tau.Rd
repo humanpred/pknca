@@ -31,6 +31,7 @@ when the doses are spaced as though one was missed.
 \seealso{
 Other Interval determination:
 \code{\link[=choose.auc.intervals]{choose.auc.intervals()}},
+\code{\link[=find.dose.regimen]{find.dose.regimen()}},
 \code{\link[=find.tau]{find.tau()}}
 }
 \concept{Interval determination}

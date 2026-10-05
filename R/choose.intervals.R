@@ -49,47 +49,6 @@ floor_tolerant <- function(x) {
   floor(x + time_tolerance(x))
 }
 
-# Does the whole pattern of doses repeat every `tau`?
-#
-# This is the criterion for a `tau.choices` entry, and it is a statement about
-# the pattern rather than about the spacings, because a regimen may give more
-# than one dose per interval:  doses at 0, 10, 24, and 34 hours repeat every 24
-# hours although no two doses are 24 hours apart.
-#
-# Two complete intervals are required.  A single complete interval followed by a
-# partial one can be read as a repeat of anything long enough to hold the doses
-# seen so far, which is how a stretch of daily doses with one dose off schedule
-# used to be reported as repeating over its whole length.
-tau_repeats <- function(x, tau) {
-  span <- max(x) - min(x)
-  n_complete <- floor_tolerant(span / tau)
-  if (n_complete < 2) {
-    return(FALSE)
-  }
-  index <- floor_tolerant((x - min(x)) / tau)
-  offset <- (x - min(x)) - index * tau
-  pattern <- sort_unique_time(offset)
-  same_offsets <- function(a, b) {
-    length(a) == length(b) && all(time_same(a, b))
-  }
-  for (i in seq_len(n_complete) - 1) {
-    if (!same_offsets(sort_unique_time(offset[index == i]), pattern)) {
-      return(FALSE)
-    }
-  }
-  # Dosing stops partway through the last interval, so the doses in it are the
-  # start of the pattern rather than all of it
-  trailing <- sort_unique_time(offset[index == n_complete])
-  if (length(trailing) > 0) {
-    limit <- span - n_complete * tau
-    expected <- pattern[pattern <= limit + time_tolerance(limit)]
-    if (!same_offsets(trailing, expected)) {
-      return(FALSE)
-    }
-  }
-  TRUE
-}
-
 # The dose that starts the last complete dosing cycle.
 #
 # A regimen giving more than one dose per interval ends its record partway
@@ -102,130 +61,64 @@ last_cycle_start <- function(x, tau) {
   min(x[index == max(index)])
 }
 
-# Is the smallest spacing the one the regimen is built on?
-#
-# A missed dose leaves a gap that is a whole number of intervals, and the doses
-# either side of it are still one interval apart, so the interval is seen twice
-# in a row somewhere in the data.  A regimen giving two doses per interval also
-# has spacings that divide one another -- doses at 0, 10, 12, and 22 hours are
-# spaced 10, 2, and 10 -- but its short spacing never repeats back to back, and
-# the interval it repeats over is not the short spacing.
-smallest_spacing_repeats <- function(spacing) {
-  if (length(spacing) < 2) {
-    return(FALSE)
-  }
-  at_smallest <- time_same(spacing, min(spacing))
-  any(at_smallest[-1] & at_smallest[-length(at_smallest)])
-}
-
-# Every positive difference between two doses, as the candidate intervals to
-# test when the user has not named any.  An interval longer than half the span
-# cannot repeat twice, so it is not a candidate.
-all_dose_spacings <- function(x) {
-  differences <- as.vector(outer(x, x, FUN = "-"))
-  ret <- sort_unique_time(differences[differences > 0])
-  ret[ret <= (max(x) - min(x)) / 2 + time_tolerance(max(x))]
-}
-
 #' Find the repeating interval within a vector of doses
 #'
-#' The dose times are sorted and times that repeat are dropped, so the order
-#' they arrive in and a dose recorded twice do not change the answer.  The
-#' interval is then found in this order:
-#' \enumerate{
-#'   \item If all values are `NA`, or there are no values, `NA` is returned.
-#'   \item If all values are the same, then 0 is returned.
-#'   \item If all doses are equally spaced, that spacing is returned.  Two doses
-#'         give the spacing between them.
-#'   \item Otherwise each candidate interval is tested, smallest first, and the
-#'         first one that the whole pattern of doses repeats over is returned.
-#'         The candidates are `tau.choices` when it is given and every spacing
-#'         between two doses when it is `NA`.  The pattern must repeat over at
-#'         least two complete intervals, so a regimen giving more than one dose
-#'         per interval is found while a length that merely spans the doses is
-#'         not.
-#'   \item If nothing repeats, and every spacing is a whole number of the
-#'         smallest spacing, and the smallest spacing is seen twice in a row,
-#'         the smallest spacing is returned with a
-#'         `"pknca_warning_tau_irregular_dosing"` warning naming the longer
-#'         gaps, which are what a missed dose looks like.
-#'   \item If none of that fits, `NA` is returned.  [resolve_dose_tau()] turns
-#'         that into a warning where a dosing interval is required.
-#' }
+#' The regimen is found with [find.dose.regimen()], and the interval is the
+#' period of its segment with the most doses (the latest of those when segments
+#' tie).  In brief, the dose times are sorted and times that repeat are dropped;
+#' equally spaced doses give their spacing; a pattern of more than one dose per
+#' interval that repeats over at least two complete intervals gives the interval
+#' it repeats over; doses scattered within a tolerance of one spacing give their
+#' median spacing; and otherwise runs of the same spacing form the regimen, with
+#' the gaps between them read as missed doses (a whole number of intervals) or
+#' doses off schedule.  Times are compared on the log scale within `tol` and
+#' `snap.tol` of [find.dose.regimen()], so a dose recorded at 23.6 hours is a
+#' daily dose.
 #'
 #' Looking for a repeating pattern before reading anything as a missed dose is
 #' what keeps a regimen with a regular gap in it, such as dosing three times a
 #' day at 0, 6, and 12 hours, from being reported as a 6 hour interval with a
 #' dose missing overnight.
 #'
-#' @inheritParams PKNCA.choose.option
+#' The intervals are matched to `tau.choices` when it is given.  When it is `NA`
+#' (the default) and `timeu` is given, they are matched to the built-in nominal
+#' intervals listed in [find.dose.regimen()].  When neither is given, the
+#' interval is the one found in the data, because the unit of `x` is not known.
+#' The warnings of [find.dose.regimen()] are given here as well, notably
+#' `"pknca_warning_tau_irregular_dosing"` for missed doses or doses off schedule.
+#'
+#' @inheritParams find.dose.regimen
 #' @param x the vector to find the interval within
 #' @param na.action What to do with NAs in `x`
-#' @param tau.choices the intervals to look for if the doses are not all equally
-#'   spaced.  `NA` (the default) tests every spacing between two doses.
-#' @returns A scalar indicating the repeating interval, or `NA` when no interval
-#'   fits the doses.
+#' @returns `NA` when there are no dose times or no interval repeats, 0 for a
+#'   single dose time, and otherwise the repeating interval.
 #' @family Interval determination
 #' @examples
 #' # Equally spaced doses give their spacing
 #' find.tau(c(0, 24, 48, 72))
 #' # Twice-daily dosing repeats daily although no two doses are a day apart
 #' find.tau(c(0, 10, 24, 34, 48, 58), tau.choices = c(12, 24))
+#' # Dose times as recorded, with the unit known
+#' find.tau(c(0, 23.6, 48, 72.4, 96), timeu = "hr")
 #' @export
 find.tau <- function(x, na.action=stats::na.omit,
                      options=list(),
-                     tau.choices=NULL) {
-  # Check inputs
-  tau.choices <- PKNCA.choose.option(name="tau.choices", value=tau.choices, options=options)
-  x <- sort_unique_time(na.action(x))
+                     tau.choices=NULL,
+                     timeu=NULL) {
+  x <- na.action(x)
   if (length(x) == 0) {
     return(NA)
-  } else if (length(x) == 1) {
-    # Single dose, no more effort needed
+  }
+  regimen <- find.dose.regimen(x, tau.choices=tau.choices, timeu=timeu, options=options)
+  primary <- regimen_primary(regimen)
+  if (regimen$n_doses[primary] == 1) {
     return(0)
   }
-  spacing <- diff(x)
-  if (all(time_same(spacing, spacing[1]))) {
-    # One interval through the full data set
-    return(spacing[1])
+  ret <- regimen$interval[primary]
+  if (is.na(ret)) {
+    return(NA)
   }
-  # An interval the whole pattern of doses repeats over describes the regimen,
-  # so it is looked for before anything is read as a missed dose.  Otherwise a
-  # regimen with a regular gap in it -- three times a day at 0, 6, and 12 hours
-  # -- would be reported as repeating every 6 hours with a dose missing
-  # overnight.
-  candidates <-
-    if (identical(tau.choices, NA)) {
-      all_dose_spacings(x)
-    } else {
-      sort_unique_time(tau.choices[tau.choices > 0])
-    }
-  for (tau in candidates) {
-    if (tau_repeats(x, tau)) {
-      return(tau)
-    }
-  }
-  # Nothing repeats, so gaps that are a whole number of the smallest spacing are
-  # doses that were not given
-  smallest <- min(spacing)
-  multiples <- spacing / smallest
-  if (all(time_same(multiples, round(multiples))) && smallest_spacing_repeats(spacing)) {
-    gaps <- x[-length(x)][!time_same(spacing, smallest)]
-    rlang::warn(
-      sprintf(
-        paste(
-          "Dosing is not equally spaced; using the most common interval of %s.",
-          "Doses appear to be missing after time%s %s."
-        ),
-        format(smallest, trim=TRUE),
-        if (length(gaps) > 1) "s" else "",
-        paste(format(gaps, trim=TRUE), collapse=", ")
-      ),
-      class = "pknca_warning_tau_irregular_dosing"
-    )
-    return(smallest)
-  }
-  NA
+  ret
 }
 
 # The route to build an interval for, from the route and duration recorded with

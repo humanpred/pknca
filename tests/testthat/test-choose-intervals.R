@@ -11,10 +11,18 @@ test_that("find.tau", {
              tau.choices=NA),
     12)
   expect_equal(find.tau(0:10, tau.choices=NA), 1)
-  # It overrides tau.choices if everything is equally spaced.
-  expect_equal(find.tau(0:10, tau.choices=c(24, 168)), 1)
-  expect_equal(find.tau(seq(0, 100, by=10),
-                        tau.choices=c(24, 168)), 10)
+  # It overrides tau.choices if everything is equally spaced, and says that the
+  # interval is not one of the choices
+  expect_warning(
+    tau_hourly <- find.tau(0:10, tau.choices=c(24, 168)),
+    class="pknca_warning_tau_not_nominal"
+  )
+  expect_equal(tau_hourly, 1)
+  expect_warning(
+    tau_ten <- find.tau(seq(0, 100, by=10), tau.choices=c(24, 168)),
+    class="pknca_warning_tau_not_nominal"
+  )
+  expect_equal(tau_ten, 10)
   expect_equal(find.tau(seq(0, 48, by=24),
                         tau.choices=c(24, 168)), 24)
   # Alternatively spaced intervals give the alternative spacing
@@ -58,13 +66,23 @@ test_that("find.tau", {
                NA)
 })
 
-test_that("find.tau gives no interval when the doses do not repeat over one", {
+test_that("find.tau reads a dose off schedule as irregular daily dosing", {
   # A single dose off schedule leaves gaps of 32 and 16 hours among otherwise
-  # daily doses.  96 hours spans the doses seen so far and so used to be
-  # reported, although no two doses are 96 hours apart and the drug was given
-  # daily; requiring two complete intervals rules it out.
-  expect_equal(find.tau(c(0, 24, 48, 80, 96, 120, 144)), NA)
-  expect_equal(find.tau(c(0, 24, 48, 80, 96, 120, 144), tau.choices=24), NA)
+  # daily doses.  The daily runs either side of it hold most of the spacings, so
+  # the interval is daily and the two gaps are named.  The 96 hours that the
+  # doses span is not an interval:  no two doses are 96 hours apart.
+  expect_warning(
+    tau <- find.tau(c(0, 24, 48, 80, 96, 120, 144)),
+    regexp="Doses are off schedule after times 48, 80[.]$",
+    class="pknca_warning_tau_irregular_dosing"
+  )
+  expect_equal(tau, 24)
+  expect_warning(
+    tau_choice <- find.tau(c(0, 24, 48, 80, 96, 120, 144), tau.choices=24),
+    regexp="Doses are off schedule after times 48, 80",
+    class="pknca_warning_tau_irregular_dosing"
+  )
+  expect_equal(tau_choice, 24)
   # The same doses, without the one that is off schedule, do repeat
   expect_equal(find.tau(c(0, 24, 48, 72, 96, 120, 144)), 24)
 })
@@ -88,8 +106,14 @@ test_that("find.tau reports a missed dose rather than the length of the gap", {
   )
   expect_equal(tau_two, 24)
   expect_equal(find.tau(c(0, 24, 48, 96, 120, 144, 192, 216, 240)), 96)
-  # A gap that is not a whole number of intervals is not a missed dose
-  expect_equal(find.tau(c(0, 24, 48, 60, 84, 108), tau.choices=24), NA)
+  # A gap that is not a whole number of intervals is not a missed dose; it is a
+  # dose off schedule
+  expect_warning(
+    tau_early <- find.tau(c(0, 24, 48, 60, 84, 108), tau.choices=24),
+    regexp="using the most common interval of 24[.] Doses are off schedule after time 48[.]$",
+    class="pknca_warning_tau_irregular_dosing"
+  )
+  expect_equal(tau_early, 24)
 })
 
 test_that("find.tau prefers a repeating pattern to a missed dose", {
@@ -413,20 +437,29 @@ test_that("choose.auc.intervals reports irregular dosing while still choosing in
   )
   expect_equal(ret$start, c(144, 144))
   expect_equal(ret$end, c(168, Inf))
-  # An irregular gap that is not a whole number of intervals gives no tau, so
-  # no interval is anchored on the last dose
+  # A dose off schedule among daily doses still gives the daily tau, so the last
+  # dose is anchored on it
   doses_gap <- c(0, 24, 48, 80, 96, 120, 144)
   expect_warning(
     ret_gap <- choose.auc.intervals(sort(unique(c(doses_gap, 144 + dense, 192, 216))), doses_gap),
+    class="pknca_warning_tau_irregular_dosing"
+  )
+  expect_equal(ret_gap$start, c(144, 144))
+  expect_equal(ret_gap$end, c(168, Inf))
+  # Two spacings, one twice the other, give no tau, so no interval is anchored
+  # on the last dose
+  doses_none <- c(0, 24, 72)
+  conc_none <- sort(unique(c(doses_none, 72 + dense, 120, 144)))
+  expect_warning(
+    ret_none <- choose.auc.intervals(conc_none, doses_none),
     class="pknca_warning_no_tau_for_intervals"
   )
-  expect_false(any(is.infinite(ret_gap$end) & ret_gap$start == 144 & ret_gap$aucint.last))
-  expect_equal(ret_gap$start, 144)
-  expect_equal(ret_gap$end, Inf)
+  expect_equal(ret_none$start, 72)
+  expect_equal(ret_none$end, Inf)
   # Dropping the steady-state interval is reported, with its own class so that
   # it is not confused with resolve_dose_tau()'s warning
   expect_warning(
-    choose.auc.intervals(sort(unique(c(doses_gap, 144 + dense, 192, 216))), doses_gap),
+    choose.auc.intervals(conc_none, doses_none),
     regexp="dosing interval could not be determined",
     class="pknca_warning_no_tau_for_intervals"
   )
@@ -602,15 +635,15 @@ test_that("resolve_dose_tau gives NA with a warning when tau is undetermined", {
     class="pknca_warning_tau_undetermined"
   )
   expect_equal(irregular, NA_real_)
-  # A dose off schedule among daily doses gives no interval rather than the
-  # length of the whole dosing period
+  # A dose off schedule among daily doses gives the daily interval with a
+  # warning, rather than the length of the whole dosing period
   expect_warning(
     off_schedule <-
       resolve_dose_tau(interval=data.frame(start=144, end=168),
                        time.dose=c(0, 24, 48, 80, 96, 120, 144)),
-    class="pknca_warning_tau_undetermined"
+    class="pknca_warning_tau_irregular_dosing"
   )
-  expect_equal(off_schedule, NA_real_)
+  expect_equal(off_schedule, 24)
 })
 
 test_that("resolve_dose_tau rejects an invalid tau column", {
@@ -722,9 +755,11 @@ test_that("find.tau matches at the edges of its tolerance", {
   doses <- c(0, spacing, 2*spacing, 3*spacing, 4*spacing)
   expect_equal(find.tau(doses), spacing)
   expect_equal(find.tau(cumsum(c(0, rep(spacing, 4)))), spacing)
-  # A difference far larger than the tolerance is a different spacing
+  # A spacing half an hour long is scatter within the tolerance, and the
+  # interval is the median spacing
   nudged <- c(0, 24, 48, 72.5, 96.5)
-  expect_equal(find.tau(nudged), NA)
+  expect_no_warning(tau_nudged <- find.tau(nudged))
+  expect_equal(tau_nudged, 24)
   # A difference within the tolerance is not
   eps <- sqrt(.Machine$double.eps)
   expect_equal(find.tau(c(0, 24, 48 + 24*eps/2, 72)), 24)
