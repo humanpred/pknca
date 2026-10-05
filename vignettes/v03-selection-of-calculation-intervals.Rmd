@@ -136,13 +136,26 @@ PKNCA.options(default = TRUE)
 
 ### Finding the Dosing Interval
 
-`find.tau()` sorts the dose times and drops the ones that repeat, then looks at the spacings between consecutive doses.  If they are all the same, that spacing is `tau`.  Otherwise each candidate interval is tested, smallest first, and the first one that the whole pattern of doses repeats over is used; the candidates are the `tau.choices` option's values when it is given and every spacing between two doses when it is `NA`.  The pattern must repeat over at least two complete intervals, so a regimen giving more than one dose per interval is found while a length that merely spans the doses is not.  Only if nothing repeats is a gap read as a missed dose: if every spacing is then a whole number of the smallest spacing and the smallest spacing is seen twice in a row, the smallest spacing is `tau` and a warning names the longer gaps.  If none of that fits, no dosing interval is reported.
+`find.tau()` gives the period of the regimen that `find.dose.regimen()` finds, using the segment with the most doses.  The dose times are sorted and the ones that repeat are dropped.  If the spacings between consecutive doses are all the same, that spacing is `tau`.  Otherwise a pattern of more than one dose per interval is looked for:  every dose recurs a fixed number of doses later, and the pattern repeats over at least two complete intervals.  Next, spacings that are all within a tolerance of their median are doses given evenly with some scatter in the recorded times, and the median spacing is `tau`.  Otherwise runs of the same spacing form the regimen.  A gap between runs that is a whole number of the spacing is read as a missed dose, and any other gap as a dose off schedule; either gives a `pknca_warning_tau_irregular_dosing` warning naming the dose times before the gaps.  Runs with different spacings are a change of regimen, which gives a `pknca_warning_tau_regimen_change` warning.  If none of that fits, no dosing interval is reported.
+
+Times are compared within a tolerance, so a dose recorded at 23.6 hours is a daily dose.  The intervals found are matched to the `tau.choices` option's values when it is given.  When it is `NA` (the default) and the time unit is given with the `timeu` argument, they are matched to the usual nominal intervals, from every 4 hours to every 12 weeks.  An interval that matches none of them gives a `pknca_warning_tau_not_nominal` warning.  Without either, the unit of the times is not known and the interval is the one found in the data.
 
 Looking for a repeating pattern first is what keeps a regimen with a regular gap in it from being misread.  Dosing three times a day at 0, 6, and 12 hours repeats daily; the 12 hour overnight gap is the regimen, not two doses that were never given.
 
 ```{r find_tau_example}
 # Twice-daily dosing repeats daily although no two doses are a day apart
 find.tau(c(0, 10, 24, 34, 48, 58, 72, 82))
+```
+
+`find.dose.regimen()` gives the whole regimen, one row per segment, with the dose times within one interval as `offsets`.
+
+```{r find_dose_regimen_example}
+# Twice daily at breakfast and dinner, then once daily
+regimen <-
+  suppressWarnings(
+    find.dose.regimen(c(0, 10, 24, 34, 48, 58, 72, 96, 120, 144), timeu = "hr")
+  )
+regimen[, c("start", "end", "n_doses", "interval", "label", "offsets")]
 ```
 
 ## To Infinity

@@ -76,6 +76,10 @@ Pharmacodynamic
 Pharmacodynamics
 Pharmacokinetic
 Pharmacokinetics
+QD
+QID
+QOD
+QW
 SDTM
 SDTMIG
 Satterthwaite
@@ -83,6 +87,7 @@ Satterthwaite’s
 Semilog
 Soper
 Summarization
+TID
 TSS
 Theophylline
 Tlast

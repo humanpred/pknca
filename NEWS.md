@@ -149,6 +149,22 @@ the generated intervals:
   as though one was missed give the underlying interval with a new
   `"pknca_warning_tau_irregular_dosing"` warning that names the gaps, rather
   than being passed silently into `mrt.md.*` and `vss.md.*`.
+* The new `find.dose.regimen()` describes the dosing regimen of one subject as
+  a table with one row per segment:  the period the doses repeat over, the dose
+  times within one period (`offsets`), a nominal label such as `"BID"`, and
+  counts of missed and off-schedule doses.  `find.tau()` now uses it and gives
+  the period of the segment with the most doses, so there is one algorithm.
+  Dose times are compared on the log scale within a tolerance rather than
+  exactly, so a dose recorded at 23.6 hours is a daily dose, twice-daily doses
+  at 08:00 and 16:00 repeat every 24 hours, and a dose off schedule among daily
+  doses gives a daily interval with the `"pknca_warning_tau_irregular_dosing"`
+  warning instead of no interval.  Both functions gain a `timeu` argument;
+  with it and no `tau.choices`, intervals are matched to the usual nominal
+  intervals from every 4 hours to every 12 weeks.  An interval that matches no
+  nominal one gives a new `"pknca_warning_tau_not_nominal"` warning, and a
+  change of regimen within the dose times gives a new
+  `"pknca_warning_tau_regimen_change"` warning; both messages include the
+  regimen table.  (@billdenney)
 * The interval generated for the last dose now starts at the first dose of the
   last complete dosing cycle, so a regimen giving more than one dose per
   interval no longer gets an interval that contains a dose that was never
