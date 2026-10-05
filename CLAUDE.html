@@ -77,10 +77,10 @@
 </div>
 <div class="section level2">
 <h2 id="repository-structure">Repository Structure<a class="anchor" aria-label="anchor" href="#repository-structure"></a></h2>
-<pre><code>R/                     # Source code (47 files)
+<pre><code>R/                     # Source code
 man/                   # Auto-generated roxygen2 documentation (do not edit by hand)
-tests/testthat/        # testthat test files (43 tests + helper)
-vignettes/             # Rmd vignettes (19 files)
+tests/testthat/        # testthat test files and helper-*.R files
+vignettes/             # Rmd vignettes
 data-raw/              # Scripts that generate package datasets
 inst/                  # Installed files (CITATION, WORDLIST)
 courses/               # Training materials and presentations
@@ -218,7 +218,7 @@ courses/               # Training materials and presentations
 <li>Use <code>@keywords Internal</code> for non-exported helper functions</li>
 </ul></li>
 <li>
-<strong>Validation:</strong> <code>checkmate</code> package for input validation; <code><a href="https://rlang.r-lib.org/reference/abort.html" class="external-link">rlang::warn()</a></code> with custom error classes (e.g., <code>"pknca_conc_none"</code>)</li>
+<strong>Validation:</strong> <code>checkmate</code> package for input validation; <code><a href="https://rlang.r-lib.org/reference/abort.html" class="external-link">rlang::abort()</a></code> / <code><a href="https://rlang.r-lib.org/reference/abort.html" class="external-link">rlang::warn()</a></code> / <code><a href="https://rlang.r-lib.org/reference/abort.html" class="external-link">rlang::inform()</a></code> with classed conditions named <code>pknca_error_*</code>, <code>pknca_warning_*</code>, <code>pknca_message_*</code> (e.g., <code>"pknca_error_unknown_options"</code>)</li>
 <li>
 <strong>Deprecation:</strong> <code>lifecycle</code> package for managing deprecated functions (see <code>R/defunct.R</code>)</li>
 <li>
@@ -252,14 +252,14 @@ courses/               # Training materials and presentations
 <th>What it does</th>
 </tr></thead><tbody><tr><td><code>R-CMD-check.yaml</code></td>
 <td>push to main, PRs</td>
-<td>R CMD check on macOS (release), Windows (release), Ubuntu (devel, release, oldrel-1)</td>
+<td>R CMD check on macOS (release), Windows (release), Ubuntu (devel, release, oldrel-1, 4.4), and Ubuntu R 4.1 with hard dependencies only and no vignettes, which guards the <code>R (&gt;= 4.1)</code> floor</td>
 </tr><tr><td><code>test-coverage.yaml</code></td>
 <td>push to main, PRs</td>
 <td>Code coverage via covr, uploads to Codecov</td>
 </tr><tr><td><code>pkgdown.yaml</code></td>
 <td>push to main, PRs, releases</td>
 <td>Builds and deploys documentation site to GitHub Pages</td>
-</tr></tbody></table><p>Build args: <code>--no-manual --compact-vignettes=gs+qpdf</code></p>
+</tr></tbody></table><p>Build args: <code>--no-manual --compact-vignettes=gs+qpdf</code> (the R 4.1 job adds <code>--ignore-vignettes</code> to check and <code>--no-build-vignettes</code> to build)</p>
 </div>
 <div class="section level2">
 <h2 id="contributing-checklist">Contributing Checklist<a class="anchor" aria-label="anchor" href="#contributing-checklist"></a></h2>
