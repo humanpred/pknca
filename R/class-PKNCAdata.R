@@ -321,14 +321,15 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
       pknca_warn_single_dose_aucs_unit(o_conc = ret$conc, options = options)
     }
   }
-  # The imputation setting is in place first so that the intervals check allows
-  # the column it names
+  # The intervals check allows the column that the imputation setting names, so
+  # it sees the setting; the setting itself is stored after the units
+  ret_with_impute <- ret
   if (!identical(NA, impute)) {
     checkmate::assert_character(impute, len = 1)
-    ret$impute <- impute
+    ret_with_impute$impute <- impute
   }
   # Date-time interval bounds are checked here and converted by pk.nca()
-  ret <- set_intervals(data = ret, intervals = intervals)
+  ret$intervals <- set_intervals(data = ret_with_impute, intervals = intervals)$intervals
   ret$intervals <- check.interval.specification(ret$intervals, impute = impute)
   # Verify that either everything or nothing is using units
   units_interval_start <- inherits(ret$intervals$start, "units")
@@ -353,6 +354,11 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
     checkmate::assert_data_frame(units, min.rows = 1)
 
     ret$units <- units
+  }
+
+  # Insert the imputation methods, if applicable
+  if (!identical(NA, impute)) {
+    ret$impute <- ret_with_impute$impute
   }
 
   ret
