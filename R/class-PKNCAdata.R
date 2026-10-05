@@ -9,8 +9,9 @@
 #' @param impute Methods for imputation.  `NA` for to search for the column
 #'   named "impute" in the intervals or no imputation if that column does not
 #'   exist, a comma-or space-separated list of names, or the name of a column in
-#'   the `intervals` data.frame.  See
-#'   `vignette("v08-data-imputation", package="PKNCA")` for more details.
+#'   the `intervals` data.frame (any column name works, not only `"impute"`, and
+#'   the column must be character).  [get_impute_method()] gives the exact rule.
+#'   See `vignette("v08-data-imputation", package="PKNCA")` for more details.
 #' @param formula.conc Formula for making a `PKNCAconc` object with `data.conc`.
 #'   This must be given if `data.conc` is a data.frame, and it must not be given
 #'   if `data.conc` is a `PKNCAconc` object.
@@ -320,9 +321,16 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
       pknca_warn_single_dose_aucs_unit(o_conc = ret$conc, options = options)
     }
   }
+  # The intervals check allows the column that the imputation setting names, so
+  # it sees the setting; the setting itself is stored after the units
+  ret_with_impute <- ret
+  if (!identical(NA, impute)) {
+    checkmate::assert_character(impute, len = 1)
+    ret_with_impute$impute <- impute
+  }
   # Date-time interval bounds are checked here and converted by pk.nca()
-  ret <- set_intervals(data = ret, intervals = intervals)
-  ret$intervals <- check.interval.specification(ret$intervals)
+  ret$intervals <- set_intervals(data = ret_with_impute, intervals = intervals)$intervals
+  ret$intervals <- check.interval.specification(ret$intervals, impute = impute)
   # Verify that either everything or nothing is using units
   units_interval_start <- inherits(ret$intervals$start, "units")
   units_interval_end <- inherits(ret$intervals$end, "units")
@@ -350,8 +358,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
 
   # Insert the imputation methods, if applicable
   if (!identical(NA, impute)) {
-    checkmate::assert_character(impute, len = 1)
-    ret$impute <- impute
+    ret$impute <- ret_with_impute$impute
   }
 
   ret

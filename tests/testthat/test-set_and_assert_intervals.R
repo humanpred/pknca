@@ -238,3 +238,96 @@ test_that("one interval_id identifies one interval in every entry point", {
   expect_identical(assert_intervals(intervals_split, o_data), intervals_split)
   expect_s3_class(PKNCAdata(o_conc, intervals = intervals_split), "PKNCAdata")
 })
+
+test_that("assert_intervals allows the column that the impute setting names", {
+  d_conc <- data.frame(subject = 1, time = c(0, 1, 2), conc = c(0, 2, 1))
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 2, cmax = TRUE))
+  intervals <- data.frame(start = 0, end = 2, cmax = TRUE, my_impute = "start_conc0")
+  # The column is not allowed unless the setting names it
+  expect_error(
+    assert_intervals(intervals, o_data),
+    class = "pknca_error_invalid_interval_columns",
+    regexp = "my_impute"
+  )
+  o_data$impute <- "my_impute"
+  expect_identical(assert_intervals(intervals, o_data), intervals)
+  expect_identical(set_intervals(o_data, intervals)$intervals, intervals)
+  # Only the column that is named is allowed
+  expect_error(
+    assert_intervals(cbind(intervals, other = "x"), o_data),
+    class = "pknca_error_invalid_interval_columns",
+    regexp = "other"
+  )
+  # The named column must be character, whatever its name
+  intervals_numeric <- intervals
+  intervals_numeric$my_impute <- 1
+  expect_error(
+    assert_intervals(intervals_numeric, o_data),
+    class = "pknca_error_interval_impute_not_character",
+    regexp = "my_impute"
+  )
+  expect_error(
+    PKNCAdata(o_conc, intervals = intervals_numeric, impute = "my_impute"),
+    class = "pknca_error_interval_impute_not_character"
+  )
+  intervals_factor <- intervals
+  intervals_factor$my_impute <- factor("start_conc0")
+  expect_error(
+    assert_intervals(intervals_factor, o_data),
+    class = "pknca_error_interval_impute_not_character",
+    regexp = "my_impute"
+  )
+  # A column of only NA is no imputation, whatever its type and name
+  for (empty in list(NA, NA_character_)) {
+    intervals_empty <- intervals
+    intervals_empty$my_impute <- empty
+    expect_identical(assert_intervals(intervals_empty, o_data), intervals_empty)
+  }
+  # The generic column is held to the same rule when it is the one read
+  o_data$impute <- NA_character_
+  expect_error(
+    assert_intervals(data.frame(start = 0, end = 2, cmax = TRUE, impute = 1), o_data),
+    class = "pknca_error_interval_impute_not_character",
+    regexp = "'impute'"
+  )
+  for (empty in list(NA, NA_character_)) {
+    intervals_empty <- data.frame(start = 0, end = 2, cmax = TRUE, impute = empty)
+    expect_identical(assert_intervals(intervals_empty, o_data), intervals_empty)
+    expect_s3_class(PKNCAdata(o_conc, intervals = intervals_empty), "PKNCAdata")
+  }
+  # The default setting and the method-string setting still allow only "impute"
+  expect_identical(
+    assert_intervals(data.frame(start = 0, end = 2, cmax = TRUE, impute = "start_conc0"), o_data),
+    data.frame(start = 0, end = 2, cmax = TRUE, impute = "start_conc0")
+  )
+  o_data$impute <- "start_conc0"
+  expect_error(
+    assert_intervals(intervals, o_data),
+    class = "pknca_error_invalid_interval_columns",
+    regexp = "my_impute"
+  )
+})
+
+test_that("rows sharing an interval_id may differ in the named impute column", {
+  d_conc <- data.frame(subject = 1, time = c(0, 1, 2), conc = c(0, 2, 1))
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  intervals <-
+    data.frame(
+      interval_id = "a", start = 0, end = 2, cmax = c(TRUE, FALSE), cmin = c(FALSE, TRUE),
+      my_impute = c("start_conc0", "start_predose")
+    )
+  expect_s3_class(PKNCAdata(o_conc, intervals = intervals, impute = "my_impute"), "PKNCAdata")
+  expect_error(
+    PKNCAdata(o_conc, intervals = intervals, impute = "other_name"),
+    class = "pknca_error_invalid_interval_columns"
+  )
+  expect_error(
+    check.interval.specification(intervals),
+    class = "pknca_error_secondary_id_conflict"
+  )
+  expect_identical(
+    check.interval.specification(intervals, impute = "my_impute")[, names(intervals)],
+    intervals
+  )
+})

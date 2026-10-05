@@ -20,17 +20,20 @@ interval_param_cols <- function(intervals) {
   intersect(names(intervals), setdiff(names(get.interval.cols()), c("start", "end")))
 }
 
-# Ensure the columns the long form needs exist:  a character `impute` and the
-# originating row index.
-interval_prepare <- function(intervals) {
+# Ensure the columns the long form needs exist:  a character imputation column
+# (`impute_col`, the column that get_impute_method() reads) and the originating
+# row index.
+interval_prepare <- function(intervals, impute_col = "impute") {
   checkmate::assert_data_frame(intervals, min.rows = 1)
-  if (!"impute" %in% names(intervals)) {
-    intervals$impute <- NA_character_
-  } else if (!is.character(intervals$impute)) {
+  if (!impute_col %in% names(intervals)) {
+    intervals[[impute_col]] <- NA_character_
+  } else if (!is_impute_column_valid(intervals[[impute_col]])) {
     rlang::abort(
-      "The 'impute' column in the intervals data.frame must be a character column",
+      sprintf("The '%s' column in the intervals data.frame must be a character column", impute_col),
       class = "pknca_error_interval_impute_not_character"
     )
+  } else {
+    intervals[[impute_col]] <- as.character(intervals[[impute_col]])
   }
   intervals[[pknca_interval_row_col]] <- seq_len(nrow(intervals))
   intervals
@@ -39,6 +42,8 @@ interval_prepare <- function(intervals) {
 #' Convert intervals between the wide and long representations
 #'
 #' @param intervals A data.frame of intervals (the wide representation).
+#' @param impute_col The name of the imputation column, which is added when the
+#'   intervals do not have it (see [get_impute_method()]).
 #' @param long The long representation, as returned by `interval_longer()`.
 #' @param template The intervals data.frame the long form came from; used to
 #'   restore the column order and any parameter columns that are no longer
@@ -51,7 +56,7 @@ interval_prepare <- function(intervals) {
 #'   `NA` in a parameter column is rejected by
 #'   [check.interval.specification()] and stops [pk.nca()].
 #' @keywords internal
-interval_longer <- function(intervals) {
+interval_longer <- function(intervals, impute_col = "impute") {
   param_cols <- interval_param_cols(intervals)
   if (length(param_cols) == 0) {
     rlang::abort(
@@ -59,7 +64,7 @@ interval_longer <- function(intervals) {
       class = "pknca_error_interval_no_param_cols"
     )
   }
-  intervals <- interval_prepare(intervals)
+  intervals <- interval_prepare(intervals, impute_col = impute_col)
   ret <-
     tidyr::pivot_longer(
       intervals,
@@ -73,7 +78,7 @@ interval_longer <- function(intervals) {
 
 #' @rdname interval_longer
 #' @keywords internal
-interval_wider <- function(long, template) {
+interval_wider <- function(long, template, impute_col = "impute") {
   if (nrow(long) == 0) {
     rlang::abort(
       "No parameters remain to calculate in any interval",
@@ -96,10 +101,10 @@ interval_wider <- function(long, template) {
   }
   ret <- ret[order(ret[[pknca_interval_row_col]]), , drop = FALSE]
   ret[[pknca_interval_row_col]] <- NULL
-  # `impute` is added on the way to the long form; drop it again when the
-  # caller did not have it and nothing set it.
-  if (!"impute" %in% names(template) && all(is.na(ret$impute))) {
-    ret$impute <- NULL
+  # The imputation column is added on the way to the long form; drop it again
+  # when the caller did not have it and nothing set it.
+  if (!impute_col %in% names(template) && all(is.na(ret[[impute_col]]))) {
+    ret[[impute_col]] <- NULL
   }
   # Original column order first, then anything newly added
   col_order <- c(intersect(names(template), names(ret)), setdiff(names(ret), names(template)))
@@ -228,7 +233,7 @@ interval_resolve_params <- function(param, param_pattern) {
 
 # Add or remove an imputation method on the targeted interval rows
 interval_edit_impute <- function(intervals, target_impute, after, target_params,
-                                 target_groups, add) {
+                                 target_groups, add, impute_col = "impute") {
   checkmate::assert_character(target_impute, len = 1)
   if (is.na(target_impute) || target_impute %in% "") {
     rlang::warn(
@@ -240,16 +245,16 @@ interval_edit_impute <- function(intervals, target_impute, after, target_params,
   if (!is.null(target_params)) {
     assert_param_name(target_params)
   }
-  long <- interval_longer(intervals)
+  long <- interval_longer(intervals, impute_col = impute_col)
   target <- interval_target_rows(long, target_params, target_groups)
-  before <- long$impute
-  long$impute[target] <-
+  before <- long[[impute_col]]
+  long[[impute_col]][target] <-
     if (add) {
-      add_impute_method(long$impute[target], target_impute, after = after)
+      add_impute_method(long[[impute_col]][target], target_impute, after = after)
     } else {
-      remove_impute_method(long$impute[target], target_impute)
+      remove_impute_method(long[[impute_col]][target], target_impute)
     }
-  if (identical(before, long$impute)) {
+  if (identical(before, long[[impute_col]])) {
     rlang::warn(
       sprintf(
         "No intervals needed a change for impute method '%s'.  No changes made.",
@@ -259,7 +264,7 @@ interval_edit_impute <- function(intervals, target_impute, after, target_params,
     )
     return(intervals)
   }
-  interval_wider(long, intervals)
+  interval_wider(long, intervals, impute_col = impute_col)
 }
 
 # Add or remove parameters on the targeted interval rows
@@ -303,10 +308,20 @@ interval_edit_param <- function(intervals, param, param_pattern, target_groups, 
   ret
 }
 
+# The imputation column of a PKNCAdata object's intervals:  the column that its
+# `impute` setting names, else the generic "impute" column (which may not exist
+# yet).
+interval_impute_column <- function(data) {
+  impute <- if (is.null(data$impute)) NA_character_ else data$impute
+  ret <- get_impute_column(intervals = data$intervals, impute = impute)
+  if (is.null(ret)) "impute" else ret
+}
+
 # Move a PKNCAdata object's whole-dataset imputation into an intervals column so
-# that per-parameter or per-group edits can apply to it.
+# that per-parameter or per-group edits can apply to it.  A setting that names a
+# column already is that column, so there is nothing to move.
 interval_hoist_impute <- function(data) {
-  if (!"impute" %in% names(data$intervals) &&
+  if (!interval_impute_column(data) %in% names(data$intervals) &&
       !is.null(data$impute) &&
       !all(is.na(data$impute))) {
     data$intervals$impute <- data$impute
@@ -379,9 +394,10 @@ interval_add_impute.PKNCAdata <- function(data, target_impute, after = Inf,
                                           target_params = NULL, target_groups = NULL, ...) {
   data <- interval_hoist_impute(data)
   data$intervals <-
-    interval_add_impute.data.frame(
+    interval_edit_impute(
       data$intervals, target_impute = target_impute, after = after,
-      target_params = target_params, target_groups = target_groups
+      target_params = target_params, target_groups = target_groups, add = TRUE,
+      impute_col = interval_impute_column(data)
     )
   data
 }
@@ -389,7 +405,7 @@ interval_add_impute.PKNCAdata <- function(data, target_impute, after = Inf,
 #' @export
 interval_remove_impute.PKNCAdata <- function(data, target_impute, target_params = NULL,
                                              target_groups = NULL, ...) {
-  if (!"impute" %in% names(data$intervals)) {
+  if (!interval_impute_column(data) %in% names(data$intervals)) {
     if (is.null(data$impute) || all(is.na(data$impute))) {
       rlang::warn(
         "No imputation is specified, so there is none to remove.",
@@ -405,9 +421,10 @@ interval_remove_impute.PKNCAdata <- function(data, target_impute, target_params 
   }
   data <- interval_hoist_impute(data)
   data$intervals <-
-    interval_remove_impute.data.frame(
-      data$intervals, target_impute = target_impute,
-      target_params = target_params, target_groups = target_groups
+    interval_edit_impute(
+      data$intervals, target_impute = target_impute, after = Inf,
+      target_params = target_params, target_groups = target_groups, add = FALSE,
+      impute_col = interval_impute_column(data)
     )
   data
 }

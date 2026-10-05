@@ -38,7 +38,7 @@ pk.nca <- function(data, verbose=FALSE) {
   intervals_before <- data$intervals
   data <- pknca_datetime_convert(data)
   if (!identical(intervals_before, data$intervals)) {
-    data$intervals <- check.interval.specification(data$intervals)
+    data$intervals <- check.interval.specification(data$intervals, impute = data$impute)
   }
   results <- data.frame()
   if (nrow(data$intervals) > 0) {
