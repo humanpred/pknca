@@ -74,6 +74,8 @@ data.frame.</p>
 <span>  out_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"long"</span>, <span class="st">"wide"</span>, <span class="st">"cdisc"</span><span class="op">)</span>,</span>
 <span>  filter_requested <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  filter_excluded <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  grpid_cols <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  grpid_numeric <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  out.format <span class="op">=</span> <span class="fu">deprecated</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -116,7 +118,23 @@ group) without an included dose uses its first concentration instead
 infinity, and PPSTINT, PPENINT, and PPTPTREF are <code>NA</code> when the subject
 has doses but none at or before the interval start.  PPRFTDTC is only
 given when the concentration and dose times were date-times (see
-<code><a href="PKNCAdata.html">PKNCAdata()</a></code>), and it can differ between the intervals of one subject.</p></dd>
+<code><a href="PKNCAdata.html">PKNCAdata()</a></code>), and it can differ between the intervals of one subject.</p>
+<p>PPGRPID, the record group identifier, is built from the grouping columns
+named in <code>grpid_cols</code> and the number of the row's interval, as
+<code>"&lt;prefix1&gt;&lt;value1&gt;.&lt;prefix2&gt;&lt;value2&gt;.I&lt;nn&gt;"</code> (for example <code>"A.P1.I01"</code>,
+<code>"P2.I01"</code>, or just <code>"I01"</code> without <code>grpid_cols</code>).  Within each
+combination of the subject, the analyte, and the <code>grpid_cols</code> columns, the
+intervals are numbered from 1 by start and then end; the rows of one
+interval (one per parameter) share the number.  Other grouping columns
+(a treatment or a matrix, for example) do not enter PPGRPID:  they stay
+as their own output columns, and intervals with the same window in
+different values of them share a number.  The number is written with at
+least two digits, and with as many as the largest interval number needs,
+so that the text sorts in time order.  The numbers, the width, and the
+checks of the values use every row of the results, so <code>filter_requested</code>
+and <code>filter_excluded</code> never renumber an interval or hide a bad value;
+an interval with no rows in the results has no number.  The grouping
+columns also remain in the output.</p></dd>
 
 
 <dt id="arg-filter-requested">filter_requested<a class="anchor" aria-label="anchor" href="#arg-filter-requested"></a></dt>
@@ -126,6 +144,29 @@ specifically requested?</p></dd>
 
 <dt id="arg-filter-excluded">filter_excluded<a class="anchor" aria-label="anchor" href="#arg-filter-excluded"></a></dt>
 <dd><p>Should excluded values be removed?</p></dd>
+
+
+<dt id="arg-grpid-cols">grpid_cols<a class="anchor" aria-label="anchor" href="#arg-grpid-cols"></a></dt>
+<dd><p>For <code>out_format = "cdisc"</code>, the grouping columns that
+prefix the interval number in PPGRPID:  a named character vector of
+grouping columns of the <code><a href="PKNCAconc.html">PKNCAconc()</a></code> object, in prefix order, other than
+the subject and the analyte.  Each name is a column, and each value is the
+text written before that column's value, such as
+<code>c(Part = "", Period = "P")</code>.  The text before a value and the values may
+not contain <code>"."</code>, and a value may not be empty, and distinct values of a
+column may not give the same text.  <code>NULL</code> (the default) uses the
+<code>grpid_cols</code> of the <code><a href="PKNCAdata.html">PKNCAdata()</a></code> object, and <code><a href="https://rdrr.io/r/base/character.html" class="external-link">character()</a></code> gives an
+interval-only identifier regardless of that default.</p></dd>
+
+
+<dt id="arg-grpid-numeric">grpid_numeric<a class="anchor" aria-label="anchor" href="#arg-grpid-numeric"></a></dt>
+<dd><p>For <code>out_format = "cdisc"</code>, the names of columns in
+<code>grpid_cols</code> whose values are whole numbers of at least 1 (such as the
+period), which are written as that number, so <code>"01"</code> becomes <code>1</code>.  A value
+that is not a finite whole number of at least 1 is an error.  <code>NULL</code> (the
+default) uses the <code>grpid_numeric</code> of the <code><a href="PKNCAdata.html">PKNCAdata()</a></code> object for the
+columns of <code>grpid_cols</code> that it names, and <code><a href="https://rdrr.io/r/base/character.html" class="external-link">character()</a></code> means no
+columns regardless of that default.</p></dd>
 
 
 <dt id="arg-out-format">out.format<a class="anchor" aria-label="anchor" href="#arg-out-format"></a></dt>

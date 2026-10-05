@@ -78,7 +78,12 @@
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code>TRUE</code> if the provenance is confirmed to be consistent, <code>FALSE</code> if
-the provenance is not consistent, or <code>NA</code> if provenance is not present.</p>
+the provenance is not consistent, or <code>NA</code> if provenance is not present.
+An object that was modified after it was created by a PKNCA function that
+marks provenance (for example <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter()</a></code>, <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">dplyr::mutate()</a></code>,
+<code><a href="exclude.html">exclude()</a></code>, or <code><a href="normalize.html">normalize()</a></code> on a <code>PKNCAresults</code> object) has a hash such
+as <code>"filtered from &lt;hash&gt;"</code> instead of the original hash and always gives
+<code>FALSE</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

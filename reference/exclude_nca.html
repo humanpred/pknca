@@ -88,13 +88,11 @@
 
 
 <dl><dt id="arg-min-span-ratio">min.span.ratio<a class="anchor" aria-label="anchor" href="#arg-min-span-ratio"></a></dt>
-<dd><p>The minimum acceptable span ratio (uses
-<code>PKNCA.options("min.span.ratio")</code> if not provided).</p></dd>
+<dd><p>The minimum acceptable span ratio (uses PKNCA.options("min.span.ratio") if not provided).</p></dd>
 
 
 <dt id="arg-max-aucinf-pext">max.aucinf.pext<a class="anchor" aria-label="anchor" href="#arg-max-aucinf-pext"></a></dt>
-<dd><p>The maximum acceptable percent AUC extrapolation (uses
-<code>PKNCA.options("max.aucinf.pext")</code> if not provided).</p></dd>
+<dd><p>The maximum acceptable percent AUC extrapolation (uses PKNCA.options("max.aucinf.pext") if not provided).</p></dd>
 
 
 <dt id="arg-min-count">min_count<a class="anchor" aria-label="anchor" href="#arg-min-count"></a></dt>
@@ -106,13 +104,11 @@
 
 
 <dt id="arg-min-hl-r-squared">min.hl.r.squared<a class="anchor" aria-label="anchor" href="#arg-min-hl-r-squared"></a></dt>
-<dd><p>The minimum acceptable r-squared value for half-life
-(uses <code>PKNCA.options("min.hl.r.squared")</code> if not provided).</p></dd>
+<dd><p>The minimum acceptable r-squared value for half-life (uses PKNCA.options("min.hl.r.squared") if not provided).</p></dd>
 
 
 <dt id="arg-min-hl-adj-r-squared">min.hl.adj.r.squared<a class="anchor" aria-label="anchor" href="#arg-min-hl-adj-r-squared"></a></dt>
-<dd><p>The minimum acceptable adjusted r-squared for half-life
-(uses 0.9 if not provided).</p></dd>
+<dd><p>The minimum acceptable adjusted r-squared for half-life (uses 0.9 if not provided).</p></dd>
 
 
 <dt id="arg-tmax-early">tmax_early<a class="anchor" aria-label="anchor" href="#arg-tmax-early"></a></dt>
@@ -130,15 +126,12 @@ thresholds came from (see <code><a href="pknca_exclude_rules.html">pknca_exclude
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
 
 <ul><li><p><code>exclude_nca_span.ratio()</code>: Exclude based on the half-life span ratio</p></li>
-<li><p><code>exclude_nca_max.aucinf.pext()</code>: Exclude based on the percent of AUC extrapolated to
-infinity (both observed and predicted)</p></li>
-<li><p><code>exclude_nca_count_conc_measured()</code>: Exclude based on the count of concentrations measured
-and not below the lower limit of quantification (affects AUC and AUMC
-parameters)</p></li>
+<li><p><code>exclude_nca_max.aucinf.pext()</code>: Exclude based on the percent of AUC extrapolated to infinity (both observed and predicted)</p></li>
+<li><p><code>exclude_nca_count_conc_measured()</code>: Exclude based on the count of concentrations measured and not below the lower limit of quantification (affects AUC and AUMC parameters)</p></li>
 <li><p><code>exclude_nca_min.hl.r.squared()</code>: Exclude based on half-life r-squared</p></li>
 <li><p><code>exclude_nca_min.hl.adj.r.squared()</code>: Exclude based on half-life adjusted r-squared</p></li>
 <li><p><code>exclude_nca_tmax_early()</code>: Exclude based on implausibly early Tmax (often used for extravascular dosing with a Tmax value of 0)</p></li>
-<li><p><code>exclude_nca_tmax_0()</code>: Exclude based on implausibly early Tmax (special case for <code>tmax_early = 0</code>)</p></li>
+<li><p><code>exclude_nca_tmax_0()</code>: Exclude based on implausibly early Tmax (special case for tmax_early = 0)</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

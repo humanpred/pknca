@@ -203,8 +203,8 @@ if the value should be excluded.
 
 ### How do I do a simple calculation? Get summary results
 
-All results (summary or individual) can be output either in a
-Quarto/Rmarkdown report or another file for reporting.
+All results (summary or individual) can be output either in a Quarto/R
+Markdown report or another file for reporting.
 
 ``` r
 

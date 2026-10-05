@@ -29,12 +29,12 @@ exclude_nca_tmax_0()
 - min.span.ratio:
 
   The minimum acceptable span ratio (uses
-  `PKNCA.options("min.span.ratio")` if not provided).
+  PKNCA.options("min.span.ratio") if not provided).
 
 - max.aucinf.pext:
 
   The maximum acceptable percent AUC extrapolation (uses
-  `PKNCA.options("max.aucinf.pext")` if not provided).
+  PKNCA.options("max.aucinf.pext") if not provided).
 
 - min_count:
 
@@ -47,7 +47,7 @@ exclude_nca_tmax_0()
 - min.hl.r.squared:
 
   The minimum acceptable r-squared value for half-life (uses
-  `PKNCA.options("min.hl.r.squared")` if not provided).
+  PKNCA.options("min.hl.r.squared") if not provided).
 
 - min.hl.adj.r.squared:
 
@@ -89,7 +89,7 @@ entries its thresholds came from (see
   (often used for extravascular dosing with a Tmax value of 0)
 
 - `exclude_nca_tmax_0()`: Exclude based on implausibly early Tmax
-  (special case for `tmax_early = 0`)
+  (special case for tmax_early = 0)
 
 ## See also
 

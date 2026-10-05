@@ -25,7 +25,9 @@ PKNCAdata(
   intervals,
   units,
   options = list(),
-  group_ref = NULL
+  group_ref = NULL,
+  grpid_cols = NULL,
+  grpid_numeric = NULL
 )
 ```
 
@@ -89,6 +91,27 @@ PKNCAdata(
   as a data.frame of group values, optionally parameter-specific (see
   Details). `NULL` (the default) derives the reference from the data.
 
+- grpid_cols:
+
+  The grouping columns that prefix the interval number in the PPGRPID
+  column of `as.data.frame(results, out_format = "cdisc")`, as a named
+  character vector of
+  [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
+  grouping columns (other than the subject and analyte), each with the
+  text written before its value (see
+  [`as.data.frame.PKNCAresults()`](https://humanpred.github.io/pknca/reference/as.data.frame.PKNCAresults.md)).
+  It is the default for the `grpid_cols` argument there, so every output
+  of one analysis agrees. `NULL` (the default) gives an interval-only
+  identifier.
+
+- grpid_numeric:
+
+  The names of the columns in `grpid_cols` whose values are whole
+  numbers of at least 1, such as the period, written as that number in
+  PPGRPID. It is the default for the `grpid_numeric` argument of
+  [`as.data.frame.PKNCAresults()`](https://humanpred.github.io/pknca/reference/as.data.frame.PKNCAresults.md).
+  `NULL` (the default) names no columns.
+
 ## Value
 
 A PKNCAdata object with concentration, dose, interval, and calculation
@@ -104,7 +127,10 @@ A secondary parameter is calculated from a result in another interval,
 and the interval specification links the two with an `interval_id`
 column and a `<parameter>_ref` pointer (see
 [`interval_add_secondary()`](https://humanpred.github.io/pknca/reference/interval_add_secondary.md)).
-Where a request has no pointer and could not otherwise be calculated,
+An `interval_id` identifies one interval: rows that share it (an
+interval split by imputation, for example) may differ only in the
+parameters they request, never in `start`, `end`, or the groups. Where a
+request has no pointer and could not otherwise be calculated,
 [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
 derives the reference profile from the data: a parameter measured on an
 interval collection whose inputs are spot samples (renal clearance)

@@ -43,6 +43,17 @@ function that PKNCA can see (for example, in the global environment) is
 used by the imputation string `"<name>"` without being registered, and
 it is not listed here.
 
+## Methods
+
+|  |  |
+|----|----|
+| Method | Description |
+| `"end_conc_drop"` | Drop a concentration measured exactly at the end of the interval, if one is present (usually used with multiple-dose data when a point at the interval boundary belongs to the next dose, e.g. an imputed C0) |
+| `"start_cmin"` | Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data) |
+| `"start_conc0"` | Set the concentration at the start time to 0, even if a nonzero concentration exists at that time (usually used with single-dose data). |
+| `"start_predose"` | Shift a predose concentration to become the time zero concentration (only if a time zero concentration does not exist). |
+| `"start_predose_conc0"` | Use a predose concentration as the start concentration when one is available and 0 when it is not. |
+
 ## See also
 
 Other Imputation:

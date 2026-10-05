@@ -4,11 +4,17 @@ Valid means that intervals are a data.frame (or data.frame-like object),
 that the column names are either the groupings of the PKNCAconc part of
 the PKNCAdata object or that they are one of the NCA parameters allowed
 (i.e. names(get.interval.cols())).
+An interval_id identifies one interval:  rows that share it may differ
+only in the parameters they request (and impute), not in start, end,
+or the groups, or a pknca_error_secondary_id_conflict error is raised.
 It will return the intervals argument unchanged, or it will raise an error."><meta property="og:description" content="Verifies that an interval definition is valid for a PKNCAdata object.
 Valid means that intervals are a data.frame (or data.frame-like object),
 that the column names are either the groupings of the PKNCAconc part of
 the PKNCAdata object or that they are one of the NCA parameters allowed
 (i.e. names(get.interval.cols())).
+An interval_id identifies one interval:  rows that share it may differ
+only in the parameters they request (and impute), not in start, end,
+or the groups, or a pknca_error_secondary_id_conflict error is raised.
 It will return the intervals argument unchanged, or it will raise an error."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -74,6 +80,9 @@ Valid means that intervals are a data.frame (or data.frame-like object),
 that the column names are either the groupings of the PKNCAconc part of
 the PKNCAdata object or that they are one of the NCA parameters allowed
 (i.e. names(get.interval.cols())).
+An <code>interval_id</code> identifies one interval:  rows that share it may differ
+only in the parameters they request (and <code>impute</code>), not in <code>start</code>, <code>end</code>,
+or the groups, or a <code>pknca_error_secondary_id_conflict</code> error is raised.
 It will return the intervals argument unchanged, or it will raise an error.</p>
     </div>
 

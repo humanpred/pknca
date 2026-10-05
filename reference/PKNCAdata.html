@@ -86,7 +86,9 @@ intervals for PK calculations.</p>
 <span>  <span class="va">intervals</span>,</span>
 <span>  <span class="va">units</span>,</span>
 <span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  group_ref <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  group_ref <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  grpid_cols <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  grpid_numeric <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -150,6 +152,23 @@ parameters, as a data.frame of group values, optionally
 parameter-specific (see Details).  <code>NULL</code> (the default) derives the
 reference from the data.</p></dd>
 
+
+<dt id="arg-grpid-cols">grpid_cols<a class="anchor" aria-label="anchor" href="#arg-grpid-cols"></a></dt>
+<dd><p>The grouping columns that prefix the interval number in
+the PPGRPID column of <code>as.data.frame(results, out_format = "cdisc")</code>, as a
+named character vector of <code><a href="PKNCAconc.html">PKNCAconc()</a></code> grouping columns (other than the
+subject and analyte), each with the text written before its value (see
+<code><a href="as.data.frame.PKNCAresults.html">as.data.frame.PKNCAresults()</a></code>).  It is the default for the <code>grpid_cols</code>
+argument there, so every output of one analysis agrees.  <code>NULL</code> (the
+default) gives an interval-only identifier.</p></dd>
+
+
+<dt id="arg-grpid-numeric">grpid_numeric<a class="anchor" aria-label="anchor" href="#arg-grpid-numeric"></a></dt>
+<dd><p>The names of the columns in <code>grpid_cols</code> whose values
+are whole numbers of at least 1, such as the period, written as that
+number in PPGRPID.  It is the default for the <code>grpid_numeric</code> argument of
+<code><a href="as.data.frame.PKNCAresults.html">as.data.frame.PKNCAresults()</a></code>.  <code>NULL</code> (the default) names no columns.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -163,7 +182,10 @@ results after a NCA calculations are done to the data).</p>
 given.  At least one of <code>data.dose</code> and <code>intervals</code> must be given.</p>
 <p>A secondary parameter is calculated from a result in another interval, and
 the interval specification links the two with an <code>interval_id</code> column and a
-<code>&lt;parameter&gt;_ref</code> pointer (see <code><a href="interval_add_secondary.html">interval_add_secondary()</a></code>).  Where a request
+<code>&lt;parameter&gt;_ref</code> pointer (see <code><a href="interval_add_secondary.html">interval_add_secondary()</a></code>).  An
+<code>interval_id</code> identifies one interval:  rows that share it (an interval
+split by imputation, for example) may differ only in the parameters they
+request, never in <code>start</code>, <code>end</code>, or the groups.  Where a request
 has no pointer and could not otherwise be calculated, <code><a href="pk.nca.html">pk.nca()</a></code> derives the
 reference profile from the data:  a parameter measured on an interval
 collection whose inputs are spot samples (renal clearance) takes the nearest

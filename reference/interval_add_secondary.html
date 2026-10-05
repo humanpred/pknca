@@ -123,7 +123,13 @@ interval.</p></dd>
 <dt id="arg-ref-id">ref_id<a class="anchor" aria-label="anchor" href="#arg-ref-id"></a></dt>
 <dd><p>The <code>interval_id</code> to give the reference interval.  The default
 of <code>NULL</code> keeps an identifier the reference rows already have and
-otherwise generates one matching the class of the <code>interval_id</code> column.</p></dd>
+otherwise generates one matching the class of the <code>interval_id</code> column.
+A <code>ref_id</code> that differs from the identifier the reference rows already
+have renames that interval, which is an error when another interval points
+at the old identifier or already has <code>ref_id</code>.  Reference rows that
+already carry more than one <code>interval_id</code> are an error
+(<code>pknca_error_secondary_ref_ambiguous_spec</code>) when <code>ref_id</code> is given, as it
+cannot name more than one interval.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

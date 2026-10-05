@@ -58,7 +58,12 @@ interval_add_secondary(
   The `interval_id` to give the reference interval. The default of
   `NULL` keeps an identifier the reference rows already have and
   otherwise generates one matching the class of the `interval_id`
-  column.
+  column. A `ref_id` that differs from the identifier the reference rows
+  already have renames that interval, which is an error when another
+  interval points at the old identifier or already has `ref_id`.
+  Reference rows that already carry more than one `interval_id` are an
+  error (`pknca_error_secondary_ref_ambiguous_spec`) when `ref_id` is
+  given, as it cannot name more than one interval.
 
 - ...:
 

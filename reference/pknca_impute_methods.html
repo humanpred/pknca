@@ -106,6 +106,10 @@ imputation string <code>"&lt;name&gt;"</code> without being registered, and it i
 here.</p>
     </div>
     <div class="section level2">
+    <h2 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a></h2>
+
+<table class="table table"><tr><td>Method</td><td>Description</td></tr><tr><td><code>"end_conc_drop"</code></td><td>Drop a concentration measured exactly at the end of the interval, if one is present (usually used with multiple-dose data when a point at the interval boundary belongs to the next dose, e.g. an imputed C0)</td></tr><tr><td><code>"start_cmin"</code></td><td>Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data)</td></tr><tr><td><code>"start_conc0"</code></td><td>Set the concentration at the start time to 0, even if a nonzero concentration exists at that time (usually used with single-dose data).</td></tr><tr><td><code>"start_predose"</code></td><td>Shift a predose concentration to become the time zero concentration (only if a time zero concentration does not exist).</td></tr><tr><td><code>"start_predose_conc0"</code></td><td>Use a predose concentration as the start concentration when one is available and 0 when it is not.</td></tr></table></div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other Imputation:
 <code><a href="PKNCA_impute_fun_list.html">PKNCA_impute_fun_list()</a></code>,
