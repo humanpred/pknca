@@ -27,3 +27,4 @@ src/*.so
 src/*.dll
 
 Rplots.pdf
+tests/testthat/_problems/
