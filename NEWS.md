@@ -6,6 +6,24 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `get_impute_method()` is now exported, so that other packages read the
+  `impute` argument of `PKNCAdata()` the way `pk.nca()` does:  a name that is
+  a column of the intervals gives that column's methods, `NA` gives the
+  `"impute"` column's methods or, without that column, a single `NA_character_`
+  (no imputation), and any other value is the method for every interval.
+  (@billdenney)
+* `PKNCAdata(impute = )` now works when it names an interval column other
+  than `"impute"`.  `assert_intervals()` (so `set_intervals()`,
+  `PKNCAdata(intervals=)`, and `pk.nca()`) allows the column that `impute`
+  names, requires it to be a character column
+  (`pknca_error_interval_impute_not_character`), and does not count it as part
+  of an interval's definition when rows share an `interval_id`.
+  `check.interval.specification()` gained an `impute` argument for the same
+  purpose.  `interval_add_impute()` and `interval_remove_impute()` edit the
+  named column rather than creating an `"impute"` column, and an imputation
+  column of only `NA` (a logical column) is read as no imputation.  The error
+  for an imputation method that is not found now says that the setting may be a
+  column of the intervals.  (@billdenney)
 * `interval_add_secondary()` with a `ref_id` no longer merges intervals:  when the
   `reference` rows carry more than one `interval_id` (two intervals sharing a
   window and groups), every one of them used to be renamed to `ref_id`.  It now

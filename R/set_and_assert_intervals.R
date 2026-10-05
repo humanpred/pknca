@@ -30,6 +30,9 @@ set_intervals <- function(data, intervals) {
 #'  that the column names are either the groupings of the PKNCAconc part of 
 #'  the PKNCAdata object or that they are one of the NCA parameters allowed 
 #'  (i.e. names(get.interval.cols())). 
+#'  The column that the `impute` setting of the PKNCAdata object names (see
+#'  [get_impute_method()]) is also allowed, and it must be a character column,
+#'  or a `pknca_error_interval_impute_not_character` error is raised.
 #'  An `interval_id` identifies one interval:  rows that share it may differ
 #'  only in the parameters they request (and `impute`), not in `start`, `end`,
 #'  or the groups, or a `pknca_error_secondary_id_conflict` error is raised.
@@ -48,6 +51,7 @@ assert_intervals <- function(intervals, data) {
     c(
       names(getGroups.PKNCAdata(data)),
       names(get.interval.cols()),
+      impute_column_names(data$impute),
       "conc_above",
       "time_above",
       "impute",
@@ -98,6 +102,8 @@ assert_intervals <- function(intervals, data) {
     )
   }
 
+  assert_impute_columns_character(intervals, impute = data$impute)
+
   # Interval times are numbers, or date-times for date-time data
   if (all(c("start", "end") %in% names(intervals))) {
     if (is_datetime_date(intervals$start) || is_datetime_date(intervals$end)) {
@@ -109,7 +115,7 @@ assert_intervals <- function(intervals, data) {
 
   # One interval_id identifies one interval, so it cannot be reused for rows
   # with a different window or group
-  assert_interval_ids_identify_one(intervals)
+  assert_interval_ids_identify_one(intervals, impute = data$impute)
 
   # Name only what the specification itself asks for, not the dependencies it
   # drags in, so that the user is told about the columns they wrote
@@ -138,4 +144,31 @@ assert_intervals <- function(intervals, data) {
   }
 
   intervals
+}
+
+# The column names the `impute` setting of a PKNCAdata object can make the
+# imputation column:  the setting itself when it is a name, else none.
+impute_column_names <- function(impute) {
+  if (is.null(impute) || length(impute) != 1 || is.na(impute)) {
+    character(0)
+  } else {
+    as.character(impute)
+  }
+}
+
+# Stop unless the imputation column that get_impute_method() would read is a
+# character column; the generic "impute" column is held to the same rule.
+assert_impute_columns_character <- function(intervals, impute) {
+  impute <- if (is.null(impute)) NA_character_ else impute
+  impute_col <- get_impute_column(intervals = intervals, impute = impute)
+  if (!is.null(impute_col) && !is_impute_column_valid(intervals[[impute_col]])) {
+    rlang::abort(
+      sprintf(
+        "The imputation column '%s' in the intervals data.frame must be a character column",
+        impute_col
+      ),
+      class = "pknca_error_interval_impute_not_character"
+    )
+  }
+  invisible(intervals)
 }
