@@ -12,6 +12,11 @@ checkProvenance(object)
 \value{
 \code{TRUE} if the provenance is confirmed to be consistent, \code{FALSE} if
 the provenance is not consistent, or \code{NA} if provenance is not present.
+An object that was modified after it was created by a PKNCA function that
+marks provenance (for example \code{\link[dplyr:filter]{dplyr::filter()}}, \code{\link[dplyr:mutate]{dplyr::mutate()}},
+\code{\link[=exclude]{exclude()}}, or \code{\link[=normalize]{normalize()}} on a \code{PKNCAresults} object) has a hash such
+as \code{"filtered from <hash>"} instead of the original hash and always gives
+\code{FALSE}.
 }
 \description{
 Check the hash of an object to confirm its provenance.

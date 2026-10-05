@@ -113,8 +113,9 @@ exclude.default <- function(object, reason, mask, FUN) {
   if (any(mask.multiple)) {
     ret[mask.multiple] <- paste(ret[mask.multiple], reason[mask.multiple], sep="; ")
   }
-  object[[dataname]][,object$columns$exclude] <- ret
-  object
+  ret_object <- object
+  ret_object[[dataname]][,object$columns$exclude] <- ret
+  mark_provenance_modified(ret_object, object, "excluded")
 }
 
 #' Set the exclude parameter on an object

@@ -15,6 +15,19 @@ the dosing including dose amount and route.
   `grpid_numeric` (also a `PKNCAdata()` argument) writes columns such as the period as
   whole numbers.
   (@billdenney)
+* `filter()` on a `PKNCAresults` object whose expressions use only group columns
+  (the columns after the `|` in the formula) is evaluated once on the results,
+  and the concentration data, the dose data, and the intervals in `$data` keep
+  the groups that remain, so that a filtered result is consistent with its
+  data.  Filters that use other result columns (`PPTESTCD`, `PPORRES`,
+  `exclude`) or choose columns without naming them (`.data[[var]]`,
+  `across()`) filter the result table only, as before.  `filter()` on PKNCA
+  objects now passes `.by` on to dplyr.  (@billdenney)
+* A `PKNCAresults` object that `filter()`, `mutate()`, `group_by()`,
+  `ungroup()`, the joins, `exclude()`, or `normalize()` changes after the run
+  no longer vouches for itself: its provenance hash becomes a marker such as
+  `"filtered from <hash>"` and `checkProvenance()` returns `FALSE`.  Calls that
+  leave the object identical keep its provenance.  (@billdenney)
 * `pknca_routes(synonyms = TRUE)` lists the spellings that data uses for a route
   of administration ("po", "intravenous bolus", CDISC `ROUTE` terms, ...) with
   the route PKNCA uses for each (`"iv"` when the spelling does not say bolus or
