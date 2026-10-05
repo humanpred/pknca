@@ -97,6 +97,8 @@ is_impute_column_valid <- function(x) {
 #' @family Imputation
 #' @export
 get_impute_column <- function(intervals, impute) {
+  # A method string that equals a column name reads as that column, as it does
+  # in get_impute_method()
   checkmate::assert_scalar(impute, na.ok = TRUE)
   checkmate::assert_data_frame(intervals)
   if (impute %in% names(intervals)) {
