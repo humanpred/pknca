@@ -1320,6 +1320,18 @@ test_that("interval_add_secondary() gives one reference interval the ref_id", {
   no_ids <- add_ratio_cmax(intervals_shared_window(c(NA, NA)), ref_id = "a")
   expect_equal(no_ids$interval_id, c("a", "a", "ss"))
   expect_equal(no_ids$ratio.cmax_ref, c(NA, NA, "a"))
+  # One identifier on every row, the target row included, names one interval
+  # with two windows, with or without a ref_id
+  expect_error(
+    add_ratio_cmax(intervals_shared_window(c("a", "a"), last = "a"), ref_id = "a"),
+    class = "pknca_error_secondary_id_conflict",
+    regexp = "'a'"
+  )
+  expect_error(
+    add_ratio_cmax(intervals_shared_window(c("a", "a"), last = "a")),
+    class = "pknca_error_secondary_id_conflict",
+    regexp = "'a'"
+  )
   # A different ref_id renames the reference interval ...
   expect_equal(
     add_ratio_cmax(intervals_shared_window(c("a", NA)), ref_id = "z")$interval_id,

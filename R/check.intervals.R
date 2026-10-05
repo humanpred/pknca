@@ -222,7 +222,7 @@ assert_interval_ids_identify_one <- function(x) {
   description <-
     do.call(
       paste,
-      c(lapply(X = x[rows, compare_cols, drop = FALSE], FUN = as.character), sep = "")
+      c(lapply(X = x[rows, compare_cols, drop = FALSE], FUN = as.character), sep = "\r")
     )
   distinct <- !duplicated(data.frame(id = ids[rows], description = description))
   conflicting <- unique(ids[rows][distinct & duplicated(ids[rows])])
