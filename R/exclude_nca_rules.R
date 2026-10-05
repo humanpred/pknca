@@ -1,19 +1,19 @@
 #' List the automatic NCA result exclusion rules
 #'
-#' Every `exclude_nca_*()` rule is registered with its description.  Its
-#' arguments and their defaults come from the factory function, and the
-#' parameters it can exclude and the [PKNCA.options()] entries it uses come
-#' from the exclusion function that the factory returns when called with its
-#' defaults (an argument without a default falls back to its option, as it
-#' does in use).
+#' Every `exclude_nca_*()` rule is registered with its description and the
+#' descriptions of its arguments.  Its arguments and their defaults come from
+#' the factory function, and the parameters it can exclude and the
+#' [PKNCA.options()] entries it uses come from the exclusion function that the
+#' factory returns when called with its defaults (an argument without a default
+#' falls back to its option, as it does in use).
 #'
 #' @returns A tibble with one row per rule and the columns:
 #' \describe{
 #'   \item{rule}{The function name (for example, `"exclude_nca_span.ratio"`)}
 #'   \item{description}{The one-line description}
 #'   \item{arguments}{A list column of data.frames with one row per argument and
-#'   the columns `argument` and `default` (the deparsed default, or `NA` when
-#'   there is none)}
+#'   the columns `argument`, `default` (the deparsed default, or `NA` when
+#'   there is none), and `description`}
 #'   \item{callable_with_defaults}{Can the rule be created without giving any
 #'   arguments?}
 #'   \item{options}{A list column of the `PKNCA.options()` names that the rule
@@ -22,6 +22,7 @@
 #'   rule, created with its defaults, can exclude, or `NULL` when it cannot be
 #'   created without arguments}
 #' }
+#' @eval pknca_rd_exclude_rules_table()
 #' @seealso [exclude_nca], [exclude()]
 #' @family Result exclusions
 #' @examples
@@ -35,11 +36,26 @@ pknca_exclude_rules <- function() {
   tibble::tibble(
     rule = rule_names,
     description = vapply(X = registry[rule_names], FUN = "[[", "description", FUN.VALUE = "", USE.NAMES = FALSE),
-    arguments = lapply(X = rule_names, FUN = pknca_function_arguments),
+    arguments = lapply(X = rule_names, FUN = pknca_exclude_rule_arguments),
     callable_with_defaults = !vapply(X = rule_funs, FUN = is.null, FUN.VALUE = TRUE),
     options = lapply(X = rule_funs, FUN = function(x) if (!is.null(x)) exclude_nca_options_used(x)),
     affected_parameters = lapply(X = rule_funs, FUN = function(x) if (!is.null(x)) exclude_nca_affected_parameters(x))
   )
+}
+
+#' Describe the arguments of an exclusion rule
+#'
+#' @param rule The rule (factory) name
+#' @returns The data.frame from `pknca_function_arguments()` with the
+#'   registered argument descriptions added as the `description` column (`NA`
+#'   for an argument without one)
+#' @keywords Internal
+#' @noRd
+pknca_exclude_rule_arguments <- function(rule) {
+  ret <- pknca_function_arguments(rule)
+  registered <- get("exclude_rules", envir = .PKNCAEnv)[[rule]]$arguments
+  ret$description <- unname(registered[ret$argument])
+  ret
 }
 
 #' Create an exclusion rule with its defaults

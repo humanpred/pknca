@@ -33,6 +33,17 @@ that PKNCA can see (for example, in the global environment) is used by the
 imputation string \code{"<name>"} without being registered, and it is not listed
 here.
 }
+\section{Methods}{
+\tabular{ll}{
+   Method \tab Description \cr
+   \code{"end_conc_drop"} \tab Drop a concentration measured exactly at the end of the interval, if one is present (usually used with multiple-dose data when a point at the interval boundary belongs to the next dose, e.g. an imputed C0) \cr
+   \code{"start_cmin"} \tab Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data) \cr
+   \code{"start_conc0"} \tab Set the concentration at the start time to 0, even if a nonzero concentration exists at that time (usually used with single-dose data). \cr
+   \code{"start_predose"} \tab Shift a predose concentration to become the time zero concentration (only if a time zero concentration does not exist). \cr
+   \code{"start_predose_conc0"} \tab Use a predose concentration as the start concentration when one is available and 0 when it is not. \cr
+}
+}
+
 \examples{
 pknca_impute_methods()[, c("method", "description")]
 }

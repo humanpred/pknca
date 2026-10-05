@@ -34,31 +34,29 @@ NULL
 #' are registered with [add.interval.col()], so that [pknca_impute_methods()]
 #' describes every method without reading the documentation.
 #'
+#' The registration is the only place the description is written:  the
+#' method's documentation is generated from it with
+#' `@eval pknca_rd_impute_method()`.  The description is plain text (it is
+#' shown as it is by [pknca_impute_methods()]); the details are documentation
+#' only, so they may use markdown.
+#'
 #' @param fun The name of the exported method function
-#' @param description The one-line description (the first sentence of the
-#'   function's documentation)
+#' @param description The one-line description
+#' @param details Further documentation, following the description
 #' @returns `NULL`, invisibly
 #' @keywords Internal
 #' @noRd
-pknca_register_impute_method <- function(fun, description) {
+pknca_register_impute_method <- function(fun, description, details = NULL) {
   checkmate::assert_string(fun, pattern = "^PKNCA_impute_method_")
   checkmate::assert_string(description, min.chars = 1)
+  checkmate::assert_string(details, min.chars = 1, null.ok = TRUE)
   current <- get("impute_methods", envir = .PKNCAEnv)
-  current[[fun]] <- list(description = description)
+  current[[fun]] <- list(description = description, details = details)
   assign("impute_methods", current, envir = .PKNCAEnv)
   invisible(NULL)
 }
 
-#' @describeIn PKNCA_impute_method Set the concentration at the start time to
-#'   0, even if a nonzero concentration exists at that time (usually used with
-#'   single-dose data).  Forcing the start concentration to zero is
-#'   intentional:  an existing start-time value is replaced with 0, including
-#'   a nonzero predose measurement shifted to the start time by
-#'   `start_predose`, so the imputation chain `"start_predose,start_conc0"`
-#'   gives the same result as `"start_conc0"` alone.  To carry a predose
-#'   measurement to the start time, use `start_predose` without
-#'   `start_conc0`.  When no observation exists at the start time, a new row
-#'   with a concentration of 0 is added.
+#' @eval pknca_rd_impute_method("PKNCA_impute_method_start_conc0")
 #' @inheritParams pk.calc.auxc
 #' @inheritParams assert_intervaltime_single
 #' @param ... ignored
@@ -76,11 +74,20 @@ PKNCA_impute_method_start_conc0 <- function(conc, time, start=0, ..., options = 
 }
 pknca_register_impute_method(
   fun = "PKNCA_impute_method_start_conc0",
-  description = "Set the concentration at the start time to 0, even if a nonzero concentration exists at that time (usually used with single-dose data)."
+  description = "Set the concentration at the start time to 0, even if a nonzero concentration exists at that time (usually used with single-dose data).",
+  details =
+    paste(
+      "Forcing the start concentration to zero is intentional:  an existing",
+      "start-time value is replaced with 0, including a nonzero predose",
+      "measurement shifted to the start time by `start_predose`, so the",
+      'imputation chain `"start_predose,start_conc0"` gives the same result as',
+      '`"start_conc0"` alone.  To carry a predose measurement to the start time,',
+      "use `start_predose` without `start_conc0`.  When no observation exists at",
+      "the start time, a new row with a concentration of 0 is added."
+    )
 )
 
-#' @describeIn PKNCA_impute_method Add a new concentration of the minimum during
-#'   the interval at the start time (usually used with multiple-dose data)
+#' @eval pknca_rd_impute_method("PKNCA_impute_method_start_cmin")
 #' @export
 PKNCA_impute_method_start_cmin <- function(conc, time, start, end, ..., options = list()) {
   ret <- data.frame(conc = conc, time = time)
@@ -100,10 +107,7 @@ pknca_register_impute_method(
   description = "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data)"
 )
 
-#' @describeIn PKNCA_impute_method Shift a predose concentration to become the
-#'   time zero concentration (only if a time zero concentration does not exist).
-#'   The most recent predose sample with a measured concentration is shifted;
-#'   samples with a missing concentration are skipped.
+#' @eval pknca_rd_impute_method("PKNCA_impute_method_start_predose")
 #' @param max_shift The maximum amount of time to shift a concentration forward
 #'   (defaults to 5% of the interval duration, i.e. `0.05*(end - start)`, if
 #'   `is.finite(end)`, and when `is.infinite(end)`, defaults to 5% of the time
@@ -143,16 +147,15 @@ PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group
 }
 pknca_register_impute_method(
   fun = "PKNCA_impute_method_start_predose",
-  description = "Shift a predose concentration to become the time zero concentration (only if a time zero concentration does not exist)."
+  description = "Shift a predose concentration to become the time zero concentration (only if a time zero concentration does not exist).",
+  details =
+    paste(
+      "The most recent predose sample with a measured concentration is shifted;",
+      "samples with a missing concentration are skipped."
+    )
 )
 
-#' @describeIn PKNCA_impute_method Use a predose concentration as the start
-#'   concentration when one is available and 0 when it is not.  A concentration
-#'   measured at the start time is kept as-is, which is what distinguishes this
-#'   from `start_conc0`:  a measured concentration at the time of an
-#'   intravenous bolus dose is the C0 for that dose, and `start_conc0` would
-#'   replace it with 0.  The chain `"start_predose,start_conc0"` cannot express
-#'   this, because `start_conc0` overwrites whatever `start_predose` shifted.
+#' @eval pknca_rd_impute_method("PKNCA_impute_method_start_predose_conc0")
 #' @export
 PKNCA_impute_method_start_predose_conc0 <- function(conc, time, start, end,
                                                     conc.group, time.group, ...,
@@ -175,13 +178,19 @@ PKNCA_impute_method_start_predose_conc0 <- function(conc, time, start, end,
 }
 pknca_register_impute_method(
   fun = "PKNCA_impute_method_start_predose_conc0",
-  description = "Use a predose concentration as the start concentration when one is available and 0 when it is not."
+  description = "Use a predose concentration as the start concentration when one is available and 0 when it is not.",
+  details =
+    paste(
+      "A concentration measured at the start time is kept as-is, which is what",
+      "distinguishes this from `start_conc0`:  a measured concentration at the",
+      "time of an intravenous bolus dose is the C0 for that dose, and",
+      '`start_conc0` would replace it with 0.  The chain',
+      '`"start_predose,start_conc0"` cannot express this, because `start_conc0`',
+      "overwrites whatever `start_predose` shifted."
+    )
 )
 
-#' @describeIn PKNCA_impute_method Drop a concentration measured exactly at the
-#'   end of the interval, if one is present (usually used with multiple-dose data
-#'   when a point at the interval boundary belongs to the next dose, e.g. an
-#'   imputed C0)
+#' @eval pknca_rd_impute_method("PKNCA_impute_method_end_conc_drop")
 #' @export
 PKNCA_impute_method_end_conc_drop <- function(conc, time, end, ..., options = list()) {
   ret <- data.frame(conc = conc, time = time)
@@ -221,6 +230,7 @@ pknca_register_impute_method(
 #'   and the columns `argument` and `default` (the deparsed default, or `NA`
 #'   when there is none)}
 #' }
+#' @eval pknca_rd_impute_methods_table()
 #' @examples
 #' pknca_impute_methods()[, c("method", "description")]
 #' @family Imputation

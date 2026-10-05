@@ -14,6 +14,8 @@ test_that("every exported exclusion rule is registered, and only those", {
       as.character(names(formals(getExportedValue("PKNCA", current_rule)))),
       info = current_rule
     )
+    # Every argument is described
+    expect_false(anyNA(rules$arguments[[idx]]$description), info = current_rule)
     # Every option a rule uses is a real option
     expect_true(all(rules$options[[idx]] %in% names(PKNCA.options())), info = current_rule)
   }
@@ -30,7 +32,14 @@ test_that("pknca_exclude_rules gives arguments, defaults, and options", {
 
   span_ratio <- get_rule("exclude_nca_span.ratio")
   expect_equal(span_ratio$description, "Exclude based on the half-life span ratio")
-  expect_equal(span_ratio$arguments[[1]], data.frame(argument = "min.span.ratio", default = NA_character_))
+  expect_equal(
+    span_ratio$arguments[[1]],
+    data.frame(
+      argument = "min.span.ratio",
+      default = NA_character_,
+      description = 'The minimum acceptable span ratio (uses PKNCA.options("min.span.ratio") if not provided).'
+    )
+  )
   expect_true(span_ratio$callable_with_defaults)
   # The threshold falls back to its option, as it does in use
   expect_equal(span_ratio$options[[1]], "min.span.ratio")
@@ -64,6 +73,7 @@ test_that("pknca_exclude_rules gives arguments, defaults, and options", {
 
   tmax_0 <- get_rule("exclude_nca_tmax_0")
   expect_equal(nrow(tmax_0$arguments[[1]]), 0)
+  expect_named(tmax_0$arguments[[1]], c("argument", "default", "description"))
 })
 
 test_that("the exclusion function describes itself", {
@@ -81,6 +91,13 @@ test_that("the exclusion function describes itself", {
 test_that("pknca_register_exclude_rule checks what it registers", {
   expect_error(pknca_register_exclude_rule(name = "not_a_rule", description = "Exclude based on x"))
   expect_error(pknca_register_exclude_rule(name = "exclude_nca_x", description = "Removes x"))
+  # Argument descriptions are named and not empty
+  expect_error(
+    pknca_register_exclude_rule(name = "exclude_nca_x", description = "Exclude based on x", arguments = "unnamed")
+  )
+  expect_error(
+    pknca_register_exclude_rule(name = "exclude_nca_x", description = "Exclude based on x", arguments = c(x = ""))
+  )
 })
 
 # A PKNCAresults object with one row for every NCA parameter, used to confirm
@@ -140,21 +157,4 @@ test_that("every rule's affected-parameter attribute is what it excludes", {
       info = rule
     )
   }
-})
-
-# The registered description and the "Exclude based on ..." documentation are
-# the same text (see helper-rd.R for reading the installed help).
-test_that("registered descriptions match the documentation", {
-  skip_without_installed_help()
-  rd <- installed_rd()
-  documented <-
-    c(
-      rd_function_descriptions(rd[["exclude_nca.Rd"]]),
-      exclude_nca_by_param = rd_text(rd_tagged(rd[["exclude_nca_by_param.Rd"]], "\\title"))
-    )
-  rules <- pknca_exclude_rules()
-  expect_equal(
-    squish(documented[rules$rule]),
-    stats::setNames(squish(rules$description), rules$rule)
-  )
 })

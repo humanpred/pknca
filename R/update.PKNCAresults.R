@@ -84,19 +84,41 @@ coerce_factor_join_keys <- function(data, cols) {
   data
 }
 
+#' Rows of `x` kept by a `dplyr` filtering join, matching factor key columns by value
+#'
+#' @param x,y Data.frames to join
+#' @param by Column names to join by
+#' @param join_fun A filtering join, such as [dplyr::anti_join()] or
+#'   [dplyr::semi_join()]
+#' @returns The rows of `x` that `join_fun` keeps, unmodified and in their
+#'   original order
+#' @noRd
+join_rows_by_value <- function(x, y, by, join_fun) {
+  rowid_col <- paste0(max(names(x)), "X")
+  tracking <- coerce_factor_join_keys(x, cols = by)
+  tracking[[rowid_col]] <- seq_len(nrow(x))
+  kept <- join_fun(tracking, coerce_factor_join_keys(y, cols = by), by = by)
+  x[kept[[rowid_col]], , drop = FALSE]
+}
+
 #' `dplyr::anti_join()` matching factor key columns by value, not by levels
 #'
-#' @param x,y Data.frames to anti-join
-#' @param by Column names to join by
+#' @inheritParams join_rows_by_value
 #' @returns The rows of `x`, unmodified and in their original order, with no
 #'   match in `y`
 #' @noRd
 anti_join_by_value <- function(x, y, by) {
-  rowid_col <- paste0(max(names(x)), "X")
-  tracking <- coerce_factor_join_keys(x, cols = by)
-  tracking[[rowid_col]] <- seq_len(nrow(x))
-  kept <- dplyr::anti_join(tracking, coerce_factor_join_keys(y, cols = by), by = by)
-  x[kept[[rowid_col]], , drop = FALSE]
+  join_rows_by_value(x, y, by = by, join_fun = dplyr::anti_join)
+}
+
+#' `dplyr::semi_join()` matching factor key columns by value, not by levels
+#'
+#' @inheritParams join_rows_by_value
+#' @returns The rows of `x`, unmodified and in their original order, with a
+#'   match in `y`
+#' @noRd
+semi_join_by_value <- function(x, y, by) {
+  join_rows_by_value(x, y, by = by, join_fun = dplyr::semi_join)
 }
 
 # remove the original data.frames from the source data to enable comparison for

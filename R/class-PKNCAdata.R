@@ -28,6 +28,17 @@
 #'   parameters, as a data.frame of group values, optionally
 #'   parameter-specific (see Details).  `NULL` (the default) derives the
 #'   reference from the data.
+#' @param grpid_cols The grouping columns that prefix the interval number in
+#'   the PPGRPID column of `as.data.frame(results, out_format = "cdisc")`, as a
+#'   named character vector of [PKNCAconc()] grouping columns (other than the
+#'   subject and analyte), each with the text written before its value (see
+#'   [as.data.frame.PKNCAresults()]).  It is the default for the `grpid_cols`
+#'   argument there, so every output of one analysis agrees.  `NULL` (the
+#'   default) gives an interval-only identifier.
+#' @param grpid_numeric The names of the columns in `grpid_cols` whose values
+#'   are whole numbers of at least 1, such as the period, written as that
+#'   number in PPGRPID.  It is the default for the `grpid_numeric` argument of
+#'   [as.data.frame.PKNCAresults()].  `NULL` (the default) names no columns.
 #' @param ... arguments passed to `PKNCAdata.default`
 #' @returns A PKNCAdata object with concentration, dose, interval, and
 #'   calculation options stored (note that PKNCAdata objects can also have
@@ -151,7 +162,8 @@ PKNCAdata.PKNCAdose <- function(data.conc, data.dose, ...) {
 PKNCAdata.default <- function(data.conc, data.dose, ...,
                               formula.conc, formula.dose,
                               impute = NA_character_,
-                              intervals, units, options=list(), group_ref = NULL) {
+                              intervals, units, options=list(), group_ref = NULL,
+                              grpid_cols = NULL, grpid_numeric = NULL) {
   if (length(list(...))) {
     rlang::abort(
       "Unknown argument provided to PKNCAdata.  All arguments other than `data.conc` and `data.dose` must be named.",
@@ -205,6 +217,10 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   # Which profiles the automatic reference finder may use for secondary
   # parameters
   ret$group_ref <- assert_group_ref(group_ref, ret$conc)
+
+  # Which grouping columns prefix the CDISC PPGRPID
+  ret$grpid_cols <- assert_grpid_cols(grpid_cols, ret$conc, grpid_numeric)
+  ret$grpid_numeric <- grpid_numeric
 
   # Assign the class and give it all back to the user.
   class(ret) <- c("PKNCAdata", class(ret))
