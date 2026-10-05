@@ -897,10 +897,30 @@ test_that("get_impute_method reads the three forms of impute", {
     get_impute_method(intervals = two_rows, impute = "start_predose,start_conc0"),
     "start_predose,start_conc0"
   )
-  # A column that is not character is an error
+  # A column that is not character is an error, whether numeric or a factor
   expect_error(
     get_impute_method(intervals = data.frame(start = 0, end = 24, my_impute = 1), impute = "my_impute"),
-    regexp = "character"
+    class = "pknca_error_interval_impute_not_character"
+  )
+  expect_error(
+    get_impute_method(
+      intervals = data.frame(start = 0, end = 24, my_impute = factor("start_conc0")),
+      impute = "my_impute"
+    ),
+    class = "pknca_error_interval_impute_not_character"
+  )
+  # A column of only NA, even if logical, is no imputation
+  expect_identical(
+    get_impute_method(intervals = cbind(two_rows, empty = NA), impute = "empty"),
+    c(NA_character_, NA_character_)
+  )
+  expect_identical(
+    get_impute_method(intervals = cbind(two_rows, impute = NA), impute = NA),
+    c(NA_character_, NA_character_)
+  )
+  expect_identical(
+    get_impute_method(intervals = cbind(two_rows, empty = NA_character_), impute = "empty"),
+    c(NA_character_, NA_character_)
   )
   expect_error(
     get_impute_method(intervals = two_rows, impute = c("a", "b")),
@@ -960,5 +980,51 @@ test_that("impute naming an interval column that does not exist is an error", {
     pk.nca(o_data),
     class = "pknca_error_impute_funs_not_found",
     regexp = "my_impute"
+  )
+})
+
+test_that("an imputation column of only NA runs pk.nca like no imputation", {
+  d_conc <- data.frame(subject = 1, time = c(0, 1, 2, 4, 8, 24), conc = c(0, 10, 8, 5, 3, 1))
+  d_dose <- data.frame(subject = 1, time = 0, dose = 100)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  intervals <- data.frame(start = 0, end = 24, auclast = TRUE, cmax = TRUE)
+  res_none <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals)))
+  o_generic <- PKNCAdata(o_conc, o_dose, intervals = cbind(intervals, impute = NA))
+  expect_identical(as.data.frame(pk.nca(o_generic)), res_none)
+  o_named <-
+    PKNCAdata(o_conc, o_dose, intervals = cbind(intervals, my_impute = NA), impute = "my_impute")
+  expect_identical(as.data.frame(pk.nca(o_named)), res_none)
+})
+
+test_that("PKNCAdata keeps its element order with the impute setting", {
+  d_conc <- data.frame(subject = 1, time = c(1, 2, 4), conc = c(10, 8, 5))
+  d_dose <- data.frame(subject = 1, time = 0, dose = 100)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  intervals <- data.frame(start = 0, end = 4, cmax = TRUE, x = "start_conc0")
+  expect_identical(
+    names(PKNCAdata(o_conc, o_dose, intervals = intervals, impute = "x")),
+    c("conc", "dose", "options", "intervals", "impute")
+  )
+  expect_identical(
+    names(PKNCAdata(o_conc, o_dose, intervals = intervals[, 1:3], impute = "start_conc0")),
+    c("conc", "dose", "options", "intervals", "impute")
+  )
+})
+
+test_that("an imputation method that is not found says the setting may be a column", {
+  expect_error(
+    PKNCA_impute_fun_list("my_impute"),
+    class = "pknca_error_impute_funs_not_found",
+    regexp = "not found: .*my_impute.*or a column of the intervals"
+  )
+  expect_error(
+    assert_impute_method(
+      "my_impute",
+      intervals = data.frame(start = 0, end = 24, other = "start_conc0")
+    ),
+    class = "pknca_error_impute_funs_not_found",
+    regexp = "or a column of the intervals"
   )
 })

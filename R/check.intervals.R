@@ -216,7 +216,10 @@ assert_interval_ids_identify_one <- function(x, impute = NA_character_) {
   pointer_cols <-
     pointer_cols[sub(pattern = "_ref$", replacement = "", x = pointer_cols) %in% interval_cols]
   compare_cols <-
-    setdiff(names(x), c(request_cols, pointer_cols, "impute", impute_column_names(impute), "interval_id"))
+    setdiff(
+      names(x),
+      c(request_cols, pointer_cols, "impute", impute_column_names(impute), "interval_id")
+    )
   # Only an id on more than one row can describe different intervals
   ids <- as.character(x$interval_id)
   rows <- which(ids %in% ids[duplicated(ids) & !is.na(ids)])

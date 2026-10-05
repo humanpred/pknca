@@ -19,7 +19,11 @@ the dosing including dose amount and route.
   (`pknca_error_interval_impute_not_character`), and does not count it as part
   of an interval's definition when rows share an `interval_id`.
   `check.interval.specification()` gained an `impute` argument for the same
-  purpose.  (@billdenney)
+  purpose.  `interval_add_impute()` and `interval_remove_impute()` edit the
+  named column rather than creating an `"impute"` column, and an imputation
+  column of only `NA` (a logical column) is read as no imputation.  The error
+  for an imputation method that is not found now says that the setting may be a
+  column of the intervals.  (@billdenney)
 * `interval_add_secondary()` with a `ref_id` no longer merges intervals:  when the
   `reference` rows carry more than one `interval_id` (two intervals sharing a
   window and groups), every one of them used to be renamed to `ref_id`.  It now

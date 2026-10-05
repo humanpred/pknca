@@ -18,7 +18,8 @@ column, or the imputation method string.  Must be an atomic scalar; a list
 A character vector of imputation specifications:  one per row of
 \code{intervals} when read from a column, and of length one otherwise (the
 method string, or \code{NA_character_} for no imputation).  A column that is
-not character is an error.
+not character is an error, except that a column of only \code{NA} (which is
+logical when made with \code{NA}) is read as no imputation.
 }
 \description{
 \code{get_impute_method()} is the rule \code{\link[=pk.nca]{pk.nca()}} uses to find the imputation

@@ -25,7 +25,8 @@
 #' @returns A character vector of imputation specifications:  one per row of
 #'   `intervals` when read from a column, and of length one otherwise (the
 #'   method string, or `NA_character_` for no imputation).  A column that is
-#'   not character is an error.
+#'   not character is an error, except that a column of only `NA` (which is
+#'   logical when made with `NA`) is read as no imputation.
 #' @examples
 #' intervals <- data.frame(start = 0, end = 24, impute = "start_conc0")
 #' # The column named by `impute`
@@ -46,9 +47,30 @@ get_impute_method <- function(intervals, impute) {
     impute_funs <- as.character(impute)
   } else {
     impute_funs <- intervals[[impute_col]]
+    if (!is_impute_column_valid(impute_funs)) {
+      rlang::abort(
+        sprintf(
+          "The imputation column '%s' in the intervals data.frame must be a character column",
+          impute_col
+        ),
+        class = "pknca_error_interval_impute_not_character"
+      )
+    }
+    impute_funs <- as.character(impute_funs)
   }
   checkmate::assert_character(impute_funs)
   impute_funs
+}
+
+# A logical column of all NA (the column that adding impute = NA makes) is
+# accepted as an imputation column and read as character.
+is_impute_column_empty <- function(x) {
+  is.logical(x) && all(is.na(x))
+}
+
+# Whether `x` can be an imputation column:  character, or empty (all NA).
+is_impute_column_valid <- function(x) {
+  is.character(x) || is_impute_column_empty(x)
 }
 
 # The name of the column of `intervals` that get_impute_method() reads, or NULL
@@ -351,7 +373,10 @@ PKNCA_impute_fun_list <- function(x) {
   if (length(bad_fun) > 0) {
     rlang::abort(
       sprintf(
-        "The following imputation functions were not found: %s",
+        paste0(
+          "The following imputation functions were not found: %s.  ",
+          "The imputation setting must be an imputation method or a column of the intervals."
+        ),
         paste(bad_fun, collapse = ", ")
       ),
       class = "pknca_error_impute_funs_not_found"

@@ -161,7 +161,7 @@ impute_column_names <- function(impute) {
 assert_impute_columns_character <- function(intervals, impute) {
   impute <- if (is.null(impute)) NA_character_ else impute
   impute_col <- get_impute_column(intervals = intervals, impute = impute)
-  if (!is.null(impute_col) && !is.character(intervals[[impute_col]])) {
+  if (!is.null(impute_col) && !is_impute_column_valid(intervals[[impute_col]])) {
     rlang::abort(
       sprintf(
         "The imputation column '%s' in the intervals data.frame must be a character column",

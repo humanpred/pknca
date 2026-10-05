@@ -271,6 +271,19 @@ test_that("assert_intervals allows the column that the impute setting names", {
     PKNCAdata(o_conc, intervals = intervals_numeric, impute = "my_impute"),
     class = "pknca_error_interval_impute_not_character"
   )
+  intervals_factor <- intervals
+  intervals_factor$my_impute <- factor("start_conc0")
+  expect_error(
+    assert_intervals(intervals_factor, o_data),
+    class = "pknca_error_interval_impute_not_character",
+    regexp = "my_impute"
+  )
+  # A column of only NA is no imputation, whatever its type and name
+  for (empty in list(NA, NA_character_)) {
+    intervals_empty <- intervals
+    intervals_empty$my_impute <- empty
+    expect_identical(assert_intervals(intervals_empty, o_data), intervals_empty)
+  }
   # The generic column is held to the same rule when it is the one read
   o_data$impute <- NA_character_
   expect_error(
@@ -278,6 +291,11 @@ test_that("assert_intervals allows the column that the impute setting names", {
     class = "pknca_error_interval_impute_not_character",
     regexp = "'impute'"
   )
+  for (empty in list(NA, NA_character_)) {
+    intervals_empty <- data.frame(start = 0, end = 2, cmax = TRUE, impute = empty)
+    expect_identical(assert_intervals(intervals_empty, o_data), intervals_empty)
+    expect_s3_class(PKNCAdata(o_conc, intervals = intervals_empty), "PKNCAdata")
+  }
   # The default setting and the method-string setting still allow only "impute"
   expect_identical(
     assert_intervals(data.frame(start = 0, end = 2, cmax = TRUE, impute = "start_conc0"), o_data),
@@ -308,5 +326,8 @@ test_that("rows sharing an interval_id may differ in the named impute column", {
     check.interval.specification(intervals),
     class = "pknca_error_secondary_id_conflict"
   )
-  expect_s3_class(check.interval.specification(intervals, impute = "my_impute"), "data.frame")
+  expect_identical(
+    check.interval.specification(intervals, impute = "my_impute")[, names(intervals)],
+    intervals
+  )
 })

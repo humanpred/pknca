@@ -566,3 +566,76 @@ test_that("interval_add_param() warns and changes nothing when target_groups mat
   )
   expect_equal(result, intervals)
 })
+
+describe("interval_add_impute and interval_remove_impute with a named impute column", {
+  d_conc_named <- data.frame(subject = 1, time = c(0, 1, 2, 4, 8, 24), conc = c(0, 10, 8, 5, 3, 1))
+  d_dose_named <- data.frame(subject = 1, time = 0, dose = 100)
+  o_conc_named <- PKNCA::PKNCAconc(d_conc_named, conc ~ time | subject)
+  o_dose_named <- PKNCA::PKNCAdose(d_dose_named, dose ~ time | subject)
+  intervals_named <-
+    data.frame(start = 0, end = 24, auclast = TRUE, cmax = TRUE, my = "start_conc0")
+  o_named <-
+    PKNCA::PKNCAdata(o_conc_named, o_dose_named, intervals = intervals_named, impute = "my")
+
+  it("adds a method to the named column and leaves the setting alone", {
+    result <- interval_add_impute(o_named, target_impute = "start_predose")
+    expect_identical(result$impute, "my")
+    expect_false("impute" %in% names(result$intervals))
+    expect_identical(result$intervals$my, "start_conc0,start_predose")
+    expect_s3_class(pk.nca(result), "PKNCAresults")
+  })
+
+  it("splits the named column by parameter", {
+    result <- interval_add_impute(o_named, target_impute = "start_predose", target_params = "cmax")
+    expect_identical(result$impute, "my")
+    expect_false("impute" %in% names(result$intervals))
+    expect_identical(sort(result$intervals$my), c("start_conc0", "start_conc0,start_predose"))
+    expect_s3_class(pk.nca(result), "PKNCAresults")
+  })
+
+  it("removes a method from the named column", {
+    result <- interval_remove_impute(o_named, target_impute = "start_conc0")
+    expect_identical(result$impute, "my")
+    expect_identical(result$intervals$my, NA_character_)
+    expect_false("impute" %in% names(result$intervals))
+    expect_s3_class(pk.nca(result), "PKNCAresults")
+    result_param <-
+      interval_remove_impute(o_named, target_impute = "start_conc0", target_params = "cmax")
+    expect_identical(result_param$impute, "my")
+    expect_false("impute" %in% names(result_param$intervals))
+    expect_s3_class(pk.nca(result_param), "PKNCAresults")
+  })
+
+  it("matches the edit made with the generic column", {
+    o_generic <-
+      PKNCA::PKNCAdata(
+        o_conc_named, o_dose_named,
+        intervals = cbind(intervals_named[, 1:4], impute = "start_conc0")
+      )
+    expect_identical(
+      as.data.frame(pk.nca(interval_add_impute(o_named, target_impute = "start_predose"))),
+      as.data.frame(pk.nca(interval_add_impute(o_generic, target_impute = "start_predose")))
+    )
+  })
+
+  it("still moves a method-string setting into the impute column", {
+    o_string <-
+      PKNCA::PKNCAdata(
+        o_conc_named, o_dose_named,
+        intervals = intervals_named[, 1:4], impute = "start_conc0"
+      )
+    result <- interval_add_impute(o_string, target_impute = "start_predose")
+    expect_identical(result$intervals$impute, "start_conc0,start_predose")
+    expect_identical(result$impute, NA_character_)
+  })
+
+  it("converts an all-NA logical named column to character", {
+    long <- interval_longer(cbind(intervals_named[, 1:4], my = NA), impute_col = "my")
+    expect_identical(long$my, c(NA_character_, NA_character_))
+    expect_error(
+      interval_longer(cbind(intervals_named[, 1:4], my = 1), impute_col = "my"),
+      class = "pknca_error_interval_impute_not_character",
+      regexp = "'my'"
+    )
+  })
+})
