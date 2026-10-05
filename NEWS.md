@@ -174,11 +174,13 @@ the generated intervals:
   the period of the segment with the most doses, so there is one algorithm.
   Dose times are compared on the log scale within a tolerance rather than
   exactly, so a dose recorded at 23.6 hours is a daily dose, twice-daily doses
-  at 08:00 and 16:00 repeat every 24 hours, and a dose off schedule among daily
-  doses gives a daily interval with the `"pknca_warning_tau_irregular_dosing"`
-  warning instead of no interval.  Both functions gain a `timeu` argument;
-  with it and no `tau.choices`, intervals are matched to the usual nominal
-  intervals from every 4 hours to every 12 weeks.  An interval that matches no
+  at 08:00 and 16:00 repeat every 24 hours, three-times-daily dosing with a dose
+  not given stays three times daily, and a dose off schedule among daily doses
+  gives a daily interval with the `"pknca_warning_tau_irregular_dosing"`
+  warning (naming that dose) instead of no interval.  Both functions gain a
+  `timeu` argument; with it and no `tau.choices`, intervals are matched to the
+  usual nominal intervals from every 4 hours to every 12 weeks, and a unit that
+  cannot be converted to hours is an error.  An interval that matches no
   nominal one gives a new `"pknca_warning_tau_not_nominal"` warning, and a
   change of regimen within the dose times gives a new
   `"pknca_warning_tau_regimen_change"` warning; both messages include the
