@@ -106,6 +106,8 @@ find.tau <- function(x, na.action=stats::na.omit,
                      tau.choices=NULL,
                      timeu=NULL) {
   x <- na.action(x)
+  # An na.action that keeps NA, such as na.pass, leaves no NA to detect from
+  x <- x[!is.na(x)]
   if (length(x) == 0) {
     return(NA)
   }

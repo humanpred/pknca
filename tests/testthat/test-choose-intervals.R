@@ -69,17 +69,17 @@ test_that("find.tau", {
 test_that("find.tau reads a dose off schedule as irregular daily dosing", {
   # A single dose off schedule leaves gaps of 32 and 16 hours among otherwise
   # daily doses.  The daily runs either side of it hold most of the spacings, so
-  # the interval is daily and the two gaps are named.  The 96 hours that the
+  # the interval is daily and the dose between the two gaps is named.  The 96 hours that the
   # doses span is not an interval:  no two doses are 96 hours apart.
   expect_warning(
     tau <- find.tau(c(0, 24, 48, 80, 96, 120, 144)),
-    regexp="Doses are off schedule after times 48, 80[.]$",
+    regexp="Doses are off schedule at time 80[.]$",
     class="pknca_warning_tau_irregular_dosing"
   )
   expect_equal(tau, 24)
   expect_warning(
     tau_choice <- find.tau(c(0, 24, 48, 80, 96, 120, 144), tau.choices=24),
-    regexp="Doses are off schedule after times 48, 80",
+    regexp="Doses are off schedule at time 80[.]$",
     class="pknca_warning_tau_irregular_dosing"
   )
   expect_equal(tau_choice, 24)
@@ -106,11 +106,11 @@ test_that("find.tau reports a missed dose rather than the length of the gap", {
   )
   expect_equal(tau_two, 24)
   expect_equal(find.tau(c(0, 24, 48, 96, 120, 144, 192, 216, 240)), 96)
-  # A gap that is not a whole number of intervals is not a missed dose; it is a
-  # dose off schedule
+  # A gap that is not a whole number of intervals is not a missed dose; the dose
+  # that ends it is off schedule, and the schedule continues from it
   expect_warning(
     tau_early <- find.tau(c(0, 24, 48, 60, 84, 108), tau.choices=24),
-    regexp="using the most common interval of 24[.] Doses are off schedule after time 48[.]$",
+    regexp="using the most common interval of 24[.] Doses are off schedule at time 60[.]$",
     class="pknca_warning_tau_irregular_dosing"
   )
   expect_equal(tau_early, 24)

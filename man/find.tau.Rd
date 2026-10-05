@@ -24,8 +24,9 @@ find.tau(
 \code{NA} to use the built-in set (when \code{timeu} is given) or none.  Names are used
 as labels.  \code{NULL} takes the \code{tau.choices} option.}
 
-\item{timeu}{The time unit of \code{x} (such as \code{"hr"} or \code{"day"}), or \code{NULL} when
-it is not known}
+\item{timeu}{The time unit of \code{x} (such as \code{"hr"} or \code{"day"}), or \code{NULL} (or
+\code{""}) when it is not known.  A unit that cannot be converted to hours is an
+error.}
 }
 \value{
 \code{NA} when there are no dose times or no interval repeats, 0 for a

@@ -22,8 +22,9 @@ find.dose.regimen(
 \code{NA} to use the built-in set (when \code{timeu} is given) or none.  Names are used
 as labels.  \code{NULL} takes the \code{tau.choices} option.}
 
-\item{timeu}{The time unit of \code{x} (such as \code{"hr"} or \code{"day"}), or \code{NULL} when
-it is not known}
+\item{timeu}{The time unit of \code{x} (such as \code{"hr"} or \code{"day"}), or \code{NULL} (or
+\code{""}) when it is not known.  A unit that cannot be converted to hours is an
+error.}
 
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
@@ -32,7 +33,7 @@ it is not known}
 a candidate}
 
 \item{snap.tol}{Relative tolerance for reporting an interval as a candidate
-and for the spans of a cycle}
+and for a dose to be on a cycle's pattern}
 
 \item{min.run}{The fewest consecutive spacings with one label that form a
 segment}
@@ -54,10 +55,9 @@ the segment's number of doses per period (twice-daily doses at 0 and 10
 hours are \code{"BID"}), or \code{NA}}
 \item{\code{source}}{\code{"nominal"} when \code{interval} is a candidate and \code{"auto"} when
 it was found in the data}
-\item{\code{n_intervals_used}}{The spacings (or for a partial cycle, the spans)
-that set the interval}
-\item{\code{n_missed}}{Spacings read as missed doses}
-\item{\code{n_irregular}}{Spacings (or spans) that fit no interval}
+\item{\code{n_intervals_used}}{The spacings that set the interval}
+\item{\code{n_missed}}{Doses read as missed}
+\item{\code{n_irregular}}{Doses off schedule or extra}
 \item{\code{note}}{A description of anything unusual}
 \item{\code{offsets}}{A list column of the dose times within one period,
 relative to the first dose of the period}
@@ -70,25 +70,36 @@ then described as one or more segments, each a stretch of dosing that repeats
 over a period, found in this order:
 \enumerate{
 \item Equally spaced doses repeat over their spacing.
-\item A cycle of more than one dose per period is looked for next:  every
-dose recurs a fixed number of doses later, at a span within
-\code{snap.tol} of the others, and the spacing at each position of the
-cycle is the same from cycle to cycle within \code{tol}.  Two complete
-cycles are required.  Twice-daily doses at 08:00 and 16:00 repeat
-every 24 hours with offsets 0 and 8.  When the period is not a
-candidate and a whole number of periods is, that multiple is used.
+\item A cycle of 2 to 4 doses per period that every dose follows is looked
+for next.  The period is the median span of that many spacings, and
+each dose's time within the period falls into one of the positions
+of the cycle.  The spacings between the positions must differ from
+one another by more than \code{tol}, every dose must be within \code{snap.tol}
+of its position, and every position must hold at least two doses
+(two complete periods).  Twice-daily doses at 08:00 and 16:00 repeat
+every 24 hours with offsets 0 and 8.  When the period is not one of
+the given \code{tau.choices} and a whole number of periods is, that
+multiple is used; the built-in nominal set never selects a longer
+period.
 \item Doses whose spacings are all within \code{tol} of their median are evenly
 spaced with scatter, and repeat over the median spacing.
 \item Otherwise, each spacing is labeled with the candidate it is within
 \code{tol} of (on the log scale), and the rest are clustered on the log
-scale.  Runs of at least \code{min.run} spacings with one label anchor
-segments, and the runs must hold most of the spacings.  A shorter run
-is a missed dose when it is a whole number (up to \code{max.missed}) of
-the segment's interval and is irregular when it is not.  Neighboring
-anchors with the same label are one segment, so a change of regimen
-gives several segments.
-\item If no segment forms, a cycle of 2 to 4 doses that at least 70\% of
-the doses follow is used, with the rest irregular.
+scale.  Doses squeezed into one interval between two runs of the
+regimen are set aside as extra doses.  Runs of at least \code{min.run}
+spacings with one label anchor segments, and the runs must hold most
+of the spacings.  A spacing outside the runs is a missed dose when it
+is a whole number (up to \code{max.missed}) of the segment's interval and
+is irregular when it is not; a dose given early or late is the dose
+between two irregular spacings.  Neighboring anchors with the same
+label are one segment, so a change of regimen gives several segments.
+\item When that reading has missed or irregular doses or more than one
+segment, a cycle of 2 to 4 doses that at least 70\% of the doses follow
+is used instead if it explains more spacings, or as many with no more
+missed, off-schedule, or extra doses and changes of regimen.  This
+keeps three-times-daily dosing with a dose not given as three times
+daily, and daily dosing after twice-daily dosing as a change of
+regimen.
 \item If none of that fits, there is no repeating interval.
 }
 }
@@ -97,23 +108,27 @@ The interval of a segment is snapped to the nearest candidate within
 \code{snap.tol} (source \code{"nominal"}), and is otherwise the value found in the data
 (source \code{"auto"}).  The value found in the data is the median of the
 spacings (or spans) that set it, so scatter in the recorded times does not
-move it.  The candidates are \code{tau.choices} when it is given.
-Otherwise, when \code{timeu} is given, they are the built-in nominal intervals
-converted from hours to \code{timeu}:  q4h (4 hours), QID (6), TID (8), BID (12),
-QD (24), QOD (48), Q72H (72), QW (168), Q2W (336), Q3W (504), Q4W (672), Q6W
-(1008), Q8W (1344), and Q12W (2016).  Without either, or when \code{timeu} cannot
-be converted to hours, PKNCA cannot know what the numbers mean, so the
-intervals come from the data alone and every source is \code{"auto"}.
+move it.  The candidates are \code{tau.choices} when it is given.  Otherwise, when
+\code{timeu} is given, they are the built-in nominal intervals converted from hours
+to \code{timeu}:  q4h (4 hours), QID (6), TID (8), BID (12), QD (24), QOD (48),
+Q72H (72), QW (168), Q2W (336), Q3W (504), Q4W (672), Q6W (1008), Q8W (1344),
+and Q12W (2016).  Without either, PKNCA cannot know what the numbers mean, so
+the intervals come from the data alone and every source is \code{"auto"}.
 }
 \section{Conditions}{
 
 \describe{
-\item{\code{pknca_warning_tau_irregular_dosing}}{A segment has missed doses or
-doses off schedule; the message names the dose times before them.}
+\item{\code{pknca_warning_tau_irregular_dosing}}{A segment has missed doses
+(the message names the dose times before them) or doses off schedule
+(the message names those doses).}
 \item{\code{pknca_warning_tau_not_nominal}}{There were candidates to match and
 a segment matched none of them.  The message includes the regimen table.}
 \item{\code{pknca_warning_tau_regimen_change}}{More than one segment was found.
 The message includes the regimen table.}
+\item{\code{pknca_error_regimen_time_unit}}{\code{timeu} cannot be converted to
+hours.}
+\item{\code{pknca_error_regimen_time_class}}{\code{x} is a date-time or difftime
+rather than a number.}
 }
 }
 
