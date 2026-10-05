@@ -1028,3 +1028,48 @@ test_that("an imputation method that is not found says the setting may be a colu
     regexp = "or a column of the intervals"
   )
 })
+
+test_that("get_impute_column names the column that get_impute_method reads", {
+  two_rows <-
+    data.frame(start = c(0, 24), end = c(24, 48), my_impute = c("start_conc0", "start_predose"))
+  both <- cbind(two_rows, impute = c("a", "b"))
+  # A name that is a column
+  expect_identical(get_impute_column(two_rows, impute = "my_impute"), "my_impute")
+  expect_identical(get_impute_column(both, impute = "my_impute"), "my_impute")
+  expect_identical(get_impute_column(both, impute = "impute"), "impute")
+  # NA finds the "impute" column, if there is one
+  expect_identical(get_impute_column(both, impute = NA), "impute")
+  expect_identical(get_impute_column(both, impute = NA_character_), "impute")
+  expect_null(get_impute_column(two_rows, impute = NA))
+  expect_null(get_impute_column(two_rows, impute = NA_character_))
+  # A method string is not a column
+  expect_null(get_impute_column(two_rows, impute = "start_conc0"))
+  expect_null(get_impute_column(both, impute = "start_conc0"))
+  expect_null(get_impute_column(two_rows, impute = "start_predose,start_conc0"))
+  # One row: the column is still told from a method string
+  one_row <- two_rows[1, ]
+  expect_identical(get_impute_column(one_row, impute = "my_impute"), "my_impute")
+  expect_null(get_impute_column(one_row, impute = "start_conc0"))
+  # Zero rows keep the columns
+  expect_identical(get_impute_column(two_rows[0, ], impute = "my_impute"), "my_impute")
+  # It does not read the column, so a column that is not character still has a name
+  expect_identical(get_impute_column(data.frame(start = 0, x = 1), impute = "x"), "x")
+  # The scalar and data.frame requirements are the ones of get_impute_method()
+  expect_error(get_impute_column(two_rows, impute = NULL), regexp = "scalar")
+  expect_error(get_impute_method(two_rows, impute = NULL), regexp = "scalar")
+  expect_error(get_impute_column(two_rows, impute = c("a", "b")), regexp = "length 1")
+  expect_error(get_impute_column(two_rows, impute = list("my_impute")), regexp = "scalar")
+  expect_error(get_impute_column(list(my_impute = "a"), impute = "my_impute"), regexp = "data.frame")
+})
+
+test_that("get_impute_column is exported and agrees with get_impute_method", {
+  expect_true("get_impute_column" %in% getNamespaceExports("PKNCA"))
+  intervals <- data.frame(start = 0, end = 24, impute = "start_conc0", other = "start_cmin")
+  for (setting in list("impute", "other", NA, NA_character_, "start_predose", "nothing_here")) {
+    from_column <- !is.null(get_impute_column(intervals, impute = setting))
+    expect_identical(
+      from_column,
+      length(get_impute_method(intervals[0, ], impute = setting)) == 0L
+    )
+  }
+})

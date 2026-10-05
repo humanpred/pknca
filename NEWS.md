@@ -6,6 +6,11 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `get_impute_column()` is now exported beside `get_impute_method()`.  It gives
+  the name of the intervals column that the `impute` argument of `PKNCAdata()`
+  takes the imputation methods from, or `NULL` when `impute` is a method string
+  or `NA` with no `"impute"` column, so other packages can tell a column from a
+  method string without reading `impute` themselves.  (@billdenney)
 * `get_impute_method()` is now exported, so that other packages read the
   `impute` argument of `PKNCAdata()` the way `pk.nca()` does:  a name that is
   a column of the intervals gives that column's methods, `NA` gives the
