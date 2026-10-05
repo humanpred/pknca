@@ -21,13 +21,16 @@
 #'
 #' @param x The data frame specifying what to calculate during each time
 #'   interval
+#' @param impute The `impute` argument of [PKNCAdata()], so that a column it
+#'   names is treated as an imputation column (like `impute`) rather than as
+#'   part of the definition of an interval.
 #' @returns x The potentially updated data frame with the interval calculation
 #'   specification.
 #'
 #' @family Interval specifications
 #' @seealso The vignette "Selection of Calculation Intervals"
 #' @export
-check.interval.specification <- function(x) {
+check.interval.specification <- function(x, impute = NA_character_) {
   if (!is.data.frame(x)) {
     # Just a warning and let as.data.frame make it an error if it can't be
     # coerced.
@@ -107,7 +110,7 @@ check.interval.specification <- function(x) {
   }
   # interval_id and the <parameter>_ref pointers that link a secondary parameter
   # to its reference interval
-  x <- check_interval_secondary_cols(x)
+  x <- check_interval_secondary_cols(x, impute = impute)
   # Confirm that something is being calculated for each interval (and warn if not)
   mask_calculated <- rep(FALSE, nrow(x))
   for (n in setdiff(names(interval_cols), c("start", "end"))) {
@@ -199,8 +202,9 @@ check_interval_id_classes <- function(x, ref_cols) {
 # Rows with the same start, end, and groups but different ids are different
 # intervals, and an id on rows with different times or groups is an error.
 # Called by assert_intervals() and, through check_interval_secondary_cols(), by
-# check.interval.specification().  Returns `x` invisibly.
-assert_interval_ids_identify_one <- function(x) {
+# check.interval.specification().  The column that `impute` names (see
+# get_impute_method()) is an imputation column too.  Returns `x` invisibly.
+assert_interval_ids_identify_one <- function(x, impute = NA_character_) {
   if (!("interval_id" %in% names(x))) {
     return(invisible(x))
   }
@@ -212,7 +216,7 @@ assert_interval_ids_identify_one <- function(x) {
   pointer_cols <-
     pointer_cols[sub(pattern = "_ref$", replacement = "", x = pointer_cols) %in% interval_cols]
   compare_cols <-
-    setdiff(names(x), c(request_cols, pointer_cols, "impute", "interval_id"))
+    setdiff(names(x), c(request_cols, pointer_cols, "impute", impute_column_names(impute), "interval_id"))
   # Only an id on more than one row can describe different intervals
   ids <- as.character(x$interval_id)
   rows <- which(ids %in% ids[duplicated(ids) & !is.na(ids)])
@@ -243,7 +247,7 @@ assert_interval_ids_identify_one <- function(x) {
 # `interval_id` and the `<parameter>_ref` pointers naming it.  Called from
 # check.interval.specification() after every registered parameter column exists.
 # Returns the (possibly coerced) interval specification.
-check_interval_secondary_cols <- function(x) {
+check_interval_secondary_cols <- function(x, impute = NA_character_) {
   interval_cols <- get.interval.cols()
   candidate <- grep(pattern = "_ref$", x = names(x), value = TRUE)
   # A `<something>_ref` column whose prefix is not a parameter is the user's own
@@ -276,7 +280,7 @@ check_interval_secondary_cols <- function(x) {
     # factor levels) so it stays comparable.
     x$interval_id <- x[[ref_cols[1]]][rep(NA_integer_, nrow(x))]
   }
-  assert_interval_ids_identify_one(x)
+  assert_interval_ids_identify_one(x, impute = impute)
   for (col in ref_cols) {
     prefix <- sub(pattern = "_ref$", replacement = "", x = col)
     unknown <- setdiff(stats::na.omit(x[[col]]), stats::na.omit(x$interval_id))

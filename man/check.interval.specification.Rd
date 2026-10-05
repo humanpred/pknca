@@ -4,11 +4,15 @@
 \alias{check.interval.specification}
 \title{Check the formatting of a calculation interval specification data frame.}
 \usage{
-check.interval.specification(x)
+check.interval.specification(x, impute = NA_character_)
 }
 \arguments{
 \item{x}{The data frame specifying what to calculate during each time
 interval}
+
+\item{impute}{The \code{impute} argument of \code{\link[=PKNCAdata]{PKNCAdata()}}, so that a column it
+names is treated as an imputation column (like \code{impute}) rather than as
+part of the definition of an interval.}
 }
 \value{
 x The potentially updated data frame with the interval calculation

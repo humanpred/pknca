@@ -1,22 +1,66 @@
-#' Get the impute function from either the intervals column or from the method
+#' Get the imputation methods for the intervals
+#'
+#' `get_impute_method()` is the rule [pk.nca()] uses to find the imputation
+#' methods for each interval, from the `impute` argument of [PKNCAdata()] and
+#' the intervals.  It reads `impute` one of three ways, in this order:
+#'
+#' 1. If `impute` is the name of a column in `intervals`, the methods are that
+#'    column's values, one per interval.  The name may be any column name, not
+#'    only `"impute"`.
+#' 2. Otherwise, if `impute` is `NA` and `intervals` has a column named
+#'    `"impute"`, the methods are that column's values, one per interval.
+#' 3. Otherwise `impute` is itself the method (or comma- or space-separated
+#'    methods) for every interval, and the result is `impute` as a single
+#'    value.  An `NA` that finds no `"impute"` column therefore gives a single
+#'    `NA_character_`, meaning no imputation.
+#'
+#' `get_impute_method()` only reads the specification.  It does not check that
+#' the methods exist; [assert_impute_method()] does.
 #'
 #' @param intervals the data.frame of intervals
 #' @param impute the imputation definition -- either the name of a column in
-#'   `intervals` (character scalar) or `NA` to look for a generic `"impute"`
-#'   column. Must be an atomic scalar; a list (even of length 1) is rejected.
-#' @return The imputation function vector
+#'   `intervals` (character scalar), `NA` to look for a generic `"impute"`
+#'   column, or the imputation method string.  Must be an atomic scalar; a list
+#'   (even of length 1) is rejected.
+#' @returns A character vector of imputation specifications:  one per row of
+#'   `intervals` when read from a column, and of length one otherwise (the
+#'   method string, or `NA_character_` for no imputation).  A column that is
+#'   not character is an error.
+#' @examples
+#' intervals <- data.frame(start = 0, end = 24, impute = "start_conc0")
+#' # The column named by `impute`
+#' get_impute_method(intervals, impute = "impute")
+#' # NA finds the column named "impute"
+#' get_impute_method(intervals, impute = NA)
+#' # NA without an "impute" column means no imputation
+#' get_impute_method(intervals[, c("start", "end")], impute = NA)
+#' # Anything else is the method for every interval
+#' get_impute_method(intervals, impute = "start_predose")
+#' @family Imputation
+#' @export
 get_impute_method <- function(intervals, impute) {
   checkmate::assert_scalar(impute, na.ok = TRUE)
   checkmate::assert_data_frame(intervals)
-  if (impute %in% names(intervals)) {
-    impute_funs <- intervals[[impute]]
-  } else if (is.na(impute) && "impute" %in% names(intervals)) {
-    impute_funs <- intervals$impute
+  impute_col <- get_impute_column(intervals = intervals, impute = impute)
+  if (is.null(impute_col)) {
+    impute_funs <- as.character(impute)
   } else {
-    impute_funs <- impute
+    impute_funs <- intervals[[impute_col]]
   }
   checkmate::assert_character(impute_funs)
   impute_funs
+}
+
+# The name of the column of `intervals` that get_impute_method() reads, or NULL
+# when `impute` is itself the method.  `impute` is checked by the caller.
+get_impute_column <- function(intervals, impute) {
+  if (impute %in% names(intervals)) {
+    impute
+  } else if (is.na(impute) && "impute" %in% names(intervals)) {
+    "impute"
+  } else {
+    NULL
+  }
 }
 
 #' Methods for imputation of data with PKNCA
