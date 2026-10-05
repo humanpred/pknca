@@ -150,6 +150,26 @@ test_that("assert_intervals refuses a sparse-only parameter for dense data", {
   )
 })
 
+test_that("the conflicting interval_ids are named, at most five", {
+  intervals_many <-
+    data.frame(
+      interval_id = rep(letters[1:6], each = 2),
+      start = 0, end = rep(c(24, 48), times = 6), cmax = TRUE
+    )
+  expect_error(
+    check.interval.specification(intervals_many),
+    class = "pknca_error_secondary_id_conflict",
+    regexp = "'a', 'b', 'c', 'd', 'e', ... must describe",
+    fixed = TRUE
+  )
+  expect_error(
+    check.interval.specification(intervals_many[1:10, ]),
+    class = "pknca_error_secondary_id_conflict",
+    regexp = "'a', 'b', 'c', 'd', 'e' must describe",
+    fixed = TRUE
+  )
+})
+
 test_that("rows of one interval may point at different references", {
   intervals_pointers <-
     data.frame(

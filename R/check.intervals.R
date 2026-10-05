@@ -211,18 +211,30 @@ assert_interval_ids_identify_one <- function(x) {
     grep(pattern = "_ref$", x = names(x), value = TRUE)
   pointer_cols <-
     pointer_cols[sub(pattern = "_ref$", replacement = "", x = pointer_cols) %in% interval_cols]
-  compare_cols <- setdiff(names(x), c(request_cols, pointer_cols, "impute"))
-  for (current_id in unique(stats::na.omit(x$interval_id))) {
-    rows <- which(x$interval_id %in% current_id)
-    if (!all(duplicated(x[rows, compare_cols, drop = FALSE])[-1])) {
-      rlang::abort(
-        sprintf(
-          "Rows sharing interval_id '%s' must describe the same interval; they differ outside the parameter and impute columns",
-          current_id
-        ),
-        class = "pknca_error_secondary_id_conflict"
-      )
-    }
+  compare_cols <-
+    setdiff(names(x), c(request_cols, pointer_cols, "impute", "interval_id"))
+  # Only an id on more than one row can describe different intervals
+  ids <- as.character(x$interval_id)
+  rows <- which(ids %in% ids[duplicated(ids) & !is.na(ids)])
+  if (length(rows) == 0 || length(compare_cols) == 0) {
+    return(invisible(x))
+  }
+  description <-
+    do.call(
+      paste,
+      c(lapply(X = x[rows, compare_cols, drop = FALSE], FUN = as.character), sep = "")
+    )
+  distinct <- !duplicated(data.frame(id = ids[rows], description = description))
+  conflicting <- unique(ids[rows][distinct & duplicated(ids[rows])])
+  if (length(conflicting) > 0) {
+    shown <- paste0("'", utils::head(conflicting, 5), "'", collapse = ", ")
+    rlang::abort(
+      sprintf(
+        "Rows sharing interval_id %s%s must describe the same interval; they differ outside the parameter and impute columns",
+        shown, if (length(conflicting) > 5) ", ..." else ""
+      ),
+      class = "pknca_error_secondary_id_conflict"
+    )
   }
   invisible(x)
 }
