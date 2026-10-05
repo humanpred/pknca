@@ -20,10 +20,10 @@ spelling::spell_check_package()                            # Spell check (wordli
 ## Repository Structure
 
 ```
-R/                     # Source code (47 files)
+R/                     # Source code
 man/                   # Auto-generated roxygen2 documentation (do not edit by hand)
-tests/testthat/        # testthat test files (43 tests + helper)
-vignettes/             # Rmd vignettes (19 files)
+tests/testthat/        # testthat test files and helper-*.R files
+vignettes/             # Rmd vignettes
 data-raw/              # Scripts that generate package datasets
 inst/                  # Installed files (CITATION, WORDLIST)
 courses/               # Training materials and presentations
@@ -130,7 +130,7 @@ dplyr verbs are supported on these classes: `filter`, `mutate`, `group_by`, `inn
   - Use `@inheritParams` and `@rdname` to avoid duplication
   - Use `@family PKNCA objects` to group related class documentation
   - Use `@keywords Internal` for non-exported helper functions
-- **Validation:** `checkmate` package for input validation; `rlang::warn()` with custom error classes (e.g., `"pknca_conc_none"`)
+- **Validation:** `checkmate` package for input validation; `rlang::abort()` / `rlang::warn()` / `rlang::inform()` with classed conditions named `pknca_error_*`, `pknca_warning_*`, `pknca_message_*` (e.g., `"pknca_error_unknown_options"`)
 - **Deprecation:** `lifecycle` package for managing deprecated functions (see `R/defunct.R`)
 - **Global options:** managed through `PKNCA.options()` / `PKNCA.choose.option()` in `R/PKNCA.options.R`
 
@@ -150,11 +150,11 @@ Three GitHub Actions workflows in `.github/workflows/`:
 
 | Workflow | Trigger | What it does |
 |----------|---------|-------------|
-| `R-CMD-check.yaml` | push to main, PRs | R CMD check on macOS (release), Windows (release), Ubuntu (devel, release, oldrel-1) |
+| `R-CMD-check.yaml` | push to main, PRs | R CMD check on macOS (release), Windows (release), Ubuntu (devel, release, oldrel-1, 4.4), and Ubuntu R 4.1 with hard dependencies only and no vignettes, which guards the `R (>= 4.1)` floor |
 | `test-coverage.yaml` | push to main, PRs | Code coverage via covr, uploads to Codecov |
 | `pkgdown.yaml` | push to main, PRs, releases | Builds and deploys documentation site to GitHub Pages |
 
-Build args: `--no-manual --compact-vignettes=gs+qpdf`
+Build args: `--no-manual --compact-vignettes=gs+qpdf` (the R 4.1 job adds `--ignore-vignettes` to check and `--no-build-vignettes` to build)
 
 ## Contributing Checklist
 
