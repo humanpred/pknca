@@ -299,8 +299,7 @@
   : Determine which concentrations were used for half-life calculation
 
 - [`get_impute_method()`](https://humanpred.github.io/pknca/reference/get_impute_method.md)
-  : Get the impute function from either the intervals column or from the
-  method
+  : Get the imputation methods for the intervals
 
 - [`group_by(`*`<PKNCAresults>`*`)`](https://humanpred.github.io/pknca/reference/group_by.PKNCAresults.md)
   [`group_by(`*`<PKNCAconc>`*`)`](https://humanpred.github.io/pknca/reference/group_by.PKNCAresults.md)

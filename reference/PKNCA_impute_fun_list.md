@@ -31,6 +31,7 @@ function names to run in order (or `NA_character_` for no imputation).
 Other Imputation:
 [`PKNCA_impute_method`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md),
 [`assert_impute_method()`](https://humanpred.github.io/pknca/reference/assert_impute_method.md),
+[`get_impute_method()`](https://humanpred.github.io/pknca/reference/get_impute_method.md),
 [`pknca_impute_methods()`](https://humanpred.github.io/pknca/reference/pknca_impute_methods.md)
 
 ## Examples

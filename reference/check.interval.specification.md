@@ -8,7 +8,7 @@ required for (or computed at the same time as) a requested parameter.
 ## Usage
 
 ``` r
-check.interval.specification(x)
+check.interval.specification(x, impute = NA_character_)
 ```
 
 ## Arguments
@@ -16,6 +16,13 @@ check.interval.specification(x)
 - x:
 
   The data frame specifying what to calculate during each time interval
+
+- impute:
+
+  The `impute` argument of
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md),
+  so that a column it names is treated as an imputation column (like
+  `impute`) rather than as part of the definition of an interval.
 
 ## Value
 

@@ -5,9 +5,9 @@ Convert intervals between the wide and long representations
 ## Usage
 
 ``` r
-interval_longer(intervals)
+interval_longer(intervals, impute_col = "impute")
 
-interval_wider(long, template)
+interval_wider(long, template, impute_col = "impute")
 ```
 
 ## Arguments
@@ -15,6 +15,12 @@ interval_wider(long, template)
 - intervals:
 
   A data.frame of intervals (the wide representation).
+
+- impute_col:
+
+  The name of the imputation column, which is added when the intervals
+  do not have it (see
+  [`get_impute_method()`](https://humanpred.github.io/pknca/reference/get_impute_method.md)).
 
 - long:
 

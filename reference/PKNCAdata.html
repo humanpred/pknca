@@ -124,8 +124,9 @@ if <code>data.dose</code> is a <code>PKNCAdose</code> object.</p></dd>
 <dd><p>Methods for imputation.  <code>NA</code> for to search for the column
 named "impute" in the intervals or no imputation if that column does not
 exist, a comma-or space-separated list of names, or the name of a column in
-the <code>intervals</code> data.frame.  See
-<code><a href="../articles/v08-data-imputation.html">vignette("v08-data-imputation", package="PKNCA")</a></code> for more details.</p></dd>
+the <code>intervals</code> data.frame (any column name works, not only <code>"impute"</code>, and
+the column must be character).  <code><a href="get_impute_method.html">get_impute_method()</a></code> gives the exact rule.
+See <code><a href="../articles/v08-data-imputation.html">vignette("v08-data-imputation", package="PKNCA")</a></code> for more details.</p></dd>
 
 
 <dt id="arg-intervals">intervals<a class="anchor" aria-label="anchor" href="#arg-intervals"></a></dt>

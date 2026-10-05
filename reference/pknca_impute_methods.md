@@ -59,7 +59,8 @@ it is not listed here.
 Other Imputation:
 [`PKNCA_impute_fun_list()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_fun_list.md),
 [`PKNCA_impute_method`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md),
-[`assert_impute_method()`](https://humanpred.github.io/pknca/reference/assert_impute_method.md)
+[`assert_impute_method()`](https://humanpred.github.io/pknca/reference/assert_impute_method.md),
+[`get_impute_method()`](https://humanpred.github.io/pknca/reference/get_impute_method.md)
 
 ## Examples
 

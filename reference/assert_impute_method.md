@@ -37,6 +37,7 @@ column), invisibly, or an error
 Other Imputation:
 [`PKNCA_impute_fun_list()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_fun_list.md),
 [`PKNCA_impute_method`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md),
+[`get_impute_method()`](https://humanpred.github.io/pknca/reference/get_impute_method.md),
 [`pknca_impute_methods()`](https://humanpred.github.io/pknca/reference/pknca_impute_methods.md)
 
 ## Examples
@@ -49,5 +50,5 @@ assert_impute_method(
 )
 try(assert_impute_method("start_misspelled"))
 #> Error in PKNCA_impute_fun_list(ret) : 
-#>   The following imputation functions were not found: PKNCA_impute_method_start_misspelled
+#>   The following imputation functions were not found: PKNCA_impute_method_start_misspelled.  The imputation setting must be an imputation method or a column of the intervals.
 ```
