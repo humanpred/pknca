@@ -48,7 +48,10 @@
 #'
 #'   A secondary parameter is calculated from a result in another interval, and
 #'   the interval specification links the two with an `interval_id` column and a
-#'   `<parameter>_ref` pointer (see [interval_add_secondary()]).  Where a request
+#'   `<parameter>_ref` pointer (see [interval_add_secondary()]).  An
+#'   `interval_id` identifies one interval:  rows that share it (an interval
+#'   split by imputation, for example) may differ only in the parameters they
+#'   request, never in `start`, `end`, or the groups.  Where a request
 #'   has no pointer and could not otherwise be calculated, [pk.nca()] derives the
 #'   reference profile from the data:  a parameter measured on an interval
 #'   collection whose inputs are spot samples (renal clearance) takes the nearest
