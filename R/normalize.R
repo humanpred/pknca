@@ -14,8 +14,9 @@ normalize <- function(object, norm_table, parameters, suffix) {
 #' @export
 normalize.PKNCAresults <- function(object, norm_table, parameters, suffix) {
   norm_parameters <- normalize(as.data.frame(object), norm_table, parameters, suffix)
-  object$result <- rbind(object$result, norm_parameters)
-  object
+  ret <- object
+  ret$result <- rbind(object$result, norm_parameters)
+  mark_provenance_modified(ret, object, "normalized")
 }
 
 #' @export

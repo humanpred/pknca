@@ -150,9 +150,109 @@ pknca_tiers <- function() {
 }
 
 #' @rdname pknca_concepts
+#' @param synonyms If `TRUE`, `pknca_routes()` returns the table of spellings
+#'   that data may use for a route instead of the route names (see Route
+#'   synonyms).
+#' @section Route synonyms:
+#'   `pknca_routes(synonyms = TRUE)` returns a data.frame with one row per
+#'   spelling and the columns
+#'
+#'   * `synonym`:  The spelling, in lower case with single spaces, as it may
+#'     appear in data (for example `"po"`, `"intravenous bolus"`).  It includes
+#'     the common abbreviations and the CDISC SDTM `ROUTE` controlled
+#'     terminology terms that are extravascular or intravascular routes.
+#'   * `route`:  One of `pknca_routes()`, or `"iv"` when the spelling is
+#'     intravascular but does not say which intravascular route it is (for
+#'     example `"intravenous"` does not say bolus or infusion).  `"iv"` is not a
+#'     value of `pknca_routes()` without `synonyms`, because PKNCA cannot
+#'     calculate with a route that does not say how the drug entered.
+#'   * `dose_route`:  `"extravascular"` or `"intravascular"`, the values that
+#'     [PKNCAdose()] accepts for `route`.
+#'
+#'   `pknca_match_route()` looks spellings up in this table.
 #' @export
-pknca_routes <- function() {
+pknca_routes <- function(synonyms = FALSE) {
+  checkmate::assert_flag(synonyms)
+  if (synonyms) {
+    return(pknca_route_synonym_table())
+  }
   c("extravascular", "iv_bolus", "iv_infusion", "iv_continuous_infusion")
+}
+
+# The spellings are grouped by the route they resolve to, with `iv` for an
+# intravascular spelling that does not say which intravascular route.  The
+# CDISC terms are those of the SDTM ROUTE codelist (C66729) that are given
+# outside or inside the vascular system; lower case is how the table stores
+# them.
+pknca_route_synonym_table <- function() {
+  spellings <-
+    list(
+      extravascular = c(
+        "extravascular",
+        "oral", "po", "per os", "by mouth", "peroral", "oral gavage", "gavage",
+        "subcutaneous", "sc", "sq", "subq", "subcut", "sub-cutaneous",
+        "intramuscular", "im",
+        "intradermal", "intraperitoneal", "intrathecal", "epidural",
+        "intravitreal", "intraocular", "intra-articular",
+        "inhaled", "inhalation", "respiratory (inhalation)", "respiratory",
+        "oropharyngeal", "nasal", "intranasal",
+        "topical", "transdermal", "cutaneous", "ophthalmic", "otic",
+        "rectal", "vaginal", "sublingual", "buccal"
+      ),
+      iv_bolus = c(
+        "iv_bolus", "iv bolus", "intravenous bolus", "bolus", "iv push"
+      ),
+      iv_infusion = c(
+        "iv_infusion", "iv infusion", "intravenous infusion", "infusion",
+        "iv drip", "intravenous drip", "drip"
+      ),
+      iv_continuous_infusion = c(
+        "iv_continuous_infusion", "iv continuous infusion",
+        "intravenous continuous infusion", "continuous infusion"
+      ),
+      iv = c(
+        "intravascular", "iv", "intravenous", "intra-arterial", "intraarterial"
+      )
+    )
+  ret <-
+    data.frame(
+      synonym = unlist(spellings, use.names = FALSE),
+      route = rep(names(spellings), lengths(spellings)),
+      stringsAsFactors = FALSE
+    )
+  ret$dose_route <- ifelse(ret$route %in% "extravascular", "extravascular", "intravascular")
+  ret
+}
+
+#' Match spellings of a route of administration to the route PKNCA uses
+#'
+#' @param x A character vector (or factor) of route spellings, such as `"PO"`
+#'   or `"INTRAVENOUS BOLUS"`.  Matching ignores case and leading, trailing,
+#'   and repeated white space.
+#' @returns A data.frame with one row for each element of `x` and the columns
+#'   `route` (one of [pknca_routes()], or `"iv"` when the spelling is
+#'   intravascular but does not say which intravascular route it is) and `dose_route` (`"extravascular"` or
+#'   `"intravascular"`, the values [PKNCAdose()] accepts for `route`).  Both
+#'   are `NA` when the spelling is not known or `x` is `NA`.
+#' @seealso The Route synonyms section of [pknca_routes()] for the spellings
+#'   that are known.
+#' @examples
+#' pknca_match_route(c("PO", "Intravenous", "IV BOLUS", "unknown"))
+#' @family Interval specifications
+#' @export
+pknca_match_route <- function(x) {
+  if (is.factor(x)) {
+    x <- as.character(x)
+  }
+  checkmate::assert_character(x)
+  tbl <- pknca_route_synonym_table()
+  normalized <- gsub("[[:space:]]+", " ", trimws(tolower(x)))
+  idx <- match(normalized, tbl$synonym)
+  data.frame(
+    route = tbl$route[idx],
+    dose_route = tbl$dose_route[idx],
+    stringsAsFactors = FALSE
+  )
 }
 
 #' @rdname pknca_concepts

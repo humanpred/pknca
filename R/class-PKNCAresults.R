@@ -61,13 +61,47 @@ PKNCAresults <- function(result, data, exclude = NULL) {
 #'   has doses but none at or before the interval start.  PPRFTDTC is only
 #'   given when the concentration and dose times were date-times (see
 #'   [PKNCAdata()]), and it can differ between the intervals of one subject.
+#'
+#'   PPGRPID, the record group identifier, is built from the grouping columns
+#'   named in `grpid_cols` and the number of the row's interval, as
+#'   `"<prefix1><value1>.<prefix2><value2>.I<nn>"` (for example `"A.P1.I01"`,
+#'   `"P2.I01"`, or just `"I01"` without `grpid_cols`).  Within each
+#'   combination of the subject, the analyte, and the `grpid_cols` columns, the
+#'   intervals are numbered from 1 by start and then end; the rows of one
+#'   interval (one per parameter) share the number.  Other grouping columns
+#'   (a treatment or a matrix, for example) do not enter PPGRPID:  they stay
+#'   as their own output columns, and intervals with the same window in
+#'   different values of them share a number.  The number is written with at
+#'   least two digits, and with as many as the largest interval number needs,
+#'   so that the text sorts in time order.  The numbers, the width, and the
+#'   checks of the values use every row of the results, so `filter_requested`
+#'   and `filter_excluded` never renumber an interval or hide a bad value;
+#'   an interval with no rows in the results has no number.  The grouping
+#'   columns also remain in the output.
 #' @param filter_requested Only return rows with parameters that were
 #'   specifically requested?
 #' @param filter_excluded Should excluded values be removed?
+#' @param grpid_cols For `out_format = "cdisc"`, the grouping columns that
+#'   prefix the interval number in PPGRPID:  a named character vector of
+#'   grouping columns of the [PKNCAconc()] object, in prefix order, other than
+#'   the subject and the analyte.  Each name is a column, and each value is the
+#'   text written before that column's value, such as
+#'   `c(Part = "", Period = "P")`.  The text before a value and the values may
+#'   not contain `"."`, and a value may not be empty, and distinct values of a
+#'   column may not give the same text.  `NULL` (the default) uses the
+#'   `grpid_cols` of the [PKNCAdata()] object, and `character()` gives an
+#'   interval-only identifier regardless of that default.
+#' @param grpid_numeric For `out_format = "cdisc"`, the names of columns in
+#'   `grpid_cols` whose values are whole numbers of at least 1 (such as the
+#'   period), which are written as that number, so `"01"` becomes `1`.  A value
+#'   that is not a finite whole number of at least 1 is an error.  `NULL` (the
+#'   default) uses the `grpid_numeric` of the [PKNCAdata()] object for the
+#'   columns of `grpid_cols` that it names, and `character()` means no
+#'   columns regardless of that default.
 #' @param out.format Deprecated in favor of `out_format`
 #' @returns A data.frame (or usually a tibble) of results
 #' @export
-as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'cdisc'), filter_requested = FALSE, filter_excluded = FALSE, out.format = deprecated()) {
+as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'cdisc'), filter_requested = FALSE, filter_excluded = FALSE, grpid_cols = NULL, grpid_numeric = NULL, out.format = deprecated()) {
   if (!filter_excluded) {
     ret <- x$result
   } else {
@@ -104,7 +138,7 @@ as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'c
   }
 
   if (out_format %in% 'cdisc') {
-    ret <- pknca_cdisc_translate(ret, x)
+    ret <- pknca_cdisc_translate(ret, x, grpid_cols = grpid_cols, grpid_numeric = grpid_numeric)
   } else if (out_format %in% 'wide') {
     if ("PPSTRESU" %in% names(ret)) {
       # Use standardized results
@@ -137,7 +171,8 @@ as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'c
 # parameters can resolve to the same PPTESTCD, e.g. every AUCint variant to
 # "AUCINT" -- so this is the only column that still identifies which PKNCA
 # calculation produced a row), and the time point reference columns of each
-# row (see pknca_cdisc_add_interval_reference()).
+# row (see pknca_cdisc_add_interval_reference()) and PPGRPID (see
+# pknca_cdisc_add_grpid()).
 #
 # `pknca_parameter` is lowercase and snake_case specifically so it cannot be
 # mistaken for an SDTM PP variable (which are always uppercase); it is a
@@ -146,11 +181,12 @@ as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'c
 #
 # @param ret The long-format result data.frame
 # @param x The PKNCAresults object (for accessing dose/route data)
+# @param grpid_cols,grpid_numeric See pknca_cdisc_add_grpid()
 # @returns The data.frame with `pknca_parameter` added, PPTESTCD translated,
-#   and PPTEST added
+#   PPTEST added, the time point reference columns, and PPGRPID
 # @keywords Internal
 # @noRd
-pknca_cdisc_translate <- function(ret, x) {
+pknca_cdisc_translate <- function(ret, x, grpid_cols = NULL, grpid_numeric = NULL) {
   all_intervals <- get.interval.cols()
   # Determine route for each result row
   route_per_row <- pknca_cdisc_get_route(ret, x)
@@ -186,7 +222,8 @@ pknca_cdisc_translate <- function(ret, x) {
     ret$pknca_parameter <- pknca_parameter
     ret$PPTEST <- cdisc_pptest
   }
-  pknca_cdisc_add_interval_reference(ret, x)
+  ret <- pknca_cdisc_add_interval_reference(ret, x)
+  pknca_cdisc_add_grpid(ret, x, grpid_cols = grpid_cols, grpid_numeric = grpid_numeric)
 }
 
 # The PPTPTREF text for each kind of time point reference (see

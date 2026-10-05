@@ -338,7 +338,7 @@ The individual results contain the columns for start time, end time, grouping va
 
 ## How do I do a simple calculation?  Get summary results {.smaller}
 
-All results (summary or individual) can be output either in a Quarto/Rmarkdown report or another file for reporting.
+All results (summary or individual) can be output either in a Quarto/R Markdown report or another file for reporting.
 
 ```{r echo=TRUE}
 # Look at summarized results
