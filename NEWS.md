@@ -6,6 +6,15 @@ the dosing including dose amount and route.
 
 # Development version
 
+* The documentation of the exclusion rules and the imputation methods is
+  generated from their registrations, so each description is written once.
+  The registration of a rule now also describes its arguments, and
+  `pknca_exclude_rules()` gives those descriptions in a new `description`
+  column of `arguments`.  The `pknca_exclude_rules()` and
+  `pknca_impute_methods()` help pages have tables of the rules and the methods.
+  Tests require every registered rule and method to be documented from its
+  registration, and the installed help to agree with the registry.
+  (@GITHUB_HANDLE)
 * `as.data.frame(results, out_format = "cdisc")` gives the record group identifier `PPGRPID`,
   `"<prefix1><value1>.<prefix2><value2>.I<nn>"` (such as `"A.P1.I01"`), from the
   grouping columns that the new `grpid_cols` argument names and the number of the
