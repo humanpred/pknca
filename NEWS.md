@@ -6,6 +6,18 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `get_impute_column()` is now exported beside `get_impute_method()`.  It gives
+  the name of the intervals column that the `impute` argument of `PKNCAdata()`
+  takes the imputation methods from, or `NULL` when `impute` is a method string
+  or `NA` with no `"impute"` column, so other packages can tell a column from a
+  method string without reading `impute` themselves.  (@billdenney)
+* `pknca_difftime_to_unit()` is now exported.  It converts a `difftime`, such
+  as a collection duration that is the difference of two date-times, into a
+  number in an analysis time unit, the conversion `pk.nca()` applies to
+  date-time times and `difftime` durations.  A value that is not a `difftime`
+  stops with `pknca_error_difftime_not_difftime` and a unit that is not a time
+  unit with `pknca_error_difftime_unit`, where a unit that cannot be converted
+  used to give `NA`.  (@billdenney)
 * `get_impute_method()` is now exported, so that other packages read the
   `impute` argument of `PKNCAdata()` the way `pk.nca()` does:  a name that is
   a column of the intervals gives that column's methods, `NA` gives the

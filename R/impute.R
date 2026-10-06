@@ -15,7 +15,9 @@
 #'    `NA_character_`, meaning no imputation.
 #'
 #' `get_impute_method()` only reads the specification.  It does not check that
-#' the methods exist; [assert_impute_method()] does.
+#' the methods exist; [assert_impute_method()] does.  [get_impute_column()]
+#' gives the name of the column the methods are read from, which tells a column
+#' from a method string even for an intervals table with one row.
 #'
 #' @param intervals the data.frame of intervals
 #' @param impute the imputation definition -- either the name of a column in
@@ -40,8 +42,6 @@
 #' @family Imputation
 #' @export
 get_impute_method <- function(intervals, impute) {
-  checkmate::assert_scalar(impute, na.ok = TRUE)
-  checkmate::assert_data_frame(intervals)
   impute_col <- get_impute_column(intervals = intervals, impute = impute)
   if (is.null(impute_col)) {
     impute_funs <- as.character(impute)
@@ -73,9 +73,34 @@ is_impute_column_valid <- function(x) {
   is.character(x) || is_impute_column_empty(x)
 }
 
-# The name of the column of `intervals` that get_impute_method() reads, or NULL
-# when `impute` is itself the method.  `impute` is checked by the caller.
+#' Get the name of the intervals column that the imputation methods come from
+#'
+#' `get_impute_column()` applies the first two of the three readings of
+#' `impute` described in [get_impute_method()] and says which column
+#' [get_impute_method()] reads the methods from.  It does not read the column,
+#' so it does not check that the column is character.
+#'
+#' @inheritParams get_impute_method
+#' @returns The name of the column of `intervals` that the methods come from
+#'   (character scalar):  `impute` when it names a column of `intervals`, or
+#'   `"impute"` when `impute` is `NA` and `intervals` has a column named
+#'   `"impute"`.  `NULL` when `impute` is itself the method string, or is `NA`
+#'   and there is no `"impute"` column, so there is no column.
+#' @examples
+#' intervals <- data.frame(start = 0, end = 24, impute = "start_conc0", my_impute = "start_cmin")
+#' get_impute_column(intervals, impute = "my_impute")
+#' get_impute_column(intervals, impute = NA)
+#' # A method string is not a column
+#' get_impute_column(intervals, impute = "start_predose")
+#' # NA without an "impute" column is not a column either
+#' get_impute_column(intervals[, c("start", "end")], impute = NA)
+#' @family Imputation
+#' @export
 get_impute_column <- function(intervals, impute) {
+  # A method string that equals a column name reads as that column, as it does
+  # in get_impute_method()
+  checkmate::assert_scalar(impute, na.ok = TRUE)
+  checkmate::assert_data_frame(intervals)
   if (impute %in% names(intervals)) {
     impute
   } else if (is.na(impute) && "impute" %in% names(intervals)) {

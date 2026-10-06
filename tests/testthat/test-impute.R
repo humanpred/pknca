@@ -580,7 +580,9 @@ test_that("get_impute_method", {
   
   # the checkmate::assert_scalar() tightening 
   expect_error(
-    get_impute_method(intervals = ivals, impute = list("start_conc0"))
+    get_impute_method(intervals = ivals, impute = list("start_conc0")),
+    regexp = "Assertion on 'impute' failed: Must be of type 'atomic scalar', not 'list'.",
+    fixed = TRUE
   )
 })
 
@@ -924,7 +926,8 @@ test_that("get_impute_method reads the three forms of impute", {
   )
   expect_error(
     get_impute_method(intervals = two_rows, impute = c("a", "b")),
-    regexp = "length 1"
+    regexp = "Assertion on 'impute' failed: Must have length 1.",
+    fixed = TRUE
   )
 })
 
@@ -1026,5 +1029,117 @@ test_that("an imputation method that is not found says the setting may be a colu
     ),
     class = "pknca_error_impute_funs_not_found",
     regexp = "or a column of the intervals"
+  )
+})
+
+test_that("get_impute_column names the column that get_impute_method reads", {
+  two_rows <-
+    data.frame(start = c(0, 24), end = c(24, 48), my_impute = c("start_conc0", "start_predose"))
+  both <- cbind(two_rows, impute = c("a", "b"))
+  # A name that is a column
+  expect_identical(get_impute_column(two_rows, impute = "my_impute"), "my_impute")
+  expect_identical(get_impute_column(both, impute = "my_impute"), "my_impute")
+  expect_identical(get_impute_column(both, impute = "impute"), "impute")
+  # NA finds the "impute" column, if there is one
+  expect_identical(get_impute_column(both, impute = NA), "impute")
+  expect_identical(get_impute_column(both, impute = NA_character_), "impute")
+  expect_null(get_impute_column(two_rows, impute = NA))
+  expect_null(get_impute_column(two_rows, impute = NA_character_))
+  # A method string is not a column
+  expect_null(get_impute_column(two_rows, impute = "start_conc0"))
+  expect_null(get_impute_column(both, impute = "start_conc0"))
+  expect_null(get_impute_column(two_rows, impute = "start_predose,start_conc0"))
+  # One row: the column is still told from a method string, and NA both ways
+  one_row <- two_rows[1, ]
+  one_row_both <- both[1, ]
+  expect_identical(get_impute_column(one_row, impute = "my_impute"), "my_impute")
+  expect_null(get_impute_column(one_row, impute = "start_conc0"))
+  expect_identical(get_impute_column(one_row_both, impute = NA), "impute")
+  expect_identical(get_impute_column(one_row_both, impute = NA_character_), "impute")
+  expect_null(get_impute_column(one_row, impute = NA))
+  expect_null(get_impute_column(one_row, impute = NA_character_))
+  # Zero rows keep the columns, so every form reads as it does with rows
+  zero_rows <- both[0, ]
+  expect_identical(get_impute_column(zero_rows, impute = "my_impute"), "my_impute")
+  expect_identical(get_impute_column(zero_rows, impute = "impute"), "impute")
+  expect_null(get_impute_column(zero_rows, impute = "start_conc0"))
+  expect_identical(get_impute_column(zero_rows, impute = NA), "impute")
+  expect_null(get_impute_column(two_rows[0, ], impute = NA))
+  expect_null(get_impute_column(two_rows[0, ], impute = NA_character_))
+  # It does not read the column, so a column that is not character still has a name
+  expect_identical(get_impute_column(data.frame(start = 0, x = 1), impute = "x"), "x")
+  expect_identical(get_impute_column(data.frame(start = 0, x = 1)[0, ], impute = "x"), "x")
+  # The argument requirements are the ones of get_impute_method(), which relies
+  # on get_impute_column() for them
+  for (fun in list(get_impute_column, get_impute_method)) {
+    expect_error(
+      fun(two_rows, impute = NULL),
+      regexp = "Assertion on 'impute' failed: Must be of type 'atomic scalar', not 'NULL'.",
+      fixed = TRUE
+    )
+    expect_error(
+      fun(two_rows, impute = c("a", "b")),
+      regexp = "Assertion on 'impute' failed: Must have length 1.",
+      fixed = TRUE
+    )
+    expect_error(
+      fun(two_rows, impute = list("my_impute")),
+      regexp = "Assertion on 'impute' failed: Must be of type 'atomic scalar', not 'list'.",
+      fixed = TRUE
+    )
+    expect_error(
+      fun(list(my_impute = "a"), impute = "my_impute"),
+      regexp = "Assertion on 'intervals' failed: Must be of type 'data.frame', not 'list'.",
+      fixed = TRUE
+    )
+  }
+})
+
+test_that("get_impute_column is exported and agrees with get_impute_method", {
+  expect_true("get_impute_column" %in% getNamespaceExports("PKNCA"))
+  intervals <-
+    data.frame(
+      start = c(0, 24), end = c(24, 48),
+      impute = c("start_conc0", "start_predose"), other = c("start_cmin", "start_conc0")
+    )
+  for (setting in list("impute", "other", NA, NA_character_)) {
+    column <- get_impute_column(intervals, impute = setting)
+    expect_identical(
+      get_impute_method(intervals, impute = setting),
+      intervals[[column]]
+    )
+  }
+  expect_identical(get_impute_column(intervals, impute = "other"), "other")
+  expect_identical(get_impute_column(intervals, impute = NA), "impute")
+  for (setting in list("start_predose", "nothing_here", "start_predose,start_conc0")) {
+    expect_null(get_impute_column(intervals, impute = setting))
+    expect_identical(
+      get_impute_method(intervals, impute = setting),
+      as.character(setting)
+    )
+  }
+  no_impute <- intervals[c("start", "end", "other")]
+  expect_null(get_impute_column(no_impute, impute = NA))
+  expect_identical(get_impute_method(no_impute, impute = NA), NA_character_)
+})
+
+test_that("get_impute_column and get_impute_method on a zero-row table", {
+  intervals <-
+    data.frame(
+      start = 0, end = 24, impute = "start_conc0", other = "start_cmin", numeric = 1
+    )[0, ]
+  # A named column or the "impute" column: no values, from a column
+  expect_identical(get_impute_method(intervals, impute = "other"), character(0))
+  expect_identical(get_impute_method(intervals, impute = NA), character(0))
+  # A method string or NA without the column: one value, from no column
+  expect_identical(get_impute_method(intervals, impute = "start_predose"), "start_predose")
+  expect_identical(
+    get_impute_method(intervals[c("start", "end")], impute = NA),
+    NA_character_
+  )
+  # A column that is not character is refused even without rows
+  expect_error(
+    get_impute_method(intervals, impute = "numeric"),
+    class = "pknca_error_interval_impute_not_character"
   )
 })

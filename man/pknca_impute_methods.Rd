@@ -52,6 +52,7 @@ Other Imputation:
 \code{\link[=PKNCA_impute_fun_list]{PKNCA_impute_fun_list()}},
 \code{\link{PKNCA_impute_method}},
 \code{\link[=assert_impute_method]{assert_impute_method()}},
+\code{\link[=get_impute_column]{get_impute_column()}},
 \code{\link[=get_impute_method]{get_impute_method()}}
 }
 \concept{Imputation}
