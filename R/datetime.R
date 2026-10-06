@@ -94,13 +94,69 @@ pknca_hours_factor <- function(unit) {
 
 #' Convert a difftime to a number in a time unit
 #'
-#' @param x A difftime vector
-#' @param unit A time unit recognized by `pknca_hours_factor()`
-#' @returns A numeric vector
-#' @keywords Internal
-#' @noRd
+#' `pknca_difftime_to_unit()` expresses a duration in the time unit of an
+#' analysis, such as a collection duration that is the difference of two
+#' date-times, so that it can be used with `PKNCAconc()` and `PKNCAdose()`
+#' times and durations given in that unit.  The same conversion turns
+#' date-times and `difftime` durations into numbers in [pk.nca()].
+#'
+#' A `difftime` of any of its units (seconds, minutes, hours, days, or weeks)
+#' is converted exactly, through seconds.  `unit` may be any time unit that the
+#' units package knows, such as `"hr"`, `"min"`, `"day"`, or `"week"`.  Hours
+#' (`"hr"`) need no conversion, so they work without the units package;
+#' every other unit needs the units package installed, which stops with an
+#' error from rlang if it is missing.
+#'
+#' To convert a number that is not a `difftime`, say its unit first with
+#' [base::as.difftime()].
+#'
+#' @param x A `difftime` vector (`NA` values stay `NA`, and a zero-length
+#'   vector gives a zero-length result)
+#' @param unit The time unit to express `x` in, a single string such as
+#'   `"hr"` or `"day"`
+#' @returns A numeric vector the length of `x`: the duration in `unit`, with no
+#'   unit or other attributes
+#' @section Errors:
+#' An `x` that is not a `difftime` stops with the class
+#' `pknca_error_difftime_not_difftime`, because a plain number has no unit to
+#' convert from.  A `unit` that is not a single string, or that is not a time
+#' unit the units package can convert hours to, stops with the class
+#' `pknca_error_difftime_unit`.
+#' @examples
+#' # Hours need no conversion beyond the difftime's own unit
+#' pknca_difftime_to_unit(as.difftime(90, units = "mins"), unit = "hr")
+#' @examplesIf requireNamespace("units", quietly = TRUE)
+#' # Any other unit needs the units package
+#' pknca_difftime_to_unit(as.difftime(36, units = "hours"), unit = "day")
+#' # The difference of two date-times
+#' start <- as.POSIXct("2026-10-05 08:00:00", tz = "UTC")
+#' end <- as.POSIXct("2026-10-05 20:30:00", tz = "UTC")
+#' pknca_difftime_to_unit(difftime(end, start), unit = "min")
+#' @export
 pknca_difftime_to_unit <- function(x, unit) {
-  as.numeric(x, units = "secs") / (3600 * pknca_hours_factor(unit))
+  if (!inherits(x, "difftime")) {
+    rlang::abort(
+      sprintf(
+        "`x` must be a difftime, not %s; use as.difftime() to give a number its unit.",
+        paste(class(x), collapse = "/")
+      ),
+      class = "pknca_error_difftime_not_difftime"
+    )
+  }
+  if (!is.character(unit) || length(unit) != 1 || is.na(unit)) {
+    rlang::abort(
+      "`unit` must be a single time unit string, like \"hr\" or \"day\".",
+      class = "pknca_error_difftime_unit"
+    )
+  }
+  hours_factor <- pknca_hours_factor(unit)
+  if (is.na(hours_factor)) {
+    rlang::abort(
+      sprintf("`unit` must be a time unit (like \"hr\" or \"day\"), not '%s'.", unit),
+      class = "pknca_error_difftime_unit"
+    )
+  }
+  as.numeric(x, units = "secs") / (3600 * hours_factor)
 }
 
 pknca_warn_date_time <- function(time_col, data_type) {
