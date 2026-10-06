@@ -211,25 +211,42 @@ the generated intervals:
 
 `auto.interval.method = "legacy"` restores all three.
 
-* `choose.auc.intervals()` and `find.tau()` match times within a tolerance
-  rather than exactly.  A sample drawn a little before its nominal time, such as
-  a trough at 167.5 hours or a predose sample at -0.05 hours, now bounds the
-  interval it belongs to, and dose times that floating point cannot hold
-  exactly, such as dosing three times a day with time measured in days, are
-  recognized as evenly spaced.  The window is the new `auto.interval.tolerance`
-  option, a fraction of the interval's length that defaults to 0.05.  It only
-  reaches backward, so a concentration drawn after a dose no longer stands in
-  for the predose sample.
-* `find.tau()` no longer reports an interval that matches no real dose spacing.
-  Dose times are sorted first and the ones that repeat are dropped, so the order
-  they arrive in and a dose recorded twice no longer change the answer.  An
-  interval that the whole pattern of doses repeats over is looked for before
-  anything is read as a missed dose, so a regimen with a regular gap in it, such
-  as dosing three times a day at 0, 6, and 12 hours, is reported as a daily
-  interval rather than a 6 hour one with doses missing overnight.  Doses spaced
-  as though one was missed give the underlying interval with a new
-  `"pknca_warning_tau_irregular_dosing"` warning that names the gaps, rather
-  than being passed silently into `mrt.md.*` and `vss.md.*`.
+* `choose.auc.intervals()` matches sample times to interval boundaries within a
+  tolerance rather than exactly.  A sample drawn a little before its nominal
+  time, such as a trough at 167.5 hours or a predose sample at -0.05 hours, now
+  bounds the interval it belongs to.  The window is the new
+  `auto.interval.tolerance` option, a fraction of the interval's length that
+  defaults to 0.05.  It only reaches backward, so a concentration drawn after a
+  dose no longer stands in for the predose sample.
+* `find.tau()` takes the interval from the new `find.dose.regimen()` (the period
+  of the segment with the most doses) and no longer reports an interval that
+  matches no real dose spacing.  Dose times are sorted first and the ones that
+  repeat are dropped, so the order they arrive in and a dose recorded twice no
+  longer change the answer.  An interval that the whole pattern of doses
+  repeats over (for at least two complete intervals) is looked for before
+  anything is read as a missed dose, so a regimen with a regular gap in it,
+  such as dosing three times a day at 0, 6, and 12 hours, is reported as a daily
+  interval rather than a 6 hour one with doses missing overnight.  Dose times
+  are compared on the log scale within a tolerance rather than exactly, so a
+  dose recorded at 23.6 hours is a daily dose, and dose times that floating
+  point cannot hold exactly, such as dosing three times a day with time
+  measured in days, are recognized as evenly spaced.  Missed doses and doses
+  off schedule give the underlying interval with a new
+  `"pknca_warning_tau_irregular_dosing"` warning that names them, rather than a
+  wrong interval passed silently into `mrt.md.*` and `vss.md.*`:
+  three-times-daily dosing with a dose not given stays three times daily, and a
+  dose off schedule among daily doses gives a daily interval.  (@billdenney)
+* The new `find.dose.regimen()` describes the dosing regimen of one subject as
+  a table with one row per segment:  the period the doses repeat over, the dose
+  times within one period (`offsets`), a nominal label such as `"BID"`, and
+  counts of missed and off-schedule doses.  It and `find.tau()` take a `timeu`
+  argument; with it and no `tau.choices`, intervals are matched to the usual
+  nominal intervals from every 4 hours to every 12 weeks, and a unit that
+  cannot be converted to hours is an error.  An interval that matches no
+  nominal one gives a new `"pknca_warning_tau_not_nominal"` warning, and a
+  change of regimen within the dose times gives a new
+  `"pknca_warning_tau_regimen_change"` warning; both messages include the
+  regimen table.  (@billdenney)
 * The interval generated for the last dose now starts at the first dose of the
   last complete dosing cycle, so a regimen giving more than one dose per
   interval no longer gets an interval that contains a dose that was never

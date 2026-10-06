@@ -105,6 +105,7 @@ Other Interval specifications:
 \code{\link[=pknca_ref]{pknca_ref()}}
 
 Other Interval determination:
+\code{\link[=find.dose.regimen]{find.dose.regimen()}},
 \code{\link[=find.tau]{find.tau()}},
 \code{\link[=resolve_dose_tau]{resolve_dose_tau()}}
 }
