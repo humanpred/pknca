@@ -48,7 +48,7 @@ the dosing including dose amount and route.
   `pknca_impute_methods()` help pages have tables of the rules and the methods.
   Tests require every registered rule and method to be documented from its
   registration, and the installed help to agree with the registry.
-  (@GITHUB_HANDLE)
+  (@billdenney)
 * `as.data.frame(results, out_format = "cdisc")` gives the record group identifier `PPGRPID`,
   `"<prefix1><value1>.<prefix2><value2>.I<nn>"` (such as `"A.P1.I01"`), from the
   grouping columns that the new `grpid_cols` argument names and the number of the
@@ -84,19 +84,19 @@ the dosing including dose amount and route.
   arguments and defaults.  Each method is registered with its description next
   to its definition, as the exclusion rules are for `pknca_exclude_rules()`, and
   tests require every exported method to be registered and its documentation
-  to begin with the registered description.  (@GITHUB_HANDLE)
+  to begin with the registered description.  (@billdenney)
 * `pk.tss.stepwise.linear()` without subjects no longer returns `NA` silently on
   R < 4.4 without the MASS package:  `confint()` on a `glm` needed MASS before
   R 4.4, and its error was swallowed.  The interval is now the Wald interval
   (`confint.default()`), which for this Gaussian model equals the profile
   interval `confint()` gives.  When steady state is not found and some model
   fits failed, a `pknca_warning_tss_stepwise_fit_failed` warning names the
-  failures instead of the `NA` being silent.  (@GITHUB_HANDLE)
+  failures instead of the `NA` being silent.  (@billdenney)
 
 * PKNCA requires only R 4.1 again (it had required R 4.4).  `%||%`, which base
   R provides only from R 4.4, is imported from rlang, and continuous
   integration checks R 4.1.  The bioequivalence functions that use `lme4` still
-  need the R version that `lme4` and `Matrix` need.  (@GITHUB_HANDLE)
+  need the R version that `lme4` and `Matrix` need.  (@billdenney)
 * `as.data.frame(out_format = "cdisc")` now gives every result row its time
   point reference as SDTMIG 3.4 defines it:  PPSTINT and PPENINT relative to
   the reference named in the new PPTPTREF column, and PPRFTDTC as that
@@ -115,13 +115,13 @@ the dosing including dose amount and route.
   with a first-observation reference) has a negative duration such as
   `"-PT0.5H"`, and durations are no longer written in scientific notation.
   PKNCA is the source of truth for these columns, so downstream SDTM writers
-  (such as nca.reporter) no longer need to recompute them.  (@GITHUB_HANDLE)
+  (such as nca.reporter) no longer need to recompute them.  (@billdenney)
 
 * `pknca_exclude_rules()` and `exclude_nca_by_param()` (and so the
   `exclude_nca_*()` rules built on it) no longer need testthat:  the
   threshold checks used checkmate's testthat expectations
   (`expect_number()`), which loaded testthat and failed when it was not
-  installed.  They now use `assert_number()`.  (@GITHUB_HANDLE)
+  installed.  They now use `assert_number()`.  (@billdenney)
 
 ## Changes to automatically generated calculation intervals
 
@@ -199,7 +199,7 @@ the generated intervals:
   without intervals; the sparse concentrations were passed through to the
   interval specification, where they were rejected as an unknown column.
 
-(Reported by @GITHUB_HANDLE, #ISSUE)
+(@billdenney, #642)
 
 ## Other changes
 * CDISC PP metadata fixes, all `pptestcd_cdisc`/`pptest_cdisc` (no calculation
@@ -277,7 +277,7 @@ the generated intervals:
   `time_reference_type` column records which kind of reference each group
   has.  Mixing numeric and date-time times, mixing time zones, and a dose
   formula without the subject of dense data are errors; sparse data use one
-  reference per group.  (@GITHUB_HANDLE)
+  reference per group.  (@billdenney)
 * `pknca_exclude_rules()` lists the automatic exclusion rules (`exclude_nca_*()`)
   with their descriptions, arguments and defaults, the `PKNCA.options()`
   entries they use, and the parameters each can exclude.  Each rule is
@@ -288,34 +288,34 @@ the generated intervals:
   stated in one place only.  Tests require every exported rule to be
   registered, its documentation to match the registered description, and each
   rule to exclude exactly the parameters it records.  The rule descriptions
-  now all read "Exclude based on ...".  (@GITHUB_HANDLE)
+  now all read "Exclude based on ...".  (@billdenney)
 * `assert_conc_time()`, `PKNCA_impute_fun_list()`, and the new
   `assert_impute_method()` (which checks an imputation specification the way
   `PKNCAdata()` and `pk.nca()` resolve it) are exported so that applications
   can check data before building PKNCA objects.  The duplicate-row error (`pknca_error_duplicate_rows`) now carries the
-  duplicated row numbers in its `rows` field.  (@GITHUB_HANDLE)
+  duplicated row numbers in its `rows` field.  (@billdenney)
 * Sparse concentration data whose subject is not a grouping variable (for
   example, `conc~time|treatment` with `subject = "id"`) are no longer rejected
   as duplicates when different subjects share a sampling time; for sparse data,
   duplicates are now the same subject at the same time within a group.
-  (@GITHUB_HANDLE)
+  (@billdenney)
 * `pknca_units_table()` no longer errors when every preferred unit equals its
-  original unit.  (@GITHUB_HANDLE)
+  original unit.  (@billdenney)
 * The documentation of the `subject` argument of `PKNCAconc()` now matches the
   code:  the default subject is the last grouping variable to the left of any
-  `/`.  (@GITHUB_HANDLE)
+  `/`.  (@billdenney)
 * In `as.data.frame(out_format = "cdisc")`, PPSTINT and PPENINT are now
   converted to the preferred time unit (`timeu_pref`) that labels them;
   previously, interval times in the original unit were labeled with the
   preferred unit (60 minutes reported as `"PT60H"` with `timeu_pref = "hr"`).
-  (@GITHUB_HANDLE)
+  (@billdenney)
 * Printing a `PKNCAdata` object no longer reports "With imputation: NA" when no
-  imputation was requested.  (@GITHUB_HANDLE)
+  imputation was requested.  (@billdenney)
 * `PKNCAdata()` warns (`pknca_warning_single_dose_aucs_unit`) when it
   generates single-dose intervals from the default `single.dose.aucs` option,
   whose 0 to 24 window is written for hours, and the time unit is a recognized
   time unit other than hours (the window would be 24 minutes or 24 days).  The
-  default option is unchanged.  (@GITHUB_HANDLE)
+  default option is unchanged.  (@billdenney)
 * With date-time data, intervals may be given as date-times (POSIXct, or Date
   for 08:00 on that date).  `PKNCAdata()` and `set_intervals()` check them, and
   `pk.nca()` converts each row relative to the time reference of the group it
@@ -326,13 +326,13 @@ the generated intervals:
   marked with `interval_time_kind`.  Date-time bounds mixed with finite
   numeric bounds, an infinite start, date-time intervals for numeric data, and
   a different time zone are errors (checked by `assert_intervals()`).
-  (@GITHUB_HANDLE)
+  (@billdenney)
 * `assert_intervals()` (and so `PKNCAdata()` and `set_intervals()`) requires
   every interval `start` to be a finite, non-missing number (or date-time) and
   every `end` to be after its `start`; an `end` may be `Inf` but not missing,
   `NaN`, or `-Inf`.  The errors (`pknca_error_interval_end_invalid`,
   `pknca_error_interval_end_not_after_start`) name the offending rows.
-  (@GITHUB_HANDLE)
+  (@billdenney)
 * Breaking change: `pk.nca()` now runs `assert_intervals()` on the intervals
   of the `PKNCAdata` object it is given, so intervals assigned directly to
   `data$intervals` after `PKNCAdata()` get the same checks as intervals given
@@ -346,7 +346,7 @@ the generated intervals:
   (@billdenney)
 * `PKNCA_options_defaults()` returns the default value of one or more options
   (or all of them) without changing the current options, unlike
-  `PKNCA.options(default = TRUE)`, which resets them.  (@GITHUB_HANDLE)
+  `PKNCA.options(default = TRUE)`, which resets them.  (@billdenney)
 
 * `be_assess()`, `be_compare()`, and `be_fit_models()` gain three options for
   treatment comparisons beyond a bioequivalence decision:
