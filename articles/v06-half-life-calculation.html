@@ -122,6 +122,11 @@ and step back:
 <ul>
 <li>at least 3 points (customizable with
 <code>PKNCA.options("min.hl.points")</code>)</li>
+<li>at most <code>PKNCA.options("max.hl.points")</code> points, which by
+default (Inf) does not limit them</li>
+<li>starting no earlier than
+<code>PKNCA.options("min.hl.start.time")</code>, which by default (0)
+does not restrict them</li>
 <li>Not including
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">T_{max}</annotation></semantics></math>
 (customizable with
@@ -144,7 +149,10 @@ is 1 hour then the default point sets that would be fit are:</p>
 <p>If <code>PKNCA.options("min.hl.points")</code> were set to
 <code>4</code>, then the 6, 8, and 12 hour set would not be fit. If
 <code>PKNCA.options("allow.tmax.in.half.life")</code> were set to
-<code>TRUE</code>, then 1, 2, 3, 4, 6, 8, and 12 hours would be fit.</p>
+<code>TRUE</code>, then 1, 2, 3, 4, 6, 8, and 12 hours would be fit. If
+<code>PKNCA.options("max.hl.points")</code> were set to <code>4</code>,
+or <code>PKNCA.options("min.hl.start.time")</code> to <code>3.5</code>,
+then only the first two sets would be fit.</p>
 </div>
 <div class="section level3">
 <h3 id="select-the-best-fit">Select the Best Fit<a class="anchor" aria-label="anchor" href="#select-the-best-fit"></a>

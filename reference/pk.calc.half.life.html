@@ -88,6 +88,8 @@ selection of the points for calculation (unless <code>manually.selected.points</
 <span>  manually.selected.points <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  min.hl.points <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  max.hl.points <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  min.hl.start.time <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  adj.r.squared.factor <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  r.squared.factor <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  tobit_n_points_penalty <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -152,8 +154,8 @@ can be changed via <code>PKNCA.options(hl_method = "tobit")</code>.</p></dd>
 <code>time</code>) been manually selected?  The impact of setting this to
 <code>TRUE</code> is that no selection for the best points will be done.  When
 <code>TRUE</code>, this option causes the options of <code>adj.r.squared.factor</code>,
-<code>r.squared.factor</code>, <code>min.hl.points</code>, and <code>allow.tmax.in.half.life</code> to be
-ignored.</p></dd>
+<code>r.squared.factor</code>, <code>min.hl.points</code>, <code>max.hl.points</code>, <code>min.hl.start.time</code>,
+and <code>allow.tmax.in.half.life</code> to be ignored.</p></dd>
 
 
 <dt id="arg-options">options<a class="anchor" aria-label="anchor" href="#arg-options"></a></dt>
@@ -165,6 +167,20 @@ ignored.</p></dd>
 <dd><p>The minimum number of points that must be
 included to calculate the half-life.  For <code>hl_method = "tobit"</code> this
 counts only above-LLOQ points.</p></dd>
+
+
+<dt id="arg-max-hl-points">max.hl.points<a class="anchor" aria-label="anchor" href="#arg-max-hl-points"></a></dt>
+<dd><p>The maximum number of points that automatic point
+selection may use (<code>Inf</code>, the default, for no maximum).  It must be more
+than <code>min.hl.points</code>.  For <code>hl_method = "tobit"</code> this counts only
+above-LLOQ points.</p></dd>
+
+
+<dt id="arg-min-hl-start-time">min.hl.start.time<a class="anchor" aria-label="anchor" href="#arg-min-hl-start-time"></a></dt>
+<dd><p>The earliest time at which automatic point
+selection may start the half-life:  points before it are not used.  It is
+on the scale of <code>time</code>, which within <code><a href="pk.nca.html">pk.nca()</a></code> is the time since the start
+of the interval.  The default, 0, does not restrict the points.</p></dd>
 
 
 <dt id="arg-adj-r-squared-factor">adj.r.squared.factor<a class="anchor" aria-label="anchor" href="#arg-adj-r-squared-factor"></a></dt>
@@ -286,7 +302,8 @@ half-life is calculated by computing the best fit line for all points at or
 after tmax (based on the value of <code>allow.tmax.in.half.life</code>).</p>
 <p>For <code>hl_method = "log-linear"</code>, the best half-life is chosen by the
 following rules in order:</p>
-<ul><li><p>At least <code>min.hl.points</code> points included</p></li>
+<ul><li><p>At least <code>min.hl.points</code> and at most <code>max.hl.points</code> points included,
+the first of them no earlier than <code>min.hl.start.time</code></p></li>
 <li><p>A <code>lambda.z</code> &gt; 0 and at the same time the best adjusted r-squared
 (within <code>adj.r.squared.factor</code>) or, when <code>adj.r.squared.factor</code> is <code>NA</code>,
 the best r-squared (within <code>r.squared.factor</code>)</p></li>
@@ -294,12 +311,15 @@ the best r-squared (within <code>r.squared.factor</code>)</p></li>
 </ul><p>For <code>hl_method = "tobit"</code>, BLQ observations are retained and treated as
 left-censored.  The best window is the one minimizing
 <code>tobit_residual * n ^ tobit_n_points_penalty</code> (default: raw <code>tobit_residual</code>)
-among windows with <code>lambda.z &gt; 0</code> and at least <code>min.hl.points</code> above-LLOQ
-points.  On ties the largest window (most total points) is preferred.</p>
+among windows with <code>lambda.z &gt; 0</code>, at least <code>min.hl.points</code> and at most
+<code>max.hl.points</code> above-LLOQ points, and a first point no earlier than
+<code>min.hl.start.time</code>.  On ties the largest window (most total points) is
+preferred.</p>
 <p>If <code>manually.selected.points</code> is <code>TRUE</code>, the <code>conc</code> and <code>time</code> data are
 used as-is without any form of point selection.  When
-<code>TRUE</code>, <code>adj.r.squared.factor</code>, <code>r.squared.factor</code>, <code>min.hl.points</code>, and
-<code>allow.tmax.in.half.life</code> are ignored.</p>
+<code>TRUE</code>, <code>adj.r.squared.factor</code>, <code>r.squared.factor</code>, <code>min.hl.points</code>,
+<code>max.hl.points</code>, <code>min.hl.start.time</code>, and <code>allow.tmax.in.half.life</code> are
+ignored.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

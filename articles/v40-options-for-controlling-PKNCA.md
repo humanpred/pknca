@@ -112,6 +112,20 @@ What is the minimum number of points required to calculate half-life?
 
 The default value is: 3
 
+### max.hl.points
+
+What is the maximum number of points that automatic point selection may
+use for half-life? It must be more than min.hl.points.
+
+The default value is: Inf
+
+### min.hl.start.time
+
+What is the earliest time at which automatic point selection may start
+the half-life (0 does not restrict it)?
+
+The default value is: 0
+
 ### min.span.ratio
 
 What is the minimum span ratio required to consider a half-life valid?

@@ -28,6 +28,10 @@ are selected.
   back:
   - at least 3 points (customizable with
     `PKNCA.options("min.hl.points")`)
+  - at most `PKNCA.options("max.hl.points")` points, which by default
+    (Inf) does not limit them
+  - starting no earlier than `PKNCA.options("min.hl.start.time")`, which
+    by default (0) does not restrict them
   - Not including $`T_{max}`$ (customizable with
     `PKNCA.options("allow.tmax.in.half.life")`)
 
@@ -43,7 +47,10 @@ then the default point sets that would be fit are:
 If `PKNCA.options("min.hl.points")` were set to `4`, then the 6, 8, and
 12 hour set would not be fit. If
 `PKNCA.options("allow.tmax.in.half.life")` were set to `TRUE`, then 1,
-2, 3, 4, 6, 8, and 12 hours would be fit.
+2, 3, 4, 6, 8, and 12 hours would be fit. If
+`PKNCA.options("max.hl.points")` were set to `4`, or
+`PKNCA.options("min.hl.start.time")` to `3.5`, then only the first two
+sets would be fit.
 
 ### Select the Best Fit
 

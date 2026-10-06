@@ -186,6 +186,12 @@ PKNCA.options()
     ## $min.hl.points
     ## [1] 3
     ## 
+    ## $max.hl.points
+    ## [1] Inf
+    ## 
+    ## $min.hl.start.time
+    ## [1] 0
+    ## 
     ## $min.span.ratio
     ## [1] 2
     ## 

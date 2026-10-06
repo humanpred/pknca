@@ -21,6 +21,8 @@ pk.calc.half.life(
   manually.selected.points = FALSE,
   options = list(),
   min.hl.points = NULL,
+  max.hl.points = NULL,
+  min.hl.start.time = NULL,
   adj.r.squared.factor = NULL,
   r.squared.factor = NULL,
   tobit_n_points_penalty = NULL,
@@ -82,8 +84,9 @@ pk.calc.half.life(
   Have the input points (`conc` and `time`) been manually selected? The
   impact of setting this to `TRUE` is that no selection for the best
   points will be done. When `TRUE`, this option causes the options of
-  `adj.r.squared.factor`, `r.squared.factor`, `min.hl.points`, and
-  `allow.tmax.in.half.life` to be ignored.
+  `adj.r.squared.factor`, `r.squared.factor`, `min.hl.points`,
+  `max.hl.points`, `min.hl.start.time`, and `allow.tmax.in.half.life` to
+  be ignored.
 
 - options:
 
@@ -95,6 +98,22 @@ pk.calc.half.life(
   The minimum number of points that must be included to calculate the
   half-life. For `hl_method = "tobit"` this counts only above-LLOQ
   points.
+
+- max.hl.points:
+
+  The maximum number of points that automatic point selection may use
+  (`Inf`, the default, for no maximum). It must be more than
+  `min.hl.points`. For `hl_method = "tobit"` this counts only above-LLOQ
+  points.
+
+- min.hl.start.time:
+
+  The earliest time at which automatic point selection may start the
+  half-life: points before it are not used. It is on the scale of
+  `time`, which within
+  [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md) is
+  the time since the start of the interval. The default, 0, does not
+  restrict the points.
 
 - adj.r.squared.factor:
 
@@ -240,7 +259,8 @@ tmax (based on the value of `allow.tmax.in.half.life`).
 For `hl_method = "log-linear"`, the best half-life is chosen by the
 following rules in order:
 
-- At least `min.hl.points` points included
+- At least `min.hl.points` and at most `max.hl.points` points included,
+  the first of them no earlier than `min.hl.start.time`
 
 - A `lambda.z` \> 0 and at the same time the best adjusted r-squared
   (within `adj.r.squared.factor`) or, when `adj.r.squared.factor` is
@@ -251,14 +271,16 @@ following rules in order:
 For `hl_method = "tobit"`, BLQ observations are retained and treated as
 left-censored. The best window is the one minimizing
 `tobit_residual * n ^ tobit_n_points_penalty` (default: raw
-`tobit_residual`) among windows with `lambda.z > 0` and at least
-`min.hl.points` above-LLOQ points. On ties the largest window (most
-total points) is preferred.
+`tobit_residual`) among windows with `lambda.z > 0`, at least
+`min.hl.points` and at most `max.hl.points` above-LLOQ points, and a
+first point no earlier than `min.hl.start.time`. On ties the largest
+window (most total points) is preferred.
 
 If `manually.selected.points` is `TRUE`, the `conc` and `time` data are
 used as-is without any form of point selection. When `TRUE`,
-`adj.r.squared.factor`, `r.squared.factor`, `min.hl.points`, and
-`allow.tmax.in.half.life` are ignored.
+`adj.r.squared.factor`, `r.squared.factor`, `min.hl.points`,
+`max.hl.points`, `min.hl.start.time`, and `allow.tmax.in.half.life` are
+ignored.
 
 ## References
 

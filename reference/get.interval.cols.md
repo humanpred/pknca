@@ -6113,6 +6113,12 @@ get.interval.cols()
 #> $half.life$arg_spec$arglist$min.hl.points
 #> [1] "min.hl.points"
 #> 
+#> $half.life$arg_spec$arglist$max.hl.points
+#> [1] "max.hl.points"
+#> 
+#> $half.life$arg_spec$arglist$min.hl.start.time
+#> [1] "min.hl.start.time"
+#> 
 #> $half.life$arg_spec$arglist$adj.r.squared.factor
 #> [1] "adj.r.squared.factor"
 #> 
