@@ -576,6 +576,12 @@ the generated intervals:
   (no imputation), and any other value is the method for every interval.
   (@billdenney)
 
+* `get_impute_column()` is now exported beside `get_impute_method()`.  It gives
+  the name of the intervals column that the `impute` argument of `PKNCAdata()`
+  takes the imputation methods from, or `NULL` when `impute` is a method string
+  or `NA` with no `"impute"` column, so other packages can tell a column from a
+  method string without reading `impute` themselves.  (@billdenney)
+
 * `PKNCA_options_defaults()` returns the default value of one or more options
   (or all of them) without changing the current options, unlike
   `PKNCA.options(default = TRUE)`, which resets them.  (@billdenney)

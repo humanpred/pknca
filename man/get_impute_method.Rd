@@ -40,7 +40,9 @@ value.  An \code{NA} that finds no \code{"impute"} column therefore gives a sing
 }
 
 \code{get_impute_method()} only reads the specification.  It does not check that
-the methods exist; \code{\link[=assert_impute_method]{assert_impute_method()}} does.
+the methods exist; \code{\link[=assert_impute_method]{assert_impute_method()}} does.  \code{\link[=get_impute_column]{get_impute_column()}}
+gives the name of the column the methods are read from, which tells a column
+from a method string even for an intervals table with one row.
 }
 \examples{
 intervals <- data.frame(start = 0, end = 24, impute = "start_conc0")
@@ -58,6 +60,7 @@ Other Imputation:
 \code{\link[=PKNCA_impute_fun_list]{PKNCA_impute_fun_list()}},
 \code{\link{PKNCA_impute_method}},
 \code{\link[=assert_impute_method]{assert_impute_method()}},
+\code{\link[=get_impute_column]{get_impute_column()}},
 \code{\link[=pknca_impute_methods]{pknca_impute_methods()}}
 }
 \concept{Imputation}
