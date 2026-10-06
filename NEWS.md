@@ -634,6 +634,22 @@ the generated intervals:
 * `pk.calc.sparse_aumc()` calculates the AUMC for sparse data, as
   `pk.calc.sparse_auc()` does the AUC.
 
+* `summary()` of sparse results shows `auclast` and `aumclast` (and the
+  deprecated `sparse_auclast` and `sparse_aumclast`) as the estimate with its
+  standard error in brackets, with the standard error taken from the
+  `auclast_se` and `aumclast_se` (or `sparse_auc_se` and `sparse_aumc_se`)
+  results of the same group, and the caption says so ("estimate and standard
+  error").  In PKNCA 0.12.1, the one `sparse_auclast` estimate in a
+  summary cell was shown alone and described as a geometric mean with a
+  geometric coefficient of variation.  The standard errors get no summary column
+  of their own.  A summary row that would combine more than one sparse estimate
+  (after `drop_group` removes the group that separates them, or for intervals
+  with the same start and end that no kept interval column tells apart) is the
+  `pknca_error_summary_multiple_spread` error, since each standard error
+  describes one estimate.  `PKNCA.set.summary()` gains a `spread_for` argument
+  to summarize a parameter with the spread from another parameter's results
+  this way.  (#170)
+
 * New derived PK parameters to complete coverage across all AUC variants
   (#152):
   * 10 clearance parameters (`cl.*`)
@@ -707,6 +723,15 @@ the generated intervals:
   and `adj.r.squared.factor` no longer has to be set to `NA` by hand.  Both
   options now accept `NA`, which selects on the other r-squared.  The default
   is unchanged:  selection on adjusted r-squared.  Suggested by @cahn88 (#337)
+
+* Two new options limit automatic half-life point selection, as the "Lambda Z
+  Rules for Best Fit" of Phoenix WinNonlin do:  `max.hl.points` is the most
+  points a fit may use (`Inf`, the default, for no limit; it must be more than
+  `min.hl.points`), and `min.hl.start.time` is the earliest time a fit may start
+  (0, the default, for no restriction; within `pk.nca()` it is the time since
+  the start of the interval).  Both are also arguments of
+  `pk.calc.half.life()`, apply to the log-linear and Tobit methods, and are
+  ignored for manually selected points.  Suggested by @bachapman (#638)
 
 * A new function `get_halflife_fit()` gives the slope, intercept, and time
   range of the half-life fit for each group and interval so that the fitted

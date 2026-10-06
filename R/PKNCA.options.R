@@ -306,6 +306,30 @@ pair_r_squared_factors <- function(x, name) {
     }
     x
   },
+  max.hl.points=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return("What is the maximum number of points that automatic point selection may use for half-life?  It must be more than min.hl.points.")
+    if (default)
+      return(Inf)
+    # min.hl.points is at least 2, and this must be more than it
+    checkmate::assert_number(x, lower = 3, na.ok = FALSE, .var.name = "max.hl.points")
+    if (is.finite(x) && min(x %% 1, 1 - (x %% 1)) > 100*.Machine$double.eps) {
+      rlang::warn(
+        "Non-integer given for max.hl.points; rounding to nearest integer",
+        class = "pknca_warning_max_hl_points_noninteger"
+      )
+      x <- round(x)
+    }
+    x
+  },
+  min.hl.start.time=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return("What is the earliest time at which automatic point selection may start the half-life (0 does not restrict it)?")
+    if (default)
+      return(0)
+    checkmate::assert_number(x, lower = 0, finite = TRUE, na.ok = FALSE, .var.name = "min.hl.start.time")
+    x
+  },
   min.span.ratio=function(x, default=FALSE, description=FALSE) {
     if (description)
       return("What is the minimum span ratio required to consider a half-life valid?")
@@ -710,6 +734,12 @@ PKNCA.options.describe <- function(name) {
 #'   scalar or a two-long vector.
 #' @param reset Reset all the summary instructions to no instruction (this is
 #'   not intended for general use)
+#' @param spread_for Optional.  The name of another parameter that `name` gives
+#'   the spread of, such as `"auclast"` for `"auclast_se"`.  Where results for
+#'   `name` are present, [summary.PKNCAresults()] summarizes `spread_for` with
+#'   these instructions:  `point` is applied to the values of `spread_for`,
+#'   `spread` to the values of `name`, and `description` describes the summary.
+#'   `name` then has no summary column of its own.  `spread` must be given.
 #' @returns All current summary settings (invisibly)
 #' @seealso [summary.PKNCAresults()]
 #' @family PKNCA calculation and summary settings
@@ -725,7 +755,8 @@ PKNCA.options.describe <- function(name) {
 #' }
 #' @export
 PKNCA.set.summary <- function(name, description, point, spread,
-                              rounding=list(signif=3), reset=FALSE) {
+                              rounding=list(signif=3), reset=FALSE,
+                              spread_for=NULL) {
   if (reset) {
     rlang::warn(
       "`reset = TRUE` is not intended for general use, summary() may not work after resetting summary instructions",
@@ -769,6 +800,24 @@ PKNCA.set.summary <- function(name, description, point, spread,
     checkmate::assert_function(spread)
     for (current_name in name) {
       current[[current_name]]$spread <- spread
+    }
+  }
+  if (!is.null(spread_for)) {
+    checkmate::assert_string(spread_for)
+    if (!(spread_for %in% names(get("interval.cols", envir=.PKNCAEnv)))) {
+      rlang::abort(
+        sprintf("spread_for must be a defined parameter name, not '%s'", spread_for),
+        class = "pknca_error_undefined_parameter"
+      )
+    }
+    if (missing(spread)) {
+      rlang::abort(
+        "spread must be given with spread_for",
+        class = "pknca_error_spread_for_needs_spread"
+      )
+    }
+    for (current_name in name) {
+      current[[current_name]]$spread_for <- spread_for
     }
   }
   # Confirm that rounding is either a single-entry list or a function

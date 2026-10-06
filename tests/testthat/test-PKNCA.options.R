@@ -71,6 +71,8 @@ test_that("PKNCA.options", {
       allow.tmax.in.half.life = FALSE,
       keep_interval_cols = NULL,
       min.hl.points = 3,
+      max.hl.points = Inf,
+      min.hl.start.time = 0,
       min.span.ratio = 2,
       max.aucinf.pext = 20,
       min.hl.r.squared = 0.9,
@@ -272,6 +274,31 @@ test_that("PKNCA.options", {
                  regexp="Non-integer given for min.hl.points; rounding to nearest integer")
   # Note that R uses the engineer's rule of rounding
   expect_equal(v1, 2)
+
+  # max.hl.points
+  expect_equal(PKNCA.options(max.hl.points=Inf, check=TRUE), Inf)
+  expect_equal(PKNCA.options(max.hl.points=6, check=TRUE), 6)
+  expect_error(PKNCA.options(max.hl.points=2, check=TRUE),
+               regexp="Element 1 is not >= 3")
+  expect_error(PKNCA.options(max.hl.points=NA_real_, check=TRUE),
+               regexp="May not be NA")
+  expect_error(PKNCA.options(max.hl.points=c(4, 5), check=TRUE),
+               regexp="Must have length 1")
+  expect_warning(v1 <- PKNCA.options(max.hl.points=5.4, check=TRUE),
+                 class="pknca_warning_max_hl_points_noninteger")
+  expect_equal(v1, 5)
+
+  # min.hl.start.time
+  expect_equal(PKNCA.options(min.hl.start.time=0, check=TRUE), 0)
+  expect_equal(PKNCA.options(min.hl.start.time=12.5, check=TRUE), 12.5)
+  expect_error(PKNCA.options(min.hl.start.time=-1, check=TRUE),
+               regexp="Element 1 is not >= 0")
+  expect_error(PKNCA.options(min.hl.start.time=Inf, check=TRUE),
+               regexp="Must be finite")
+  expect_error(PKNCA.options(min.hl.start.time=NA_real_, check=TRUE),
+               regexp="May not be NA")
+  expect_error(PKNCA.options(min.hl.start.time=c(1, 2), check=TRUE),
+               regexp="Must have length 1")
 
   # min.span.ratio
   expect_equal(PKNCA.options(min.span.ratio=2, check=TRUE), 2)

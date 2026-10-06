@@ -1492,3 +1492,138 @@ test_that("the no-surviving-span exclude reason names the r-squared in use (#337
     "No valid terminal phase: no span with lambda.z > 0 within the r-squared tolerance of the best fit"
   )
 })
+
+test_that("max.hl.points limits the points that automatic selection may use (#638)", {
+  # Every span of an exact exponential has an r-squared of 1, so selection
+  # takes the most points it is allowed
+  time <- 0:10
+  conc <- exp(-0.2 * time)
+  unrestricted <- pk.calc.half.life(conc = conc, time = time)
+  expect_equal(unrestricted$lambda.z.n.points, 10)
+
+  limited <- pk.calc.half.life(conc = conc, time = time, max.hl.points = 4)
+  expect_equal(limited$lambda.z.n.points, 4)
+  expect_equal(limited$lambda.z.time.first, 7)
+  manual <-
+    pk.calc.half.life(
+      conc = conc[time >= 7], time = time[time >= 7], tmax = 0, tlast = 10,
+      manually.selected.points = TRUE
+    )
+  expect_equal(limited$lambda.z, manual$lambda.z)
+  expect_equal(limited$adj.r.squared, manual$adj.r.squared)
+
+  # The same limit given as an option
+  expect_equal(
+    pk.calc.half.life(conc = conc, time = time, options = list(max.hl.points = 4)),
+    limited
+  )
+  # A limit at or above the number of points changes nothing
+  expect_equal(pk.calc.half.life(conc = conc, time = time, max.hl.points = 10), unrestricted)
+})
+
+test_that("max.hl.points must be more than min.hl.points (#638)", {
+  time <- 0:10
+  conc <- exp(-0.2 * time)
+  expect_error(
+    pk.calc.half.life(conc = conc, time = time, min.hl.points = 3, max.hl.points = 3),
+    class = "pknca_error_max_hl_points_not_above_min"
+  )
+  expect_error(
+    pk.calc.half.life(conc = conc, time = time, min.hl.points = 5, max.hl.points = 4),
+    regexp = "max.hl.points (4) must be more than min.hl.points (5)",
+    fixed = TRUE
+  )
+  expect_equal(
+    pk.calc.half.life(conc = conc, time = time, min.hl.points = 3, max.hl.points = 4)$lambda.z.n.points,
+    4
+  )
+})
+
+test_that("min.hl.start.time keeps automatic selection from starting before it (#638)", {
+  time <- 0:10
+  conc <- exp(-0.2 * time)
+  later <- pk.calc.half.life(conc = conc, time = time, min.hl.start.time = 5)
+  expect_equal(later$lambda.z.time.first, 5)
+  expect_equal(later$lambda.z.n.points, 6)
+  manual <-
+    pk.calc.half.life(
+      conc = conc[time >= 5], time = time[time >= 5], tmax = 0, tlast = 10,
+      manually.selected.points = TRUE
+    )
+  expect_equal(later$lambda.z, manual$lambda.z)
+  # A start time between samples starts at the next sample
+  expect_equal(
+    pk.calc.half.life(conc = conc, time = time, min.hl.start.time = 4.5)$lambda.z.time.first,
+    5
+  )
+
+  # The default of 0 does not restrict the points, even when times are negative
+  unrestricted <- pk.calc.half.life(conc = conc, time = time)
+  expect_equal(pk.calc.half.life(conc = conc, time = time, min.hl.start.time = 0), unrestricted)
+  negative <- pk.calc.half.life(conc = conc, time = time - 20, min.hl.start.time = 0)
+  expect_equal(negative$lambda.z.n.points, 10)
+  expect_equal(negative$lambda.z, unrestricted$lambda.z)
+})
+
+test_that("min.hl.start.time that leaves too few points says so (#638)", {
+  time <- 0:10
+  conc <- exp(-0.2 * time)
+  expect_warning(
+    result <- pk.calc.half.life(conc = conc, time = time, min.hl.start.time = 9),
+    class = "pknca_warning_halflife_too_few_points"
+  )
+  expect_true(is.na(result$lambda.z))
+  expect_equal(
+    attr(result, "exclude"),
+    "Too few points for half-life calculation (min.hl.points=3 with only 2 points at or after min.hl.start.time=9)"
+  )
+})
+
+test_that("max.hl.points and min.hl.start.time apply to the Tobit method (#638)", {
+  # Points from time 6 on are BLQ; six points (times 0 to 5) are above the LLOQ
+  time <- 0:7
+  conc_true <- 10 * exp(-0.5 * time) * c(1, 1.02, 0.98, 1.01, 0.99, 1.03, 1, 1)
+  lloq <- 0.6
+  conc <- ifelse(conc_true < lloq, 0, conc_true)
+  args <-
+    list(
+      lloq = lloq, hl_method = "tobit", allow.tmax.in.half.life = TRUE,
+      tmax = 0, tlast = 5
+    )
+  # With at most 4 above-LLOQ points, the windows are those starting at time 2
+  # or 3:  the same windows as for the data from time 2 on
+  from_2 <- do.call(pk.calc.half.life, c(list(conc = conc[time >= 2], time = time[time >= 2]), args))
+  limited <- do.call(pk.calc.half.life, c(list(conc = conc, time = time, max.hl.points = 4), args))
+  expect_equal(limited, from_2)
+  expect_lte(limited$lambda.z.n.points - limited$lambda.z.n.points_blq, 4)
+
+  later <- do.call(pk.calc.half.life, c(list(conc = conc, time = time, min.hl.start.time = 2), args))
+  expect_equal(later, from_2)
+})
+
+# The first time and number of points of the half-life that pk.nca() selects
+# for an exact exponential, with the given options
+nca_half_life_points <- function(options) {
+  d_conc <- data.frame(subject = 1, time = 0:10, conc = exp(-0.2 * (0:10)))
+  d_dose <- data.frame(subject = 1, time = 0, dose = 1)
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | subject),
+      PKNCAdose(d_dose, dose ~ time | subject),
+      intervals = data.frame(start = 0, end = Inf, half.life = TRUE),
+      options = options
+    )
+  res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+  stats::setNames(res$PPORRES, res$PPTESTCD)[c("lambda.z.time.first", "lambda.z.n.points")]
+}
+
+test_that("pk.nca() uses max.hl.points and min.hl.start.time from the options (#638)", {
+  expect_equal(
+    nca_half_life_points(list(max.hl.points = 4)),
+    c(lambda.z.time.first = 7, lambda.z.n.points = 4)
+  )
+  expect_equal(
+    nca_half_life_points(list(min.hl.start.time = 5)),
+    c(lambda.z.time.first = 5, lambda.z.n.points = 6)
+  )
+})

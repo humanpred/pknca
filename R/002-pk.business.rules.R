@@ -147,3 +147,24 @@ business.median <-
 #' @export
 business.range <-
   pk.business(range, max.missing=~PKNCA::PKNCA.Options("max.missing"))
+
+# The summary spread of a sparse estimate:  its standard error.  A standard
+# error describes one estimate, so a summary row combining several estimates
+# has no valid spread.
+summary_spread_one_se <- function(x, ...) {
+  if (length(x) > 1) {
+    rlang::abort(
+      sprintf(
+        paste(
+          "Cannot summarize %d standard errors in one summary row:  each describes",
+          "one estimate.  Check whether drop_group removed a grouping column or",
+          "whether intervals with the same start and end need a column in the",
+          "keep_interval_cols option to tell them apart."
+        ),
+        length(x)
+      ),
+      class = "pknca_error_summary_multiple_spread"
+    )
+  }
+  x
+}
