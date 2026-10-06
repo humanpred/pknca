@@ -4,6 +4,52 @@
 #'   `pknca_affected_parameters` attribute lists the parameters it can exclude,
 #'   and its `pknca_options` attribute lists the [PKNCA.options()] entries its
 #'   thresholds came from (see [pknca_exclude_rules()]).
+#' @section Tmax coverage:
+#'
+#'   `exclude_nca_tmax_coverage()` compares each subject's samples with the
+#'   Tmax values of its group.  The group is the summary group of
+#'   [summary.PKNCAresults()]:  every grouping column except the subject, with
+#'   the interval start and end (so each part, treatment, analyte, and
+#'   interval is its own group).  The Tmax range of the group is the first to
+#'   third quartile of the Tmax values of every subject in the group (the
+#'   subject being judged included), extended by 1.5 times the interquartile
+#'   range on each side (Tukey's fences).  Tmax values that are missing or
+#'   already excluded are not used.  Unless a subject of the group has its
+#'   Tmax at the interval start, the range starts just after it:  a sample at
+#'   or before the interval start (usually the predose sample) does not show
+#'   that the peak was sampled, and a lower fence at or below zero would
+#'   otherwise count every predose sample as within the range.
+#'
+#'   The samples are the concentration rows within the interval that have a
+#'   concentration and are not excluded.  When the concentration data have a
+#'   nominal time (`time.nominal` in [PKNCAconc()]), the samples are placed by
+#'   their nominal time minus the interval start, so the nominal times must
+#'   share the origin of the interval times (for example, the nominal time
+#'   since the first dose); otherwise, they are placed by their actual time.
+#'   Times are never converted between units, and the time unit is only used
+#'   in the text.
+#'
+#'   * A subject with no sample in the Tmax range is excluded:  every
+#'     parameter of that interval is excluded with a reason that gives the
+#'     range and the subject's sample nearest to it.
+#'   * With nominal times, a subject with a sample in the range that is
+#'     missing some of the group's nominal times within the range (see
+#'     [pknca_missing_samples()]) is not excluded.  Instead, a
+#'     `pknca_warning_tmax_coverage_partial` warning says that Cmax and Tmax
+#'     may be unreliable.  The warning's fields are `group` (a one-row
+#'     data.frame with the group and subject), `tmax_range`,
+#'     `time_nominal_missing`, and `reason` (as in [pknca_missing_samples()]),
+#'     and it can be caught with [withCallingHandlers()].  Without nominal
+#'     times, there is no schedule to compare with, and no warning is given.
+#'   * A group with fewer than `min_subjects` subjects with a Tmax (one subject,
+#'     for example) is not checked, and a
+#'     `pknca_message_tmax_coverage_few_subjects` message says so.  Quartiles
+#'     of fewer than four values describe the spread of the group poorly.
+#'   * When no nominal time of the group is within the interval, the group is
+#'     not checked, and a `pknca_warning_tmax_coverage_no_nominal` warning says
+#'     so (the nominal times may be relative to each dose instead).
+#'   * Sparse data have one Tmax per group, from the mean profile, so they are
+#'     not checked, and a `pknca_message_tmax_coverage_sparse` message says so.
 #' @examples
 #' my_conc <- PKNCAconc(data.frame(conc=1.1^(3:0),
 #'                                 time=0:3,
@@ -342,6 +388,218 @@ pknca_register_exclude_rule(
   description = "Exclude based on implausibly early Tmax (special case for tmax_early = 0)"
 )
 
+
+#' @eval pknca_rd_exclude_rule("exclude_nca_tmax_coverage")
+#' @export
+exclude_nca_tmax_coverage <- function(min_subjects = 4) {
+  checkmate::assert_int(min_subjects, lower = 2)
+  affected_parameters <- setdiff(names(get.interval.cols()), c("start", "end"))
+  ret_fun <- function(x, object, ...) {
+    exclude_nca_tmax_coverage_group(
+      x = x,
+      object = object,
+      min_subjects = min_subjects,
+      affected_parameters = affected_parameters
+    )
+  }
+  exclude_nca_describe(ret_fun, affected = affected_parameters)
+}
+pknca_register_exclude_rule(
+  name = "exclude_nca_tmax_coverage",
+  description = "Exclude based on whether a subject has a sample within the Tmax range of its group (the first to third quartile of the Tmax values, extended by 1.5 times the interquartile range); a subject with no sample in the range is excluded, and a subject missing some of the nominal times in the range gets a warning",
+  arguments =
+    c(min_subjects = "The fewest subjects with a Tmax in a group for the group to be checked (smaller groups are not checked, with a message)")
+)
+
+#' Judge the Tmax coverage of one subject and interval
+#'
+#' @param x The results of one subject and interval (one group of
+#'   [exclude()])
+#' @param object The PKNCAresults object
+#' @param min_subjects,affected_parameters See [exclude_nca_tmax_coverage()]
+#' @returns The exclusion reasons for the rows of `x`
+#' @keywords Internal
+#' @noRd
+exclude_nca_tmax_coverage_group <- function(x, object, min_subjects, affected_parameters) {
+  if (!inherits(object, "PKNCAresults")) {
+    rlang::abort(
+      "exclude_nca_tmax_coverage() checks NCA results; use it with exclude() on a PKNCAresults object",
+      class = "pknca_error_tmax_coverage_not_results"
+    )
+  }
+  ret <- rep(NA_character_, nrow(x))
+  if (is_sparse_pk(object)) {
+    rlang::inform(
+      "Tmax coverage is not checked for sparse data:  each group has one Tmax, from its mean profile",
+      class = "pknca_message_tmax_coverage_sparse"
+    )
+    return(ret)
+  }
+  idx_tmax <- which(x$PPTESTCD == "tmax")
+  if (length(idx_tmax) > 1) {
+    rlang::abort(
+      "Should not see more than one tmax (please report this as a bug)",
+      class = "pknca_error_internal_duplicate_parameter"
+    )
+  }
+  exclude_col <- object$columns$exclude
+  # A subject without a usable Tmax of its own is not judged
+  if (length(idx_tmax) == 0 || is.na(x$PPORRES[idx_tmax]) || !(x[[exclude_col]][idx_tmax] %in% c(NA, ""))) {
+    return(ret)
+  }
+
+  o_conc <- as_PKNCAconc(object)
+  subject_col <- o_conc$columns$subject
+  conc_group_cols <- group_vars(o_conc)
+  conc_peer_cols <- setdiff(conc_group_cols, subject_col)
+  summary_group_cols <- get_summary_PKNCAresults_drop_group(object = object, drop_group = subject_col)
+  current_group <- x[idx_tmax, summary_group_cols, drop = FALSE]
+  current_subject <- x[idx_tmax, conc_group_cols, drop = FALSE]
+
+  # Every subject's Tmax in the group, including the subject being judged
+  all_tmax <- object$result[object$result$PPTESTCD == "tmax", , drop = FALSE]
+  all_tmax <- all_tmax[!is.na(all_tmax$PPORRES) & all_tmax[[exclude_col]] %in% c(NA, ""), , drop = FALSE]
+  peers <- pknca_semi_join(all_tmax, current_group, by = summary_group_cols)
+  # Group-level conditions are signaled once per group, by its first subject
+  is_first_subject <-
+    length(subject_col) == 0 ||
+    identical(as.vector(peers[[subject_col]][1]), as.vector(current_subject[[subject_col]]))
+  group_text <- name_value_text(current_group)
+  if (nrow(peers) < min_subjects) {
+    if (is_first_subject) {
+      rlang::inform(
+        sprintf(
+          "Tmax coverage is not checked for %s:  %d subject(s) have a Tmax, fewer than the %d needed (min_subjects)",
+          group_text, nrow(peers), min_subjects
+        ),
+        class = "pknca_message_tmax_coverage_few_subjects"
+      )
+    }
+    return(ret)
+  }
+  quartiles <- stats::quantile(peers$PPORRES, probs = c(0.25, 0.75), names = FALSE)
+  iqr <- quartiles[2] - quartiles[1]
+  tmax_range <- c(quartiles[1] - 1.5 * iqr, quartiles[2] + 1.5 * iqr)
+  # A sample at or before the interval start (usually the predose sample) does
+  # not show that the peak was sampled, unless a subject of the group has its
+  # Tmax there.  Otherwise, a lower fence at or below zero would count every
+  # predose sample as within the range.
+  after_start <- all(peers$PPORRES > 0)
+  if (after_start) {
+    tmax_range[1] <- max(tmax_range[1], 0)
+  }
+  # Times relative to the interval start are differences, which can differ
+  # from the Tmax values in the last bits
+  tolerance <- sqrt(.Machine$double.eps) * max(1, abs(tmax_range))
+
+  start <- x$start[idx_tmax]
+  end <- x$end[idx_tmax]
+  timeu <- pknca_cdisc_get_timeu_orig(object)
+  unit_text <- if (is.na(timeu)) "" else paste0(" ", timeu)
+  nominal_col <- o_conc$columns$time.nominal
+  use_nominal <- !is.null(nominal_col)
+  time_col <- if (use_nominal) nominal_col else o_conc$columns$time
+  time_type <- if (use_nominal) "nominal" else "actual"
+
+  conc_data <- as.data.frame(o_conc)
+  conc_data$excluded_XXX <- !is.na(normalize_exclude(o_conc))
+  in_interval <- !is.na(conc_data[[time_col]]) & conc_data[[time_col]] >= start & conc_data[[time_col]] <= end
+  group_conc <-
+    pknca_semi_join(
+      conc_data[in_interval, , drop = FALSE],
+      current_group[, conc_peer_cols, drop = FALSE],
+      by = conc_peer_cols
+    )
+  if (use_nominal && nrow(group_conc) == 0) {
+    if (is_first_subject) {
+      rlang::warn(
+        sprintf(
+          "Tmax coverage is not checked for %s:  no nominal time of the group is within the interval (%g to %g%s); the nominal times may not share the origin of the actual times",
+          group_text, start, end, unit_text
+        ),
+        class = "pknca_warning_tmax_coverage_no_nominal"
+      )
+    }
+    return(ret)
+  }
+  subject_conc <- pknca_semi_join(group_conc, current_subject, by = conc_group_cols)
+  usable <- !is.na(subject_conc[[o_conc$columns$concentration]]) & !subject_conc$excluded_XXX
+  position <- subject_conc[[time_col]][usable] - start
+  if (after_start) {
+    position <- position[position > tolerance]
+  }
+  in_range <- exclude_nca_tmax_in_range(position, tmax_range = tmax_range, after_start = after_start, tolerance = tolerance)
+  range_text <-
+    sprintf(
+      "%s time %g to %g%s after the interval start",
+      time_type, tmax_range[1], tmax_range[2], unit_text
+    )
+  if (!any(in_range)) {
+    nearest_text <-
+      if (length(position) == 0 && after_start) {
+        "no sample after the interval start"
+      } else if (length(position) == 0) {
+        "no sample in the interval"
+      } else {
+        distance <- pmax(tmax_range[1] - position, position - tmax_range[2], 0)
+        sprintf("nearest sample at %g%s", position[which.min(distance)], unit_text)
+      }
+    ret[x$PPTESTCD %in% affected_parameters] <-
+      sprintf("no sample in the Tmax range of the group (%s, %s)", range_text, nearest_text)
+    return(ret)
+  }
+  if (use_nominal) {
+    status <-
+      pknca_nominal_sample_status(
+        data = group_conc,
+        group_cols = conc_peer_cols,
+        subject_col = subject_col,
+        nominal_col = nominal_col,
+        conc_col = o_conc$columns$concentration,
+        excluded = group_conc$excluded_XXX,
+        complete = TRUE
+      )
+    status <- pknca_semi_join(status, current_subject, by = conc_group_cols)
+    status_position <- status[[nominal_col]] - start
+    missing_in_range <-
+      status$status != "present" &
+      exclude_nca_tmax_in_range(status_position, tmax_range = tmax_range, after_start = after_start, tolerance = tolerance)
+    if (any(missing_in_range)) {
+      subject_group <- x[idx_tmax, unique(c(summary_group_cols, subject_col)), drop = FALSE]
+      rownames(subject_group) <- NULL
+      rlang::warn(
+        sprintf(
+          "Cmax and Tmax may be unreliable for %s:  no usable sample at nominal time %s%s, within the Tmax range of the group (%s)",
+          name_value_text(subject_group),
+          paste(sprintf("%g", status[[nominal_col]][missing_in_range]), collapse = ", "),
+          unit_text,
+          range_text
+        ),
+        class = "pknca_warning_tmax_coverage_partial",
+        group = subject_group,
+        tmax_range = tmax_range,
+        time_nominal_missing = status[[nominal_col]][missing_in_range],
+        reason = status$status[missing_in_range]
+      )
+    }
+  }
+  ret
+}
+
+#' Which times are within the Tmax range
+#'
+#' @param position Times relative to the interval start
+#' @param tmax_range The lower and upper bounds of the range
+#' @param after_start Must a time be after the interval start?
+#' @param tolerance The tolerance for comparing times
+#' @returns A logical vector, one value per `position`
+#' @keywords Internal
+#' @noRd
+exclude_nca_tmax_in_range <- function(position, tmax_range, after_start, tolerance) {
+  position >= tmax_range[1] - tolerance &
+    position <= tmax_range[2] + tolerance &
+    (!after_start | position > tolerance)
+}
 
 #' @eval pknca_rd_exclude_rule("exclude_nca_by_param", describe_in = NULL)
 #' @description

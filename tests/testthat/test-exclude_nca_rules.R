@@ -114,10 +114,35 @@ exclude_rules_fixture <- function() {
   PKNCAresults(result = result, data = o_data, exclude = "exclude")
 }
 
+# Fixtures for the rules that judge a subject against the other subjects of
+# its group rather than a parameter against a threshold, each built so that
+# the rule excludes one subject with a row for every NCA parameter
+exclude_rules_group_fixtures <-
+  list(
+    # Subject 6 has no sample in the Tmax range of the group (see
+    # tmax_coverage_conc())
+    exclude_nca_tmax_coverage = function() {
+      o_conc <- PKNCAconc(tmax_coverage_conc(), conc ~ time | subject, time.nominal = "time_nominal")
+      o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 24, cmax = TRUE))
+      parameters <- setdiff(names(get.interval.cols()), c("start", "end"))
+      result <-
+        rbind(
+          data.frame(subject = 1:5, start = 0, end = 24, PPTESTCD = "tmax", PPORRES = c(1, 1, 2, 2, 2), exclude = NA_character_),
+          data.frame(subject = 6, start = 0, end = 24, PPTESTCD = parameters, PPORRES = ifelse(parameters == "tmax", 8, 0), exclude = NA_character_)
+        )
+      PKNCAresults(result = result, data = o_data, exclude = "exclude")
+    }
+  )
+
 # The parameters an exclusion function actually excludes on the fixture.  Every
-# rule compares a parameter to a threshold, so an extremely low or an extremely
-# high value of every parameter triggers it.
-excluded_on_fixture <- function(rule_fun, fixture) {
+# rule without a fixture of its own in exclude_rules_group_fixtures compares a
+# parameter to a threshold, so an extremely low or an extremely high value of
+# every parameter triggers it.
+excluded_on_fixture <- function(rule_fun, fixture, rule) {
+  if (rule %in% names(exclude_rules_group_fixtures)) {
+    group_excluded <- suppressWarnings(exclude(exclude_rules_group_fixtures[[rule]](), FUN = rule_fun))
+    return(sort(unique(group_excluded$result$PPTESTCD[!is.na(group_excluded$result$exclude)])))
+  }
   excluded <- character()
   for (current_value in c(-1e300, 1e300)) {
     current_fixture <- fixture
@@ -133,7 +158,7 @@ test_that("each rule created with its defaults excludes exactly its listed param
   fixture <- exclude_rules_fixture()
   for (idx in which(rules$callable_with_defaults)) {
     rule_fun <- getExportedValue("PKNCA", rules$rule[idx])()
-    expect_equal(excluded_on_fixture(rule_fun, fixture), rules$affected_parameters[[idx]], info = rules$rule[idx])
+    expect_equal(excluded_on_fixture(rule_fun, fixture, rules$rule[idx]), rules$affected_parameters[[idx]], info = rules$rule[idx])
   }
 })
 
@@ -152,7 +177,7 @@ test_that("every rule's affected-parameter attribute is what it excludes", {
     rule_args <- if (is.null(arguments[[rule]])) list() else arguments[[rule]]
     rule_fun <- do.call(getExportedValue("PKNCA", rule), rule_args)
     expect_equal(
-      excluded_on_fixture(rule_fun, fixture),
+      excluded_on_fixture(rule_fun, fixture, rule),
       exclude_nca_affected_parameters(rule_fun),
       info = rule
     )

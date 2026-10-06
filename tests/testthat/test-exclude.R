@@ -274,7 +274,7 @@ test_that("multiple exclusions for the same row provide all the reasons (fix #11
   )
 })
 
-test_that("a condition signalled by an exclusion function reaches the caller with its class and fields", {
+test_that("a condition signaled by an exclusion function reaches the caller with its class and fields", {
   my_conc <- generate.conc(nsub = 2, ntreat = 1, time.points = 0:4)
   obj <- PKNCAconc(my_conc, formula = conc ~ time | treatment + ID)
   warn_per_group <- function(x, ...) {

@@ -9,6 +9,7 @@
 \alias{exclude_nca_min.hl.adj.r.squared}
 \alias{exclude_nca_tmax_early}
 \alias{exclude_nca_tmax_0}
+\alias{exclude_nca_tmax_coverage}
 \title{Exclude NCA parameters based on examining the parameter set.}
 \usage{
 exclude_nca_span.ratio(min.span.ratio)
@@ -28,6 +29,8 @@ exclude_nca_min.hl.adj.r.squared(min.hl.adj.r.squared = 0.9)
 exclude_nca_tmax_early(tmax_early = 0)
 
 exclude_nca_tmax_0()
+
+exclude_nca_tmax_coverage(min_subjects = 4)
 }
 \arguments{
 \item{min.span.ratio}{The minimum acceptable span ratio (uses PKNCA.options("min.span.ratio") if not provided).}
@@ -43,6 +46,8 @@ exclude_nca_tmax_0()
 \item{min.hl.adj.r.squared}{The minimum acceptable adjusted r-squared for half-life (uses 0.9 if not provided).}
 
 \item{tmax_early}{The time for Tmax which is considered too early to be a valid NCA result}
+
+\item{min_subjects}{The fewest subjects with a Tmax in a group for the group to be checked (smaller groups are not checked, with a message)}
 }
 \value{
 A function to give to \code{\link[=exclude]{exclude()}} as \code{FUN}.  Its
@@ -69,7 +74,59 @@ Exclude NCA parameters based on examining the parameter set.
 
 \item \code{exclude_nca_tmax_0()}: Exclude based on implausibly early Tmax (special case for tmax_early = 0)
 
+\item \code{exclude_nca_tmax_coverage()}: Exclude based on whether a subject has a sample within the Tmax range of its group (the first to third quartile of the Tmax values, extended by 1.5 times the interquartile range); a subject with no sample in the range is excluded, and a subject missing some of the nominal times in the range gets a warning
+
 }}
+\section{Tmax coverage}{
+
+
+\code{exclude_nca_tmax_coverage()} compares each subject's samples with the
+Tmax values of its group.  The group is the summary group of
+\code{\link[=summary.PKNCAresults]{summary.PKNCAresults()}}:  every grouping column except the subject, with
+the interval start and end (so each part, treatment, analyte, and
+interval is its own group).  The Tmax range of the group is the first to
+third quartile of the Tmax values of every subject in the group (the
+subject being judged included), extended by 1.5 times the interquartile
+range on each side (Tukey's fences).  Tmax values that are missing or
+already excluded are not used.  Unless a subject of the group has its
+Tmax at the interval start, the range starts just after it:  a sample at
+or before the interval start (usually the predose sample) does not show
+that the peak was sampled, and a lower fence at or below zero would
+otherwise count every predose sample as within the range.
+
+The samples are the concentration rows within the interval that have a
+concentration and are not excluded.  When the concentration data have a
+nominal time (\code{time.nominal} in \code{\link[=PKNCAconc]{PKNCAconc()}}), the samples are placed by
+their nominal time minus the interval start, so the nominal times must
+share the origin of the interval times (for example, the nominal time
+since the first dose); otherwise, they are placed by their actual time.
+Times are never converted between units, and the time unit is only used
+in the text.
+\itemize{
+\item A subject with no sample in the Tmax range is excluded:  every
+parameter of that interval is excluded with a reason that gives the
+range and the subject's sample nearest to it.
+\item With nominal times, a subject with a sample in the range that is
+missing some of the group's nominal times within the range (see
+\code{\link[=pknca_missing_samples]{pknca_missing_samples()}}) is not excluded.  Instead, a
+\code{pknca_warning_tmax_coverage_partial} warning says that Cmax and Tmax
+may be unreliable.  The warning's fields are \code{group} (a one-row
+data.frame with the group and subject), \code{tmax_range},
+\code{time_nominal_missing}, and \code{reason} (as in \code{\link[=pknca_missing_samples]{pknca_missing_samples()}}),
+and it can be caught with \code{\link[=withCallingHandlers]{withCallingHandlers()}}.  Without nominal
+times, there is no schedule to compare with, and no warning is given.
+\item A group with fewer than \code{min_subjects} subjects with a Tmax (one subject,
+for example) is not checked, and a
+\code{pknca_message_tmax_coverage_few_subjects} message says so.  Quartiles
+of fewer than four values describe the spread of the group poorly.
+\item When no nominal time of the group is within the interval, the group is
+not checked, and a \code{pknca_warning_tmax_coverage_no_nominal} warning says
+so (the nominal times may be relative to each dose instead).
+\item Sparse data have one Tmax per group, from the mean profile, so they are
+not checked, and a \code{pknca_message_tmax_coverage_sparse} message says so.
+}
+}
+
 \examples{
 my_conc <- PKNCAconc(data.frame(conc=1.1^(3:0),
                                 time=0:3,
@@ -87,6 +144,7 @@ as.data.frame(my_result_excluded)
 \seealso{
 Other Result exclusions:
 \code{\link[=exclude]{exclude()}},
-\code{\link[=pknca_exclude_rules]{pknca_exclude_rules()}}
+\code{\link[=pknca_exclude_rules]{pknca_exclude_rules()}},
+\code{\link[=pknca_missing_samples]{pknca_missing_samples()}}
 }
 \concept{Result exclusions}

@@ -276,6 +276,20 @@ the generated intervals:
 
 ## New features
 
+* Missing samples and Tmax coverage (#269, @billdenney):
+  * `pknca_missing_samples()` lists, for each subject, the nominal times of
+    its group's sampling schedule that have no usable concentration, with the
+    reason (`"no row"`, `"NA concentration"`, or `"excluded"`).  It takes a
+    `PKNCAconc`, `PKNCAdata`, or `PKNCAresults` object and needs the
+    `time.nominal` argument of `PKNCAconc()`.
+  * The `exclude_nca_tmax_coverage()` exclusion rule excludes every result of
+    a subject's interval when the subject has no sample within the Tmax range
+    of its summary group (Tukey's fences around the subjects' Tmax values),
+    and warns with the classed `pknca_warning_tmax_coverage_partial` warning
+    when a subject has a sample in the range but is missing some of the
+    group's nominal times within it.  Groups with fewer than `min_subjects`
+    (default 4) subjects and sparse data are not checked.
+
 * CDISC output (#403):
   * `as.data.frame.PKNCAresults()` gains `out_format = "cdisc"`, which
     translates PPTESTCD to CDISC standard codes and adds a PPTEST column.
@@ -816,9 +830,9 @@ the generated intervals:
 
 ## Bug fixes
 
-* A warning signalled by an exclusion function given to `exclude(FUN = )` now
+* A warning signaled by an exclusion function given to `exclude(FUN = )` now
   reaches the caller with its class and fields.  Before, the function ran inside
-  a grouped `dplyr::mutate()`, which collected the warnings and signalled one
+  a grouped `dplyr::mutate()`, which collected the warnings and signaled one
   summary warning in their place, so a handler for a classed warning never saw
   it.  An exclusion function that returns neither one value nor one value per
   row of its group is now the `pknca_error_exclude_fun_length` error
