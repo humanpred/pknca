@@ -147,3 +147,14 @@ business.median <-
 #' @export
 business.range <-
   pk.business(range, max.missing=~PKNCA::PKNCA.Options("max.missing"))
+
+# The standard error of the arithmetic mean of independent estimates, from their
+# standard errors:  sqrt(sum(se^2))/k.  For one estimate, it is that estimate's
+# standard error.
+business.se_mean <-
+  pk.business(
+    function(x, ...) {
+      sqrt(sum(x^2))/length(x)
+    },
+    max.missing=~PKNCA::PKNCA.Options("max.missing")
+  )

@@ -734,6 +734,12 @@ PKNCA.options.describe <- function(name) {
 #'   scalar or a two-long vector.
 #' @param reset Reset all the summary instructions to no instruction (this is
 #'   not intended for general use)
+#' @param spread_for Optional.  The name of another parameter that `name` gives
+#'   the spread of, such as `"auclast"` for `"auclast_se"`.  Where results for
+#'   `name` are present, [summary.PKNCAresults()] summarizes `spread_for` with
+#'   these instructions:  `point` is applied to the values of `spread_for`,
+#'   `spread` to the values of `name`, and `description` describes the summary.
+#'   `name` then has no summary column of its own.  `spread` must be given.
 #' @returns All current summary settings (invisibly)
 #' @seealso [summary.PKNCAresults()]
 #' @family PKNCA calculation and summary settings
@@ -749,7 +755,8 @@ PKNCA.options.describe <- function(name) {
 #' }
 #' @export
 PKNCA.set.summary <- function(name, description, point, spread,
-                              rounding=list(signif=3), reset=FALSE) {
+                              rounding=list(signif=3), reset=FALSE,
+                              spread_for=NULL) {
   if (reset) {
     rlang::warn(
       "`reset = TRUE` is not intended for general use, summary() may not work after resetting summary instructions",
@@ -793,6 +800,24 @@ PKNCA.set.summary <- function(name, description, point, spread,
     checkmate::assert_function(spread)
     for (current_name in name) {
       current[[current_name]]$spread <- spread
+    }
+  }
+  if (!is.null(spread_for)) {
+    checkmate::assert_string(spread_for)
+    if (!(spread_for %in% names(get("interval.cols", envir=.PKNCAEnv)))) {
+      rlang::abort(
+        sprintf("spread_for must be a defined parameter name, not '%s'", spread_for),
+        class = "pknca_error_undefined_parameter"
+      )
+    }
+    if (missing(spread)) {
+      rlang::abort(
+        "spread must be given with spread_for",
+        class = "pknca_error_spread_for_needs_spread"
+      )
+    }
+    for (current_name in name) {
+      current[[current_name]]$spread_for <- spread_for
     }
   }
   # Confirm that rounding is either a single-entry list or a function

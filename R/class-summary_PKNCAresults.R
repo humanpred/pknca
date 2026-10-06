@@ -2,6 +2,13 @@
 #'
 #' @details Excluded results will not be included in the summary.
 #'
+#' A parameter whose summary instructions name it as the spread of another
+#' parameter (`spread_for` in [PKNCA.set.summary()], such as the standard error
+#' of a sparse AUClast) has no column of its own.  Where its results are
+#' present, the other parameter is summarized with its instructions instead:
+#' for a sparse AUClast, the mean with the standard error.  The caption gives
+#' the summary used.
+#'
 #' @param object The results to summarize
 #' @param drop_group Which group(s) should be dropped from the formula?
 #' @param drop_param Which parameters should be excluded from the summary?
@@ -131,7 +138,7 @@ summary.PKNCAresults <- function(object, ...,
         names(object$data$intervals),
         names(get.interval.cols())
       ),
-      c(c("start", "end"), drop_param)
+      c(c("start", "end"), drop_param, names(summary_spread_for()))
     )
 
   # Extract columns that have been requested by the user for summary in any
@@ -191,10 +198,12 @@ summary.PKNCAresults <- function(object, ...,
       footnote_n = attr(ret, "footnote_n", exact = TRUE),
       footnote_not_calculated = attr(ret, "footnote_not_calculated", exact = TRUE),
       not_calculated = not_calculated,
-      caption_prefix = caption_prefix
+      caption_prefix = caption_prefix,
+      descriptions_used = attr(ret, "descriptions", exact = TRUE)
     )
   attr(ret, "footnote_n") <- NULL
   attr(ret, "footnote_not_calculated") <- NULL
+  attr(ret, "descriptions") <- NULL
   ret_pretty <- rename_summary_PKNCAresults(data = ret, unit_list = unit_list, pretty_names = pretty_names)
   as_summary_PKNCAresults(
     ret_pretty,
@@ -306,7 +315,7 @@ get_summary_PKNCAresults_count_N <- function(data, result_group, subject_col, su
 }
 
 # Provide a clean caption for summarized parameters
-get_summary_PKNCAresults_caption <- function(param_names, pretty_names, footnote_N, footnote_n, footnote_not_calculated, not_calculated, caption_prefix) {
+get_summary_PKNCAresults_caption <- function(param_names, pretty_names, footnote_N, footnote_n, footnote_not_calculated, not_calculated, caption_prefix, descriptions_used = list()) {
   # Extract the summarization descriptions for the caption
   summary_descriptions <-
     unlist(
@@ -316,6 +325,17 @@ get_summary_PKNCAresults_caption <- function(param_names, pretty_names, footnote
         i = "description"
       )
     )
+  # A parameter summarized with another parameter's instructions (see
+  # summary_spread_for()) is described by the summaries actually used; a name
+  # repeats when its cells used more than one.
+  for (nm in intersect(names(descriptions_used), param_names)) {
+    summary_descriptions <-
+      c(
+        summary_descriptions[names(summary_descriptions) != nm],
+        stats::setNames(descriptions_used[[nm]], rep(nm, length(descriptions_used[[nm]])))
+      )
+  }
+  summary_descriptions <- summary_descriptions[order(match(names(summary_descriptions), param_names))]
 
   if (pretty_names) {
     # Make the caption use pretty names if they're used in the header
@@ -377,6 +397,7 @@ summarize_PKNCAresults_object <- function(data, result_group, subject_col, resul
   ret_values_list <- list()
   footnote_n <- FALSE
   footnote_not_calculated <- FALSE
+  descriptions <- list()
   for (idx in seq_len(nrow(result_group))) {
     ret_idx <-
       summarize_PKNCAresults_group(
@@ -395,10 +416,15 @@ summarize_PKNCAresults_object <- function(data, result_group, subject_col, resul
     if (attr(ret_idx, "footnote_not_calculated", exact = TRUE)) {
       footnote_not_calculated <- TRUE
     }
+    group_descriptions <- attr(ret_idx, "descriptions", exact = TRUE)
+    for (nm in names(group_descriptions)) {
+      descriptions[[nm]] <- unique(c(descriptions[[nm]], group_descriptions[[nm]]))
+    }
   }
   ret <- cbind(result_group, dplyr::bind_rows(ret_values_list))
   attr(ret, "footnote_n") <- footnote_n
   attr(ret, "footnote_not_calculated") <- footnote_not_calculated
+  attr(ret, "descriptions") <- descriptions
   ret
 }
 
@@ -436,6 +462,7 @@ summarize_PKNCAresults_group <- function(data, current_group, subject_col, resul
 
   footnote_n <- FALSE
   footnote_not_calculated <- FALSE
+  descriptions <- list()
   for (current_param in current_param_all) {
     current_summary <-
       summarize_PKNCAresults_parameter(
@@ -445,10 +472,11 @@ summarize_PKNCAresults_group <- function(data, current_group, subject_col, resul
         include_units = length(result_units[[current_param]]) > 1,
         not_calculated = not_calculated
       )
-    # Read the attribute before `sprintf()` below drops it
+    # Read the attributes before `sprintf()` below drops them
     if (attr(current_summary, "not_calculated", exact = TRUE)) {
       footnote_not_calculated <- TRUE
     }
+    descriptions[[current_param]] <- attr(current_summary, "description", exact = TRUE)
     # summarize N, if requested and there is a value for calculation
     if (("N" %in% names(current_group)) && (current_summary != not_calculated)) {
       N_group <- as.integer(current_group$N)
@@ -464,6 +492,7 @@ summarize_PKNCAresults_group <- function(data, current_group, subject_col, resul
   }
   attr(ret, "footnote_n") <- footnote_n
   attr(ret, "footnote_not_calculated") <- footnote_not_calculated
+  attr(ret, "descriptions") <- descriptions
   ret
 }
 
@@ -509,6 +538,17 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
   if (is.null(current_summary_instructions)) {
     rlang::abort(sprintf("No summary function is set for parameter %s. Please set it with PKNCA.set.summary and report this as a bug in PKNCA.", parameter), class = "pknca_error_no_summary_function")  # nocov
   }
+  # The spread comes from another parameter's results when that parameter gives
+  # this one's spread (such as the standard error of a sparse AUClast) and has
+  # results here
+  spread_values <- current_data[[number_col]]
+  spread_param <- names(summary_spread_for())[summary_spread_for() %in% parameter]
+  spread_data <- data[data$PPTESTCD %in% spread_param, , drop = FALSE]
+  use_spread_param <- nrow(spread_data) > 0
+  if (use_spread_param) {
+    current_summary_instructions <- PKNCA.set.summary()[[spread_param[1]]]
+    spread_values <- spread_data[[number_col]]
+  }
 
   point <- current_summary_instructions$point(current_data[[number_col]])
   # We could count only the number of measurements included in the point
@@ -526,8 +566,9 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
   spread_txt <- NULL
   na_spread <- TRUE
   used_not_calculated <- FALSE
-  if ("spread" %in% names(current_summary_instructions) && n > 1) {
-    spread <- current_summary_instructions$spread(current_data[[number_col]])
+  # A spread from another parameter exists for a single estimate, too
+  if ("spread" %in% names(current_summary_instructions) && (n > 1 || use_spread_param)) {
+    spread <- current_summary_instructions$spread(spread_values)
     na_spread <- all(is.na(spread))
     if (na_spread) {
       # The spread couldn't be calculated, so show that
@@ -560,8 +601,16 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
     n = n,
     units = units,
     not_calculated = used_not_calculated,
+    description = current_summary_instructions$description,
     class = "summarize_PKNCAresults_parameter"
   )
+}
+
+# The parameters whose summary instructions give the spread of another
+# parameter, named by the parameter and valued by the one they give the spread
+# for (see `spread_for` in PKNCA.set.summary())
+summary_spread_for <- function() {
+  unlist(lapply(PKNCA.set.summary(), `[[`, "spread_for"))
 }
 
 rename_summary_PKNCAresults <- function(data, unit_list, pretty_names) {

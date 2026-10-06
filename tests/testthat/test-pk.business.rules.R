@@ -60,3 +60,12 @@ test_that("pk.business", {
   expect_equal(b.mean(c(0, 1)), structure(0.5, n = 2))
   expect_equal(b.mean.2(c(0, 1)), structure(1, n = 1))
 })
+
+test_that("business.se_mean gives the standard error of the mean of independent estimates", {
+  expect_equal(as.numeric(business.se_mean(3)), 3)
+  expect_equal(as.numeric(business.se_mean(c(3, 4))), 2.5)
+  # Missing values follow the max.missing option (0.5 by default)
+  expect_equal(as.numeric(business.se_mean(c(3, NA))), 3)
+  expect_equal(business.se_mean(c(3, NA, NA)), NA_real_)
+  expect_equal(business.se_mean(numeric()), NA_real_)
+})

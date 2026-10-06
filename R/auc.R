@@ -571,8 +571,25 @@ PKNCA.set.summary(
 )
 
 PKNCA.set.summary(
-  name=c("auclast_se", "auclast_df", "aumclast_se", "aumclast_df"),
+  name=c("auclast_df", "aumclast_df"),
   description="arithmetic mean and standard deviation",
   point=business.mean,
   spread=business.sd
+)
+
+# A sparse AUClast is one estimate per group with its standard error on another
+# result row, so it is summarized as the mean with the standard error
+PKNCA.set.summary(
+  name="auclast_se",
+  description="arithmetic mean and standard error",
+  point=business.mean,
+  spread=business.se_mean,
+  spread_for="auclast"
+)
+PKNCA.set.summary(
+  name="aumclast_se",
+  description="arithmetic mean and standard error",
+  point=business.mean,
+  spread=business.se_mean,
+  spread_for="aumclast"
 )
