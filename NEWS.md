@@ -816,6 +816,14 @@ the generated intervals:
 
 ## Bug fixes
 
+* A warning signalled by an exclusion function given to `exclude(FUN = )` now
+  reaches the caller with its class and fields.  Before, the function ran inside
+  a grouped `dplyr::mutate()`, which collected the warnings and signalled one
+  summary warning in their place, so a handler for a classed warning never saw
+  it.  An exclusion function that returns neither one value nor one value per
+  row of its group is now the `pknca_error_exclude_fun_length` error
+  (#269, @billdenney).
+
 * The `aucint` and `aumcint` parameters are dose-aware.  The profile
   being integrated ends at the first dose at or after the end of the interval,
   so a concentration measured after that dose is no longer interpolated back
