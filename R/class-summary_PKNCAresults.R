@@ -7,8 +7,8 @@
 #' of a sparse AUClast) has no column of its own.  Where its results are
 #' present, the other parameter is summarized with its instructions instead:
 #' for a sparse AUClast, the estimate with its standard error.  The caption
-#' gives the summary used.  A summary row with more than one result of such a
-#' parameter is an error, since each is the spread of one estimate.
+#' gives the summary used.  A summary row with more than one sparse estimate is
+#' an error, since each standard error describes one estimate.
 #'
 #' @param object The results to summarize
 #' @param drop_group Which group(s) should be dropped from the formula?
@@ -547,22 +547,6 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
   spread_data <- data[data$PPTESTCD %in% spread_param, , drop = FALSE]
   use_spread_param <- nrow(spread_data) > 0
   if (use_spread_param) {
-    # A spread result describes one estimate, so a summary row combining
-    # several of them (such as two sparse AUClast estimates) has no valid spread
-    if (nrow(spread_data) > 1) {
-      rlang::abort(
-        sprintf(
-          paste(
-            "Cannot summarize %d results of %s in one summary row:  %s is the spread",
-            "of one estimate.  Check whether drop_group removed a grouping column",
-            "or whether intervals with the same start and end need a column in the",
-            "keep_interval_cols option to tell them apart."
-          ),
-          nrow(spread_data), spread_param[1], spread_param[1]
-        ),
-        class = "pknca_error_summary_multiple_spread"
-      )
-    }
     current_summary_instructions <- PKNCA.set.summary()[[spread_param[1]]]
     spread_values <- spread_data[[number_col]]
   }

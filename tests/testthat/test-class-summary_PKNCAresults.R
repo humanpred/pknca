@@ -524,7 +524,7 @@ test_that("summary combines a sparse AUClast with its standard error from anothe
   )
   expect_equal(
     attr(o_summary, "caption"),
-    "auclast: arithmetic mean and standard error; cmax: geometric mean and geometric coefficient of variation"
+    "auclast: estimate and standard error; cmax: geometric mean and geometric coefficient of variation"
   )
 })
 
@@ -533,7 +533,7 @@ test_that("a summary row with more than one sparse estimate is an error (#170)",
   res <- sparse_summary_results()
   expect_error(
     summary(res, drop_group = c("id", "treatment")),
-    regexp = "Cannot summarize 2 results of auclast_se in one summary row",
+    regexp = "Cannot summarize 2 standard errors in one summary row",
     class = "pknca_error_summary_multiple_spread"
   )
   # Intervals with the same start and end that nothing in the summary tells apart
@@ -585,11 +585,11 @@ test_that("the caption describes each summary a parameter used (#170)", {
           auclast =
             c(
               "geometric mean and geometric coefficient of variation",
-              "arithmetic mean and standard error"
+              "estimate and standard error"
             )
         )
     ),
-    "auclast, cmax: geometric mean and geometric coefficient of variation; auclast: arithmetic mean and standard error"
+    "auclast, cmax: geometric mean and geometric coefficient of variation; auclast: estimate and standard error"
   )
 })
 
@@ -617,7 +617,7 @@ test_that("PKNCA.set.summary checks spread_for (#170)", {
   )
   # The failed calls left the registered instructions in place
   expect_equal(PKNCA.set.summary()$auclast_se$spread_for, "auclast")
-  expect_equal(PKNCA.set.summary()$auclast_se$description, "arithmetic mean and standard error")
+  expect_equal(PKNCA.set.summary()$auclast_se$description, "estimate and standard error")
 })
 
 test_that("the deprecated sparse_auclast is summarized with sparse_auc_se (#170)", {
@@ -631,5 +631,5 @@ test_that("the deprecated sparse_auclast is summarized with sparse_auc_se (#170)
     o_summary$sparse_auclast,
     sprintf("%s [%s]", signifString(auc, 3), signifString(se, 3))
   )
-  expect_equal(attr(o_summary, "caption"), "sparse_auclast: arithmetic mean and standard error")
+  expect_equal(attr(o_summary, "caption"), "sparse_auclast: estimate and standard error")
 })

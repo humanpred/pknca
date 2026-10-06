@@ -635,11 +635,11 @@ the generated intervals:
   `pk.calc.sparse_auc()` does the AUC.
 
 * `summary()` of sparse results shows `auclast` and `aumclast` (and the
-  deprecated `sparse_auclast` and `sparse_aumclast`) as the mean with the
+  deprecated `sparse_auclast` and `sparse_aumclast`) as the estimate with its
   standard error in brackets, with the standard error taken from the
   `auclast_se` and `aumclast_se` (or `sparse_auc_se` and `sparse_aumc_se`)
-  results of the same group, and the caption says so ("arithmetic mean and
-  standard error").  In PKNCA 0.12.1, the one `sparse_auclast` estimate in a
+  results of the same group, and the caption says so ("estimate and standard
+  error").  In PKNCA 0.12.1, the one `sparse_auclast` estimate in a
   summary cell was shown alone and described as a geometric mean with a
   geometric coefficient of variation.  The standard errors get no summary column
   of their own.  A summary row that would combine more than one sparse estimate
