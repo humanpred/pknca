@@ -1,0 +1,11 @@
+# Store every text file with LF line endings; checkouts convert per core.autocrlf.
+* text=auto
+
+# Binary files are never normalized.
+*.pdf -text
+*.png -text
+*.pptx -text
+*.xlsx -text
+*.rda -text
+*.rds -text
+*.RData -text

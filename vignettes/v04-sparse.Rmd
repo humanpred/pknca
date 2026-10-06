@@ -106,6 +106,8 @@ As with any other PKNCA result, the data are available through the `summary()` f
 summary(o_nca)
 ```
 
+In the summary, the sparse `auclast` is the estimate with its standard error in brackets (from the `auclast_se` result), as the caption says; `auclast_se` has no column of its own.
+
 or individual results are available through the `as.data.frame()` function:
 
 ```{r}
