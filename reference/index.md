@@ -298,6 +298,10 @@
 - [`get_halflife_points()`](https://humanpred.github.io/pknca/reference/get_halflife_points.md)
   : Determine which concentrations were used for half-life calculation
 
+- [`get_impute_column()`](https://humanpred.github.io/pknca/reference/get_impute_column.md)
+  : Get the name of the intervals column that the imputation methods
+  come from
+
 - [`get_impute_method()`](https://humanpred.github.io/pknca/reference/get_impute_method.md)
   : Get the imputation methods for the intervals
 

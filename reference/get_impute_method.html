@@ -109,7 +109,9 @@ methods) for every interval, and the result is <code>impute</code> as a single
 value.  An <code>NA</code> that finds no <code>"impute"</code> column therefore gives a single
 <code>NA_character_</code>, meaning no imputation.</p></li>
 </ol><p><code>get_impute_method()</code> only reads the specification.  It does not check that
-the methods exist; <code><a href="assert_impute_method.html">assert_impute_method()</a></code> does.</p>
+the methods exist; <code><a href="assert_impute_method.html">assert_impute_method()</a></code> does.  <code><a href="get_impute_column.html">get_impute_column()</a></code>
+gives the name of the column the methods are read from, which tells a column
+from a method string even for an intervals table with one row.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -117,6 +119,7 @@ the methods exist; <code><a href="assert_impute_method.html">assert_impute_metho
 <code><a href="PKNCA_impute_fun_list.html">PKNCA_impute_fun_list()</a></code>,
 <code><a href="PKNCA_impute_method.html">PKNCA_impute_method</a></code>,
 <code><a href="assert_impute_method.html">assert_impute_method()</a></code>,
+<code><a href="get_impute_column.html">get_impute_column()</a></code>,
 <code><a href="pknca_impute_methods.html">pknca_impute_methods()</a></code></p></div>
     </div>
 

@@ -52,6 +52,9 @@ logical when made with `NA`) is read as no imputation.
 that the methods exist;
 [`assert_impute_method()`](https://humanpred.github.io/pknca/reference/assert_impute_method.md)
 does.
+[`get_impute_column()`](https://humanpred.github.io/pknca/reference/get_impute_column.md)
+gives the name of the column the methods are read from, which tells a
+column from a method string even for an intervals table with one row.
 
 ## See also
 
@@ -59,6 +62,7 @@ Other Imputation:
 [`PKNCA_impute_fun_list()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_fun_list.md),
 [`PKNCA_impute_method`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md),
 [`assert_impute_method()`](https://humanpred.github.io/pknca/reference/assert_impute_method.md),
+[`get_impute_column()`](https://humanpred.github.io/pknca/reference/get_impute_column.md),
 [`pknca_impute_methods()`](https://humanpred.github.io/pknca/reference/pknca_impute_methods.md)
 
 ## Examples
