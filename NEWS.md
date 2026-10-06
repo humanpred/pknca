@@ -11,7 +11,7 @@ the dosing including dose amount and route.
   number in an analysis time unit, the conversion `pk.nca()` applies to
   date-time times and `difftime` durations.  A value that is not a `difftime`
   stops with `pknca_error_difftime_not_difftime` and a unit that is not a time
-  unit with `pknca_error_difftime_unit`, where an unconvertible unit used to
+  unit with `pknca_error_difftime_unit`, where a unit that cannot be converted used to
   give `NA`.  (@billdenney)
 * `get_impute_method()` is now exported, so that other packages read the
   `impute` argument of `PKNCAdata()` the way `pk.nca()` does:  a name that is
