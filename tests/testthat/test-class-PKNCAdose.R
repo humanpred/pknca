@@ -54,8 +54,7 @@ test_that("PKNCAdose", {
             data.frame(
               exclude = NA_character_,
               route = "extravascular",
-              duration = 0,
-              stringsAsFactors = FALSE
+              duration = 0
             )
           ),
         formula = . ~ time | treatment + ID,
@@ -88,8 +87,7 @@ test_that("PKNCAdose", {
             data.frame(
               exclude = NA_character_,
               route = "extravascular",
-              duration = 0,
-              stringsAsFactors = FALSE
+              duration = 0
             )
           ),
         formula = dose ~ . | treatment + ID,
@@ -172,8 +170,7 @@ test_that("PKNCAdose model.frame", {
                data.frame("getDepVar.PKNCAdose(formula)"=rep(1:2, each=5),
                           "getIndepVar.PKNCAdose(formula)"=0,
                           treatment=rep(c("Trt 1", "Trt 2"), each=5),
-                          ID=rep(1:5, 2),
-                          stringsAsFactors=FALSE),
+                          ID=rep(1:5, 2)),
                ignore_attr=TRUE,
                info="model.frame.PKNCAdose works with two-sided formula")
 
@@ -188,8 +185,7 @@ test_that("PKNCAdose model.frame", {
                data.frame("getDepVar.PKNCAdose(formula)"=NA_integer_,
                           "getIndepVar.PKNCAdose(formula)"=0,
                           treatment=rep(c("Trt 1", "Trt 2"), each=5),
-                          ID=rep(1:5, 2),
-                          stringsAsFactors=FALSE),
+                          ID=rep(1:5, 2)),
                ignore_attr=TRUE,
                info="model.frame.PKNCAdose works with one-sided formula")
 
@@ -204,8 +200,7 @@ test_that("PKNCAdose model.frame", {
                data.frame("getDepVar.PKNCAdose(formula)"=NA_integer_,
                           "getIndepVar.PKNCAdose(formula)"=0,
                           treatment=rep(c("Trt 1", "Trt 2"), each=5),
-                          ID=rep(1:5, 2),
-                          stringsAsFactors=FALSE),
+                          ID=rep(1:5, 2)),
                ignore_attr=TRUE,
                info="model.frame.PKNCAdose works with one-sided formula ('.' on LHS)")
 
@@ -220,8 +215,7 @@ test_that("PKNCAdose model.frame", {
                data.frame("getDepVar.PKNCAdose(formula)"=rep(1:2, each=5),
                           "getIndepVar.PKNCAdose(formula)"=NA_integer_,
                           treatment=rep(c("Trt 1", "Trt 2"), each=5),
-                          ID=rep(1:5, 2),
-                          stringsAsFactors=FALSE),
+                          ID=rep(1:5, 2)),
                ignore_attr=TRUE,
                info="model.frame.PKNCAdose works with one-sided formula ('.' on RHS)")
 
@@ -321,8 +315,7 @@ test_that("PKNCAdose with exclusions", {
             tmp.dose,
             data.frame(
               route = "extravascular",
-              duration = 0,
-              stringsAsFactors = FALSE
+              duration = 0
             )
           ),
         formula = dose~time|treatment+ID,
@@ -405,8 +398,7 @@ test_that("time.nominal within PKNCAdose", {
           data.frame(
             exclude=NA_character_,
             route="extravascular",
-            duration=0,
-            stringsAsFactors=FALSE
+            duration=0
           )
         ),
       formula = dose ~ time | treatment + ID,

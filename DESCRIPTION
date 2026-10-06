@@ -1,7 +1,7 @@
 Package: PKNCA
 Type: Package
 Title: Perform Pharmacokinetic Non-Compartmental Analysis
-Version: 0.12.1.9000
+Version: 0.12.1.9002
 Authors@R: c(
     person("Bill", "Denney", email="wdenney@humanpredictions.com", role=c("aut", "cre"), comment=c(ORCID="0000-0002-5759-428X")),
     person("Clare", "Buckeridge", email="clare.buckeridge@pfizer.com", role="aut"),
@@ -9,7 +9,7 @@ Authors@R: c(
     person("Sridhar", "Duvvuri", role="ctb"),
     person("Natalie", "Sang", email="nataliesang143@gmail.com", role="ctb"))
 Depends:
-    R (>= 4.4)
+    R (>= 4.1)
 Imports:
     checkmate,
     dplyr (>= 1.1.0),
@@ -21,8 +21,10 @@ Imports:
     tidyr,
     tibble,
     utils,
-    lifecycle
+    lifecycle,
+    lubridate
 Suggests:
+    cdiscdata (>= 0.2.0),
     covr,
     cowplot,
     emmeans,
@@ -36,6 +38,7 @@ Suggests:
     rmarkdown,
     spelling,
     testthat (>= 3.0.0),
+    tools,
     units,
     withr
 Description: Compute standard Non-Compartmental Analysis (NCA) parameters for

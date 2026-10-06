@@ -33,7 +33,9 @@ PKNCAdose(data, ...)
 
 \item{formula}{The formula defining the \code{dose.amount~time|groups} where
 \code{time} is the time of the dosing and \code{dose.amount} is the amount
-administered at that time (see Details).}
+administered at that time (see Details).  The \code{time} may be numeric, or
+it may be a date-time (POSIXct) or a date (Date) when the concentration
+time is too (see the "Date-time input" section of \code{\link[=PKNCAconc]{PKNCAconc()}}).}
 
 \item{route}{Define the route of administration.  The value may be either a
 column name from the \code{data} (checked first) or a character string of either
@@ -46,7 +48,9 @@ duration of dosing.  If given as a character string, it is the name of a
 column from the \code{data}, and if given as a number, it is the value for all
 doses.  Only one may be given, and if neither is given, then the dose is
 assumed to be a bolus (\code{duration=0}).  If \code{rate} is given, then the dose
-amount must be given (the left hand side of the \code{formula}).}
+amount must be given (the left hand side of the \code{formula}).  A numeric
+duration is in the time unit of the analysis; a difftime duration is
+converted to that unit in \code{\link[=PKNCAdata]{PKNCAdata()}}.}
 
 \item{time.nominal}{(optional) The name of the nominal time column (if the
 main time variable is actual time.  The \code{time.nominal} is not used during

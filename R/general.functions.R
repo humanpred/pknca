@@ -1,3 +1,22 @@
+# "name=value, name=value" text for messages.  A data.frame gives one string
+# per row; a named list or one-row data.frame gives a single string.
+name_value_text <- function(x, collapse = ", ") {
+  x <- as.data.frame(x)
+  vapply(
+    X = seq_len(nrow(x)),
+    FUN = function(row_idx) {
+      values <-
+        vapply(
+          X = x,
+          FUN = function(col) as.character(col[[row_idx]]),
+          FUN.VALUE = ""
+        )
+      paste(names(x), values, sep = "=", collapse = collapse)
+    },
+    FUN.VALUE = ""
+  )
+}
+
 #' Check that the conversion to a data type does not change the number
 #' of NA values
 #'
@@ -118,8 +137,7 @@ signifString.data.frame <- function(x, ...) {
                     y
                   }
                 })
-  ret <- as.data.frame(ret,
-                       stringsAsFactors=FALSE)
+  ret <- as.data.frame(ret)
   rownames(ret) <- rownames(x)
   colnames(ret) <- colnames(x)
   ret

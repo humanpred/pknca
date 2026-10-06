@@ -26,7 +26,8 @@ be_table(
 }
 \value{
 A data.frame with one row per endpoint and test formulation and the
-pass/fail decision columns.
+pass/fail decision columns.  For the \code{"descriptive"} framework the decision
+columns (\code{limit_lower}, \code{limit_upper}, \code{criterion}, and \code{pass}) are omitted.
 }
 \description{
 \code{be_table()} takes the parameters from \code{\link[=be_extract_param]{be_extract_param()}} and a regulatory

@@ -1,29 +1,79 @@
 # Options for use within the code for setting and getting PKNCA default options. ####
 
+# `adj.r.squared.factor` and `r.squared.factor` are checked identically; only
+# the r-squared they act on and the wording of their messages differ.  `NA`
+# means "do not select on this r-squared" (see `pk.calc.half.life()`).
+check_r_squared_factor_option <- function(x, default=FALSE, description=FALSE, name) {
+  adj <- name == "adj.r.squared.factor"
+  r_squared <- if (adj) "adjusted r^2" else "r^2"
+  if (description) {
+    rationale <-
+      if (adj) {
+        "It allows for more data points to be preferred in the calculation of half-life."
+      } else {
+        paste(
+          "Unlike the adjusted r^2, the r^2 does not reward more data points,",
+          "so it generally selects fewer of them."
+        )
+      }
+    return(paste0(
+      "During the calculation of lambda.z, all candidate regressions with an ",
+      r_squared, " within ", name, " of the best ", r_squared,
+      " are considered acceptable, and the acceptable regression using the",
+      " most data points is selected.  ", rationale,
+      "  Setting either of adj.r.squared.factor and r.squared.factor takes",
+      " the other out of use, so exactly one of them is ever in use; setting",
+      " this one to NA therefore selects on the other r-squared."
+    ))
+  }
+  if (default)
+    return(if (adj) 0.0001 else NA_real_)
+  checkmate::assert_number(x, na.ok = TRUE, .var.name = name)
+  if (is.na(x)) {
+    return(NA_real_)
+  }
+  if (x <= 0 || x >= 1) {
+    rlang::abort(
+      paste(name, "must be between 0 and 1, exclusive"),
+      class = paste0("pknca_error_", name, "_out_of_bounds")
+    )
+  }
+
+  if (x > 0.01) {
+    rlang::warn(
+      paste(name, "is usually <0.01"),
+      class = paste0("pknca_warning_", if (adj) "adj_r2" else "r2", "_factor_large")
+    )
+  }
+  x
+}
+
+# adj.r.squared.factor and r.squared.factor are two ways of asking for the same
+# half-life point selection, so exactly one of them is ever in use.  Setting one
+# takes the other out of use, and setting one to NA hands the selection to the
+# other, which takes the standard tolerance when it does not have one.  `x` holds
+# both values and `name` is the one that was just set.
+pair_r_squared_factors <- function(x, name) {
+  other <-
+    if (name == "adj.r.squared.factor") "r.squared.factor" else "adj.r.squared.factor"
+  if (!is.na(x[[name]])) {
+    x[[other]] <- NA_real_
+  } else if (is.na(x[[other]])) {
+    x[[other]] <- .PKNCA.option.check$adj.r.squared.factor(default = TRUE)
+  }
+  x
+}
+
 .PKNCA.option.check <- list(
   adj.r.squared.factor=function(x, default=FALSE, description=FALSE) {
-    if (description)
-      return(paste(
-        "During the calculation of lambda.z, all candidate regressions",
-        "with an adjusted r^2 within adj.r.squared.factor of the best",
-        "adjusted r^2 are considered acceptable, and the acceptable",
-        "regression using the most data points is selected.  It allows",
-        "for more data points to be preferred in the calculation of",
-        "half-life."))
-    if (default)
-      return(0.0001)
-    checkmate::assert_number(x, .var.name = "adj.r.squared.factor")
-    if (x <= 0 || x >= 1) {
-      rlang::abort(
-        "adj.r.squared.factor must be between 0 and 1, exclusive",
-        class = "pknca_error_adj.r.squared.factor_out_of_bounds"
-      )
-    }
-
-    if (x > 0.01) {
-      rlang::warn("adj.r.squared.factor is usually <0.01", class = "pknca_warning_adj_r2_factor_large")
-    }
-    x
+    check_r_squared_factor_option(
+      x, default=default, description=description, name="adj.r.squared.factor"
+    )
+  },
+  r.squared.factor=function(x, default=FALSE, description=FALSE) {
+    check_r_squared_factor_option(
+      x, default=default, description=description, name="r.squared.factor"
+    )
   },
   max.missing=function(x, default=FALSE, description=FALSE) {
     if (description)
@@ -338,6 +388,36 @@
     }
     x
   },
+  auto.interval.method=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return(paste(
+        "When automatically determining the intervals, where do the parameters",
+        "to calculate come from?  'builder' asks 'pknca_interval_table' for the",
+        "parameters that suit each interval's context.  'legacy' uses the",
+        "parameter lists PKNCA used before that was available:  the",
+        "'single.dose.aucs' option for single-dose data, and AUClast, Cmax, and",
+        "Tmax for each interval of multiple-dose data.  Only the choice of",
+        "parameters differs; the intervals themselves are found the same way",
+        "either way.  See 'choose.auc.intervals' for more information."))
+    if (default)
+      return("builder")
+    checkmate::assert_string(x, .var.name = "auto.interval.method")
+    match.arg(x, choices = c("builder", "legacy"))
+  },
+  auto.interval.tolerance=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return(paste(
+        "When automatically determining the intervals, how far from the",
+        "boundary of an interval may a sample be drawn and still count as the",
+        "sample at that boundary?  It is given as a fraction of the interval's",
+        "length (the dosing interval, tau, for a dosing interval), so that a",
+        "trough drawn at 167.5 hours still ends an interval nominally ending",
+        "at 168 hours.  See 'choose.auc.intervals' for more information."))
+    if (default)
+      return(0.05)
+    checkmate::assert_number(x, lower = 0, upper = 1, .var.name = "auto.interval.tolerance")
+    x
+  },
   single.dose.aucs=function(x, default=FALSE, description=FALSE) {
     if (description)
       return("When data is single-dose, what intervals should be used?")
@@ -484,11 +564,8 @@ PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
         "Cannot set default and set new options at the same time.",
         class = "pknca_error_default_with_options"
       )
-    # Extract all the default values
-    defaults <- lapply(.PKNCA.option.check,
-                       FUN=function(x) x(default=TRUE))
     # Set the default options
-    assign("options", defaults, envir=.PKNCAEnv)
+    assign("options", PKNCA_options_defaults(), envir=.PKNCAEnv)
   } else if (check) {
     # Check an option for accuracy, but don't set it
     if (length(args) != 1) {
@@ -532,6 +609,9 @@ PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
         }
         # Verify and set the option value
         current[[n]] <- .PKNCA.option.check[[n]](args[[n]])
+        if (n %in% c("adj.r.squared.factor", "r.squared.factor")) {
+          current <- pair_r_squared_factors(current, n)
+        }
       }
       # Assign current into the setting environment
       assign("options", current, envir=.PKNCAEnv)
@@ -560,6 +640,44 @@ PKNCA.choose.option <- function(name, value=NULL, options=list()) {
     PKNCA.options(name=name, value=options[[name]], check=TRUE)
   } else {
     PKNCA.options(name)
+  }
+}
+
+#' Get the default values of PKNCA options without changing them
+#'
+#' Unlike `PKNCA.options(default = TRUE)`, which resets the current options to
+#' their defaults, this only reads the default values.
+#'
+#' @param name The option name(s) requested, or `NULL` for all options.
+#' @returns For one `name`, the default value of that option; otherwise, a
+#'   named list of default values (all options when `name` is `NULL`).
+#' @family PKNCA calculation and summary settings
+#' @seealso [PKNCA.options()], [PKNCA.options.describe()]
+#' @examples
+#' PKNCA_options_defaults("min.span.ratio")
+#' # The current options are not changed
+#' PKNCA.options(min.span.ratio = 3)
+#' PKNCA_options_defaults("min.span.ratio")
+#' PKNCA.options("min.span.ratio")
+#' PKNCA.options(default = TRUE)
+#' @export
+PKNCA_options_defaults <- function(name = NULL) {
+  checkmate::assert_character(name, any.missing = FALSE, min.len = 1, null.ok = TRUE)
+  if (is.null(name)) {
+    name <- names(.PKNCA.option.check)
+  }
+  bad_name <- setdiff(name, names(.PKNCA.option.check))
+  if (length(bad_name) > 0) {
+    rlang::abort(
+      sprintf("PKNCA.options does not have value(s) for %s.", paste(bad_name, collapse = ", ")),
+      class = "pknca_error_unknown_options"
+    )
+  }
+  ret <- lapply(X = .PKNCA.option.check[name], FUN = function(x) x(default = TRUE))
+  if (length(name) == 1) {
+    ret[[1]]
+  } else {
+    ret
   }
 }
 

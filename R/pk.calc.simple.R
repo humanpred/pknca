@@ -135,7 +135,7 @@ add.interval.col("tmax",
                  desc="Time of maximum observed conc",
                  depends=NULL,
                  pptestcd_cdisc="TMAX",
-                 pptest_cdisc="Time of CMAX",
+                 pptest_cdisc="Time of CMAX Observation",
                  formula="$T_{\\max} = t_{i: C_i = C_{\\max}}$",
                  tier = "common")
 
@@ -361,7 +361,7 @@ add.interval.col("thalf.eff.iv.obs",
                  formalsmap=list(mrt="mrt.iv.obs"),
                  depends="mrt.iv.obs",
                  pptestcd_cdisc="EFFIVOHL",
-                 pptest_cdisc="Effective Half-Life (for IV dosing, based on MRT Obs)",
+                 pptest_cdisc="Effective HL (IV dosing, MRT Obs)",
                  formula="$t_{1/2,\\text{eff,iv,obs}} = \\ln(2) \\cdot MRT_{\\text{iv,obs}}$")
 
 add.interval.col("thalf.eff.iv.pred",
@@ -373,7 +373,7 @@ add.interval.col("thalf.eff.iv.pred",
                  formalsmap=list(mrt="mrt.iv.pred"),
                  depends="mrt.iv.pred",
                  pptestcd_cdisc="EFFIVPHL",
-                 pptest_cdisc="Effective Half-Life (for IV dosing, based on MRT Pred)",
+                 pptest_cdisc="Effective HL (IV dosing, MRT Pred)",
                  formula="$t_{1/2,\\text{eff,iv,pred}} = \\ln(2) \\cdot MRT_{\\text{iv,pred}}$")
 
 add.interval.col("thalf.eff.iv.last",
@@ -385,7 +385,7 @@ add.interval.col("thalf.eff.iv.last",
                  formalsmap=list(mrt="mrt.iv.last"),
                  depends="mrt.iv.last",
                  pptestcd_cdisc="EFFIVLHL",
-                 pptest_cdisc="Effective Half-Life (for IV dosing, based on AUClast)",
+                 pptest_cdisc="Effective HL (IV dosing, MRT last)",
                  formula="$t_{1/2,\\text{eff,iv,last}} = \\ln(2) \\cdot MRT_{\\text{iv,last}}$")
 
 
@@ -540,7 +540,7 @@ add.interval.col("kel.iv.pred",
                  formalsmap=list(mrt="mrt.iv.pred"),
                  depends="mrt.iv.pred",
                  pptestcd_cdisc="KELIVP",
-                 pptest_cdisc="Kel (for IV dosing, based on AUCinf,pred)",
+                 pptest_cdisc="Kel (for IV dosing, AUCinf,pred)",
                  formula="$k_{el,\\text{iv,pred}} = \\frac{1}{MRT_{\\text{iv,pred}}}$")
 
 add.interval.col("kel.iv.last",
@@ -573,6 +573,8 @@ add.interval.col("kel.int.all",
                  desc = "Elim rate, MRTint.all",
                  formalsmap = list(mrt = "mrt.int.all"),
                  depends = "mrt.int.all",
+                 pptestcd_cdisc = "KELIA",
+                 pptest_cdisc = "Kel (based on AUCint,all)",
                  formula = "$k_{el,\\text{int,all}} = \\frac{1}{MRT_{\\text{int,all}}}$")
 
 add.interval.col("kel.int.inf.obs",
@@ -583,6 +585,8 @@ add.interval.col("kel.int.inf.obs",
                  desc = "Elim rate, MRTint.inf.obs",
                  formalsmap = list(mrt = "mrt.int.inf.obs"),
                  depends = "mrt.int.inf.obs",
+                 pptestcd_cdisc = "KELIO",
+                 pptest_cdisc = "Kel (based on AUCint,inf,obs)",
                  formula = "$k_{el,\\text{int,}\\infty\\text{,obs}} = \\frac{1}{MRT_{\\text{int,}\\infty\\text{,obs}}}$")
 
 add.interval.col("kel.int.inf.pred",
@@ -593,6 +597,8 @@ add.interval.col("kel.int.inf.pred",
                  desc = "Elim rate, MRTint.inf.pred",
                  formalsmap = list(mrt = "mrt.int.inf.pred"),
                  depends = "mrt.int.inf.pred",
+                 pptestcd_cdisc = "KELIP",
+                 pptest_cdisc = "Kel (based on AUCint,inf,pred)",
                  formula = "$k_{el,\\text{int,}\\infty\\text{,pred}} = \\frac{1}{MRT_{\\text{int,}\\infty\\text{,pred}}}$")
 
 add.interval.col("kel.int.last",
@@ -603,6 +609,8 @@ add.interval.col("kel.int.last",
                  desc = "Elim rate, MRTint.last",
                  formalsmap = list(mrt = "mrt.int.last"),
                  depends = "mrt.int.last",
+                 pptestcd_cdisc = "KELIL",
+                 pptest_cdisc = "Kel (based on AUCint,last)",
                  formula = "$k_{el,\\text{int,last}} = \\frac{1}{MRT_{\\text{int,last}}}$")
 
 add.interval.col("kel.iv.all",
@@ -612,7 +620,9 @@ add.interval.col("kel.iv.all",
                  pretty_name = "Kel (for IV dosing,  based on AUCall)",
                  desc = "Elim rate, IV MRTall",
                  formalsmap = list(mrt = "mrt.iv.all"),
-                 depends = "mrt.iv.all")
+                 depends = "mrt.iv.all",
+                 pptestcd_cdisc = "KELVA",
+                 pptest_cdisc = "Kel (for IV dosing, AUCall)")
 
 add.interval.col("kel.ivint.all",
                  FUN = "pk.calc.kel",
@@ -621,7 +631,9 @@ add.interval.col("kel.ivint.all",
                  pretty_name = "Kel (IV dose interval, based on AUCint.all)",
                  desc = "Elim rate, IV MRTint.all",
                  formalsmap = list(mrt = "mrt.ivint.all"),
-                 depends = "mrt.ivint.all")
+                 depends = "mrt.ivint.all",
+                 pptestcd_cdisc = "KELWA",
+                 pptest_cdisc = "Kel (IV dose interval, AUCint,all)")
 
 add.interval.col("kel.ivint.last",
                  FUN = "pk.calc.kel",
@@ -630,17 +642,21 @@ add.interval.col("kel.ivint.last",
                  pretty_name = "Kel (IV dose interval, based on AUCint.last)",
                  desc = "Elim rate, IV MRTint.last",
                  formalsmap = list(mrt = "mrt.ivint.last"),
-                 depends = "mrt.ivint.last")
+                 depends = "mrt.ivint.last",
+                 pptestcd_cdisc = "KELWL",
+                 pptest_cdisc = "Kel (IV dose interval, AUCint,last)")
 
 add.interval.col("kel.sparse.last",
-                 FUN = "pk.calc.kel",
+                 FUN = NA,
+                 FUN_sparse = "pk.calc.kel",
                  values = c(FALSE, TRUE),
                  unit_type = "inverse_time",
                  pretty_name = "Kel (for sparse data, based on AUClast)",
                  desc = "Elim rate, sparse MRTlast",
-                 sparse = TRUE,
-                 formalsmap = list(mrt = "mrt.sparse.last"),
-                 depends = "mrt.sparse.last")
+                 formalsmap_sparse = list(mrt = "mrt.sparse.last"),
+                 depends = "mrt.sparse.last",
+                 pptestcd_cdisc = "KELSL",
+                 pptest_cdisc = "Kel (for sparse data, AUClast)")
 
 
 #' Calculate the (observed oral) clearance
@@ -689,7 +705,7 @@ add.interval.col("cl.last",
                  desc="Clearance, AUClast",
                  formalsmap=list(auc="auclast"),
                  depends="auclast",
-                 pptestcd_cdisc=list(route=list(extravascular="CLF/FLST", intravascular="CLLST")),
+                 pptestcd_cdisc=list(route=list(extravascular="CLFLST", intravascular="CLLST")),
                  pptest_cdisc=list(route=list(extravascular="CL by F (based on AUClast)", intravascular="CL (based on AUClast)")),
                  formula="$CL_{\\text{last}} = \\frac{Dose}{AUC_{\\text{last}}}$")
 
@@ -701,7 +717,7 @@ add.interval.col("cl.all",
                  desc="Clearance, AUCall",
                  formalsmap=list(auc="aucall"),
                  depends="aucall",
-                 pptestcd_cdisc=list(route=list(extravascular="CLF/FALL", intravascular="CLALL")),
+                 pptestcd_cdisc=list(route=list(extravascular="CLFALL", intravascular="CLALL")),
                  pptest_cdisc=list(route=list(extravascular="CL by F (based on AUCall)", intravascular="CL (based on AUCall)")),
                  formula="$CL_{\\text{all}} = \\frac{Dose}{AUC_{\\text{all}}}$")
 
@@ -713,7 +729,7 @@ add.interval.col("cl.obs",
                  desc="Clearance, observed Clast",
                  formalsmap=list(auc="aucinf.obs"),
                  depends="aucinf.obs",
-                 pptestcd_cdisc=list(route=list(extravascular="CLF/FO", intravascular="CLO")),
+                 pptestcd_cdisc=list(route=list(extravascular="CLFO", intravascular="CLO")),
                  pptest_cdisc=list(route=list(extravascular="Total CL Obs by F", intravascular="Total CL Obs")),
                  formula="$CL_{\\text{obs}} = \\frac{Dose}{AUC_{\\infty,\\text{obs}}}$",
                  tier = "common")
@@ -726,7 +742,7 @@ add.interval.col("cl.pred",
                  desc="Clearance, predicted Clast",
                  formalsmap=list(auc="aucinf.pred"),
                  depends="aucinf.pred",
-                 pptestcd_cdisc=list(route=list(extravascular="CLF/FP", intravascular="CLP")),
+                 pptestcd_cdisc=list(route=list(extravascular="CLFP", intravascular="CLP")),
                  pptest_cdisc=list(route=list(extravascular="Total CL Pred by F", intravascular="Total CL Pred")),
                  formula="$CL_{\\text{pred}} = \\frac{Dose}{AUC_{\\infty,\\text{pred}}}$")
 
@@ -738,6 +754,8 @@ add.interval.col("cl.int.all",
                  desc = "Clearance, AUCint.all",
                  formalsmap = list(auc = "aucint.all"),
                  depends = "aucint.all",
+                 pptestcd_cdisc = "CLIA",
+                 pptest_cdisc = "CL (based on AUCint,all)",
                  formula = "$CL_{\\text{int,all}} = \\frac{Dose}{AUC_{\\text{int,all}}}$")
 
 add.interval.col("cl.int.inf.obs",
@@ -748,6 +766,12 @@ add.interval.col("cl.int.inf.obs",
                  desc = "Clearance, AUCint.inf.obs",
                  formalsmap = list(auc = "aucint.inf.obs"),
                  depends = "aucint.inf.obs",
+                 # No CDISC PKPARMCD code exists for a clearance based on an
+                 # interval AUC (only tau-, last-, all-, and inf-basis whole
+                 # profile clearances are coded); this is a sponsor-defined
+                 # code despite the "common" tier.
+                 pptestcd_cdisc = "CLIO",
+                 pptest_cdisc = "CL (based on AUCint,inf,obs)",
                  formula = "$CL_{\\text{int,}\\infty\\text{,obs}} = \\frac{Dose}{AUC_{\\text{int,}\\infty\\text{,obs}}}$",
                  tier = "common")
 
@@ -759,6 +783,8 @@ add.interval.col("cl.int.inf.pred",
                  desc = "Clearance, AUCint.inf.pred",
                  formalsmap = list(auc = "aucint.inf.pred"),
                  depends = "aucint.inf.pred",
+                 pptestcd_cdisc = "CLIP",
+                 pptest_cdisc = "CL (based on AUCint,inf,pred)",
                  formula = "$CL_{\\text{int,}\\infty\\text{,pred}} = \\frac{Dose}{AUC_{\\text{int,}\\infty\\text{,pred}}}$")
 
 add.interval.col("cl.int.last",
@@ -769,6 +795,8 @@ add.interval.col("cl.int.last",
                  desc = "Clearance, AUCint.last",
                  formalsmap = list(auc = "aucint.last"),
                  depends = "aucint.last",
+                 pptestcd_cdisc = "CLIL",
+                 pptest_cdisc = "CL (based on AUCint,last)",
                  formula = "$CL_{\\text{int,last}} = \\frac{Dose}{AUC_{\\text{int,last}}}$")
 
 add.interval.col("cl.iv.all",
@@ -779,6 +807,8 @@ add.interval.col("cl.iv.all",
                  desc = "IV clearance, AUCall",
                  formalsmap = list(auc = "aucivall"),
                  depends = "aucivall",
+                 pptestcd_cdisc = "CLVA",
+                 pptest_cdisc = "CL (for IV dosing, AUCall)",
                  formula = "$CL_{\\text{iv,all}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,all}}}$")
 
 add.interval.col("cl.iv.last",
@@ -789,6 +819,8 @@ add.interval.col("cl.iv.last",
                  desc = "IV clearance, AUClast",
                  formalsmap = list(auc = "aucivlast"),
                  depends = "aucivlast",
+                 pptestcd_cdisc = "CLVL",
+                 pptest_cdisc = "CL (for IV dosing, AUClast)",
                  formula = "$CL_{\\text{iv,last}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,last}}}$")
 
 add.interval.col("cl.iv.obs",
@@ -799,6 +831,8 @@ add.interval.col("cl.iv.obs",
                  desc = "IV clearance, AUCinf.obs",
                  formalsmap = list(auc = "aucivinf.obs"),
                  depends = "aucivinf.obs",
+                 pptestcd_cdisc = "CLVO",
+                 pptest_cdisc = "CL (for IV dosing, AUCinf,obs)",
                  formula = "$CL_{\\text{iv,obs}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,}\\infty\\text{,obs}}}$")
 
 add.interval.col("cl.iv.pred",
@@ -809,6 +843,8 @@ add.interval.col("cl.iv.pred",
                  desc = "IV clearance, AUCinf.pred",
                  formalsmap = list(auc = "aucivinf.pred"),
                  depends = "aucivinf.pred",
+                 pptestcd_cdisc = "CLVP",
+                 pptest_cdisc = "CL (for IV dosing, AUCinf,pred)",
                  formula = "$CL_{\\text{iv,pred}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,}\\infty\\text{,pred}}}$")
 
 add.interval.col("cl.ivint.all",
@@ -819,6 +855,8 @@ add.interval.col("cl.ivint.all",
                  desc = "IV clearance, AUCint.all",
                  formalsmap = list(auc = "aucivint.all"),
                  depends = "aucivint.all",
+                 pptestcd_cdisc = "CLWA",
+                 pptest_cdisc = "CL (IV dose interval, AUCint,all)",
                  formula = "$CL_{\\text{iv,int,all}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,all}}}$")
 
 add.interval.col("cl.ivint.last",
@@ -829,17 +867,21 @@ add.interval.col("cl.ivint.last",
                  desc = "IV clearance, AUCint.last",
                  formalsmap = list(auc = "aucivint.last"),
                  depends = "aucivint.last",
+                 pptestcd_cdisc = "CLWL",
+                 pptest_cdisc = "CL (IV dose interval, AUCint,last)",
                  formula = "$CL_{\\text{iv,int,last}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,last}}}$")
 
 add.interval.col("cl.sparse.last",
-                 FUN = "pk.calc.cl",
+                 FUN = NA,
+                 FUN_sparse = "pk.calc.cl",
                  values = c(FALSE, TRUE),
                  unit_type = "clearance",
                  pretty_name = "CL (for sparse data, based on AUClast)",
                  desc = "Clearance, sparse AUClast",
-                 sparse = TRUE,
-                 formalsmap = list(auc = "sparse_auclast"),
+                 formalsmap_sparse = list(auc = "sparse_auclast"),
                  depends = "sparse_auclast",
+                 pptestcd_cdisc = "CLSL",
+                 pptest_cdisc = "CL (for sparse data, AUClast)",
                  formula = "$CL_{\\text{sparse,last}} = \\frac{Dose}{AUC_{\\text{sparse,last}}}$")
 
 
@@ -867,16 +909,119 @@ pk.calc.f <- function(dose1, auc1, dose2, auc2) {
 }
 
 pknca_concept(pk.calc.f) <- "bioavailability"
-add.interval.col("f",
+# The AUC a bioavailability is built on is a choice of the analysis, so each
+# basis is its own parameter.  They share the CDISC code, as the clr.* family
+# shares RENALCL.
+add.interval.col("f.obs",
                  FUN="pk.calc.f",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
-                 pretty_name="Bioavailability",
-                 desc="Bioavailability (absolute or relative)",
-                 depends=NULL,
+                 pretty_name="Bioavailability (AUCinf,obs)",
+                 desc="Bioavailability from AUCinf,obs",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("aucinf.obs"),
+                                 dose2="totdose",
+                                 auc2="aucinf.obs"),
+                 depends=c("totdose", "aucinf.obs"),
                  pptestcd_cdisc="FAB",
                  pptest_cdisc="Absolute Bioavailability",
-                 formula="$F = \\frac{AUC_2 / Dose_2}{AUC_1 / Dose_1}$",
+                 formula="$F = \\frac{AUC_{\\infty,obs,2} / Dose_2}{AUC_{\\infty,obs,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("f.pred",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUCinf,pred)",
+                 desc="Bioavailability from AUCinf,pred",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("aucinf.pred"),
+                                 dose2="totdose",
+                                 auc2="aucinf.pred"),
+                 depends=c("totdose", "aucinf.pred"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{\\infty,pred,2} / Dose_2}{AUC_{\\infty,pred,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("f.last",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUClast)",
+                 desc="Bioavailability from AUClast",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("auclast"),
+                                 dose2="totdose",
+                                 auc2="auclast"),
+                 depends=c("totdose", "auclast"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{last,2} / Dose_2}{AUC_{last,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("f.int.last",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUCint,last)",
+                 desc="Bioavailability from AUCint,last",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("aucint.last"),
+                                 dose2="totdose",
+                                 auc2="aucint.last"),
+                 depends=c("totdose", "aucint.last"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{int,last,2} / Dose_2}{AUC_{int,last,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("f.int.all",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUCint,all)",
+                 desc="Bioavailability from AUCint,all",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("aucint.all"),
+                                 dose2="totdose",
+                                 auc2="aucint.all"),
+                 depends=c("totdose", "aucint.all"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{int,all,2} / Dose_2}{AUC_{int,all,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("f.int.obs",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUCint,inf,obs)",
+                 desc="Bioavailability from AUCint,inf,obs",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("aucint.inf.obs"),
+                                 dose2="totdose",
+                                 auc2="aucint.inf.obs"),
+                 depends=c("totdose", "aucint.inf.obs"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{int,\\infty,obs,2} / Dose_2}{AUC_{int,\\infty,obs,1} / Dose_1}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("f.int.pred",
+                 FUN="pk.calc.f",
+                 values=c(FALSE, TRUE),
+                 unit_type="fraction",
+                 pretty_name="Bioavailability (AUCint,inf,pred)",
+                 desc="Bioavailability from AUCint,inf,pred",
+                 formalsmap=list(dose1=pknca_ref("totdose"),
+                                 auc1=pknca_ref("aucint.inf.pred"),
+                                 dose2="totdose",
+                                 auc2="aucint.inf.pred"),
+                 depends=c("totdose", "aucint.inf.pred"),
+                 pptestcd_cdisc="FAB",
+                 pptest_cdisc="Absolute Bioavailability",
+                 formula="$F = \\frac{AUC_{int,\\infty,pred,2} / Dose_2}{AUC_{int,\\infty,pred,1} / Dose_1}$",
                  selection = list(secondary = TRUE))
 
 
@@ -953,6 +1098,8 @@ add.interval.col("mrt.int.all",
                  desc = "MRT, interval AUCall/AUMCall",
                  formalsmap = list(auc = "aucint.all", aumc = "aumcint.all"),
                  depends = c("aucint.all", "aumcint.all"),
+                 pptestcd_cdisc = "MRTIA",
+                 pptest_cdisc = "MRT (based on AUCint,all)",
                  formula = "$MRT_{\\text{int,all}} = \\frac{AUMC_{\\text{int,all}}}{AUC_{\\text{int,all}}}$")
 
 add.interval.col("mrt.int.inf.obs",
@@ -963,6 +1110,8 @@ add.interval.col("mrt.int.inf.obs",
                  desc = "MRT, interval AUC/AUMCinf obs",
                  formalsmap = list(auc = "aucint.inf.obs", aumc = "aumcint.inf.obs"),
                  depends = c("aucint.inf.obs", "aumcint.inf.obs"),
+                 pptestcd_cdisc = "MRTIO",
+                 pptest_cdisc = "MRT (based on AUCint,inf,obs)",
                  formula = "$MRT_{\\text{int,}\\infty\\text{,obs}} = \\frac{AUMC_{\\text{int,}\\infty\\text{,obs}}}{AUC_{\\text{int,}\\infty\\text{,obs}}}$")
 
 add.interval.col("mrt.int.inf.pred",
@@ -973,6 +1122,8 @@ add.interval.col("mrt.int.inf.pred",
                  desc = "MRT, interval AUC/AUMCinf pred",
                  formalsmap = list(auc = "aucint.inf.pred", aumc = "aumcint.inf.pred"),
                  depends = c("aucint.inf.pred", "aumcint.inf.pred"),
+                 pptestcd_cdisc = "MRTIP",
+                 pptest_cdisc = "MRT (based on AUCint,inf,pred)",
                  formula = "$MRT_{\\text{int,}\\infty\\text{,pred}} = \\frac{AUMC_{\\text{int,}\\infty\\text{,pred}}}{AUC_{\\text{int,}\\infty\\text{,pred}}}$")
 
 add.interval.col("mrt.int.last",
@@ -983,17 +1134,21 @@ add.interval.col("mrt.int.last",
                  desc = "MRT, interval AUClast/AUMClast",
                  formalsmap = list(auc = "aucint.last", aumc = "aumcint.last"),
                  depends = c("aucint.last", "aumcint.last"),
+                 pptestcd_cdisc = "MRTIL",
+                 pptest_cdisc = "MRT (based on AUCint,last)",
                  formula = "$MRT_{\\text{int,last}} = \\frac{AUMC_{\\text{int,last}}}{AUC_{\\text{int,last}}}$")
 
 add.interval.col("mrt.sparse.last",
-                 FUN = "pk.calc.mrt",
+                 FUN = NA,
+                 FUN_sparse = "pk.calc.mrt",
                  values = c(FALSE, TRUE),
                  unit_type = "time",
                  pretty_name = "MRT (for sparse data, based on AUClast)",
                  desc = "MRT, sparse AUClast/AUMClast",
-                 sparse = TRUE,
-                 formalsmap = list(auc = "sparse_auclast", aumc = "sparse_aumclast"),
-                 depends = c("sparse_auclast", "sparse_aumclast"))
+                 formalsmap_sparse = list(auc = "sparse_auclast", aumc = "sparse_aumclast"),
+                 depends = c("sparse_auclast", "sparse_aumclast"),
+                 pptestcd_cdisc = "MRTSL",
+                 pptest_cdisc = "MRT (for sparse data, AUClast)")
 
 
 #' @describeIn pk.calc.mrt MRT for an IV infusion
@@ -1053,7 +1208,9 @@ add.interval.col("mrt.iv.all",
                  pretty_name = "MRT (for IV dosing, based on AUCall)",
                  desc = "IV MRT, AUCall/AUMCall",
                  formalsmap = list(auc = "aucivall", aumc = "aumcivall"),
-                 depends = c("aucivall", "aumcivall"))
+                 depends = c("aucivall", "aumcivall"),
+                 pptestcd_cdisc = "MRTVA",
+                 pptest_cdisc = "MRT (for IV dosing, AUCall)")
 
 add.interval.col("mrt.ivint.all",
                  FUN = "pk.calc.mrt.iv",
@@ -1062,7 +1219,9 @@ add.interval.col("mrt.ivint.all",
                  pretty_name = "MRT (IV dose interval, based on AUCint.all)",
                  desc = "IV MRT, interval AUC/AUMCall",
                  formalsmap = list(auc = "aucivint.all", aumc = "aumcivint.all"),
-                 depends = c("aucivint.all", "aumcivint.all"))
+                 depends = c("aucivint.all", "aumcivint.all"),
+                 pptestcd_cdisc = "MRTWA",
+                 pptest_cdisc = "MRT (IV dose interval, AUCint,all)")
 
 add.interval.col("mrt.ivint.last",
                  FUN = "pk.calc.mrt.iv",
@@ -1071,7 +1230,9 @@ add.interval.col("mrt.ivint.last",
                  pretty_name = "MRT (IV dose interval, based on AUCint.last)",
                  desc = "IV MRT, interval AUC/AUMClast",
                  formalsmap = list(auc = "aucivint.last", aumc = "aumcivint.last"),
-                 depends = c("aucivint.last", "aumcivint.last"))
+                 depends = c("aucivint.last", "aumcivint.last"),
+                 pptestcd_cdisc = "MRTWL",
+                 pptest_cdisc = "MRT (IV dose interval, AUCint,last)")
 
 
 #' @describeIn pk.calc.mrt MRT for multiple-dose data with nonlinear kinetics
@@ -1122,7 +1283,7 @@ add.interval.col("mrt.md.obs",
                  formalsmap=list(auctau="auclast", aumctau="aumclast", aucinf="aucinf.obs"),
                  depends=c("auclast", "aumclast", "aucinf.obs"),
                  pptestcd_cdisc="MRTMDO",
-                 pptest_cdisc="MRT (for multiple dosing, based on AUCinf,obs)",
+                 pptest_cdisc="MRT (multiple dosing, AUCinf,obs)",
                  formula="$MRT_{\\text{md,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
@@ -1135,7 +1296,7 @@ add.interval.col("mrt.md.pred",
                  formalsmap=list(auctau="auclast", aumctau="aumclast", aucinf="aucinf.pred"),
                  depends=c("auclast", "aumclast", "aucinf.pred"),
                  pptestcd_cdisc="MRTMDP",
-                 pptest_cdisc="MRT (for multiple dosing, based on AUCinf,pred)",
+                 pptest_cdisc="MRT (multiple dosing, AUCinf,pred)",
                  formula="$MRT_{\\text{md,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
@@ -1167,6 +1328,8 @@ add.interval.col("mrt.ivmd.obs",
                  desc="IV MRT, multi-dose, AUCinf.obs",
                  formalsmap=list(auctau="auclast", aumctau="aumclast", aucinf="aucinf.obs"),
                  depends=c("auclast", "aumclast", "aucinf.obs"),
+                 pptestcd_cdisc="MRTMO",
+                 pptest_cdisc="MRT (IV infusion, MD, AUCinf,obs)",
                  formula="$MRT_{\\text{ivmd,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
@@ -1178,6 +1341,8 @@ add.interval.col("mrt.ivmd.pred",
                  desc="IV MRT, multi-dose, AUCinf.pred",
                  formalsmap=list(auctau="auclast", aumctau="aumclast", aucinf="aucinf.pred"),
                  depends=c("auclast", "aumclast", "aucinf.pred"),
+                 pptestcd_cdisc="MRTMP",
+                 pptest_cdisc="MRT (IV infusion, MD, AUCinf,pred)",
                  formula="$MRT_{\\text{ivmd,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
@@ -1212,7 +1377,7 @@ add.interval.col("vz.obs",
                  desc="Vz, observed Clast",
                  formalsmap=list(cl="cl.obs"),
                  depends=c("cl.obs", "lambda.z"),
-                 pptestcd_cdisc=list(route=list(extravascular="VZF/FO", intravascular="VZO")),
+                 pptestcd_cdisc=list(route=list(extravascular="VZFO", intravascular="VZO")),
                  pptest_cdisc=list(route=list(extravascular="Vz by F Obs", intravascular="Vz Obs")),
                  formula="$V_{z,\\text{obs}} = \\frac{CL_{\\text{obs}}}{\\lambda_z}$")
 
@@ -1224,7 +1389,7 @@ add.interval.col("vz.pred",
                  desc="Vz, predicted Clast",
                  formalsmap=list(cl="cl.pred"),
                  depends=c("cl.pred", "lambda.z"),
-                 pptestcd_cdisc=list(route=list(extravascular="VZF/FP", intravascular="VZP")),
+                 pptestcd_cdisc=list(route=list(extravascular="VZFP", intravascular="VZP")),
                  pptest_cdisc=list(route=list(extravascular="Vz by F Pred", intravascular="Vz Pred")),
                  formula="$V_{z,\\text{pred}} = \\frac{CL_{\\text{pred}}}{\\lambda_z}$")
 
@@ -1246,6 +1411,8 @@ add.interval.col("vz.int.all",
                  desc = "Vz, interval AUCint.all",
                  formalsmap = list(cl = "cl.int.all"),
                  depends = c("cl.int.all", "lambda.z"),
+                 pptestcd_cdisc = "VZIA",
+                 pptest_cdisc = "Vz (based on AUCint,all)",
                  formula = "$V_{z,\\text{int,all}} = \\frac{CL_{\\text{int,all}}}{\\lambda_z}$")
 
 add.interval.col("vz.int.inf.obs",
@@ -1256,6 +1423,8 @@ add.interval.col("vz.int.inf.obs",
                  desc = "Vz, interval AUCint.inf.obs",
                  formalsmap = list(cl = "cl.int.inf.obs"),
                  depends = c("cl.int.inf.obs", "lambda.z"),
+                 pptestcd_cdisc = "VZIO",
+                 pptest_cdisc = "Vz (based on AUCint,inf,obs)",
                  formula = "$V_{z,\\text{int,}\\infty\\text{,obs}} = \\frac{CL_{\\text{int,}\\infty\\text{,obs}}}{\\lambda_z}$")
 
 add.interval.col("vz.int.inf.pred",
@@ -1266,6 +1435,8 @@ add.interval.col("vz.int.inf.pred",
                  desc = "Vz, interval AUCint.inf.pred",
                  formalsmap = list(cl = "cl.int.inf.pred"),
                  depends = c("cl.int.inf.pred", "lambda.z"),
+                 pptestcd_cdisc = "VZIP",
+                 pptest_cdisc = "Vz (based on AUCint,inf,pred)",
                  formula = "$V_{z,\\text{int,}\\infty\\text{,pred}} = \\frac{CL_{\\text{int,}\\infty\\text{,pred}}}{\\lambda_z}$")
 
 add.interval.col("vz.int.last",
@@ -1276,6 +1447,8 @@ add.interval.col("vz.int.last",
                  desc = "Vz, interval AUCint.last",
                  formalsmap = list(cl = "cl.int.last"),
                  depends = c("cl.int.last", "lambda.z"),
+                 pptestcd_cdisc = "VZIL",
+                 pptest_cdisc = "Vz (based on AUCint,last)",
                  formula = "$V_{z,\\text{int,last}} = \\frac{CL_{\\text{int,last}}}{\\lambda_z}$")
 
 add.interval.col("vz.iv.all",
@@ -1286,6 +1459,8 @@ add.interval.col("vz.iv.all",
                  desc = "IV Vz, AUCall",
                  formalsmap = list(cl = "cl.iv.all"),
                  depends = c("cl.iv.all", "lambda.z"),
+                 pptestcd_cdisc = "VZVA",
+                 pptest_cdisc = "Vz (for IV dosing, AUCall)",
                  formula = "$V_{z,\\text{iv,all}} = \\frac{CL_{\\text{iv,all}}}{\\lambda_z}$")
 
 add.interval.col("vz.iv.last",
@@ -1296,6 +1471,8 @@ add.interval.col("vz.iv.last",
                  desc = "IV Vz, AUClast",
                  formalsmap = list(cl = "cl.iv.last"),
                  depends = c("cl.iv.last", "lambda.z"),
+                 pptestcd_cdisc = "VZVL",
+                 pptest_cdisc = "Vz (for IV dosing, AUClast)",
                  formula = "$V_{z,\\text{iv,last}} = \\frac{CL_{\\text{iv,last}}}{\\lambda_z}$")
 
 add.interval.col("vz.iv.obs",
@@ -1306,6 +1483,8 @@ add.interval.col("vz.iv.obs",
                  desc = "IV Vz, observed AUCinf",
                  formalsmap = list(cl = "cl.iv.obs"),
                  depends = c("cl.iv.obs", "lambda.z"),
+                 pptestcd_cdisc = "VZVO",
+                 pptest_cdisc = "Vz (for IV dosing, AUCinf,obs)",
                  formula = "$V_{z,\\text{iv,obs}} = \\frac{CL_{\\text{iv,obs}}}{\\lambda_z}$")
 
 add.interval.col("vz.iv.pred",
@@ -1316,6 +1495,8 @@ add.interval.col("vz.iv.pred",
                  desc = "IV Vz, predicted AUCinf",
                  formalsmap = list(cl = "cl.iv.pred"),
                  depends = c("cl.iv.pred", "lambda.z"),
+                 pptestcd_cdisc = "VZVP",
+                 pptest_cdisc = "Vz (for IV dosing, AUCinf,pred)",
                  formula = "$V_{z,\\text{iv,pred}} = \\frac{CL_{\\text{iv,pred}}}{\\lambda_z}$")
 
 add.interval.col("vz.ivint.all",
@@ -1326,6 +1507,8 @@ add.interval.col("vz.ivint.all",
                  desc = "IV Vz, interval AUCint.all",
                  formalsmap = list(cl = "cl.ivint.all"),
                  depends = c("cl.ivint.all", "lambda.z"),
+                 pptestcd_cdisc = "VZWA",
+                 pptest_cdisc = "Vz (IV dose interval, AUCint,all)",
                  formula = "$V_{z,\\text{iv,int,all}} = \\frac{CL_{\\text{iv,int,all}}}{\\lambda_z}$")
 
 add.interval.col("vz.ivint.last",
@@ -1336,6 +1519,8 @@ add.interval.col("vz.ivint.last",
                  desc = "IV Vz, interval AUCint.last",
                  formalsmap = list(cl = "cl.ivint.last"),
                  depends = c("cl.ivint.last", "lambda.z"),
+                 pptestcd_cdisc = "VZWL",
+                 pptest_cdisc = "Vz (IV dose interval, AUCint,last)",
                  formula = "$V_{z,\\text{iv,int,last}} = \\frac{CL_{\\text{iv,int,last}}}{\\lambda_z}$")
 
 add.interval.col("vz.last",
@@ -1349,14 +1534,16 @@ add.interval.col("vz.last",
                  formula = "$V_{z,\\text{last}} = \\frac{CL_{\\text{last}}}{\\lambda_z}$")
 
 add.interval.col("vz.sparse.last",
-                 FUN         = "pk.calc.vz",
+                 FUN         = NA,
+                 FUN_sparse  = "pk.calc.vz",
                  values      = c(FALSE, TRUE),
                  unit_type   = "volume",
                  pretty_name = "Vz (for sparse data, based on AUClast)",
                  desc        = "Vz from sparse sampling",
-                 sparse      = TRUE,
-                 formalsmap  = list(cl = "cl.sparse.last", lambda.z = "kel.sparse.last"),
+                 formalsmap_sparse = list(cl = "cl.sparse.last", lambda.z = "kel.sparse.last"),
                  depends     = c("cl.sparse.last", "kel.sparse.last"),
+                 pptestcd_cdisc = "VZSL",
+                 pptest_cdisc = "Vz (for sparse data, AUClast)",
                  formula = "$V_{z,\\text{sparse,last}} = \\frac{CL_{\\text{sparse,last}}}{\\lambda_z}$")
 
 
@@ -1380,7 +1567,7 @@ add.interval.col("vss.obs",
                  desc="Vss, observed Clast",
                  formalsmap=list(cl="cl.obs", mrt="mrt.obs"),
                  depends=c("cl.obs", "mrt.obs"),
-                 pptestcd_cdisc=list(route=list(extravascular="VSSF/FO", intravascular="VSSO")),
+                 pptestcd_cdisc=list(route=list(extravascular="VSSFO", intravascular="VSSO")),
                  pptest_cdisc=list(route=list(extravascular="Vss by F Obs", intravascular="Vol Dist Steady State Obs")),
                  formula="$V_{ss,\\text{obs}} = CL_{\\text{obs}} \\cdot MRT_{\\text{obs}}$")
 
@@ -1392,7 +1579,7 @@ add.interval.col("vss.pred",
                  desc="Vss, predicted Clast",
                  formalsmap=list(cl="cl.pred", mrt="mrt.pred"),
                  depends=c("cl.pred", "mrt.pred"),
-                 pptestcd_cdisc=list(route=list(extravascular="VSSF/FP", intravascular="VSSP")),
+                 pptestcd_cdisc=list(route=list(extravascular="VSSFP", intravascular="VSSP")),
                  pptest_cdisc=list(route=list(extravascular="Vss by F Pred", intravascular="Vol Dist Steady State Pred")),
                  formula="$V_{ss,\\text{pred}} = CL_{\\text{pred}} \\cdot MRT_{\\text{pred}}$")
 
@@ -1404,7 +1591,7 @@ add.interval.col("vss.last",
                  desc="Vss, calc'd through Tlast",
                  formalsmap=list(cl="cl.last", mrt="mrt.last"),
                  depends=c("cl.last", "mrt.last"),
-                 pptestcd_cdisc=list(route=list(extravascular="VSSF/FLST", intravascular="VSSLST")),
+                 pptestcd_cdisc=list(route=list(extravascular="VSSFLST", intravascular="VSSLST")),
                  pptest_cdisc=list(route=list(extravascular="Vss by F (based on AUClast)", intravascular="Vss (based on AUClast)")),
                  formula="$V_{ss,\\text{last}} = CL_{\\text{last}} \\cdot MRT_{\\text{last}}$")
 
@@ -1429,7 +1616,7 @@ add.interval.col("vss.iv.pred",
                  formalsmap=list(cl="cl.pred", mrt="mrt.iv.pred"),
                  depends=c("cl.pred", "mrt.iv.pred"),
                  pptestcd_cdisc="VSSIVP",
-                 pptest_cdisc="Vss (for IV dosing, based on AUCinf,pred)",
+                 pptest_cdisc="Vss (for IV dosing, AUCinf,pred)",
                  formula="$V_{ss,\\text{iv,pred}} = CL_{\\text{pred}} \\cdot MRT_{\\text{iv,pred}}$")
 
 add.interval.col("vss.iv.last",
@@ -1453,7 +1640,7 @@ add.interval.col("vss.md.obs",
                  formalsmap=list(cl="cl.last", mrt="mrt.md.obs"),
                  depends=c("cl.last", "mrt.md.obs"),
                  pptestcd_cdisc="VSSMDO",
-                 pptest_cdisc="Vss (for multiple-dose, based on AUCinf,obs)",
+                 pptest_cdisc="Vss (multiple-dose, AUCinf,obs)",
                  formula="$V_{ss,\\text{md,obs}} = CL_{\\text{last}} \\cdot MRT_{\\text{md,obs}}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
@@ -1466,7 +1653,7 @@ add.interval.col("vss.md.pred",
                  formalsmap=list(cl="cl.last", mrt="mrt.md.pred"),
                  depends=c("cl.last", "mrt.md.pred"),
                  pptestcd_cdisc="VSSMDP",
-                 pptest_cdisc="Vss (for multiple-dose, based on AUCinf,pred)",
+                 pptest_cdisc="Vss (multiple-dose, AUCinf,pred)",
                  formula="$V_{ss,\\text{md,pred}} = CL_{\\text{last}} \\cdot MRT_{\\text{md,pred}}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
@@ -1478,6 +1665,8 @@ add.interval.col("vss.ivmd.obs",
                  desc="IV Vss, multi-dose, obs",
                  formalsmap=list(cl="cl.last", mrt="mrt.ivmd.obs"),
                  depends=c("cl.last", "mrt.ivmd.obs"),
+                 pptestcd_cdisc="VSSMO",
+                 pptest_cdisc="Vss (IV infusion, MD, AUCinf,obs)",
                  formula="$V_{ss,\\text{ivmd,obs}} = CL_{\\text{last}} \\cdot MRT_{\\text{ivmd,obs}}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
@@ -1489,6 +1678,8 @@ add.interval.col("vss.ivmd.pred",
                  desc="IV Vss, multi-dose, pred",
                  formalsmap=list(cl="cl.last", mrt="mrt.ivmd.pred"),
                  depends=c("cl.last", "mrt.ivmd.pred"),
+                 pptestcd_cdisc="VSSMP",
+                 pptest_cdisc="Vss (IV infusion, MD, AUCinf,pred)",
                  formula="$V_{ss,\\text{ivmd,pred}} = CL_{\\text{last}} \\cdot MRT_{\\text{ivmd,pred}}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
@@ -1510,6 +1701,8 @@ add.interval.col("vss.int.all",
                  desc = "Vss, calc from interval AUCint.all",
                  formalsmap = list(cl = "cl.int.all", mrt = "mrt.int.all"),
                  depends = c("cl.int.all", "mrt.int.all"),
+                 pptestcd_cdisc = "VSSIA",
+                 pptest_cdisc = "Vss (based on AUCint,all)",
                  formula = "$V_{ss,\\text{int,all}} = CL_{\\text{int,all}} \\cdot MRT_{\\text{int,all}}$")
 
 add.interval.col("vss.int.inf.obs",
@@ -1520,6 +1713,8 @@ add.interval.col("vss.int.inf.obs",
                  desc = "Vss, calc from interval AUCint.inf.obs",
                  formalsmap = list(cl = "cl.int.inf.obs", mrt = "mrt.int.inf.obs"),
                  depends = c("cl.int.inf.obs", "mrt.int.inf.obs"),
+                 pptestcd_cdisc = "VSSIO",
+                 pptest_cdisc = "Vss (based on AUCint,inf,obs)",
                  formula = "$V_{ss,\\text{int,}\\infty\\text{,obs}} = CL_{\\text{int,}\\infty\\text{,obs}} \\cdot MRT_{\\text{int,}\\infty\\text{,obs}}$")
 
 add.interval.col("vss.int.inf.pred",
@@ -1530,6 +1725,8 @@ add.interval.col("vss.int.inf.pred",
                  desc = "Vss, calc from interval AUCint.inf.pred",
                  formalsmap = list(cl = "cl.int.inf.pred", mrt = "mrt.int.inf.pred"),
                  depends = c("cl.int.inf.pred", "mrt.int.inf.pred"),
+                 pptestcd_cdisc = "VSSIP",
+                 pptest_cdisc = "Vss (based on AUCint,inf,pred)",
                  formula = "$V_{ss,\\text{int,}\\infty\\text{,pred}} = CL_{\\text{int,}\\infty\\text{,pred}} \\cdot MRT_{\\text{int,}\\infty\\text{,pred}}$")
 
 add.interval.col("vss.int.last",
@@ -1540,6 +1737,8 @@ add.interval.col("vss.int.last",
                  desc = "Vss, calc from interval AUCint.last",
                  formalsmap = list(cl = "cl.int.last", mrt = "mrt.int.last"),
                  depends = c("cl.int.last", "mrt.int.last"),
+                 pptestcd_cdisc = "VSSIL",
+                 pptest_cdisc = "Vss (based on AUCint,last)",
                  formula = "$V_{ss,\\text{int,last}} = CL_{\\text{int,last}} \\cdot MRT_{\\text{int,last}}$")
 
 add.interval.col("vss.iv.all",
@@ -1549,7 +1748,9 @@ add.interval.col("vss.iv.all",
                  pretty_name = "Vss (for IV dosing,  based on AUCall)",
                  desc = "IV Vss, calc from AUCall",
                  formalsmap = list(cl = "cl.iv.all", mrt = "mrt.iv.all"),
-                 depends = c("cl.iv.all", "mrt.iv.all"))
+                 depends = c("cl.iv.all", "mrt.iv.all"),
+                 pptestcd_cdisc = "VSSVA",
+                 pptest_cdisc = "Vss (for IV dosing, AUCall)")
 
 add.interval.col("vss.ivint.all",
                  FUN = "pk.calc.vss",
@@ -1558,7 +1759,9 @@ add.interval.col("vss.ivint.all",
                  pretty_name = "Vss (IV dose interval, based on AUCint.all)",
                  desc = "IV Vss, calc from interval AUCint.all",
                  formalsmap = list(cl = "cl.ivint.all", mrt = "mrt.ivint.all"),
-                 depends = c("cl.ivint.all", "mrt.ivint.all"))
+                 depends = c("cl.ivint.all", "mrt.ivint.all"),
+                 pptestcd_cdisc = "VSSWA",
+                 pptest_cdisc = "Vss (IV dose interval, AUCint,all)")
 
 add.interval.col("vss.ivint.last",
                  FUN = "pk.calc.vss",
@@ -1567,17 +1770,21 @@ add.interval.col("vss.ivint.last",
                  pretty_name = "Vss (IV dose interval, based on AUCint.last)",
                  desc = "IV Vss, calc from interval AUCint.last",
                  formalsmap = list(cl = "cl.ivint.last", mrt = "mrt.ivint.last"),
-                 depends = c("cl.ivint.last", "mrt.ivint.last"))
+                 depends = c("cl.ivint.last", "mrt.ivint.last"),
+                 pptestcd_cdisc = "VSSWL",
+                 pptest_cdisc = "Vss (IV dose interval, AUCint,last)")
 
 add.interval.col("vss.sparse.last",
-                 FUN = "pk.calc.vss",
+                 FUN = NA,
+                 FUN_sparse = "pk.calc.vss",
                  values = c(FALSE, TRUE),
                  unit_type = "volume",
                  pretty_name = "Vss (for sparse data, based on AUClast)",
                  desc = "Vss, calc from sparse AUClast",
-                 sparse = TRUE,
-                 formalsmap = list(cl = "cl.sparse.last", mrt = "mrt.sparse.last"),
-                 depends = c("cl.sparse.last", "mrt.sparse.last"))
+                 formalsmap_sparse = list(cl = "cl.sparse.last", mrt = "mrt.sparse.last"),
+                 depends = c("cl.sparse.last", "mrt.sparse.last"),
+                 pptestcd_cdisc = "VSSSL",
+                 pptest_cdisc = "Vss (for sparse data, AUClast)")
 
 
 #' Calculate the average concentration during an interval.
@@ -1784,7 +1991,7 @@ add.interval.col("tlag",
                  desc="Lag time",
                  depends=NULL,
                  pptestcd_cdisc="TLAG",
-                 pptest_cdisc="Time to First Nonzero Conc",
+                 pptest_cdisc="Time Until First Nonzero Conc",
                  formula="$T_{\\text{lag}} = t_{i: C_{i+1} > C_i, i = \\min}$",
                  tier = "common",
                  selection = list(route = "extravascular"))
@@ -1880,8 +2087,8 @@ add.interval.col("ceoi",
                  pretty_name="Ceoi",
                  desc="Concentration at the end of infusion",
                  depends=NULL,
-                 pptestcd_cdisc="CEOI",
-                 pptest_cdisc="Ceoi",
+                 pptestcd_cdisc="CONCEINF",
+                 pptest_cdisc="Concentration at End Infusion",
                  formula="$C_{\\text{eoi}} = C(t = T_{\\text{inf}})$",
                  tier = "common",
                  selection = list(route = "iv_infusion"))
@@ -1982,6 +2189,9 @@ add.interval.col(
   pretty_name = "Concentration count",
   desc = "Count of non-missing conc",
   depends = NULL,
+  # CDISC PKPARMCD has no code for a sample count (it is a data-quality
+  # derivative, not a PK parameter); sponsor-defined despite the "common"
+  # tier -- see the pknca_cdisc_codes() gap list.
   pptestcd_cdisc="CNTCONC",
   pptest_cdisc="Concentration count",
   formula = "$n_{\\text{conc}} = \\sum_{i} \\mathbf{1}(C_i \\neq NA)$",
@@ -2094,11 +2304,12 @@ PKNCA.set.summary(
 )
 
 #===============================================================================
-# RATIO PARAMETERS   - count: 2
+# RATIO PARAMETERS
 #===============================================================================
 PKNCA.set.summary(
   name = c(
-    "ptr", "f"
+    "ptr", "f.obs",
+    "f.pred", "f.last", "f.int.last", "f.int.all", "f.int.obs", "f.int.pred"
   ),
   description = "geometric mean and geometric coefficient of variation",
   point = business.geomean,

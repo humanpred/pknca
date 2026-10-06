@@ -36,7 +36,10 @@ in time (\code{"spot"}, the usual case for blood, plasma, and serum) or in a
 collection over an interval (\code{"interval"}, the usual case for urine and
 feces)?  See \code{\link[=pknca_sample_types]{pknca_sample_types()}}.}
 
-\item{sparse}{Is this a sparse sampling design?}
+\item{sparse}{Is this a sparse sampling design?  The parameters chosen are
+the same either way -- \code{auclast} and \code{aumclast} are estimated with the
+sparse methods when the data are sparse, and the rest are calculated from
+the arithmetic-mean profile -- but a sparse design imputes nothing.}
 
 \item{tier}{\code{"common"} (the default) gives the parameters usually reported
 for the context; \code{"all"} gives every parameter it can calculate.}
@@ -108,9 +111,13 @@ Other Interval specifications:
 \code{\link[=get.parameter.deps]{get.parameter.deps()}},
 \code{\link[=interval_add_impute]{interval_add_impute()}},
 \code{\link[=interval_add_param]{interval_add_param()}},
+\code{\link[=interval_add_secondary]{interval_add_secondary()}},
+\code{\link[=pknca_cdisc_codes]{pknca_cdisc_codes()}},
 \code{\link[=pknca_check_parameter_classification]{pknca_check_parameter_classification()}},
 \code{\link[=pknca_concepts]{pknca_concepts()}},
+\code{\link[=pknca_match_route]{pknca_match_route()}},
 \code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
-\code{\link[=pknca_presets]{pknca_presets()}}
+\code{\link[=pknca_presets]{pknca_presets()}},
+\code{\link[=pknca_ref]{pknca_ref()}}
 }
 \concept{Interval specifications}

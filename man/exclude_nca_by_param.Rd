@@ -2,7 +2,7 @@
 % Please edit documentation in R/exclude_nca.R
 \name{exclude_nca_by_param}
 \alias{exclude_nca_by_param}
-\title{Exclude NCA Results Based on Parameter Thresholds}
+\title{Exclude based on NCA parameter thresholds}
 \usage{
 exclude_nca_by_param(
   parameter,
@@ -18,12 +18,13 @@ exclude_nca_by_param(
 
 \item{max_thr}{The maximum acceptable value for the parameter. If not provided, is not applied.}
 
-\item{affected_parameters}{Character vector of PKNCA parameters that will be marked as excluded.
-By default is the defined parameter.}
+\item{affected_parameters}{Character vector of PKNCA parameters that will be marked as excluded. By default is the defined parameter.}
 }
 \value{
 A function that can be used with \code{PKNCA::exclude} to mark through the 'exclude'  column
 the rows in the PKNCA results based on the specified thresholds for a parameter.
+Its \code{pknca_affected_parameters} attribute lists the parameters it can mark
+(see \code{\link[=pknca_exclude_rules]{pknca_exclude_rules()}}).
 }
 \description{
 Exclude rows from NCA results based on specified thresholds for a given parameter.

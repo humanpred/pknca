@@ -9,7 +9,7 @@
 #'   not requested for a parameter within an interval.
 #' @param not_calculated A character string to use when a parameter summary was
 #'   requested, but the point estimate AND spread calculations (if applicable)
-#'   returned `NA`.
+#'   returned `NA`.  It is described in the caption when it is used.
 #' @param summarize_n Should a column for `N` be added (`TRUE` or `FALSE`)?
 #'   `NA` means to automatically detect adding `N` if the data has a subject
 #'   column indicated.  Note that `N` is maximum number of parameter results for
@@ -189,9 +189,12 @@ summary.PKNCAresults <- function(object, ...,
       pretty_names = pretty_names,
       footnote_N = "N" %in% names(ret),
       footnote_n = attr(ret, "footnote_n", exact = TRUE),
+      footnote_not_calculated = attr(ret, "footnote_not_calculated", exact = TRUE),
+      not_calculated = not_calculated,
       caption_prefix = caption_prefix
     )
   attr(ret, "footnote_n") <- NULL
+  attr(ret, "footnote_not_calculated") <- NULL
   ret_pretty <- rename_summary_PKNCAresults(data = ret, unit_list = unit_list, pretty_names = pretty_names)
   as_summary_PKNCAresults(
     ret_pretty,
@@ -303,7 +306,7 @@ get_summary_PKNCAresults_count_N <- function(data, result_group, subject_col, su
 }
 
 # Provide a clean caption for summarized parameters
-get_summary_PKNCAresults_caption <- function(param_names, pretty_names, footnote_N, footnote_n, caption_prefix) {
+get_summary_PKNCAresults_caption <- function(param_names, pretty_names, footnote_N, footnote_n, footnote_not_calculated, not_calculated, caption_prefix) {
   # Extract the summarization descriptions for the caption
   summary_descriptions <-
     unlist(
@@ -342,6 +345,9 @@ get_summary_PKNCAresults_caption <- function(param_names, pretty_names, footnote
   if (footnote_n) {
     ret <- c(ret, "n: number of measurements included in summary")
   }
+  if (footnote_not_calculated) {
+    ret <- c(ret, paste0(not_calculated, ": not calculated"))
+  }
   current_caption <- paste(ret, collapse = "; ")
   
   if (is.null(caption_prefix)) {
@@ -370,6 +376,7 @@ summarize_PKNCAresults_clean_exclude <- function(object) {
 summarize_PKNCAresults_object <- function(data, result_group, subject_col, result_value_template, result_units, intervals, not_calculated) {
   ret_values_list <- list()
   footnote_n <- FALSE
+  footnote_not_calculated <- FALSE
   for (idx in seq_len(nrow(result_group))) {
     ret_idx <-
       summarize_PKNCAresults_group(
@@ -385,9 +392,13 @@ summarize_PKNCAresults_object <- function(data, result_group, subject_col, resul
     if (attr(ret_idx, "footnote_n", exact = TRUE)) {
       footnote_n <- TRUE
     }
+    if (attr(ret_idx, "footnote_not_calculated", exact = TRUE)) {
+      footnote_not_calculated <- TRUE
+    }
   }
   ret <- cbind(result_group, dplyr::bind_rows(ret_values_list))
   attr(ret, "footnote_n") <- footnote_n
+  attr(ret, "footnote_not_calculated") <- footnote_not_calculated
   ret
 }
 
@@ -403,6 +414,8 @@ summarize_PKNCAresults_group <- function(data, current_group, subject_col, resul
       "No results to summarize for result row, please report a bug",
       class = "pknca_warning_no_results_to_summarize"
     )
+    attr(ret, "footnote_n") <- FALSE
+    attr(ret, "footnote_not_calculated") <- FALSE
     return(ret)
     # nocov end
   }
@@ -422,6 +435,7 @@ summarize_PKNCAresults_group <- function(data, current_group, subject_col, resul
     )
 
   footnote_n <- FALSE
+  footnote_not_calculated <- FALSE
   for (current_param in current_param_all) {
     current_summary <-
       summarize_PKNCAresults_parameter(
@@ -431,6 +445,10 @@ summarize_PKNCAresults_group <- function(data, current_group, subject_col, resul
         include_units = length(result_units[[current_param]]) > 1,
         not_calculated = not_calculated
       )
+    # Read the attribute before `sprintf()` below drops it
+    if (attr(current_summary, "not_calculated", exact = TRUE)) {
+      footnote_not_calculated <- TRUE
+    }
     # summarize N, if requested and there is a value for calculation
     if (("N" %in% names(current_group)) && (current_summary != not_calculated)) {
       N_group <- as.integer(current_group$N)
@@ -445,6 +463,7 @@ summarize_PKNCAresults_group <- function(data, current_group, subject_col, resul
     ret[[current_param]] <- as.character(current_summary)
   }
   attr(ret, "footnote_n") <- footnote_n
+  attr(ret, "footnote_not_calculated") <- footnote_not_calculated
   ret
 }
 
@@ -506,12 +525,14 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
   spread <- NULL
   spread_txt <- NULL
   na_spread <- TRUE
+  used_not_calculated <- FALSE
   if ("spread" %in% names(current_summary_instructions) && n > 1) {
     spread <- current_summary_instructions$spread(current_data[[number_col]])
     na_spread <- all(is.na(spread))
     if (na_spread) {
       # The spread couldn't be calculated, so show that
       spread_txt <- not_calculated
+      used_not_calculated <- TRUE
     } else {
       # Round the spread
       spread_txt <- roundingSummarize(spread, parameter)
@@ -525,6 +546,7 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
 
   if (na_point && na_spread) {
     result_txt <- not_calculated
+    used_not_calculated <- TRUE
   } else if (include_units) {
     result_txt <- paste(result_txt, units)
   }
@@ -537,6 +559,7 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
     N = N,
     n = n,
     units = units,
+    not_calculated = used_not_calculated,
     class = "summarize_PKNCAresults_parameter"
   )
 }

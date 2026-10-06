@@ -3,10 +3,14 @@
 assign("options", NULL, envir=.PKNCAEnv)
 assign("summary", list(), envir=.PKNCAEnv)
 assign("interval.cols", list(), envir=.PKNCAEnv)
+assign("exclude_rules", list(), envir=.PKNCAEnv)
+assign("impute_methods", list(), envir=.PKNCAEnv)
 
-# Validate a CDISC pptestcd/pptest argument: must be a character string, or a
-# named list with a "route" element containing a named list of
-# route-specific values (e.g. list(route = list(extravascular = ...))).
+# Validate a CDISC pptestcd/pptest argument: must be a character string, a
+# named list with a "route" element containing a named list of route-specific
+# values (e.g. list(route = list(extravascular = ...))), or a named list with
+# exactly the elements "dense" and "sparse" giving the code for each kind of
+# analysis (e.g. list(dense = "AUCLST", sparse = "SPARSEAL")).
 # Not exported -- internal helper shared by add.interval.col().
 #' @param x The CDISC argument value to validate.
 #' @param arg_name The argument name used in error messages.
@@ -24,6 +28,21 @@ validate_cdisc_arg <- function(x, arg_name) {
         class = "pknca_error_cdisc_character_invalid"
       )
     }
+  } else if (is.list(x) && any(c("dense", "sparse") %in% names(x))) {
+    # A dense/sparse mapping is flat.  Unlike routes, the keys are a closed
+    # set, so both must be given, each a single code.
+    if (!setequal(names(x), c("dense", "sparse")) ||
+        (length(x) != 2) ||
+        !checkmate::test_string(x$dense, na.ok = FALSE) ||
+        !checkmate::test_string(x$sparse, na.ok = FALSE)) {
+      rlang::abort(
+        sprintf(
+          "`%s`, when a list mapping dense and sparse analyses to codes, must have exactly the elements \"dense\" and \"sparse\", each a single non-missing character string.",
+          arg_name
+        ),
+        class = "pknca_error_cdisc_sparse_mapping_invalid"
+      )
+    }
   } else if (is.list(x)) {
     # `identical(names(x), "route")` also confirms that x has length 1
     if (!identical(names(x), "route") ||
@@ -31,7 +50,7 @@ validate_cdisc_arg <- function(x, arg_name) {
         !checkmate::test_names(names(x$route), type = "named")) {
       rlang::abort(
         sprintf(
-          "`%s`, when a list, must have exactly one named element, \"route\", whose value is itself a named list mapping route to value.",
+          "`%s`, when a list, must have exactly one named element, \"route\", whose value is itself a named list mapping route to value, or exactly the elements \"dense\" and \"sparse\".",
           arg_name
         ),
         class = "pknca_error_cdisc_route_mapping_invalid"
@@ -46,6 +65,40 @@ validate_cdisc_arg <- function(x, arg_name) {
       class = "pknca_error_cdisc_invalid_type"
     )
   }
+}
+
+# pknca_ref() lives here rather than with the rest of the secondary-parameter
+# machinery because the registrations that call it run while
+# R/pk.calc.simple.R and R/pk.calc.urine.R are sourced, and both of those sort
+# before R/secondary-parameters.R.
+
+#' Mark a formalsmap entry as coming from the reference interval
+#'
+#' Used in the `formalsmap` argument of [add.interval.col()] to declare that an
+#' argument takes the value of `param` calculated in the *reference* interval
+#' (the interval named by the `<parameter>_ref` column of the interval
+#' specification) rather than in the current interval.
+#'
+#' @param param The name of the NCA parameter to take from the reference
+#'   interval (a single non-missing character string).  It does not need to be
+#'   registered yet when `pknca_ref()` is called; it is validated when the
+#'   parameter is calculated.
+#' @returns An object of class `pknca_ref`.
+#' @seealso [add.interval.col()], the vignette "Secondary parameters"
+#' @examples
+#' pknca_ref("aucinf.obs")
+#' @family Interval specifications
+#' @export
+pknca_ref <- function(param) {
+  checkmate::assert_string(param, min.chars = 1, na.ok = FALSE)
+  structure(list(param = param), class = "pknca_ref")
+}
+
+#' @rdname pknca_ref
+#' @param x An object to test.
+#' @export
+is_pknca_ref <- function(x) {
+  inherits(x, "pknca_ref")
 }
 
 # The vocabularies used to classify parameters.  They are defined here, next
@@ -86,7 +139,7 @@ pknca_concepts <- function() {
     "excreted_amount", "excreted_fraction", "excretion_rate",
     "collected_volume",
     # Bookkeeping
-    "bioavailability", "total_dose", "observation_count"
+    "bioavailability", "total_dose", "observation_count", "parameter_ratio"
   )
 }
 
@@ -97,9 +150,109 @@ pknca_tiers <- function() {
 }
 
 #' @rdname pknca_concepts
+#' @param synonyms If `TRUE`, `pknca_routes()` returns the table of spellings
+#'   that data may use for a route instead of the route names (see Route
+#'   synonyms).
+#' @section Route synonyms:
+#'   `pknca_routes(synonyms = TRUE)` returns a data.frame with one row per
+#'   spelling and the columns
+#'
+#'   * `synonym`:  The spelling, in lower case with single spaces, as it may
+#'     appear in data (for example `"po"`, `"intravenous bolus"`).  It includes
+#'     the common abbreviations and the CDISC SDTM `ROUTE` controlled
+#'     terminology terms that are extravascular or intravascular routes.
+#'   * `route`:  One of `pknca_routes()`, or `"iv"` when the spelling is
+#'     intravascular but does not say which intravascular route it is (for
+#'     example `"intravenous"` does not say bolus or infusion).  `"iv"` is not a
+#'     value of `pknca_routes()` without `synonyms`, because PKNCA cannot
+#'     calculate with a route that does not say how the drug entered.
+#'   * `dose_route`:  `"extravascular"` or `"intravascular"`, the values that
+#'     [PKNCAdose()] accepts for `route`.
+#'
+#'   `pknca_match_route()` looks spellings up in this table.
 #' @export
-pknca_routes <- function() {
+pknca_routes <- function(synonyms = FALSE) {
+  checkmate::assert_flag(synonyms)
+  if (synonyms) {
+    return(pknca_route_synonym_table())
+  }
   c("extravascular", "iv_bolus", "iv_infusion", "iv_continuous_infusion")
+}
+
+# The spellings are grouped by the route they resolve to, with `iv` for an
+# intravascular spelling that does not say which intravascular route.  The
+# CDISC terms are those of the SDTM ROUTE codelist (C66729) that are given
+# outside or inside the vascular system; lower case is how the table stores
+# them.
+pknca_route_synonym_table <- function() {
+  spellings <-
+    list(
+      extravascular = c(
+        "extravascular",
+        "oral", "po", "per os", "by mouth", "peroral", "oral gavage", "gavage",
+        "subcutaneous", "sc", "sq", "subq", "subcut", "sub-cutaneous",
+        "intramuscular", "im",
+        "intradermal", "intraperitoneal", "intrathecal", "epidural",
+        "intravitreal", "intraocular", "intra-articular",
+        "inhaled", "inhalation", "respiratory (inhalation)", "respiratory",
+        "oropharyngeal", "nasal", "intranasal",
+        "topical", "transdermal", "cutaneous", "ophthalmic", "otic",
+        "rectal", "vaginal", "sublingual", "buccal"
+      ),
+      iv_bolus = c(
+        "iv_bolus", "iv bolus", "intravenous bolus", "bolus", "iv push"
+      ),
+      iv_infusion = c(
+        "iv_infusion", "iv infusion", "intravenous infusion", "infusion",
+        "iv drip", "intravenous drip", "drip"
+      ),
+      iv_continuous_infusion = c(
+        "iv_continuous_infusion", "iv continuous infusion",
+        "intravenous continuous infusion", "continuous infusion"
+      ),
+      iv = c(
+        "intravascular", "iv", "intravenous", "intra-arterial", "intraarterial"
+      )
+    )
+  ret <-
+    data.frame(
+      synonym = unlist(spellings, use.names = FALSE),
+      route = rep(names(spellings), lengths(spellings)),
+      stringsAsFactors = FALSE
+    )
+  ret$dose_route <- ifelse(ret$route %in% "extravascular", "extravascular", "intravascular")
+  ret
+}
+
+#' Match spellings of a route of administration to the route PKNCA uses
+#'
+#' @param x A character vector (or factor) of route spellings, such as `"PO"`
+#'   or `"INTRAVENOUS BOLUS"`.  Matching ignores case and leading, trailing,
+#'   and repeated white space.
+#' @returns A data.frame with one row for each element of `x` and the columns
+#'   `route` (one of [pknca_routes()], or `"iv"` when the spelling is
+#'   intravascular but does not say which intravascular route it is) and `dose_route` (`"extravascular"` or
+#'   `"intravascular"`, the values [PKNCAdose()] accepts for `route`).  Both
+#'   are `NA` when the spelling is not known or `x` is `NA`.
+#' @seealso The Route synonyms section of [pknca_routes()] for the spellings
+#'   that are known.
+#' @examples
+#' pknca_match_route(c("PO", "Intravenous", "IV BOLUS", "unknown"))
+#' @family Interval specifications
+#' @export
+pknca_match_route <- function(x) {
+  if (is.factor(x)) {
+    x <- as.character(x)
+  }
+  checkmate::assert_character(x)
+  tbl <- pknca_route_synonym_table()
+  normalized <- gsub("[[:space:]]+", " ", trimws(tolower(x)))
+  idx <- match(normalized, tbl$synonym)
+  data.frame(
+    route = tbl$route[idx],
+    dose_route = tbl$dose_route[idx],
+    stringsAsFactors = FALSE
+  )
 }
 
 #' @rdname pknca_concepts
@@ -149,6 +302,60 @@ pknca_concept <- function(x) {
   x
 }
 
+# Confirm that a calculation function named in an add.interval.col() argument
+# exists and that its formals map only names its formals.  Used for the `FUN`/
+# `formalsmap` pair and for the sparse-estimator pair, so the argument names are
+# given for the error messages.
+assert_fun_formalsmap <- function(FUN, formalsmap, fun_arg = "FUN", formalsmap_arg = "formalsmap") {
+  checkmate::assert_list(x = formalsmap, names = "unique", .var.name = formalsmap_arg)
+  if (length(formalsmap) > 0) {
+    if (is.na(FUN)) {
+      rlang::abort(
+        sprintf("`%s` may not be provided when `%s` is NA", formalsmap_arg, fun_arg),
+        class = "pknca_error_formalsmap_with_na_fun"
+      )
+    }
+    checkmate::assert_character(
+      x = names(formalsmap), min.chars = 1, any.missing = FALSE,
+      .var.name = sprintf("names(%s)", formalsmap_arg)
+    )
+  }
+  if (is.na(FUN)) {
+    return(invisible(NULL))
+  }
+  # getAnywhere() splits a dotted name into generic.class pairs and looks each
+  # one up with an unqualified getS3method() evaluated in this namespace, so
+  # getS3method has to be imported.  Nearly every PKNCA function name has a dot
+  # in it, and utils is not attached in a subprocess (testthat runs test files
+  # in one), where the package would otherwise fail to load.
+  fun_obj <- utils::getAnywhere(FUN)
+  if (length(fun_obj$objs) == 0) {
+    rlang::abort(
+      sprintf(
+        "The function named '%s' is not defined. Please define it before calling add.interval.col().",
+        FUN
+      ),
+      class = "pknca_error_fun_not_found"
+    )
+  }
+  if (length(formalsmap) > 0) {
+    fun_formals <- names(formals(fun_obj$objs[[1]]))
+    invalid_formals <- setdiff(names(formalsmap), fun_formals)
+    if (length(invalid_formals) > 0) {
+      rlang::abort(
+        sprintf(
+          "All names in `%s` must be arguments to the function '%s'. Invalid names: %s",
+          formalsmap_arg,
+          FUN,
+          paste(dQuote(invalid_formals), collapse = ", ")
+        ),
+        class = "pknca_error_formalsmap_invalid_names"
+      )
+    }
+  }
+  invisible(NULL)
+}
+
 # Validate the `selection` argument of add.interval.col().  Every element is
 # optional; an empty or absent selection means "derive everything".
 assert_selection <- function(selection, name) {
@@ -189,7 +396,9 @@ assert_selection <- function(selection, name) {
 #' Add columns for calculations within PKNCA intervals
 #'
 #' @param name The column name as a non-empty character string (length 1,
-#'   may not be `NA` or `""`).
+#'   may not be `NA` or `""`).  Names ending in `_ref` and the name
+#'   `interval_id` are reserved for the reference-interval linkage columns of
+#'   the interval specification and may not be used.
 #' @param FUN The function to run (as a character string) or `NA` if the
 #'   parameter is automatically calculated when calculating another parameter.
 #' @param values Valid values for the column: either a function used to
@@ -205,19 +414,34 @@ assert_selection <- function(selection, name) {
 #'   column.
 #' @param desc A human-readable description of the parameter.  SDTM requires
 #'   <=40 characters; a longer description is accepted with a warning.
-#' @param sparse Is the calculation for sparse PK?
+#' @param sparse Retired.  `TRUE` is an error:  register a sparse-only
+#'   parameter with `FUN = NA` and a `FUN_sparse` (plus `formalsmap_sparse`)
+#'   instead, which is now what makes a parameter sparse-only.  `FALSE`, the
+#'   default, is accepted and does nothing.
 #' @param formalsmap A named list mapping parameter names in the function call
 #'   to NCA parameter names.  See the details for information on use of
 #'   `formalsmap`.
+#' @param FUN_sparse The function to run (as a character string) when the data
+#'   are sparse PK, or `NA` (the default) when the parameter has no
+#'   sparse-specific estimator.  With sparse data, a parameter that has one uses
+#'   it; a parameter that does not falls back to `FUN` applied to the
+#'   arithmetic-mean profile.  See the details.
+#' @param formalsmap_sparse The `formalsmap` for `FUN_sparse`, which usually has
+#'   a different calling convention than `FUN` (a sparse estimator needs
+#'   `subject`, for example).  May only be given when `FUN_sparse` is not
+#'   `NA`.
 #' @param datatype The data type used for the calculation. The default is
 #'   `"interval"`, which is currently the only supported value. The
 #'   `"individual"` and `"population"` data types are reserved for future
 #'   use and will currently raise an error if selected.
 #' @param pptestcd_cdisc The CDISC PPTESTCD code for this parameter.  Can be a
-#'   character string for simple mappings, or a named list for route-dependent
+#'   character string for simple mappings, a named list for route-dependent
 #'   mappings with a `route` element whose value is itself a named list keyed
 #'   by route (e.g. `list(route = list(extravascular = "CLF/FO", intravascular
-#'   = "CLO"))`).  Defaults to `name` if not provided.
+#'   = "CLO"))`), or a named list with exactly the elements `dense` and
+#'   `sparse`, for a parameter with a `FUN_sparse` whose sparse estimate has a
+#'   code of its own (e.g. `list(dense = "AUCLST", sparse = "SPARSEAL")`).
+#'   Defaults to `name` if not provided.
 #' @param pptest_cdisc The CDISC PPTEST name for this parameter.  Can be a
 #'   character string or a named list (same structure as `pptestcd_cdisc`).
 #'   Defaults to `desc` if not provided.
@@ -258,7 +482,18 @@ assert_selection <- function(selection, name) {
 #' @returns NULL (Calling this function has a side effect of changing the
 #'   available intervals for calculations)
 #'
-#' @details The `formalsmap` argument enables mapping some alternate formal
+#' @details `FUN_sparse` gives a parameter a second calculation function for
+#' sparse PK.  With sparse data, a parameter that has one is calculated with it
+#' -- from the pooled individual samples, and with `formalsmap_sparse` in place
+#' of `formalsmap` -- and its result is reported as a sparse result.  A
+#' parameter with no `FUN_sparse` falls back to `FUN` applied to the
+#' arithmetic-mean profile, which is what sparse data have always done.  A
+#' sparse estimator names its concentration inputs `conc`/`time` the way a dense
+#' one does; those draw from the pooled samples rather than the mean profile.
+#' The estimators PKNCA ships are linear-trapezoidal only, so `auc.method` does
+#' not apply to them.
+#'
+#' The `formalsmap` argument enables mapping some alternate formal
 #' argument names to parameters.  It is used to generalize functions that may
 #' use multiple similar arguments (such as the variants of mean residence time).
 #' The names of the list should correspond to function formal parameter names
@@ -291,12 +526,29 @@ assert_selection <- function(selection, name) {
 #'     \item{"duration.dose.group"}{Duration of dose (typically infusion duration) for doses in the current group.}
 #'     \item{"route.group"}{Route of dosing for the current group.}
 #'   }
+#'   \item{For sparse PK (`NULL` with dense PK, so a parameter naming one of
+#'   these is only calculable with a sparse `PKNCAconc`):}
+#'   \describe{
+#'     \item{"conc.sparse"}{The pooled individual concentration measurements for the current interval ("conc" is the arithmetic-mean profile built from them).}
+#'     \item{"time.sparse"}{Times associated with the pooled individual concentration measurements for the current interval (values start at 0 at the beginning of the current interval).}
+#'     \item{"conc.sparse.group"}{The pooled individual concentration measurements for the current group.}
+#'     \item{"time.sparse.group"}{Times associated with the pooled individual concentration measurements for the current group.}
+#'     \item{"subject"}{Subject identifiers for the pooled individual concentration measurements for the current interval.}
+#'   }
 #'   \item{Constants:}
 #'   \describe{
 #'     \item{a value wrapped in [base::I()]}{The value itself, passed to the
 #'     function unchanged.  Use this for an argument that selects a variant of
 #'     a shared calculation function (for example, `auc.type = I("AUCall")`)
 #'     rather than naming a data source or another parameter.}
+#'   }
+#'   \item{For the reference interval:}
+#'   \describe{
+#'     \item{a parameter name wrapped in [pknca_ref()]}{The value of that NCA
+#'     parameter calculated in the reference interval, which is the interval
+#'     named by the `<name>_ref` column of the interval specification.  A
+#'     parameter with any such argument is a secondary parameter; see the
+#'     vignette "Secondary parameters".}
 #'   }
 #' }
 #' @examples
@@ -329,6 +581,8 @@ add.interval.col <- function(name,
                              desc="",
                              sparse=FALSE,
                              formalsmap=list(),
+                             FUN_sparse=NA_character_,
+                             formalsmap_sparse=list(),
                              datatype=c("interval",
                                         "individual",
                                         "population"),
@@ -340,8 +594,32 @@ add.interval.col <- function(name,
                              selection=NULL) {
   # Check inputs
   checkmate::assert_character(x = name, len = 1, min.chars = 1, any.missing = FALSE)
+  # `<name>_ref` columns in an interval specification are the reference-interval
+  # pointers for secondary parameters, and `interval_id` names intervals, so a
+  # parameter may not take either form.
+  if (grepl(pattern = "_ref$", x = name) || name %in% "interval_id") {
+    rlang::abort(
+      sprintf(
+        "The parameter name '%s' is reserved: names ending in '_ref' and the name 'interval_id' identify the reference-interval linkage columns of the interval specification",
+        name
+      ),
+      class = "pknca_error_param_name_reserved"
+    )
+  }
   checkmate::assert_character(x = FUN, len = 1, any.missing = TRUE) # allows NA
   checkmate::assert_logical(x = sparse, len = 1, any.missing=FALSE)
+  # Retired in 0.12.1.9000, so the error first ships in the release after
+  # 0.12.1; the argument can be removed entirely in the next minor release
+  # after that.
+  if (isTRUE(sparse)) {
+    rlang::abort(
+      sprintf(
+        "The `sparse` argument is retired; a parameter is sparse-only when it has a sparse estimator and no dense function.  Register '%s' with `FUN = NA` and `FUN_sparse = <the calculation function>` (and `formalsmap_sparse` in place of `formalsmap`) instead.",
+        name
+      ),
+      class = "pknca_error_sparse_argument_retired"
+    )
+  }
   checkmate::assert_character(x = pretty_name, len = 1, min.chars = 1, any.missing=FALSE)
   checkmate::assert_character(x = desc, len = 1, any.missing=FALSE)
   if (nchar(desc) > 40) {
@@ -384,54 +662,12 @@ add.interval.col <- function(name,
   datatype <- match.arg(datatype)
   checkmate::assert_choice(x = datatype, choices = "interval")
 
-  # Validate formalsmap
-  checkmate::assert_list(x = formalsmap, names = "unique")
-
-  # Validate formalsmap and function compatibility
-  if (length(formalsmap) > 0) {
-    # Ensure FUN exists
-    if (is.na(FUN)) {
-      rlang::abort("`formalsmap` may not be provided when `FUN` is NA", class = "pknca_error_formalsmap_with_na_fun")
-    }
-    # Ensure formalsmap names are unique
-    checkmate::assert_character(x = names(formalsmap), min.chars = 1, any.missing = FALSE)
-  }
-  
-  # Ensure that the function exists
-  if (!is.na(FUN)) {
-    # getAnywhere() splits a dotted name into generic.class pairs and looks each
-    # one up with an unqualified getS3method() evaluated in this namespace, so
-    # getS3method has to be imported.  Nearly every PKNCA function name has a dot
-    # in it, and utils is not attached in a subprocess (testthat runs test files
-    # in one), where the package would otherwise fail to load.
-    fun_obj <- utils::getAnywhere(FUN)
-    if (length(fun_obj$objs) == 0) {
-      rlang::abort(
-        sprintf(
-          "The function named '%s' is not defined. Please define it before calling add.interval.col().",
-          FUN
-        ),
-        class = "pknca_error_fun_not_found"
-      )
-    }
-
-    # Validate formalsmap parameters match function formals
-    if (length(formalsmap) > 0) {
-      fun_formals <- names(formals(fun_obj$objs[[1]]))
-      invalid_formals <- setdiff(names(formalsmap), fun_formals)
-      if (length(invalid_formals) > 0) {
-        rlang::abort(
-          sprintf(
-            "All names in `formalsmap` must be arguments to the function '%s'. Invalid names: %s",
-            FUN,
-            paste(dQuote(invalid_formals), collapse = ", ")
-          ),
-          class = "pknca_error_formalsmap_invalid_names"
-        )
-      }
-    }
-
-  }
+  assert_fun_formalsmap(FUN = FUN, formalsmap = formalsmap)
+  checkmate::assert_character(x = FUN_sparse, len = 1, any.missing = TRUE) # allows NA
+  assert_fun_formalsmap(
+    FUN = FUN_sparse, formalsmap = formalsmap_sparse,
+    fun_arg = "FUN_sparse", formalsmap_arg = "formalsmap_sparse"
+  )
 
   # Default CDISC mappings to name/desc when not provided
   if (is.null(pptestcd_cdisc)) {
@@ -454,12 +690,13 @@ add.interval.col <- function(name,
   current[[name]] <-
     list(
       FUN=FUN,
+      FUN_sparse=FUN_sparse,
       values=values,
       unit_type=unit_type,
       pretty_name=pretty_name,
       desc=desc,
-      sparse=sparse,
       formalsmap=formalsmap,
+      formalsmap_sparse=formalsmap_sparse,
       depends=depends,
       datatype=datatype,
       pptestcd_cdisc=pptestcd_cdisc,
@@ -547,6 +784,72 @@ sort_interval_cols <- function() {
 get.interval.cols <- function() {
   sort_interval_cols()
   get("interval.cols", envir=.PKNCAEnv)
+}
+
+# Does a registry entry have a dense calculation function?  `start` and `end`
+# have neither, and a parameter registered with `FUN = NA` is either calculated
+# only by its sparse estimator or produced as a column of another parameter's
+# result.
+has_dense_fun <- function(spec) {
+  !is.null(spec$FUN) && !is.na(spec$FUN)
+}
+
+# Is a parameter calculated only from sparse data?  That is exactly a
+# registration with no dense `FUN` and a `FUN_sparse`; there is no separate flag
+# to say so (see the retired `sparse` argument of add.interval.col()).
+spec_is_sparse_only <- function(spec) {
+  !has_dense_fun(spec) && !is.null(spec$FUN_sparse) && !is.na(spec$FUN_sparse)
+}
+
+# The function that calculates a parameter, and the formals map that resolves
+# its arguments.  For a sparse-only parameter these are the sparse estimator and
+# its own formals map, because that is the only way the parameter is ever
+# calculated; everything that reasons about "the function this parameter calls"
+# reads them here rather than from `FUN` directly.
+interval_col_fun <- function(spec) {
+  if (has_dense_fun(spec)) spec$FUN else spec$FUN_sparse %||% NA_character_
+}
+
+interval_col_formalsmap <- function(spec) {
+  if (has_dense_fun(spec)) spec$formalsmap else spec$formalsmap_sparse %||% list()
+}
+
+# The parameters that have a sparse-specific estimator (see the `FUN_sparse`
+# argument of add.interval.col()).
+fun_sparse_params <- function() {
+  all_intervals <- get.interval.cols()
+  has_fun_sparse <-
+    vapply(
+      X = all_intervals,
+      FUN = function(x) !is.null(x$FUN_sparse) && !is.na(x$FUN_sparse),
+      FUN.VALUE = TRUE
+    )
+  names(all_intervals)[has_fun_sparse]
+}
+
+# The parameters that only sparse data can produce.  Two kinds qualify:  one
+# registered with a `FUN_sparse` and no `FUN`, and a companion of such a
+# parameter -- a column of a sparse estimator's returned data.frame (an AUC's
+# standard error and degrees of freedom, say), registered with `FUN = NA` and a
+# dependency on the parameter that produces it.
+#
+# Requesting one of these for dense data can never give a result.  The
+# deprecated names among them are still only skipped, for backward
+# compatibility; assert_intervals() refuses the rest.
+sparse_only_params <- function() {
+  all_intervals <- get.interval.cols()
+  own_estimator <- vapply(all_intervals, spec_is_sparse_only, FUN.VALUE = TRUE)
+  with_fun_sparse <- fun_sparse_params()
+  is_companion <-
+    vapply(
+      X = all_intervals,
+      FUN = function(x) {
+        !has_dense_fun(x) && !spec_is_sparse_only(x) &&
+          (length(x$depends) > 0) && all(x$depends %in% with_fun_sparse)
+      },
+      FUN.VALUE = TRUE
+    )
+  names(all_intervals)[own_estimator | is_companion]
 }
 
 # Add the start and end interval columns

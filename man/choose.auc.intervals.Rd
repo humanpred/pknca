@@ -8,7 +8,9 @@ choose.auc.intervals(
   time.conc,
   time.dosing,
   options = list(),
-  single.dose.aucs = NULL
+  single.dose.aucs = NULL,
+  route = "extravascular",
+  sparse = FALSE
 )
 }
 \arguments{
@@ -20,29 +22,69 @@ choose.auc.intervals(
 \code{PKNCA.options()})}
 
 \item{single.dose.aucs}{The AUC specification for single dosing.}
+
+\item{route}{How the drug was given, as one of \code{\link[=pknca_routes]{pknca_routes()}}.}
+
+\item{sparse}{Is this a sparse sampling design?  A sparse design imputes
+nothing; see \code{\link[=pknca_interval_table]{pknca_interval_table()}}.}
 }
 \value{
-A data frame with columns for \code{start}, \code{end}, \code{auc.type}, and
-\code{half.life}.  See \code{\link[=check.interval.specification]{check.interval.specification()}} for column definitions.
+A data frame with columns for \code{start}, \code{end}, and the parameters to
+calculate.  See \code{\link[=check.interval.specification]{check.interval.specification()}} for column definitions.
 The data frame may have zero rows if no intervals could be found.
 }
 \description{
-Intervals for AUC are selected by the following metrics:
+Intervals are selected by the following metrics:
 \enumerate{
-\item If only one dose is administered, use the
-\code{PKNCA.options("single.dose.aucs")}
-\item If more than one dose is administered, estimate the AUC
-between any two doses that have PK taken at both of the
-dosing times and at least one time  between the doses.
-\item For the final dose of multiple doses, try to determine the
-dosing interval (\eqn{\tau}) and estimate the AUC in that
-interval if multiple samples are taken in the interval.
-\item If there are samples \eqn{> \tau} after the last dose,
-calculate the half life after the last dose.
+\item If there are no dose times, no intervals are generated and a
+\code{"pknca_warning_no_dose_times_for_group"} warning is given.
+\item If only one dose is administered and any sample follows it, the
+interval runs from the dose to infinity with the parameters
+\code{\link[=pknca_interval_table]{pknca_interval_table()}} gives for a single dose.
+\item If more than one dose is administered, an interval is generated
+between any two consecutive doses that have samples at both dose
+times and at least one sample between them.  It is a dosing interval
+when the samples run up to the next dose, and a single-dose profile
+bounded by the next dose when they stop partway and leave a washout.
+\item For the final dose, the dosing interval (\eqn{\tau}) is found with
+\code{\link[=find.tau]{find.tau()}}.  An interval one \eqn{\tau} long is generated when a
+sample was taken at its end, with the parameters for a dose at steady
+state.  It starts at the first dose of the last complete cycle, which
+is the last dose itself unless the regimen gives more than one dose
+per \eqn{\tau}, so that the interval never contains a dose that was
+not recorded.
+\item If samples continue beyond \eqn{\tau} after the last dose, the
+half-life is calculated from the last dose onward.  If the last dose
+has samples after it but gets neither of these, its profile is
+calculated to infinity as a single dose.
 }
+}
+\details{
+Times are matched within a tolerance rather than exactly, so a sample drawn a
+little before its nominal time still bounds the interval it belongs to.  The
+window is the \code{auto.interval.tolerance} option as a fraction of the
+interval's length, and it only reaches backward:  a sample drawn after a
+boundary belongs to what follows that boundary, so a concentration drawn
+after a dose cannot stand in for the predose sample.
+
+Setting the \code{auto.interval.method} option to \code{"legacy"} calculates the
+parameter lists PKNCA used before \code{\link[=pknca_interval_table]{pknca_interval_table()}} was available:
+the \code{single.dose.aucs} option for single-dose data, and AUClast, Cmax, and
+Tmax for each interval of multiple-dose data.  The intervals themselves are
+found the same way either way.
+}
+\examples{
+# A single dose gives one profile to infinity
+choose.auc.intervals(c(0, 1, 2, 4, 8, 24), 0)[, c("start", "end")]
+
+# Daily dosing with a dense profile on the first and last day
+choose.auc.intervals(
+  c(0, 1, 2, 4, 8, 12, 24, 48, 72, 96, 120, 144, 145, 146, 148, 152, 156, 168, 192),
+  seq(0, 144, by = 24)
+)[, c("start", "end")]
 }
 \seealso{
-\code{\link[=pk.calc.auc]{pk.calc.auc()}}, \code{\link[=pk.calc.aumc]{pk.calc.aumc()}}, \code{\link[=pk.calc.half.life]{pk.calc.half.life()}},
+\code{\link[=pknca_interval_table]{pknca_interval_table()}}, \code{\link[=pk.calc.auc]{pk.calc.auc()}}, \code{\link[=pk.calc.half.life]{pk.calc.half.life()}},
 \code{\link[=PKNCA.options]{PKNCA.options()}}
 
 Other Interval specifications:
@@ -52,11 +94,15 @@ Other Interval specifications:
 \code{\link[=get.parameter.deps]{get.parameter.deps()}},
 \code{\link[=interval_add_impute]{interval_add_impute()}},
 \code{\link[=interval_add_param]{interval_add_param()}},
+\code{\link[=interval_add_secondary]{interval_add_secondary()}},
+\code{\link[=pknca_cdisc_codes]{pknca_cdisc_codes()}},
 \code{\link[=pknca_check_parameter_classification]{pknca_check_parameter_classification()}},
 \code{\link[=pknca_concepts]{pknca_concepts()}},
 \code{\link[=pknca_interval_table]{pknca_interval_table()}},
+\code{\link[=pknca_match_route]{pknca_match_route()}},
 \code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
-\code{\link[=pknca_presets]{pknca_presets()}}
+\code{\link[=pknca_presets]{pknca_presets()}},
+\code{\link[=pknca_ref]{pknca_ref()}}
 
 Other Interval determination:
 \code{\link[=find.tau]{find.tau()}},

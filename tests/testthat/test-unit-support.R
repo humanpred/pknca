@@ -26,6 +26,7 @@ test_that("pknca_find_units_param", {
 })
 
 test_that("unit conversion tables are created correctly", {
+  skip_if_not_installed("units")
   expect_true(
     all(
       pknca_units_table(
@@ -90,6 +91,7 @@ test_that("unit conversion tables are created correctly", {
 })
 
 test_that("pknca_units_table", {
+  skip_if_not_installed("units")
   expect_warning(
       pknca_units_table(
         concu="ng/mL", doseu="mg/kg", amountu="mg", timeu="hr",
@@ -139,6 +141,14 @@ test_that("pknca_units_add_paren", {
   expect_equal(pknca_units_add_paren("mg*kg"), "(mg*kg)")
 })
 
+test_that("pknca_units_quotient divides one unit by another", {
+  expect_equal(pknca_units_quotient("mg", "hr*ng/mL"), "mg/(hr*ng/mL)")
+  expect_equal(pknca_units_quotient("ng/mL", "mg/L"), "(ng/mL)/(mg/L)")
+  # Units that are not known compose into units that are not known
+  expect_equal(pknca_units_quotient(NA_character_, "mg"), NA_character_)
+  expect_equal(pknca_units_quotient("mg", NA_character_), NA_character_)
+})
+
 test_that("pknca_units_table treats missing, NULL, and NA the same", {
   expect_equal(
     pknca_units_table(),
@@ -183,6 +193,7 @@ test_that("pknca_units_table treats missing, NULL, and NA the same", {
 })
 
 test_that("allow duplicate PPSTRESU units", {
+  skip_if_not_installed("units")
   d_conversion <-
     data.frame(
       PPORRESU = c("ng/mL", "(ng/mL)/(mg/kg)", "(mg/kg)/(hr*ng/mL)", "(mg/kg)/(ng/mL)"),
@@ -195,6 +206,7 @@ test_that("allow duplicate PPSTRESU units", {
 })
 
 test_that("Use preferred units (#197)", {
+  skip_if_not_installed("units")
   prep <-
     pknca_units_table(
       concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
@@ -333,6 +345,7 @@ test_that("pknca_unit_conversion", {
 
 # Tests for pknca_units_table for PKNCAdata
 test_that("pknca_units_table for PKNCAdata", {
+  skip_if_not_installed("units")
 
   # Subset the data to only include USUBJID 8 (2 analytes, A & B)
   d_conc <- data.frame(
@@ -372,13 +385,20 @@ test_that("pknca_units_table for PKNCAdata", {
   o_data <- PKNCAdata(o_conc, o_dose)
   units_table <- expect_no_error(pknca_units_table(o_data))
 
+  # A primary parameter is described by one row per stratum, naming no
+  # reference group.  The standardization columns come from the secondary
+  # parameters whose composed units reduce to a fraction.
   expect_equal(
     units_table[units_table$PPTESTCD == "cmax",],
     data.frame(
       specimen = c("blood", "urine", "blood", "urine"),
       analyte = rep(c("A", "B"), each = 2),
       PPORRESU = c("ng/mL", "pg/mL", "ug/mL", "pg/mL"),
-      PPTESTCD = "cmax"
+      PPTESTCD = "cmax",
+      specimen_ref = NA_character_,
+      analyte_ref = NA_character_,
+      PPSTRESU = c("ng/mL", "pg/mL", "ug/mL", "pg/mL"),
+      conversion_factor = 1
     ), ignore_attr = TRUE
   )
 
@@ -394,7 +414,8 @@ test_that("pknca_units_table for PKNCAdata", {
       data.frame(
         treatment = c("drug1", "drug2"),
         PPORRESU = c("mg", "ug"),
-        PPTESTCD = "totdose"
+        PPTESTCD = "totdose",
+        treatment_ref = NA_character_
       ), ignore_attr = TRUE
     )
 
@@ -511,4 +532,12 @@ test_that("select_minimal_grouping_cols", {
   data[, "a"] <- 10
   result <- select_minimal_grouping_cols(data, "d")
   expect_equal(result, data["d"])
+})
+
+test_that("A preferred unit equal to the original unit needs no conversion (and no units package)", {
+  # Only preferred units that differ from the original ones become conversions,
+  # so when none differ there is no conversion at all.
+  units_same <- pknca_units_table(concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr", timeu_pref = "hr")
+  units_none <- pknca_units_table(concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr")
+  expect_equal(units_same, units_none)
 })

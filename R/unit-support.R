@@ -18,12 +18,33 @@
 #' @returns A unit conversion table with columns for "PPTESTCD" and "PPORRESU"
 #'   if `conversions` is not given, and adding "PPSTRESU" and
 #'   "conversion_factor" if `conversions` is given.
+#' @section Secondary parameters and reference groups:
+#'
+#'   A secondary parameter (renal clearance, bioavailability, a ratio; see
+#'   `vignette("v09-secondary-parameters")`) takes one value from the interval
+#'   requesting it and another from a reference interval, so its units are a
+#'   quotient of the two groups' units.  When the `PKNCAdata` method finds more
+#'   than one set of units among the groups, the table therefore gains a
+#'   `<group column>_ref` column for each of its group columns and, for each
+#'   secondary parameter, one row per pair of (own group, reference group) with
+#'   "PPORRESU" composed from the correct side of each.  Rows describing a
+#'   result that names no reference -- every primary parameter, and a secondary
+#'   parameter calculated without a reference -- hold `NA` in the `_ref`
+#'   columns, and results carrying no reference group join to them.  A quotient
+#'   whose two sides are convertible into one another is dimensionless, and such
+#'   a row also gets "PPSTRESU" of "fraction" with the "conversion_factor" that
+#'   turns the raw quotient into that number.
+#'
+#'   With one set of units for every group there is no reference side to name
+#'   and no `_ref` column is added.
 #' @seealso The `units` argument for [PKNCAdata()]
 #' @examples
 #' pknca_units_table() # only parameters that are unitless
 #' pknca_units_table(
 #'   concu="ng/mL", doseu="mg/kg", amountu="mg", timeu="hr"
 #' )
+#' @examplesIf requireNamespace("units", quietly = TRUE)
+#' # Automatic unit conversion needs the units package
 #' pknca_units_table(
 #'   concu="ng/mL", doseu="mg/kg", amountu="mg", timeu="hr",
 #'   # Convert clearance and volume units to more understandable units with
@@ -108,7 +129,7 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
     conversions_pref <- conversions_pref[conversions_pref$PPORRESU != conversions_pref$PPSTRESU, ]
     # Drop units that are not provided
     conversions_pref <- conversions_pref[!is.na(conversions_pref$PPORRESU), ]
-    conversions_pref$conversion_factor <- NA_real_
+    conversions_pref$conversion_factor <- rep(NA_real_, nrow(conversions_pref))
     for (idx in seq_len(nrow(conversions))) {
       # Use the original conversions argument over `conversions_pref`
       mask_pref <- conversions_pref$PPORRESU %in% conversions$PPORRESU[idx]
@@ -148,14 +169,9 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
     }
     for (idx in which(is.na(conversions$conversion_factor))) {
       conversions$conversion_factor[idx] <-
-        as.numeric(
-          units::set_units(
-            units::set_units(
-              1,
-              conversions$PPORRESU[idx], mode="standard"
-            ),
-            conversions$PPSTRESU[idx], mode="standard"
-          )
+        pknca_units_conversion_factor(
+          from = conversions$PPORRESU[idx],
+          to = conversions$PPSTRESU[idx]
         )
     }
     unexpected_conversions <- setdiff(conversions$PPORRESU, ret$PPORRESU)
@@ -243,22 +259,7 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
     mismatching_units_groups <- groups_units_tbl[mask_duplicated_groups, , drop = FALSE]
   }
   if (nrow(mismatching_units_groups) > 0) {
-    mismatching_units_groups_msg <- vapply(
-      seq_len(nrow(mismatching_units_groups)),
-      FUN.VALUE = character(1),
-      FUN = function(row_idx) {
-        do.call(
-          paste,
-          c(
-            lapply(
-              X = names(mismatching_units_groups),
-              FUN = function(x) paste(x, mismatching_units_groups[[x]][row_idx], sep = "=")
-            ),
-            sep = ", "
-          )
-        )
-      }
-    )
+    mismatching_units_groups_msg <- name_value_text(mismatching_units_groups)
     rlang::abort(
       sprintf(
         "Units should be uniform at least across concentration groups. Review the units for the next group(s):\n%s",
@@ -286,6 +287,9 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
   groups_cols <- setdiff(names(groups_units_tbl), all_unit_cols)
 
   ret <- vector(mode = "list", length = nrow(groups_units_tbl))
+  # The same tables without their group columns, which is how the secondary
+  # composition below reads one unit set's answer for a source parameter
+  unit_tables <- vector(mode = "list", length = nrow(groups_units_tbl))
   for (i in seq_len(nrow(groups_units_tbl))) {
     pknca_units_tbl_args <- list(
       concu = groups_units_tbl[[concu_col]][i],
@@ -310,6 +314,7 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
       # Remove parameters that require dose units since no dose was provided
       pknca_units_tbl_i <- pknca_units_tbl_i[!is.na(pknca_units_tbl_i$PPORRESU), ]
     }
+    unit_tables[[i]] <- pknca_units_tbl_i
     if (length(groups_cols) > 0) {
       groups_values <- groups_units_tbl[i, groups_cols, drop = FALSE]
       row.names(groups_values) <- NULL
@@ -319,30 +324,227 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
     }
   }
 
-  as.data.frame(dplyr::bind_rows(ret))
+  ret <- as.data.frame(dplyr::bind_rows(ret))
+  # A secondary parameter takes one of its values from another group, so its
+  # units are only knowable once the groups can differ.  With a single unit set
+  # they cannot, and the table is exactly what it has always been.
+  if (length(groups_cols) > 0 && nrow(groups_units_tbl) > 1) {
+    groups_values <- groups_units_tbl[, groups_cols, drop = FALSE]
+    row.names(groups_values) <- NULL
+    ret <- pknca_units_table_secondary(ret, unit_tables, groups_values)
+  }
+  ret
+}
+
+# The two sides of the quotient a secondary parameter's units compose into,
+# named by the formal arguments of its calculation function:  the requesting
+# interval's own side over the reference interval's side.  A side naming two
+# formals is itself a quotient (bioavailability divides an AUC by a dose on each
+# side).  Any other secondary parameter -- one registered elsewhere, or one that
+# is secondary only because it depends on another -- has no known composition
+# and keeps the single-sided row of its own group.
+secondary_unit_sides <- function(param) {
+  switch(
+    get.interval.cols()[[param]]$FUN,
+    pk.calc.clr = list(own = "ae", ref = "auc"),
+    pk.calc.ratio = list(own = "test", ref = "reference"),
+    pk.calc.f = list(own = c("auc2", "dose2"), ref = c("auc1", "dose1")),
+    NULL
+  )
+}
+
+# One unit string divided by another, in the style of the rest of the table
+pknca_units_quotient <- function(numerator, denominator) {
+  if (is.na(numerator) || is.na(denominator)) {
+    NA_character_
+  } else {
+    sprintf(
+      "%s/%s",
+      pknca_units_add_paren(numerator), pknca_units_add_paren(denominator)
+    )
+  }
+}
+
+# The units of one side of a secondary parameter's quotient under one unit set.
+# `unit_table` is that unit set's table, `formals_used` names the side's formal
+# arguments, `args` maps every formal of that side to the parameter it takes its
+# value from, and `unit_column` chooses the original or the standardized units.
+secondary_unit_side <- function(unit_table, formals_used, args, unit_column) {
+  values <-
+    vapply(
+      X = args[formals_used],
+      FUN = function(target) {
+        ret <- unit_table[[unit_column]][unit_table$PPTESTCD %in% target]
+        if (length(ret) == 1) as.character(ret) else NA_character_
+      },
+      FUN.VALUE = ""
+    )
+  if (anyNA(values)) {
+    NA_character_
+  } else if (length(values) == 1) {
+    unname(values)
+  } else {
+    pknca_units_quotient(values[[1]], values[[2]])
+  }
+}
+
+# Add the reference-keyed unit rows that describe secondary parameters
+#
+# A secondary parameter combines a value from the interval requesting it with
+# one from a reference interval, so where units are group-stratified its units
+# are a quotient of the two groups' units rather than either group's alone.
+# Every row built from a single group therefore gains `<group column>_ref`
+# columns holding `NA` -- "this row describes a result that names no reference"
+# -- and one row per (own group, reference group) pair is added for each
+# secondary parameter whose composition is known.  [pknca_unit_conversion()]
+# joins on the `_ref` columns along with everything else, so a result finds the
+# row describing the pair of groups it actually came from.
+#
+# A quotient of two convertible sides is dimensionless, and that row also gets
+# `PPSTRESU` of "fraction" with the factor that turns the raw quotient into it.
+# A quotient of two sides that are not convertible (an `mg` dose against a
+# `mg/kg` dose) is reported in the composite units, which is the honest answer.
+#
+# @param units The table built from each unit set on its own
+# @param unit_tables That same table per unit set, without the group columns
+# @param group_values One row of group values per unit set, in the same order as
+#   `unit_tables`
+# @returns `units` with the `_ref` columns and the reference-keyed rows added
+# @keywords Internal
+# @noRd
+pknca_units_table_secondary <- function(units, unit_tables, group_values) {
+  ref_cols <- paste0(names(group_values), "_ref")
+  units[ref_cols] <- NA_character_
+  classification <- parameter_classification()
+  params <- names(classification$secondary)[classification$secondary]
+  has_composition <-
+    vapply(
+      X = params,
+      FUN = function(p) !is.null(secondary_unit_sides(p)),
+      FUN.VALUE = TRUE
+    )
+  params <- params[has_composition]
+  n_sets <- nrow(group_values)
+  has_std <- all(c("PPSTRESU", "conversion_factor") %in% names(units))
+  # The factor between one pair of unit strings is the same answer for every
+  # parameter and group pair that composes them
+  factors <- list()
+  new_rows <- list()
+  for (current_param in params) {
+    info <- secondary_param_info(current_param)
+    sides <- secondary_unit_sides(current_param)
+    own_units <-
+      vapply(
+        X = unit_tables,
+        FUN = secondary_unit_side,
+        FUN.VALUE = "",
+        formals_used = sides$own, args = info$own_args, unit_column = "PPORRESU"
+      )
+    ref_units <-
+      vapply(
+        X = unit_tables,
+        FUN = secondary_unit_side,
+        FUN.VALUE = "",
+        formals_used = sides$ref, args = info$ref_args, unit_column = "PPORRESU"
+      )
+    for (own_i in seq_len(n_sets)) {
+      own_table <- unit_tables[[own_i]]
+      base <- own_table[own_table$PPTESTCD %in% current_param, , drop = FALSE]
+      if (nrow(base) != 1) {
+        # The parameter has no units at all in this unit set (no dose data),
+        # and a composed quotient would have none either
+        next
+      }
+      for (ref_i in seq_len(n_sets)) {
+        u_own <- own_units[[own_i]]
+        u_ref <- ref_units[[ref_i]]
+        if (is.na(u_own) || is.na(u_ref) || identical(u_own, u_ref)) {
+          # Units the two sides do not both know, or a quotient of one unit by
+          # itself, say nothing the parameter's registered units do not
+          current <-
+            data.frame(
+              PPORRESU = base$PPORRESU,
+              PPTESTCD = current_param,
+              PPSTRESU = if (has_std) base$PPSTRESU else NA_character_,
+              conversion_factor = if (has_std) base$conversion_factor else NA_real_
+            )
+        } else {
+          composed <- pknca_units_quotient(u_own, u_ref)
+          key <- paste(u_own, u_ref, sep = "|")
+          if (is.null(factors[[key]])) {
+            factors[[key]] <- pknca_unit_reconcile_factor(from = u_own, to = u_ref)
+          }
+          standardized <- NA_character_
+          conversion_factor <- NA_real_
+          if (!is.na(factors[[key]])) {
+            # PPORRES carries `u_own/u_ref` and one u_own is `factors[[key]]`
+            # u_ref, so multiplying by it leaves the pure number the quotient of
+            # two convertible units is.
+            standardized <- "fraction"
+            conversion_factor <- factors[[key]]
+          } else if (has_std) {
+            # Not a fraction, but the sides may still have preferred units of
+            # their own, and the quotient of those is the composite's
+            standardized <-
+              pknca_units_quotient(
+                secondary_unit_side(own_table, sides$own, info$own_args, "PPSTRESU"),
+                secondary_unit_side(unit_tables[[ref_i]], sides$ref, info$ref_args, "PPSTRESU")
+              )
+            conversion_factor <- pknca_unit_reconcile_factor(from = composed, to = standardized)
+          }
+          current <-
+            data.frame(
+              PPORRESU = composed,
+              PPTESTCD = current_param,
+              PPSTRESU = standardized,
+              conversion_factor = conversion_factor
+            )
+        }
+        own_values <- group_values[own_i, , drop = FALSE]
+        ref_values <- group_values[ref_i, , drop = FALSE]
+        names(ref_values) <- ref_cols
+        row.names(own_values) <- row.names(ref_values) <- NULL
+        new_rows[[length(new_rows) + 1L]] <- cbind(own_values, ref_values, current)
+      }
+    }
+  }
+  new_rows <- dplyr::bind_rows(new_rows)
+  if (!has_std && all(is.na(new_rows$PPSTRESU))) {
+    # Nothing standardizes, so the table keeps the two columns it never had
+    new_rows$PPSTRESU <- NULL
+    new_rows$conversion_factor <- NULL
+  } else {
+    if (!has_std) {
+      units$PPSTRESU <- units$PPORRESU
+      units$conversion_factor <- 1
+    }
+    # As in pknca_units_table(): units without a conversion of their own -- and
+    # composites with no conversion to be had -- are already the units to
+    # report, and a factor of 1 keeps them
+    mask_unconverted <- is.na(new_rows$PPSTRESU) | is.na(new_rows$conversion_factor)
+    new_rows$PPSTRESU[mask_unconverted] <- new_rows$PPORRESU[mask_unconverted]
+    new_rows$conversion_factor[mask_unconverted] <- 1
+  }
+  as.data.frame(dplyr::bind_rows(units, new_rows))
 }
 
 pknca_units_table_unitless <- function() {
   rbind(
     data.frame(
       PPORRESU="unitless",
-      PPTESTCD=pknca_find_units_param(unit_type="unitless"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="unitless")
     ),
     data.frame(
       PPORRESU="fraction",
-      PPTESTCD=pknca_find_units_param(unit_type="fraction"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="fraction")
     ),
     data.frame(
       PPORRESU="%",
-      PPTESTCD=pknca_find_units_param(unit_type="%"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="%")
     ),
     data.frame(
       PPORRESU="count",
-      PPTESTCD=pknca_find_units_param(unit_type="count"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="count")
     )
   )
 }
@@ -385,13 +587,11 @@ pknca_units_table_time <- function(timeu) {
   rbind(
     data.frame(
       PPORRESU=timeu,
-      PPTESTCD=pknca_find_units_param(unit_type="time"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="time")
     ),
     data.frame(
       PPORRESU=inverse_timeu,
-      PPTESTCD=pknca_find_units_param(unit_type="inverse_time"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="inverse_time")
     )
   )
 }
@@ -402,8 +602,7 @@ pknca_units_table_conc <- function(concu) {
   }
   data.frame(
     PPORRESU=concu,
-    PPTESTCD=pknca_find_units_param(unit_type="conc"),
-    stringsAsFactors=FALSE
+    PPTESTCD=pknca_find_units_param(unit_type="conc")
   )
 }
 
@@ -413,8 +612,7 @@ pknca_units_table_amount <- function(amountu) {
   }
   data.frame(
     PPORRESU=amountu,
-    PPTESTCD=pknca_find_units_param(unit_type="amount"),
-    stringsAsFactors=FALSE
+    PPTESTCD=pknca_find_units_param(unit_type="amount")
   )
 }
 
@@ -426,8 +624,7 @@ pknca_units_table_amount_dose <- function(amountu, doseu) {
   }
   data.frame(
     PPORRESU=amount_doseu,
-    PPTESTCD=pknca_find_units_param(unit_type="amount_dose"),
-    stringsAsFactors=FALSE
+    PPTESTCD=pknca_find_units_param(unit_type="amount_dose")
   )
 }
 
@@ -437,8 +634,7 @@ pknca_units_table_dose <- function(doseu) {
   }
   data.frame(
     PPORRESU=doseu,
-    PPTESTCD=pknca_find_units_param(unit_type="dose"),
-    stringsAsFactors=FALSE
+    PPTESTCD=pknca_find_units_param(unit_type="dose")
   )
 }
 
@@ -453,14 +649,12 @@ pknca_units_table_conc_dose <- function(concu, doseu) {
   rbind(
     data.frame(
       PPORRESU=conc_dosenorm,
-      PPTESTCD=pknca_find_units_param(unit_type="conc_dosenorm"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="conc_dosenorm")
     ),
     data.frame(
       # Volume units
       PPORRESU=volume,
-      PPTESTCD=pknca_find_units_param(unit_type="volume"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="volume")
     )
   )
 }
@@ -477,14 +671,12 @@ pknca_units_table_conc_time <- function(concu, timeu) {
     data.frame(
       # AUC units
       PPORRESU=auc,
-      PPTESTCD=pknca_find_units_param(unit_type="auc"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="auc")
     ),
     data.frame(
       # AUMC units
       PPORRESU=aumc,
-      PPTESTCD=pknca_find_units_param(unit_type="aumc"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="aumc")
     )
   )
 }
@@ -504,20 +696,17 @@ pknca_units_table_conc_time_dose <- function(concu, timeu, doseu) {
     data.frame(
       # AUC units, dose-normalized
       PPORRESU=auc_dosenorm,
-      PPTESTCD=pknca_find_units_param(unit_type="auc_dosenorm"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="auc_dosenorm")
     ),
     data.frame(
       # AUMC units, dose-normalized
       PPORRESU=aumc_dosenorm,
-      PPTESTCD=pknca_find_units_param(unit_type="aumc_dosenorm"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="aumc_dosenorm")
     ),
     data.frame(
       # Clearance units
       PPORRESU=clearance,
-      PPTESTCD=pknca_find_units_param(unit_type="clearance"),
-      stringsAsFactors=FALSE
+      PPTESTCD=pknca_find_units_param(unit_type="clearance")
     )
   )
 }
@@ -531,8 +720,7 @@ pknca_units_table_conc_time_amount <- function(concu, timeu, amountu) {
   data.frame(
     # Renal clearance units
     PPORRESU=renal_clearance,
-    PPTESTCD=pknca_find_units_param(unit_type="renal_clearance"),
-    stringsAsFactors=FALSE
+    PPTESTCD=pknca_find_units_param(unit_type="renal_clearance")
   )
 }
 
@@ -544,8 +732,7 @@ pknca_units_table_time_amount <- function(timeu, amountu) {
   }
   data.frame(
     PPORRESU = time_amount,
-    PPTESTCD = pknca_find_units_param(unit_type = "amount_time"),
-    stringsAsFactors = FALSE
+    PPTESTCD = pknca_find_units_param(unit_type = "amount_time")
   )
 }
 
@@ -558,8 +745,7 @@ pknca_units_table_conc_time_amount_dose <- function(concu, timeu, amountu, doseu
   data.frame(
     # Renal clearance, dose-normalized
     PPORRESU=renal_clearance_dosenorm,
-    PPTESTCD=pknca_find_units_param(unit_type="renal_clearance_dosenorm"),
-    stringsAsFactors=FALSE
+    PPTESTCD=pknca_find_units_param(unit_type="renal_clearance_dosenorm")
   )
 }
 
@@ -599,6 +785,57 @@ pknca_units_add_paren <- function(unit) {
   ifelse(mask_paren, yes=paste0("(", unit, ")"), no=unit)
 }
 
+#' Find the factor converting a value from one unit to another
+#'
+#' @param from,to Single unit strings, as they appear in the "PPORRESU" and
+#'   "PPSTRESU" columns of a unit conversion table
+#' @returns The number that a value in `from` units is multiplied by to express
+#'   it in `to` units.  Units that the `units` package cannot convert between
+#'   are an error.
+#' @keywords Internal
+pknca_units_conversion_factor <- function(from, to) {
+  as.numeric(
+    units::set_units(
+      units::set_units(1, from, mode = "standard"),
+      to, mode = "standard"
+    )
+  )
+}
+
+#' Find the conversion factor between two units, when there is one
+#'
+#' The conversions of [pknca_units_table()] are requested by the user and so
+#' fail loudly when they cannot be made.  This answers the different question of
+#' whether two units PKNCA derived itself can be reconciled -- units that are
+#' unrelated (a concentration and an amount) or outside udunits (`"IU/mL"`) are
+#' an expected answer of "no" rather than a mistake.
+#'
+#' @inheritParams pknca_units_conversion_factor
+#' @returns The number that a value in `from` units is multiplied by to express
+#'   it in `to` units, or `NA_real_` when the two are not convertible or the
+#'   `units` package is not installed.
+#' @seealso [pknca_units_table()]
+#' @keywords Internal
+pknca_unit_reconcile_factor <- function(from, to) {
+  if (length(from) != 1 || length(to) != 1 || is.na(from) || is.na(to)) {
+    NA_real_
+  } else if (identical(as.character(from), as.character(to))) {
+    # Identical units need no conversion, so an analysis whose two sides already
+    # agree does not need the `units` package installed.
+    1
+  } else if (!requireNamespace("units", quietly = TRUE)) {
+    # Reached only where the Suggests-level `units` package is not installed
+    NA_real_ # nocov
+  } else {
+    ret <- try(pknca_units_conversion_factor(from = from, to = to), silent = TRUE)
+    if (inherits(ret, "try-error") || length(ret) != 1 || !is.finite(ret)) {
+      NA_real_
+    } else {
+      ret
+    }
+  }
+}
+
 #' Perform unit conversion (if possible) on PKNCA results
 #'
 #' @param result The results data.frame
@@ -610,6 +847,13 @@ pknca_units_add_paren <- function(unit) {
 pknca_unit_conversion <- function(result, units, allow_partial_missing_units = FALSE) {
   ret <- result
   if (!is.null(units)) {
+    # A result that names no reference group (nothing linked two intervals, or a
+    # secondary parameter was calculated within one interval) can only be
+    # described by the rows that name no reference either.  Matching it against
+    # the reference-keyed rows as well would give it one row per reference group.
+    for (col in setdiff(grep("_ref$", names(units), value = TRUE), names(ret))) {
+      units <- units[is.na(units[[col]]), setdiff(names(units), col), drop = FALSE]
+    }
     ret <-
       dplyr::left_join(
         ret, units,

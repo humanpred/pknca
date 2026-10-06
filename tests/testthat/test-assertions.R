@@ -85,6 +85,11 @@ test_that("assert_conc_time", {
   )
 })
 
+test_that("assert_conc_time returns NULL invisibly for valid data", {
+  ret <- expect_invisible(assert_conc_time(conc = c(1, 2), time = c(0, 1)))
+  expect_null(ret)
+})
+
 test_that("assert_lambdaz", {
   expect_equal(assert_lambdaz(1), 1)
   expect_equal(assert_lambdaz(NA), NA) # NA is allowed by default
@@ -208,4 +213,13 @@ test_that("assert_unit", {
     assert_unit(unit = 1, data = d),
     regexp = "Must be of type 'character'"
   )
+})
+
+test_that("assert_conc_time is exported and checks concentrations and times together", {
+  expect_true("assert_conc_time" %in% getNamespaceExports("PKNCA"))
+  expect_null(assert_conc_time(conc = c(0, 2, 1), time = 0:2))
+  expect_invisible(assert_conc_time(conc = c(0, 2, 1), time = 0:2))
+  expect_error(assert_conc_time(conc = c(0, 2), time = 0:2), regexp = "conc")
+  expect_error(assert_conc_time(conc = c(0, 2, 1), time = c(2, 0, 1)), regexp = "time")
+  expect_null(assert_conc_time(conc = c(0, 2, 1), time = c(2, 0, 1), sorted_time = FALSE))
 })

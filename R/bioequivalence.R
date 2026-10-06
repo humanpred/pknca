@@ -50,23 +50,31 @@
 #'   RSABE-style scaled criterion with the NTID constant and the within-subject
 #'   standard deviation ratio constraint.
 #'
-#' All frameworks additionally impose the point-estimate constraint that the
-#' geometric mean ratio fall within 80.00-125.00%.
+#' * **descriptive** -- no regulatory decision.  The geometric means, their
+#'   ratio, and its confidence interval are estimated exactly as for ABE, but no
+#'   acceptance limits are applied and no pass/fail is reported.  Use it for
+#'   comparisons that are estimated rather than judged, such as food effect and
+#'   drug-drug interaction studies.
+#'
+#' All decision frameworks additionally impose the point-estimate constraint
+#' that the geometric mean ratio fall within 80.00-125.00%.
 #'
 #' @param name The regulatory framework, one of `"ABE"`, `"EMA"`, `"HC"`,
-#'   `"GCC"`, `"FDA"`, `"NTID"`, or `"HVNTID"`.
+#'   `"GCC"`, `"FDA"`, `"NTID"`, `"HVNTID"`, or `"descriptive"`.
 #' @returns An object of class `be_regulator`: a list with elements `name`,
 #'   `scaling` (one of `"none"`, `"abel"`, `"rsabe"`, `"ntid"`, `"hvntid"`),
 #'   `cvswitch`, `r_const`, `cvcap`, `switch_swr`, `pe_constr`, `est_method`
-#'   (`"anova"` or `"isc"`), and `switch_basis`.
+#'   (`"anova"` or `"isc"`), `decision` (`FALSE` only for `"descriptive"`), and
+#'   `switch_basis`.
 #' @family Bioequivalence
 #' @seealso [be_expand_limits()] for the ABEL acceptance limits and [be_assess()]
 #'   for the full assessment.
 #' @examples
 #' be_regulator("EMA")
 #' be_regulator("FDA")
+#' be_regulator("descriptive")
 #' @export
-be_regulator <- function(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVNTID")) {
+be_regulator <- function(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVNTID", "descriptive")) {
   name <- match.arg(name)
   # Regulatory constants, each with its source.  These are intentionally
   # internalized (not pulled from PowerTOST) so PKNCA stands alone.
@@ -111,14 +119,21 @@ be_regulator <- function(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVN
       HVNTID = list(
         scaling = "hvntid", cvswitch = NA_real_, r_const = NA_real_,
         cvcap = Inf, switch_swr = NA_real_, est_method = "isc"
+      ),
+      # No regulatory decision: the ABE estimates without limits or pass/fail.
+      descriptive = list(
+        scaling = "none", cvswitch = NA_real_, r_const = NA_real_,
+        cvcap = NA_real_, switch_swr = NA_real_, est_method = "anova"
       )
     )
+  decision <- name != "descriptive"
   structure(
     c(
       list(name = name),
       reg,
       list(
-        pe_constr = TRUE,
+        pe_constr = decision,
+        decision = decision,
         # Upper-confidence-bound cap on the swT/swR ratio (narrow therapeutic
         # index frameworks only).
         sw_ratio_cap = if (name %in% c("NTID", "HVNTID")) 2.5 else NA_real_,
@@ -154,6 +169,9 @@ print.be_regulator <- function(x, ...) {
   }
   cat(sprintf("  PE constraint:      %s\n", if (x$pe_constr) "80.00-125.00%" else "none"))
   cat(sprintf("  Point estimate:     %s\n", x$est_method))
+  if (!x$decision) {
+    cat("  Decision:           none (descriptive; no acceptance limits or pass/fail)\n")
+  }
   invisible(x)
 }
 
@@ -170,7 +188,8 @@ print.be_regulator <- function(x, ...) {
 #'   endpoint (for example from [be_within_var()]).
 #' @param regulator A regulator name (see [be_regulator()]) or a `be_regulator`
 #'   object.  Only the ABEL frameworks (`"EMA"`, `"HC"`, `"GCC"`) widen; `"ABE"`
-#'   always returns 80.00-125.00%.
+#'   always returns 80.00-125.00%, and `"descriptive"` (which has no limits) is
+#'   an error.
 #' @returns A named numeric vector `c(lower, upper)` of acceptance limits as
 #'   percentages.
 #' @family Bioequivalence
@@ -182,6 +201,12 @@ print.be_regulator <- function(x, ...) {
 #' @export
 be_expand_limits <- function(swR, regulator) {
   reg <- if (inherits(regulator, "be_regulator")) regulator else be_regulator(regulator)
+  if (!reg$decision) {
+    rlang::abort(
+      "The descriptive framework has no acceptance limits.",
+      class = "pknca_error_be_expand_limits_descriptive"
+    )
+  }
   checkmate::assert_number(swR, lower = 0, finite = TRUE)
   default <- c(lower = 80, upper = 125)
   # Only the expanding-limits frameworks widen; everything else uses 80-125%.
@@ -201,6 +226,12 @@ be_expand_limits <- function(swR, regulator) {
   swr_cap <- sqrt(log(1 + reg$cvcap^2))
   swr_eff <- min(swR, swr_cap)
   c(lower = exp(-reg$r_const * swr_eff) * 100, upper = exp(reg$r_const * swr_eff) * 100)
+}
+
+# Median, over subjects, of the number of times a subject received `level`.
+# Subjects who never received it count as zero.
+.be_median_reps <- function(level, trt, subj) {
+  as.numeric(stats::median(tapply(!is.na(trt) & trt == level, subj, sum)))
 }
 
 # Build a subject's treatment pattern (for example "TRTR"), ordering the
@@ -232,7 +263,12 @@ be_expand_limits <- function(swR, regulator) {
 #'   `n_sequences`, `n_periods`, `n_treatments`, `n_subjects`, `sequences`,
 #'   `treatments`, `reference`, `replicate_reference`, `replicate_test`,
 #'   `reps_reference`, `reps_test`, `balanced`, and `feasible` (a named logical
-#'   vector for `abe`, `abel`, `rsabe`, `ntid`, `hvntid`).
+#'   vector for `abe`, `abel`, `rsabe`, `ntid`, `hvntid`).  `reps_reference` is
+#'   the median, over subjects, of the number of times a subject received the
+#'   reference.  `reps_test` is the same median computed separately for each
+#'   test formulation; with several test formulations it is the smallest of
+#'   those medians, so `replicate_test` is `TRUE` only when every test
+#'   formulation is replicated.
 #' @family Bioequivalence
 #' @seealso [be_assess()]
 #' @examples
@@ -257,7 +293,10 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
   reference_value <- as.character(reference_value)
   treatments <- sort(unique(as.character(data[[treatment]])))
   if (!(reference_value %in% treatments)) {
-    stop("Reference value, \"", reference_value, "\", not found in column, \"", treatment, "\".")
+    rlang::abort(
+      sprintf("Reference value '%s' not found in column '%s'.", reference_value, treatment),
+      class = "pknca_error_be_design_ref_not_found"
+    )
   }
 
   subj <- as.character(data[[subject]])
@@ -265,9 +304,8 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
   per <- data[[period]]
   # Per-subject treatment pattern, ordered by period -- the realized sequence.
   patterns <- tapply(seq_len(nrow(data)), subj, .be_subject_pattern, per = per, trt = trt)
-  # Per-subject replication counts of each formulation.
+  # Per-subject replication counts of the reference.
   reps_ref_by_subj <- tapply(trt == reference_value, subj, sum)
-  reps_test_by_subj <- tapply(!is.na(trt) & trt != reference_value, subj, sum)
 
   n_subjects <- length(unique(subj))
   n_periods <- length(unique(per))
@@ -281,7 +319,11 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
   n_sequences <- length(seq_values)
 
   reps_reference <- as.numeric(stats::median(reps_ref_by_subj, na.rm = TRUE))
-  reps_test <- as.numeric(stats::median(reps_test_by_subj, na.rm = TRUE))
+  # Replication is counted per test formulation: pooling the test formulations
+  # would read a three-treatment crossover (each given once) as test-replicated.
+  test_levels <- setdiff(treatments, reference_value)
+  reps_test_each <- vapply(test_levels, .be_median_reps, numeric(1), trt = trt, subj = subj)
+  reps_test <- if (length(test_levels) == 0) 0 else min(reps_test_each)
   replicate_reference <- reps_reference >= 2
   replicate_test <- reps_test >= 2
 
@@ -454,13 +496,15 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
     .subject = factor(as.character(data[[subject]])),
     .period = factor(as.character(data[[period]])),
     .trt = as.character(data[[treatment]]),
-    .val = data[[value]],
-    stringsAsFactors = FALSE
+    .val = data[[value]]
   )
   work <- work[!is.na(work$.val) & work$.val > 0, , drop = FALSE]
   work$.logval <- log(work$.val)
   if (!(reference_value %in% work$.trt)) {
-    stop("Reference value, \"", reference_value, "\", not found in column, \"", treatment, "\".")
+    rlang::abort(
+      sprintf("Reference value '%s' not found in data.", reference_value),
+      class = "pknca_error_be_within_var_ref_not_found"
+    )
   }
   test_levels <- setdiff(unique(work$.trt), reference_value)
 
@@ -481,7 +525,10 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
     # only).  Variances come from the model; degrees of freedom are kept from
     # the ANOVA above (the design-based within-subject replication).
     if (is.na(ref_v$sw) || is.na(test_v$sw)) {
-      stop("model_type = \"nlme\" (mixed model) requires a fully replicated design with both formulations replicated; use model_type = \"anova\".")
+      rlang::abort(
+        "model_type = 'nlme' requires a fully replicated design with both formulations replicated; use model_type = 'anova'.",
+        class = "pknca_error_be_within_var_nlme_not_replicated"
+      )
     }
     mixed <- .be_within_var_mixed(work, reference_value, test_levels)
     ref_v$s2w <- mixed$s2wR
@@ -575,13 +622,36 @@ print.be_within_var <- function(x, ...) {
   }
 }
 
+# ISC estimate with the same fields as .be_isc(), all missing.  Used when no two
+# subjects received both formulations (a parallel design), where intra-subject
+# contrasts do not exist.  The argument is the condition from tryCatch().
+.be_isc_na <- function(cnd = NULL) {
+  list(
+    pe_log = NA_real_, se = NA_real_, df = NA_real_, n = 0L,
+    gmr_percent = NA_real_, ci_lower = NA_real_, ci_upper = NA_real_
+  )
+}
+
+# .be_isc(), or all-missing values when too few subjects have both formulations.
+# be_table() errors if a regulator that needs the ISC estimate gets the missing
+# values.
+.be_isc_or_na <- function(work, reference_value, test_level, alpha = 0.10) {
+  tryCatch(
+    .be_isc(work, reference_value, test_level, alpha),
+    pknca_error_be_isc_insufficient = .be_isc_na
+  )
+}
+
 .be_isc <- function(work, reference_value, test_level, alpha = 0.10) {
   byid <- split(work, work$.subject)
   ilat <- vapply(byid, .be_subject_ilat, numeric(1), reference_value, test_level)
   ilat <- ilat[!is.na(ilat)]
   n <- length(ilat)
   if (n < 2) {
-    stop("The intra-subject contrast estimate needs at least 2 subjects with both formulations.")
+    rlang::abort(
+      "The intra-subject contrast estimate needs at least 2 subjects with both formulations.",
+      class = "pknca_error_be_isc_insufficient"
+    )
   }
   pe_log <- mean(ilat)
   se <- stats::sd(ilat) / sqrt(n)
@@ -624,7 +694,10 @@ print.be_within_var <- function(x, ...) {
 # Average bioequivalence with expanding limits (EMA / HC / GCC).
 .be_abel <- function(est, wv, reg, alpha) {
   if (is.na(wv$swR)) {
-    stop("Reference scaling requires a replicated reference; the reference is not replicated.")
+    rlang::abort(
+      "Reference scaling requires a replicated reference; the reference is not replicated.",
+      class = "pknca_error_be_abel_reference_not_replicated"
+    )
   }
   lim <- be_expand_limits(wv$swR, reg)
   ci_ok <- est$ci_lower >= lim[["lower"]] && est$ci_upper <= lim[["upper"]]
@@ -639,7 +712,10 @@ print.be_within_var <- function(x, ...) {
 # variability (swR < 0.294) it falls back to unscaled average bioequivalence.
 .be_rsabe <- function(est, wv, reg, alpha) {
   if (is.na(wv$swR)) {
-    stop("Reference scaling requires a replicated reference; the reference is not replicated.")
+    rlang::abort(
+      "Reference scaling requires a replicated reference; the reference is not replicated.",
+      class = "pknca_error_be_rsabe_reference_not_replicated"
+    )
   }
   pe_ok <- .be_pe_ok(reg, est$gmr_percent)
   if (!is.na(reg$switch_swr) && wv$swR < reg$switch_swr) {
@@ -663,7 +739,10 @@ print.be_within_var <- function(x, ...) {
 # PowerTOST's power.NTID (BEscABE & BEABE & BEsratio).
 .be_ntid <- function(est, wv, reg, alpha) {
   if (is.na(wv$swT)) {
-    stop("NTID assessment requires a fully replicated design (both formulations replicated).")
+    rlang::abort(
+      "NTID assessment requires a fully replicated design (both formulations replicated).",
+      class = "pknca_error_be_ntid_not_replicated"
+    )
   }
   bound <- .be_rsabe_bound(est$pe_log, est$se, est$df, wv$s2wR, wv$df_wR, reg$r_const)
   list(
@@ -684,7 +763,10 @@ print.be_within_var <- function(x, ...) {
 # NTIDs).  Matches PowerTOST's power.HVNTID (BEABE & BEsratio).
 .be_hvntid <- function(est, wv, reg, alpha) {
   if (is.na(wv$swT)) {
-    stop("HVNTID assessment requires a fully replicated design (both formulations replicated).")
+    rlang::abort(
+      "HVNTID assessment requires a fully replicated design (both formulations replicated).",
+      class = "pknca_error_be_hvntid_not_replicated"
+    )
   }
   list(
     limit_lower = 80, limit_upper = 125, criterion = NA_real_,
@@ -696,8 +778,12 @@ print.be_within_var <- function(x, ...) {
   )
 }
 
-# Dispatch to the decider for a regulator's scaling type.
+# Dispatch to the decider for a regulator's scaling type.  The descriptive
+# framework makes no decision.
 .be_decide <- function(est, wv, reg, alpha) {
+  if (!reg$decision) {
+    return(list(limit_lower = NA_real_, limit_upper = NA_real_, criterion = NA_real_, pass = NA))
+  }
   switch(
     reg$scaling,
     none = .be_abe(est, wv, reg, alpha),
@@ -720,9 +806,12 @@ print.be_within_var <- function(x, ...) {
     return(hit[1])
   }
   if (required) {
-    stop(
-      "Could not determine the ", what, " column; supply it explicitly (tried: ",
-      paste(candidates, collapse = ", "), ")."
+    rlang::abort(
+      sprintf(
+        "Could not determine the %s column; supply it explicitly (tried: %s).",
+        what, paste(candidates, collapse = ", ")
+      ),
+      class = paste0("pknca_error_be_", what, "_column_not_found")
     )
   }
   NA_character_
@@ -730,17 +819,46 @@ print.be_within_var <- function(x, ...) {
 
 
 # Fixed-effects ANOVA average-BE estimate (Method A): subject as a fixed effect,
-# reproducing replicateBE::method.A's geometric mean ratio and CI.
+# reproducing replicateBE::method.A's geometric mean ratio and CI.  A parallel
+# design has one observation per subject, so subject would be aliased with
+# treatment; there the model is treatment (plus covariates) alone.
 .be_anova_est <- function(work, reference_value, test_level, alpha) {
   w <- work[work$.trt %in% c(reference_value, test_level), , drop = FALSE]
   w$.trt <- stats::relevel(factor(w$.trt), ref = reference_value)
   w$.subject <- droplevels(w$.subject)
   w$.period <- droplevels(w$.period)
-  fit_formula <-
-    if (nlevels(w$.period) > 1) .logval ~ .subject + .period + .trt else .logval ~ .subject + .trt
+  design_terms <-
+    if (.be_is_parallel(w)) {
+      ".trt"
+    } else if (nlevels(w$.period) > 1) {
+      c(".subject", ".period", ".trt")
+    } else {
+      c(".subject", ".trt")
+    }
+  covariate_terms <- .be_covariate_terms(w)
+  if (length(covariate_terms) > 0) {
+    # A covariate estimable across all arms can be aliased within one pair; lm()
+    # would then drop it for this test level only.  A subject-level covariate is
+    # absorbed by the subject fixed effect, which still adjusts for it, so the
+    # check leaves the subject term out.
+    .be_check_covariates_estimable(
+      w, c(setdiff(design_terms, ".subject"), covariate_terms),
+      context = sprintf("comparing test '%s' with reference '%s'", test_level, reference_value)
+    )
+  }
+  fit_formula <- stats::reformulate(c(design_terms, covariate_terms), response = ".logval")
   model <- stats::lm(fit_formula, data = w)
   cf <- summary(model)$coefficients
   term <- paste0(".trt", test_level)
+  if (!(term %in% rownames(cf))) {
+    rlang::abort(
+      sprintf(
+        "The effect of treatment '%s' is not estimable; it is aliased with a design term or covariate.",
+        test_level
+      ),
+      class = "pknca_error_be_trt_not_estimable"
+    )
+  }
   est <- cf[term, "Estimate"]
   se <- cf[term, "Std. Error"]
   df <- model$df.residual
@@ -786,16 +904,22 @@ print.be_within_var <- function(x, ...) {
 #' column is present, units are unavailable and the `units` column is omitted
 #' from the assessment table.
 #'
+#' Each covariate is copied to a standardized column named `.cov_<name>`
+#' (character columns become factors).  A covariate may not be one of the
+#' subject, sequence, period, treatment, or value columns, and it may not be
+#' missing in any row that is analyzed.
+#'
 #' @inheritParams be_assess
 #' @returns An object of class `be_dataset`: a list with `data` (the
-#'   standardized long frame, including a `.units` column), `columns` (the
-#'   resolved column names, including `units`), `reference_value`, `test_levels`,
-#'   and `endpoints` (those present).
+#'   standardized long frame, including a `.units` column and one `.cov_<name>`
+#'   column per covariate), `columns` (the resolved column names, including
+#'   `units` and `covariates`), `reference_value`, `test_levels`, and
+#'   `endpoints` (those present).
 #' @family Bioequivalence
 #' @export
 be_dataset <- function(object, reference_col, reference_value,
                        endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
-                       subject = NULL, sequence = NULL, period = NULL) {
+                       subject = NULL, sequence = NULL, period = NULL, covariates = NULL) {
   if (inherits(object, "PKNCAresults")) {
     assert_PKNCAresults(object)
     data <- as.data.frame(as.data.frame(object, filter_excluded = TRUE))
@@ -805,20 +929,28 @@ be_dataset <- function(object, reference_col, reference_value,
   } else if (is.data.frame(object)) {
     data <- as.data.frame(object)
   } else {
-    stop("`object` must be a PKNCAresults object or a data.frame.")
+    rlang::abort(
+      "`object` must be a PKNCAresults object or a data.frame.",
+      class = "pknca_error_be_invalid_object"
+    )
   }
   checkmate::assert_data_frame(data, min.rows = 1)
   checkmate::assert_subset("PPTESTCD", choices = names(data))
   checkmate::assert_string(reference_col)
   checkmate::assert_choice(reference_col, choices = names(data))
   checkmate::assert_character(endpoints, min.len = 1, any.missing = FALSE)
+  checkmate::assert_character(covariates, min.len = 1, any.missing = FALSE, unique = TRUE, null.ok = TRUE)
+  checkmate::assert_subset(covariates, choices = names(data))
   value_col <-
     if ("PPSTRES" %in% names(data)) {
       "PPSTRES"
     } else if ("PPORRES" %in% names(data)) {
       "PPORRES"
     } else {
-      stop("The data must contain a `PPORRES` or `PPSTRES` column of results.")
+      rlang::abort(
+        "The data must contain a `PPORRES` or `PPSTRES` column of results.",
+        class = "pknca_error_be_missing_value_col"
+      )
     }
   # Units column matching the value column (PKNCAresults provides PPSTRESU /
   # PPORRESU).  May be absent, in which case units are unavailable.
@@ -836,10 +968,42 @@ be_dataset <- function(object, reference_col, reference_value,
     .be_find_col(sequence, data, c("sequence", "Sequence", "SEQUENCE", "SEQ", "seq"), "sequence", required = FALSE)
   reference_value <- as.character(reference_value)
   if (!(reference_value %in% as.character(data[[reference_col]]))) {
-    stop("Reference value, \"", reference_value, "\", not found in column, \"", reference_col, "\".")
+    rlang::abort(
+      sprintf("Reference value, \"%s\", not found in column \"%s\".", reference_value, reference_col),
+      class = "pknca_error_be_dataset_ref_not_found"
+    )
+  }
+
+  covariates <- if (is.null(covariates)) character() else covariates
+  design_cols <- c(subject, sequence, period, reference_col, value_col, "PPTESTCD")
+  bad_cov <- intersect(covariates, design_cols)
+  if (length(bad_cov) > 0) {
+    rlang::abort(
+      sprintf(
+        "Covariate(s) %s are design or value columns and cannot also be covariates.",
+        paste(bad_cov, collapse = ", ")
+      ),
+      class = "pknca_error_be_covariate_design_col"
+    )
   }
 
   data <- data[!is.na(data[[value_col]]) & data[[value_col]] > 0, , drop = FALSE]
+  missing_cov <- covariates[vapply(data[covariates], anyNA, logical(1))]
+  if (length(missing_cov) > 0) {
+    rlang::abort(
+      sprintf(
+        "Covariate(s) %s have missing values in rows that would be analyzed.",
+        paste(missing_cov, collapse = ", ")
+      ),
+      class = "pknca_error_be_covariate_missing"
+    )
+  }
+  # Only covariates requested here become standardized `.cov_` columns.
+  data <- data[, !startsWith(names(data), ".cov_"), drop = FALSE]
+  for (cv in covariates) {
+    data[[paste0(".cov_", cv)]] <-
+      if (is.character(data[[cv]])) factor(data[[cv]]) else data[[cv]]
+  }
   data$.subject <- factor(as.character(data[[subject]]))
   data$.sequence <-
     if (!is.na(sequence)) factor(as.character(data[[sequence]])) else factor(rep(NA_character_, nrow(data)))
@@ -850,22 +1014,29 @@ be_dataset <- function(object, reference_col, reference_value,
 
   present <- intersect(endpoints, unique(as.character(data$PPTESTCD)))
   if (length(present) == 0) {
-    stop("None of the requested endpoints were found in the data.")
+    rlang::abort(
+      "None of the requested endpoints were found in the data.",
+      class = "pknca_error_be_no_endpoints"
+    )
   }
   missing_eps <- setdiff(endpoints, present)
   if (length(missing_eps) > 0) {
-    warning("Endpoints not found and skipped: ", paste(missing_eps, collapse = ", "))
+    rlang::warn(
+      sprintf("Endpoints not found and skipped: %s", paste(missing_eps, collapse = ", ")),
+      class = "pknca_warning_be_missing_endpoints"
+    )
   }
   # Bioequivalence assumes log-normal exposure metrics (Cmax, AUC).  Warn for
   # time/rate parameters where the log-normal model is inappropriate (Tmax, for
   # example, uses non-parametric methods).
   flagged <- present[tolower(present) %in% .be_nonlognormal_params]
   if (length(flagged) > 0) {
-    warning(
-      "Endpoint(s) ", paste(flagged, collapse = ", "), " are not log-normal ",
-      "exposure metrics; bioequivalence here log-transforms the value and is ",
-      "appropriate for Cmax/AUC. Time or rate parameters (e.g. Tmax, half-life) ",
-      "require different methods (non-parametric or Fieller)."
+    rlang::warn(
+      sprintf(
+        "Endpoint(s) %s are not log-normal exposure metrics; bioequivalence here log-transforms the value and is appropriate for Cmax/AUC. Time or rate parameters (e.g. Tmax, half-life) require different methods (non-parametric or Fieller).",
+        paste(flagged, collapse = ", ")
+      ),
+      class = "pknca_warning_be_nonlognormal_endpoint"
     )
   }
   structure(
@@ -873,7 +1044,8 @@ be_dataset <- function(object, reference_col, reference_value,
       data = data,
       columns = list(
         subject = subject, sequence = sequence, period = period,
-        treatment = reference_col, value = value_col, units = unit_col
+        treatment = reference_col, value = value_col, units = unit_col,
+        covariates = covariates
       ),
       reference_value = reference_value,
       test_levels = setdiff(levels(data$.trt), reference_value),
@@ -894,33 +1066,129 @@ print.be_dataset <- function(x, ...) {
 }
 
 # Choose the model type from the regulator and the design when the user did not
-# request one.  The FDA reference-scaled family always uses the intra-subject-
-# contrast path ("isc"); otherwise the design decides: a parallel design (one
-# measurement per subject) uses a fixed-effects ANOVA, while a crossover or
-# replicate design uses the mixed model "lmer".  The treatment-specific mixed
-# model ("nlme") needs a full replicate.
-.be_resolve_model_type <- function(model_type, reg, design) {
-  model_type <-
-    if (!is.null(model_type)) {
-      match.arg(model_type, c("lmer", "nlme", "anova", "isc"))
-    } else if (identical(reg$est_method, "isc")) {
-      "isc"
-    } else {
-      design$recommended_model_type
+# request one.  With `heteroscedastic = TRUE` the treatment-specific residual
+# variance models are used: "nlme" (lme + varIdent) for repeated measures and
+# "gls" (gls + varIdent) for a parallel design.  Otherwise the FDA
+# reference-scaled family uses the intra-subject-contrast path ("isc") and the
+# design decides the rest: a parallel design (one measurement per subject) uses a
+# fixed-effects ANOVA, while a crossover or replicate design uses the mixed model
+# "lmer".  "nlme" needs a full replicate only when reference scaling is
+# requested, because only then are its per-formulation variances used as
+# within-subject variances.
+.be_resolve_model_type <- function(model_type, reg, design, heteroscedastic = FALSE) {
+  parallel <- identical(design$recommended_model_type, "anova")
+  if (!is.null(model_type)) {
+    model_type <- match.arg(model_type, c("lmer", "nlme", "anova", "isc", "gls"))
+  }
+  if (heteroscedastic) {
+    if (identical(model_type, "lmer")) {
+      rlang::abort(
+        paste(
+          "heteroscedastic = TRUE cannot be combined with model_type = 'lmer':",
+          "lme4::lmer() fits a single residual variance (its weights are fixed prior weights).",
+          "Use model_type = 'nlme' (repeated measures) or 'gls' (parallel), or leave model_type = NULL."
+        ),
+        class = "pknca_error_be_heteroscedastic_lmer"
+      )
     }
-  if (identical(model_type, "nlme") && !(design$replicate_reference && design$replicate_test)) {
-    stop("model_type = \"nlme\" requires a fully replicated design (both formulations replicated).")
+    if (!is.null(model_type) && !(model_type %in% c("nlme", "gls"))) {
+      rlang::abort(
+        sprintf(
+          "heteroscedastic = TRUE requires model_type 'nlme' or 'gls'; model_type '%s' fits a single residual variance.",
+          model_type
+        ),
+        class = "pknca_error_be_heteroscedastic_model_type"
+      )
+    }
+    if (is.null(model_type)) {
+      model_type <- if (parallel) "gls" else "nlme"
+    }
+  } else if (is.null(model_type)) {
+    model_type <-
+      if (identical(reg$est_method, "isc")) {
+        "isc"
+      } else {
+        design$recommended_model_type
+      }
+  }
+  if (identical(model_type, "nlme") && parallel) {
+    rlang::abort(
+      "model_type = 'nlme' needs repeated measures per subject; use model_type = 'gls' for a parallel design.",
+      class = "pknca_error_be_nlme_parallel"
+    )
+  }
+  if (identical(model_type, "gls") && !parallel) {
+    rlang::abort(
+      "model_type = 'gls' is for parallel designs; use model_type = 'nlme' when subjects have repeated measures.",
+      class = "pknca_error_be_gls_repeated"
+    )
+  }
+  full_replicate <- design$replicate_reference && design$replicate_test
+  if (identical(model_type, "nlme") && reg$scaling != "none" && !full_replicate) {
+    rlang::abort(
+      "model_type = 'nlme' with reference scaling requires a fully replicated design (both formulations replicated).",
+      class = "pknca_error_be_resolve_model_nlme_not_replicated"
+    )
   }
   model_type
 }
 
+# TRUE when no subject has more than one observation (a parallel design).
+.be_is_parallel <- function(ds_ep) {
+  max(table(droplevels(ds_ep$.subject))) <= 1
+}
+
+# Formula terms for the standardized covariate columns (`.cov_<name>`, from
+# be_dataset()), backquoted so that any column name is usable.  A covariate
+# with a single value cannot be estimated and is an error.
+.be_covariate_terms <- function(ds_ep) {
+  covs <- grep("^\\.cov_", names(ds_ep), value = TRUE)
+  constant <- covs[lengths(lapply(ds_ep[covs], unique)) < 2]
+  if (length(constant) > 0) {
+    rlang::abort(
+      sprintf(
+        "Covariate(s) %s take a single value in the analyzed data and cannot be estimated.",
+        paste(sub("^\\.cov_", "", constant), collapse = ", ")
+      ),
+      class = "pknca_error_be_covariate_constant"
+    )
+  }
+  if (length(covs) == 0) character() else paste0("`", covs, "`")
+}
+
+# Error when the fixed effects, including covariates, are aliased (for example a
+# covariate that duplicates the treatment).  Without this, lm() and lmer() drop
+# a column silently and lme() and gls() fail with a singularity error.
+# `context`, when given, names the comparison in the message.
+.be_check_covariates_estimable <- function(ds_ep, terms, context = NULL) {
+  mm <- stats::model.matrix(stats::reformulate(terms), data = droplevels(ds_ep))
+  if (qr(mm)$rank < ncol(mm)) {
+    rlang::abort(
+      paste0(
+        "The covariates are aliased with the treatment, sequence, or period terms or with each other",
+        if (is.null(context)) "" else paste0(" when ", context),
+        ", so the model is not estimable."
+      ),
+      class = "pknca_error_be_covariate_aliased"
+    )
+  }
+}
+
 # Build the average-BE fixed-effects model formula from the standardized
-# columns, dropping the sequence term when it is absent or single-level.
+# columns, dropping the sequence term when it is absent or single-level, and
+# for a parallel design, where the sequence is the treatment arm.  Covariates
+# are appended as additive fixed effects.
 .be_model_formula <- function(ds_ep, random) {
   terms <- character()
-  if (nlevels(droplevels(ds_ep$.sequence)) > 1) terms <- c(terms, ".sequence")
+  if (!.be_is_parallel(ds_ep) && nlevels(droplevels(ds_ep$.sequence)) > 1) {
+    terms <- c(terms, ".sequence")
+  }
   if (nlevels(droplevels(ds_ep$.period)) > 1) terms <- c(terms, ".period")
-  terms <- c(terms, ".trt")
+  covariate_terms <- .be_covariate_terms(ds_ep)
+  terms <- c(terms, ".trt", covariate_terms)
+  if (length(covariate_terms) > 0) {
+    .be_check_covariates_estimable(ds_ep, terms)
+  }
   rhs <- paste(terms, collapse = " + ")
   if (random) rhs <- paste(rhs, "+ (1|.subject)")
   stats::as.formula(paste(".logval ~", rhs))
@@ -930,15 +1198,18 @@ print.be_dataset <- function(x, ...) {
 #'
 #' `be_fit_model_single()` fits the average-BE model for a single endpoint and
 #' dispatches on `model_type` to `be_fit_model_lmer()`, `be_fit_model_nlme()`,
-#' or `be_fit_model_anova()`.  This is the only place model fitting happens.  For
-#' the `"lmer"`, `"anova"`, and `"isc"` types the within-formulation ANOVA
-#' variances are also fit here; for `"nlme"` they come from the single mixed
-#' model.
+#' `be_fit_model_gls()`, or `be_fit_model_anova()`.  This is the only place
+#' model fitting happens.  For the `"lmer"`, `"anova"`, and `"isc"` types the
+#' within-formulation ANOVA variances are also fit here; for `"nlme"` they come
+#' from the single mixed model.  Covariate columns carried by [be_dataset()]
+#' (`.cov_<name>`) enter every model as additive fixed effects.
 #'
 #' @param ds_ep The standardized single-endpoint data.frame from [be_dataset()]
 #'   (`be_dataset(...)$data` filtered to one endpoint).
-#' @param model_type One of `"lmer"`, `"nlme"`, `"anova"`, or `"isc"` (the
-#'   intra-subject-contrast path, fit like `"anova"`).
+#' @param model_type One of `"lmer"`, `"nlme"`, `"anova"`, `"isc"` (the
+#'   intra-subject-contrast path, fit like `"anova"`), or `"gls"` (generalized
+#'   least squares with treatment-specific residual variances, for parallel
+#'   designs).
 #' @param scaling Logical; whether reference scaling is needed (controls whether
 #'   the within-formulation variances are estimated).
 #' @returns An object of class `be_fit`: a list with `model_type`, the fitted
@@ -947,13 +1218,14 @@ print.be_dataset <- function(x, ...) {
 #'   attribute (`NULL` when not provided).
 #' @family Bioequivalence
 #' @export
-be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova", "isc"), scaling = TRUE) {
+be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova", "isc", "gls"), scaling = TRUE) {
   model_type <- match.arg(model_type)
   fit <-
     switch(
       model_type,
       lmer = be_fit_model_lmer(ds_ep, scaling = scaling),
-      nlme = be_fit_model_nlme(ds_ep),
+      nlme = be_fit_model_nlme(ds_ep, scaling = scaling),
+      gls = be_fit_model_gls(ds_ep),
       anova = ,
       isc = be_fit_model_anova(ds_ep, scaling = scaling)
     )
@@ -984,7 +1256,10 @@ be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova", "
 # Internal fitter dispatched by be_fit_model_single().
 be_fit_model_lmer <- function(ds_ep, scaling = TRUE) {
   if (!requireNamespace("lme4", quietly = TRUE) || !requireNamespace("lmerTest", quietly = TRUE)) {
-    stop("The 'lme4' and 'lmerTest' packages are required for model_type = \"lmer\"; install them with install.packages(c(\"lme4\", \"lmerTest\")).")
+    rlang::abort(
+      "The 'lme4' and 'lmerTest' packages are required for model_type = 'lmer'; install them with install.packages(c('lme4', 'lmerTest')).",
+      class = "pknca_error_be_missing_lme4"
+    )
   }
   model <- lmerTest::lmer(.be_model_formula(ds_ep, random = TRUE), data = ds_ep)
   c(list(model = model), .be_fit_within(ds_ep, scaling))
@@ -996,22 +1271,46 @@ be_fit_model_anova <- function(ds_ep, scaling = TRUE) {
   c(list(model = model), .be_fit_within(ds_ep, scaling))
 }
 
-# Internal fitter dispatched by be_fit_model_single().
-be_fit_model_nlme <- function(ds_ep) {
+# Internal fitter dispatched by be_fit_model_single().  Several test
+# formulations are allowed unless reference scaling is requested, because the
+# scaling frameworks compare one test formulation's variance to the reference.
+# The formula is inlined into the call (bquote) so emmeans can re-evaluate it.
+be_fit_model_nlme <- function(ds_ep, scaling = TRUE) {
   reference_value <- levels(ds_ep$.trt)[1]
   test_levels <- setdiff(levels(ds_ep$.trt), reference_value)
-  if (length(test_levels) != 1) {
-    stop("model_type = \"nlme\" supports a single test formulation; use \"anova\" or \"lmer\".")
+  if (scaling && length(test_levels) != 1) {
+    rlang::abort(
+      "model_type = 'nlme' with reference scaling supports a single test formulation; use 'anova' or 'lmer'.",
+      class = "pknca_error_be_nlme_multiple_test"
+    )
   }
-  model <-
+  fixed <- .be_model_formula(ds_ep, random = FALSE)
+  model <- eval(bquote(
     nlme::lme(
-      .be_model_formula(ds_ep, random = FALSE),
+      .(fixed),
       random = ~ 1 | .subject,
       weights = nlme::varIdent(form = ~ 1 | .trt),
       data = ds_ep,
       control = nlme::lmeControl(opt = "optim", returnObject = TRUE)
     )
+  ))
   list(model = model, ref_var = NULL, test_var = NULL)
+}
+
+# Internal fitter dispatched by be_fit_model_single().  Generalized least
+# squares with treatment-specific residual variances, for a parallel design
+# (one observation per subject, so there is no within-subject variance).  The
+# formula is inlined into the call (bquote) so emmeans can re-evaluate it.
+be_fit_model_gls <- function(ds_ep) {
+  fixed <- .be_model_formula(ds_ep, random = FALSE)
+  model <- eval(bquote(
+    nlme::gls(
+      .(fixed),
+      weights = nlme::varIdent(form = ~ 1 | .trt),
+      data = ds_ep
+    )
+  ))
+  list(model = model, ref_var = .be_arm_var_na(), test_var = .be_arm_var_na())
 }
 
 #' Extract bioequivalence parameters from a fitted model
@@ -1039,17 +1338,18 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
       fit$model_type,
       lmer = be_extract_param_lmer(fit, alpha),
       nlme = be_extract_param_nlme(fit, alpha),
+      gls = be_extract_param_gls(fit, ds_ep, alpha),
       anova = ,
       isc = be_extract_param_anova(fit, ds_ep, alpha)
     )
   # Within-formulation variances: from the ANOVA fits (lmer/anova) or the
-  # varIdent model (nlme).
+  # varIdent model (nlme); none for gls (parallel).
   wv <- model_part$within
   units <- attr(fit, "units")
   if (is.null(units)) units <- NA_character_
   rows <- list()
   for (tl in test_levels) {
-    isc <- .be_isc(ds_ep, reference_value, tl, alpha)
+    isc <- .be_isc_or_na(ds_ep, reference_value, tl, alpha)
     m <- model_part$contrasts[[tl]]
     n_tl <- length(unique(ds_ep$.subject[ds_ep$.trt %in% c(reference_value, tl)]))
     rows[[length(rows) + 1]] <-
@@ -1065,8 +1365,7 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
         isc_gmr_percent = isc$gmr_percent, isc_ci_lower = isc$ci_lower, isc_ci_upper = isc$ci_upper,
         swr = wv$ref_var$sw, swt = wv$test_var$sw,
         cvwr_percent = wv$ref_var$cv, cvwt_percent = wv$test_var$cv,
-        df_wr = wv$ref_var$df, df_wt = wv$test_var$df,
-        stringsAsFactors = FALSE
+        df_wr = wv$ref_var$df, df_wt = wv$test_var$df
       )
   }
   out <- do.call(rbind, rows)
@@ -1095,27 +1394,39 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
   out
 }
 
-# Shared emmeans extraction for the lmer and nlme model types.  Returns the
-# reference geometric mean (with confidence interval) and, per test level, the
-# test geometric mean (with confidence interval) and the geometric mean ratio
-# with its confidence interval.
-.be_emmeans_part <- function(model, reference_value, test_levels, alpha, lmer_df = NULL, ref_var, test_var) {
+# emmeans contrast coefficients for `test_level` minus `reference_value`, over
+# the treatment levels `lev` in emmeans grid order.
+.be_contrast_coef <- function(test_level, lev, reference_value) {
+  as.numeric(lev == test_level) - as.numeric(lev == reference_value)
+}
+
+# Shared emmeans extraction for the lmer, nlme, and gls model types.  Returns
+# the reference geometric mean (with confidence interval) and, per test level,
+# the test geometric mean (with confidence interval) and the geometric mean
+# ratio with its confidence interval.  `data` is passed to emmeans for models
+# that do not keep their data (gls), and `emm_mode` is the emmeans
+# degrees-of-freedom `mode` for models that take one (gls).  Contrasts are named
+# by test level, so each test level's row is found by exact name.
+.be_emmeans_part <- function(model, reference_value, test_levels, alpha, lmer_df = NULL, ref_var, test_var,
+                             data = NULL, emm_mode = NULL) {
   emm_args <- list(object = model, specs = ".trt")
   if (!is.null(lmer_df)) emm_args$lmer.df <- lmer_df
+  if (!is.null(data)) emm_args$data <- data
+  if (!is.null(emm_mode)) emm_args$mode <- emm_mode
   emm <- do.call(emmeans::emmeans, emm_args)
   arm <- .be_arm_gm_from_emm(emm, alpha)
-  ctr <- emmeans::contrast(emm, method = "revpairwise", adjust = "none")
+  ctr_coef <-
+    stats::setNames(
+      lapply(test_levels, .be_contrast_coef, lev = names(arm), reference_value = reference_value),
+      test_levels
+    )
+  ctr <- emmeans::contrast(emm, method = ctr_coef, adjust = "none")
   cs <- as.data.frame(summary(ctr, infer = c(TRUE, TRUE), level = 1 - alpha))
   ref <- arm[[reference_value]]
   contrasts <- list()
   for (tl in test_levels) {
     t_arm <- arm[[tl]]
-    crow <-
-      if (length(test_levels) == 1) {
-        cs[1, , drop = FALSE]
-      } else {
-        cs[grepl(tl, cs$contrast, fixed = TRUE), , drop = FALSE][1, ]
-      }
+    crow <- cs[as.character(cs$contrast) == tl, , drop = FALSE]
     contrasts[[tl]] <- list(
       gm_test = t_arm$gm, gm_test_lower = t_arm$lower, gm_test_upper = t_arm$upper,
       gmr_percent = exp(crow$estimate) * 100,
@@ -1131,36 +1442,68 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
   )
 }
 
+# Error unless emmeans (Suggests) is installed; the class names the model type.
+.be_require_emmeans <- function(model_type) {
+  if (!requireNamespace("emmeans", quietly = TRUE)) {
+    rlang::abort(
+      "The 'emmeans' package is required to extract bioequivalence parameters; install it with install.packages('emmeans').",
+      class = paste0("pknca_error_be_", model_type, "_missing_emmeans")
+    )
+  }
+}
+
 # Internal extractor dispatched by be_extract_param().
 be_extract_param_lmer <- function(fit, alpha = 0.10) {
-  if (!requireNamespace("emmeans", quietly = TRUE)) {
-    stop("The 'emmeans' package is required to extract bioequivalence parameters; install it with install.packages(\"emmeans\").")
-  }
+  .be_require_emmeans("lmer")
   reference_value <- levels(fit$model@frame$.trt)[1]
   test_levels <- setdiff(levels(fit$model@frame$.trt), reference_value)
   .be_emmeans_part(fit$model, reference_value, test_levels, alpha,
                    lmer_df = "satterthwaite", ref_var = fit$ref_var, test_var = fit$test_var)
 }
 
+# Treatment-specific within-subject variance of one formulation from the
+# varIdent structure of an nlme fit.  It is a within-subject variance only when
+# the formulation is replicated within subjects; otherwise the residual also
+# carries the subject-by-formulation interaction and the variance is reported
+# as missing.  Degrees of freedom are the design-based ANOVA ones, as in
+# be_within_var().
+.be_nlme_arm_var <- function(dat, level, sigma, mult) {
+  anova_var <- .be_arm_var(dat[dat$.trt == level, , drop = FALSE])
+  if (is.na(anova_var$df)) {
+    return(.be_arm_var_na())
+  }
+  s2 <- (sigma * mult[[level]])^2
+  list(s2w = s2, sw = sqrt(s2), df = anova_var$df, cv = sqrt(exp(s2) - 1) * 100)
+}
+
 # Internal extractor dispatched by be_extract_param().
 be_extract_param_nlme <- function(fit, alpha = 0.10) {
-  if (!requireNamespace("emmeans", quietly = TRUE)) {
-    stop("The 'emmeans' package is required to extract bioequivalence parameters; install it with install.packages(\"emmeans\").")
-  }
+  .be_require_emmeans("nlme")
   dat <- fit$model$data
   reference_value <- levels(dat$.trt)[1]
   test_levels <- setdiff(levels(dat$.trt), reference_value)
-  # Treatment-specific within-subject SDs from the varIdent structure.
   sigma <- fit$model$sigma
   mult <- stats::coef(fit$model$modelStruct$varStruct, unconstrained = FALSE, allCoef = TRUE)
-  arm_var <- function(level) {
-    s2 <- (sigma * mult[[level]])^2
-    list(sw = sqrt(s2), s2w = s2, cv = sqrt(exp(s2) - 1) * 100, df = NA_real_)
-  }
-  ref_var <- arm_var(reference_value)
-  test_var <- if (length(test_levels) == 1) arm_var(test_levels) else .be_arm_var_na()
+  ref_var <- .be_nlme_arm_var(dat, reference_value, sigma, mult)
+  test_var <-
+    if (length(test_levels) == 1) .be_nlme_arm_var(dat, test_levels, sigma, mult) else .be_arm_var_na()
   .be_emmeans_part(fit$model, reference_value, test_levels, alpha,
-                   ref_var = ref_var, test_var = test_var)
+                   ref_var = ref_var, test_var = test_var, data = dat)
+}
+
+# Internal extractor dispatched by be_extract_param().  gls does not keep its
+# data, so the endpoint data are passed to emmeans.  Satterthwaite degrees of
+# freedom are requested explicitly: the emmeans default for gls ("auto") falls
+# back to residual degrees of freedom when the variance-parameter covariance is
+# unavailable, while an explicit "satterthwaite" errors instead.  With
+# treatment as the only fixed effect they match the Welch degrees of freedom.
+be_extract_param_gls <- function(fit, ds_ep, alpha = 0.10) {
+  .be_require_emmeans("gls")
+  reference_value <- levels(ds_ep$.trt)[1]
+  test_levels <- setdiff(levels(ds_ep$.trt), reference_value)
+  .be_emmeans_part(fit$model, reference_value, test_levels, alpha,
+                   ref_var = fit$ref_var, test_var = fit$test_var, data = ds_ep,
+                   emm_mode = "satterthwaite")
 }
 
 # Internal extractor dispatched by be_extract_param().
@@ -1209,7 +1552,8 @@ be_extract_param_anova <- function(fit, ds_ep, alpha = 0.10) {
 #' @param design The design label (character) for the `design` column.
 #' @param model_type The model type label for the `model_type` column.
 #' @returns A data.frame with one row per endpoint and test formulation and the
-#'   pass/fail decision columns.
+#'   pass/fail decision columns.  For the `"descriptive"` framework the decision
+#'   columns (`limit_lower`, `limit_upper`, `criterion`, and `pass`) are omitted.
 #' @family Bioequivalence
 #' @export
 be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, model_type = NA_character_) {
@@ -1235,6 +1579,12 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
           gmr_percent = p$model_gmr_percent, ci_lower = p$model_ci_lower, ci_upper = p$model_ci_upper
         )
       }
+    if (identical(reg$est_method, "isc") && is.na(est$pe_log)) {
+      rlang::abort(
+        "The intra-subject contrast estimate needs at least 2 subjects with both formulations.",
+        class = "pknca_error_be_isc_insufficient"
+      )
+    }
     dec <- .be_decide(est, wv, reg, alpha)
     rows[[length(rows) + 1]] <-
       data.frame(
@@ -1245,12 +1595,14 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
         gmr_percent = est$gmr_percent, ci_lower = est$ci_lower, ci_upper = est$ci_upper,
         cvwr_percent = p$cvwr_percent, cvwt_percent = p$cvwt_percent, swr = p$swr,
         limit_lower = dec$limit_lower, limit_upper = dec$limit_upper, criterion = dec$criterion,
-        regulator = reg$name, model_type = model_type, pass = dec$pass,
-        stringsAsFactors = FALSE
+        regulator = reg$name, model_type = model_type, pass = dec$pass
       )
   }
   out <- do.call(rbind, rows)
   rownames(out) <- NULL
+  if (!reg$decision) {
+    out <- out[, setdiff(names(out), c("limit_lower", "limit_upper", "criterion", "pass")), drop = FALSE]
+  }
   out
 }
 
@@ -1269,10 +1621,13 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
       } else {
         "both a test and reference formulation"
       }
-    stop(sprintf(
-      "The %s framework requires %s, which the %s design does not provide.",
-      reg$name, need, design$design
-    ))
+    rlang::abort(
+      sprintf(
+        "The %s framework requires %s, which the %s design does not provide.",
+        reg$name, need, design$design
+      ),
+      class = "pknca_error_be_infeasible_design"
+    )
   }
 }
 
@@ -1302,20 +1657,37 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
 be_fit_models <- function(object, reference_col, reference_value,
                           endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
                           regulator = "ABE", model_type = NULL, alpha = 0.10,
-                          subject = NULL, sequence = NULL, period = NULL, design = NULL) {
+                          subject = NULL, sequence = NULL, period = NULL, design = NULL,
+                          covariates = NULL, heteroscedastic = FALSE) {
   assert_numeric_between(alpha, lower = 0, upper = 1)
+  checkmate::assert_flag(heteroscedastic)
   reg <- be_regulator(regulator)
-  ds <- be_dataset(object, reference_col, reference_value, endpoints, subject, sequence, period)
+  ds <- be_dataset(
+    object, reference_col, reference_value, endpoints, subject, sequence, period,
+    covariates = covariates
+  )
   if (is.null(design)) {
     design <- be_design(
       ds$data, ds$columns$subject, ds$columns$sequence, ds$columns$period,
       ds$columns$treatment, ds$reference_value
     )
   } else if (!inherits(design, "be_design")) {
-    stop("`design` must be a `be_design` object from `be_design()`.")
+    rlang::abort(
+      "`design` must be a `be_design` object from `be_design()`.",
+      class = "pknca_error_be_invalid_design"
+    )
   }
   .be_check_feasible(reg, design)
-  model_type <- .be_resolve_model_type(model_type, reg, design)
+  model_type <- .be_resolve_model_type(model_type, reg, design, heteroscedastic)
+  if (length(ds$columns$covariates) > 0 && identical(reg$est_method, "isc")) {
+    rlang::warn(
+      sprintf(
+        "The %s framework uses intra-subject contrasts for the ratio and its decision; covariates affect only the geometric means.",
+        reg$name
+      ),
+      class = "pknca_warning_be_covariates_isc"
+    )
+  }
 
   params <- list()
   for (ep in ds$endpoints) {
@@ -1335,18 +1707,20 @@ be_fit_models <- function(object, reference_col, reference_value,
     .be_warn_units_missing()
     tbl$units <- NULL
   }
-  attr(tbl, "caption") <- .be_caption(reg, model_type, alpha)
+  attr(tbl, "caption") <- .be_caption(reg, model_type, alpha, ds$columns$covariates)
   tbl
 }
 
-# A methods caption documenting the model and the regulatory decision rule.
-.be_caption <- function(reg, model_type, alpha) {
+# A methods caption documenting the model, any covariates, and the regulatory
+# decision rule (or that no decision was applied).
+.be_caption <- function(reg, model_type, alpha, covariates = character()) {
   ci <- sprintf("%g%% CI", 100 * (1 - alpha))
   model_desc <-
     switch(
       model_type,
       lmer = "a mixed-effects model (lmerTest::lmer, Satterthwaite degrees of freedom)",
       nlme = "a mixed-effects model with treatment-specific residual variances (nlme::lme)",
+      gls = "a generalized least-squares model with treatment-specific residual variances (nlme::gls, Satterthwaite degrees of freedom from emmeans)",
       anova = ,
       isc = "a fixed-effects ANOVA"
     )
@@ -1377,6 +1751,9 @@ be_fit_models <- function(object, reference_col, reference_value,
       ntid = "Narrow therapeutic index scaling requires the scaled bound, the conventional 90% CI within 80.00-125.00%, and the swT/swR ratio bound.",
       hvntid = "Highly variable NTID scaling requires the scaled bound and the swT/swR ratio bound."
     )
+  if (!reg$decision) {
+    decision <- "No regulatory decision was applied: there are no acceptance limits and no pass/fail."
+  }
   within <-
     if (identical(reg$scaling, "none")) {
       ""
@@ -1385,7 +1762,28 @@ be_fit_models <- function(object, reference_col, reference_value,
     } else {
       " Within-formulation variances (swR, swT) are estimated by ANOVA on each formulation's replicates."
     }
-  sprintf("%s bioequivalence assessment (%s). %s %s%s", reg$name, ci, point, decision, within)
+  covariate_text <-
+    if (length(covariates) == 0) {
+      ""
+    } else {
+      paste0(
+        sprintf(
+          paste(
+            " The model includes %s as additive covariate(s); least-squares means are at",
+            "the mean of numeric covariates and averaged over the levels of factor covariates."
+          ),
+          paste(covariates, collapse = ", ")
+        ),
+        if (identical(reg$est_method, "isc")) " Covariates do not enter the intra-subject contrasts." else ""
+      )
+    }
+  title <-
+    if (reg$decision) {
+      sprintf("%s bioequivalence assessment (%s).", reg$name, ci)
+    } else {
+      sprintf("Descriptive treatment comparison (%s).", ci)
+    }
+  sprintf("%s %s %s%s%s", title, point, decision, within, covariate_text)
 }
 
 #' Assess bioequivalence against a regulatory framework
@@ -1405,9 +1803,25 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' confidence interval.  The FDA reference-scaled frameworks (FDA RSABE, NTID,
 #' HVNTID) always use intra-subject contrasts (`"isc"`), as the guidances
 #' specify, regardless of design.  Pass `model_type` to override (`"lmer"`,
-#' `"anova"`, `"isc"`, or `"nlme"`).  Within-subject variability uses the
-#' regulatory ANOVA estimator for the `"lmer"`/`"anova"`/`"isc"` paths and the
-#' treatment-specific mixed-model estimator for `"nlme"`.
+#' `"anova"`, `"isc"`, `"nlme"`, or `"gls"`).  Within-subject variability uses
+#' the regulatory ANOVA estimator for the `"lmer"`/`"anova"`/`"isc"` paths and
+#' the treatment-specific mixed-model estimator for `"nlme"`.
+#'
+#' With `heteroscedastic = TRUE` the residual variance is estimated separately
+#' for each treatment: a crossover or replicate study uses `nlme::lme()` with
+#' `varIdent(~ 1 | treatment)` (`"nlme"`), and a parallel study uses
+#' `nlme::gls()` with the same variance structure (`"gls"`).  `lme4::lmer()`
+#' cannot estimate treatment-specific residual variances (its `weights` are
+#' fixed prior weights), so `heteroscedastic = TRUE` with `model_type = "lmer"`
+#' is an error.  Without reference scaling, `"nlme"` accepts non-replicated
+#' designs and several test formulations; with reference scaling it needs a
+#' fully replicated design and one test formulation, because the
+#' per-formulation variances are then used as the within-subject variances.
+#'
+#' `regulator = "descriptive"` estimates the geometric means, their ratio, and
+#' its confidence interval exactly as for `"ABE"` but applies no acceptance
+#' limits and reports no pass/fail, for comparisons such as food effect and
+#' drug-drug interaction studies.
 #'
 #' @param object A `PKNCAresults` object or a tidy long data.frame with a
 #'   `PPTESTCD` column of parameter names, a `PPORRES`/`PPSTRES` column of
@@ -1418,12 +1832,16 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' @param endpoints Character vector of NCA parameters (matched against
 #'   `PPTESTCD`) to assess.
 #' @param regulator The regulatory framework (see [be_regulator()]); one of
-#'   `"ABE"`, `"EMA"`, `"HC"`, `"GCC"`, `"FDA"`, `"NTID"`, or `"HVNTID"`.
+#'   `"ABE"`, `"EMA"`, `"HC"`, `"GCC"`, `"FDA"`, `"NTID"`, `"HVNTID"`, or
+#'   `"descriptive"` (no acceptance limits or pass/fail).
 #' @param model_type The model for the average-BE point estimate, one of
 #'   `"lmer"` (mixed model, for crossover/replicate designs), `"anova"`
 #'   (fixed-effects, for parallel designs), `"isc"` (intra-subject contrasts, the
-#'   FDA reference-scaled path), or `"nlme"` (treatment-specific mixed model).
-#'   When `NULL` (default) it is chosen from the design and regulator.
+#'   FDA reference-scaled path), `"nlme"` (mixed model with treatment-specific
+#'   residual variances, for crossover/replicate designs), or `"gls"`
+#'   (generalized least squares with treatment-specific residual variances, for
+#'   parallel designs).  When `NULL` (default) it is chosen from the design,
+#'   the regulator, and `heteroscedastic`.
 #' @param alpha The significance level; the confidence interval has level
 #'   `1 - alpha` (default `0.10` gives the 90% interval).
 #' @param subject,sequence,period Column names for the subject, randomization
@@ -1431,6 +1849,15 @@ be_fit_models <- function(object, reference_col, reference_value,
 #'   object or detected from common column names.  `sequence` may be absent.
 #' @param design An optional [be_design()] object; computed from the data when
 #'   `NULL`.
+#' @param covariates An optional character vector of column names added to
+#'   every model as additive fixed effects (numeric columns as linear terms,
+#'   character or factor columns as factors).  They must not be missing in any
+#'   analyzed row.  For a `PKNCAresults` object they must be columns of
+#'   `as.data.frame(object)`, which means grouping columns.  The within-subject
+#'   variances used for reference scaling and the intra-subject contrasts do not
+#'   use covariates.
+#' @param heteroscedastic Logical.  When `TRUE`, estimate a separate residual
+#'   variance for each treatment (see Details).
 #' @returns An object of class `be_assess` (a data.frame), ordered by endpoint
 #'   (in the order requested) then by test formulation (reference-first), with
 #'   one row per endpoint and test formulation and the columns `endpoint`,
@@ -1442,7 +1869,10 @@ be_fit_models <- function(object, reference_col, reference_value,
 #'   `cvwr_percent`, `cvwt_percent`, `swr`, `limit_lower`, `limit_upper`,
 #'   `criterion`, `regulator`, `model_type`, and `pass`.  `limit_*` are `NA` for
 #'   the RSABE criterion and `criterion` is `NA` for the limit-based frameworks.
-#'   A `caption` attribute documents the model and the decision rule.
+#'   For `regulator = "descriptive"` the `limit_lower`, `limit_upper`,
+#'   `criterion`, and `pass` columns are omitted.  A `caption` attribute
+#'   documents the model and the decision rule, or states that no regulatory
+#'   decision was applied.
 #' @family Bioequivalence
 #' @seealso [be_compare()] to assess one dataset under several frameworks,
 #'   [be_within_var()], and [be_regulator()].
@@ -1458,8 +1888,7 @@ be_fit_models <- function(object, reference_col, reference_value,
 #'     subject = i, sequence = seqs[i], period = seq_along(trt), treatment = trt,
 #'     PPTESTCD = "auclast",
 #'     PPORRES = exp(log(100) + ifelse(trt == "T", 0.04, 0) + b[i] +
-#'                     stats::rnorm(length(trt), sd = 0.45)),
-#'     stringsAsFactors = FALSE
+#'                     stats::rnorm(length(trt), sd = 0.45))
 #'   )
 #' }))
 #' be_assess(d, reference_col = "treatment", reference_value = "R",
@@ -1468,11 +1897,13 @@ be_fit_models <- function(object, reference_col, reference_value,
 be_assess <- function(object, reference_col, reference_value,
                       endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
                       regulator = "ABE", model_type = NULL, alpha = 0.10,
-                      subject = NULL, sequence = NULL, period = NULL, design = NULL) {
+                      subject = NULL, sequence = NULL, period = NULL, design = NULL,
+                      covariates = NULL, heteroscedastic = FALSE) {
   out <- be_fit_models(
     object, reference_col = reference_col, reference_value = reference_value,
     endpoints = endpoints, regulator = regulator, model_type = model_type, alpha = alpha,
-    subject = subject, sequence = sequence, period = period, design = design
+    subject = subject, sequence = sequence, period = period, design = design,
+    covariates = covariates, heteroscedastic = heteroscedastic
   )
   structure(
     out,
@@ -1511,10 +1942,13 @@ format.be_assess <- function(x, digits = 2, ...) {
 
 #' @export
 print.be_assess <- function(x, ...) {
-  cat(sprintf(
-    "Bioequivalence assessment: %s (model_type %s, %g%% CI)\n",
-    attr(x, "regulator"), attr(x, "model_type"), (1 - attr(x, "alpha")) * 100
-  ))
+  header <-
+    if (identical(attr(x, "regulator"), "descriptive")) {
+      "Treatment comparison: descriptive, no regulatory decision (model_type %s, %g%% CI)\n"
+    } else {
+      paste0("Bioequivalence assessment: ", attr(x, "regulator"), " (model_type %s, %g%% CI)\n")
+    }
+  cat(sprintf(header, attr(x, "model_type"), (1 - attr(x, "alpha")) * 100))
   cat(sprintf("Design: %s\n\n", attr(x, "design")))
   print.data.frame(format(x), row.names = FALSE, ...)
   if (!is.null(attr(x, "caption"))) {
@@ -1532,8 +1966,9 @@ summary.be_assess <- function(object, ...) {
   out$ci_lower <- round(out$ci_lower, 2)
   out$ci_upper <- round(out$ci_upper, 2)
   caption <- sprintf(
-    "%s assessment (model_type %s, %g%% CI); pass = bioequivalent.",
-    attr(object, "regulator"), attr(object, "model_type"), (1 - attr(object, "alpha")) * 100
+    "%s assessment (model_type %s, %g%% CI); %s",
+    attr(object, "regulator"), attr(object, "model_type"), (1 - attr(object, "alpha")) * 100,
+    if ("pass" %in% names(out)) "pass = bioequivalent." else "no regulatory decision was applied."
   )
   structure(out, class = c("summary_be_assess", "data.frame"), caption = caption)
 }
@@ -1551,6 +1986,7 @@ print.summary_be_assess <- function(x, ...) {
 #' stacks the results, so the same study can be judged side by side under the
 #' different reference-scaling rules.  Frameworks that the design does not
 #' support (for example NTID on a partial replicate) are skipped with a warning.
+#' Rows for the `"descriptive"` framework have `NA` in the decision columns.
 #'
 #' @inheritParams be_assess
 #' @param regulators A character vector of regulatory frameworks to compare (see
@@ -1570,8 +2006,7 @@ print.summary_be_assess <- function(x, ...) {
 #'     subject = i, sequence = seqs[i], period = seq_along(trt), treatment = trt,
 #'     PPTESTCD = "auclast",
 #'     PPORRES = exp(log(100) + ifelse(trt == "T", 0.04, 0) + b[i] +
-#'                     stats::rnorm(length(trt), sd = 0.45)),
-#'     stringsAsFactors = FALSE
+#'                     stats::rnorm(length(trt), sd = 0.45))
 #'   )
 #' }))
 #' be_compare(d, reference_col = "treatment", reference_value = "R",
@@ -1581,8 +2016,22 @@ be_compare <- function(object, reference_col, reference_value,
                        endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
                        regulators = c("ABE", "EMA", "HC", "GCC", "FDA"),
                        model_type = NULL, alpha = 0.10,
-                       subject = NULL, sequence = NULL, period = NULL, design = NULL) {
+                       subject = NULL, sequence = NULL, period = NULL, design = NULL,
+                       covariates = NULL, heteroscedastic = FALSE) {
+  # Input errors are raised here, once; inside the per-framework loop below they
+  # would be reported as every framework being skipped.  The choices come from
+  # be_regulator() and be_fit_model_single() so there is one list of each.
   checkmate::assert_character(regulators, min.len = 1, any.missing = FALSE)
+  checkmate::assert_subset(regulators, choices = eval(formals(be_regulator)$name))
+  checkmate::assert_choice(model_type, choices = eval(formals(be_fit_model_single)$model_type), null.ok = TRUE)
+  assert_numeric_between(alpha, lower = 0, upper = 1)
+  checkmate::assert_flag(heteroscedastic)
+  # be_dataset() validates the data, columns, and covariates; be_assess()
+  # repeats its warnings for each framework, so they are not shown twice.
+  suppressWarnings(
+    be_dataset(object, reference_col, reference_value, endpoints, subject, sequence, period,
+               covariates = covariates)
+  )
   results <- list()
   units_missing <- FALSE
   for (rg in regulators) {
@@ -1592,7 +2041,8 @@ be_compare <- function(object, reference_col, reference_value,
         be_assess(
           object, reference_col = reference_col, reference_value = reference_value,
           endpoints = endpoints, regulator = rg, model_type = model_type, alpha = alpha,
-          subject = subject, sequence = sequence, period = period, design = design
+          subject = subject, sequence = sequence, period = period, design = design,
+          covariates = covariates, heteroscedastic = heteroscedastic
         ),
         silent = TRUE
       ),
@@ -1602,7 +2052,10 @@ be_compare <- function(object, reference_col, reference_value,
       }
     )
     if (inherits(res, "try-error")) {
-      warning(sprintf("Skipping %s: %s", rg, conditionMessage(attr(res, "condition"))))
+      rlang::warn(
+        sprintf("Skipping %s: %s", rg, conditionMessage(attr(res, "condition"))),
+        class = "pknca_warning_be_skipped_framework"
+      )
     } else {
       results[[rg]] <- as.data.frame(res)
     }
@@ -1611,9 +2064,13 @@ be_compare <- function(object, reference_col, reference_value,
     .be_warn_units_missing()
   }
   if (length(results) == 0) {
-    stop("No regulatory framework could be assessed for this design.")
+    rlang::abort(
+      "No regulatory framework could be assessed for this design.",
+      class = "pknca_error_be_no_frameworks"
+    )
   }
-  out <- do.call(rbind, results)
+  # bind_rows() fills the decision columns with NA for "descriptive" rows.
+  out <- as.data.frame(dplyr::bind_rows(results))
   rownames(out) <- NULL
   structure(
     out,
@@ -1656,6 +2113,10 @@ print.be_compare <- function(x, ...) {
 #' @export
 summary.be_compare <- function(object, ...) {
   d <- as.data.frame(object)
+  if (!("pass" %in% names(d))) {
+    # Only the descriptive framework was compared; it has no decision.
+    d$pass <- NA
+  }
   # Pivot to an endpoint x regulator grid of pass/fail.
   grid <- tapply(
     d$pass,

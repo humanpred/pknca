@@ -28,10 +28,17 @@ test_that("pk.nca", {
   myconc <- PKNCAconc(tmpconc, formula=conc~time|treatment+ID)
   mydose.nodose <- PKNCAdose(tmpdose, formula=~time|treatment+ID)
   mydata.nodose <- PKNCAdata(myconc, mydose.nodose)
+  # The automatically generated interval now asks for a clearance, which needs
+  # the dose; everything that does not need the dose is unaffected.
+  result.nodose <- suppressMessages(pk.nca(mydata.nodose)$result)
   expect_equal(
-    pk.nca(mydata.nodose)$result,
-    myresult$result,
+    result.nodose[!result.nodose$PPTESTCD %in% "cl.obs", ],
+    myresult$result[!myresult$result$PPTESTCD %in% "cl.obs", ],
     info="missing dose information is handled without an issue"
+  )
+  expect_true(
+    all(is.na(result.nodose$PPORRES[result.nodose$PPTESTCD %in% "cl.obs"])),
+    info="a parameter that needs the dose is NA rather than an error"
   )
 
   # Test each of the pieces for myresult for accuracy
@@ -43,36 +50,45 @@ test_that("pk.nca", {
     tmp
   }, info="The data is just a copy of the input data plus an instantiation of the PKNCA.options")
 
+  # Automatically generated intervals now come from pknca_interval_table()
+  # rather than the single.dose.aucs option, so a single dose gives one
+  # interval to infinity instead of a 0 to 24 window plus one to infinity, and
+  # the interval carries the imputation and the parameters that context gives.
+  # Every value the two versions share is unchanged:  these data have a
+  # concentration at the time of the dose, so imputing one there changes
+  # nothing.  Two expectations are written to more digits than before
+  # (lambda.z.corrxy -0.9521 to -0.9525 and clast.obs 0.3148 to 0.3149); both
+  # were already within the test's tolerance of the value the calculation
+  # gives, and neither value moved.
   verify.result <-
     tibble::tibble(
       treatment="Trt 1",
-      ID=rep(c(1, 2), each=16),
+      ID=rep(c(1, 2), each=20),
       start=0,
-      end=c(24, rep(Inf, 15),
-            24, rep(Inf, 15)),
+      end=Inf,
       PPTESTCD=rep(c("auclast", "cmax", "tmax", "tlast", "clast.obs",
+                     "tlag", "count_conc",
                      "lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy",
                      "lambda.z.time.first", "lambda.z.time.last",
                      "lambda.z.n.points", "clast.pred", "half.life",
-                     "span.ratio", "aucinf.obs"),
+                     "span.ratio", "aucinf.obs", "aucpext.obs", "cl.obs"),
                    times=2),
       PPORRES=c(13.54, 0.9998, 4.000, 24.00, 0.3441,
+                0.000, 25.00,
                 0.04297, 0.9072, 0.9021, -0.952, 5.000, 24.00,
                 20.00, 0.3356, 16.13, 1.178,
-                21.55, 14.03, 0.9410, 2.000,
-                24.00, 0.3148, 0.05689, 0.9000, 0.8944, -0.952,
+                21.55, 37.16, 0.04640,
+                14.03, 0.9410, 2.000, 24.00, 0.3149,
+                0.000, 25.00,
+                0.05689, 0.9000, 0.8944, -0.952,
                 5.000, 24.00, 20.00, 0.3011, 12.18,
-                1.560, 19.56),
-      PPANMETH = c(
-        "AUC: lin up/log down",
-        rep("", 4),
-        rep("", 10),
-        "AUC: lin up/log down",
-        "AUC: lin up/log down",
-        rep("", 4),
-        rep("", 10),
-        "AUC: lin up/log down"
-      ),
+                1.560, 19.56, 28.29, 0.05111),
+      PPANMETH =
+        ifelse(
+          PPTESTCD %in% c("auclast", "aucinf.obs"),
+          "Imputation: start_predose_conc0. AUC: lin up/log down",
+          "Imputation: start_predose_conc0"
+        ),
       exclude=NA_character_
     )
   expect_equal(
@@ -187,7 +203,7 @@ test_that("verbose pk.nca", {
   expect_message(expect_message(expect_message(
     suppressWarnings(pk.nca(mydata, verbose=TRUE)),
     regexp = "Setting up options"),
-    regexp = "Starting dense PK NCA calculations"),
+    regexp = "Starting PK NCA calculations"),
     regexp = "Combining completed dense PK calculation results"
   )
   expect_message(
@@ -224,14 +240,15 @@ test_that("pk.nca.interval errors", {
 test_that("a parameter needing an interval column says so instead of asking for a bug report", {
   d_conc <- data.frame(conc = 2^(0:-5), time = 0:5)
   o_conc <- PKNCAconc(d_conc, conc~time)
-  # `conc_above` for time_above and `dose1` for f have to be given by the user
-  # as interval columns.  `tau` does not belong here: it is detected from the
-  # dose times when it is not given, and is NA with a warning when it can be
-  # neither given nor detected.
+  # `conc_above` for time_above has to be given by the user as an interval
+  # column, and `f` needs a reference interval to take its comparator from.
+  # `tau` does not belong here: it is detected from the dose times when it is
+  # not given, and is NA with a warning when it can be neither given nor
+  # detected.
   needs_interval_col <-
     list(
       time_above = "Cannot find argument 'conc_above' for NCA parameter 'time_above' (calculated by 'pk.calc.time_above'); give it as a column in the interval specification",
-      f = "Cannot find argument 'dose1' for NCA parameter 'f' (calculated by 'pk.calc.f'); give it as a column in the interval specification"
+      f.obs = "The secondary parameter 'f.obs' needs a reference interval for its 'dose1' argument (the value of 'totdose' from another interval). Set the 'f.obs_ref' column in the interval specification to the 'interval_id' of the reference interval, give `group_ref` to PKNCAdata(), or use interval_add_secondary()."
     )
   for (current_param in names(needs_interval_col)) {
     d_interval <- data.frame(start = 0, end = Inf)
@@ -512,8 +529,7 @@ test_that("No interval requested (e.g. for placebo)", {
       myconc, mydose,
       intervals=
         data.frame(
-          treatment="Trt 3", start=0, end=24, cmax=TRUE,
-          stringsAsFactors=FALSE
+          treatment="Trt 3", start=0, end=24, cmax=TRUE
         )
     )
   expect_warning(expect_warning(expect_warning(expect_warning(
@@ -539,8 +555,7 @@ test_that("Volume-related calculations", {
   mydose <- PKNCAdose(tmpdose, formula=dose~time|treatment+ID)
   mydata <-  PKNCAdata(myconc, mydose,
                        intervals=data.frame(treatment="Trt 1", start=0, end=24,
-                                            ae=TRUE, fe=TRUE,
-                                            stringsAsFactors=FALSE))
+                                            ae=TRUE, fe=TRUE))
   myresult <- pk.nca(mydata)
   expect_equal(as.data.frame(myresult)[["PPORRES"]], c(12, 12, 30, 30),
               info="ae and fe are correctly calculated")
@@ -549,41 +564,44 @@ test_that("Volume-related calculations", {
   mydose2 <- PKNCAdose(tmpdose2, formula=dose~time|treatment+ID)
   mydata2 <-  PKNCAdata(myconc, mydose2,
                        intervals=data.frame(treatment="Trt 1", start=0, end=24,
-                                            ae=TRUE, fe=TRUE,
-                                            stringsAsFactors=FALSE))
+                                            ae=TRUE, fe=TRUE))
   myresult2 <- pk.nca(mydata2)
   expect_equal(as.data.frame(myresult2)[["PPORRES"]], c(12, 6, 30, 15),
                info="fe respects dose")
 })
 
 test_that("pk.nca can calculate values with group-level data", {
-  tmpconc_impute <- generate.conc(2, 1, 0:24)
-  # This is what will happen in the imputation
-  tmpconc_observe_05 <- tmpconc_impute[tmpconc_impute$time %in% 0,]
-  tmpconc_observe_05$time <- 0.5
-  tmpconc_observe <- rbind(tmpconc_impute, tmpconc_observe_05)
-  tmpconc_observe <- tmpconc_observe[order(tmpconc_observe$treatment, tmpconc_observe$ID, tmpconc_observe$time),]
-  tmpdose <- generate.dose(tmpconc_impute)
+  tmpconc <- generate.conc(2, 1, 0:24)
+  tmpdose <- generate.dose(tmpconc)
   tmpdose$time <- 0.5
 
-  myconc_impute <- PKNCAconc(tmpconc_impute, formula=conc~time|treatment+ID)
-  myconc_observe <- PKNCAconc(tmpconc_observe, formula=conc~time|treatment+ID)
+  myconc <- PKNCAconc(tmpconc, formula=conc~time|treatment+ID)
   mydose <- PKNCAdose(tmpdose, formula=dose~time|treatment+ID)
-  mydata_impute <-
-    PKNCAdata(myconc_impute, mydose,
+  # aucint reads the group-level concentrations, so an interval ending between
+  # two measurements interpolates the concentration at its end; auclast, which
+  # only sees the interval's own data, stops at the last measurement within it.
+  mydata_part <-
+    PKNCAdata(myconc, mydose,
+              intervals=data.frame(treatment="Trt 1", start=0, end=4.5,
+                                   auclast=TRUE, aucint.last=TRUE))
+  res_part <- as.data.frame(pk.nca(mydata_part))
+  auclast_part <- res_part$PPORRES[res_part$PPTESTCD %in% "auclast"]
+  aucint_part <- res_part$PPORRES[res_part$PPTESTCD %in% "aucint.last"]
+  expect_true(all(aucint_part > auclast_part))
+
+  # Over the whole profile there is nothing outside the interval to look at, and
+  # the dose at 0.5 within the interval is integrated across rather than
+  # estimated at, so the two agree
+  mydata_full <-
+    PKNCAdata(myconc, mydose,
               intervals=data.frame(treatment="Trt 1", start=0, end=24,
-                                   aucint.last.dose=TRUE,
-                                   stringsAsFactors=FALSE))
-  mydata_observe <-
-    PKNCAdata(myconc_observe, mydose,
-              intervals=data.frame(treatment="Trt 1", start=0, end=24,
-                                   auclast=TRUE,
-                                   stringsAsFactors=FALSE))
-  myres_impute <- pk.nca(mydata_impute)
-  myres_observe <- pk.nca(mydata_observe)
-  expect_equal(as.data.frame(myres_impute)$PPORRES,
-               as.data.frame(myres_observe)$PPORRES,
-               info="Manually imputing values gives the same result as aucint")
+                                   auclast=TRUE, aucint.last=TRUE))
+  res_full <- as.data.frame(pk.nca(mydata_full))
+  expect_equal(
+    res_full$PPORRES[res_full$PPTESTCD %in% "aucint.last"],
+    res_full$PPORRES[res_full$PPTESTCD %in% "auclast"],
+    info="A dose within the interval does not add a point to integrate to"
+  )
 })
 
 test_that("Missing dose info for some subjects gives a warning, not a difficult-to-interpret error", {
@@ -670,7 +688,7 @@ test_that("calculate with sparse data", {
       cmax=TRUE,
       sparse_auclast=TRUE
     )
-  o_data_sparse <- PKNCAdata(o_conc_sparse, intervals=d_intervals)
+  o_data_sparse <- without_sparse_deprecation(PKNCAdata(o_conc_sparse, intervals=d_intervals))
   suppressMessages(
     expect_warning(expect_warning(
       o_nca <- pk.nca(o_data_sparse),
@@ -694,7 +712,7 @@ test_that("calculate with sparse data", {
       cmax=c(TRUE, TRUE, FALSE),
       sparse_auclast=c(FALSE, TRUE, TRUE)
     )
-  o_data_sparse_mixed <- PKNCAdata(o_conc_sparse, intervals=d_intervals_mixed)
+  o_data_sparse_mixed <- without_sparse_deprecation(PKNCAdata(o_conc_sparse, intervals=d_intervals_mixed))
   suppressMessages(
     expect_warning(expect_warning(
       o_nca_sparse_mixed <- pk.nca(o_data_sparse_mixed),
@@ -734,7 +752,10 @@ test_that("calculate with sparse data", {
   d_dose_sparse_multi_trt$time <- 0
   d_dose_sparse_multi_trt$dose_grp <- d_dose_sparse_multi_trt$dose
   o_dose_sparse_multi_trt <- PKNCAdose(d_dose_sparse_multi_trt, dose~time|dose_grp+id)
-  o_data_sparse_multi_trt <- PKNCAdata(o_conc_sparse_multi_trt, o_dose_sparse_multi_trt, intervals=d_intervals_mixed)
+  o_data_sparse_multi_trt <-
+    without_sparse_deprecation(
+      PKNCAdata(o_conc_sparse_multi_trt, o_dose_sparse_multi_trt, intervals=d_intervals_mixed)
+    )
   suppressMessages(
     expect_warning(expect_warning(expect_warning(expect_warning(
       o_nca_sparse_multi_trt <- pk.nca(o_data_sparse_multi_trt),
@@ -754,7 +775,10 @@ test_that("calculate with sparse data", {
   d_dose_sparse_multi_trt_bad_dose_single$dose[1] <- d_dose_sparse_multi_trt_bad_dose_single$dose[1] + 1
   o_conc_sparse_multi_trt_bad_dose_single <- PKNCAconc(d_sparse_multi_trt_bad_dose_single, conc~time|id, sparse=TRUE)
   o_dose_sparse_multi_trt_bad_dose_single <- PKNCAdose(d_dose_sparse_multi_trt_bad_dose_single, dose~time|id)
-  o_data_sparse_multi_trt_bad_dose_single <- PKNCAdata(o_conc_sparse_multi_trt_bad_dose_single, o_dose_sparse_multi_trt_bad_dose_single, intervals=d_intervals_mixed)
+  o_data_sparse_multi_trt_bad_dose_single <-
+    without_sparse_deprecation(
+      PKNCAdata(o_conc_sparse_multi_trt_bad_dose_single, o_dose_sparse_multi_trt_bad_dose_single, intervals=d_intervals_mixed)
+    )
   expect_error(
     pk.nca(o_data_sparse_multi_trt_bad_dose_single),
     regexp="With sparse PK, all subjects in a group must have the same dosing information.*Not all subjects have the same dosing information"
@@ -764,12 +788,369 @@ test_that("calculate with sparse data", {
   d_dose_sparse_multi_trt_bad_dose <- d_dose_sparse_multi_trt
   d_dose_sparse_multi_trt_bad_dose$dose[1] <- d_dose_sparse_multi_trt$dose[1] + 1
   o_dose_sparse_multi_trt_bad_dose <- PKNCAdose(d_dose_sparse_multi_trt_bad_dose, dose~time|dose_grp+id)
-  o_data_sparse_multi_trt_bad_dose <- PKNCAdata(o_conc_sparse_multi_trt, o_dose_sparse_multi_trt_bad_dose, intervals=d_intervals_mixed)
+  o_data_sparse_multi_trt_bad_dose <-
+    without_sparse_deprecation(
+      PKNCAdata(o_conc_sparse_multi_trt, o_dose_sparse_multi_trt_bad_dose, intervals=d_intervals_mixed)
+    )
   expect_error(
     pk.nca(o_data_sparse_multi_trt_bad_dose),
     regexp="With sparse PK, all subjects in a group must have the same dosing information.*Not all subjects have the same dosing information for this group: +dose_grp=100"
   )
   # Correct detection of mixed doses within a sparse dose group when there are no groups
+})
+
+test_that("sparse data give dense parameters the mean profile and sparse parameters the pooled samples", {
+  fn_dense <- "pknca_test_nconc_dense_fn_"
+  fn_sparse <- "pknca_test_nconc_sparse_fn_"
+  assign(fn_dense, function(conc, time) length(conc), envir = .GlobalEnv)
+  assign(
+    fn_sparse,
+    function(conc, time, subject) 1000 * length(unique(subject)) + length(conc),
+    envir = .GlobalEnv
+  )
+  local_interval_cols()
+  on.exit(rm(list = c(fn_dense, fn_sparse), envir = .GlobalEnv), add = TRUE)
+  add.interval.col(
+    "pknca_test_nconc_dense_",
+    FUN = fn_dense,
+    unit_type = "count",
+    pretty_name = "Test: dense sample count",
+    desc = "Count of dense concentrations"
+  )
+  # No dense function and a sparse estimator is what makes a parameter
+  # sparse-only
+  add.interval.col(
+    "pknca_test_nconc_sparse_",
+    FUN = NA,
+    FUN_sparse = fn_sparse,
+    unit_type = "count",
+    pretty_name = "Test: sparse sample count",
+    desc = "Count of pooled sparse concentrations"
+  )
+  # The pooled samples are also reachable by name from a formalsmap, as
+  # add.interval.col() documents
+  add.interval.col(
+    "pknca_test_nconc_pooled_",
+    FUN = fn_dense,
+    unit_type = "count",
+    pretty_name = "Test: pooled sample count",
+    desc = "Count from the pooled samples",
+    formalsmap = list(conc = "conc.sparse", time = "time.sparse")
+  )
+
+  # 9 subjects, 21 measurements, 7 unique times, so the mean profile has 7 rows
+  # and the pooled samples have 21
+  d_sparse <-
+    data.frame(
+      id = c(1L, 2L, 3L, 1L, 2L, 3L, 1L, 2L, 3L, 4L, 5L, 6L, 4L, 5L, 6L, 7L, 8L, 9L, 7L, 8L, 9L),
+      conc = c(0, 0, 0, 1.75, 2.2, 1.58, 4.63, 2.99, 1.52, 3.03, 1.98, 2.22, 3.34, 1.3, 1.22, 3.54, 2.84, 2.55, 0.3, 0.0421, 0.231),
+      time = c(0, 0, 0, 1, 1, 1, 6, 6, 6, 2, 2, 2, 10, 10, 10, 4, 4, 4, 24, 24, 24)
+    )
+  o_conc_sparse <- PKNCAconc(d_sparse, conc~time|id, sparse = TRUE)
+  d_intervals <-
+    data.frame(
+      start = 0, end = 24,
+      pknca_test_nconc_dense_ = TRUE, pknca_test_nconc_sparse_ = TRUE,
+      pknca_test_nconc_pooled_ = TRUE
+    )
+  o_nca <- suppressMessages(pk.nca(PKNCAdata(o_conc_sparse, intervals = d_intervals)))
+  df_result <- as.data.frame(o_nca)
+  # The dense results stay ahead of the sparse one even though both are now
+  # calculated in the same pass
+  expect_equal(
+    df_result$PPTESTCD,
+    c("pknca_test_nconc_dense_", "pknca_test_nconc_pooled_", "pknca_test_nconc_sparse_")
+  )
+  expect_equal(df_result$PPORRES, c(7, 21, 9021))
+
+  # The same request on dense data: the sparse-only parameter has no pooled
+  # samples to calculate from, and nothing else can produce it, so it is refused
+  o_conc_dense <- PKNCAconc(d_sparse, conc~time|id)
+  d_intervals_dense <- d_intervals
+  d_intervals_dense$pknca_test_nconc_pooled_ <- FALSE
+  expect_error(
+    PKNCAdata(o_conc_dense, intervals = d_intervals_dense),
+    regexp = "only calculated for sparse PK.*pknca_test_nconc_sparse_",
+    class = "pknca_error_sparse_only_parameter"
+  )
+  # Without it, the dense parameter calculates from each subject's own profile
+  d_intervals_dense$pknca_test_nconc_sparse_ <- FALSE
+  o_nca_dense <-
+    suppressMessages(pk.nca(PKNCAdata(o_conc_dense, intervals = d_intervals_dense)))
+  df_dense <- as.data.frame(o_nca_dense)
+  expect_equal(unique(df_dense$PPTESTCD), "pknca_test_nconc_dense_")
+})
+
+test_that("sparse data calculate auclast and aumclast with the sparse estimators", {
+  d_sparse <-
+    data.frame(
+      id = c(1L, 2L, 3L, 1L, 2L, 3L, 1L, 2L, 3L, 4L, 5L, 6L, 4L, 5L, 6L, 7L, 8L, 9L, 7L, 8L, 9L),
+      conc = c(0, 0, 0, 1.75, 2.2, 1.58, 4.63, 2.99, 1.52, 3.03, 1.98, 2.22, 3.34, 1.3, 1.22, 3.54, 2.84, 2.55, 0.3, 0.0421, 0.231),
+      time = c(0, 0, 0, 1, 1, 1, 6, 6, 6, 2, 2, 2, 10, 10, 10, 4, 4, 4, 24, 24, 24),
+      dose = 100
+    )
+  d_dose <- unique(d_sparse[, c("id", "dose")])
+  d_dose$time <- 0
+  o_conc_sparse <- PKNCAconc(d_sparse, conc~time|id, sparse = TRUE)
+  o_dose <- PKNCAdose(d_dose, dose~time|id)
+
+  # The unified names and the legacy sparse_* names in one interval, so the two
+  # are compared on identical data
+  d_intervals <-
+    data.frame(
+      start = 0, end = 24,
+      auclast = TRUE, auclast_se = TRUE, auclast_df = TRUE,
+      aumclast = TRUE, aumclast_se = TRUE, aumclast_df = TRUE,
+      sparse_auclast = TRUE, sparse_aumclast = TRUE,
+      cl.last = TRUE, cl.sparse.last = TRUE
+    )
+  o_nca <-
+    suppressMessages(suppressWarnings(
+      pk.nca(PKNCAdata(o_conc_sparse, o_dose, intervals = d_intervals))
+    ))
+  df_result <- as.data.frame(o_nca)
+  value_of <- function(x) df_result$PPORRES[df_result$PPTESTCD %in% x]
+
+  expect_equal(value_of("auclast"), value_of("sparse_auclast"))
+  expect_equal(value_of("auclast_se"), value_of("sparse_auc_se"))
+  expect_equal(value_of("auclast_df"), value_of("sparse_auc_df"))
+  expect_equal(value_of("aumclast"), value_of("sparse_aumclast"))
+  expect_equal(value_of("aumclast_se"), value_of("sparse_aumc_se"))
+  expect_equal(value_of("aumclast_df"), value_of("sparse_aumc_df"))
+  # The known values for these data (see test-sparse.R)
+  expect_equal(value_of("auclast"), 39.4689)
+  # Every derived parameter now picks the sparse estimate up by name, so the
+  # unified clearance matches the hand-maintained sparse one
+  expect_equal(value_of("cl.last"), value_of("cl.sparse.last"))
+  # A sparse estimator names its method so that the analysis stays traceable
+  expect_equal(
+    unique(df_result$PPANMETH[df_result$PPTESTCD %in% c("auclast", "aumclast")]),
+    "AUC: linear. Sparse: arithmetic mean, <=50% BLQ"
+  )
+  # A result the sparse estimator produced is reported with the sparse results,
+  # after the dense ones
+  expect_equal(
+    df_result$PPTESTCD,
+    c(
+      # Dense results: cl.last is calculated by the dense clearance function,
+      # from the sparse-estimated auclast
+      "cl.last",
+      # Sparse results, in registry order
+      "auclast", "auclast_se", "auclast_df",
+      "aumclast", "aumclast_se", "aumclast_df",
+      "sparse_auclast", "sparse_auc_se", "sparse_auc_df",
+      "sparse_aumclast", "sparse_aumc_se", "sparse_aumc_df",
+      "cl.sparse.last"
+    )
+  )
+
+  # Dense data are untouched: auclast is still the dense trapezoid on each
+  # subject's own profile, honoring auc.method
+  o_conc_dense <- PKNCAconc(d_sparse, conc~time|id)
+  o_nca_dense <-
+    suppressMessages(suppressWarnings(
+      pk.nca(PKNCAdata(o_conc_dense, o_dose, intervals = data.frame(start = 0, end = 24, auclast = TRUE)))
+    ))
+  df_dense <- as.data.frame(o_nca_dense)
+  d_subject1 <- d_sparse[d_sparse$id == 1, ]
+  expect_equal(
+    df_dense$PPORRES[df_dense$id == 1],
+    as.numeric(pk.calc.auc.last(conc = d_subject1$conc, time = d_subject1$time))
+  )
+  expect_equal(df_dense$PPANMETH[df_dense$id == 1], "AUC: lin up/log down")
+})
+
+test_that("a parameter only a sparse estimator produces is refused for dense data", {
+  d_conc <- data.frame(id = 1L, conc = c(0, 2, 1, 0.5), time = c(0, 1, 2, 4))
+  o_conc_dense <- PKNCAconc(d_conc, conc~time|id)
+  # Every sparse-only parameter except the deprecated ones, which were skipped
+  # for dense data before they were deprecated and still are
+  refusable <- setdiff(sparse_only_params(), names(deprecated_sparse_parameters))
+  expect_gt(length(refusable), 0)
+  for (param in refusable) {
+    d_intervals <- data.frame(start = 0, end = 4)
+    d_intervals[[param]] <- TRUE
+    expect_error(
+      PKNCAdata(o_conc_dense, intervals = d_intervals),
+      regexp = sprintf("only calculated for sparse PK.*%s", param),
+      class = "pknca_error_sparse_only_parameter",
+      info = param
+    )
+  }
+  # The same request is fine with sparse data
+  d_sparse <- data.frame(id = 1:8, conc = c(0, 0, 2, 3, 1, 1.5, 0.4, 0.6), time = rep(c(0, 1, 2, 4), each = 2))
+  o_conc_sparse <- PKNCAconc(d_sparse, conc~time|id, sparse = TRUE)
+  expect_no_error(
+    PKNCAdata(o_conc_sparse, intervals = data.frame(start = 0, end = 4, auclast_se = TRUE))
+  )
+  # A legacy sparse-only parameter is deprecated rather than refused, and is
+  # still skipped for dense data
+  expect_no_error(
+    without_sparse_deprecation(
+      PKNCAdata(o_conc_dense, intervals = data.frame(start = 0, end = 4, sparse_auclast = TRUE))
+    )
+  )
+})
+
+test_that("pk.nca says once that auc.method does not reach the sparse estimators", {
+  d_sparse <- data.frame(id = 1:8, conc = c(0, 0, 2, 3, 1, 1.5, 0.4, 0.6), time = rep(c(0, 1, 2, 4), each = 2))
+  o_conc_sparse <- PKNCAconc(d_sparse, conc~time|id, sparse = TRUE)
+  d_intervals <- data.frame(start = 0, end = 4, auclast = TRUE)
+
+  count_messages <- function(expr) {
+    n <- 0L
+    withCallingHandlers(
+      expr,
+      pknca_message_sparse_auc_method = function(m) {
+        n <<- n + 1L
+        rlang::cnd_muffle(m)
+      }
+    )
+    n
+  }
+  # The default auc.method is "lin up/log down", which the sparse estimators
+  # cannot honor
+  expect_message(
+    suppressWarnings(pk.nca(PKNCAdata(o_conc_sparse, intervals = d_intervals))),
+    regexp = 'auc.method option \\("lin up/log down"\\) does not apply to: auclast',
+    class = "pknca_message_sparse_auc_method"
+  )
+  expect_equal(
+    count_messages(suppressWarnings(pk.nca(PKNCAdata(o_conc_sparse, intervals = d_intervals)))),
+    1L
+  )
+  # Nothing to say when the option already matches the estimator
+  expect_equal(
+    count_messages(suppressWarnings(pk.nca(
+      PKNCAdata(o_conc_sparse, intervals = d_intervals, options = list(auc.method = "linear"))
+    ))),
+    0L
+  )
+  # or when no parameter with a sparse estimator was requested
+  expect_equal(
+    count_messages(suppressWarnings(pk.nca(
+      PKNCAdata(o_conc_sparse, intervals = data.frame(start = 0, end = 4, cmax = TRUE))
+    ))),
+    0L
+  )
+  # or when the data are dense
+  o_conc_dense <- PKNCAconc(d_sparse, conc~time|id)
+  expect_equal(
+    count_messages(suppressWarnings(suppressMessages(
+      pk.nca(PKNCAdata(o_conc_dense, intervals = d_intervals))
+    ))),
+    0L
+  )
+})
+
+test_that("interval_requested_params includes dependencies of what was asked for", {
+  d_intervals <- data.frame(start = 0, end = 24, cl.last = TRUE, cmax = FALSE)
+  requested <- interval_requested_params(d_intervals)
+  # cl.last is calculated from auclast, which nothing asked for directly
+  expect_setequal(requested, c("cl.last", "auclast"))
+  expect_false("cmax" %in% requested)
+  # An interval requesting nothing gives nothing
+  expect_equal(interval_requested_params(data.frame(start = 0, end = 24)), character())
+})
+
+test_that("pk.nca.interval marks each result row with its parameter's sparse flag", {
+  d_interval <-
+    check.interval.specification(
+      data.frame(start = 0, end = 24, cmax = TRUE, sparse_auclast = TRUE)
+    )
+  # Without the pooled samples the sparse parameter cannot be calculated
+  ret_dense <-
+    pk.nca.interval(
+      conc = c(0, 1.5, 2.5), time = c(0, 1, 2), volume = NULL, duration.conc = NULL,
+      dose = 1, time.dose = 0, duration.dose = 0, route = "extravascular",
+      interval = d_interval
+    )
+  expect_equal(ret_dense$PPTESTCD, "cmax")
+  expect_equal(attr(ret_dense, "sparse"), FALSE)
+
+  # The pooled samples are given separately from the mean profile, and the
+  # sparse parameter is calculated from them
+  ret_sparse <-
+    pk.nca.interval(
+      conc = c(0, 1.5, 2.5), time = c(0, 1, 2), volume = NULL, duration.conc = NULL,
+      dose = 1, time.dose = 0, duration.dose = 0, route = "extravascular",
+      conc.sparse = c(0, 0, 1, 2, 2, 3), time.sparse = c(0, 0, 1, 1, 2, 2),
+      subject = 1:6,
+      interval = d_interval
+    )
+  expect_equal(
+    ret_sparse$PPTESTCD,
+    c("cmax", "sparse_auclast", "sparse_auc_se", "sparse_auc_df")
+  )
+  expect_equal(attr(ret_sparse, "sparse"), c(FALSE, TRUE, TRUE, TRUE))
+  # cmax comes from the mean profile given in `conc`, not from the pooled samples
+  expect_equal(ret_sparse$PPORRES[ret_sparse$PPTESTCD %in% "cmax"], 2.5)
+})
+
+test_that("remap_sparse_sources points only the dense concentration sources at the pooled samples", {
+  expect_equal(
+    remap_sparse_sources(
+      list(
+        conc = "conc", time = "time",
+        conc.group = "conc.group", time.group = "time.group",
+        subject = "subject", dose = "dose", options = "options"
+      )
+    ),
+    list(
+      conc = "conc.sparse", time = "time.sparse",
+      conc.group = "conc.sparse.group", time.group = "time.sparse.group",
+      subject = "subject", dose = "dose", options = "options"
+    )
+  )
+  # A source already naming the pooled samples, a parameter name, a constant,
+  # and a reference-interval pointer are all left alone
+  arglist_other <-
+    list(
+      conc = "conc.sparse", auc = "sparse_auclast",
+      auc.type = I("AUCall"), dose1 = pknca_ref("totdose")
+    )
+  expect_equal(remap_sparse_sources(arglist_other), arglist_other)
+})
+
+test_that("impute_conc_time applies each imputation function in order", {
+  # start_conc0 inserts a zero at the interval start; end_conc_drop then removes
+  # the measurement at the interval end
+  expect_equal(
+    impute_conc_time(
+      impute_funs = c("PKNCA_impute_method_start_conc0", "PKNCA_impute_method_end_conc_drop"),
+      conc = c(1, 2, 3), time = c(1, 2, 4), start = 0, end = 4,
+      conc.group = c(1, 2, 3), time.group = c(1, 2, 4), options = list()
+    ),
+    data.frame(conc = c(0, 1, 2), time = c(0, 1, 2)),
+    ignore_attr = "row.names"
+  )
+  # An empty chain returns the input unchanged
+  expect_equal(
+    impute_conc_time(
+      impute_funs = character(),
+      conc = c(1, 2), time = c(1, 2), start = 0, end = 4,
+      conc.group = c(1, 2), time.group = c(1, 2), options = list()
+    ),
+    data.frame(conc = c(1, 2), time = c(1, 2))
+  )
+})
+
+test_that("bind_interval_result repeats the interval columns for every result row", {
+  expect_equal(
+    bind_interval_result(
+      data.frame(start = 0, end = 24),
+      data.frame(PPTESTCD = c("cmax", "tmax"), PPORRES = c(2, 1))
+    ),
+    data.frame(
+      start = c(0, 0), end = c(24, 24),
+      PPTESTCD = c("cmax", "tmax"), PPORRES = c(2, 1)
+    )
+  )
+  # A zero-row calculation keeps the columns and adds no rows
+  expect_equal(
+    nrow(bind_interval_result(data.frame(start = 0, end = 24), data.frame(PPTESTCD = character()))),
+    0L
+  )
 })
 
 test_that("Unexpected interval columns now not cause an error (#238)", {
@@ -937,14 +1318,20 @@ test_that("pk.nca produces the PPANMETH column", {
   )
 
   # --- PPANMETH specifies if an imputation method was used in the interval ---
+  # c0's calculation function sets no "method" attribute at run time, so
+  # PPANMETH falls back to the registered formula_note (documenting the
+  # method-selection order) instead of being empty.
+  c0_formula_note <- get.interval.cols()[["c0"]]$formula_note
   o_data <- PKNCAdata(myconc, mydose, intervals=data.frame(start=0, end=24, c0=TRUE))
   o_data_impute <- PKNCAdata(myconc, mydose, intervals=data.frame(start=0, end=24, c0=TRUE), impute="start_conc0")
   res <- pk.nca(o_data)
   res_impute <- pk.nca(o_data_impute)
-  expect_equal(res$result$PPANMETH, "")
   expect_true("PPANMETH" %in% names(res$result))
-  expect_equal(res$result$PPANMETH, "")
-  expect_equal(res_impute$result$PPANMETH, "Imputation: start_conc0")
+  expect_equal(res$result$PPANMETH, c0_formula_note)
+  expect_equal(
+    res_impute$result$PPANMETH,
+    paste0("Imputation: start_conc0. ", c0_formula_note)
+  )
 
   # --- PPANMETH reports based on the parameter dependencies ---
   mydata <- PKNCAdata(
@@ -955,7 +1342,7 @@ test_that("pk.nca produces the PPANMETH column", {
   res <- pk.nca(mydata)
   expect_equal(
     res$result$PPANMETH[res$result$PPTESTCD == "c0"],
-    "Imputation: start_conc0"
+    paste0("Imputation: start_conc0. ", c0_formula_note)
   )
   expect_equal(
     res$result$PPANMETH[res$result$PPTESTCD == "half.life"],
@@ -1032,11 +1419,17 @@ test_that("pk.nca can be run for each parameter independently (#473)", {
   # ── Params that cannot be tested independently ────────────────────────────
   # These require special data structures or multi-dose designs
   # and are tested in dedicated tests elsewhere
+  # A secondary parameter needs a reference interval to take its comparator
+  # from, so one interval alone cannot calculate any of them; they are covered
+  # in test-secondary-parameters.R.  Derived from the classification so that a
+  # newly registered secondary parameter is excluded without editing this list.
+  parameter_table <- pknca_parameter_table()
   non_pknca_covered_params <- c(
-    "f", "time_above",
+    "time_above",
     "sparse_auc_se", "sparse_auc_df",
     "sparse_aumc_se", "sparse_aumc_df",
-    "ceoi"
+    "ceoi",
+    parameter_table$parameter[parameter_table$secondary]
   )
   
   all_params <- setdiff(
@@ -1045,9 +1438,12 @@ test_that("pk.nca can be run for each parameter independently (#473)", {
   )
   
   # ── Classify params as sparse or dense ───────────────────────────────────
+  # A parameter is tested with sparse data when it is registered sparse-only or
+  # when only a sparse estimator produces it (the `_se`/`_df` companions).
   all_interval_cols <- get.interval.cols()
+  needs_sparse <- sparse_only_params()
   sparse_params <- Filter(
-    function(p) isTRUE(all_interval_cols[[p]]$sparse),
+    function(p) isTRUE(all_interval_cols[[p]]$sparse) || (p %in% needs_sparse),
     all_params
   )
   dense_params <- setdiff(all_params, sparse_params)
@@ -1079,15 +1475,19 @@ test_that("pk.nca can be run for each parameter independently (#473)", {
       info = paste0("Parameter ", param, " can be calculated independently")
     )
   }
-  
+
   # ── Test sparse params with sparse data ──────────────────────────────────
+  # Several of these are deprecated but must keep calculating; the deprecation
+  # warning itself is tested in test-sparse.R
   for (param in sparse_params) {
     intervals_with_param <- intervals_sparse
     intervals_with_param[[param]] <- TRUE
-    o_data <- PKNCAdata(o_conc_sparse, o_dose_sparse,
-                        intervals = intervals_with_param)
+    o_data <-
+      without_sparse_deprecation(
+        PKNCAdata(o_conc_sparse, o_dose_sparse, intervals = intervals_with_param)
+      )
     expect_no_error(
-      param_res <- pk.nca(o_data)
+      param_res <- without_sparse_auc_method_note(pk.nca(o_data))
     )
     expect_false(
       all(is.na(param_res$result$PPORRES)),
@@ -1120,17 +1520,8 @@ test_that("pk.nca.interval covers route, volume.group, duration.conc.group, dose
     },
     envir = .GlobalEnv
   )
-  old_cols <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
-  old_sorted <- get0("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
-  on.exit({
-    assign("interval.cols", old_cols, envir = PKNCA:::.PKNCAEnv)
-    if (!is.null(old_sorted)) {
-      assign("interval.cols_sorted", old_sorted, envir = PKNCA:::.PKNCAEnv)
-    } else if (exists("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv, inherits = FALSE)) {
-      rm("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
-    }
-    rm(list = fn_name, envir = .GlobalEnv)
-  }, add = TRUE)
+  local_interval_cols()
+  on.exit(rm(list = fn_name, envir = .GlobalEnv), add = TRUE)
 
   add.interval.col(
     "pknca_test_grp_args_cov_col_",
@@ -1384,17 +1775,8 @@ test_that("an I()-wrapped formalsmap value is passed to the function as a consta
     },
     envir = .GlobalEnv
   )
-  old_cols <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
-  old_sorted <- get0("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
-  on.exit({
-    assign("interval.cols", old_cols, envir = PKNCA:::.PKNCAEnv)
-    if (!is.null(old_sorted)) {
-      assign("interval.cols_sorted", old_sorted, envir = PKNCA:::.PKNCAEnv)
-    } else if (exists("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv, inherits = FALSE)) {
-      rm("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
-    }
-    rm(list = fn_name, envir = .GlobalEnv)
-  }, add = TRUE)
+  local_interval_cols()
+  on.exit(rm(list = fn_name, envir = .GlobalEnv), add = TRUE)
 
   add.interval.col(
     "pknca_test_formalsmap_constant_col_",
@@ -1422,5 +1804,40 @@ test_that("an I()-wrapped formalsmap value is passed to the function as a consta
   expect_equal(
     result$PPORRES[result$PPTESTCD == "pknca_test_formalsmap_constant_col_"],
     30
+  )
+})
+
+test_that("a calculation function returning names without values errors instead of recycling", {
+  fn_name <- "pknca_test_zero_row_result_"
+  assign(
+    fn_name,
+    function(conc, time) {
+      data.frame(a = numeric(0), b = numeric(0), c = numeric(0))
+    },
+    envir = .GlobalEnv
+  )
+  local_interval_cols()
+  on.exit(rm(list = fn_name, envir = .GlobalEnv), add = TRUE)
+
+  add.interval.col(
+    "pknca_test_zero_row_result_col_",
+    FUN = fn_name,
+    unit_type = "conc",
+    pretty_name = "Test: zero-row result",
+    desc = "Shape check for a zero-row result"
+  )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(data.frame(conc = c(1, 2, 3), time = c(0, 1, 2)), conc~time),
+      PKNCAdose(data.frame(dose = 1, time = 0), dose~time),
+      intervals =
+        data.frame(start = 0, end = 24, pknca_test_zero_row_result_col_ = TRUE)
+    )
+  # A zero-row data.frame gives 3 names and 0 values; padding it out would
+  # report NA results under real parameter names, so it must be an error.
+  expect_error(
+    pk.nca(o_data),
+    regexp = "returned 3 result name\\(s\\) and 0 value\\(s\\); it must return one value per name",
+    class = "pknca_error_interval_calculation"
   )
 })

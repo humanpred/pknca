@@ -29,6 +29,17 @@
 #' @export
 pk.nca <- function(data, verbose=FALSE) {
   assert_PKNCAdata(data)
+  # Date-time times and intervals and difftime durations become numbers here,
+  # so that intervals can change after PKNCAdata().  The results keep the
+  # converted data, which is the data the calculations used.
+  if (nrow(data$intervals) > 0) {
+    assert_intervals(data$intervals, data)
+  }
+  intervals_before <- data$intervals
+  data <- pknca_datetime_convert(data)
+  if (!identical(intervals_before, data$intervals)) {
+    data$intervals <- check.interval.specification(data$intervals, impute = data$impute)
+  }
   results <- data.frame()
   if (nrow(data$intervals) > 0) {
     if (verbose) {
@@ -37,22 +48,41 @@ pk.nca <- function(data, verbose=FALSE) {
     # Merge the options into the default options.
     tmp_options <- PKNCA.options()
     tmp_options[names(data$options)] <- data$options
+    # Requesting one of the r-squared factors here takes the other out of use,
+    # the way PKNCA.options() pairs them when they are set
+    for (n in intersect(names(data$options), c("adj.r.squared.factor", "r.squared.factor"))) {
+      tmp_options <- pair_r_squared_factors(tmp_options, n)
+    }
     data$options <- tmp_options
-    splitdata <- full_join_PKNCAdata(data)
+    # A working copy: reference intervals gain the source parameters their links
+    # need.  The PKNCAresults below keeps the user's own `data`, so the
+    # expansion never becomes visible in `x$data$intervals`.
+    data_calc <- expand_secondary_intervals(data)
+    splitdata <- full_join_PKNCAdata(data_calc)
     group_info <-
       splitdata[
         ,
         setdiff(names(splitdata), c("data_conc", "data_sparse_conc", "data_dose", "data_intervals")),
         drop=FALSE
       ]
-    # Calculate the results
-    if (verbose) {
-      rlang::inform("Starting dense PK NCA calculations.", class = "pknca_message_dense_pk_start")
+    # Calculate the results.  Sparse data reach the calculations as two
+    # representations of the same samples: the pooled individual measurements
+    # and the arithmetic-mean profile that prepare_PKNCAconc_sparse() built from
+    # them.  Both are in scope for every interval, and each parameter draws from
+    # the one its registration calls for.
+    sparse <- is_sparse_pk(data)
+    if (sparse) {
+      inform_sparse_auc_method(data_calc$intervals, options = data$options)
     }
-    results_dense <-
+    if (verbose) {
+      rlang::inform("Starting PK NCA calculations.", class = "pknca_message_pk_start")
+    }
+    results_all <-
       purrr::pmap(
         .l = list(
           data_conc = splitdata$data_conc,
+          data_sparse_conc =
+            if (sparse) splitdata$data_sparse_conc else rep(list(NULL), nrow(splitdata)),
           data_dose = splitdata$data_dose,
           data_intervals = splitdata$data_intervals
         ),
@@ -60,39 +90,25 @@ pk.nca <- function(data, verbose=FALSE) {
         options = data$options,
         impute = data$impute,
         verbose = verbose,
-        sparse = FALSE,
         .progress = data$options$progress
       )
     if (verbose) {
       rlang::inform("Combining completed dense PK calculation results.", class = "pknca_message_dense_pk_combine")
     }
-    results <- pk_nca_result_to_df(group_info, results_dense)
-    if (is_sparse_pk(data)) {
-      if (verbose) {
-        rlang::inform("Starting sparse PK NCA calculations.", class = "pknca_message_sparse_pk_start")
-      }
-      results_sparse <-
-        purrr::pmap(
-          .l=list(
-            data_conc=splitdata$data_sparse_conc,
-            data_dose=splitdata$data_dose,
-            data_intervals=splitdata$data_intervals
-          ),
-          .f=pk.nca.intervals,
-          options=data$options,
-          impute=data$impute,
-          verbose=verbose,
-          sparse=TRUE
-        )
+    # Every dense result comes before every sparse one in the output, so the two
+    # are gathered separately even though they were calculated together.
+    results <- pk_nca_result_to_df(group_info, lapply(results_all, `[[`, "dense"))
+    if (sparse) {
       if (verbose) {
         rlang::inform("Combining completed sparse PK calculation results.", class = "pknca_message_sparse_pk_combine")
       }
       results <-
         dplyr::bind_rows(
           results,
-          pk_nca_result_to_df(group_info, results_sparse)
+          pk_nca_result_to_df(group_info, lapply(results_all, `[[`, "sparse"))
         )
     }
+    results <- pk_nca_secondary(results, data_calc)
   }
   PKNCAresults(
     result=results,
@@ -119,18 +135,7 @@ pk_nca_result_to_df <- function(group_info, result) {
   if (nrow(ret_warnings) > 0) {
     group_names <- setdiff(names(ret_warnings), "data_result")
     # Tell the user where the warning comes from
-    warning_preamble <-
-      do.call(
-        what=paste,
-        args=
-          append(
-            lapply(
-              X=group_names,
-              FUN=function(x) paste(x, ret_warnings[[x]], sep="=")
-            ),
-            list(sep="; ")
-          )
-      )
+    warning_preamble <- name_value_text(ret_warnings[group_names], collapse="; ")
     invisible(lapply(
       X=seq_along(warning_preamble),
       FUN=function(idx) {
@@ -186,6 +191,9 @@ filter_interval <- function(data, start, end, include_na=FALSE, include_end=TRUE
 
 #' Determine if there are any sparse or dense calculations requested within an interval
 #'
+#' A calculation is sparse when only sparse data can produce it, which is a
+#' property of the registration rather than a flag; see [add.interval.col()].
+#'
 #' @param interval An interval specification
 #' @inheritParams PKNCAconc
 #' @return A logical value indicating if the interval requests any sparse (if
@@ -200,11 +208,112 @@ any_sparse_dense_in_interval <- function(interval, sparse) {
   any(
     vapply(
       X=all_intervals[names(requested[requested])],
-      FUN="[[",
-      "sparse",
+      FUN=spec_is_sparse_only,
       FUN.VALUE = TRUE
     ) %in% sparse
   )
+}
+
+# The sparse estimators are defined for the linear trapezoidal rule only (the
+# Nedelman-Jia/Holder variance needs fixed per-time-point weights), so
+# `auc.method` does not reach them.  Say so once per pk.nca() call when the
+# option asks for something else and an estimator is actually going to run,
+# because the same parameter calculated on dense data would have honored it.
+inform_sparse_auc_method <- function(intervals, options) {
+  auc_method <- PKNCA.choose.option("auc.method", options = options)
+  if (identical(auc_method, "linear")) {
+    return(invisible(NULL))
+  }
+  # Only the areas:  `auc.method` chooses how a curve is integrated, so saying
+  # it does not apply to a clearance or a mean residence time built on one of
+  # them would be noise.
+  all_intervals <- get.interval.cols()
+  integrated <-
+    Filter(
+      f = function(n) all_intervals[[n]]$unit_type %in% c("auc", "aumc"),
+      x = fun_sparse_params()
+    )
+  affected <- intersect(integrated, interval_requested_params(intervals))
+  if (length(affected) == 0) {
+    return(invisible(NULL))
+  }
+  rlang::inform(
+    sprintf(
+      "The sparse estimators use the linear trapezoidal rule, so the auc.method option (\"%s\") does not apply to: %s",
+      auc_method, paste(affected, collapse=", ")
+    ),
+    class = "pknca_message_sparse_auc_method"
+  )
+}
+
+# Every parameter an interval specification asks for.  With `expand`, the ones
+# needed only as a dependency of something else are included:  the registry is
+# sorted so that a parameter comes after everything it depends on, so one
+# reverse pass closes the dependencies of dependencies -- the same expansion
+# pk.nca.interval() does for a single interval, here over the whole
+# specification.  Without it, only what the specification names itself, which is
+# what a message about the request should talk about.
+interval_requested_params <- function(intervals, expand = TRUE) {
+  all_intervals <- get.interval.cols()
+  param_names <- setdiff(names(all_intervals), c("start", "end"))
+  requested <- stats::setNames(logical(length(param_names)), param_names)
+  for (n in intersect(param_names, names(intervals))) {
+    requested[[n]] <- any(intervals[[n]] %in% TRUE)
+  }
+  if (expand) {
+    for (n in rev(param_names)) {
+      if (requested[[n]]) {
+        requested[all_intervals[[n]]$depends] <- TRUE
+      }
+    }
+  }
+  names(requested)[requested]
+}
+
+# The data source a sparse parameter's calculation function reads when its
+# formals map names the dense one.  A sparse calculation function names its
+# inputs `conc`/`time` the way a dense one does, but takes them from the pooled
+# individual samples rather than from the arithmetic-mean profile that
+# prepare_PKNCAconc_sparse() built out of them.
+sparse_source_names <-
+  c(
+    conc="conc.sparse",
+    time="time.sparse",
+    conc.group="conc.sparse.group",
+    time.group="time.sparse.group"
+  )
+
+# Point a sparse parameter's resolved formals map (see parameter_arg_spec()) at
+# the pooled samples.  A formals map entry that is already a sparse source, a
+# constant (I()-wrapped), a reference-interval pointer, or the name of another
+# parameter is left alone.
+remap_sparse_sources <- function(arglist) {
+  for (idx in seq_along(arglist)) {
+    current <- arglist[[idx]]
+    if (is.character(current) && !inherits(current, "AsIs") &&
+        (length(current) == 1) && (current %in% names(sparse_source_names))) {
+      arglist[[idx]] <- unname(sparse_source_names[current])
+    }
+  }
+  arglist
+}
+
+# Run one imputation chain (a vector of function names from
+# PKNCA_impute_fun_list()) over a single concentration-time profile, giving the
+# data.frame of imputed `conc` and `time`.
+impute_conc_time <- function(impute_funs, conc, time, start, end,
+                             conc.group, time.group, options) {
+  impute_data <- data.frame(conc=conc, time=time)
+  for (current_fun_nm in impute_funs) {
+    impute_args <- as.list(impute_data)
+    impute_args$start <- start
+    impute_args$end <- end
+    impute_args$conc.group <- conc.group
+    impute_args$time.group <- time.group
+    impute_args$options <- options
+    impute_data <- do.call(current_fun_nm, args=impute_args)
+  }
+  impute_data
 }
 
 # Re-raise an error from a single interval calculation with the interval named.
@@ -225,6 +334,30 @@ interval_calculation_error <- function(e, error_preamble) {
   rlang::abort(msg, class = "pknca_error_interval_calculation", parent = e)
 }
 
+# How a parameter is calculated in the interval at hand:  which function runs,
+# whether that function reads the pooled sparse samples, and whether it can run
+# at all.  A parameter with a sparse estimator uses it when the pooled samples
+# are in scope and otherwise falls back to its dense function on the mean
+# profile; a sparse-only parameter has nothing to calculate from without them.
+#
+# Shared by pk.nca.interval()'s calculation loop and its check that an
+# imputation has not silently changed what a sparse estimator will see, so that
+# the two cannot disagree about which parameters are calculated sparsely.
+parameter_dispatch <- function(spec, has_sparse_conc) {
+  use_fun_sparse <-
+    has_sparse_conc && !is.null(spec$FUN_sparse) && !is.na(spec$FUN_sparse)
+  current_fun <- if (use_fun_sparse) spec$FUN_sparse else spec$FUN
+  list(
+    FUN = current_fun,
+    # The sparse estimator ran, so the result came from the pooled samples and
+    # the sparse formals map is the one that resolves its arguments.  A
+    # sparse-only parameter has no `FUN` to fall back to, which is what makes it
+    # uncalculable for dense data.
+    sparse = use_fun_sparse,
+    calculable = !is.na(current_fun)
+  )
+}
+
 # Subset data down to just the times of interest and then pass it
 # further to the calculation routines.
 #
@@ -232,7 +365,11 @@ interval_calculation_error <- function(e, error_preamble) {
 #' Compute NCA for multiple intervals
 #'
 #' @param data_conc A data.frame or tibble with standardized column names as
-#'   output from `prepare_PKNCAconc()`
+#'   output from `prepare_PKNCAconc()`.  With sparse PK this is the
+#'   arithmetic-mean profile.
+#' @param data_sparse_conc For sparse PK, a data.frame or tibble of the pooled
+#'   individual samples (including a `subject` column) as output from
+#'   `prepare_PKNCAconc()`; `NULL` for dense PK
 #' @param data_dose A data.frame or tibble with standardized column names as
 #'   output from `prepare_PKNCAdose()`
 #' @param data_intervals A data.frame or tibble with standardized column names
@@ -241,15 +378,19 @@ interval_calculation_error <- function(e, error_preamble) {
 #' @inheritParams PKNCAdata
 #' @inheritParams pk.nca
 #' @inheritParams pk.nca.interval
-#' @return A data.frame with all NCA results
-pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
-                             options, impute, verbose=FALSE) {
+#' @return A list with elements "dense" and "sparse", each a data.frame of the
+#'   NCA results calculated from that concentration representation (or, when no
+#'   calculation was possible at all, the warning condition saying why)
+pk.nca.intervals <- function(data_conc, data_dose, data_intervals,
+                             options, impute, data_sparse_conc=NULL, verbose=FALSE) {
   if (is.null(data_conc) || (nrow(data_conc) == 0)) {
     # No concentration data; potentially placebo data
-    return(rlang::warning_cnd(class="pknca_warning_no_conc_data", message="No concentration data"))
+    no_data <- rlang::warning_cnd(class="pknca_warning_no_conc_data", message="No concentration data")
+    return(list(dense=no_data, sparse=no_data))
   } else if (is.null(data_intervals) || (nrow(data_intervals) == 0)) {
     # No intervals; potentially placebo data
-    return(rlang::warning_cnd(class="pknca_warning_no_intervals", message="No intervals for data"))
+    no_intervals <- rlang::warning_cnd(class="pknca_warning_no_intervals", message="No intervals for data")
+    return(list(dense=no_intervals, sparse=no_intervals))
   }
   # Sort the group-level concentration data in time order.  The interval-level
   # data are sorted below (per interval), but the group-level data are passed
@@ -257,18 +398,32 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
   # several of those (via interp.extrap.conc()) require time-sorted input.  See
   # https://github.com/humanpred/pknca/issues/568.
   data_conc <- data_conc[order(data_conc$time), , drop=FALSE]
+  has_sparse_data <- !is.null(data_sparse_conc) && (nrow(data_sparse_conc) > 0)
+  if (has_sparse_data) {
+    data_sparse_conc <- data_sparse_conc[order(data_sparse_conc$time), , drop=FALSE]
+  }
   # Hoist the debug check: options is already the fully-merged options object
   # (merged at the top of pk.nca()), so there is no need to re-query
   # PKNCA.options() from the environment on every iteration.
   use_debug <- !is.null(options$debug)
-  ret_list <- list()
+  ret_dense <- list()
+  ret_sparse <- list()
   for (i in seq_len(nrow(data_intervals))) {
     current_interval <- data_intervals[i, , drop=FALSE]
-    has_calc_sparse_dense <- any_sparse_dense_in_interval(current_interval, sparse=sparse)
+    has_calc_dense <- any_sparse_dense_in_interval(current_interval, sparse=FALSE)
+    has_calc_sparse <-
+      has_sparse_data && any_sparse_dense_in_interval(current_interval, sparse=TRUE)
     # Choose only times between the start and end.
     conc_data_interval <- filter_interval(data_conc, start=data_intervals$start[i], end=data_intervals$end[i])
     # Sort the data in time order
     conc_data_interval <- conc_data_interval[order(conc_data_interval$time),]
+    if (has_sparse_data) {
+      conc_sparse_interval <-
+        filter_interval(data_sparse_conc, start=data_intervals$start[i], end=data_intervals$end[i])
+      conc_sparse_interval <- conc_sparse_interval[order(conc_sparse_interval$time),]
+    } else {
+      conc_sparse_interval <- NULL
+    }
     NA_data_dose_ <- data.frame(dose=NA_real_, time=NA_real_, duration=NA_real_, route=NA_real_)
     if (is.null(data_dose) || identical(data_dose, NA)) {
       data_dose <- dose_data_interval <- NA_data_dose_
@@ -292,24 +447,25 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
     error_preamble <-
       paste(
         "Error with interval",
-        paste(
-          c("start", "end"),
-          unlist(current_interval[, c("start", "end")]),
-          sep="=", collapse=", ")
+        name_value_text(current_interval[, c("start", "end")])
       )
     if (nrow(conc_data_interval) == 0) {
       rlang::warn(sprintf("%s: No data for interval", error_preamble), class = "pknca_warning_no_data_for_interval")
-    } else if (!has_calc_sparse_dense) {
-      if (verbose) {
+    } else {
+      if (verbose && !has_calc_dense) {
         rlang::inform(
-          sprintf(
-            "No %s calculations requested for an interval",
-            if (sparse) "sparse" else "dense"
-          ),
+          "No dense calculations requested for an interval",
           class = "pknca_message_no_interval_calculations"
         )
       }
-    } else {
+      if (verbose && has_sparse_data && !has_calc_sparse) {
+        rlang::inform(
+          "No sparse calculations requested for an interval",
+          class = "pknca_message_no_interval_calculations"
+        )
+      }
+    }
+    if ((nrow(conc_data_interval) > 0) && (has_calc_dense || has_calc_sparse)) {
       impute_method <- get_impute_method(intervals = current_interval, impute = impute)
       # volume and duration are read with `[[` rather than the `$` used for
       # every column around them because they are the only ones that may not be
@@ -338,11 +494,16 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
         duration.dose.group=data_dose$duration,
         route.group=data_dose$route,
         # Generic data
-        sparse=sparse,
         interval=current_interval,
         options=options)
-      if ("subject" %in% names(conc_data_interval)) {
-        args$subject <- conc_data_interval$subject
+      if (has_sparse_data) {
+        # The pooled individual samples that the mean profile in `conc`/`time`
+        # was built from.  Only a sparse-flagged parameter reads them.
+        args$conc.sparse <- conc_sparse_interval$conc
+        args$time.sparse <- conc_sparse_interval$time
+        args$subject <- conc_sparse_interval$subject
+        args$conc.sparse.group <- data_sparse_conc$conc
+        args$time.sparse.group <- data_sparse_conc$time
       }
       uses_include_hl <- FALSE
       if ("include_half.life" %in% names(conc_data_interval)) {
@@ -374,22 +535,95 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
             error = function(e) interval_calculation_error(e, error_preamble = error_preamble)
           )
       }
-      # Add all the new data into the output
-      new_ret <-
-        cbind(
-          # The rep(1, ...) is to fix #381 where attributes on an interval
-          # column cause cbind to fail
-          current_interval[
-            rep(1, nrow(calculated_interval)),
-            c("start", "end", options$keep_interval_cols)
-          ],
-          calculated_interval,
-          row.names=NULL
-        )
-      ret_list[[length(ret_list) + 1L]] <- new_ret
+      # Add all the new data into the output, keeping the dense and sparse
+      # results apart (pk.nca() reports every dense result before any sparse
+      # one)
+      sparse_row <- attr(calculated_interval, "sparse")
+      interval_cols <-
+        current_interval[, c("start", "end", options$keep_interval_cols), drop=FALSE]
+      if (any(!sparse_row)) {
+        ret_dense[[length(ret_dense) + 1L]] <-
+          bind_interval_result(interval_cols, calculated_interval[!sparse_row, , drop=FALSE])
+      }
+      if (any(sparse_row)) {
+        ret_sparse[[length(ret_sparse) + 1L]] <-
+          bind_interval_result(interval_cols, calculated_interval[sparse_row, , drop=FALSE])
+      }
     }
   }
-  if (length(ret_list) == 0L) data.frame() else dplyr::bind_rows(ret_list)
+  list(
+    dense=if (length(ret_dense) == 0L) data.frame() else dplyr::bind_rows(ret_dense),
+    sparse=if (length(ret_sparse) == 0L) data.frame() else dplyr::bind_rows(ret_sparse)
+  )
+}
+
+# Prefix the columns that identify an interval onto the results calculated
+# within it, repeated to one row per result.
+bind_interval_result <- function(interval_cols, calculated) {
+  cbind(
+    # The rep(1, ...) is to fix #381 where attributes on an interval column
+    # cause cbind to fail
+    interval_cols[rep(1, nrow(calculated)), , drop=FALSE],
+    calculated,
+    row.names=NULL
+  )
+}
+
+# Combine exclusion reasons from a calculation's inputs with the exclusion the
+# calculation itself set (the "exclude" attribute).  "DO NOT EXCLUDE" on the
+# result wins and clears everything.  Documented in
+# vignettes/v80-writing-parameter-functions.Rmd.
+combine_exclude_reasons <- function(from_inputs, from_result) {
+  reasons <- stats::na.omit(c(from_inputs, from_result))
+  if (identical(from_result, "DO NOT EXCLUDE")) {
+    NA_character_
+  } else if (length(reasons) > 0) {
+    paste(reasons, collapse = "; ")
+  } else {
+    NA_character_
+  }
+}
+
+# How a parameter's calculation function is called: `arglist` maps each of its
+# formals to the name of the data source or parameter that supplies the value
+# (`...` removed, and the formals that `formalsmap` sets to NULL dropped), and
+# `required` names the formals that have no default, so that an argument which
+# cannot be found can be told from an optional one.
+#
+# Both depend only on the registry entry, so they are worked out on first use
+# and cached there, the same way `requires_*` is (see set_requires_inputs()).
+# Re-registering a parameter replaces its whole entry, cache included.  A
+# parameter with a sparse estimator has two specs, one per calling convention,
+# selected and cached by `sparse`.
+parameter_arg_spec <- function(param, sparse = FALSE) {
+  all_intervals <- get.interval.cols()
+  cache_name <- if (sparse) "arg_spec_sparse" else "arg_spec"
+  cached <- all_intervals[[param]][[cache_name]]
+  if (!is.null(cached)) {
+    return(cached)
+  }
+  if (sparse) {
+    fun_formals <- formals(get(all_intervals[[param]]$FUN_sparse))
+    formalsmap <- all_intervals[[param]]$formalsmap_sparse
+  } else {
+    fun_formals <- formals(get(all_intervals[[param]]$FUN))
+    formalsmap <- all_intervals[[param]]$formalsmap
+  }
+  arg_names <- setdiff(names(fun_formals), "...")
+  arglist <- stats::setNames(object = as.list(arg_names), arg_names)
+  arglist[names(formalsmap)] <- formalsmap
+  # Drop arguments that were set to NULL by the formalsmap
+  arglist <- arglist[!vapply(X = arglist, FUN = is.null, FUN.VALUE = TRUE)]
+  has_no_default <-
+    vapply(
+      X = names(arglist),
+      FUN = function(x) inherits(fun_formals[[x]], "name"),
+      FUN.VALUE = TRUE
+    )
+  ret <- list(arglist = arglist, required = names(arglist)[has_no_default])
+  all_intervals[[param]][[cache_name]] <- ret
+  assign("interval.cols", all_intervals, envir = .PKNCAEnv)
+  ret
 }
 
 #' Compute all PK parameters for a single concentration-time data set
@@ -430,11 +664,17 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals, sparse,
 #' @param lloq An optional scalar or vector (the same length as `conc`) with the
 #'   lower limit of quantification passed to [pk.calc.half.life()] for the Tobit
 #'   half-life method.
-#' @param subject Subject identifiers (used for sparse calculations)
-#' @param sparse Should only sparse calculations be performed (TRUE) or only
-#'   dense calculations (FALSE)?
-#' @returns A data frame with the start and end time along with all PK
-#'   parameters for the `interval`
+#' @param subject Subject identifiers for the pooled sparse samples
+#' @param conc.sparse,time.sparse The pooled individual concentrations and their
+#'   times for the current interval with sparse PK (`conc` and `time` are the
+#'   arithmetic-mean profile built from them).  `NULL` for dense PK.
+#' @param conc.sparse.group,time.sparse.group The pooled individual
+#'   concentrations and their times for all data for the group with sparse PK.
+#'   `NULL` for dense PK.
+#' @returns A data frame with one row per result, with columns `PPTESTCD`,
+#'   `PPORRES`, `PPANMETH`, and `exclude`.  Its "sparse" attribute is a logical
+#'   vector saying, for each row, whether the parameter that produced it is
+#'   registered as a sparse PK parameter.
 #'
 #' @seealso [check.interval.specification()]
 #' @export
@@ -443,37 +683,68 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
                             dose, time.dose, duration.dose, route,
                             conc.group=NULL, time.group=NULL, volume.group=NULL, duration.conc.group=NULL,
                             dose.group=NULL, time.dose.group=NULL, duration.dose.group=NULL, route.group=NULL,
+                            conc.sparse=NULL, time.sparse=NULL,
+                            conc.sparse.group=NULL, time.sparse.group=NULL,
                             impute_method=NA_character_,
                             include_half.life=NULL, exclude_half.life=NULL, lloq=NULL,
-                            subject, sparse, interval, options=list()) {
+                            subject=NULL, interval, options=list()) {
   if (!checkmate::test_data_frame(interval, nrows = 1)) {
     rlang::abort(
       "Please report a bug.  Interval must be a one-row data.frame",
       class = "pknca_error_internal_interval_not_one_row_df"
     )
   }
+  # Sparse parameters are calculated from the pooled samples, so those need the
+  # same imputation the mean profile gets.
+  has_sparse_conc <- !is.null(conc.sparse)
+  sparse_impute_changed <- FALSE
 
   if (!all(is.na(impute_method))) {
     impute_funs <- PKNCA_impute_fun_list(impute_method)
     stopifnot(length(impute_funs) == 1)
-    impute_data <- data.frame(conc=conc, time=time)
-    for (current_fun_nm in impute_funs[[1]]) {
-      impute_args <- as.list(impute_data)
-      impute_args$start <- interval$start[1]
-      impute_args$end <- interval$end[1]
-      impute_args$conc.group <- conc.group
-      impute_args$time.group <- time.group
-      impute_args$options <- options
-      impute_data <- do.call(current_fun_nm, args=impute_args)
-    }
+    impute_data <-
+      impute_conc_time(
+        impute_funs=impute_funs[[1]], conc=conc, time=time,
+        start=interval$start[1], end=interval$end[1],
+        conc.group=conc.group, time.group=time.group, options=options
+      )
     conc <- impute_data$conc
     time <- impute_data$time
+    if (has_sparse_conc) {
+      impute_sparse <-
+        impute_conc_time(
+          impute_funs=impute_funs[[1]], conc=conc.sparse, time=time.sparse,
+          start=interval$start[1], end=interval$end[1],
+          conc.group=conc.sparse.group, time.group=time.sparse.group, options=options
+        )
+      # An imputation that added or altered a pooled measurement has no subject
+      # to attribute it to, so a sparse estimator cannot use the result.  The
+      # calculation loop below refuses it rather than estimating from a profile
+      # whose subject bookkeeping no longer matches.  An imputation that changed
+      # nothing (a sample already exists at the interval start, say) is fine.
+      sparse_impute_changed <-
+        !isTRUE(all.equal(conc.sparse, impute_sparse$conc)) ||
+        !isTRUE(all.equal(time.sparse, impute_sparse$time))
+      conc.sparse <- impute_sparse$conc
+      time.sparse <- impute_sparse$time
+    }
     tmp_imp_method <- paste0("Imputation: ", paste(na.omit(impute_method), collapse = ", "))
   } else {
     tmp_imp_method <- character()
   }
-  # Prepare the return value using SDTM names
-  ret <- data.frame(PPTESTCD=NA, PPORRES=NA)[-1,]
+  # Results accumulate as parallel vectors, one element per result row, and
+  # become the returned data.frame (with SDTM names) at the end.  `result_sparse`
+  # records which representation of the concentrations each row came from.
+  result_testcd <- NULL
+  result_value <- NULL
+  result_method <- NULL
+  result_exclude <- NULL
+  result_sparse <- NULL
+  # The same values and exclusions keyed by name.  The argument resolution
+  # below reads them for a parameter already calculated in this interval, so
+  # they grow as the calculations proceed.
+  computed_value <- list()
+  computed_exclude <- list()
   # Determine exactly what needs to be calculated in what order. Start with the
   # interval specification and find any dependencies that are not listed for
   # calculation.  Then loop over the calculations in order confirming what needs
@@ -483,101 +754,154 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   if (length(dose) == 0) {
     rlang::abort("Please report a bug. Length of dose should not be zero.", class = "pknca_error_internal_dose_length_zero")  # nocov
   }
+  # What the interval requests, as a logical vector over the parameters (start
+  # and end are times, not requests).  The expansion below and the calculation
+  # loop after it read it instead of the interval's columns, and an interval
+  # typically requests a handful of the few hundred registered parameters.
+  param_names <- setdiff(names(all_intervals), c("start", "end"))
+  requested <- vapply(X = interval[param_names], FUN = as.logical, FUN.VALUE = TRUE)
   # Make sure that we calculate all of the dependencies.  Do this in
   # reverse order for dependencies of dependencies.
-  for (n in rev(names(all_intervals))) {
-    if (interval[[n]]) {
-      interval[all_intervals[[n]]$depends] <- TRUE
+  for (n in rev(param_names)) {
+    if (requested[[n]]) {
+      depends <- all_intervals[[n]]$depends
+      requested[depends] <- TRUE
+      interval[depends] <- TRUE
     }
   }
+  # Parameters linked to a reference interval are calculated across intervals by
+  # pk_nca_secondary() after every interval has been calculated.  Their
+  # dependencies are still expanded above, because the requesting interval's own half of the
+  # calculation (`ae`, `totdose`, ...) is computed here.
+  deferred <- interval_deferred_params(interval)
+  to_calculate <- setdiff(names(requested)[requested], deferred)
+  dispatch <-
+    lapply(
+      X = stats::setNames(nm = to_calculate),
+      FUN = function(n) parameter_dispatch(all_intervals[[n]], has_sparse_conc = has_sparse_conc)
+    )
+  if (sparse_impute_changed) {
+    calculated_sparsely <-
+      names(dispatch)[vapply(dispatch, function(x) x$calculable && x$sparse, FUN.VALUE = TRUE)]
+    if (length(calculated_sparsely) > 0) {
+      rlang::abort(
+        sprintf(
+          "The sparse estimators do not support imputation, and '%s' changed the pooled samples for the interval %s.  Either drop the imputation for the sparse data, or request only parameters calculated from the mean profile (these are calculated from the pooled samples: %s).",
+          paste(na.omit(impute_method), collapse = ", "),
+          name_value_text(interval[, c("start", "end")]),
+          paste(calculated_sparsely, collapse = ", ")
+        ),
+        class = "pknca_error_sparse_impute"
+      )
+    }
+  }
+  # Every data source a calculation function can name, under the name that
+  # add.interval.col() uses for it.  A source that was not given is NULL, which
+  # leaves the argument off the call so that the function's own default
+  # applies.  The interval's own times start at zero, so `time` and `time.dose`
+  # are realigned to the start of the interval; the group times keep the
+  # group's scale.
+  source_map <-
+    list(
+      conc=conc,
+      time=time - interval$start[1],
+      volume=volume,
+      duration.conc=duration.conc,
+      dose=dose,
+      time.dose=time.dose - interval$start[1],
+      duration.dose=duration.dose,
+      route=route,
+      conc.group=conc.group,
+      time.group=time.group,
+      volume.group=volume.group,
+      duration.conc.group=duration.conc.group,
+      dose.group=dose.group,
+      time.dose.group=time.dose.group,
+      duration.dose.group=duration.dose.group,
+      route.group=route.group,
+      # The pooled individual samples and their subject identifiers are given
+      # only for sparse PK
+      conc.sparse=conc.sparse,
+      time.sparse=if (has_sparse_conc) time.sparse - interval$start[1] else NULL,
+      conc.sparse.group=conc.sparse.group,
+      time.sparse.group=time.sparse.group,
+      subject=subject,
+      lloq=lloq,
+      start=interval[["start"]],
+      end=interval[["end"]],
+      options=options
+    )
   # Do the calculations
-  for (n in names(all_intervals)) {
-    request_to_calculate <- as.logical(interval[[n]])
-    has_calculation_function <- !is.na(all_intervals[[n]]$FUN)
-    is_correct_sparse_dense <- all_intervals[[n]]$sparse == sparse
-    if (request_to_calculate && has_calculation_function && is_correct_sparse_dense) {
+  for (n in to_calculate) {
+    current_fun <- dispatch[[n]]$FUN
+    # Whichever function ran, a result calculated from the pooled samples is a
+    # sparse result
+    from_sparse <- dispatch[[n]]$sparse
+    if (dispatch[[n]]$calculable) {
       call_args <- list()
       exclude_from_argument <- character(0)
       # Prepare to call the function by setting up its arguments.
-      # Define the required arguments (arglist), and ignore the "..." argument
-      # if it exists.
-      arglist <- setdiff(names(formals(get(all_intervals[[n]]$FUN))),
-                         "...")
-      arglist <- stats::setNames(object=as.list(arglist), arglist)
-      arglist[names(all_intervals[[n]]$formalsmap)] <- all_intervals[[n]]$formalsmap
-      # Drop arguments that were set to NULL by the formalsmap
-      arglist <- arglist[!vapply(X = arglist, FUN = is.null, FUN.VALUE = TRUE)]
+      arg_spec <- parameter_arg_spec(n, sparse = dispatch[[n]]$sparse)
+      arglist <- arg_spec$arglist
+      if (from_sparse) {
+        arglist <- remap_sparse_sources(arglist)
+      }
       for (arg_formal in names(arglist)) {
         arg_mapped <- arglist[[arg_formal]]
-        if (inherits(arg_mapped, "AsIs")) {
+        if (is_pknca_ref(arg_mapped)) {
+          # A secondary parameter reaching here was requested without a
+          # reference pointer, so only the historical same-interval sources can
+          # supply the value.
+          info <- secondary_param_info(n)
+          target <- arg_mapped$param
+          if (!is.null(interval[[arg_formal]])) {
+            # Historical escape hatch: a value column named by the formal (e.g.
+            # `dose1` for f), passed through via keep_interval_cols
+            call_args[[arg_formal]] <- interval[[arg_formal]]
+          } else if (!(target %in% info$own_args) &&
+                     target %in% names(computed_value)) {
+            # Historical same-interval behavior (e.g. clr with auclast requested
+            # in the same interval).  Disallowed when the target is also an own
+            # argument, because test and reference would then be the same value
+            # and the result degenerate (f would always be 1).
+            call_args[[arg_formal]] <- computed_value[[target]]
+            exclude_from_argument <- c(exclude_from_argument, computed_exclude[[target]])
+          } else {
+            rlang::abort(
+              sprintf(
+                "The secondary parameter '%s' needs a reference interval for its '%s' argument (the value of '%s' from another interval). Set the '%s_ref' column in the interval specification to the 'interval_id' of the reference interval, give `group_ref` to PKNCAdata(), or use interval_add_secondary().",
+                n, arg_formal, target, n
+              ),
+              class = "pknca_error_secondary_needs_ref"
+            )
+          }
+        } else if (inherits(arg_mapped, "AsIs")) {
           # An I()-wrapped formalsmap value is the argument itself rather than
           # the name of a data source or another parameter.
           call_args[[arg_formal]] <- unclass(arg_mapped)
-        } else if (arg_mapped == "conc") {
-          call_args[[arg_formal]] <- conc
-        } else if (arg_mapped == "time") {
-          # Realign the time to be relative to the start of the
-          # interval
-          call_args[[arg_formal]] <- time - interval$start[1]
-        } else if (arg_mapped == "volume") {
-          call_args[[arg_formal]] <- volume
-        } else if (arg_mapped == "duration.conc") {
-          call_args[[arg_formal]] <- duration.conc
-        } else if (arg_mapped == "dose") {
-          call_args[[arg_formal]] <- dose
-        } else if (arg_mapped == "time.dose") {
-          # Realign the time to be relative to the start of the
-          # interval
-          call_args[[arg_formal]] <- time.dose - interval$start[1]
-        } else if (arg_mapped == "duration.dose") {
-          call_args[[arg_formal]] <- duration.dose
-        } else if (arg_mapped == "route") {
-          call_args[[arg_formal]] <- route
-        } else if (arg_mapped == "conc.group") {
-          call_args[[arg_formal]] <- conc.group
-        } else if (arg_mapped == "time.group") {
-          # Don't realign the time to be relative to the start of the
-          # interval
-          call_args[[arg_formal]] <- time.group
-        } else if (arg_mapped == "volume.group") {
-          call_args[[arg_formal]] <- volume.group
-        } else if (arg_mapped == "duration.conc.group") {
-          call_args[[arg_formal]] <- duration.conc.group
-        } else if (arg_mapped == "dose.group") {
-          call_args[[arg_formal]] <- dose.group
-        } else if (arg_mapped == "time.dose.group") {
-          # Realign the time to be relative to the start of the
-          # interval
-          call_args[[arg_formal]] <- time.dose.group
-        } else if (arg_mapped == "duration.dose.group") {
-          call_args[[arg_formal]] <- duration.dose.group
-        } else if (arg_mapped == "route.group") {
-          call_args[[arg_formal]] <- route.group
-        } else if (arg_mapped == "subject") {
-          call_args[[arg_formal]] <- subject
-        } else if (arg_mapped == "lloq") {
-          call_args[[arg_formal]] <- lloq
         } else if (arg_mapped == "tau") {
+          # tau is derived from the dose times when the interval does not give
+          # it, and that says so when it cannot be determined, so it is worked
+          # out only for a parameter that asks for it.
           call_args[[arg_formal]] <-
             resolve_dose_tau(
               interval=interval,
               time.dose=time.dose.group,
               options=options
             )
-        } else if (arg_mapped %in% c("start", "end")) {
-          # Provide the start and end of the interval if they are requested
-          call_args[[arg_formal]] <- interval[[arg_mapped]]
-        } else if (arg_mapped == "options") {
-          call_args[[arg_formal]] <- options
-        } else if (any(mask_arg <- ret$PPTESTCD %in% arg_mapped)) {
-          call_args[[arg_formal]] <- ret$PPORRES[mask_arg]
+        } else if (arg_mapped %in% names(source_map)) {
+          call_args[[arg_formal]] <- source_map[[arg_mapped]]
+        } else if (arg_mapped %in% names(computed_value)) {
+          # A parameter calculated earlier in this interval carries its
+          # exclusion into anything calculated from it
+          call_args[[arg_formal]] <- computed_value[[arg_mapped]]
           exclude_from_argument <-
-            c(exclude_from_argument, ret$exclude[mask_arg])
+            c(exclude_from_argument, computed_exclude[[arg_mapped]])
         } else if (!is.null(interval[[arg_mapped]])) {
           call_args[[arg_formal]] <- interval[[arg_mapped]]
         } else {
           # Give an error if there is not a default argument.
-          if (inherits(formals(get(all_intervals[[n]]$FUN))[[arg_formal]], "name")) {
+          if (arg_formal %in% arg_spec$required) {
             arg_text <-
               if (arg_formal == arg_mapped) {
                 sprintf("'%s'", arg_formal)
@@ -592,7 +916,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
             rlang::abort(
               sprintf(
                 "Cannot find argument %s for NCA parameter '%s' (calculated by '%s'); give it as a column in the interval specification",
-                arg_text, n, all_intervals[[n]]$FUN
+                arg_text, n, current_fun
               ),
               class = "pknca_error_missing_nca_argument"
             )
@@ -621,24 +945,22 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         }
       }
       # Do the calculation
-      tmp_result <- do.call(all_intervals[[n]]$FUN, call_args)
+      tmp_result <- do.call(current_fun, call_args)
       # The handling of the exclude column is documented in the
       # "vignettes/v80-writing-parameter-functions.Rmd" vignette.  Document any
       # changes to this section of code there.
       exclude_reason <-
-        stats::na.omit(c(
-          exclude_from_argument, attr(tmp_result, "exclude")
-        ))
-      exclude_reason <-
-        if (identical(attr(tmp_result, "exclude"), "DO NOT EXCLUDE")) {
-          NA_character_
-        } else if (length(exclude_reason) > 0) {
-          paste(exclude_reason, collapse="; ")
-        } else {
-          NA_character_
-        }
-      # The handling of the method column (PPANMETH)
-      tmp_method <- c(tmp_imp_method, attr(tmp_result, "method"))
+        combine_exclude_reasons(exclude_from_argument, attr(tmp_result, "exclude"))
+      # The handling of the method column (PPANMETH).  Not every calculation
+      # function sets a "method" attribute at run time; when one does not, but
+      # the parameter's own registration documents a `formula_note` (e.g.
+      # c0's method-selection order), that falls back into PPANMETH so the
+      # documented metadata is not silently lost.
+      calc_method <- attr(tmp_result, "method")
+      if (is.null(calc_method)) {
+        calc_method <- all_intervals[[n]]$formula_note
+      }
+      tmp_method <- c(tmp_imp_method, calc_method)
       attr(tmp_result, "method") <- NULL
 
       # If the function returns a data frame, save all the returned values,
@@ -649,16 +971,57 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       } else {
         tmp_testcd <- n
       }
-      single_result <-
-        data.frame(
-          PPTESTCD=tmp_testcd,
-          PPORRES=tmp_result,
-          PPANMETH=paste(tmp_method, collapse=". "),
-          exclude=exclude_reason,
-          stringsAsFactors=FALSE
+      # A calculation function returning a data.frame gives one result row per
+      # column of it.  The method and the exclusion belong to the calculation,
+      # so they apply to every row it produced.
+      n_result <- max(length(tmp_testcd), length(tmp_result))
+      # The names and the values must pair up: equal lengths, or a scalar on
+      # either side that applies to all of the other.  Anything else (an empty
+      # or ragged return) would recycle into misassigned names.
+      if (n_result == 0 ||
+          !(length(tmp_testcd) %in% c(1L, n_result)) ||
+          !(length(tmp_result) %in% c(1L, n_result))) {
+        rlang::abort(
+          sprintf(
+            "The calculation function '%s' returned %g result name(s) and %g value(s); it must return one value per name",
+            current_fun, length(tmp_testcd), length(tmp_result)
+          ),
+          class = "pknca_error_calc_result_shape"
         )
-      ret <- rbind(ret, single_result)
+      }
+      row_testcd <- rep_len(tmp_testcd, n_result)
+      row_value <- rep_len(tmp_result, n_result)
+      row_exclude <- rep(exclude_reason, n_result)
+      result_testcd <- c(result_testcd, row_testcd)
+      result_value <- c(result_value, row_value)
+      result_method <- c(result_method, rep(paste(tmp_method, collapse=". "), n_result))
+      result_exclude <- c(result_exclude, row_exclude)
+      result_sparse <- c(result_sparse, rep(from_sparse, n_result))
+      # Two calculations giving a result the same name contribute both values,
+      # in calculation order, the way a data.frame of results would.
+      for (idx in seq_len(n_result)) {
+        current_testcd <- row_testcd[[idx]]
+        computed_value[[current_testcd]] <-
+          c(computed_value[[current_testcd]], row_value[[idx]])
+        computed_exclude[[current_testcd]] <-
+          c(computed_exclude[[current_testcd]], row_exclude[[idx]])
+      }
     }
   }
+  ret <-
+    if (length(result_testcd) == 0) {
+      # Nothing was calculated for this interval
+      data.frame(PPTESTCD=NA, PPORRES=NA)[-1,]
+    } else {
+      data.frame(
+        PPTESTCD=result_testcd,
+        PPORRES=result_value,
+        PPANMETH=result_method,
+        exclude=result_exclude
+      )
+    }
+  # Which concentration representation each row came from, so that the caller
+  # can keep the dense and sparse results apart
+  attr(ret, "sparse") <- if (is.null(result_sparse)) logical(0) else result_sparse
   ret
 }

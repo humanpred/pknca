@@ -22,3 +22,24 @@ test_that("pk.calc.cmax", {
                myres$result$dose[myres$result$PPTESTCD %in% "auclast"],
                info="Dose normalization works when requested as a parameter in pk.nca")
 })
+
+test_that("dose-normalized CDISC codes derive from dense/sparse mappings elementwise", {
+  # auclast's own pptestcd_cdisc/pptest_cdisc are plain strings (CDISC has no
+  # code distinguishing a sparse AUClast from one integrated per subject), so
+  # auclast.dn gets the simple suffix behavior on both.
+  expect_equal(get.interval.cols()[["auclast.dn"]]$pptestcd_cdisc, "AUCLSTD")
+  expect_equal(
+    get.interval.cols()[["auclast.dn"]]$pptest_cdisc,
+    "AUC to Last Nonzero Conc by Dose"
+  )
+  # aumclast carries a dense/sparse *test name* mapping (CDISC has no separate
+  # code for a sparsely estimated AUMClast, so only the test name
+  # distinguishes it); the derived aumclast.dn test name must stay
+  # elementwise distinguishable, while its code keeps the simple suffix
+  # behavior.
+  expect_equal(get.interval.cols()[["aumclast.dn"]]$pptestcd_cdisc, "AUMCLSTD")
+  expect_equal(
+    get.interval.cols()[["aumclast.dn"]]$pptest_cdisc,
+    list(dense = "AUMC to Last Nonzero Conc by Dose", sparse = "Sparse AUMClast by Dose")
+  )
+})

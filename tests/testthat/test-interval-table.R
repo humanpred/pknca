@@ -82,19 +82,42 @@ test_that("an interval collection gives the excreta parameters and no imputation
   expect_false("impute" %in% names(ret))
 })
 
-test_that("a sparse design gives only sparse parameters", {
+test_that("a sparse design reports the same parameters as the dense one, with no imputation", {
+  # `auclast` and `aumclast` are estimated with the sparse methods and the rest
+  # are calculated from the arithmetic-mean profile, so the parameter set does
+  # not change; only the imputation does, because there is nothing to impute
   ret <-
     pknca_interval_table(0, 24, dosing = "single", route = "extravascular", sparse = TRUE)
-  expect_equal(params_of(ret), sort(c("sparse_auclast", "sparse_auc_se")))
+  dense <-
+    pknca_interval_table(0, 24, dosing = "single", route = "extravascular", sparse = FALSE)
+  expect_equal(
+    params_of(ret),
+    sort(c("aucinf.obs", "auclast", "aucpext.obs", "cl.obs", "cmax", "count_conc",
+           "half.life", "tlag", "tmax"))
+  )
+  expect_equal(params_of(ret), params_of(dense))
   expect_false("impute" %in% names(ret))
+  expect_true("impute" %in% names(dense))
+  # The preset gives the same thing
+  expect_equal(params_of(pknca_interval_table(0, 24, preset = "sparse_single_dose")), params_of(ret))
 })
 
-test_that("a dense design gives no sparse parameters", {
-  # sparse_auc_se is produced alongside sparse_auclast and is not flagged in
-  # the registry, so it has to be classified through what it depends on
+test_that("no context chooses a parameter that needs sparse data", {
+  # The deprecated sparse_* family and the standard errors and degrees of
+  # freedom that arrive as sparse estimator output are all reached by name, not
+  # by selection.  Derived from the classification so that a newly registered
+  # sparse-only parameter does not need this test edited.
+  parameter_table <- pknca_parameter_table()
+  needs_sparse <- parameter_table$parameter[parameter_table$sparse]
+  expect_true(all(c("sparse_auclast", "sparse_auc_se", "auclast_se", "vz.sparse.last") %in% needs_sparse))
   for (d in pknca_dosing()) {
-    ret <- pknca_interval_table(0, 24, dosing = d, route = "extravascular", tier = "all")
-    expect_false(any(grepl("sparse", params_of(ret))), info = d)
+    for (sp in c(FALSE, TRUE)) {
+      ret <-
+        pknca_interval_table(
+          0, 24, dosing = d, route = "extravascular", sparse = sp, tier = "all"
+        )
+      expect_equal(intersect(params_of_all(ret), needs_sparse), character(), info = paste(d, sp))
+    }
   }
 })
 
@@ -290,6 +313,7 @@ test_that("every parameter is reachable from some context, or documented as not"
     }
   }
   unreachable <- sort(setdiff(setdiff(names(get.interval.cols()), c("start", "end")), emitted))
+  parameter_table <- pknca_parameter_table()
   # Everything built on AUCall.  Whether AUCall differs from AUClast depends on
   # whether there are values below the limit of quantification after the last
   # measurable one, which is a property of the data rather than of the
@@ -309,10 +333,13 @@ test_that("every parameter is reachable from some context, or documented as not"
       "vss.all", "vss.int.all", "vss.iv.all", "vss.ivint.all",
       "vz.all", "vz.int.all", "vz.iv.all", "vz.ivint.all",
       # Secondary parameters need inputs from more than one profile, which one
-      # interval cannot supply
-      "f",
-      "clr.last", "clr.obs", "clr.pred",
-      "clr.last.dn", "clr.obs.dn", "clr.pred.dn"
+      # interval cannot supply.  Derived from the classification so that a newly
+      # registered secondary parameter does not need this list edited.
+      parameter_table$parameter[parameter_table$secondary],
+      # A parameter that needs sparse data is either deprecated or arrives as
+      # sparse estimator output without being asked for, so no context chooses
+      # one.  Derived for the same reason.
+      parameter_table$parameter[parameter_table$sparse]
     ))
   )
   # Asking for it by name works
@@ -326,7 +353,7 @@ test_that("every parameter is reachable from some context, or documented as not"
 test_that("a secondary parameter is not chosen automatically", {
   for (tier in c("common", "all")) {
     expect_false(
-      "f" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", tier = tier)),
+      "f.obs" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", tier = tier)),
       info = tier
     )
     expect_false(
@@ -341,7 +368,7 @@ test_that("a secondary parameter is not chosen automatically", {
 
 test_that("a secondary parameter is still available by name", {
   expect_true(
-    "f" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", include = "f"))
+    "f.obs" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", include = "f.obs"))
   )
   expect_true(
     "clr.obs" %in%

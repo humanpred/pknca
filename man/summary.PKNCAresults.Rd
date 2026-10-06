@@ -40,7 +40,7 @@ not requested for a parameter within an interval.}
 
 \item{not_calculated}{A character string to use when a parameter summary was
 requested, but the point estimate AND spread calculations (if applicable)
-returned \code{NA}.}
+returned \code{NA}.  It is described in the caption when it is used.}
 
 \item{drop.group, summarize.n.per.group, not.requested.string, not.calculated.string}{Deprecated use \code{drop_group}, \code{not_requested}, \code{not_calculated}, or
 \code{summarize_n}, instead}

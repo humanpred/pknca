@@ -15,7 +15,9 @@ be_compare(
   subject = NULL,
   sequence = NULL,
   period = NULL,
-  design = NULL
+  design = NULL,
+  covariates = NULL,
+  heteroscedastic = FALSE
 )
 }
 \arguments{
@@ -37,8 +39,11 @@ formulation.}
 \item{model_type}{The model for the average-BE point estimate, one of
 \code{"lmer"} (mixed model, for crossover/replicate designs), \code{"anova"}
 (fixed-effects, for parallel designs), \code{"isc"} (intra-subject contrasts, the
-FDA reference-scaled path), or \code{"nlme"} (treatment-specific mixed model).
-When \code{NULL} (default) it is chosen from the design and regulator.}
+FDA reference-scaled path), \code{"nlme"} (mixed model with treatment-specific
+residual variances, for crossover/replicate designs), or \code{"gls"}
+(generalized least squares with treatment-specific residual variances, for
+parallel designs).  When \code{NULL} (default) it is chosen from the design,
+the regulator, and \code{heteroscedastic}.}
 
 \item{alpha}{The significance level; the confidence interval has level
 \code{1 - alpha} (default \code{0.10} gives the 90\% interval).}
@@ -49,6 +54,17 @@ object or detected from common column names.  \code{sequence} may be absent.}
 
 \item{design}{An optional \code{\link[=be_design]{be_design()}} object; computed from the data when
 \code{NULL}.}
+
+\item{covariates}{An optional character vector of column names added to
+every model as additive fixed effects (numeric columns as linear terms,
+character or factor columns as factors).  They must not be missing in any
+analyzed row.  For a \code{PKNCAresults} object they must be columns of
+\code{as.data.frame(object)}, which means grouping columns.  The within-subject
+variances used for reference scaling and the intra-subject contrasts do not
+use covariates.}
+
+\item{heteroscedastic}{Logical.  When \code{TRUE}, estimate a separate residual
+variance for each treatment (see Details).}
 }
 \value{
 An object of class \code{be_compare} (a data.frame) with the \code{\link[=be_assess]{be_assess()}}
@@ -59,6 +75,7 @@ columns for every endpoint, test formulation, and regulator.
 stacks the results, so the same study can be judged side by side under the
 different reference-scaling rules.  Frameworks that the design does not
 support (for example NTID on a partial replicate) are skipped with a warning.
+Rows for the \code{"descriptive"} framework have \code{NA} in the decision columns.
 }
 \examples{
 \dontshow{if (requireNamespace("lme4", quietly = TRUE) && requireNamespace("lmerTest", quietly = TRUE) && requireNamespace("emmeans", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -72,8 +89,7 @@ d <- do.call(rbind, lapply(seq_len(nsub), function(i) {
     subject = i, sequence = seqs[i], period = seq_along(trt), treatment = trt,
     PPTESTCD = "auclast",
     PPORRES = exp(log(100) + ifelse(trt == "T", 0.04, 0) + b[i] +
-                    stats::rnorm(length(trt), sd = 0.45)),
-    stringsAsFactors = FALSE
+                    stats::rnorm(length(trt), sd = 0.45))
   )
 }))
 be_compare(d, reference_col = "treatment", reference_value = "R",

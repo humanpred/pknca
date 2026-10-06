@@ -55,8 +55,7 @@ test_that("clean.conc.na", {
     data.frame(
       conc=1:3,
       time=1:3,
-      extra=c("a", "b", "c"),
-      stringsAsFactors=FALSE
+      extra=c("a", "b", "c")
     )
   )
   expect_equal(
@@ -69,8 +68,7 @@ test_that("clean.conc.na", {
     data.frame(
       conc=1:2,
       time=c(1, 3),
-      extra=c("a", "c"),
-      stringsAsFactors=FALSE
+      extra=c("a", "c")
     ),
     ignore_attr=TRUE
   )

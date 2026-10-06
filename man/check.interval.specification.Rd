@@ -4,11 +4,15 @@
 \alias{check.interval.specification}
 \title{Check the formatting of a calculation interval specification data frame.}
 \usage{
-check.interval.specification(x)
+check.interval.specification(x, impute = NA_character_)
 }
 \arguments{
 \item{x}{The data frame specifying what to calculate during each time
 interval}
+
+\item{impute}{The \code{impute} argument of \code{\link[=PKNCAdata]{PKNCAdata()}}, so that a column it
+names is treated as an imputation column (like \code{impute}) rather than as
+part of the definition of an interval.}
 }
 \value{
 x The potentially updated data frame with the interval calculation
@@ -45,10 +49,14 @@ Other Interval specifications:
 \code{\link[=get.parameter.deps]{get.parameter.deps()}},
 \code{\link[=interval_add_impute]{interval_add_impute()}},
 \code{\link[=interval_add_param]{interval_add_param()}},
+\code{\link[=interval_add_secondary]{interval_add_secondary()}},
+\code{\link[=pknca_cdisc_codes]{pknca_cdisc_codes()}},
 \code{\link[=pknca_check_parameter_classification]{pknca_check_parameter_classification()}},
 \code{\link[=pknca_concepts]{pknca_concepts()}},
 \code{\link[=pknca_interval_table]{pknca_interval_table()}},
+\code{\link[=pknca_match_route]{pknca_match_route()}},
 \code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
-\code{\link[=pknca_presets]{pknca_presets()}}
+\code{\link[=pknca_presets]{pknca_presets()}},
+\code{\link[=pknca_ref]{pknca_ref()}}
 }
 \concept{Interval specifications}

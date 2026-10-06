@@ -29,9 +29,13 @@ Other Interval specifications:
 \code{\link[=get.parameter.deps]{get.parameter.deps()}},
 \code{\link[=interval_add_impute]{interval_add_impute()}},
 \code{\link[=interval_add_param]{interval_add_param()}},
+\code{\link[=interval_add_secondary]{interval_add_secondary()}},
+\code{\link[=pknca_cdisc_codes]{pknca_cdisc_codes()}},
 \code{\link[=pknca_check_parameter_classification]{pknca_check_parameter_classification()}},
 \code{\link[=pknca_concepts]{pknca_concepts()}},
 \code{\link[=pknca_interval_table]{pknca_interval_table()}},
-\code{\link[=pknca_parameter_table]{pknca_parameter_table()}}
+\code{\link[=pknca_match_route]{pknca_match_route()}},
+\code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
+\code{\link[=pknca_ref]{pknca_ref()}}
 }
 \concept{Interval specifications}

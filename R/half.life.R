@@ -19,7 +19,8 @@
 #' \itemize{
 #'  \item{At least `min.hl.points` points included}
 #'  \item{A `lambda.z` > 0 and at the same time the best adjusted r-squared
-#'  (within `adj.r.squared.factor`)}
+#'  (within `adj.r.squared.factor`) or, when `adj.r.squared.factor` is `NA`,
+#'  the best r-squared (within `r.squared.factor`)}
 #'  \item{The one with the most points included}
 #' }
 #'
@@ -31,7 +32,7 @@
 #'
 #' If `manually.selected.points` is `TRUE`, the `conc` and `time` data are
 #' used as-is without any form of point selection.  When
-#' `TRUE`, `adj.r.squared.factor`, `min.hl.points`, and
+#' `TRUE`, `adj.r.squared.factor`, `r.squared.factor`, `min.hl.points`, and
 #' `allow.tmax.in.half.life` are ignored.
 #'
 #' @inheritParams assert_conc_time
@@ -54,12 +55,22 @@
 #'   `time`) been manually selected?  The impact of setting this to
 #'   `TRUE` is that no selection for the best points will be done.  When
 #'   `TRUE`, this option causes the options of `adj.r.squared.factor`,
-#'   `min.hl.points`, and `allow.tmax.in.half.life` to be ignored.
+#'   `r.squared.factor`, `min.hl.points`, and `allow.tmax.in.half.life` to be
+#'   ignored.
 #' @param min.hl.points The minimum number of points that must be
 #'   included to calculate the half-life.  For `hl_method = "tobit"` this
 #'   counts only above-LLOQ points.
 #' @param adj.r.squared.factor The allowance in adjusted r-squared for
-#'   adding another point (log-linear method only).
+#'   adding another point (log-linear method only).  Giving it takes
+#'   `r.squared.factor` out of use, and setting it to `NA` selects points with
+#'   `r.squared.factor` instead.
+#' @param r.squared.factor The allowance in r-squared for adding another point
+#'   (log-linear method only).  Giving it takes `adj.r.squared.factor` out of
+#'   use, so exactly one of the two is ever in use; `NA` (the default) selects
+#'   points with `adj.r.squared.factor`.  Unlike the adjusted r-squared, the
+#'   r-squared does not reward more points, so it generally selects fewer of
+#'   them; with `min.hl.points = 2` the two-point fit has an r-squared of 1 and
+#'   is therefore always selected.
 #' @param tobit_n_points_penalty The penalty exponent on the number of points
 #'   for Tobit window selection.  See [PKNCA.options()].
 #' @param tobit_optim_control A list of control parameters passed to
@@ -121,6 +132,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
                               options=list(),
                               min.hl.points=NULL,
                               adj.r.squared.factor=NULL,
+                              r.squared.factor=NULL,
                               tobit_n_points_penalty=NULL,
                               tobit_optim_control=NULL,
                               conc.blq=NULL,
@@ -148,8 +160,40 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   allow.tmax.in.half.life <-
     PKNCA.choose.option(name="allow.tmax.in.half.life", value=allow.tmax.in.half.life, options=options)
   if (!is_tobit) {
-    adj.r.squared.factor <-
-      PKNCA.choose.option(name="adj.r.squared.factor", value=adj.r.squared.factor, options=options)
+    factors <-
+      list(
+        adj.r.squared.factor =
+          PKNCA.choose.option(name="adj.r.squared.factor", value=adj.r.squared.factor, options=options),
+        r.squared.factor =
+          PKNCA.choose.option(name="r.squared.factor", value=r.squared.factor, options=options)
+      )
+    # Each factor given here is applied the way PKNCA.options() applies it when
+    # it is set:  it takes the other one out of use, so the last one given wins
+    given <-
+      c(
+        if (!is.null(adj.r.squared.factor) || "adj.r.squared.factor" %in% names(options)) {
+          "adj.r.squared.factor"
+        },
+        if (!is.null(r.squared.factor) || "r.squared.factor" %in% names(options)) {
+          "r.squared.factor"
+        }
+      )
+    requested <- factors
+    for (n in given) {
+      factors[[n]] <- requested[[n]]
+      factors <- pair_r_squared_factors(factors, n)
+    }
+    # Points are selected on one r-squared or the other; the NA factor is the
+    # one that is not in use.
+    if (is.na(factors$adj.r.squared.factor)) {
+      r_squared_name <- "r.squared"
+      r_squared_label <- "r-squared"
+      r_squared_factor <- factors$r.squared.factor
+    } else {
+      r_squared_name <- "adj.r.squared"
+      r_squared_label <- "adjusted r-squared"
+      r_squared_factor <- factors$adj.r.squared.factor
+    }
   } else {
     tobit_n_points_penalty <-
       PKNCA.choose.option(name="tobit_n_points_penalty", value=tobit_n_points_penalty, options=options)
@@ -274,7 +318,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       attr(ret, "method") <- "Lambda Z: Manual selection"
       if (nrow(data) > 0) {
         fit <- fit_half_life(data=data, tlast=ret$tlast)
-        ret[, ret_replacements] <- fit[, ret_replacements]
+        ret[, ret_replacements] <- fit[ret_replacements]
         if (ret$half.life <= 0) {
           attr(ret, "exclude") <- "Negative half-life estimated with manually-selected points"
         }
@@ -322,8 +366,8 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
           rlang::warn("2 points used for half-life calculation", class = "pknca_warning_halflife_2points")
           TRUE
         } else {
-          half_lives_for_selection$adj.r.squared >
-            (max(half_lives_for_selection$adj.r.squared, na.rm=TRUE) - adj.r.squared.factor)
+          half_lives_for_selection[[r_squared_name]] >
+            (max(half_lives_for_selection[[r_squared_name]], na.rm=TRUE) - r_squared_factor)
         }
       mask_best[is.na(mask_best)] <- FALSE
       if (sum(mask_best) > 1) {
@@ -335,10 +379,13 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       if (any(mask_best)) {
         ret[, ret_replacements] <- half_lives_for_selection[mask_best, ret_replacements]
       } else {
-        # A well-fitting span with lambda.z <= 0 can anchor the adjusted
-        # r-squared tolerance so that no span with lambda.z > 0 is within it.
+        # A well-fitting span with lambda.z <= 0 can anchor the r-squared
+        # tolerance so that no span with lambda.z > 0 is within it.
         attr(ret, "exclude") <-
-          "No valid terminal phase: no span with lambda.z > 0 within the adjusted r-squared tolerance of the best fit"
+          sprintf(
+            "No valid terminal phase: no span with lambda.z > 0 within the %s tolerance of the best fit",
+            r_squared_label
+          )
       }
     } else {
       attr(ret, "exclude") <-
@@ -454,9 +501,11 @@ pknca_concept(pk.calc.half.life) <- "half_life"
 #'   and "time"
 #' @param tlast The time of last observed concentration above the limit
 #'   of quantification.
-#' @return A data.frame with one row and columns named "r.squared",
-#'   "adj.r.squared", "PROB", "lambda.z", "clast.pred",
-#'   "lambda.z.n.points", "half.life", "span.ratio"
+#' @return A named list with one value each for "r.squared", "adj.r.squared",
+#'   "lambda.z.corrxy", "lambda.z", "clast.pred", "lambda.z.time.first",
+#'   "lambda.z.time.last", "lambda.z.n.points", "half.life", and "span.ratio".
+#'   [pk.calc.half.life()] fits one candidate per span of terminal points and
+#'   builds a data.frame from the candidate it selects.
 #' @seealso [pk.calc.half.life()]
 fit_half_life <- function(data, tlast) {
   fit <- stats::.lm.fit(x=cbind(1, data$time), y=data$log_conc)
@@ -465,20 +514,19 @@ fit_half_life <- function(data, tlast) {
   r_squared <- 1 - as.numeric(sum(fit$residuals^2))/as.numeric(sum((data$log_conc - mean(data$log_conc))^2))
   clast_pred <- exp(sum(fit$coefficients*c(1, as.numeric(tlast))))
   lambda_z <- -fit$coefficients[2]
-  ret <-
-    data.frame(
-      r.squared=r_squared,
-      adj.r.squared=adj.r.squared(r_squared, nrow(data)),
-      lambda.z.corrxy=if(nrow(data) > 1) stats::cor(data$time, data$log_conc) else NA,
-      lambda.z=lambda_z,
-      clast.pred=clast_pred,
-      lambda.z.time.first=min(data$time, na.rm=TRUE),
-      lambda.z.time.last=max(data$time, na.rm=TRUE),
-      lambda.z.n.points=nrow(data)
-    )
-  ret$half.life <- log(2)/ret$lambda.z
-  ret$span.ratio <- (max(data$time) - min(data$time))/ret$half.life
-  ret
+  half_life <- log(2)/lambda_z
+  list(
+    r.squared=r_squared,
+    adj.r.squared=adj.r.squared(r_squared, nrow(data)),
+    lambda.z.corrxy=if(nrow(data) > 1) stats::cor(data$time, data$log_conc) else NA_real_,
+    lambda.z=lambda_z,
+    clast.pred=clast_pred,
+    lambda.z.time.first=min(data$time, na.rm=TRUE),
+    lambda.z.time.last=max(data$time, na.rm=TRUE),
+    lambda.z.n.points=nrow(data),
+    half.life=half_life,
+    span.ratio=(max(data$time) - min(data$time))/half_life
+  )
 }
 
 #' Negative log-likelihood for Tobit half-life regression
@@ -796,7 +844,11 @@ add.interval.col("tobit_residual",
                  unit_type="unitless",
                  pretty_name="Tobit residual SD",
                  desc="Tobit fit residual SD, log-conc",
-                 depends="half.life")
+                 depends="half.life",
+                 # No CDISC PKPARMCD code exists for a Tobit-model diagnostic;
+                 # sponsor-defined.
+                 pptestcd_cdisc="TOBITRSD",
+                 pptest_cdisc="Tobit residual SD")
 PKNCA.set.summary(
   name="tobit_residual",
   description="arithmetic mean and standard deviation",
@@ -809,7 +861,9 @@ add.interval.col("adj_tobit_residual",
                  unit_type="unitless",
                  pretty_name="Adjusted Tobit residual SD",
                  desc="Adjusted Tobit residual SD",
-                 depends="half.life")
+                 depends="half.life",
+                 pptestcd_cdisc="ATOBITRD",
+                 pptest_cdisc="Adjusted Tobit residual SD")
 PKNCA.set.summary(
   name="adj_tobit_residual",
   description="arithmetic mean and standard deviation",
@@ -822,7 +876,9 @@ add.interval.col("lambda.z.n.points_blq",
                  unit_type="count",
                  pretty_name="Number of BLQ points for lambda_z (Tobit)",
                  desc="BLQ points in Tobit lambda.z",
-                 depends="half.life")
+                 depends="half.life",
+                 pptestcd_cdisc="LAMZNBLQ",
+                 pptest_cdisc="Number of BLQ Points for Lambda z")
 PKNCA.set.summary(
   name="lambda.z.n.points_blq",
   description="median and range",

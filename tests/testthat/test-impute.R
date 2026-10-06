@@ -480,7 +480,11 @@ test_that("pk.nca with imputation", {
   d_dose <- unique(datasets::Theoph[datasets::Theoph$Time == 0,
                                     c("Dose", "Time", "Subject")])
   dose_obj <- PKNCAdose(d_dose, Dose~Time|Subject)
-  data_obj_noimpute <- PKNCAdata(conc_obj, dose_obj)
+  # Automatically generated intervals now carry the imputation that
+  # pknca_interval_table() chooses for their context, so the interval is given
+  # explicitly here to have one with no imputation at all to compare against.
+  data_obj_noimpute <-
+    PKNCAdata(conc_obj, dose_obj, intervals = data.frame(start = 0, end = 24, auclast = TRUE))
   data_obj_impute <- PKNCAdata(conc_obj, dose_obj, impute = "start_predose,start_conc0")
   suppressWarnings(nca_obj_noimpute <- pk.nca(data_obj_noimpute))
   nca_obj_impute <- pk.nca(data_obj_impute)
@@ -544,8 +548,8 @@ test_that("PKNCA_impute_fun_list", {
 })
 
 test_that("PKNCA_impute_fun_list errors when imputation name resolves to a non-function", {
-  # utils::getAnywhere only searches namespaces and the search path, not local
-  # frames. Assign a non-function object to .GlobalEnv so getAnywhere finds it.
+  # The lookup searches namespaces and the search path, not local frames, so
+  # the non-function object goes in .GlobalEnv where the lookup reaches it.
   nm <- "PKNCA_impute_method_notafun_cov_test"
   assign(nm, 42L, envir = .GlobalEnv)
   on.exit(rm(list = nm, envir = .GlobalEnv), add = TRUE)
@@ -707,4 +711,320 @@ test_that("start_predose_conc0 falls back to 0 within pk.nca when there is no pr
     d_res$PPORRES[d_res$PPTESTCD == "auclast"]
   }
   expect_equal(get_auclast("start_predose_conc0"), get_auclast("start_conc0"))
+})
+
+test_that("PKNCA_impute_fun_list splits and expands imputation strings", {
+  expect_equal(
+    PKNCA_impute_fun_list(c("start_predose,start_conc0", "start_cmin end_conc_drop", NA, "")),
+    list(
+      c("PKNCA_impute_method_start_predose", "PKNCA_impute_method_start_conc0"),
+      c("PKNCA_impute_method_start_cmin", "PKNCA_impute_method_end_conc_drop"),
+      NA_character_,
+      NA_character_
+    )
+  )
+  expect_error(
+    PKNCA_impute_fun_list("start_misspelled"),
+    regexp = "PKNCA_impute_method_start_misspelled",
+    class = "pknca_error_impute_funs_not_found"
+  )
+})
+
+test_that("assert_impute_method resolves and validates imputation specifications", {
+  # A string of methods
+  expect_equal(assert_impute_method("start_predose,start_conc0"), "start_predose,start_conc0")
+  expect_invisible(assert_impute_method("start_conc0"))
+  # No imputation
+  expect_equal(assert_impute_method(NA_character_), NA_character_)
+  # A column of the intervals
+  intervals <- data.frame(start = 0, end = c(24, 48), method = c("start_conc0", NA))
+  expect_equal(assert_impute_method("method", intervals = intervals), c("start_conc0", NA))
+  # The "impute" column of the intervals is used for NA
+  intervals_impute <- data.frame(start = 0, end = 24, impute = "start_cmin")
+  expect_equal(assert_impute_method(NA, intervals = intervals_impute), "start_cmin")
+  # Unknown methods, including within a column, are an error
+  expect_error(
+    assert_impute_method("start_misspelled"),
+    class = "pknca_error_impute_funs_not_found"
+  )
+  expect_error(
+    assert_impute_method("method", intervals = data.frame(start = 0, end = 24, method = "bad_method")),
+    class = "pknca_error_impute_funs_not_found"
+  )
+  # Specifications must be scalars
+  expect_error(assert_impute_method(c("start_conc0", "start_cmin")), regexp = "impute")
+})
+
+test_that("every exported imputation method is registered, and only those", {
+  methods <- pknca_impute_methods()
+  exported <- sort(grep("^PKNCA_impute_method_", getNamespaceExports("PKNCA"), value = TRUE))
+  expect_equal(sort(methods$fun), exported)
+  expect_named(methods, c("method", "fun", "description", "arguments"))
+  expect_equal(methods$method, sort(methods$method))
+  expect_equal(methods$fun, paste0("PKNCA_impute_method_", methods$method))
+  # Every method resolves the way imputation strings are resolved
+  expect_equal(
+    PKNCA_impute_fun_list(methods$method),
+    as.list(methods$fun)
+  )
+  for (idx in seq_len(nrow(methods))) {
+    expect_true(nzchar(methods$description[idx]), info = methods$method[idx])
+    expect_equal(
+      methods$arguments[[idx]]$argument,
+      as.character(names(formals(getExportedValue("PKNCA", methods$fun[idx])))),
+      info = methods$method[idx]
+    )
+  }
+})
+
+test_that("pknca_impute_methods gives names, descriptions, and arguments", {
+  methods <- pknca_impute_methods()
+  expect_equal(
+    methods$method,
+    c("end_conc_drop", "start_cmin", "start_conc0", "start_predose", "start_predose_conc0")
+  )
+  start_conc0 <- methods[methods$method == "start_conc0", ]
+  expect_equal(start_conc0$fun, "PKNCA_impute_method_start_conc0")
+  expect_match(start_conc0$description, "^Set the concentration at the start time to 0")
+  expect_equal(
+    start_conc0$arguments[[1]],
+    data.frame(
+      argument = c("conc", "time", "start", "...", "options"),
+      default = c(NA, NA, "0", NA, "list()")
+    )
+  )
+  start_predose <- methods[methods$method == "start_predose", ]
+  expect_equal(
+    start_predose$arguments[[1]]$default[start_predose$arguments[[1]]$argument == "max_shift"],
+    "NA_real_"
+  )
+})
+
+test_that("pknca_register_impute_method checks what it registers", {
+  expect_error(pknca_register_impute_method(fun = "not_a_method", description = "x"))
+  expect_error(pknca_register_impute_method(fun = "PKNCA_impute_method_x", description = ""))
+  expect_error(pknca_register_impute_method(fun = "PKNCA_impute_method_x", description = "x", details = ""))
+})
+
+test_that("an unregistered user-defined imputation method still works by name", {
+  # Registration describes PKNCA's own methods; a user's method is found by
+  # its function name, as before, wherever PKNCA can see it (here, the global
+  # environment)
+  user_method <- function(conc, time, start, ..., options = list()) {
+    ret <- data.frame(conc = conc, time = time)
+    if (!any(time %in% start)) {
+      ret <- rbind(data.frame(conc = 10, time = start), ret)
+    }
+    ret
+  }
+  assign("PKNCA_impute_method_start_user10", user_method, envir = globalenv())
+  withr::defer(rm("PKNCA_impute_method_start_user10", envir = globalenv()))
+
+  # It is not in the registry, and the registry still lists only PKNCA's own
+  # exported methods
+  methods <- pknca_impute_methods()
+  expect_false("start_user10" %in% methods$method)
+  expect_equal(
+    sort(methods$fun),
+    sort(grep("^PKNCA_impute_method_", getNamespaceExports("PKNCA"), value = TRUE))
+  )
+  # It resolves by name, alone or chained with a registered method
+  expect_equal(PKNCA_impute_fun_list("start_user10"), list("PKNCA_impute_method_start_user10"))
+  expect_equal(
+    PKNCA_impute_fun_list("start_user10,end_conc_drop"),
+    list(c("PKNCA_impute_method_start_user10", "PKNCA_impute_method_end_conc_drop"))
+  )
+  expect_equal(assert_impute_method("start_user10"), "start_user10")
+  # pk.nca() uses it
+  o_conc <- PKNCAconc(data.frame(conc = c(4, 2), time = 1:2, subject = 1), conc~time|subject)
+  o_data <-
+    PKNCAdata(
+      o_conc,
+      intervals = data.frame(start = 0, end = 2, auclast = TRUE),
+      impute = "start_user10"
+    )
+  d_nca <- as.data.frame(pk.nca(o_data))
+  expect_equal(
+    d_nca$PPORRES[d_nca$PPTESTCD == "auclast"],
+    pk.calc.auc.last(conc = c(10, 4, 2), time = 0:2),
+    ignore_attr = TRUE
+  )
+})
+
+test_that("get_impute_method reads the three forms of impute", {
+  two_rows <-
+    data.frame(start = c(0, 24), end = c(24, 48), my_impute = c("start_conc0", "start_predose"))
+  # A named column gives its values, one per interval
+  expect_identical(
+    get_impute_method(intervals = two_rows, impute = "my_impute"),
+    c("start_conc0", "start_predose")
+  )
+  # The name wins over the generic "impute" column
+  both <- cbind(two_rows, impute = c("a", "b"))
+  expect_identical(
+    get_impute_method(intervals = both, impute = "my_impute"),
+    c("start_conc0", "start_predose")
+  )
+  expect_identical(
+    get_impute_method(intervals = both, impute = "impute"),
+    c("a", "b")
+  )
+  # NA reads the generic "impute" column when there is one
+  expect_identical(
+    get_impute_method(intervals = both, impute = NA),
+    c("a", "b")
+  )
+  expect_identical(
+    get_impute_method(intervals = both, impute = NA_character_),
+    c("a", "b")
+  )
+  # NA without an "impute" column is a single NA_character_ (no imputation),
+  # whatever the number of intervals and even if another column holds methods
+  expect_identical(
+    get_impute_method(intervals = two_rows, impute = NA),
+    NA_character_
+  )
+  expect_identical(
+    get_impute_method(intervals = two_rows, impute = NA_character_),
+    NA_character_
+  )
+  # Any other value is the method for every interval, as a single value
+  expect_identical(
+    get_impute_method(intervals = two_rows, impute = "start_conc0"),
+    "start_conc0"
+  )
+  expect_identical(
+    get_impute_method(intervals = two_rows, impute = "start_predose,start_conc0"),
+    "start_predose,start_conc0"
+  )
+  # A column that is not character is an error, whether numeric or a factor
+  expect_error(
+    get_impute_method(intervals = data.frame(start = 0, end = 24, my_impute = 1), impute = "my_impute"),
+    class = "pknca_error_interval_impute_not_character"
+  )
+  expect_error(
+    get_impute_method(
+      intervals = data.frame(start = 0, end = 24, my_impute = factor("start_conc0")),
+      impute = "my_impute"
+    ),
+    class = "pknca_error_interval_impute_not_character"
+  )
+  # A column of only NA, even if logical, is no imputation
+  expect_identical(
+    get_impute_method(intervals = cbind(two_rows, empty = NA), impute = "empty"),
+    c(NA_character_, NA_character_)
+  )
+  expect_identical(
+    get_impute_method(intervals = cbind(two_rows, impute = NA), impute = NA),
+    c(NA_character_, NA_character_)
+  )
+  expect_identical(
+    get_impute_method(intervals = cbind(two_rows, empty = NA_character_), impute = "empty"),
+    c(NA_character_, NA_character_)
+  )
+  expect_error(
+    get_impute_method(intervals = two_rows, impute = c("a", "b")),
+    regexp = "length 1"
+  )
+})
+
+test_that("get_impute_method is exported", {
+  expect_true("get_impute_method" %in% getNamespaceExports("PKNCA"))
+})
+
+test_that("impute naming an interval column runs pk.nca like the impute column", {
+  d_conc <- data.frame(subject = 1, time = c(1, 2, 4, 8, 24), conc = c(10, 8, 5, 3, 1))
+  d_dose <- data.frame(subject = 1, time = 0, dose = 100)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  intervals <- data.frame(start = 0, end = 24, auclast = TRUE, cmax = TRUE, c0 = TRUE)
+  intervals_impute <- cbind(intervals, impute = "start_conc0")
+  intervals_named <- cbind(intervals, my_impute = "start_conc0")
+
+  res_impute <- pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals_impute, impute = "impute"))
+  res_named <- pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals_named, impute = "my_impute"))
+  res_na <- pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals_impute))
+  res_string <- pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals, impute = "start_conc0"))
+
+  expect_identical(as.data.frame(res_named), as.data.frame(res_impute))
+  expect_identical(as.data.frame(res_na), as.data.frame(res_impute))
+  expect_identical(as.data.frame(res_string), as.data.frame(res_impute))
+  # The imputation took effect: the AUC runs from an imputed 0 at the start
+  df_named <- as.data.frame(res_named)
+  expect_equal(
+    df_named$PPORRES[df_named$PPTESTCD == "auclast"],
+    pk.calc.auc.last(conc = c(0, d_conc$conc), time = c(0, d_conc$time), interval = c(0, 24)),
+    ignore_attr = TRUE
+  )
+  expect_identical(
+    PKNCAdata(o_conc, o_dose, intervals = intervals_named, impute = "my_impute")$impute,
+    "my_impute"
+  )
+})
+
+test_that("impute naming an interval column that does not exist is an error", {
+  d_conc <- data.frame(subject = 1, time = c(1, 2, 4, 8, 24), conc = c(10, 8, 5, 3, 1))
+  d_dose <- data.frame(subject = 1, time = 0, dose = 100)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  intervals <- data.frame(start = 0, end = 24, auclast = TRUE, other_impute = "start_conc0")
+  # A column that the setting does not name is not an allowed column
+  expect_error(
+    PKNCAdata(o_conc, o_dose, intervals = intervals),
+    class = "pknca_error_invalid_interval_columns",
+    regexp = "other_impute"
+  )
+  # The name is not a column, so it is read as a method, which does not exist
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = intervals[, c("start", "end", "auclast")], impute = "my_impute")
+  expect_error(
+    pk.nca(o_data),
+    class = "pknca_error_impute_funs_not_found",
+    regexp = "my_impute"
+  )
+})
+
+test_that("an imputation column of only NA runs pk.nca like no imputation", {
+  d_conc <- data.frame(subject = 1, time = c(0, 1, 2, 4, 8, 24), conc = c(0, 10, 8, 5, 3, 1))
+  d_dose <- data.frame(subject = 1, time = 0, dose = 100)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  intervals <- data.frame(start = 0, end = 24, auclast = TRUE, cmax = TRUE)
+  res_none <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals)))
+  o_generic <- PKNCAdata(o_conc, o_dose, intervals = cbind(intervals, impute = NA))
+  expect_identical(as.data.frame(pk.nca(o_generic)), res_none)
+  o_named <-
+    PKNCAdata(o_conc, o_dose, intervals = cbind(intervals, my_impute = NA), impute = "my_impute")
+  expect_identical(as.data.frame(pk.nca(o_named)), res_none)
+})
+
+test_that("PKNCAdata keeps its element order with the impute setting", {
+  d_conc <- data.frame(subject = 1, time = c(1, 2, 4), conc = c(10, 8, 5))
+  d_dose <- data.frame(subject = 1, time = 0, dose = 100)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  intervals <- data.frame(start = 0, end = 4, cmax = TRUE, x = "start_conc0")
+  expect_identical(
+    names(PKNCAdata(o_conc, o_dose, intervals = intervals, impute = "x")),
+    c("conc", "dose", "options", "intervals", "impute")
+  )
+  expect_identical(
+    names(PKNCAdata(o_conc, o_dose, intervals = intervals[, 1:3], impute = "start_conc0")),
+    c("conc", "dose", "options", "intervals", "impute")
+  )
+})
+
+test_that("an imputation method that is not found says the setting may be a column", {
+  expect_error(
+    PKNCA_impute_fun_list("my_impute"),
+    class = "pknca_error_impute_funs_not_found",
+    regexp = "not found: .*my_impute.*or a column of the intervals"
+  )
+  expect_error(
+    assert_impute_method(
+      "my_impute",
+      intervals = data.frame(start = 0, end = 24, other = "start_conc0")
+    ),
+    class = "pknca_error_impute_funs_not_found",
+    regexp = "or a column of the intervals"
+  )
 })

@@ -26,8 +26,8 @@ assert_conc_time(conc, time, any_missing_conc = TRUE, sorted_time = TRUE)
 
 \code{time} or give an informative error
 
-A data.frame with columns named "conc" and "time" or an informative
-error
+\code{NULL}, invisibly, when the data are valid; otherwise an
+informative error
 }
 \description{
 If the concentrations or times are invalid, will provide an error.
@@ -46,4 +46,9 @@ Some cases may generate warnings but allow the data to proceed.
 \item A negative concentration is often but not always an
 error; it will generate a warning.
 }
+}
+\examples{
+assert_conc_time(conc = c(0, 2, 1), time = 0:2)
+# Unsorted times are allowed when `sorted_time = FALSE`
+assert_conc_time(conc = c(0, 2, 1), time = c(2, 0, 1), sorted_time = FALSE)
 }

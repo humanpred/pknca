@@ -5,12 +5,15 @@
 \alias{interval_wider}
 \title{Convert intervals between the wide and long representations}
 \usage{
-interval_longer(intervals)
+interval_longer(intervals, impute_col = "impute")
 
-interval_wider(long, template)
+interval_wider(long, template, impute_col = "impute")
 }
 \arguments{
 \item{intervals}{A data.frame of intervals (the wide representation).}
+
+\item{impute_col}{The name of the imputation column, which is added when the
+intervals do not have it (see \code{\link[=get_impute_method]{get_impute_method()}}).}
 
 \item{long}{The long representation, as returned by \code{interval_longer()}.}
 

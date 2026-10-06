@@ -24,7 +24,12 @@ of \code{"parallel"}, \code{"2x2x2"}, \code{"full_replicate"}, \code{"partial_re
 \code{n_sequences}, \code{n_periods}, \code{n_treatments}, \code{n_subjects}, \code{sequences},
 \code{treatments}, \code{reference}, \code{replicate_reference}, \code{replicate_test},
 \code{reps_reference}, \code{reps_test}, \code{balanced}, and \code{feasible} (a named logical
-vector for \code{abe}, \code{abel}, \code{rsabe}, \code{ntid}, \code{hvntid}).
+vector for \code{abe}, \code{abel}, \code{rsabe}, \code{ntid}, \code{hvntid}).  \code{reps_reference} is
+the median, over subjects, of the number of times a subject received the
+reference.  \code{reps_test} is the same median computed separately for each
+test formulation; with several test formulations it is the smallest of
+those medians, so \code{replicate_test} is \code{TRUE} only when every test
+formulation is replicated.
 }
 \description{
 \code{be_design()} inspects the treatment-by-period pattern of a crossover study

@@ -71,8 +71,7 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
     dosing <-
       data.frame(
         subject=subject.dosing,
-        time=time.dosing,
-        stringsAsFactors=FALSE
+        time=time.dosing
       )
     # Shrink the data to just the predose data (by subject)
     ret <- merge(ret, dosing)

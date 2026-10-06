@@ -15,7 +15,7 @@ as_sparse_pk <- function(conc, time, subject) {
     conc <- conc$conc
   }
   assert_conc_time(conc = conc, time = time, any_missing_conc = TRUE, sorted_time = FALSE)
-  checkmate::check_vector(subject, any.missing=FALSE, len=length(conc), null.ok=FALSE)
+  checkmate::assert_vector(subject, any.missing=FALSE, len=length(conc), null.ok=FALSE)
   # Drop observations with missing concentrations so that per-timepoint means,
   # variances, and subject counts reflect only available data.
   mask_ok <- !is.na(conc)
@@ -382,14 +382,17 @@ pknca_concept(pk.calc.sparse_auclast) <- "auc"
 
 add.interval.col(
   "sparse_auclast",
-  sparse=TRUE,
-  FUN="pk.calc.sparse_auclast",
+  FUN=NA,
+  FUN_sparse="pk.calc.sparse_auclast",
   values=c(FALSE, TRUE),
   unit_type="auc",
   pretty_name="Sparse AUClast",
   desc="Sparse AUC to last conc above LOQ",
-  pptestcd_cdisc="SPARSEAL",
-  pptest_cdisc="Sparse AUClast",
+  # Deprecated in favor of auclast's own sparse estimator (see
+  # deprecated_sparse_parameters below), and computes the identical value;
+  # shares its CT code (CDISC has no sparse-specific AUClast code).
+  pptestcd_cdisc="AUCLST",
+  pptest_cdisc="AUC to Last Nonzero Conc",
   formula="$AUC_{\\text{sparse}} = \\sum_k \\frac{\\bar{C}_k + \\bar{C}_{k+1}}{2} \\Delta t_k$",
   formula_note="Linear trapezoidal using population mean concentrations",
   tier = "common")
@@ -402,6 +405,10 @@ add.interval.col(
   pretty_name="Sparse AUClast standard error",
   desc="SE of sparse AUC to last conc above LOQ",
   depends="sparse_auclast",
+  # No CDISC PKPARMCD code exists for the standard error of a PK parameter
+  # (real submissions carry this in SUPPPP, not as its own PP record); kept
+  # as a sponsor-defined code despite the "common" tier -- see the
+  # pknca_cdisc_codes() gap list.
   pptestcd_cdisc="SPARSEAS",
   pptest_cdisc="Sparse AUClast standard error",
   formula="$SE(AUC_{\\text{sparse}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$",
@@ -420,6 +427,59 @@ add.interval.col(
   pptest_cdisc="Sparse AUClast degrees of freedom",
   formula="$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$",
   formula_note="Satterthwaite approximation (Nedelman et al 1995, eq. 6a)")
+
+# The interval-specification names that the unified sparse parameters replace.
+# They still calculate, and give the same values they always have, but they are
+# deprecated:  see warn_deprecated_sparse_parameters().
+#
+# `kel.sparse.last` maps to `kel.last` because both are 1/MRT.  Only
+# `vz.sparse.last` changes meaning:  `vz.last` divides the clearance by the
+# terminal rate constant fitted on the mean profile rather than by 1/MRT, which
+# is why `vz.sparse.last` equals `vss.sparse.last` and `vz.last` does not equal
+# `vss.last`.
+deprecated_sparse_parameters <- c(
+  sparse_auclast = "auclast",
+  sparse_auc_se = "auclast_se",
+  sparse_auc_df = "auclast_df",
+  sparse_aumclast = "aumclast",
+  sparse_aumc_se = "aumclast_se",
+  sparse_aumc_df = "aumclast_df",
+  cl.sparse.last = "cl.last",
+  mrt.sparse.last = "mrt.last",
+  kel.sparse.last = "kel.last",
+  vss.sparse.last = "vss.last",
+  vz.sparse.last = "vz.last"
+)
+
+# Warn once per session for each set of deprecated parameter names an interval
+# specification requests.  These are interval-specification columns rather than
+# functions, so there is no function call for lifecycle to attach itself to.
+warn_deprecated_sparse_parameters <- function(requested) {
+  deprecated <- intersect(names(deprecated_sparse_parameters), requested)
+  if (length(deprecated) == 0) {
+    return(invisible(NULL))
+  }
+  replacement_note <-
+    ifelse(
+      deprecated %in% "vz.sparse.last",
+      " (which uses the lambda.z fitted on the mean profile rather than 1/MRT, so the value changes)",
+      ""
+    )
+  rlang::warn(
+    sprintf(
+      "%s deprecated and will be an error in the next minor release of PKNCA; use %s instead:\n%s",
+      ngettext(length(deprecated), msg1="This NCA parameter is", msg2="These NCA parameters are"),
+      ngettext(length(deprecated), msg1="the unified name", msg2="the unified names"),
+      paste0(
+        "  ", deprecated, " -> ", deprecated_sparse_parameters[deprecated], replacement_note,
+        collapse = "\n"
+      )
+    ),
+    class = "pknca_warning_deprecated_sparse_parameter",
+    .frequency = "once",
+    .frequency_id = paste(c("pknca_deprecated_sparse", sort(deprecated)), collapse = "_")
+  )
+}
 
 #' Is a PKNCA object used for sparse PK?
 #'
@@ -611,13 +671,17 @@ pknca_concept(pk.calc.sparse_aumclast) <- "aumc"
 
 add.interval.col(
   "sparse_aumclast",
-  sparse = TRUE,
-  FUN = "pk.calc.sparse_aumclast",
+  FUN = NA,
+  FUN_sparse = "pk.calc.sparse_aumclast",
   values = c(FALSE, TRUE),
   unit_type = "aumc",
   pretty_name = "Sparse AUMClast",
   desc = "Sparse AUMC to last conc above LOQ",
-  depends     = "sparse_auclast"
+  depends     = "sparse_auclast",
+  # CDISC has no code for a sparse AUMC estimate (only SPARSEAL/AS/AD cover
+  # sparse AUC); sponsor-defined, consistent with those.
+  pptestcd_cdisc = "SPARSEML",
+  pptest_cdisc = "Sparse AUMClast"
 )
 
 add.interval.col(
@@ -627,7 +691,9 @@ add.interval.col(
   unit_type = "aumc",
   pretty_name = "Sparse AUMC standard error",
   desc = "SE of sparse AUMC to last conc above LOQ",
-  depends = "sparse_aumclast"
+  depends = "sparse_aumclast",
+  pptestcd_cdisc = "SPARSEMS",
+  pptest_cdisc = "Sparse AUMClast standard error"
 )
 
 add.interval.col(
@@ -637,7 +703,9 @@ add.interval.col(
   unit_type = "count",
   pretty_name = "Sparse AUMC degrees of freedom",
   desc = "variance DF for sparse AUMC to Tlast",
-  depends = "sparse_aumclast"
+  depends = "sparse_aumclast",
+  pptestcd_cdisc = "SPARSEMD",
+  pptest_cdisc = "Sparse AUMClast degrees of freedom"
 )
 
 PKNCA.set.summary(
