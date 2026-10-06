@@ -20,11 +20,21 @@ get.interval.cols()
 \code{\link[=check.interval.specification]{check.interval.specification()}} and the vignette "Selection of
 Calculation Intervals"
 
-Other Interval specifications: 
-\code{\link{add.interval.col}()},
-\code{\link{check.interval.deps}()},
-\code{\link{check.interval.specification}()},
-\code{\link{choose.auc.intervals}()},
-\code{\link{get.parameter.deps}()}
+Other Interval specifications:
+\code{\link[=add.interval.col]{add.interval.col()}},
+\code{\link[=check.interval.specification]{check.interval.specification()}},
+\code{\link[=choose.auc.intervals]{choose.auc.intervals()}},
+\code{\link[=get.parameter.deps]{get.parameter.deps()}},
+\code{\link[=interval_add_impute]{interval_add_impute()}},
+\code{\link[=interval_add_param]{interval_add_param()}},
+\code{\link[=interval_add_secondary]{interval_add_secondary()}},
+\code{\link[=pknca_cdisc_codes]{pknca_cdisc_codes()}},
+\code{\link[=pknca_check_parameter_classification]{pknca_check_parameter_classification()}},
+\code{\link[=pknca_concepts]{pknca_concepts()}},
+\code{\link[=pknca_interval_table]{pknca_interval_table()}},
+\code{\link[=pknca_match_route]{pknca_match_route()}},
+\code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
+\code{\link[=pknca_presets]{pknca_presets()}},
+\code{\link[=pknca_ref]{pknca_ref()}}
 }
 \concept{Interval specifications}

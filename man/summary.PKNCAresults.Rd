@@ -8,6 +8,7 @@
   object,
   ...,
   drop_group = object$data$conc$columns$subject,
+  drop_param = character(),
   summarize_n = NA,
   not_requested = ".",
   not_calculated = "NC",
@@ -15,7 +16,8 @@
   summarize.n.per.group = deprecated(),
   not.requested.string = deprecated(),
   not.calculated.string = deprecated(),
-  pretty_names = NULL
+  pretty_names = NULL,
+  caption_prefix = NULL
 )
 }
 \arguments{
@@ -24,6 +26,8 @@
 \item{...}{Ignored.}
 
 \item{drop_group}{Which group(s) should be dropped from the formula?}
+
+\item{drop_param}{Which parameters should be excluded from the summary?}
 
 \item{summarize_n}{Should a column for \code{N} be added (\code{TRUE} or \code{FALSE})?
 \code{NA} means to automatically detect adding \code{N} if the data has a subject
@@ -36,7 +40,7 @@ not requested for a parameter within an interval.}
 
 \item{not_calculated}{A character string to use when a parameter summary was
 requested, but the point estimate AND spread calculations (if applicable)
-returned \code{NA}.}
+returned \code{NA}.  It is described in the caption when it is used.}
 
 \item{drop.group, summarize.n.per.group, not.requested.string, not.calculated.string}{Deprecated use \code{drop_group}, \code{not_requested}, \code{not_calculated}, or
 \code{summarize_n}, instead}
@@ -44,6 +48,8 @@ returned \code{NA}.}
 \item{pretty_names}{Should pretty names (easier to understand in a report) be
 used?  \code{TRUE} is yes, \code{FALSE} is no, and \code{NULL} is yes if units are used
 and no if units are not used.}
+
+\item{caption_prefix}{Prefix to prepend to the generated table caption.}
 }
 \value{
 A data frame of NCA parameter results summarized according to the
@@ -54,6 +60,14 @@ Summarize PKNCA results
 }
 \details{
 Excluded results will not be included in the summary.
+
+A parameter whose summary instructions name it as the spread of another
+parameter (\code{spread_for} in \code{\link[=PKNCA.set.summary]{PKNCA.set.summary()}}, such as the standard error
+of a sparse AUClast) has no column of its own.  Where its results are
+present, the other parameter is summarized with its instructions instead:
+for a sparse AUClast, the estimate with its standard error.  The caption
+gives the summary used.  A summary row with more than one sparse estimate is
+an error, since each standard error describes one estimate.
 }
 \examples{
 conc_obj <- PKNCAconc(as.data.frame(datasets::Theoph), conc ~ Time | Subject)

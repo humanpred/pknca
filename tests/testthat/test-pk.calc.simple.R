@@ -61,8 +61,8 @@ test_that("pk.calc.tmax", {
   # No data give a warning and NA
   expect_warning(expect_warning(
     v1 <- pk.calc.tmax(numeric(), numeric()),
-    class = "pknca_conc_none"),
-    class = "pknca_time_none"
+    class = "pknca_warning_no_concentration"),
+    class = "pknca_warning_no_time"
   )
   expect_equal(v1, NA)
 
@@ -85,6 +85,42 @@ test_that("pk.calc.tmax", {
                0)
   expect_equal(pk.calc.tmax(c(1, 1), c(0, 1), first.tmax=FALSE),
                1)
+})
+
+test_that("pk.calc.tmin", {
+  # No data give a warning and NA
+  expect_warning(expect_warning(
+    v1 <- pk.calc.tmin(numeric(), numeric()),
+    class = "pknca_warning_no_concentration"),
+    class = "pknca_warning_no_time"
+  )
+  expect_equal(v1, NA)
+
+  # Either concentration or time is missing, give an error
+  expect_error(
+    suppressWarnings(pk.calc.tmin(conc = numeric())),
+    regexp='argument "time" is missing, with no default'
+  )
+  expect_error(
+    pk.calc.tmin(time=numeric()),
+    regexp='argument "conc" is missing, with no default'
+  )
+
+  # All NA concentrations give NA
+  expect_warning(
+    expect_equal(pk.calc.tmin(c(NA, NA), c(0, 1), first.tmin=TRUE), NA),
+    class = "pknca_warning_all_concentration_missing"
+  )
+
+  # It calculates tmin correctly based on the first.tmin option
+  expect_equal(pk.calc.tmin(c(1, 2), c(0, 1), first.tmin=TRUE), 0)
+  expect_equal(pk.calc.tmin(c(1, 2), c(0, 1), first.tmin=FALSE), 0)
+  expect_equal(pk.calc.tmin(c(1, 1), c(0, 1), first.tmin=TRUE), 0)
+  expect_equal(pk.calc.tmin(c(1, 1), c(0, 1), first.tmin=FALSE), 1)
+
+  # Zero concentrations are valid minima
+  expect_equal(pk.calc.tmin(c(0, 1), c(0, 1), first.tmin=TRUE), 0)
+  expect_equal(pk.calc.tmin(c(1, 0), c(0, 1), first.tmin=TRUE), 1)
 })
 
 test_that("pk.calc.tlast", {
@@ -150,7 +186,7 @@ test_that("pk.calc.clast.obs", {
   t1 <- c(0, 1, 2, 3)
   expect_warning(
     v1 <- pk.calc.clast.obs(c1, t1),
-    class = "pknca_conc_all_missing"
+    class = "pknca_warning_all_concentration_missing"
   )
   expect_equal(v1, NA_real_)
 
@@ -167,8 +203,10 @@ test_that("pk.calc.thalf.eff", {
   )
 
   # NA input gives equivalent NA output
-  expect_equal(pk.calc.thalf.eff(NA),
-               as.numeric(NA))
+  expect_equal(
+    pk.calc.thalf.eff(NA),
+    NA_real_
+  )
 
   # Numbers mixed with NA give appropriate output
   d1 <- c(0, 1, NA, 3)
@@ -187,7 +225,7 @@ test_that("pk.calc.kel", {
   # NA input gives equivalent NA output
   expect_equal(
     pk.calc.kel(NA),
-    as.numeric(NA)
+    NA_real_
   )
 
   # Numbers mixed with NA give appropriate output
@@ -248,8 +286,8 @@ test_that("pk.calc.aucpext", {
   expect_equal(v1, -100)
   expect_warning(expect_warning(
     v2 <- pk.calc.aucpext(auclast=0, aucinf=0),
-    class = "pknca_aucpext_aucinf_le_auclast"),
-    class = "pknca_aucpext_aucinf_auclast_positive"
+    class = "pknca_warning_aucpext_aucinf_le_auclast"),
+    class = "pknca_warning_aucpext_aucinf_auclast_positive"
   )
   expect_equal(v2, NA_real_,
                info="aucinf<=0 gives NA_real_ (not infinity)")
@@ -301,6 +339,17 @@ test_that("pk.calc.mrt.md", {
   expect_equal(pk.calc.mrt.md(1, 2, 1.5, 24), 2 + 24*0.5)
   expect_equal(pk.calc.mrt.md(0, 2, 1.5, 24), NA_real_,
                info="auctau <= 0 becomes NA (not Inf)")
+})
+
+test_that("pk.calc.mrt.md.iv", {
+  expect_equal(pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=4), 2 + 24*0.5 - 2)
+  expect_equal(pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=0),
+               pk.calc.mrt.md(1, 2, 1.5, 24),
+               info="a zero infusion duration is the same as the non-IV form")
+  expect_equal(pk.calc.mrt.md.iv(0, 2, 1.5, 24, duration.dose=4), NA_real_,
+               info="auctau <= 0 becomes NA (not Inf)")
+  expect_equal(pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=NA), NA_real_,
+               info="a missing infusion duration becomes NA")
 })
 
 test_that("pk.calc.vz", {
@@ -429,6 +478,11 @@ test_that("pk.calc.aucabove", {
     pk.calc.auc.all(conc = c(0, 0, 0, 1:3, 0), time = 0:6)
   )
 
+  expect_equal(
+  pk.calc.aucabove(conc = c(0:5, 1), time = 0:6, conc_above = NA_real_),
+  structure(NA_real_, exclude = "Missing concentration to be above")
+  )
+
   # Confirm that it works through NCA calculations
   d_conc <- data.frame(conc = c(2, 1:5, 3), time = 0:6)
   d_intervals <- data.frame(start = 0, end = 6, aucabove.trough.all = TRUE, aucabove.predose.all = TRUE)
@@ -448,6 +502,7 @@ test_that("pk.calc.aucabove", {
           pk.calc.aucabove(conc = d_conc$conc, time = d_conc$time, conc_above = 2),
           pk.calc.aucabove(conc = d_conc$conc, time = d_conc$time, conc_above = 3)
         ),
+      PPANMETH = c("", "", "AUC: lin up/log down", "AUC: lin up/log down"),
       exclude = NA_character_
     )
   )
@@ -456,6 +511,97 @@ test_that("pk.calc.aucabove", {
 test_that("pk.calc.count_conc", {
   expect_equal(pk.calc.count_conc(1:5), 5)
   expect_equal(pk.calc.count_conc(c(1:2, NA)), 2)
-  expect_equal(suppressWarnings(pk.calc.count_conc(c())), 0)
+  expect_equal(pk.calc.count_conc(c(1:2, NA, 0)), 3)
+  expect_equal(suppressWarnings(pk.calc.count_conc(numeric())), 0)
   expect_equal(suppressWarnings(pk.calc.count_conc(NA)), 0)
+})
+
+test_that("pk.calc.count_conc_measured", {
+  expect_equal(pk.calc.count_conc_measured(1:5), 5)
+  expect_equal(pk.calc.count_conc_measured(c(1:2, NA)), 2)
+  # including BLQ
+  expect_equal(pk.calc.count_conc_measured(c(1:2, NA, 0)), 2)
+  # Other
+  expect_equal(suppressWarnings(pk.calc.count_conc_measured(numeric())), 0)
+  expect_equal(suppressWarnings(pk.calc.count_conc_measured(NA)), 0)
+})
+
+test_that("pk.calc.totdose", {
+  expect_equal(pk.calc.totdose(1), 1)
+  expect_equal(pk.calc.totdose(c(1, 1)), 2)
+})
+
+test_that("pk.calc.cstart", {
+  expect_equal(pk.calc.cstart(1:5, 0:4, 0), 1)
+  expect_equal(pk.calc.cstart(1:5, 0:4, 1), 2)
+  expect_equal(pk.calc.cstart(1:5, 0:4, 1.5), NA_real_)
+  expect_error(
+    pk.calc.cstart(1:5, c(0, 0:3), 0),
+    regexp = "Assertion on 'time' failed: Contains duplicated values, position 2."
+  )
+})
+
+test_that("pk.calc.aucabove rejects non-finite conc_above", {
+  # This is a deliberate tightening from the previous stopifnot()-based check,
+  # which allowed conc_above = Inf (silently yielding AUC = 0 for all
+  # profiles, since conc - Inf is always -Inf). Pinned here so it isn't
+  # accidentally reverted.
+  expect_error(
+    pk.calc.aucabove(conc = c(1, 2, 3), time = c(0, 1, 2), conc_above = Inf),
+    regexp = "finite"
+  )
+  expect_error(
+    pk.calc.aucabove(conc = c(1, 2, 3), time = c(0, 1, 2), conc_above = -Inf),
+    regexp = "finite"
+  )
+})
+
+test_that("zero-length input gives NA rather than zero (issue 601)", {
+  expect_equal(pk.calc.cl(dose = numeric(0), auc = 10), NA_real_)
+  expect_equal(pk.calc.cl(dose = NULL, auc = 10), NA_real_)
+  expect_equal(pk.calc.totdose(dose = numeric(0)), NA_real_)
+  expect_equal(pk.calc.totdose(dose = NULL), NA_real_)
+  # Unchanged for real input, including multiple doses in one interval
+  expect_equal(pk.calc.cl(dose = 100, auc = 10), 10)
+  expect_equal(pk.calc.cl(dose = c(50, 50), auc = 10), 10)
+  expect_equal(pk.calc.totdose(dose = c(50, 50)), 100)
+  # Counting parameters legitimately return zero for no measurements
+  expect_warning(
+    expect_equal(pk.calc.count_conc(conc = numeric(0)), 0),
+    class = "pknca_warning_no_concentration"
+  )
+})
+
+test_that("count_conc and count_conc_measured count imputed concentrations by value", {
+  # Documented in the "Imputed concentrations" section:  neither count knows
+  # whether a concentration was imputed, so count_conc_measured includes an
+  # imputed concentration that is above the limit of quantification and
+  # excludes an imputed zero
+  d_conc <-
+    data.frame(
+      subject = 1,
+      time = c(-0.5, 1, 2, 4, 8, 12, 24),
+      conc = c(2, 50, 40, 30, 15, 8, 2)
+    )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_dose <- PKNCAdose(data.frame(subject = 1, dose = 100, time = 0), dose ~ time | subject)
+  intervals <-
+    data.frame(start = 0, end = 24, count_conc = TRUE, count_conc_measured = TRUE)
+  counts <- function(impute) {
+    o_data <- suppressMessages(PKNCAdata(o_conc, o_dose, intervals = intervals, impute = impute))
+    res <- as.data.frame(suppressMessages(suppressWarnings(pk.nca(o_data))))
+    c(
+      conc = res$PPORRES[res$PPTESTCD == "count_conc"],
+      measured = res$PPORRES[res$PPTESTCD == "count_conc_measured"]
+    )
+  }
+  # Six samples are in the 0-24 interval; the predose sample at -0.5 is not
+  expect_equal(counts(NA_character_), c(conc = 6, measured = 6))
+  # A zero is added:  counted by count_conc, not by count_conc_measured
+  expect_equal(counts("start_conc0"), c(conc = 7, measured = 6))
+  # A measured concentration is carried to the start time:  counted by both
+  expect_equal(counts("start_predose"), c(conc = 7, measured = 7))
+  # A fabricated minimum is above the limit of quantification, so it is counted
+  # by both even though it was not measured at that time
+  expect_equal(counts("start_cmin"), c(conc = 7, measured = 7))
 })

@@ -30,8 +30,10 @@ pk.business <- function(FUN,
     # to use PKNCA.Options("max.missing")
     max.missing <- PKNCA.options("max.missing")
     mask.missing <- is.na(x) | (zero.missing & (x %in% 0))
+    if (length(x) == 0)
+      return(NA_real_)
     if (sum(mask.missing)/length(x) > max.missing)
-      return(NA)
+      return(NA_real_)
     ret <- FUN(x[!mask.missing], ...)
     attr(ret, "n") <- sum(!mask.missing)
     ret
@@ -51,8 +53,8 @@ pk.business <- function(FUN,
 geomean <- function(x, na.rm=FALSE) {
   if (na.rm)
     x <- stats::na.omit(x)
-  if (any(is.na(x))) {
-    as.numeric(NA)
+  if (anyNA(x)) {
+    NA_real_
   } else if (any(x == 0)) {
     0
   } else if (any(x < 0)) {
@@ -145,3 +147,24 @@ business.median <-
 #' @export
 business.range <-
   pk.business(range, max.missing=~PKNCA::PKNCA.Options("max.missing"))
+
+# The summary spread of a sparse estimate:  its standard error.  A standard
+# error describes one estimate, so a summary row combining several estimates
+# has no valid spread.
+summary_spread_one_se <- function(x, ...) {
+  if (length(x) > 1) {
+    rlang::abort(
+      sprintf(
+        paste(
+          "Cannot summarize %d standard errors in one summary row:  each describes",
+          "one estimate.  Check whether drop_group removed a grouping column or",
+          "whether intervals with the same start and end need a column in the",
+          "keep_interval_cols option to tell them apart."
+        ),
+        length(x)
+      ),
+      class = "pknca_error_summary_multiple_spread"
+    )
+  }
+  x
+}

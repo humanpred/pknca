@@ -25,9 +25,7 @@
 #'   `conc.origin` is typically used to set predose values to zero (default),
 #'   set a predose concentration for endogenous compounds, or set predose
 #'   concentrations to `NA` if otherwise unknown.
-#' @param conc.blq How to handle BLQ values. (See [clean.conc.blq()] for usage
-#'   instructions.)
-#' @param conc.na How to handle NA concentrations.  (See [clean.conc.na()])
+#' @inheritParams clean.conc.blq
 #' @param route.dose What is the route of administration ("intravascular" or
 #'   "extravascular").  See the details for how this parameter is used.
 #' @param duration.dose What is the duration of administration? See the details
@@ -36,8 +34,6 @@
 #'   after (`TRUE`) the interpolated point?  See the details for how this
 #'   parameter is used.  It only has a meaningful effect at the instant of an IV
 #'   bolus dose.
-#' @param check Run [assert_conc_time()], [clean.conc.blq()], and
-#'   [clean.conc.na()]?
 #' @param ... Additional arguments passed to `interpolate.conc()` or
 #'   `extrapolate.conc()`.
 #' @returns The interpolated or extrapolated concentration value as a scalar
@@ -71,19 +67,20 @@
 #' from the data after dosing.
 #'
 #' @seealso [pk.calc.clast.obs()], [pk.calc.half.life()], [pk.calc.c0()]
+#' @family Concentration interpolation and extrapolation
 #' @export
 interp.extrap.conc <- function(conc, time, time.out,
-                               lambda.z=NA,
-                               clast=pk.calc.clast.obs(conc, time),
-                               options=list(),
+                               lambda.z = NA,
+                               clast = pk.calc.clast.obs(conc, time),
+                               options = list(),
                                method = NULL,
                                auc.type = "AUCinf",
                                interp.method,
                                extrap.method,
                                ...,
-                               conc.blq=NULL,
-                               conc.na=NULL,
-                               check=TRUE) {
+                               conc.blq = NULL,
+                               conc.na = NULL,
+                               check = TRUE) {
   # Defunct inputs
   if (!missing(interp.method)) {
     .Defunct(msg = "the `interp.method` has been replaced by the `method` argument for consistency with the rest of PKNCA") # nocov
@@ -93,22 +90,20 @@ interp.extrap.conc <- function(conc, time, time.out,
 
   # Check inputs
   method <- PKNCA.choose.option(name="auc.method", value=method, options=options)
-  conc.blq <- PKNCA.choose.option(name="conc.blq", value=conc.blq, options=options)
-  conc.na <- PKNCA.choose.option(name="conc.na", value=conc.na, options=options)
   if (check) {
     assert_conc_time(conc = conc, time = time)
     data <-
       clean.conc.blq(
-        conc, time,
-        conc.blq=conc.blq,
-        conc.na=conc.na,
+        conc = conc, time = time,
+        conc.blq = conc.blq, conc.na = conc.na,
+        options = options,
         check=FALSE
       )
   } else {
     data <- data.frame(conc, time)
   }
   if (length(time.out) < 1) {
-    stop("time.out must be a vector with at least one element")
+    rlang::abort("time.out must be a vector with at least one element", class = "pknca_error_timeout_empty")
   }
   if (all(data$conc %in% 0)) {
     # tlast would be NA in this case, but if everything input is zero, then all
@@ -119,9 +114,9 @@ interp.extrap.conc <- function(conc, time, time.out,
     ret <- rep(NA, length(time.out))
     for (i in seq_len(length(time.out)))
       if (is.na(tlast)) {
-        stop("Please report a bug:  tlast is NA; cannot interpolate/extrapolate") # nocov
+        rlang::abort("Please report a bug:  tlast is NA; cannot interpolate/extrapolate", class = "pknca_error_internal_tlast_na")  # nocov
       } else if (is.na(time.out[i])) {
-        warning("An interpolation/extrapolation time is NA")
+        rlang::warn("An interpolation/extrapolation time is NA", class = "pknca_warning_timeout_na")
       } else if (time.out[i] <= tlast) {
         ret[i] <-
           interpolate.conc(
@@ -167,8 +162,6 @@ interpolate.conc <- function(conc, time, time.out,
     tolower(PKNCA.choose.option(
       name="auc.method", value=method, options=options
     ))
-  conc.blq <- PKNCA.choose.option(name="conc.blq", value=conc.blq, options=options)
-  conc.na <- PKNCA.choose.option(name="conc.na", value=conc.na, options=options)
   if (check) {
     assert_conc_time(conc, time)
     data <-
@@ -176,6 +169,7 @@ interpolate.conc <- function(conc, time, time.out,
         conc=conc, time=time,
         conc.blq=conc.blq,
         conc.na=conc.na,
+        options = options,
         check=FALSE
       )
   } else {
@@ -184,7 +178,10 @@ interpolate.conc <- function(conc, time, time.out,
   checkmate::assert_number(x=conc.origin, na.ok=TRUE)
   checkmate::assert_number(x=time.out, na.ok=FALSE)
   if (time.out > max(data$time)) {
-    stop("`interpolate.conc()` does not extrapolate, use `interp.extrap.conc()`")
+    rlang::abort(
+      "`interpolate.conc()` does not extrapolate, use `interp.extrap.conc()`",
+      class = "pknca_error_interpolate_beyond_maxtime"
+    )
   }
   # Verify that we are interpolating between the first concentration
   # and the last above LOQ concentration
@@ -194,8 +191,11 @@ interpolate.conc <- function(conc, time, time.out,
   } else if (all(data$conc == 0)) {
     ret <- 0
   } else if (time.out > tlast) {
-    stop("`interpolate.conc()` can only works through Tlast, please use `interp.extrap.conc()` to combine both interpolation and extrapolation.")
-  } else if (time.out %in% data$time) {
+    rlang::abort(
+      "`interpolate.conc()` only works through Tlast, please use `interp.extrap.conc()` to combine both interpolation and extrapolation.",
+      class = "pknca_error_interpolate_beyond_tlast"
+    )
+    } else if (time.out %in% data$time) {
     # See if there is an exact time match and return that if it
     # exists.
     ret <- data$conc[time.out == data$time]
@@ -226,7 +226,7 @@ interpolate.conc <- function(conc, time, time.out,
       } else if (interp_method == "zero") {
         0
       } else {
-        stop("Please report a bug: invalid interp_method") # nocov
+        rlang::abort("Please report a bug: invalid interp_method", class = "pknca_error_internal_invalid_interp_method")  # nocov
       }
   }
   ret
@@ -247,37 +247,39 @@ extrapolate.conc <- function(conc, time, time.out,
     .Defunct(msg = "the `extrap.method` has been replaced by the `auc.type` argument for consistency with the rest of PKNCA") # nocov
   }
   assert_lambdaz(lambda.z)
-  conc.na <- PKNCA.choose.option(name="conc.na", value=conc.na, options=options)
-  conc.blq <- PKNCA.choose.option(name="conc.blq", value=conc.blq, options=options)
   if (check) {
     assert_conc_time(conc, time)
     data <-
       clean.conc.blq(
-        conc=conc, time=time,
-        conc.na=conc.na,
-        check=FALSE
+        conc = conc, time = time,
+        conc.blq = conc.blq, conc.na = conc.na,
+        options = options,
+        check = FALSE
       )
   } else {
     data <- data.frame(conc, time)
   }
   auc.type <- tolower(auc.type)
   if (!(auc.type %in% c("aucinf", "aucall", "auclast")))
-    stop("`auc.type` must be one of 'AUCinf', 'AUClast', or 'AUCall'")
+    rlang::abort("`auc.type` must be one of 'AUCinf', 'AUClast', or 'AUCall'", class = "pknca_error_invalid_auc_type")
   if (length(time.out) != 1)
-    stop("Only one time.out value may be estimated at once.")
+    rlang::abort("Only one time.out value may be estimated at once.", class = "pknca_error_timeout_length")
   tlast <- pk.calc.tlast(conc=data$conc, time=data$time, check=FALSE)
   if (is.na(tlast)) {
     # If there are no observed concentrations, return NA
     ret <- NA
   } else if (time.out <= tlast) {
-    stop("extrapolate.conc can only work beyond Tlast, please use interp.extrap.conc to combine both interpolation and extrapolation.")
+    rlang::abort(
+      "extrapolate.conc can only work beyond Tlast, please use interp.extrap.conc to combine both interpolation and extrapolation.",
+      class = "pknca_error_extrapolate_before_tlast"
+    )
   } else {
     # Start the interpolation
     if (auc.type %in% "aucinf") {
       # If AUCinf is requested, extrapolate using the half-life
       ret <- extrapolate_conc_lambdaz(clast=clast, lambda.z=lambda.z, tlast=tlast, time_out=time.out)
-    } else if (auc.type %in% "auclast" |
-                 (auc.type %in% "aucall" &
+    } else if (auc.type %in% "auclast" ||
+                 (auc.type %in% "aucall" &&
                     tlast == max(data$time))) {
       # If AUClast is requested or AUCall is requested and there are
       # no BLQ at the end, we are already certain that we are after
@@ -309,7 +311,7 @@ extrapolate.conc <- function(conc, time, time.out,
           )
       }
     } else {
-      stop("Invalid auc.type caught too late (seeing this error indicates a software bug)") # nocov
+      rlang::abort("Invalid auc.type caught too late (seeing this error indicates a software bug)", class = "pknca_error_invalid_auc_type_late")  # nocov
     }
   }
   ret
@@ -330,22 +332,23 @@ event_choices_interp.extrap.conc.dose <-
 #'   without interpolating or extrapolating beyond doses.
 #' @export
 interp.extrap.conc.dose <- function(conc, time,
-                                    time.dose, route.dose="extravascular", duration.dose=NA,
-                                    time.out, out.after=FALSE,
-                                    options=list(),
-                                    conc.blq=NULL,
-                                    conc.na=NULL,
+                                    time.dose, route.dose = "extravascular", duration.dose = NA,
+                                    time.out, out.after = FALSE,
+                                    options = list(),
+                                    conc.blq = NULL,
+                                    conc.na = NULL,
                                     ...,
-                                    check=TRUE) {
+                                    check = TRUE) {
   # Check inputs
-  conc.na <- PKNCA.choose.option(name="conc.na", value=conc.na, options=options)
-  conc.blq <- PKNCA.choose.option(name="conc.blq", value=conc.blq, options=options)
   if (check) {
     assert_conc_time(conc = conc, time = time)
     data_conc <-
-      clean.conc.blq(conc, time,
-                     conc.blq=conc.blq, conc.na=conc.na,
-                     check=FALSE)
+      clean.conc.blq(
+        conc = conc, time = time,
+        conc.blq = conc.blq, conc.na = conc.na,
+        options = options,
+        check=FALSE
+      )
   } else {
     data_conc <- data.frame(conc, time)
   }
@@ -354,16 +357,25 @@ interp.extrap.conc.dose <- function(conc, time,
     route.dose <- as.character(route.dose)
   }
   if (!(all(route.dose %in% c("extravascular", "intravascular")))) {
-    stop("route.dose must be either 'extravascular' or 'intravascular'")
+    rlang::abort(
+      "route.dose must be either 'extravascular' or 'intravascular'",
+      class = "pknca_error_invalid_route_dose"
+    )
   }
   if (!(length(route.dose) %in% c(1, length(time.dose)))) {
-    stop("route.dose must either be a scalar or the same length as time.dose")
+    rlang::abort(
+      "route.dose must either be a scalar or the same length as time.dose",
+      class = "pknca_error_route_dose_length"
+    )
   }
   if (!all(is.na(duration.dose) | (is.numeric(duration.dose) & !is.factor(duration.dose)))) {
-    stop("duration.dose must be NA or a number.")
+    rlang::abort("duration.dose must be NA or a number.", class = "pknca_error_invalid_duration_dose")
   }
   if (!(length(duration.dose) %in% c(1, length(time.dose)))) {
-    stop("duration.dose must either be a scalar or the same length as time.dose")
+    rlang::abort(
+      "duration.dose must either be a scalar or the same length as time.dose",
+      class = "pknca_error_duration_dose_length"
+    )
   }
 
   # Generate a single timeline
@@ -376,8 +388,7 @@ interp.extrap.conc.dose <- function(conc, time,
                  time=time.dose,
                  route=route.dose,
                  duration=duration.dose,
-                 iv_bolus=route.dose %in% "intravascular" & duration.dose %in% 0,
-                 stringsAsFactors=FALSE),
+                 iv_bolus=route.dose %in% "intravascular" & duration.dose %in% 0),
       # Expand IV bolus dosing to have a before and after concentration
       data.frame(iv_bolus=c(FALSE, TRUE, TRUE),
                  out_after=c(FALSE, FALSE, TRUE)),
@@ -410,11 +421,7 @@ interp.extrap.conc.dose <- function(conc, time,
     TRUE~"unknown") # should never happen
   if (any(mask_unknown <- data_all$event %in% "unknown")) {
     # All events should be accounted for already
-    stop( # nocov
-      "Unknown event in interp.extrap.conc.dose at time(s): ", # nocov
-      paste(unique(data_all$time[mask_unknown]), collapse=", "), # nocov
-      " (Please report this as a bug)" # nocov
-    ) # nocov
+    rlang::abort(sprintf("Unknown event in interp.extrap.conc.dose at time(s): %s (Please report this as a bug)", paste(unique(data_all$time[mask_unknown]), collapse = ", ")), class = "pknca_error_internal_unknown_event")  # nocov
   }
   # Remove "output_only" from event_before and event_after
   simple_locf <- function(x, missing_val) {
@@ -435,9 +442,14 @@ interp.extrap.conc.dose <- function(conc, time,
       do.call(interp.extrap.conc.dose.select[[nm]]$select, list(x=data_all))
     if (any(mask)) {
       if ("warning" %in% names(interp.extrap.conc.dose.select[[nm]])) {
-        warning(sprintf("%s: %d data points",
-                        interp.extrap.conc.dose.select[[nm]]$warning,
-                        sum(mask)))
+        rlang::warn(
+          sprintf(
+            "%s: %d data points",
+            interp.extrap.conc.dose.select[[nm]]$warning,
+            sum(mask)
+          ),
+          class = "pknca_warning_interp_extrap_conc_dose"
+        )
         data_all$method[mask] <- nm
       } else {
         for (current_idx in which(mask)) {
@@ -454,8 +466,7 @@ interp.extrap.conc.dose <- function(conc, time,
   }
   if (any(mask_no_method <- is.na(data_all$method))) {
     # This should never happen, all eventualities should be covered
-    stop("No method for imputing concentration at time(s): ", # nocov
-         paste(unique(data_all$time[mask_no_method]), collapse=", ")) # nocov
+    rlang::abort(sprintf("No method for imputing concentration at time(s): %s", paste(unique(data_all$time[mask_no_method]), collapse = ", ")), class = "pknca_error_internal_no_interp_method")  # nocov
   }
   # Filter to the requested time points and output
   data_out <- data_all[data_all$out,,drop=FALSE]
@@ -483,12 +494,7 @@ iecd_impossible_select <- function(x) {
        x$event_after %in% c("conc_dose_iv_bolus_after", "dose_iv_bolus_after"))
 }
 iecd_impossible_value <- function(data_all, current_idx, ...) {
-  stop(sprintf( # nocov
-    "Impossible combination requested for interp.extrap.conc.dose (please report this as a bug).  event_before: %s, event: %s, event_after: %s", # nocov
-    data_all$event_before[current_idx], # nocov
-    data_all$event[current_idx], # nocov
-    data_all$event_after[current_idx] # nocov
-  )) # nocov
+  rlang::abort(sprintf("Impossible combination requested for interp.extrap.conc.dose (please report this as a bug).  event_before: %s, event: %s, event_after: %s", data_all$event_before[current_idx], data_all$event[current_idx], data_all$event_after[current_idx]), class = "pknca_error_internal_impossible_event_combination")  # nocov
 }
 
 # Observed concentration ####
@@ -523,9 +529,12 @@ iecd_interp_select <- function(x) {
 iecd_interp_value <- function(data_all, current_idx, ...) {
   tmp_conc <- data_all[!is.na(data_all$conc) &
                          data_all$dose_count %in% data_all$dose_count[current_idx],]
-  interpolate.conc(conc=tmp_conc$conc, time=tmp_conc$time,
-                   time.out=data_all$time[current_idx],
-                   check=FALSE, ...)
+  # interp.extrap.conc() rather than interpolate.conc() because the
+  # concentrations on both sides of the output time may both be after Tlast (a
+  # run of values below the limit of quantification), and that is extrapolation.
+  interp.extrap.conc(conc=tmp_conc$conc, time=tmp_conc$time,
+                     time.out=data_all$time[current_idx],
+                     check=FALSE, ...)
 }
 
 # Extrapolation ####
@@ -541,9 +550,16 @@ iecd_extrap_select <- function(x) {
   extrap_output_only | extrap_dose
 }
 iecd_extrap_value <- function(data_all, current_idx, lambda.z, ...) {
-  last_conc <- data_all[data_all$time < data_all$time[current_idx] &
-                          !is.na(data_all$conc),]
-  last_conc <- last_conc[nrow(last_conc),]
+  # Extrapolate from the run of measurements immediately before the output
+  # time, back to the dose that started them.  Only the last of them matters for
+  # AUClast and AUCinf, but AUCall draws a line from it to the first measurement
+  # below the limit of quantification after it, so extrapolate.conc() has to see
+  # them all.
+  idx_before <- seq_len(current_idx - 1)
+  idx_dose <- idx_before[data_all$dose_event[idx_before]]
+  idx_conc <- max(c(1L, idx_dose)):(current_idx - 1)
+  tmp_conc <- data_all[idx_conc[data_all$conc_event[idx_conc]], ]
+  last_conc <- tmp_conc[nrow(tmp_conc),]
   if (last_conc$conc %in% 0) {
     # BLQ continues to be BLQ
     0
@@ -551,12 +567,18 @@ iecd_extrap_value <- function(data_all, current_idx, lambda.z, ...) {
     if (missing(lambda.z)) {
       lambda.z <- NA_real_
     }
-    args <- list(conc=last_conc$conc[nrow(last_conc)],
-                 time=last_conc$time[nrow(last_conc)],
+    args <- list(conc=tmp_conc$conc,
+                 time=tmp_conc$time,
                  time.out=data_all$time[current_idx], lambda.z=lambda.z,
                  ...)
-    if (!("clast" %in% names(args))) {
-      args$clast <- last_conc$conc[nrow(last_conc)]
+    # A `clast` given by the caller (clast.pred, for AUCinf,pred) describes the
+    # end of the whole profile, so it only applies when this run of measurements
+    # ends there.  Extrapolating to a dose partway through the data -- the
+    # trough before a later dose -- uses the last measurement of the run.
+    all_conc <- data_all[data_all$conc_event, ]
+    tlast_all <- pk.calc.tlast(conc=all_conc$conc, time=all_conc$time, check=FALSE)
+    if (!("clast" %in% names(args)) || !isTRUE(last_conc$time == tlast_all)) {
+      args$clast <- last_conc$conc
     }
     do.call(extrapolate.conc, args)
   }

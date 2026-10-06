@@ -38,25 +38,26 @@ pk.tss.monoexponential <- function(...,
                                    verbose=FALSE) {
   # Check inputs
   modeldata <- pk.tss.data.prep(..., check=check)
-  if (is.factor(tss.fraction) |
-      !is.numeric(tss.fraction))
-    stop("tss.fraction must be a number")
-  if (!length(tss.fraction) == 1) {
-    warning("Only first value of tss.fraction is being used")
+  if (length(tss.fraction) > 1) {
+    rlang::warn("Only first value of tss.fraction is being used", class = "pknca_warning_tss_fraction_multiple")
     tss.fraction <- tss.fraction[1]
   }
-  if (tss.fraction <= 0 | tss.fraction >= 1) {
-    stop("tss.fraction must be between 0 and 1, exclusive")
+  checkmate::assert_number(tss.fraction, na.ok = FALSE)
+
+  if (tss.fraction <= 0 || tss.fraction >= 1) {
+    rlang::abort("tss.fraction must be between 0 and 1, exclusive", class = "pknca_error_tss_fraction_range")
   } else if (tss.fraction < 0.8) {
-    warning("tss.fraction is usually >= 0.8")
+    rlang::warn("tss.fraction is usually >= 0.8", class = "pknca_warning_tss_fraction_small")
   }
   # Note that this will by default choose "population" if nothing is
   # requested.
   output <- match.arg(output, several.ok=TRUE)
   if (!("subject" %in% names(modeldata))) {
     if (any(c("population", "popind", "individual") %in% output)) {
-      warning("Cannot give 'population', 'popind', or 'individual' ",
-              "output without multiple subjects of data")
+      rlang::warn(
+        "Cannot give 'population', 'popind', or 'individual' output without multiple subjects of data",
+        class = "pknca_warning_tss_output_no_subjects"
+      )
       output <- setdiff(output, c("population", "popind", "individual"))
     }
   }
@@ -82,14 +83,14 @@ pk.tss.monoexponential <- function(...,
       NA
     }
   ret <-
-    if (!identical(NA, ret_population) & !identical(NA, ret_individual)) {
+    if (!identical(NA, ret_population) && !identical(NA, ret_individual)) {
       merge(ret_population, ret_individual)
     } else if (!identical(NA, ret_population)) {
       ret_population
     } else if (!identical(NA, ret_individual)) {
       ret_individual
     } else {
-      stop("Error in selection of return values for pk.tss.monoexponential.  This is likely a bug.") # nocov
+      rlang::abort("Error in selection of return values for pk.tss.monoexponential. This is likely a bug.", class = "pknca_error_internal_tss_return_selection")  # nocov
     }
   ret
 }
@@ -234,15 +235,17 @@ pk.tss.monoexponential.population <- function(data,
     )
   if (verbose)
     print(all.model.summary)
-  if (all(is.na(all.model.summary$AIC)) |
+  if (all(is.na(all.model.summary$AIC)) ||
       length(all.model.summary) == 0) {
-    warning("No population model for monoexponential Tss converged, no results given")
+    rlang::warn(
+      "No population model for monoexponential Tss converged, no results given",
+      class = "pknca_warning_tss_population_no_convergence"
+    )
     ret <-
       data.frame(
         tss.monoexponential.population=NA,
         tss.monoexponential.popind=NA,
-        subject=unique(data[["subject"]]),
-        stringsAsFactors=FALSE
+        subject=unique(data[["subject"]])
       )
   } else {
     best.model <-
@@ -250,8 +253,7 @@ pk.tss.monoexponential.population <- function(data,
              min(all.model.summary$AIC, na.rm=TRUE)][[1]]$model
     ret <-
       data.frame(
-        tss.monoexponential.population=nlme::fixef(best.model)[["tss"]],
-        stringsAsFactors=FALSE
+        tss.monoexponential.population=nlme::fixef(best.model)[["tss"]]
       )
     best.ranef <- nlme::ranef(best.model)
     if ("tss" %in% names(best.ranef)) {
@@ -261,20 +263,21 @@ pk.tss.monoexponential.population <- function(data,
           data.frame(
             tss.monoexponential.popind=(best.ranef$tss +
                                           ret$tss.monoexponential.population),
-            subject=factor(rownames(best.ranef)),
-            stringsAsFactors=FALSE
+            subject=factor(rownames(best.ranef))
           ),
           all=TRUE
         )
     } else if ("popind" %in% output) {
-      warning("tss.monoexponential.popind was requested, but the best model did not include a random effect for tss.  Set to NA.")
+      rlang::warn(
+        "tss.monoexponential.popind was requested, but the best model did not include a random effect for tss.  Set to NA.",
+        class = "pknca_warning_tss_popind_no_random_effect"
+      )
       ret <-
         merge(
           ret,
           data.frame(
             tss.monoexponential.popind=NA,
-            subject=unique(data$subject),
-            stringsAsFactors=FALSE
+            subject=unique(data$subject)
           ),
           all=TRUE
         )
@@ -304,7 +307,7 @@ pk.tss.monoexponential.population <- function(data,
 #'   provided) or one row per subject (if `popind` is provided).  The columns
 #'   will be named `tss.monoexponential.population` and/or
 #'   `tss.monoexponential.popind`.
-#' @importFrom rlang .data
+#' @importFrom rlang .data %||%
 pk.tss.monoexponential.individual <- function(data,
                                               output=c(
                                                 "individual",
@@ -351,12 +354,11 @@ pk.tss.monoexponential.individual <- function(data,
           data.frame(
             time=.$time,
             tss.constant=.$tss.constant,
-            conc=.$conc,
-            stringsAsFactors=FALSE
+            conc=.$conc
           )
         )
     )
-  if ("subject" %in% names(data) &
+  if ("subject" %in% names(data) &&
       "individual" %in% output) {
     data_grouped <-
       if (all(c("treatment", "subject") %in% names(data))) {
@@ -364,7 +366,7 @@ pk.tss.monoexponential.individual <- function(data,
       } else if ("subject" %in% names(data)) {
         dplyr::grouped_df(data, vars="subject")
       } else {
-        stop("Subject must be specified to have subject-level fitting")
+        rlang::abort("Please report a bug. Subject must be specified to have subject-level fitting", class = "pknca_error_internal_tss_no_subject_for_individual")  # nocov
       }
     ret_sub <-
       dplyr::summarize(
@@ -374,8 +376,7 @@ pk.tss.monoexponential.individual <- function(data,
             data.frame(
               time=.data$time,
               tss.constant=.data$tss.constant,
-              conc=.data$conc,
-              stringsAsFactors=FALSE
+              conc=.data$conc
             )
           )
       )
@@ -385,7 +386,6 @@ pk.tss.monoexponential.individual <- function(data,
   as.data.frame(
     ret[,c(intersect(names(ret), c("subject", "treatment")),
            paste("tss.monoexponential", output, sep=".")),
-        drop=FALSE],
-    stringsAsFactors=FALSE
+        drop=FALSE]
   )
 }

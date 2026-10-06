@@ -9,7 +9,7 @@ pk.calc.sparse_auc(
   conc,
   time,
   subject,
-  method = NULL,
+  method = "linear",
   auc.type = "AUClast",
   ...,
   options = list()
@@ -44,7 +44,7 @@ The AUC is calculated as:
 
 Where:
 
-\itemize{
+\describe{
 \item{\eqn{AUC}{AUC}}{is the estimated area under the concentration-time curve}
 \item{\eqn{w_i}{w_i}}{is the weight applied to the concentration at time i (related to the time which it affects, see \code{\link[=sparse_auc_weight_linear]{sparse_auc_weight_linear()}})}
 \item{\eqn{\bar{C}_i}{Cbar_i}}{is the average concentration at time i}
@@ -56,9 +56,11 @@ Where:
 
 }}
 \seealso{
-Other Sparse Methods: 
-\code{\link{as_sparse_pk}()},
-\code{\link{sparse_auc_weight_linear}()},
-\code{\link{sparse_mean}()}
+Other Sparse Methods:
+\code{\link[=as_sparse_pk]{as_sparse_pk()}},
+\code{\link[=pk.calc.auclast_sparse]{pk.calc.auclast_sparse()}},
+\code{\link[=pk.calc.sparse_aumc]{pk.calc.sparse_aumc()}},
+\code{\link[=sparse_auc_weight_linear]{sparse_auc_weight_linear()}},
+\code{\link[=sparse_mean]{sparse_mean()}}
 }
 \concept{Sparse Methods}

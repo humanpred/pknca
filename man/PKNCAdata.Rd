@@ -22,7 +22,10 @@ PKNCAdata(data.conc, data.dose, ...)
   impute = NA_character_,
   intervals,
   units,
-  options = list()
+  options = list(),
+  group_ref = NULL,
+  grpid_cols = NULL,
+  grpid_numeric = NULL
 )
 }
 \arguments{
@@ -43,18 +46,39 @@ if \code{data.dose} is a \code{PKNCAdose} object.}
 \item{impute}{Methods for imputation.  \code{NA} for to search for the column
 named "impute" in the intervals or no imputation if that column does not
 exist, a comma-or space-separated list of names, or the name of a column in
-the \code{intervals} data.frame.  See
-\code{vignette("v08-data-imputation", package="PKNCA")} for more details.}
+the \code{intervals} data.frame (any column name works, not only \code{"impute"}, and
+the column must be character).  \code{\link[=get_impute_method]{get_impute_method()}} gives the exact rule.
+See \code{vignette("v08-data-imputation", package="PKNCA")} for more details.}
 
 \item{intervals}{A data frame with the AUC interval specifications as defined
 in \code{\link[=check.interval.specification]{check.interval.specification()}}.  If missing, this will be
-automatically chosen by \code{\link[=choose.auc.intervals]{choose.auc.intervals()}}. (see details)}
+automatically chosen by \code{\link[=choose.auc.intervals]{choose.auc.intervals()}}. (see details)  With
+date-time data, \code{start} and \code{end} may be date-times (see the "Date-time
+input" section).}
 
 \item{units}{A data.frame of unit assignments and conversions as created by
 \code{\link[=pknca_units_table]{pknca_units_table()}}}
 
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
+
+\item{group_ref}{The reference profiles for automatically-linked secondary
+parameters, as a data.frame of group values, optionally
+parameter-specific (see Details).  \code{NULL} (the default) derives the
+reference from the data.}
+
+\item{grpid_cols}{The grouping columns that prefix the interval number in
+the PPGRPID column of \code{as.data.frame(results, out_format = "cdisc")}, as a
+named character vector of \code{\link[=PKNCAconc]{PKNCAconc()}} grouping columns (other than the
+subject and analyte), each with the text written before its value (see
+\code{\link[=as.data.frame.PKNCAresults]{as.data.frame.PKNCAresults()}}).  It is the default for the \code{grpid_cols}
+argument there, so every output of one analysis agrees.  \code{NULL} (the
+default) gives an interval-only identifier.}
+
+\item{grpid_numeric}{The names of the columns in \code{grpid_cols} whose values
+are whole numbers of at least 1, such as the period, written as that
+number in PPGRPID.  It is the default for the \code{grpid_numeric} argument of
+\code{\link[=as.data.frame.PKNCAresults]{as.data.frame.PKNCAresults()}}.  \code{NULL} (the default) names no columns.}
 }
 \value{
 A PKNCAdata object with concentration, dose, interval, and
@@ -68,13 +92,106 @@ intervals for PK calculations.
 \details{
 If \code{data.dose} is not given or is \code{NA}, then the \code{intervals} must be
 given.  At least one of \code{data.dose} and \code{intervals} must be given.
+
+A secondary parameter is calculated from a result in another interval, and
+the interval specification links the two with an \code{interval_id} column and a
+\verb{<parameter>_ref} pointer (see \code{\link[=interval_add_secondary]{interval_add_secondary()}}).  An
+\code{interval_id} identifies one interval:  rows that share it (an interval
+split by imputation, for example) may differ only in the parameters they
+request, never in \code{start}, \code{end}, or the groups.  Where a request
+has no pointer and could not otherwise be calculated, \code{\link[=pk.nca]{pk.nca()}} derives the
+reference profile from the data:  a parameter measured on an interval
+collection whose inputs are spot samples (renal clearance) takes the nearest
+profile with no collection volume, and \code{group_ref} restricts -- or, for
+anything else, supplies -- the profiles that may be used.  The derived
+reference interval is created for the calculation only and is not added to
+the intervals in the result.  When more than one profile is equally close,
+the affected results are \code{NA} with the reason in the \code{exclude} column and a
+\code{pknca_warning_secondary_auto_reference} warning.
+
+\code{group_ref} takes three forms.  A data.frame of group values applies to
+every secondary parameter:  its columns must be group columns of the
+concentration data, every column must match (and) for at least one of its
+rows (or), and every value must appear in the data -- for example, with
+groups crossing \code{TRTP}, \code{PCTEST}, and \code{PCSPEC},
+\code{group_ref = data.frame(PCSPEC = "PLASMA")} directs renal-clearance
+references to the plasma profiles and
+\code{group_ref = data.frame(PCTEST = "midazolam")} directs metabolite ratios
+to the parent analyte.  The same data.frame with a \code{parameter} column
+applies each row only to the secondary parameter it names, and the columns
+a parameter's rows leave \code{NA} do not apply to it, so one table can steer
+renal clearance by \code{PCSPEC} and a metabolite ratio by \code{PCTEST}:
+\code{group_ref = data.frame(parameter = c("clr.obs", "ratio.aucinf.obs"), PCSPEC = c("PLASMA", NA), PCTEST = c(NA, "midazolam"))}.  A named list of
+data.frames, one per parameter, says the same thing:
+\code{group_ref = list(clr.obs = data.frame(PCSPEC = "PLASMA"), ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))}.
 }
+\section{Date-time input}{
+
+
+The concentration and dose times may be date-times (POSIXct) or dates
+(Date).  \code{PKNCAdata()} checks them and keeps them as they are, and
+\code{\link[=pk.nca]{pk.nca()}} converts them to numeric time before it calculates, so the
+intervals can still be changed after \code{PKNCAdata()}:
+\itemize{
+\item The time reference is the first dose (ignoring excluded doses) within
+each combination of the grouping variables (and the subject) shared by
+the concentration and dose formulas.  With \code{dose~time|Part+Subject},
+each subject's first dose in each study part (or period, for a
+crossover) is time 0; with \code{dose~time|Subject}, each subject's first
+dose of the study is time 0.  The dose formula must include the subject,
+so that one reference is never shared by several subjects.
+\item A subject (group) without an included dose time uses its first
+concentration (the first one not excluded) as the reference, with a
+warning.  Without dosing data, every reference is the first
+concentration, within each combination of the concentration grouping
+variables to the left of any \code{/} (so analytes share their subject's
+reference).
+\item Sparse data use one reference per group rather than per subject, because
+every subject in a sparse group shares the group's dosing.
+\item Numeric time is in the time unit of the \code{\link[=PKNCAconc]{PKNCAconc()}} object:
+\code{timeu_pref} when given, otherwise \code{timeu}, otherwise hours (without
+units).  Numeric concentration collection and dosing durations are in
+that unit, and difftime durations are converted to it.
+\item Manually specified \code{intervals} may be numeric times relative to the
+time reference, in that unit, or date-times.  Date-time \code{start} and
+\code{end} (POSIXct, or Date for 08:00, with a warning) are converted
+relative to the reference of the group each row applies to.  A row that
+does not name every reference group (for example, a row without
+\code{Subject}) applies to every matching group and becomes one row per
+group, because one absolute window is a different relative window for
+each subject.  A date-time \code{start} may pair with \code{end = Inf} (or a
+POSIXct \code{Inf}), which stays infinite; the start must be finite, both
+bounds must otherwise be date-times, and the time zone must match the
+data.  \code{PKNCAdata()} and \code{\link[=set_intervals]{set_intervals()}} check date-time intervals,
+and \code{\link[=pk.nca]{pk.nca()}} converts them; converted intervals have an
+\code{interval_time_kind} column (\code{"datetime"}, or \code{"relative"} for numeric
+rows added later).  The conversion gives the window only:  a window
+starting before a subject's first measurement still needs an
+imputation rule (\code{impute}) for a concentration at its start.
+\item The results of \code{\link[=pk.nca]{pk.nca()}} keep the converted data that the calculation
+used (\code{results$data}), with the time reference of each group in its
+\code{time_reference} element and the \code{time_reference_type} column saying
+whether it is the \code{"first_dose"} or the \code{"first_conc"};
+\code{as.data.frame(results, out_format = "cdisc")} gives, in the PPRFTDTC
+column, the date-time of the reference of each row:  the dose that
+starts its interval, or the first concentration for a \code{"first_conc"}
+group (see \code{\link[=as.data.frame.PKNCAresults]{as.data.frame.PKNCAresults()}}).
+}
+
+Both times must be date-times (or dates), not one numeric and one
+date-time; date-times must have the same time zone; and the dose formula
+must include the subject of dense data.  Otherwise, it is an error.
+Differences are elapsed time, so a change to or from daylight saving time
+is handled correctly when the time zone is a named zone (like
+\code{"America/New_York"}).
+}
+
 \seealso{
 \code{\link[=choose.auc.intervals]{choose.auc.intervals()}}, \code{\link[=pk.nca]{pk.nca()}}, \code{\link[=pknca_units_table]{pknca_units_table()}}
 
-Other PKNCA objects: 
-\code{\link{PKNCAconc}()},
-\code{\link{PKNCAdose}()},
-\code{\link{PKNCAresults}()}
+Other PKNCA objects:
+\code{\link[=PKNCAconc]{PKNCAconc()}},
+\code{\link[=PKNCAdose]{PKNCAdose()}},
+\code{\link[=PKNCAresults]{PKNCAresults()}}
 }
 \concept{PKNCA objects}

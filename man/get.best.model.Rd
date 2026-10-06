@@ -9,7 +9,7 @@ get.best.model(object, ...)
 \arguments{
 \item{object}{the list of models}
 
-\item{\dots}{Parameters passed to AIC.list}
+\item{\dots}{Passed to \code{AIC()}}
 }
 \value{
 The model which is assessed as best.  If more than one are equal,

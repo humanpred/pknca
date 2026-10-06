@@ -2,9 +2,12 @@
 % Please edit documentation in R/pk.calc.simple.R
 \name{pk.calc.count_conc}
 \alias{pk.calc.count_conc}
+\alias{pk.calc.count_conc_measured}
 \title{Count the number of concentration measurements in an interval}
 \usage{
 pk.calc.count_conc(conc, check = TRUE)
+
+pk.calc.count_conc_measured(conc, check = TRUE)
 }
 \arguments{
 \item{conc}{Measured concentrations}
@@ -14,17 +17,50 @@ pk.calc.count_conc(conc, check = TRUE)
 \value{
 a count of the non-missing concentrations (0 if all concentrations
 are missing)
+
+a count of the non-missing, measured (not below or above the limit
+of quantification) concentrations (0 if all concentrations are missing).
+"Measured" here means above the limit of quantification; an imputed
+concentration above it is counted (see the "Imputed concentrations"
+section).
 }
 \description{
-\code{count_conc} is typically used for quality control on the data to ensure that
-there are a sufficient number of non-missing samples for a calculation and to
-ensure that data are consistent between individuals.
+\code{count_conc} and \code{count_conc_measured} are typically used for quality control
+on the data to ensure that there are a sufficient number of non-missing
+samples for a calculation and to ensure that data are consistent between
+individuals.
 }
+\section{Functions}{
+\itemize{
+\item \code{pk.calc.count_conc_measured()}: Count the number of concentration measurements
+that are not missing, above, or below the limit of quantification in an
+interval
+
+}}
+\section{Imputed concentrations}{
+
+
+Both counts are taken after imputation, and neither distinguishes an imputed
+concentration from a measured one.  \code{count_conc} counts every non-missing
+concentration, so any imputation that adds a point increases it.
+\code{count_conc_measured} counts concentrations above the limit of
+quantification, so whether an imputed point is counted depends on its value
+rather than on its being imputed:  the zero added by
+\code{\link[=PKNCA_impute_method_start_conc0]{PKNCA_impute_method_start_conc0()}} is not counted, while the concentration
+carried to the start time by \code{\link[=PKNCA_impute_method_start_predose]{PKNCA_impute_method_start_predose()}} and the
+minimum added by \code{\link[=PKNCA_impute_method_start_cmin]{PKNCA_impute_method_start_cmin()}} are.
+
+To count only measured samples, calculate the counts in an interval with no
+imputation.
+}
+
 \seealso{
-Other NCA parameters for concentrations during the intervals: 
-\code{\link{pk.calc.clast.obs}()},
-\code{\link{pk.calc.cmax}()},
-\code{\link{pk.calc.cstart}()},
-\code{\link{pk.calc.ctrough}()}
+Other NCA parameters for concentrations during the intervals:
+\code{\link[=pk.calc.c0]{pk.calc.c0()}},
+\code{\link[=pk.calc.cav]{pk.calc.cav()}},
+\code{\link[=pk.calc.ceoi]{pk.calc.ceoi()}},
+\code{\link[=pk.calc.clast.obs]{pk.calc.clast.obs()}},
+\code{\link[=pk.calc.cmax]{pk.calc.cmax()}},
+\code{\link[=pk.calc.ctrough]{pk.calc.ctrough()}}
 }
 \concept{NCA parameters for concentrations during the intervals}

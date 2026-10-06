@@ -4,24 +4,47 @@
 \alias{get.parameter.deps}
 \title{Get all columns that depend on a parameter}
 \usage{
-get.parameter.deps(x)
+get.parameter.deps(x, recursive = FALSE)
 }
 \arguments{
 \item{x}{The parameter name (as a character string)}
+
+\item{recursive}{Search backward to the inputs \code{x} is calculated from,
+rather than forward to the parameters calculated from \code{x}.  See the
+details.}
 }
 \value{
-A character vector of parameter names that depend on the parameter
-\code{x}.  If none depend on \code{x}, then the result will be an empty vector.
+With \code{recursive = FALSE} (default), a character vector of
+parameter names that depend on the parameter \code{x}; empty if none do.
+With \code{recursive = TRUE}, the unique set of everything \code{x} is calculated
+from, following each dependency to the end.
 }
 \description{
 Get all columns that depend on a parameter
 }
+\details{
+The two directions answer different questions.  The default
+answers "what becomes invalid if \code{x} changes?".  \code{recursive = TRUE}
+answers "what does \code{x} need?", and its result mixes parameter names
+with the raw inputs the calculation ends at, such as \code{"conc"},
+\code{"time"}, \code{"dose"}, and \code{"time.dose"}.
+}
 \seealso{
-Other Interval specifications: 
-\code{\link{add.interval.col}()},
-\code{\link{check.interval.deps}()},
-\code{\link{check.interval.specification}()},
-\code{\link{choose.auc.intervals}()},
-\code{\link{get.interval.cols}()}
+Other Interval specifications:
+\code{\link[=add.interval.col]{add.interval.col()}},
+\code{\link[=check.interval.specification]{check.interval.specification()}},
+\code{\link[=choose.auc.intervals]{choose.auc.intervals()}},
+\code{\link[=get.interval.cols]{get.interval.cols()}},
+\code{\link[=interval_add_impute]{interval_add_impute()}},
+\code{\link[=interval_add_param]{interval_add_param()}},
+\code{\link[=interval_add_secondary]{interval_add_secondary()}},
+\code{\link[=pknca_cdisc_codes]{pknca_cdisc_codes()}},
+\code{\link[=pknca_check_parameter_classification]{pknca_check_parameter_classification()}},
+\code{\link[=pknca_concepts]{pknca_concepts()}},
+\code{\link[=pknca_interval_table]{pknca_interval_table()}},
+\code{\link[=pknca_match_route]{pknca_match_route()}},
+\code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
+\code{\link[=pknca_presets]{pknca_presets()}},
+\code{\link[=pknca_ref]{pknca_ref()}}
 }
 \concept{Interval specifications}

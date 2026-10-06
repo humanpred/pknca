@@ -110,26 +110,22 @@ test_that("Significance", {
   expect_equal(
     signifString(data.frame(A=c(0, 1.111111),
                             B=factor(LETTERS[1:2]),
-                            C=LETTERS[1:2],
-                            stringsAsFactors=FALSE),
+                            C=LETTERS[1:2]),
                  digits=3),
     data.frame(A=c("0.000", "1.11"),
                B=factor(LETTERS[1:2]),
-               C=LETTERS[1:2],
-               stringsAsFactors=FALSE),
+               C=LETTERS[1:2]),
     ignore_attr=TRUE,
     info="Data frame significance is calculated correctly"
   )
   expect_equal(
     signifString(data.frame(A=c(0, 1.111111),
                             B=factor(LETTERS[1:2]),
-                            C=LETTERS[1:2],
-                            stringsAsFactors=FALSE),
+                            C=LETTERS[1:2]),
                  digits=4),
     data.frame(A=c("0.0000", "1.111"),
                B=factor(LETTERS[1:2]),
-               C=LETTERS[1:2],
-               stringsAsFactors=FALSE),
+               C=LETTERS[1:2]),
     ignore_attr=TRUE,
     info="Data frame digits are respected"
   )
@@ -166,4 +162,11 @@ test_that("max_na and min_na", {
     NA_integer_,
     info="zero_length/na.rm combinations are respected (NOT made zero length)"
   )
+})
+
+test_that("zero_len_summary", {
+  testing_function <- zero_len_summary(mean)
+  expect_equal(testing_function(1:5), 3)
+  expect_equal(testing_function(1:5, na.rm = TRUE), 3)
+  expect_equal(testing_function(), NA)
 })

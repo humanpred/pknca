@@ -10,7 +10,8 @@ PKNCA.set.summary(
   point,
   spread,
   rounding = list(signif = 3),
-  reset = FALSE
+  reset = FALSE,
+  spread_for = NULL
 )
 }
 \arguments{
@@ -34,7 +35,15 @@ digits to round.  If a function, it is expected to return a scalar number
 or character string with the correct results for an input of either a
 scalar or a two-long vector.}
 
-\item{reset}{Reset all the summary instructions}
+\item{reset}{Reset all the summary instructions to no instruction (this is
+not intended for general use)}
+
+\item{spread_for}{Optional.  The name of another parameter that \code{name} gives
+the spread of, such as \code{"auclast"} for \code{"auclast_se"}.  Where results for
+\code{name} are present, \code{\link[=summary.PKNCAresults]{summary.PKNCAresults()}} summarizes \code{spread_for} with
+these instructions:  \code{point} is applied to the values of \code{spread_for},
+\code{spread} to the values of \code{name}, and \code{description} describes the summary.
+\code{name} then has no summary column of its own.  \code{spread} must be given.}
 }
 \value{
 All current summary settings (invisibly)
@@ -56,8 +65,9 @@ PKNCA.set.summary(
 \seealso{
 \code{\link[=summary.PKNCAresults]{summary.PKNCAresults()}}
 
-Other PKNCA calculation and summary settings: 
-\code{\link{PKNCA.choose.option}()},
-\code{\link{PKNCA.options}()}
+Other PKNCA calculation and summary settings:
+\code{\link[=PKNCA.choose.option]{PKNCA.choose.option()}},
+\code{\link[=PKNCA.options]{PKNCA.options()}},
+\code{\link[=PKNCA_options_defaults]{PKNCA_options_defaults()}}
 }
 \concept{PKNCA calculation and summary settings}

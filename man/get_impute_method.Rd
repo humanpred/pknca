@@ -2,18 +2,65 @@
 % Please edit documentation in R/impute.R
 \name{get_impute_method}
 \alias{get_impute_method}
-\title{Get the impute function from either the intervals column or from the method}
+\title{Get the imputation methods for the intervals}
 \usage{
 get_impute_method(intervals, impute)
 }
 \arguments{
 \item{intervals}{the data.frame of intervals}
 
-\item{impute}{the imputation definition}
+\item{impute}{the imputation definition -- either the name of a column in
+\code{intervals} (character scalar), \code{NA} to look for a generic \code{"impute"}
+column, or the imputation method string.  Must be an atomic scalar; a list
+(even of length 1) is rejected.}
 }
 \value{
-The imputation function vector
+A character vector of imputation specifications:  one per row of
+\code{intervals} when read from a column, and of length one otherwise (the
+method string, or \code{NA_character_} for no imputation).  A column that is
+not character is an error, except that a column of only \code{NA} (which is
+logical when made with \code{NA}) is read as no imputation.
 }
 \description{
-Get the impute function from either the intervals column or from the method
+\code{get_impute_method()} is the rule \code{\link[=pk.nca]{pk.nca()}} uses to find the imputation
+methods for each interval, from the \code{impute} argument of \code{\link[=PKNCAdata]{PKNCAdata()}} and
+the intervals.  It reads \code{impute} one of three ways, in this order:
 }
+\details{
+\enumerate{
+\item If \code{impute} is the name of a column in \code{intervals}, the methods are that
+column's values, one per interval.  The name may be any column name, not
+only \code{"impute"}.
+\item Otherwise, if \code{impute} is \code{NA} and \code{intervals} has a column named
+\code{"impute"}, the methods are that column's values, one per interval.
+\item Otherwise \code{impute} is itself the method (or comma- or space-separated
+methods) for every interval, and the result is \code{impute} as a single
+value.  An \code{NA} that finds no \code{"impute"} column therefore gives a single
+\code{NA_character_}, meaning no imputation.
+}
+
+\code{get_impute_method()} only reads the specification.  It does not check that
+the methods exist; \code{\link[=assert_impute_method]{assert_impute_method()}} does.  \code{\link[=get_impute_column]{get_impute_column()}}
+gives the name of the column the methods are read from, which tells a column
+from a method string even for an intervals table with one row.
+}
+\examples{
+intervals <- data.frame(start = 0, end = 24, impute = "start_conc0")
+# The column named by `impute`
+get_impute_method(intervals, impute = "impute")
+# NA finds the column named "impute"
+get_impute_method(intervals, impute = NA)
+# NA without an "impute" column means no imputation
+get_impute_method(intervals[, c("start", "end")], impute = NA)
+# Anything else is the method for every interval
+get_impute_method(intervals, impute = "start_predose")
+}
+\seealso{
+Other Imputation:
+\code{\link[=PKNCA_impute_fun_list]{PKNCA_impute_fun_list()}},
+\code{\link{PKNCA_impute_method}},
+\code{\link[=assert_impute_method]{assert_impute_method()}},
+\code{\link[=get_impute_column]{get_impute_column()}},
+\code{\link[=pknca_impute_methods]{pknca_impute_methods()}}
+}
+\concept{Imputation}

@@ -4,11 +4,15 @@
 \alias{check.interval.specification}
 \title{Check the formatting of a calculation interval specification data frame.}
 \usage{
-check.interval.specification(x)
+check.interval.specification(x, impute = NA_character_)
 }
 \arguments{
 \item{x}{The data frame specifying what to calculate during each time
 interval}
+
+\item{impute}{The \code{impute} argument of \code{\link[=PKNCAdata]{PKNCAdata()}}, so that a column it
+names is treated as an imputation column (like \code{impute}) rather than as
+part of the definition of an interval.}
 }
 \value{
 x The potentially updated data frame with the interval calculation
@@ -24,15 +28,35 @@ parameters which are not requested may be calculated if it is required for
 \code{start} and \code{end} time must always be given as columns, and the \code{start} must
 be before the \code{end}.  Other columns define the parameters to be calculated
 and the groupings to apply the intervals to.
+
+Data are selected for calculation within an interval by the time of the
+measurement or dose: a row is included when its time is at or after \code{start}
+and at or before \code{end} (a dose exactly at \code{end} is not included in the
+interval).  For duration data (for example, urine collections or intravenous
+infusions), the time is the start of the collection or administration, and
+the duration is not considered during selection: a collection that starts
+within the interval and ends after \code{end} is included and contributes its
+full amount to the interval.  For the simplest interpretation of results,
+align collection start and end times with interval boundaries.
 }
 \seealso{
 The vignette "Selection of Calculation Intervals"
 
-Other Interval specifications: 
-\code{\link{add.interval.col}()},
-\code{\link{check.interval.deps}()},
-\code{\link{choose.auc.intervals}()},
-\code{\link{get.interval.cols}()},
-\code{\link{get.parameter.deps}()}
+Other Interval specifications:
+\code{\link[=add.interval.col]{add.interval.col()}},
+\code{\link[=choose.auc.intervals]{choose.auc.intervals()}},
+\code{\link[=get.interval.cols]{get.interval.cols()}},
+\code{\link[=get.parameter.deps]{get.parameter.deps()}},
+\code{\link[=interval_add_impute]{interval_add_impute()}},
+\code{\link[=interval_add_param]{interval_add_param()}},
+\code{\link[=interval_add_secondary]{interval_add_secondary()}},
+\code{\link[=pknca_cdisc_codes]{pknca_cdisc_codes()}},
+\code{\link[=pknca_check_parameter_classification]{pknca_check_parameter_classification()}},
+\code{\link[=pknca_concepts]{pknca_concepts()}},
+\code{\link[=pknca_interval_table]{pknca_interval_table()}},
+\code{\link[=pknca_match_route]{pknca_match_route()}},
+\code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
+\code{\link[=pknca_presets]{pknca_presets()}},
+\code{\link[=pknca_ref]{pknca_ref()}}
 }
 \concept{Interval specifications}

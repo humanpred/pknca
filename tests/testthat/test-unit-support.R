@@ -26,6 +26,7 @@ test_that("pknca_find_units_param", {
 })
 
 test_that("unit conversion tables are created correctly", {
+  skip_if_not_installed("units")
   expect_true(
     all(
       pknca_units_table(
@@ -90,6 +91,7 @@ test_that("unit conversion tables are created correctly", {
 })
 
 test_that("pknca_units_table", {
+  skip_if_not_installed("units")
   expect_warning(
       pknca_units_table(
         concu="ng/mL", doseu="mg/kg", amountu="mg", timeu="hr",
@@ -105,12 +107,46 @@ test_that("pknca_units_table", {
     ),
     regexp="cannot convert ng/mL into mol/L"
   )
+  expect_error(
+    pknca_units_table(
+      concu=c("ng/mL", "umol/L"), doseu="mg/kg", amountu="mg", timeu="hr",
+      conversions=data.frame(PPORRESU="ng/mL", PPSTRESU="mol/L")
+    ),
+    regexp = "Only one unit may be provided at a time: ng/mL, umol/L"
+  )
+  # fraction excreted now has units of amount/dose
+  unit_fe_kg <-
+    pknca_units_table(
+      doseu="mg/kg", amountu="ng",
+      conversions=data.frame(PPORRESU="ng/(mg/kg)", PPSTRESU="kg")
+    )
+  expect_equal(
+    unit_fe_kg$conversion_factor[unit_fe_kg$PPTESTCD == "fe"],
+    1e-6
+  )
+  unit_fe_fraction <-
+    pknca_units_table(
+      doseu="mg", amountu="ng",
+      conversions=data.frame(PPORRESU="ng/mg", PPSTRESU="fraction")
+    )
+  expect_equal(
+    unit_fe_fraction$conversion_factor[unit_fe_fraction$PPTESTCD == "fe"],
+    1e-6
+  )
 })
 
 test_that("pknca_units_add_paren", {
   expect_equal(pknca_units_add_paren("mg"), "mg")
   expect_equal(pknca_units_add_paren("mg/kg"), "(mg/kg)")
   expect_equal(pknca_units_add_paren("mg*kg"), "(mg*kg)")
+})
+
+test_that("pknca_units_quotient divides one unit by another", {
+  expect_equal(pknca_units_quotient("mg", "hr*ng/mL"), "mg/(hr*ng/mL)")
+  expect_equal(pknca_units_quotient("ng/mL", "mg/L"), "(ng/mL)/(mg/L)")
+  # Units that are not known compose into units that are not known
+  expect_equal(pknca_units_quotient(NA_character_, "mg"), NA_character_)
+  expect_equal(pknca_units_quotient("mg", NA_character_), NA_character_)
 })
 
 test_that("pknca_units_table treats missing, NULL, and NA the same", {
@@ -157,6 +193,7 @@ test_that("pknca_units_table treats missing, NULL, and NA the same", {
 })
 
 test_that("allow duplicate PPSTRESU units", {
+  skip_if_not_installed("units")
   d_conversion <-
     data.frame(
       PPORRESU = c("ng/mL", "(ng/mL)/(mg/kg)", "(mg/kg)/(hr*ng/mL)", "(mg/kg)/(ng/mL)"),
@@ -166,4 +203,341 @@ test_that("allow duplicate PPSTRESU units", {
   expect_silent(
     pknca_units_table(concu = "ng/mL", doseu = "mg/kg", timeu = "hr", conversions = d_conversion)
   )
+})
+
+test_that("Use preferred units (#197)", {
+  skip_if_not_installed("units")
+  prep <-
+    pknca_units_table(
+      concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
+      concu_pref = "ug/mL"
+    )
+  expect_equal(prep$conversion_factor[prep$PPTESTCD == "cmax"], 0.001)
+  prep <-
+    pknca_units_table(
+      concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
+      doseu_pref = "ug/kg"
+    )
+  expect_equal(prep$conversion_factor[prep$PPTESTCD == "cmax.dn"], 0.001)
+  prep <-
+    pknca_units_table(
+      concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
+      timeu_pref = "day"
+    )
+  expect_equal(prep$conversion_factor[prep$PPTESTCD == "tmax"], 1/24)
+  prep <-
+    pknca_units_table(
+      concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
+      amountu_pref = "kg"
+    )
+  expect_equal(prep$conversion_factor[prep$PPTESTCD == "clr.obs"], 1e-6)
+
+  # conversions can override the preferred units parameter
+  prep <-
+    pknca_units_table(
+      concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
+      timeu_pref = "day",
+      conversions = data.frame(PPORRESU = "hr^2*ng/mL", PPSTRESU = "min^2*ng/mL")
+    )
+  prep_no_conversions <-
+    pknca_units_table(
+      concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
+      timeu_pref = "day"
+    )
+  expect_equal(prep$conversion_factor[prep$PPTESTCD == "tmax"], 1/24)
+  expect_equal(prep$conversion_factor[prep$PPTESTCD == "aumcall"], 3600)
+  expect_equal(prep_no_conversions$conversion_factor[prep_no_conversions$PPTESTCD == "aumcall"], 24^-2)
+
+  expect_error(
+    pknca_units_table(
+      concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
+      timeu_pref = "day",
+      conversions = data.frame(PPORRESU = "A", PPSTRESU = "B")
+    ),
+    regexp = "Cannot find PPORRESU match between conversions and preferred unit conversions.  Check PPORRESU values in 'conversions' argument.",
+    fixed = TRUE
+  )
+
+  # Not all arguments are required
+  expect_silent(
+    pknca_units_table(
+      concu = "ng/mL",
+      doseu = "mg",
+      timeu = "hr",
+      timeu_pref = "day"
+    )
+  )
+})
+
+test_that("pknca_units_table expected errors", {
+  expect_error(
+    pknca_units_table(conversions = "A")
+  )
+  expect_error(
+    pknca_units_table(conversions = data.frame(A = 1)),
+    # Generate the error to match (in case its text changes)
+    regexp =
+      attr(
+        try(
+          checkmate::assert_names("A", subset.of = c("PPORRESU", "PPSTRESU", "conversion_factor"), .var.name = "names(conversions)"),
+          silent = TRUE
+        ),
+        "condition"
+      )$message,
+    fixed = TRUE
+  )
+})
+
+test_that("pknca_unit_conversion", {
+  results <- data.frame(PPORRES = 1, PPTESTCD = "cmax")
+
+  # No change when no unit conversion occurs
+  expect_equal(pknca_unit_conversion(results, units = NULL), results)
+
+  # Adding units with no conversion
+  d_u <- data.frame(PPTESTCD = "cmax", PPORRESU = "ng/mL")
+  results_u <- data.frame(PPORRES = 1, PPTESTCD = "cmax", PPORRESU = "ng/mL")
+  expect_equal(pknca_unit_conversion(results, units = d_u), results_u)
+
+  # Adding units with conversion
+  d_u_conv <- data.frame(PPTESTCD = "cmax", PPORRESU = "ng/mL", conversion_factor = 0.001, PPSTRESU = "ug/mL")
+  results_u_conv <- data.frame(PPORRES = 1, PPTESTCD = "cmax", PPORRESU = "ng/mL", PPSTRESU = "ug/mL", PPSTRES = 0.001)
+  expect_equal(pknca_unit_conversion(results, units = d_u_conv), results_u_conv)
+
+  # Adding units with some units missing gives an error
+  d_u_missing <- data.frame(PPTESTCD = "cmax", PPORRESU = NA_character_)
+  results_u_missing <- data.frame(PPORRES = 1, PPTESTCD = "cmax", PPORRESU = NA_character_)
+  expect_error(
+    pknca_unit_conversion(results, units = d_u_missing),
+    regexp = "Units are provided for some but not all parameters; missing for: cmax\nThis error can be converted to a warning using `PKNCA.options(allow_partial_missing_units = TRUE)`",
+    fixed = TRUE
+  )
+
+  # Adding units with some units missing gives an error; that error can be converted to a warning
+  d_u_missing <- data.frame(PPTESTCD = "cmax", PPORRESU = NA_character_)
+  results_u_missing <- data.frame(PPORRES = 1, PPTESTCD = "cmax", PPORRESU = NA_character_)
+  expect_warning(
+    pknca_unit_conversion(results, units = d_u_missing, allow_partial_missing_units = TRUE),
+    regexp = "Units are provided for some but not all parameters; missing for: cmax",
+    fixed = TRUE
+  )
+
+  # Fully-integrated test
+  d_conc <- as.data.frame(Theoph[Theoph$Subject %in% Theoph$Subject[1], ])
+  o_conc <- PKNCAconc(d_conc, conc~Time|Subject)
+  o_dose <- PKNCAdose(d_conc[d_conc$Time == 0, ], Dose~Time|Subject)
+  # Do not give dose units
+  d_units <- pknca_units_table(concu = "mg/L", timeu = "hr")
+  d_interval <- data.frame(start = 0, end = Inf, cmax = TRUE, cl.obs = TRUE)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = d_interval, units = d_units)
+  expect_error(
+    pk.nca(o_data),
+    regexp = "Units are provided for some but not all parameters; missing for: cl.obs\nThis error can be converted to a warning using `PKNCA.options(allow_partial_missing_units = TRUE)`",
+    fixed = TRUE
+  )
+  o_data_warn <- PKNCAdata(o_conc, o_dose, intervals = d_interval, units = d_units, options = list(allow_partial_missing_units = TRUE))
+  expect_warning(
+    pk.nca(o_data_warn),
+    regexp = "Units are provided for some but not all parameters; missing for: cl.obs",
+    fixed = TRUE
+  )
+})
+
+# Tests for pknca_units_table for PKNCAdata
+test_that("pknca_units_table for PKNCAdata", {
+  skip_if_not_installed("units")
+
+  # Subset the data to only include USUBJID 8 (2 analytes, A & B)
+  d_conc <- data.frame(
+    subject = 1,
+    time = rep(1:10, times = 4),
+    conc = rep(c(0:5, 4:1), times = 4),
+    analyte = rep(c("A", "B"), each = 20),
+    specimen = rep(c("blood", "urine"), each = 10, times = 4),
+    dose = 100,
+    treatment = rep(c("drug1", "drug2"), each = 10 * 4)
+  )
+  d_dose <- unique(d_conc[d_conc$time %in% c(0, 5), c("dose", "time", "subject", "treatment")])
+
+  # Creates a stratified units table when PKNCAconc has a unit-stratifying group column
+  for (strat_var in c("specimen", "analyte")) {
+    d_conc$concu_col <- ifelse(d_conc[[strat_var]] == d_conc[[strat_var]][1], "ng/mL", "ug/mL")
+
+    o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte, concu = "concu_col")
+    o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject)
+    o_data <- PKNCAdata(o_conc, o_dose)
+    units_table <- expect_no_error(pknca_units_table(o_data))
+
+    expect_equal(
+      units_table[units_table$PPTESTCD == "cmax", c(strat_var, "PPORRESU")],
+      data.frame(
+        specimen = c(unique(d_conc[[strat_var]])[1], unique(d_conc[[strat_var]])[2]),
+        PPORRESU = c("ng/mL", "ug/mL")
+      ), ignore_attr = TRUE
+    )
+  }
+
+  # Creates a stratified units table when PKNCAconc has two unit-stratifying group columns
+  d_conc$concu_col <- ifelse(d_conc$analyte == "A", "ng/mL", "ug/mL")
+  d_conc$concu_col <- ifelse(d_conc$specimen == "blood", d_conc$concu_col, "pg/mL")
+  o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte, concu = "concu_col")
+  o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject)
+  o_data <- PKNCAdata(o_conc, o_dose)
+  units_table <- expect_no_error(pknca_units_table(o_data))
+
+  # A primary parameter is described by one row per stratum, naming no
+  # reference group.  The standardization columns come from the secondary
+  # parameters whose composed units reduce to a fraction.
+  expect_equal(
+    units_table[units_table$PPTESTCD == "cmax",],
+    data.frame(
+      specimen = c("blood", "urine", "blood", "urine"),
+      analyte = rep(c("A", "B"), each = 2),
+      PPORRESU = c("ng/mL", "pg/mL", "ug/mL", "pg/mL"),
+      PPTESTCD = "cmax",
+      specimen_ref = NA_character_,
+      analyte_ref = NA_character_,
+      PPSTRESU = c("ng/mL", "pg/mL", "ug/mL", "pg/mL"),
+      conversion_factor = 1
+    ), ignore_attr = TRUE
+  )
+
+  # Creates a stratified units table when PKNCAdose has a unit-stratifying group column
+  d_dose$doseu_col <- ifelse(d_dose$treatment == d_dose$treatment[1], "mg", "ug")
+  o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject, doseu = "doseu_col")
+  o_data <- PKNCAdata(o_conc, o_dose)
+  units_table <- expect_no_error(pknca_units_table(o_data))
+
+  expect_equal(
+      units_table[units_table$PPTESTCD == "totdose",],
+      data.frame(
+        treatment = c("drug1", "drug2"),
+        PPORRESU = c("mg", "ug"),
+        PPTESTCD = "totdose",
+        treatment_ref = NA_character_
+      ), ignore_attr = TRUE
+    )
+
+  # Creates an uniform units table when units are not defined as columns
+  o_conc <- PKNCAconc(
+    d_conc, conc ~ time | treatment + specimen + subject / analyte,
+    concu = "ng/mL", timeu = "h"
+  )
+  o_dose <- PKNCAdose(
+    d_dose, dose ~ time | treatment + subject,
+    doseu = "mg"
+  )
+  o_data <- PKNCAdata(o_conc, o_dose)
+  units_table <- expect_no_error(pknca_units_table(o_data))
+  expect_equal(
+    units_table[units_table$PPTESTCD == "cmax.dn",],
+    data.frame(
+      PPORRESU = c("(ng/mL)/mg"),
+      PPTESTCD = c("cmax.dn")
+    ), ignore_attr = TRUE
+  )
+
+  # Returns NULL when no units are defined anywhere
+  o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject)
+  o_data <- PKNCAdata(o_conc, o_dose)
+  units_table <- expect_no_error(pknca_units_table(o_data))
+
+  expect_true(is.null(units_table))
+
+  # Errors when units are not uniform within a concentration group
+  d_conc$concu_col <- "ng/mL"
+  d_conc$concu_col[1] <- "pg/L"  # Introduce inconsistency
+  o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + specimen + subject / analyte, concu = "concu_col")
+  o_dose <- PKNCAdose(d_dose, dose ~ time | treatment + subject)
+  expect_error(
+    PKNCAdata(o_conc, o_dose),
+    regexp = "Units should be uniform at least across concentration groups.*"
+  )
+
+  # The conversions argument is passed through to the per-group unit tables
+  o_conc <- PKNCAconc(
+    d_conc, conc ~ time | treatment + specimen + subject / analyte,
+    concu = "ng/mL", timeu = "h"
+  )
+  o_dose <- PKNCAdose(
+    d_dose, dose ~ time | treatment + subject,
+    doseu = "mg"
+  )
+  o_data <- PKNCAdata(o_conc, o_dose)
+  my_conversions <- data.frame(
+    PPORRESU = "(ng/mL)/mg",
+    PPSTRESU = "nmol/L/mg",
+    conversion_factor = 1 / 138.121  # hypothetical molecular weight
+  )
+  units_table_converted <- expect_no_error(
+    pknca_units_table(o_data, conversions = my_conversions)
+  )
+  # PPSTRESU and conversion_factor columns appear when conversions are supplied
+  expect_true(all(c("PPSTRESU", "conversion_factor") %in% names(units_table_converted)))
+  # The specified conversion is applied to the matching PPORRESU row
+  expect_equal(
+    units_table_converted$PPSTRESU[units_table_converted$PPTESTCD == "cmax.dn"],
+    "nmol/L/mg"
+  )
+  expect_equal(
+    units_table_converted$conversion_factor[units_table_converted$PPTESTCD == "cmax.dn"],
+    1 / 138.121
+  )
+
+  # When no dose is provided, dose-related parameters are excluded from the unit
+  # table (they do not appear with NA units)
+  o_conc <- PKNCAconc(
+    d_conc, conc ~ time | treatment + specimen + subject / analyte,
+    concu = "ng/mL", timeu = "h"
+  )
+  o_data <- PKNCAdata(
+    o_conc,
+    intervals = data.frame(start = 0, end = Inf, cmax = TRUE, totdose = FALSE)
+  )
+  units_table <- expect_no_error(pknca_units_table(o_data))
+  # Non-dose-related parameters have units
+  expect_true("cmax" %in% units_table$PPTESTCD)
+  expect_false(anyNA(units_table$PPORRESU[units_table$PPTESTCD == "cmax"]))
+  # Dose-related parameters are absent entirely
+  expect_false("totdose" %in% units_table$PPTESTCD)
+  expect_false("cmax.dn" %in% units_table$PPTESTCD)
+})
+
+test_that("select_minimal_grouping_cols returns df unchanged when strata_cols is empty", {
+  df <- data.frame(a = 1:3, b = letters[1:3])
+  expect_identical(select_minimal_grouping_cols(df, character(0)), df)
+  expect_identical(select_minimal_grouping_cols(df, c()), df)
+})
+
+test_that("select_minimal_grouping_cols", {
+  # Make a dataset where a variable `d` depends on `a` & `b`
+  data <- data.frame(
+    a = rep(letters[c(1, 2, 3)], each = 4),
+    b = rep(letters[c(1, 2)], each = 3),
+    c = letters[1]
+  )
+  data$d <- paste0(data$a, data$b)
+
+  # Returns the minimal grouping_columns (a, b) for one target columns
+  result <- select_minimal_grouping_cols(data, "d")
+  expect_equal(result, data[c("a", "b", "d")])
+
+  # Returns the original data if all grouping columns are needed
+  result <- select_minimal_grouping_cols(data, c("c", "d"))
+  expect_equal(result, data)
+
+  # Returns just the strata columns if no stratification groups are found
+  data[, "a"] <- 10
+  result <- select_minimal_grouping_cols(data, "d")
+  expect_equal(result, data["d"])
+})
+
+test_that("A preferred unit equal to the original unit needs no conversion (and no units package)", {
+  # Only preferred units that differ from the original ones become conversions,
+  # so when none differ there is no conversion at all.
+  units_same <- pknca_units_table(concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr", timeu_pref = "hr")
+  units_none <- pknca_units_table(concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr")
+  expect_equal(units_same, units_none)
 })

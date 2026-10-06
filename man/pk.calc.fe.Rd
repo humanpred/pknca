@@ -25,4 +25,15 @@ is a unitless fraction.
 }
 \seealso{
 \code{\link[=pk.calc.ae]{pk.calc.ae()}}, \code{\link[=pk.calc.clr]{pk.calc.clr()}}
+
+Other Urine/Excretion parameters:
+\code{\link[=pk.calc.ae]{pk.calc.ae()}},
+\code{\link[=pk.calc.clr]{pk.calc.clr()}},
+\code{\link[=pk.calc.erint]{pk.calc.erint()}},
+\code{\link[=pk.calc.erlst]{pk.calc.erlst()}},
+\code{\link[=pk.calc.ermax]{pk.calc.ermax()}},
+\code{\link[=pk.calc.ertlst]{pk.calc.ertlst()}},
+\code{\link[=pk.calc.ertmax]{pk.calc.ertmax()}},
+\code{\link[=pk.calc.volpk]{pk.calc.volpk()}}
 }
+\concept{Urine/Excretion parameters}

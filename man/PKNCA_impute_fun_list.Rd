@@ -7,16 +7,29 @@
 PKNCA_impute_fun_list(x)
 }
 \arguments{
-\item{x}{The character vector of PKNCA imputation method functions (without
-the \code{PKNCA_impute_method_} part)}
+\item{x}{The character vector of PKNCA imputation method strings (without
+the \code{PKNCA_impute_method_} part, like \code{"start_predose,start_conc0"})}
 }
 \value{
-A list of character vectors of functions to run.
+A list with one element per element of \code{x}, each a character vector
+of function names to run in order (or \code{NA_character_} for no imputation).
 }
 \description{
-An error will be raised if the functions are not found.
+Each imputation string is split at commas and spaces, and each method name
+is expanded to its function name by adding \code{PKNCA_impute_method_} to the
+beginning.  An error will be raised if the functions are not found.
 }
-\details{
-This function is not for use by users of PKNCA.
+\examples{
+PKNCA_impute_fun_list(c("start_predose,start_conc0", NA))
 }
-\keyword{Internal}
+\seealso{
+\code{\link[=assert_impute_method]{assert_impute_method()}}, \link{PKNCA_impute_method}
+
+Other Imputation:
+\code{\link{PKNCA_impute_method}},
+\code{\link[=assert_impute_method]{assert_impute_method()}},
+\code{\link[=get_impute_column]{get_impute_column()}},
+\code{\link[=get_impute_method]{get_impute_method()}},
+\code{\link[=pknca_impute_methods]{pknca_impute_methods()}}
+}
+\concept{Imputation}

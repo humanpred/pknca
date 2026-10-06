@@ -14,18 +14,33 @@ add.interval.col(
   desc = "",
   sparse = FALSE,
   formalsmap = list(),
-  datatype = c("interval", "individual", "population")
+  FUN_sparse = NA_character_,
+  formalsmap_sparse = list(),
+  datatype = c("interval", "individual", "population"),
+  pptestcd_cdisc = NULL,
+  pptest_cdisc = NULL,
+  formula = NULL,
+  formula_note = NULL,
+  tier = "uncommon",
+  selection = NULL
 )
 }
 \arguments{
-\item{name}{The column name as a character string}
+\item{name}{The column name as a non-empty character string (length 1,
+may not be \code{NA} or \code{""}).  Names ending in \verb{_ref} and the name
+\code{interval_id} are reserved for the reference-interval linkage columns of
+the interval specification and may not be used.}
 
 \item{FUN}{The function to run (as a character string) or \code{NA} if the
 parameter is automatically calculated when calculating another parameter.}
 
-\item{values}{Valid values for the column}
+\item{values}{Valid values for the column: either a function used to
+coerce/validate values (e.g. \code{as.numeric}) or a vector of allowed values
+(e.g. \code{c(FALSE, TRUE)}).}
 
-\item{unit_type}{The type of units to use for assigning and converting units.}
+\item{unit_type}{The type of units to use for assigning and converting
+units. Must be one of the pre-defined unit types (see Details). This
+argument is required and has no default; omitting it raises an error.}
 
 \item{pretty_name}{The name of the parameter to use for printing in summary
 tables with units.  (If an analysis does not include units, then the normal
@@ -34,16 +49,83 @@ name is used.)}
 \item{depends}{Character vector of columns that must be run before this
 column.}
 
-\item{desc}{A human-readable description of the parameter (<=40 characters to
-comply with SDTM)}
+\item{desc}{A human-readable description of the parameter.  SDTM requires
+<=40 characters; a longer description is accepted with a warning.}
 
-\item{sparse}{Is the calculation for sparse PK?}
+\item{sparse}{Retired.  \code{TRUE} is an error:  register a sparse-only
+parameter with \code{FUN = NA} and a \code{FUN_sparse} (plus \code{formalsmap_sparse})
+instead, which is now what makes a parameter sparse-only.  \code{FALSE}, the
+default, is accepted and does nothing.}
 
 \item{formalsmap}{A named list mapping parameter names in the function call
 to NCA parameter names.  See the details for information on use of
 \code{formalsmap}.}
 
-\item{datatype}{The type of data used for the calculation}
+\item{FUN_sparse}{The function to run (as a character string) when the data
+are sparse PK, or \code{NA} (the default) when the parameter has no
+sparse-specific estimator.  With sparse data, a parameter that has one uses
+it; a parameter that does not falls back to \code{FUN} applied to the
+arithmetic-mean profile.  See the details.}
+
+\item{formalsmap_sparse}{The \code{formalsmap} for \code{FUN_sparse}, which usually has
+a different calling convention than \code{FUN} (a sparse estimator needs
+\code{subject}, for example).  May only be given when \code{FUN_sparse} is not
+\code{NA}.}
+
+\item{datatype}{The data type used for the calculation. The default is
+\code{"interval"}, which is currently the only supported value. The
+\code{"individual"} and \code{"population"} data types are reserved for future
+use and will currently raise an error if selected.}
+
+\item{pptestcd_cdisc}{The CDISC PPTESTCD code for this parameter.  Can be a
+character string for simple mappings, a named list for route-dependent
+mappings with a \code{route} element whose value is itself a named list keyed
+by route (e.g. \code{list(route = list(extravascular = "CLF/FO", intravascular = "CLO"))}), or a named list with exactly the elements \code{dense} and
+\code{sparse}, for a parameter with a \code{FUN_sparse} whose sparse estimate has a
+code of its own (e.g. \code{list(dense = "AUCLST", sparse = "SPARSEAL")}).
+Defaults to \code{name} if not provided.}
+
+\item{pptest_cdisc}{The CDISC PPTEST name for this parameter.  Can be a
+character string or a named list (same structure as \code{pptestcd_cdisc}).
+Defaults to \code{desc} if not provided.}
+
+\item{formula}{Character value providing a LaTeX expression for how the
+parameter is calculated.  Optional and used only for documentation.}
+
+\item{formula_note}{Character value providing additional context about the
+formula (e.g. assumptions or method details).  Displayed alongside the
+formula in documentation tables.}
+
+\item{tier}{How commonly the parameter is reported:  \code{"common"} for one
+that belongs in a default report for at least one context, or
+\code{"uncommon"} (the default) for one that is calculated only when asked for
+by name.  See \code{\link[=pknca_tiers]{pknca_tiers()}}.}
+
+\item{selection}{A named list declaring what cannot be derived about where
+the parameter applies.  Every element is optional, and the default of
+\code{NULL} derives everything:
+
+\describe{
+\item{\code{concept}}{The kind of quantity the parameter is (see
+\code{\link[=pknca_concepts]{pknca_concepts()}}).  Needed only when the calculation function
+carries no \code{\link[=pknca_concept]{pknca_concept()}} and the concept cannot be taken from
+\code{depends}.}
+\item{\code{route}}{The routes of administration the parameter applies to
+(see \code{\link[=pknca_routes]{pknca_routes()}}).  Derived as intravenous for anything
+calculated from \code{c0} or needing a dose duration, and as any route
+otherwise.}
+\item{\code{dosing}}{The dosing patterns the parameter applies to (see
+\code{\link[=pknca_dosing]{pknca_dosing()}}).  Derived as single-dose for anything calculated
+from an extrapolation to infinity.  A declared value propagates to
+every parameter calculated from this one.}
+\item{\code{secondary}}{\code{TRUE} for a parameter that needs inputs from more
+than one profile, such as bioavailability, which compares two
+administrations, or renal clearance, which needs an amount excreted
+and a plasma AUC.  One interval cannot supply those, so a secondary
+parameter is never chosen automatically; it stays available by name.
+A declared value propagates to every parameter calculated from this
+one.}
+}}
 }
 \value{
 NULL (Calling this function has a side effect of changing the
@@ -53,6 +135,17 @@ available intervals for calculations)
 Add columns for calculations within PKNCA intervals
 }
 \details{
+\code{FUN_sparse} gives a parameter a second calculation function for
+sparse PK.  With sparse data, a parameter that has one is calculated with it
+-- from the pooled individual samples, and with \code{formalsmap_sparse} in place
+of \code{formalsmap} -- and its result is reported as a sparse result.  A
+parameter with no \code{FUN_sparse} falls back to \code{FUN} applied to the
+arithmetic-mean profile, which is what sparse data have always done.  A
+sparse estimator names its concentration inputs \code{conc}/\code{time} the way a dense
+one does; those draw from the pooled samples rather than the mean profile.
+The estimators PKNCA ships are linear-trapezoidal only, so \code{auc.method} does
+not apply to them.
+
 The \code{formalsmap} argument enables mapping some alternate formal
 argument names to parameters.  It is used to generalize functions that may
 use multiple similar arguments (such as the variants of mean residence time).
@@ -86,6 +179,30 @@ and the values should be one of the following:
 \item{"duration.dose.group"}{Duration of dose (typically infusion duration) for doses in the current group.}
 \item{"route.group"}{Route of dosing for the current group.}
 }
+\item{For sparse PK (\code{NULL} with dense PK, so a parameter naming one of
+these is only calculable with a sparse \code{PKNCAconc}):}
+\describe{
+\item{"conc.sparse"}{The pooled individual concentration measurements for the current interval ("conc" is the arithmetic-mean profile built from them).}
+\item{"time.sparse"}{Times associated with the pooled individual concentration measurements for the current interval (values start at 0 at the beginning of the current interval).}
+\item{"conc.sparse.group"}{The pooled individual concentration measurements for the current group.}
+\item{"time.sparse.group"}{Times associated with the pooled individual concentration measurements for the current group.}
+\item{"subject"}{Subject identifiers for the pooled individual concentration measurements for the current interval.}
+}
+\item{Constants:}
+\describe{
+\item{a value wrapped in \code{\link[base:I]{base::I()}}}{The value itself, passed to the
+function unchanged.  Use this for an argument that selects a variant of
+a shared calculation function (for example, \code{auc.type = I("AUCall")})
+rather than naming a data source or another parameter.}
+}
+\item{For the reference interval:}
+\describe{
+\item{a parameter name wrapped in \code{\link[=pknca_ref]{pknca_ref()}}}{The value of that NCA
+parameter calculated in the reference interval, which is the interval
+named by the \verb{<name>_ref} column of the interval specification.  A
+parameter with any such argument is a secondary parameter; see the
+vignette "Secondary parameters".}
+}
 }
 }
 \examples{
@@ -107,11 +224,21 @@ add.interval.col("cmax.dn",
 }
 }
 \seealso{
-Other Interval specifications: 
-\code{\link{check.interval.deps}()},
-\code{\link{check.interval.specification}()},
-\code{\link{choose.auc.intervals}()},
-\code{\link{get.interval.cols}()},
-\code{\link{get.parameter.deps}()}
+Other Interval specifications:
+\code{\link[=check.interval.specification]{check.interval.specification()}},
+\code{\link[=choose.auc.intervals]{choose.auc.intervals()}},
+\code{\link[=get.interval.cols]{get.interval.cols()}},
+\code{\link[=get.parameter.deps]{get.parameter.deps()}},
+\code{\link[=interval_add_impute]{interval_add_impute()}},
+\code{\link[=interval_add_param]{interval_add_param()}},
+\code{\link[=interval_add_secondary]{interval_add_secondary()}},
+\code{\link[=pknca_cdisc_codes]{pknca_cdisc_codes()}},
+\code{\link[=pknca_check_parameter_classification]{pknca_check_parameter_classification()}},
+\code{\link[=pknca_concepts]{pknca_concepts()}},
+\code{\link[=pknca_interval_table]{pknca_interval_table()}},
+\code{\link[=pknca_match_route]{pknca_match_route()}},
+\code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
+\code{\link[=pknca_presets]{pknca_presets()}},
+\code{\link[=pknca_ref]{pknca_ref()}}
 }
 \concept{Interval specifications}

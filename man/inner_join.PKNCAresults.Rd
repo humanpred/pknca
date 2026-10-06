@@ -196,9 +196,9 @@ inequality conditions.
 dplyr joins for PKNCA
 }
 \seealso{
-Other dplyr verbs: 
-\code{\link{filter.PKNCAresults}()},
-\code{\link{group_by.PKNCAresults}()},
-\code{\link{mutate.PKNCAresults}()}
+Other dplyr verbs:
+\code{\link[=filter.PKNCAresults]{filter.PKNCAresults()}},
+\code{\link[=group_by.PKNCAresults]{group_by.PKNCAresults()}},
+\code{\link[=mutate.PKNCAresults]{mutate.PKNCAresults()}}
 }
 \concept{dplyr verbs}

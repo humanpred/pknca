@@ -1,5 +1,3 @@
-source("generate.data.R")
-
 test_that("PKNCAconc expected errors", {
   tmp.conc <- generate.conc(nsub=1, ntreat=1, time.points=0:24)
   tmp.conc$foo <- "A"
@@ -12,6 +10,16 @@ test_that("PKNCAconc expected errors", {
     regexp="duration must be numeric without missing (NA) or infinite values, and all values must be >= 0",
     fixed=TRUE
   )
+})
+
+test_that("PKNCAconc does not error for excluded, invalid times (#310)", {
+  # Missing time points that are excluded are not checked
+  tmp.conc <- data.frame(time = c(1, NA), conc = c(1, NA), exclude = c(NA, "foo"))
+  expect_no_error(PKNCAconc(conc~time, data = tmp.conc, exclude = "exclude"))
+
+  # Exclude column can be not defined (NULL)
+  tmp.conc <- data.frame(time = c(1, 2), conc = c(1, 2))
+  expect_no_error(PKNCAconc(conc~time, data = tmp.conc, exclude = NULL))
 })
 
 test_that("PKNCAconc", {
@@ -55,10 +63,14 @@ test_that("PKNCAconc", {
   # Subject assignment
   expect_equal(PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte),
                PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject="ID"))
-  expect_error(PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject=5),
-               regexp="subject must be a character string")
-  expect_error(PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject=c("", "foo")),
-               regexp="subject must be a scalar")
+  expect_error(
+    PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject=5),
+    regexp="Must be of type 'string'"
+  )
+  expect_error(
+    PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject=c("", "foo")),
+    regexp="Must have length 1"
+  )
   expect_error(PKNCAconc(tmp.conc.analyte, formula=conc~time|treatment+ID/analyte, subject="foo"),
                regexp="The subject parameter must map to a name in the data")
 
@@ -228,24 +240,22 @@ test_that("PKNCAconc with exclusions", {
   expect_equal(
     myconc,
     structure(
-      list(data=cbind(tmp.conc,
-                      volume=NA_real_,
-                      duration=0),
-           formula=conc~time|treatment+ID,
-           columns=
-             list(
-               concentration="conc",
-               time="time",
-               groups=
-                 list(
-                   group_vars=c("treatment", "ID"),
-                   group_analyte=character()
-                 ),
-               subject="ID",
-               exclude="excl",
-               volume="volume",
-               duration="duration"
-             )
+      list(
+        data=tmp.conc,
+        formula=conc~time|treatment+ID,
+        columns=
+          list(
+            concentration="conc",
+            time="time",
+            groups=
+              list(
+                group_vars=c("treatment", "ID"),
+                group_analyte=character()
+              ),
+            subject="ID",
+            exclude="excl"
+          ),
+        units = list()
       ),
       class=c("PKNCAconc", "list")
     )
@@ -261,159 +271,12 @@ test_that("PKNCAconc with duration", {
   expect_equal(
     myconc,
     structure(
-      list(data=cbind(tmp.conc,
-                      data.frame(exclude=NA_character_,
-                                 volume=NA_real_,
-                                 stringsAsFactors=FALSE)),
-           formula=conc~time|treatment+ID,
-           columns=
-             list(
-               concentration="conc",
-               time="time",
-               groups=
-                 list(
-                   group_vars=c("treatment", "ID"),
-                   group_analyte=character()
-                 ),
-               subject="ID",
-               exclude="exclude",
-               volume="volume",
-               duration="duration_test"
-             )
-      ),
-      class=c("PKNCAconc", "list")
-    )
-  )
-})
-
-test_that("PKNCAconc with nominal time added", {
-  tmp.conc <- generate.conc(nsub=2, ntreat=2, time.points=0:24)
-  tmp.conc$tnom <- tmp.conc$time
-  myconc <- PKNCAconc(tmp.conc, formula=conc~time|treatment+ID, time.nominal="tnom")
-  expect_equal(
-    myconc,
-    structure(
-      list(data=cbind(tmp.conc,
-                      data.frame(exclude=NA_character_,
-                                 volume=NA_real_,
-                                 duration=0,
-                                 stringsAsFactors=FALSE)),
-           formula=conc~time|treatment+ID,
-           columns=
-             list(
-               concentration="conc",
-               time="time",
-               groups=
-                 list(
-                   group_vars=c("treatment", "ID"),
-                   group_analyte=character()
-                 ),
-               subject="ID",
-               exclude="exclude",
-               volume="volume",
-               duration="duration",
-               time.nominal="tnom")),
-      class=c("PKNCAconc", "list")
-    )
-  )
-  expect_equal(
-    PKNCAconc(tmp.conc, formula=conc~time|treatment+ID, time.nominal="foo"),
-    structure(
-      list(data=cbind(tmp.conc,
-                      data.frame(exclude=NA_character_,
-                                 volume=NA_real_,
-                                 duration=0,
-                                 foo=NA,
-                                 stringsAsFactors=FALSE)),
-           formula=conc~time|treatment+ID,
-           columns=
-             list(
-               concentration="conc",
-               time="time",
-               groups=
-                 list(
-                   group_vars=c("treatment", "ID"),
-                   group_analyte=character()
-                 ),
-               subject="ID",
-               exclude="exclude",
-               volume="volume",
-               duration="duration",
-               time.nominal="foo"
-             )
-      ),
-      class=c("PKNCAconc", "list"))
-  )
-})
-
-test_that("PKNCAconc with volume added", {
-  tmp.conc <- generate.conc(nsub=2, ntreat=2, time.points=0:24)
-  tmp.conc$vol <- seq_len(nrow(tmp.conc))
-  myconc <- PKNCAconc(tmp.conc, formula=conc~time|treatment+ID, volume="vol")
-  expect_equal(
-    myconc,
-    structure(
-      list(data=cbind(tmp.conc,
-                      data.frame(exclude=NA_character_,
-                                 duration=0,
-                                 stringsAsFactors=FALSE)),
-           formula=conc~time|treatment+ID,
-           columns=list(
-             concentration="conc",
-             time="time",
-             groups=
-               list(
-                 group_vars=c("treatment", "ID"),
-                 group_analyte=character()
-               ),
-             subject="ID",
-             exclude="exclude",
-             volume="vol",
-             duration="duration"
-           )
-      ),
-      class=c("PKNCAconc", "list"))
-  )
-  myconc_manual_vol <- PKNCAconc(tmp.conc, formula=conc~time|treatment+ID, volume=2)
-  expect_equal(
-    myconc_manual_vol,
-    structure(
-      list(data=cbind(tmp.conc,
-                      data.frame(exclude=NA_character_,
-                                 volume=2,
-                                 duration=0,
-                                 stringsAsFactors=FALSE)),
-           formula=conc~time|treatment+ID,
-           columns=
-             list(
-               concentration="conc",
-               time="time",
-               groups=
-                 list(
-                   group_vars=c("treatment", "ID"),
-                   group_analyte=character()
-                 ),
-               subject="ID",
-               exclude="exclude",
-               volume="volume",
-               duration="duration"
-             )
-      ),
-      class=c("PKNCAconc", "list")
-    )
-  )
-  myconc_manual_vol_vector <- PKNCAconc(tmp.conc, formula=conc~time|treatment+ID, volume=seq_len(nrow(tmp.conc)))
-  expect_equal(
-    myconc_manual_vol_vector,
-    structure(
       list(
         data=
           cbind(
             tmp.conc,
             data.frame(
-              exclude=NA_character_,
-              volume=seq_len(nrow(tmp.conc)),
-              duration=0
+              exclude=NA_character_
             )
           ),
         formula=conc~time|treatment+ID,
@@ -428,9 +291,155 @@ test_that("PKNCAconc with volume added", {
               ),
             subject="ID",
             exclude="exclude",
-            volume="volume",
-            duration="duration"
-          )
+            duration="duration_test"
+          ),
+        units = list()
+      ),
+      class=c("PKNCAconc", "list")
+    )
+  )
+})
+
+test_that("PKNCAconc with nominal time added", {
+  tmp.conc <- generate.conc(nsub=2, ntreat=2, time.points=0:24)
+  tmp.conc$tnom <- tmp.conc$time
+  myconc <- PKNCAconc(tmp.conc, formula=conc~time|treatment+ID, time.nominal="tnom")
+  expect_equal(
+    myconc,
+    structure(
+      list(
+        data=
+          cbind(
+            tmp.conc,
+            data.frame(
+              exclude=NA_character_
+            )
+          ),
+        formula=conc~time|treatment+ID,
+        columns=
+          list(
+            concentration="conc",
+            time="time",
+            groups=
+              list(
+                group_vars=c("treatment", "ID"),
+                group_analyte=character()
+              ),
+            subject="ID",
+            exclude="exclude",
+            time.nominal="tnom"
+          ),
+        units = list()
+      ),
+      class=c("PKNCAconc", "list")
+    )
+  )
+  expect_equal(
+    PKNCAconc(tmp.conc, formula=conc~time|treatment+ID, time.nominal="foo"),
+    structure(
+      list(data=cbind(tmp.conc,
+                      data.frame(exclude=NA_character_,
+                                 foo=NA)),
+           formula=conc~time|treatment+ID,
+           columns=
+             list(
+               concentration="conc",
+               time="time",
+               groups=
+                 list(
+                   group_vars=c("treatment", "ID"),
+                   group_analyte=character()
+                 ),
+               subject="ID",
+               exclude="exclude",
+               time.nominal="foo"
+             ),
+           units = list()
+      ),
+      class=c("PKNCAconc", "list"))
+  )
+})
+
+test_that("PKNCAconc with volume added", {
+  tmp.conc <- generate.conc(nsub=2, ntreat=2, time.points=0:24)
+  tmp.conc$vol <- seq_len(nrow(tmp.conc))
+  myconc <- PKNCAconc(tmp.conc, formula=conc~time|treatment+ID, volume="vol")
+  expect_equal(
+    myconc,
+    structure(
+      list(data=cbind(tmp.conc,
+                      data.frame(exclude=NA_character_)),
+           formula=conc~time|treatment+ID,
+           columns=list(
+             concentration="conc",
+             time="time",
+             groups=
+               list(
+                 group_vars=c("treatment", "ID"),
+                 group_analyte=character()
+               ),
+             subject="ID",
+             exclude="exclude",
+             volume="vol"
+           ),
+           units = list()
+      ),
+      class=c("PKNCAconc", "list"))
+  )
+  myconc_manual_vol <- PKNCAconc(tmp.conc, formula=conc~time|treatment+ID, volume=2)
+  expect_equal(
+    myconc_manual_vol,
+    structure(
+      list(data=cbind(tmp.conc,
+                      data.frame(exclude=NA_character_,
+                                 volume=2)),
+           formula=conc~time|treatment+ID,
+           columns=
+             list(
+               concentration="conc",
+               time="time",
+               groups=
+                 list(
+                   group_vars=c("treatment", "ID"),
+                   group_analyte=character()
+                 ),
+               subject="ID",
+               exclude="exclude",
+               volume="volume"
+             ),
+           units = list()
+      ),
+      class=c("PKNCAconc", "list")
+    )
+  )
+  myconc_manual_vol_vector <- PKNCAconc(tmp.conc, formula=conc~time|treatment+ID, volume=seq_len(nrow(tmp.conc)))
+  expect_equal(
+    myconc_manual_vol_vector,
+    structure(
+      list(
+        data=
+          cbind(
+            tmp.conc,
+            data.frame(
+              exclude=NA_character_,
+              volume=seq_len(nrow(tmp.conc))
+            )
+          ),
+        formula=conc~time|treatment+ID,
+        columns=
+          list(
+            concentration="conc",
+            time="time",
+            groups=
+              list(
+                group_vars=c("treatment", "ID"),
+                group_analyte=character()
+              ),
+            subject="ID",
+            exclude="exclude",
+            volume="volume"
+          ),
+        units = list()
       ),
       class=c("PKNCAconc", "list")
     )
@@ -441,8 +450,6 @@ test_that("as.data.frame.PKNCAconc", {
   tmp_conc <- generate.conc(nsub=1, ntreat=1, time.points=0:24)
   result_conc <- tmp_conc
   result_conc$exclude <- NA_character_
-  result_conc$volume <- NA_real_
-  result_conc$duration <- 0
   expect_equal(
     as.data.frame(PKNCAconc(conc~time, data=tmp_conc)),
     result_conc
@@ -463,8 +470,6 @@ test_that("PKNCAconc with sparse data", {
 
   d_sparse_aug <- d_sparse
   d_sparse_aug$exclude <- NA_character_
-  d_sparse_aug$volume <- NA_real_
-  d_sparse_aug$duration <- 0
   expect_equal(
     o_conc_sparse$data_sparse,
     d_sparse_aug
@@ -488,12 +493,249 @@ With 9 subjects defined in the 'id' column.
 Nominal time column is not specified.
 
 First 6 rows of concentration data:
- id conc time dose exclude volume duration
-  1 0.00    0  100    <NA>     NA        0
-  2 0.00    0  100    <NA>     NA        0
-  3 0.00    0  100    <NA>     NA        0
-  1 1.75    1  100    <NA>     NA        0
-  2 2.20    1  100    <NA>     NA        0
-  3 1.58    1  100    <NA>     NA        0"
+ id conc time dose exclude
+  1 0.00    0  100    <NA>
+  2 0.00    0  100    <NA>
+  3 0.00    0  100    <NA>
+  1 1.75    1  100    <NA>
+  2 2.20    1  100    <NA>
+  3 1.58    1  100    <NA>"
+  )
+})
+
+test_that("Test uniqueness after excluding rows (#298)", {
+  repeated_with_exclusion <-
+    data.frame(
+      conc = 1,
+      time = c(0, 0),
+      id = 1,
+      exclude = c(NA, "duplicate")
+    )
+
+  expect_error(
+    PKNCAconc(repeated_with_exclusion, conc~time|id),
+    regexp="Rows that are not unique per group and time.*concentration"
+  )
+  expect_s3_class(
+    PKNCAconc(repeated_with_exclusion, conc~time|id, exclude = "exclude"),
+    class = "PKNCAconc"
+  )
+})
+
+test_that("PKNCAconc units (#336)", {
+  d <- data.frame(conc = 1, time = 0, concu_x = "A", timeu_x = "B", amountu_x = "C")
+
+  # No units
+  o_conc <- PKNCAconc(data = d, conc~time)
+  expect_equal(o_conc$units, list())
+  expect_null(o_conc$columns$concu)
+  expect_null(o_conc$columns$timeu)
+  expect_null(o_conc$columns$amountu)
+
+  # Each unit column individually
+  o_conc <- PKNCAconc(data = d, conc~time, concu = "concu_x")
+  expect_equal(o_conc$units, list())
+  expect_equal(o_conc$columns$concu, structure("concu_x", unit_type = "column"))
+  expect_null(o_conc$columns$timeu)
+  expect_null(o_conc$columns$amountu)
+
+  o_conc <- PKNCAconc(data = d, conc~time, timeu = "timeu_x")
+  expect_equal(o_conc$units, list())
+  expect_null(o_conc$columns$concu)
+  expect_equal(o_conc$columns$timeu, structure("timeu_x", unit_type = "column"))
+  expect_null(o_conc$columns$amountu)
+
+  o_conc <- PKNCAconc(data = d, conc~time, amountu = "amountu_x")
+  expect_equal(o_conc$units, list())
+  expect_null(o_conc$columns$concu)
+  expect_null(o_conc$columns$timeu)
+  expect_equal(o_conc$columns$amountu, structure("amountu_x", unit_type = "column"))
+
+  # Each unit as a value, not a column
+  o_conc <- PKNCAconc(data = d, conc~time, concu = "concu_y")
+  expect_equal(o_conc$units, list(concu = structure("concu_y", unit_type = "value")))
+  expect_null(o_conc$columns$concu)
+  expect_null(o_conc$columns$timeu)
+  expect_null(o_conc$columns$amountu)
+
+  o_conc <- PKNCAconc(data = d, conc~time, timeu = "timeu_y")
+  expect_equal(o_conc$units, list(timeu = structure("timeu_y", unit_type = "value")))
+  expect_null(o_conc$columns$concu)
+  expect_null(o_conc$columns$timeu)
+  expect_null(o_conc$columns$amountu)
+
+  o_conc <- PKNCAconc(data = d, conc~time, amountu = "amountu_y")
+  expect_equal(o_conc$units, list(amountu = structure("amountu_y", unit_type = "value")))
+  expect_null(o_conc$columns$concu)
+  expect_null(o_conc$columns$timeu)
+  expect_null(o_conc$columns$amountu)
+
+  # Preferred units
+  expect_error(
+    PKNCAconc(data = d, conc~time, concu_pref = "concu_z"),
+    regexp = "Preferred units may not be set unless original units are set: concu_pref"
+  )
+  o_conc <- PKNCAconc(data = d, conc~time, concu = "concu_y", concu_pref = "concu_z")
+  expect_equal(
+    o_conc$units,
+    list(
+      concu = structure("concu_y", unit_type = "value"),
+      concu_pref = structure("concu_z", unit_type = "value")
+    )
+  )
+  expect_null(o_conc$columns$concu)
+  expect_null(o_conc$columns$timeu)
+  expect_null(o_conc$columns$amountu)
+
+  o_conc <- PKNCAconc(data = d, conc~time, concu = "concu_x", concu_pref = "concu_z")
+  expect_equal(o_conc$units, list(concu_pref = structure("concu_z", unit_type = "value")))
+  expect_equal(
+    o_conc$columns$concu,
+    structure("concu_x", unit_type = "column")
+  )
+  expect_null(o_conc$columns$timeu)
+  expect_null(o_conc$columns$amountu)
+
+  o_conc <- PKNCAconc(data = d, conc~time, timeu = "timeu_x", timeu_pref = "timeu_z")
+  expect_equal(o_conc$units, list(timeu_pref = structure("timeu_z", unit_type = "value")))
+  expect_null(o_conc$columns$concu)
+  expect_equal(o_conc$columns$timeu, structure("timeu_x", unit_type = "column"))
+  expect_null(o_conc$columns$amountu)
+
+  o_conc <- PKNCAconc(data = d, conc~time, amountu = "amountu_x", amountu_pref = "amountu_z")
+  expect_equal(o_conc$units, list(amountu_pref = structure("amountu_z", unit_type = "value")))
+  expect_null(o_conc$columns$concu)
+  expect_null(o_conc$columns$timeu)
+  expect_equal(
+    o_conc$columns$amountu,
+    structure("amountu_x", unit_type = "column")
+  )
+})
+
+test_that("PKNCAconc lloq argument is stored and validated (scalar and column)", {
+  tmp.conc <- generate.conc(nsub = 2, ntreat = 1, time.points = 0:6)
+
+  # A scalar value materialises an "lloq" column filled with that value
+  o_scalar <- PKNCAconc(tmp.conc, conc ~ time | ID, lloq = 0.5)
+  expect_equal(o_scalar$columns$lloq, "lloq")
+  expect_equal(o_scalar$data$lloq, rep(0.5, nrow(tmp.conc)))
+
+  # A column name is used directly
+  tmp.conc.col <- tmp.conc
+  tmp.conc.col$assay_lloq <- 0.25
+  o_col <- PKNCAconc(tmp.conc.col, conc ~ time | ID, lloq = "assay_lloq")
+  expect_equal(o_col$columns$lloq, "assay_lloq")
+  expect_equal(o_col$data$assay_lloq, rep(0.25, nrow(tmp.conc.col)))
+
+  # A non-numeric lloq column is rejected
+  tmp.conc.bad <- tmp.conc
+  tmp.conc.bad$bad_lloq <- "x"
+  expect_error(
+    PKNCAconc(tmp.conc.bad, conc ~ time | ID, lloq = "bad_lloq"),
+    regexp = "Must be of type 'numeric'"
+  )
+
+  # Without lloq, no lloq column or attribute is added
+  o_none <- PKNCAconc(tmp.conc, conc ~ time | ID)
+  expect_null(o_none$columns$lloq)
+  expect_false("lloq" %in% names(o_none$data))
+})
+
+test_that("exclude_half.life and include_half.life columns must be logical (#583)", {
+  d_conc <-
+    data.frame(
+      conc = c(1, 0.5, 0.25, 0.125),
+      time = 0:3,
+      excl_chr = c(NA, NA, "yes", NA),
+      incl_chr = c(NA, "yes", "yes", "yes"),
+      excl_num = c(0, 0, 1, 0),
+      excl_lgl = c(NA, NA, TRUE, NA),
+      incl_lgl = c(FALSE, TRUE, TRUE, TRUE),
+      subject = 1
+    )
+  # A non-logical column is an error that names the column
+  expect_error(
+    PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_chr"),
+    regexp = "The exclude_half.life column ('excl_chr') must be a logical (TRUE/FALSE/NA) column, not character",
+    fixed = TRUE
+  )
+  expect_error(
+    PKNCAconc(d_conc, conc ~ time | subject, include_half.life = "incl_chr"),
+    regexp = "The include_half.life column ('incl_chr') must be a logical (TRUE/FALSE/NA) column, not character",
+    fixed = TRUE
+  )
+  # Numeric 0/1 columns are also rejected
+  expect_error(
+    PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_num"),
+    regexp = "The exclude_half.life column ('excl_num') must be a logical (TRUE/FALSE/NA) column, not numeric",
+    fixed = TRUE
+  )
+  # Logical columns (including NA values) continue to work
+  o_excl <- PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_lgl")
+  expect_s3_class(o_excl, "PKNCAconc")
+  expect_equal(o_excl$columns$exclude_half.life, "excl_lgl")
+  o_incl <- PKNCAconc(d_conc, conc ~ time | subject, include_half.life = "incl_lgl")
+  expect_s3_class(o_incl, "PKNCAconc")
+  expect_equal(o_incl$columns$include_half.life, "incl_lgl")
+})
+
+test_that("exclude_half.life and include_half.life column names must exist in the data (#583)", {
+  d_conc <-
+    data.frame(
+      conc = c(1, 0.5, 0.25, 0.125),
+      time = 0:3,
+      excl_lgl = c(NA, NA, TRUE, NA),
+      subject = 1
+    )
+  # A column name not in the data is an error that names the missing column,
+  # so a typo cannot quietly deactivate the selection
+  expect_error(
+    PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_typo"),
+    regexp = "The exclude_half.life column ('excl_typo') does not exist in the data",
+    fixed = TRUE
+  )
+  expect_error(
+    PKNCAconc(d_conc, conc ~ time | subject, include_half.life = "incl_typo"),
+    regexp = "The include_half.life column ('incl_typo') does not exist in the data",
+    fixed = TRUE
+  )
+  # An existing logical column is unaffected by the existence check
+  o_excl <- PKNCAconc(d_conc, conc ~ time | subject, exclude_half.life = "excl_lgl")
+  expect_equal(o_excl$columns$exclude_half.life, "excl_lgl")
+})
+
+test_that("The duplicate-row error from PKNCAconc() gives the row numbers", {
+  d_conc <- data.frame(conc = c(0, 2, 1, 3), time = c(0, 1, 1, 2), subject = 1)
+  duplicate_error <-
+    tryCatch(
+      PKNCAconc(d_conc, conc~time|subject),
+      pknca_error_duplicate_rows = function(e) e
+    )
+  expect_s3_class(duplicate_error, "pknca_error_duplicate_rows")
+  expect_equal(duplicate_error$rows, 3L)
+  # Excluded rows are not checked
+  d_conc$excl <- c(NA, NA, "Duplicate", NA)
+  expect_s3_class(PKNCAconc(d_conc, conc~time|subject, exclude = "excl"), "PKNCAconc")
+})
+
+test_that("Sparse concentration data are checked for duplicates per subject and time", {
+  d_sparse <-
+    data.frame(
+      treatment = "A",
+      id = c(1, 2, 3, 1),
+      time = c(0, 0, 1, 1),
+      conc = c(0, 0, 2, 3)
+    )
+  # Different subjects at the same time are the point of sparse sampling
+  expect_s3_class(
+    PKNCAconc(d_sparse, conc~time|treatment, subject = "id", sparse = TRUE),
+    "PKNCAconc"
+  )
+  # The same subject twice at one time is not
+  d_sparse_dup <- rbind(d_sparse, d_sparse[4, ])
+  expect_error(
+    PKNCAconc(d_sparse_dup, conc~time|treatment, subject = "id", sparse = TRUE),
+    regexp = "Row numbers: 5",
+    class = "pknca_error_duplicate_rows"
   )
 })

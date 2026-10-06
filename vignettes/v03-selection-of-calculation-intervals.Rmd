@@ -19,7 +19,7 @@ library(cowplot)
 library(PKNCA)
 library(knitr)
 library(ggplot2)
-source("../tests/testthat/generate.data.R")
+source("../tests/testthat/helper-generate_data.R")
 scale_colour_discrete <- scale_colour_hue
 scale_fill_discrete <- scale_fill_hue
 ```
@@ -69,7 +69,8 @@ ggplot(d_conc_multi, aes(x=time, y=conc)) +
 intervals_manual <- data.frame(start=144, end=168, auclast=TRUE)
 knitr::kable(intervals_manual)
 
-PKNCAdata(d_conc, intervals=intervals_manual)
+d_conc_multi_obj <- PKNCAconc(d_conc_multi, conc~time|treatment+ID)
+PKNCAdata(d_conc_multi_obj, intervals=intervals_manual)
 ```
 
 # Group Matching
@@ -96,9 +97,66 @@ knitr::kable(intervals_manual)
 
 # Intervals
 
-Intervals are defined by `data.frame`s with one row per interval, zero or more columns to match the groups from the `PKNCAdata` object, and one or more NCA parameters to calculate.
+Intervals are defined by `data.frame`s with one row per interval, zero or more columns to match the groups from the `PKNCAdata` object, and one or more NCA parameters to calculate.  An interval may also have an `impute` column specifying the data imputation method(s) to apply to the interval before calculation (see the Data Imputation vignette for details).  An interval may have a `tau` column giving the dosing interval for the multiple-dose parameters (see Multiple-Dose MRT and Vss below).  Any other columns named in the `keep_interval_cols` PKNCA option are passed through from the intervals to the corresponding rows of the results.
 
 Selection of points within an interval occurs by choosing any point at or after the `start` and at or before the `end`.
+
+## Automatic Selection of Intervals
+
+When `PKNCAdata()` is given no `intervals`, it chooses them for each group from the concentration and dose times with `choose.auc.intervals()`.  The parameters within each interval come from `pknca_interval_table()`, so each interval is given the parameters and the imputation that suit its context (see `?pknca_interval_table` for how that table is built).
+
+The rules are:
+
+* A group with no dose times gives no intervals, with a warning.
+* A single dose with any sample after it gives one interval from the dose to infinity, calculated as a single dose.
+* Between two consecutive doses with samples at both dose times and at least one sample between them, an interval is generated.  It is calculated as a dosing interval when the samples run up to the next dose, and as a single-dose profile bounded by the next dose when they stop partway and leave a washout.  This is what distinguishes two treatment periods recorded in one group from repeated dosing.
+* For the last dose, the dosing interval `tau` is found from the dose times with `find.tau()`.  When a sample ends it, an interval one `tau` long is generated and calculated as a dose at steady state.  It starts at the first dose of the last complete cycle, which is the last dose itself unless the regimen gives more than one dose per `tau`, so the interval never contains a dose that was not recorded.  When samples continue beyond it, the half-life is calculated from the last dose onward.
+
+Sample and dose times are matched within a tolerance rather than exactly, so a trough drawn at 167.5 hours still ends an interval that nominally ends at 168 hours, and a predose sample drawn at -0.05 hours still starts the interval at the dose.  The width of that window is the `auto.interval.tolerance` option, given as a fraction of the interval's length.  The window only reaches backward: a sample drawn after a boundary belongs to what follows it, so a concentration drawn after a dose cannot stand in for the predose sample, and a trough drawn after the next dose cannot end the interval before it.
+
+```{r auto_interval_example}
+# Daily dosing with a dense profile on the first and last day
+choose.auc.intervals(
+  time.conc = c(0, 1, 2, 4, 8, 12, 24, 48, 72, 96, 120,
+                144, 145, 146, 148, 152, 156, 168, 192, 216),
+  time.dosing = seq(0, 144, by = 24)
+)[, c("start", "end", "aucint.last", "cmax", "half.life", "impute")]
+```
+
+Setting the `auto.interval.method` option to `"legacy"` calculates the parameter lists PKNCA used before this was added: the `single.dose.aucs` option for single-dose data, and AUClast, Cmax, and Tmax for each interval of multiple-dose data.  The intervals themselves are found the same way either way.
+
+```{r auto_interval_legacy}
+PKNCA.options(auto.interval.method = "legacy")
+choose.auc.intervals(
+  time.conc = c(0, 1, 2, 4, 8, 24, 48),
+  time.dosing = 0
+)[, c("start", "end", "auclast", "aucinf.obs", "half.life")]
+PKNCA.options(default = TRUE)
+```
+
+### Finding the Dosing Interval
+
+`find.tau()` gives the period of the regimen that `find.dose.regimen()` finds, using the segment with the most doses.  The dose times are sorted and the ones that repeat are dropped.  If the spacings between consecutive doses are all the same, that spacing is `tau`.  Otherwise a cycle of two to four doses per interval is looked for:  each dose's time within the interval falls into one of the positions of the cycle, the spacings between the positions differ from one another, every position holds doses from at least two complete intervals, and the positions fit the doses clearly better than evenly spaced doses would, so that doses recorded a few hours early or late are not mistaken for a cycle.  Next, spacings that are all within a tolerance of their median are doses given evenly with some scatter in the recorded times, and the median spacing is `tau`.  Otherwise runs of the same spacing form the regimen.  A gap between runs that is a whole number of the spacing is read as a missed dose, a dose between two gaps that fit neither is a dose off schedule, and doses squeezed into one interval are extra doses; each gives a `pknca_warning_tau_irregular_dosing` warning naming the doses.  Runs with different spacings are a change of regimen, which gives a `pknca_warning_tau_regimen_change` warning.  When the runs need missed doses or a change of regimen to explain the doses, a cycle that most doses follow is used instead if it explains them at least as well.  If none of that fits, no dosing interval is reported.
+
+Times are compared within a tolerance, so a dose recorded at 23.6 hours is a daily dose.  The intervals found are matched to the `tau.choices` option's values when it is given.  When it is `NA` (the default) and the time unit is known, they are matched to the usual nominal intervals, from every 4 hours to every 12 weeks.  `PKNCAdata()` and `pk.nca()` know the time unit when it is given to `PKNCAconc()` as `timeu`; `find.tau()` and `choose.auc.intervals()` take it as their `timeu` argument.  An interval that matches none of them gives a `pknca_warning_tau_not_nominal` warning.  Without either, the unit of the times is not known and the interval is the one found in the data.
+
+Looking for a repeating pattern first is what keeps a regimen with a regular gap in it from being misread.  Dosing three times a day at 0, 6, and 12 hours repeats daily; the 12 hour overnight gap is the regimen, not two doses that were never given.  That holds when a dose is missing too:  the doses that were given keep their time of day, so the regimen is still three times daily, with one missed dose.
+
+```{r find_tau_example}
+# Twice-daily dosing repeats daily although no two doses are a day apart
+find.tau(c(0, 10, 24, 34, 48, 58, 72, 82))
+```
+
+`find.dose.regimen()` gives the whole regimen, one row per segment, with the dose times within one interval as `offsets`.
+
+```{r find_dose_regimen_example}
+# Twice daily at breakfast and dinner, then once daily
+regimen <-
+  suppressWarnings(
+    find.dose.regimen(c(0, 10, 24, 34, 48, 58, 72, 96, 120, 144), timeu = "hr")
+  )
+regimen[, c("start", "end", "n_doses", "interval", "label", "offsets")]
+```
 
 ## To Infinity
 
@@ -119,8 +177,8 @@ print(d_conc)
 ```
 ```{r infinity_interval_plot-visualization, eval=requireNamespace("ggplot2")}
 # Use superposition to simulate multiple doses
-ggplot(d_conc$data[d_conc$data$time <= 48,], aes(x=time, y=conc)) +
-  geom_ribbon(data=d_conc$data,
+ggplot(as.data.frame(d_conc)[as.data.frame(d_conc)$time <= 48,], aes(x=time, y=conc)) +
+  geom_ribbon(data=as.data.frame(d_conc),
               aes(ymax=conc, ymin=0),
               fill="skyblue") +
   geom_point() + geom_line() +
@@ -189,7 +247,8 @@ intervals_manual <-
   )
 knitr::kable(intervals_manual)
 
-my.data <- PKNCAdata(d_conc, intervals=intervals_manual)
+d_conc_multi_obj <- PKNCAconc(d_conc_multi, conc~time|treatment+ID)
+my.data <- PKNCAdata(d_conc_multi_obj, intervals=intervals_manual)
 ```
 
 # Overlapping Intervals and Different Calculations by Interval
@@ -213,12 +272,12 @@ print(d_conc)
 ```
 ```{r overlapping_intervals_plot-visualization, eval=requireNamespace("ggplot2")}
 # Use superposition to simulate multiple doses
-ggplot(d_conc$data, aes(x=time, y=conc)) +
-  geom_ribbon(data=d_conc$data,
+ggplot(as.data.frame(d_conc), aes(x=time, y=conc)) +
+  geom_ribbon(data=as.data.frame(d_conc),
               aes(ymax=conc, ymin=0),
               fill="lightgreen",
               alpha=0.5) +
-  geom_ribbon(data=d_conc$data[d_conc$data$time <= 24,],
+  geom_ribbon(data=as.data.frame(d_conc)[as.data.frame(d_conc)$time <= 24,],
               aes(ymax=conc, ymin=0),
               fill="skyblue",
               alpha=0.5) +
@@ -245,21 +304,25 @@ my.data <- PKNCAdata(d_conc, intervals=intervals_manual)
 
 Some events have durations of times rather than instants in time associated with them.  Two typical examples of duration data in NCA are intravenous infusions and urine or fecal sample collections.  Inform PKNCA of durations with the `duration` argument to the `PKNCAdose` and `PKNCAconc` functions.
 
-Durations data are selected based on both the beginning and ending of the duration existing within the interval.
+Duration data are selected for an interval by the event time, which is the time of the start of the duration (for example, the start of a urine collection).  Like any other data point, a duration record is selected when its start time is at or after the interval `start` and at or before the interval `end`; the end of the duration is not considered.  A collection that starts within the interval and ends after the interval `end` is therefore selected, and it contributes its full amount to calculations within the interval (the amount is not pro-rated to the portion of the duration inside the interval).  For the simplest interpretation of results, align collection start and end times with the interval boundaries.
+
+The figures below show which durations are selected for two intervals.  The vertical arrows indicate the interval `start` and `end`, and each horizontal segment is a duration (for example, a urine collection) with tick marks at the collection boundaries.  In the first figure, the interval is from 0 to 24, and all four durations are selected, including the duration from 24 to 48 because its start time is exactly at the interval `end`.  In the second figure, the interval is from 0 to 16:  the duration from 12 to 24 is selected because its start time is within the interval, even though the collection extends past the interval `end` (and its full amount contributes to the interval), while the duration from 24 to 48 is not selected.
 
 ```{r interval_yes_no, echo=FALSE, eval=requireNamespace("ggplot2")}
 ggplot_intervals <- function(definition, intervals) {
-  intervals$within <-
-    c("No", "Yes")[intervals$interval.start >= min(definition$start.x) &
-                     intervals$interval.end >= max(definition$start.x)]
-  intervals$within <-
-    factor(intervals$within, levels=c("Yes", "No"))
+  # A duration is selected for the interval when its start time is at or
+  # after the interval start and at or before the interval end.
+  intervals$selected <-
+    c("No", "Yes")[(intervals$interval.start >= min(definition$start.x) &
+                      intervals$interval.start <= max(definition$start.x)) + 1]
+  intervals$selected <-
+    factor(intervals$selected, levels=c("Yes", "No"))
   ggplot(intervals,
          aes(x=interval.start,
              xend=interval.end,
              y=y,
              yend=y,
-             linetype=within)) +
+             linetype=selected)) +
     geom_segment() +
     geom_segment(data=definition,
                  mapping=aes(x=start.x, xend=start.x, y=start.y, yend=end.y),
@@ -273,7 +336,8 @@ ggplot_intervals <- function(definition, intervals) {
                size=4) +
     scale_y_continuous(breaks=NULL) +
     labs(x="Time",
-         y=NULL)
+         y=NULL,
+         linetype="Selected")
 }
 
 interval_definition <-
@@ -300,29 +364,66 @@ ggplot_intervals(interval_definition,
 
 ```
 
+# Multiple-Dose MRT and Vss
+
+The multiple-dose parameters `mrt.md.obs`, `mrt.md.pred`, `vss.md.obs`, and `vss.md.pred` measure MRT and Vss over a steady-state dosing interval instead of over a single dose.
+
+**These are the parameters to use when PK are nonlinear.**  When PK are linear, MRT and Vss can be measured from a single dose, and the single-dose parameters (`mrt.obs`, `vss.obs`, and similar) describe steady state as well.  When PK are nonlinear they do not: clearance and volume at steady state differ from their values after the first dose, so MRT and Vss have to be measured over a steady-state interval.
+
+Taking `mrt.last` over a dosing interval is not a substitute.  `AUMC` divided by `AUC` over 0 to tau leaves out the drug still in the body at the end of the interval and underestimates MRT substantially.  The multiple-dose parameters add the `tau*(AUCinf - AUCtau)/AUCtau` term that accounts for it.
+
+The dosing interval comes from a `tau` column in the interval specification, and that column takes precedence whenever it is given:
+
+```{r md-tau-column, eval=FALSE}
+intervals_md <-
+  data.frame(
+    start=0, end=24,
+    tau=24,
+    mrt.md.obs=TRUE, vss.md.obs=TRUE
+  )
+```
+
+When no `tau` column is given, `tau` is detected from the dose times with `find.tau()`, which needs at least two doses in the dosing data.  A steady-state design that records only the profiled dose has nothing that repeats, so it needs the `tau` column.  If `tau` can be neither given nor detected, the parameters are `NA` with a warning rather than silently falling back to the single-dose equation.
+
+## Intravenous Infusions
+
+For an IV infusion, use `mrt.ivmd.obs`, `mrt.ivmd.pred`, `vss.ivmd.obs`, and `vss.ivmd.pred` instead.  They subtract half of the infusion duration, the same correction that `mrt.iv.obs` applies to the single-dose MRT.  Without it, MRT is high by half the infusion duration and Vss is high by clearance times half the infusion duration.
+
 # Parameters Available for Calculation in an Interval
 
 The following parameters are available in an interval.  For more information about the parameter, see the documentation for the function.
 
 ```{r parameters-available, echo=FALSE}
 interval_spec <- get.interval.cols()
-interval_spec <- interval_spec[sort(names(interval_spec))]
+# start and end define the interval itself; they are not calculated parameters
+interval_spec <- interval_spec[setdiff(sort(names(interval_spec)), c("start", "end"))]
 
 get_function_for_calc <- function(x) {
-  if (is.na(x$FUN)) {
-    if (is.null(x$depends)) {
-      "(none)"
-    } else {
-      paste("See the parameter name", x$depends)
-    }
-  } else {
+  if (!is.na(x$FUN)) {
     x$FUN
+  } else if (!is.null(x$FUN_sparse) && !is.na(x$FUN_sparse)) {
+    # A sparse-only parameter is calculated by its sparse estimator
+    x$FUN_sparse
+  } else if (is.null(x$depends)) {
+    "(none)"
+  } else {
+    paste("See the parameter name:", paste(x$depends, collapse = ", "))
   }
 }
 
 kable(
   data.frame(
     `Parameter Name`=names(interval_spec),
+    `Formula` = vapply(
+      X = interval_spec,
+      FUN = function(x) if (is.null(x$formula)) "" else x$formula,
+      FUN.VALUE = ""
+    ),
+    `Formula Note` = vapply(
+      X = interval_spec,
+      FUN = function(x) if (is.null(x$formula_note)) "" else x$formula_note,
+      FUN.VALUE = ""
+    ),
     `Unit Type`=vapply(X = interval_spec, FUN = "[[", "unit_type", FUN.VALUE = ""),
     `Parameter Description`=vapply(X = interval_spec, FUN = "[[", "desc", FUN.VALUE = ""),
     `Function for Calculation`=vapply(X = interval_spec, FUN = get_function_for_calc, FUN.VALUE = ""),

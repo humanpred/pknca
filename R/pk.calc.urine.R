@@ -1,3 +1,26 @@
+#' Calculate the total urine volume
+#'
+#' @param volume The volume (or mass) of the sample
+#' @return The sum of urine volumes for the interval
+#' @family Urine/Excretion parameters
+#' @export
+pk.calc.volpk <- function(volume) {
+  if (length(volume) == 0) return(NA_real_)
+  sum(volume)
+}
+
+pknca_concept(pk.calc.volpk) <- "collected_volume"
+add.interval.col("volpk",
+                 FUN="pk.calc.volpk",
+                 values=c(FALSE, TRUE),
+                 unit_type="volume",
+                 pretty_name="Total Urine Volume",
+                 desc="Sum of urine volumes for interval",
+                 pptestcd_cdisc="VOLPK",
+                 pptest_cdisc="Sum of Urine Vol",
+                 formula="$V_{\\text{urine}} = \\sum_i V_i$",
+                 tier = "common")
+
 #' Calculate amount excreted (typically in urine or feces)
 #'
 #' @details ae is `sum(conc*volume)`.
@@ -9,49 +32,38 @@
 #' @details The units for the concentration and volume should match such that
 #'   `sum(conc*volume)` has units of mass or moles.
 #' @seealso [pk.calc.clr()], [pk.calc.fe()]
+#' @family Urine/Excretion parameters
 #' @export
 pk.calc.ae <- function(conc, volume, check=TRUE) {
-  mask_missing_conc <- is.na(conc)
-  mask_missing_vol <- is.na(volume)
-  mask_missing_both <- mask_missing_conc & mask_missing_vol
-  mask_missing_conc <- mask_missing_conc & !mask_missing_both
-  mask_missing_vol <- mask_missing_vol & !mask_missing_both
-  message_both <- message_conc <- message_vol <- NA_character_
-  if (all(mask_missing_both)) {
-    message_both <- "All concentrations and volumes are missing"
-  } else if (any(mask_missing_both)) {
-    message_both <- sprintf("%g of %g concentrations and volumes are missing", sum(mask_missing_both), length(conc))
-  }
-  if (all(mask_missing_conc)) {
-    message_conc <- "All concentrations are missing"
-  } else if (any(mask_missing_conc)) {
-    message_conc <- sprintf("%g of %g concentrations are missing", sum(mask_missing_conc), length(conc))
-  }
-  if (all(mask_missing_vol)) {
-    message_vol <- "All volumes are missing"
-  } else if (any(mask_missing_vol)) {
-    message_vol <- sprintf("%g of %g volumes are missing", sum(mask_missing_vol), length(conc))
-  }
-  message_all <- stats::na.omit(c(message_both, message_conc, message_vol))
-  ret <- sum(conc*volume)
+  # Generate combined missing-data messages for conc/volume using helper
+  message_all <- generate_missing_messages(conc, volume,
+                                           name_a = "concentrations",
+                                           name_b = "volumes")
+
+  ret <-
+    if (length(conc) == 0 || length(volume) == 0) {
+      NA_real_
+    } else {
+      sum(conc * volume)
+    }
   if (length(message_all) != 0) {
     message <- paste(message_all, collapse = "; ")
     ret <- structure(ret, exclude = message)
   }
   ret
 }
+
+pknca_concept(pk.calc.ae) <- "excreted_amount"
 add.interval.col("ae",
                  FUN="pk.calc.ae",
                  values=c(FALSE, TRUE),
                  unit_type="amount",
                  pretty_name="Amount excreted",
-                 desc="The amount excreted (typically into urine or feces)")
-PKNCA.set.summary(
-  name="ae",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+                 desc="Amount excreted (urine/feces)",
+                 pptestcd_cdisc="RCAMINT",
+                 pptest_cdisc="Amt Rec from T1 to T2",
+                 formula="$AE = \\sum_i C_i V_i$",
+                 tier = "common")
 
 #' Calculate renal clearance
 #'
@@ -63,49 +75,56 @@ PKNCA.set.summary(
 #' @details The units for the `ae` and `auc` should match such that `ae/auc` has
 #'   units of volume/time.
 #' @seealso [pk.calc.ae()], [pk.calc.fe()]
+#' @family Urine/Excretion parameters
 #' @export
 pk.calc.clr <- function(ae, auc) {
+  if (length(ae) == 0) {
+    return(NA_real_)
+  }
   sum(ae)/auc
 }
+
+pknca_concept(pk.calc.clr) <- "renal_clearance"
 add.interval.col("clr.last",
                  FUN="pk.calc.clr",
                  values=c(FALSE, TRUE),
                  unit_type="renal_clearance",
                  pretty_name="Renal clearance (from AUClast)",
-                 formalsmap=list(auc="auclast"),
-                 desc="The renal clearance calculated using AUClast")
-PKNCA.set.summary(
-  name="clr.last",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+                 formalsmap=list(auc=pknca_ref("auclast")),
+                 depends="ae",
+                 desc="Renal clearance, AUClast",
+                 pptestcd_cdisc="RENALCL",
+                 pptest_cdisc="Renal CL",
+                 formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$",
+                 selection = list(secondary = TRUE))
+
 add.interval.col("clr.obs",
                  FUN="pk.calc.clr",
                  values=c(FALSE, TRUE),
                  unit_type="renal_clearance",
                  pretty_name="Renal clearance (from AUCinf,obs)",
-                 formalsmap=list(auc="aucinf.obs"),
-                 desc="The renal clearance calculated using AUCinf,obs")
-PKNCA.set.summary(
-  name="clr.obs",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+                 formalsmap=list(auc=pknca_ref("aucinf.obs")),
+                 depends="ae",
+                 desc="Renal clearance, AUCinf,obs",
+                 pptestcd_cdisc="RENALCL",
+                 pptest_cdisc="Renal CL",
+                 formula="$CL_{R,\\text{obs}} = \\frac{AE}{AUC_{\\infty,\\text{obs}}}$",
+                 tier = "common",
+                 selection = list(secondary = TRUE))
+
 add.interval.col("clr.pred",
                  FUN="pk.calc.clr",
                  values=c(FALSE, TRUE),
                  unit_type="renal_clearance",
                  pretty_name="Renal clearance (from AUCinf,pred)",
-                 formalsmap=list(auc="aucinf.pred"),
-                 desc="The renal clearance calculated using AUCinf,pred")
-PKNCA.set.summary(
-  name="clr.pred",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
-)
+                 formalsmap=list(auc=pknca_ref("aucinf.pred")),
+                 depends="ae",
+                 desc="Renal clearance, AUCinf,pred",
+                 pptestcd_cdisc="RENALCL",
+                 pptest_cdisc="Renal CL",
+                 formula="$CL_{R,\\text{pred}} = \\frac{AE}{AUC_{\\infty,\\text{pred}}}$",
+                 selection = list(secondary = TRUE))
+
 
 #' Calculate fraction excreted (typically in urine or feces)
 #'
@@ -117,19 +136,324 @@ PKNCA.set.summary(
 #' @details   The units for `ae` and `dose` should be the same so that `ae/dose`
 #'   is a unitless fraction.
 #' @seealso [pk.calc.ae()], [pk.calc.clr()]
+#' @family Urine/Excretion parameters
 #' @export
 pk.calc.fe <- function(ae, dose) {
+  if (length(ae) == 0) {
+    return(NA_real_)
+  }
   sum(ae)/dose
 }
+
+pknca_concept(pk.calc.fe) <- "excreted_fraction"
 add.interval.col("fe",
                  FUN="pk.calc.fe",
-                 unit_type="fraction",
+                 unit_type="amount_dose",
                  pretty_name="Fraction excreted",
                  values=c(FALSE, TRUE),
-                 desc="The fraction of the dose excreted")
+                 depends="ae",
+                 desc="Fraction of dose excreted",
+                 pptestcd_cdisc="FREXINT",
+                 pptest_cdisc="Fract Excr from T1 to T2",
+                 formula="$f_e = \\frac{AE}{Dose}$",
+                 tier = "common")
+
+#' Calculate the midpoint collection time of the last measurable excretion rate
+#'
+#' @param conc The concentration in the excreta (e.g., urine or feces)
+#' @param volume The volume (or mass) of the sample
+#' @param time The starting time of the collection interval
+#' @param duration.conc The duration of the collection interval
+#' @param check Should the concentration and time data be checked?
+#' @return The midpoint collection time of the last measurable excretion rate, or NA/0 if not available
+#' @family Urine/Excretion parameters
+#' @export
+pk.calc.ertlst <- function(conc, volume, time, duration.conc, check = TRUE) {
+
+  # Generate messages about missing concentrations/volumes
+  message_all <- generate_missing_messages(conc, volume,
+                                           name_a = "concentrations",
+                                           name_b = "volumes")
+
+  er <- conc * volume / duration.conc
+
+  if (all(is.na(er))) {
+    ret <- NA_real_
+  } else if (all(er %in% c(0, NA))) {
+    ret <- 0
+  } else {
+    midtime <- time + duration.conc / 2
+    ret <- max(midtime[!is.na(er) & er != 0])
+  }
+
+  if (length(message_all) != 0) {
+    message <- paste(message_all, collapse = "; ")
+    ret <- structure(ret, exclude = message)
+  }
+  ret
+}
+
+pknca_concept(pk.calc.ertlst) <- "excretion_rate"
+
+# Add the column to the interval specification
+add.interval.col("ertlst",
+                 FUN="pk.calc.ertlst",
+                 unit_type="time",
+                 pretty_name="Tlast excretion rate",
+                 desc="Midpoint time of last excr rate",
+                 pptestcd_cdisc="ERTLST",
+                 pptest_cdisc="Midpoint of Interval of Last Nonzero ER",
+                 formula="$T_{\\text{last,ER}} = t_{\\text{mid},i: ER_i > 0, i = \\max}$")
+
+
+#' Calculate the maximum excretion rate
+#'
+#' @param conc The concentration in the excreta (e.g., urine or feces)
+#' @param volume The volume (or mass) of the sample
+#' @param time The starting time of the collection interval
+#' @param duration.conc The duration of the collection interval
+#' @param check Should the concentration data be checked?
+#' @return The maximum excretion rate, or NA if not available
+#' @family Urine/Excretion parameters
+#' @export
+pk.calc.ermax <- function(conc, volume, time, duration.conc, check = TRUE) {
+
+  # Generate messages about missing concentrations/volumes
+  message_all <- generate_missing_messages(conc, volume,
+                                           name_a = "concentrations",
+                                           name_b = "volumes")
+
+  if (length(conc) == 0 || all(is.na(conc))) {
+    ret <- NA_real_
+  } else {
+    er <- conc * volume / duration.conc
+    if (all(is.na(er))) {
+      ret <- NA_real_
+    } else {
+      ret <- max(er, na.rm=TRUE)
+    }
+  }
+
+  if (length(message_all) != 0) {
+    message <- paste(message_all, collapse = "; ")
+    ret <- structure(ret, exclude = message)
+  }
+  ret
+}
+
+pknca_concept(pk.calc.ermax) <- "excretion_rate"
+
+add.interval.col("ermax",
+                 FUN="pk.calc.ermax",
+                 unit_type="amount_time",
+                 pretty_name="Maximum excretion rate",
+                 desc="Maximum excretion rate",
+                 pptestcd_cdisc="ERMAX",
+                 pptest_cdisc="Max Excretion Rate",
+                 formula="$ER_{\\max} = \\max_i \\left( \\frac{C_i V_i}{d_i} \\right)$")
+
+
+#' Calculate the midpoint collection time of the maximum excretion rate
+#'
+#' @param conc The concentration in the excreta (e.g., urine or feces)
+#' @param volume The volume (or mass) of the sample
+#' @param time The starting time of the collection interval
+#' @param duration.conc The duration of the collection interval
+#' @inheritParams PKNCA.choose.option
+#' @param check Should the concentration and time data be checked?
+#' @param first.tmax If TRUE, return the first time of maximum excretion rate; otherwise, return the last
+#' @return The midpoint collection time of the maximum excretion rate, or NA if not available
+#' @family Urine/Excretion parameters
+#' @export
+pk.calc.ertmax <- function(conc, volume, time, duration.conc, options = list(), check = TRUE, first.tmax = NULL) {
+  first.tmax <- PKNCA.choose.option(name="first.tmax", value=first.tmax, options=options)
+
+  # Generate messages about missing concentrations/volumes
+  message_all <- generate_missing_messages(conc, volume,
+                                           name_a = "concentrations",
+                                           name_b = "volumes")
+
+  if (length(conc) == 0 || all(conc %in% c(NA, 0))) {
+    ret <- NA_real_
+  } else {
+    er <- conc * volume / duration.conc
+    ermax <- pk.calc.ermax(conc, volume, time, duration.conc, check = FALSE)
+    midtime <- time + duration.conc / 2
+    ret <- midtime[er %in% ermax]
+
+    if (first.tmax) {
+      ret <- ret[1]
+    } else {
+      ret <- ret[length(ret)]
+    }
+  }
+
+  if (length(message_all) != 0) {
+    message <- paste(message_all, collapse = "; ")
+    ret <- structure(ret, exclude = message)
+  }
+  ret
+}
+
+pknca_concept(pk.calc.ertmax) <- "excretion_rate"
+
+add.interval.col("ertmax",
+                 FUN="pk.calc.ertmax",
+                 unit_type="time",
+                 pretty_name="Tmax excretion rate",
+                 desc="Midpoint time of max excr rate",
+                 pptestcd_cdisc="ERTMAX",
+                 pptest_cdisc="Midpoint of Interval of Maximum ER",
+                 formula="$T_{\\max,ER} = t_{\\text{mid},i: ER_i = ER_{\\max}}$")
+
+
+#' Calculate the excretion rate over the interval
+#'
+#' @details The excretion rate is the amount recovered during the interval
+#'   divided by the duration of the interval, `ae/(end - start)`.  It uses the
+#'   interval rather than the sum of the collection durations, so a gap between
+#'   collections lowers the rate.  An interval ending at infinity has no
+#'   duration to divide by and gives `NA`.
+#'
+#' @param ae The amount excreted during the interval (see [pk.calc.ae()])
+#' @inheritParams assert_intervaltime_single
+#' @returns The excretion rate during the interval
+#' @seealso [pk.calc.ae()], [pk.calc.ermax()]
+#' @family Urine/Excretion parameters
+#' @export
+pk.calc.erint <- function(ae, start, end) {
+  if (length(ae) == 0 || length(start) == 0 || length(end) == 0) {
+    return(NA_real_)
+  }
+  if (is.infinite(end)) {
+    return(
+      structure(
+        NA_real_,
+        exclude = "Excretion rate is not defined for an interval ending at infinity"
+      )
+    )
+  }
+  ae / (end - start)
+}
+
+pknca_concept(pk.calc.erint) <- "excretion_rate"
+
+add.interval.col("erint",
+                 FUN="pk.calc.erint",
+                 unit_type="amount_time",
+                 pretty_name="Excretion rate",
+                 desc="Excretion rate from T1 to T2",
+                 depends="ae",
+                 pptestcd_cdisc="ERINT",
+                 pptest_cdisc="Excret Rate from T1 to T2",
+                 formula="$ER_{T_1 \\rightarrow T_2} = \\frac{A_e}{T_2 - T_1}$",
+                 formula_note="Amount recovered during the interval divided by the interval duration")
+
+#' Calculate the last measurable excretion rate
+#'
+#' @details Collections are ordered by their midpoint time, matching
+#'   [pk.calc.ertlst()], which gives the midpoint time of this same collection.
+#'   When no collection has a positive excretion rate, the result is 0.
+#'
+#' @inheritParams pk.calc.ermax
+#' @returns The last measurable (positive) excretion rate, or `NA` if not
+#'   available
+#' @seealso [pk.calc.ertlst()], [pk.calc.ermax()]
+#' @family Urine/Excretion parameters
+#' @export
+pk.calc.erlst <- function(conc, volume, time, duration.conc, check = TRUE) {
+
+  # Generate messages about missing concentrations/volumes
+  message_all <- generate_missing_messages(conc, volume,
+                                           name_a = "concentrations",
+                                           name_b = "volumes")
+
+  er <- conc * volume / duration.conc
+
+  if (length(er) == 0 || all(is.na(er))) {
+    ret <- NA_real_
+  } else {
+    mask_measurable <- !is.na(er) & er != 0
+    if (!any(mask_measurable)) {
+      ret <- 0
+    } else {
+      midtime <- time + duration.conc / 2
+      ret <- er[mask_measurable][which.max(midtime[mask_measurable])]
+    }
+  }
+
+  if (length(message_all) != 0) {
+    message <- paste(message_all, collapse = "; ")
+    ret <- structure(ret, exclude = message)
+  }
+  ret
+}
+
+pknca_concept(pk.calc.erlst) <- "excretion_rate"
+
+add.interval.col("erlst",
+                 FUN="pk.calc.erlst",
+                 unit_type="amount_time",
+                 pretty_name="Last measurable excretion rate",
+                 desc="Last measurable excretion rate",
+                 pptestcd_cdisc="ERLST",
+                 pptest_cdisc="Last Meas Excretion Rate",
+                 formula="$ER_{\\text{last}} = \\frac{C_l V_l}{d_l}$",
+                 formula_note="The last collection with a nonzero excretion rate, ordered by collection midpoint")
+
 PKNCA.set.summary(
-  name="fe",
-  description="geometric mean and geometric coefficient of variation",
-  point=business.geomean,
-  spread=business.geocv
+  name = c("volpk", "ae", "clr.last", "clr.obs", "clr.pred", "fe", "ermax", "erint", "erlst"),
+  description = "geometric mean and geometric coefficient of variation",
+  point = business.geomean,
+  spread = business.geocv
 )
+
+PKNCA.set.summary(
+  name = c("ertlst", "ertmax"),
+  description = "median and range",
+  point = business.median,
+  spread = business.range
+)
+
+
+# Helper to generate missing-data checking messages for paired vectors
+#
+# This function accepts two columns/vectors (for example, concentrations
+# and volumes). It computes missingness internally and produces a character
+# vector of human-readable messages describing the missingness that matches
+# the style used in the package (used previously in `pk.calc.ae`).
+generate_missing_messages <- function(a, b,
+                                      name_a = deparse(substitute(a)),
+                                      name_b = deparse(substitute(b))) {
+
+  mask_a <- is.na(a)
+  mask_b <- is.na(b)
+
+  mask_both <- mask_a & mask_b
+  mask_a_only <- mask_a & !mask_both
+  mask_b_only <- mask_b & !mask_both
+
+  msg_both <- msg_a <- msg_b <- NA_character_
+  n <- length(mask_a)
+
+  if (all(mask_both)) {
+    msg_both <- sprintf("All %s and %s are missing", name_a, name_b)
+  } else if (any(mask_both)) {
+    msg_both <- sprintf("%g of %g %s and %s are missing", sum(mask_both), n, name_a, name_b)
+  }
+
+  if (all(mask_a_only)) {
+    msg_a <- sprintf("All %s are missing", name_a)
+  } else if (any(mask_a_only)) {
+    msg_a <- sprintf("%g of %g %s are missing", sum(mask_a_only), n, name_a)
+  }
+
+  if (all(mask_b_only)) {
+    msg_b <- sprintf("All %s are missing", name_b)
+  } else if (any(mask_b_only)) {
+    msg_b <- sprintf("%g of %g %s are missing", sum(mask_b_only), n, name_b)
+  }
+
+  # Return non-NA messages
+  stats::na.omit(c(msg_both, msg_a, msg_b))
+}

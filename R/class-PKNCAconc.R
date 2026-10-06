@@ -6,16 +6,16 @@
 #'   `amount~time|groups` for urine/feces (In the remainder of the
 #'   documentation, "concentration" will be used to describe concentration or
 #'   amount.)  One special aspect of the `groups` part of the formula is that
-#'   the last group is typically assumed to be the `subject`; see the
-#'   documentation for the `subject` argument for exceptions to this assumption.
+#'   the last group to the left of any `/` is assumed to be the `subject`
+#'   unless the `subject` argument is given.  The `time` may be numeric, or it
+#'   may be a date-time (POSIXct) or a date (Date); see the "Date-time input"
+#'   section.
 #' @param subject The column indicating the subject number.  If not provided,
-#'   this defaults to the beginning of the inner groups: For example with
-#'   `concentration~time|Study+Subject/Analyte`, the inner groups start with the
-#'   first grouping variable before a `/`, `Subject`.  If there is only one
-#'   grouping variable, it is assumed to be the subject (e.g.
-#'   `concentration~time|Subject`), and if there are multiple grouping variables
-#'   without a `/`, subject is assumed to be the last one.  For single-subject
-#'   data, it is assigned as `NULL`.
+#'   this defaults to the last grouping variable to the left of a `/` (for
+#'   example, `Subject` with `concentration~time|Study+Subject/Analyte`), or the
+#'   last grouping variable when there is no `/` (for example, `Subject` with
+#'   `concentration~time|Study+Subject`).  When there are no grouping variables
+#'   (single-subject data), no subject column is set.
 #' @param time.nominal (optional) The name of the nominal time column (if the
 #'   main time variable is actual time.  The `time.nominal` is not used during
 #'   calculations; it is available to assist with data summary and checking.
@@ -24,20 +24,65 @@
 #'   values of `NA` or `""` for concentrations to include and non-empty text for
 #'   concentrations to exclude.
 #' @param volume (optional) The volume (or mass) of collection as is typically
-#'   used for urine or feces measurements.
+#'   used for urine or feces measurements.  A `volume` column is added to the
+#'   data only when this is given; requesting a parameter that needs it (`ae`,
+#'   `fe`, `volpk`, and similar) without it is an error.
 #' @param duration (optional) The duration of collection as is typically used
-#'   for concentration measurements in urine or feces.
-#' @param exclude_half.life,include_half.life A character scalar for the column
-#'   name in the dataset of the points to exclude from the half-life calculation
-#'   (still using normal curve-stripping selection rules for the other points)
-#'   or to include for the half-life (using specifically those points and
-#'   bypassing automatic curve-stripping point selection).  See the "Half-Life
-#'   Calculation" vignette for more details on the use of these arguments.
+#'   for concentration measurements in urine or feces.  The `time` of a
+#'   measurement is the start of the collection, and only the `time` is used
+#'   when selecting data for a calculation interval; the duration is not
+#'   considered.  A collection starting within an interval and ending after the
+#'   interval `end` contributes its full amount to that interval, so for the
+#'   simplest interpretation of results, align collection start and end times
+#'   with interval boundaries.  A `duration` column is added to the data only
+#'   when this is given; requesting an excretion rate parameter (`ermax`,
+#'   `ertmax`, `ertlst`) without it is an error.  A numeric duration is in the
+#'   time unit of the analysis; a difftime duration is converted to that unit
+#'   in [PKNCAdata()].
+#' @param exclude_half.life,include_half.life Manual half-life point selection,
+#'   given as a logical value per concentration measurement (or, in
+#'   [PKNCAconc()], the name of such a column in the data).  `exclude_half.life`
+#'   drops the flagged points; automatic curve-stripping point selection is
+#'   still performed on the remaining (non-excluded) points and is not bypassed.
+#'   `include_half.life` names the exact points to use, bypassing automatic
+#'   curve-stripping point selection.  Each value is `TRUE`, `FALSE`, or `NA`
+#'   (undefined); the column/vector is treated as "in use" for an interval
+#'   unless it is entirely `NA` (so an all-`FALSE` column still counts as in
+#'   use), so leave it `NA` (rather than `FALSE`) where the mechanism should not
+#'   apply.  The column must be logical and must exist in the data; anything
+#'   else is an error.  Only one of `exclude_half.life` and
+#'   `include_half.life` may be in use for a given interval.  See the
+#'   "Half-Life Calculation" vignette for more details on the use of these
+#'   arguments.
+#' @param lloq (optional) The lower limit of quantification used by the Tobit
+#'   half-life method (`hl_method = "tobit"`).  Either the name of a column in
+#'   `data` giving the per-observation LLOQ or a numeric scalar applied to all
+#'   observations.  When provided, it is passed through to
+#'   [pk.calc.half.life()].  See the "Half-Life Calculation with Tobit
+#'   Regression" vignette for more details.
 #' @param sparse Are the concentration-time data sparse PK (commonly used in
 #'   small nonclinical species or with terminal or difficult sampling) or dense
 #'   PK (commonly used in clinical studies or larger nonclinical species)?
 #' @param ... Ignored.
 #' @returns A PKNCAconc object that can be used for automated NCA.
+#' @section Date-time input:
+#'
+#'   The concentration time (and the dose time in [PKNCAdose()]) may be a
+#'   date-time (POSIXct) or a date (Date; a date is taken as 08:00 on that
+#'   date, a typical time of a first PK sample, with a warning).  Date-times have no numeric unit, so
+#'   they are converted directly to the time unit used for calculations and
+#'   reports:  `timeu_pref` when given (it takes precedence over `timeu`, and
+#'   `timeu` is set to it), otherwise `timeu`, otherwise hours (without
+#'   units).  The unit must be a single time unit value (like `"hr"` or
+#'   `"day"`), not a column name.  A numeric `duration` (here or in
+#'   [PKNCAdose()]) is in that unit, and a difftime `duration` is converted to
+#'   it exactly.
+#'
+#'   The times remain date-times in the `PKNCAconc`, `PKNCAdose`, and
+#'   `PKNCAdata` objects.  [pk.nca()] converts them to numeric time relative to
+#'   the first dose (or first concentration) in each group; see the "Date-time
+#'   input" section of [PKNCAdata()].  The nominal time (`time.nominal`) is not converted and usually
+#'   stays numeric.
 #' @family PKNCA objects
 #' @export
 PKNCAconc <- function(data, ...) {
@@ -56,18 +101,33 @@ PKNCAconc.tbl_df <- function(data, ...) {
 }
 
 #' @rdname PKNCAconc
+#' @param concu,amountu,timeu Either unit values (e.g. "ng/mL") or column names
+#'   within the data where units are provided.  For a date-time (POSIXct or
+#'   Date) time column, `timeu` must be a unit value, and `timeu_pref` takes
+#'   precedence over it (see the "Date-time input" section).
+#' @param concu_pref,amountu_pref,timeu_pref Preferred units for reporting (not
+#'   column names).  For a date-time time column, the times are converted
+#'   directly to `timeu_pref`, which then is also `timeu`.
 #' @export
 PKNCAconc.data.frame <- function(data, formula, subject,
-                                 time.nominal, exclude, duration, volume,
-                                 exclude_half.life, include_half.life, sparse=FALSE, ...) {
+                                 time.nominal, exclude = NULL, duration, volume,
+                                 exclude_half.life, include_half.life, lloq, sparse = FALSE, ...,
+                                 concu = NULL, amountu = NULL, timeu = NULL,
+                                 concu_pref = NULL, amountu_pref = NULL, timeu_pref = NULL) {
   # The data must have... data
   if (nrow(data) == 0) {
-    stop("data must have at least one row.")
+    rlang::abort("data must have at least one row.", class = "pknca_error_data_no_rows")
   }
   # Verify that all the variables in the formula are columns in the data.
   missing_vars <- setdiff(all.vars(formula), names(data))
   if (length(missing_vars) > 0) {
-    stop("All of the variables in the formula must be in the data.  Missing: ", paste(missing_vars))
+    rlang::abort(
+      sprintf(
+        "All of the variables in the formula must be in the data.  Missing: %s",
+        paste(missing_vars, collapse = ", ")
+      ),
+      class = "pknca_error_formula_missing_vars"
+    )
   }
   parsed_form_raw <- parse_formula_to_cols(form = formula)
   parsed_form_groups <-
@@ -89,40 +149,24 @@ PKNCAconc.data.frame <- function(data, formula, subject,
       groups = parsed_form_groups
     )
   if (length(parsed_form$concentration) != 1) {
-    stop("The left hand side of the formula must have exactly one variable")
+    rlang::abort("The left hand side of the formula must have exactly one variable", class = "pknca_error_conc_formula_lhs")
   }
   if (length(parsed_form$time) != 1) {
-    stop("The right hand side of the formula (excluding groups) must have exactly one variable")
+    rlang::abort(
+      "The right hand side of the formula (excluding groups) must have exactly one variable",
+      class = "pknca_error_conc_formula_rhs"
+    )
   }
-  # Do some general checking of the concentration and time data to give an early
-  # error if the data are not correct.  Do not check monotonic.time because the
-  # data may contain information for more than one subject.
-  assert_conc_time(
-    conc = data[[parsed_form$concentration]],
-    time = data[[parsed_form$time]],
-    sorted_time = FALSE
-  )
-  # Values must be unique (one value per measurement)
-  key_cols <- c(parsed_form$time, unlist(parsed_form$groups))
-  mask_dup <- duplicated(data[,key_cols])
-  if (any(mask_dup)) {
-    stop("Rows that are not unique per group and time (column names: ",
-         paste(key_cols, collapse=", "),
-         ") found within concentration data.  Row numbers: ",
-         paste(seq_along(mask_dup)[mask_dup], collapse=", "))
-  }
+
   # Assign the subject
   if (missing(subject)) {
     subject <- parsed_form$groups$group_vars[length(parsed_form$groups$group_vars)]
   } else {
     # Ensure that the subject is part of the data definition and a scalar
     # character string.
-    if (!is.character(subject))
-      stop("subject must be a character string")
-    if (!(length(subject) == 1))
-      stop("subject must be a scalar")
+    checkmate::assert_string(subject, null.ok = FALSE)
     if (!(subject %in% names(data)))
-      stop("The subject parameter must map to a name in the data")
+        rlang::abort("The subject parameter must map to a name in the data", class = "pknca_error_subject_not_in_data")
   }
   parsed_form$subject <- subject
   if (sparse) {
@@ -141,22 +185,41 @@ PKNCAconc.data.frame <- function(data, formula, subject,
       )
   }
   class(ret) <- c("PKNCAconc", class(ret))
-  if (missing(exclude)) {
-    ret <- setExcludeColumn(ret, dataname=getDataName.PKNCAconc(ret))
-  } else {
-    ret <- setExcludeColumn(ret, exclude=exclude, dataname=getDataName.PKNCAconc(ret))
+  ret <- setExcludeColumn(ret, exclude = exclude, dataname = getDataName.PKNCAconc(ret))
+
+  # Do some general checking of the concentration and time data.
+  # Do not check monotonic.time because the data may contain information
+  # for more than one subject. Disregard points that will be excluded.
+  is_excluded <- !is.na(normalize_exclude(ret))
+
+  time_values <- data[[parsed_form$time]]
+  # Date-time values are checked as numbers (for missing values); they become
+  # numeric time relative to the first dose in PKNCAdata().
+  timeu <- pknca_datetime_timeu(time = time_values, timeu = timeu, timeu_pref = timeu_pref, time_col = parsed_form$time, data = data)
+  if (is_datetime_date(time_values)) {
+    time_values <- as.numeric(time_values)
   }
-  if (missing(volume)) {
-    ret <- setAttributeColumn(ret, attr_name="volume", default_value=NA_real_)
-  } else {
+  assert_conc_time(
+    conc = data[[parsed_form$concentration]][!is_excluded],
+    time = time_values[!is_excluded],
+    sorted_time = FALSE
+  )
+
+  # Values must be unique (one value per measurement), check after the exclusion
+  # column has been added to the object so that exclusions can be accounted for
+  # in duplicate checking.
+  duplicate_check(object = ret, data_type = "concentration")
+
+  # volume and duration are only used by urine/fecal calculations, so the
+  # columns are added only when the user gives them; calculations that need
+  # them report their absence (see absent_conc_inputs()).
+  if (!missing(volume)) {
     ret <- setAttributeColumn(ret, attr_name="volume", col_or_value=volume)
     if (!is.numeric(getAttributeColumn(ret, attr_name="volume")[[1]])) {
-      stop("Volume must be numeric")
+      rlang::abort("Volume must be numeric", class = "pknca_error_volume_not_numeric")
     }
   }
-  if (missing(duration)) {
-    ret <- setDuration.PKNCAconc(ret)
-  } else {
+  if (!missing(duration)) {
     ret <- setDuration.PKNCAconc(ret, duration=duration)
   }
   if (!missing(time.nominal)) {
@@ -169,15 +232,37 @@ PKNCAconc.data.frame <- function(data, formula, subject,
     ret <-
       setAttributeColumn(object=ret,
                          attr_name="exclude_half.life",
-                         col_name=exclude_half.life)
+                         col_name=exclude_half.life,
+                         stop_if_default=paste0(
+                           "The exclude_half.life column ('", exclude_half.life,
+                           "') does not exist in the data"
+                         ))
   }
   if (!missing(include_half.life)) {
     ret <-
       setAttributeColumn(object=ret,
                          attr_name="include_half.life",
-                         col_name=include_half.life)
+                         col_name=include_half.life,
+                         stop_if_default=paste0(
+                           "The include_half.life column ('", include_half.life,
+                           "') does not exist in the data"
+                         ))
   }
-  ret
+  if (!missing(lloq)) {
+    ret <- setAttributeColumn(object=ret, attr_name="lloq", col_or_value=lloq)
+    checkmate::assertNumeric(
+      getAttributeColumn(object = ret, attr_name = "lloq")[[1]]
+    )
+  }
+
+  # Unit handling
+  ret <-
+    pknca_set_units(
+      ret,
+      units_orig = list(concu = concu, amountu = amountu, timeu = timeu),
+      units_pref = list(concu_pref = concu_pref, amountu_pref = amountu_pref, timeu_pref = timeu_pref)
+    )
+  assert_PKNCAconc(ret)
 }
 
 #' Extract the formula from a PKNCAconc object.
@@ -235,11 +320,17 @@ getGroups.PKNCAconc <- function(object, form=stats::formula(object), level,
                                 data=as.data.frame(object), sep) {
   grpnames <- unlist(object$columns$groups)
   if (!missing(level))
-    if (is.factor(level) | is.character(level)) {
+    if (is.factor(level) || is.character(level)) {
       level <- as.character(level)
-      if (any(!(level %in% grpnames)))
-        stop("Not all levels are listed in the group names.  Missing levels are: ",
-             paste(setdiff(level, grpnames), collapse=", "))
+      if (any(!(level %in% grpnames))) {
+        rlang::abort(
+          sprintf(
+            "Not all levels are listed in the group names. Missing levels are: %s",
+            paste(setdiff(level, grpnames), collapse = ", ")
+          ),
+          class = "pknca_error_conc_missing_group_levels"
+        )
+      }
       grpnames <- level
     } else if (is.numeric(level)) {
       if (length(level) == 1 &&
@@ -286,14 +377,17 @@ setDuration.PKNCAconc <- function(object, duration, ...) {
     object <-
       setAttributeColumn(object=object, attr_name="duration", col_or_value=duration)
   }
-  duration.val <- getAttributeColumn(object=object, attr_name="duration")[[1]]
+  duration.val <- pknca_duration_check_values(getAttributeColumn(object=object, attr_name="duration")[[1]])
   if (is.numeric(duration.val) &&
-      !any(is.na(duration.val)) &&
+      !anyNA(duration.val) &&
       !any(is.infinite(duration.val)) &&
       all(duration.val >= 0)) {
     # It passes the test
   } else {
-    stop("duration must be numeric without missing (NA) or infinite values, and all values must be >= 0")
+    rlang::abort(
+      "duration must be numeric without missing (NA) or infinite values, and all values must be >= 0",
+      class = "pknca_error_conc_invalid_duration"
+    )
   }
   object
 }
@@ -313,11 +407,9 @@ print.PKNCAconc <- function(x, n=6, summarize=FALSE, ...) {
   print(stats::formula(x), ...)
   if (is_sparse_pk(x)) {
     data_current <- x$data_sparse
-    is_sparse <- TRUE
     cat("Data are sparse PK.\n")
   } else {
     data_current <- x$data
-    is_sparse <- FALSE
     cat("Data are dense PK.\n")
   }
   single_subject <- is.na(x$columns$subject) || (length(x$columns$subject) == 0)

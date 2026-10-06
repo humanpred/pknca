@@ -27,32 +27,33 @@ pk.tss.stepwise.linear <- function(...,
                                    check=TRUE) {
   # Check inputs
   modeldata <- pk.tss.data.prep(..., check=check)
-  if (is.factor(min.points) |
-      !is.numeric(min.points))
-    stop("min.points must be a number")
   if (!length(min.points) == 1) {
-    warning("Only first value of min.points is used")
+    rlang::warn("Only first value of min.points is used", class = "pknca_warning_min_points_length")
     min.points <- min.points[1]
   }
-  if (min.points < 3)
-    stop("min.points must be at least 3")
-  if (is.factor(level) |
-      !is.numeric(level)) {
-    stop("level must be a number")
-  }
+
+  checkmate::assert_number(min.points, lower = 3)
+
   if (!length(level) == 1) {
-    warning("Only first value of level is being used")
+    rlang::warn("Only first value of level is being used", class = "pknca_warning_tss_level_multiple")
     level <- level[1]
   }
-  if (level <= 0 | level >= 1) {
-    stop("level must be between 0 and 1, exclusive")
+
+  checkmate::assert_numeric(level, any.missing = FALSE)
+
+  if (level <= 0 || level >= 1) {
+    rlang::abort("level must be between 0 and 1, exclusive", class = "pknca_error_tss_level_range")
   }
+
   # Confirm that we may have sufficient data to complete the
   # modeling.  Because of the variety of methods used for estimating
   # time to steady-state, assurance that we have enough data is more
   # simply determined by model convergence.
   if (length(unique(modeldata$time)) < min.points) {
-    warning("After removing non-dosing time points, insufficient data remains for tss calculation")
+    rlang::warn(
+      "After removing non-dosing time points, insufficient data remains for tss calculation",
+      class = "pknca_warning_tss_insufficient_data"
+    )
     return(NA)
   }
   # Assign treatment if given and with multiple levels
@@ -63,39 +64,38 @@ pk.tss.stepwise.linear <- function(...,
   # them out in order.
   remaining.time <- sort(unique(modeldata$time))
   ret <- NA
+  # Start times whose model could not be fit, with the reason
+  fit_failures <- character()
   while (is.na(ret) &
          (length(remaining.time) >= min.points)) {
     if (verbose) {
-      message("Trying ", min(remaining.time, na.rm=TRUE))
+      rlang::inform(sprintf("Trying %s", min(remaining.time, na.rm = TRUE)), class = "pknca_message_tss_trying_time")
     }
-    try({
-      # Try to make the model
-      current.interval <-
-        if ("subject" %in% names(modeldata)) {
-          # If we have a subject column, try to fit a linear
-          # mixed-effects model.
-          current.model <-
-            nlme::lme(
-              formula.to.fit,
-              random=~time|subject,
-              data=modeldata[modeldata$time >= min(remaining.time),,drop=FALSE])
-          nlme::intervals(current.model, level=level, which="fixed")$fixed["time",]
-        } else {
-          # If we do not have a subject column, fit a linear model.
-          current.model <-
-            stats::glm(
-              formula.to.fit,
-              data=modeldata[modeldata$time >= min(remaining.time),,drop=FALSE])
-          # There is no intervals function for glm, so build one
-          ci <- as.vector(stats::confint(current.model, "time", level=level))
-          c(ci[1], stats::coef(current.model)[["time"]], ci[2])
-        }
+    current.interval <-
+      tryCatch(
+        pk.tss.stepwise.linear_interval(
+          modeldata = modeldata[modeldata$time >= min(remaining.time),,drop=FALSE],
+          formula.to.fit = formula.to.fit,
+          level = level
+        ),
+        error = function(e) e
+      )
+    if (inherits(current.interval, "error")) {
+      fit_failures <-
+        c(
+          fit_failures,
+          sprintf("from time %g: %s", min(remaining.time, na.rm = TRUE), conditionMessage(current.interval))
+        )
+    } else {
       if (verbose) {
-        message(
-          sprintf("Current interval %g [%g, %g]",
-                  current.interval[2],
-                  current.interval[1],
-                  current.interval[3])
+        rlang::inform(
+          sprintf(
+            "Current interval %g [%g, %g]",
+            current.interval[2],
+            current.interval[1],
+            current.interval[3]
+          ),
+          class = "pknca_message_tss_interval"
         )
       }
       # If the signs of the upper and lower bounds of the slope of
@@ -103,11 +103,54 @@ pk.tss.stepwise.linear <- function(...,
       # a non-significant slope.  A non-significant slope indicates steady-state.
       if (sign(current.interval[1]) != sign(current.interval[3]))
         ret <- min(remaining.time, na.rm=TRUE)
-    }, silent=!verbose)
+    }
     remaining.time <- remaining.time[-1]
   }
+  # Early start times often fail to converge (the concentrations are still
+  # rising), and later ones decide the result, so failures matter only when
+  # nothing was found:  then NA could be from failures, not from the data.
+  if (is.na(ret) && length(fit_failures) > 0) {
+    rlang::warn(
+      sprintf(
+        "Steady state was not found, and the stepwise linear model could not be fit for %d start time(s), which were skipped:\n%s",
+        length(fit_failures),
+        paste(fit_failures, collapse = "\n")
+      ),
+      class = "pknca_warning_tss_stepwise_fit_failed"
+    )
+  }
   data.frame(
-    tss.stepwise.linear=ret,
-    stringsAsFactors=FALSE
+    tss.stepwise.linear=ret
   )
+}
+
+#' Fit the stepwise linear model for one start time
+#'
+#' @param modeldata The data from the start time on
+#' @param formula.to.fit The fixed-effects formula
+#' @param level The confidence level
+#' @returns A numeric vector of the lower confidence bound, estimate, and upper
+#'   confidence bound of the slope with time
+#' @keywords Internal
+#' @noRd
+pk.tss.stepwise.linear_interval <- function(modeldata, formula.to.fit, level) {
+  if ("subject" %in% names(modeldata)) {
+    # With a subject column, fit a linear mixed-effects model
+    current.model <-
+      nlme::lme(
+        formula.to.fit,
+        random=~time|subject,
+        data=modeldata
+      )
+    nlme::intervals(current.model, level=level, which="fixed")$fixed["time",]
+  } else {
+    # Without a subject column, fit a linear model.  For this Gaussian
+    # identity-link model the profile likelihood is exactly quadratic, so the
+    # Wald interval (confint.default()) equals the profile interval that
+    # confint() gives, without needing MASS (which confint() on a glm needed
+    # before R 4.4).
+    current.model <- stats::glm(formula.to.fit, data=modeldata)
+    ci <- as.vector(stats::confint.default(current.model, "time", level=level))
+    c(ci[1], stats::coef(current.model)[["time"]], ci[2])
+  }
 }

@@ -4,7 +4,13 @@
 \alias{find.tau}
 \title{Find the repeating interval within a vector of doses}
 \usage{
-find.tau(x, na.action = stats::na.omit, options = list(), tau.choices = NULL)
+find.tau(
+  x,
+  na.action = stats::na.omit,
+  options = list(),
+  tau.choices = NULL,
+  timeu = NULL
+)
 }
 \arguments{
 \item{x}{the vector to find the interval within}
@@ -14,28 +20,56 @@ find.tau(x, na.action = stats::na.omit, options = list(), tau.choices = NULL)
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
 
-\item{tau.choices}{the intervals to look for if the doses are not all equally
-spaced.}
+\item{tau.choices}{The nominal intervals to match, in the unit of \code{x}, or
+\code{NA} to use the built-in set (when \code{timeu} is given) or none.  Names are used
+as labels.  \code{NULL} takes the \code{tau.choices} option.}
+
+\item{timeu}{The time unit of \code{x} (such as \code{"hr"} or \code{"day"}), or \code{NULL} (or
+\code{""}) when it is not known.  A unit that cannot be converted to hours is an
+error.}
 }
 \value{
-A scalar indicating the repeating interval with the most repetition.
-\enumerate{
-\item If all values are \code{NA} then NA is returned.
-\item If all values are the same, then 0 is returned.
-\item If all values are equally spaced, then that spacing is
-returned.
-\item If one of the \code{choices} can minimize the number of
-unique values, then that is returned.
-\item If none of the \code{choices} can minimize the number of
-unique values, then -1 is returned.
-}
+\code{NA} when there are no dose times or no interval repeats, 0 for a
+single dose time, and otherwise the repeating interval.
 }
 \description{
-This is intended to find the interval over which x repeats by the rule
-\code{unique(mod(x, interval))} is minimized.
+The regimen is found with \code{\link[=find.dose.regimen]{find.dose.regimen()}}, and the interval is the
+period of its segment with the most doses (the latest of those when segments
+tie).  In brief, the dose times are sorted and times that repeat are dropped;
+equally spaced doses give their spacing; a pattern of more than one dose per
+interval that repeats over at least two complete intervals gives the interval
+it repeats over; doses scattered within a tolerance of one spacing give their
+median spacing; and otherwise runs of the same spacing form the regimen, with
+the gaps between them read as missed doses (a whole number of intervals) or
+doses off schedule.  Times are compared on the log scale within \code{tol} and
+\code{snap.tol} of \code{\link[=find.dose.regimen]{find.dose.regimen()}}, so a dose recorded at 23.6 hours is a
+daily dose.
+}
+\details{
+Looking for a repeating pattern before reading anything as a missed dose is
+what keeps a regimen with a regular gap in it, such as dosing three times a
+day at 0, 6, and 12 hours, from being reported as a 6 hour interval with a
+dose missing overnight.
+
+The intervals are matched to \code{tau.choices} when it is given.  When it is \code{NA}
+(the default) and \code{timeu} is given, they are matched to the built-in nominal
+intervals listed in \code{\link[=find.dose.regimen]{find.dose.regimen()}}.  When neither is given, the
+interval is the one found in the data, because the unit of \code{x} is not known.
+The warnings of \code{\link[=find.dose.regimen]{find.dose.regimen()}} are given here as well, notably
+\code{"pknca_warning_tau_irregular_dosing"} for missed doses or doses off schedule.
+}
+\examples{
+# Equally spaced doses give their spacing
+find.tau(c(0, 24, 48, 72))
+# Twice-daily dosing repeats daily although no two doses are a day apart
+find.tau(c(0, 10, 24, 34, 48, 58), tau.choices = c(12, 24))
+# Dose times as recorded, with the unit known
+find.tau(c(0, 23.6, 48, 72.4, 96), timeu = "hr")
 }
 \seealso{
-Other Interval determination: 
-\code{\link{choose.auc.intervals}()}
+Other Interval determination:
+\code{\link[=choose.auc.intervals]{choose.auc.intervals()}},
+\code{\link[=find.dose.regimen]{find.dose.regimen()}},
+\code{\link[=resolve_dose_tau]{resolve_dose_tau()}}
 }
 \concept{Interval determination}

@@ -1,4 +1,4 @@
-#' A compute the Area Under the (Moment) Curve
+#' Compute the Area Under the (Moment) Curve
 #'
 #' Compute the area under the curve (AUC) and the area under the moment curve
 #' (AUMC) for pharmacokinetic (PK) data.  AUC and AUMC are used for many
@@ -12,28 +12,27 @@
 #'
 #' If all conc input are zero, then the AU(M)C is zero.
 #'
+#' You probably do not want to call `pk.calc.auxc()`.  Usually, you will call
+#' one of the other functions for calculating AUC like `pk.calc.auc.last()`,
+#' `pk.calc.auc.inf.obs()`, etc.
+#'
 #' @inheritParams assert_conc_time
 #' @inheritParams assert_intervaltime_single
 #' @inheritParams choose_interval_method
 #' @inheritParams assert_lambdaz
 #' @inheritParams PKNCA.choose.option
+#' @inheritParams clean.conc.blq
 #' @param clast,clast.obs,clast.pred The last concentration above the limit of
 #'   quantification; this is used for AUCinf calculations.  If provided as
 #'   clast.obs (observed clast value, default), AUCinf is AUCinf,obs. If
 #'   provided as clast.pred, AUCinf is AUCinf,pred.
-#' @param conc.blq How to handle BLQ values in between the first and last above
-#'   LOQ concentrations. (See [clean.conc.blq()] for usage instructions.)
-#' @param conc.na How to handle missing concentration values.  (See
-#'   [clean.conc.na()] for usage instructions.)
-#' @param check Run [assert_conc_time()], [clean.conc.blq()], and
-#'   [clean.conc.na()]?
 #' @param fun_linear The function to use for integration of the linear part of
 #'   the curve (not required for AUC or AUMC functions)
 #' @param fun_log The function to use for integration of the logarithmic part of
 #'   the curve (if log integration is used; not required for AUC or AUMC
 #'   functions)
 #' @param fun_inf The function to use for extrapolation from the final
-#'   measurement to infinite time (not required for AUC or AUMC functions.
+#'   measurement to infinite time (not required for AUC or AUMC functions).
 #' @param ... For functions other than `pk.calc.auxc`, these values are passed
 #'   to `pk.calc.auxc`
 #' @returns A numeric value for the AU(M)C.
@@ -69,16 +68,13 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
                          fun_linear, fun_log, fun_inf) {
   # Check the inputs
   method <- PKNCA.choose.option(name="auc.method", value=method, options=options)
-  conc.blq <- PKNCA.choose.option(name="conc.blq", value=conc.blq, options=options)
-  conc.na <- PKNCA.choose.option(name="conc.na", value=conc.na, options=options)
   if (check) {
     assert_conc_time(conc = conc, time = time)
     data <-
       clean.conc.blq(
-        conc, time,
-        conc.blq=conc.blq,
-        conc.na=conc.na,
-        check=FALSE
+        conc = conc, time = time,
+        conc.blq = conc.blq, conc.na = conc.na, options = options,
+        check = FALSE
       )
   } else {
     data <- data.frame(conc = conc, time = time)
@@ -102,10 +98,15 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
     # All the data were missing or 0 before excluding points
     return(structure(0, exclude="DO NOT EXCLUDE"))
   }
+
   auc.type <- match.arg(auc.type)
   interval <- assert_intervaltime_single(interval = interval)
-  if (auc.type %in% "AUCinf" & is.finite(interval[2])) {
-    warning("Requesting AUCinf when the end of the interval is not Inf")
+
+  if (auc.type %in% "AUCinf" && is.finite(interval[2])) {
+    rlang::warn(
+      "Requesting AUCinf when the end of the interval is not Inf",
+      class = "pknca_warning_aucinf_finite_interval"
+    )
   }
 
   # Subset the data to the range of interest ####
@@ -118,12 +119,18 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
         "Requesting an AUC range starting (%g) before the first measurement (%g) is not allowed",
         interval_start, min(data$time)
       )
-    rlang::warn(message = warn_message, class = "pknca_warn_auc_before_first")
+    rlang::warn(message = warn_message, class = "pknca_warning_auc_before_first")
     return(structure(NA_real_, exclude=warn_message))
   } else if (interval_start > max(data$time)) {
     # Give this as a warning, but allow it to continue
-    warning(sprintf("AUC start time (%g) is after the maximum observed time (%g)",
-                    interval_start, max(data$time)))
+    rlang::warn(
+      sprintf(
+        "AUC start time (%g) is after the maximum observed time (%g)",
+        interval_start,
+        max(data$time)
+      ),
+      class = "pknca_warning_auc_after_max_time"
+    )
   }
   # Ensure that we have clean concentration and time data.  This means that we
   # need to make sure that we have our starting point. Interpolation ensures
@@ -172,7 +179,7 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
     # All concentrations are BLQ (note that this has to be checked
     # after full subsetting and interpolation to ensure that it is
     # still true)
-    stop("Unknown error with NA tlast but non-BLQ concentrations") # nocov
+    rlang::abort("Unknown error with NA tlast but non-BLQ concentrations", class = "pknca_error_internal_tlast")  # nocov
   } else {
     interval_method <- choose_interval_method(conc = data$conc, time = data$time, tlast = tlast, method = method, auc.type = auc.type, options = options)
     ret <-
@@ -183,6 +190,8 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
         fun_linear = fun_linear, fun_log = fun_log, fun_inf = fun_inf
       )
   }
+  # Add method details as an attribute
+  attr(ret, "method") <- paste0("AUC: ", method)
   ret
 }
 
@@ -205,18 +214,26 @@ pk.calc.auc <- function(conc, time, ..., options=list()) {
 #' @export
 pk.calc.auc.last <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.auc.last, please use pk.calc.auc")
+    rlang::abort(
+      "auc.type cannot be changed when calling pk.calc.auc.last, please use pk.calc.auc",
+      class = "pknca_error_auc_last_type_override"
+    )
   pk.calc.auc(conc=conc, time=time, ...,
               options=options,
               auc.type="AUClast",
               lambda.z=NA)
 }
 
+pknca_concept(pk.calc.auc.last) <- "auc"
+
 #' @describeIn pk.calc.auxc Compute the AUCinf
 #' @export
 pk.calc.auc.inf <- function(conc, time, ..., options=list(), lambda.z) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.auc.inf, please use pk.calc.auc")
+    rlang::abort(
+      "auc.type cannot be changed when calling pk.calc.auc.inf, please use pk.calc.auc",
+      class = "pknca_error_auc_inf_type_override"
+    )
   pk.calc.auc(conc=conc, time=time, ...,
               options=options,
               auc.type="AUCinf",
@@ -232,6 +249,8 @@ pk.calc.auc.inf.obs <- function(conc, time, clast.obs, ..., options=list(),
                   lambda.z=lambda.z)
 }
 
+pknca_concept(pk.calc.auc.inf.obs) <- "auc"
+
 #' @describeIn pk.calc.auxc Compute the AUCinf with the predicted Clast.
 #' @export
 pk.calc.auc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
@@ -241,15 +260,22 @@ pk.calc.auc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
                   lambda.z=lambda.z)
 }
 
+pknca_concept(pk.calc.auc.inf.pred) <- "auc"
+
 #' @describeIn pk.calc.auxc Compute the AUCall.
 #' @export
 pk.calc.auc.all <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.auc.all, please use pk.calc.auc")
+    rlang::abort(
+      "auc.type cannot be changed when calling pk.calc.auc.all, please use pk.calc.auc",
+      class = "pknca_error_auc_all_type_override"
+    )
   pk.calc.auc(conc=conc, time=time, ..., options=options,
               auc.type="AUCall",
               lambda.z=NA)
 }
+
+pknca_concept(pk.calc.auc.all) <- "auc"
 
 
 #' @describeIn pk.calc.auxc Compute the area under the moment curve
@@ -266,18 +292,26 @@ pk.calc.aumc <- function(conc, time, ..., options=list()) {
 #' @export
 pk.calc.aumc.last <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.aumc.last, please use pk.calc.aumc")
+    rlang::abort(
+      "auc.type cannot be changed when calling pk.calc.aumc.last, please use pk.calc.aumc",
+      class = "pknca_error_aumc_last_type_override"
+    )
   pk.calc.aumc(conc=conc, time=time, ..., options=options,
                auc.type="AUClast",
                lambda.z=NA)
 }
+
+pknca_concept(pk.calc.aumc.last) <- "aumc"
 
 #' @describeIn pk.calc.auxc Compute the AUMCinf
 #' @export
 pk.calc.aumc.inf <- function(conc, time, ..., options=list(),
                              lambda.z) {
   if ("auc.type" %in% names(list(...))) {
-    stop("auc.type cannot be changed when calling pk.calc.aumc.inf, please use pk.calc.aumc")
+    rlang::abort(
+      "auc.type cannot be changed when calling pk.calc.aumc.inf, please use pk.calc.aumc",
+      class = "pknca_error_aumc_inf_type_override"
+    )
   }
   pk.calc.aumc(conc=conc, time=time, ..., options=options,
                auc.type="AUCinf",
@@ -292,6 +326,8 @@ pk.calc.aumc.inf.obs <- function(conc, time, clast.obs, ..., options=list(),
                    lambda.z=lambda.z)
 }
 
+pknca_concept(pk.calc.aumc.inf.obs) <- "aumc"
+
 #' @describeIn pk.calc.auxc Compute the AUMCinf with the predicted Clast.
 #' @export
 pk.calc.aumc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
@@ -300,14 +336,79 @@ pk.calc.aumc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
                    lambda.z=lambda.z)
 }
 
+pknca_concept(pk.calc.aumc.inf.pred) <- "aumc"
+
 #' @describeIn pk.calc.auxc Compute the AUMCall.
 #' @export
 pk.calc.aumc.all <- function(conc, time, ..., options=list()) {
   if ("auc.type" %in% names(list(...)))
-    stop("auc.type cannot be changed when calling pk.calc.aumc.all, please use pk.calc.aumc")
+    rlang::abort(
+      "auc.type cannot be changed when calling pk.calc.aumc.all, please use pk.calc.aumc",
+      class = "pknca_error_aumc_all_type_override"
+    )
   pk.calc.aumc(conc=conc, time=time, ..., options=options,
                auc.type="AUCall",
                lambda.z=NA)
+}
+
+pknca_concept(pk.calc.aumc.all) <- "aumc"
+
+# Move a sparse estimator's result into the unified parameter's namespace:  the
+# point estimate keeps the parameter's own name and the standard error and
+# degrees of freedom take the `_se` and `_df` suffixes.  The method annotation
+# moves from the individual columns onto the data.frame, which is where
+# pk.nca.interval() reads it for PPANMETH.
+unify_sparse_result <- function(x, name, method) {
+  if (!is.data.frame(x) || (ncol(x) != 3)) {
+    rlang::abort(
+      "Please report a bug.  A sparse estimator must return a three-column data.frame of estimate, standard error, and degrees of freedom.",
+      class = "pknca_error_internal_sparse_result_shape"
+    )  # nocov
+  }
+  ret <-
+    stats::setNames(
+      # as.numeric() drops the per-column method attributes
+      data.frame(as.numeric(x[[1]]), as.numeric(x[[2]]), as.numeric(x[[3]])),
+      nm = paste0(name, c("", "_se", "_df"))
+    )
+  attr(ret, "method") <- method
+  ret
+}
+
+#' Sparse estimators for the AUC and AUMC to the last measured concentration
+#'
+#' These are the `FUN_sparse` of `auclast` and `aumclast`:  with sparse PK,
+#' [pk.nca()] estimates those parameters from the pooled individual samples with
+#' the Bailer point estimate and the Nedelman-Jia/Holder standard error rather
+#' than integrating the arithmetic-mean profile.  They wrap
+#' [pk.calc.sparse_auclast()] and [pk.calc.sparse_aumclast()], reporting the
+#' results under the unified parameter names.
+#'
+#' @inheritParams pk.calc.sparse_auc
+#' @returns A data.frame with the point estimate, its standard error, and the
+#'   degrees of freedom, named for the parameter (`auclast`, `auclast_se`, and
+#'   `auclast_df`, or the `aumclast` equivalents)
+#' @details The sparse variance theory is defined for the linear trapezoidal
+#'   rule only, so these ignore the `auc.method` option; [pk.nca()] says so when
+#'   the option is set to anything else.
+#' @family Sparse Methods
+#' @export
+pk.calc.auclast_sparse <- function(conc, time, subject, ..., options=list()) {
+  unify_sparse_result(
+    pk.calc.sparse_auclast(conc=conc, time=time, subject=subject, ..., options=options),
+    name="auclast",
+    method=c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")
+  )
+}
+
+#' @describeIn pk.calc.auclast_sparse Sparse AUMClast
+#' @export
+pk.calc.aumclast_sparse <- function(conc, time, subject, ..., options=list()) {
+  unify_sparse_result(
+    pk.calc.sparse_aumclast(conc=conc, time=time, subject=subject, ..., options=options),
+    name="aumclast",
+    method=c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")
+  )
 }
 
 # Add the columns to the interval specification
@@ -316,61 +417,147 @@ add.interval.col("aucinf.obs",
                  values=c(FALSE, TRUE),
                  unit_type="auc",
                  pretty_name="AUCinf,obs",
-                 desc="The area under the concentration time curve from the beginning of the interval to infinity with extrapolation to infinity from the observed Clast",
-                 depends=c("lambda.z", "clast.obs"))
+                 desc="AUC start to inf, obs Clast extrap",
+                 depends=c("lambda.z", "clast.obs"),
+                 pptestcd_cdisc="AUCIFO",
+                 pptest_cdisc="AUC Infinity Obs",
+                 formula="$AUC_{\\infty,\\text{obs}} = AUC_{0-\\text{last}} + \\frac{C_{\\text{last,obs}}}{\\lambda_z}$",
+                 tier = "common")
 
 add.interval.col("aucinf.pred",
                  FUN="pk.calc.auc.inf.pred",
                  values=c(FALSE, TRUE),
                  unit_type="auc",
                  pretty_name="AUCinf,pred",
-                 desc="The area under the concentration time curve from the beginning of the interval to infinity with extrapolation to infinity from the predicted Clast",
-                 depends=c("lambda.z", "clast.pred"))
+                 desc="AUC start to inf, pred Clast extrap",
+                 depends=c("lambda.z", "clast.pred"),
+                 pptestcd_cdisc="AUCIFP",
+                 pptest_cdisc="AUC Infinity Pred",
+                 formula="$AUC_{\\infty,\\text{pred}} = AUC_{0-\\text{last}} + \\frac{C_{\\text{last,pred}}}{\\lambda_z}$")
 
 add.interval.col("auclast",
                  FUN="pk.calc.auc.last",
+                 FUN_sparse="pk.calc.auclast_sparse",
                  values=c(FALSE, TRUE),
                  unit_type="auc",
                  pretty_name="AUClast",
-                 desc="The area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification")
+                 desc="AUC start to last conc above LOQ",
+                 # CDISC PKPARMCD has no code distinguishing a sparsely
+                 # estimated AUClast from one integrated per subject; both use
+                 # AUCLST, and PPANMETH (set at calculation time; see
+                 # pk.calc.sparse_auc()) records the sparse estimation method.
+                 pptestcd_cdisc="AUCLST",
+                 pptest_cdisc="AUC to Last Nonzero Conc",
+                 formula="$AUC_{\\text{last}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule (linear-up/log-down by default)",
+                 tier = "common")
+
+add.interval.col("auclast_se",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="auc",
+                 pretty_name="AUClast standard error",
+                 desc="SE of AUClast (sparse PK only)",
+                 depends="auclast",
+                 pptestcd_cdisc="SPARSEAS",
+                 pptest_cdisc="Sparse AUClast standard error",
+                 formula="$SE(AUC_{\\text{last}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$",
+                 formula_note="Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001)")
+
+add.interval.col("auclast_df",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="count",
+                 pretty_name="AUClast degrees of freedom",
+                 desc="DF for AUClast (sparse PK only)",
+                 depends="auclast",
+                 pptestcd_cdisc="SPARSEAD",
+                 pptest_cdisc="Sparse AUClast degrees of freedom",
+                 formula="$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$",
+                 formula_note="Satterthwaite approximation (Nedelman et al 1995, eq. 6a)")
 
 add.interval.col("aucall",
                  FUN="pk.calc.auc.all",
                  values=c(FALSE, TRUE),
                  unit_type="auc",
                  pretty_name="AUCall",
-                 desc="The area under the concentration time curve from the beginning of the interval to the last concentration above the limit of quantification plus the triangle from that last concentration to 0 at the first concentration below the limit of quantification"
-)
+                 desc="AUClast plus triangle, 0 at BLQ",
+                 pptestcd_cdisc="AUCALL",
+                 pptest_cdisc="AUC All",
+                 formula="$AUC_{\\text{all}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule (linear-up/log-down by default)")
 
 add.interval.col("aumcinf.obs",
                  FUN="pk.calc.aumc.inf.obs",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMC,inf,obs",
-                 desc="The area under the concentration time moment curve from the beginning of the interval to infinity with extrapolation to infinity from the observed Clast",
-                 depends=c("lambda.z", "clast.obs"))
+                 desc="AUMC start to inf, obs Clast extrap",
+                 depends=c("lambda.z", "clast.obs"),
+                 pptestcd_cdisc="AUMCIFO",
+                 pptest_cdisc="AUMC Infinity Obs",
+                 formula="$AUMC_{\\infty,\\text{obs}} = AUMC_{0-\\text{last}} + \\frac{C_{\\text{last,obs}} T_{\\text{last}}}{\\lambda_z} + \\frac{C_{\\text{last,obs}}}{\\lambda_z^2}$")
 
 add.interval.col("aumcinf.pred",
                  FUN="pk.calc.aumc.inf.pred",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMC,inf,pred",
-                 desc="The area under the concentration time moment curve from the beginning of the interval to infinity with extrapolation to infinity from the predicted Clast",
-                 depends=c("lambda.z", "clast.pred"))
+                 desc="AUMC start to inf, pred Clast extrap",
+                 depends=c("lambda.z", "clast.pred"),
+                 pptestcd_cdisc="AUMCIFP",
+                 pptest_cdisc="AUMC Infinity Pred",
+                 formula="$AUMC_{\\infty,\\text{pred}} = AUMC_{0-\\text{last}} + \\frac{C_{\\text{last,pred}} T_{\\text{last}}}{\\lambda_z} + \\frac{C_{\\text{last,pred}}}{\\lambda_z^2}$")
 
 add.interval.col("aumclast",
                  FUN="pk.calc.aumc.last",
+                 FUN_sparse="pk.calc.aumclast_sparse",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMC,last",
-                 desc="The area under the concentration time moment curve from the beginning of the interval to the last concentration above the limit of quantification")
+                 desc="AUMC start to last conc above LOQ",
+                 # CDISC has no separate code for a sparsely estimated AUMClast
+                 # the way SPARSEAL covers the AUC, so only the test name says
+                 # which estimator produced the row
+                 pptestcd_cdisc="AUMCLST",
+                 pptest_cdisc=list(dense="AUMC to Last Nonzero Conc", sparse="Sparse AUMClast"),
+                 formula="$AUMC_{\\text{last}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule (linear-up/log-down by default)")
+
+add.interval.col("aumclast_se",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="aumc",
+                 pretty_name="AUMC,last standard error",
+                 desc="SE of AUMClast (sparse PK only)",
+                 depends="aumclast",
+                 pptestcd_cdisc="AUMCLSES",
+                 pptest_cdisc="Sparse AUMClast standard error",
+                 formula="$SE(AUMC_{\\text{last}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$",
+                 formula_note="Variance from the weighted covariance of the moment curve across subjects")
+
+add.interval.col("aumclast_df",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="count",
+                 pretty_name="AUMC,last degrees of freedom",
+                 desc="DF for AUMClast (sparse PK only)",
+                 depends="aumclast",
+                 pptestcd_cdisc="AUMCLSED",
+                 pptest_cdisc="Sparse AUMClast degrees of freedom",
+                 formula="$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$",
+                 formula_note="Satterthwaite approximation (Nedelman et al 1995, eq. 6a)")
 
 add.interval.col("aumcall",
                  FUN="pk.calc.aumc.all",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMC,all",
-                 desc="The area under the concentration time moment curve from the beginning of the interval to the last concentration above the limit of quantification plus the moment of the triangle from that last concentration to 0 at the first concentration below the limit of quantification")
+                 desc="AUMClast plus triangle moment, 0 at BLQ",
+                 pptestcd_cdisc="AUMCALL",
+                 pptest_cdisc="AUMC All",
+                 formula="$AUMC_{\\text{all}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
+                 formula_note="Trapezoidal rule (linear-up/log-down by default)")
 
 PKNCA.set.summary(
   name=
@@ -381,4 +568,28 @@ PKNCA.set.summary(
   description="geometric mean and geometric coefficient of variation",
   point=business.geomean,
   spread=business.geocv
+)
+
+PKNCA.set.summary(
+  name=c("auclast_df", "aumclast_df"),
+  description="arithmetic mean and standard deviation",
+  point=business.mean,
+  spread=business.sd
+)
+
+# A sparse AUClast is one estimate per group with its standard error on another
+# result row, so it is summarized as the estimate with its standard error
+PKNCA.set.summary(
+  name="auclast_se",
+  description="estimate and standard error",
+  point=business.mean,
+  spread=summary_spread_one_se,
+  spread_for="auclast"
+)
+PKNCA.set.summary(
+  name="aumclast_se",
+  description="estimate and standard error",
+  point=business.mean,
+  spread=summary_spread_one_se,
+  spread_for="aumclast"
 )

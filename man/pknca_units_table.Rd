@@ -2,18 +2,42 @@
 % Please edit documentation in R/unit-support.R
 \name{pknca_units_table}
 \alias{pknca_units_table}
+\alias{pknca_units_table.default}
+\alias{pknca_units_table.PKNCAdata}
 \title{Create a unit assignment and conversion table}
 \usage{
-pknca_units_table(concu, doseu, amountu, timeu, conversions = data.frame())
+pknca_units_table(concu, ...)
+
+\method{pknca_units_table}{default}(
+  concu,
+  doseu,
+  amountu,
+  timeu,
+  concu_pref = NULL,
+  doseu_pref = NULL,
+  amountu_pref = NULL,
+  timeu_pref = NULL,
+  conversions = data.frame(),
+  ...
+)
+
+\method{pknca_units_table}{PKNCAdata}(concu, ..., conversions = data.frame())
 }
 \arguments{
 \item{concu, doseu, amountu, timeu}{Units for concentration, dose, amount, and
-time}
+time in the source data}
+
+\item{...}{Additional arguments (not used)}
+
+\item{concu_pref, doseu_pref, amountu_pref, timeu_pref}{Preferred units for
+reporting; \code{conversions} will be automatically.}
 
 \item{conversions}{An optional data.frame with columns of c("PPORRESU",
 "PPSTRESU", "conversion_factor") for the original calculation units, the
 standardized units, and a conversion factor to multiply the initial value
-by to get a standardized value.}
+by to get a standardized value.  This argument overrides any preferred unit
+conversions from \code{concu_pref}, \code{doseu_pref}, \code{amountu_pref}, or
+\code{timeu_pref}.}
 }
 \value{
 A unit conversion table with columns for "PPTESTCD" and "PPORRESU"
@@ -25,11 +49,35 @@ This data.frame is typically used for the \code{units} argument for \code{\link[
 If a unit is not given, then all of the units derived from that unit will be
 \code{NA}.
 }
+\section{Secondary parameters and reference groups}{
+
+
+A secondary parameter (renal clearance, bioavailability, a ratio; see
+\code{vignette("v09-secondary-parameters")}) takes one value from the interval
+requesting it and another from a reference interval, so its units are a
+quotient of the two groups' units.  When the \code{PKNCAdata} method finds more
+than one set of units among the groups, the table therefore gains a
+\verb{<group column>_ref} column for each of its group columns and, for each
+secondary parameter, one row per pair of (own group, reference group) with
+"PPORRESU" composed from the correct side of each.  Rows describing a
+result that names no reference -- every primary parameter, and a secondary
+parameter calculated without a reference -- hold \code{NA} in the \verb{_ref}
+columns, and results carrying no reference group join to them.  A quotient
+whose two sides are convertible into one another is dimensionless, and such
+a row also gets "PPSTRESU" of "fraction" with the "conversion_factor" that
+turns the raw quotient into that number.
+
+With one set of units for every group there is no reference side to name
+and no \verb{_ref} column is added.
+}
+
 \examples{
 pknca_units_table() # only parameters that are unitless
 pknca_units_table(
   concu="ng/mL", doseu="mg/kg", amountu="mg", timeu="hr"
 )
+\dontshow{if (requireNamespace("units", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# Automatic unit conversion needs the units package
 pknca_units_table(
   concu="ng/mL", doseu="mg/kg", amountu="mg", timeu="hr",
   # Convert clearance and volume units to more understandable units with
@@ -50,6 +98,14 @@ pknca_units_table(
     conversion_factor=c(1/138.121, NA, NA)
   )
 )
+
+# This will make all time-related parameters use "day" even though the
+# original units are "hr"
+pknca_units_table(
+  concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
+  timeu_pref = "day"
+)
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 The \code{units} argument for \code{\link[=PKNCAdata]{PKNCAdata()}}

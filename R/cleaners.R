@@ -21,7 +21,7 @@ clean.conc.na <- function(conc, time, ...,
   if (check)
     assert_conc_time(conc, time)
   # Prep it as a data frame
-  ret <- data.frame(conc, time, ..., stringsAsFactors=FALSE)
+  ret <- data.frame(conc, time, ...)
   if (conc.na %in% "drop") {
     # If it is set to "drop" then omit the NA concentrations
     ret <- ret[!is.na(conc),]
@@ -30,7 +30,7 @@ clean.conc.na <- function(conc, time, ...,
   } else {
     # This case should already have been captured by the PKNCA.options
     # call above.
-    stop("Unknown how to handle conc.na") # nocov
+    rlang::abort("Unknown how to handle conc.na", class = "pknca_error_unknown_conc_na")  # nocov
   }
   ret
 }
@@ -54,7 +54,7 @@ clean.conc.na <- function(conc, time, ...,
 #'   considered BLQ if they are 0.
 #'
 #'   `conc.blq` can be set either a scalar indicating what should be done for
-#'   all BLQ values or a list with elements named "first", "middle", and "last"
+#'   all BLQ values or a list with elements either named "first", "middle" and "last" or "before.tmax" and "after.tmax"
 #'   each set to a scalar.
 #'
 #' The meaning of each of the list elements is:
@@ -64,6 +64,8 @@ clean.conc.na <- function(conc, time, ...,
 #'   \item{middle}{Values that are BLQ between the first and last
 #'     non-BLQ values.}
 #'   \item{last}{Values that are BLQ after the last non-BLQ value}
+#'   \item{before.tmax}{Values that are BLQ before the time at first maximum concentration}
+#'   \item{after.tmax}{Values that are BLQ after the time at first maximum concentration}
 #' }
 #'
 #' The valid settings for each are:
@@ -91,39 +93,50 @@ clean.conc.blq <- function(conc, time,
   # If all data has been excluded, then don't do anything
   if (nrow(ret) > 0) {
     tfirst <- pk.calc.tfirst(ret$conc, ret$time, check=FALSE)
-    if (is.na(tfirst)) {
-      # All measurements are BLQ; so apply the "first" BLQ rule to
-      # everyting.
+    tlast <- pk.calc.tlast(ret$conc, ret$time, check=FALSE)
+    tmax <- pk.calc.tmax(ret$conc, ret$time, check=FALSE)
+
+    # If all measurements are BLQ
+    if (all(ret$conc == 0)){
+      # Apply "first" BLQ rule to everything for tfirst/tlast.
+      # tlast is set to tfirst + 1 as a sentinel that is guaranteed to be
+      # greater than all values in ret$time (since tfirst = max(ret$time)).
+      # It is only ever compared to ret$time (never used as an actual time
+      # point), so the fact that it lies outside the observed time range is
+      # intentional and harmless.
       tfirst <- max(ret$time)
       tlast <- tfirst + 1
-    } else {
-      # There is at least one above LOQ concentration
-      tlast <- pk.calc.tlast(ret$conc, ret$time, check=FALSE)
+
+      # Apply "before.tmax" BLQ rule to everything for tmax
+      tmax <- max(ret$time)
     }
-    # For each of the first, middle, and last, do the right thing to
-    # the values in that set.
-    for (n in c("first", "middle", "last")) {
+
+    # Depending on the specified argument perform the corresponding action
+    for (i in seq_len(length(conc.blq))) {
       # Set the mask to apply the rule to
-      if (n == "first") {
-        mask <- (ret$time <= tfirst &
-                   ret$conc %in% 0)
-      } else if (n == "middle") {
-        mask <- (tfirst < ret$time &
-                   ret$time < tlast &
-                     ret$conc %in% 0)
-      } else if (n == "last") {
-        mask <- (tlast <= ret$time &
-                   ret$conc %in% 0)
+      time_type <- names(conc.blq)[i]
+      if (is.null(time_type) && length(conc.blq) == 1) {
+        # %in% 0 is used for BLQ checks throughout because BLQ concentrations
+        # are set to exactly 0 by this function. Exact equality is
+        # definitionally correct; a tolerance cannot be used because we do not
+        # know what a "low" concentration may be in all situations.
+        mask <- ret$conc %in% 0
+      } else if (time_type == "first") {
+        mask <- ret$time <= tfirst & ret$conc %in% 0
+      } else if (time_type == "middle") {
+        mask <- tfirst < ret$time & ret$time < tlast & ret$conc %in% 0
+      } else if (time_type == "last") {
+        mask <- tlast <= ret$time & ret$conc %in% 0
+      } else if (time_type == "before.tmax") {
+        mask <- ret$time < tmax & ret$conc %in% 0
+      } else if (time_type == "after.tmax") {
+        mask <- tmax <= ret$time & ret$conc %in% 0
       } else {
-        stop("There is a bug in cleaning the conc.blq with position names") # nocov
+        rlang::abort("There is a bug in cleaning the conc.blq with position names", class = "pknca_error_internal_conc_blq_position")  # nocov
       }
       # Choose the rule to apply
-      this_rule <-
-        if (is.list(conc.blq)) {
-          conc.blq[[n]]
-        } else {
-          conc.blq
-        }
+      this_rule <- unname(conc.blq)[[i]]
+
       if (this_rule %in% "keep") {
         # Do nothing
       } else if (this_rule %in% "drop") {
@@ -133,8 +146,7 @@ clean.conc.blq <- function(conc, time,
       } else {
         # This case should already have been captured by the PKNCA.options
         # call above.
-        stop(sprintf("Unknown how to handle conc.blq rule %s", # nocov
-                     as.character(this_rule)))                 # nocov
+        rlang::abort(sprintf("Unknown how to handle conc.blq rule %s", as.character(this_rule)), class = "pknca_error_unknown_conc_blq_rule")  # nocov
       }
     }
   }

@@ -11,7 +11,9 @@ pk.calc.aucabove(conc, time, conc_above = NA_real_, ..., options = list())
 
 \item{time}{Time of the measurement of the concentrations}
 
-\item{conc_above}{The concentration to be above}
+\item{conc_above}{The concentration threshold to calculate AUC above.
+Must be finite (\code{Inf}/\code{-Inf} are not allowed); if \code{NA}, no AUC is
+calculated.}
 
 \item{...}{Extra arguments.  Currently, the only extra argument that is used
 is \code{method} as described in the details section.}

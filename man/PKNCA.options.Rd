@@ -17,7 +17,7 @@ of the values when used in another function)}
 \item{name}{An option name to use with the \code{value}.}
 
 \item{value}{An option value (paired with the \code{name}) to set or check (if
-\code{NULL}, ).}
+\code{NULL}, the current value of the option is returned).}
 }
 \value{
 If...
@@ -55,8 +55,9 @@ PKNCA.options(auc.method="lin up/log down", min.hl.points=3)
 \seealso{
 \code{\link[=PKNCA.options.describe]{PKNCA.options.describe()}}
 
-Other PKNCA calculation and summary settings: 
-\code{\link{PKNCA.choose.option}()},
-\code{\link{PKNCA.set.summary}()}
+Other PKNCA calculation and summary settings:
+\code{\link[=PKNCA.choose.option]{PKNCA.choose.option()}},
+\code{\link[=PKNCA.set.summary]{PKNCA.set.summary()}},
+\code{\link[=PKNCA_options_defaults]{PKNCA_options_defaults()}}
 }
 \concept{PKNCA calculation and summary settings}

@@ -8,31 +8,40 @@ test_that("exclude_nca", {
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_max.aucinf.pext())
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, nrow(my_result_excluded$result)-2),
-                 rep("AUC percent extrapolated > 20", 2)))
+                 rep("aucpext > 20", 2)))
 
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_max.aucinf.pext(50))
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, nrow(my_result_excluded$result)-2),
-                 rep("AUC percent extrapolated > 50", 2)))
+                 rep("aucpext > 50", 2)))
 
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_span.ratio())
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("Span ratio < 2", 10)))
+                 rep("span.ratio < 2", 12)))
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_span.ratio(1))
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("Span ratio < 1", 10)))
-  
+                 rep("span.ratio < 1", 12)))
+
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.r.squared())
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("Half-life r-squared < 0.9", 10)))
+                 rep("r.squared < 0.9", 12)))
   my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.r.squared(0.95))
   expect_equal(as.data.frame(my_result_excluded)$exclude,
                c(rep(NA_character_, 4),
-                 rep("Half-life r-squared < 0.95", 10)))
-  
+                 rep("r.squared < 0.95", 12)))
+
+  my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.adj.r.squared())
+  expect_equal(as.data.frame(my_result_excluded)$exclude,
+               c(rep(NA_character_, 4),
+                 rep("adj.r.squared < 0.9", 12)))
+  my_result_excluded <- exclude(my_result, FUN=exclude_nca_min.hl.adj.r.squared(0.95))
+  expect_equal(as.data.frame(my_result_excluded)$exclude,
+               c(rep(NA_character_, 4),
+                 rep("adj.r.squared < 0.95", 12)))
+
   my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, cmax=TRUE))
   suppressMessages(
     my_result <- pk.nca(my_data)
@@ -46,4 +55,274 @@ test_that("exclude_nca", {
   expect_equal(my_result,
                exclude(my_result, FUN=exclude_nca_min.hl.r.squared()),
                info="Result is ignored when not calculated")
+  expect_equal(my_result,
+               exclude(my_result, FUN=exclude_nca_min.hl.adj.r.squared()),
+               info="Result is ignored when not calculated")
+})
+
+test_that("exclude_nca_max.aucinf.pext", {
+  my_conc <- PKNCAconc(data.frame(conc=c(1.1^(3:0), 1.1), time=0:4, subject=1), conc~time|subject)
+  my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, aucpext.pred=TRUE, aucpext.obs=TRUE))
+  suppressMessages(
+    my_result <- pk.nca(my_data)
+  )
+  expect_equal(
+    as.data.frame(my_result)$exclude,
+    rep(NA_character_, nrow(as.data.frame(my_result)))
+  )
+  my_result_exclude_20 <- exclude(my_result, FUN = exclude_nca_max.aucinf.pext(max.aucinf.pext = 20))
+  expect_equal(
+    as.data.frame(my_result_exclude_20)$exclude,
+    c(rep(NA_character_, nrow(as.data.frame(my_result_exclude_20))-4), rep("aucpext > 20", 4))
+  )
+  my_result_exclude_50 <- exclude(my_result, FUN = exclude_nca_max.aucinf.pext(max.aucinf.pext = 50))
+  expect_equal(
+    as.data.frame(my_result_exclude_50)$exclude,
+    c(rep(NA_character_, nrow(as.data.frame(my_result_exclude_50))-4), rep("aucpext > 50", 4))
+  )
+})
+
+test_that("exclude_nca_count_conc_measured", {
+  my_conc <- PKNCAconc(data.frame(conc=c(1.1^(c(3:0, -Inf)), 1.1), time=0:5, subject = 1), conc~time|subject)
+  my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, aucinf.obs=TRUE, aucpext.obs=TRUE, count_conc_measured = TRUE))
+  suppressMessages(
+    my_result <- pk.nca(my_data)
+  )
+  expect_equal(
+    as.data.frame(my_result)$exclude,
+    rep(NA_character_, 17)
+  )
+  my_result_exclude5 <- exclude(my_result, FUN = exclude_nca_count_conc_measured(min_count = 5))
+  expect_equal(
+    as.data.frame(my_result_exclude5)$exclude,
+    rep(NA_character_, 17)
+  )
+  my_result_exclude10 <- exclude(my_result, FUN = exclude_nca_count_conc_measured(min_count = 10))
+  expect_equal(
+    as.data.frame(my_result_exclude10)$exclude,
+    c("count_conc_measured < 10", rep(NA_character_, 14), rep("count_conc_measured < 10", 2))
+  )
+})
+
+test_that("exclude_nca_tmax_early", {
+  my_conc <- PKNCAconc(data.frame(conc=c(1.1^(c(3:0, -Inf)), 1.1), time=0:5, subject = 1), conc~time|subject)
+  my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, auclast = TRUE, half.life = TRUE))
+  suppressMessages(
+    my_result <- pk.nca(my_data)
+  )
+  expect_equal(
+    as.data.frame(my_result)$exclude,
+    rep(NA_character_, nrow(as.data.frame(my_result)))
+  )
+  my_result_exclude_1 <- exclude(my_result, FUN = exclude_nca_tmax_early(tmax_early = 1))
+  expect_equal(
+    as.data.frame(my_result_exclude_1)$exclude,
+    rep("tmax < 1 (likely missed dose, insufficient PK samples, or PK sample swap)", nrow(as.data.frame(my_result_exclude_1)))
+  )
+  my_result_exclude_0 <- exclude(my_result, FUN = exclude_nca_tmax_0())
+  expect_equal(
+    as.data.frame(my_result_exclude_0)$exclude,
+    rep("tmax <= 0 (likely missed dose, insufficient PK samples, or PK sample swap)", nrow(as.data.frame(my_result_exclude_0)))
+  )
+  # This should never happen in real code
+  expect_error(
+    exclude_nca_tmax_early()(data.frame(PPTESTCD = "tmax", PPORRES = 1:2)),
+    regexp = "Should not see more than one tmax (please report this as a bug)",
+    fixed = TRUE
+  )
+})
+
+test_that("exclude_nca_by_param works as expected", {
+  # Define the input
+  my_conc <- PKNCAconc(data.frame(conc=c(1.1^(3:0), 1.1), time=0:4, subject=1), conc~time|subject)
+  my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, span.ratio=TRUE))
+  suppressMessages(
+    my_result <- pk.nca(my_data)
+  )
+
+  # excludes rows based on min_thr
+  res_min_excluded <- PKNCA::exclude(
+    my_result,
+    FUN = exclude_nca_by_param("span.ratio", min_thr = 100)
+  )
+  expect_equal(
+    as.data.frame(res_min_excluded)$exclude,
+    c(rep(NA, 11), "span.ratio < 100")
+  )
+
+  # does not exclude rows when min_thr is not met
+  res_min_not_excluded <- PKNCA::exclude(
+    my_result,
+    FUN = exclude_nca_by_param("span.ratio", min_thr = 0.01)
+  )
+  expect_equal(
+    as.data.frame(res_min_not_excluded)$exclude,
+    rep(NA_character_, 12)
+  )
+
+  # excludes rows based on max_thr
+  res_max_excluded <- PKNCA::exclude(
+    my_result,
+    FUN = exclude_nca_by_param("span.ratio", max_thr = 0.01)
+  )
+  expect_equal(
+    as.data.frame(res_max_excluded)$exclude,
+    c(rep(NA, 11), "span.ratio > 0.01")
+  )
+
+  # does not exclude rows when max_thr is not exceeded
+  res_max_not_excluded <- PKNCA::exclude(
+    my_result,
+    FUN = exclude_nca_by_param("span.ratio", max_thr = 100)
+  )
+  expect_equal(
+    as.data.frame(res_max_not_excluded)$exclude,
+    rep(NA_character_, 12)
+  )
+
+  # throws an error for invalid min_thr
+  expect_error(
+    exclude_nca_by_param("span.ratio", min_thr = "invalid"),
+    "Assertion on 'min_thr' failed: Must be of type 'number'"
+  )
+
+  # throws an error for invalid max_thr
+  expect_error(
+    exclude_nca_by_param(parameter = "span.ratio", max_thr = c(1, 2)),
+    "Assertion on 'max_thr' failed: Must have length 1"
+  )
+
+  # throws an error when min_thr is greater than max_thr
+  expect_error(
+    exclude_nca_by_param("span.ratio", min_thr = 10, max_thr = 5),
+    "if both defined min_thr must be less than max_thr"
+  )
+
+  # returns the original object when the parameter is not found
+  res <- PKNCA::exclude(my_result, FUN = exclude_nca_by_param("nonexistent", min_thr = 0))
+  expect_true(all(is.na(as.data.frame(res)$exclude)))
+
+  # returns the object when the parameter's value is NA
+  my_result_na <- my_result
+  my_result_na$result$PPORRES <- NA
+  res <- PKNCA::exclude(
+    my_result_na,
+    FUN = exclude_nca_by_param("span.ratio", min_thr = 0)
+  )
+  expect_true(all(is.na(as.data.frame(res)$exclude)))
+
+  # marks records associated with the affected_parameters
+  res <- PKNCA::exclude(
+    my_result,
+    FUN = exclude_nca_by_param(
+      "span.ratio", min_thr = 0.01, affected_parameters = c("lambda.z", "span.ratio")
+    )
+  )
+  # All span.ratio records should be NA (not excluded)
+  expect_true(all(is.na(as.data.frame(res)$exclude[res$result$PPTESTCD == "span.ratio"])))
+  expect_true(all(is.na(as.data.frame(res)$exclude[res$result$PPTESTCD == "lambda.z"])))
+
+  # produces an error when more than 1 PPORRES is per parameter (should never happen in real code)
+  expect_error(
+    exclude_nca_by_param(
+      param = "r.squared",
+      min_thr = 0.7
+    )(data.frame(PPTESTCD = "r.squared", PPORRES = c(1, 1))),
+    regexp = "Should not see more than one r.squared (please report this as a bug)",
+    fixed = TRUE
+  )
+})
+
+test_that("a half-life exclusion only reaches an AUCint that used the half-life (#270)", {
+  d_conc <-
+    data.frame(
+      subject = 1,
+      time = c(0, 0.5, 1, 2, 4, 8, 12, 24),
+      conc = c(0, 8, 10, 7, 4, 2, 1.2, 0.4)
+    )
+  d_dose <- data.frame(subject = 1, time = 0, dose = 100)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | subject)
+  # The first interval ends before tlast (24), so it only interpolates; the
+  # second reaches past tlast and has to extrapolate with the half-life.
+  intervals <-
+    data.frame(
+      start = c(0, 0),
+      end = c(12, 36),
+      aucint.inf.obs = TRUE,
+      aucint.inf.pred = TRUE,
+      half.life = TRUE,
+      span.ratio = TRUE
+    )
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = intervals)
+  my_result <- pk.nca(o_data)
+  # The span ratio is well below the threshold, so the half-life is excluded in
+  # both intervals
+  excluded <- as.data.frame(exclude(my_result, FUN = exclude_nca_span.ratio(min.span.ratio = 5)))
+  exclusion <- function(param, interval_end) {
+    excluded$exclude[excluded$PPTESTCD %in% param & excluded$end %in% interval_end]
+  }
+  expect_equal(exclusion("half.life", 12), "span.ratio < 5")
+  expect_equal(exclusion("half.life", 36), "span.ratio < 5")
+  expect_equal(exclusion("aucint.inf.obs", 12), NA_character_)
+  expect_equal(exclusion("aucint.inf.pred", 12), NA_character_)
+  expect_equal(exclusion("aucint.inf.obs", 36), "span.ratio < 5")
+  expect_equal(exclusion("aucint.inf.pred", 36), "span.ratio < 5")
+
+  # The same split for the other half-life exclusions
+  for (FUN in list(exclude_nca_min.hl.r.squared(1), exclude_nca_min.hl.adj.r.squared(1))) {
+    excluded <- as.data.frame(exclude(my_result, FUN = FUN))
+    expect_true(is.na(exclusion("aucint.inf.obs", 12)))
+    expect_false(is.na(exclusion("aucint.inf.obs", 36)))
+  }
+})
+
+test_that("a result with no extrapolation reported keeps a half-life exclusion (#270)", {
+  # aucinf.obs and the rest of the half-life family do not report an
+  # extrapolation, so they are excluded with the half-life as they always were
+  my_conc <- PKNCAconc(data.frame(conc = c(1.1^(3:0), 1.1), time = 0:4, subject = 1), conc~time|subject)
+  my_data <- PKNCAdata(my_conc, intervals = data.frame(start = 0, end = Inf, aucinf.obs = TRUE))
+  suppressMessages(my_result <- pk.nca(my_data))
+  excluded <- as.data.frame(exclude(my_result, FUN = exclude_nca_span.ratio()))
+  expect_equal(
+    excluded$exclude[excluded$PPTESTCD %in% "aucinf.obs"],
+    "span.ratio < 2"
+  )
+})
+
+test_that("a half-life exclusion is kept when the method column is not there (#270)", {
+  # exclude() always passes the method column, but the returned function is
+  # usable on its own, and without the column there is nothing to say that the
+  # half-life was unused
+  expect_equal(
+    exclude_nca_span.ratio(2)(
+      data.frame(PPTESTCD = c("span.ratio", "aucint.inf.obs"), PPORRES = c(1, 5))
+    ),
+    rep("span.ratio < 2", 2)
+  )
+})
+
+test_that("exclude_nca_by_param() checks thresholds without testthat", {
+  # A bad threshold is an ordinary error, not a failed testthat expectation
+  err <- tryCatch(exclude_nca_by_param("cmax", min_thr = "a"), error = function(e) e)
+  expect_s3_class(err, "error")
+  expect_false(inherits(err, "expectation"))
+  expect_match(conditionMessage(err), "Assertion on 'min_thr' failed", fixed = TRUE)
+})
+
+test_that("exclusion rules do not load testthat", {
+  # A separate R session with the installed package, where testthat is not
+  # already loaded
+  pknca_path <- getNamespaceInfo("PKNCA", "path")
+  skip_if(
+    dir.exists(file.path(pknca_path, "man")),
+    "The installed package is needed (run under R CMD check, not devtools::load_all())"
+  )
+  code <-
+    sprintf(
+      "suppressMessages(library(PKNCA, lib.loc = '%s')); invisible(pknca_exclude_rules()); invisible(exclude_nca_by_param('cmax', min_thr = 1)); cat(isNamespaceLoaded('testthat'))",
+      normalizePath(dirname(pknca_path), winslash = "/")
+    )
+  out <- system2(file.path(R.home("bin"), "Rscript"), args = c("-e", shQuote(code)), stdout = TRUE, stderr = TRUE)
+  expect_equal(utils::tail(out, 1), "FALSE")
 })

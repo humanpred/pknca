@@ -85,6 +85,11 @@ test_that("assert_conc_time", {
   )
 })
 
+test_that("assert_conc_time returns NULL invisibly for valid data", {
+  ret <- expect_invisible(assert_conc_time(conc = c(1, 2), time = c(0, 1)))
+  expect_null(ret)
+})
+
 test_that("assert_lambdaz", {
   expect_equal(assert_lambdaz(1), 1)
   expect_equal(assert_lambdaz(NA), NA) # NA is allowed by default
@@ -99,9 +104,122 @@ test_that("assert_lambdaz", {
   )
 })
 
+test_that("assert_PKNCAconc", {
+  expect_error(
+    assert_PKNCAconc("A"),
+    regexp = "Must be a PKNCAconc object"
+  )
+  obj <- PKNCAconc(data.frame(conc = 1, time = 0), conc~time)
+  expect_identical(assert_PKNCAconc(obj), obj)
+})
+
 test_that("assert_PKNCAdata", {
   expect_error(
     assert_PKNCAdata("A"),
     regexp = "Must be a PKNCAdata object"
   )
+})
+
+test_that("assert_PKNCAdose", {
+  expect_error(
+    assert_PKNCAdose("A"),
+    regexp = "Must be a PKNCAdose object"
+  )
+  obj <- PKNCAdose(data.frame(dose = 1, time = 0), dose~time)
+  expect_identical(assert_PKNCAdose(obj), obj)
+})
+
+test_that("assert_PKNCAresults", {
+  expect_error(
+    assert_PKNCAresults("A"),
+    regexp = "Must be a PKNCAresults object"
+  )
+})
+
+test_that("element_find", {
+  values5<-c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, TRUE)
+  values10<-c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, TRUE)
+  expect_equal(
+    element_find(values5),
+    element_find(values10)
+  )
+
+  expect_equal(
+    element_find(values5),
+    "Elements 1, 2, 3, 4, 5"
+  )
+
+  expect_equal(
+    element_find(values10),
+    "Elements 1, 2, 3, 4, 5"
+  )
+})
+
+test_that("assert_unit_col", {
+  d <- data.frame(A = 1, B = "C")
+  expect_equal(
+    assert_unit_col(unit = "B", data = d),
+    structure("B", unit_type = "column")
+  )
+  expect_error(
+    assert_unit_col(unit = 1:2),
+    regexp = "Must be of type 'character'"
+  )
+  expect_error(
+    assert_unit_col(unit = 1),
+    regexp = "Must be of type 'character'"
+  )
+  expect_error(
+    assert_unit_col(unit = "D", data = "A"),
+    regexp = "Must be of type 'data.frame'"
+  )
+  expect_error(
+    assert_unit_col(unit = "D", data = d),
+    regexp = "Names must include the elements {'D'}",
+    fixed = TRUE
+  )
+  expect_error(
+    assert_unit_col(unit = "A", data = d),
+    regexp = "Must be of type 'character'"
+  )
+})
+
+test_that("assert_unit_value", {
+  expect_equal(assert_unit_value("A"), structure("A", unit_type = "value"))
+  expect_null(assert_unit_value(NULL))
+  expect_error(
+    assert_unit_value(c("A", "B")),
+    regexp = "Must have length 1"
+  )
+  expect_error(
+    assert_unit_value(1),
+    regexp = "Must be of type 'character'"
+  )
+})
+
+test_that("assert_unit", {
+  d <- data.frame(A = 1, B = "C")
+
+  expect_null(assert_unit(NULL, data = d))
+  expect_equal(
+    assert_unit(unit = "B", data = d),
+    structure("B", unit_type = "column")
+  )
+  expect_equal(
+    assert_unit(unit = "C", data = d),
+    structure("C", unit_type = "value")
+  )
+  expect_error(
+    assert_unit(unit = 1, data = d),
+    regexp = "Must be of type 'character'"
+  )
+})
+
+test_that("assert_conc_time is exported and checks concentrations and times together", {
+  expect_true("assert_conc_time" %in% getNamespaceExports("PKNCA"))
+  expect_null(assert_conc_time(conc = c(0, 2, 1), time = 0:2))
+  expect_invisible(assert_conc_time(conc = c(0, 2, 1), time = 0:2))
+  expect_error(assert_conc_time(conc = c(0, 2), time = 0:2), regexp = "conc")
+  expect_error(assert_conc_time(conc = c(0, 2, 1), time = c(2, 0, 1)), regexp = "time")
+  expect_null(assert_conc_time(conc = c(0, 2, 1), time = c(2, 0, 1), sorted_time = FALSE))
 })

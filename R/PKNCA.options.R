@@ -1,25 +1,79 @@
 # Options for use within the code for setting and getting PKNCA default options. ####
 
+# `adj.r.squared.factor` and `r.squared.factor` are checked identically; only
+# the r-squared they act on and the wording of their messages differ.  `NA`
+# means "do not select on this r-squared" (see `pk.calc.half.life()`).
+check_r_squared_factor_option <- function(x, default=FALSE, description=FALSE, name) {
+  adj <- name == "adj.r.squared.factor"
+  r_squared <- if (adj) "adjusted r^2" else "r^2"
+  if (description) {
+    rationale <-
+      if (adj) {
+        "It allows for more data points to be preferred in the calculation of half-life."
+      } else {
+        paste(
+          "Unlike the adjusted r^2, the r^2 does not reward more data points,",
+          "so it generally selects fewer of them."
+        )
+      }
+    return(paste0(
+      "During the calculation of lambda.z, all candidate regressions with an ",
+      r_squared, " within ", name, " of the best ", r_squared,
+      " are considered acceptable, and the acceptable regression using the",
+      " most data points is selected.  ", rationale,
+      "  Setting either of adj.r.squared.factor and r.squared.factor takes",
+      " the other out of use, so exactly one of them is ever in use; setting",
+      " this one to NA therefore selects on the other r-squared."
+    ))
+  }
+  if (default)
+    return(if (adj) 0.0001 else NA_real_)
+  checkmate::assert_number(x, na.ok = TRUE, .var.name = name)
+  if (is.na(x)) {
+    return(NA_real_)
+  }
+  if (x <= 0 || x >= 1) {
+    rlang::abort(
+      paste(name, "must be between 0 and 1, exclusive"),
+      class = paste0("pknca_error_", name, "_out_of_bounds")
+    )
+  }
+
+  if (x > 0.01) {
+    rlang::warn(
+      paste(name, "is usually <0.01"),
+      class = paste0("pknca_warning_", if (adj) "adj_r2" else "r2", "_factor_large")
+    )
+  }
+  x
+}
+
+# adj.r.squared.factor and r.squared.factor are two ways of asking for the same
+# half-life point selection, so exactly one of them is ever in use.  Setting one
+# takes the other out of use, and setting one to NA hands the selection to the
+# other, which takes the standard tolerance when it does not have one.  `x` holds
+# both values and `name` is the one that was just set.
+pair_r_squared_factors <- function(x, name) {
+  other <-
+    if (name == "adj.r.squared.factor") "r.squared.factor" else "adj.r.squared.factor"
+  if (!is.na(x[[name]])) {
+    x[[other]] <- NA_real_
+  } else if (is.na(x[[other]])) {
+    x[[other]] <- .PKNCA.option.check$adj.r.squared.factor(default = TRUE)
+  }
+  x
+}
+
 .PKNCA.option.check <- list(
   adj.r.squared.factor=function(x, default=FALSE, description=FALSE) {
-    if (description)
-      return(paste(
-        "The adjusted r^2 for the calculation of lambda.z has this factor",
-        "times the number of data points added to it.  It allows for more",
-        "data points to be preferred in the calculation of half-life."))
-    if (default)
-      return(0.0001)
-    if (length(x) != 1)
-      stop("adj.r.squared.factor must be a scalar")
-    if (is.factor(x) |
-        !is.numeric(x))
-      stop("adj.r.squared.factor must be numeric (and not a factor)")
-    # Must be between 0 and 1, exclusive
-    if (x <= 0 | x >= 1)
-      stop("adj.r.squared.factor must be between 0 and 1, exclusive")
-    if (x > 0.01)
-      warning("adj.r.squared.factor is usually <0.01")
-    x
+    check_r_squared_factor_option(
+      x, default=default, description=description, name="adj.r.squared.factor"
+    )
+  },
+  r.squared.factor=function(x, default=FALSE, description=FALSE) {
+    check_r_squared_factor_option(
+      x, default=default, description=description, name="r.squared.factor"
+    )
   },
   max.missing=function(x, default=FALSE, description=FALSE) {
     if (description)
@@ -28,15 +82,13 @@
         "calculate summary statistics with the business.* functions."))
     if (default)
       return(0.5)
-    if (length(x) != 1)
-      stop("max.missing must be a scalar")
-    if (is.factor(x) | !is.numeric(x))
-      stop("max.missing must be numeric (and not a factor)")
-    # Must be between 0 and 1, inclusive
-    if (x < 0 | x >= 1)
-      stop("max.missing must be between 0 and 1")
-    if (x > 0.5)
-      warning("max.missing is usually <= 0.5")
+    checkmate::assert_number(x, .var.name = "max.missing")
+    if (x < 0 || x >= 1) {
+      rlang::abort("max.missing must be between 0 and 1", class = "pknca_error_max.missing_out_of_bounds")
+    }
+    if (x > 0.5) {
+      rlang::warn("max.missing is usually <= 0.5", class = "pknca_warning_max_missing_large")
+    }
     x
   },
   auc.method=function(x, default=FALSE, description=FALSE) {
@@ -58,22 +110,23 @@
         "help for 'clean.conc.na' for how to use this option."))
     if (default)
       return("drop")
-    if (is.na(x))
-      stop("conc.na must not be NA")
+    if (is.na(x)) {
+      rlang::abort("conc.na must not be NA", class = "pknca_error_conc_na_is_na")
+    }
     if (is.factor(x)) {
-      warning("conc.na may not be a factor; attempting conversion")
+      rlang::warn("conc.na may not be a factor; attempting conversion", class = "pknca_warning_conc_na_factor")
       x <- as.character(x)
     }
     if (tolower(x) %in% "drop") {
       x <- tolower(x)
     } else if (is.numeric(x)) {
       if (is.infinite(x)) {
-        stop("When a number, conc.na must be finite")
+        rlang::abort("When a number, conc.na must be finite", class = "pknca_error_conc_na_infinite")
       } else if (x < 0) {
-        warning("conc.na is usually not < 0")
+        rlang::warn("conc.na is usually not < 0", class = "pknca_warning_conc_na_negative")
       }
     } else {
-      stop("conc.na must either be a finite number or the text 'drop'")
+      rlang::abort("conc.na must either be a finite number or the text 'drop'", class = "pknca_error_conc_na_invalid")
     }
     x
   },
@@ -88,34 +141,56 @@
                   middle="drop",
                   last="keep"))
     check.element <- function(x) {
-      if (length(x) != 1)
-        stop("conc.blq must be a scalar")
-      if (is.na(x))
-        stop("conc.blq must not be NA")
+      checkmate::assert_scalar(x, na.ok = FALSE)
       if (is.factor(x)) {
-        warning("conc.blq may not be a factor; attempting conversion")
+        rlang::warn("conc.blq may not be a factor; attempting conversion", class = "pknca_warning_conc_blq_factor")
         x <- as.character(x)
       }
       if (tolower(x) %in% c("drop", "keep")) {
         x <- tolower(x)
       } else if (is.numeric(x)) {
         if (is.infinite(x)) {
-          stop("When a number, conc.blq must be finite")
+          rlang::abort("When a number, conc.blq must be finite", class = "pknca_error_conc_blq_infinite")
         } else if (x < 0) {
-          warning("conc.blq is usually not < 0")
+          rlang::warn("conc.blq is usually not < 0", class = "pknca_warning_conc_blq_negative")
         }
       } else {
-        stop("conc.blq must either be a finite number or the text 'drop' or 'keep'")
+        rlang::abort(
+          "conc.blq must either be a finite number or the text 'drop' or 'keep'",
+          class = "pknca_error_conc_blq_invalid"
+        )
       }
       x
     }
     if (is.list(x)) {
-      extra.names <- setdiff(names(x), c("first", "last", "middle"))
-      missing.names <- setdiff(c("first", "last", "middle"), names(x))
+      tfirst_names <- c("first", "last", "middle")
+      tmax_names <- c("before.tmax", "after.tmax")
+
+      are.names.mixed <- any(names(x) %in% tfirst_names) & any(names(x) %in% tmax_names)
+      extra.names <- setdiff(names(x), c(tfirst_names, tmax_names))
+      missing.names <- if (any(names(x) %in% tfirst_names)) setdiff(tfirst_names, names(x)) else setdiff(tmax_names, names(x))
+      duplicated.names <- names(x)[duplicated(names(x))]
+      if (are.names.mixed) {
+        rlang::abort(
+          "When given as a list, prevent mixing arguments of different BLQ strategies.\n Either define 'first', 'middle' and 'last' or 'before.tmax' and 'after.tmax'.",
+          class = "pknca_error_conc_blq_mixed_names"
+        )
+      }
       if (length(extra.names) != 0)
-        stop("When given as a list, conc.blq must only have elements named 'first', 'middle', and 'last'.")
+        rlang::abort(
+          "When given as a list, conc.blq must only have elements named 'first', 'middle' and 'last' or 'before.tmax' and 'after.tmax'.",
+          class = "pknca_error_conc_blq_extra_names"
+        )
       if (length(missing.names) != 0)
-        stop("When given as a list, conc.blq must include elements named 'first', 'middle', and 'last'.")
+        rlang::abort(
+          "When given as a list, conc.blq must include all elements named 'first', 'middle' and 'last' or 'before.tmax' and 'after.tmax'.",
+          class = "pknca_error_conc_blq_missing_names"
+        )
+      if (length(duplicated.names) != 0)
+        rlang::abort(
+          "When given as a list, conc.blq should not have duplicated names",
+          class = "pknca_error_conc_blq_duplicated_names"
+        )
       # After the names are confirmed, confirm each value.
       x <- lapply(x, check.element)
     } else {
@@ -123,24 +198,59 @@
     }
     x
   },
+  debug = function(x, default = FALSE, description = FALSE) {
+    if (description) {
+      return("Enable PKNCA debugging mode (not for production use)")
+    }
+    if (default) {
+      return(NULL)
+    }
+    x
+  },
   first.tmax=function(x, default=FALSE, description=FALSE) {
     if (description)
       return(paste(
-        "If there is more than one concentration equal to Cmax, which time",
-        "should be selected for Tmax?  If 'TRUE', the first will be selected.",
-        "If 'FALSE', the last will be selected."))
+        "If there is more than one time point with the maximum value (Cmax or ERmax),",
+        "which time should be selected for Tmax/ERTmax?  If 'TRUE', the first will be selected.",
+        "If 'FALSE', the last will be selected."
+      ))
     if (default)
       return(TRUE)
-    if (length(x) != 1)
-      stop("first.tmax must be a scalar")
-    if (is.na(x))
-      stop("first.tmax may not be NA")
+
+    checkmate::assert_scalar(x, na.ok = FALSE, .var.name = "first.tmax")
+
     if (!is.logical(x)) {
       x <- as.logical(x)
       if (is.na(x)) {
-        stop("Could not convert first.tmax to a logical value")
+        rlang::abort("Could not convert first.tmax to a logical value", class = "pknca_error_first_tmax_not_logical")
       } else {
-        warning("Converting first.tmax to a logical value: ", x)
+        rlang::warn(
+          sprintf("Converting first.tmax to a logical value: %s", x),
+          class = "pknca_warning_first_tmax_converted"
+        )
+      }
+    }
+    x
+  },
+  first.tmin=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return(paste(
+        "If there is more than one time point with the minimum value (Cmin),",
+        "which time should be selected for Tmin?  If 'TRUE', the first will be selected.",
+        "If 'FALSE', the last will be selected."
+      ))
+    if (default)
+      return(TRUE)
+    checkmate::assert_scalar(x, na.ok = FALSE, .var.name = "first.tmin")
+    if (!is.logical(x)) {
+      x <- as.logical(x)
+      if (is.na(x)) {
+        rlang::abort("Could not convert first.tmin to a logical value", class = "pknca_error_first_tmin_not_logical")
+      } else {
+        rlang::warn(
+          sprintf("Converting first.tmin to a logical value: %s", x),
+          class = "pknca_warning_first_tmin_converted"
+        )
       }
     }
     x
@@ -152,16 +262,19 @@
         "half-life calculation?  'TRUE' is yes and 'FALSE' is no."))
     if (default)
       return(FALSE)
-    if (length(x) != 1)
-      stop("allow.tmax.in.half.life must be a scalar")
-    if (is.na(x))
-      stop("allow.tmax.in.half.life may not be NA")
+    checkmate::assert_scalar(x, na.ok = FALSE, .var.name = "allow.tmax.in.half.life")
     if (!is.logical(x)) {
       x <- as.logical(x)
       if (is.na(x)) {
-        stop("Could not convert allow.tmax.in.half.life to a logical value")
+        rlang::abort(
+          "Could not convert allow.tmax.in.half.life to a logical value",
+          class = "pknca_error_allow_tmax_hl_not_logical"
+        )
       } else {
-        warning("Converting allow.tmax.in.half.life to a logical value: ", ret)
+        rlang::warn(
+          sprintf("Converting allow.tmax.in.half.life to a logical value: %s", x),
+          class = "pknca_warning_allow_tmax_hl_converted"
+        )
       }
     }
     x
@@ -181,19 +294,40 @@
       return("What is the minimum number of points required to calculate half-life?")
     if (default)
       return(3)
-    if (length(x) != 1)
-      stop("min.hl.points must be a scalar")
-    if (is.factor(x))
-      stop("min.hl.points cannot be a factor")
-    if (!is.numeric(x))
-      stop("min.hl.points must be a number")
-    if (x < 2)
-      stop("min.hl.points must be >=2")
+    checkmate::assert_number(x, lower = 2, na.ok = FALSE, .var.name = "min.hl.points")
+
     if (min(x %% 1, 1 - (x %% 1)) >
         100*.Machine$double.eps) {
-      warning("Non-integer given for min.hl.points; rounding to nearest integer")
+      rlang::warn(
+        "Non-integer given for min.hl.points; rounding to nearest integer",
+        class = "pknca_warning_min_hl_points_noninteger"
+      )
       x <- round(x)
     }
+    x
+  },
+  max.hl.points=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return("What is the maximum number of points that automatic point selection may use for half-life?  It must be more than min.hl.points.")
+    if (default)
+      return(Inf)
+    # min.hl.points is at least 2, and this must be more than it
+    checkmate::assert_number(x, lower = 3, na.ok = FALSE, .var.name = "max.hl.points")
+    if (is.finite(x) && min(x %% 1, 1 - (x %% 1)) > 100*.Machine$double.eps) {
+      rlang::warn(
+        "Non-integer given for max.hl.points; rounding to nearest integer",
+        class = "pknca_warning_max_hl_points_noninteger"
+      )
+      x <- round(x)
+    }
+    x
+  },
+  min.hl.start.time=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return("What is the earliest time at which automatic point selection may start the half-life (0 does not restrict it)?")
+    if (default)
+      return(0)
+    checkmate::assert_number(x, lower = 0, finite = TRUE, na.ok = FALSE, .var.name = "min.hl.start.time")
     x
   },
   min.span.ratio=function(x, default=FALSE, description=FALSE) {
@@ -201,16 +335,11 @@
       return("What is the minimum span ratio required to consider a half-life valid?")
     if (default)
       return(2)
-    if (length(x) != 1)
-      stop("min.span.ratio must be a scalar")
-    if (is.factor(x))
-      stop("min.span.ratio cannot be a factor")
-    if (!is.numeric(x))
-      stop("min.span.ratio must be a number")
+    checkmate::assert_number(x, na.ok = FALSE, .var.name = "min.span.ratio")
     if (x <= 0)
-      stop("min.span.ratio must be > 0")
+      rlang::abort("min.span.ratio must be > 0", class = "pknca_error_min_span_ratio_range")
     if (x < 2)
-      warning("min.span.ratio is usually >= 2")
+      rlang::warn("min.span.ratio is usually >= 2", class = "pknca_warning_min_span_ratio_small")
     x
   },
   max.aucinf.pext=function(x, default=FALSE, description=FALSE) {
@@ -218,18 +347,19 @@
       return("What is the maximum percent extrapolation to consider an AUCinf valid?")
     if (default)
       return(20)
-    if (length(x) != 1)
-      stop("max.aucinf.pext must be a scalar")
-    if (is.factor(x))
-      stop("max.aucinf.pext cannot be a factor")
-    if (!is.numeric(x))
-      stop("max.aucinf.pext must be a number")
-    if (x <= 0)
-      stop("max.aucinf.pext must be > 0")
-    if (x > 25)
-      warning("max.aucinf.pext is usually <=25")
-    if (x < 1)
-      warning("max.aucinf.pext is on the percent not ratio scale, value given is <1%")
+    checkmate::assert_number(x, na.ok = FALSE, .var.name = "max.aucinf.pext")
+    if (x <= 0) {
+      rlang::abort("max.aucinf.pext must be > 0", class = "pknca_error_max_aucinf_pext_range")
+    }
+    if (x > 25) {
+      rlang::warn("max.aucinf.pext is usually <=25", class = "pknca_warning_max_aucinf_pext_large")
+    }
+    if (x < 1) {
+      rlang::warn(
+        "max.aucinf.pext is on the percent not ratio scale, value given is <1%",
+        class = "pknca_warning_max_aucinf_pext_small"
+      )
+    }
     x
   },
   min.hl.r.squared=function(x, default=FALSE, description=FALSE) {
@@ -237,16 +367,14 @@
       return("What is the minimum r-squared value to consider a half-life calculation valid?")
     if (default)
       return(0.9)
-    if (length(x) != 1)
-      stop("min.hl.r.squared must be a scalar")
-    if (is.factor(x))
-      stop("min.hl.r.squared cannot be a factor")
-    if (!is.numeric(x))
-      stop("min.hl.r.squared must be a number")
-    if (x <= 0 | x >= 1)
-      stop("min.hl.r.squared must be between 0 and 1, exclusive")
-    if (x < 0.9)
-      warning("min.hl.r.squared is usually >= 0.9")
+    checkmate::assert_number(x, .var.name = "min.hl.r.squared")
+    if (x <= 0 || x >= 1) {
+      rlang::abort("min.hl.r.squared must be between 0 and 1, exclusive", class = "pknca_error_min_hl_r2_out_of_bounds")
+    }
+
+    if (x < 0.9) {
+      rlang::warn("min.hl.r.squared is usually >= 0.9", class = "pknca_warning_min_hl_r2_small")
+    }
     x
   },
 
@@ -269,17 +397,49 @@
         "interval."))
     if (default)
       return(NA)
-    if (is.factor(x))
-      stop("tau.choices cannot be a factor")
-    if (length(x) > 1 & any(is.na(x)))
-      stop("tau.choices may not include NA and be a vector")
-    if (!identical(x, NA))
-      if (!is.numeric(x))
-        stop("tau.choices must be a number")
+    # NA mixed into a numeric vector is not allowed
+    if (length(x) > 1 && anyNA(x)) {
+      rlang::abort("tau.choices may not include NA and be a vector", class = "pknca_error_tau_choices_na_in_vector")
+    }
+
+    # Only validate non-NA cases
+    if (!identical(x, NA)) {
+      checkmate::assert_numeric(x, .var.name = "tau.choices")
       if (!is.vector(x)) {
-        warning("tau.choices must be a vector, converting")
+        rlang::warn("tau.choices must be a vector, converting", class = "pknca_warning_tau_choices_not_vector")
         x <- as.vector(x)
       }
+    }
+    x
+  },
+  auto.interval.method=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return(paste(
+        "When automatically determining the intervals, where do the parameters",
+        "to calculate come from?  'builder' asks 'pknca_interval_table' for the",
+        "parameters that suit each interval's context.  'legacy' uses the",
+        "parameter lists PKNCA used before that was available:  the",
+        "'single.dose.aucs' option for single-dose data, and AUClast, Cmax, and",
+        "Tmax for each interval of multiple-dose data.  Only the choice of",
+        "parameters differs; the intervals themselves are found the same way",
+        "either way.  See 'choose.auc.intervals' for more information."))
+    if (default)
+      return("builder")
+    checkmate::assert_string(x, .var.name = "auto.interval.method")
+    match.arg(x, choices = c("builder", "legacy"))
+  },
+  auto.interval.tolerance=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return(paste(
+        "When automatically determining the intervals, how far from the",
+        "boundary of an interval may a sample be drawn and still count as the",
+        "sample at that boundary?  It is given as a fraction of the interval's",
+        "length (the dosing interval, tau, for a dosing interval), so that a",
+        "trough drawn at 167.5 hours still ends an interval nominally ending",
+        "at 168 hours.  See 'choose.auc.intervals' for more information."))
+    if (default)
+      return(0.05)
+    checkmate::assert_number(x, lower = 0, upper = 1, .var.name = "auto.interval.tolerance")
     x
   },
   single.dose.aucs=function(x, default=FALSE, description=FALSE) {
@@ -298,7 +458,58 @@
         cmax=c(FALSE, TRUE))
     }
     check.interval.specification(x)
-  })
+  },
+  allow_partial_missing_units = function(x, default = FALSE, description = FALSE) {
+    if (description)
+      return("When using unit assignment and conversions, should some units be allowed to be missing?")
+    if (default) {
+      return(FALSE)
+    }
+    checkmate::assert_logical(x, any.missing = FALSE, len = 1)
+    x
+  },
+
+  hl_method = function(x, default = FALSE, description = FALSE) {
+    choices <- c("log-linear", "tobit")
+    if (description)
+      return(paste(
+        "The method used to calculate the half-life and related parameters.",
+        "Options are:",
+        paste0('"', choices, '"', collapse = ", ")
+      ))
+    if (default)
+      return(choices[1])
+    checkmate::assert_string(x, .var.name = "hl_method")
+    x <- match.arg(x, choices)
+    x
+  },
+
+  tobit_n_points_penalty = function(x, default = FALSE, description = FALSE) {
+    if (description)
+      return(paste(
+        "The penalty exponent applied to the number of points when selecting the best",
+        "Tobit regression half-life fit.  The selection criterion is",
+        "tobit_residual * n_points ^ tobit_n_points_penalty, and the window",
+        "minimizing this criterion is selected.  A value of 0 (the default)",
+        "uses the raw Tobit residual with no point-count penalty."))
+    if (default)
+      return(0)
+    checkmate::assert_number(x, lower = 0, na.ok = FALSE, .var.name = "tobit_n_points_penalty"
+    )
+    x
+  },
+
+  tobit_optim_control = function(x, default = FALSE, description = FALSE) {
+    if (description)
+      return(paste(
+        "A list of control parameters passed to stats::optim() when fitting the",
+        "Tobit regression half-life.  See ?stats::optim for available options."))
+    if (default)
+      return(list())
+    checkmate::assert_list(x, .var.name = "tobit_optim_control")
+    x
+  }
+)
 
 # Functions controlling and modifying options ####
 
@@ -324,7 +535,7 @@
 #'   of the values when used in another function)
 #' @param name An option name to use with the `value`.
 #' @param value An option value (paired with the `name`) to set or check (if
-#'   `NULL`, ).
+#'   `NULL`, the current value of the option is returned).
 #' @returns If...
 #' \describe{
 #'   \item{no arguments are given}{returns the current options.}
@@ -345,7 +556,7 @@
 PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
   current <- get("options", envir=.PKNCAEnv)
   # If the options have not been initialized, initialize them and then proceed.
-  if (is.null(current) & !default) {
+  if (is.null(current) && !default) {
     PKNCA.options(default=TRUE)
     current <- get("options", envir=.PKNCAEnv)
   }
@@ -354,41 +565,55 @@ PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
   # like another argument.
   if (missing(name)) {
     if (!missing(value))
-      stop("Cannot have a value without a name")
+      rlang::abort("Cannot have a value without a name", class = "pknca_error_value_without_name")
   } else {
     if (name %in% names(args))
-      stop("Cannot give an option name both with the name argument and as a named argument.")
+      rlang::abort(
+        "Cannot give an option name both with the name argument and as a named argument.",
+        class = "pknca_error_duplicate_option_name"
+      )
     if (!missing(value)) {
       args[[name]] <- value
     } else {
       args <- append(args, name)
     }
   }
-  if (default & check)
-    stop("Cannot request both default and check")
+  if (default && check) {
+    rlang::abort("Cannot request both default and check", class = "pknca_error_default_and_check")
+  }
+
   if (default) {
     if (length(args) > 0)
-      stop("Cannot set default and set new options at the same time.")
-    # Extract all the default values
-    defaults <- lapply(.PKNCA.option.check,
-                       FUN=function(x) x(default=TRUE))
+      rlang::abort(
+        "Cannot set default and set new options at the same time.",
+        class = "pknca_error_default_with_options"
+      )
     # Set the default options
-    assign("options", defaults, envir=.PKNCAEnv)
+    assign("options", PKNCA_options_defaults(), envir=.PKNCAEnv)
   } else if (check) {
     # Check an option for accuracy, but don't set it
-    if (length(args) != 1)
-      stop("Must give exactly one option to check")
+    if (length(args) != 1) {
+      rlang::abort("Must give exactly one option to check", class = "pknca_error_check_not_scalar")
+    }
     n <- names(args)
-    if (!(n %in% names(.PKNCA.option.check)))
-      stop(paste("Invalid setting for PKNCA:", n))
+    if (!(n %in% names(.PKNCA.option.check))) {
+      rlang::abort(sprintf("Invalid setting for PKNCA: %s", n), class = "pknca_error_invalid_option_check")
+    }
     # Verify the option, and return the sanitized version
     return(.PKNCA.option.check[[n]](args[[n]]))
   } else if (length(args) > 0) {
     if (is.null(names(args))) {
       # Confirm that the settings exist
-      if (length(bad.args <- setdiff(unlist(args), names(current))) > 0)
-        stop(sprintf("PKNCA.options does not have value(s) for %s.",
-                     paste(bad.args, collapse=", ")))
+      bad.args <- setdiff(unlist(args), names(current))
+      if (length(bad.args) > 0) {
+        rlang::abort(
+          sprintf(
+            "PKNCA.options does not have value(s) for %s.",
+            paste(bad.args, collapse = ", ")
+          ),
+          class = "pknca_error_unknown_options"
+        )
+      }
       # Get the setting(s)
       if (length(args) == 1) {
         ret <- current[[args[[1]]]]
@@ -403,10 +628,14 @@ PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
       # Set a value
       # Verify values are viable and then set them.
       for (n in names(args)) {
-        if (!(n %in% names(.PKNCA.option.check)))
-          stop(paste("Invalid setting for PKNCA:", n))
+        if (!(n %in% names(.PKNCA.option.check))) {
+          rlang::abort(sprintf("Invalid setting for PKNCA: %s", n), class = "pknca_error_invalid_option_set")
+        }
         # Verify and set the option value
         current[[n]] <- .PKNCA.option.check[[n]](args[[n]])
+        if (n %in% c("adj.r.squared.factor", "r.squared.factor")) {
+          current <- pair_r_squared_factors(current, n)
+        }
       }
       # Assign current into the setting environment
       assign("options", current, envir=.PKNCAEnv)
@@ -438,6 +667,44 @@ PKNCA.choose.option <- function(name, value=NULL, options=list()) {
   }
 }
 
+#' Get the default values of PKNCA options without changing them
+#'
+#' Unlike `PKNCA.options(default = TRUE)`, which resets the current options to
+#' their defaults, this only reads the default values.
+#'
+#' @param name The option name(s) requested, or `NULL` for all options.
+#' @returns For one `name`, the default value of that option; otherwise, a
+#'   named list of default values (all options when `name` is `NULL`).
+#' @family PKNCA calculation and summary settings
+#' @seealso [PKNCA.options()], [PKNCA.options.describe()]
+#' @examples
+#' PKNCA_options_defaults("min.span.ratio")
+#' # The current options are not changed
+#' PKNCA.options(min.span.ratio = 3)
+#' PKNCA_options_defaults("min.span.ratio")
+#' PKNCA.options("min.span.ratio")
+#' PKNCA.options(default = TRUE)
+#' @export
+PKNCA_options_defaults <- function(name = NULL) {
+  checkmate::assert_character(name, any.missing = FALSE, min.len = 1, null.ok = TRUE)
+  if (is.null(name)) {
+    name <- names(.PKNCA.option.check)
+  }
+  bad_name <- setdiff(name, names(.PKNCA.option.check))
+  if (length(bad_name) > 0) {
+    rlang::abort(
+      sprintf("PKNCA.options does not have value(s) for %s.", paste(bad_name, collapse = ", ")),
+      class = "pknca_error_unknown_options"
+    )
+  }
+  ret <- lapply(X = .PKNCA.option.check[name], FUN = function(x) x(default = TRUE))
+  if (length(name) == 1) {
+    ret[[1]]
+  } else {
+    ret
+  }
+}
+
 #' Describe a PKNCA.options option by name.
 #'
 #' @param name The option name requested.
@@ -465,7 +732,14 @@ PKNCA.options.describe <- function(name) {
 #'   digits to round.  If a function, it is expected to return a scalar number
 #'   or character string with the correct results for an input of either a
 #'   scalar or a two-long vector.
-#' @param reset Reset all the summary instructions
+#' @param reset Reset all the summary instructions to no instruction (this is
+#'   not intended for general use)
+#' @param spread_for Optional.  The name of another parameter that `name` gives
+#'   the spread of, such as `"auclast"` for `"auclast_se"`.  Where results for
+#'   `name` are present, [summary.PKNCAresults()] summarizes `spread_for` with
+#'   these instructions:  `point` is applied to the values of `spread_for`,
+#'   `spread` to the values of `name`, and `description` describes the summary.
+#'   `name` then has no summary column of its own.  `spread` must be given.
 #' @returns All current summary settings (invisibly)
 #' @seealso [summary.PKNCAresults()]
 #' @family PKNCA calculation and summary settings
@@ -481,58 +755,80 @@ PKNCA.options.describe <- function(name) {
 #' }
 #' @export
 PKNCA.set.summary <- function(name, description, point, spread,
-                              rounding=list(signif=3), reset=FALSE) {
+                              rounding=list(signif=3), reset=FALSE,
+                              spread_for=NULL) {
   if (reset) {
+    rlang::warn(
+      "`reset = TRUE` is not intended for general use, summary() may not work after resetting summary instructions",
+      class = "pknca_warning_summary_reset"
+    )
     current <- list()
   } else {
     current <- get("summary", envir=.PKNCAEnv)
   }
-  if (missing(name) & missing(point) & missing(spread)) {
+  if (missing(name) && missing(point) && missing(spread)) {
     if (reset)
       assign("summary", current, envir=.PKNCAEnv)
     return(invisible(current))
   }
   # Confirm that the name exists
   if (!all(found_names <- name %in% names(get("interval.cols", envir=.PKNCAEnv)))) {
-    stop(paste("You must first define the parameter name with add.interval.col.  Parameters not yet defined are:",
-               paste(name[!found_names], collapse=", ")))
+    rlang::abort(
+      sprintf(
+        "You must first define the parameter name with add.interval.col.  Parameters not yet defined are: %s",
+        paste(name[!found_names], collapse = ", ")
+      ),
+      class = "pknca_error_undefined_parameter"
+    )
   }
   # Reset all names to prep for settings below
   for (current_name in name) {
     current[[current_name]] <- list()
   }
   # Confirm that description is a scalar character string
-  if (!is.character(description)) {
-    stop("`description` must be a character string.")
-  } else if (length(description) != 1) {
-    stop("`description` must be a scalar.")
-  }
+  checkmate::assert_string(description)
   for (current_name in name) {
     current[[current_name]]$description <- description
   }
   # Confirm that point is a function
-  if (!is.function(point)) {
-    stop("`point` must be a function")
-  }
+  checkmate::assert_function(point)
   for (current_name in name) {
     current[[current_name]]$point <- point
   }
   # Confirm that spread is a function (if given)
   if (!missing(spread)) {
-    if (!is.function(spread)) {
-      stop("spread must be a function")
-    }
+    checkmate::assert_function(spread)
     for (current_name in name) {
       current[[current_name]]$spread <- spread
     }
   }
+  if (!is.null(spread_for)) {
+    checkmate::assert_string(spread_for)
+    if (!(spread_for %in% names(get("interval.cols", envir=.PKNCAEnv)))) {
+      rlang::abort(
+        sprintf("spread_for must be a defined parameter name, not '%s'", spread_for),
+        class = "pknca_error_undefined_parameter"
+      )
+    }
+    if (missing(spread)) {
+      rlang::abort(
+        "spread must be given with spread_for",
+        class = "pknca_error_spread_for_needs_spread"
+      )
+    }
+    for (current_name in name) {
+      current[[current_name]]$spread_for <- spread_for
+    }
+  }
   # Confirm that rounding is either a single-entry list or a function
   if (is.list(rounding)) {
-    if (length(rounding) != 1) {
-      stop("rounding must have a single value in the list")
-    }
+    checkmate::assert_list(rounding, len = 1)
+
     if (!(names(rounding) %in% c("signif", "round"))) {
-      stop("When a list, rounding must have a name of either 'signif' or 'round'")
+      rlang::abort(
+        "When a list, rounding must have a name of either 'signif' or 'round'",
+        class = "pknca_error_rounding_list_name"
+      )
     }
     for (current_name in name) {
       current[[current_name]]$rounding <- rounding
@@ -542,7 +838,7 @@ PKNCA.set.summary <- function(name, description, point, spread,
       current[[current_name]]$rounding <- rounding
     }
   } else {
-    stop("rounding must be either a list or a function")
+    rlang::abort("rounding must be either a list or a function", class = "pknca_error_rounding_invalid")
   }
   # Set the summary parameters
   assign("summary", current, envir=.PKNCAEnv)

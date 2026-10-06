@@ -18,3 +18,6 @@ cran-comments.md
 ^data-raw$
 ^revdep$
 ^CRAN-SUBMISSION$
+^\.claude$
+^design$
+^CLAUDE\.md$

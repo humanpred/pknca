@@ -18,13 +18,20 @@ PKNCAconc(data, ...)
   formula,
   subject,
   time.nominal,
-  exclude,
+  exclude = NULL,
   duration,
   volume,
   exclude_half.life,
   include_half.life,
+  lloq,
   sparse = FALSE,
-  ...
+  ...,
+  concu = NULL,
+  amountu = NULL,
+  timeu = NULL,
+  concu_pref = NULL,
+  amountu_pref = NULL,
+  timeu_pref = NULL
 )
 }
 \arguments{
@@ -37,17 +44,17 @@ time, and the groups defined in \code{formula}.}
 \code{amount~time|groups} for urine/feces (In the remainder of the
 documentation, "concentration" will be used to describe concentration or
 amount.)  One special aspect of the \code{groups} part of the formula is that
-the last group is typically assumed to be the \code{subject}; see the
-documentation for the \code{subject} argument for exceptions to this assumption.}
+the last group to the left of any \code{/} is assumed to be the \code{subject}
+unless the \code{subject} argument is given.  The \code{time} may be numeric, or it
+may be a date-time (POSIXct) or a date (Date); see the "Date-time input"
+section.}
 
 \item{subject}{The column indicating the subject number.  If not provided,
-this defaults to the beginning of the inner groups: For example with
-\code{concentration~time|Study+Subject/Analyte}, the inner groups start with the
-first grouping variable before a \code{/}, \code{Subject}.  If there is only one
-grouping variable, it is assumed to be the subject (e.g.
-\code{concentration~time|Subject}), and if there are multiple grouping variables
-without a \code{/}, subject is assumed to be the last one.  For single-subject
-data, it is assigned as \code{NULL}.}
+this defaults to the last grouping variable to the left of a \code{/} (for
+example, \code{Subject} with \code{concentration~time|Study+Subject/Analyte}), or the
+last grouping variable when there is no \code{/} (for example, \code{Subject} with
+\code{concentration~time|Study+Subject}).  When there are no grouping variables
+(single-subject data), no subject column is set.}
 
 \item{time.nominal}{(optional) The name of the nominal time column (if the
 main time variable is actual time.  The \code{time.nominal} is not used during
@@ -59,21 +66,58 @@ values of \code{NA} or \code{""} for concentrations to include and non-empty tex
 concentrations to exclude.}
 
 \item{duration}{(optional) The duration of collection as is typically used
-for concentration measurements in urine or feces.}
+for concentration measurements in urine or feces.  The \code{time} of a
+measurement is the start of the collection, and only the \code{time} is used
+when selecting data for a calculation interval; the duration is not
+considered.  A collection starting within an interval and ending after the
+interval \code{end} contributes its full amount to that interval, so for the
+simplest interpretation of results, align collection start and end times
+with interval boundaries.  A \code{duration} column is added to the data only
+when this is given; requesting an excretion rate parameter (\code{ermax},
+\code{ertmax}, \code{ertlst}) without it is an error.  A numeric duration is in the
+time unit of the analysis; a difftime duration is converted to that unit
+in \code{\link[=PKNCAdata]{PKNCAdata()}}.}
 
 \item{volume}{(optional) The volume (or mass) of collection as is typically
-used for urine or feces measurements.}
+used for urine or feces measurements.  A \code{volume} column is added to the
+data only when this is given; requesting a parameter that needs it (\code{ae},
+\code{fe}, \code{volpk}, and similar) without it is an error.}
 
-\item{exclude_half.life, include_half.life}{A character scalar for the column
-name in the dataset of the points to exclude from the half-life calculation
-(still using normal curve-stripping selection rules for the other points)
-or to include for the half-life (using specifically those points and
-bypassing automatic curve-stripping point selection).  See the "Half-Life
-Calculation" vignette for more details on the use of these arguments.}
+\item{exclude_half.life, include_half.life}{Manual half-life point selection,
+given as a logical value per concentration measurement (or, in
+\code{\link[=PKNCAconc]{PKNCAconc()}}, the name of such a column in the data).  \code{exclude_half.life}
+drops the flagged points; automatic curve-stripping point selection is
+still performed on the remaining (non-excluded) points and is not bypassed.
+\code{include_half.life} names the exact points to use, bypassing automatic
+curve-stripping point selection.  Each value is \code{TRUE}, \code{FALSE}, or \code{NA}
+(undefined); the column/vector is treated as "in use" for an interval
+unless it is entirely \code{NA} (so an all-\code{FALSE} column still counts as in
+use), so leave it \code{NA} (rather than \code{FALSE}) where the mechanism should not
+apply.  The column must be logical and must exist in the data; anything
+else is an error.  Only one of \code{exclude_half.life} and
+\code{include_half.life} may be in use for a given interval.  See the
+"Half-Life Calculation" vignette for more details on the use of these
+arguments.}
+
+\item{lloq}{(optional) The lower limit of quantification used by the Tobit
+half-life method (\code{hl_method = "tobit"}).  Either the name of a column in
+\code{data} giving the per-observation LLOQ or a numeric scalar applied to all
+observations.  When provided, it is passed through to
+\code{\link[=pk.calc.half.life]{pk.calc.half.life()}}.  See the "Half-Life Calculation with Tobit
+Regression" vignette for more details.}
 
 \item{sparse}{Are the concentration-time data sparse PK (commonly used in
 small nonclinical species or with terminal or difficult sampling) or dense
 PK (commonly used in clinical studies or larger nonclinical species)?}
+
+\item{concu, amountu, timeu}{Either unit values (e.g. "ng/mL") or column names
+within the data where units are provided.  For a date-time (POSIXct or
+Date) time column, \code{timeu} must be a unit value, and \code{timeu_pref} takes
+precedence over it (see the "Date-time input" section).}
+
+\item{concu_pref, amountu_pref, timeu_pref}{Preferred units for reporting (not
+column names).  For a date-time time column, the times are converted
+directly to \code{timeu_pref}, which then is also \code{timeu}.}
 }
 \value{
 A PKNCAconc object that can be used for automated NCA.
@@ -81,10 +125,31 @@ A PKNCAconc object that can be used for automated NCA.
 \description{
 Create a PKNCAconc object
 }
+\section{Date-time input}{
+
+
+The concentration time (and the dose time in \code{\link[=PKNCAdose]{PKNCAdose()}}) may be a
+date-time (POSIXct) or a date (Date; a date is taken as 08:00 on that
+date, a typical time of a first PK sample, with a warning).  Date-times have no numeric unit, so
+they are converted directly to the time unit used for calculations and
+reports:  \code{timeu_pref} when given (it takes precedence over \code{timeu}, and
+\code{timeu} is set to it), otherwise \code{timeu}, otherwise hours (without
+units).  The unit must be a single time unit value (like \code{"hr"} or
+\code{"day"}), not a column name.  A numeric \code{duration} (here or in
+\code{\link[=PKNCAdose]{PKNCAdose()}}) is in that unit, and a difftime \code{duration} is converted to
+it exactly.
+
+The times remain date-times in the \code{PKNCAconc}, \code{PKNCAdose}, and
+\code{PKNCAdata} objects.  \code{\link[=pk.nca]{pk.nca()}} converts them to numeric time relative to
+the first dose (or first concentration) in each group; see the "Date-time
+input" section of \code{\link[=PKNCAdata]{PKNCAdata()}}.  The nominal time (\code{time.nominal}) is not converted and usually
+stays numeric.
+}
+
 \seealso{
-Other PKNCA objects: 
-\code{\link{PKNCAdata}()},
-\code{\link{PKNCAdose}()},
-\code{\link{PKNCAresults}()}
+Other PKNCA objects:
+\code{\link[=PKNCAdata]{PKNCAdata()}},
+\code{\link[=PKNCAdose]{PKNCAdose()}},
+\code{\link[=PKNCAresults]{PKNCAresults()}}
 }
 \concept{PKNCA objects}

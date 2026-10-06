@@ -5,6 +5,9 @@ aucintegrate_linear <- function(conc.1, conc.2, time.1, time.2) {
 }
 
 aucintegrate_log <- function(conc.1, conc.2, time.1, time.2) {
+  # conc.1 != conc.2 is guaranteed by choose_interval_method(), which only
+  # assigns "log" to intervals where concentrations are strictly declining and
+  # neither endpoint is zero.
   (time.2-time.1) * (conc.2-conc.1)/log(conc.2/conc.1)
 }
 
@@ -17,6 +20,9 @@ aumcintegrate_linear <- function(conc.1, conc.2, time.1, time.2) {
 }
 
 aumcintegrate_log <- function(conc.1, conc.2, time.1, time.2) {
+  # conc.1 != conc.2 is guaranteed by choose_interval_method(), which only
+  # assigns "log" to intervals where concentrations are strictly declining and
+  # neither endpoint is zero.
   ((time.2-time.1) * (conc.2*time.2-conc.1*time.1) / log(conc.2/conc.1)-
      (time.2-time.1)^2 * (conc.2-conc.1) / (log(conc.2/conc.1)^2))
 }
@@ -44,6 +50,9 @@ interpolate_conc_linear <- function(conc_1, conc_2, time_1, time_2, time_out) {
 
 #' @rdname interp_extrap_conc_method
 interpolate_conc_log <- function(conc_1, conc_2, time_1, time_2, time_out) {
+  # conc_1 > 0 and conc_2 > 0 are guaranteed by choose_interval_method(),
+  # which assigns "zero" or "linear" to any interval where either endpoint
+  # is zero, so log() will never receive a zero or negative value here.
   exp(
     log(conc_1)+
       (time_out-time_1)/(time_2-time_1)*(log(conc_2)-log(conc_1))
@@ -76,35 +85,50 @@ extrapolate_conc_lambdaz <- function(clast, lambda.z, tlast, time_out) {
 #'   and 'extrap_log'
 choose_interval_method <- function(conc, time, tlast, method, auc.type, options) {
   # Input checking
-  stopifnot(is.numeric(conc))
-  stopifnot(is.numeric(time))
-  stopifnot(!any(is.na(time)))
-  stopifnot(!any(is.na(conc)))
-  stopifnot(length(conc) == length(time))
+  checkmate::assert_numeric(conc, any.missing = FALSE)
+  checkmate::assert_numeric(time, any.missing = FALSE, len = length(conc))
   assert_aucmethod(method)
-  stopifnot(length(auc.type) == 1)
-  stopifnot(auc.type %in% c("AUCinf", "AUClast", "AUCall"))
+  checkmate::assert_choice(auc.type, choices = c("AUCinf", "AUClast", "AUCall"))
 
   if (missing(tlast)) {
     tlast <- pk.calc.tlast(conc, time, check=FALSE)
   } else {
-    stopifnot(is.numeric(tlast))
-    stopifnot(length(tlast) == 1)
+    checkmate::assert_number(tlast)
   }
-
-  # Where is tlast in the data?
-  idx_tlast <- which(time == tlast)
 
   ret <- rep(NA_character_, length(conc))
   # Handle all interpolation
   idx_1 <- seq(1, length(conc) - 1)
   idx_2 <- idx_1 + 1
   mask_zero <- conc[idx_1] == 0 & conc[idx_2] == 0
+  # %in% 0 is used throughout instead of == 0 because BLQ concentrations are
+  # cleaned to exactly 0 upstream (by clean.conc.blq()), making exact equality
+  # definitionally correct. We cannot use a tolerance here because we do not
+  # know what a "low" concentration may be in all situations.
   if (all(conc %in% 0)) {
     ret[] <- "zero"
-    # short circuit other options
+    # short circuit other options — tlast is NA for all-zero data, so
+    # idx_tlast is not computed here.
     return(ret)
-  } else if (method == "linear") {
+  }
+
+  # Where is tlast in the data?  Must be checked after the all-zeros early
+  # return above, since tlast is NA when all concentrations are zero.
+  idx_tlast <- which(time == tlast)
+  if (length(idx_tlast) != 1) {
+    tlast_detail <-
+      if (length(idx_tlast) == 0) {
+        "tlast was not found in time (possible floating point issue)"
+      } else {
+        "tlast was found multiple times"
+      }
+    rlang::abort(
+      sprintf("tlast (%s) must occur exactly once in time; %s", tlast, tlast_detail),
+      class = "pknca_error_tlast_not_unique"
+    )
+  }
+
+  if (method == "linear") {
     ret[seq_len(idx_tlast - 1)] <- "linear"
   } else if (method == "lin up/log down") {
     mask_down <- conc[idx_2] < conc[idx_1] & conc[idx_2] != 0
@@ -124,7 +148,7 @@ choose_interval_method <- function(conc, time, tlast, method, auc.type, options)
     ret[c(mask_linear, FALSE)] <- "linear"
     ret[c(mask_log, FALSE)] <- "log"
   } else {
-    stop("Unknown integration method, please report a bug: ", method) # nocov
+    rlang::abort(sprintf("Unknown integration method, please report a bug: %s", method), class = "pknca_error_internal_unknown_integration_method")  # nocov
   }
   ret[c(mask_zero, FALSE)] <- "zero"
   # What happens after tlast?
@@ -178,7 +202,7 @@ auc_integrate <- function(conc, time, clast, tlast, lambda.z, interval_method, f
     # or clast,pred is passed in.
     ret[length(ret)+1] <- fun_inf(clast, tlast, lambda.z)
   } else if (interval_method_extrap != "zero") {
-    stop("Invalid interval_method_extrap, please report a bug: ", interval_method_extrap) # nocov
+    rlang::abort(sprintf("Invalid interval_method_extrap, please report a bug: %s", interval_method_extrap), class = "pknca_error_internal_invalid_interval_method_extrap")  # nocov
   }
   ret <- sum(ret)
   ret

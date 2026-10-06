@@ -23,16 +23,18 @@ The weight is used as the \eqn{w_i}{w_i} parameter in \code{\link[=pk.calc.spars
 
 Where:
 
-\itemize{
+\describe{
 \item{\eqn{w_i}{w_i}}{is the weight at time i}
 \item{\eqn{\delta_{time,i-1,i}}{d_time[i-1,i]} and \eqn{\delta_{time,i,i+1}}{d_time[i,i+1]}}{are the changes between time i-1 and i or i and i+1 (zero outside of the time range)}
 \item{\eqn{t_i}{t_i}}{is the time at time i}
 }
 }
 \seealso{
-Other Sparse Methods: 
-\code{\link{as_sparse_pk}()},
-\code{\link{pk.calc.sparse_auc}()},
-\code{\link{sparse_mean}()}
+Other Sparse Methods:
+\code{\link[=as_sparse_pk]{as_sparse_pk()}},
+\code{\link[=pk.calc.auclast_sparse]{pk.calc.auclast_sparse()}},
+\code{\link[=pk.calc.sparse_auc]{pk.calc.sparse_auc()}},
+\code{\link[=pk.calc.sparse_aumc]{pk.calc.sparse_aumc()}},
+\code{\link[=sparse_mean]{sparse_mean()}}
 }
 \concept{Sparse Methods}

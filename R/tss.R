@@ -8,9 +8,7 @@
 #'   to be on the same treatment)
 #' @param subject.dosing Subject number for dosing
 #' @param time.dosing Time of dosing
-#' @param conc.blq See [clean.conc.blq()]
-#' @param conc.na See [clean.conc.na()]
-#' @param check Run [assert_conc_time()]?
+#' @inheritParams clean.conc.blq
 #' @param \dots Discarded inputs to allow generic calls between tss methods.
 #' @returns a data frame with columns for `conc`entration, `time`, `subject`,
 #'   and `treatment`.
@@ -20,39 +18,51 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
                              conc.blq=NULL,
                              conc.na=NULL,
                              check=TRUE, ...) {
-  # Check inputs
-  conc.blq <- PKNCA.choose.option(name="conc.blq", value=conc.blq, options=options)
-  conc.na <- PKNCA.choose.option(name="conc.na", value=conc.na, options=options)
   if (check) {
     # When subject and time are not given, then monotonicity tests for
     # time are not required.
     sorted_time <- missing(subject) & missing(treatment)
     assert_conc_time(conc = conc, time = time, sorted_time = sorted_time)
   }
-  if (!missing(subject.dosing) & missing(subject)) {
-    stop("Cannot give subject.dosing without subject")
+  if (!missing(subject.dosing) && missing(subject)) {
+    rlang::abort("Cannot give subject.dosing without subject", class = "pknca_error_tss_subject_dosing_without_subject")
   }
-  if (any(is.na(time.dosing))) {
-    stop("time.dosing may not contain any NA values")
+  if (anyNA(time.dosing)) {
+    rlang::abort("time.dosing may not contain any NA values", class = "pknca_error_tss_time_dosing_na")
   }
   if (!missing(subject)) {
     if (!missing(treatment)) {
-      ret <- clean.conc.blq(conc=conc, time=time, subject, treatment,
-                            conc.blq=conc.blq, conc.na=conc.na,
-                            check=FALSE)
+      ret <-
+        clean.conc.blq(
+          conc = conc, time = time,
+          conc.blq = conc.blq, conc.na = conc.na, options = options,
+          check = FALSE,
+          subject, treatment
+        )
     } else {
-      ret <- clean.conc.blq(conc=conc, time=time, subject,
-                            conc.blq=conc.blq, conc.na=conc.na,
-                            check=FALSE)
+      ret <-
+        clean.conc.blq(
+          conc = conc, time = time,
+          conc.blq = conc.blq, conc.na = conc.na, options = options,
+          check = FALSE,
+          subject
+        )
     }
   } else if (missing(treatment)) {
-    ret <- clean.conc.blq(conc=conc, time=time,
-                          conc.blq=conc.blq, conc.na=conc.na,
-                          check=FALSE)
+    ret <-
+      clean.conc.blq(
+        conc = conc, time = time,
+        conc.blq = conc.blq, conc.na = conc.na, options = options,
+        check = FALSE
+      )
   } else {
-    ret <- clean.conc.blq(conc=conc, time=time, treatment,
-                          conc.blq=conc.blq, conc.na=conc.na,
-                          check=FALSE)
+    ret <-
+      clean.conc.blq(
+        conc = conc, time = time,
+        conc.blq = conc.blq, conc.na = conc.na, options = options,
+        check = FALSE,
+        treatment
+      )
   }
   if (missing(subject.dosing)) {
     # Shrink the data to just the predose data
@@ -61,8 +71,7 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
     dosing <-
       data.frame(
         subject=subject.dosing,
-        time=time.dosing,
-        stringsAsFactors=FALSE
+        time=time.dosing
       )
     # Shrink the data to just the predose data (by subject)
     ret <- merge(ret, dosing)
@@ -112,7 +121,7 @@ pk.tss <- function(...,
     if (identical(NA, ret)) {
       ret <- ret_monoexponential
     } else {
-      stop("Bug in pk.tss where ret is set to non-NA too early.  Please report the bug with a reproducible example.") # nocov
+      rlang::abort("Bug in pk.tss where ret is set to non-NA too early. Please report the bug with a reproducible example.", class = "pknca_error_internal_pk_tss_ret_non_na")  # nocov
     }
     # Set check to FALSE if it has already been checked (so that it
     # doesn't happen again in stepwise.linear)

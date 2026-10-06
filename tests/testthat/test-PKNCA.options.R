@@ -56,6 +56,7 @@ test_that("PKNCA.options", {
     PKNCA.options(),
     list(
       adj.r.squared.factor = 0.0001,
+      r.squared.factor = NA_real_,
       max.missing = 0.5,
       auc.method = "lin up/log down",
       conc.na = "drop",
@@ -64,15 +65,21 @@ test_that("PKNCA.options", {
         middle = "drop",
         last = "keep"
       ),
+      debug = NULL,
       first.tmax = TRUE,
+      first.tmin = TRUE,
       allow.tmax.in.half.life = FALSE,
       keep_interval_cols = NULL,
       min.hl.points = 3,
+      max.hl.points = Inf,
+      min.hl.start.time = 0,
       min.span.ratio = 2,
       max.aucinf.pext = 20,
       min.hl.r.squared = 0.9,
       progress = TRUE,
       tau.choices = NA,
+      auto.interval.method = "builder",
+      auto.interval.tolerance = 0.05,
       single.dose.aucs = check.interval.specification(
         data.frame(
           start = 0,
@@ -83,7 +90,11 @@ test_that("PKNCA.options", {
           tmax = c(FALSE, TRUE),
           cmax = c(FALSE, TRUE)
         )
-      )
+      ),
+      allow_partial_missing_units = FALSE,
+      hl_method = "log-linear",
+      tobit_n_points_penalty = 0,
+      tobit_optim_control = list()
     )
   )
 
@@ -91,23 +102,41 @@ test_that("PKNCA.options", {
 
   # adj.r.squared.factor
   expect_error(PKNCA.options(adj.r.squared.factor=c(0.1, 0.9), check=TRUE),
-               regexp="adj.r.squared.factor must be a scalar")
+               regexp="Must have length 1")
   expect_error(PKNCA.options(adj.r.squared.factor=1, check=TRUE),
                regexp="adj.r.squared.factor must be between 0 and 1, exclusive")
   expect_error(PKNCA.options(adj.r.squared.factor=0, check=TRUE),
                regexp="adj.r.squared.factor must be between 0 and 1, exclusive")
   expect_error(PKNCA.options(adj.r.squared.factor="A", check=TRUE),
-               regexp="adj.r.squared.factor must be numeric \\(and not a factor\\)")
+               regexp="Must be of type 'number'")
   expect_warning(v1 <- PKNCA.options(adj.r.squared.factor=0.9, check=TRUE))
   expect_equal(v1, 0.9)
   expect_warning(PKNCA.options(adj.r.squared.factor=0.9, check=TRUE),
                  regexp="adj.r.squared.factor is usually <0.01")
+  expect_equal(PKNCA.options(adj.r.squared.factor=NA, check=TRUE), NA_real_)
+
+  # r.squared.factor
+  expect_error(PKNCA.options(r.squared.factor=c(0.1, 0.9), check=TRUE),
+               regexp="Must have length 1")
+  expect_error(PKNCA.options(r.squared.factor=1, check=TRUE),
+               regexp="r.squared.factor must be between 0 and 1, exclusive",
+               class="pknca_error_r.squared.factor_out_of_bounds")
+  expect_error(PKNCA.options(r.squared.factor=0, check=TRUE),
+               regexp="r.squared.factor must be between 0 and 1, exclusive",
+               class="pknca_error_r.squared.factor_out_of_bounds")
+  expect_error(PKNCA.options(r.squared.factor="A", check=TRUE),
+               regexp="Must be of type 'number'")
+  expect_warning(v_r2 <- PKNCA.options(r.squared.factor=0.9, check=TRUE),
+                 regexp="r.squared.factor is usually <0.01",
+                 class="pknca_warning_r2_factor_large")
+  expect_equal(v_r2, 0.9)
+  expect_equal(PKNCA.options(r.squared.factor=NA, check=TRUE), NA_real_)
 
   # max.missing
   expect_error(PKNCA.options(max.missing=c(1, 2), check=TRUE),
-               regexp="max.missing must be a scalar")
+               regexp="Must have length 1")
   expect_error(PKNCA.options(max.missing="A", check=TRUE),
-               regexp="max.missing must be numeric \\(and not a factor\\)")
+               regexp="Must be of type 'number'")
   expect_error(PKNCA.options(max.missing=-1, check=TRUE),
                regexp="max.missing must be between 0 and 1")
   expect_error(PKNCA.options(max.missing=1, check=TRUE),
@@ -167,27 +196,58 @@ test_that("PKNCA.options", {
   expect_error(PKNCA.options(conc.blq="foo", check=TRUE),
                regexp="conc.blq must either be a finite number or the text 'drop' or 'keep'")
   expect_error(PKNCA.options(conc.blq=c(1, 2), check=TRUE),
-               regexp="conc.blq must be a scalar")
+               regexp="Must have length 1")
   expect_error(PKNCA.options(conc.blq=NA, check=TRUE),
-               regexp="conc.blq must not be NA")
+               regexp="May not be NA")
 
   # Confirm that list-style input also works
   expect_equal(PKNCA.options(conc.blq=list(first="drop", middle=5, last="keep"),
                              check=TRUE),
                list(first="drop", middle=5, last="keep"))
   expect_error(PKNCA.options(conc.blq=list(first="drop", middle=5, last="keep",
-                               foo=5),
+                                           foo=5),
                              check=TRUE),
-               regexp="When given as a list, conc.blq must only have elements named 'first', 'middle', and 'last'.")
+               regexp="When given as a list, conc.blq must only have elements named 'first', 'middle' and 'last' or 'before.tmax' and 'after.tmax'.")
   expect_error(PKNCA.options(conc.blq=list(first="drop", middle=5),
                              check=TRUE),
-               regexp="When given as a list, conc.blq must include elements named 'first', 'middle', and 'last'.")
+               regexp="When given as a list, conc.blq must include all elements named 'first', 'middle' and 'last' or 'before.tmax' and 'after.tmax'.")
+
+  # Confirm that before.tmax and after.tmax must be specified together
+  expect_error(PKNCA.options(conc.blq=list(after.tmax="drop"), check=TRUE),
+               regexp="When given as a list, conc.blq must include all elements named 'first', 'middle' and 'last' or 'before.tmax' and 'after.tmax'.")
+
+  # Confirm that before.tmax and after.tmax work correctly
+  expect_equal(PKNCA.options(conc.blq=list(before.tmax="drop", after.tmax="keep"),
+                             check=TRUE),
+               list(before.tmax="drop", after.tmax="keep"))
+
+  # Confirm that first/middle/last and before.tmax/after.tmax cannot be mixed and need to be complete
+  names_tmax <- c("before.tmax", "after.tmax")
+  names_tlast <- c("first", "middle", "last")
+  all_combinations <- unlist(lapply(seq_along(c(names_tlast, names_tmax)), function(x) combn(c(names_tlast, names_tmax), x, simplify = FALSE)), recursive = FALSE)
+  for (i in seq_along(all_combinations)) {
+    conc.blq.i <- as.list(setNames(rep(0, length(all_combinations[[i]])), all_combinations[[i]]))
+    are.names.mixed <- any(names_tmax %in% all_combinations[[i]]) && any(names_tlast %in% all_combinations[[i]])
+    are.names.incomplete_tmax <- any(names_tmax %in% all_combinations[[i]]) && !all(names_tmax %in% all_combinations[[i]])
+    are.names.incomplete_tlast <- any(names_tlast %in% all_combinations[[i]]) && !all(names_tlast %in% all_combinations[[i]])
+
+    if (are.names.mixed) {
+      # Lists with mixed names for both BLQ strategies should provide an error
+      expect_error(PKNCA.options(conc.blq=conc.blq.i, check=TRUE),
+                   regexp="When given as a list, prevent mixing arguments of different BLQ strategies\\.")
+    } else if (are.names.incomplete_tmax || are.names.incomplete_tlast) {
+      # Lists with missing names for either BLQ strategy should provide an error
+      expect_error(PKNCA.options(conc.blq=conc.blq.i, check=TRUE),
+                   regexp="When given as a list, conc.blq must include all elements named 'first', 'middle' and 'last' or 'before.tmax' and 'after.tmax'.")
+    }
+  }
 
   # first.tmax
   expect_equal(PKNCA.options(first.tmax=FALSE, check=TRUE),
                FALSE)
   expect_error(PKNCA.options(first.tmax=c(FALSE, TRUE), check=TRUE),
-               regexp="first.tmax must be a scalar")
+               regexp="Must have length 1")
+  
   # Conversion works
   expect_warning(v1 <- PKNCA.options(first.tmax="T", check=TRUE),
                  regexp="Converting first.tmax to a logical value: TRUE")
@@ -196,37 +256,60 @@ test_that("PKNCA.options", {
                  regexp="Converting first.tmax to a logical value: TRUE")
   expect_equal(v1, TRUE)
   expect_error(PKNCA.options(first.tmax=NA, check=TRUE),
-               regexp="first.tmax may not be NA")
+               regexp="May not be NA")
   expect_error(PKNCA.options(first.tmax="x", check=TRUE),
                regexp="Could not convert first.tmax to a logical value")
 
   # min.hl.points
-  expect_equal(PKNCA.options(min.hl.points=3, check=TRUE),
-               3)
+  expect_equal(PKNCA.options(min.hl.points=3, check=TRUE), 3)
   expect_error(PKNCA.options(min.hl.points=c(3, 4), check=TRUE),
-               regexp="min.hl.points must be a scalar")
+               regexp="Must have length 1")
   expect_error(PKNCA.options(min.hl.points=factor(3), check=TRUE),
-               regexp="min.hl.points cannot be a factor")
+               regexp="Must be of type 'number'")
   expect_error(PKNCA.options(min.hl.points="a", check=TRUE),
-               regexp="min.hl.points must be a number")
+               regexp="Must be of type 'number'")
   expect_error(PKNCA.options(min.hl.points=1.5, check=TRUE),
-               regexp="min.hl.points must be >=2")
+               regexp="Element 1 is not >= 2")
   expect_warning(v1 <- PKNCA.options(min.hl.points=2.5, check=TRUE),
                  regexp="Non-integer given for min.hl.points; rounding to nearest integer")
   # Note that R uses the engineer's rule of rounding
   expect_equal(v1, 2)
 
+  # max.hl.points
+  expect_equal(PKNCA.options(max.hl.points=Inf, check=TRUE), Inf)
+  expect_equal(PKNCA.options(max.hl.points=6, check=TRUE), 6)
+  expect_error(PKNCA.options(max.hl.points=2, check=TRUE),
+               regexp="Element 1 is not >= 3")
+  expect_error(PKNCA.options(max.hl.points=NA_real_, check=TRUE),
+               regexp="May not be NA")
+  expect_error(PKNCA.options(max.hl.points=c(4, 5), check=TRUE),
+               regexp="Must have length 1")
+  expect_warning(v1 <- PKNCA.options(max.hl.points=5.4, check=TRUE),
+                 class="pknca_warning_max_hl_points_noninteger")
+  expect_equal(v1, 5)
+
+  # min.hl.start.time
+  expect_equal(PKNCA.options(min.hl.start.time=0, check=TRUE), 0)
+  expect_equal(PKNCA.options(min.hl.start.time=12.5, check=TRUE), 12.5)
+  expect_error(PKNCA.options(min.hl.start.time=-1, check=TRUE),
+               regexp="Element 1 is not >= 0")
+  expect_error(PKNCA.options(min.hl.start.time=Inf, check=TRUE),
+               regexp="Must be finite")
+  expect_error(PKNCA.options(min.hl.start.time=NA_real_, check=TRUE),
+               regexp="May not be NA")
+  expect_error(PKNCA.options(min.hl.start.time=c(1, 2), check=TRUE),
+               regexp="Must have length 1")
+
   # min.span.ratio
-  expect_equal(PKNCA.options(min.span.ratio=2, check=TRUE),
-               2)
+  expect_equal(PKNCA.options(min.span.ratio=2, check=TRUE), 2)
   expect_error(PKNCA.options(min.span.ratio=0, check=TRUE),
                regexp="min.span.ratio must be > 0")
   expect_error(PKNCA.options(min.span.ratio=c(2, 1), check=TRUE),
-               regexp="min.span.ratio must be a scalar")
+               regexp="Must have length 1")
   expect_error(PKNCA.options(min.span.ratio=factor(1), check=TRUE),
-               regexp="min.span.ratio cannot be a factor")
+               regexp="Must be of type 'number'")
   expect_error(PKNCA.options(min.span.ratio="a", check=TRUE),
-               regexp="min.span.ratio must be a number")
+               regexp="Must be of type 'number'")
   expect_warning(PKNCA.options(min.span.ratio=1, check=TRUE),
                  regexp="min.span.ratio is usually >= 2")
 
@@ -236,11 +319,11 @@ test_that("PKNCA.options", {
   expect_error(PKNCA.options(max.aucinf.pext=0, check=TRUE),
                regexp="max.aucinf.pext must be > 0")
   expect_error(PKNCA.options(max.aucinf.pext=c(2, 1), check=TRUE),
-               regexp="max.aucinf.pext must be a scalar")
+               regexp="Must have length 1")
   expect_error(PKNCA.options(max.aucinf.pext=factor(1), check=TRUE),
-               regexp="max.aucinf.pext cannot be a factor")
+               regexp="Must be of type 'number'")
   expect_error(PKNCA.options(max.aucinf.pext="a", check=TRUE),
-               regexp="max.aucinf.pext must be a number")
+               regexp="Must be of type 'number'")
   expect_warning(PKNCA.options(max.aucinf.pext=25.1, check=TRUE),
                  regexp="max.aucinf.pext is usually <=25")
   expect_warning(PKNCA.options(max.aucinf.pext=0.1, check=TRUE),
@@ -252,11 +335,11 @@ test_that("PKNCA.options", {
   expect_error(PKNCA.options(min.hl.r.squared=0, check=TRUE),
                regexp="min.hl.r.squared must be between 0 and 1, exclusive")
   expect_error(PKNCA.options(min.hl.r.squared=c(2, 1), check=TRUE),
-               regexp="min.hl.r.squared must be a scalar")
+               regexp="Must have length 1")
   expect_error(PKNCA.options(min.hl.r.squared=factor(1), check=TRUE),
-               regexp="min.hl.r.squared cannot be a factor")
+               regexp="Must be of type 'number'")
   expect_error(PKNCA.options(min.hl.r.squared="a", check=TRUE),
-               regexp="min.hl.r.squared must be a number")
+               regexp="Must be of type 'number'")
   expect_warning(PKNCA.options(min.hl.r.squared=0.89, check=TRUE),
                  regexp="min.hl.r.squared is usually >= 0.9")
 
@@ -268,7 +351,7 @@ test_that("PKNCA.options", {
   expect_error(PKNCA.options(tau.choices=c(NA, 1), check=TRUE),
                regexp="tau.choices may not include NA and be a vector")
   expect_error(PKNCA.options(tau.choices="x", check=TRUE),
-               regexp="tau.choices must be a number")
+               regexp="Must be of type 'numeric'")
 
   # Reset all options to their default to ensure that any subsequent
   # tests work correctly.
@@ -326,38 +409,42 @@ test_that("PKNCA.choose.option", {
 test_that("PKNCA.set.summary input checking", {
   # Get the current state to reset it at the end
   initial.summary.set <- PKNCA.set.summary()
-  PKNCA.set.summary(reset=TRUE)
+  expect_warning(
+    PKNCA.set.summary(reset=TRUE),
+    class = "pknca_warning_summary_reset"
+  )  
   # Confirm that reset actually resets the summary settings
   expect_equal(PKNCA.set.summary(), list())
-
+  
   # name must already be defined
   expect_error(PKNCA.set.summary("blah"),
                regexp="You must first define the parameter name with add.interval.col")
   # point must be a function
   expect_error(PKNCA.set.summary("auclast", description="A", point="a"),
-               regexp="`point` must be a function")
+               regexp="Must be a function")
   # description is required and must be a scalar character string
   expect_error(
     PKNCA.set.summary("auclast", description=1),
-    regexp="`description` must be a character string",
+    regexp="Must be of type 'string'",
     fixed=TRUE
   )
   expect_error(
     PKNCA.set.summary("auclast", description=c("A", "B")),
-    regexp="`description` must be a scalar.",
+    regexp="Must have length 1",
     fixed=TRUE
   )
   expect_error(PKNCA.set.summary("auclast", description=1))
   # spread must be a function
   expect_error(PKNCA.set.summary("auclast", description="A", point=mean, spread="a"),
-               regexp="spread must be a function")
+               regexp="Must be a function")
+  
   # Rounding must either be a function or a list
   expect_error(PKNCA.set.summary("auclast", description="A", point=mean, spread=sd,
                                  rounding="a"),
                regexp="rounding must be either a list or a function")
   expect_error(PKNCA.set.summary("auclast", description="A", point=mean, spread=sd,
                                  rounding=list(foo=3, bar=4)),
-               regexp="rounding must have a single value in the list")
+               regexp="Must have length 1")
   expect_error(PKNCA.set.summary("auclast", description="A", point=mean, spread=sd,
                                  rounding=list(foo=3)),
                regexp="When a list, rounding must have a name of either 'signif' or 'round'")
@@ -381,7 +468,10 @@ test_that("PKNCA.set.summary input checking", {
                list(auclast=list(description="A", point=mean, spread=sd,
                                  rounding=list(round=2))))
   # Changing a vector of settings works
-  PKNCA.set.summary(reset=TRUE)
+  expect_warning(
+    PKNCA.set.summary(reset=TRUE),
+    class = "pknca_warning_summary_reset"
+  )  
   expect_equal(
     PKNCA.set.summary(
       name=c("cmax", "auclast"),
@@ -403,9 +493,12 @@ test_that("PKNCA.set.summary input checking", {
            )
     )
   )
-
+  
   # Reset all the values to the defaults
-  PKNCA.set.summary(reset=TRUE)
+  expect_warning(
+    PKNCA.set.summary(reset=TRUE),
+    class = "pknca_warning_summary_reset"
+  )  
   for (n in names(initial.summary.set)) {
     tmp <- initial.summary.set[[n]]
     tmp$name <- n
@@ -434,4 +527,73 @@ test_that("PKNCA.options fails when setting defaults and another option simultan
     regexp="Cannot set default and set new options at the same time.",
     fixed=TRUE
   )
+})
+
+
+test_that("adj.r.squared.factor description matches the selection rule in the code (#582)", {
+  desc <- PKNCA.options.describe("adj.r.squared.factor")
+  expect_match(desc, "within adj.r.squared.factor of the best", fixed = TRUE)
+  expect_match(desc, "regression using the most data points is selected", fixed = TRUE)
+})
+
+test_that("r.squared.factor is described as the unadjusted counterpart (#337)", {
+  desc <- PKNCA.options.describe("r.squared.factor")
+  expect_match(desc, "with an r^2 within r.squared.factor of the best r^2", fixed = TRUE)
+  expect_match(desc, "regression using the most data points is selected", fixed = TRUE)
+  expect_match(desc, "takes the other out of use", fixed = TRUE)
+})
+
+test_that("setting one r-squared factor takes the other out of use (#337)", {
+  initial_options <- PKNCA.options()
+  on.exit(assign("options", initial_options, envir = PKNCA:::.PKNCAEnv))
+
+  PKNCA.options(r.squared.factor = 0.0002)
+  expect_equal(PKNCA.options("adj.r.squared.factor"), NA_real_)
+  expect_equal(PKNCA.options("r.squared.factor"), 0.0002)
+
+  PKNCA.options(adj.r.squared.factor = 0.0003)
+  expect_equal(PKNCA.options("adj.r.squared.factor"), 0.0003)
+  expect_equal(PKNCA.options("r.squared.factor"), NA_real_)
+
+  # Taking one out of use hands the selection to the other, which picks up the
+  # standard tolerance when it does not have one
+  PKNCA.options(adj.r.squared.factor = NA)
+  expect_equal(PKNCA.options("adj.r.squared.factor"), NA_real_)
+  expect_equal(PKNCA.options("r.squared.factor"), 0.0001)
+
+  PKNCA.options(r.squared.factor = NA)
+  expect_equal(PKNCA.options("adj.r.squared.factor"), 0.0001)
+  expect_equal(PKNCA.options("r.squared.factor"), NA_real_)
+
+  # Setting both in one call is a last-one-wins pair, never a conflict
+  PKNCA.options(adj.r.squared.factor = 0.0005, r.squared.factor = 0.0006)
+  expect_equal(PKNCA.options("adj.r.squared.factor"), NA_real_)
+  expect_equal(PKNCA.options("r.squared.factor"), 0.0006)
+
+  # Checking a value does not set anything, so the pair is untouched
+  expect_equal(PKNCA.options(adj.r.squared.factor = 0.0007, check = TRUE), 0.0007)
+  expect_equal(PKNCA.options("r.squared.factor"), 0.0006)
+})
+
+test_that("PKNCA_options_defaults reads defaults without changing the current options", {
+  withr::defer(PKNCA.options(default = TRUE))
+  PKNCA.options(default = TRUE)
+  all_defaults <- PKNCA.options()
+  PKNCA.options(min.span.ratio = 3, auc.method = "linear")
+  expect_equal(PKNCA_options_defaults(), all_defaults)
+  expect_equal(PKNCA_options_defaults("min.span.ratio"), all_defaults$min.span.ratio)
+  expect_equal(
+    PKNCA_options_defaults(c("min.span.ratio", "auc.method")),
+    all_defaults[c("min.span.ratio", "auc.method")]
+  )
+  # The current options are unchanged
+  expect_equal(PKNCA.options("min.span.ratio"), 3)
+  expect_equal(PKNCA.options("auc.method"), "linear")
+  expect_error(
+    PKNCA_options_defaults(c("min.span.ratio", "not_an_option")),
+    regexp = "not_an_option",
+    class = "pknca_error_unknown_options"
+  )
+  expect_error(PKNCA_options_defaults(NA_character_), regexp = "missing")
+  expect_error(PKNCA_options_defaults(character()), regexp = "length >= 1")
 })

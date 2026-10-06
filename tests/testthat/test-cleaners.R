@@ -5,10 +5,10 @@ test_that("clean.conc.na", {
 
   # It drops NA values if requested (even if they are the only value)
   expect_warning(v1 <-
-    clean.conc.na(conc=as.numeric(NA), time=1, conc.na="drop"))
+    clean.conc.na(conc = NA_real_, time=1, conc.na="drop"))
   expect_equal(v1,
                data.frame(conc=numeric(), time=numeric()))
-  expect_warning(v2 <- 
+  expect_warning(v2 <-
     clean.conc.na(conc=as.numeric(c(NA, NA)), time=1:2,
                   conc.na="drop"))
   expect_equal(v2,
@@ -21,7 +21,7 @@ test_that("clean.conc.na", {
 
   # It also works with a number as the conc.na value
   expect_warning(v3 <-
-    clean.conc.na(conc=as.numeric(NA), time=1, conc.na=5))
+    clean.conc.na(conc = NA_real_, time = 1, conc.na = 5))
   expect_equal(v3,
                data.frame(conc=5, time=1))
   expect_warning(v4 <-
@@ -55,8 +55,7 @@ test_that("clean.conc.na", {
     data.frame(
       conc=1:3,
       time=1:3,
-      extra=c("a", "b", "c"),
-      stringsAsFactors=FALSE
+      extra=c("a", "b", "c")
     )
   )
   expect_equal(
@@ -69,8 +68,7 @@ test_that("clean.conc.na", {
     data.frame(
       conc=1:2,
       time=c(1, 3),
-      extra=c("a", "c"),
-      stringsAsFactors=FALSE
+      extra=c("a", "c")
     ),
     ignore_attr=TRUE
   )
@@ -189,7 +187,7 @@ test_that("clean.conc.blq", {
     d.result,
     info="fix related item to #145"
   )
-  
+
   # If there are BLQ values at the beginning, middle, and end, it
   # only drops all of them or drops them selectively as instructed.
   d.test <- data.frame(conc=c(0, 1, 0, 2, 0), time=1:5)
@@ -214,7 +212,7 @@ test_that("clean.conc.blq", {
       }
     }
   }
-  
+
   # When conc.na is 0, it drops those.
   d.test <- data.frame(conc=c(0, 1, NA, 2, 0), time=1:5)
   expect_equal(clean.conc.blq(d.test$conc, d.test$time,
@@ -240,5 +238,143 @@ test_that("clean.conc.blq", {
                               more=d.test$more,
                               conc.blq="drop", conc.na="drop"),
                d.test[c(2,4),])
-  
+
+
+    # If there are BLQ values before tmax, drops those if given a simple drop
+    d.test <- data.frame(conc=c(0, 1), time=1:2)
+    expect_equal(
+      clean.conc.blq(
+        d.test$conc, d.test$time,
+        conc.blq=list(before.tmax="drop", after.tmax="drop"), conc.na="drop"),
+      d.test[2, ]
+    )
+
+    # If there are BLQ values after tmax, drops those if given a simple drop
+    d.test <- data.frame(conc=c(1, 0), time=1:2)
+    expect_equal(
+      clean.conc.blq(
+        d.test$conc, d.test$time,
+        conc.blq=list(before.tmax="drop", after.tmax="drop"), conc.na="drop"),
+      d.test[1,]
+    )
+
+    # If there are BLQ values before and after tmax, drops those if given a single instruction
+    d.test <- data.frame(conc=c(0, 1, 0), time=1:3)
+    expect_equal(
+      clean.conc.blq(
+        d.test$conc, d.test$time,
+        conc.blq=list(before.tmax="drop", after.tmax="drop"), conc.na="drop"
+      ),
+      d.test[2,]
+    )
+
+    # If all values are BLQ, drops all rows
+    d.test <- data.frame(conc=0, time=1:3)
+    expect_equal(
+      clean.conc.blq(
+        d.test$conc, d.test$time,
+        conc.blq=list(before.tmax="drop", after.tmax="drop"), conc.na="drop"
+      ),
+      d.test[logical(),]
+    )
+
+    # If there are BLQ values in the middle, it drops or keeps those or sets them to a number
+    d.test <- data.frame(conc=c(1, 0, 2), time=1:3)
+    expect_equal(
+      clean.conc.blq(
+        d.test$conc, d.test$time,
+        conc.blq=list(before.tmax="drop", after.tmax="drop"), conc.na="drop"
+      ),
+      d.test[-2,]
+    )
+
+    d.test <- data.frame(conc=c(1, 0, 2), time=1:3)
+    expect_equal(
+      clean.conc.blq(
+        d.test$conc, d.test$time,
+        conc.blq=list(before.tmax="keep", after.tmax="keep"), conc.na="drop"
+      ),
+      d.test
+    )
+
+    d.test <- data.frame(conc=c(1, 0, 2), time=1:3)
+    d.result <- data.frame(conc=c(1, 0.5, 2), time=1:3)
+    expect_equal(
+      clean.conc.blq(
+        d.test$conc, d.test$time,
+        conc.blq=list(before.tmax=0.5, after.tmax=0.5), conc.na="drop"
+      ),
+      d.result
+    )
+
+    # If there are BLQ values before and after tmax, it only drops all of them
+    # or drops them selectively as instructed
+    d.test <- data.frame(conc=c(0, 1, 0, 2, 0), time=1:5)
+    expect_equal(
+      clean.conc.blq(
+        d.test$conc, d.test$time,
+        conc.blq=list(before.tmax="drop", after.tmax="drop"), conc.na="drop"
+      ),
+      d.test[c(2, 4),]
+    )
+    for (before.tmax in c("drop", "keep")) {
+      for (after.tmax in c("drop", "keep")) {
+        expect_equal(
+          clean.conc.blq(
+            d.test$conc, d.test$time,
+            conc.blq=list(before.tmax=before.tmax, after.tmax=after.tmax),
+            conc.na=0
+          ),
+          d.test[
+            c(before.tmax %in% "keep",
+              TRUE,
+              before.tmax %in% "keep",
+              TRUE,
+              after.tmax %in% "keep"),],
+          info=paste(before.tmax, after.tmax)
+        )
+      }
+    }
+
+    # When conc.na is 0, it drops those
+    d.test <- data.frame(conc=c(0, 1, NA, 2, 0), time=1:5)
+    expect_equal(
+      clean.conc.blq(
+        d.test$conc, d.test$time,
+        conc.blq=list(before.tmax="drop", after.tmax="drop"), conc.na=0
+      ),
+      d.test[c(2, 4),]
+    )
+
+    # When conc.na is a number, it keeps those
+    d.test <- data.frame(conc=c(0, 1, NA, 2, 0), time=1:5)
+    d.result <- data.frame(conc=c(0, 1, 0.5, 2, 0), time=1:5)
+    expect_equal(
+      clean.conc.blq(
+        d.test$conc, d.test$time,
+        conc.blq=list(before.tmax="drop", after.tmax="drop"), conc.na=0.5
+      ),
+      d.result[2:4,]
+    )
+
+    # It passes additional to be part of the output data frame
+    d.test <- data.frame(conc=c(0, 1, NA, 2, 0), time=1:5, more=6:10)
+    d.result <- data.frame(conc=c(0, 1, 0.5, 2, 0), time=1:5, more=6:10)
+    expect_equal(
+      clean.conc.blq(
+        d.test$conc, d.test$time,
+        more=d.test$more,
+        conc.blq=list(before.tmax="drop", after.tmax="drop"), conc.na=0.5
+      ),
+      d.result[2:4,]
+    )
+    d.test <- data.frame(conc=c(0, 1, NA, 2, 0), time=1:5, more=6:10)
+    expect_equal(
+      clean.conc.blq(
+        d.test$conc, d.test$time,
+        more=d.test$more,
+        conc.blq=list(before.tmax="drop", after.tmax="drop"), conc.na="drop"
+      ),
+      d.test[c(2,4),]
+    )
 })

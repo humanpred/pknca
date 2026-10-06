@@ -1,11 +1,12 @@
 #' Estimate the concentration at dosing time for an IV bolus dose.
 #'
 #' @inheritParams assert_conc_time
+#' @inheritParams clean.conc.blq
 #' @param time.dose The time when dosing occurred
 #' @param method The order of methods to test (see details)
-#' @param check Check the `conc` and `time` inputs
 #' @returns The estimated concentration at time 0.
 #'
+#' @family NCA parameters for concentrations during the intervals
 #' @details Methods available for interpolation are below, and each
 #' has its own specific function.
 #'
@@ -24,18 +25,18 @@ pk.calc.c0 <- function(conc, time, time.dose=0,
   if (check) {
     assert_conc_time(conc = conc, time = time)
   }
-  if (length(time.dose) != 1)
-    stop("time.dose must be a scalar")
-  if (!is.numeric(time.dose) | is.factor(time.dose))
-    stop("time.dose must be a number")
-  if (time.dose > max(time)) {
-    warning("time.dose is after all available data")
-    return(NA)
+  checkmate::assert_number(time.dose, na.ok = TRUE, finite = FALSE)
+  if (is.na(time.dose)) {
+    rlang::warn("time.dose is NA", class = "pknca_warning_timedose_na")
+    return(structure(NA_real_, exclude = "dose time is missing"))
+  } else if (time.dose > max(time)) {
+    rlang::warn("time.dose is after all available data", class = "pknca_warning_timedose_after_data")
+    return(structure(NA_real_, exclude = "dose time is after all available concentration data"))
   }
   method <- match.arg(method, several.ok=TRUE)
   # Find the value
   ret <- NA
-  while (is.na(ret) &
+  while (is.na(ret) &&
          length(method) > 0) {
     current.method <- method[1]
     method <- method[-1]
@@ -51,6 +52,8 @@ pk.calc.c0 <- function(conc, time, time.dose=0,
   }
   ret
 }
+
+pknca_concept(pk.calc.c0) <- "initial_conc"
 
 #' @describeIn pk.calc.c0 Semilog regress the first and second points
 #' after time.dose.  This method will return `NA` if the second
@@ -72,7 +75,7 @@ pk.calc.c0.method.logslope <- function(conc, time, time.dose=0,
   c2 <- conc[mask.2]
   t1 <- time[mask.1]
   t2 <- time[mask.2]
-  if (c2 < c1 &
+  if (c2 < c1 &&
       c2 != 0) {
     exp(log(c1) - (log(c2)-log(c1))/(t2-t1)*(t1 - time.dose))
   } else {
@@ -129,8 +132,13 @@ add.interval.col("c0",
                  values=c(FALSE, TRUE),
                  unit_type="conc",
                  pretty_name="C0",
-                 desc="Initial concentration after an IV bolus",
-                 depends=NULL)
+                 desc="Initial conc after IV bolus",
+                 depends=NULL,
+                 pptestcd_cdisc="C0",
+                 pptest_cdisc="Initial Conc",
+                 formula="$C_0 = \\text{if measured, } C_{t=0}; \\text{ else, } C_0 = C_1 \\exp\\left(-\\frac{\\ln(C_2) - \\ln(C_1)}{t_2-t_1} (t_1 - t_{\\text{dose}})\\right)$",
+                 formula_note="Methods are tried in order: c0, logslope, c1, cmin, set0; the formula shows c0 and logslope",
+                 tier = "common")
 PKNCA.set.summary(
   name="c0",
   description="geometric mean and geometric coefficient of variation",

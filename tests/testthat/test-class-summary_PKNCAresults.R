@@ -1,3 +1,10 @@
+# These tests are about how results are summarized, so the intervals are given
+# explicitly as the single.dose.aucs option:  that is what PKNCAdata() used to
+# generate automatically for single-dose data, and it keeps the two-interval
+# layout these expectations were written for.  The intervals PKNCAdata() now
+# generates come from pknca_interval_table() and are tested in
+# test-choose-intervals.R and test-class-PKNCAresults.R.
+
 test_that("PKNCAresults summary", {
   # Note that generate.conc sets the random seed, so it doesn't have
   # to happen here.
@@ -5,7 +12,7 @@ test_that("PKNCAresults summary", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   myresult <- pk.nca(mydata)
 
   # Testing the summarization
@@ -23,8 +30,7 @@ test_that("PKNCAresults summary", {
         cmax = c(".", "0.970 [4.29]"),
         tmax = c(".", "3.00 [2.00, 4.00]"),
         half.life = c(".", "14.2 [2.79]"),
-        aucinf.obs = c(".", "20.5 [6.84]"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c(".", "20.5 [6.84]")
       ),
       caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects"
     ),
@@ -36,7 +42,7 @@ test_that("PKNCAresults summary", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   # Not capturing the warning due to R bug
   # https://bugs.r-project.org/bugzilla3/show_bug.cgi?id=17122
   # expect_warning(myresult <- pk.nca(mydata),
@@ -55,10 +61,9 @@ test_that("PKNCAresults summary", {
         cmax = c(".", "1.00 [NC]"),
         tmax = c(".", "4.00, n=1"),
         half.life = c(".", "16.1, n=1"),
-        aucinf.obs = c(".", "21.5 [NC]"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c(".", "21.5 [NC]")
       ),
-      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; n: number of measurements included in summary"
+      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; n: number of measurements included in summary; NC: not calculated"
     ),
     info = "summary of PKNCAresults with some missing values results in NA for spread"
   )
@@ -68,7 +73,7 @@ test_that("PKNCAresults summary", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   # Not capturing the warning due to R bug
   # https://bugs.r-project.org/bugzilla3/show_bug.cgi?id=17122
   # expect_warning(myresult <- pk.nca(mydata),
@@ -87,10 +92,9 @@ test_that("PKNCAresults summary", {
         cmax = c(".", "NC"),
         tmax = c(".", "NC"),
         half.life = c(".", "NC"),
-        aucinf.obs = c(".", "NC"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c(".", "NC")
       ),
-      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects"
+      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; NC: not calculated"
     ),
     info = "summary of PKNCAresults without most results gives NC"
   )
@@ -111,10 +115,9 @@ test_that("PKNCAresults summary", {
         cmax = c("NR", "NoCalc"),
         tmax = c("NR", "NoCalc"),
         half.life = c("NR", "NoCalc"),
-        aucinf.obs = c("NR", "NoCalc"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c("NR", "NoCalc")
       ),
-      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects"
+      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; NoCalc: not calculated"
     ),
     info = "Summary respects the not.requested.string and not.calculated.string"
   )
@@ -135,10 +138,9 @@ test_that("PKNCAresults summary", {
         cmax = c("NR", "NoCalc"),
         tmax = c("NR", "NoCalc"),
         half.life = c("NR", "NoCalc"),
-        aucinf.obs = c("NR", "NoCalc"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c("NR", "NoCalc")
       ),
-      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation"
+      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; NoCalc: not calculated"
     ),
     info = "N is optionally omitted"
   )
@@ -186,7 +188,7 @@ test_that("dropping `start` and `end` from groups is allowed with a warning.", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   myresult <- pk.nca(mydata)
 
   expect_warning(
@@ -203,7 +205,7 @@ test_that("summary.PKNCAresults manages exclusions as missing not as non-existen
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   myresult <- pk.nca(mydata)
   myresult_excluded <-
     exclude(
@@ -239,8 +241,7 @@ test_that("summary.PKNCAresults manages exclusions as missing not as non-existen
         cmax = c(".", "0.970 [4.29]"),
         tmax = c(".", "3.00 [2.00, 4.00]"),
         half.life = c(".", "14.2 [2.79]"),
-        aucinf.obs = c(".", "20.5 [6.84]"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c(".", "20.5 [6.84]")
       ),
       caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects"
     ),
@@ -258,8 +259,7 @@ test_that("summary.PKNCAresults manages exclusions as missing not as non-existen
         cmax = c(".", "0.970 [4.29]"),
         tmax = c(".", "3.00 [2.00, 4.00]"),
         half.life = c(".", "14.2 [2.79]"),
-        aucinf.obs = c(".", "20.5 [6.84]"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c(".", "20.5 [6.84]")
       ),
       caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; n: number of measurements included in summary"
     ),
@@ -277,10 +277,9 @@ test_that("summary.PKNCAresults manages exclusions as missing not as non-existen
         cmax = c(".", "0.970 [4.29]"),
         tmax = c(".", "3.00 [2.00, 4.00]"),
         half.life = c(".", "14.2 [2.79]"),
-        aucinf.obs = c(".", "20.5 [6.84]"),
-        stringsAsFactors = FALSE
+        aucinf.obs = c(".", "20.5 [6.84]")
       ),
-      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects"
+      caption = "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; NC: not calculated"
     ),
     info = "summary of PKNCAresults correctly excludes all of auclast when requested"
   )
@@ -291,7 +290,7 @@ test_that("print.summary_PKNCAresults works", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   myresult <- pk.nca(mydata)
 
   expect_output(
@@ -307,12 +306,71 @@ test_that("print.summary_PKNCAresults works", {
   )
 })
 
-test_that("summary pretty_name control", {
+test_that("print.summary_PKNCAresults supports caption_prefix", {
   tmpconc <- generate.conc(2, 1, 0:24)
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
+  myresult <- pk.nca(mydata)
+  
+  expect_output(
+    print(summary(myresult, caption_prefix = "Summary:")),
+    paste(
+      " start end treatment N     auclast         cmax              tmax   half.life.*",
+      "     0  24     Trt 1 2 13.8 \\[2.51\\]            .                 .           ..*",
+      "     0 Inf     Trt 1 2           . 0.970 \\[4.29\\] 3.00 \\[2.00, 4.00\\] 14.2 \\[2.79\\].*",
+      "",
+      "Caption: Summary: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation",
+      sep = "\n"
+    )
+  )
+})
+
+
+test_that("the not calculated abbreviation is described in the caption only when it is used", {
+  caption_args <-
+    list(
+      param_names = "cmax",
+      pretty_names = FALSE,
+      footnote_N = FALSE,
+      footnote_n = FALSE,
+      not_calculated = "NC",
+      caption_prefix = NULL
+    )
+  expect_equal(
+    do.call(get_summary_PKNCAresults_caption, c(caption_args, footnote_not_calculated = FALSE)),
+    "cmax: geometric mean and geometric coefficient of variation",
+    info = "no value was not calculated, so the abbreviation is omitted"
+  )
+  expect_equal(
+    do.call(get_summary_PKNCAresults_caption, c(caption_args, footnote_not_calculated = TRUE)),
+    "cmax: geometric mean and geometric coefficient of variation; NC: not calculated"
+  )
+  caption_args$not_calculated <- "NoCalc"
+  expect_equal(
+    do.call(get_summary_PKNCAresults_caption, c(caption_args, footnote_not_calculated = TRUE)),
+    "cmax: geometric mean and geometric coefficient of variation; NoCalc: not calculated",
+    info = "the user's not_calculated string is what is described"
+  )
+  caption_args$not_calculated <- "NC"
+  caption_args$footnote_N <- TRUE
+  caption_args$footnote_n <- TRUE
+  expect_equal(
+    do.call(get_summary_PKNCAresults_caption, c(caption_args, footnote_not_calculated = TRUE)),
+    "cmax: geometric mean and geometric coefficient of variation; N: number of subjects; n: number of measurements included in summary; NC: not calculated",
+    info = "the abbreviation comes after the N and n footnotes"
+  )
+})
+
+
+test_that("summary pretty_name control", {
+  skip_if_not_installed("units")
+  tmpconc <- generate.conc(2, 1, 0:24)
+  tmpdose <- generate.dose(tmpconc)
+  myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
+  mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   myresult <- pk.nca(mydata)
 
   d_units_orig <- pknca_units_table(concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr")
@@ -321,7 +379,8 @@ test_that("summary pretty_name control", {
       concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr",
       conversions = data.frame(PPORRESU = "ng/mL", PPSTRESU = "mg/mL")
     )
-  mydata_orig <- PKNCAdata(myconc, mydose, units = d_units_orig)
+  mydata_orig <- PKNCAdata(myconc, mydose, units = d_units_orig,
+                           intervals = PKNCA.options("single.dose.aucs"))
   myresult_units_orig <- pk.nca(mydata_orig)
 
   s_plain <- summary(myresult)
@@ -398,7 +457,7 @@ test_that("PKNCAresults summary counts N and n", {
   tmpdose <- generate.dose(tmpconc)
   myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
   mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
-  mydata <- PKNCAdata(myconc, mydose)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
   suppressWarnings(
     myresult <- pk.nca(mydata)
   )
@@ -408,4 +467,169 @@ test_that("PKNCAresults summary counts N and n", {
     attr(o_summary, "caption"),
     "auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; tmax: median and range; half.life: arithmetic mean and standard deviation; N: number of subjects; n: number of measurements included in summary"
   )
+})
+
+test_that("summary.PKNCAresults drop_param argument works", {
+  tmpconc <- generate.conc(2, 1, 0:6)
+  tmpdose <- generate.dose(tmpconc)
+  myconc <- PKNCAconc(tmpconc, formula = conc ~ time | treatment + ID)
+  mydose <- PKNCAdose(tmpdose, formula = dose ~ time | treatment + ID)
+  mydata <- PKNCAdata(myconc, mydose, intervals = PKNCA.options("single.dose.aucs"))
+  suppressWarnings(
+    myresult <- pk.nca(mydata)
+  )
+  o_summary <- summary(myresult)
+  expect_true("auclast" %in% names(o_summary))
+  o_summary_noauclast <- summary(myresult, drop_param = "auclast")
+  expect_false("auclast" %in% names(o_summary_noauclast))
+})
+
+# Sparse results with one sample per animal at each time and two treatments.
+# A sparse AUClast is one estimate per treatment, with its standard error on
+# the auclast_se row.
+sparse_summary_results <- function(intervals = data.frame(start = 0, end = 24, auclast = TRUE, cmax = TRUE),
+                                   options = list()) {
+  d_conc <- expand.grid(time = c(0, 1, 2, 4, 8, 24), rep = 1:3, treatment = c("A", "B"))
+  d_conc$id <- paste(d_conc$treatment, d_conc$time, d_conc$rep)
+  d_conc$conc <-
+    10 * exp(-0.2 * d_conc$time) * (1 - exp(-2 * d_conc$time)) *
+    (1 + c(-0.1, 0, 0.1)[d_conc$rep]) * c(A = 1, B = 0.8)[as.character(d_conc$treatment)]
+  d_dose <- data.frame(treatment = c("A", "B"), time = 0, dose = 1)
+  # Requesting a deprecated sparse name warns once per session
+  o_data <-
+    suppressWarnings(PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | treatment + id, sparse = TRUE),
+      PKNCAdose(d_dose, dose ~ time | treatment),
+      intervals = intervals,
+      options = options
+    ))
+  suppressWarnings(suppressMessages(pk.nca(o_data)))
+}
+
+test_that("summary combines a sparse AUClast with its standard error from another row (#170)", {
+  res <- sparse_summary_results()
+  d_res <- as.data.frame(res)
+  auc <- d_res$PPORRES[d_res$PPTESTCD == "auclast"]
+  se <- d_res$PPORRES[d_res$PPTESTCD == "auclast_se"]
+  o_summary <- summary(res)
+  expect_equal(names(o_summary), c("start", "end", "treatment", "auclast", "cmax"))
+  expect_equal(
+    o_summary$auclast,
+    sprintf("%s [%s]", signifString(auc, 3), signifString(se, 3))
+  )
+  # Dense-style parameters in the same summary keep their own summary
+  expect_equal(
+    o_summary$cmax,
+    signifString(d_res$PPORRES[d_res$PPTESTCD == "cmax"], 3)
+  )
+  expect_equal(
+    attr(o_summary, "caption"),
+    "auclast: estimate and standard error; cmax: geometric mean and geometric coefficient of variation"
+  )
+})
+
+test_that("a summary row with more than one sparse estimate is an error (#170)", {
+  # Dropping the group that separates the estimates
+  res <- sparse_summary_results()
+  expect_error(
+    summary(res, drop_group = c("id", "treatment")),
+    regexp = "Cannot summarize 2 standard errors in one summary row",
+    class = "pknca_error_summary_multiple_spread"
+  )
+  # Intervals with the same start and end that nothing in the summary tells apart
+  res_dup <-
+    sparse_summary_results(
+      intervals = data.frame(start = 0, end = 24, auclast = TRUE, impute = c(NA, "start_conc0"))
+    )
+  expect_error(summary(res_dup), class = "pknca_error_summary_multiple_spread")
+  # A kept interval column tells them apart, so each row has one estimate
+  res_kept <-
+    sparse_summary_results(
+      intervals = data.frame(start = 0, end = 24, auclast = TRUE, label = c("a", "b")),
+      options = list(keep_interval_cols = "label")
+    )
+  expect_equal(nrow(summary(res_kept)), 4)
+})
+
+test_that("a requested standard error gets no summary column of its own (#170)", {
+  res <-
+    sparse_summary_results(
+      intervals = data.frame(start = 0, end = 24, auclast = TRUE, auclast_se = TRUE)
+    )
+  o_summary <- summary(res)
+  expect_equal(names(o_summary), c("start", "end", "treatment", "auclast"))
+})
+
+test_that("an excluded sparse standard error is not calculated in the summary (#170)", {
+  res <- sparse_summary_results()
+  res_excl <- exclude(res, reason = "SE excluded", mask = res$result$PPTESTCD == "auclast_se")
+  d_res <- as.data.frame(res)
+  auc <- d_res$PPORRES[d_res$PPTESTCD == "auclast"]
+  o_summary <- summary(res_excl)
+  expect_equal(o_summary$auclast, paste(signifString(auc, 3), "[NC]"))
+  expect_match(attr(o_summary, "caption"), "NC: not calculated", fixed = TRUE)
+})
+
+test_that("the caption describes each summary a parameter used (#170)", {
+  expect_equal(
+    get_summary_PKNCAresults_caption(
+      param_names = c("auclast", "cmax"),
+      pretty_names = FALSE,
+      footnote_N = FALSE,
+      footnote_n = FALSE,
+      footnote_not_calculated = FALSE,
+      not_calculated = "NC",
+      caption_prefix = NULL,
+      descriptions_used =
+        list(
+          auclast =
+            c(
+              "geometric mean and geometric coefficient of variation",
+              "estimate and standard error"
+            )
+        )
+    ),
+    "auclast, cmax: geometric mean and geometric coefficient of variation; auclast: estimate and standard error"
+  )
+})
+
+test_that("PKNCA.set.summary checks spread_for (#170)", {
+  expect_error(
+    PKNCA.set.summary(
+      name = "auclast_se", description = "x", point = business.mean,
+      spread = business.mean, spread_for = "not_a_parameter"
+    ),
+    class = "pknca_error_undefined_parameter"
+  )
+  expect_error(
+    PKNCA.set.summary(
+      name = "auclast_se", description = "x", point = business.mean,
+      spread_for = "auclast"
+    ),
+    class = "pknca_error_spread_for_needs_spread"
+  )
+  expect_error(
+    PKNCA.set.summary(
+      name = "auclast_se", description = "x", point = business.mean,
+      spread = business.mean, spread_for = c("auclast", "aumclast")
+    ),
+    regexp = "Must have length 1"
+  )
+  # The failed calls left the registered instructions in place
+  expect_equal(PKNCA.set.summary()$auclast_se$spread_for, "auclast")
+  expect_equal(PKNCA.set.summary()$auclast_se$description, "estimate and standard error")
+})
+
+test_that("the deprecated sparse_auclast is summarized with sparse_auc_se (#170)", {
+  res <- sparse_summary_results(intervals = data.frame(start = 0, end = 24, sparse_auclast = TRUE))
+  d_res <- as.data.frame(res)
+  auc <- d_res$PPORRES[d_res$PPTESTCD == "sparse_auclast"]
+  se <- d_res$PPORRES[d_res$PPTESTCD == "sparse_auc_se"]
+  o_summary <- summary(res)
+  expect_equal(names(o_summary), c("start", "end", "treatment", "sparse_auclast"))
+  expect_equal(
+    o_summary$sparse_auclast,
+    sprintf("%s [%s]", signifString(auc, 3), signifString(se, 3))
+  )
+  expect_equal(attr(o_summary, "caption"), "sparse_auclast: estimate and standard error")
 })
