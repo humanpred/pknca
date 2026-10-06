@@ -12,7 +12,8 @@ pk.nca.intervals(
   impute,
   data_sparse_conc = NULL,
   verbose = FALSE,
-  timeu = NULL
+  timeu = NULL,
+  warning_prefix = ""
 )
 }
 \arguments{
@@ -40,6 +41,9 @@ individual samples (including a \code{subject} column) as output from
 \item{timeu}{The time unit of the group's times, or \code{NULL} when it is not
 known.  A \eqn{\tau} detected from the dose times is matched to the nominal
 dosing intervals for that unit (see \code{\link[=find.tau]{find.tau()}}).}
+
+\item{warning_prefix}{The text naming the group, put before each dose regimen
+warning}
 }
 \value{
 A list with elements "dense" and "sparse", each a data.frame of the

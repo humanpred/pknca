@@ -63,7 +63,7 @@ pk.nca <- function(data, verbose=FALSE) {
     splitdata <-
       full_join_PKNCAdata(
         data_calc,
-        extra_conc_cols = as.character(data_calc$conc$columns$timeu)
+        extra_conc_cols = pknca_timeu_extra_col(data_calc$conc)
       )
     group_info <-
       splitdata[
@@ -83,9 +83,15 @@ pk.nca <- function(data, verbose=FALSE) {
     data_sparse_conc <-
       if (sparse) splitdata$data_sparse_conc else rep(list(NULL), nrow(splitdata))
     group_timeu <-
-      purrr::map2(
-        splitdata$data_conc, data_sparse_conc, pknca_group_timeu,
-        o_conc = data_calc$conc
+      pknca_split_timeu(
+        splitdata = splitdata, group_info = group_info, o_conc = data_calc$conc,
+        datetime = !is.null(data_calc$time_reference)
+      )
+    group_warning_prefix <-
+      vapply(
+        X = split(group_info, seq_len(nrow(group_info))),
+        FUN = pknca_group_warning_prefix,
+        FUN.VALUE = ""
       )
     if (verbose) {
       rlang::inform("Starting PK NCA calculations.", class = "pknca_message_pk_start")
@@ -97,7 +103,8 @@ pk.nca <- function(data, verbose=FALSE) {
           data_sparse_conc = data_sparse_conc,
           data_dose = splitdata$data_dose,
           data_intervals = splitdata$data_intervals,
-          timeu = group_timeu
+          timeu = group_timeu,
+          warning_prefix = unname(group_warning_prefix)
         ),
         .f = pk.nca.intervals,
         options = data$options,
@@ -388,6 +395,8 @@ parameter_dispatch <- function(spec, has_sparse_conc) {
 #' @param data_intervals A data.frame or tibble with standardized column names
 #'   as output from `prepare_PKNCAintervals()`
 #' @param impute The column name in `data_intervals` to use for imputation
+#' @param warning_prefix The text naming the group, put before each dose regimen
+#'   warning
 #' @inheritParams PKNCAdata
 #' @inheritParams pk.nca
 #' @inheritParams pk.nca.interval
@@ -396,7 +405,7 @@ parameter_dispatch <- function(spec, has_sparse_conc) {
 #'   calculation was possible at all, the warning condition saying why)
 pk.nca.intervals <- function(data_conc, data_dose, data_intervals,
                              options, impute, data_sparse_conc=NULL, verbose=FALSE,
-                             timeu=NULL) {
+                             timeu=NULL, warning_prefix="") {
   if (is.null(data_conc) || (nrow(data_conc) == 0)) {
     # No concentration data; potentially placebo data
     no_data <- rlang::warning_cnd(class="pknca_warning_no_conc_data", message="No concentration data")
@@ -422,6 +431,9 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals,
   use_debug <- !is.null(options$debug)
   ret_dense <- list()
   ret_sparse <- list()
+  # The dose regimen warnings that detecting tau gives are the same for every
+  # interval of the group, so they are given once, naming the group
+  regimen_warnings <- pknca_regimen_warning_collector()
   for (i in seq_len(nrow(data_intervals))) {
     current_interval <- data_intervals[i, , drop=FALSE]
     has_calc_dense <- any_sparse_dense_in_interval(current_interval, sparse=FALSE)
@@ -508,9 +520,9 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals,
         duration.dose.group=data_dose$duration,
         route.group=data_dose$route,
         # Generic data
-        timeu=timeu,
         interval=current_interval,
-        options=options)
+        options=options,
+        timeu=timeu)
       if (has_sparse_data) {
         # The pooled individual samples that the mean profile in `conc`/`time`
         # was built from.  Only a sparse-flagged parameter reads them.
@@ -542,11 +554,11 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals,
       # Try the calculation
       if (use_debug) {
         # debugging mode does not need coverage
-        calculated_interval <- do.call(pk.nca.interval, args) # nocov
+        calculated_interval <- pknca_collect_regimen_warnings(do.call(pk.nca.interval, args), regimen_warnings) # nocov
       } else {
         calculated_interval <-
           tryCatch(
-            do.call(pk.nca.interval, args),
+            pknca_collect_regimen_warnings(do.call(pk.nca.interval, args), regimen_warnings),
             error = function(e) interval_calculation_error(e, error_preamble = error_preamble)
           )
       }
@@ -566,6 +578,7 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals,
       }
     }
   }
+  pknca_emit_regimen_warnings(regimen_warnings, prefix = warning_prefix)
   list(
     dense=if (length(ret_dense) == 0L) data.frame() else dplyr::bind_rows(ret_dense),
     sparse=if (length(ret_sparse) == 0L) data.frame() else dplyr::bind_rows(ret_sparse)
@@ -705,7 +718,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
                             conc.sparse.group=NULL, time.sparse.group=NULL,
                             impute_method=NA_character_,
                             include_half.life=NULL, exclude_half.life=NULL, lloq=NULL,
-                            subject=NULL, timeu=NULL, interval, options=list()) {
+                            subject=NULL, interval, options=list(), timeu=NULL) {
   if (!checkmate::test_data_frame(interval, nrows = 1)) {
     rlang::abort(
       "Please report a bug.  Interval must be a one-row data.frame",

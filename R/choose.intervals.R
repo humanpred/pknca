@@ -125,18 +125,23 @@ find.tau <- function(x, na.action=stats::na.omit,
 
 # The time unit of one group's times, for matching its dosing interval to the
 # nominal intervals of find.dose.regimen():  the unit given to PKNCAconc() as a
-# value, or the one unit in the group's rows of its unit column.  NULL leaves
-# the interval to the dose times alone, as it is when there is no unit, when the
-# group's rows give more than one unit, or when the unit cannot be converted to
-# hours (a unit may be any label, and without the units package only "hr" can
-# be converted).  With sparse PK, the unit column is in the pooled samples.
-pknca_group_timeu <- function(o_conc, data_conc = NULL, data_sparse_conc = NULL) {
+# value; or the one unit in the group's unit column, read from the group's
+# columns when the unit column is a grouping column and otherwise from its rows
+# (the pooled samples, with sparse PK); or, for date-times (`datetime`), the
+# hours they were converted to.  NULL leaves the interval to the dose times
+# alone, as it is when there is no unit, when the group's rows give more than
+# one unit, or when the unit cannot be converted to hours (a unit may be any
+# label, and without the units package only "hr" can be converted).
+pknca_group_timeu <- function(o_conc, data_conc = NULL, data_sparse_conc = NULL,
+                              group = NULL, datetime = FALSE) {
   timeu <- o_conc$units$timeu
   column <- o_conc$columns$timeu
   if (is.null(timeu) && !is.null(column)) {
-    rows <- if (is.null(data_sparse_conc)) data_conc else data_sparse_conc
+    rows <- if (column %in% names(group)) group else if (is.null(data_sparse_conc)) data_conc else data_sparse_conc
     timeu <- unique(as.character(rows[[column]]))
     timeu <- timeu[!is.na(timeu)]
+  } else if (is.null(timeu) && datetime) {
+    timeu <- pknca_datetime_time_unit(o_conc)
   }
   timeu <- as.vector(timeu)
   if (length(timeu) != 1) {
@@ -149,6 +154,81 @@ pknca_group_timeu <- function(o_conc, data_conc = NULL, data_sparse_conc = NULL)
     return(NULL)
   }
   timeu
+}
+
+# The unit column to carry with each group's concentration data, so that
+# pknca_group_timeu() can read it:  none when the unit is a value, and none
+# when the column is already carried as a grouping column or a column that the
+# calculations use, where carrying it twice would collide.
+pknca_timeu_extra_col <- function(o_conc) {
+  column <- o_conc$columns$timeu
+  carried <-
+    c(
+      unlist(o_conc$columns$groups), o_conc$columns$subject,
+      o_conc$columns$concentration, o_conc$columns$time, o_conc$columns$volume,
+      o_conc$columns$duration, o_conc$columns$include_half.life,
+      o_conc$columns$exclude_half.life, o_conc$columns$lloq
+    )
+  if (is.null(column) || column %in% carried) {
+    return(character(0))
+  }
+  as.character(column)
+}
+
+# The time unit of each group of a split PKNCAdata object (see
+# full_join_PKNCAdata()), as a list with one element per row
+pknca_split_timeu <- function(splitdata, group_info, o_conc, datetime) {
+  ret <- vector("list", nrow(splitdata))
+  for (idx in seq_len(nrow(splitdata))) {
+    timeu <-
+      pknca_group_timeu(
+        o_conc = o_conc,
+        data_conc = splitdata$data_conc[[idx]],
+        data_sparse_conc = splitdata[["data_sparse_conc"]][[idx]],
+        group = group_info[idx, , drop = FALSE],
+        datetime = datetime
+      )
+    if (!is.null(timeu)) {
+      ret[[idx]] <- timeu
+    }
+  }
+  ret
+}
+
+# Gathering the dose regimen warnings of one group (the
+# "pknca_warning_dose_regimen" class of find.dose.regimen()) so that each is
+# given once for the group, with the group named, rather than once for every
+# interval and every parameter that needed tau.
+pknca_regimen_warning_collector <- function() {
+  collector <- new.env(parent = emptyenv())
+  collector$conditions <- list()
+  collector
+}
+
+# Evaluate `expr`, keeping its dose regimen warnings in `collector`
+pknca_collect_regimen_warnings <- function(expr, collector) {
+  withCallingHandlers(
+    expr,
+    pknca_warning_dose_regimen = function(cnd) pknca_keep_regimen_warning(cnd, collector)
+  )
+}
+
+# Keep one dose regimen warning (by class and message) and muffle it
+pknca_keep_regimen_warning <- function(cnd, collector) {
+  key <- paste(class(cnd)[1], conditionMessage(cnd))
+  collector$conditions[[key]] <- cnd
+  invokeRestart("muffleWarning")
+}
+
+# Give the kept dose regimen warnings, each once, prefixed with the group
+pknca_emit_regimen_warnings <- function(collector, prefix) {
+  for (cnd in collector$conditions) {
+    rlang::warn(
+      paste0(prefix, conditionMessage(cnd)),
+      class = setdiff(class(cnd), c("rlang_warning", "warning", "condition"))
+    )
+  }
+  invisible(NULL)
 }
 
 # The route to build an interval for, from the route and duration recorded with

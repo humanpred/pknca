@@ -899,6 +899,14 @@ test_that("pknca_group_timeu finds the time unit of a group", {
   d_mixed$tu <- c("hr", "hr", "min")
   expect_null(pknca_group_timeu(o_column, data_conc = d_mixed))
   expect_null(pknca_group_timeu(o_column, data_conc = d_conc[0, ]))
+  # A unit column that is also a grouping column is read from the group
+  o_group <- PKNCAconc(d_conc, conc~time|tu+subject, timeu = "tu")
+  expect_equal(
+    pknca_group_timeu(o_group, data_conc = d_conc[1:3, c("time", "conc")], group = data.frame(tu = "hr", subject = 1)),
+    "hr"
+  )
+  # Date-times without a unit were converted to hours
+  expect_equal(pknca_group_timeu(PKNCAconc(d_conc, conc~time|subject), datetime = TRUE), "hr")
   # No unit at all, or one that is not a time unit, gives no unit
   expect_null(pknca_group_timeu(PKNCAconc(d_conc, conc~time|subject)))
   expect_null(pknca_group_timeu(PKNCAconc(d_conc, conc~time|subject, timeu = "not_a_unit")))
@@ -951,4 +959,57 @@ test_that("PKNCAdata matches tau to the nominal intervals in days", {
   expect_equal(ret_none$intervals$end, c(5.04, Inf))
   ret_day <- PKNCAdata(PKNCAconc(d_conc, conc~time, timeu = "day"), o_dose)
   expect_equal(ret_day$intervals$end, c(5.02, Inf))
+})
+
+test_that("pknca_timeu_extra_col carries a unit column only when it is not carried already", {
+  d_conc <- data.frame(subject = 1, time = 0:2, conc = 1, tu = "hr")
+  expect_equal(pknca_timeu_extra_col(PKNCAconc(d_conc, conc~time|subject, timeu = "hr")), character(0))
+  expect_equal(pknca_timeu_extra_col(PKNCAconc(d_conc, conc~time|subject, timeu = "tu")), "tu")
+  expect_equal(pknca_timeu_extra_col(PKNCAconc(d_conc, conc~time|tu+subject, timeu = "tu")), character(0))
+})
+
+test_that("PKNCAdata uses a time unit column that is also a grouping column", {
+  doses <- c(0, 24.5, 49, 73, 97.5)
+  times <- sort(unique(c(doses, 97.5 + c(0.5, 1, 2, 4, 8, 12, 24, 36, 48))))
+  d_conc <- data.frame(tu = "hr", subject = rep(1:2, each = length(times)), time = rep(times, 2))
+  d_conc$conc <- exp(-0.1 * d_conc$time) + 1
+  d_dose <- data.frame(tu = "hr", subject = rep(1:2, each = length(doses)), time = rep(doses, 2), dose = 1)
+  expect_no_warning(
+    ret <-
+      PKNCAdata(
+        PKNCAconc(d_conc, conc~time|tu+subject, timeu = "tu"),
+        PKNCAdose(d_dose, dose~time|tu+subject)
+      )
+  )
+  expect_equal(ret$intervals$end, c(121.5, Inf, 121.5, Inf))
+})
+
+test_that("PKNCAdata names the group in each dose regimen warning, once per group", {
+  doses <- 0:5
+  times <- sort(unique(c(doses, 5 + c(0.25, 0.5, 1, 2, 4))))
+  d_conc <- data.frame(subject = rep(1:2, each = length(times)), time = rep(times, 2))
+  d_conc$conc <- exp(-0.3 * d_conc$time) + 1
+  d_dose <- data.frame(subject = rep(1:2, each = length(doses)), time = rep(doses, 2), dose = 1)
+  warnings <-
+    testthat::capture_warnings(
+      PKNCAdata(PKNCAconc(d_conc, conc~time|subject, timeu = "hr"), PKNCAdose(d_dose, dose~time|subject))
+    )
+  expect_length(warnings, 2)
+  expect_match(warnings[1], "^subject=1: The dosing interval is not one of the nominal intervals")
+  expect_match(warnings[2], "^subject=2: The dosing interval is not one of the nominal intervals")
+  # The class is kept, with the common parent class
+  expect_warning(
+    PKNCAdata(PKNCAconc(d_conc[d_conc$subject == 1, ], conc~time|subject, timeu = "hr"), PKNCAdose(d_dose[d_dose$subject == 1, ], dose~time|subject)),
+    class = "pknca_warning_dose_regimen"
+  )
+})
+
+test_that("PKNCAdata reads date-times without a unit as hours", {
+  doses <- c(0, 24.5, 49, 73, 97.5)
+  times <- sort(unique(c(doses, 97.5 + c(0.5, 1, 2, 4, 8, 12, 24, 36, 48))))
+  first_dose <- as.POSIXct("2026-01-01 08:00", tz = "UTC")
+  d_conc <- data.frame(time = first_dose + times * 3600, conc = exp(-0.1 * times) + 1)
+  d_dose <- data.frame(time = first_dose + doses * 3600, dose = 1)
+  ret <- PKNCAdata(PKNCAconc(d_conc, conc~time), PKNCAdose(d_dose, dose~time))
+  expect_equal(ret$intervals$end, c(121.5, Inf))
 })

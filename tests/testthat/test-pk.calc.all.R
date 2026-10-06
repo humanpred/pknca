@@ -1867,4 +1867,66 @@ test_that("pk.nca matches a detected tau to the nominal intervals for the time u
     pk_nca_tau_used(PKNCAconc(d_conc, conc~time, concu = "ng/mL", timeu = "hr"), o_dose, intervals),
     24
   )
+  # The unit as a column, and as a column that is also a grouping column
+  d_conc$tu <- "hr"
+  expect_equal(
+    pk_nca_tau_used(PKNCAconc(d_conc, conc~time, concu = "ng/mL", timeu = "tu"), o_dose, intervals),
+    24
+  )
+  o_dose_grouped <- PKNCAdose(data.frame(tu = "hr", time = doses, dose = 1), dose~time|tu)
+  expect_equal(
+    pk_nca_tau_used(PKNCAconc(d_conc, conc~time|tu, concu = "ng/mL", timeu = "tu"), o_dose_grouped, intervals),
+    24
+  )
+})
+
+test_that("pk.nca matches a detected tau to the time unit for sparse PK", {
+  doses <- c(0, 24.5, 49, 73, 97.5)
+  times <- 97.5 + c(0, 0.5, 1, 2, 4, 8, 12, 24)
+  # One sample per subject, two subjects at each time
+  d_conc <- data.frame(subject = seq_len(2 * length(times)), time = rep(times, each = 2))
+  d_conc$conc <- 10 * exp(-0.1 * (d_conc$time - 97.5)) + 1 + (d_conc$subject %% 2) / 10
+  d_conc$tu <- "hr"
+  o_dose <- PKNCAdose(data.frame(time = doses, dose = 1), dose~time)
+  intervals <-
+    data.frame(
+      start = 97.5, end = 121.5,
+      auclast = TRUE, aumclast = TRUE, aucinf.obs = TRUE, mrt.md.obs = TRUE
+    )
+  expect_equal(
+    pk_nca_tau_used(PKNCAconc(d_conc, conc~time|subject, sparse = TRUE), o_dose, intervals),
+    24.5
+  )
+  expect_equal(
+    pk_nca_tau_used(
+      PKNCAconc(d_conc, conc~time|subject, sparse = TRUE, concu = "ng/mL", timeu = "tu"),
+      o_dose, intervals
+    ),
+    24
+  )
+})
+
+test_that("pk.nca gives each dose regimen warning once per group, naming it", {
+  # Dosing every hour matches no nominal interval; with four subjects and two
+  # intervals that need tau, each subject is named once
+  doses <- 0:5
+  times <- sort(unique(c(doses, 5 + c(0.25, 0.5, 1, 2, 4))))
+  d_conc <- data.frame(subject = rep(1:4, each = length(times)), time = rep(times, 4))
+  d_conc$conc <- exp(-0.3 * d_conc$time) + 1
+  d_dose <- data.frame(subject = rep(1:4, each = length(doses)), time = rep(doses, 4), dose = 1)
+  intervals <-
+    data.frame(
+      start = c(4, 5), end = c(5, 6),
+      auclast = TRUE, aumclast = TRUE, aucinf.obs = TRUE, mrt.md.obs = TRUE
+    )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject, concu = "ng/mL", timeu = "hr"),
+      PKNCAdose(d_dose, dose~time|subject),
+      intervals = intervals
+    )
+  warnings <- testthat::capture_warnings(pk.nca(o_data))
+  regimen_warnings <- grep("not one of the nominal intervals", warnings, value = TRUE)
+  expect_length(regimen_warnings, 4)
+  expect_equal(substr(regimen_warnings, 1, 11), paste0("subject=", 1:4, ": "))
 })
