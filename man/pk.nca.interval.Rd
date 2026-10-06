@@ -110,9 +110,10 @@ half-life method.}
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
 
-\item{timeu}{The time unit of the group's times, or \code{NULL} when it is not
-known.  A \eqn{\tau} detected from the dose times is matched to the nominal
-dosing intervals for that unit (see \code{\link[=find.tau]{find.tau()}}).}
+\item{timeu}{The time unit of the group's times:  \code{NULL} when it is not
+known, which is taken to be hours, or \code{NA} when it cannot be used.  A
+\eqn{\tau} detected from the dose times is matched to the nominal dosing
+intervals for that unit (see \code{\link[=find.dose.regimen]{find.dose.regimen()}}).}
 }
 \value{
 A data frame with one row per result, with columns \code{PPTESTCD},

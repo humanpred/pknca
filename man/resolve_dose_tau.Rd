@@ -17,8 +17,7 @@ within it)}
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
 
-\item{timeu}{The time unit of \code{time.dose}, or \code{NULL} when it is not known
-(see \code{\link[=find.tau]{find.tau()}})}
+\item{timeu}{The time unit of \code{time.dose} (see \code{\link[=choose.auc.intervals]{choose.auc.intervals()}})}
 }
 \value{
 The dosing interval, or \code{NA_real_} when it cannot be determined

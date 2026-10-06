@@ -1,3 +1,17 @@
+# find.tau() for times without a unit that are not hours:  the times are taken
+# to be hours, the interval matches no nominal one, and that is said
+find_tau_not_hours <- function(...) {
+  expect_warning(ret <- find.tau(...), class = "pknca_warning_tau_not_nominal")
+  ret
+}
+
+# choose.auc.intervals() for times without a unit that are not hours (see
+# find_tau_not_hours())
+choose_intervals_not_hours <- function(...) {
+  expect_warning(ret <- choose.auc.intervals(...), class = "pknca_warning_tau_not_nominal")
+  ret
+}
+
 test_that("find.tau", {
   # Regularly spaced intervals give the regular spacing
   expect_equal(
@@ -10,7 +24,8 @@ test_that("find.tau", {
                            seq(4, 168+12, 12)))),
              tau.choices=NA),
     12)
-  expect_equal(find.tau(0:10, tau.choices=NA), 1)
+  # Doses an hour apart are not a nominal interval
+  expect_equal(find_tau_not_hours(0:10, tau.choices=NA), 1)
   # It overrides tau.choices if everything is equally spaced, and says that the
   # interval is not one of the choices
   expect_warning(
@@ -105,7 +120,7 @@ test_that("find.tau reports a missed dose rather than the length of the gap", {
     class="pknca_warning_tau_irregular_dosing"
   )
   expect_equal(tau_two, 24)
-  expect_equal(find.tau(c(0, 24, 48, 96, 120, 144, 192, 216, 240)), 96)
+  expect_equal(find_tau_not_hours(c(0, 24, 48, 96, 120, 144, 192, 216, 240)), 96)
   # A gap that is not a whole number of intervals is not a missed dose; the dose
   # that ends it is off schedule, and the schedule continues from it
   expect_warning(
@@ -142,12 +157,13 @@ test_that("find.tau sorts and de-duplicates the dose times", {
 
 test_that("find.tau matches times within a tolerance", {
   # Dosing three times a day with time in days:  the spacings differ in the
-  # last bits, so exact comparison gave no interval at all.
-  expect_equal(find.tau(seq(0, 2, by=1/3)), 1/3)
-  expect_equal(find.tau(c(0, 1/3, 2/3, 1)), 1/3)
+  # last bits, so exact comparison gave no interval at all.  Without a unit the
+  # times are taken to be hours, so a third of one is not a nominal interval.
+  expect_equal(find_tau_not_hours(seq(0, 2, by=1/3)), 1/3)
+  expect_equal(find_tau_not_hours(c(0, 1/3, 2/3, 1)), 1/3)
   # Dosing every twenty minutes with time in hours
-  expect_equal(find.tau((0:5)*20/60), 20/60)
-  expect_equal(find.tau(seq(0, 0.5, by=0.1)), 0.1)
+  expect_equal(find_tau_not_hours((0:5)*20/60), 20/60)
+  expect_equal(find_tau_not_hours(seq(0, 0.5, by=0.1)), 0.1)
   # Twice daily in days, where the interval repeats but no two doses are a day
   # apart
   expect_equal(find.tau(c(0, 1/3, 1, 4/3, 2, 7/3), tau.choices=1), 1)
@@ -309,8 +325,9 @@ test_that("choose.auc.intervals finds the intervals between doses", {
   # The interval boundaries are unchanged from before the parameters came from
   # pknca_interval_table(); the parameters within them are not, so these pin
   # the boundaries and one parameter set is checked in full below.
+  # The times here are abstract, so they are compared with no nominal intervals
   bounds <- function(...) {
-    ret <- choose.auc.intervals(...)
+    ret <- choose.auc.intervals(..., timeu=NA)
     data.frame(start=ret$start, end=ret$end)
   }
   # Two doses with samples at both and one between
@@ -396,11 +413,11 @@ test_that("choose.auc.intervals matches sample times within a tolerance", {
 
 test_that("choose.auc.intervals handles non-integer dosing times", {
   # Dosing three times a day with time in days, sampled every four hours
-  ret <- choose.auc.intervals(sort(unique(round(seq(0, 3, by=1/6), 10))), seq(0, 2, by=1/3))
+  ret <- choose_intervals_not_hours(sort(unique(round(seq(0, 3, by=1/6), 10))), seq(0, 2, by=1/3))
   expect_equal(ret$start, c(0, 1/3, 2/3, 1, 4/3, 5/3, 2, 2))
   expect_equal(ret$end, c(1/3, 2/3, 1, 4/3, 5/3, 2, 7/3, Inf))
   # Dosing every twenty minutes with time in hours
-  ret_minutes <- choose.auc.intervals((0:11)*10/60, (0:3)*20/60)
+  ret_minutes <- choose_intervals_not_hours((0:11)*10/60, (0:3)*20/60)
   expect_equal(ret_minutes$start, c(0, 20, 40, 60, 60)/60)
   expect_equal(ret_minutes$end, c(20/60, 40/60, 60/60, 80/60, Inf))
 })
@@ -599,10 +616,11 @@ test_that("resolve_dose_tau detects tau from repeated dose times", {
     24
   )
   # Time in days, where exact comparison gave no tau at all
-  expect_equal(
-    resolve_dose_tau(interval=data.frame(start=2, end=7/3), time.dose=seq(0, 2, by=1/3)),
-    1/3
+  expect_warning(
+    tau_days <- resolve_dose_tau(interval=data.frame(start=2, end=7/3), time.dose=seq(0, 2, by=1/3)),
+    class="pknca_warning_tau_not_nominal"
   )
+  expect_equal(tau_days, 1/3)
 })
 
 test_that("resolve_dose_tau warns about a tau that spans a missed dose", {
@@ -753,8 +771,8 @@ test_that("find.tau matches at the edges of its tolerance", {
   # Spacings that differ only in the last bits are the same spacing
   spacing <- 1/3
   doses <- c(0, spacing, 2*spacing, 3*spacing, 4*spacing)
-  expect_equal(find.tau(doses), spacing)
-  expect_equal(find.tau(cumsum(c(0, rep(spacing, 4)))), spacing)
+  expect_equal(find_tau_not_hours(doses), spacing)
+  expect_equal(find_tau_not_hours(cumsum(c(0, rep(spacing, 4)))), spacing)
   # A spacing half an hour long is scatter within the tolerance, and the
   # interval is the median spacing
   nudged <- c(0, 24, 48, 72.5, 96.5)
@@ -764,9 +782,9 @@ test_that("find.tau matches at the edges of its tolerance", {
   eps <- sqrt(.Machine$double.eps)
   expect_equal(find.tau(c(0, 24, 48 + 24*eps/2, 72)), 24)
   # Large times, where the representable spacing is coarser
-  expect_equal(find.tau(c(0, 1e6, 2e6, 3e6)), 1e6)
+  expect_equal(find_tau_not_hours(c(0, 1e6, 2e6, 3e6)), 1e6)
   # Very small times
-  expect_equal(find.tau(c(0, 1e-6, 2e-6, 3e-6)), 1e-6)
+  expect_equal(find_tau_not_hours(c(0, 1e-6, 2e-6, 3e-6)), 1e-6)
 })
 
 test_that("find.tau gives no interval for a missed dose in a short history", {
@@ -857,29 +875,37 @@ test_that("a two-day twice-daily regimen gives the intervals it should", {
 
 test_that("choose.auc.intervals matches tau to the nominal intervals for its time unit", {
   # Daily doses recorded up to half an hour late:  the median spacing is 24.5
-  # hours, and with the unit known it snaps to the daily interval
+  # hours, which snaps to the daily interval with the unit known or taken to be
+  # hours, and is used as it is when the unit cannot be used
   doses <- c(0, 24.5, 49, 73, 97.5)
   conc <- sort(unique(c(doses, 97.5 + c(0.5, 1, 2, 4, 8, 12, 24, 36, 48))))
-  expect_equal(choose.auc.intervals(conc, doses)$end, c(122, Inf))
+  expect_equal(choose.auc.intervals(conc, doses)$end, c(121.5, Inf))
   expect_equal(choose.auc.intervals(conc, doses, timeu = "hr")$end, c(121.5, Inf))
-  # Dosing every hour matches no nominal interval, which is said only when the
-  # unit is known
+  expect_equal(choose.auc.intervals(conc, doses, timeu = NA)$end, c(122, Inf))
+  # Dosing every hour matches no nominal interval, which is said unless the
+  # unit cannot be used
   doses_hourly <- 0:5
   conc_hourly <- sort(unique(c(doses_hourly, 5 + c(0.25, 0.5, 1, 2, 4))))
-  expect_no_warning(ret_hourly <- choose.auc.intervals(conc_hourly, doses_hourly))
+  expect_no_warning(ret_hourly <- choose.auc.intervals(conc_hourly, doses_hourly, timeu = NA))
   expect_warning(
     ret_hourly_unit <- choose.auc.intervals(conc_hourly, doses_hourly, timeu = "hr"),
     class = "pknca_warning_tau_not_nominal"
   )
+  expect_warning(
+    ret_hourly_none <- choose.auc.intervals(conc_hourly, doses_hourly),
+    class = "pknca_warning_tau_not_nominal"
+  )
   expect_equal(ret_hourly_unit$start, ret_hourly$start)
   expect_equal(ret_hourly_unit$end, ret_hourly$end)
+  expect_equal(ret_hourly_none$end, ret_hourly$end)
 })
 
 test_that("resolve_dose_tau matches tau to the nominal intervals for its time unit", {
   doses <- c(0, 24.5, 49, 73, 97.5)
   interval <- data.frame(start = 97.5, end = 121.5)
-  expect_equal(resolve_dose_tau(interval = interval, time.dose = doses), 24.5)
+  expect_equal(resolve_dose_tau(interval = interval, time.dose = doses), 24)
   expect_equal(resolve_dose_tau(interval = interval, time.dose = doses, timeu = "hr"), 24)
+  expect_equal(resolve_dose_tau(interval = interval, time.dose = doses, timeu = NA), 24.5)
 })
 
 test_that("pknca_group_timeu finds the time unit of a group", {
@@ -894,10 +920,11 @@ test_that("pknca_group_timeu finds the time unit of a group", {
     pknca_group_timeu(o_column, data_conc = NULL, data_sparse_conc = d_conc[1:3, ]),
     "hr"
   )
-  # Rows that give more than one unit, or none, give no unit
+  # Rows that give more than one unit give a unit that cannot be used, and rows
+  # that give none give no unit
   d_mixed <- d_conc[1:3, ]
   d_mixed$tu <- c("hr", "hr", "min")
-  expect_null(pknca_group_timeu(o_column, data_conc = d_mixed))
+  expect_equal(pknca_group_timeu(o_column, data_conc = d_mixed), NA_character_)
   expect_null(pknca_group_timeu(o_column, data_conc = d_conc[0, ]))
   # A unit column that is also a grouping column is read from the group
   o_group <- PKNCAconc(d_conc, conc~time|tu+subject, timeu = "tu")
@@ -905,11 +932,13 @@ test_that("pknca_group_timeu finds the time unit of a group", {
     pknca_group_timeu(o_group, data_conc = d_conc[1:3, c("time", "conc")], group = data.frame(tu = "hr", subject = 1)),
     "hr"
   )
-  # Date-times without a unit were converted to hours
-  expect_equal(pknca_group_timeu(PKNCAconc(d_conc, conc~time|subject), datetime = TRUE), "hr")
-  # No unit at all, or one that is not a time unit, gives no unit
+  # No unit at all gives no unit (taken to be hours), and a unit that is not a
+  # time unit gives one that cannot be used
   expect_null(pknca_group_timeu(PKNCAconc(d_conc, conc~time|subject)))
-  expect_null(pknca_group_timeu(PKNCAconc(d_conc, conc~time|subject, timeu = "not_a_unit")))
+  expect_equal(
+    pknca_group_timeu(PKNCAconc(d_conc, conc~time|subject, timeu = "not_a_unit")),
+    NA_character_
+  )
 })
 
 test_that("PKNCAdata matches tau to the nominal intervals for the concentration time unit", {
@@ -917,10 +946,14 @@ test_that("PKNCAdata matches tau to the nominal intervals for the concentration 
   d_conc <- data.frame(time = sort(unique(c(doses, 97.5 + c(0.5, 1, 2, 4, 8, 12, 24, 36, 48)))))
   d_conc$conc <- exp(-0.1 * d_conc$time) + 1
   o_dose <- PKNCAdose(data.frame(time = doses, dose = 1), dose~time)
-  # Without a unit, as before:  tau is the median spacing
+  # Without a unit, the times are taken to be hours, and tau snaps to the daily
+  # interval
   ret_none <- PKNCAdata(PKNCAconc(d_conc, conc~time), o_dose)
   expect_equal(ret_none$intervals$start, c(97.5, 97.5))
-  expect_equal(ret_none$intervals$end, c(122, Inf))
+  expect_equal(ret_none$intervals$end, c(121.5, Inf))
+  # With a unit that cannot be used, tau is the median spacing
+  ret_unusable <- PKNCAdata(PKNCAconc(d_conc, conc~time, timeu = "not_a_unit"), o_dose)
+  expect_equal(ret_unusable$intervals$end, c(122, Inf))
   # With hours, tau snaps to the daily interval
   ret_hr <- PKNCAdata(PKNCAconc(d_conc, conc~time, timeu = "hr"), o_dose)
   expect_equal(ret_hr$intervals$start, c(97.5, 97.5))
@@ -936,7 +969,13 @@ test_that("PKNCAdata says when hourly dosing matches no nominal interval", {
   d_conc <- data.frame(time = sort(unique(c(doses, 5 + c(0.25, 0.5, 1, 2, 4)))))
   d_conc$conc <- exp(-0.3 * d_conc$time) + 1
   o_dose <- PKNCAdose(data.frame(time = doses, dose = 1), dose~time)
-  expect_no_warning(ret_none <- PKNCAdata(PKNCAconc(d_conc, conc~time), o_dose))
+  # Without a unit the times are taken to be hours, so it is said then, too; a
+  # unit that cannot be used leaves nothing to compare with
+  expect_no_warning(ret_none <- PKNCAdata(PKNCAconc(d_conc, conc~time, timeu = "not_a_unit"), o_dose))
+  expect_warning(
+    PKNCAdata(PKNCAconc(d_conc, conc~time), o_dose),
+    class = "pknca_warning_tau_not_nominal"
+  )
   expect_warning(
     ret_hr <- PKNCAdata(PKNCAconc(d_conc, conc~time, timeu = "hr"), o_dose),
     class = "pknca_warning_tau_not_nominal"
@@ -955,7 +994,11 @@ test_that("PKNCAdata matches tau to the nominal intervals in days", {
   d_conc <- data.frame(time = sort(unique(c(doses, 4.02 + c(0.05, 0.1, 0.25, 0.5, 1, 1.5, 2)))))
   d_conc$conc <- exp(-2 * d_conc$time) + 1
   o_dose <- PKNCAdose(data.frame(time = doses, dose = 1), dose~time)
-  ret_none <- PKNCAdata(PKNCAconc(d_conc, conc~time), o_dose)
+  # Without the unit, a day is taken to be an hour, which is no nominal interval
+  expect_warning(
+    ret_none <- PKNCAdata(PKNCAconc(d_conc, conc~time), o_dose),
+    class = "pknca_warning_tau_not_nominal"
+  )
   expect_equal(ret_none$intervals$end, c(5.04, Inf))
   ret_day <- PKNCAdata(PKNCAconc(d_conc, conc~time, timeu = "day"), o_dose)
   expect_equal(ret_day$intervals$end, c(5.02, Inf))
@@ -1041,4 +1084,25 @@ test_that("dose regimen warnings of a group are given even when the group errors
   warnings <- testthat::capture_warnings(ret <- pknca_with_regimen_warnings(regimen_warned_twice(), prefix = "g: "))
   expect_equal(warnings, "g: tau warning")
   expect_equal(ret, "value")
+})
+
+test_that("find.tau takes times without a unit to be hours", {
+  # A dose two hours late is once-daily dosing, not a 25 hour interval
+  expect_no_warning(tau_late <- find.tau(c(0, 24, 50)))
+  expect_equal(tau_late, 24)
+  expect_no_warning(tau_half <- find.tau(c(0, 24, 48.5)))
+  expect_equal(tau_half, 24)
+  # Multiple-dose cycles are unchanged
+  expect_equal(find.tau(c(0, 10, 24, 34, 48, 58)), 24)
+  expect_equal(find.tau(c(0, 6, 12, 24, 30, 36, 48, 54, 60)), 24)
+  # Spacings that match no interval in hours give the interval found in the
+  # data, and say so
+  expect_warning(
+    tau_100 <- find.tau(c(0, 100, 200, 300)),
+    class = "pknca_warning_tau_not_nominal"
+  )
+  expect_equal(tau_100, 100)
+  # A unit that cannot be used leaves the interval to the data
+  expect_no_warning(tau_unusable <- find.tau(c(0, 24, 50), timeu = NA))
+  expect_equal(tau_unusable, 25)
 })

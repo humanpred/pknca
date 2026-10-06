@@ -288,8 +288,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
                 o_conc=o_conc_numeric,
                 data_conc=current_conc,
                 data_sparse_conc=n_conc_dose[["data_sparse_conc"]][[idx]],
-                group=current_group,
-                datetime=!is.null(ret_numeric$time_reference)
+                group=current_group
               )
             )
           )
