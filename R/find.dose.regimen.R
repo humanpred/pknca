@@ -132,17 +132,94 @@ regimen_regular <- function(times, period, rules) {
   )
 }
 
+# Does a cycle of k positions explain the scatter of the doses, rather than
+# fitting it?  Two tests, on the doses within the band of their positions:
+#
+# * The doses sit at most half as far from their positions as the spacings sit
+#   from their median.  Scatter that carries forward from dose to dose leaves
+#   the doses drifting from any fixed position, and fails this.
+# * k positions fit the doses better than k evenly spaced positions by more
+#   than chance (an F test at `level`).  Scatter around evenly spaced times,
+#   with few doses per position, makes the positions look uneven by chance,
+#   and fails this; the evenly spaced positions are the regular regimen that
+#   the cycle has to beat.
+regimen_cycle_explains_scatter <- function(times, rotated, position, on_pattern, k,
+                                           period, level = 0.999) {
+  used <- rotated[on_pattern]
+  used_position <- position[on_pattern]
+  n_used <- length(used)
+  if (n_used <= k) {
+    return(FALSE)
+  }
+  position_mean <- stats::ave(used, used_position)
+  spacing <- diff(times)
+  if (mean(abs(used - position_mean)) > 0.5 * mean(abs(spacing - stats::median(spacing)))) {
+    return(FALSE)
+  }
+  rss_cycle <- sum((used - position_mean)^2)
+  even <- used - (used_position - 1L) * period / k
+  rss_even <- sum((even - mean(even))^2)
+  if (rss_cycle == 0) {
+    return(rss_even > 0)
+  }
+  f_statistic <- ((rss_even - rss_cycle) / (k - 1L)) / (rss_cycle / (n_used - k))
+  f_statistic > stats::qf(level, k - 1L, n_used - k)
+}
+
+# Each dose's position within a cycle of `k` doses repeating every `period`.
+# The phases are rotated so that the widest gap between them is the wrap point,
+# and no position straddles it; the k - 1 next-widest gaps separate the
+# positions.  Returns the rotated phases, the position of each dose, the median
+# phase of each position, and the cycle each dose falls in.
+regimen_cycle_positions <- function(times, k, period) {
+  n_dose <- length(times)
+  phase <- (times - times[1]) %% period
+  phase[period - phase <= time_tolerance(period)] <- 0
+  sorted <- sort(phase)
+  circular_gap <- c(diff(sorted), sorted[1] + period - sorted[n_dose])
+  origin <- sorted[which.max(circular_gap) %% n_dose + 1L]
+  rotated <- (phase - origin) %% period
+  rotated[period - rotated <= time_tolerance(period)] <- 0
+  by_phase <- order(rotated)
+  cut_after <- sort(order(diff(rotated[by_phase]), decreasing = TRUE)[seq_len(k - 1L)])
+  position <- integer(n_dose)
+  position[by_phase] <- 1L + findInterval(seq_len(n_dose) - 1L, cut_after)
+  center <- vapply(split(rotated, position), stats::median, numeric(1))
+  list(
+    rotated = rotated, position = position, center = center,
+    cycle_index = round((times - times[1] - origin - center[position]) / period)
+  )
+}
+
+# The period that best fits the dose times given their positions and cycles:
+# the least-squares slope of dose time on cycle number, with one intercept per
+# position.  The median span that starts the search is noisy, and its error
+# accumulates from cycle to cycle, spreading the doses of a position apart.
+regimen_cycle_period <- function(times, positions, period) {
+  time_centered <- times - stats::ave(times, positions$position)
+  cycle_centered <- positions$cycle_index - stats::ave(positions$cycle_index, positions$position)
+  denominator <- sum(cycle_centered^2)
+  if (denominator == 0) {
+    # Needs every position to hold doses from one cycle only, which the 2k + 1
+    # doses that regimen_cycle_pattern() requires rule out in practice:  some
+    # position holds three doses, a period apart.
+    return(period) # nocov
+  }
+  sum(cycle_centered * time_centered) / denominator
+}
+
 # Where each dose falls within a cycle of `k` doses.
 #
-# The period is the median span of k consecutive spacings.  Each dose's phase
-# within the period is clustered into k positions, which survives a missing
-# dose because a dose keeps its phase when an earlier dose is not given.  The
-# cycle is only a cycle when the spacings between its positions differ from
-# one another by more than `log_tolerance`:  evenly spaced doses with some
-# scatter also fall into k positions, one period apart, and adding spacings
-# together would hide their scatter rather than find a cycle.  A dose is on the
-# pattern when it is within `snap_tol` of the shortest spacing of its position,
-# and every position needs two doses on the pattern (two complete periods).
+# The period starts as the median span of k consecutive spacings and is refined
+# by least squares.  Each dose's phase within the period is clustered into k
+# positions, which survives a missing dose because a dose keeps its phase when
+# an earlier dose is not given.  The cycle is only a cycle when the spacings
+# between its positions differ from one another by more than `log_tolerance`
+# and the positions explain the scatter of the doses (see
+# regimen_cycle_explains_scatter()).  A dose is on the pattern when it is within
+# `snap_tol` of the period of its position (and closer to it than to the next
+# position), and every position needs two doses on the pattern (two complete
+# periods).
 #
 # Returns NULL when there is no such cycle, and otherwise the period, the
 # offsets of the positions from the position of the first dose, which doses are
@@ -153,32 +230,27 @@ regimen_cycle_pattern <- function(times, k, rules) {
     return(NULL)
   }
   period <- stats::median(times[(1 + k):n_dose] - times[seq_len(n_dose - k)])
-  phase <- (times - times[1]) %% period
-  phase[period - phase <= time_tolerance(period)] <- 0
-  # Rotate the phases so that the widest gap between them is the wrap point, and
-  # no position straddles it
-  sorted <- sort(phase)
-  circular_gap <- c(diff(sorted), sorted[1] + period - sorted[n_dose])
-  origin <- sorted[which.max(circular_gap) %% n_dose + 1L]
-  rotated <- (phase - origin) %% period
-  rotated[period - rotated <= time_tolerance(period)] <- 0
-  ordered <- order(rotated)
-  cut_after <- sort(order(diff(rotated[ordered]), decreasing = TRUE)[seq_len(k - 1L)])
-  position <- integer(n_dose)
-  position[ordered] <- 1L + findInterval(seq_len(n_dose) - 1L, cut_after)
-  center <- vapply(split(rotated, position), stats::median, numeric(1))
+  period <- regimen_cycle_period(times, regimen_cycle_positions(times, k, period), period)
+  positions <- regimen_cycle_positions(times, k, period)
+  rotated <- positions$rotated
+  position <- positions$position
+  center <- positions$center
   position_gap <- diff(c(center, center[1] + period))
   if (log(max(position_gap) / min(position_gap)) <= rules$log_tolerance) {
     return(NULL)
   }
-  on_pattern <- abs(rotated - center[position]) <= rules$snap_tol * min(position_gap)
-  slot <- round((times - times[1] - origin - center[position]) / period) * k + position - 1L
+  band <- min(rules$snap_tol * period, min(position_gap) / 2)
+  on_pattern <- abs(rotated - center[position]) <= band
+  if (!regimen_cycle_explains_scatter(times, rotated, position, on_pattern, k, period)) {
+    return(NULL)
+  }
+  dose_slot <- positions$cycle_index * k + position - 1L
   on_index <- which(on_pattern)
-  on_pattern[on_index[duplicated(slot[on_index])]] <- FALSE
+  on_pattern[on_index[duplicated(dose_slot[on_index])]] <- FALSE
   if (any(tabulate(position[on_pattern], k) < 2)) {
     return(NULL)
   }
-  slot_on <- slot[on_pattern]
+  slot_on <- dose_slot[on_pattern]
   missing_slot <- setdiff(seq(min(slot_on), max(slot_on)), slot_on)
   times_on <- times[on_pattern][order(slot_on)]
   first_position <- position[which(on_pattern)[1]]
@@ -271,9 +343,9 @@ regimen_label_spacing <- function(spacing, rules) {
   label <- ifelse(is.na(nominal), NA_character_, paste0("nominal", nominal))
   other <- which(is.na(nominal))
   if (length(other) > 0) {
-    ordered <- other[order(spacing[other])]
-    cluster <- cumsum(c(TRUE, diff(log(spacing[ordered])) > rules$log_tolerance))
-    label[ordered] <- paste0("cluster", cluster)
+    by_size <- other[order(spacing[other])]
+    cluster <- cumsum(c(TRUE, diff(log(spacing[by_size])) > rules$log_tolerance))
+    label[by_size] <- paste0("cluster", cluster)
   }
   label
 }
@@ -311,27 +383,52 @@ regimen_extra_doses <- function(times, rules) {
 
 # Runs of same-labeled spacings, and the segment each spacing belongs to.
 #
-# A run of at least `min_run` spacings anchors a segment, and the anchors must
-# hold most of the spacings, or there is no regimen to report (NULL).  A shorter
-# run joins the anchor before it (or after it, at the start).  Anchors with the
-# same label next to one another are one segment.
+# A run of at least `min_run` spacings anchors a segment, and a shorter run joins
+# the anchor before it (or after it, at the start).  A spacing with the label of
+# its anchor is a member of the segment, wherever it falls.  The runs must hold
+# the spacings (see regimen_runs_hold_spacings()), or there is no regimen to
+# report (NULL).  Anchors with the same label next to one another are one
+# segment.
 regimen_segment_runs <- function(spacing, rules) {
   n_spacing <- length(spacing)
-  runs <- rle(regimen_label_spacing(spacing, rules))
+  label <- regimen_label_spacing(spacing, rules)
+  runs <- rle(label)
   anchor <- runs$lengths >= min(rules$min_run, n_spacing)
-  if (!any(anchor) || sum(runs$lengths[anchor]) <= n_spacing / 2) {
+  if (!any(anchor)) {
     return(NULL)
   }
   run_of <- rep(seq_along(runs$lengths), runs$lengths)
   anchor_index <- which(anchor)
   previous_anchor <- findInterval(seq_along(runs$lengths), anchor_index)
-  assigned_run <- anchor_index[pmax(previous_anchor, 1L)]
-  assigned <- assigned_run[run_of]
-  anchor_label <- runs$values[assigned]
+  anchor_label <- runs$values[anchor_index[pmax(previous_anchor, 1L)][run_of]]
+  member <- label == anchor_label
+  if (!regimen_runs_hold_spacings(spacing, member, anchor_label, rules)) {
+    return(NULL)
+  }
   list(
-    member = run_of == assigned,
+    member = member,
     segment = cumsum(c(TRUE, anchor_label[-1] != anchor_label[-n_spacing]))
   )
+}
+
+# Do the runs explain the spacings?  They do when most spacings are members of
+# their segment, or when every other spacing is a missed dose, as two missed
+# doses in a short daily history are.
+regimen_runs_hold_spacings <- function(spacing, member, anchor_label, rules) {
+  if (sum(member) > length(spacing) / 2) {
+    return(TRUE)
+  }
+  label_spacing <- vapply(split(spacing[member], anchor_label[member]), stats::median, numeric(1))
+  other <- !member
+  all(regimen_missed_multiple(spacing[other], label_spacing[anchor_label[other]], rules))
+}
+
+# Is each spacing a whole number (2 to `max_missed`) of `interval`, as a gap left
+# by missed doses is?
+regimen_missed_multiple <- function(spacing, interval, rules) {
+  multiple <- round(spacing / interval)
+  multiple >= 2 & multiple <= rules$max_missed &
+    abs(log(spacing / (multiple * interval))) <= rules$log_tolerance
 }
 
 # The doses that are off schedule, from the spacings that fit neither the
@@ -358,22 +455,20 @@ regimen_off_schedule_stretch <- function(spacing_index) {
 
 # One segment from its spacings.  Spacings that are not in the segment's runs
 # are missed doses when they are a whole number (up to `max_missed`) of the
-# segment's interval and are irregular otherwise.  A segment with nothing
+# segment's interval, one dose fewer than that number, and are irregular
+# otherwise.  A segment with nothing
 # missed or off schedule may itself repeat over more than one dose, as
 # twice-daily doses at breakfast and dinner do.
-regimen_segment <- function(times, spacing, within, member, segment_id, rules) {
-  in_run <- within[member[within]]
-  other <- within[!member[within]]
-  base <- stats::median(spacing[in_run])
-  multiple <- round(spacing[other] / base)
-  missed <-
-    multiple >= 2 & multiple <= rules$max_missed &
-    abs(log(spacing[other] / (multiple * base))) <= rules$log_tolerance
+regimen_segment <- function(times, spacing, in_segment, member, segment_id, rules) {
+  in_run <- in_segment[member[in_segment]]
+  other <- in_segment[!member[in_segment]]
+  segment_spacing <- stats::median(spacing[in_run])
+  missed <- regimen_missed_multiple(spacing[other], segment_spacing, rules)
   missed_after <- times[other[missed]]
   off_schedule <- regimen_off_schedule_doses(times, other[!missed])
-  description <- regimen_describe(base, 1L, rules)
+  description <- regimen_describe(segment_spacing, 1L, rules)
   offsets <- 0
-  segment_times <- times[c(within, max(within) + 1L)]
+  segment_times <- times[c(in_segment, max(in_segment) + 1L)]
   if (length(other) == 0) {
     pattern <- regimen_full_cycle(segment_times, rules)
     if (!is.null(pattern)) {
@@ -391,8 +486,8 @@ regimen_segment <- function(times, spacing, within, member, segment_id, rules) {
       segment = segment_id, start = min(segment_times), end = max(segment_times),
       n_doses = length(segment_times), description = description,
       offsets = offsets, n_intervals_used = length(in_run),
-      n_missed = sum(missed), n_irregular = length(off_schedule),
-      note = paste(note, collapse = "; ")
+      n_missed = as.integer(sum(round(spacing[other[missed]] / segment_spacing) - 1)),
+      n_irregular = length(off_schedule), note = paste(note, collapse = "; ")
     ),
     missed_after = missed_after, off_schedule = off_schedule,
     explained = length(in_run) + sum(missed)
@@ -420,13 +515,13 @@ regimen_add_extra_doses <- function(detection, extra_times) {
     return(detection)
   }
   regimen <- detection$regimen
-  for (row in seq_len(nrow(regimen))) {
-    inside <- extra_times[extra_times > regimen$start[row] & extra_times < regimen$end[row]]
+  for (row_index in seq_len(nrow(regimen))) {
+    inside <- extra_times[extra_times > regimen$start[row_index] & extra_times < regimen$end[row_index]]
     if (length(inside) > 0) {
-      regimen$n_doses[row] <- regimen$n_doses[row] + length(inside)
-      regimen$n_irregular[row] <- regimen$n_irregular[row] + length(inside)
-      existing <- regimen$note[row][nzchar(regimen$note[row])]
-      regimen$note[row] <- paste(c(existing, regimen_note("extra dose at", inside)), collapse = "; ")
+      regimen$n_doses[row_index] <- regimen$n_doses[row_index] + length(inside)
+      regimen$n_irregular[row_index] <- regimen$n_irregular[row_index] + length(inside)
+      existing <- regimen$note[row_index][nzchar(regimen$note[row_index])]
+      regimen$note[row_index] <- paste(c(existing, regimen_note("extra dose at", inside)), collapse = "; ")
     }
   }
   detection$regimen <- regimen
@@ -446,9 +541,9 @@ regimen_segments <- function(times, rules) {
   }
   detections <- list()
   for (segment_id in unique(runs$segment)) {
-    within <- which(runs$segment == segment_id)
+    in_segment <- which(runs$segment == segment_id)
     detections[[length(detections) + 1L]] <-
-      regimen_segment(kept, spacing, within, runs$member, segment_id, rules)
+      regimen_segment(kept, spacing, in_segment, runs$member, segment_id, rules)
   }
   regimen_add_extra_doses(regimen_bind(detections), times[extra])
 }
@@ -466,11 +561,11 @@ regimen_anomalies <- function(detection) {
 # dosing with every evening dose missed, while doses at 0 and 10 hours with one
 # dose not given stay a daily cycle; the runs read the 10 and 14 hour spacings
 # as one spacing, which a cycle describes more fully.
-regimen_cycle_preferred <- function(cycle, segments) {
+regimen_cycle_preferred <- function(cycle_reading, segments) {
   is.null(segments) ||
-    cycle$explained > segments$explained ||
-    (cycle$explained == segments$explained &&
-       regimen_anomalies(cycle) <= regimen_anomalies(segments))
+    cycle_reading$explained > segments$explained ||
+    (cycle_reading$explained == segments$explained &&
+       regimen_anomalies(cycle_reading) <= regimen_anomalies(segments))
 }
 
 # Doses that are not evenly spaced and not a complete cycle.  Runs of one
@@ -485,9 +580,9 @@ regimen_detect_irregular <- function(times, rules) {
   }
   pattern <- regimen_partial_cycle(times, rules)
   if (!is.null(pattern)) {
-    cycle <- regimen_cycle_detection(times, pattern, rules)
-    if (regimen_cycle_preferred(cycle, segments)) {
-      return(cycle)
+    cycle_reading <- regimen_cycle_detection(times, pattern, rules)
+    if (regimen_cycle_preferred(cycle_reading, segments)) {
+      return(cycle_reading)
     }
   }
   if (!is.null(segments)) {
@@ -585,16 +680,24 @@ regimen_warn <- function(detection, has_candidates) {
 #' \enumerate{
 #'   \item Equally spaced doses repeat over their spacing.
 #'   \item A cycle of 2 to 4 doses per period that every dose follows is looked
-#'         for next.  The period is the median span of that many spacings, and
-#'         each dose's time within the period falls into one of the positions
-#'         of the cycle.  The spacings between the positions must differ from
-#'         one another by more than `tol`, every dose must be within `snap.tol`
-#'         of its position, and every position must hold at least two doses
-#'         (two complete periods).  Twice-daily doses at 08:00 and 16:00 repeat
+#'         for next.  The period is the median span of that many spacings,
+#'         refined by least squares, and each dose's time within the period
+#'         falls into one of the positions of the cycle.  The spacings between
+#'         the positions must differ from one another by more than `tol`, every
+#'         dose must be within `snap.tol` of the period of its position, and
+#'         every position must hold at least two doses (two complete periods).
+#'         The positions must also explain the scatter of the doses:  the doses
+#'         sit at most half as far from their positions as the spacings sit
+#'         from their median, and the positions fit the doses better than
+#'         evenly spaced positions by more than chance (an F test at the 0.999
+#'         level).  Daily doses recorded a few hours early or late are therefore
+#'         daily dosing, not a cycle.  Twice-daily doses at 08:00 and 16:00 repeat
 #'         every 24 hours with offsets 0 and 8.  When the period is not one of
 #'         the given `tau.choices` and a whole number of periods is, that
-#'         multiple is used; the built-in nominal set never selects a longer
-#'         period.
+#'         multiple is used if the doses hold two complete repeats of it (so a
+#'         48 hour choice selects two days of twice-daily dosing only when there
+#'         are at least nine doses); the built-in nominal set never selects a
+#'         longer period.
 #'   \item Doses whose spacings are all within `tol` of their median are evenly
 #'         spaced with scatter, and repeat over the median spacing.
 #'   \item Otherwise, each spacing is labeled with the candidate it is within

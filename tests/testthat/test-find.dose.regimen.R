@@ -268,8 +268,8 @@ test_that("find.dose.regimen keeps a cycle with one dose not given", {
   tid <- c(0, 6, 12) + rep(0:6 * 24, each = 3)
   # Removing a dose from any position of the cycle leaves the daily cycle; the
   # dose before the gap is named
-  for (drop in c(48, 54, 60)) {
-    doses <- setdiff(tid, drop)
+  for (dropped in c(48, 54, 60)) {
+    doses <- setdiff(tid, dropped)
     expect_warning(
       ret <- find.dose.regimen(doses, timeu = "hr"),
       regexp = "Doses appear to be missing after time",
@@ -280,7 +280,7 @@ test_that("find.dose.regimen keeps a cycle with one dose not given", {
       regimen_expected(
         start = 0, end = 156, n_doses = 20L, interval = 24, label = "TID",
         source = "nominal", n_intervals_used = 19L, n_missed = 1L,
-        note = paste("missed doses after", max(doses[doses < drop])),
+        note = paste("missed doses after", max(doses[doses < dropped])),
         offsets = c(0, 6, 12)
       )
     )
@@ -503,4 +503,66 @@ test_that("gradually lengthening spacings form one run", {
       source = "auto", n_intervals_used = 4L
     )
   )
+})
+
+test_that("find.dose.regimen reads two missed doses in a short history", {
+  doses <- setdiff(0:6 * 24, c(72, 96))
+  expect_warning(
+    ret <- find.dose.regimen(doses, timeu = "hr"),
+    regexp = "Doses appear to be missing after time 48[.]$",
+    class = "pknca_warning_tau_irregular_dosing"
+  )
+  expect_equal(
+    ret,
+    regimen_expected(
+      start = 0, end = 144, n_doses = 5L, interval = 24, label = "QD",
+      source = "nominal", n_intervals_used = 3L, n_missed = 2L,
+      note = "missed doses after 48"
+    )
+  )
+  expect_warning(
+    expect_equal(find.tau(doses), 24),
+    class = "pknca_warning_tau_irregular_dosing"
+  )
+})
+
+test_that("find.dose.regimen keeps a jittered twice-daily cycle", {
+  # Doses at 0 and 10 hours each day for a week, each up to an hour early or
+  # late:  the 10 and 14 hour spacings scatter about 12, while the doses stay
+  # near their two times of day
+  lost <- 0
+  for (seed in 1:20) {
+    set.seed(seed)
+    doses <- c(0, 10) + rep(0:6 * 24, each = 2) + stats::runif(14, -1, 1)
+    ret <- find.dose.regimen(doses, timeu = "hr")
+    if (!(nrow(ret) == 1 && ret$interval == 24 && length(ret$offsets[[1]]) == 2)) {
+      lost <- lost + 1
+    }
+  }
+  expect_lte(lost, 1)
+})
+
+test_that("find.dose.regimen rarely reads jittered daily dosing as a cycle", {
+  # Daily doses each up to 3 hours early or late, in short histories where a
+  # few doses per position can look uneven by chance.  The warnings describe the
+  # scatter (and, for the few read as a cycle, its period), so they are muffled
+  # while the readings are counted.
+  for (n_dose in c(7, 11)) {
+    as_cycle <- 0
+    for (seed in 1:200) {
+      set.seed(seed)
+      doses <- 24 * seq_len(n_dose) + stats::runif(n_dose, -3, 3)
+      ret <-
+        withCallingHandlers(
+          find.dose.regimen(doses, timeu = "hr"),
+          pknca_warning_tau_irregular_dosing = function(w) invokeRestart("muffleWarning"),
+          pknca_warning_tau_regimen_change = function(w) invokeRestart("muffleWarning"),
+          pknca_warning_tau_not_nominal = function(w) invokeRestart("muffleWarning")
+        )
+      if (any(lengths(ret$offsets) > 1)) {
+        as_cycle <- as_cycle + 1
+      }
+    }
+    expect_lte(as_cycle, 10)
+  }
 })

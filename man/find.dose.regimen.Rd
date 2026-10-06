@@ -71,16 +71,24 @@ over a period, found in this order:
 \enumerate{
 \item Equally spaced doses repeat over their spacing.
 \item A cycle of 2 to 4 doses per period that every dose follows is looked
-for next.  The period is the median span of that many spacings, and
-each dose's time within the period falls into one of the positions
-of the cycle.  The spacings between the positions must differ from
-one another by more than \code{tol}, every dose must be within \code{snap.tol}
-of its position, and every position must hold at least two doses
-(two complete periods).  Twice-daily doses at 08:00 and 16:00 repeat
+for next.  The period is the median span of that many spacings,
+refined by least squares, and each dose's time within the period
+falls into one of the positions of the cycle.  The spacings between
+the positions must differ from one another by more than \code{tol}, every
+dose must be within \code{snap.tol} of the period of its position, and
+every position must hold at least two doses (two complete periods).
+The positions must also explain the scatter of the doses:  the doses
+sit at most half as far from their positions as the spacings sit
+from their median, and the positions fit the doses better than
+evenly spaced positions by more than chance (an F test at the 0.999
+level).  Daily doses recorded a few hours early or late are therefore
+daily dosing, not a cycle.  Twice-daily doses at 08:00 and 16:00 repeat
 every 24 hours with offsets 0 and 8.  When the period is not one of
 the given \code{tau.choices} and a whole number of periods is, that
-multiple is used; the built-in nominal set never selects a longer
-period.
+multiple is used if the doses hold two complete repeats of it (so a
+48 hour choice selects two days of twice-daily dosing only when there
+are at least nine doses); the built-in nominal set never selects a
+longer period.
 \item Doses whose spacings are all within \code{tol} of their median are evenly
 spaced with scatter, and repeat over the median spacing.
 \item Otherwise, each spacing is labeled with the candidate it is within
