@@ -739,7 +739,8 @@ PKNCA.options.describe <- function(name) {
 #'   `name` are present, [summary.PKNCAresults()] summarizes `spread_for` with
 #'   these instructions:  `point` is applied to the values of `spread_for`,
 #'   `spread` to the values of `name`, and `description` describes the summary.
-#'   `name` then has no summary column of its own.  `spread` must be given.
+#'   `name` then has no summary column of its own, and a summary row with more
+#'   than one result of `name` is an error.  `spread` must be given.
 #' @returns All current summary settings (invisibly)
 #' @seealso [summary.PKNCAresults()]
 #' @family PKNCA calculation and summary settings

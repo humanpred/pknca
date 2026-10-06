@@ -43,7 +43,8 @@ the spread of, such as \code{"auclast"} for \code{"auclast_se"}.  Where results 
 \code{name} are present, \code{\link[=summary.PKNCAresults]{summary.PKNCAresults()}} summarizes \code{spread_for} with
 these instructions:  \code{point} is applied to the values of \code{spread_for},
 \code{spread} to the values of \code{name}, and \code{description} describes the summary.
-\code{name} then has no summary column of its own.  \code{spread} must be given.}
+\code{name} then has no summary column of its own, and a summary row with more
+than one result of \code{name} is an error.  \code{spread} must be given.}
 }
 \value{
 All current summary settings (invisibly)

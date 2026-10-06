@@ -726,13 +726,13 @@ PKNCA.set.summary(
   name = "sparse_auc_se",
   description = "arithmetic mean and standard error",
   point = business.mean,
-  spread = business.se_mean,
+  spread = business.mean,
   spread_for = "sparse_auclast"
 )
 PKNCA.set.summary(
   name = "sparse_aumc_se",
   description = "arithmetic mean and standard error",
   point = business.mean,
-  spread = business.se_mean,
+  spread = business.mean,
   spread_for = "sparse_aumclast"
 )

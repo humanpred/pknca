@@ -65,8 +65,9 @@ A parameter whose summary instructions name it as the spread of another
 parameter (\code{spread_for} in \code{\link[=PKNCA.set.summary]{PKNCA.set.summary()}}, such as the standard error
 of a sparse AUClast) has no column of its own.  Where its results are
 present, the other parameter is summarized with its instructions instead:
-for a sparse AUClast, the mean with the standard error.  The caption gives
-the summary used.
+for a sparse AUClast, the estimate with its standard error.  The caption
+gives the summary used.  A summary row with more than one result of such a
+parameter is an error, since each is the spread of one estimate.
 }
 \examples{
 conc_obj <- PKNCAconc(as.data.frame(datasets::Theoph), conc ~ Time | Subject)

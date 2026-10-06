@@ -487,7 +487,8 @@ test_that("summary.PKNCAresults drop_param argument works", {
 # Sparse results with one sample per animal at each time and two treatments.
 # A sparse AUClast is one estimate per treatment, with its standard error on
 # the auclast_se row.
-sparse_summary_results <- function(intervals = data.frame(start = 0, end = 24, auclast = TRUE, cmax = TRUE)) {
+sparse_summary_results <- function(intervals = data.frame(start = 0, end = 24, auclast = TRUE, cmax = TRUE),
+                                   options = list()) {
   d_conc <- expand.grid(time = c(0, 1, 2, 4, 8, 24), rep = 1:3, treatment = c("A", "B"))
   d_conc$id <- paste(d_conc$treatment, d_conc$time, d_conc$rep)
   d_conc$conc <-
@@ -499,7 +500,8 @@ sparse_summary_results <- function(intervals = data.frame(start = 0, end = 24, a
     suppressWarnings(PKNCAdata(
       PKNCAconc(d_conc, conc ~ time | treatment + id, sparse = TRUE),
       PKNCAdose(d_dose, dose ~ time | treatment),
-      intervals = intervals
+      intervals = intervals,
+      options = options
     ))
   suppressWarnings(suppressMessages(pk.nca(o_data)))
 }
@@ -526,17 +528,27 @@ test_that("summary combines a sparse AUClast with its standard error from anothe
   )
 })
 
-test_that("summary of several sparse AUClast estimates gives their mean and the standard error of the mean (#170)", {
+test_that("a summary row with more than one sparse estimate is an error (#170)", {
+  # Dropping the group that separates the estimates
   res <- sparse_summary_results()
-  d_res <- as.data.frame(res)
-  auc <- d_res$PPORRES[d_res$PPTESTCD == "auclast"]
-  se <- d_res$PPORRES[d_res$PPTESTCD == "auclast_se"]
-  o_summary <- summary(res, drop_group = c("id", "treatment"))
-  expect_equal(nrow(o_summary), 1)
-  expect_equal(
-    o_summary$auclast,
-    sprintf("%s [%s]", signifString(mean(auc), 3), signifString(sqrt(sum(se^2))/2, 3))
+  expect_error(
+    summary(res, drop_group = c("id", "treatment")),
+    regexp = "Cannot summarize 2 results of auclast_se in one summary row",
+    class = "pknca_error_summary_multiple_spread"
   )
+  # Intervals with the same start and end that nothing in the summary tells apart
+  res_dup <-
+    sparse_summary_results(
+      intervals = data.frame(start = 0, end = 24, auclast = TRUE, impute = c(NA, "start_conc0"))
+    )
+  expect_error(summary(res_dup), class = "pknca_error_summary_multiple_spread")
+  # A kept interval column tells them apart, so each row has one estimate
+  res_kept <-
+    sparse_summary_results(
+      intervals = data.frame(start = 0, end = 24, auclast = TRUE, label = c("a", "b")),
+      options = list(keep_interval_cols = "label")
+    )
+  expect_equal(nrow(summary(res_kept)), 4)
 })
 
 test_that("a requested standard error gets no summary column of its own (#170)", {
@@ -585,7 +597,7 @@ test_that("PKNCA.set.summary checks spread_for (#170)", {
   expect_error(
     PKNCA.set.summary(
       name = "auclast_se", description = "x", point = business.mean,
-      spread = business.se_mean, spread_for = "not_a_parameter"
+      spread = business.mean, spread_for = "not_a_parameter"
     ),
     class = "pknca_error_undefined_parameter"
   )
@@ -599,7 +611,7 @@ test_that("PKNCA.set.summary checks spread_for (#170)", {
   expect_error(
     PKNCA.set.summary(
       name = "auclast_se", description = "x", point = business.mean,
-      spread = business.se_mean, spread_for = c("auclast", "aumclast")
+      spread = business.mean, spread_for = c("auclast", "aumclast")
     ),
     regexp = "Must have length 1"
   )
