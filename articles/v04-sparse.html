@@ -239,10 +239,14 @@ imputation (there is no individual profile to impute into):</p>
 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> function:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##  start end auclast auclast_se auclast_df cmax aucinf.obs</span></span>
-<span><span class="co">##      0  24    39.5       7.31         NC 3.05         NC</span></span>
+<pre><code><span><span class="co">##  start end     auclast auclast_df cmax aucinf.obs</span></span>
+<span><span class="co">##      0  24 39.5 [7.31]         NC 3.05         NC</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; auclast_se, auclast_df: arithmetic mean and standard deviation; NC: not calculated</span></span></code></pre>
+<span><span class="co">## Caption: auclast: estimate and standard error; auclast_df: arithmetic mean and standard deviation; cmax, aucinf.obs: geometric mean and geometric coefficient of variation; NC: not calculated</span></span></code></pre>
+<p>In the summary, the sparse <code>auclast</code> is the estimate with
+its standard error in brackets (from the <code>auclast_se</code>
+result), as the caption says; <code>auclast_se</code> has no column of
+its own.</p>
 <p>or individual results are available through the
 <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> function:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">

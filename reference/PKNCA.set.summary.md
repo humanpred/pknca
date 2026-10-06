@@ -11,7 +11,8 @@ PKNCA.set.summary(
   point,
   spread,
   rounding = list(signif = 3),
-  reset = FALSE
+  reset = FALSE,
+  spread_for = NULL
 )
 ```
 
@@ -52,6 +53,17 @@ PKNCA.set.summary(
 
   Reset all the summary instructions to no instruction (this is not
   intended for general use)
+
+- spread_for:
+
+  Optional. The name of another parameter that `name` gives the spread
+  of, such as `"auclast"` for `"auclast_se"`. Where results for `name`
+  are present,
+  [`summary.PKNCAresults()`](https://humanpred.github.io/pknca/reference/summary.PKNCAresults.md)
+  summarizes `spread_for` with these instructions: `point` is applied to
+  the values of `spread_for`, `spread` to the values of `name`, and
+  `description` describes the summary. `name` then has no summary column
+  of its own. `spread` must be given.
 
 ## Value
 

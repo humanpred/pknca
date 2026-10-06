@@ -70,7 +70,8 @@
 <span>  <span class="va">point</span>,</span>
 <span>  <span class="va">spread</span>,</span>
 <span>  rounding <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>signif <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
-<span>  reset <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  reset <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  spread_for <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -111,6 +112,15 @@ scalar or a two-long vector.</p></dd>
 <dt id="arg-reset">reset<a class="anchor" aria-label="anchor" href="#arg-reset"></a></dt>
 <dd><p>Reset all the summary instructions to no instruction (this is
 not intended for general use)</p></dd>
+
+
+<dt id="arg-spread-for">spread_for<a class="anchor" aria-label="anchor" href="#arg-spread-for"></a></dt>
+<dd><p>Optional.  The name of another parameter that <code>name</code> gives
+the spread of, such as <code>"auclast"</code> for <code>"auclast_se"</code>.  Where results for
+<code>name</code> are present, <code><a href="summary.PKNCAresults.html">summary.PKNCAresults()</a></code> summarizes <code>spread_for</code> with
+these instructions:  <code>point</code> is applied to the values of <code>spread_for</code>,
+<code>spread</code> to the values of <code>name</code>, and <code>description</code> describes the summary.
+<code>name</code> then has no summary column of its own.  <code>spread</code> must be given.</p></dd>
 
 </dl></div>
     <div class="section level2">

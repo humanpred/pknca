@@ -85,6 +85,16 @@ summarization settings.
 
 Excluded results will not be included in the summary.
 
+A parameter whose summary instructions name it as the spread of another
+parameter (`spread_for` in
+[`PKNCA.set.summary()`](https://humanpred.github.io/pknca/reference/PKNCA.set.summary.md),
+such as the standard error of a sparse AUClast) has no column of its
+own. Where its results are present, the other parameter is summarized
+with its instructions instead: for a sparse AUClast, the estimate with
+its standard error. The caption gives the summary used. A summary row
+with more than one sparse estimate is an error, since each standard
+error describes one estimate.
+
 ## See also
 
 [`PKNCA.set.summary()`](https://humanpred.github.io/pknca/reference/PKNCA.set.summary.md),

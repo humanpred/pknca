@@ -178,10 +178,14 @@ As with any other PKNCA result, the data are available through the
 summary(o_nca)
 ```
 
-    ##  start end auclast auclast_se auclast_df cmax aucinf.obs
-    ##      0  24    39.5       7.31         NC 3.05         NC
+    ##  start end     auclast auclast_df cmax aucinf.obs
+    ##      0  24 39.5 [7.31]         NC 3.05         NC
     ## 
-    ## Caption: auclast, cmax, aucinf.obs: geometric mean and geometric coefficient of variation; auclast_se, auclast_df: arithmetic mean and standard deviation; NC: not calculated
+    ## Caption: auclast: estimate and standard error; auclast_df: arithmetic mean and standard deviation; cmax, aucinf.obs: geometric mean and geometric coefficient of variation; NC: not calculated
+
+In the summary, the sparse `auclast` is the estimate with its standard
+error in brackets (from the `auclast_se` result), as the caption says;
+`auclast_se` has no column of its own.
 
 or individual results are available through the
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) function:

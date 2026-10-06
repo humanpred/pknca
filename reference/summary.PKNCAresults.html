@@ -144,6 +144,13 @@ summarization settings.</p>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Excluded results will not be included in the summary.</p>
+<p>A parameter whose summary instructions name it as the spread of another
+parameter (<code>spread_for</code> in <code><a href="PKNCA.set.summary.html">PKNCA.set.summary()</a></code>, such as the standard error
+of a sparse AUClast) has no column of its own.  Where its results are
+present, the other parameter is summarized with its instructions instead:
+for a sparse AUClast, the estimate with its standard error.  The caption
+gives the summary used.  A summary row with more than one sparse estimate is
+an error, since each standard error describes one estimate.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
