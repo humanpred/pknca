@@ -1743,9 +1743,9 @@ test_that("mrt.ivmd and vss.ivmd correct the multiple-dose MRT for the infusion 
   expect_equal(value[["vss.ivmd.obs"]], value[["cl.last"]]*value[["mrt.ivmd.obs"]])
   expect_equal(value[["vss.ivmd.pred"]], value[["cl.last"]]*value[["mrt.ivmd.pred"]])
 
-  # tau reaches the IV form the same way it reaches the non-IV form.  One
-  # warning is raised per requested parameter that takes tau, so collect them
-  # all rather than letting the ones expect_warning() does not take escape.
+  # tau reaches the IV form the same way it reaches the non-IV form.  The
+  # warning is the same for every requested parameter that takes tau, so it is
+  # given once for the group; collect them all so that none escapes.
   interval_no_tau <- interval
   interval_no_tau$tau <- NULL
   warn_class <- character()
@@ -1757,8 +1757,8 @@ test_that("mrt.ivmd and vss.ivmd correct the multiple-dose MRT for the infusion 
         invokeRestart("muffleWarning")
       }
     )
-  expect_equal(warn_class, rep("pknca_warning_tau_undetermined", 3),
-               info="one warning per requested parameter taking tau")
+  expect_equal(warn_class, "pknca_warning_tau_undetermined",
+               info="one warning for the group, not one per parameter taking tau")
   value_na <- stats::setNames(res_na$PPORRES, res_na$PPTESTCD)
   expect_equal(value_na[["mrt.ivmd.obs"]], NA_real_)
   expect_equal(value_na[["vss.ivmd.obs"]], NA_real_)
@@ -1929,4 +1929,27 @@ test_that("pk.nca gives each dose regimen warning once per group, naming it", {
   regimen_warnings <- grep("not one of the nominal intervals", warnings, value = TRUE)
   expect_length(regimen_warnings, 4)
   expect_equal(substr(regimen_warnings, 1, 11), paste0("subject=", 1:4, ": "))
+})
+
+test_that("pk.nca gives the undetermined-tau warning once per group, naming it", {
+  # Single doses give no tau; two subjects with two intervals that each need it
+  # give one warning per subject
+  times <- c(0, 0.5, 1, 2, 4, 8, 12, 24)
+  d_conc <- data.frame(subject = rep(1:2, each = length(times)), time = rep(times, 2))
+  d_conc$conc <- exp(-0.2 * d_conc$time) + 0.1
+  d_dose <- data.frame(subject = 1:2, time = 0, dose = 1)
+  intervals <-
+    data.frame(
+      start = c(0, 0), end = c(12, 24),
+      auclast = TRUE, aumclast = TRUE, aucinf.obs = TRUE, mrt.md.obs = TRUE
+    )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject), PKNCAdose(d_dose, dose~time|subject),
+      intervals = intervals
+    )
+  warnings <- testthat::capture_warnings(pk.nca(o_data))
+  undetermined <- grep("Cannot determine tau from the dose times", warnings, value = TRUE)
+  expect_length(undetermined, 2)
+  expect_equal(substr(undetermined, 1, 11), paste0("subject=", 1:2, ": "))
 })

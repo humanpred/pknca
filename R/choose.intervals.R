@@ -196,9 +196,10 @@ pknca_split_timeu <- function(splitdata, group_info, o_conc, datetime) {
 }
 
 # Gathering the dose regimen warnings of one group (the
-# "pknca_warning_dose_regimen" class of find.dose.regimen()) so that each is
-# given once for the group, with the group named, rather than once for every
-# interval and every parameter that needed tau.
+# "pknca_warning_dose_regimen" class of find.dose.regimen() and
+# resolve_dose_tau()) so that each is given once for the group, with the group
+# named, rather than once for every interval and every parameter that needed
+# tau.
 pknca_regimen_warning_collector <- function() {
   collector <- new.env(parent = emptyenv())
   collector$conditions <- list()
@@ -218,6 +219,15 @@ pknca_keep_regimen_warning <- function(cnd, collector) {
   key <- paste(class(cnd)[1], conditionMessage(cnd))
   collector$conditions[[key]] <- cnd
   invokeRestart("muffleWarning")
+}
+
+# Evaluate `expr` for one group, giving its dose regimen warnings once each,
+# prefixed with the group.  They are given on the way out, so an error in
+# `expr` does not lose the warnings that came before it.
+pknca_with_regimen_warnings <- function(expr, prefix) {
+  collector <- pknca_regimen_warning_collector()
+  on.exit(pknca_emit_regimen_warnings(collector, prefix), add = TRUE)
+  pknca_collect_regimen_warnings(expr, collector)
 }
 
 # Give the kept dose regimen warnings, each once, prefixed with the group
@@ -533,7 +543,7 @@ resolve_dose_tau <- function(interval, time.dose, options=list(), timeu=NULL) {
   if (is.na(ret) || ret <= 0) {
     rlang::warn(
       "Cannot determine tau from the dose times; add a 'tau' column to the intervals to calculate multiple-dose parameters",
-      class = "pknca_warning_tau_undetermined"
+      class = c("pknca_warning_tau_undetermined", "pknca_warning_dose_regimen")
     )
     return(NA_real_)
   }

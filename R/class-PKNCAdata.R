@@ -270,10 +270,9 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
         ]
       warning_prefix <- pknca_group_warning_prefix(current_group)
       if (!is.null(current_conc)) {
-        regimen_warnings <- pknca_regimen_warning_collector()
         generated_intervals <-
-          pknca_collect_regimen_warnings(
-            collector = regimen_warnings,
+          pknca_with_regimen_warnings(
+            prefix = warning_prefix,
             choose.auc.intervals(
             current_conc$time,
             current_dose$time,
@@ -294,7 +293,6 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
               )
             )
           )
-        pknca_emit_regimen_warnings(regimen_warnings, prefix = warning_prefix)
         # choose.auc.intervals() uses single.dose.aucs for one dose time
         used_single_dose_aucs <-
           used_single_dose_aucs ||

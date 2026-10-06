@@ -432,8 +432,10 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals,
   ret_dense <- list()
   ret_sparse <- list()
   # The dose regimen warnings that detecting tau gives are the same for every
-  # interval of the group, so they are given once, naming the group
+  # interval of the group, so they are given once, naming the group, on the way
+  # out (so that an error does not lose them)
   regimen_warnings <- pknca_regimen_warning_collector()
+  on.exit(pknca_emit_regimen_warnings(regimen_warnings, prefix = warning_prefix), add = TRUE)
   for (i in seq_len(nrow(data_intervals))) {
     current_interval <- data_intervals[i, , drop=FALSE]
     has_calc_dense <- any_sparse_dense_in_interval(current_interval, sparse=FALSE)
@@ -578,7 +580,6 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals,
       }
     }
   }
-  pknca_emit_regimen_warnings(regimen_warnings, prefix = warning_prefix)
   list(
     dense=if (length(ret_dense) == 0L) data.frame() else dplyr::bind_rows(ret_dense),
     sparse=if (length(ret_sparse) == 0L) data.frame() else dplyr::bind_rows(ret_sparse)

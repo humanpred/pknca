@@ -1013,3 +1013,32 @@ test_that("PKNCAdata reads date-times without a unit as hours", {
   ret <- PKNCAdata(PKNCAconc(d_conc, conc~time), PKNCAdose(d_dose, dose~time))
   expect_equal(ret$intervals$end, c(121.5, Inf))
 })
+
+# A group's interval selection that gives a dose regimen warning and then fails
+regimen_warned_then_failed <- function() {
+  rlang::warn("tau warning", class = c("pknca_warning_tau_not_nominal", "pknca_warning_dose_regimen"))
+  rlang::abort("failed", class = "pknca_error_test_group")
+}
+
+# A group's interval selection that gives the same dose regimen warning twice
+regimen_warned_twice <- function() {
+  rlang::warn("tau warning", class = c("pknca_warning_tau_not_nominal", "pknca_warning_dose_regimen"))
+  rlang::warn("tau warning", class = c("pknca_warning_tau_not_nominal", "pknca_warning_dose_regimen"))
+  "value"
+}
+
+test_that("dose regimen warnings of a group are given even when the group errors", {
+  # The warning is reported, prefixed, before the error
+  expect_warning(
+    expect_error(
+      pknca_with_regimen_warnings(regimen_warned_then_failed(), prefix = "subject=1: "),
+      class = "pknca_error_test_group"
+    ),
+    regexp = "^subject=1: tau warning$",
+    class = "pknca_warning_tau_not_nominal"
+  )
+  # Without an error, each warning is given once
+  warnings <- testthat::capture_warnings(ret <- pknca_with_regimen_warnings(regimen_warned_twice(), prefix = "g: "))
+  expect_equal(warnings, "g: tau warning")
+  expect_equal(ret, "value")
+})
