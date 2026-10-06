@@ -333,6 +333,17 @@ the generated intervals:
   `NaN`, or `-Inf`.  The errors (`pknca_error_interval_end_invalid`,
   `pknca_error_interval_end_not_after_start`) name the offending rows.
   (@GITHUB_HANDLE)
+* Breaking change: `pk.nca()` now runs `assert_intervals()` on the intervals
+  of the `PKNCAdata` object it is given, so intervals assigned directly to
+  `data$intervals` after `PKNCAdata()` get the same checks as intervals given
+  to `PKNCAdata()` or `set_intervals()`.  Previously a direct assignment
+  skipped them, so an interval column that is not a grouping column, an NCA
+  parameter, or listed in the `keep_interval_cols` option was silently
+  ignored; it is now the `pknca_error_invalid_interval_columns` error, as it
+  already was in `PKNCAdata()`.  Add such columns to `keep_interval_cols`, or
+  drop them, before calling `pk.nca()` (this broke `aNCA`, whose test
+  fixtures assign intervals that carry `DOSETRT`, `ROUTE`, and `STUDYID`).
+  (@billdenney)
 * `PKNCA_options_defaults()` returns the default value of one or more options
   (or all of them) without changing the current options, unlike
   `PKNCA.options(default = TRUE)`, which resets them.  (@GITHUB_HANDLE)
@@ -1042,6 +1053,18 @@ when the issue is due to an excluded point (#310)
 * `PKNCA.set.summary(reset = TRUE)` warns that it may break the use of
   `summary()` (#477)
 * `pk.nca` output now includes a `PPANMETH` column describing the analysis methods used for each parameter regarding imputations, AUC and half.life calculations (#457)
+* Breaking change: to supply `PPANMETH`, the AUC and AUMC calculation
+  functions (`pk.calc.auc()`, `pk.calc.aumc()`, and their `.last`, `.all`,
+  `.inf`, `.inf.obs`, and `.inf.pred` variants; the `pk.calc.aucint*()` and
+  `pk.calc.aumcint*()` families; `pk.calc.auclast_sparse()` and
+  `pk.calc.aumclast_sparse()`) and `pk.calc.half.life()` with manually selected
+  points return their value with a `"method"` attribute, such as
+  `"AUC: lin up/log down"`.  `pk.nca()` moves it into `PPANMETH` and removes
+  it, so `pk.nca()` results are unchanged, but a direct call keeps the
+  attribute, and it carries through arithmetic on the value.  Code that
+  compares a direct result to a bare number with `identical()` or
+  `testthat::expect_equal()` will now fail on the attribute; use
+  `as.numeric()` to drop it (this broke a `pmxTools` test).  (#457)
 * Added new `tmin` parameter
 * New post-processing functions to normalize PKNCA result parameters based on any column in PKNCAconc data.frame (`normalize_by_col()`) or by using a custom normalization table (`normalize()`)
 * New excretion rate parameters: `ermax`  (Maximum excretion rate), `ertmax` (Midpoint time of maximum excretion rate) and `ertlst` (Time of last excretion rate measurement) (#433)
