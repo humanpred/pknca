@@ -7,7 +7,7 @@
 # Nominal dosing intervals in hours, named the way protocols name them
 dose_interval_nominal_hours <- function() {
   c(
-    q4h = 4, QID = 6, TID = 8, BID = 12, QD = 24, QOD = 48, Q72H = 72,
+    Q4H = 4, QID = 6, TID = 8, BID = 12, QD = 24, QOD = 48, Q72H = 72,
     QW = 168, Q2W = 336, Q3W = 504, Q4W = 672, Q6W = 1008, Q8W = 1344,
     Q12W = 2016
   )
@@ -726,7 +726,7 @@ regimen_warn <- function(detection, has_candidates) {
 #' spacings (or spans) that set it, so scatter in the recorded times does not
 #' move it.  The candidates are `tau.choices` when it is given.  Otherwise, when
 #' `timeu` is given, they are the built-in nominal intervals converted from hours
-#' to `timeu`:  q4h (4 hours), QID (6), TID (8), BID (12), QD (24), QOD (48),
+#' to `timeu`:  Q4H (4 hours), QID (6), TID (8), BID (12), QD (24), QOD (48),
 #' Q72H (72), QW (168), Q2W (336), Q3W (504), Q4W (672), Q6W (1008), Q8W (1344),
 #' and Q12W (2016).  Without either, PKNCA cannot know what the numbers mean, so
 #' the intervals come from the data alone and every source is `"auto"`.
