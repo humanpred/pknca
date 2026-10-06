@@ -100,7 +100,8 @@ and <code>time</code>.</p>
 <span>  lloq <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  subject <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">interval</span>,</span>
-<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  timeu <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -220,6 +221,12 @@ half-life method.</p></dd>
 <dt id="arg-options">options<a class="anchor" aria-label="anchor" href="#arg-options"></a></dt>
 <dd><p>List of changes to the default PKNCA options (see
 <code><a href="PKNCA.options.html">PKNCA.options()</a></code>)</p></dd>
+
+
+<dt id="arg-timeu">timeu<a class="anchor" aria-label="anchor" href="#arg-timeu"></a></dt>
+<dd><p>The time unit of the group's times, or <code>NULL</code> when it is not
+known.  A \(\tau\) detected from the dose times is matched to the nominal
+dosing intervals for that unit (see <code><a href="find.tau.html">find.tau()</a></code>).</p></dd>
 
 </dl></div>
     <div class="section level2">

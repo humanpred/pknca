@@ -39,7 +39,8 @@ choose.auc.intervals(
   options = list(),
   single.dose.aucs = NULL,
   route = "extravascular",
-  sparse = FALSE
+  sparse = FALSE,
+  timeu = NULL
 )
 ```
 
@@ -72,6 +73,14 @@ choose.auc.intervals(
   Is this a sparse sampling design? A sparse design imputes nothing; see
   [`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md).
 
+- timeu:
+
+  The time unit of `time.conc` and `time.dosing`, or `NULL` when it is
+  not known (see
+  [`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md)).
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
+  gives the time unit of its concentration data.
+
 ## Value
 
 A data frame with columns for `start`, `end`, and the parameters to
@@ -81,6 +90,14 @@ for column definitions. The data frame may have zero rows if no
 intervals could be found.
 
 ## Details
+
+With a time unit (`timeu`), \\\tau\\ is matched to the nominal dosing
+intervals of
+[`find.dose.regimen()`](https://humanpred.github.io/pknca/reference/find.dose.regimen.md):
+dose times recorded a little early or late give the nominal interval,
+and an interval that matches none of them, such as dosing every hour,
+gives a `"pknca_warning_tau_not_nominal"` warning. Without a time unit,
+\\\tau\\ is found from the dose times alone.
 
 Times are matched within a tolerance rather than exactly, so a sample
 drawn a little before its nominal time still bounds the interval it

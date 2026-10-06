@@ -305,7 +305,11 @@ move it.  The candidates are <code>tau.choices</code> when it is given.  Otherwi
 to <code>timeu</code>:  Q4H (4 hours), QID (6), TID (8), BID (12), QD (24), QOD (48),
 Q72H (72), QW (168), Q2W (336), Q3W (504), Q4W (672), Q6W (1008), Q8W (1344),
 and Q12W (2016).  Without either, PKNCA cannot know what the numbers mean, so
-the intervals come from the data alone and every source is <code>"auto"</code>.</p>
+the intervals come from the data alone and every source is <code>"auto"</code>.
+Converting a unit other than <code>"hr"</code> needs the units package; without it,
+<code><a href="PKNCAdata.html">PKNCAdata()</a></code> and <code><a href="pk.nca.html">pk.nca()</a></code> match only data in hours to the nominal
+intervals, so their results for data in other units can differ between
+installations with and without that package.</p>
     </div>
     <div class="section level2">
     <h2 id="conditions">Conditions<a class="anchor" aria-label="anchor" href="#conditions"></a></h2>
@@ -323,6 +327,10 @@ a segment matched none of them.  The message includes the regimen table.</p></dd
 <dt><code>pknca_warning_tau_regimen_change</code></dt>
 <dd><p>More than one segment was found.
 The message includes the regimen table.</p></dd>
+
+<dt><code>pknca_warning_dose_regimen</code></dt>
+<dd><p>The parent class of the three warnings
+above, to handle them together.</p></dd>
 
 <dt><code>pknca_error_regimen_time_unit</code></dt>
 <dd><p><code>timeu</code> cannot be converted to

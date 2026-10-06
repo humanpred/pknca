@@ -36,7 +36,8 @@ pk.nca.interval(
   lloq = NULL,
   subject = NULL,
   interval,
-  options = list()
+  options = list(),
+  timeu = NULL
 )
 ```
 
@@ -155,6 +156,13 @@ pk.nca.interval(
 
   List of changes to the default PKNCA options (see
   [`PKNCA.options()`](https://humanpred.github.io/pknca/reference/PKNCA.options.md))
+
+- timeu:
+
+  The time unit of the group's times, or `NULL` when it is not known. A
+  \\\tau\\ detected from the dose times is matched to the nominal dosing
+  intervals for that unit (see
+  [`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md)).
 
 ## Value
 

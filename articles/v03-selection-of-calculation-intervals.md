@@ -253,11 +253,20 @@ none of that fits, no dosing interval is reported.
 Times are compared within a tolerance, so a dose recorded at 23.6 hours
 is a daily dose. The intervals found are matched to the `tau.choices`
 option’s values when it is given. When it is `NA` (the default) and the
-time unit is given with the `timeu` argument, they are matched to the
-usual nominal intervals, from every 4 hours to every 12 weeks. An
-interval that matches none of them gives a
-`pknca_warning_tau_not_nominal` warning. Without either, the unit of the
-times is not known and the interval is the one found in the data.
+time unit is known, they are matched to the usual nominal intervals,
+from every 4 hours to every 12 weeks.
+[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
+and [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+know the time unit when it is given to
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
+as `timeu`;
+[`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md)
+and
+[`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md)
+take it as their `timeu` argument. An interval that matches none of them
+gives a `pknca_warning_tau_not_nominal` warning. Without either, the
+unit of the times is not known and the interval is the one found in the
+data.
 
 Looking for a repeating pattern first is what keeps a regimen with a
 regular gap in it from being misread. Dosing three times a day at 0, 6,
