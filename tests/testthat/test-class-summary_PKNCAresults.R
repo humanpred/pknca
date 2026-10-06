@@ -483,3 +483,153 @@ test_that("summary.PKNCAresults drop_param argument works", {
   o_summary_noauclast <- summary(myresult, drop_param = "auclast")
   expect_false("auclast" %in% names(o_summary_noauclast))
 })
+
+# Sparse results with one sample per animal at each time and two treatments.
+# A sparse AUClast is one estimate per treatment, with its standard error on
+# the auclast_se row.
+sparse_summary_results <- function(intervals = data.frame(start = 0, end = 24, auclast = TRUE, cmax = TRUE),
+                                   options = list()) {
+  d_conc <- expand.grid(time = c(0, 1, 2, 4, 8, 24), rep = 1:3, treatment = c("A", "B"))
+  d_conc$id <- paste(d_conc$treatment, d_conc$time, d_conc$rep)
+  d_conc$conc <-
+    10 * exp(-0.2 * d_conc$time) * (1 - exp(-2 * d_conc$time)) *
+    (1 + c(-0.1, 0, 0.1)[d_conc$rep]) * c(A = 1, B = 0.8)[as.character(d_conc$treatment)]
+  d_dose <- data.frame(treatment = c("A", "B"), time = 0, dose = 1)
+  # Requesting a deprecated sparse name warns once per session
+  o_data <-
+    suppressWarnings(PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | treatment + id, sparse = TRUE),
+      PKNCAdose(d_dose, dose ~ time | treatment),
+      intervals = intervals,
+      options = options
+    ))
+  suppressWarnings(suppressMessages(pk.nca(o_data)))
+}
+
+test_that("summary combines a sparse AUClast with its standard error from another row (#170)", {
+  res <- sparse_summary_results()
+  d_res <- as.data.frame(res)
+  auc <- d_res$PPORRES[d_res$PPTESTCD == "auclast"]
+  se <- d_res$PPORRES[d_res$PPTESTCD == "auclast_se"]
+  o_summary <- summary(res)
+  expect_equal(names(o_summary), c("start", "end", "treatment", "auclast", "cmax"))
+  expect_equal(
+    o_summary$auclast,
+    sprintf("%s [%s]", signifString(auc, 3), signifString(se, 3))
+  )
+  # Dense-style parameters in the same summary keep their own summary
+  expect_equal(
+    o_summary$cmax,
+    signifString(d_res$PPORRES[d_res$PPTESTCD == "cmax"], 3)
+  )
+  expect_equal(
+    attr(o_summary, "caption"),
+    "auclast: estimate and standard error; cmax: geometric mean and geometric coefficient of variation"
+  )
+})
+
+test_that("a summary row with more than one sparse estimate is an error (#170)", {
+  # Dropping the group that separates the estimates
+  res <- sparse_summary_results()
+  expect_error(
+    summary(res, drop_group = c("id", "treatment")),
+    regexp = "Cannot summarize 2 standard errors in one summary row",
+    class = "pknca_error_summary_multiple_spread"
+  )
+  # Intervals with the same start and end that nothing in the summary tells apart
+  res_dup <-
+    sparse_summary_results(
+      intervals = data.frame(start = 0, end = 24, auclast = TRUE, impute = c(NA, "start_conc0"))
+    )
+  expect_error(summary(res_dup), class = "pknca_error_summary_multiple_spread")
+  # A kept interval column tells them apart, so each row has one estimate
+  res_kept <-
+    sparse_summary_results(
+      intervals = data.frame(start = 0, end = 24, auclast = TRUE, label = c("a", "b")),
+      options = list(keep_interval_cols = "label")
+    )
+  expect_equal(nrow(summary(res_kept)), 4)
+})
+
+test_that("a requested standard error gets no summary column of its own (#170)", {
+  res <-
+    sparse_summary_results(
+      intervals = data.frame(start = 0, end = 24, auclast = TRUE, auclast_se = TRUE)
+    )
+  o_summary <- summary(res)
+  expect_equal(names(o_summary), c("start", "end", "treatment", "auclast"))
+})
+
+test_that("an excluded sparse standard error is not calculated in the summary (#170)", {
+  res <- sparse_summary_results()
+  res_excl <- exclude(res, reason = "SE excluded", mask = res$result$PPTESTCD == "auclast_se")
+  d_res <- as.data.frame(res)
+  auc <- d_res$PPORRES[d_res$PPTESTCD == "auclast"]
+  o_summary <- summary(res_excl)
+  expect_equal(o_summary$auclast, paste(signifString(auc, 3), "[NC]"))
+  expect_match(attr(o_summary, "caption"), "NC: not calculated", fixed = TRUE)
+})
+
+test_that("the caption describes each summary a parameter used (#170)", {
+  expect_equal(
+    get_summary_PKNCAresults_caption(
+      param_names = c("auclast", "cmax"),
+      pretty_names = FALSE,
+      footnote_N = FALSE,
+      footnote_n = FALSE,
+      footnote_not_calculated = FALSE,
+      not_calculated = "NC",
+      caption_prefix = NULL,
+      descriptions_used =
+        list(
+          auclast =
+            c(
+              "geometric mean and geometric coefficient of variation",
+              "estimate and standard error"
+            )
+        )
+    ),
+    "auclast, cmax: geometric mean and geometric coefficient of variation; auclast: estimate and standard error"
+  )
+})
+
+test_that("PKNCA.set.summary checks spread_for (#170)", {
+  expect_error(
+    PKNCA.set.summary(
+      name = "auclast_se", description = "x", point = business.mean,
+      spread = business.mean, spread_for = "not_a_parameter"
+    ),
+    class = "pknca_error_undefined_parameter"
+  )
+  expect_error(
+    PKNCA.set.summary(
+      name = "auclast_se", description = "x", point = business.mean,
+      spread_for = "auclast"
+    ),
+    class = "pknca_error_spread_for_needs_spread"
+  )
+  expect_error(
+    PKNCA.set.summary(
+      name = "auclast_se", description = "x", point = business.mean,
+      spread = business.mean, spread_for = c("auclast", "aumclast")
+    ),
+    regexp = "Must have length 1"
+  )
+  # The failed calls left the registered instructions in place
+  expect_equal(PKNCA.set.summary()$auclast_se$spread_for, "auclast")
+  expect_equal(PKNCA.set.summary()$auclast_se$description, "estimate and standard error")
+})
+
+test_that("the deprecated sparse_auclast is summarized with sparse_auc_se (#170)", {
+  res <- sparse_summary_results(intervals = data.frame(start = 0, end = 24, sparse_auclast = TRUE))
+  d_res <- as.data.frame(res)
+  auc <- d_res$PPORRES[d_res$PPTESTCD == "sparse_auclast"]
+  se <- d_res$PPORRES[d_res$PPTESTCD == "sparse_auc_se"]
+  o_summary <- summary(res)
+  expect_equal(names(o_summary), c("start", "end", "treatment", "sparse_auclast"))
+  expect_equal(
+    o_summary$sparse_auclast,
+    sprintf("%s [%s]", signifString(auc, 3), signifString(se, 3))
+  )
+  expect_equal(attr(o_summary, "caption"), "sparse_auclast: estimate and standard error")
+})
