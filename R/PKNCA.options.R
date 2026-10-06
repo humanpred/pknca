@@ -306,6 +306,30 @@ pair_r_squared_factors <- function(x, name) {
     }
     x
   },
+  max.hl.points=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return("What is the maximum number of points that automatic point selection may use for half-life?  It must be more than min.hl.points.")
+    if (default)
+      return(Inf)
+    # min.hl.points is at least 2, and this must be more than it
+    checkmate::assert_number(x, lower = 3, na.ok = FALSE, .var.name = "max.hl.points")
+    if (is.finite(x) && min(x %% 1, 1 - (x %% 1)) > 100*.Machine$double.eps) {
+      rlang::warn(
+        "Non-integer given for max.hl.points; rounding to nearest integer",
+        class = "pknca_warning_max_hl_points_noninteger"
+      )
+      x <- round(x)
+    }
+    x
+  },
+  min.hl.start.time=function(x, default=FALSE, description=FALSE) {
+    if (description)
+      return("What is the earliest time at which automatic point selection may start the half-life (0 does not restrict it)?")
+    if (default)
+      return(0)
+    checkmate::assert_number(x, lower = 0, finite = TRUE, na.ok = FALSE, .var.name = "min.hl.start.time")
+    x
+  },
   min.span.ratio=function(x, default=FALSE, description=FALSE) {
     if (description)
       return("What is the minimum span ratio required to consider a half-life valid?")

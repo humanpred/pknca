@@ -718,6 +718,15 @@ the generated intervals:
   options now accept `NA`, which selects on the other r-squared.  The default
   is unchanged:  selection on adjusted r-squared.  Suggested by @cahn88 (#337)
 
+* Two new options limit automatic half-life point selection, as the "Lambda Z
+  Rules for Best Fit" of Phoenix WinNonlin do:  `max.hl.points` is the most
+  points a fit may use (`Inf`, the default, for no limit; it must be more than
+  `min.hl.points`), and `min.hl.start.time` is the earliest time a fit may start
+  (0, the default, for no restriction; within `pk.nca()` it is the time since
+  the start of the interval).  Both are also arguments of
+  `pk.calc.half.life()`, apply to the log-linear and Tobit methods, and are
+  ignored for manually selected points.  Suggested by @bachapman (#638)
+
 * A new function `get_halflife_fit()` gives the slope, intercept, and time
   range of the half-life fit for each group and interval so that the fitted
   line can be drawn or predicted from.  Times are given on the same scale as

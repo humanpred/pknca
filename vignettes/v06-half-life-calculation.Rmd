@@ -32,6 +32,8 @@ All sets of points that are applicable according to the current options are sele
 * Drop all points at or before the end of the last dose administration, including infusion duration (if dosing information is provided), then
 * Choose all sets of points that start from the $T_{last}$ and step back:
     * at least `r PKNCA.options("min.hl.points")` points (customizable with `PKNCA.options("min.hl.points")`)
+    * at most `PKNCA.options("max.hl.points")` points, which by default (`r format(PKNCA.options("max.hl.points"))`) does not limit them
+    * starting no earlier than `PKNCA.options("min.hl.start.time")`, which by default (`r PKNCA.options("min.hl.start.time")`) does not restrict them
     * `r c("Not including", "Including")[PKNCA.options("allow.tmax.in.half.life") + 1]` $T_{max}$ (customizable with `PKNCA.options("allow.tmax.in.half.life")`)
 
 As a specific example, if measurements were at 0, 1, 2, 3, 4, 6, 8, 12, and 24 hours; if $T_{last}$ is 12 hours; and if $T_{max}$ is 1 hour then the default point sets that would be fit are:
@@ -41,7 +43,7 @@ As a specific example, if measurements were at 0, 1, 2, 3, 4, 6, 8, 12, and 24 h
 3. 3, 4, 6, 8, and 12 hours; and
 4. 2, 3, 4, 6, 8, and 12 hours.
 
-If `PKNCA.options("min.hl.points")` were set to `4`, then the 6, 8, and 12 hour set would not be fit.  If `PKNCA.options("allow.tmax.in.half.life")` were set to `TRUE`, then 1, 2, 3, 4, 6, 8, and 12 hours would be fit.
+If `PKNCA.options("min.hl.points")` were set to `4`, then the 6, 8, and 12 hour set would not be fit.  If `PKNCA.options("allow.tmax.in.half.life")` were set to `TRUE`, then 1, 2, 3, 4, 6, 8, and 12 hours would be fit.  If `PKNCA.options("max.hl.points")` were set to `4`, or `PKNCA.options("min.hl.start.time")` to `3.5`, then only the first two sets would be fit.
 
 ## Select the Best Fit
 
