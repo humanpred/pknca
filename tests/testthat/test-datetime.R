@@ -894,3 +894,93 @@ test_that("Date-time interval ends follow the same rules as numeric ones", {
     class = "pknca_error_interval_end_not_after_start"
   )
 })
+
+test_that("pknca_difftime_to_unit converts a difftime to a number in a time unit", {
+  # Hours are an identity (and need no units package)
+  expect_identical(pknca_difftime_to_unit(as.difftime(c(1, 2.5, 24), units = "hours"), "hr"), c(1, 2.5, 24))
+  skip_if_not_installed("units")
+  # Minutes, in either direction
+  expect_equal(pknca_difftime_to_unit(as.difftime(90, units = "mins"), "hr"), 1.5)
+  expect_equal(pknca_difftime_to_unit(as.difftime(90, units = "mins"), "min"), 90)
+  expect_equal(pknca_difftime_to_unit(as.difftime(1.5, units = "hours"), "min"), 90)
+  # Days, in either direction
+  expect_equal(pknca_difftime_to_unit(as.difftime(2, units = "days"), "hr"), 48)
+  expect_equal(pknca_difftime_to_unit(as.difftime(36, units = "hours"), "day"), 1.5)
+  expect_equal(pknca_difftime_to_unit(as.difftime(1, units = "weeks"), "day"), 7)
+  # Seconds
+  expect_equal(pknca_difftime_to_unit(as.difftime(7200, units = "secs"), "hr"), 2)
+  expect_equal(pknca_difftime_to_unit(as.difftime(7200, units = "secs"), "min"), 120)
+  # The difference of two date-times
+  start <- as.POSIXct("2026-10-05 08:00:00", tz = "UTC")
+  end <- as.POSIXct("2026-10-05 20:30:00", tz = "UTC")
+  expect_equal(pknca_difftime_to_unit(difftime(end, start), "hr"), 12.5)
+  expect_equal(pknca_difftime_to_unit(difftime(end, start), "min"), 750)
+  # The result is a plain number
+  ret <- pknca_difftime_to_unit(as.difftime(90, units = "mins"), "hr")
+  expect_true(is.numeric(ret))
+  expect_null(attributes(ret))
+})
+
+test_that("pknca_difftime_to_unit keeps NA and the length of x", {
+  expect_identical(
+    pknca_difftime_to_unit(as.difftime(c(1, NA, 3), units = "hours"), "hr"),
+    c(1, NA, 3)
+  )
+  expect_identical(pknca_difftime_to_unit(as.difftime(NA_real_, units = "hours"), "hr"), NA_real_)
+  expect_identical(pknca_difftime_to_unit(as.difftime(numeric(0), units = "hours"), "hr"), numeric(0))
+  skip_if_not_installed("units")
+  expect_equal(
+    pknca_difftime_to_unit(as.difftime(c(60, NA, 120), units = "mins"), "day"),
+    c(1/24, NA, 1/12)
+  )
+  expect_identical(pknca_difftime_to_unit(as.difftime(numeric(0), units = "mins"), "day"), numeric(0))
+})
+
+test_that("pknca_difftime_to_unit refuses what it cannot convert", {
+  one_hour <- as.difftime(1, units = "hours")
+  skip_if_not_installed("units")
+  # A unit that is not a time unit
+  expect_error(
+    pknca_difftime_to_unit(one_hour, "not_a_unit"),
+    class = "pknca_error_difftime_unit",
+    regexp = "not 'not_a_unit'"
+  )
+  expect_error(
+    pknca_difftime_to_unit(one_hour, "mg"),
+    class = "pknca_error_difftime_unit",
+    regexp = "not 'mg'"
+  )
+  # An invalid unit, even for a zero-length x
+  zero_length <- as.difftime(numeric(0), units = "hours")
+  for (unit in list(NA_character_, c("hr", "min"), character(0), 1, NULL)) {
+    expect_error(pknca_difftime_to_unit(one_hour, unit), class = "pknca_error_difftime_unit")
+    expect_error(pknca_difftime_to_unit(zero_length, unit), class = "pknca_error_difftime_unit")
+  }
+  expect_error(pknca_difftime_to_unit(zero_length, "not_a_unit"), class = "pknca_error_difftime_unit")
+  # A number has no unit to convert from
+  expect_error(
+    pknca_difftime_to_unit(1, "hr"),
+    class = "pknca_error_difftime_not_difftime",
+    regexp = "not numeric"
+  )
+  expect_error(
+    pknca_difftime_to_unit(as.POSIXct("2026-10-05", tz = "UTC"), "hr"),
+    class = "pknca_error_difftime_not_difftime"
+  )
+  expect_error(pknca_difftime_to_unit(NULL, "hr"), class = "pknca_error_difftime_not_difftime")
+})
+
+test_that("pknca_difftime_to_unit converts to hours without the units package", {
+  local_mocked_bindings(
+    check_installed = function(...) stop("units is not installed"),
+    .package = "rlang"
+  )
+  expect_identical(pknca_difftime_to_unit(as.difftime(90, units = "mins"), "hr"), 1.5)
+  expect_identical(pknca_difftime_to_unit(as.difftime(numeric(0), units = "mins"), "hr"), numeric(0))
+  # Any other unit asks for the units package
+  expect_error(pknca_difftime_to_unit(as.difftime(90, units = "mins"), "min"), "units is not installed")
+})
+
+test_that("pknca_difftime_to_unit is exported", {
+  expect_true("pknca_difftime_to_unit" %in% getNamespaceExports("PKNCA"))
+})

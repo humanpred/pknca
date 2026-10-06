@@ -6,6 +6,13 @@ the dosing including dose amount and route.
 
 # Development version
 
+* `pknca_difftime_to_unit()` is now exported.  It converts a `difftime`, such
+  as a collection duration that is the difference of two date-times, into a
+  number in an analysis time unit, the conversion `pk.nca()` applies to
+  date-time times and `difftime` durations.  A value that is not a `difftime`
+  stops with `pknca_error_difftime_not_difftime` and a unit that is not a time
+  unit with `pknca_error_difftime_unit`, where a unit that cannot be converted
+  used to give `NA`.  (@billdenney)
 * `get_impute_method()` is now exported, so that other packages read the
   `impute` argument of `PKNCAdata()` the way `pk.nca()` does:  a name that is
   a column of the intervals gives that column's methods, `NA` gives the
