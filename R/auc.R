@@ -473,8 +473,8 @@ add.interval.col("auclast_df",
                  depends="auclast",
                  pptestcd_cdisc="SPARSEAD",
                  pptest_cdisc="Sparse AUClast degrees of freedom",
-                 formula="$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$",
-                 formula_note="Satterthwaite approximation (Nedelman et al 1995, eq. 6a)")
+                 formula="$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$",
+                 formula_note="Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)")
 
 add.interval.col("aucall",
                  FUN="pk.calc.auc.all",
@@ -545,8 +545,8 @@ add.interval.col("aumclast_df",
                  depends="aumclast",
                  pptestcd_cdisc="AUMCLSED",
                  pptest_cdisc="Sparse AUMClast degrees of freedom",
-                 formula="$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$",
-                 formula_note="Satterthwaite approximation (Nedelman et al 1995, eq. 6a)")
+                 formula="$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$",
+                 formula_note="Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)")
 
 add.interval.col("aumcall",
                  FUN="pk.calc.aumc.all",

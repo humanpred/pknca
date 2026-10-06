@@ -19,13 +19,10 @@ test_that("sparse_auc", {
   auclast_se_serial <- 6.86584835083522 # for a serial design (with multiple measures from the same animal not taken into account)
   auclast_df_serial <- 2.82631153092225
   
-  expect_warning(
-    sparse_batch <- pk.calc.sparse_auc(conc = d_sparse$conc, time = d_sparse$time, subject = d_sparse$id),
-    regexp = "Cannot yet calculate sparse degrees of freedom for multiple samples per subject"
-  )
+  sparse_batch <- pk.calc.sparse_auc(conc = d_sparse$conc, time = d_sparse$time, subject = d_sparse$id)
   expect_equal(sparse_batch$sparse_auc, structure(auclast, method=c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")))
   expect_equal(sparse_batch$sparse_auc_se, structure(auclast_se_batch, method=c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")))
-  expect_equal(sparse_batch$sparse_auc_df, structure(NA_real_, method=c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")))
+  expect_equal(sparse_batch$sparse_auc_df, structure(auclast_df_batch, method=c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")))
 
   sparse_serial <- pk.calc.sparse_auc(conc=d_sparse$conc, time=d_sparse$time, subject=seq_len(nrow(d_sparse)))
   expect_equal(sparse_serial$sparse_auc, structure(auclast, method=c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")))
@@ -178,6 +175,58 @@ test_that("cov_holder clips covariance to Cauchy-Schwartz bound", {
   expect_equal(abs(cov_mat[1, 2]), sqrt(cov_mat[1, 1] * cov_mat[2, 2]))
 })
 
+test_that("sparse AUC degrees of freedom match Nedelman and Jia (1998) for a batch design", {
+  # Example 1a of Yeh (1990), with the AUC, standard error, and degrees of
+  # freedom given by the code in the appendix of Nedelman and Jia (1998):  three
+  # batches of three animals, each batch sampled at three times
+  time <- c(0, 0.5, 1, 2, 4, 6, 8, 12, 24)
+  batch_of_time <- c(1, 2, 1, 2, 1, 2, 3, 3, 3)
+  conc_by_time <-
+    list(
+      c(0, 0, 0), c(4, 1.3, 3.2), c(4.69, 2.07, 6.45), c(6.68, 3.83, 6.08),
+      c(4.69, 4.06, 6.45), c(8.13, 9.54, 6.29), c(9.36, 13, 5.48),
+      c(5.18, 5.18, 2.79), c(1.06, 2.15, 0.827)
+    )
+  d_yeh <-
+    data.frame(
+      time = rep(time, each = 3),
+      subject = paste0(rep(batch_of_time, each = 3), "_", 1:3),
+      conc = unlist(conc_by_time)
+    )
+  result <- pk.calc.sparse_auc(conc = d_yeh$conc, time = d_yeh$time, subject = d_yeh$subject)
+  expect_equal(as.numeric(result$sparse_auc), 110.1015, tolerance = 1e-7)
+  expect_equal(as.numeric(result$sparse_auc_se), 14.78964, tolerance = 1e-6)
+  expect_equal(as.numeric(result$sparse_auc_df), 2.144318, tolerance = 1e-6)
+})
+
+test_that("sparse AUC degrees of freedom with one sample per subject are equation 6a of Nedelman et al (1995)", {
+  d_serial <-
+    data.frame(
+      time = rep(c(0, 1, 2, 4, 8, 24), times = c(3, 4, 3, 5, 3, 4)),
+      conc = c(2.1, 2.6, 1.9, 4.2, 3.6, 4.9, 4.4, 5.1, 6.0, 4.7, 4.1, 3.3, 3.9, 4.6, 3.0, 2.2, 1.5, 1.9, 0.4, 0.6, 0.3, 0.5)
+    )
+  d_serial$subject <- seq_len(nrow(d_serial))
+  result <- pk.calc.sparse_auc(conc = d_serial$conc, time = d_serial$time, subject = d_serial$subject)
+  times <- unique(d_serial$time)
+  w <- c(0, diff(times)/2) + c(diff(times)/2, 0)
+  s2 <- tapply(d_serial$conc, d_serial$time, stats::var)
+  n <- tapply(d_serial$conc, d_serial$time, length)
+  expected_df <- sum(w^2*s2/n)^2/sum(w^4*s2^2/(n^2*(n - 1)))
+  expect_equal(as.numeric(result$sparse_auc_df), unname(expected_df))
+})
+
+test_that("sparse AUC degrees of freedom are NA when a time has one subject", {
+  # The variance at time 2 cannot be estimated from one subject
+  result <-
+    pk.calc.sparse_auc(
+      conc = c(0, 0, 5, 6, 3, 4, 2),
+      time = c(0, 0, 1, 1, 2, 4, 4),
+      subject = c(1, 2, 1, 2, 3, 1, 2)
+    )
+  expect_true(is.na(result$sparse_auc_se))
+  expect_true(is.na(result$sparse_auc_df))
+})
+
 # ============================================================================
 # Sparse AUMC Tests
 # ============================================================================
@@ -191,19 +240,21 @@ test_that("sparse_aumc calculates moment-based variance correctly", {
     )
   
   # Calculate sparse AUMC
-  expect_warning(
-    sparse_aumc_batch <- pk.calc.sparse_aumc(
-      conc = d_sparse$conc, 
-      time = d_sparse$time, 
-      subject = d_sparse$id
-    ),
-    regexp = "Cannot yet calculate sparse degrees of freedom for multiple samples per subject"
+  sparse_aumc_batch <- pk.calc.sparse_aumc(
+    conc = d_sparse$conc,
+    time = d_sparse$time,
+    subject = d_sparse$id
   )
-  
+
   # Basic checks
   expect_true(is.numeric(sparse_aumc_batch$sparse_aumc))
   expect_true(is.numeric(sparse_aumc_batch$sparse_aumc_se))
-  expect_true(is.na(sparse_aumc_batch$sparse_aumc_df))
+  # The AUMC is the linear-trapezoidal integral of the moment values (t*C), so
+  # the expected values are those of the AUC method applied to them, as given by
+  # the code in the appendix of Nedelman and Jia (1998)
+  expect_equal(as.numeric(sparse_aumc_batch$sparse_aumc), 295.6202667, tolerance = 1e-9)
+  expect_equal(as.numeric(sparse_aumc_batch$sparse_aumc_se), 66.92717545, tolerance = 1e-9)
+  expect_equal(as.numeric(sparse_aumc_batch$sparse_aumc_df), 2.473378057, tolerance = 1e-9)
   
   # AUMC should be positive
   expect_true(sparse_aumc_batch$sparse_aumc > 0)
@@ -408,24 +459,16 @@ test_that("sparse AUC and AUMC integrate correctly with PKNCA workflow", {
     time = c(0, 0, 0, 1, 1, 1, 2, 2, 2, 4, 4, 4)
   )
   
-  # Calculate both AUC and AUMC
-  # Batch design (repeated subjects) → expected warning about df
-  expect_warning(
-    auc_result <- pk.calc.sparse_auclast(
-      conc = d_sparse$conc,
-      time = d_sparse$time,
-      subject = d_sparse$id
-    ),
-    regexp = "Cannot yet calculate sparse degrees of freedom for multiple samples per subject"
+  # Calculate both AUC and AUMC (every subject at every time)
+  auc_result <- pk.calc.sparse_auclast(
+    conc = d_sparse$conc,
+    time = d_sparse$time,
+    subject = d_sparse$id
   )
-  
-  expect_warning(
-    aumc_result <- pk.calc.sparse_aumclast(
-      conc = d_sparse$conc,
-      time = d_sparse$time,
-      subject = d_sparse$id
-    ),
-    regexp = "Cannot yet calculate sparse degrees of freedom for multiple samples per subject"
+  aumc_result <- pk.calc.sparse_aumclast(
+    conc = d_sparse$conc,
+    time = d_sparse$time,
+    subject = d_sparse$id
   )
   
   # Both should return data frames with 3 columns
@@ -436,9 +479,9 @@ test_that("sparse AUC and AUMC integrate correctly with PKNCA workflow", {
   expect_true(all(c("sparse_auclast", "sparse_auc_se", "sparse_auc_df") %in% names(auc_result)))
   expect_true(all(c("sparse_aumclast", "sparse_aumc_se", "sparse_aumc_df") %in% names(aumc_result)))
   
-  # All values should be positive or NA (df is NA for batch design)
-  expect_true(all(auc_result > 0 | is.na(auc_result)))
-  expect_true(all(aumc_result > 0 | is.na(aumc_result)))
+  # All values, including the degrees of freedom, should be positive
+  expect_true(all(auc_result > 0))
+  expect_true(all(aumc_result > 0))
 })
 
 # ============================================================================
