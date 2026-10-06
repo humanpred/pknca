@@ -123,7 +123,10 @@ pknca_hours_factor <- function(unit) {
 #' unit the units package can convert hours to, stops with the class
 #' `pknca_error_difftime_unit`.
 #' @examples
+#' # Hours need no conversion beyond the difftime's own unit
 #' pknca_difftime_to_unit(as.difftime(90, units = "mins"), unit = "hr")
+#' @examplesIf requireNamespace("units", quietly = TRUE)
+#' # Any other unit needs the units package
 #' pknca_difftime_to_unit(as.difftime(36, units = "hours"), unit = "day")
 #' # The difference of two date-times
 #' start <- as.POSIXct("2026-10-05 08:00:00", tz = "UTC")

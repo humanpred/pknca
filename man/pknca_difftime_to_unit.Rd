@@ -45,10 +45,14 @@ unit the units package can convert hours to, stops with the class
 }
 
 \examples{
+# Hours need no conversion beyond the difftime's own unit
 pknca_difftime_to_unit(as.difftime(90, units = "mins"), unit = "hr")
+\dontshow{if (requireNamespace("units", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# Any other unit needs the units package
 pknca_difftime_to_unit(as.difftime(36, units = "hours"), unit = "day")
 # The difference of two date-times
 start <- as.POSIXct("2026-10-05 08:00:00", tz = "UTC")
 end <- as.POSIXct("2026-10-05 20:30:00", tz = "UTC")
 pknca_difftime_to_unit(difftime(end, start), unit = "min")
+\dontshow{\}) # examplesIf}
 }

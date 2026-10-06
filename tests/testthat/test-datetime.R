@@ -938,13 +938,13 @@ test_that("pknca_difftime_to_unit keeps NA and the length of x", {
 
 test_that("pknca_difftime_to_unit refuses what it cannot convert", {
   one_hour <- as.difftime(1, units = "hours")
+  skip_if_not_installed("units")
   # A unit that is not a time unit
   expect_error(
     pknca_difftime_to_unit(one_hour, "not_a_unit"),
     class = "pknca_error_difftime_unit",
     regexp = "not 'not_a_unit'"
   )
-  skip_if_not_installed("units")
   expect_error(
     pknca_difftime_to_unit(one_hour, "mg"),
     class = "pknca_error_difftime_unit",
@@ -968,6 +968,17 @@ test_that("pknca_difftime_to_unit refuses what it cannot convert", {
     class = "pknca_error_difftime_not_difftime"
   )
   expect_error(pknca_difftime_to_unit(NULL, "hr"), class = "pknca_error_difftime_not_difftime")
+})
+
+test_that("pknca_difftime_to_unit converts to hours without the units package", {
+  local_mocked_bindings(
+    check_installed = function(...) stop("units is not installed"),
+    .package = "rlang"
+  )
+  expect_identical(pknca_difftime_to_unit(as.difftime(90, units = "mins"), "hr"), 1.5)
+  expect_identical(pknca_difftime_to_unit(as.difftime(numeric(0), units = "mins"), "hr"), numeric(0))
+  # Any other unit asks for the units package
+  expect_error(pknca_difftime_to_unit(as.difftime(90, units = "mins"), "min"), "units is not installed")
 })
 
 test_that("pknca_difftime_to_unit is exported", {
