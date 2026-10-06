@@ -40,4 +40,5 @@ The dosing interval, or `NA_real_` when it cannot be determined
 
 Other Interval determination:
 [`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md),
+[`find.dose.regimen()`](https://humanpred.github.io/pknca/reference/find.dose.regimen.md),
 [`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md)

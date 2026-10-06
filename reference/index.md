@@ -223,6 +223,9 @@
 - [`filter_interval()`](https://humanpred.github.io/pknca/reference/filter_interval.md)
   : Subset data to the rows used for calculations within an interval
 
+- [`find.dose.regimen()`](https://humanpred.github.io/pknca/reference/find.dose.regimen.md)
+  : Find the dosing regimen from the dose times of one subject
+
 - [`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md)
   : Find the repeating interval within a vector of doses
 

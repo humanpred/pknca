@@ -122,6 +122,7 @@ Other Interval specifications:
 [`pknca_ref()`](https://humanpred.github.io/pknca/reference/pknca_ref.md)
 
 Other Interval determination:
+[`find.dose.regimen()`](https://humanpred.github.io/pknca/reference/find.dose.regimen.md),
 [`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md),
 [`resolve_dose_tau()`](https://humanpred.github.io/pknca/reference/resolve_dose_tau.md)
 

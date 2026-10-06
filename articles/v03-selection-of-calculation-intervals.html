@@ -316,28 +316,61 @@ data. The intervals themselves are found the same way either way.</p>
 <div class="section level4">
 <h4 id="finding-the-dosing-interval">Finding the Dosing Interval<a class="anchor" aria-label="anchor" href="#finding-the-dosing-interval"></a>
 </h4>
-<p><code><a href="../reference/find.tau.html">find.tau()</a></code> sorts the dose times and drops the ones that
-repeat, then looks at the spacings between consecutive doses. If they
-are all the same, that spacing is <code>tau</code>. Otherwise each
-candidate interval is tested, smallest first, and the first one that the
-whole pattern of doses repeats over is used; the candidates are the
-<code>tau.choices</code> option’s values when it is given and every
-spacing between two doses when it is <code>NA</code>. The pattern must
-repeat over at least two complete intervals, so a regimen giving more
-than one dose per interval is found while a length that merely spans the
-doses is not. Only if nothing repeats is a gap read as a missed dose: if
-every spacing is then a whole number of the smallest spacing and the
-smallest spacing is seen twice in a row, the smallest spacing is
-<code>tau</code> and a warning names the longer gaps. If none of that
-fits, no dosing interval is reported.</p>
+<p><code><a href="../reference/find.tau.html">find.tau()</a></code> gives the period of the regimen that
+<code><a href="../reference/find.dose.regimen.html">find.dose.regimen()</a></code> finds, using the segment with the most
+doses. The dose times are sorted and the ones that repeat are dropped.
+If the spacings between consecutive doses are all the same, that spacing
+is <code>tau</code>. Otherwise a cycle of two to four doses per interval
+is looked for: each dose’s time within the interval falls into one of
+the positions of the cycle, the spacings between the positions differ
+from one another, every position holds doses from at least two complete
+intervals, and the positions fit the doses clearly better than evenly
+spaced doses would, so that doses recorded a few hours early or late are
+not mistaken for a cycle. Next, spacings that are all within a tolerance
+of their median are doses given evenly with some scatter in the recorded
+times, and the median spacing is <code>tau</code>. Otherwise runs of the
+same spacing form the regimen. A gap between runs that is a whole number
+of the spacing is read as a missed dose, a dose between two gaps that
+fit neither is a dose off schedule, and doses squeezed into one interval
+are extra doses; each gives a
+<code>pknca_warning_tau_irregular_dosing</code> warning naming the
+doses. Runs with different spacings are a change of regimen, which gives
+a <code>pknca_warning_tau_regimen_change</code> warning. When the runs
+need missed doses or a change of regimen to explain the doses, a cycle
+that most doses follow is used instead if it explains them at least as
+well. If none of that fits, no dosing interval is reported.</p>
+<p>Times are compared within a tolerance, so a dose recorded at 23.6
+hours is a daily dose. The intervals found are matched to the
+<code>tau.choices</code> option’s values when it is given. When it is
+<code>NA</code> (the default) and the time unit is given with the
+<code>timeu</code> argument, they are matched to the usual nominal
+intervals, from every 4 hours to every 12 weeks. An interval that
+matches none of them gives a <code>pknca_warning_tau_not_nominal</code>
+warning. Without either, the unit of the times is not known and the
+interval is the one found in the data.</p>
 <p>Looking for a repeating pattern first is what keeps a regimen with a
 regular gap in it from being misread. Dosing three times a day at 0, 6,
 and 12 hours repeats daily; the 12 hour overnight gap is the regimen,
-not two doses that were never given.</p>
+not two doses that were never given. That holds when a dose is missing
+too: the doses that were given keep their time of day, so the regimen is
+still three times daily, with one missed dose.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Twice-daily dosing repeats daily although no two doses are a day apart</span></span>
 <span><span class="fu"><a href="../reference/find.tau.html">find.tau</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span>, <span class="fl">24</span>, <span class="fl">34</span>, <span class="fl">48</span>, <span class="fl">58</span>, <span class="fl">72</span>, <span class="fl">82</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 24</span></span></code></pre>
+<p><code><a href="../reference/find.dose.regimen.html">find.dose.regimen()</a></code> gives the whole regimen, one row per
+segment, with the dose times within one interval as
+<code>offsets</code>.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Twice daily at breakfast and dinner, then once daily</span></span>
+<span><span class="va">regimen</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="../reference/find.dose.regimen.html">find.dose.regimen</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span>, <span class="fl">24</span>, <span class="fl">34</span>, <span class="fl">48</span>, <span class="fl">58</span>, <span class="fl">72</span>, <span class="fl">96</span>, <span class="fl">120</span>, <span class="fl">144</span><span class="op">)</span>, timeu <span class="op">=</span> <span class="st">"hr"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">regimen</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"start"</span>, <span class="st">"end"</span>, <span class="st">"n_doses"</span>, <span class="st">"interval"</span>, <span class="st">"label"</span>, <span class="st">"offsets"</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
+<pre><code><span><span class="co">##   start end n_doses interval label offsets</span></span>
+<span><span class="co">## 1     0  72       7       24   BID   0, 10</span></span>
+<span><span class="co">## 2    72 144       4       24    QD       0</span></span></code></pre>
 </div>
 </div>
 <div class="section level3">
@@ -363,7 +396,7 @@ simpler when scripting to ensure that all points are selected.</p>
 <span><span class="co">##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    &lt;NA&gt;</span></span>
 <span><span class="co">##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    &lt;NA&gt;</span></span>
 <span><span class="co">##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    &lt;NA&gt;</span></span></code></pre>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Use superposition to simulate multiple doses</span></span>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">d_conc</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">d_conc</span><span class="op">)</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="fl">48</span>,<span class="op">]</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>, y<span class="op">=</span><span class="va">conc</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_ribbon</span><span class="op">(</span>data<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">d_conc</span><span class="op">)</span>,</span>
@@ -375,7 +408,7 @@ simpler when scripting to ensure that all points are selected.</p>
 <span>  <span class="fu">labs</span><span class="op">(</span>x<span class="op">=</span><span class="st">"Time Since First Dose (hr)"</span>,</span>
 <span>       y<span class="op">=</span><span class="st">"Concentration\n(arbitrary units)"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="v03-selection-of-calculation-intervals_files/figure-html/infinity_interval_plot-visualization-1.png" class="r-plt" alt="" width="576"></p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">intervals_manual</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    start<span class="op">=</span><span class="fl">0</span>,</span>
@@ -386,7 +419,7 @@ simpler when scripting to ensure that all points are selected.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">intervals_manual</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   start end auclast aucinf.obs</span></span>
 <span><span class="co">## 1     0 Inf    TRUE       TRUE</span></span></code></pre>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">d_conc</span>, intervals<span class="op">=</span><span class="va">intervals_manual</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -410,7 +443,7 @@ first and second rows of the intervals, respectively.</p>
 <span><span class="co">##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    &lt;NA&gt;</span></span>
 <span><span class="co">##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    &lt;NA&gt;</span></span>
 <span><span class="co">##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    &lt;NA&gt;</span></span></code></pre>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot the concentration-time data and the interval</span></span>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="va">d_conc_multi</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>, y<span class="op">=</span><span class="va">conc</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_ribbon</span><span class="op">(</span>data<span class="op">=</span><span class="va">d_conc_multi</span><span class="op">[</span><span class="va">d_conc_multi</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="fl">24</span>,<span class="op">]</span>,</span>
@@ -425,7 +458,7 @@ first and second rows of the intervals, respectively.</p>
 <span>  <span class="fu">labs</span><span class="op">(</span>x<span class="op">=</span><span class="st">"Time Since First Dose (hr)"</span>,</span>
 <span>       y<span class="op">=</span><span class="st">"Concentration\n(arbitrary units)"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="v03-selection-of-calculation-intervals_files/figure-html/multiple_intervals_plot-visualization-1.png" class="r-plt" alt="" width="576"></p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">intervals_manual</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    start<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">144</span><span class="op">)</span>,</span>
@@ -452,7 +485,7 @@ first and second rows of the intervals, respectively.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_conc_multi_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc_multi</span>, <span class="va">conc</span><span class="op">~</span><span class="va">time</span><span class="op">|</span><span class="va">treatment</span><span class="op">+</span><span class="va">ID</span><span class="op">)</span></span>
 <span><span class="va">my.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">d_conc_multi_obj</span>, intervals<span class="op">=</span><span class="va">intervals_manual</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -483,7 +516,7 @@ calculations can be performed in different intervals. In this case,
 <span><span class="co">##  Study 1     Trt 1  1    4 0.8425422 Analyte 1    &lt;NA&gt;</span></span>
 <span><span class="co">##  Study 1     Trt 1  1    6 0.7771994 Analyte 1    &lt;NA&gt;</span></span>
 <span><span class="co">##  Study 1     Trt 1  1    8 0.7052469 Analyte 1    &lt;NA&gt;</span></span></code></pre>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Use superposition to simulate multiple doses</span></span>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">d_conc</span><span class="op">)</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>, y<span class="op">=</span><span class="va">conc</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_ribbon</span><span class="op">(</span>data<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">d_conc</span><span class="op">)</span>,</span>
@@ -500,7 +533,7 @@ calculations can be performed in different intervals. In this case,
 <span>  <span class="fu">labs</span><span class="op">(</span>x<span class="op">=</span><span class="st">"Time Since First Dose (hr)"</span>,</span>
 <span>       y<span class="op">=</span><span class="st">"Concentration\n(arbitrary units)"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="v03-selection-of-calculation-intervals_files/figure-html/overlapping_intervals_plot-visualization-1.png" class="r-plt" alt="" width="576"></p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">intervals_manual</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    start<span class="op">=</span><span class="fl">0</span>,</span>
@@ -531,7 +564,7 @@ calculations can be performed in different intervals. In this case,
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">d_conc</span>, intervals<span class="op">=</span><span class="va">intervals_manual</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -589,7 +622,7 @@ underestimates MRT substantially. The multiple-dose parameters add the
 <p>The dosing interval comes from a <code>tau</code> column in the
 interval specification, and that column takes precedence whenever it is
 given:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">intervals_md</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    start<span class="op">=</span><span class="fl">0</span>, end<span class="op">=</span><span class="fl">24</span>,</span>
