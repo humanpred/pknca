@@ -717,6 +717,9 @@ and bug reports.
   [`pknca_sample_types()`](https://humanpred.github.io/pknca/reference/pknca_concepts.md)
   : Concepts, tiers, and contexts used to classify NCA parameters
 
+- [`pknca_difftime_to_unit()`](https://humanpred.github.io/pknca/reference/pknca_difftime_to_unit.md)
+  : Convert a difftime to a number in a time unit
+
 - [`pknca_exclude_rules()`](https://humanpred.github.io/pknca/reference/pknca_exclude_rules.md)
   : List the automatic NCA result exclusion rules
 
