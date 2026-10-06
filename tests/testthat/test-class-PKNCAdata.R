@@ -564,7 +564,13 @@ test_that("The legacy single-dose intervals warn for a time unit other than hour
     )
   )
   o_dose_multi <- PKNCAdose(data.frame(subject = 1, time = c(0, 60), dose = 1), dose~time|subject)
-  expect_no_warning(PKNCAdata(o_conc_min, o_dose_multi, options = legacy))
+  # Multiple doses do not use the single-dose intervals.  With the time unit
+  # known, the 60 minute dosing interval is compared with the nominal intervals,
+  # and it matches none of them.
+  expect_warning(
+    PKNCAdata(o_conc_min, o_dose_multi, options = legacy),
+    class = "pknca_warning_tau_not_nominal"
+  )
   # A time unit given as a column is checked, too
   d_conc$timeu_col <- "day"
   expect_warning(

@@ -122,6 +122,10 @@ to \code{timeu}:  Q4H (4 hours), QID (6), TID (8), BID (12), QD (24), QOD (48),
 Q72H (72), QW (168), Q2W (336), Q3W (504), Q4W (672), Q6W (1008), Q8W (1344),
 and Q12W (2016).  Without either, PKNCA cannot know what the numbers mean, so
 the intervals come from the data alone and every source is \code{"auto"}.
+Converting a unit other than \code{"hr"} needs the units package; without it,
+\code{\link[=PKNCAdata]{PKNCAdata()}} and \code{\link[=pk.nca]{pk.nca()}} match only data in hours to the nominal
+intervals, so their results for data in other units can differ between
+installations with and without that package.
 }
 \section{Conditions}{
 
@@ -133,6 +137,8 @@ the intervals come from the data alone and every source is \code{"auto"}.
 a segment matched none of them.  The message includes the regimen table.}
 \item{\code{pknca_warning_tau_regimen_change}}{More than one segment was found.
 The message includes the regimen table.}
+\item{\code{pknca_warning_dose_regimen}}{The parent class of the three warnings
+above, to handle them together.}
 \item{\code{pknca_error_regimen_time_unit}}{\code{timeu} cannot be converted to
 hours.}
 \item{\code{pknca_error_regimen_time_class}}{\code{x} is a date-time or difftime

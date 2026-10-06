@@ -4,7 +4,7 @@
 \alias{resolve_dose_tau}
 \title{Determine the dosing interval (tau) to use for a calculation interval}
 \usage{
-resolve_dose_tau(interval, time.dose, options = list())
+resolve_dose_tau(interval, time.dose, options = list(), timeu = NULL)
 }
 \arguments{
 \item{interval}{One row of an interval definition (see
@@ -16,6 +16,9 @@ within it)}
 
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
+
+\item{timeu}{The time unit of \code{time.dose}, or \code{NULL} when it is not known
+(see \code{\link[=find.tau]{find.tau()}})}
 }
 \value{
 The dosing interval, or \code{NA_real_} when it cannot be determined
