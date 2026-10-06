@@ -123,6 +123,34 @@ find.tau <- function(x, na.action=stats::na.omit,
   ret
 }
 
+# The time unit of one group's times, for matching its dosing interval to the
+# nominal intervals of find.dose.regimen():  the unit given to PKNCAconc() as a
+# value, or the one unit in the group's rows of its unit column.  NULL leaves
+# the interval to the dose times alone, as it is when there is no unit, when the
+# group's rows give more than one unit, or when the unit cannot be converted to
+# hours (a unit may be any label, and without the units package only "hr" can
+# be converted).  With sparse PK, the unit column is in the pooled samples.
+pknca_group_timeu <- function(o_conc, data_conc = NULL, data_sparse_conc = NULL) {
+  timeu <- o_conc$units$timeu
+  column <- o_conc$columns$timeu
+  if (is.null(timeu) && !is.null(column)) {
+    rows <- if (is.null(data_sparse_conc)) data_conc else data_sparse_conc
+    timeu <- unique(as.character(rows[[column]]))
+    timeu <- timeu[!is.na(timeu)]
+  }
+  timeu <- as.vector(timeu)
+  if (length(timeu) != 1) {
+    return(NULL)
+  }
+  if (!identical(timeu, "hr") && !requireNamespace("units", quietly = TRUE)) {
+    return(NULL) # nocov
+  }
+  if (is.na(pknca_hours_factor(timeu))) {
+    return(NULL)
+  }
+  timeu
+}
+
 # The route to build an interval for, from the route and duration recorded with
 # the doses.  `PKNCAdose()` records the route as extravascular or intravascular
 # and the way the drug entered the vein as a duration, while the parameter
@@ -226,6 +254,12 @@ interval_samples_reach_end <- function(time.conc, start, end) {
 #'         calculated to infinity as a single dose.
 #'  }
 #'
+#' With a time unit (`timeu`), \eqn{\tau} is matched to the nominal dosing
+#' intervals of [find.dose.regimen()]:  dose times recorded a little early or
+#' late give the nominal interval, and an interval that matches none of them,
+#' such as dosing every hour, gives a `"pknca_warning_tau_not_nominal"` warning.
+#' Without a time unit, \eqn{\tau} is found from the dose times alone.
+#'
 #' Times are matched within a tolerance rather than exactly, so a sample drawn a
 #' little before its nominal time still bounds the interval it belongs to.  The
 #' window is the `auto.interval.tolerance` option as a fraction of the
@@ -244,6 +278,9 @@ interval_samples_reach_end <- function(time.conc, start, end) {
 #' @param time.dosing Time of dosing
 #' @param single.dose.aucs The AUC specification for single dosing.
 #' @param route How the drug was given, as one of [pknca_routes()].
+#' @param timeu The time unit of `time.conc` and `time.dosing`, or `NULL` when
+#'   it is not known (see [find.tau()]).  [PKNCAdata()] gives the time unit of
+#'   its concentration data.
 #' @param sparse Is this a sparse sampling design?  A sparse design imputes
 #'   nothing; see [pknca_interval_table()].
 #' @returns A data frame with columns for `start`, `end`, and the parameters to
@@ -267,7 +304,8 @@ choose.auc.intervals <- function(time.conc, time.dosing,
                                  options=list(),
                                  single.dose.aucs=NULL,
                                  route="extravascular",
-                                 sparse=FALSE) {
+                                 sparse=FALSE,
+                                 timeu=NULL) {
   # Check inputs
   single.dose.aucs <- PKNCA.choose.option(name="single.dose.aucs", value=single.dose.aucs, options=options)
   tolerance_fraction <-
@@ -341,7 +379,7 @@ choose.auc.intervals <- function(time.conc, time.dosing,
   # ends it, the half-life when samples carry on past it, and the whole profile
   # when neither applies but samples were taken after it.
   last_dose <- max(time.dosing)
-  tau <- find.tau(time.dosing, options=options)
+  tau <- find.tau(time.dosing, options=options, timeu=timeu)
   samples_after_last_dose <-
     any(time.conc > last_dose & !time_same(time.conc, last_dose))
   last_dose_interval <- FALSE
@@ -395,18 +433,20 @@ choose.auc.intervals <- function(time.conc, time.dosing,
 #' @inheritParams PKNCA.choose.option
 #' @param interval One row of an interval definition (see
 #'   [check.interval.specification()])
+#' @param timeu The time unit of `time.dose`, or `NULL` when it is not known
+#'   (see [find.tau()])
 #' @param time.dose The dose times for the whole group (not just the interval;
 #'   an interval one `tau` long contains a single dose, so nothing repeats
 #'   within it)
 #' @returns The dosing interval, or `NA_real_` when it cannot be determined
 #' @family Interval determination
 #' @keywords Internal
-resolve_dose_tau <- function(interval, time.dose, options=list()) {
+resolve_dose_tau <- function(interval, time.dose, options=list(), timeu=NULL) {
   tau_manual <- interval[["tau"]]
   if (!is.null(tau_manual) && !is.na(tau_manual[1])) {
     return(assert_dosetau(as.numeric(tau_manual[1])))
   }
-  ret <- find.tau(time.dose, options=options)
+  ret <- find.tau(time.dose, options=options, timeu=timeu)
   # find.tau() gives 0 for a single dose time and NA when no interval repeats.
   # Neither is a dosing interval, and a tau of 0 would silently reduce a
   # multiple-dose parameter to its single-dose equivalent rather than failing.

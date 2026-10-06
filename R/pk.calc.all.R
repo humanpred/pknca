@@ -58,7 +58,13 @@ pk.nca <- function(data, verbose=FALSE) {
     # need.  The PKNCAresults below keeps the user's own `data`, so the
     # expansion never becomes visible in `x$data$intervals`.
     data_calc <- expand_secondary_intervals(data)
-    splitdata <- full_join_PKNCAdata(data_calc)
+    # The unit column comes along so that each group's tau can be matched to the
+    # nominal intervals for its time unit
+    splitdata <-
+      full_join_PKNCAdata(
+        data_calc,
+        extra_conc_cols = as.character(data_calc$conc$columns$timeu)
+      )
     group_info <-
       splitdata[
         ,
@@ -74,6 +80,13 @@ pk.nca <- function(data, verbose=FALSE) {
     if (sparse) {
       inform_sparse_auc_method(data_calc$intervals, options = data$options)
     }
+    data_sparse_conc <-
+      if (sparse) splitdata$data_sparse_conc else rep(list(NULL), nrow(splitdata))
+    group_timeu <-
+      purrr::map2(
+        splitdata$data_conc, data_sparse_conc, pknca_group_timeu,
+        o_conc = data_calc$conc
+      )
     if (verbose) {
       rlang::inform("Starting PK NCA calculations.", class = "pknca_message_pk_start")
     }
@@ -81,10 +94,10 @@ pk.nca <- function(data, verbose=FALSE) {
       purrr::pmap(
         .l = list(
           data_conc = splitdata$data_conc,
-          data_sparse_conc =
-            if (sparse) splitdata$data_sparse_conc else rep(list(NULL), nrow(splitdata)),
+          data_sparse_conc = data_sparse_conc,
           data_dose = splitdata$data_dose,
-          data_intervals = splitdata$data_intervals
+          data_intervals = splitdata$data_intervals,
+          timeu = group_timeu
         ),
         .f = pk.nca.intervals,
         options = data$options,
@@ -382,7 +395,8 @@ parameter_dispatch <- function(spec, has_sparse_conc) {
 #'   NCA results calculated from that concentration representation (or, when no
 #'   calculation was possible at all, the warning condition saying why)
 pk.nca.intervals <- function(data_conc, data_dose, data_intervals,
-                             options, impute, data_sparse_conc=NULL, verbose=FALSE) {
+                             options, impute, data_sparse_conc=NULL, verbose=FALSE,
+                             timeu=NULL) {
   if (is.null(data_conc) || (nrow(data_conc) == 0)) {
     # No concentration data; potentially placebo data
     no_data <- rlang::warning_cnd(class="pknca_warning_no_conc_data", message="No concentration data")
@@ -494,6 +508,7 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals,
         duration.dose.group=data_dose$duration,
         route.group=data_dose$route,
         # Generic data
+        timeu=timeu,
         interval=current_interval,
         options=options)
       if (has_sparse_data) {
@@ -665,6 +680,9 @@ parameter_arg_spec <- function(param, sparse = FALSE) {
 #'   lower limit of quantification passed to [pk.calc.half.life()] for the Tobit
 #'   half-life method.
 #' @param subject Subject identifiers for the pooled sparse samples
+#' @param timeu The time unit of the group's times, or `NULL` when it is not
+#'   known.  A \eqn{\tau} detected from the dose times is matched to the nominal
+#'   dosing intervals for that unit (see [find.tau()]).
 #' @param conc.sparse,time.sparse The pooled individual concentrations and their
 #'   times for the current interval with sparse PK (`conc` and `time` are the
 #'   arithmetic-mean profile built from them).  `NULL` for dense PK.
@@ -687,7 +705,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
                             conc.sparse.group=NULL, time.sparse.group=NULL,
                             impute_method=NA_character_,
                             include_half.life=NULL, exclude_half.life=NULL, lloq=NULL,
-                            subject=NULL, interval, options=list()) {
+                            subject=NULL, timeu=NULL, interval, options=list()) {
   if (!checkmate::test_data_frame(interval, nrows = 1)) {
     rlang::abort(
       "Please report a bug.  Interval must be a one-row data.frame",
@@ -887,7 +905,8 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
             resolve_dose_tau(
               interval=interval,
               time.dose=time.dose.group,
-              options=options
+              options=options,
+              timeu=timeu
             )
         } else if (arg_mapped %in% names(source_map)) {
           call_args[[arg_formal]] <- source_map[[arg_mapped]]

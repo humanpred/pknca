@@ -10,7 +10,8 @@ choose.auc.intervals(
   options = list(),
   single.dose.aucs = NULL,
   route = "extravascular",
-  sparse = FALSE
+  sparse = FALSE,
+  timeu = NULL
 )
 }
 \arguments{
@@ -27,6 +28,10 @@ choose.auc.intervals(
 
 \item{sparse}{Is this a sparse sampling design?  A sparse design imputes
 nothing; see \code{\link[=pknca_interval_table]{pknca_interval_table()}}.}
+
+\item{timeu}{The time unit of \code{time.conc} and \code{time.dosing}, or \code{NULL} when
+it is not known (see \code{\link[=find.tau]{find.tau()}}).  \code{\link[=PKNCAdata]{PKNCAdata()}} gives the time unit of
+its concentration data.}
 }
 \value{
 A data frame with columns for \code{start}, \code{end}, and the parameters to
@@ -60,6 +65,12 @@ calculated to infinity as a single dose.
 }
 }
 \details{
+With a time unit (\code{timeu}), \eqn{\tau} is matched to the nominal dosing
+intervals of \code{\link[=find.dose.regimen]{find.dose.regimen()}}:  dose times recorded a little early or
+late give the nominal interval, and an interval that matches none of them,
+such as dosing every hour, gives a \code{"pknca_warning_tau_not_nominal"} warning.
+Without a time unit, \eqn{\tau} is found from the dose times alone.
+
 Times are matched within a tolerance rather than exactly, so a sample drawn a
 little before its nominal time still bounds the interval it belongs to.  The
 window is the \code{auto.interval.tolerance} option as a fraction of the

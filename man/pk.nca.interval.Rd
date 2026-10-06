@@ -30,6 +30,7 @@ pk.nca.interval(
   exclude_half.life = NULL,
   lloq = NULL,
   subject = NULL,
+  timeu = NULL,
   interval,
   options = list()
 )
@@ -102,6 +103,10 @@ lower limit of quantification passed to \code{\link[=pk.calc.half.life]{pk.calc.
 half-life method.}
 
 \item{subject}{Subject identifiers for the pooled sparse samples}
+
+\item{timeu}{The time unit of the group's times, or \code{NULL} when it is not
+known.  A \eqn{\tau} detected from the dose times is matched to the nominal
+dosing intervals for that unit (see \code{\link[=find.tau]{find.tau()}}).}
 
 \item{interval}{One row of an interval definition (see
 \code{\link[=check.interval.specification]{check.interval.specification()}} for how to define the interval.}

@@ -243,10 +243,14 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
         class = "pknca_error_missing_dose_times"
       )
     }
+    o_conc_numeric <- as_PKNCAconc(ret_numeric)
+    # The unit column comes along so that each group's dosing interval can be
+    # matched to the nominal intervals for its time unit
     n_conc_dose <-
       full_join_PKNCAconc_PKNCAdose(
-        o_conc = as_PKNCAconc(ret_numeric),
-        o_dose = as_PKNCAdose(ret_numeric)
+        o_conc = o_conc_numeric,
+        o_dose = as_PKNCAdose(ret_numeric),
+        extra_cols_conc = as.character(o_conc_numeric$columns$timeu)
       )
     n_conc_dose$data_intervals <- rep(list(NULL), nrow(n_conc_dose))
     # The single.dose.aucs option is only consulted by the legacy method; the
@@ -284,7 +288,13 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
                 route=current_dose$route,
                 duration=current_dose$duration
               ),
-            sparse=is_sparse_pk(ret$conc)
+            sparse=is_sparse_pk(ret$conc),
+            timeu=
+              pknca_group_timeu(
+                o_conc=o_conc_numeric,
+                data_conc=current_conc,
+                data_sparse_conc=n_conc_dose[["data_sparse_conc"]][[idx]]
+              )
           )
         # choose.auc.intervals() uses single.dose.aucs for one dose time
         used_single_dose_aucs <-

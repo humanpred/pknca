@@ -1841,3 +1841,30 @@ test_that("a calculation function returning names without values errors instead 
     class = "pknca_error_interval_calculation"
   )
 })
+
+# The tau that mrt.md.obs used, solved back from its equation
+pk_nca_tau_used <- function(o_conc, o_dose, intervals) {
+  res <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals)))
+  value <- stats::setNames(res$PPORRES, res$PPTESTCD)
+  (value[["mrt.md.obs"]] - value[["aumclast"]] / value[["auclast"]]) *
+    value[["auclast"]] / (value[["aucinf.obs"]] - value[["auclast"]])
+}
+
+test_that("pk.nca matches a detected tau to the nominal intervals for the time unit", {
+  # Daily doses recorded up to half an hour late:  without a unit tau is the
+  # median spacing, 24.5 hours, and with hours it is the daily interval
+  doses <- c(0, 24.5, 49, 73, 97.5)
+  d_conc <- data.frame(time = sort(unique(c(doses, 97.5 + c(0.5, 1, 2, 4, 8, 12, 24)))))
+  d_conc$conc <- 10 * exp(-0.1 * (d_conc$time - 97.5)) * (d_conc$time >= 97.5) + 1
+  o_dose <- PKNCAdose(data.frame(time = doses, dose = 1), dose~time)
+  intervals <-
+    data.frame(
+      start = 97.5, end = 121.5,
+      auclast = TRUE, aumclast = TRUE, aucinf.obs = TRUE, mrt.md.obs = TRUE
+    )
+  expect_equal(pk_nca_tau_used(PKNCAconc(d_conc, conc~time), o_dose, intervals), 24.5)
+  expect_equal(
+    pk_nca_tau_used(PKNCAconc(d_conc, conc~time, concu = "ng/mL", timeu = "hr"), o_dose, intervals),
+    24
+  )
+})
