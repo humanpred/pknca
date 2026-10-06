@@ -17,7 +17,8 @@
 #' following rules in order:
 #'
 #' \itemize{
-#'  \item{At least `min.hl.points` points included}
+#'  \item{At least `min.hl.points` and at most `max.hl.points` points included,
+#'  the first of them no earlier than `min.hl.start.time`}
 #'  \item{A `lambda.z` > 0 and at the same time the best adjusted r-squared
 #'  (within `adj.r.squared.factor`) or, when `adj.r.squared.factor` is `NA`,
 #'  the best r-squared (within `r.squared.factor`)}
@@ -27,13 +28,16 @@
 #' For `hl_method = "tobit"`, BLQ observations are retained and treated as
 #' left-censored.  The best window is the one minimizing
 #' `tobit_residual * n ^ tobit_n_points_penalty` (default: raw `tobit_residual`)
-#' among windows with `lambda.z > 0` and at least `min.hl.points` above-LLOQ
-#' points.  On ties the largest window (most total points) is preferred.
+#' among windows with `lambda.z > 0`, at least `min.hl.points` and at most
+#' `max.hl.points` above-LLOQ points, and a first point no earlier than
+#' `min.hl.start.time`.  On ties the largest window (most total points) is
+#' preferred.
 #'
 #' If `manually.selected.points` is `TRUE`, the `conc` and `time` data are
 #' used as-is without any form of point selection.  When
-#' `TRUE`, `adj.r.squared.factor`, `r.squared.factor`, `min.hl.points`, and
-#' `allow.tmax.in.half.life` are ignored.
+#' `TRUE`, `adj.r.squared.factor`, `r.squared.factor`, `min.hl.points`,
+#' `max.hl.points`, `min.hl.start.time`, and `allow.tmax.in.half.life` are
+#' ignored.
 #'
 #' @inheritParams assert_conc_time
 #' @inheritParams choose_interval_method
@@ -55,11 +59,19 @@
 #'   `time`) been manually selected?  The impact of setting this to
 #'   `TRUE` is that no selection for the best points will be done.  When
 #'   `TRUE`, this option causes the options of `adj.r.squared.factor`,
-#'   `r.squared.factor`, `min.hl.points`, and `allow.tmax.in.half.life` to be
-#'   ignored.
+#'   `r.squared.factor`, `min.hl.points`, `max.hl.points`, `min.hl.start.time`,
+#'   and `allow.tmax.in.half.life` to be ignored.
 #' @param min.hl.points The minimum number of points that must be
 #'   included to calculate the half-life.  For `hl_method = "tobit"` this
 #'   counts only above-LLOQ points.
+#' @param max.hl.points The maximum number of points that automatic point
+#'   selection may use (`Inf`, the default, for no maximum).  It must be more
+#'   than `min.hl.points`.  For `hl_method = "tobit"` this counts only
+#'   above-LLOQ points.
+#' @param min.hl.start.time The earliest time at which automatic point
+#'   selection may start the half-life:  points before it are not used.  It is
+#'   on the scale of `time`, which within [pk.nca()] is the time since the start
+#'   of the interval.  The default, 0, does not restrict the points.
 #' @param adj.r.squared.factor The allowance in adjusted r-squared for
 #'   adding another point (log-linear method only).  Giving it takes
 #'   `r.squared.factor` out of use, and setting it to `NA` selects points with
@@ -131,6 +143,8 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
                               manually.selected.points=FALSE,
                               options=list(),
                               min.hl.points=NULL,
+                              max.hl.points=NULL,
+                              min.hl.start.time=NULL,
                               adj.r.squared.factor=NULL,
                               r.squared.factor=NULL,
                               tobit_n_points_penalty=NULL,
@@ -151,6 +165,19 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   # Resolve remaining options
   min.hl.points <-
     PKNCA.choose.option(name="min.hl.points", value=min.hl.points, options=options)
+  max.hl.points <-
+    PKNCA.choose.option(name="max.hl.points", value=max.hl.points, options=options)
+  min.hl.start.time <-
+    PKNCA.choose.option(name="min.hl.start.time", value=min.hl.start.time, options=options)
+  if (max.hl.points <= min.hl.points) {
+    rlang::abort(
+      sprintf(
+        "max.hl.points (%g) must be more than min.hl.points (%g)",
+        max.hl.points, min.hl.points
+      ),
+      class = "pknca_error_max_hl_points_not_above_min"
+    )
+  }
   conc.blq <-
     PKNCA.choose.option(name="conc.blq", value=conc.blq, options=options)
   conc.na <-
@@ -313,6 +340,12 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     } else {
       dfK <- data[as.numeric(data$time) > as.numeric(ret$tmax), ]
     }
+    # Every candidate span ends at the last point, so a span that may not start
+    # before min.hl.start.time cannot include any point before it (0 does not
+    # restrict the span, even for negative times)
+    if (min.hl.start.time > 0) {
+      dfK <- dfK[as.numeric(dfK$time) >= min.hl.start.time, ]
+    }
 
     if (manually.selected.points) {
       attr(ret, "method") <- "Lambda Z: Manual selection"
@@ -352,7 +385,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
         log_conc = half_lives_for_selection$log_conc,
         time     = half_lives_for_selection$lambda.z.time.first
       )
-      for (i in min.hl.points:nrow(half_lives_for_selection)) {
+      for (i in min.hl.points:min(nrow(half_lives_for_selection), max.hl.points)) {
         fit <- fit_half_life(data=dfK_for_fit[seq_len(i), , drop=FALSE], tlast=ret$tlast)
         half_lives_for_selection[i, names(fit)] <- fit
       }
@@ -390,8 +423,8 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     } else {
       attr(ret, "exclude") <-
         sprintf(
-          "Too few points for half-life calculation (min.hl.points=%g with only %g points)",
-          min.hl.points, nrow(dfK)
+          "Too few points for half-life calculation (min.hl.points=%g with only %g points%s)",
+          min.hl.points, nrow(dfK), hl_start_time_note(min.hl.start.time)
         )
       rlang::warn(attr(ret, "exclude"), class = "pknca_warning_halflife_too_few_points")
     }
@@ -404,6 +437,9 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       dfK_all <- data_tobit[data_tobit$time >= ret$tmax, ]
     } else {
       dfK_all <- data_tobit[data_tobit$time > ret$tmax, ]
+    }
+    if (min.hl.start.time > 0) {
+      dfK_all <- dfK_all[dfK_all$time >= min.hl.start.time, ]
     }
     dfK_all <- dfK_all[order(dfK_all$time), ]
 
@@ -441,12 +477,20 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       # The last valid starting row is the one at position
       # (n_above_lloq - min.hl.points + 1) in above_lloq_idx
       max_start_row <- above_lloq_idx[n_above_lloq - min.hl.points + 1]
-      n_windows <- max_start_row
+      # A window starting after the (n_above_lloq - max.hl.points)th above-LLOQ
+      # point holds at most max.hl.points of them
+      min_start_row <-
+        if (n_above_lloq > max.hl.points) {
+          above_lloq_idx[n_above_lloq - max.hl.points] + 1
+        } else {
+          1
+        }
 
-      tobit_fits <- vector("list", n_windows)
-      for (j in seq_len(n_windows)) {
-        tobit_fits[[j]] <- fit_half_life_tobit(
-          data = dfK_all[j:nrow(dfK_all), , drop = FALSE],
+      start_rows <- min_start_row:max_start_row
+      tobit_fits <- vector("list", length(start_rows))
+      for (k in seq_along(start_rows)) {
+        tobit_fits[[k]] <- fit_half_life_tobit(
+          data = dfK_all[start_rows[k]:nrow(dfK_all), , drop = FALSE],
           tlast = ret$tlast,
           optim_control = tobit_optim_control
         )
@@ -478,8 +522,8 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     } else {
       attr(ret, "exclude") <-
         sprintf(
-          "Too few above-LLOQ points for Tobit half-life (min.hl.points=%g with only %g above-LLOQ points)",
-          min.hl.points, n_above_lloq
+          "Too few above-LLOQ points for Tobit half-life (min.hl.points=%g with only %g above-LLOQ points%s)",
+          min.hl.points, n_above_lloq, hl_start_time_note(min.hl.start.time)
         )
       rlang::warn(attr(ret, "exclude"), class = "pknca_warning_halflife_too_few_points_tobit")
     }
@@ -492,6 +536,16 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
 }
 
 pknca_concept(pk.calc.half.life) <- "half_life"
+
+# Says why points are missing from a too-few-points message when
+# min.hl.start.time removed some
+hl_start_time_note <- function(min.hl.start.time) {
+  if (min.hl.start.time > 0) {
+    sprintf(" at or after min.hl.start.time=%g", min.hl.start.time)
+  } else {
+    ""
+  }
+}
 
 #' Perform the half-life fit given the data.  The function simply fits
 #' the data without any validation.  No selection of points or any other

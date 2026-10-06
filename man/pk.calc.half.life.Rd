@@ -16,6 +16,8 @@ pk.calc.half.life(
   manually.selected.points = FALSE,
   options = list(),
   min.hl.points = NULL,
+  max.hl.points = NULL,
+  min.hl.start.time = NULL,
   adj.r.squared.factor = NULL,
   r.squared.factor = NULL,
   tobit_n_points_penalty = NULL,
@@ -59,8 +61,8 @@ can be changed via \code{PKNCA.options(hl_method = "tobit")}.}
 \code{time}) been manually selected?  The impact of setting this to
 \code{TRUE} is that no selection for the best points will be done.  When
 \code{TRUE}, this option causes the options of \code{adj.r.squared.factor},
-\code{r.squared.factor}, \code{min.hl.points}, and \code{allow.tmax.in.half.life} to be
-ignored.}
+\code{r.squared.factor}, \code{min.hl.points}, \code{max.hl.points}, \code{min.hl.start.time},
+and \code{allow.tmax.in.half.life} to be ignored.}
 
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
@@ -68,6 +70,16 @@ ignored.}
 \item{min.hl.points}{The minimum number of points that must be
 included to calculate the half-life.  For \code{hl_method = "tobit"} this
 counts only above-LLOQ points.}
+
+\item{max.hl.points}{The maximum number of points that automatic point
+selection may use (\code{Inf}, the default, for no maximum).  It must be more
+than \code{min.hl.points}.  For \code{hl_method = "tobit"} this counts only
+above-LLOQ points.}
+
+\item{min.hl.start.time}{The earliest time at which automatic point
+selection may start the half-life:  points before it are not used.  It is
+on the scale of \code{time}, which within \code{\link[=pk.nca]{pk.nca()}} is the time since the start
+of the interval.  The default, 0, does not restrict the points.}
 
 \item{adj.r.squared.factor}{The allowance in adjusted r-squared for
 adding another point (log-linear method only).  Giving it takes
@@ -158,7 +170,8 @@ For \code{hl_method = "log-linear"}, the best half-life is chosen by the
 following rules in order:
 
 \itemize{
-\item{At least \code{min.hl.points} points included}
+\item{At least \code{min.hl.points} and at most \code{max.hl.points} points included,
+the first of them no earlier than \code{min.hl.start.time}}
 \item{A \code{lambda.z} > 0 and at the same time the best adjusted r-squared
 (within \code{adj.r.squared.factor}) or, when \code{adj.r.squared.factor} is \code{NA},
 the best r-squared (within \code{r.squared.factor})}
@@ -168,13 +181,16 @@ the best r-squared (within \code{r.squared.factor})}
 For \code{hl_method = "tobit"}, BLQ observations are retained and treated as
 left-censored.  The best window is the one minimizing
 \code{tobit_residual * n ^ tobit_n_points_penalty} (default: raw \code{tobit_residual})
-among windows with \code{lambda.z > 0} and at least \code{min.hl.points} above-LLOQ
-points.  On ties the largest window (most total points) is preferred.
+among windows with \code{lambda.z > 0}, at least \code{min.hl.points} and at most
+\code{max.hl.points} above-LLOQ points, and a first point no earlier than
+\code{min.hl.start.time}.  On ties the largest window (most total points) is
+preferred.
 
 If \code{manually.selected.points} is \code{TRUE}, the \code{conc} and \code{time} data are
 used as-is without any form of point selection.  When
-\code{TRUE}, \code{adj.r.squared.factor}, \code{r.squared.factor}, \code{min.hl.points}, and
-\code{allow.tmax.in.half.life} are ignored.
+\code{TRUE}, \code{adj.r.squared.factor}, \code{r.squared.factor}, \code{min.hl.points},
+\code{max.hl.points}, \code{min.hl.start.time}, and \code{allow.tmax.in.half.life} are
+ignored.
 }
 \references{
 Gabrielsson J, Weiner D.  "Section 2.8.4 Strategies for estimation of
