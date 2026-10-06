@@ -60,3 +60,13 @@ test_that("pk.business", {
   expect_equal(b.mean(c(0, 1)), structure(0.5, n = 2))
   expect_equal(b.mean.2(c(0, 1)), structure(1, n = 1))
 })
+
+test_that("summary_spread_one_se gives the one standard error and refuses more", {
+  expect_equal(summary_spread_one_se(3), 3)
+  expect_equal(summary_spread_one_se(NA_real_), NA_real_)
+  expect_error(
+    summary_spread_one_se(c(3, 4)),
+    regexp = "Cannot summarize 2 standard errors in one summary row",
+    class = "pknca_error_summary_multiple_spread"
+  )
+})
