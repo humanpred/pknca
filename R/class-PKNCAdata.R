@@ -285,6 +285,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
             sparse=is_sparse_pk(ret$conc),
             time.conc.nominal=current_conc[["time.nominal"]],
             time.dosing.nominal=current_dose[["time.nominal"]],
+            conc=current_conc$conc,
             timeu=
               pknca_group_timeu(
                 o_conc=o_conc_numeric,

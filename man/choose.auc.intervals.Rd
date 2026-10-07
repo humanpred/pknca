@@ -14,7 +14,8 @@ choose.auc.intervals(
   timeu = NULL,
   time.conc.nominal = NULL,
   time.dosing.nominal = NULL,
-  dense.samples = 3
+  dense.samples = 3,
+  conc = NULL
 )
 }
 \arguments{
@@ -39,13 +40,17 @@ concentration data.}
 
 \item{time.conc.nominal, time.dosing.nominal}{Nominal times of the samples
 and of the doses, on the same scale as \code{time.conc} and \code{time.dosing} and
-the same length, or \code{NULL}.  They are used only to judge whether a dose is
-sampled densely after a change of regimen.  \code{\link[=PKNCAdata]{PKNCAdata()}} gives the
-\code{time.nominal} columns of \code{\link[=PKNCAconc]{PKNCAconc()}} and \code{\link[=PKNCAdose]{PKNCAdose()}}.}
+the same length, or \code{NULL}.  They are used, and checked to be numeric, only
+to judge whether a dose is sampled densely after a change of regimen.
+\code{\link[=PKNCAdata]{PKNCAdata()}} gives the \code{time.nominal} columns of \code{\link[=PKNCAconc]{PKNCAconc()}} and
+\code{\link[=PKNCAdose]{PKNCAdose()}}.}
 
 \item{dense.samples}{The fewest samples within one dosing period after a
 dose that make it sampled densely, which gives it an interval after a
 change of regimen}
+
+\item{conc}{The concentrations at \code{time.conc}, or \code{NULL}.  Used only to leave
+samples without a concentration out of the dense-sampling count.}
 }
 \value{
 A data frame with columns for \code{start}, \code{end}, and the parameters to
@@ -83,17 +88,28 @@ When \code{\link[=find.dose.regimen]{find.dose.regimen()}} finds a change of reg
 than one segment) and the design is not sparse, the intervals follow the
 segments instead:
 \itemize{
-\item One steady-state interval for each segment:  its last complete cycle,
-at the segment's own period, when a sample ends it.  The cycle of an
-earlier segment ends at the dose that starts the next one.
+\item One steady-state interval for each segment, when a sample ends it.
+An earlier segment's interval is its last complete cycle, from the
+cycle's first dose to the recorded dose one period later (the dose
+that starts the next segment, unless a dose was missed before it), so
+it never contains a later dose.  The last segment's interval is its
+last cycle, one period at the segment's own period.  Like the
+interval after the last dose, a steady-state interval needs only a
+sample at its end, so it may have as few as two samples.
 \item The interval after the first dose, as above.
 \item The interval after any other dose only when the dose is sampled
 densely:  at least \code{dense.samples} samples (3 by default) strictly
-within one period of its segment after the dose.  The nominal sample
-times are counted when they are given (\code{time.conc.nominal}), from the
-dose's nominal time when that is given, so that a sample drawn a little
-late counts where it was scheduled; otherwise the actual sample times
-are counted.
+within one period of its segment after the dose.  A sample counts by
+its nominal time when it has one (\code{time.conc.nominal}), from the
+dose's nominal time when that is given (\code{time.dosing.nominal}), so
+that a sample drawn a little late counts where it was scheduled; a
+sample without a nominal time counts by its actual time.  Samples at
+the same time count once, and samples without a concentration
+(\code{conc} is \code{NA}) do not count; samples below the limit of
+quantification do.  Nominal times must share the actual times'
+origin (time since the first dose, for example).  When they restart
+instead, as times since the latest dose do, the actual times are
+used with a \code{"pknca_warning_intervals_nominal_restart"} warning.
 \item The last dose gets the intervals above at the period of the last
 segment, even when an earlier segment has more doses.
 }

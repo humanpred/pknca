@@ -1246,3 +1246,203 @@ test_that("choose.auc.intervals says when a regimen change leaves no interval", 
   expect_equal(nrow(ret), 0)
   expect_equal(names(ret), names(empty_interval_specification()))
 })
+
+test_that("a segment's steady-state interval ends at the dose that follows it", {
+  dense <- c(0.5, 1, 2, 4, 8)
+  # Once daily with the times as recorded, then twice daily:  the once-daily
+  # cycle runs from 47.8 to the twice-daily dose at 72.4, and the last cycle
+  # starts at the last dose (119.8), not at 108.3
+  doses <- c(0, 24.3, 47.8, 72.4, 84.3, 96.1, 108.3, 119.8)
+  conc <- sort(unique(c(doses, dense, 47.8 + dense, 119.8 + c(dense, 12, 24))))
+  expect_equal(
+    segment_bounds(conc, doses, timeu = "hr"),
+    data.frame(start = c(0, 47.8, 119.8, 119.8), end = c(24.3, 72.4, 131.8, Inf))
+  )
+  # A dose missed before the next segment:  the cycle before the gap is the
+  # steady state (48 to 72), and the gap from 72 to 120 gets no interval
+  # because the dose at 72 is not sampled densely
+  doses_missed <- c(0, 24, 48, 72, 120, 132, 144, 156)
+  conc_missed <- sort(unique(c(doses_missed, dense, 48 + dense, 156 + c(dense, 12, 24))))
+  expect_warning(
+    ret_missed <- segment_bounds(conc_missed, doses_missed),
+    class = "pknca_warning_tau_irregular_dosing"
+  )
+  expect_equal(ret_missed, data.frame(start = c(0, 48, 156, 156), end = c(24, 72, 168, Inf)))
+})
+
+test_that("the last cycle of a single regimen starts at the dose that begins it", {
+  # Once daily with the times as recorded:  the last dose (47.8) starts the last
+  # cycle, so no interval runs from 24.3 to 48.3 over it.  Without a sample one
+  # period after the last dose, its profile is a single dose.
+  dense <- c(0.5, 1, 2, 4, 8)
+  doses <- c(0, 24.3, 47.8)
+  conc <- sort(unique(c(doses, dense, 24.3 + c(dense, 12), 48.3)))
+  ret <- choose.auc.intervals(conc, doses)
+  expect_equal(ret$start, c(0, 24.3, 47.8))
+  expect_equal(ret$end, c(24.3, 47.8, Inf))
+  # A sample one period after the last dose gives its steady-state interval
+  ret_end <- choose.auc.intervals(sort(c(conc, 71.8)), doses)
+  expect_equal(ret_end$start, c(0, 24.3, 47.8))
+  expect_equal(ret_end$end, c(24.3, 47.8, 71.8))
+})
+
+test_that("intervals after a regimen change are not near-duplicates", {
+  # Doses with irregular spacings, sampled densely after every dose:  two
+  # intervals that start together end at different doses
+  doses <- c(0, 23.34, 47.95, 71.72, 83.55, 95.65, 107.76, 119.38, 131.17, 143.25)
+  conc <- sort(unique(c(doses, as.vector(outer(doses, c(0.5, 1, 2, 4, 8), "+")), 143.25 + c(12, 24))))
+  ret <- segment_bounds(conc, doses)
+  smallest_gap <- min(diff(conc))
+  for (row_index in seq_len(nrow(ret) - 1L)) {
+    same_start <- time_same(ret$start[-seq_len(row_index)], ret$start[row_index])
+    end_gap <- abs(ret$end[-seq_len(row_index)] - ret$end[row_index])
+    expect_true(all(!same_start | end_gap >= smallest_gap))
+  }
+  expect_equal(nrow(ret), 11)
+})
+
+test_that("choose.auc.intervals follows regimen changes in either direction and over three segments", {
+  dense <- c(0.5, 1, 2, 4, 8)
+  # Twice daily, then once daily
+  doses_bid_qd <- c(0, 12, 24, 36, 48, 72, 96, 120)
+  expect_equal(
+    segment_bounds(
+      sort(unique(c(doses_bid_qd, dense, 36 + dense[1:4], 120 + c(dense, 12, 24, 36)))),
+      doses_bid_qd
+    ),
+    data.frame(start = c(0, 36, 120, 120), end = c(12, 48, 144, Inf))
+  )
+  # Once daily, twice daily, once daily
+  doses_three <- c(0, 24, 48, 72, 84, 96, 108, 120, 144, 168, 192)
+  expect_equal(
+    segment_bounds(sort(unique(c(doses_three, dense, 192 + c(dense, 12, 24, 36)))), doses_three),
+    data.frame(start = c(0, 48, 108, 192, 192), end = c(24, 72, 120, 216, Inf))
+  )
+  # One sample after a dose is dense when dense.samples is 1
+  doses <- c(0, 24, 48, 72, 84, 96, 108, 120)
+  conc_one <- sort(unique(c(doses, dense, 98, 120 + c(dense, 12))))
+  expect_false(any(segment_bounds(conc_one, doses)$start == 96))
+  expect_equal(
+    segment_bounds(conc_one, doses, dense.samples = 1),
+    data.frame(start = c(0, 48, 96, 120), end = c(24, 72, 108, 132))
+  )
+})
+
+test_that("dense sampling counts each usable sample once", {
+  dense <- c(0.5, 1, 2, 4, 8)
+  doses <- c(0, 24, 48, 72, 84, 96, 108, 120)
+  conc <- sort(unique(c(doses, dense, 96 + c(1, 2, 4), 120 + c(dense, 12))))
+  # A sample without a nominal time counts by its actual time
+  nominal_missing <- conc
+  nominal_missing[conc == 97] <- NA
+  expect_true(any(segment_bounds(conc, doses, time.conc.nominal = nominal_missing)$start == 96))
+  # Two samples at the same nominal time count once
+  nominal_repeated <- conc
+  nominal_repeated[conc == 100] <- 98
+  expect_false(any(segment_bounds(conc, doses, time.conc.nominal = nominal_repeated)$start == 96))
+  # A sample without a concentration does not count; one below the limit of
+  # quantification (0) does
+  concentration <- rep(1, length(conc))
+  concentration[conc == 97] <- NA
+  expect_false(any(segment_bounds(conc, doses, conc = concentration)$start == 96))
+  concentration[conc == 97] <- 0
+  expect_true(any(segment_bounds(conc, doses, conc = concentration)$start == 96))
+})
+
+test_that("restarting nominal times fall back to the actual times", {
+  dense <- c(0.5, 1, 2, 4, 8)
+  doses <- c(0, 24, 48, 72, 84, 96, 108, 120)
+  conc <- sort(unique(c(doses, as.vector(outer(doses, dense, "+")), 132)))
+  actual_only <- segment_bounds(conc, doses)
+  # Sample nominal times since the latest dose
+  since_dose <- conc - doses[findInterval(conc, doses)]
+  expect_warning(
+    ret_samples <- segment_bounds(conc, doses, time.conc.nominal = since_dose),
+    class = "pknca_warning_intervals_nominal_restart"
+  )
+  expect_equal(ret_samples, actual_only)
+  expect_equal(nrow(actual_only), 8)
+  # Dose nominal times that do not increase (all 0)
+  conc_dose <- sort(unique(c(doses, 0.5, 1, 2, 25, 120 + c(dense, 12))))
+  expect_warning(
+    ret_doses <-
+      segment_bounds(
+        conc_dose, doses, time.conc.nominal = conc_dose,
+        time.dosing.nominal = rep(0, length(doses)), dense.samples = 1
+      ),
+    class = "pknca_warning_intervals_nominal_restart"
+  )
+  expect_equal(ret_doses, segment_bounds(conc_dose, doses, dense.samples = 1))
+  expect_true(inherits(
+    tryCatch(
+      choose.auc.intervals(conc, doses, time.conc.nominal = since_dose),
+      pknca_warning_intervals_nominal_restart = function(w) w
+    ),
+    "pknca_warning_dose_regimen"
+  ))
+})
+
+test_that("nominal times are checked only when they are used", {
+  doses <- c(0, 24, 48, 72, 84, 96, 108, 120)
+  conc <- sort(unique(c(doses, 0.5, 1, 2, 120 + c(0.5, 1, 2, 12))))
+  # A single regimen does not use them, so a character column is accepted
+  expect_equal(
+    choose.auc.intervals(c(0, 1, 2, 24), c(0, 24, 48), time.conc.nominal = c("0", "1", "2", "24")),
+    choose.auc.intervals(c(0, 1, 2, 24), c(0, 24, 48))
+  )
+  # A regimen change uses them, so they must be numeric and one per time
+  expect_error(
+    choose.auc.intervals(conc, doses, time.conc.nominal = as.character(conc)),
+    regexp = "time.conc.nominal",
+    class = "pknca_error_intervals_nominal_type"
+  )
+  expect_error(
+    choose.auc.intervals(conc, doses, time.conc.nominal = 1:2),
+    class = "pknca_error_intervals_nominal_length"
+  )
+  expect_error(
+    choose.auc.intervals(conc, doses, time.dosing.nominal = 1:2),
+    class = "pknca_error_intervals_nominal_length"
+  )
+})
+
+test_that("PKNCAdata accepts a character nominal time column with a single regimen", {
+  times <- c(0, 1, 2, 4, 8, 24, 48, 72)
+  d_conc <- data.frame(subject = 1, time = times, conc = exp(-0.1 * times) + 1, nominal = as.character(times))
+  d_dose <- data.frame(subject = 1, time = c(0, 24, 48), dose = 1)
+  ret <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject, time.nominal = "nominal"),
+      PKNCAdose(d_dose, dose~time|subject)
+    )
+  expect_equal(ret$intervals$start, c(0, 48))
+  # With a regimen change it is used, so it must be numeric
+  doses <- c(0, 24, 48, 72, 84, 96, 108, 120)
+  times_change <- sort(unique(c(doses, 0.5, 1, 2, 120 + c(0.5, 1, 2, 12))))
+  d_conc_change <- data.frame(subject = 1, time = times_change, conc = 1, nominal = as.character(times_change))
+  expect_error(
+    PKNCAdata(
+      PKNCAconc(d_conc_change, conc~time|subject, time.nominal = "nominal"),
+      PKNCAdose(data.frame(subject = 1, time = doses, dose = 1), dose~time|subject)
+    ),
+    class = "pknca_error_intervals_nominal_type"
+  )
+})
+
+test_that("a segment's steady state is its last complete cycle", {
+  # Twice daily at 0 and 10 hours, then once daily from 58:  the dose at 48
+  # starts a cycle that the change of regimen cuts short, so the steady state is
+  # the cycle from 24 to 48
+  doses <- c(0, 10, 24, 34, 48, 58, 82, 106, 130, 154)
+  conc <- sort(unique(c(doses, 0.5, 1, 2, 4, 8, 154 + c(0.5, 1, 2, 4, 8, 12, 24, 36))))
+  expect_equal(
+    segment_bounds(conc, doses),
+    data.frame(start = c(0, 24, 154, 154), end = c(10, 48, 178, Inf))
+  )
+  # No cycle is followed by a dose one period later
+  expect_null(interval_segment_cycle(c(0, 30), boundary = 90, period = 24, offsets = 0))
+  expect_equal(
+    interval_segment_cycle(c(0, 24, 48), boundary = 72, period = 24, offsets = 0),
+    c(start = 48, end = 72)
+  )
+})

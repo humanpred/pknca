@@ -1946,3 +1946,38 @@ test_that("pk.nca gives the undetermined-tau warning once per group, naming it",
   expect_length(undetermined, 2)
   expect_equal(substr(undetermined, 1, 11), paste0("subject=", 1:2, ": "))
 })
+
+# The linear trapezoidal AUC of the samples from `start` to `end`
+trapezoid_auc <- function(time, conc, start, end) {
+  keep <- time >= start & time <= end
+  time <- time[keep]
+  conc <- conc[keep]
+  sum(diff(time) * (conc[-1] + conc[-length(conc)]) / 2)
+}
+
+test_that("pk.nca calculates the intervals chosen after a regimen change", {
+  dense <- c(0.5, 1, 2, 4, 8)
+  doses <- c(0, 24, 48, 72, 84, 96, 108, 120)
+  times <- sort(unique(c(doses, dense, 48 + dense, 120 + c(dense, 12, 24, 36))))
+  conc <- 10 * exp(-0.1 * (times - doses[findInterval(times, doses)])) + 1
+  o_data <-
+    suppressWarnings(
+      PKNCAdata(
+        PKNCAconc(data.frame(subject = 1, time = times, conc = conc), conc~time|subject),
+        PKNCAdose(data.frame(subject = 1, time = doses, dose = 1), dose~time|subject),
+        options = list(auc.method = "linear")
+      )
+    )
+  res <- as.data.frame(suppressWarnings(pk.nca(o_data)))
+  aucint <- res[res$PPTESTCD == "aucint.last", ]
+  expect_equal(aucint$start, c(0, 48, 120))
+  expect_equal(aucint$end, c(24, 72, 132))
+  expect_equal(
+    aucint$PPORRES,
+    c(
+      trapezoid_auc(times, conc, 0, 24),
+      trapezoid_auc(times, conc, 48, 72),
+      trapezoid_auc(times, conc, 120, 132)
+    )
+  )
+})
