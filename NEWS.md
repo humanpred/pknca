@@ -283,16 +283,20 @@ the generated intervals:
   intervals.  **Results change for dense data with a regimen change:**  the
   last-dose interval used the period of the segment with the most doses, and
   every sampled dosing interval got an interval.  Sparse data and a single
-  regimen are unchanged.  `choose.auc.intervals()` gains the
+  regimen keep their intervals, except where the interval for the last dose
+  used to contain a later recorded dose (see the next item).  `choose.auc.intervals()` gains the
   `time.conc.nominal`, `time.dosing.nominal`, `dense.samples`, and `conc`
   arguments; the nominal times are checked (numeric, one per time) only when
   they are used.  (@billdenney)
-* The interval for the last dose now starts at the dose that begins the last
-  cycle when dose times are recorded a little early:  once-daily doses at 0,
-  24.3, and 47.8 hours used to give an interval from 24.3 to 48.3, which
-  contains the dose at 47.8, and now give the last cycle from 47.8.  Each dose
-  is matched to its place in the regimen rather than counted in whole periods
-  from the first dose.  (@billdenney)
+* The interval for the last dose no longer contains a later recorded dose, for
+  sparse and dense data and with or without a change of regimen.  When dose
+  times are recorded a little early it starts at the dose that begins the last
+  cycle:  once-daily doses at 0, 24.3, and 47.8 hours used to give an interval
+  from 24.3 to 48.3, which contains the dose at 47.8, and now give the last
+  cycle from 47.8.  Each dose is matched to its place in the regimen rather
+  than counted in whole periods from the first dose, and when the last two
+  doses are less than a period apart at the same place in the regimen, the
+  interval starts at the last dose.  (@billdenney)
 * The interval generated for the last dose now starts at the first dose of the
   last complete dosing cycle, so a regimen giving more than one dose per
   interval no longer gets an interval that contains a dose that was never

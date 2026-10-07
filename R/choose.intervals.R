@@ -45,16 +45,29 @@ time_has_boundary_sample <- function(boundary, time.conc, window = 0) {
 
 # The cycle of each of the sorted dose times `x` of a regimen that repeats
 # every `tau` with doses at `offsets` within the period (from the first dose,
-# as find.dose.regimen() reports them).  Each dose is matched to its nearest
+# as find.dose.regimen() reports them), and the place in the period (the index
+# of the offset) that each dose is at.  Each dose is matched to its nearest
 # offset, so a dose recorded a little early stays in its own cycle rather than
 # falling into the one before it.
-dose_cycle_index <- function(x, tau, offsets = 0) {
+dose_cycles <- function(x, tau, offsets = 0) {
   since_first <- x - x[1]
   phase <- since_first %% tau
   distance <- abs(outer(phase, offsets, "-"))
   distance <- pmin(distance, tau - distance)
-  nearest <- max.col(-distance, ties.method = "first")
-  round((since_first - offsets[nearest]) / tau)
+  position <- max.col(-distance, ties.method = "first")
+  list(index = round((since_first - offsets[position]) / tau), position = position)
+}
+
+# Do the doses of one cycle fit it?  Each must be at its own place in the
+# period (two doses at one place are less than a period apart, so they are not
+# one cycle), a complete cycle fills every place, and no other dose may come
+# after the cycle starts.  `in_cycle` marks the cycle's doses among `x`.
+cycle_doses_fit <- function(x, in_cycle, position, n_offsets, complete) {
+  places <- position[in_cycle]
+  filled <- if (complete) length(places) == n_offsets else length(places) <= n_offsets
+  start <- min(x[in_cycle])
+  later_other <- !in_cycle & x > start & !time_same(x, start)
+  anyDuplicated(places) == 0 && filled && !any(later_other)
 }
 
 # The dose that starts the last dosing cycle.
@@ -64,9 +77,17 @@ dose_cycle_index <- function(x, tau, offsets = 0) {
 # last `tau` of the record:  twice-daily doses ending at 106 hours have their
 # last cycle running from 96 to 120 hours, and an interval from 106 to 130
 # would contain the unrecorded dose at 120.
+#
+# When the doses of the last cycle do not fit it (see cycle_doses_fit()), such
+# as two doses less than a period apart, the last dose starts the last cycle,
+# so the interval after it never contains a recorded dose.
 last_cycle_start <- function(x, tau, offsets = 0) {
-  index <- dose_cycle_index(x, tau, offsets)
-  min(x[index == max(index)])
+  cycles <- dose_cycles(x, tau, offsets)
+  last <- cycles$index == max(cycles$index)
+  if (!cycle_doses_fit(x, last, cycles$position, length(offsets), complete = FALSE)) {
+    return(max(x))
+  }
+  min(x[last])
 }
 
 # How far the spacing from one cycle to the next may be from the period for the
@@ -667,10 +688,12 @@ interval_last_dose <- function(time.conc, time.dosing, cycle_doses, tau, offsets
   list(pieces = pieces, no_tau = no_tau)
 }
 
-# Is a dose followed by at least `dense.samples` samples within one `tau`?  The
-# nominal sample times are counted when there are any, from the dose's nominal
-# time when it has one, so that a sample drawn a little late is still counted
-# where it was scheduled; otherwise the actual sample times are counted.
+# Is a dose followed by at least `dense.samples` samples within one `tau`?  Each
+# sample counts by its nominal time when it has one, from the dose's nominal
+# time when that is given, so that a sample drawn a little late is still
+# counted where it was scheduled; a sample without a nominal time counts by its
+# actual time from the actual dose time.  Samples at the same time since the
+# dose count once.
 interval_dense_after_dose <- function(dose, dose_nominal, tau, samples, dense.samples) {
   by_nominal <- !is.na(samples$nominal)
   reference <- if (is.null(dose_nominal) || is.na(dose_nominal)) dose else dose_nominal
@@ -682,27 +705,30 @@ interval_dense_after_dose <- function(dose, dose_nominal, tau, samples, dense.sa
   sum(inside) >= dense.samples
 }
 
-# Check a nominal time vector given to choose.auc.intervals(), when it is used
-interval_check_nominal <- function(nominal, n_expected, name) {
-  if (is.null(nominal)) {
+# Check a vector given to choose.auc.intervals() for judging dense sampling,
+# when it is used:  numeric, with one value for each time
+interval_check_input <- function(x, n_expected, name, description, class_stem) {
+  if (is.null(x)) {
     return(invisible(NULL))
   }
-  if (!is.numeric(nominal)) {
+  # checkmate counts a vector of only missing values as numeric, as an all-NA
+  # column read from a file often is logical
+  if (!checkmate::test_numeric(x)) {
     rlang::abort(
       sprintf(
-        "`%s` (the `time.nominal` column, from PKNCAdata()) must be numeric to judge dense sampling after a change of regimen; it is %s",
-        name, class(nominal)[1]
+        "`%s` (%s) must be numeric to judge dense sampling after a change of regimen; it is %s",
+        name, description, class(x)[1]
       ),
-      class = "pknca_error_intervals_nominal_type"
+      class = paste0(class_stem, "_type")
     )
   }
-  if (length(nominal) != n_expected) {
+  if (length(x) != n_expected) {
     rlang::abort(
       sprintf(
         "`%s` must have one value for each time (%d), not %d",
-        name, n_expected, length(nominal)
+        name, n_expected, length(x)
       ),
-      class = "pknca_error_intervals_nominal_length"
+      class = paste0(class_stem, "_length")
     )
   }
   invisible(NULL)
@@ -745,13 +771,28 @@ interval_dose_nominal_restarts <- function(actual, nominal) {
 # warning only the actual times are used.
 interval_density_inputs <- function(samples_given, time_dosing_given, time_dosing_nominal) {
   n_sample <- length(samples_given$time)
-  interval_check_nominal(samples_given$nominal, n_sample, "time.conc.nominal")
-  interval_check_nominal(time_dosing_nominal, length(time_dosing_given), "time.dosing.nominal")
-  checkmate::assert_numeric(samples_given$conc, len = n_sample, null.ok = TRUE, .var.name = "conc")
+  interval_check_input(
+    samples_given$nominal, n_sample, "time.conc.nominal",
+    "the time.nominal column of PKNCAconc(), from PKNCAdata()",
+    "pknca_error_intervals_nominal"
+  )
+  interval_check_input(
+    time_dosing_nominal, length(time_dosing_given), "time.dosing.nominal",
+    "the time.nominal column of PKNCAdose(), from PKNCAdata()",
+    "pknca_error_intervals_nominal"
+  )
+  interval_check_input(
+    samples_given$conc, n_sample, "conc", "the concentrations",
+    "pknca_error_intervals_conc"
+  )
   usable <- if (is.null(samples_given$conc)) rep(TRUE, n_sample) else !is.na(samples_given$conc)
   sample_nominal <-
-    if (is.null(samples_given$nominal)) rep(NA_real_, n_sample) else samples_given$nominal
-  dose_nominal <- interval_dose_times(time_dosing_given, time_dosing_nominal)$nominal
+    if (is.null(samples_given$nominal)) rep(NA_real_, n_sample) else as.numeric(samples_given$nominal)
+  dose_nominal <-
+    interval_dose_times(
+      time_dosing_given,
+      if (is.null(time_dosing_nominal)) NULL else as.numeric(time_dosing_nominal)
+    )$nominal
   doses <- interval_dose_times(time_dosing_given)$time
   if (interval_nominal_restarts(samples_given$time, sample_nominal) ||
       (!is.null(dose_nominal) && interval_dose_nominal_restarts(doses, dose_nominal))) {
@@ -791,11 +832,14 @@ interval_segment_doses <- function(time.dosing, regimen, segment) {
 # a missed dose before the next segment leaves the gap to that segment without
 # a steady-state interval, and the cycle before the gap is used.
 interval_segment_cycle <- function(segment_doses, boundary, period, offsets) {
-  index <- dose_cycle_index(segment_doses, period, offsets)
+  cycles <- dose_cycles(segment_doses, period, offsets)
   following <- c(segment_doses, boundary)
-  for (cycle in sort(unique(index), decreasing = TRUE)) {
-    in_cycle <- segment_doses[index == cycle]
-    if (length(in_cycle) != length(offsets)) {
+  for (cycle in sort(unique(cycles$index), decreasing = TRUE)) {
+    member <- cycles$index == cycle
+    in_cycle <- segment_doses[member]
+    # A cycle before the last may have later doses after it, which are the
+    # cycles that follow it, so only its own places are checked
+    if (!cycle_doses_fit(in_cycle, rep(TRUE, length(in_cycle)), cycles$position[member], length(offsets), complete = TRUE)) {
       next
     }
     cycle_start <- min(in_cycle)

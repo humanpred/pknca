@@ -1446,3 +1446,81 @@ test_that("a segment's steady state is its last complete cycle", {
     c(start = 48, end = 72)
   )
 })
+
+# Does any interval with a finite end contain a recorded dose strictly inside?
+interval_contains_dose <- function(intervals, doses) {
+  for (row_index in which(is.finite(intervals$end))) {
+    start <- intervals$start[row_index]
+    end <- intervals$end[row_index]
+    if (any(doses > start & doses < end & !time_same(doses, start) & !time_same(doses, end))) {
+      return(TRUE)
+    }
+  }
+  FALSE
+}
+
+test_that("the last cycle never starts before a later dose at the same place", {
+  # Two doses less than a period apart at the same place in the regimen are not
+  # one cycle, so the last dose starts the last cycle
+  expect_equal(last_cycle_start(c(0, 9.09, 24.78, 31.92, 41, 46.94), 9.08), 46.94)
+  expect_equal(last_cycle_start(c(0, 7.03, 19.38, 29.89), 12), 29.89)
+  expect_equal(last_cycle_start(c(0, 24, 48, 70, 71), 24), 71)
+  expect_equal(last_cycle_start(c(0, 10, 24, 34, 48, 49), 24, offsets = c(0, 10)), 49)
+  # A cycle with its doses at their own places still starts at its first dose
+  expect_equal(last_cycle_start(c(0, 10, 24, 34, 48, 58, 72, 82, 96, 106), 24, offsets = c(0, 10)), 96)
+  expect_equal(last_cycle_start(c(0, 24.3, 47.8), 24), 47.8)
+  # The interval after the last dose then holds no recorded dose
+  doses <- c(0, 7.03, 19.38, 29.89)
+  conc <- sort(unique(c(doses, 0.5, 1, 2, 29.89 + c(0.5, 1, 2, 4, 8, 12, 24))))
+  ret <- suppressWarnings(choose.auc.intervals(conc, doses, timeu = NA))
+  expect_false(interval_contains_dose(ret, doses))
+})
+
+test_that("sparse data with a regimen change get no interval over a later dose", {
+  # Once daily to 120, then twice daily:  the sparse path uses the period of the
+  # segment with the most doses, and its last cycle starts at the last dose
+  doses <- c(seq(0, 120, by = 24), 132, 144, 156)
+  conc <- sort(unique(c(doses, 0.5, 1, 2, 4, 8, 156 + c(0.5, 1, 2, 4, 8, 12, 24, 36))))
+  warnings <- testthat::capture_warnings(ret <- choose.auc.intervals(conc, doses, sparse = TRUE))
+  expect_false(interval_contains_dose(ret, doses))
+  expect_equal(ret$start, c(0, 156, 156))
+  expect_equal(ret$end, c(24, 180, Inf))
+  expect_match(warnings, "^The dosing regimen changes within the dose times:")
+})
+
+test_that("an all-NA nominal column counts samples by their actual times", {
+  dense <- c(0.5, 1, 2, 4, 8)
+  doses <- c(0, 24, 48, 72, 84, 96, 108, 120)
+  times <- sort(unique(c(doses, dense, 48 + dense, 120 + c(dense, 12, 24, 36))))
+  d_conc <- data.frame(subject = 1, time = times, conc = exp(-0.1 * (times %% 12)) + 1, nominal = NA)
+  d_dose <- data.frame(subject = 1, time = doses, dose = 1)
+  ret_na <-
+    suppressWarnings(PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject, time.nominal = "nominal"),
+      PKNCAdose(d_dose, dose~time|subject)
+    ))
+  ret_none <-
+    suppressWarnings(PKNCAdata(PKNCAconc(d_conc, conc~time|subject), PKNCAdose(d_dose, dose~time|subject)))
+  expect_equal(ret_na$intervals, ret_none$intervals)
+  expect_equal(ret_na$intervals$start, c(0, 48, 120, 120))
+})
+
+test_that("concentrations given for dense sampling are checked when used", {
+  doses <- c(0, 24, 48, 72, 84, 96, 108, 120)
+  conc <- sort(unique(c(doses, 0.5, 1, 2, 120 + c(0.5, 1, 2, 12))))
+  expect_error(
+    choose.auc.intervals(conc, doses, conc = 1:2),
+    regexp = "`conc` must have one value for each time",
+    class = "pknca_error_intervals_conc_length"
+  )
+  expect_error(
+    choose.auc.intervals(conc, doses, conc = rep("1", length(conc))),
+    regexp = "`conc` \\(the concentrations\\) must be numeric",
+    class = "pknca_error_intervals_conc_type"
+  )
+  # A single regimen does not use them
+  expect_equal(
+    choose.auc.intervals(c(0, 1, 2, 24), c(0, 24, 48), conc = "not used"),
+    choose.auc.intervals(c(0, 1, 2, 24), c(0, 24, 48))
+  )
+})
