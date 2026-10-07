@@ -111,7 +111,14 @@ are not excluded.  When the concentration data have a nominal time
 (\code{time.nominal} in \code{\link[=PKNCAconc]{PKNCAconc()}}), the samples are placed by their
 nominal time minus the interval start, so the nominal times must share
 the origin of the interval times (for example, the nominal time since the
-first dose); otherwise, they are placed by their actual time.  Times are
+first dose); otherwise, they are placed by their actual time.  The
+Tmax values are placed the same way:  with nominal times, a subject's
+Tmax is the nominal time of the sample it was found at, so an offset
+between the actual and nominal times moves the fences and the samples
+together.  A subject whose Tmax sample has no nominal time does not enter
+the fences, and a subject whose samples in the interval have no nominal
+time at all is not judged, with a
+\code{pknca_message_tmax_coverage_no_nominal_subject} message.  Times are
 never converted between units, and the time unit is only used in the
 text.
 \itemize{
@@ -132,8 +139,8 @@ message that Cmax and Tmax may be unreliable.  Its fields are \code{group},
 \code{\link[=pknca_missing_samples]{pknca_missing_samples()}}).  Without nominal times, there is no
 schedule to compare with, and no message is given.
 \item The warnings and messages can be caught with \code{\link[=withCallingHandlers]{withCallingHandlers()}}.
-\item A group with fewer than \code{min_subjects} subjects with a Tmax (one subject,
-for example) is not checked, and a
+\item A group with fewer than \code{min_subjects} subjects with a Tmax on the
+basis of the fences (one subject, for example) is not checked, and a
 \code{pknca_message_tmax_coverage_few_subjects} message says so once per
 group.  Quartiles of fewer than four values describe the spread of the
 group poorly.
@@ -142,8 +149,9 @@ checked, and a \code{pknca_warning_tmax_coverage_no_nominal} warning says so
 once per group.  They disagree when no nominal time of the group is
 after the interval start, when most samples of the group with an
 actual time in the interval have a nominal time outside it, or when a
-subject's nominal times decrease while its actual times increase within
-the interval, as when the nominal times restart at each dose.
+subject's nominal times go back to the start of its schedule while its
+actual times increase within the interval, as when the nominal times
+restart at each dose.
 \item Sparse data have one Tmax per group, from the mean profile, so they are
 not checked, and a \code{pknca_message_tmax_coverage_sparse} message says so
 once per call to \code{\link[=exclude]{exclude()}}.

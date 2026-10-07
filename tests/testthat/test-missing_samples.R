@@ -133,7 +133,7 @@ test_that("pknca_missing_samples does not report groups whose nominal times rest
   o_conc <- PKNCAconc(d_restart, conc ~ time | subject, time.nominal = "time_nominal")
   expect_warning(
     result <- pknca_missing_samples(o_conc),
-    regexp = "Missing samples are not reported for the data:  the nominal times of 3 subject(s) decrease while the actual times increase, as when the nominal times restart at each dose",
+    regexp = "Missing samples are not reported for the data:  the nominal times of 3 subject(s) go back to the start of the schedule while the actual times increase, as when the nominal times restart at each dose",
     fixed = TRUE,
     class = "pknca_warning_missing_samples_nominal_restart"
   )

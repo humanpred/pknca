@@ -28,9 +28,11 @@
 #' The nominal times must share one origin for each subject (for example, the
 #' time since the first dose).  Nominal times that restart at each dose repeat
 #' for each dose, so one dose's samples would fill another dose's missing
-#' times.  They are found when a subject's nominal times decrease while its
-#' actual times increase; the groups with such a subject are not reported, and
-#' a `pknca_warning_missing_samples_nominal_restart` warning names them.
+#' times.  They are found when a subject's nominal times go back to the
+#' start of its schedule (its first nominal time after zero, or earlier) while
+#' its actual times increase; two samples drawn out of order are not a
+#' restart.  The groups with such a subject are not reported, and a
+#' `pknca_warning_missing_samples_nominal_restart` warning names them.
 #'
 #' Sparse data (see the `sparse` argument of [PKNCAconc()]) have no schedule
 #' that each subject follows:  each subject gives a few of the group's
@@ -108,7 +110,7 @@ pknca_missing_samples <- function(object) {
     rownames(skipped_groups) <- NULL
     rlang::warn(
       sprintf(
-        "Missing samples are not reported for %s:  the nominal times of %d subject(s) decrease while the actual times increase, as when the nominal times restart at each dose",
+        "Missing samples are not reported for %s:  the nominal times of %d subject(s) go back to the start of the schedule while the actual times increase, as when the nominal times restart at each dose",
         if (length(group_cols) == 0) "the data" else paste(name_value_text(skipped_groups), collapse = "; "),
         length(restarts)
       ),
@@ -215,19 +217,23 @@ pknca_semi_join <- function(x, y, by) {
   }
 }
 
-#' The subjects whose nominal times decrease while their actual times increase
+#' The subjects whose nominal times restart while their actual times increase
 #'
 #' With one origin for a subject's nominal times (for example, the time since
 #' the first dose), the nominal times never decrease as the actual times
-#' increase; nominal times that restart at each dose do.  Repeated samples at
-#' one nominal time are allowed.  Only the order of the times is used, so the
-#' times may be in any unit (or date-times).
+#' increase; nominal times that restart at each dose go back to the beginning
+#' of the subject's schedule.  A decrease is a restart when the later nominal
+#' time is at or before the subject's first scheduled time after zero (its
+#' smallest positive nominal time, or its smallest nominal time when none is
+#' positive).  A smaller decrease, such as two samples drawn out of order, is
+#' not.  Repeated samples at one nominal time are allowed.  Only the order of
+#' the times is used, so the times may be in any unit (or date-times).
 #'
 #' @param data The concentration data
 #' @param id_cols The columns that identify a subject (the grouping columns)
 #' @param actual_col,nominal_col The actual and nominal time columns
 #' @returns The keys (see `pknca_interval_group_key()`) of the subjects whose
-#'   nominal times decrease
+#'   nominal times restart
 #' @keywords Internal
 #' @noRd
 pknca_nominal_restart_keys <- function(data, id_cols, actual_col, nominal_col) {
@@ -247,6 +253,23 @@ pknca_nominal_restart_keys <- function(data, id_cols, actual_col, nominal_col) {
   if (n < 2) {
     return(character())
   }
-  decrease <- key[-1] == key[-n] & nominal[-1] < nominal[-n]
-  unique(key[-1][decrease])
+  schedule_starts <- tapply(nominal, key, FUN = pknca_first_positive)
+  # match(), since indexing by name cannot find the empty key of data without
+  # subject columns
+  schedule_start <- as.vector(schedule_starts)[match(key, names(schedule_starts))]
+  restart <-
+    key[-1] == key[-n] &
+    nominal[-1] < nominal[-n] &
+    nominal[-1] <= schedule_start[-1]
+  unique(key[-1][restart])
+}
+
+#' The smallest positive value, or the smallest value when none is positive
+#'
+#' @param x A numeric vector without missing values
+#' @returns A number
+#' @keywords Internal
+#' @noRd
+pknca_first_positive <- function(x) {
+  if (any(x > 0)) min(x[x > 0]) else min(x)
 }

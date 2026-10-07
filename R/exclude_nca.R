@@ -33,7 +33,14 @@
 #'   (`time.nominal` in [PKNCAconc()]), the samples are placed by their
 #'   nominal time minus the interval start, so the nominal times must share
 #'   the origin of the interval times (for example, the nominal time since the
-#'   first dose); otherwise, they are placed by their actual time.  Times are
+#'   first dose); otherwise, they are placed by their actual time.  The
+#'   Tmax values are placed the same way:  with nominal times, a subject's
+#'   Tmax is the nominal time of the sample it was found at, so an offset
+#'   between the actual and nominal times moves the fences and the samples
+#'   together.  A subject whose Tmax sample has no nominal time does not enter
+#'   the fences, and a subject whose samples in the interval have no nominal
+#'   time at all is not judged, with a
+#'   `pknca_message_tmax_coverage_no_nominal_subject` message.  Times are
 #'   never converted between units, and the time unit is only used in the
 #'   text.
 #'
@@ -54,8 +61,8 @@
 #'     [pknca_missing_samples()]).  Without nominal times, there is no
 #'     schedule to compare with, and no message is given.
 #'   * The warnings and messages can be caught with [withCallingHandlers()].
-#'   * A group with fewer than `min_subjects` subjects with a Tmax (one subject,
-#'     for example) is not checked, and a
+#'   * A group with fewer than `min_subjects` subjects with a Tmax on the
+#'     basis of the fences (one subject, for example) is not checked, and a
 #'     `pknca_message_tmax_coverage_few_subjects` message says so once per
 #'     group.  Quartiles of fewer than four values describe the spread of the
 #'     group poorly.
@@ -64,8 +71,9 @@
 #'     once per group.  They disagree when no nominal time of the group is
 #'     after the interval start, when most samples of the group with an
 #'     actual time in the interval have a nominal time outside it, or when a
-#'     subject's nominal times decrease while its actual times increase within
-#'     the interval, as when the nominal times restart at each dose.
+#'     subject's nominal times go back to the start of its schedule while its
+#'     actual times increase within the interval, as when the nominal times
+#'     restart at each dose.
 #'   * Sparse data have one Tmax per group, from the mean profile, so they are
 #'     not checked, and a `pknca_message_tmax_coverage_sparse` message says so
 #'     once per call to [exclude()].
@@ -517,56 +525,60 @@ exclude_nca_tmax_coverage_subject <- function(x, object, settings, affected_para
 #' @keywords Internal
 #' @noRd
 exclude_nca_tmax_coverage_prepare <- function(object, cache) {
-  rm(list = ls(cache), envir = cache)
-  cache$object <- object
-  cache$seen <- new.env(parent = emptyenv())
-  cache$groups <- list()
+  # The inputs are built here and put into the cache together, so an error
+  # partway through leaves the cache as it was (and it is prepared again on
+  # the next call, since its object differs)
+  prepared <- list(object = object, seen = new.env(parent = emptyenv()), groups = list())
   o_conc <- as_PKNCAconc(object)
-  cache$sparse <- is_sparse_pk(object)
+  prepared$sparse <- is_sparse_pk(object)
   # The groups that exclude() calls the rule with (see exclude.default())
-  cache$call_cols <-
+  prepared$call_cols <-
     unique(c(names(getGroups(object)), intersect(names(object$result), c("start", "end"))))
-  if (cache$sparse) {
+  if (prepared$sparse) {
+    rm(list = ls(cache), envir = cache)
+    list2env(prepared, envir = cache)
     rlang::inform(
       "Tmax coverage is not checked for sparse data:  each group has one Tmax, from its mean profile",
       class = "pknca_message_tmax_coverage_sparse"
     )
     return(invisible(NULL))
   }
-  cache$subject_col <- o_conc$columns$subject
-  cache$conc_group_cols <- group_vars(o_conc)
-  cache$conc_peer_cols <- setdiff(cache$conc_group_cols, cache$subject_col)
-  cache$summary_group_cols <- get_summary_PKNCAresults_drop_group(object = object, drop_group = cache$subject_col)
+  prepared$subject_col <- o_conc$columns$subject
+  prepared$conc_group_cols <- group_vars(o_conc)
+  prepared$conc_peer_cols <- setdiff(prepared$conc_group_cols, prepared$subject_col)
+  prepared$summary_group_cols <- get_summary_PKNCAresults_drop_group(object = object, drop_group = prepared$subject_col)
 
   all_tmax <- object$result[object$result$PPTESTCD == "tmax", , drop = FALSE]
   all_tmax <- all_tmax[!is.na(all_tmax$PPORRES) & all_tmax[[object$columns$exclude]] %in% c(NA, ""), , drop = FALSE]
-  cache$all_tmax <- all_tmax
-  cache$all_tmax_key <- pknca_interval_group_key(all_tmax, cache$summary_group_cols)
+  prepared$all_tmax <- all_tmax
+  prepared$all_tmax_key <- pknca_interval_group_key(all_tmax, prepared$summary_group_cols)
 
   conc_data <- as.data.frame(o_conc)
-  cache$conc_data <- conc_data
-  cache$conc_excluded <- !is.na(normalize_exclude(o_conc))
-  cache$conc_peer_key <- pknca_interval_group_key(conc_data, cache$conc_peer_cols)
-  cache$conc_col <- o_conc$columns$concentration
-  cache$actual_col <- o_conc$columns$time
-  cache$nominal_col <- o_conc$columns$time.nominal
-  cache$use_nominal <- !is.null(cache$nominal_col)
-  cache$time_col <- if (cache$use_nominal) cache$nominal_col else cache$actual_col
-  cache$time_type <- if (cache$use_nominal) "nominal" else "actual"
+  prepared$conc_data <- conc_data
+  prepared$conc_excluded <- !is.na(normalize_exclude(o_conc))
+  prepared$conc_peer_key <- pknca_interval_group_key(conc_data, prepared$conc_peer_cols)
+  prepared$conc_col <- o_conc$columns$concentration
+  prepared$actual_col <- o_conc$columns$time
+  prepared$nominal_col <- o_conc$columns$time.nominal
+  prepared$use_nominal <- !is.null(prepared$nominal_col)
+  prepared$time_col <- if (prepared$use_nominal) prepared$nominal_col else prepared$actual_col
+  prepared$time_type <- if (prepared$use_nominal) "nominal" else "actual"
   timeu <- pknca_cdisc_get_timeu_orig(object)
-  cache$unit_text <- if (is.na(timeu)) "" else paste0(" ", timeu)
+  prepared$unit_text <- if (is.na(timeu)) "" else paste0(" ", timeu)
 
   # The doses, to find each subject's route at the interval start
   o_dose <- as_PKNCAdose(object)
-  cache$has_dose <- !identical(o_dose, NA) && length(o_dose$columns$time) == 1
-  if (cache$has_dose) {
+  prepared$has_dose <- !identical(o_dose, NA) && length(o_dose$columns$time) == 1
+  if (prepared$has_dose) {
     dose_data <- as.data.frame(o_dose)
-    cache$dose_key_cols <- intersect(unlist(o_dose$columns$groups), cache$conc_group_cols)
-    cache$dose_key <- pknca_interval_group_key(dose_data, cache$dose_key_cols)
-    cache$dose_time <- dose_data[[o_dose$columns$time]]
-    cache$dose_route <- getAttributeColumn(o_dose, attr_name = "route", warn_missing = character())[[1]]
-    cache$dose_duration <- getAttributeColumn(o_dose, attr_name = "duration", warn_missing = character())[[1]]
+    prepared$dose_key_cols <- intersect(unlist(o_dose$columns$groups), prepared$conc_group_cols)
+    prepared$dose_key <- pknca_interval_group_key(dose_data, prepared$dose_key_cols)
+    prepared$dose_time <- dose_data[[o_dose$columns$time]]
+    prepared$dose_route <- getAttributeColumn(o_dose, attr_name = "route", warn_missing = character())[[1]]
+    prepared$dose_duration <- getAttributeColumn(o_dose, attr_name = "duration", warn_missing = character())[[1]]
   }
+  rm(list = ls(cache), envir = cache)
+  list2env(prepared, envir = cache)
   invisible(NULL)
 }
 
@@ -619,30 +631,16 @@ exclude_nca_tmax_coverage_group <- function(current, group_key, settings, cache)
   peers <- cache$all_tmax[cache$all_tmax_key == group_key, , drop = FALSE]
   group_text <- name_value_text(current[, cache$summary_group_cols, drop = FALSE])
   unit_text <- cache$unit_text
-  if (nrow(peers) < settings$min_subjects) {
-    rlang::inform(
-      sprintf(
-        "Tmax coverage is not checked for %s:  %d subject(s) have a Tmax, fewer than the %d needed (min_subjects)",
-        group_text, nrow(peers), settings$min_subjects
-      ),
-      class = "pknca_message_tmax_coverage_few_subjects"
-    )
-    return(list())
-  }
-  # Type 7 is the default of stats::quantile(); with few subjects, the types
-  # give different quartiles, so it is fixed here and in the documentation
-  quartiles <- stats::quantile(peers$PPORRES, probs = c(0.25, 0.75), names = FALSE, type = 7)
-  iqr <- quartiles[2] - quartiles[1]
-  # Samples before the interval start are not in the interval, so the ranges
-  # start at the interval start at the earliest
-  inner_range <- c(max(quartiles[1] - settings$k_warn * iqr, 0), quartiles[2] + settings$k_warn * iqr)
-  outer_range <- c(max(quartiles[1] - settings$k_exclude * iqr, 0), quartiles[2] + settings$k_exclude * iqr)
-  # Times relative to the interval start are differences, which can differ
-  # from the Tmax values in the last bits
-  tolerance <- sqrt(.Machine$double.eps) * max(1, abs(outer_range))
-
   start <- current$start
   end <- current$end
+  # Times relative to the interval start are differences, which can differ
+  # from the Tmax values in the last bits
+  time_scale <- c(1, abs(start), abs(peers$PPORRES))
+  if (is.finite(end)) {
+    time_scale <- c(time_scale, abs(end))
+  }
+  tolerance <- sqrt(.Machine$double.eps) * max(time_scale)
+
   time_col <- cache$time_col
   conc_data <- cache$conc_data
   peer_key <- pknca_interval_group_key(current, cache$conc_peer_cols)
@@ -671,6 +669,45 @@ exclude_nca_tmax_coverage_group <- function(current, group_key, settings, cache)
   group_conc <- conc_data[in_interval, , drop = FALSE]
   group_excluded <- cache$conc_excluded[in_interval]
   subject_rows <- split(seq_len(nrow(group_conc)), pknca_interval_group_key(group_conc, cache$conc_group_cols))
+
+  # Each subject's samples and Tmax, placed on one basis:  the nominal times
+  # when there are any, and the actual times otherwise
+  peer_subject_key <- pknca_interval_group_key(peers, cache$conc_group_cols)
+  subjects <- vector(mode = "list", length = nrow(peers))
+  for (idx_peer in seq_len(nrow(peers))) {
+    rows <- subject_rows[[peer_subject_key[idx_peer]]]
+    if (is.null(rows)) rows <- integer()
+    rows <- rows[!is.na(group_conc[[cache$conc_col]][rows]) & !group_excluded[rows]]
+    subjects[[idx_peer]] <-
+      exclude_nca_tmax_coverage_subject_samples(
+        sample_conc = group_conc[rows, , drop = FALSE],
+        tmax = peers$PPORRES[idx_peer],
+        start = start,
+        tolerance = tolerance,
+        start_counts = exclude_nca_tmax_coverage_start_counts(subject = peers[idx_peer, , drop = FALSE], start = start, tolerance = tolerance, cache = cache),
+        cache = cache
+      )
+  }
+  tmax_position <- vapply(X = subjects, FUN = "[[", "tmax_position", FUN.VALUE = 1)
+  tmax_position <- tmax_position[!is.na(tmax_position)]
+  if (length(tmax_position) < settings$min_subjects) {
+    rlang::inform(
+      sprintf(
+        "Tmax coverage is not checked for %s:  %d subject(s) have a Tmax, fewer than the %d needed (min_subjects)",
+        group_text, length(tmax_position), settings$min_subjects
+      ),
+      class = "pknca_message_tmax_coverage_few_subjects"
+    )
+    return(list())
+  }
+  # Type 7 is the default of stats::quantile(); with few subjects, the types
+  # give different quartiles, so it is fixed here and in the documentation
+  quartiles <- stats::quantile(tmax_position, probs = c(0.25, 0.75), names = FALSE, type = 7)
+  iqr <- quartiles[2] - quartiles[1]
+  # Samples before the interval start are not in the interval, so the ranges
+  # start at the interval start at the earliest
+  inner_range <- c(max(quartiles[1] - settings$k_warn * iqr, 0), quartiles[2] + settings$k_warn * iqr)
+  outer_range <- c(max(quartiles[1] - settings$k_exclude * iqr, 0), quartiles[2] + settings$k_exclude * iqr)
   inner_text <-
     sprintf("%s time %g to %g%s after the interval start", cache$time_type, inner_range[1], inner_range[2], unit_text)
   outer_text <-
@@ -690,33 +727,38 @@ exclude_nca_tmax_coverage_group <- function(current, group_key, settings, cache)
     status_rows <- split(seq_len(nrow(status)), pknca_interval_group_key(status, cache$conc_group_cols))
   }
 
-  peer_subject_key <- pknca_interval_group_key(peers, cache$conc_group_cols)
   ret <- list()
   for (idx_peer in seq_len(nrow(peers))) {
     current_key <- peer_subject_key[idx_peer]
     subject_group <- as.data.frame(peers[idx_peer, unique(c(cache$summary_group_cols, cache$subject_col)), drop = FALSE])
     rownames(subject_group) <- NULL
-    start_counts <- exclude_nca_tmax_coverage_start_counts(subject = peers[idx_peer, , drop = FALSE], start = start, tolerance = tolerance, cache = cache)
-    rows <- subject_rows[[current_key]]
-    if (is.null(rows)) rows <- integer()
-    usable <- !is.na(group_conc[[cache$conc_col]][rows]) & !group_excluded[rows]
-    position <- group_conc[[time_col]][rows][usable] - start
-    # Unscheduled samples have no nominal time to place them by
-    position <- position[!is.na(position)]
-    if (!start_counts) {
-      position <- position[position > tolerance]
-    }
-    nearest <- exclude_nca_tmax_coverage_nearest(position, outer_range)
-    nearest_text <-
-      if (length(position) == 0 && !start_counts) {
-        "no sample after the interval start"
-      } else if (length(position) == 0) {
-        "no sample in the interval"
-      } else {
-        sprintf("nearest sample at %g%s", nearest, unit_text)
-      }
+    current_subject <- subjects[[idx_peer]]
+    position <- current_subject$position
+    start_counts <- current_subject$start_counts
     verdict <- list(reason = NULL, warning = NULL, message = NULL)
+    if (current_subject$no_nominal) {
+      verdict$message <-
+        list(
+          message =
+            sprintf(
+              "Tmax coverage is not checked for %s:  its samples in the interval have no nominal time",
+              name_value_text(subject_group)
+            ),
+          class = "pknca_message_tmax_coverage_no_nominal_subject",
+          group = subject_group
+        )
+      ret[[current_key]] <- verdict
+      next
+    }
     if (!any(exclude_nca_tmax_in_range(position, tmax_range = outer_range, start_counts = start_counts, tolerance = tolerance))) {
+      nearest_text <-
+        if (length(position) == 0 && !start_counts) {
+          "no sample after the interval start"
+        } else if (length(position) == 0) {
+          "no sample in the interval"
+        } else {
+          sprintf("nearest sample at %g%s", exclude_nca_tmax_coverage_nearest(position, outer_range), unit_text)
+        }
       verdict$reason <- sprintf("no sample in the outer Tmax range of the group (%s, %s)", outer_text, nearest_text)
     } else if (!any(exclude_nca_tmax_in_range(position, tmax_range = inner_range, start_counts = start_counts, tolerance = tolerance))) {
       nearest_inner <- exclude_nca_tmax_coverage_nearest(position, inner_range)
@@ -762,6 +804,55 @@ exclude_nca_tmax_coverage_group <- function(current, group_key, settings, cache)
   ret
 }
 
+#' A subject's usable samples and Tmax, placed relative to the interval start
+#'
+#' With nominal times, the samples are placed by their nominal times, and the
+#' Tmax by the nominal time of the sample it was found at (the usable sample
+#' whose actual time is the interval start plus the Tmax; the first of them,
+#' and the one with the highest concentration, when there are several).  The
+#' fences and the samples are then on one basis, so an offset between the
+#' actual and nominal times does not move one against the other.  Without
+#' nominal times, both are actual times.
+#'
+#' @param sample_conc The subject's usable concentration rows in the interval
+#' @param tmax The subject's Tmax (relative to the interval start)
+#' @param start The interval start
+#' @param tolerance The tolerance for comparing times
+#' @param start_counts Does a sample at the interval start count (see
+#'   `exclude_nca_tmax_coverage_start_counts()`)?
+#' @inheritParams exclude_nca_tmax_coverage_subject
+#' @returns A list with `position` (the sample times that count), `tmax_position`
+#'   (the Tmax on the same basis, `NA` when its sample has no nominal time),
+#'   `start_counts`, and `no_nominal` (does the subject have usable samples but
+#'   none with a nominal time?)
+#' @keywords Internal
+#' @noRd
+exclude_nca_tmax_coverage_subject_samples <- function(sample_conc, tmax, start, tolerance, start_counts, cache) {
+  ret <- list(position = numeric(), tmax_position = tmax, start_counts = start_counts, no_nominal = FALSE)
+  if (cache$use_nominal) {
+    nominal <- sample_conc[[cache$nominal_col]]
+    ret$no_nominal <- nrow(sample_conc) > 0 && all(is.na(nominal))
+    at_tmax <- which(abs(sample_conc[[cache$actual_col]] - (start + tmax)) <= tolerance)
+    ret$tmax_position <-
+      if (length(at_tmax) == 0) {
+        NA_real_
+      } else {
+        at_tmax <- at_tmax[which.max(sample_conc[[cache$conc_col]][at_tmax])]
+        nominal[at_tmax] - start
+      }
+    position <- nominal - start
+  } else {
+    position <- sample_conc[[cache$actual_col]] - start
+  }
+  # Unscheduled samples have no nominal time to place them by
+  position <- position[!is.na(position)]
+  if (!start_counts) {
+    position <- position[position > tolerance]
+  }
+  ret$position <- position
+  ret
+}
+
 #' The sample time nearest to a range
 #'
 #' @param position Sample times relative to the interval start
@@ -785,7 +876,7 @@ exclude_nca_tmax_coverage_nearest <- function(position, tmax_range) {
 #' instead (restarting at every dose) disagree:  most samples whose actual time
 #' is after the interval start then have a nominal time outside the interval,
 #' no nominal time of the group is after the interval start at all, or, for an
-#' interval with more than one dose, a subject's nominal times decrease while
+#' interval with more than one dose, a subject's nominal times restart while
 #' its actual times increase (see `pknca_nominal_restart_keys()`).
 #'
 #' @param is_group A logical vector:  is the concentration row in the group?
@@ -827,7 +918,7 @@ exclude_nca_tmax_coverage_nominal_mismatch <- function(cache, is_group, in_inter
   if (length(restarts) > 0) {
     return(
       sprintf(
-        "the nominal times of %d subject(s) decrease while the actual times increase within the interval",
+        "the nominal times of %d subject(s) go back to the start of the schedule while the actual times increase within the interval",
         length(restarts)
       )
     )

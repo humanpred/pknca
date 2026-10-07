@@ -331,8 +331,48 @@ test_that("a missing group value is its own group for an exclusion function", {
   )
 })
 
-# The exclusion text each group of a PKNCAresults object gets when every group
-# (the groups of the results with start and end) is given to FUN on its own
+# NCA results with several groups and intervals, used to compare exclude()
+# with other ways of applying the rules.  Six subjects in each of two
+# treatments, with nominal times; in treatment 1, subject 1 has only its 0- and
+# 24-hour samples, so its Tmax is 24 hours, which the Tmax-coverage rule
+# excludes, and it has too few measured concentrations for its AUC.
+exclude_rules_multi_group_nca <- function() {
+  my_conc <- generate.conc(nsub = 6, ntreat = 2, time.points = c(0, 0.5, 1, 2, 4, 8, 12, 24))
+  my_dose <- generate.dose(my_conc)
+  my_conc$time_nominal <- my_conc$time
+  my_conc <- my_conc[!(my_conc$treatment == "Trt 1" & my_conc$ID == 1 & my_conc$time > 0 & my_conc$time < 24), ]
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(my_conc, conc ~ time | treatment + ID, time.nominal = "time_nominal"),
+      PKNCAdose(my_dose, dose ~ time | treatment + ID),
+      intervals =
+        rbind(
+          data.frame(start = 0, end = 24, cmax = TRUE, tmax = TRUE, auclast = TRUE, half.life = FALSE, aucinf.obs = FALSE),
+          data.frame(start = 0, end = Inf, cmax = FALSE, tmax = FALSE, auclast = FALSE, half.life = TRUE, aucinf.obs = TRUE)
+        )
+    )
+  suppressWarnings(suppressMessages(pk.nca(o_data)))
+}
+
+# The arguments of the rules that need them, or that need them to exclude
+# something in exclude_rules_multi_group_nca()
+exclude_rules_multi_group_arguments <- function() {
+  list(
+    exclude_nca_by_param = list(parameter = "cmax", max_thr = 0.9, affected_parameters = c("cmax", "tmax")),
+    exclude_nca_count_conc_measured = list(min_count = 3),
+    exclude_nca_span.ratio = list(min.span.ratio = 4),
+    exclude_nca_tmax_early = list(tmax_early = 3)
+  )
+}
+
+# The rules that exclude rows of exclude_rules_multi_group_nca() with the
+# arguments of exclude_rules_multi_group_arguments()
+exclude_rules_multi_group_triggered <- function() {
+  c("exclude_nca_count_conc_measured", "exclude_nca_tmax_coverage", "exclude_nca_tmax_early")
+}
+
+# The exclude column of a PKNCAresults object after every group (the groups of
+# the results with start and end) is given to FUN on its own
 exclude_by_group_oracle <- function(object, FUN) {
   data <- object$result
   groupnames <- unique(c(names(getGroups(object)), "start", "end"))
@@ -342,41 +382,27 @@ exclude_by_group_oracle <- function(object, FUN) {
     idx <- which(key == current_key)
     ret[idx] <- FUN(data[idx, , drop = FALSE], object)
   }
-  ret
+  # A new reason is added to an earlier one with "; "
+  orig <- data[[object$columns$exclude]]
+  has_orig <- !(orig %in% c(NA, ""))
+  ifelse(is.na(ret), orig, ifelse(has_orig, paste(orig, ret, sep = "; "), ret))
 }
 
 test_that("every exclusion rule gives the same result as applying it to each group on its own", {
-  my_conc <- generate.conc(nsub = 3, ntreat = 2, time.points = c(0, 0.5, 1, 2, 4, 8, 12, 24))
-  my_dose <- generate.dose(my_conc)
-  o_data <-
-    PKNCAdata(
-      PKNCAconc(my_conc, conc ~ time | treatment + ID),
-      PKNCAdose(my_dose, dose ~ time | treatment + ID),
-      intervals =
-        rbind(
-          data.frame(start = 0, end = 24, cmax = TRUE, tmax = TRUE, auclast = TRUE, half.life = FALSE, aucinf.obs = FALSE),
-          data.frame(start = 0, end = Inf, cmax = FALSE, tmax = FALSE, auclast = FALSE, half.life = TRUE, aucinf.obs = TRUE)
-        )
-    )
-  o_nca <- suppressMessages(pk.nca(o_data))
-  arguments <-
-    list(
-      exclude_nca_by_param = list(parameter = "cmax", max_thr = 0.9, affected_parameters = c("cmax", "tmax")),
-      exclude_nca_count_conc_measured = list(min_count = 3),
-      exclude_nca_span.ratio = list(min.span.ratio = 4),
-      exclude_nca_tmax_early = list(tmax_early = 1.5)
-    )
-  any_excluded <- FALSE
+  o_nca <- exclude_rules_multi_group_nca()
+  arguments <- exclude_rules_multi_group_arguments()
   for (rule in names(get("exclude_rules", envir = .PKNCAEnv))) {
     rule_args <- if (is.null(arguments[[rule]])) list() else arguments[[rule]]
     rule_fun <- do.call(getExportedValue("PKNCA", rule), rule_args)
-    expected <- suppressMessages(exclude_by_group_oracle(o_nca, rule_fun))
-    actual <- suppressMessages(exclude(o_nca, FUN = rule_fun))$result$exclude
+    expected <- suppressWarnings(suppressMessages(exclude_by_group_oracle(o_nca, rule_fun)))
+    actual <- suppressWarnings(suppressMessages(exclude(o_nca, FUN = rule_fun)))$result$exclude
     expect_equal(actual, expected, info = rule)
-    any_excluded <- any_excluded || any(!is.na(actual))
+    # The fixture triggers these rules, so their comparison is not only of NA
+    # values
+    if (rule %in% exclude_rules_multi_group_triggered()) {
+      expect_true(any(!is.na(actual)), info = rule)
+    }
   }
-  # The fixture triggers the rules, so the comparison is not only of NA values
-  expect_true(any_excluded)
 })
 
 # exclude.default() as it was before the exclusion function ran outside of
@@ -465,32 +491,16 @@ exclude_default_main <- function(object, reason, mask, FUN) {
 }
 
 test_that("exclude() gives the same result as the grouped dplyr::mutate() it replaced", {
-  my_conc <- generate.conc(nsub = 3, ntreat = 2, time.points = c(0, 0.5, 1, 2, 4, 8, 12, 24))
-  my_dose <- generate.dose(my_conc)
-  o_data <-
-    PKNCAdata(
-      PKNCAconc(my_conc, conc ~ time | treatment + ID),
-      PKNCAdose(my_dose, dose ~ time | treatment + ID),
-      intervals =
-        rbind(
-          data.frame(start = 0, end = 24, cmax = TRUE, tmax = TRUE, auclast = TRUE, half.life = FALSE, aucinf.obs = FALSE),
-          data.frame(start = 0, end = Inf, cmax = FALSE, tmax = FALSE, auclast = FALSE, half.life = TRUE, aucinf.obs = TRUE)
-        )
-    )
-  o_nca <- suppressMessages(pk.nca(o_data))
-  arguments <-
-    list(
-      exclude_nca_by_param = list(parameter = "cmax", max_thr = 0.9, affected_parameters = c("cmax", "tmax")),
-      exclude_nca_count_conc_measured = list(min_count = 3),
-      exclude_nca_span.ratio = list(min.span.ratio = 4),
-      exclude_nca_tmax_coverage = list(min_subjects = 3),
-      exclude_nca_tmax_early = list(tmax_early = 1.5)
-    )
+  o_nca <- exclude_rules_multi_group_nca()
+  arguments <- exclude_rules_multi_group_arguments()
   for (rule in names(get("exclude_rules", envir = .PKNCAEnv))) {
     rule_args <- if (is.null(arguments[[rule]])) list() else arguments[[rule]]
     expected <- suppressWarnings(suppressMessages(exclude_default_main(o_nca, FUN = do.call(getExportedValue("PKNCA", rule), rule_args))))
     actual <- suppressWarnings(suppressMessages(exclude(o_nca, FUN = do.call(getExportedValue("PKNCA", rule), rule_args))))
     expect_equal(actual, expected, info = rule)
+    if (rule %in% exclude_rules_multi_group_triggered()) {
+      expect_true(any(!is.na(actual$result$exclude)), info = rule)
+    }
   }
   # A logical result with a reason, and a result of length one for a group
   expect_equal(
