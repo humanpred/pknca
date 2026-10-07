@@ -145,19 +145,19 @@ pknca_concept(pk.calc.auciv) <- "auc"
 #'   `aucivlast_se`, and `aucivlast_df`)
 #' @family Sparse Methods
 #' @export
-pk.calc.aucivlast_sparse <- function(conc, time, subject, ..., options=list()) {
+pk.calc.aucivlast_sparse <- function(conc, time, subject, ..., options = list()) {
   sparse_auxc_result(
-    conc=conc, time=time, subject=subject, moment=FALSE, extrapolate=FALSE,
-    iv_bolus=TRUE, name="aucivlast", options=options
+    conc = conc, time = time, subject = subject, moment = FALSE, extrapolate = FALSE,
+    iv_bolus = TRUE, name = "aucivlast", options = options
   )
 }
 
 #' @describeIn pk.calc.aucivlast_sparse Sparse AUCall for IV bolus dosing
 #' @export
-pk.calc.aucivall_sparse <- function(conc, time, subject, ..., options=list()) {
+pk.calc.aucivall_sparse <- function(conc, time, subject, ..., options = list()) {
   sparse_auxc_result(
-    conc=conc, time=time, subject=subject, moment=FALSE, extrapolate=FALSE,
-    auc.type="AUCall", iv_bolus=TRUE, name="aucivall", options=options
+    conc = conc, time = time, subject = subject, moment = FALSE, extrapolate = FALSE,
+    auc.type = "AUCall", iv_bolus = TRUE, name = "aucivall", options = options
   )
 }
 
@@ -165,12 +165,12 @@ pk.calc.aucivall_sparse <- function(conc, time, subject, ..., options=list()) {
 #' @export
 pk.calc.aucivinf.obs_sparse <- function(conc, time, subject, lambda.z,
                                         lambda.z.time.first, lambda.z.time.last,
-                                        lambda.z.n.points, ..., options=list()) {
+                                        lambda.z.n.points, ..., options = list()) {
   sparse_auxc_result(
-    conc=conc, time=time, subject=subject, lambda.z=lambda.z,
-    lambda.z.time.first=lambda.z.time.first, lambda.z.time.last=lambda.z.time.last,
-    lambda.z.n.points=lambda.z.n.points, moment=FALSE, extrapolate=TRUE,
-    iv_bolus=TRUE, name="aucivinf.obs", options=options
+    conc = conc, time = time, subject = subject, lambda.z = lambda.z,
+    lambda.z.time.first = lambda.z.time.first, lambda.z.time.last = lambda.z.time.last,
+    lambda.z.n.points = lambda.z.n.points, moment = FALSE, extrapolate = TRUE,
+    iv_bolus = TRUE, name = "aucivinf.obs", options = options
   )
 }
 
@@ -466,19 +466,19 @@ pknca_concept(pk.calc.aumciv) <- "aumc"
 
 #' @describeIn pk.calc.aucivlast_sparse Sparse AUMClast for IV bolus dosing
 #' @export
-pk.calc.aumcivlast_sparse <- function(conc, time, subject, ..., options=list()) {
+pk.calc.aumcivlast_sparse <- function(conc, time, subject, ..., options = list()) {
   sparse_auxc_result(
-    conc=conc, time=time, subject=subject, moment=TRUE, extrapolate=FALSE,
-    iv_bolus=TRUE, name="aumcivlast", options=options
+    conc = conc, time = time, subject = subject, moment = TRUE, extrapolate = FALSE,
+    iv_bolus = TRUE, name = "aumcivlast", options = options
   )
 }
 
 #' @describeIn pk.calc.aucivlast_sparse Sparse AUMCall for IV bolus dosing
 #' @export
-pk.calc.aumcivall_sparse <- function(conc, time, subject, ..., options=list()) {
+pk.calc.aumcivall_sparse <- function(conc, time, subject, ..., options = list()) {
   sparse_auxc_result(
-    conc=conc, time=time, subject=subject, moment=TRUE, extrapolate=FALSE,
-    auc.type="AUCall", iv_bolus=TRUE, name="aumcivall", options=options
+    conc = conc, time = time, subject = subject, moment = TRUE, extrapolate = FALSE,
+    auc.type = "AUCall", iv_bolus = TRUE, name = "aumcivall", options = options
   )
 }
 
@@ -486,12 +486,12 @@ pk.calc.aumcivall_sparse <- function(conc, time, subject, ..., options=list()) {
 #' @export
 pk.calc.aumcivinf.obs_sparse <- function(conc, time, subject, lambda.z,
                                          lambda.z.time.first, lambda.z.time.last,
-                                         lambda.z.n.points, ..., options=list()) {
+                                         lambda.z.n.points, ..., options = list()) {
   sparse_auxc_result(
-    conc=conc, time=time, subject=subject, lambda.z=lambda.z,
-    lambda.z.time.first=lambda.z.time.first, lambda.z.time.last=lambda.z.time.last,
-    lambda.z.n.points=lambda.z.n.points, moment=TRUE, extrapolate=TRUE,
-    iv_bolus=TRUE, name="aumcivinf.obs", options=options
+    conc = conc, time = time, subject = subject, lambda.z = lambda.z,
+    lambda.z.time.first = lambda.z.time.first, lambda.z.time.last = lambda.z.time.last,
+    lambda.z.n.points = lambda.z.n.points, moment = TRUE, extrapolate = TRUE,
+    iv_bolus = TRUE, name = "aumcivinf.obs", options = options
   )
 }
 # Register all standard AUMC IV versions
