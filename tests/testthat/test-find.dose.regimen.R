@@ -171,9 +171,11 @@ test_that("find.dose.regimen snaps scattered dose times to the nominal interval"
       source = "nominal", n_intervals_used = 4L
     )
   )
-  # Without a unit, the interval is the median spacing
+  # Without a unit the times are taken to be hours, so they snap the same way;
+  # with a unit that cannot be used, the interval is the median spacing
   expect_equal(find.dose.regimen(c(0, 23.6, 48, 72.4, 96))$interval, 24)
-  expect_equal(find.dose.regimen(c(0, 23.5, 47, 71.5, 95))$interval, 23.5)
+  expect_equal(find.dose.regimen(c(0, 23.5, 47, 71.5, 95))$interval, 24)
+  expect_equal(find.dose.regimen(c(0, 23.5, 47, 71.5, 95), timeu = NA)$interval, 23.5)
 })
 
 test_that("find.dose.regimen reports an interval that matches no nominal one", {
@@ -189,10 +191,17 @@ test_that("find.dose.regimen reports an interval that matches no nominal one", {
       source = "auto", n_intervals_used = 5L
     )
   )
-  # With no unit there is nothing to match, so there is no warning
-  expect_no_warning(ret_no_unit <- find.dose.regimen(seq(0, 150, by = 30)))
-  expect_equal(ret_no_unit$source, "auto")
-  expect_equal(ret_no_unit$interval, 30)
+  # Without a unit the times are taken to be hours, so it is said then too
+  expect_warning(
+    ret_no_unit <- find.dose.regimen(seq(0, 150, by = 30)),
+    class = "pknca_warning_tau_not_nominal"
+  )
+  expect_equal(ret_no_unit, ret)
+  # With a unit that cannot be used there is nothing to match, so there is no
+  # warning
+  expect_no_warning(ret_unusable <- find.dose.regimen(seq(0, 150, by = 30), timeu = NA))
+  expect_equal(ret_unusable$source, "auto")
+  expect_equal(ret_unusable$interval, 30)
 })
 
 test_that("find.dose.regimen matches tau.choices instead of the built-in set", {
@@ -241,9 +250,12 @@ test_that("find.dose.regimen converts the built-in set to the time unit", {
 })
 
 test_that("find.dose.regimen treats an empty time unit as unknown", {
-  expect_no_warning(ret <- find.dose.regimen(seq(0, 150, by = 30), timeu = ""))
-  expect_equal(ret$source, "auto")
-  expect_equal(ret$interval, 30)
+  # An unknown unit is taken to be hours
+  expect_equal(find.dose.regimen(c(0, 24, 50), timeu = ""), find.dose.regimen(c(0, 24, 50)))
+  expect_equal(find.dose.regimen(c(0, 24, 50), timeu = "")$interval, 24)
+  # NA, of either type, is a unit that cannot be used
+  expect_equal(find.dose.regimen(c(0, 24, 50), timeu = NA)$interval, 25)
+  expect_equal(find.dose.regimen(c(0, 24, 50), timeu = NA_character_)$interval, 25)
 })
 
 test_that("find.dose.regimen follows a cycle that most of the doses keep", {
@@ -435,7 +447,7 @@ test_that("the built-in nominal set does not choose a longer period", {
       source = "auto", n_intervals_used = 9L, offsets = c(0, 12)
     )
   )
-  expect_equal(find.tau(doses), 36)
+  expect_warning(expect_equal(find.tau(doses), 36), class = "pknca_warning_tau_not_nominal")
   # A user's choice does select the multiple
   expect_equal(find.tau(doses, tau.choices = 72), 72)
 })
@@ -493,9 +505,10 @@ test_that("a user's choice that no multiple of the period matches is not used", 
 
 test_that("gradually lengthening spacings form one run", {
   # Each spacing is within the tolerance of the next, though not all are within
-  # it of their median, so they are one segment at the median spacing
+  # it of their median, so they are one segment at the median spacing (taken
+  # as data here, with a unit that cannot be used)
   doses <- cumsum(c(0, 20, 23, 26.5, 30))
-  expect_no_warning(ret <- find.dose.regimen(doses))
+  expect_no_warning(ret <- find.dose.regimen(doses, timeu = NA))
   expect_equal(
     ret,
     regimen_expected(

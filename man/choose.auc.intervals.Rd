@@ -29,9 +29,10 @@ choose.auc.intervals(
 \item{sparse}{Is this a sparse sampling design?  A sparse design imputes
 nothing; see \code{\link[=pknca_interval_table]{pknca_interval_table()}}.}
 
-\item{timeu}{The time unit of \code{time.conc} and \code{time.dosing}, or \code{NULL} when
-it is not known (see \code{\link[=find.tau]{find.tau()}}).  \code{\link[=PKNCAdata]{PKNCAdata()}} gives the time unit of
-its concentration data.}
+\item{timeu}{The time unit of \code{time.conc} and \code{time.dosing}; \code{NULL} when it is
+not known, which is taken to be hours; or \code{NA} when it cannot be used (see
+\code{\link[=find.dose.regimen]{find.dose.regimen()}}).  \code{\link[=PKNCAdata]{PKNCAdata()}} gives the time unit of its
+concentration data.}
 }
 \value{
 A data frame with columns for \code{start}, \code{end}, and the parameters to
@@ -65,11 +66,12 @@ calculated to infinity as a single dose.
 }
 }
 \details{
-With a time unit (\code{timeu}), \eqn{\tau} is matched to the nominal dosing
-intervals of \code{\link[=find.dose.regimen]{find.dose.regimen()}}:  dose times recorded a little early or
-late give the nominal interval, and an interval that matches none of them,
-such as dosing every hour, gives a \code{"pknca_warning_tau_not_nominal"} warning.
-Without a time unit, \eqn{\tau} is found from the dose times alone.
+\eqn{\tau} is matched to the nominal dosing intervals of
+\code{\link[=find.dose.regimen]{find.dose.regimen()}} in the time unit \code{timeu}, taken to be hours when it is
+not given:  dose times recorded a little early or late give the nominal
+interval, and an interval that matches none of them, such as dosing every
+hour, gives a \code{"pknca_warning_tau_not_nominal"} warning.  With \code{timeu = NA}
+(a unit PKNCA cannot use), \eqn{\tau} is found from the dose times alone.
 
 Times are matched within a tolerance rather than exactly, so a sample drawn a
 little before its nominal time still bounds the interval it belongs to.  The

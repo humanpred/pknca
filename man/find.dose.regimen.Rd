@@ -19,12 +19,13 @@ find.dose.regimen(
 \item{x}{Dose times for one subject, as numbers}
 
 \item{tau.choices}{The nominal intervals to match, in the unit of \code{x}, or
-\code{NA} to use the built-in set (when \code{timeu} is given) or none.  Names are used
-as labels.  \code{NULL} takes the \code{tau.choices} option.}
+\code{NA} to use the built-in set.  Names are used as labels.  \code{NULL} takes the
+\code{tau.choices} option.}
 
-\item{timeu}{The time unit of \code{x} (such as \code{"hr"} or \code{"day"}), or \code{NULL} (or
-\code{""}) when it is not known.  A unit that cannot be converted to hours is an
-error.}
+\item{timeu}{The time unit of \code{x} (such as \code{"hr"} or \code{"day"}); \code{NULL} (or
+\code{""}) when it is not known, which is taken to be hours; or \code{NA} when it is
+known not to be a unit PKNCA can use, which leaves the intervals to the
+data.  Any other unit that cannot be converted to hours is an error.}
 
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
@@ -116,16 +117,22 @@ The interval of a segment is snapped to the nearest candidate within
 \code{snap.tol} (source \code{"nominal"}), and is otherwise the value found in the data
 (source \code{"auto"}).  The value found in the data is the median of the
 spacings (or spans) that set it, so scatter in the recorded times does not
-move it.  The candidates are \code{tau.choices} when it is given.  Otherwise, when
-\code{timeu} is given, they are the built-in nominal intervals converted from hours
-to \code{timeu}:  Q4H (4 hours), QID (6), TID (8), BID (12), QD (24), QOD (48),
-Q72H (72), QW (168), Q2W (336), Q3W (504), Q4W (672), Q6W (1008), Q8W (1344),
-and Q12W (2016).  Without either, PKNCA cannot know what the numbers mean, so
-the intervals come from the data alone and every source is \code{"auto"}.
-Converting a unit other than \code{"hr"} needs the units package; without it,
-\code{\link[=PKNCAdata]{PKNCAdata()}} and \code{\link[=pk.nca]{pk.nca()}} match only data in hours to the nominal
-intervals, so their results for data in other units can differ between
-installations with and without that package.
+move it.  The candidates are \code{tau.choices} when it is given.  Otherwise they
+are the built-in nominal intervals, converted from hours to \code{timeu}:  Q4H (4
+hours), QID (6), TID (8), BID (12), QD (24), QOD (48), Q72H (72), QW (168),
+Q2W (336), Q3W (504), Q4W (672), Q6W (1008), Q8W (1344), and Q12W (2016).
+
+\strong{Without a time unit, the times are taken to be hours}, as PKNCA takes
+date-times to be, so dose times 24 and 26 hours apart are once-daily dosing.
+Times recorded in another unit without saying so are then compared with
+intervals in hours, and an interval that matches none of them gives a
+\code{"pknca_warning_tau_not_nominal"} warning; give \code{timeu} to avoid that.
+\code{timeu = NA} says that the unit is not one PKNCA can use, and the intervals
+then come from the data alone (every source is \code{"auto"}).  Converting a unit
+other than \code{"hr"} needs the units package; without it, \code{\link[=PKNCAdata]{PKNCAdata()}} and
+\code{\link[=pk.nca]{pk.nca()}} treat such a unit as one they cannot use, so their results for
+data in other units can differ between installations with and without that
+package.
 }
 \section{Conditions}{
 
@@ -133,8 +140,9 @@ installations with and without that package.
 \item{\code{pknca_warning_tau_irregular_dosing}}{A segment has missed doses
 (the message names the dose times before them) or doses off schedule
 (the message names those doses).}
-\item{\code{pknca_warning_tau_not_nominal}}{There were candidates to match and
-a segment matched none of them.  The message includes the regimen table.}
+\item{\code{pknca_warning_tau_not_nominal}}{There were candidates to match (any
+\code{timeu} other than \code{NA}) and a segment matched none of them.  The message
+includes the regimen table.}
 \item{\code{pknca_warning_tau_regimen_change}}{More than one segment was found.
 The message includes the regimen table.}
 \item{\code{pknca_warning_dose_regimen}}{The parent class of the three warnings

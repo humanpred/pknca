@@ -251,12 +251,19 @@ the generated intervals:
   for multiple-dose parameters now use the time unit of the concentration data
   (the `timeu` given to `PKNCAconc()`) when matching the dosing interval, through
   a new `timeu` argument to `choose.auc.intervals()` and `pk.nca.interval()`.
-  **Results change when a time unit is set:**  dose times recorded a little
-  early or late give the nominal interval (24 rather than, say, 24.5 hours), and
-  an interval that matches no nominal interval, such as dosing every hour, now
-  gives a `"pknca_warning_tau_not_nominal"` warning where it was silent.  Data
-  without a time unit, or with a unit that cannot be converted to hours, are
-  unchanged.  (@billdenney)
+  **Times without a unit are taken to be hours**, as date-times already were,
+  so the built-in nominal intervals (every 4 hours to every 12 weeks) apply to
+  them too:  `find.tau(c(0, 24, 50))` is 24 (once daily) rather than the median
+  spacing of 25.  **Results change:**  dose times recorded a little early or
+  late give the nominal interval (24 rather than, say, 24.5 hours), which moves
+  the interval generated for the last dose and multiple-dose parameters such as
+  `mrt.md.obs`, and an interval that matches no nominal interval, such as
+  dosing every hour, now gives a `"pknca_warning_tau_not_nominal"` warning
+  where it was silent.  Data recorded in minutes or days without saying so are
+  compared with intervals in hours and usually give that warning; give `timeu`
+  to `PKNCAconc()` to avoid it.  A unit that cannot be converted to hours (or
+  `timeu = NA` to `find.tau()` and its relatives) leaves the interval to the
+  dose times, as before.  (@billdenney)
 * The interval generated for the last dose now starts at the first dose of the
   last complete dosing cycle, so a regimen giving more than one dose per
   interval no longer gets an interval that contains a dose that was never

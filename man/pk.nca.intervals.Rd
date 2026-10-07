@@ -38,9 +38,10 @@ individual samples (including a \code{subject} column) as output from
 
 \item{verbose}{Indicate, by \code{message()}, the current state of calculation.}
 
-\item{timeu}{The time unit of the group's times, or \code{NULL} when it is not
-known.  A \eqn{\tau} detected from the dose times is matched to the nominal
-dosing intervals for that unit (see \code{\link[=find.tau]{find.tau()}}).}
+\item{timeu}{The time unit of the group's times:  \code{NULL} when it is not
+known, which is taken to be hours, or \code{NA} when it cannot be used.  A
+\eqn{\tau} detected from the dose times is matched to the nominal dosing
+intervals for that unit (see \code{\link[=find.dose.regimen]{find.dose.regimen()}}).}
 
 \item{warning_prefix}{The text naming the group, put before each dose regimen
 warning}
