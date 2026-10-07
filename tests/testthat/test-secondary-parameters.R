@@ -799,7 +799,7 @@ test_that("summary() and the CDISC output ignore the reference group columns", {
   expect_false(any(grepl("_ref$", names(d_summary))))
   # The summary heads each column with the parameter's pretty name and units,
   # which for a secondary parameter are the composed ones
-  clr_column <- "Renal clearance (from AUClast) (mg/(hr*ng/mL))"
+  clr_column <- "Renal clearance (based on AUClast) (mg/(hr*ng/mL))"
   expect_true(clr_column %in% names(d_summary))
   expect_equal(d_summary[[clr_column]][d_summary$PCSPEC %in% "urine"], "2.43")
   d_cdisc <- as.data.frame(res, out_format = "cdisc")

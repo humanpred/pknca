@@ -1283,7 +1283,7 @@ test_that("pk.nca produces the PPANMETH column", {
   )
   expect_equal(
     unique(res_incl$result$PPANMETH[res_incl$result$PPTESTCD %in% c("lambda.z", "half.life", "r.squared")]),
-    "Lambda Z: Manual selection"
+    "Lambda z: Manual selection"
   )
   expect_equal(
     unique(res_excl$result$PPANMETH[res_excl$result$PPTESTCD %in% c("lambda.z", "half.life", "r.squared")]),
@@ -1331,7 +1331,7 @@ test_that("pk.nca produces the PPANMETH column", {
   )
   expect_equal(
     res$result$PPANMETH[res$result$PPTESTCD == "half.life"],
-    "Imputation: start_conc0. Lambda Z: Manual selection"
+    "Imputation: start_conc0. Lambda z: Manual selection"
   )
   expect_equal(
     res$result$PPANMETH[res$result$PPTESTCD == "aucinf.pred"],

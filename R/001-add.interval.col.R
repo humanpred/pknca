@@ -858,7 +858,7 @@ add.interval.col(
   FUN = NA,
   values = as.numeric,
   unit_type="time",
-  pretty_name="Interval Start",
+  pretty_name="Interval start",
   desc = "Starting time of the interval"
 )
 add.interval.col(
@@ -866,6 +866,6 @@ add.interval.col(
   FUN = NA,
   values = as.numeric,
   unit_type="time",
-  pretty_name="Interval End",
-  desc = "End time of interval (may be Inf)"
+  pretty_name="Interval end",
+  desc = "End time of the interval (may be Inf)"
 )
