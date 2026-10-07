@@ -87,12 +87,16 @@ the interval start and end (so each part, treatment, analyte, and
 interval is its own group).  The Tmax range of the group is the first to
 third quartile of the Tmax values of every subject in the group (the
 subject being judged included), extended by 1.5 times the interquartile
-range on each side (Tukey's fences).  Tmax values that are missing or
-already excluded are not used.  Unless a subject of the group has its
-Tmax at the interval start, the range starts just after it:  a sample at
-or before the interval start (usually the predose sample) does not show
-that the peak was sampled, and a lower fence at or below zero would
-otherwise count every predose sample as within the range.
+range on each side (Tukey's fences).  The quartiles are those of
+\code{stats::quantile(type = 7)}, the default type; with few subjects, the
+types differ (Tmax values of 1, 1, 2, 2, 1, and 8 give a third quartile
+of 2 with type 7, 3.5 with type 6, and 2.5 with type 8).  Tmax values
+that are missing or already excluded are not used.  The range never starts before
+the interval start, where the reported range starts when the lower fence
+is below it.  A sample at the interval start (usually the predose sample)
+counts as within the range only when a subject of the group has its Tmax
+at the interval start, which shows that the start is a plausible Tmax (as
+after an IV bolus).
 
 The samples are the concentration rows within the interval that have a
 concentration and are not excluded.  When the concentration data have a
@@ -111,19 +115,25 @@ missing some of the group's nominal times within the range (see
 \code{\link[=pknca_missing_samples]{pknca_missing_samples()}}) is not excluded.  Instead, a
 \code{pknca_warning_tmax_coverage_partial} warning says that Cmax and Tmax
 may be unreliable.  The warning's fields are \code{group} (a one-row
-data.frame with the group and subject), \code{tmax_range},
-\code{time_nominal_missing}, and \code{reason} (as in \code{\link[=pknca_missing_samples]{pknca_missing_samples()}}),
-and it can be caught with \code{\link[=withCallingHandlers]{withCallingHandlers()}}.  Without nominal
-times, there is no schedule to compare with, and no warning is given.
+data.frame with the group and subject), \code{tmax_range} (the reported
+range, relative to the interval start), \code{time_nominal_missing}, and
+\code{reason} (as in \code{\link[=pknca_missing_samples]{pknca_missing_samples()}}), and it can be caught with
+\code{\link[=withCallingHandlers]{withCallingHandlers()}}.  Without nominal times, there is no schedule to
+compare with, and no warning is given.
 \item A group with fewer than \code{min_subjects} subjects with a Tmax (one subject,
 for example) is not checked, and a
-\code{pknca_message_tmax_coverage_few_subjects} message says so.  Quartiles
-of fewer than four values describe the spread of the group poorly.
-\item When no nominal time of the group is within the interval, the group is
-not checked, and a \code{pknca_warning_tmax_coverage_no_nominal} warning says
-so (the nominal times may be relative to each dose instead).
+\code{pknca_message_tmax_coverage_few_subjects} message says so once per
+group.  Quartiles of fewer than four values describe the spread of the
+group poorly.
+\item When the nominal times disagree with the interval, the group is not
+checked, and a \code{pknca_warning_tmax_coverage_no_nominal} warning says so
+once per group.  They disagree when no nominal time of the group is
+after the interval start, or when most samples of the group with an
+actual time in the interval have a nominal time outside it, as when the
+nominal times restart at each dose.
 \item Sparse data have one Tmax per group, from the mean profile, so they are
-not checked, and a \code{pknca_message_tmax_coverage_sparse} message says so.
+not checked, and a \code{pknca_message_tmax_coverage_sparse} message says so
+once per call to \code{\link[=exclude]{exclude()}}.
 }
 }
 

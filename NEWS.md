@@ -298,7 +298,9 @@ the generated intervals:
     and warns with the classed `pknca_warning_tmax_coverage_partial` warning
     when a subject has a sample in the range but is missing some of the
     group's nominal times within it.  Groups with fewer than `min_subjects`
-    (default 4) subjects and sparse data are not checked.
+    (default 4) subjects, sparse data, and groups whose nominal times disagree
+    with the interval (as when the nominal times restart at each dose) are not
+    checked, with a classed message or warning.
 
 * CDISC output (#403):
   * `as.data.frame.PKNCAresults()` gains `out_format = "cdisc"`, which
