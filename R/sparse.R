@@ -390,7 +390,7 @@ var_sparse_auc <- function(sparse_pk) {
 #'
 #' Nedelman JR, Gibiansky E, Lau DTW. Applying Bailer’s method for AUC
 #' confidence intervals to sparse sampling. Pharmaceutical Research.
-#' 1995;12(1):124-128. doi:10.1023/A:1016255124336
+#' 1995;12(1):124-128.
 #' @keywords Internal
 #' @noRd
 sparse_satterthwaite_df <- function(sparse_pk, weights, covariance) {
