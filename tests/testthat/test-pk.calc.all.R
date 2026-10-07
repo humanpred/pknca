@@ -1836,8 +1836,9 @@ pk_nca_tau_used <- function(o_conc, o_dose, intervals) {
 }
 
 test_that("pk.nca matches a detected tau to the nominal intervals for the time unit", {
-  # Daily doses recorded up to half an hour late:  without a unit tau is the
-  # median spacing, 24.5 hours, and with hours it is the daily interval
+  # Daily doses recorded up to half an hour late:  with hours, stated or taken
+  # without a unit, tau is the daily interval; with a unit that cannot be used
+  # it is the median spacing, 24.5
   doses <- c(0, 24.5, 49, 73, 97.5)
   d_conc <- data.frame(time = sort(unique(c(doses, 97.5 + c(0.5, 1, 2, 4, 8, 12, 24)))))
   d_conc$conc <- 10 * exp(-0.1 * (d_conc$time - 97.5)) * (d_conc$time >= 97.5) + 1
@@ -1847,10 +1848,14 @@ test_that("pk.nca matches a detected tau to the nominal intervals for the time u
       start = 97.5, end = 121.5,
       auclast = TRUE, aumclast = TRUE, aucinf.obs = TRUE, mrt.md.obs = TRUE
     )
-  expect_equal(pk_nca_tau_used(PKNCAconc(d_conc, conc~time), o_dose, intervals), 24.5)
+  expect_equal(pk_nca_tau_used(PKNCAconc(d_conc, conc~time), o_dose, intervals), 24)
   expect_equal(
     pk_nca_tau_used(PKNCAconc(d_conc, conc~time, concu = "ng/mL", timeu = "hr"), o_dose, intervals),
     24
+  )
+  expect_equal(
+    pk_nca_tau_used(PKNCAconc(d_conc, conc~time, concu = "ng/mL", timeu = "not_a_unit"), o_dose, intervals),
+    24.5
   )
   # The unit as a column, and as a column that is also a grouping column
   d_conc$tu <- "hr"
@@ -1879,7 +1884,10 @@ test_that("pk.nca matches a detected tau to the time unit for sparse PK", {
       auclast = TRUE, aumclast = TRUE, aucinf.obs = TRUE, mrt.md.obs = TRUE
     )
   expect_equal(
-    pk_nca_tau_used(PKNCAconc(d_conc, conc~time|subject, sparse = TRUE), o_dose, intervals),
+    pk_nca_tau_used(
+      PKNCAconc(d_conc, conc~time|subject, sparse = TRUE, concu = "ng/mL", timeu = "not_a_unit"),
+      o_dose, intervals
+    ),
     24.5
   )
   expect_equal(

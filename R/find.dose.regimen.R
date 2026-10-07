@@ -15,9 +15,10 @@ dose_interval_nominal_hours <- function() {
 
 # The nominal intervals that detected intervals are matched to, in the time
 # unit of the dose times, and whether the user named them.  `tau.choices` is
-# the set when it is given.  Otherwise the built-in set applies when the time
-# unit is known, converted from hours; with no unit there is nothing to match,
-# and the intervals come from the data.
+# the set when it is given.  Otherwise the built-in set applies, converted from
+# hours to `timeu`; with no unit (NULL) the times are taken to be hours, as
+# PKNCA takes date-times to be.  A unit that is stated but cannot be used (NA)
+# leaves nothing to match, and the intervals come from the data.
 regimen_candidates <- function(tau.choices, timeu) {
   if (!identical(tau.choices, NA)) {
     values <- sort(tau.choices[tau.choices > 0])
@@ -25,6 +26,9 @@ regimen_candidates <- function(tau.choices, timeu) {
     return(list(values = values[keep], explicit = TRUE))
   }
   if (is.null(timeu)) {
+    return(list(values = dose_interval_nominal_hours(), explicit = FALSE))
+  }
+  if (is.na(timeu)) {
     return(list(values = numeric(0), explicit = FALSE))
   }
   hours <- pknca_hours_factor(timeu)
@@ -724,24 +728,31 @@ regimen_warn <- function(detection, has_candidates) {
 #' `snap.tol` (source `"nominal"`), and is otherwise the value found in the data
 #' (source `"auto"`).  The value found in the data is the median of the
 #' spacings (or spans) that set it, so scatter in the recorded times does not
-#' move it.  The candidates are `tau.choices` when it is given.  Otherwise, when
-#' `timeu` is given, they are the built-in nominal intervals converted from hours
-#' to `timeu`:  Q4H (4 hours), QID (6), TID (8), BID (12), QD (24), QOD (48),
-#' Q72H (72), QW (168), Q2W (336), Q3W (504), Q4W (672), Q6W (1008), Q8W (1344),
-#' and Q12W (2016).  Without either, PKNCA cannot know what the numbers mean, so
-#' the intervals come from the data alone and every source is `"auto"`.
-#' Converting a unit other than `"hr"` needs the units package; without it,
-#' [PKNCAdata()] and [pk.nca()] match only data in hours to the nominal
-#' intervals, so their results for data in other units can differ between
-#' installations with and without that package.
+#' move it.  The candidates are `tau.choices` when it is given.  Otherwise they
+#' are the built-in nominal intervals, converted from hours to `timeu`:  Q4H (4
+#' hours), QID (6), TID (8), BID (12), QD (24), QOD (48), Q72H (72), QW (168),
+#' Q2W (336), Q3W (504), Q4W (672), Q6W (1008), Q8W (1344), and Q12W (2016).
+#'
+#' **Without a time unit, the times are taken to be hours**, as PKNCA takes
+#' date-times to be, so dose times 24 and 26 hours apart are once-daily dosing.
+#' Times recorded in another unit without saying so are then compared with
+#' intervals in hours, and an interval that matches none of them gives a
+#' `"pknca_warning_tau_not_nominal"` warning; give `timeu` to avoid that.
+#' `timeu = NA` says that the unit is not one PKNCA can use, and the intervals
+#' then come from the data alone (every source is `"auto"`).  Converting a unit
+#' other than `"hr"` needs the units package; without it, [PKNCAdata()] and
+#' [pk.nca()] treat such a unit as one they cannot use, so their results for
+#' data in other units can differ between installations with and without that
+#' package.
 #'
 #' @section Conditions:
 #' \describe{
 #'   \item{`pknca_warning_tau_irregular_dosing`}{A segment has missed doses
 #'     (the message names the dose times before them) or doses off schedule
 #'     (the message names those doses).}
-#'   \item{`pknca_warning_tau_not_nominal`}{There were candidates to match and
-#'     a segment matched none of them.  The message includes the regimen table.}
+#'   \item{`pknca_warning_tau_not_nominal`}{There were candidates to match (any
+#'     `timeu` other than `NA`) and a segment matched none of them.  The message
+#'     includes the regimen table.}
 #'   \item{`pknca_warning_tau_regimen_change`}{More than one segment was found.
 #'     The message includes the regimen table.}
 #'   \item{`pknca_warning_dose_regimen`}{The parent class of the three warnings
@@ -755,11 +766,12 @@ regimen_warn <- function(detection, has_candidates) {
 #' @inheritParams PKNCA.choose.option
 #' @param x Dose times for one subject, as numbers
 #' @param tau.choices The nominal intervals to match, in the unit of `x`, or
-#'   `NA` to use the built-in set (when `timeu` is given) or none.  Names are used
-#'   as labels.  `NULL` takes the `tau.choices` option.
-#' @param timeu The time unit of `x` (such as `"hr"` or `"day"`), or `NULL` (or
-#'   `""`) when it is not known.  A unit that cannot be converted to hours is an
-#'   error.
+#'   `NA` to use the built-in set.  Names are used as labels.  `NULL` takes the
+#'   `tau.choices` option.
+#' @param timeu The time unit of `x` (such as `"hr"` or `"day"`); `NULL` (or
+#'   `""`) when it is not known, which is taken to be hours; or `NA` when it is
+#'   known not to be a unit PKNCA can use, which leaves the intervals to the
+#'   data.  Any other unit that cannot be converted to hours is an error.
 #' @param tol Relative tolerance for grouping spacings with one another and with
 #'   a candidate
 #' @param snap.tol Relative tolerance for reporting an interval as a candidate
@@ -811,13 +823,15 @@ find.dose.regimen <- function(x, tau.choices = NULL, timeu = NULL, options = lis
     )
   }
   checkmate::assert_numeric(x, any.missing = FALSE, finite = TRUE)
-  checkmate::assert_string(timeu, null.ok = TRUE)
+  checkmate::assert_string(timeu, null.ok = TRUE, na.ok = TRUE)
   checkmate::assert_number(tol, lower = 0, finite = TRUE)
   checkmate::assert_number(snap.tol, lower = 0, finite = TRUE)
   checkmate::assert_count(min.run, positive = TRUE)
   checkmate::assert_count(max.missed, positive = TRUE)
   if (identical(timeu, "")) {
     timeu <- NULL
+  } else if (!is.null(timeu) && is.na(timeu)) {
+    timeu <- NA_character_
   }
   tau.choices <- PKNCA.choose.option(name = "tau.choices", value = tau.choices, options = options)
   candidates <- regimen_candidates(tau.choices, timeu)

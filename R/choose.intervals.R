@@ -81,9 +81,12 @@ last_cycle_start <- function(x, tau) {
 #' dose missing overnight.
 #'
 #' The intervals are matched to `tau.choices` when it is given.  When it is `NA`
-#' (the default) and `timeu` is given, they are matched to the built-in nominal
-#' intervals listed in [find.dose.regimen()].  When neither is given, the
-#' interval is the one found in the data, because the unit of `x` is not known.
+#' (the default), they are matched to the built-in nominal intervals listed in
+#' [find.dose.regimen()], in the unit `timeu`.  **Without a time unit, the times
+#' are taken to be hours**, so `find.tau(c(0, 24, 50))` is 24 (once daily)
+#' rather than the median spacing of 25; times in another unit should give
+#' `timeu`, or they are compared with intervals in hours and an interval that
+#' matches none of them gives a `"pknca_warning_tau_not_nominal"` warning.
 #' The warnings of [find.dose.regimen()] are given here as well, notably
 #' `"pknca_warning_tau_irregular_dosing"` for missed doses or doses off schedule.
 #'
@@ -127,31 +130,35 @@ find.tau <- function(x, na.action=stats::na.omit,
 # nominal intervals of find.dose.regimen():  the unit given to PKNCAconc() as a
 # value; or the one unit in the group's unit column, read from the group's
 # columns when the unit column is a grouping column and otherwise from its rows
-# (the pooled samples, with sparse PK); or, for date-times (`datetime`), the
-# hours they were converted to.  NULL leaves the interval to the dose times
-# alone, as it is when there is no unit, when the group's rows give more than
-# one unit, or when the unit cannot be converted to hours (a unit may be any
-# label, and without the units package only "hr" can be converted).
+# (the pooled samples, with sparse PK).  NULL when no unit is given, which
+# find.dose.regimen() takes to be hours (as date-times are converted to hours).
+# NA when a unit is given but cannot be used:  the group's rows give more than
+# one unit, or the unit cannot be converted to hours (a unit may be any label,
+# and without the units package only "hr" can be converted).
 pknca_group_timeu <- function(o_conc, data_conc = NULL, data_sparse_conc = NULL,
-                              group = NULL, datetime = FALSE) {
+                              group = NULL) {
   timeu <- o_conc$units$timeu
   column <- o_conc$columns$timeu
   if (is.null(timeu) && !is.null(column)) {
     rows <- if (column %in% names(group)) group else if (is.null(data_sparse_conc)) data_conc else data_sparse_conc
     timeu <- unique(as.character(rows[[column]]))
     timeu <- timeu[!is.na(timeu)]
-  } else if (is.null(timeu) && datetime) {
-    timeu <- pknca_datetime_time_unit(o_conc)
+    if (length(timeu) == 0) {
+      return(NULL)
+    }
+  }
+  if (is.null(timeu)) {
+    return(NULL)
   }
   timeu <- as.vector(timeu)
   if (length(timeu) != 1) {
-    return(NULL)
+    return(NA_character_)
   }
   if (!identical(timeu, "hr") && !requireNamespace("units", quietly = TRUE)) {
-    return(NULL) # nocov
+    return(NA_character_) # nocov
   }
   if (is.na(pknca_hours_factor(timeu))) {
-    return(NULL)
+    return(NA_character_)
   }
   timeu
 }
@@ -177,7 +184,7 @@ pknca_timeu_extra_col <- function(o_conc) {
 
 # The time unit of each group of a split PKNCAdata object (see
 # full_join_PKNCAdata()), as a list with one element per row
-pknca_split_timeu <- function(splitdata, group_info, o_conc, datetime) {
+pknca_split_timeu <- function(splitdata, group_info, o_conc) {
   ret <- vector("list", nrow(splitdata))
   for (idx in seq_len(nrow(splitdata))) {
     timeu <-
@@ -185,8 +192,7 @@ pknca_split_timeu <- function(splitdata, group_info, o_conc, datetime) {
         o_conc = o_conc,
         data_conc = splitdata$data_conc[[idx]],
         data_sparse_conc = splitdata[["data_sparse_conc"]][[idx]],
-        group = group_info[idx, , drop = FALSE],
-        datetime = datetime
+        group = group_info[idx, , drop = FALSE]
       )
     if (!is.null(timeu)) {
       ret[[idx]] <- timeu
@@ -344,11 +350,12 @@ interval_samples_reach_end <- function(time.conc, start, end) {
 #'         calculated to infinity as a single dose.
 #'  }
 #'
-#' With a time unit (`timeu`), \eqn{\tau} is matched to the nominal dosing
-#' intervals of [find.dose.regimen()]:  dose times recorded a little early or
-#' late give the nominal interval, and an interval that matches none of them,
-#' such as dosing every hour, gives a `"pknca_warning_tau_not_nominal"` warning.
-#' Without a time unit, \eqn{\tau} is found from the dose times alone.
+#' \eqn{\tau} is matched to the nominal dosing intervals of
+#' [find.dose.regimen()] in the time unit `timeu`, taken to be hours when it is
+#' not given:  dose times recorded a little early or late give the nominal
+#' interval, and an interval that matches none of them, such as dosing every
+#' hour, gives a `"pknca_warning_tau_not_nominal"` warning.  With `timeu = NA`
+#' (a unit PKNCA cannot use), \eqn{\tau} is found from the dose times alone.
 #'
 #' Times are matched within a tolerance rather than exactly, so a sample drawn a
 #' little before its nominal time still bounds the interval it belongs to.  The
@@ -368,9 +375,10 @@ interval_samples_reach_end <- function(time.conc, start, end) {
 #' @param time.dosing Time of dosing
 #' @param single.dose.aucs The AUC specification for single dosing.
 #' @param route How the drug was given, as one of [pknca_routes()].
-#' @param timeu The time unit of `time.conc` and `time.dosing`, or `NULL` when
-#'   it is not known (see [find.tau()]).  [PKNCAdata()] gives the time unit of
-#'   its concentration data.
+#' @param timeu The time unit of `time.conc` and `time.dosing`; `NULL` when it is
+#'   not known, which is taken to be hours; or `NA` when it cannot be used (see
+#'   [find.dose.regimen()]).  [PKNCAdata()] gives the time unit of its
+#'   concentration data.
 #' @param sparse Is this a sparse sampling design?  A sparse design imputes
 #'   nothing; see [pknca_interval_table()].
 #' @returns A data frame with columns for `start`, `end`, and the parameters to
@@ -523,8 +531,7 @@ choose.auc.intervals <- function(time.conc, time.dosing,
 #' @inheritParams PKNCA.choose.option
 #' @param interval One row of an interval definition (see
 #'   [check.interval.specification()])
-#' @param timeu The time unit of `time.dose`, or `NULL` when it is not known
-#'   (see [find.tau()])
+#' @param timeu The time unit of `time.dose` (see [choose.auc.intervals()])
 #' @param time.dose The dose times for the whole group (not just the interval;
 #'   an interval one `tau` long contains a single dose, so nothing repeats
 #'   within it)

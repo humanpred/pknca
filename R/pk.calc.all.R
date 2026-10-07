@@ -84,8 +84,7 @@ pk.nca <- function(data, verbose=FALSE) {
       if (sparse) splitdata$data_sparse_conc else rep(list(NULL), nrow(splitdata))
     group_timeu <-
       pknca_split_timeu(
-        splitdata = splitdata, group_info = group_info, o_conc = data_calc$conc,
-        datetime = !is.null(data_calc$time_reference)
+        splitdata = splitdata, group_info = group_info, o_conc = data_calc$conc
       )
     group_warning_prefix <-
       vapply(
@@ -694,9 +693,10 @@ parameter_arg_spec <- function(param, sparse = FALSE) {
 #'   lower limit of quantification passed to [pk.calc.half.life()] for the Tobit
 #'   half-life method.
 #' @param subject Subject identifiers for the pooled sparse samples
-#' @param timeu The time unit of the group's times, or `NULL` when it is not
-#'   known.  A \eqn{\tau} detected from the dose times is matched to the nominal
-#'   dosing intervals for that unit (see [find.tau()]).
+#' @param timeu The time unit of the group's times:  `NULL` when it is not
+#'   known, which is taken to be hours, or `NA` when it cannot be used.  A
+#'   \eqn{\tau} detected from the dose times is matched to the nominal dosing
+#'   intervals for that unit (see [find.dose.regimen()]).
 #' @param conc.sparse,time.sparse The pooled individual concentrations and their
 #'   times for the current interval with sparse PK (`conc` and `time` are the
 #'   arithmetic-mean profile built from them).  `NULL` for dense PK.

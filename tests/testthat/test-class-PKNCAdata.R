@@ -388,13 +388,18 @@ test_that("no intervals auto-determined (Fix GitHub issue #84)", {
   interval_2$Treatment <- 2
   interval_2$Subject <- 1
   interval_2$impute <- c(interval_2_ss$impute, NA_character_)
+  # The doses are an hour apart, and without a unit that is taken to be an hour,
+  # which is no nominal interval
   expect_warning(
-    two_multiple_dose_treatments <-
-      PKNCAdata(
-        PKNCAconc(data=tmp_conc, Conc~Time|Treatment+Subject),
-        PKNCAdose(data=tmp_dose, Dose~Time|Subject)
-      ),
-    regexp="No intervals generated"
+    expect_warning(
+      two_multiple_dose_treatments <-
+        PKNCAdata(
+          PKNCAconc(data=tmp_conc, Conc~Time|Treatment+Subject),
+          PKNCAdose(data=tmp_dose, Dose~Time|Subject)
+        ),
+      regexp="No intervals generated"
+    ),
+    class="pknca_warning_tau_not_nominal"
   )
   expect_equal(
     two_multiple_dose_treatments$intervals,

@@ -21,12 +21,13 @@ find.tau(
 \code{PKNCA.options()})}
 
 \item{tau.choices}{The nominal intervals to match, in the unit of \code{x}, or
-\code{NA} to use the built-in set (when \code{timeu} is given) or none.  Names are used
-as labels.  \code{NULL} takes the \code{tau.choices} option.}
+\code{NA} to use the built-in set.  Names are used as labels.  \code{NULL} takes the
+\code{tau.choices} option.}
 
-\item{timeu}{The time unit of \code{x} (such as \code{"hr"} or \code{"day"}), or \code{NULL} (or
-\code{""}) when it is not known.  A unit that cannot be converted to hours is an
-error.}
+\item{timeu}{The time unit of \code{x} (such as \code{"hr"} or \code{"day"}); \code{NULL} (or
+\code{""}) when it is not known, which is taken to be hours; or \code{NA} when it is
+known not to be a unit PKNCA can use, which leaves the intervals to the
+data.  Any other unit that cannot be converted to hours is an error.}
 }
 \value{
 \code{NA} when there are no dose times or no interval repeats, 0 for a
@@ -52,9 +53,12 @@ day at 0, 6, and 12 hours, from being reported as a 6 hour interval with a
 dose missing overnight.
 
 The intervals are matched to \code{tau.choices} when it is given.  When it is \code{NA}
-(the default) and \code{timeu} is given, they are matched to the built-in nominal
-intervals listed in \code{\link[=find.dose.regimen]{find.dose.regimen()}}.  When neither is given, the
-interval is the one found in the data, because the unit of \code{x} is not known.
+(the default), they are matched to the built-in nominal intervals listed in
+\code{\link[=find.dose.regimen]{find.dose.regimen()}}, in the unit \code{timeu}.  \strong{Without a time unit, the times
+are taken to be hours}, so \code{find.tau(c(0, 24, 50))} is 24 (once daily)
+rather than the median spacing of 25; times in another unit should give
+\code{timeu}, or they are compared with intervals in hours and an interval that
+matches none of them gives a \code{"pknca_warning_tau_not_nominal"} warning.
 The warnings of \code{\link[=find.dose.regimen]{find.dose.regimen()}} are given here as well, notably
 \code{"pknca_warning_tau_irregular_dosing"} for missed doses or doses off schedule.
 }
