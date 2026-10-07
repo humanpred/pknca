@@ -84,7 +84,10 @@ find.dose.regimen(
   when it is not known, which is taken to be hours; or `NA` when it is
   known not to be a unit PKNCA can use, which leaves the intervals to
   the data. Any other unit that cannot be converted to hours is an
-  error.
+  error, except that without the units package a unit other than `"hr"`
+  leaves the intervals to the data with a message, so an unrecognized
+  unit such as `"zzz"` is an error only when the units package is
+  installed.
 
 - options:
 
@@ -185,11 +188,9 @@ them gives a `"pknca_warning_tau_not_nominal"` warning; give `timeu` to
 avoid that. `timeu = NA` says that the unit is not one PKNCA can use,
 and the intervals then come from the data alone (every source is
 `"auto"`). Converting a unit other than `"hr"` needs the units package;
-without it,
-[`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
-and [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
-treat such a unit as one they cannot use, so their results for data in
-other units can differ between installations with and without that
+without it, such a unit gives a `"pknca_message_tau_units_fallback"`
+message and the intervals come from the data alone, so results for data
+in other units can differ between installations with and without that
 package.
 
 ## Conditions
@@ -212,6 +213,11 @@ package.
 - `pknca_warning_dose_regimen`:
 
   The parent class of the three warnings above, to handle them together.
+
+- `pknca_message_tau_units_fallback`:
+
+  `timeu` is not `"hr"` and the units package is not installed to
+  convert it, so the intervals come from the data alone.
 
 - `pknca_error_regimen_time_unit`:
 

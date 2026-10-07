@@ -223,7 +223,10 @@ regimen.</p></li>
 <dd><p>The time unit of <code>x</code> (such as <code>"hr"</code> or <code>"day"</code>); <code>NULL</code> (or
 <code>""</code>) when it is not known, which is taken to be hours; or <code>NA</code> when it is
 known not to be a unit PKNCA can use, which leaves the intervals to the
-data.  Any other unit that cannot be converted to hours is an error.</p></dd>
+data.  Any other unit that cannot be converted to hours is an error, except
+that without the units package a unit other than <code>"hr"</code> leaves the
+intervals to the data with a message, so an unrecognized unit such as
+<code>"zzz"</code> is an error only when the units package is installed.</p></dd>
 
 
 <dt id="arg-options">options<a class="anchor" aria-label="anchor" href="#arg-options"></a></dt>
@@ -312,10 +315,10 @@ intervals in hours, and an interval that matches none of them gives a
 <code>"pknca_warning_tau_not_nominal"</code> warning; give <code>timeu</code> to avoid that.
 <code>timeu = NA</code> says that the unit is not one PKNCA can use, and the intervals
 then come from the data alone (every source is <code>"auto"</code>).  Converting a unit
-other than <code>"hr"</code> needs the units package; without it, <code><a href="PKNCAdata.html">PKNCAdata()</a></code> and
-<code><a href="pk.nca.html">pk.nca()</a></code> treat such a unit as one they cannot use, so their results for
-data in other units can differ between installations with and without that
-package.</p>
+other than <code>"hr"</code> needs the units package; without it, such a unit gives a
+<code>"pknca_message_tau_units_fallback"</code> message and the intervals come from the
+data alone, so results for data in other units can differ between
+installations with and without that package.</p>
     </div>
     <div class="section level2">
     <h2 id="conditions">Conditions<a class="anchor" aria-label="anchor" href="#conditions"></a></h2>
@@ -338,6 +341,11 @@ The message includes the regimen table.</p></dd>
 <dt><code>pknca_warning_dose_regimen</code></dt>
 <dd><p>The parent class of the three warnings
 above, to handle them together.</p></dd>
+
+<dt><code>pknca_message_tau_units_fallback</code></dt>
+<dd><p><code>timeu</code> is not <code>"hr"</code> and the
+units package is not installed to convert it, so the intervals come from
+the data alone.</p></dd>
 
 <dt><code>pknca_error_regimen_time_unit</code></dt>
 <dd><p><code>timeu</code> cannot be converted to

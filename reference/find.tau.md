@@ -54,7 +54,10 @@ find.tau(
   when it is not known, which is taken to be hours; or `NA` when it is
   known not to be a unit PKNCA can use, which leaves the intervals to
   the data. Any other unit that cannot be converted to hours is an
-  error.
+  error, except that without the units package a unit other than `"hr"`
+  leaves the intervals to the data with a message, so an unrecognized
+  unit such as `"zzz"` is an error only when the units package is
+  installed.
 
 ## Value
 

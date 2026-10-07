@@ -130,7 +130,10 @@ daily dose.</p>
 <dd><p>The time unit of <code>x</code> (such as <code>"hr"</code> or <code>"day"</code>); <code>NULL</code> (or
 <code>""</code>) when it is not known, which is taken to be hours; or <code>NA</code> when it is
 known not to be a unit PKNCA can use, which leaves the intervals to the
-data.  Any other unit that cannot be converted to hours is an error.</p></dd>
+data.  Any other unit that cannot be converted to hours is an error, except
+that without the units package a unit other than <code>"hr"</code> leaves the
+intervals to the data with a message, so an unrecognized unit such as
+<code>"zzz"</code> is an error only when the units package is installed.</p></dd>
 
 </dl></div>
     <div class="section level2">
