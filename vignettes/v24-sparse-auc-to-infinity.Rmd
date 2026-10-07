@@ -1,0 +1,385 @@
+---
+title: "Sparse AUC to Infinity and the Uncertainty of Lambda z"
+author: "Bill Denney"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Sparse AUC to Infinity and the Uncertainty of Lambda z}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(PKNCA)
+simulation <- readRDS("v24-sparse-auc-to-infinity-simulation.rds")
+# One summary value of the simulation, for the text
+sim_value <- function(design, blq, elimination, method, parameter, column, digits = 1) {
+  s <- simulation$summary
+  row <-
+    s$design == design & s$blq == blq & s$elimination == elimination &
+    s$method == method & s$parameter == parameter
+  stopifnot(sum(row) == 1)
+  round(s[[column]][row], digits)
+}
+# The range of a summary value over scenarios
+sim_range <- function(method, parameter, column, elimination = c("fast", "slow"), digits = 0) {
+  s <- simulation$summary
+  v <- s[[column]][s$method == method & s$parameter == parameter & s$elimination %in% elimination]
+  paste(round(range(v), digits), collapse = " to ")
+}
+```
+
+# Introduction
+
+With sparse sampling, each animal contributes only one or a few samples to a
+concentration-time profile, so there is no individual AUC to summarize.
+Instead, the AUC is estimated from the mean concentration at each time, and its
+standard error comes from the variability between animals at each time.  Bailer
+(1988) gave the estimator and its variance for the AUC from time 0 to the last
+sampling time with serial sacrifice (one sample per animal).  Nedelman and Jia
+(1998) extended it to designs where animals give more than one sample, with
+a Satterthwaite approximation for the degrees of freedom, and Holder (2001)
+gave an unbiased estimator of the covariance between times.  Yuan (1993)
+extended Bailer's method to the AUC from 0 to infinity by adding the
+extrapolation $\bar{y}_n/\lambda_z$, treating the terminal elimination rate
+$\lambda_z$ as known.
+
+In practice, $\lambda_z$ is estimated from the same data, so its uncertainty
+adds to that of the AUC to infinity.  This vignette describes how PKNCA
+calculates the sparse AUC and AUMC to infinity with their standard errors and
+degrees of freedom, gives a delta-method extension of Yuan's method that
+includes the uncertainty in $\lambda_z$, and compares the methods in a
+simulation-estimation study.
+
+# The sparse AUC to the last measurement
+
+At each sampling time $t_i$ ($i = 0, \ldots, n$), $r_i$ animals are sampled and
+$\bar{y}_i$ is the arithmetic mean concentration.  $r_{ij}$ animals are sampled
+at both $t_i$ and $t_j$ ($r_{ii} = r_i$).  The linear trapezoidal AUC of the
+mean profile is a weighted sum of the means,
+
+$$\widehat{AUC}_{0-t_{last}} = \sum_{i=0}^{n} w_i \bar{y}_i,
+\quad w_0 = \frac{t_1 - t_0}{2},
+\quad w_i = \frac{t_{i+1} - t_{i-1}}{2},
+\quad w_n = \frac{t_n - t_{n-1}}{2},$$
+
+where $t_n = t_{last}$ is the last time with a positive mean.  Since the
+estimate is linear in the means, its variance is
+
+$$\text{Var}\left(\widehat{AUC}_{0-t_{last}}\right) = \sum_{i}\sum_{j} w_i w_j \frac{r_{ij}\,\sigma_{ij}}{r_i r_j},$$
+
+with $\sigma_{ij}$ the covariance of the concentrations at $t_i$ and $t_j$
+within an animal.  PKNCA estimates $\sigma_{ii}$ with the sample variance and
+$\sigma_{ij}$ ($i \neq j$) with the unbiased estimator of Holder (2001), setting
+it to 0 when fewer than two animals are sampled at both times.  With serial
+sacrifice, $r_{ij} = 0$ for $i \neq j$ and this is Bailer's (1988) variance,
+$\sum_i w_i^2 s_i^2/r_i$.
+
+Only times up to $t_{last}$ have weight.  When more than half of the samples at
+a time are below the limit of quantification (BLQ), PKNCA sets that time's mean
+to zero; times after the last positive mean are not part of
+$AUC_{0-t_{last}}$, and they contribute nothing to its variance either.
+
+# Extrapolation to infinity (Yuan 1993)
+
+With first-order terminal elimination, the area after $t_{last}$ is
+$\bar{y}_{n}/\lambda_z$, so
+
+$$\widehat{AUC}_{0-\infty} = \sum_{i=0}^{n} w_i \bar{y}_i + \frac{\bar{y}_n}{\lambda_z}.$$
+
+This is still linear in the means if $\lambda_z$ is known, with the last weight
+increased by $1/\lambda_z$.  Yuan's (1993) variance (his equation 4) is
+Bailer's with that weight, $g_n = w_n + 1/\lambda_z$:
+
+$$\text{Var}\left(\widehat{AUC}_{0-\infty}\right) = \sum_{i}\sum_{j} g_i g_j \frac{r_{ij}\,\sigma_{ij}}{r_i r_j},
+\qquad g_i = w_i + \frac{\delta_{i,n}}{\lambda_z}.$$
+
+Written this way, the method applies to any sampling design, not only serial
+sacrifice.
+
+The AUMC is the AUC of the moment curve $t\,C(t)$.  Its estimate uses the
+moment means $\bar{m}_i = t_i \bar{y}_i$, and the extrapolation
+$t_{last} C_{last}/\lambda_z + C_{last}/\lambda_z^2$ is
+$\bar{m}_n\left(1/\lambda_z + 1/(t_{last}\lambda_z^2)\right)$, so the AUMC
+weights are $g_i = w_i + \delta_{i,n}\left(1/\lambda_z + 1/(t_{last}\lambda_z^2)\right)$
+applied to the moment means, with the covariances of the moments
+$t_i t_j \sigma_{ij}$.
+
+# The uncertainty of lambda z (delta method)
+
+$\lambda_z$ is estimated from the mean profile:  PKNCA fits a line to the log
+mean concentrations at the half-life points, chosen automatically by the
+adjusted $r^2$ (see `vignette("v06-half-life-calculation")`).  For a given
+set of half-life points $H$, the estimate is minus the least-squares slope,
+
+$$\hat{\lambda}_z = -\sum_{j \in H} c_j \log \bar{y}_j,
+\qquad c_j = \frac{t_j - \bar{t}_H}{\sum_{k \in H}\left(t_k - \bar{t}_H\right)^2},$$
+
+a smooth function of the means.  So $\widehat{AUC}_{0-\infty}$ is a smooth
+function of the means, and the delta method gives its variance from the same
+covariance of the means with the gradient in place of the weights:
+
+$$g_j = \frac{\partial \widehat{AUC}_{0-\infty}}{\partial \bar{y}_j}
+= w_j + \frac{\delta_{j,n}}{\lambda_z}
++ \frac{\bar{y}_n}{\lambda_z^2}\,\frac{c_j}{\bar{y}_j}\,\mathbb{1}_{j \in H}.$$
+
+The last term is the uncertainty in $\lambda_z$.  Because the gradient is taken
+with respect to all of the means together, the variance includes the covariance
+of $\hat{\lambda}_z$ with $\bar{y}_n$ and with $\widehat{AUC}_{0-t_{last}}$.
+Those covariances matter:  a high mean at an early half-life point raises the
+AUC to $t_{last}$ but steepens the slope, which lowers the extrapolated area,
+so the two partly cancel.  Adding a separately estimated variance of
+$\hat{\lambda}_z$ to Yuan's variance would miss that.
+
+For the AUMC, with the moment means,
+$\hat{\lambda}_z = -\sum_{j \in H} c_j \left(\log \bar{m}_j - \log t_j\right)$ and
+
+$$g_j = w_j + \delta_{j,n}\left(\frac{1}{\lambda_z} + \frac{1}{t_{last}\lambda_z^2}\right)
++ \bar{m}_n\left(\frac{1}{\lambda_z^2} + \frac{2}{t_{last}\lambda_z^3}\right)\frac{c_j}{\bar{m}_j}\,\mathbb{1}_{j \in H}.$$
+
+The method conditions on the selected half-life points:  the variability from
+choosing them is not included.  It is a first-order approximation, which is
+most accurate when the coefficient of variation of the means at the half-life
+points is small.
+
+# Degrees of freedom
+
+Confidence intervals use a $t$ distribution.  The variance estimate is a
+quadratic form in the individual measurements $y$, $\hat{V} = y^T M y$, where
+$M$ centers the measurements at each time and weights the products of each
+animal's measurements by $g_i g_j r_{ij}/(r_i r_j h_{ij})$, with $h_{ij}$ the
+divisor of the Holder covariance.  With $\Omega$ the covariance of the
+measurements, Nedelman and Jia's (1998) equation 6 gives the Satterthwaite
+degrees of freedom,
+
+$$\nu = \frac{2\,E^2}{V}, \qquad E = \text{tr}(M\Omega), \qquad V = 2\,\text{tr}(M\Omega M\Omega).$$
+
+With serial sacrifice, this is equation 6a of Nedelman, Gibiansky, and Lau
+(1995).  PKNCA uses the same expression with the weights $g$ for the AUC and
+AUMC to infinity, with or without the delta-method terms.
+
+# An alternative:  lambda z from the individual samples
+
+Instead of the log means, $\lambda_z$ could be estimated from every individual
+sample in the terminal phase, with its standard error from that regression.
+Samples below the limit of quantification are censored, so the regression is a
+Tobit regression on the log concentrations; when animals give more than one
+sample, a random intercept for each animal accounts for their correlation.  The
+variance of $\hat{\lambda}_z$ is then added to Yuan's variance.
+
+Two properties of this approach differ from the delta method.  A line through
+the individual log concentrations follows the geometric-mean profile, while the
+AUC and $C_{last}$ come from the arithmetic means; the two have the same
+terminal slope only when the between-animal coefficient of variation is the
+same at every terminal time.  And the regression does not give the covariance of
+$\hat{\lambda}_z$ with the means, so it is added as though it were independent.
+The simulation below compares both.
+
+# Simulation-estimation study
+
+```{r simulation-details, echo = FALSE}
+model <- simulation$model
+```
+
+The study simulated a one-compartment model with first-order absorption (dose
+`r model$dose`, typical $k_a$ `r model$ka`/hr and $V$ `r model$v`), log-normal
+between-animal variability (`r 100*model$omega_ke`% on each of $k_a$, $k_e$,
+and $V$), and a multiplicative residual error (`r 100*model$sigma`%) with mean
+1.  Two elimination rates gave a small and a large extrapolated area, and two
+limits of quantification gave no BLQ samples or about a third of the samples at
+24 hours BLQ.  The serial-sacrifice design sampled `r simulation$n_serial`
+animals at each of `r length(simulation$sample_times)` times
+(`r paste(simulation$sample_times, collapse = ", ")` hours); the batch design
+sampled three batches of four animals, each batch at three of those times.
+Each of the `r nrow(simulation$scenarios)` scenarios had
+`r format(simulation$n_replicates, big.mark = ",")` replicates.
+
+The truth is the AUC (and AUMC) to infinity of the population mean
+concentration curve, which is what the arithmetic means estimate; for this model
+it is the mean of the individual $\text{dose}/(V k_e)$ (and
+$\text{dose}/(V k_e)\,(1/k_e + 1/k_a)$), which has a closed form for log-normal
+parameters.  For each replicate, the half-life was fit to the mean profile as
+PKNCA does, and the three standard errors were calculated:
+
+* **Yuan:**  $\lambda_z$ treated as known (`sparse_lambda_z_se = "none"`);
+* **Delta:**  the delta method for $\lambda_z$ (`sparse_lambda_z_se = "delta"`);
+* **Individual:**  $\lambda_z$ and its standard error from a Tobit regression
+  of the individual samples from the first half-life time onward (with a random
+  intercept for each animal in the batch design), with that $\lambda_z$ in the
+  extrapolation and its variance added to Yuan's.
+
+The simulation is in `data-raw/sparse_aucinf_simulation.R` in the PKNCA source,
+which was run with PKNCA `r simulation$pknca_version` (`r simulation$r_version`,
+`r simulation$run_date`); every replicate has its own seed, so the results can
+be reproduced.
+
+```{r simulation-results, echo = FALSE}
+results <- simulation$summary
+results$scenario_label <- paste(results$design, results$blq, results$elimination, sep = ", ")
+results$method <- factor(results$method, levels = c("yuan", "delta", "individual"))
+show_results <- function(parameter) {
+  r <- results[results$parameter == parameter, ]
+  r <- r[order(r$scenario, r$method), ]
+  out <-
+    data.frame(
+      Scenario = r$scenario_label,
+      Method = as.character(r$method),
+      `Extrapolated (%)` = round(r$percent_extrapolated, 1),
+      `Bias (%)` = round(r$relative_bias, 1),
+      `RMSE (%)` = round(r$rmse, 1),
+      `Median abs. error (%)` = round(r$median_absolute_error, 1),
+      `Median 95% CI width (%)` = round(r$median_ci_width, 1),
+      `Median df` = round(r$median_df, 1),
+      `Coverage (%)` = round(r$coverage, 1),
+      check.names = FALSE
+    )
+  knitr::kable(out, row.names = FALSE)
+}
+```
+
+## AUC to infinity
+
+```{r simulation-auc, echo = FALSE}
+show_results("auc")
+```
+
+## AUMC to infinity
+
+```{r simulation-aumc, echo = FALSE}
+show_results("aumc")
+```
+
+Bias, root mean squared error (RMSE), median absolute error, and the median
+width of the 95% confidence interval are relative to the true value.  Yuan and
+delta share the point estimate, so they differ only in the standard error.  The
+Monte Carlo standard error of each coverage is about
+`r round(max(simulation$summary$coverage_mcse), 1)` percentage points or less.
+
+## Findings
+
+**Coverage of the AUC to infinity.**  When elimination was fast and 5 to 8% of
+the AUC was extrapolated, all three methods covered close to the nominal 95%
+(Yuan `r sim_range("yuan", "auc", "coverage", "fast")`%, delta
+`r sim_range("delta", "auc", "coverage", "fast")`%, individual
+`r sim_range("individual", "auc", "coverage", "fast")`%), so the uncertainty of
+$\lambda_z$ matters little when little is extrapolated.  When elimination was
+slow and about 22% was extrapolated, treating $\lambda_z$ as known (Yuan)
+under-covered (`r sim_range("yuan", "auc", "coverage", "slow")`%), and the delta
+method was closest to nominal in every scenario
+(`r sim_range("delta", "auc", "coverage", "slow")`%).
+Adding the variance of $\lambda_z$ from the individual samples
+(`r sim_range("individual", "auc", "coverage", "slow")`% with slow elimination)
+recovered only part of the shortfall, because it omits the covariance of
+$\hat{\lambda}_z$ with the means.
+
+**Precision of the point estimate.**  The median absolute errors were similar
+for the two estimates of $\lambda_z$, but the log-mean $\lambda_z$ occasionally
+came out near zero when samples were BLQ or elimination was slow, which made
+the AUC to infinity heavy-tailed:  with serial sacrifice, BLQ samples, and fast
+elimination, the RMSE was `r sim_value("serial", "moderate", "fast", "delta", "auc", "rmse")`%
+with the log-mean $\lambda_z$ and
+`r sim_value("serial", "moderate", "fast", "individual", "auc", "rmse")`% with
+the Tobit $\lambda_z$ from the individual samples.  The Tobit fit uses every
+terminal sample, including the censored ones, rather than means that count BLQ
+samples as zero.  That advantage was not uniform:  in the batch design with BLQ
+samples and slow elimination, the mixed-effects Tobit fit was itself unstable
+(RMSE `r sim_value("batch", "moderate", "slow", "individual", "auc", "rmse")`%,
+against `r sim_value("batch", "moderate", "slow", "delta", "auc", "rmse")`%).
+
+**The AUMC to infinity.**  All three methods under-covered the AUMC
+(delta `r sim_range("delta", "aumc", "coverage")`%, Yuan
+`r sim_range("yuan", "aumc", "coverage")`%), more so with slow elimination.  Its
+extrapolation is proportional to $1/\lambda_z^2$, so the first-order delta
+method is a poorer approximation, and the estimate is more heavy-tailed.
+
+**Interval width.**  The delta-method intervals were wider than Yuan's, by the
+most when elimination was slow; the extra width is what improved the coverage.
+
+# Calculating it with PKNCA
+
+Request `aucinf.obs` (or `aumcinf.obs`) with sparse data.  The standard error
+and degrees of freedom are reported with it as `aucinf.obs_se` and
+`aucinf.obs_df`, and the summary shows the estimate with its standard error.
+
+```{r pknca-example}
+d_sparse <-
+  data.frame(
+    time = rep(c(0, 0.5, 1, 2, 4, 6, 8, 12, 24), each = 4),
+    conc =
+      c(0, 0, 0, 0,  3.1, 4.4, 3.6, 5.2,  5.8, 6.9, 5.1, 7.4,  7.2, 6.1, 8.3, 6.6,
+        5.0, 6.2, 4.4, 5.6,  4.1, 3.4, 4.8, 3.7,  2.9, 3.5, 2.4, 3.1,
+        1.6, 1.9, 1.3, 1.8,  0.33, 0.27, 0.41, 0.30)
+  )
+d_sparse$animal <- seq_len(nrow(d_sparse))
+o_data <-
+  PKNCAdata(
+    PKNCAconc(d_sparse, conc ~ time | animal, sparse = TRUE),
+    intervals = data.frame(start = 0, end = Inf, aucinf.obs = TRUE, aumcinf.obs = TRUE),
+    options = list(sparse_lambda_z_se = "delta")
+  )
+o_nca <- pk.nca(o_data)
+d_result <- as.data.frame(o_nca)
+d_result[grepl("^au.*inf|^lambda.z$", d_result$PPTESTCD), c("PPTESTCD", "PPORRES")]
+summary(o_nca)
+```
+
+The `sparse_lambda_z_se` option (set globally with `PKNCA.options()` or for
+one analysis with the `options` argument of `PKNCAdata()`) is `"none"` for
+Yuan's method or `"delta"` for the delta method.  The method used is recorded in
+the `PPANMETH` column.
+
+# Discussion
+
+When $\lambda_z$ is estimated from the same samples, its uncertainty adds to
+that of the AUC to infinity, and treating it as known, as Yuan's (1993)
+standard error does, under-covers once the extrapolated area is a substantial
+part of the AUC.  The delta method on the log means is a consistent extension of
+Yuan's method:  it keeps his estimate, applies to serial-sacrifice and batch
+designs alike through the covariance of the means, includes the covariance of
+$\hat{\lambda}_z$ with $C_{last}$ and the AUC to $t_{last}$, and needs nothing
+beyond the quantities already used for the sparse AUC to $t_{last}$.  In the
+simulation it brought the coverage of the AUC to infinity much closer to
+nominal when the extrapolated area was large
+(`r sim_range("delta", "auc", "coverage", "slow")`%, against
+`r sim_range("yuan", "auc", "coverage", "slow")`% for Yuan), though still a few
+points short.  For this reason, PKNCA offers it as the extension of Yuan's method
+(`sparse_lambda_z_se = "delta"`).
+
+Estimating $\lambda_z$ from the individual samples with a (mixed-effects) Tobit
+regression gave a more stable point estimate when samples were BLQ, but adding
+its variance to Yuan's did not give adequate coverage, and its mixed-effects
+fit was unstable in the sparsest design.  A natural refinement, not studied
+here, would combine the individual-sample $\lambda_z$ with a variance that
+includes its covariance with the means, for example by a joint delta method or a
+bootstrap over animals.
+
+Limitations remain.  The delta method conditions on the selected half-life
+points, so the uncertainty of the automatic point selection is not included; it
+is a first-order approximation, which is least accurate when $\lambda_z$ is
+imprecise, as for the AUMC with slow elimination; and the arithmetic mean
+profile of animals with different elimination rates is not monoexponential, so
+the extrapolation $C_{last}/\lambda_z$ is itself biased for the population mean
+curve.  Where the extrapolated area is large, sampling longer remains the
+better remedy.
+
+# References
+
+Bailer AJ.  Testing for the equality of area under the curves when using
+destructive measurement techniques.  Journal of Pharmacokinetics and
+Biopharmaceutics.  1988;16(3):303-309.
+
+Holder DJ.  Comments on Nedelman and Jia's extension of Satterthwaite's
+approximation applied to pharmacokinetics.  Journal of Biopharmaceutical
+Statistics.  2001;11(1-2):75-79.  doi:10.1081/BIP-100104199
+
+Nedelman JR, Gibiansky E, Lau DTW.  Applying Bailer's method for AUC
+confidence intervals to sparse sampling.  Pharmaceutical Research.
+1995;12(1):124-128.
+
+Nedelman JR, Jia X.  An extension of Satterthwaite's approximation applied to
+pharmacokinetics.  Journal of Biopharmaceutical Statistics.
+1998;8(2):317-328.  doi:10.1080/10543409808835241
+
+Yuan J.  Estimation of variance for AUC in animal studies.  Journal of
+Pharmaceutical Sciences.  1993;82(7):761-763.  doi:10.1002/jps.2600820718
