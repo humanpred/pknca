@@ -61,6 +61,7 @@ A tibble with one row per rule and the columns:
 | [`exclude_nca_min.hl.r.squared()`](https://humanpred.github.io/pknca/reference/exclude_nca.md) | Exclude based on half-life r-squared | `min.hl.r.squared` |
 | [`exclude_nca_span.ratio()`](https://humanpred.github.io/pknca/reference/exclude_nca.md) | Exclude based on the half-life span ratio | `min.span.ratio` |
 | [`exclude_nca_tmax_0()`](https://humanpred.github.io/pknca/reference/exclude_nca.md) | Exclude based on implausibly early Tmax (special case for tmax_early = 0) | (none) |
+| [`exclude_nca_tmax_coverage()`](https://humanpred.github.io/pknca/reference/exclude_nca.md) | Exclude based on whether a subject has a sample within Tukey's fences around the Tmax values of its group; the rule flags a subject with no sample within the inner fences, and excludes only a subject with no sample within the outer fences | (none) |
 | [`exclude_nca_tmax_early()`](https://humanpred.github.io/pknca/reference/exclude_nca.md) | Exclude based on implausibly early Tmax (often used for extravascular dosing with a Tmax value of 0) | (none) |
 
 ## See also
@@ -70,14 +71,15 @@ A tibble with one row per rule and the columns:
 
 Other Result exclusions:
 [`exclude()`](https://humanpred.github.io/pknca/reference/exclude.md),
-[`exclude_nca`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
+[`exclude_nca`](https://humanpred.github.io/pknca/reference/exclude_nca.md),
+[`pknca_missing_samples()`](https://humanpred.github.io/pknca/reference/pknca_missing_samples.md)
 
 ## Examples
 
 ``` r
 rules <- pknca_exclude_rules()
 rules[, c("rule", "description")]
-#> # A tibble: 8 × 2
+#> # A tibble: 9 × 2
 #>   rule                             description                                  
 #>   <chr>                            <chr>                                        
 #> 1 exclude_nca_by_param             Exclude based on NCA parameter thresholds    
@@ -87,5 +89,6 @@ rules[, c("rule", "description")]
 #> 5 exclude_nca_min.hl.r.squared     Exclude based on half-life r-squared         
 #> 6 exclude_nca_span.ratio           Exclude based on the half-life span ratio    
 #> 7 exclude_nca_tmax_0               Exclude based on implausibly early Tmax (spe…
-#> 8 exclude_nca_tmax_early           Exclude based on implausibly early Tmax (oft…
+#> 8 exclude_nca_tmax_coverage        Exclude based on whether a subject has a sam…
+#> 9 exclude_nca_tmax_early           Exclude based on implausibly early Tmax (oft…
 ```

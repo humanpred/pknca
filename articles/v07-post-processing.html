@@ -159,11 +159,13 @@ concentrations for AUC calculation
 (<code><a href="../reference/exclude_nca.html">exclude_nca_count_conc_measured()</a></code>), a low half-life
 r-squared or adjusted r-squared
 (<code><a href="../reference/exclude_nca.html">exclude_nca_min.hl.r.squared()</a></code> and
-<code><a href="../reference/exclude_nca.html">exclude_nca_min.hl.adj.r.squared()</a></code>), and an implausibly
-early
+<code><a href="../reference/exclude_nca.html">exclude_nca_min.hl.adj.r.squared()</a></code>), an implausibly early
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">T_{max}</annotation></semantics></math>
 (<code><a href="../reference/exclude_nca.html">exclude_nca_tmax_early()</a></code> and
-<code><a href="../reference/exclude_nca.html">exclude_nca_tmax_0()</a></code>). They are built on the more general
+<code><a href="../reference/exclude_nca.html">exclude_nca_tmax_0()</a></code>), and samples far from the usual
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">T_{max}</annotation></semantics></math>
+times of the group (<code><a href="../reference/exclude_nca.html">exclude_nca_tmax_coverage()</a></code>, described
+below). They are built on the more general
 <code><a href="../reference/exclude_nca_by_param.html">exclude_nca_by_param()</a></code>, which excludes results when a
 single parameter is below a minimum threshold and/or above a maximum
 threshold, and which can also be used directly for any parameter. To use
@@ -228,6 +230,101 @@ argument to <code><a href="../reference/exclude.html">exclude()</a></code>.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">18</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Imputation: start_p… span.r…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.obs          31.5    Imputation: start_p… span.r…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.obs                0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… span.r…</span></span></code></pre>
+</div>
+<div class="section level4">
+<h4 id="missing-samples-and-t_max-coverage">Missing Samples and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">T_{max}</annotation></semantics></math>
+Coverage<a class="anchor" aria-label="anchor" href="#missing-samples-and-t_max-coverage"></a>
+</h4>
+<p>A subject who missed the samples around the peak can have a
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>C</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">C_{max}</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">T_{max}</annotation></semantics></math>
+that describe some other part of the profile. Two functions find those
+subjects, and both work best with nominal times (the
+<code>time.nominal</code> argument of <code><a href="../reference/PKNCAconc.html">PKNCAconc()</a></code>).</p>
+<p><code><a href="../reference/pknca_missing_samples.html">pknca_missing_samples()</a></code> lists, for each subject, the
+nominal times of its group’s sampling schedule that have no usable
+concentration: the subject has no row at that time, the concentration is
+<code>NA</code>, or the row is excluded. The schedule of a group is
+every nominal time that any subject of the group has a row for, so
+recording a missed sample as a row with an <code>NA</code> concentration
+keeps that time in the schedule.</p>
+<p><code><a href="../reference/exclude_nca.html">exclude_nca_tmax_coverage()</a></code> is an exclusion rule that
+flags subjects whose samples miss the usual
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">T_{max}</annotation></semantics></math>
+times, and excludes only beyond the outer fences. Within each summary
+group, it finds the first and third quartiles of the subjects’
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">T_{max}</annotation></semantics></math>
+values (with <code><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">stats::quantile()</a></code> type 7, its default) and
+extends them by 1.5 times the interquartile range for the inner fences
+and by 3 times it for the outer fences (Tukey’s fences; the multiples
+are the <code>k_warn</code> and <code>k_exclude</code> arguments). A
+subject with no sample within the outer fences is excluded. A subject
+with a sample within the outer fences but none within the inner fences
+gets a warning that it may be a data issue, and is not excluded. A
+subject with a sample within the inner fences that is missing other
+nominal times within them gets a message that
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>C</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">C_{max}</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">T_{max}</annotation></semantics></math>
+may be unreliable. A predose sample counts only after an intravascular
+bolus. Groups with fewer than four subjects are not checked. See
+<code><a href="../reference/exclude_nca.html">?exclude_nca</a></code> for the details.</p>
+<p>The example below adds nominal times to the theophylline data and
+removes some samples: subject 2 loses every sample from 0.25 to 7 hours,
+and subject 3 loses its 1-hour concentration. Subject 2 has no sample
+left within the inner fences (up to 7.25 hours), but its 9-hour sample
+is within the outer fences (up to 11 hours), so it is flagged with a
+warning and not excluded. Subjects 3 and 10 (whose 0.5-hour sample was
+taken nearer to 1 hour) have samples within the inner fences, but each
+is missing one nominal time within them, so each gets a message.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">nominal_times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3.5</span>, <span class="fl">5</span>, <span class="fl">7</span>, <span class="fl">9</span>, <span class="fl">12</span>, <span class="fl">24</span><span class="op">)</span></span>
+<span><span class="va">d_conc_nominal</span> <span class="op">&lt;-</span> <span class="va">d_conc</span></span>
+<span><span class="va">d_conc_nominal</span><span class="op">$</span><span class="va">Time_nominal</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">d_conc_nominal</span><span class="op">$</span><span class="va">Time</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">nominal_times</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.min</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">nominal_times</span> <span class="op">-</span> <span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">d_conc_nominal</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">d_conc_nominal</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">2</span> <span class="op">&amp;</span> <span class="va">Time_nominal</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">Time_nominal</span> <span class="op">&lt;=</span> <span class="fl">7</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>conc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">3</span> <span class="op">&amp;</span> <span class="va">Time_nominal</span> <span class="op">==</span> <span class="fl">1</span>, <span class="cn">NA</span>, <span class="va">conc</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">conc_obj_nominal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc_nominal</span>, <span class="va">conc</span><span class="op">~</span><span class="va">Time</span><span class="op">|</span><span class="va">Subject</span>, time.nominal <span class="op">=</span> <span class="st">"Time_nominal"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/pknca_missing_samples.html">pknca_missing_samples</a></span><span class="op">(</span><span class="va">conc_obj_nominal</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##   Subject Time_nominal           reason</span></span>
+<span><span class="co">## 1       2         0.25           no row</span></span>
+<span><span class="co">## 2       2         0.50           no row</span></span>
+<span><span class="co">## 3       2         1.00           no row</span></span>
+<span><span class="co">## 4       2         2.00           no row</span></span>
+<span><span class="co">## 5       2         3.50           no row</span></span>
+<span><span class="co">## 6       2         5.00           no row</span></span>
+<span><span class="co">## 7       2         7.00           no row</span></span>
+<span><span class="co">## 8       3         1.00 NA concentration</span></span>
+<span><span class="co">## 9      10         0.50           no row</span></span></code></pre>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">results_obj_nominal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">conc_obj_nominal</span>, <span class="va">dose_obj</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2</span></span>
+<span><span class="co">## points)</span></span></code></pre>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">results_excl_tmax</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exclude.html">exclude</a></span><span class="op">(</span><span class="va">results_obj_nominal</span>, FUN <span class="op">=</span> <span class="fu"><a href="../reference/exclude_nca.html">exclude_nca_tmax_coverage</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Warning: Possible data issue for start=0, end=Inf, Subject=2: no sample in the</span></span>
+<span><span class="co">## inner Tmax range of the group (nominal time 0 to 7.25 after the interval start,</span></span>
+<span><span class="co">## nearest sample at 9); not excluded, since a sample is in the outer range</span></span></code></pre>
+<pre><code><span><span class="co">## Cmax and Tmax may be unreliable for start=0, end=Inf, Subject=3:  no usable sample at nominal time 1, within the inner Tmax range of the group (nominal time 0 to 7.25 after the interval start)</span></span>
+<span><span class="co">## Cmax and Tmax may be unreliable for start=0, end=Inf, Subject=10:  no usable sample at nominal time 0.5, within the inner Tmax range of the group (nominal time 0 to 7.25 after the interval start)</span></span></code></pre>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_excl_tmax</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cmax"</span>, <span class="st">"tmax"</span>, <span class="st">"auclast"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">Subject</span>, <span class="va">start</span>, <span class="va">end</span>, <span class="va">PPTESTCD</span>, <span class="va">PPORRES</span>, <span class="va">exclude</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
+<span><span class="co">##   Subject start   end PPTESTCD PPORRES exclude</span></span>
+<span><span class="co">##     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>       1     0   <span style="color: #BB0000;">Inf</span> auclast   147.   <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span>       1     0   <span style="color: #BB0000;">Inf</span> cmax       10.5  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span>       1     0   <span style="color: #BB0000;">Inf</span> tmax        1.12 <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span>       2     0   <span style="color: #BB0000;">Inf</span> auclast    53.2  <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">5</span>       2     0   <span style="color: #BB0000;">Inf</span> cmax        4.55 <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">6</span>       2     0   <span style="color: #BB0000;">Inf</span> tmax        9    <span style="color: #BB0000;">NA</span></span></span></code></pre>
 <p>You may also write your own exclusion function. The exclusion
 functions built-into PKNCA are a bit more complex than required because
 they handle options and manage general functionality that may not apply
@@ -242,7 +339,7 @@ described in the details section of <code><a href="../reference/exclude.html">?e
 provided. But, excluding specific points allows for errors to also enter
 the analysis because parameters that depend on the excluded parameter
 will not be excluded.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mask_exclude_cmax</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">results_obj</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -284,7 +381,7 @@ will not be excluded.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">18</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.obs          31.5    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.obs                0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… <span style="color: #BB0000;">NA</span></span></span></code></pre>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># With exclusions applied, the 'exclude' column has the reason for exclusion.</span></span>
 <span><span class="va">results_excl_specific</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -318,7 +415,7 @@ will not be excluded.</p>
 </h4>
 <p>More than one exclusion can be applied sequentially to results as in
 the example below.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mask_exclude_lz</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">results_obj</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -387,7 +484,7 @@ PKNCAresults object. You can also specify the unit as another column in
 the concentration data or as a constant value.</p>
 <p>Suppose your concentration data includes a column for body weight,
 and you want to normalize Cmax by each subject’s weight:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Add a weight column to the concentration data</span></span>
 <span><span class="va">d_conc2</span> <span class="op">&lt;-</span> <span class="va">d_conc</span></span>
 <span><span class="va">d_conc2</span><span class="op">$</span><span class="va">weight</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fl">60</span><span class="op">:</span><span class="fl">71</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">12</span><span class="op">)</span><span class="op">[</span><span class="va">d_conc2</span><span class="op">$</span><span class="va">Subject</span><span class="op">]</span><span class="op">)</span></span>
@@ -440,7 +537,7 @@ can perform the same normalization using the <code><a href="../reference/normali
 function by providing a normalization table. Below, we use the same
 subject weights as above to normalize Cmax, but without adding the
 weight column to the concentration data:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Use the same subject_weights as above</span></span>
 <span><span class="va">norm_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Subject <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">d_conc</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span>, normalization <span class="op">=</span> <span class="fl">60</span><span class="op">:</span><span class="fl">71</span>, unit <span class="op">=</span> <span class="st">"kg"</span><span class="op">)</span></span>
 <span><span class="va">results_norm_custom</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/normalize.html">normalize</a></span><span class="op">(</span></span>
@@ -492,7 +589,7 @@ requested, it will not be shown in the summary.</p>
 <p>The summary will have one column for each grouping variable other
 than the subject grouping variable; one column each for the start and
 end time; and one column per parameter calculated.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax                 tlag</span></span>
 <span><span class="co">##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]</span></span>
@@ -503,7 +600,7 @@ end time; and one column per parameter calculated.</p>
 <p>When values are excluded as described above, the excluded values are
 not included in the summary (note that half.life and aucinf.obs
 differ).</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_excl_span</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax                 tlag</span></span>
 <span><span class="co">##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]</span></span>
@@ -519,7 +616,7 @@ differ).</p>
 </h3>
 <p>A listing of all calculated values is available using
 <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 20 × 7</span></span></span>
@@ -546,7 +643,7 @@ differ).</p>
 <span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.obs          31.5    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.obs                0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… <span style="color: #BB0000;">NA</span></span></span></code></pre>
 <p>Excluded values remain in the listing.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_excl_span</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 20 × 7</span></span></span>
@@ -587,7 +684,7 @@ interval (or if the row is excluded from all calculations). It accepts
 either a PKNCAresults or a PKNCAdata object (with a PKNCAdata object,
 the half-life is calculated first), and the intervals do not need to
 start at time 0.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_conc_hl</span> <span class="op">&lt;-</span> <span class="va">d_conc</span></span>
 <span><span class="va">d_conc_hl</span><span class="op">$</span><span class="va">hl_used</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_halflife_points.html">get_halflife_points</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span>
 <span><span class="co"># The points used for the half-life fit are the later time points</span></span>
@@ -613,7 +710,7 @@ start at time 0.</p>
 row per group and interval, as the slope and intercept of
 <code>log(conc) = intercept + slope*time</code>. The slope is
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><msub><mi>λ</mi><mi>z</mi></msub></mrow><annotation encoding="application/x-tex">-\lambda_z</annotation></semantics></math>.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_halflife_fit.html">get_halflife_fit</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##    Subject start end intercept       slope time_first time_last</span></span>
 <span><span class="co">## 1        1     0 Inf  2.368785 -0.04845700       9.05     24.37</span></span>
@@ -646,7 +743,7 @@ Concentrations are returned as concentrations, not
 log-concentrations.</p>
 <p>With <code>n</code>, the times span the concentrations used for the
 fit:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_halflife_curve.html">get_halflife_curve</a></span><span class="op">(</span><span class="va">results_obj</span>, n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   Subject start end  time     conc</span></span>
@@ -659,7 +756,7 @@ fit:</p>
 after the last concentration used for the fit is done by default, and
 extrapolation before the first is not, so early times give
 <code>NA</code>:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_halflife_curve.html">get_halflife_curve</a></span><span class="op">(</span><span class="va">results_obj</span>, tout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">12</span>, <span class="fl">48</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Subject</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   Subject start end time     conc</span></span>
@@ -669,7 +766,7 @@ extrapolation before the first is not, so early times give
 <p>Both defaults can be changed with the
 <code>extrapolate_earlier</code> and <code>extrapolate_later</code>
 arguments:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_halflife_curve.html">get_halflife_curve</a></span><span class="op">(</span></span>
 <span>  <span class="va">results_obj</span>,</span>
 <span>  tout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">12</span>, <span class="fl">48</span><span class="op">)</span>,</span>

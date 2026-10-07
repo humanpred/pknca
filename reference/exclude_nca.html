@@ -81,7 +81,9 @@
 <span></span>
 <span><span class="fu">exclude_nca_tmax_early</span><span class="op">(</span>tmax_early <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">exclude_nca_tmax_0</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">exclude_nca_tmax_0</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">exclude_nca_tmax_coverage</span><span class="op">(</span>min_subjects <span class="op">=</span> <span class="fl">4</span>, k_warn <span class="op">=</span> <span class="fl">1.5</span>, k_exclude <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -115,6 +117,18 @@
 <dt id="arg-tmax-early">tmax_early<a class="anchor" aria-label="anchor" href="#arg-tmax-early"></a></dt>
 <dd><p>The time for Tmax which is considered too early to be a valid NCA result</p></dd>
 
+
+<dt id="arg-min-subjects">min_subjects<a class="anchor" aria-label="anchor" href="#arg-min-subjects"></a></dt>
+<dd><p>The fewest subjects with a Tmax in a group for the group to be checked (smaller groups are not checked, with a message)</p></dd>
+
+
+<dt id="arg-k-warn">k_warn<a class="anchor" aria-label="anchor" href="#arg-k-warn"></a></dt>
+<dd><p>The multiple of the interquartile range that sets the inner fences; a subject with no sample within them gets a warning</p></dd>
+
+
+<dt id="arg-k-exclude">k_exclude<a class="anchor" aria-label="anchor" href="#arg-k-exclude"></a></dt>
+<dd><p>The multiple of the interquartile range that sets the outer fences (at least k_warn); a subject with no sample within them is excluded</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -133,12 +147,88 @@ thresholds came from (see <code><a href="pknca_exclude_rules.html">pknca_exclude
 <li><p><code>exclude_nca_min.hl.adj.r.squared()</code>: Exclude based on half-life adjusted r-squared</p></li>
 <li><p><code>exclude_nca_tmax_early()</code>: Exclude based on implausibly early Tmax (often used for extravascular dosing with a Tmax value of 0)</p></li>
 <li><p><code>exclude_nca_tmax_0()</code>: Exclude based on implausibly early Tmax (special case for tmax_early = 0)</p></li>
+<li><p><code>exclude_nca_tmax_coverage()</code>: Exclude based on whether a subject has a sample within Tukey's fences around the Tmax values of its group; the rule flags a subject with no sample within the inner fences, and excludes only a subject with no sample within the outer fences</p></li>
+</ul></div>
+    <div class="section level2">
+    <h2 id="tmax-coverage">Tmax coverage<a class="anchor" aria-label="anchor" href="#tmax-coverage"></a></h2>
+
+
+
+<p><code>exclude_nca_tmax_coverage()</code> compares each subject's samples with the
+Tmax values of its group; it flags a subject whose samples miss the usual
+Tmax times, and excludes only beyond the outer fences.  The group is the
+summary group of <code><a href="summary.PKNCAresults.html">summary.PKNCAresults()</a></code>:  every grouping column except
+the subject, with the interval start and end (so each part, treatment,
+analyte, and interval is its own group).  From the first and third
+quartiles of the Tmax values of every subject in the group (the subject
+being judged included), Tukey's inner fences are the quartiles extended
+by <code>k_warn</code> times the interquartile range, and the outer fences by
+<code>k_exclude</code> times it.  The quartiles are those of
+<code>stats::quantile(type = 7)</code>, the default type; with few subjects, the
+types differ (Tmax values of 1, 1, 2, 2, 1, and 8 give a third quartile
+of 2 with type 7, 3.5 with type 6, and 2.5 with type 8).  Tmax values
+that are missing or already excluded are not used.  The ranges never
+start before the interval start, where a reported range starts when its
+lower fence is below it.  A sample at the interval start counts only when
+the subject's dose at or before the interval start is an intravascular
+bolus (route intravascular and no duration or a duration of zero in
+<code><a href="PKNCAdose.html">PKNCAdose()</a></code>), so a predose sample does not count after an extravascular
+dose or when the results have no dose data.</p>
+<p>The samples are the concentration rows with an actual time within the
+interval (the rows that <code><a href="pk.nca.html">pk.nca()</a></code> used) that have a concentration and
+are not excluded.  When the concentration data have a nominal time
+(<code>time.nominal</code> in <code><a href="PKNCAconc.html">PKNCAconc()</a></code>), the samples are placed by their
+nominal time minus the interval start, so the nominal times must share
+the origin of the interval times (for example, the nominal time since the
+first dose); otherwise, they are placed by their actual time.  The
+Tmax values are placed the same way:  with nominal times, a subject's
+Tmax is the nominal time of the sample it was found at, so an offset
+between the actual and nominal times moves the fences and the samples
+together.  A subject whose Tmax sample has no nominal time does not enter
+the fences, and a subject whose samples in the interval have no nominal
+time at all is not judged, with a
+<code>pknca_message_tmax_coverage_no_nominal_subject</code> message.  Times are
+never converted between units, and the time unit is only used in the
+text.</p><ul><li><p>A subject with no sample within the outer fences is excluded:  every
+parameter of that interval is excluded with a reason that gives the
+outer range and the subject's sample nearest to it.</p></li>
+<li><p>A subject with a sample within the outer fences but none within the
+inner fences is flagged as a possible data issue and not excluded:  a
+<code>pknca_warning_tmax_coverage_outlier</code> warning has the fields <code>group</code> (a
+one-row data.frame with the group and subject), <code>tmax_range</code> (the inner
+range, relative to the interval start), and <code>nearest_sample</code> (the
+subject's sample nearest to it, relative to the interval start).</p></li>
+<li><p>With nominal times, a subject with a sample within the inner fences
+that is missing some of the group's nominal times within them (see
+<code><a href="pknca_missing_samples.html">pknca_missing_samples()</a></code>) gets a <code>pknca_message_tmax_coverage_partial</code>
+message that Cmax and Tmax may be unreliable.  Its fields are <code>group</code>,
+<code>tmax_range</code>, <code>time_nominal_missing</code>, and <code>reason</code> (as in
+<code><a href="pknca_missing_samples.html">pknca_missing_samples()</a></code>).  Without nominal times, there is no
+schedule to compare with, and no message is given.</p></li>
+<li><p>The warnings and messages can be caught with <code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">withCallingHandlers()</a></code>.</p></li>
+<li><p>A group with fewer than <code>min_subjects</code> subjects with a Tmax on the
+basis of the fences (one subject, for example) is not checked, and a
+<code>pknca_message_tmax_coverage_few_subjects</code> message says so once per
+group.  Quartiles of fewer than four values describe the spread of the
+group poorly.</p></li>
+<li><p>When the nominal times disagree with the interval, the group is not
+checked, and a <code>pknca_warning_tmax_coverage_no_nominal</code> warning says so
+once per group.  They disagree when no nominal time of the group is
+after the interval start, when most samples of the group with an
+actual time in the interval have a nominal time outside it, or when a
+subject's nominal times go back to the start of its schedule while its
+actual times increase within the interval, as when the nominal times
+restart at each dose.</p></li>
+<li><p>Sparse data have one Tmax per group, from the mean profile, so they are
+not checked, and a <code>pknca_message_tmax_coverage_sparse</code> message says so
+once per call to <code><a href="exclude.html">exclude()</a></code>.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other Result exclusions:
 <code><a href="exclude.html">exclude()</a></code>,
-<code><a href="pknca_exclude_rules.html">pknca_exclude_rules()</a></code></p></div>
+<code><a href="pknca_exclude_rules.html">pknca_exclude_rules()</a></code>,
+<code><a href="pknca_missing_samples.html">pknca_missing_samples()</a></code></p></div>
     </div>
 
     <div class="section level2">

@@ -71,11 +71,13 @@ a low half-life r-squared or adjusted r-squared
 ([`exclude_nca_min.hl.r.squared()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
 and
 [`exclude_nca_min.hl.adj.r.squared()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)),
-and an implausibly early $`T_{max}`$
+an implausibly early $`T_{max}`$
 ([`exclude_nca_tmax_early()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
 and
-[`exclude_nca_tmax_0()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)).
-They are built on the more general
+[`exclude_nca_tmax_0()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)),
+and samples far from the usual $`T_{max}`$ times of the group
+([`exclude_nca_tmax_coverage()`](https://humanpred.github.io/pknca/reference/exclude_nca.md),
+described below). They are built on the more general
 [`exclude_nca_by_param()`](https://humanpred.github.io/pknca/reference/exclude_nca_by_param.md),
 which excludes results when a single parameter is below a minimum
 threshold and/or above a maximum threshold, and which can also be used
@@ -150,6 +152,113 @@ as.data.frame(results_excl_span) %>%
     ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… span.r…
     ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… span.r…
     ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… span.r…
+
+#### Missing Samples and $`T_{max}`$ Coverage
+
+A subject who missed the samples around the peak can have a $`C_{max}`$
+and $`T_{max}`$ that describe some other part of the profile. Two
+functions find those subjects, and both work best with nominal times
+(the `time.nominal` argument of
+[`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)).
+
+[`pknca_missing_samples()`](https://humanpred.github.io/pknca/reference/pknca_missing_samples.md)
+lists, for each subject, the nominal times of its group’s sampling
+schedule that have no usable concentration: the subject has no row at
+that time, the concentration is `NA`, or the row is excluded. The
+schedule of a group is every nominal time that any subject of the group
+has a row for, so recording a missed sample as a row with an `NA`
+concentration keeps that time in the schedule.
+
+[`exclude_nca_tmax_coverage()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
+is an exclusion rule that flags subjects whose samples miss the usual
+$`T_{max}`$ times, and excludes only beyond the outer fences. Within
+each summary group, it finds the first and third quartiles of the
+subjects’ $`T_{max}`$ values (with
+[`stats::quantile()`](https://rdrr.io/r/stats/quantile.html) type 7, its
+default) and extends them by 1.5 times the interquartile range for the
+inner fences and by 3 times it for the outer fences (Tukey’s fences; the
+multiples are the `k_warn` and `k_exclude` arguments). A subject with no
+sample within the outer fences is excluded. A subject with a sample
+within the outer fences but none within the inner fences gets a warning
+that it may be a data issue, and is not excluded. A subject with a
+sample within the inner fences that is missing other nominal times
+within them gets a message that $`C_{max}`$ and $`T_{max}`$ may be
+unreliable. A predose sample counts only after an intravascular bolus.
+Groups with fewer than four subjects are not checked. See
+[`?exclude_nca`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
+for the details.
+
+The example below adds nominal times to the theophylline data and
+removes some samples: subject 2 loses every sample from 0.25 to 7 hours,
+and subject 3 loses its 1-hour concentration. Subject 2 has no sample
+left within the inner fences (up to 7.25 hours), but its 9-hour sample
+is within the outer fences (up to 11 hours), so it is flagged with a
+warning and not excluded. Subjects 3 and 10 (whose 0.5-hour sample was
+taken nearer to 1 hour) have samples within the inner fences, but each
+is missing one nominal time within them, so each gets a message.
+
+``` r
+
+nominal_times <- c(0, 0.25, 0.5, 1, 2, 3.5, 5, 7, 9, 12, 24)
+d_conc_nominal <- d_conc
+d_conc_nominal$Time_nominal <-
+  sapply(d_conc_nominal$Time, function(x) nominal_times[which.min(abs(nominal_times - x))])
+d_conc_nominal <-
+  d_conc_nominal %>%
+  filter(!(Subject == 2 & Time_nominal > 0 & Time_nominal <= 7)) %>%
+  mutate(conc = ifelse(Subject == 3 & Time_nominal == 1, NA, conc))
+
+conc_obj_nominal <- PKNCAconc(d_conc_nominal, conc~Time|Subject, time.nominal = "Time_nominal")
+pknca_missing_samples(conc_obj_nominal)
+```
+
+    ##   Subject Time_nominal           reason
+    ## 1       2         0.25           no row
+    ## 2       2         0.50           no row
+    ## 3       2         1.00           no row
+    ## 4       2         2.00           no row
+    ## 5       2         3.50           no row
+    ## 6       2         5.00           no row
+    ## 7       2         7.00           no row
+    ## 8       3         1.00 NA concentration
+    ## 9      10         0.50           no row
+
+``` r
+
+results_obj_nominal <- pk.nca(PKNCAdata(conc_obj_nominal, dose_obj))
+```
+
+    ## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2
+    ## points)
+
+``` r
+
+results_excl_tmax <- exclude(results_obj_nominal, FUN = exclude_nca_tmax_coverage())
+```
+
+    ## Warning: Possible data issue for start=0, end=Inf, Subject=2: no sample in the
+    ## inner Tmax range of the group (nominal time 0 to 7.25 after the interval start,
+    ## nearest sample at 9); not excluded, since a sample is in the outer range
+
+    ## Cmax and Tmax may be unreliable for start=0, end=Inf, Subject=3:  no usable sample at nominal time 1, within the inner Tmax range of the group (nominal time 0 to 7.25 after the interval start)
+    ## Cmax and Tmax may be unreliable for start=0, end=Inf, Subject=10:  no usable sample at nominal time 0.5, within the inner Tmax range of the group (nominal time 0 to 7.25 after the interval start)
+
+``` r
+
+as.data.frame(results_excl_tmax) %>%
+  filter(Subject %in% 1:2, PPTESTCD %in% c("cmax", "tmax", "auclast")) %>%
+  select(Subject, start, end, PPTESTCD, PPORRES, exclude)
+```
+
+    ## # A tibble: 6 × 6
+    ##   Subject start   end PPTESTCD PPORRES exclude
+    ##     <dbl> <dbl> <dbl> <chr>      <dbl> <chr>  
+    ## 1       1     0   Inf auclast   147.   NA     
+    ## 2       1     0   Inf cmax       10.5  NA     
+    ## 3       1     0   Inf tmax        1.12 NA     
+    ## 4       2     0   Inf auclast    53.2  NA     
+    ## 5       2     0   Inf cmax        4.55 NA     
+    ## 6       2     0   Inf tmax        9    NA
 
 You may also write your own exclusion function. The exclusion functions
 built-into PKNCA are a bit more complex than required because they

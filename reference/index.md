@@ -210,6 +210,7 @@
   [`exclude_nca_min.hl.adj.r.squared()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
   [`exclude_nca_tmax_early()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
   [`exclude_nca_tmax_0()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
+  [`exclude_nca_tmax_coverage()`](https://humanpred.github.io/pknca/reference/exclude_nca.md)
   : Exclude NCA parameters based on examining the parameter set.
 
 - [`exclude_nca_by_param()`](https://humanpred.github.io/pknca/reference/exclude_nca_by_param.md)
@@ -647,6 +648,10 @@
 
 - [`pknca_match_route()`](https://humanpred.github.io/pknca/reference/pknca_match_route.md)
   : Match spellings of a route of administration to the route PKNCA uses
+
+- [`pknca_missing_samples()`](https://humanpred.github.io/pknca/reference/pknca_missing_samples.md)
+  : Find the samples missing from each subject's nominal sampling
+  schedule
 
 - [`pknca_parameter_table()`](https://humanpred.github.io/pknca/reference/pknca_parameter_table.md)
   : How each NCA parameter is classified for interval selection
