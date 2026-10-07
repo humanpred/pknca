@@ -14,9 +14,15 @@
 #     and its variance is added to the Yuan variance as though lambda.z were
 #     independent of the means.
 #
-# The truth is the AUC (and AUMC) of the population mean concentration curve,
-# which is what the arithmetic means estimate; it has a closed form for the
-# one-compartment model below.  Concentrations come from pmxTools.
+# The design (one- and two-compartment models, oral and IV bolus, serial and
+# batch sampling) is in data-raw/sparse_simulation_design.R.  No animal is
+# sampled at the dose:  for oral dosing, the concentration at time 0 is imputed
+# as zero (as the start_conc0 imputation does in pk.nca()), and for IV bolus
+# dosing, C0 is back-extrapolated from the mean profile by the sparse IV
+# estimators (pk.calc.aucivinf.obs_sparse() and pk.calc.aumcivinf.obs_sparse()).
+# The truth is the AUC (and AUMC) from 0 to infinity of the population mean
+# concentration curve, which is what the arithmetic means estimate:  the mean
+# of the individual values over a large virtual population.
 #
 # Run from the package root with the PKNCA version that has
 # pk.calc.aucinf.obs_sparse() installed:
@@ -31,96 +37,39 @@ library(PKNCA)
 
 n_replicates <- as.integer(Sys.getenv("SIM_REPLICATES", "5000"))
 seed_base <- 20261007
-n_cores <- as.integer(Sys.getenv("SIM_CORES", "12"))
+n_cores <- as.integer(Sys.getenv("SIM_CORES", "16"))
 
-# Model and scenarios ####
+n_virtual <- as.integer(Sys.getenv("SIM_VIRTUAL", "100000"))
 
-# One-compartment model with first-order absorption; dose 100, typical ka 1.5/hr
-# and V 10, with log-normal variability (omega) on ka, ke, and V and a
-# multiplicative residual error with mean 1
-model <- list(dose = 100, ka = 1.5, v = 10, omega_ka = 0.3, omega_ke = 0.3, omega_v = 0.3, sigma = 0.15)
+source("data-raw/sparse_simulation_design.R")
 
-scenarios <-
-  expand.grid(
-    design = c("serial", "batch"),
-    blq = c("none", "moderate"),
-    elimination = c("fast", "slow"),
-    stringsAsFactors = FALSE
-  )
-scenarios$scenario <- seq_len(nrow(scenarios))
-# Fast elimination leaves a small extrapolated area and slow a large one
-scenarios$ke <- ifelse(scenarios$elimination == "fast", 0.15, 0.07)
+# The truth ####
 
-sample_times <- c(0.25, 0.5, 1, 2, 4, 6, 8, 12, 24)
-# Batch design:  three batches of four animals, each sampled at three times
-batch_times <- list(c(0.25, 2, 8), c(0.5, 4, 12), c(1, 6, 24))
-n_serial <- 4
-
-# The concentration of one animal at the given times (pmxTools takes scalar
-# parameters)
-conc_1cmt <- function(time, dose, ka, ke, v) {
-  pmxTools::calc_sd_1cmt_linear_oral_1(t = time, CL = ke*v, V = v, ka = ka, dose = dose)
-}
-
-# E[X^p] for log-normal X with median m and log-scale standard deviation omega
-lnorm_moment <- function(m, omega, p) {
-  exp(p*log(m) + p^2*omega^2/2)
-}
-
-# The AUC and AUMC to infinity of the population mean curve:  the means of the
-# individual AUC = dose/(V ke) and AUMC = dose/(V ke) (1/ke + 1/ka)
-true_values <- function(ke) {
-  inv_v <- lnorm_moment(model$v, model$omega_v, -1)
-  c(
-    auc = model$dose*inv_v*lnorm_moment(ke, model$omega_ke, -1),
-    aumc =
-      model$dose*inv_v*(
-        lnorm_moment(ke, model$omega_ke, -2) +
-          lnorm_moment(ke, model$omega_ke, -1)*lnorm_moment(model$ka, model$omega_ka, -1)
-      )
-  )
-}
-
-# The LLOQ for moderate BLQ:  70% of the median concentration at the last time,
-# which leaves about a third of those samples BLQ
-scenario_lloq <- function(blq, ke) {
-  if (blq == "none") {
-    return(0)
+# The AUC and AUMC from 0 to infinity of a block of virtual animals
+animal_auc_aumc_block <- function(rows, animals, route) {
+  ret <- matrix(NA_real_, length(rows), 2)
+  for (i in seq_along(rows)) {
+    ret[i, ] <- animal_inf_parameters(animals[rows[i], ], route)[c("aucinf", "aumcinf")]
   }
-  0.7*conc_1cmt(24, model$dose, model$ka, ke, model$v)
+  ret
 }
 
-simulate_data <- function(design, ke, lloq) {
-  sampling <-
-    if (design == "serial") {
-      data.frame(
-        subject = seq_len(length(sample_times)*n_serial),
-        time = rep(sample_times, each = n_serial)
-      )
-    } else {
-      batches <- list()
-      for (b in seq_along(batch_times)) {
-        batches[[b]] <- expand.grid(subject = (b - 1)*4 + 1:4, time = batch_times[[b]])
-      }
-      do.call(rbind, batches)
-    }
-  subjects <- sort(unique(sampling$subject))
-  eta <-
-    data.frame(
-      subject = subjects,
-      ka = model$ka*exp(stats::rnorm(length(subjects), sd = model$omega_ka)),
-      ke = ke*exp(stats::rnorm(length(subjects), sd = model$omega_ke)),
-      v = model$v*exp(stats::rnorm(length(subjects), sd = model$omega_v))
+# The AUC and AUMC of the population mean curve, with the Monte Carlo standard
+# error of each (in percent)
+true_values <- function(scenario_row, seed) {
+  route <- scenario_row$route
+  animals <- withr::with_seed(seed, draw_animals(n_virtual, scenario_row))
+  blocks <- split(seq_len(n_virtual), cut(seq_len(n_virtual), n_cores, labels = FALSE))
+  values <-
+    do.call(
+      rbind,
+      parallel::mclapply(blocks, animal_auc_aumc_block, animals = animals, route = route, mc.cores = n_cores)
     )
-  d <- merge(sampling, eta, by = "subject")
-  d$conc <- NA_real_
-  for (i in seq_len(nrow(d))) {
-    d$conc[i] <- conc_1cmt(d$time[i], model$dose, d$ka[i], d$ke[i], d$v[i])
-  }
-  d$conc <- d$conc*exp(stats::rnorm(nrow(d), mean = -model$sigma^2/2, sd = model$sigma))
-  d$blq <- d$conc < lloq
-  d$conc_reported <- ifelse(d$blq, 0, d$conc)
-  d[order(d$time, d$subject), c("subject", "time", "conc_reported", "blq")]
+  truth <- colMeans(values)
+  list(
+    truth = c(auc = truth[[1]], aumc = truth[[2]]),
+    mcse_percent = 100*apply(values, 2, stats::sd)/sqrt(n_virtual)/truth
+  )
 }
 
 # Tobit regression for the individual-sample method ####
@@ -212,10 +161,27 @@ combine_df <- function(v1, df1, v2, df2) {
   (v1 + v2)^2/(v1^2/df1 + v2^2/df2)
 }
 
-estimate_replicate <- function(d, design, lloq, truth) {
+# The sparse AUCinf,obs and AUMCinf,obs functions for the route, and their
+# results as unnamed estimate, standard error, and degrees of freedom
+sparse_inf_functions <- list(
+  oral = list(auc = pk.calc.aucinf.obs_sparse, aumc = pk.calc.aumcinf.obs_sparse),
+  iv = list(auc = pk.calc.aucivinf.obs_sparse, aumc = pk.calc.aumcivinf.obs_sparse)
+)
+
+estimate_replicate <- function(d, route, design, lloq, truth) {
   conc <- d$conc_reported
+  time <- d$time
+  subject <- d$subject
+  if (route == "oral") {
+    # The imputed zero at time 0 is known, so it has no subject
+    conc <- c(0, conc)
+    time <- c(0, time)
+    subject <- c(NA, subject)
+  }
+  fun_auc <- sparse_inf_functions[[route]]$auc
+  fun_aumc <- sparse_inf_functions[[route]]$aumc
   # The half-life of the arithmetic mean profile, as pk.nca() calculates it
-  sparse_pk <- sparse_mean(as_sparse_pk(conc = conc, time = d$time, subject = d$subject))
+  sparse_pk <- sparse_mean(as_sparse_pk(conc = conc, time = time, subject = subject))
   means <- vapply(sparse_pk, `[[`, "mean", FUN.VALUE = 1)
   times <- vapply(sparse_pk, `[[`, "time", FUN.VALUE = 1)
   hl <- suppressWarnings(pk.calc.half.life(conc = means, time = times))
@@ -227,22 +193,22 @@ estimate_replicate <- function(d, design, lloq, truth) {
   clast <- means[idx_last]
   base_args <-
     list(
-      conc = conc, time = d$time, subject = d$subject,
+      conc = conc, time = time, subject = subject,
       lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
       lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points
     )
   out <- list()
   for (method in c("none", "delta")) {
     args <- c(base_args, list(options = list(sparse_lambda_z_se = method)))
-    auc <- suppressWarnings(do.call(pk.calc.aucinf.obs_sparse, args))
-    aumc <- suppressWarnings(do.call(pk.calc.aumcinf.obs_sparse, args))
+    auc <- unlist(suppressWarnings(do.call(fun_auc, args)))
+    aumc <- unlist(suppressWarnings(do.call(fun_aumc, args)))
     label <- if (method == "none") "yuan" else "delta"
     out[[length(out) + 1]] <-
       data.frame(
         method = label, parameter = c("auc", "aumc"),
-        estimate = c(auc$aucinf.obs, aumc$aumcinf.obs),
-        se = c(auc$aucinf.obs_se, aumc$aumcinf.obs_se),
-        df = c(auc$aucinf.obs_df, aumc$aumcinf.obs_df)
+        estimate = c(auc[[1]], aumc[[1]]),
+        se = c(auc[[2]], aumc[[2]]),
+        df = c(auc[[3]], aumc[[3]])
       )
   }
   # Individual samples from the start of the half-life range onward
@@ -251,26 +217,26 @@ estimate_replicate <- function(d, design, lloq, truth) {
   if (!is.na(tobit[["lambda.z"]]) && tobit[["lambda.z"]] > 0) {
     lambda_z <- tobit[["lambda.z"]]
     # The Yuan part with the Tobit lambda.z, and the added lambda.z variance
-    args <- base_args
+    args <- c(base_args, list(options = list(sparse_lambda_z_se = "none")))
     args$lambda.z <- lambda_z
-    auc <- do.call(pk.calc.aucinf.obs_sparse, args)
-    aumc <- do.call(pk.calc.aumcinf.obs_sparse, args)
+    auc <- unlist(do.call(fun_auc, args))
+    aumc <- unlist(do.call(fun_aumc, args))
     d_auc_d_lambda_z <- -clast/lambda_z^2
     d_aumc_d_lambda_z <- -tlast*clast/lambda_z^2 - 2*clast/lambda_z^3
     var_lambda_z <- tobit[["se"]]^2
-    v_auc <- auc$aucinf.obs_se^2
-    v_aumc <- aumc$aumcinf.obs_se^2
+    v_auc <- auc[[2]]^2
+    v_aumc <- aumc[[2]]^2
     v_lz_auc <- d_auc_d_lambda_z^2*var_lambda_z
     v_lz_aumc <- d_aumc_d_lambda_z^2*var_lambda_z
     out[[length(out) + 1]] <-
       data.frame(
         method = "individual", parameter = c("auc", "aumc"),
-        estimate = c(auc$aucinf.obs, aumc$aumcinf.obs),
+        estimate = c(auc[[1]], aumc[[1]]),
         se = sqrt(c(v_auc + v_lz_auc, v_aumc + v_lz_aumc)),
         df =
           c(
-            combine_df(v_auc, auc$aucinf.obs_df, v_lz_auc, tobit[["df"]]),
-            combine_df(v_aumc, aumc$aumcinf.obs_df, v_lz_aumc, tobit[["df"]])
+            combine_df(v_auc, auc[[3]], v_lz_auc, tobit[["df"]]),
+            combine_df(v_aumc, aumc[[3]], v_lz_aumc, tobit[["df"]])
           )
       )
   }
@@ -282,9 +248,10 @@ estimate_replicate <- function(d, design, lloq, truth) {
 
 run_replicate <- function(scenario_row, replicate) {
   withr::with_seed(seed_base + 100000*scenario_row$scenario + replicate, {
-    lloq <- scenario_lloq(scenario_row$blq, scenario_row$ke)
-    d <- simulate_data(scenario_row$design, scenario_row$ke, lloq)
-    ret <- estimate_replicate(d, scenario_row$design, lloq, true_values(scenario_row$ke))
+    lloq <- scenario_lloq(scenario_row)
+    d <- simulate_data(scenario_row, lloq)
+    truth <- c(auc = scenario_row$truth_auc, aumc = scenario_row$truth_aumc)
+    ret <- estimate_replicate(d, scenario_row$route, scenario_row$design, lloq, truth)
     if (!is.null(ret)) {
       ret$replicate <- replicate
       ret$scenario <- scenario_row$scenario
@@ -296,13 +263,15 @@ run_replicate <- function(scenario_row, replicate) {
 
 # Summary ####
 
-summarize_results <- function(results) {
+summarize_results <- function(results, scenarios) {
   results$t_quantile <- ifelse(is.finite(results$df) & results$df > 0, stats::qt(0.975, results$df), stats::qnorm(0.975))
   results$covered <- abs(results$estimate - results$truth) <= results$t_quantile*results$se
+  key <- paste(results$scenario, results$method, results$parameter)
+  by_key <- split(results, key)
   keys <- unique(results[, c("scenario", "method", "parameter")])
   rows <- list()
   for (i in seq_len(nrow(keys))) {
-    r <- merge(results, keys[i, ])
+    r <- by_key[[paste(keys$scenario[i], keys$method[i], keys$parameter[i])]]
     ok <- is.finite(r$estimate) & is.finite(r$se)
     relative_error <- (r$estimate[ok] - r$truth[1])/r$truth[1]
     rows[[i]] <- data.frame(
@@ -336,6 +305,21 @@ run_job <- function(i, jobs) {
 
 if (sys.nframe() == 0) {
   started <- Sys.time()
+  # The truth depends on the route, elimination, and number of compartments
+  truth_keys <- unique(scenarios[, c("route", "elimination", "compartments")])
+  truth_mcse <- list()
+  scenarios$truth_auc <- NA_real_
+  scenarios$truth_aumc <- NA_real_
+  for (i in seq_len(nrow(truth_keys))) {
+    rows <- which(
+      scenarios$route == truth_keys$route[i] & scenarios$elimination == truth_keys$elimination[i] &
+        scenarios$compartments == truth_keys$compartments[i]
+    )
+    tv <- true_values(scenarios[rows[1], ], seed = seed_base + i)
+    scenarios$truth_auc[rows] <- tv$truth[["auc"]]
+    scenarios$truth_aumc[rows] <- tv$truth[["aumc"]]
+    truth_mcse[[i]] <- data.frame(truth_keys[i, ], auc = tv$mcse_percent[1], aumc = tv$mcse_percent[2], row.names = NULL)
+  }
   jobs <- expand.grid(scenario = scenarios$scenario, replicate = seq_len(n_replicates))
   results <-
     parallel::mclapply(
@@ -352,20 +336,26 @@ if (sys.nframe() == 0) {
   results <- do.call(rbind, results)
   simulation <-
     list(
-      summary = summarize_results(results),
+      summary = summarize_results(results, scenarios),
       scenarios = scenarios,
       model = model,
-      sample_times = sample_times,
+      model_1cmt = model_1cmt,
+      model_2cmt = model_2cmt,
+      sampling_times = sampling_times,
       batch_times = batch_times,
       n_serial = n_serial,
+      n_batch = n_batch,
       n_replicates = n_replicates,
+      n_virtual = n_virtual,
+      truth_mcse_percent = do.call(rbind, truth_mcse),
       seed_base = seed_base,
       pknca_version = as.character(utils::packageVersion("PKNCA")),
+      pmxtools_version = as.character(utils::packageVersion("pmxTools")),
       r_version = R.version.string,
       run_date = format(Sys.Date()),
       run_minutes = as.numeric(difftime(Sys.time(), started, units = "mins"))
     )
   saveRDS(simulation, "vignettes/v24-sparse-auc-to-infinity-simulation.rds")
   saveRDS(results, "data-raw/sparse_aucinf_simulation_replicates.rds")
-  print(simulation$summary[, c("design", "blq", "elimination", "method", "parameter", "n", "relative_bias", "se_ratio", "coverage")], digits = 3)
+  print(simulation$summary[, c("compartments", "route", "design", "blq", "elimination", "method", "parameter", "n", "relative_bias", "se_ratio", "coverage")], digits = 3)
 }

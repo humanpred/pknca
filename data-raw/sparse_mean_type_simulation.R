@@ -12,12 +12,13 @@
 # come from a large virtual population of the true individual parameters (no
 # residual error).
 #
-# Concentrations come from pmxTools; every replicate runs inside
-# withr::with_seed() with its own seed.
+# The design is in data-raw/sparse_simulation_design.R; every replicate runs
+# inside withr::with_seed() with its own seed.
 #
 #   Rscript data-raw/sparse_mean_type_simulation.R
 #
-# writes data-raw/sparse_mean_type_simulation.rds (the summary).
+# writes vignettes/v24-sparse-auc-to-infinity-mean-type.rds (the summary), used by
+# vignette("v24-sparse-auc-to-infinity").
 
 library(PKNCA)
 
@@ -26,122 +27,14 @@ n_virtual <- as.integer(Sys.getenv("SIM_VIRTUAL", "50000"))
 seed_base <- 20261008
 n_cores <- as.integer(Sys.getenv("SIM_CORES", "16"))
 
-# Model and scenarios ####
-
-# Dose 100 and a multiplicative residual error with mean 1, with log-normal
-# between-animal variability (omega 0.3) on each structural parameter.
-#
-# One compartment:  V 10 and ke 0.15/hr (fast) or 0.07/hr (slow); typical ka
-# 5/hr gives an oral Tmax of 0.72 hr (fast) and 0.87 hr (slow).
-# Two compartments:  V1 10, V2 15, Q 6, and CL 5.1 (fast) or 1.97 (slow), which
-# give the same terminal half-lives (4.6 and 9.9 hr) after a distribution phase
-# with a half-life of about 0.5 hr; typical ka 2.5/hr gives an oral Tmax of
-# 0.62 hr (fast) and 0.72 hr (slow).
-model <- list(dose = 100, omega = 0.3, sigma = 0.15)
-model_1cmt <- list(ka = 5, v = 10)
-model_2cmt <- list(ka = 2.5, v1 = 10, v2 = 15, q = 6)
-
-scenarios <-
-  expand.grid(
-    route = c("oral", "iv"),
-    design = c("serial", "batch"),
-    blq = c("none", "moderate"),
-    elimination = c("fast", "slow"),
-    compartments = c(1, 2),
-    stringsAsFactors = FALSE
-  )
-scenarios$scenario <- seq_len(nrow(scenarios))
-# ke for one compartment and CL for two
-scenarios$ke <- ifelse(scenarios$elimination == "fast", 0.15, 0.07)
-scenarios$cl_2cmt <- ifelse(scenarios$elimination == "fast", 5.1, 1.97)
-
-# Sampling:  oral with a predose sample, IV bolus with an early sample.  The
-# batch designs sample three batches of four animals at a third of the times
-# each (and predose for oral).
-sampling_times <- list(oral = c(0, 0.25, 0.5, 1, 2, 4, 6, 8, 12, 24), iv = c(1/12, 0.25, 0.5, 1, 2, 4, 8, 12, 24))
-batch_times <-
-  list(
-    oral = list(c(0, 0.25, 2, 8), c(0, 0.5, 4, 12), c(0, 1, 6, 24)),
-    iv = list(c(1/12, 1, 8), c(0.25, 2, 12), c(0.5, 4, 24))
-  )
-n_serial <- 4
-n_batch <- 4
-
-# The concentration of one animal (one row of animal parameters) at the given
-# times (pmxTools)
-conc_animal <- function(time, route, animal) {
-  if (is.null(animal$v2)) {
-    if (route == "oral") {
-      pmxTools::calc_sd_1cmt_linear_oral_1(t = time, CL = animal$cl, V = animal$v1, ka = animal$ka, dose = model$dose)
-    } else {
-      pmxTools::calc_sd_1cmt_linear_bolus(t = time, CL = animal$cl, V = animal$v1, dose = model$dose)
-    }
-  } else {
-    if (route == "oral") {
-      pmxTools::calc_sd_2cmt_linear_oral_1(t = time, CL = animal$cl, V1 = animal$v1, Q = animal$q, V2 = animal$v2, ka = animal$ka, dose = model$dose)
-    } else {
-      pmxTools::calc_sd_2cmt_linear_bolus(t = time, CL = animal$cl, V1 = animal$v1, Q = animal$q, V2 = animal$v2, dose = model$dose)
-    }
-  }
-}
-
-# The typical animal of a scenario
-typical_animal <- function(scenario_row) {
-  if (scenario_row$compartments == 1) {
-    data.frame(ka = model_1cmt$ka, cl = scenario_row$ke*model_1cmt$v, v1 = model_1cmt$v)
-  } else {
-    data.frame(ka = model_2cmt$ka, cl = scenario_row$cl_2cmt, v1 = model_2cmt$v1, q = model_2cmt$q, v2 = model_2cmt$v2)
-  }
-}
-
-# The LLOQ for moderate BLQ:  70% of the typical concentration at 24 hours
-scenario_lloq <- function(scenario_row) {
-  if (scenario_row$blq == "none") 0 else 0.7*conc_animal(24, scenario_row$route, typical_animal(scenario_row))
-}
-
-# Animals with log-normal variability around the typical values.  For one
-# compartment the draws are ka, ke, and V (in that order); for two, ka, CL, V1,
-# Q, and V2.
-draw_animals <- function(n, scenario_row) {
-  typical <- typical_animal(scenario_row)
-  if (scenario_row$compartments == 1) {
-    ka <- typical$ka*exp(stats::rnorm(n, sd = model$omega))
-    ke <- scenario_row$ke*exp(stats::rnorm(n, sd = model$omega))
-    v <- typical$v1*exp(stats::rnorm(n, sd = model$omega))
-    data.frame(ka = ka, cl = ke*v, v1 = v)
-  } else {
-    data.frame(
-      ka = typical$ka*exp(stats::rnorm(n, sd = model$omega)),
-      cl = typical$cl*exp(stats::rnorm(n, sd = model$omega)),
-      v1 = typical$v1*exp(stats::rnorm(n, sd = model$omega)),
-      q = typical$q*exp(stats::rnorm(n, sd = model$omega)),
-      v2 = typical$v2*exp(stats::rnorm(n, sd = model$omega))
-    )
-  }
-}
+source("data-raw/sparse_simulation_design.R")
 
 # True parameters of the virtual population ####
-
-# Integrand of the AUC (moment = 0) or AUMC (moment = 1) of one animal
-conc_moment <- function(time, route, animal, moment) {
-  time^moment*conc_animal(time, route, animal)
-}
 
 individual_parameters <- function(animal, route) {
   auc_to_24 <- stats::integrate(conc_moment, 0, 24, route = route, animal = animal, moment = 0, rel.tol = 1e-8)$value
   aumc_to_24 <- stats::integrate(conc_moment, 0, 24, route = route, animal = animal, moment = 1, rel.tol = 1e-8)$value
-  auc_inf <- model$dose/animal$cl
-  if (is.null(animal$v2)) {
-    # Mean residence time Vss/CL (absorption adds 1/ka) and the half-life
-    mrt <- animal$v1/animal$cl
-    half_life <- log(2)*animal$v1/animal$cl
-  } else {
-    mrt <- (animal$v1 + animal$v2)/animal$cl
-    half_life <- pmxTools::calc_derived_2cpt(CL = animal$cl, V1 = animal$v1, Q = animal$q, V2 = animal$v2)$thalf_beta
-  }
-  if (route == "oral") {
-    mrt <- mrt + 1/animal$ka
-  }
+  inf <- animal_inf_parameters(animal, route)
   peak <-
     if (route == "oral") {
       stats::optimize(conc_animal, c(0, 24), route = route, animal = animal, maximum = TRUE, tol = 1e-10)$objective
@@ -149,8 +42,8 @@ individual_parameters <- function(animal, route) {
       conc_animal(0, route, animal)
     }
   c(
-    auclast = auc_to_24, aucinf = auc_inf, cmax = peak,
-    aumclast = aumc_to_24, aumcinf = auc_inf*mrt, half.life = half_life
+    auclast = auc_to_24, aucinf = inf[["aucinf"]], cmax = peak,
+    aumclast = aumc_to_24, aumcinf = inf[["aumcinf"]], half.life = inf[["half.life"]]
   )
 }
 
@@ -179,36 +72,7 @@ true_targets <- function(scenario_row, seed) {
   )
 }
 
-# Simulation and estimation ####
-
-simulate_data <- function(scenario_row, lloq) {
-  route <- scenario_row$route
-  design <- scenario_row$design
-  if (design == "serial") {
-    times <- sampling_times[[route]]
-    sampling <- data.frame(subject = seq_len(length(times)*n_serial), time = rep(times, each = n_serial))
-  } else {
-    batches <- list()
-    for (b in seq_along(batch_times[[route]])) {
-      batches[[b]] <- expand.grid(subject = (b - 1)*n_batch + seq_len(n_batch), time = batch_times[[route]][[b]])
-    }
-    sampling <- do.call(rbind, batches)
-  }
-  subjects <- sort(unique(sampling$subject))
-  animals <- draw_animals(length(subjects), scenario_row)
-  # Samples in order of animal, then time:  the residual errors are drawn in
-  # this order
-  d <- sampling[order(sampling$subject, sampling$time), ]
-  d$conc <- NA_real_
-  for (i in seq_along(subjects)) {
-    rows <- d$subject == subjects[i]
-    d$conc[rows] <- conc_animal(d$time[rows], route, animals[i, ])
-  }
-  d$conc <- d$conc*exp(stats::rnorm(nrow(d), mean = -model$sigma^2/2, sd = model$sigma))
-  d$blq <- d$conc < lloq
-  d$conc_reported <- ifelse(d$blq, 0, d$conc)
-  d[order(d$time, d$subject), c("subject", "time", "conc_reported", "blq")]
-}
+# Estimation ####
 
 # The geometric mean at one time:  a time with more than half of its samples
 # BLQ is BLQ (as for PKNCA's arithmetic sparse mean), and otherwise BLQ samples
@@ -247,11 +111,14 @@ nca_profile <- function(time, conc, route) {
     }
   intervals <- data.frame(start = 0, end = Inf)
   intervals[unname(params)] <- TRUE
+  # There is no sample at the dose:  the oral concentration at time 0 is
+  # imputed as zero, and the IV parameters back-extrapolate C0
   o_data <-
     PKNCAdata(
       PKNCAconc(d_conc, conc ~ time | id),
       PKNCAdose(d_dose, dose ~ time | id, route = if (route == "oral") "extravascular" else "intravascular"),
       intervals = intervals,
+      impute = if (route == "oral") "start_conc0" else NA_character_,
       options = list(auc.method = "linear")
     )
   res <- as.data.frame(suppressWarnings(suppressMessages(pk.nca(o_data))))
@@ -356,7 +223,7 @@ if (sys.nframe() == 0) {
       run_date = format(Sys.Date()),
       run_minutes = as.numeric(difftime(Sys.time(), started, units = "mins"))
     )
-  saveRDS(simulation, "data-raw/sparse_mean_type_simulation.rds")
+  saveRDS(simulation, "vignettes/v24-sparse-auc-to-infinity-mean-type.rds")
   saveRDS(results, "data-raw/sparse_mean_type_simulation_replicates.rds")
   print(simulation$summary[, c("compartments", "route", "design", "blq", "elimination", "mean_type", "parameter", "n_ok", "bias_natural", "bias_typical", "cv", "robust_cv")], digits = 3)
 }

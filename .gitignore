@@ -30,6 +30,6 @@ Rplots.pdf
 tests/testthat/_problems/
 tests/testthat/testthat-problems.rds
 
-# Replicate-level output of data-raw/sparse_aucinf_simulation.R (the summary is in vignettes/)
+# Replicate-level output of the sparse simulations in data-raw/ (the summaries are in vignettes/)
 data-raw/sparse_aucinf_simulation_replicates.rds
 data-raw/sparse_mean_type_simulation_replicates.rds
