@@ -9,17 +9,27 @@ var_sparse_auc(sparse_pk)
 \arguments{
 \item{sparse_pk}{A sparse_pk object from \code{\link[=as_sparse_pk]{as_sparse_pk()}}}
 }
+\value{
+The variance of the AUC estimate with a \code{"df"} attribute containing
+its degrees of freedom.
+}
 \description{
 Equation 7.vii in Nedelman and Jia, 1998 is used for this calculation:
 }
 \details{
 \deqn{var\left(\hat{AUC}\right) = \sum\limits_{i=0}^m\left(\frac{w_i^2 s_i^2}{r_i}\right) + 2\sum\limits_{i<j}\left(\frac{w_i w_j r_{ij} s_{ij}}{r_i r_j}\right)}{var(AUC) = sum_(i=0)^(m) ((w_i^2 * s_i^2)/(r_i) + + 2*sum_(i<j)((w_i * w_j * r_ij * s_ij)/(r_i * r_j))}
 
-The degrees of freedom are calculated as described in equation 6 of the same
-paper.
+The degrees of freedom are the Satterthwaite approximation of equation 6 of
+the same paper for any sampling design, including subjects with more than
+one sample (see the \code{"df"} attribute of the return value and Details of
+\code{\link[=cov_holder]{cov_holder()}} for the covariance).
 }
 \references{
 Nedelman JR, Jia X. An extension of Satterthwaite’s approximation applied to
 pharmacokinetics. Journal of Biopharmaceutical Statistics. 1998;8(2):317-328.
 doi:10.1080/10543409808835241
+
+Holder DJ. Comments on Nedelman and Jia’s Extension of Satterthwaite’s
+Approximation Applied to Pharmacokinetics. Journal of Biopharmaceutical
+Statistics. 2001;11(1-2):75-79. doi:10.1081/BIP-100104199
 }

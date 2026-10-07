@@ -170,7 +170,7 @@ The functions behind the sparse estimators -- `pk.calc.sparse_auc()`, `pk.calc.s
 
 ## Degrees of freedom with multiple samples per subject
 
-The degrees of freedom (`auclast_df` and `aumclast_df`) can only be calculated when each subject contributes a single sample to the profile (as in a serial sacrifice design).  When any subject contributes more than one sample, as in the example data here, PKNCA warns that it "Cannot yet calculate sparse degrees of freedom for multiple samples per subject", and the degrees of freedom are `NA`.  That warning is the source of the warnings in the results above.  The point estimates and standard errors are still calculated.
+The degrees of freedom (`auclast_df` and `aumclast_df`) are the Satterthwaite approximation of Nedelman and Jia (1998), which accounts for the correlation between samples from the same subject, so they are calculated whether each subject contributes one sample (as in a serial sacrifice design) or several (as in the example data here and in batch designs).  They are `NA` when a time point has a single subject, because its variance cannot be estimated.
 
 ## More than half of the measurements below the limit of quantification
 

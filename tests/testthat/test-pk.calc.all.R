@@ -690,9 +690,8 @@ test_that("calculate with sparse data", {
     )
   o_data_sparse <- without_sparse_deprecation(PKNCAdata(o_conc_sparse, intervals=d_intervals))
   suppressMessages(
-    expect_warning(expect_warning(
+    expect_warning(
       o_nca <- pk.nca(o_data_sparse),
-      class = "pknca_warning_sparse_df_multi"),
       class = "pknca_warning_halflife_too_few_points"
     )
   )
@@ -714,22 +713,14 @@ test_that("calculate with sparse data", {
     )
   o_data_sparse_mixed <- without_sparse_deprecation(PKNCAdata(o_conc_sparse, intervals=d_intervals_mixed))
   suppressMessages(
-    expect_warning(expect_warning(
-      o_nca_sparse_mixed <- pk.nca(o_data_sparse_mixed),
-      class = "pknca_warning_sparse_df_multi"),
-      class = "pknca_warning_sparse_df_multi"
-    )
+    o_nca_sparse_mixed <- pk.nca(o_data_sparse_mixed)
   )
   df_result_sparse_mixed <- as.data.frame(o_nca_sparse_mixed)
   expect_true("sparse_auclast" %in% df_result_sparse_mixed$PPTESTCD)
   expect_equal(df_result_sparse_mixed$PPORRES[df_result_sparse_mixed$PPTESTCD %in% "sparse_auclast"], rep(39.4689, 2))
   suppressMessages(
     expect_message(
-      expect_warning(expect_warning(
-        o_nca_sparse_mixed <- pk.nca(o_data_sparse_mixed, verbose=TRUE),
-        class = "pknca_warning_sparse_df_multi"),
-        class = "pknca_warning_sparse_df_multi"
-      ),
+      o_nca_sparse_mixed <- pk.nca(o_data_sparse_mixed, verbose=TRUE),
       regexp="No sparse calculations requested for an interval"
     )
   )
@@ -757,13 +748,7 @@ test_that("calculate with sparse data", {
       PKNCAdata(o_conc_sparse_multi_trt, o_dose_sparse_multi_trt, intervals=d_intervals_mixed)
     )
   suppressMessages(
-    expect_warning(expect_warning(expect_warning(expect_warning(
-      o_nca_sparse_multi_trt <- pk.nca(o_data_sparse_multi_trt),
-      class = "pknca_warning_sparse_df_multi"),
-      class = "pknca_warning_sparse_df_multi"),
-      class = "pknca_warning_sparse_df_multi"),
-      class = "pknca_warning_sparse_df_multi"
-    )
+    o_nca_sparse_multi_trt <- pk.nca(o_data_sparse_multi_trt)
   )
   expect_equal(nrow(as.data.frame(o_nca_sparse_multi_trt)), 16)
 
