@@ -283,6 +283,39 @@ the generated intervals:
   to `PKNCAconc()` to avoid it.  A unit that cannot be converted to hours (or
   `timeu = NA` to `find.tau()` and its relatives) leaves the interval to the
   dose times, as before.  (@billdenney)
+* After a change of regimen in a group's dose times (more than one segment from
+  `find.dose.regimen()`), `choose.auc.intervals()` and so `PKNCAdata()` choose
+  the intervals by segment:  one steady-state interval for each segment at its
+  own period, the interval after the first dose, and the interval after any
+  other dose that is sampled densely (at least `dense.samples` samples, 3 by
+  default, within one period after it).  Each usable sample counts once:  by its
+  nominal time when the data carry `time.nominal` (which must share the actual
+  times' origin; nominal times that restart at each dose fall back to the actual
+  times with a `"pknca_warning_intervals_nominal_restart"` warning), by its
+  actual time otherwise, and not at all without a concentration.  An earlier
+  segment's steady-state interval ends at the dose that starts its next cycle,
+  so it never contains a later dose, and like the interval after the last dose
+  it needs only a sample at its end.  The last dose uses the last segment's
+  period even when an earlier segment has more doses.  A new
+  `"pknca_warning_intervals_by_segment"` warning, also a
+  `"pknca_warning_tau_regimen_change"` warning, names the segments and the
+  intervals.  **Results change for dense data with a regimen change:**  the
+  last-dose interval used the period of the segment with the most doses, and
+  every sampled dosing interval got an interval.  Sparse data and a single
+  regimen keep their intervals, except where the interval for the last dose
+  used to contain a later recorded dose (see the next item).  `choose.auc.intervals()` gains the
+  `time.conc.nominal`, `time.dosing.nominal`, `dense.samples`, and `conc`
+  arguments; the nominal times are checked (numeric, one per time) only when
+  they are used.  (@billdenney)
+* The interval for the last dose no longer contains a later recorded dose, for
+  sparse and dense data and with or without a change of regimen.  When dose
+  times are recorded a little early it starts at the dose that begins the last
+  cycle:  once-daily doses at 0, 24.3, and 47.8 hours used to give an interval
+  from 24.3 to 48.3, which contains the dose at 47.8, and now give the last
+  cycle from 47.8.  Each dose is matched to its place in the regimen rather
+  than counted in whole periods from the first dose, and when the last two
+  doses are less than a period apart at the same place in the regimen, the
+  interval starts at the last dose.  (@billdenney)
 * Without the units package, a time unit other than `"hr"` now gives a
   `"pknca_message_tau_units_fallback"` message, once for each group, saying
   that the dosing interval is the one found in the dose times and that
