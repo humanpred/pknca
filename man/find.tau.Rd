@@ -27,7 +27,9 @@ find.tau(
 \item{timeu}{The time unit of \code{x} (such as \code{"hr"} or \code{"day"}); \code{NULL} (or
 \code{""}) when it is not known, which is taken to be hours; or \code{NA} when it is
 known not to be a unit PKNCA can use, which leaves the intervals to the
-data.  Any other unit that cannot be converted to hours is an error.}
+data.  Any other unit that cannot be converted to hours is an error, except
+that without the units package a unit other than \code{"hr"} leaves the
+intervals to the data with a message.}
 }
 \value{
 \code{NA} when there are no dose times or no interval repeats, 0 for a

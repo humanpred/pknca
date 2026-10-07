@@ -579,3 +579,47 @@ test_that("find.dose.regimen rarely reads jittered daily dosing as a cycle", {
     expect_lte(as_cycle, 10)
   }
 })
+
+test_that("find.dose.regimen says when the units package is needed to compare", {
+  local_mocked_bindings(is_installed = function(...) FALSE, .package = "rlang")
+  # A unit other than hours cannot be converted, so the interval is the one in
+  # the data, with one message naming the unit
+  messages <- testthat::capture_messages(ret <- find.dose.regimen(c(0, 24, 50), timeu = "min"))
+  expect_length(messages, 1)
+  expect_match(messages, "times in 'min' cannot be compared with the nominal dosing intervals")
+  expect_match(messages, "Installing the units package")
+  expect_equal(ret$interval, 25)
+  expect_equal(ret$source, "auto")
+  expect_message(
+    tau <- find.tau(c(0, 24, 50), timeu = "day"),
+    class = "pknca_message_tau_units_fallback"
+  )
+  expect_equal(tau, 25)
+  # Hours, stated or taken, need no conversion
+  expect_no_message(tau_hr <- find.tau(c(0, 24, 50), timeu = "hr"))
+  expect_equal(tau_hr, 24)
+  expect_no_message(tau_none <- find.tau(c(0, 24, 50)))
+  expect_equal(tau_none, 24)
+})
+
+test_that("PKNCAdata says once per group when the units package is needed", {
+  local_mocked_bindings(is_installed = function(...) FALSE, .package = "rlang")
+  doses <- c(0, 24.5, 49, 73, 97.5)
+  times <- sort(unique(c(doses, 97.5 + c(0.5, 1, 2, 4, 8, 12, 24, 36, 48))))
+  d_conc <- data.frame(subject = rep(1:2, each = length(times)), time = rep(times, 2))
+  d_conc$conc <- exp(-0.1 * d_conc$time) + 1
+  d_dose <- data.frame(subject = rep(1:2, each = length(doses)), time = rep(doses, 2), dose = 1)
+  messages <-
+    testthat::capture_messages(
+      ret <-
+        PKNCAdata(
+          PKNCAconc(d_conc, conc~time|subject, timeu = "min"),
+          PKNCAdose(d_dose, dose~time|subject)
+        )
+    )
+  fallback <- grep("cannot be compared with the nominal dosing intervals", messages, value = TRUE)
+  expect_length(fallback, 2)
+  expect_equal(substr(fallback, 1, 11), paste0("subject=", 1:2, ": "))
+  # The interval is the median spacing found in the data
+  expect_equal(unique(ret$intervals$end), c(122, Inf))
+})
