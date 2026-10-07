@@ -1,10 +1,15 @@
 #' Generate a sparse_pk object
 #'
 #' @inheritParams assert_conc_time
-#' @param subject Subject identifiers (may be any class; may not be null)
+#' @param subject Subject identifiers (may be any class; may not be null).  A
+#'   missing subject marks an imputed concentration (such as the zero that the
+#'   `start_conc0` imputation adds at the start of an interval):  a time where
+#'   every subject is missing has a known concentration, which enters sparse
+#'   estimates but not their variance.
 #' @returns A sparse_pk object which is a list of lists.  The inner lists have
 #'   elements named: "time", The time of measurement; "conc", The concentration
-#'   measured; "subject", The subject identifiers.  The object will usually be
+#'   measured; "subject", The subject identifiers; "imputed", Whether the
+#'   concentration at that time is imputed (known).  The object will usually be
 #'   modified by future functions to add more named elements to the inner list.
 #' @family Sparse Methods
 #' @export
@@ -15,7 +20,7 @@ as_sparse_pk <- function(conc, time, subject) {
     conc <- conc$conc
   }
   assert_conc_time(conc = conc, time = time, any_missing_conc = TRUE, sorted_time = FALSE)
-  checkmate::assert_vector(subject, any.missing=FALSE, len=length(conc), null.ok=FALSE)
+  checkmate::assert_vector(subject, len=length(conc), null.ok=FALSE)
   # Drop observations with missing concentrations so that per-timepoint means,
   # variances, and subject counts reflect only available data.
   mask_ok <- !is.na(conc)
@@ -27,13 +32,24 @@ as_sparse_pk <- function(conc, time, subject) {
   ret <- list()
   for (current_time in unique_times) {
     current_mask <- time %in% current_time
+    imputed <- all(is.na(subject[current_mask]))
+    if (!imputed && anyNA(subject[current_mask])) {
+      rlang::abort(
+        sprintf(
+          "At time %g, some subjects are missing:  a time must have either all measured (non-missing subjects) or all imputed (missing subjects) concentrations",
+          current_time
+        ),
+        class = "pknca_error_sparse_pk_mixed_imputed"
+      )
+    }
     ret <-
       append(
         ret,
         list(list(
           time=current_time,
           conc=conc[current_mask],
-          subject=subject[current_mask]
+          subject=subject[current_mask],
+          imputed=imputed
         ))
       )
   }
@@ -152,6 +168,257 @@ sparse_mean <- function(sparse_pk, sparse_mean_method=c("arithmetic mean, <=50% 
   sparse_pk
 }
 
+# The trapezoidal weights of the mean profile for an AUC or AUMC:  AUClast
+# integrates to tlast, the last time with a positive mean, and AUCall adds the
+# triangle from tlast to the next time.  That next time's mean is zero by the
+# definition of tlast, so it carries no weight either; neither do later times.
+# Times without weight do not enter the variance or its degrees of freedom.
+sparse_auc_weight_type <- function(sparse_pk, auc.type) {
+  if (!(auc.type %in% c("AUClast", "AUCall"))) {
+    rlang::abort(
+      sprintf(
+        "The sparse AUC and AUMC are calculated with auc.type 'AUClast' or 'AUCall', not '%s'",
+        auc.type
+      ),
+      class = "pknca_error_sparse_auc_type"
+    )
+  }
+  times <- sparse_pk_attribute(sparse_pk, "time")
+  means <- sparse_pk_attribute(sparse_pk, "mean")
+  idx_last <- max(c(0L, which(means > 0)))
+  idx_end <- if (auc.type == "AUCall") min(idx_last + 1L, length(times)) else idx_last
+  weights <- rep(0, length(times))
+  if (idx_end > 1) {
+    half_diff_times <- diff(times[seq_len(idx_end)])/2
+    weights[seq_len(idx_end)] <- c(0, half_diff_times) + c(half_diff_times, 0)
+  }
+  weights[seq_along(weights) > idx_last] <- 0
+  sparse_pk_attribute(sparse_pk = sparse_pk, weight = weights)
+}
+
+# The times of a sparse_pk object that enter the variance of an estimate:  those
+# with a nonzero weight and measured concentrations (an imputed concentration is
+# known, so it has no variance)
+sparse_pk_weighted <- function(sparse_pk) {
+  imputed <- vapply(X = sparse_pk, FUN = function(current_time) isTRUE(current_time$imputed), FUN.VALUE = TRUE)
+  ret <- sparse_pk[sparse_pk_attribute(sparse_pk, "weight") != 0 & !imputed]
+  class(ret) <- class(sparse_pk)
+  ret
+}
+
+#' Sparse AUC or AUMC with its standard error, to tlast or to infinity
+#'
+#' The estimate is the AUClast (or AUMClast) of the mean profile, plus with
+#' `extrapolate = TRUE` its extrapolation from tlast with `lambda.z`:
+#' \eqn{C_{last}/\lambda_z} for the AUC (Yuan 1993) and \eqn{t_{last}
+#' C_{last}/\lambda_z + C_{last}/\lambda_z^2} for the AUMC, where
+#' \eqn{C_{last}} is the mean concentration at tlast.  Both are linear in the
+#' means at each time (the moment means \eqn{t_i \bar{y}_i} for the AUMC), so
+#' the variance is that of [var_sparse_auc()] (or [var_sparse_aumc()]) with the
+#' trapezoidal weights plus the extrapolation weight at tlast.
+#'
+#' With `lambda_z_se = "none"` (Yuan 1993), `lambda.z` is treated as known.  With
+#' `"delta"`, its uncertainty is added with the delta method:  `lambda.z` is minus
+#' the least-squares slope of the log mean concentrations on time over the
+#' half-life points, \eqn{\lambda_z = -\sum_j c_j \log \bar{y}_j} with
+#' \eqn{c_j = (t_j - \bar{t})/\sum_k (t_k - \bar{t})^2}, so the estimate is a
+#' smooth function of the means, and its gradient takes the place of the weights.
+#' For the AUC, the weight of the mean at time \eqn{j} is
+#' \deqn{w_j + \frac{\delta_{j,last}}{\lambda_z} + \frac{C_{last}}{\lambda_z^2} \frac{c_j}{\bar{y}_j}.}
+#' The gradient covers the covariance of `lambda.z` with \eqn{C_{last}} and the
+#' AUClast, which come from the same samples.  The half-life points are taken as
+#' fixed:  the uncertainty of choosing them is not included.
+#'
+#' The area starts at time 0.  Without a concentration at time 0 (measured or
+#' imputed), the result is `NA`, except for an IV bolus (`iv_bolus = TRUE`):
+#' then \eqn{C_0} is estimated from the mean profile as [pk.calc.c0()] does
+#' (see [sparse_c0()]), and the AUC from time 0 to the first sample is added.
+#' \eqn{C_0} is a smooth function of the means, so its gradient adds to the
+#' weights of the means it comes from.  The AUMC from time 0 to the first sample
+#' is \eqn{t_1^2 \bar{y}_1/2} with the linear trapezoidal rule whatever
+#' \eqn{C_0} is, so \eqn{C_0} does not change the AUMC.
+#'
+#' @param moment Calculate the AUMC (`TRUE`) or the AUC (`FALSE`)?
+#' @param extrapolate Extrapolate to infinity (`TRUE`) or stop at tlast
+#'   (`FALSE`)?
+#' @param auc.type Without extrapolation, `"AUClast"` or `"AUCall"` (see
+#'   [pk.calc.sparse_auc()])
+#' @param iv_bolus Back-extrapolate to \eqn{C_0} when there is no concentration
+#'   at time 0?
+#' @param lambda_z_se How the standard error accounts for `lambda.z` (see
+#'   Details and the `sparse_lambda_z_se` option of [PKNCA.options()])
+#' @inheritParams pk.calc.sparse_auc
+#' @inheritParams pk.calc.half.life
+#' @param lambda.z The elimination rate of the mean profile
+#' @param lambda.z.time.first,lambda.z.time.last,lambda.z.n.points The first
+#'   and last time and the number of points of the half-life fit to the mean
+#'   profile (used with `lambda_z_se = "delta"`)
+#' @returns A list with the `estimate`, its standard error (`se`), the
+#'   degrees of freedom (`df`), and the method used for \eqn{C_0}
+#'   (`c0_method`, `NA` when \eqn{C_0} was not back-extrapolated)
+#' @references
+#' Yuan J. Estimation of variance for AUC in animal studies.  Journal of
+#' Pharmaceutical Sciences.  1993;82(7):761-763. doi:10.1002/jps.2600820718
+#' @keywords Internal
+#' @noRd
+sparse_auxc_obs <- function(conc, time, subject, lambda.z = NA,
+                            lambda.z.time.first = NA, lambda.z.time.last = NA,
+                            lambda.z.n.points = NA,
+                            moment = FALSE, extrapolate = TRUE, auc.type = "AUClast",
+                            iv_bolus = FALSE, lambda_z_se = "delta",
+                            hl_method = "log-linear") {
+  na_ret <- list(estimate = NA_real_, se = NA_real_, df = NA_real_, c0_method = NA_character_)
+  sparse_pk <- as_sparse_pk(conc = conc, time = time, subject = subject)
+  sparse_pk <- sparse_mean(sparse_pk = sparse_pk, sparse_mean_method = "arithmetic mean, <=50% BLQ")
+  # The area starts at time 0 (the start of the interval in pk.nca()), as for
+  # the sparse AUClast
+  time_first <- min(sparse_pk_attribute(sparse_pk, "time"))
+  c0 <- list(c0 = NA_real_, gradient = numeric(), method = NA_character_)
+  if (time_first > 0 && iv_bolus) {
+    c0 <- sparse_c0(sparse_pk)
+    if (is.na(c0$c0)) {
+      return(na_ret)
+    }
+    # C0 enters the mean profile as a known (imputed) concentration; its
+    # uncertainty is in its gradient below
+    sparse_pk <-
+      sparse_mean(
+        as_sparse_pk(conc = c(c0$c0, conc), time = c(0, time), subject = c(NA, subject)),
+        sparse_mean_method = "arithmetic mean, <=50% BLQ"
+      )
+  } else if (time_first > 0) {
+    rlang::warn(
+      sprintf("Requesting an AUC range starting (0) before the first measurement (%g) is not allowed", time_first),
+      class = "pknca_warning_auc_before_first"
+    )
+    return(na_ret)
+  }
+  # The extrapolation to infinity starts from tlast
+  sparse_pk <- sparse_auc_weight_type(sparse_pk, auc.type = if (extrapolate) "AUClast" else auc.type)
+  times <- sparse_pk_attribute(sparse_pk, "time")
+  means <- sparse_pk_attribute(sparse_pk, "mean")
+  weights <- sparse_pk_attribute(sparse_pk, "weight")
+  idx_last <- max(c(0L, which(means > 0)))
+  if (extrapolate && (idx_last == 0 || is.na(lambda.z) || lambda.z <= 0)) {
+    return(na_ret)
+  }
+  if (moment) {
+    # Moment means and the AUMClast of the mean profile (linear trapezoidal)
+    values <- times * means
+  } else {
+    values <- means
+  }
+  estimate <- sum(weights*values)
+  if (!is.na(c0$c0) && !moment) {
+    # The weight of C0 (the first trapezoid) passes to the means it comes from;
+    # time 0 is first, and the gradient is over the measured times after it
+    weights[-1] <- weights[-1] + weights[1]*c0$gradient
+  }
+  if (extrapolate) {
+    tlast <- times[idx_last]
+    extrapolation_weight <-
+      if (moment) {
+        1/lambda.z + 1/(tlast*lambda.z^2)
+      } else {
+        1/lambda.z
+      }
+    estimate <- estimate + values[idx_last]*extrapolation_weight
+    weights[idx_last] <- weights[idx_last] + extrapolation_weight
+  }
+  if (extrapolate && lambda_z_se == "delta") {
+    if (hl_method != "log-linear") {
+      rlang::warn(
+        "The delta-method standard error for lambda.z needs the log-linear half-life (the hl_method option), so it is not calculated",
+        class = "pknca_warning_sparse_lambda_z_se_hl_method"
+      )
+      return(list(estimate = estimate, se = NA_real_, df = NA_real_, c0_method = c0$method))
+    }
+    # The half-life points of the mean profile (the half-life is fit to the
+    # positive means from lambda.z.time.first through lambda.z.time.last)
+    tolerance <- sqrt(.Machine$double.eps)*max(1, abs(times))
+    idx_hl <-
+      which(
+        times >= lambda.z.time.first - tolerance &
+          times <= lambda.z.time.last + tolerance &
+          means > 0
+      )
+    if (length(idx_hl) != lambda.z.n.points) {
+      rlang::warn(
+        sprintf(
+          "The %d half-life points of the mean profile could not be identified (%d positive means are between %g and %g), so the delta-method standard error is not calculated",
+          lambda.z.n.points, length(idx_hl), lambda.z.time.first, lambda.z.time.last
+        ),
+        class = "pknca_warning_sparse_lambda_z_points"
+      )
+      return(list(estimate = estimate, se = NA_real_, df = NA_real_, c0_method = c0$method))
+    }
+    time_hl <- times[idx_hl]
+    slope_weights <- (time_hl - mean(time_hl))/sum((time_hl - mean(time_hl))^2)
+    # d(estimate)/d(lambda.z) times d(lambda.z)/d(value_j) = -c_j/value_j; the
+    # log of a moment mean differs from the log of the mean by the constant
+    # log(t_j), so the same holds for moment means
+    d_estimate_d_lambda_z <-
+      if (moment) {
+        -values[idx_last]*(1/lambda.z^2 + 2/(tlast*lambda.z^3))
+      } else {
+        -values[idx_last]/lambda.z^2
+      }
+    weights[idx_hl] <-
+      weights[idx_hl] + d_estimate_d_lambda_z*(-slope_weights/values[idx_hl])
+  }
+  sparse_pk <- sparse_pk_attribute(sparse_pk, weight = weights)
+  variance <-
+    if (moment) {
+      var_sparse_aumc(sparse_pk)
+    } else {
+      var_sparse_auc(sparse_pk)
+    }
+  list(
+    estimate = estimate,
+    se = sqrt(as.numeric(variance)),
+    df = attr(variance, "df"),
+    c0_method = c0$method
+  )
+}
+
+#' The concentration at time 0 of a sparse mean profile after an IV bolus
+#'
+#' The methods of [pk.calc.c0()] are tried in its default order on the mean
+#' profile (`"c0"` does not apply, since there is no concentration at time 0):
+#' `"logslope"`, `"c1"`, `"cmin"`, then `"set0"`.  The first that gives a value
+#' is used, with its gradient with respect to the means.  With `"logslope"`,
+#' \eqn{C_0 = \bar{y}_1 (\bar{y}_1/\bar{y}_2)^{t_1/(t_2 - t_1)}}, so
+#' \eqn{\partial C_0/\partial \bar{y}_1 = C_0 t_2/((t_2 - t_1)\bar{y}_1)} and
+#' \eqn{\partial C_0/\partial \bar{y}_2 = -C_0 t_1/((t_2 - t_1)\bar{y}_2)}.
+#'
+#' @param sparse_pk A sparse_pk object with means (from [sparse_mean()]) and no
+#'   time 0
+#' @returns A list with `c0`, its `gradient` with respect to the means of
+#'   `sparse_pk`, and the `method` used
+#' @keywords Internal
+#' @noRd
+sparse_c0 <- function(sparse_pk) {
+  times <- sparse_pk_attribute(sparse_pk, "time")
+  means <- sparse_pk_attribute(sparse_pk, "mean")
+  gradient <- rep(0, length(means))
+  for (method in c("logslope", "c1", "cmin", "set0")) {
+    c0 <- pk.calc.c0(conc = means, time = times, time.dose = 0, method = method, check = FALSE)
+    if (!is.na(c0)) {
+      break
+    }
+  }
+  if (method == "logslope") {
+    gradient[1] <- c0*times[2]/((times[2] - times[1])*means[1])
+    gradient[2] <- -c0*times[1]/((times[2] - times[1])*means[2])
+  } else if (method == "c1") {
+    gradient[1] <- 1
+  } else if (method == "cmin" && c0 > 0) {
+    # A mean of zero is set by the BLQ rule, not estimated, so it has no gradient
+    gradient[which.min(means)] <- 1
+  }
+  list(c0 = c0, gradient = gradient, method = method)
+}
+
 #' Calculate the variance for the AUC of sparsely sampled PK
 #'
 #' Equation 7.vii in Nedelman and Jia, 1998 is used for this calculation:
@@ -176,6 +443,12 @@ sparse_mean <- function(sparse_pk, sparse_mean_method=c("arithmetic mean, <=50% 
 #' Statistics. 2001;11(1-2):75-79. doi:10.1081/BIP-100104199
 #' @export
 var_sparse_auc <- function(sparse_pk) {
+  # Times with no weight in the AUC or an imputed (known) concentration do not
+  # contribute to its variance
+  sparse_pk <- sparse_pk_weighted(sparse_pk)
+  if (length(sparse_pk) == 0) {
+    return(structure(0, df = NA_real_))
+  }
   covariance <- cov_holder(sparse_pk)
   var_auc <- 0
   weights <- sparse_pk_attribute(sparse_pk, "weight")
@@ -229,7 +502,7 @@ var_sparse_auc <- function(sparse_pk) {
 #'
 #' Nedelman JR, Gibiansky E, Lau DTW. Applying Bailer’s method for AUC
 #' confidence intervals to sparse sampling. Pharmaceutical Research.
-#' 1995;12(1):124-128. doi:10.1023/A:1016255124336
+#' 1995;12(1):124-128.
 #' @keywords Internal
 #' @noRd
 sparse_satterthwaite_df <- function(sparse_pk, weights, covariance) {
@@ -382,8 +655,9 @@ pk.calc.sparse_auc <- function(conc, time, subject,
     rlang::abort('Sparse AUC calculation only supports `method = "linear"`.', class = "pknca_error_sparse_auc_method")
   }
   sparse_pk <- as_sparse_pk(conc=conc, time=time, subject=subject)
-  sparse_pk_wt <- sparse_auc_weight_linear(sparse_pk)
-  sparse_pk_mean <- sparse_mean(sparse_pk=sparse_pk_wt, sparse_mean_method="arithmetic mean, <=50% BLQ")
+  sparse_pk_mean <- sparse_mean(sparse_pk=sparse_pk, sparse_mean_method="arithmetic mean, <=50% BLQ")
+  # The weights end where the AUC does, so the variance describes the same area
+  sparse_pk_mean <- sparse_auc_weight_type(sparse_pk_mean, auc.type = auc.type)
   auc <-
     pk.calc.auc(
       conc=sparse_pk_attribute(sparse_pk_mean, "mean"),
@@ -393,7 +667,14 @@ pk.calc.sparse_auc <- function(conc, time, subject,
       options=options
     )
 
-  var_auc <- var_sparse_auc(sparse_pk_mean)
+  # Without an estimate (no concentration at time 0, say), there is no
+  # standard error either
+  var_auc <-
+    if (is.na(auc)) {
+      structure(NA_real_, df = NA_real_)
+    } else {
+      var_sparse_auc(sparse_pk_mean)
+    }
   ret <- data.frame(
     sparse_auc=auc,
     # as.numeric() drops the "df" attribute
@@ -567,6 +848,12 @@ is_sparse_pk <- function(object) {
 #' @keywords internal
 #' @export
 var_sparse_aumc <- function(sparse_pk) {
+  # Times with no weight in the AUMC or an imputed (known) concentration do not
+  # contribute to its variance
+  sparse_pk <- sparse_pk_weighted(sparse_pk)
+  if (length(sparse_pk) == 0) {
+    return(structure(0, df = NA_real_))
+  }
   # Step 1: Transform concentration to moment data (t * C) per subject
   # Must be done BEFORE calculating means — variance must be estimated
   # on individual moment values, not on mean concentrations
@@ -649,15 +936,14 @@ pk.calc.sparse_aumc <- function(conc, time, subject,
   }
   # Create sparse_pk object from data
   sparse_pk <- as_sparse_pk(conc = conc, time = time, subject = subject)
-  
-  # Calculate weights (same as for AUC)
-  sparse_pk_wt <- sparse_auc_weight_linear(sparse_pk)
-  
+
   # Calculate mean CONCENTRATION (for pk.calc.aumc integration)
   sparse_pk_mean <- sparse_mean(
-    sparse_pk = sparse_pk_wt,
+    sparse_pk = sparse_pk,
     sparse_mean_method = "arithmetic mean, <=50% BLQ"
   )
+  # Calculate weights (same as for AUC), ending where the AUMC does
+  sparse_pk_mean <- sparse_auc_weight_type(sparse_pk_mean, auc.type = auc.type)
   
   # Use pk.calc.aumc on the mean concentration profile
   # pk.calc.aumc will handle the time*conc multiplication during integration
@@ -672,8 +958,15 @@ pk.calc.sparse_aumc <- function(conc, time, subject,
   
   # Calculate variance on MOMENT data (this is where the fix matters)
   # var_sparse_aumc will create moment data internally
-  var_aumc <- var_sparse_aumc(sparse_pk_wt)
-  
+  var_aumc <-
+    if (is.na(aumc)) {
+      # Without an estimate (no concentration at time 0, say), there is no
+      # standard error either
+      structure(NA_real_, df = NA_real_)
+    } else {
+      var_sparse_aumc(sparse_pk_mean)
+    }
+
   data.frame(
     sparse_aumc = aumc,
     sparse_aumc_se = sqrt(as.numeric(var_aumc)),

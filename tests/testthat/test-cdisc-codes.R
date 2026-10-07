@@ -58,6 +58,14 @@ test_that("every registered CDISC PPTESTCD is <=8 characters and PPTEST is <=40 
   expect_equal(nrow(over_test), 0L, info = paste(capture.output(print(over_test)), collapse = "\n"))
 })
 
+test_that("every registered parameter description is <=40 characters", {
+  # add.interval.col() only warns about a long description when the package
+  # loads, which no test sees
+  descriptions <- vapply(get.interval.cols(), function(x) x$desc %||% NA_character_, FUN.VALUE = "")
+  over_desc <- descriptions[!is.na(descriptions) & nchar(descriptions) > 40]
+  expect_equal(length(over_desc), 0L, info = paste(names(over_desc), over_desc, sep = ": ", collapse = "\n"))
+})
+
 test_that("pknca_cdisc_codes() reflects the live registry", {
   codes <- pknca_cdisc_codes()
   expect_true(is.data.frame(codes))

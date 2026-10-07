@@ -411,9 +411,94 @@ pk.calc.aumclast_sparse <- function(conc, time, subject, ..., options=list()) {
   )
 }
 
+#' Sparse estimators for the AUC and AUMC to infinity
+#'
+#' These are the `FUN_sparse` of `aucinf.obs` and `aumcinf.obs`:  with sparse
+#' PK, [pk.nca()] estimates them as the sparse AUClast or AUMClast (see
+#' [pk.calc.auclast_sparse()]) plus the extrapolation from the mean
+#' concentration at tlast with the `lambda.z` of the mean profile, with the
+#' standard error of Yuan (1993) and its extension to the AUMC.  The
+#' `sparse_lambda_z_se` option of [PKNCA.options()] chooses whether the standard
+#' error adds the uncertainty of `lambda.z` with the delta method (`"delta"`,
+#' the default) or treats it as known (`"none"`, Yuan's method); see
+#' `vignette("v24-sparse-auc-to-infinity")`.
+#'
+#' @inheritParams pk.calc.sparse_auc
+#' @inheritParams pk.calc.half.life
+#' @param lambda.z The elimination rate of the mean profile
+#' @param lambda.z.time.first,lambda.z.time.last,lambda.z.n.points The first
+#'   and last time and the number of points of the half-life fit to the mean
+#'   profile
+#' @returns A data.frame with the point estimate, its standard error, and the
+#'   degrees of freedom, named for the parameter (`aucinf.obs`, `aucinf.obs_se`,
+#'   and `aucinf.obs_df`, or the `aumcinf.obs` equivalents)
+#' @references
+#' Yuan J. Estimation of variance for AUC in animal studies.  Journal of
+#' Pharmaceutical Sciences.  1993;82(7):761-763. doi:10.1002/jps.2600820718
+#' @family Sparse Methods
+#' @export
+pk.calc.aucinf.obs_sparse <- function(conc, time, subject, lambda.z,
+                                      lambda.z.time.first, lambda.z.time.last,
+                                      lambda.z.n.points, ..., options=list()) {
+  sparse_auxc_result(
+    conc=conc, time=time, subject=subject, lambda.z=lambda.z,
+    lambda.z.time.first=lambda.z.time.first, lambda.z.time.last=lambda.z.time.last,
+    lambda.z.n.points=lambda.z.n.points, moment=FALSE, extrapolate=TRUE, name="aucinf.obs",
+    options=options
+  )
+}
+
+#' @describeIn pk.calc.aucinf.obs_sparse Sparse AUMCinf,obs
+#' @export
+pk.calc.aumcinf.obs_sparse <- function(conc, time, subject, lambda.z,
+                                       lambda.z.time.first, lambda.z.time.last,
+                                       lambda.z.n.points, ..., options=list()) {
+  sparse_auxc_result(
+    conc=conc, time=time, subject=subject, lambda.z=lambda.z,
+    lambda.z.time.first=lambda.z.time.first, lambda.z.time.last=lambda.z.time.last,
+    lambda.z.n.points=lambda.z.n.points, moment=TRUE, extrapolate=TRUE, name="aumcinf.obs",
+    options=options
+  )
+}
+
+# The shared body of the sparse estimators that use sparse_auxc_obs():
+# pk.calc.aucinf.obs_sparse(), pk.calc.aumcinf.obs_sparse(), and their IV bolus
+# versions
+sparse_auxc_result <- function(conc, time, subject, lambda.z = NA,
+                               lambda.z.time.first = NA, lambda.z.time.last = NA,
+                               lambda.z.n.points = NA, moment, extrapolate,
+                               auc.type = "AUClast", iv_bolus = FALSE, name, options) {
+  lambda_z_se <- PKNCA.choose.option(name="sparse_lambda_z_se", options=options)
+  result <-
+    sparse_auxc_obs(
+      conc=conc, time=time, subject=subject, lambda.z=lambda.z,
+      lambda.z.time.first=lambda.z.time.first, lambda.z.time.last=lambda.z.time.last,
+      lambda.z.n.points=lambda.z.n.points, moment=moment, extrapolate=extrapolate,
+      auc.type=auc.type, iv_bolus=iv_bolus, lambda_z_se=lambda_z_se,
+      hl_method=PKNCA.choose.option(name="hl_method", options=options)
+    )
+  unify_sparse_result(
+    data.frame(result$estimate, result$se, result$df),
+    name=name,
+    method=
+      c(
+        "AUC: linear", "Sparse: arithmetic mean, <=50% BLQ",
+        if (!is.na(result$c0_method)) {
+          paste0("Sparse C0: ", result$c0_method, " on the mean profile")
+        },
+        if (extrapolate && lambda_z_se == "delta") {
+          "Sparse SE: delta method for lambda.z"
+        } else if (extrapolate) {
+          "Sparse SE: lambda.z treated as known (Yuan 1993)"
+        }
+      )
+  )
+}
+
 # Add the columns to the interval specification
 add.interval.col("aucinf.obs",
                  FUN="pk.calc.auc.inf.obs",
+                 FUN_sparse="pk.calc.aucinf.obs_sparse",
                  values=c(FALSE, TRUE),
                  unit_type="auc",
                  pretty_name="AUCinf,obs",
@@ -423,6 +508,30 @@ add.interval.col("aucinf.obs",
                  pptest_cdisc="AUC Infinity Obs",
                  formula="$AUC_{\\infty,\\text{obs}} = AUC_{0-\\text{last}} + \\frac{C_{\\text{last,obs}}}{\\lambda_z}$",
                  tier = "common")
+
+add.interval.col("aucinf.obs_se",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="auc",
+                 pretty_name="AUCinf,obs standard error",
+                 desc="SE of AUCinf,obs (sparse PK only)",
+                 depends="aucinf.obs",
+                 pptestcd_cdisc="AUCIFOSE",
+                 pptest_cdisc="Sparse AUCinf obs standard error",
+                 formula="$SE(AUC_{\\infty,\\text{obs}}) = \\sqrt{\\sum_{i,j} g_i g_j \\hat{\\sigma}_{ij} r_{ij} / (r_i r_j)}$",
+                 formula_note="Weights g are the trapezoidal weights plus the extrapolation weight at tlast (Yuan 1993), with the delta-method gradient for lambda.z when the sparse_lambda_z_se option is \"delta\"")
+
+add.interval.col("aucinf.obs_df",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="count",
+                 pretty_name="AUCinf,obs degrees of freedom",
+                 desc="DF for AUCinf,obs (sparse PK only)",
+                 depends="aucinf.obs",
+                 pptestcd_cdisc="AUCIFODF",
+                 pptest_cdisc="Sparse AUCinf obs degrees of freedom",
+                 formula="$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$",
+                 formula_note="Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)")
 
 add.interval.col("aucinf.pred",
                  FUN="pk.calc.auc.inf.pred",
@@ -489,6 +598,7 @@ add.interval.col("aucall",
 
 add.interval.col("aumcinf.obs",
                  FUN="pk.calc.aumc.inf.obs",
+                 FUN_sparse="pk.calc.aumcinf.obs_sparse",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMC,inf,obs",
@@ -497,6 +607,30 @@ add.interval.col("aumcinf.obs",
                  pptestcd_cdisc="AUMCIFO",
                  pptest_cdisc="AUMC Infinity Obs",
                  formula="$AUMC_{\\infty,\\text{obs}} = AUMC_{0-\\text{last}} + \\frac{C_{\\text{last,obs}} T_{\\text{last}}}{\\lambda_z} + \\frac{C_{\\text{last,obs}}}{\\lambda_z^2}$")
+
+add.interval.col("aumcinf.obs_se",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="aumc",
+                 pretty_name="AUMCinf,obs standard error",
+                 desc="SE of AUMCinf,obs (sparse PK only)",
+                 depends="aumcinf.obs",
+                 pptestcd_cdisc="AUMIFOSE",
+                 pptest_cdisc="Sparse AUMCinf obs standard error",
+                 formula="$SE(AUMC_{\\infty,\\text{obs}}) = \\sqrt{\\sum_{i,j} g_i g_j \\hat{\\sigma}^{m}_{ij} r_{ij} / (r_i r_j)}$",
+                 formula_note="Weights g on the moment means are the trapezoidal weights plus the extrapolation weight at tlast, with the delta-method gradient for lambda.z when the sparse_lambda_z_se option is \"delta\"")
+
+add.interval.col("aumcinf.obs_df",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="count",
+                 pretty_name="AUMCinf,obs degrees of freedom",
+                 desc="DF for AUMCinf,obs (sparse PK only)",
+                 depends="aumcinf.obs",
+                 pptestcd_cdisc="AUMIFODF",
+                 pptest_cdisc="Sparse AUMCinf obs degrees of freedom",
+                 formula="$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$",
+                 formula_note="Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)")
 
 add.interval.col("aumcinf.pred",
                  FUN="pk.calc.aumc.inf.pred",
@@ -585,6 +719,26 @@ PKNCA.set.summary(
   point=business.mean,
   spread=summary_spread_one_se,
   spread_for="auclast"
+)
+PKNCA.set.summary(
+  name=c("aucinf.obs_df", "aumcinf.obs_df"),
+  description="arithmetic mean and standard deviation",
+  point=business.mean,
+  spread=business.sd
+)
+PKNCA.set.summary(
+  name="aucinf.obs_se",
+  description="estimate and standard error",
+  point=business.mean,
+  spread=summary_spread_one_se,
+  spread_for="aucinf.obs"
+)
+PKNCA.set.summary(
+  name="aumcinf.obs_se",
+  description="estimate and standard error",
+  point=business.mean,
+  spread=summary_spread_one_se,
+  spread_for="aumcinf.obs"
 )
 PKNCA.set.summary(
   name="aumclast_se",

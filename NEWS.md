@@ -677,6 +677,40 @@ the generated intervals:
   to summarize a parameter with the spread from another parameter's results
   this way.  (#170)
 
+* With sparse PK, `aucinf.obs` and `aumcinf.obs` are now estimated as the sparse
+  AUClast or AUMClast plus the extrapolation from the mean concentration at
+  tlast, with standard errors and degrees of freedom in the new
+  `aucinf.obs_se`, `aucinf.obs_df`, `aumcinf.obs_se`, and `aumcinf.obs_df`
+  parameters (`pk.calc.aucinf.obs_sparse()` and `pk.calc.aumcinf.obs_sparse()`).
+  The standard error extends Yuan's (1993) to any sampling design and to the
+  AUMC and, by default, adds the uncertainty of `lambda.z` with the delta
+  method, including its covariance with Clast and the AUClast; the new
+  `sparse_lambda_z_se` option set to `"none"` gives Yuan's standard error, which
+  treats `lambda.z` as known.  Before, these parameters were calculated on the
+  arithmetic-mean profile with the `auc.method` option and had no standard
+  error; like the sparse AUClast, they now use the linear trapezoidal rule.
+  Like the sparse AUClast, they need a concentration at the start of the
+  interval, measured or imputed.  See `vignette("v24-sparse-auc-to-infinity")`.
+  (#428)
+
+* With sparse PK after an IV bolus, `aucivlast`, `aucivall`, `aucivinf.obs`,
+  `aumcivlast`, `aumcivall`, and `aumcivinf.obs` are now sparse estimators with
+  standard errors and degrees of freedom (the new `_se` and `_df` parameters,
+  such as `aucivlast_se` and `aucivlast_df`; `pk.calc.aucivlast_sparse()` and
+  its siblings).  Without a sample at time 0, C0 is back-extrapolated from the
+  mean profile with the methods of `pk.calc.c0()`, and its uncertainty is added
+  to the standard error with the delta method.  The other IV parameters
+  (`aucivint.*`, `aucivinf.pred`, and the AUMC equivalents) are calculated from
+  the mean profile, as before.
+
+* With sparse PK, an imputed concentration of zero at a time without samples,
+  as the `start_conc0` imputation adds at the start of an interval, is now used
+  by the sparse estimators (such as `auclast` and `aucinf.obs`):  it is a known
+  value, so it enters the estimate without adding to its variance or degrees of
+  freedom.  `as_sparse_pk()` marks such a concentration with a missing subject.
+  Other imputed values are estimates whose uncertainty the sparse estimators
+  cannot include, so they are still refused (`pknca_error_sparse_impute`).
+
 * The sparse degrees of freedom (`auclast_df`, `aumclast_df`, and the deprecated
   `sparse_auc_df` and `sparse_aumc_df`) are now calculated when subjects
   contribute more than one sample, as in batch designs, with the Satterthwaite
@@ -856,6 +890,22 @@ the generated intervals:
 
 ## Bug fixes
 
+* The standard error and degrees of freedom of a sparse AUClast or AUMClast
+  (`auclast_se`, `auclast_df`, `aumclast_se`, `aumclast_df`, and the deprecated
+  `sparse_*` equivalents) no longer include the times after tlast.  The point
+  estimate stops at tlast, the last time with a positive mean, but the variance
+  weighted every sampled time, so a profile whose last times have a zero mean
+  (more than half of the samples BLQ) had too large a standard error:  in one
+  example 3.68 instead of the 2.10 of Bailer's method, and 35.2 instead of 8.52
+  for the AUMC.  `pk.calc.sparse_auc()` and `pk.calc.sparse_aumc()` with
+  `auc.type = "AUCall"` include the triangle after tlast in the variance too, and
+  they now refuse other `auc.type` values, whose variance they do not calculate
+  (`pknca_error_sparse_auc_type`).
+
+* When a sparse AUClast or AUMClast is `NA` because there is no concentration at
+  the start of the interval, its standard error and degrees of freedom are now
+  `NA` too, instead of the variance of an area that was not estimated.
+
 * The `aucint` and `aumcint` parameters are dose-aware.  The profile
   being integrated ends at the first dose at or after the end of the interval,
   so a concentration measured after that dose is no longer interpolated back
@@ -918,21 +968,24 @@ the generated intervals:
   such as `pk.calc.count_conc()` still return 0, which is their documented
   behavior.
 
-* Imputation combined with a sparse estimator is now a clear error
+* An imputation that a sparse estimator cannot use is now a clear error
   (`pknca_error_sparse_impute`) naming the interval and the imputation method,
   instead of corrupting the subject bookkeeping silently or, since the
   `as_sparse_pk()` subject check became a real assertion, dying with an
   internal assertion failure.  An imputed measurement belongs to no animal, and
   the sparse standard error depends on which animal contributed which sample.
-  The error is raised only when the imputation actually changes the pooled
-  samples:  an imputation that finds what it would have added -- a
-  concentration already measured at the interval start, say -- still
-  calculates, as does one requested alongside only mean-profile parameters.
+  The error is raised only when the imputation changes the pooled samples with
+  something other than a zero at a time without samples (see the sparse
+  imputation entry under New features):  an imputation that finds what it would
+  have added -- a concentration already measured at the interval start, say --
+  still calculates, as does one requested alongside only mean-profile
+  parameters.
 
-* `as_sparse_pk()` now raises an error when `subject` is `NULL`, has a
-  different length than `conc`, or contains missing values.  Previously the
-  check was inert and such inputs passed silently into the sparse
-  calculations.
+* `as_sparse_pk()` now raises an error when `subject` is `NULL` or has a
+  different length than `conc`.  Previously the check was inert and such inputs
+  passed silently into the sparse calculations.  A missing subject marks an
+  imputed concentration, and a time cannot mix imputed and measured
+  concentrations (`pknca_error_sparse_pk_mixed_imputed`).
 
 * `pk.calc.sparse_auc()` and `pk.calc.sparse_aumc()` now use their
   `options` argument when integrating the mean concentration-time profile, so

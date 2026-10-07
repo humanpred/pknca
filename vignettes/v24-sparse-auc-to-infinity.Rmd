@@ -1,0 +1,681 @@
+---
+title: "Sparse AUC to Infinity and the Uncertainty of Lambda z"
+author: "Bill Denney"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Sparse AUC to Infinity and the Uncertainty of Lambda z}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(PKNCA)
+simulation <- readRDS("v24-sparse-auc-to-infinity-simulation.rds")
+mean_type <- readRDS("v24-sparse-auc-to-infinity-mean-type.rds")
+# The rows of a simulation summary that match every given column value
+sim_rows <- function(summary, filters) {
+  keep <- rep(TRUE, nrow(summary))
+  for (current_name in names(filters)) {
+    keep <- keep & summary[[current_name]] %in% filters[[current_name]]
+  }
+  summary[keep, ]
+}
+# The range of a column of the standard error study over the rows matching
+# `...` (column = value), as text
+se_range <- function(column, ..., digits = 0) {
+  v <- sim_rows(simulation$summary, list(...))[[column]]
+  paste(format(round(range(v), digits), nsmall = digits), collapse = " to ")
+}
+# The same for the arithmetic and geometric mean profile study
+mt_range <- function(column, ..., digits = 0) {
+  v <- sim_rows(mean_type$summary, list(...))[[column]]
+  paste(format(round(range(v), digits), nsmall = digits), collapse = " to ")
+}
+```
+
+# Summary and recommendations
+
+For sparse sampling, where each animal gives one or a few samples:
+
+* **Use the delta-method standard error for the AUC to infinity (the
+  default).**  When little of the AUC is extrapolated, Yuan's standard error,
+  which treats $\lambda_z$ as known, and the delta method both cover close to
+  the nominal 95% (Yuan `r se_range("coverage", method = "yuan", parameter = "auc", elimination = "fast")`%).
+  When about a fifth of the AUC is extrapolated, Yuan's intervals are too
+  narrow (`r se_range("coverage", method = "yuan", parameter = "auc", elimination = "slow")`%
+  coverage), and the delta method is closer to nominal
+  (`r se_range("coverage", method = "delta", parameter = "auc", elimination = "slow")`%).
+  Set `sparse_lambda_z_se = "none"` for Yuan's method.
+* **Give the AUC a concentration at time 0.**  As for any PKNCA AUC, the sparse
+  AUC is `NA` without one.  Sacrificial designs rarely sample at the dose, so
+  after an extravascular dose impute zero with `impute = "start_conc0"`.  After
+  an IV bolus, request the IV parameters (`aucivlast`, `aucivinf.obs`):  they
+  back-extrapolate $C_0$ from the mean profile and include its uncertainty.
+* **Treat the AUMC, and the MRT and Vss that come from it, with caution.**  The
+  AUMC to infinity was biased low in most scenarios, and its confidence intervals
+  under-covered in every scenario, even with the delta method
+  (`r se_range("coverage", method = "delta", parameter = "aumc")`%), most when
+  elimination was slow.
+* **The half-life of the mean profile is not the typical animal's half-life.**
+  It was too long when the terminal phase was well sampled (by up to
+  `r max(round(sim_rows(mean_type$summary, list(mean_type = "arithmetic", parameter = "half.life", elimination = "fast", blq = "none"))$bias_typical))`%)
+  and too short when the profile was cut short by BLQ samples or a two-compartment
+  distribution (down to
+  `r min(round(sim_rows(mean_type$summary, list(mean_type = "arithmetic", parameter = "half.life"))$bias_typical))`%).
+  Sample long enough to see at least three terminal half-lives.
+* **Cmax of the mean profile reads high with few animals per time.**  Taking
+  the maximum of noisy means near a broad peak overestimated Cmax by up to
+  `r max(round(sim_rows(mean_type$summary, list(mean_type = "arithmetic", parameter = "cmax", route = "oral"))$bias_natural))`%.
+* **Geometric-mean profiles were evaluated and not adopted.**  They were no more
+  biased and were as precise or modestly more precise, but they estimate a
+  different quantity (the typical animal rather than the population mean
+  curve), need a rule for BLQ samples that drives their BLQ results, and fall
+  outside the variance methods for sparse AUCs, which are for arithmetic means;
+  adopting them would change all sparse calculations for a modest gain.
+* **Estimating $\lambda_z$ from the individual samples was evaluated and not
+  adopted.**  A (mixed-effects) Tobit fit gave a steadier point estimate when
+  $\lambda_z$ was uncertain, but its standard error, added to Yuan's, did not
+  cover as well as the delta method.
+
+# Introduction
+
+With sparse sampling, each animal contributes only one or a few samples to a
+concentration-time profile, so there is no individual AUC to summarize.
+Instead, the AUC is estimated from the mean concentration at each time, and its
+standard error comes from the variability between animals at each time.  Bailer
+(1988) gave the estimator and its variance for the AUC from time 0 to the last
+sampling time with serial sacrifice (one sample per animal).  Nedelman and Jia
+(1998) extended it to designs where animals give more than one sample, with
+a Satterthwaite approximation for the degrees of freedom, and Holder (2001)
+gave an unbiased estimator of the covariance between times.  Yuan (1993)
+extended Bailer's method to the AUC from 0 to infinity by adding the
+extrapolation $\bar{y}_n/\lambda_z$, treating the terminal elimination rate
+$\lambda_z$ as known.
+
+In practice, $\lambda_z$ is estimated from the same data, so its uncertainty
+adds to that of the AUC to infinity.  This vignette describes how PKNCA
+calculates the sparse AUC and AUMC to infinity with their standard errors and
+degrees of freedom, gives a delta-method extension of Yuan's method that
+includes the uncertainty in $\lambda_z$, extends both to IV bolus dosing, and
+compares the methods in a simulation-estimation study.  A second study compares
+arithmetic and geometric mean profiles.
+
+# The sparse AUC to the last measurement
+
+At each sampling time $t_i$ ($i = 0, \ldots, n$), $r_i$ animals are sampled and
+$\bar{y}_i$ is the arithmetic mean concentration.  $r_{ij}$ animals are sampled
+at both $t_i$ and $t_j$ ($r_{ii} = r_i$).  The linear trapezoidal AUC of the
+mean profile is a weighted sum of the means,
+
+$$\widehat{AUC}_{0-t_{last}} = \sum_{i=0}^{n} w_i \bar{y}_i,
+\quad w_0 = \frac{t_1 - t_0}{2},
+\quad w_i = \frac{t_{i+1} - t_{i-1}}{2},
+\quad w_n = \frac{t_n - t_{n-1}}{2},$$
+
+where $t_n = t_{last}$ is the last time with a positive mean.  Since the
+estimate is linear in the means, its variance is
+
+$$\text{Var}\left(\widehat{AUC}_{0-t_{last}}\right) = \sum_{i}\sum_{j} w_i w_j \frac{r_{ij}\,\sigma_{ij}}{r_i r_j},$$
+
+with $\sigma_{ij}$ the covariance of the concentrations at $t_i$ and $t_j$
+within an animal.  PKNCA estimates $\sigma_{ii}$ with the sample variance and
+$\sigma_{ij}$ ($i \neq j$) with the unbiased estimator of Holder (2001), setting
+it to 0 when fewer than two animals are sampled at both times.  With serial
+sacrifice, $r_{ij} = 0$ for $i \neq j$ and this is Bailer's (1988) variance,
+$\sum_i w_i^2 s_i^2/r_i$.
+
+Only times up to $t_{last}$ have weight.  When more than half of the samples at
+a time are below the limit of quantification (BLQ), PKNCA sets that time's mean
+to zero; times after the last positive mean are not part of
+$AUC_{0-t_{last}}$, and they contribute nothing to its variance either.
+
+As for any AUC in PKNCA, the area starts at the start of the interval, so a
+concentration is needed there, measured or imputed; without one, the sparse
+AUC is `NA`.  Animals are rarely sampled at the dose in sacrificial designs, so
+after an extravascular dose the usual choice is to impute a concentration of
+zero with `impute = "start_conc0"`.  An imputed zero is known rather than
+measured, so it has weight in the estimate (as $\bar{y}_0 = 0$) but no
+variance.
+
+# Extrapolation to infinity (Yuan 1993)
+
+With first-order terminal elimination, the area after $t_{last}$ is
+$\bar{y}_{n}/\lambda_z$, so
+
+$$\widehat{AUC}_{0-\infty} = \sum_{i=0}^{n} w_i \bar{y}_i + \frac{\bar{y}_n}{\lambda_z}.$$
+
+This is still linear in the means if $\lambda_z$ is known, with the last weight
+increased by $1/\lambda_z$.  Yuan's (1993) variance (his equation 4) is
+Bailer's with that weight, $g_n = w_n + 1/\lambda_z$:
+
+$$\text{Var}\left(\widehat{AUC}_{0-\infty}\right) = \sum_{i}\sum_{j} g_i g_j \frac{r_{ij}\,\sigma_{ij}}{r_i r_j},
+\qquad g_i = w_i + \frac{\delta_{i,n}}{\lambda_z}.$$
+
+Written this way, the method applies to any sampling design, not only serial
+sacrifice.
+
+The AUMC is the AUC of the moment curve $t\,C(t)$.  Its estimate uses the
+moment means $\bar{m}_i = t_i \bar{y}_i$, and the extrapolation
+$t_{last} C_{last}/\lambda_z + C_{last}/\lambda_z^2$ is
+$\bar{m}_n\left(1/\lambda_z + 1/(t_{last}\lambda_z^2)\right)$, so the AUMC
+weights are $g_i = w_i + \delta_{i,n}\left(1/\lambda_z + 1/(t_{last}\lambda_z^2)\right)$
+applied to the moment means, with the covariances of the moments
+$t_i t_j \sigma_{ij}$.
+
+# IV bolus:  the back-extrapolated C0
+
+After an IV bolus, the concentration at time 0 is not zero, and it cannot be
+measured.  As for dense data, PKNCA estimates it from the mean profile with the
+methods of `pk.calc.c0()`:  log-linear back-extrapolation from the first two
+means when they decline,
+
+$$\hat{C}_0 = \bar{y}_1 \left(\frac{\bar{y}_1}{\bar{y}_2}\right)^{t_1/(t_2 - t_1)},$$
+
+and otherwise $\bar{y}_1$.  The AUC adds the trapezoid from time 0 to $t_1$,
+$t_1(\hat{C}_0 + \bar{y}_1)/2$.  $\hat{C}_0$ is a smooth function of the
+first two means, so its uncertainty enters the variance through its gradient,
+as in the next section:  the weights of $\bar{y}_1$ and $\bar{y}_2$ gain
+$(t_1/2)\,\partial \hat{C}_0/\partial \bar{y}_j$, with
+
+$$\frac{\partial \hat{C}_0}{\partial \bar{y}_1} = \frac{\hat{C}_0\, t_2}{(t_2 - t_1)\,\bar{y}_1},
+\qquad
+\frac{\partial \hat{C}_0}{\partial \bar{y}_2} = -\frac{\hat{C}_0\, t_1}{(t_2 - t_1)\,\bar{y}_2}.$$
+
+With the linear trapezoidal rule, the AUMC from time 0 to $t_1$ is
+$t_1^2\bar{y}_1/2$ whatever $C_0$ is, so $C_0$ does not affect the AUMC.  These
+are the sparse `aucivlast`, `aucivall`, and `aucivinf.obs` (and their AUMC
+equivalents), each with its standard error and degrees of freedom.
+
+# The uncertainty of lambda z (delta method)
+
+$\lambda_z$ is estimated from the mean profile:  PKNCA fits a line to the log
+mean concentrations at the half-life points, chosen automatically by the
+adjusted $r^2$ (see `vignette("v06-half-life-calculation")`).  For a given
+set of half-life points $H$, the estimate is minus the least-squares slope,
+
+$$\hat{\lambda}_z = -\sum_{j \in H} c_j \log \bar{y}_j,
+\qquad c_j = \frac{t_j - \bar{t}_H}{\sum_{k \in H}\left(t_k - \bar{t}_H\right)^2},$$
+
+a smooth function of the means.  So $\widehat{AUC}_{0-\infty}$ is a smooth
+function of the means, and the delta method gives its variance from the same
+covariance of the means with the gradient in place of the weights:
+
+$$g_j = \frac{\partial \widehat{AUC}_{0-\infty}}{\partial \bar{y}_j}
+= w_j + \frac{\delta_{j,n}}{\lambda_z}
++ \frac{\bar{y}_n}{\lambda_z^2}\,\frac{c_j}{\bar{y}_j}\,\mathbb{1}_{j \in H}.$$
+
+The last term is the uncertainty in $\lambda_z$.  Because the gradient is taken
+with respect to all of the means together, the variance includes the covariance
+of $\hat{\lambda}_z$ with $\bar{y}_n$ and with $\widehat{AUC}_{0-t_{last}}$.
+Those covariances matter:  a high mean at an early half-life point raises the
+AUC to $t_{last}$ but steepens the slope, which lowers the extrapolated area,
+so the two partly cancel.  Adding a separately estimated variance of
+$\hat{\lambda}_z$ to Yuan's variance would miss that.
+
+For the AUMC, with the moment means,
+$\hat{\lambda}_z = -\sum_{j \in H} c_j \left(\log \bar{m}_j - \log t_j\right)$ and
+
+$$g_j = w_j + \delta_{j,n}\left(\frac{1}{\lambda_z} + \frac{1}{t_{last}\lambda_z^2}\right)
++ \bar{m}_n\left(\frac{1}{\lambda_z^2} + \frac{2}{t_{last}\lambda_z^3}\right)\frac{c_j}{\bar{m}_j}\,\mathbb{1}_{j \in H}.$$
+
+The method conditions on the selected half-life points:  the variability from
+choosing them is not included.  It is a first-order approximation, which is
+most accurate when the coefficient of variation of the means at the half-life
+points is small.
+
+# Degrees of freedom
+
+Confidence intervals use a $t$ distribution.  The variance estimate is a
+quadratic form in the individual measurements $y$, $\hat{V} = y^T M y$, where
+$M$ centers the measurements at each time and weights the products of each
+animal's measurements by $g_i g_j r_{ij}/(r_i r_j h_{ij})$, with $h_{ij}$ the
+divisor of the Holder covariance.  With $\Omega$ the covariance of the
+measurements, Nedelman and Jia's (1998) equation 6 gives the Satterthwaite
+degrees of freedom,
+
+$$\nu = \frac{2\,E^2}{V}, \qquad E = \text{tr}(M\Omega), \qquad V = 2\,\text{tr}(M\Omega M\Omega).$$
+
+With serial sacrifice, this is equation 6a of Nedelman, Gibiansky, and Lau
+(1995).  PKNCA uses the same expression with the weights $g$ for the AUC and
+AUMC to infinity, with or without the delta-method terms.
+
+# An alternative:  lambda z from the individual samples
+
+Instead of the log means, $\lambda_z$ could be estimated from every individual
+sample in the terminal phase, with its standard error from that regression.
+Samples below the limit of quantification are censored, so the regression is a
+Tobit regression on the log concentrations; when animals give more than one
+sample, a random intercept for each animal accounts for their correlation.  The
+variance of $\hat{\lambda}_z$ is then added to Yuan's variance.
+
+Two properties of this approach differ from the delta method.  A line through
+the individual log concentrations follows the geometric-mean profile, while the
+AUC and $C_{last}$ come from the arithmetic means; the two have the same
+terminal slope only when the between-animal coefficient of variation is the
+same at every terminal time.  And the regression does not give the covariance of
+$\hat{\lambda}_z$ with the means, so it is added as though it were independent.
+The simulation below compares both.
+
+# Simulation-estimation study
+
+```{r simulation-details, echo = FALSE}
+model <- simulation$model
+```
+
+## Design
+
+Both studies in this vignette share one design
+(`data-raw/sparse_simulation_design.R` in the PKNCA source).  Concentrations come
+from one- and two-compartment models (pmxTools) after a dose of
+`r model$dose`, given orally or as an IV bolus, with log-normal between-animal
+variability (`r 100*model$omega`% on each structural parameter) and a
+multiplicative residual error (`r 100*model$sigma`%) with mean 1:
+
+* **One compartment:**  $V$ `r simulation$model_1cmt$v`, $k_e$ 0.15/hr (fast
+  elimination, half-life 4.6 hr) or 0.07/hr (slow, 9.9 hr), and oral $k_a$
+  `r simulation$model_1cmt$ka`/hr (Tmax 0.7 to 0.9 hr).
+* **Two compartments:**  $V_1$ `r simulation$model_2cmt$v1`, $V_2$
+  `r simulation$model_2cmt$v2`, $Q$ `r simulation$model_2cmt$q`, and $CL$
+  chosen for the same terminal half-lives after a distribution phase with a
+  half-life of about 0.5 hr; oral $k_a$ `r simulation$model_2cmt$ka`/hr (Tmax
+  0.6 to 0.7 hr).
+
+The slow elimination leaves about a fifth of the AUC to extrapolate after 24
+hours, and the fast elimination less than a tenth.  Two limits of
+quantification gave no BLQ samples or about a third of the samples at 24 hours
+BLQ (70% of the typical concentration at 24 hours).  No animal was sampled at
+the dose.  The serial-sacrifice design sampled `r simulation$n_serial` animals
+at each of `r length(simulation$sampling_times$oral)` times
+(`r paste(signif(simulation$sampling_times$oral, 2), collapse = ", ")` hours
+for oral dosing; for IV bolus dosing, the first time was 5 minutes and 6 hours
+was omitted); the batch design sampled three batches of
+`r simulation$n_batch` animals, each batch at a third of those times.  With
+`r nrow(simulation$scenarios)` scenarios (two models, two routes, two designs,
+two limits of quantification, and two elimination rates), the standard error
+study had `r format(simulation$n_replicates, big.mark = ",")` replicates per
+scenario.
+
+The truth is the AUC (and AUMC) from 0 to infinity of the population mean
+concentration curve, which is what the arithmetic means estimate:  the mean of
+the individual values over `r format(simulation$n_virtual, big.mark = ",")`
+virtual animals (Monte Carlo standard error at most
+`r round(max(simulation$truth_mcse_percent[, c("auc", "aumc")]), 2)`%).  For
+each replicate, the oral concentration at time 0 was imputed as zero and the IV
+bolus $C_0$ was back-extrapolated, the half-life was fit to the mean profile as
+PKNCA does, and three standard errors were calculated:
+
+* **Yuan:**  $\lambda_z$ treated as known (`sparse_lambda_z_se = "none"`);
+* **Delta:**  the delta method for $\lambda_z$ (`sparse_lambda_z_se = "delta"`);
+* **Individual:**  $\lambda_z$ and its standard error from a Tobit regression
+  of the individual samples from the first half-life time onward (with a random
+  intercept for each animal in the batch design), with that $\lambda_z$ in the
+  extrapolation and its variance added to Yuan's.
+
+The simulation is in `data-raw/sparse_aucinf_simulation.R` in the PKNCA source,
+which was run with PKNCA `r simulation$pknca_version` and pmxTools
+`r simulation$pmxtools_version` (`r simulation$r_version`,
+`r simulation$run_date`); every replicate has its own seed, so the results can
+be reproduced.
+
+```{r simulation-results, echo = FALSE}
+results <- simulation$summary
+scenario_columns <- function(r) {
+  data.frame(
+    Model = paste0(r$compartments, "-cmt"),
+    Route = ifelse(r$route == "iv", "IV bolus", "oral"),
+    Design = r$design,
+    BLQ = r$blq,
+    Elimination = r$elimination
+  )
+}
+# One row per scenario with a column of `column` for each method
+by_method <- function(parameter, column, methods, digits = 1) {
+  r <- results[results$parameter == parameter, ]
+  scenarios <- sort(unique(r$scenario))
+  ret <- data.frame(scenario = scenarios)
+  for (current_method in methods) {
+    current <- r[r$method == current_method, ]
+    ret[[current_method]] <- round(current[[column]][match(scenarios, current$scenario)], digits)
+  }
+  ret
+}
+show_coverage <- function(parameter) {
+  r <- results[results$parameter == parameter & results$method == "yuan", ]
+  r <- r[order(r$scenario), ]
+  coverage <- by_method(parameter, "coverage", c("yuan", "delta", "individual"))
+  width <- by_method(parameter, "median_ci_width", c("yuan", "delta", "individual"), digits = 0)
+  out <-
+    data.frame(
+      scenario_columns(r),
+      `Extrap. (%)` = round(r$percent_extrapolated, 1),
+      `Coverage Yuan` = coverage$yuan,
+      `Coverage delta` = coverage$delta,
+      `Coverage indiv.` = coverage$individual,
+      `CI width Yuan` = width$yuan,
+      `CI width delta` = width$delta,
+      `CI width indiv.` = width$individual,
+      check.names = FALSE
+    )
+  knitr::kable(out, row.names = FALSE)
+}
+show_accuracy <- function(parameter) {
+  r <- results[results$parameter == parameter & results$method == "yuan", ]
+  r <- r[order(r$scenario), ]
+  bias <- by_method(parameter, "relative_bias", c("yuan", "individual"))
+  mae <- by_method(parameter, "median_absolute_error", c("yuan", "individual"))
+  rmse <- by_method(parameter, "rmse", c("yuan", "individual"))
+  out <-
+    data.frame(
+      scenario_columns(r),
+      `Bias mean` = bias$yuan,
+      `Bias indiv.` = bias$individual,
+      `MAE mean` = mae$yuan,
+      `MAE indiv.` = mae$individual,
+      `RMSE mean` = rmse$yuan,
+      `RMSE indiv.` = rmse$individual,
+      check.names = FALSE
+    )
+  knitr::kable(out, row.names = FALSE)
+}
+```
+
+## Results:  coverage of the AUC to infinity
+
+```{r simulation-auc-coverage, echo = FALSE}
+show_coverage("auc")
+```
+
+## Results:  coverage of the AUMC to infinity
+
+```{r simulation-aumc-coverage, echo = FALSE}
+show_coverage("aumc")
+```
+
+Coverage is the percentage of 95% confidence intervals that contain the truth,
+and the CI width is the median width relative to the truth (%).  The Monte Carlo
+standard error of each coverage is at most
+`r round(max(simulation$summary$coverage_mcse), 1)` percentage points.
+
+## Results:  accuracy of the point estimates
+
+The point estimate with $\lambda_z$ from the log means ("mean", shared by Yuan
+and delta) and with $\lambda_z$ from the Tobit fit of the individual samples
+("indiv."):  bias, median absolute error (MAE), and root mean squared error
+(RMSE), all relative to the truth (%).
+
+```{r simulation-auc-accuracy, echo = FALSE}
+show_accuracy("auc")
+```
+
+```{r simulation-aumc-accuracy, echo = FALSE}
+show_accuracy("aumc")
+```
+
+## Findings
+
+**Coverage of the AUC to infinity.**  With fast elimination, when
+`r se_range("percent_extrapolated", parameter = "auc", method = "yuan", elimination = "fast")`%
+of the AUC was extrapolated, all three methods covered close to the nominal 95%
+(Yuan `r se_range("coverage", method = "yuan", parameter = "auc", elimination = "fast", digits = 1)`%,
+delta `r se_range("coverage", method = "delta", parameter = "auc", elimination = "fast", digits = 1)`%,
+individual `r se_range("coverage", method = "individual", parameter = "auc", elimination = "fast", digits = 1)`%),
+so the uncertainty of $\lambda_z$ matters little when little is extrapolated.
+With slow elimination, when
+`r se_range("percent_extrapolated", parameter = "auc", method = "yuan", elimination = "slow")`%
+was extrapolated, treating $\lambda_z$ as known under-covered (Yuan
+`r se_range("coverage", method = "yuan", parameter = "auc", elimination = "slow", digits = 1)`%),
+and the delta method was closest to nominal in every scenario
+(`r se_range("coverage", method = "delta", parameter = "auc", elimination = "slow", digits = 1)`%),
+though still a few points short.  Adding the variance of $\lambda_z$ from the
+individual samples
+(`r se_range("coverage", method = "individual", parameter = "auc", elimination = "slow", digits = 1)`%)
+recovered only part of the shortfall, because it omits the covariance of
+$\hat{\lambda}_z$ with the means.  The results were alike for the oral and IV
+bolus routes, so back-extrapolating $C_0$ added little uncertainty, and alike
+for the one- and two-compartment models and the two designs.
+
+**Accuracy of the AUC to infinity.**  The bias of the AUC to infinity was
+`r se_range("relative_bias", method = "yuan", parameter = "auc", digits = 1)`%:
+slightly high with fast elimination, where the linear trapezoidal rule
+overestimates the area under the declining curve, and near zero with slow
+elimination (slightly low with two compartments and BLQ samples).  The median absolute errors
+were similar for the two estimates of $\lambda_z$, but the log-mean
+$\lambda_z$ occasionally came out near zero with slow elimination and BLQ
+samples, which made the AUC to infinity heavy-tailed (RMSE up to
+`r round(max(sim_rows(results, list(method = "yuan", parameter = "auc"))$rmse))`%).
+The Tobit fit uses every terminal sample, including the censored ones, rather
+than means that count BLQ samples as zero, and it was steadier (RMSE up to
+`r round(max(sim_rows(results, list(method = "individual", parameter = "auc"))$rmse))`%).
+
+**The AUMC to infinity.**  All three methods under-covered the AUMC in every
+scenario (delta `r se_range("coverage", method = "delta", parameter = "aumc")`%,
+Yuan `r se_range("coverage", method = "yuan", parameter = "aumc")`%, individual
+`r se_range("coverage", method = "individual", parameter = "aumc")`%), most
+with slow elimination.  Its extrapolation is proportional to $1/\lambda_z^2$,
+so the first-order delta method is a poorer approximation, and the estimate is
+more heavy-tailed:  its median absolute error was
+`r se_range("median_absolute_error", method = "yuan", parameter = "aumc")`%,
+and with two compartments and slow elimination it was biased low
+(`r se_range("relative_bias", method = "yuan", parameter = "aumc", compartments = 2, elimination = "slow")`%),
+because the arithmetic mean of animals with different elimination rates
+declines ever more slowly, which a single exponential from $t_{last}$ misses.
+
+**Interval width.**  The delta-method intervals were wider than Yuan's, most
+when elimination was slow; the extra width is what improved the coverage.
+
+# Arithmetic or geometric mean profiles
+
+The sparse AUC uses the arithmetic mean at each time, whose profile is the
+population mean concentration curve.  A geometric mean profile instead
+approximates the typical animal, and it may be less affected by animals with
+high concentrations.  The second study compared the two for the AUClast,
+AUCinf, Cmax ($C_0$ for IV bolus), AUMClast, AUMCinf, and half-life, using the
+same design with `r format(mean_type$n_replicates, big.mark = ",")` replicates
+per scenario (`data-raw/sparse_mean_type_simulation.R`).
+
+For each replicate, both mean profiles were formed, and `pk.nca()` calculated
+the parameters from each with the linear trapezoidal rule (imputing zero at
+time 0 for oral dosing and back-extrapolating $C_0$ for IV bolus).  For the
+geometric mean, a time with more than half of its samples BLQ was BLQ (as for
+the arithmetic sparse mean), and otherwise BLQ samples counted as half of the
+LLOQ.  Each profile was compared with its own target (the arithmetic or
+geometric mean of the individual parameters of
+`r format(mean_type$n_virtual, big.mark = ",")` virtual animals) and with the
+typical animal.  Precision is the robust coefficient of variation (the
+interquartile range divided by 1.349, relative to the median).
+
+```{r mean-type-summary, echo = FALSE}
+mt <- mean_type$summary
+parameter_labels <-
+  c(auclast = "AUClast", aucinf = "AUCinf", cmax = "Cmax (C0 for IV)",
+    aumclast = "AUMClast", aumcinf = "AUMCinf", half.life = "Half-life")
+range_text <- function(x) paste(round(range(x)), collapse = " to ")
+out <- data.frame()
+for (current_parameter in names(parameter_labels)) {
+  a <- mt[mt$parameter == current_parameter & mt$mean_type == "arithmetic", ]
+  g <- mt[mt$parameter == current_parameter & mt$mean_type == "geometric", ]
+  g <- g[match(a$scenario, g$scenario), ]
+  out <-
+    rbind(
+      out,
+      data.frame(
+        Parameter = parameter_labels[[current_parameter]],
+        `Bias vs own target, arith.` = range_text(a$bias_natural),
+        `Bias vs own target, geom.` = range_text(g$bias_natural),
+        `Bias vs typical, arith.` = range_text(a$bias_typical),
+        `Bias vs typical, geom.` = range_text(g$bias_typical),
+        `Robust CV, arith.` = range_text(a$robust_cv),
+        `Robust CV, geom.` = range_text(g$robust_cv),
+        `Geom. CV lower (scenarios)` = sprintf("%d of %d", sum(g$robust_cv < a$robust_cv - 1), nrow(a)),
+        check.names = FALSE
+      )
+    )
+}
+knitr::kable(out, row.names = FALSE, caption = "Bias (median, %) and robust CV (%) over the scenarios; the last column counts the scenarios where the geometric robust CV was more than 1 point lower.")
+```
+
+```{r mean-type-half-life, echo = FALSE}
+hl <- mt[mt$parameter == "half.life", ]
+keys <- unique(hl[, c("compartments", "elimination", "blq")])
+keys <- keys[order(keys$compartments, keys$elimination, keys$blq), ]
+out_hl <- data.frame()
+for (i in seq_len(nrow(keys))) {
+  current <- merge(hl, keys[i, ])
+  out_hl <-
+    rbind(
+      out_hl,
+      data.frame(
+        Model = paste0(keys$compartments[i], "-cmt"),
+        Elimination = keys$elimination[i],
+        BLQ = keys$blq[i],
+        `Arithmetic` = range_text(current$bias_typical[current$mean_type == "arithmetic"]),
+        `Geometric` = range_text(current$bias_typical[current$mean_type == "geometric"]),
+        check.names = FALSE
+      )
+    )
+}
+knitr::kable(out_hl, row.names = FALSE, caption = "Bias (%) of the half-life of the mean profile against the typical animal's half-life, over routes and designs.")
+```
+
+**Findings.**  Against their own targets, the two profiles were similarly
+accurate for the AUCs and Cmax.  The geometric profile was as precise or more
+precise, most clearly for the half-life with BLQ samples and for the AUMC to
+infinity, but the gains were modest elsewhere.  Both underestimated the AUMC to
+infinity (arithmetic
+`r mt_range("bias_natural", mean_type = "arithmetic", parameter = "aumcinf")`%,
+geometric `r mt_range("bias_natural", mean_type = "geometric", parameter = "aumcinf")`%).
+The half-life of the arithmetic mean profile was not consistently too short:
+it was too long when the terminal phase was well sampled, because the late mean
+is dominated by the slowly eliminating animals, and too short with BLQ samples
+(counted as zero in the late means) and in the two-compartment model with slow
+elimination, where the fitted points reach back toward the distribution phase.
+The geometric profile was generally a few percent short, because the
+geometric mean of exponentials declines at the average elimination rate.
+
+The geometric profile was not adopted.  Its gains were modest; it estimates a
+different quantity (the typical animal rather than the population mean curve);
+its BLQ rule (here, half the LLOQ) is a choice that drives its results with BLQ
+samples; and the sparse variance methods (Bailer, Nedelman and Jia, Holder)
+are for arithmetic means, so adopting it would change every sparse calculation.
+
+# Calculating it with PKNCA
+
+Request `aucinf.obs` (or `aumcinf.obs`) with sparse data.  The standard error
+and degrees of freedom are reported with it as `aucinf.obs_se` and
+`aucinf.obs_df`, and the summary shows the estimate with its standard error.
+These animals were not sampled at the dose, so the concentration at time 0 is
+imputed as zero.
+
+```{r pknca-example}
+d_sparse <-
+  data.frame(
+    time = rep(c(0.5, 1, 2, 4, 6, 8, 12, 24), each = 4),
+    conc =
+      c(3.1, 4.4, 3.6, 5.2,  5.8, 6.9, 5.1, 7.4,  7.2, 6.1, 8.3, 6.6,
+        5.0, 6.2, 4.4, 5.6,  4.1, 3.4, 4.8, 3.7,  2.9, 3.5, 2.4, 3.1,
+        1.6, 1.9, 1.3, 1.8,  0.33, 0.27, 0.41, 0.30)
+  )
+d_sparse$animal <- seq_len(nrow(d_sparse))
+o_data <-
+  PKNCAdata(
+    PKNCAconc(d_sparse, conc ~ time | animal, sparse = TRUE),
+    intervals = data.frame(start = 0, end = Inf, aucinf.obs = TRUE, aumcinf.obs = TRUE),
+    impute = "start_conc0"
+  )
+o_nca <- pk.nca(o_data)
+d_result <- as.data.frame(o_nca)
+d_result[grepl("^au.*inf|^lambda.z$", d_result$PPTESTCD), c("PPTESTCD", "PPORRES")]
+summary(o_nca)
+```
+
+The `sparse_lambda_z_se` option (set globally with `PKNCA.options()` or for
+one analysis with the `options` argument of `PKNCAdata()`) is `"delta"` (the
+default) for the delta method or `"none"` for Yuan's method.  The method used
+is recorded in the `PPANMETH` column.
+
+After an IV bolus, request the IV parameters; $C_0$ is back-extrapolated from
+the mean profile, and no imputation is needed.
+
+```{r pknca-example-iv}
+d_sparse_iv <-
+  data.frame(
+    time = rep(c(0.25, 0.5, 1, 2, 4, 8, 24), each = 4),
+    conc =
+      c(9.1, 10.4, 8.7, 9.9,  8.8, 9.5, 8.1, 9.2,  8.2, 7.6, 8.9, 7.9,
+        6.4, 7.1, 6.0, 6.9,  4.6, 4.1, 5.0, 4.3,  2.1, 1.8, 2.3, 1.9,
+        0.10, 0.08, 0.12, 0.09)
+  )
+d_sparse_iv$animal <- seq_len(nrow(d_sparse_iv))
+o_data_iv <-
+  PKNCAdata(
+    PKNCAconc(d_sparse_iv, conc ~ time | animal, sparse = TRUE),
+    PKNCAdose(data.frame(time = 0, dose = 100), dose ~ time, route = "intravascular"),
+    intervals = data.frame(start = 0, end = Inf, c0 = TRUE, aucivinf.obs = TRUE)
+  )
+d_result_iv <- as.data.frame(suppressWarnings(pk.nca(o_data_iv)))
+d_result_iv[grepl("^c0$|^aucivinf", d_result_iv$PPTESTCD), c("PPTESTCD", "PPORRES")]
+```
+
+The warnings suppressed here say that the AUCs from time 0 without $C_0$
+(`aucinf.obs`, which `aucivinf.obs` depends on) are not calculated.
+
+# Discussion
+
+When $\lambda_z$ is estimated from the same samples, its uncertainty adds to
+that of the AUC to infinity, and treating it as known, as Yuan's (1993)
+standard error does, under-covers once the extrapolated area is a substantial
+part of the AUC.  The delta method on the log means is a consistent extension of
+Yuan's method:  it keeps his estimate, applies to serial-sacrifice and batch
+designs alike through the covariance of the means, includes the covariance of
+$\hat{\lambda}_z$ with $C_{last}$ and the AUC to $t_{last}$, and needs nothing
+beyond the quantities already used for the sparse AUC to $t_{last}$.  In the
+simulation it brought the coverage of the AUC to infinity much closer to
+nominal when the extrapolated area was large
+(`r se_range("coverage", method = "delta", parameter = "auc", elimination = "slow", digits = 1)`%,
+against `r se_range("coverage", method = "yuan", parameter = "auc", elimination = "slow", digits = 1)`%
+for Yuan), though still a few points short, and it cost little when the
+extrapolated area was small.  For this reason, it is PKNCA's default
+(`sparse_lambda_z_se = "delta"`).  The same delta method carries the
+uncertainty of the back-extrapolated $C_0$ after an IV bolus, and the IV bolus
+scenarios covered as well as the oral ones.
+
+Estimating $\lambda_z$ from the individual samples with a (mixed-effects) Tobit
+regression gave a more stable point estimate when samples were BLQ, but adding
+its variance to Yuan's did not give adequate coverage, and its mixed-effects
+fit was itself occasionally unstable in the batch design with BLQ samples and
+slow elimination.  A natural refinement, not studied
+here, would combine the individual-sample $\lambda_z$ with a variance that
+includes its covariance with the means, for example by a joint delta method or a
+bootstrap over animals.
+
+Limitations remain.  The delta method conditions on the selected half-life
+points, so the uncertainty of the automatic point selection is not included; it
+is a first-order approximation, which is least accurate when $\lambda_z$ is
+imprecise, as for the AUMC with slow elimination; and the arithmetic mean
+profile of animals with different elimination rates is not monoexponential, so
+the extrapolation $C_{last}/\lambda_z$ is itself biased for the population mean
+curve, which is part of why the AUMC to infinity is underestimated.  Where the
+extrapolated area is large, sampling longer remains the better remedy.
+
+# References
+
+Bailer AJ.  Testing for the equality of area under the curves when using
+destructive measurement techniques.  Journal of Pharmacokinetics and
+Biopharmaceutics.  1988;16(3):303-309.
+
+Holder DJ.  Comments on Nedelman and Jia's extension of Satterthwaite's
+approximation applied to pharmacokinetics.  Journal of Biopharmaceutical
+Statistics.  2001;11(1-2):75-79.  doi:10.1081/BIP-100104199
+
+Nedelman JR, Gibiansky E, Lau DTW.  Applying Bailer's method for AUC
+confidence intervals to sparse sampling.  Pharmaceutical Research.
+1995;12(1):124-128.
+
+Nedelman JR, Jia X.  An extension of Satterthwaite's approximation applied to
+pharmacokinetics.  Journal of Biopharmaceutical Statistics.
+1998;8(2):317-328.  doi:10.1080/10543409808835241
+
+Yuan J.  Estimation of variance for AUC in animal studies.  Journal of
+Pharmaceutical Sciences.  1993;82(7):761-763.  doi:10.1002/jps.2600820718
