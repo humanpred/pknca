@@ -172,8 +172,9 @@ regimen_tau <- function(regimen) {
 # (the pooled samples, with sparse PK).  NULL when no unit is given, which
 # find.dose.regimen() takes to be hours (as date-times are converted to hours).
 # NA when a unit is given but cannot be used:  the group's rows give more than
-# one unit, or the unit cannot be converted to hours (a unit may be any label,
-# and without the units package only "hr" can be converted).
+# one unit, or the unit cannot be converted to hours (a unit may be any label).
+# Without the units package a unit other than "hr" cannot be checked, and is
+# handed on for find.dose.regimen() to say so.
 pknca_group_timeu <- function(o_conc, data_conc = NULL, data_sparse_conc = NULL,
                               group = NULL) {
   timeu <- o_conc$units$timeu
@@ -193,8 +194,8 @@ pknca_group_timeu <- function(o_conc, data_conc = NULL, data_sparse_conc = NULL,
   if (length(timeu) != 1) {
     return(NA_character_)
   }
-  if (!identical(timeu, "hr") && !requireNamespace("units", quietly = TRUE)) {
-    return(NA_character_) # nocov
+  if (!identical(timeu, "hr") && !rlang::is_installed("units")) {
+    return(timeu)
   }
   if (is.na(pknca_hours_factor(timeu))) {
     return(NA_character_)
@@ -242,9 +243,9 @@ pknca_split_timeu <- function(splitdata, group_info, o_conc) {
 
 # Gathering the dose regimen warnings of one group (the
 # "pknca_warning_dose_regimen" class of find.dose.regimen() and
-# resolve_dose_tau()) so that each is given once for the group, with the group
-# named, rather than once for every interval and every parameter that needed
-# tau.
+# resolve_dose_tau()), and its message that the units package is missing, so
+# that each is given once for the group, with the group named, rather than once
+# for every interval and every parameter that needed tau.
 pknca_regimen_warning_collector <- function() {
   collector <- new.env(parent = emptyenv())
   collector$conditions <- list()
@@ -255,15 +256,16 @@ pknca_regimen_warning_collector <- function() {
 pknca_collect_regimen_warnings <- function(expr, collector) {
   withCallingHandlers(
     expr,
-    pknca_warning_dose_regimen = function(cnd) pknca_keep_regimen_warning(cnd, collector)
+    pknca_warning_dose_regimen = function(cnd) pknca_keep_regimen_warning(cnd, collector),
+    pknca_message_tau_units_fallback = function(cnd) pknca_keep_regimen_warning(cnd, collector)
   )
 }
 
-# Keep one dose regimen warning (by class and message) and muffle it
+# Keep one dose regimen warning or message (by class and message) and muffle it
 pknca_keep_regimen_warning <- function(cnd, collector) {
   key <- paste(class(cnd)[1], conditionMessage(cnd))
   collector$conditions[[key]] <- cnd
-  invokeRestart("muffleWarning")
+  invokeRestart(if (inherits(cnd, "message")) "muffleMessage" else "muffleWarning")
 }
 
 # Evaluate `expr` for one group, giving its dose regimen warnings once each,
@@ -278,10 +280,14 @@ pknca_with_regimen_warnings <- function(expr, prefix) {
 # Give the kept dose regimen warnings, each once, prefixed with the group
 pknca_emit_regimen_warnings <- function(collector, prefix) {
   for (cnd in collector$conditions) {
-    rlang::warn(
-      paste0(prefix, conditionMessage(cnd)),
-      class = setdiff(class(cnd), c("rlang_warning", "warning", "condition"))
-    )
+    text <- paste0(prefix, sub("\n$", "", conditionMessage(cnd)))
+    own_class <-
+      setdiff(class(cnd), c("rlang_warning", "warning", "rlang_message", "message", "condition"))
+    if (inherits(cnd, "message")) {
+      rlang::inform(text, class = own_class)
+    } else {
+      rlang::warn(text, class = own_class)
+    }
   }
   invisible(NULL)
 }

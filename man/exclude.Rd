@@ -56,6 +56,7 @@ exclude(myconc,
 \seealso{
 Other Result exclusions:
 \code{\link{exclude_nca}},
-\code{\link[=pknca_exclude_rules]{pknca_exclude_rules()}}
+\code{\link[=pknca_exclude_rules]{pknca_exclude_rules()}},
+\code{\link[=pknca_missing_samples]{pknca_missing_samples()}}
 }
 \concept{Result exclusions}

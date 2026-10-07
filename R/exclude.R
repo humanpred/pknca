@@ -33,7 +33,6 @@
 exclude <- function(object, reason, mask, FUN)
   UseMethod("exclude")
 
-utils::globalVariables(c("exclude_current_group_XXX", "row_number_XXX", "exclude_current_group_XXX_row_num"))
 #' @describeIn exclude The general case for data exclusion
 #' @export
 exclude.default <- function(object, reason, mask, FUN) {
@@ -47,27 +46,7 @@ exclude.default <- function(object, reason, mask, FUN) {
         intersect(names(object[[dataname]]),
                   c("start", "end"))
       ))
-    mask_df <-
-      object[[dataname]] %>%
-      dplyr::mutate(row_number_XXX=seq_len(dplyr::n())) %>%
-      dplyr::grouped_df(groupnames) %>%
-      dplyr::mutate(
-        exclude_current_group_XXX_row_num=row_number_XXX,
-        exclude_current_group_XXX=
-          do.call(
-            FUN,
-            list(
-              as.data.frame(.)[.$row_number_XXX %in% row_number_XXX,,drop=FALSE],
-              object
-            )
-          )
-      ) %>%
-      dplyr::mutate(
-        exclude_lengths_match=length(exclude_current_group_XXX) ==
-          length(exclude_current_group_XXX_row_num)
-      )
-    # Extract the output and ensure that the output order equals the input order
-    mask <- mask_df$exclude_current_group_XXX[order(mask_df$exclude_current_group_XXX_row_num)]
+    mask <- exclude_by_group(object = object, dataname = dataname, groupnames = groupnames, FUN = FUN)
     if (is.character(mask)) {
       reason <- mask
       mask <- !is.na(reason)
@@ -116,6 +95,43 @@ exclude.default <- function(object, reason, mask, FUN) {
   ret_object <- object
   ret_object[[dataname]][,object$columns$exclude] <- ret
   mark_provenance_modified(ret_object, object, "excluded")
+}
+
+#' Call an exclusion function on each group of an object's data
+#'
+#' The groups are those of [dplyr::grouped_df()], so a missing group value is
+#' its own group.  `FUN` is called outside of any dplyr verb so that the
+#' conditions it signals reach the caller with their classes and fields (a
+#' grouped `dplyr::mutate()` collects warnings and signals one summary warning
+#' in their place).
+#'
+#' @inheritParams exclude
+#' @param dataname The name of the data.frame within `object`
+#' @param groupnames The columns that define the groups
+#' @returns The values `FUN` returned, one per row of the data in the order of
+#'   the data (a value of length one for a group is used for every row of it)
+#' @keywords Internal
+#' @noRd
+exclude_by_group <- function(object, dataname, groupnames, FUN) {
+  data <- object[[dataname]]
+  group_rows <- dplyr::group_rows(dplyr::grouped_df(data, groupnames))
+  ret <- rep(NA, nrow(data))
+  for (current_rows in group_rows) {
+    current_value <- FUN(as.data.frame(data[current_rows, , drop = FALSE]), object)
+    if (length(current_value) == 1) {
+      current_value <- rep(current_value, length(current_rows))
+    } else if (length(current_value) != length(current_rows)) {
+      rlang::abort(
+        sprintf(
+          "The exclusion function must return one value or one value per row of the group; it returned %d values for a group of %d rows.",
+          length(current_value), length(current_rows)
+        ),
+        class = "pknca_error_exclude_fun_length"
+      )
+    }
+    ret[current_rows] <- current_value
+  }
+  ret
 }
 
 #' Set the exclude parameter on an object
