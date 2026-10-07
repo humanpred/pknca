@@ -16,7 +16,7 @@
 #
 # The truth is the AUC (and AUMC) of the population mean concentration curve,
 # which is what the arithmetic means estimate; it has a closed form for the
-# one-compartment model below.
+# one-compartment model below.  Concentrations come from pmxTools.
 #
 # Run from the package root with the PKNCA version that has
 # pk.calc.aucinf.obs_sparse() installed:
@@ -56,8 +56,10 @@ sample_times <- c(0.25, 0.5, 1, 2, 4, 6, 8, 12, 24)
 batch_times <- list(c(0.25, 2, 8), c(0.5, 4, 12), c(1, 6, 24))
 n_serial <- 4
 
+# The concentration of one animal at the given times (pmxTools takes scalar
+# parameters)
 conc_1cmt <- function(time, dose, ka, ke, v) {
-  dose*ka/(v*(ka - ke))*(exp(-ke*time) - exp(-ka*time))
+  pmxTools::calc_sd_1cmt_linear_oral_1(t = time, CL = ke*v, V = v, ka = ka, dose = dose)
 }
 
 # E[X^p] for log-normal X with median m and log-scale standard deviation omega
@@ -111,9 +113,11 @@ simulate_data <- function(design, ke, lloq) {
       v = model$v*exp(stats::rnorm(length(subjects), sd = model$omega_v))
     )
   d <- merge(sampling, eta, by = "subject")
-  d$conc <-
-    conc_1cmt(d$time, model$dose, d$ka, d$ke, d$v) *
-    exp(stats::rnorm(nrow(d), mean = -model$sigma^2/2, sd = model$sigma))
+  d$conc <- NA_real_
+  for (i in seq_len(nrow(d))) {
+    d$conc[i] <- conc_1cmt(d$time[i], model$dose, d$ka[i], d$ke[i], d$v[i])
+  }
+  d$conc <- d$conc*exp(stats::rnorm(nrow(d), mean = -model$sigma^2/2, sd = model$sigma))
   d$blq <- d$conc < lloq
   d$conc_reported <- ifelse(d$blq, 0, d$conc)
   d[order(d$time, d$subject), c("subject", "time", "conc_reported", "blq")]
