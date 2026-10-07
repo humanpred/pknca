@@ -9,8 +9,9 @@
 #' stay together, so the correlation between samples from the same animal is
 #' kept.  [pk.nca()] then calculates every parameter for every replicate the
 #' same way as for the original data (from the arithmetic-mean profile, or with
-#' the sparse estimators), and [sparse_bootstrap_summary()] and
-#' [sparse_bootstrap_compare()] summarize the replicates.
+#' the sparse estimators).  Its results summarize the replicates with
+#' [summary()][summary.PKNCAresults_sparse_bootstrap()], and [be_assess()]
+#' compares groups with the percentile intervals of the replicates.
 #'
 #' The replicates are a new group (`replicate_col`) with the values
 #' `"original"` (the data as given) and `"bootstrap1"` through
@@ -24,6 +25,9 @@
 #' where each animal (or eye, as in Shen and Machado 2017) receives each
 #' treatment.  Other groups (such as the treatment of a parallel design) are
 #' resampled independently.
+#'
+#' The `"original"` replicate holds the data as given, so the same [pk.nca()]
+#' run also gives the estimates.
 #'
 #' @param object A sparse `PKNCAconc` object
 #' @param n_boot The number of bootstrap replicates.  The default of 200 is
@@ -61,7 +65,7 @@
 #' o_conc_boot <- sparse_bootstrap(o_conc, n_boot = 20, seed = 1)
 #' o_data_boot <-
 #'   PKNCAdata(o_conc_boot, intervals = data.frame(start = 0, end = 24, auclast = TRUE, cmax = TRUE))
-#' sparse_bootstrap_summary(pk.nca(o_data_boot))
+#' summary(pk.nca(o_data_boot))
 #' @family Sparse Methods
 #' @export
 sparse_bootstrap <- function(object, n_boot = 200, seed = NULL, paired = NULL,
@@ -199,184 +203,250 @@ sparse_bootstrap_set_seed <- function(seed) {
   }
 }
 
-# The long results of a bootstrap pk.nca() run, with an excluded result set to
-# NA and the sparse standard errors and degrees of freedom (which describe one
-# replicate, not the bootstrap) dropped
-sparse_bootstrap_results <- function(object) {
-  checkmate::assert_class(object, "PKNCAresults")
+# The results of the bootstrap replicates as an ordinary sparse PKNCAresults
+# object whose subjects are the replicates, so that the summary and comparison
+# functions for dense data apply to them.  The original data and the sparse
+# standard errors and degrees of freedom (which describe one replicate, not the
+# bootstrap) are dropped.
+sparse_bootstrap_replicates <- function(object) {
   bootstrap <- object$data$conc$bootstrap
-  if (is.null(bootstrap)) {
+  replicate_col <- bootstrap$replicate_col
+  ret <- object
+  keep <- ret$result[[replicate_col]] != "original" & !(ret$result$PPTESTCD %in% sparse_only_params())
+  ret$result <- ret$result[keep, , drop = FALSE]
+  columns <- ret$data$conc$columns
+  columns$groups$group_vars <- setdiff(columns$groups$group_vars, columns$subject)
+  columns$subject <- replicate_col
+  ret$data$conc$columns <- columns
+  class(ret) <- setdiff(class(ret), "PKNCAresults_sparse_bootstrap")
+  ret
+}
+
+# The animals in the original data, with the `groups` columns
+sparse_bootstrap_animals <- function(object, groups) {
+  bootstrap <- object$data$conc$bootstrap
+  data <- object$data$conc$data_sparse
+  data <- data[data[[bootstrap$replicate_col]] == "original", , drop = FALSE]
+  unique(data.frame(data[groups], .subject = data[[bootstrap$subject]]))
+}
+
+# A key identifying the combination of `cols` in each row of `data` ("" when
+# there are no columns)
+sparse_bootstrap_key <- function(data, cols) {
+  if (length(cols) > 0) {
+    do.call(paste, c(unname(as.list(data[cols])), sep = "\r"))
+  } else {
+    rep("", nrow(data))
+  }
+}
+
+#' Summarize the results of a sparse bootstrap
+#'
+#' The bootstrap replicates (see [sparse_bootstrap()]) are summarized the way
+#' subjects are for dense data (see [summary.PKNCAresults()]), with each
+#' parameter's summary statistics from [PKNCA.set.summary()]:  for example, the
+#' geometric mean and geometric coefficient of variation of the replicates'
+#' AUClast.  `N` is the number of animals in the study, and the caption gives
+#' the number of bootstrap replicates and the random seed.  The original data
+#' and the sparse standard errors of single replicates are not part of the
+#' summary.  For confidence intervals and comparisons between groups, see
+#' [be_assess()].
+#'
+#' @inheritParams summary.PKNCAresults
+#' @returns A data frame of the summarized bootstrap results (see
+#'   [summary.PKNCAresults()])
+#' @family Sparse Methods
+#' @export
+summary.PKNCAresults_sparse_bootstrap <- function(object, ...) {
+  bootstrap <- object$data$conc$bootstrap
+  ret <- summary(sparse_bootstrap_replicates(object), ...)
+  if ("N" %in% names(ret)) {
+    groups <- intersect(names(ret), names(object$data$conc$data_sparse))
+    animals <- sparse_bootstrap_animals(object, groups)
+    n_study <- table(sparse_bootstrap_key(animals, groups))
+    ret$N <- as.character(as.vector(n_study[match(sparse_bootstrap_key(ret, groups), names(n_study))]))
+  }
+  attr(ret, "caption") <-
+    paste0(
+      attr(ret, "caption"),
+      sprintf("; summarized over %d bootstrap replicates (seed %d)", bootstrap$n_boot, bootstrap$seed)
+    )
+  ret
+}
+
+#' @describeIn be_dataset The replicates of a sparse bootstrap, one row per
+#'   replicate, treatment, and endpoint
+#' @export
+be_dataset.PKNCAresults_sparse_bootstrap <- function(object, reference_col, reference_value,
+                                                     endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
+                                                     subject = NULL, sequence = NULL, period = NULL,
+                                                     covariates = NULL, ...) {
+  bootstrap <- object$data$conc$bootstrap
+  given <- c(subject = !is.null(subject), sequence = !is.null(sequence), period = !is.null(period), covariates = !is.null(covariates))
+  if (any(given)) {
     rlang::abort(
-      "The results are not from a bootstrap; calculate them from the PKNCAconc object that sparse_bootstrap() returns",
-      class = "pknca_error_bootstrap_not_bootstrap"
+      sprintf(
+        "A sparse bootstrap has no subject-level model, so %s cannot be given",
+        paste(names(given)[given], collapse = ", ")
+      ),
+      class = "pknca_error_be_bootstrap_argument"
     )
   }
-  ret <- as.data.frame(object, filter_excluded = FALSE)
-  exclude_col <- object$columns$exclude
-  if (!is.null(exclude_col) && exclude_col %in% names(ret)) {
-    ret$PPORRES[!is.na(ret[[exclude_col]]) & nzchar(ret[[exclude_col]])] <- NA_real_
-  }
-  ret <- ret[!(ret$PPTESTCD %in% sparse_only_params()), , drop = FALSE]
-  # The columns that identify a result (the groups, the interval, and the
-  # parameter), apart from the replicate
-  value_cols <- c("PPORRES", "PPORRESU", "PPSTRES", "PPSTRESU", "PPANMETH", exclude_col)
-  attr(ret, "key_cols") <- setdiff(names(ret), c(value_cols, bootstrap$replicate_col))
-  attr(ret, "bootstrap") <- bootstrap
-  ret
-}
-
-#' Summarize the parameters of a sparse bootstrap
-#'
-#' For each parameter of each group and interval, the estimate from the
-#' original data is given with the arithmetic mean, standard deviation,
-#' geometric mean, and geometric coefficient of variation of the bootstrap
-#' replicates and their percentile confidence interval.  The bootstrap standard
-#' deviation is the standard error of the estimate.
-#'
-#' @param object The [pk.nca()] results from the `PKNCAconc` object that
-#'   [sparse_bootstrap()] returns
-#' @param conf_level The confidence level of the percentile interval
-#' @returns A data.frame with the groups (without the replicate column),
-#'   `start`, `end`, `PPTESTCD`, the `estimate` from the original data, the
-#'   number of replicates (`n_boot`) and of those with a value (`n`), `mean`,
-#'   `sd`, `geomean`, `geocv` (percent), and the percentile interval
-#'   (`ci_lower` and `ci_upper`).  The geometric statistics use the positive
-#'   values (with [business.geomean()] and [business.geocv()]).
-#' @family Sparse Methods
-#' @export
-sparse_bootstrap_summary <- function(object, conf_level = 0.95) {
-  checkmate::assert_number(conf_level, lower = 0, upper = 1)
-  results <- sparse_bootstrap_results(object)
-  bootstrap <- attr(results, "bootstrap")
-  key_cols <- attr(results, "key_cols")
-  key <- do.call(paste, c(unname(as.list(results[key_cols])), sep = "\r"))
-  probs <- c((1 - conf_level)/2, 1 - (1 - conf_level)/2)
-  rows <- list()
-  for (current_rows in split(seq_len(nrow(results)), factor(key, levels = unique(key)))) {
-    current <- results[current_rows, , drop = FALSE]
-    is_original <- current[[bootstrap$replicate_col]] == "original"
-    boot_values <- current$PPORRES[!is_original]
-    boot_ok <- boot_values[!is.na(boot_values)]
-    boot_positive <- boot_ok[boot_ok > 0]
-    interval <-
-      if (length(boot_ok) > 0) {
-        unname(stats::quantile(boot_ok, probs = probs, names = FALSE))
-      } else {
-        c(NA_real_, NA_real_)
-      }
-    rows[[length(rows) + 1]] <-
-      data.frame(
-        current[1, key_cols, drop = FALSE],
-        estimate = if (any(is_original)) current$PPORRES[is_original][1] else NA_real_,
-        n_boot = bootstrap$n_boot,
-        n = length(boot_ok),
-        mean = if (length(boot_ok) > 0) mean(boot_ok) else NA_real_,
-        sd = if (length(boot_ok) > 1) stats::sd(boot_ok) else NA_real_,
-        geomean = if (length(boot_positive) > 0) business.geomean(boot_positive) else NA_real_,
-        geocv = if (length(boot_positive) > 1) business.geocv(boot_positive) else NA_real_,
-        ci_lower = interval[1],
-        ci_upper = interval[2],
-        check.names = FALSE
-      )
-  }
-  ret <- do.call(rbind, rows)
-  rownames(ret) <- NULL
-  attr(ret, "conf_level") <- conf_level
-  attr(ret, "seed") <- bootstrap$seed
-  ret
-}
-
-#' Compare groups with a sparse bootstrap (bioequivalence)
-#'
-#' The ratio of each test group to the reference group is calculated for every
-#' bootstrap replicate, and its percentile interval is the confidence interval
-#' for the ratio (Shen and Machado 2017).  With a parallel design, the groups
-#' are resampled independently; with a crossover, give the treatment column as
-#' `paired` to [sparse_bootstrap()] so that each replicate draws the same
-#' animals for every treatment.  The ratio of the estimates from the original
-#' data is the point estimate.
-#'
-#' @param object The [pk.nca()] results from the `PKNCAconc` object that
-#'   [sparse_bootstrap()] returns
-#' @param reference_col The group column with the treatments to compare
-#' @param reference_value The reference level of `reference_col`
-#' @param parameters The parameters (`PPTESTCD`) to compare; `NULL` compares all
-#' @param conf_level The confidence level of the percentile interval; 0.90 for
-#'   the usual bioequivalence assessment
-#' @param limits The acceptance limits for the ratio, in percent
-#' @returns A data.frame with one row per parameter, test level, interval, and
-#'   other group:  the other groups, `start`, `end`, `endpoint` (the
-#'   parameter), `test`, `reference`, the estimates from the original data
-#'   (`estimate_test` and `estimate_reference`), the number of replicates with
-#'   a ratio (`n`), the ratio and its percentile interval in percent
-#'   (`ratio_percent`, `ci_lower`, and `ci_upper`), `limit_lower`,
-#'   `limit_upper`, and `pass` (the interval is within the limits).
-#' @references
-#' Shen M, Machado SG.  Bioequivalence evaluation of sparse sampling
-#' pharmacokinetics data using bootstrap resampling method.  Journal of
-#' Biopharmaceutical Statistics.  2017;27(2):257-264.
-#' doi:10.1080/10543406.2016.1265543
-#' @family Sparse Methods
-#' @family Bioequivalence
-#' @export
-sparse_bootstrap_compare <- function(object, reference_col, reference_value,
-                                     parameters = NULL, conf_level = 0.90,
-                                     limits = be_expand_limits(0, "ABE")) {
-  results <- sparse_bootstrap_results(object)
-  bootstrap <- attr(results, "bootstrap")
+  data <- as.data.frame(as.data.frame(object, filter_excluded = TRUE))
+  data <- data[!(data$PPTESTCD %in% sparse_only_params()), , drop = FALSE]
+  group_cols <- setdiff(names(getGroups(object)), c("start", "end", bootstrap$replicate_col))
   checkmate::assert_string(reference_col)
-  checkmate::assert_choice(reference_col, choices = setdiff(attr(results, "key_cols"), c("start", "end", "PPTESTCD")))
-  checkmate::assert_choice(as.character(reference_value), choices = as.character(unique(results[[reference_col]])))
-  checkmate::assert_character(parameters, any.missing = FALSE, null.ok = TRUE)
-  checkmate::assert_number(conf_level, lower = 0, upper = 1)
-  checkmate::assert_numeric(limits, len = 2, any.missing = FALSE, sorted = TRUE)
-  if (!is.null(parameters)) {
-    results <- results[results$PPTESTCD %in% parameters, , drop = FALSE]
+  checkmate::assert_choice(reference_col, choices = group_cols)
+  value_unit_cols <- .be_value_unit_cols(data)
+  reference_value <- .be_check_reference(data, reference_col, reference_value)
+  other_cols <- setdiff(group_cols, reference_col)
+  other_levels <- unique(data[, other_cols, drop = FALSE])
+  if (nrow(other_levels) > 1) {
+    rlang::abort(
+      sprintf(
+        "A sparse bootstrap comparison needs one level of the groups other than `reference_col`; filter the results to one level of %s",
+        paste(other_cols, collapse = ", ")
+      ),
+      class = "pknca_error_be_bootstrap_groups"
+    )
   }
-  other_cols <- setdiff(attr(results, "key_cols"), reference_col)
-  is_reference <- as.character(results[[reference_col]]) == as.character(reference_value)
-  reference <- results[is_reference, , drop = FALSE]
-  test <- results[!is_reference, , drop = FALSE]
-  match_cols <- c(other_cols, bootstrap$replicate_col)
-  reference_key <- do.call(paste, c(unname(as.list(reference[match_cols])), sep = "\r"))
-  test$reference_value <- reference$PPORRES[match(do.call(paste, c(unname(as.list(test[match_cols])), sep = "\r")), reference_key)]
-  test$ratio <- test$PPORRES/test$reference_value
-  key <- do.call(paste, c(unname(as.list(test[c(other_cols, reference_col)])), sep = "\r"))
-  probs <- c((1 - conf_level)/2, 1 - (1 - conf_level)/2)
-  rows <- list()
-  for (current_rows in split(seq_len(nrow(test)), factor(key, levels = unique(key)))) {
-    current <- test[current_rows, , drop = FALSE]
-    is_original <- current[[bootstrap$replicate_col]] == "original"
-    boot_ratio <- current$ratio[!is_original]
-    boot_ratio <- boot_ratio[is.finite(boot_ratio)]
-    interval <-
-      if (length(boot_ratio) > 0) {
-        100*unname(stats::quantile(boot_ratio, probs = probs, names = FALSE))
-      } else {
-        c(NA_real_, NA_real_)
-      }
-    original <- current[is_original, , drop = FALSE]
-    rows[[length(rows) + 1]] <-
-      data.frame(
-        current[1, setdiff(other_cols, "PPTESTCD"), drop = FALSE],
-        endpoint = current$PPTESTCD[1],
-        test = as.character(current[[reference_col]][1]),
-        reference = as.character(reference_value),
-        estimate_test = if (nrow(original) > 0) original$PPORRES[1] else NA_real_,
-        estimate_reference = if (nrow(original) > 0) original$reference_value[1] else NA_real_,
-        n = length(boot_ratio),
-        ratio_percent = if (nrow(original) > 0) 100*original$ratio[1] else NA_real_,
-        ci_lower = interval[1],
-        ci_upper = interval[2],
-        limit_lower = unname(limits[1]),
-        limit_upper = unname(limits[2]),
-        pass = interval[1] >= limits[1] & interval[2] <= limits[2],
-        check.names = FALSE
-      )
+  data <- data[!is.na(data[[value_unit_cols$value]]) & data[[value_unit_cols$value]] > 0, , drop = FALSE]
+  present <- .be_check_endpoints(data, endpoints)
+  data <- data[data$PPTESTCD %in% present, , drop = FALSE]
+  intervals <- unique(data[, c("PPTESTCD", "start", "end")])
+  if (anyDuplicated(intervals$PPTESTCD) > 0) {
+    rlang::abort(
+      "A sparse bootstrap comparison needs one interval per endpoint; filter the results to one interval",
+      class = "pknca_error_be_bootstrap_intervals"
+    )
   }
-  ret <- do.call(rbind, rows)
-  rownames(ret) <- NULL
-  attr(ret, "conf_level") <- conf_level
-  attr(ret, "seed") <- bootstrap$seed
-  ret
+  data$.trt <- stats::relevel(factor(as.character(data[[reference_col]])), ref = reference_value)
+  data$.replicate <- data[[bootstrap$replicate_col]]
+  data$.value <- data[[value_unit_cols$value]]
+  data$.units <- if (!is.na(value_unit_cols$units)) as.character(data[[value_unit_cols$units]]) else NA_character_
+  structure(
+    list(
+      data = data,
+      columns = list(
+        treatment = reference_col, value = value_unit_cols$value,
+        units = value_unit_cols$units, replicate = bootstrap$replicate_col
+      ),
+      reference_value = reference_value,
+      test_levels = setdiff(levels(data$.trt), reference_value),
+      endpoints = present,
+      animals = sparse_bootstrap_animals(object, reference_col),
+      design = if (reference_col %in% bootstrap$paired) "crossover" else "parallel",
+      bootstrap = bootstrap
+    ),
+    class = c("be_dataset_sparse_bootstrap", "be_dataset")
+  )
+}
+
+# The estimate (from the original data) and the percentile interval of the
+# replicates of one treatment and endpoint, or of a ratio; `values` are named
+# by replicate
+sparse_bootstrap_interval <- function(values, probs) {
+  boot <- values[names(values) != "original"]
+  boot <- boot[is.finite(boot)]
+  interval <-
+    if (length(boot) > 0) {
+      unname(stats::quantile(boot, probs = probs, names = FALSE))
+    } else {
+      c(NA_real_, NA_real_)
+    }
+  list(estimate = unname(values["original"]), lower = interval[1], upper = interval[2])
+}
+
+# The values of one treatment and endpoint, named by replicate
+sparse_bootstrap_values <- function(data, treatment, endpoint) {
+  rows <- data$.trt == treatment & data$PPTESTCD == endpoint
+  stats::setNames(data$.value[rows], data$.replicate[rows])
+}
+
+# The number of animals in a comparison of a test with the reference:  each
+# animal once with a crossover (paired treatments), and the sum of the
+# treatment groups with a parallel design (where animal identifiers may repeat
+# between groups)
+sparse_bootstrap_n_compared <- function(ds, test) {
+  treatments <- c(ds$reference_value, test)
+  animals <- ds$animals[as.character(ds$animals[[ds$columns$treatment]]) %in% treatments, , drop = FALSE]
+  if (identical(ds$design, "crossover")) {
+    length(unique(animals$.subject))
+  } else {
+    nrow(animals)
+  }
+}
+
+#' @describeIn be_assess Bioequivalence from the percentile intervals of a
+#'   sparse bootstrap (Shen and Machado 2017)
+#' @export
+be_assess.PKNCAresults_sparse_bootstrap <- function(object, reference_col, reference_value,
+                                                    endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
+                                                    regulator = "ABE", model_type = NULL, alpha = 0.10,
+                                                    subject = NULL, sequence = NULL, period = NULL, design = NULL,
+                                                    covariates = NULL, heteroscedastic = FALSE, ...) {
+  assert_numeric_between(alpha, lower = 0, upper = 1)
+  reg <- be_regulator(regulator)
+  if (!identical(reg$scaling, "none")) {
+    rlang::abort(
+      sprintf(
+        "The %s framework scales by the within-subject variability, which a sparse bootstrap does not have; use \"ABE\" or \"descriptive\"",
+        reg$name
+      ),
+      class = "pknca_error_be_bootstrap_scaled"
+    )
+  }
+  if (!is.null(model_type) && !identical(model_type, "bootstrap")) {
+    rlang::abort(
+      "The results of a sparse bootstrap are assessed with `model_type = \"bootstrap\"`",
+      class = "pknca_error_be_bootstrap_model_type"
+    )
+  }
+  if (!is.null(design) || !isFALSE(heteroscedastic)) {
+    rlang::abort(
+      "A sparse bootstrap has no subject-level model, so `design` and `heteroscedastic` cannot be given",
+      class = "pknca_error_be_bootstrap_argument"
+    )
+  }
+  ds <- be_dataset(object, reference_col, reference_value, endpoints, subject, sequence, period, covariates)
+  probs <- c(alpha/2, 1 - alpha/2)
+  params <- list()
+  for (current_endpoint in ds$endpoints) {
+    reference <- sparse_bootstrap_values(ds$data, ds$reference_value, current_endpoint)
+    reference_interval <- sparse_bootstrap_interval(reference, probs)
+    for (current_test in ds$test_levels) {
+      test <- sparse_bootstrap_values(ds$data, current_test, current_endpoint)
+      test_interval <- sparse_bootstrap_interval(test, probs)
+      both <- intersect(names(test), names(reference))
+      ratio_interval <- sparse_bootstrap_interval(test[both]/reference[both], probs)
+      units <- unique(ds$data$.units[ds$data$PPTESTCD == current_endpoint])
+      # The columns that be_table() reads for a framework without reference
+      # scaling, with no within-subject variances
+      params[[length(params) + 1]] <-
+        data.frame(
+          endpoint = current_endpoint, test = current_test,
+          n = sparse_bootstrap_n_compared(ds, current_test),
+          units = units[1],
+          gm_reference = reference_interval$estimate,
+          gm_reference_lower = reference_interval$lower,
+          gm_reference_upper = reference_interval$upper,
+          gm_test = test_interval$estimate,
+          gm_test_lower = test_interval$lower,
+          gm_test_upper = test_interval$upper,
+          model_gmr_percent = 100*ratio_interval$estimate,
+          model_ci_lower = 100*ratio_interval$lower,
+          model_ci_upper = 100*ratio_interval$upper,
+          model_df = NA_real_,
+          swr = NA_real_, swt = NA_real_, cvwr_percent = NA_real_, cvwt_percent = NA_real_,
+          df_wr = NA_real_, df_wt = NA_real_, sw_ratio = NA_real_, sw_ratio_ci_upper = NA_real_
+        )
+    }
+  }
+  tbl <- be_table(do.call(rbind, params), reg, alpha, design = ds$design, model_type = "bootstrap")
+  tbl <-
+    .be_table_finish(
+      tbl, ds,
+      caption = .be_caption(reg, "bootstrap", alpha, n_boot = ds$bootstrap$n_boot)
+    )
+  .be_assess_object(tbl, alpha)
 }

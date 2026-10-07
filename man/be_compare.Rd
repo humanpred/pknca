@@ -23,7 +23,10 @@ be_compare(
 \arguments{
 \item{object}{A \code{PKNCAresults} object or a tidy long data.frame with a
 \code{PPTESTCD} column of parameter names, a \code{PPORRES}/\code{PPSTRES} column of
-values, and subject/sequence/period/treatment columns.}
+values, and subject/sequence/period/treatment columns.  The results of a
+sparse bootstrap (from a \code{PKNCAconc} object made by \code{\link[=sparse_bootstrap]{sparse_bootstrap()}})
+are compared with the percentile intervals of the bootstrap replicates
+(Shen and Machado 2017); see Details.}
 
 \item{reference_col}{The column identifying the formulation/treatment.}
 
@@ -109,7 +112,6 @@ Other Bioequivalence:
 \code{\link[=be_fit_models]{be_fit_models()}},
 \code{\link[=be_regulator]{be_regulator()}},
 \code{\link[=be_table]{be_table()}},
-\code{\link[=be_within_var]{be_within_var()}},
-\code{\link[=sparse_bootstrap_compare]{sparse_bootstrap_compare()}}
+\code{\link[=be_within_var]{be_within_var()}}
 }
 \concept{Bioequivalence}

@@ -160,12 +160,12 @@ o_data_boot <-
     options=list(progress=FALSE)
   )
 o_nca_boot <- pk.nca(o_data_boot)
-sparse_bootstrap_summary(o_nca_boot)
+summary(o_nca_boot)
 ```
 
-For each parameter, `estimate` is the value from the original data, and `mean`, `sd`, `geomean`, and `geocv` describe the replicates; the bootstrap standard deviation is the standard error of the estimate, and `ci_lower` and `ci_upper` are the percentile interval.  With only three animals at each time, the bootstrap standard deviation of `auclast` is smaller than its Nedelman-Jia/Holder standard error (`auclast_se` above), because resampling three values understates their variance by a factor of 2/3; `vignette("v24-sparse-auc-to-infinity")` compares the methods.
+The summary treats the replicates the way the summary of dense data treats subjects, with each parameter's usual summary statistics; `N` is the number of animals in the study, and the caption gives the number of replicates.  The `"original"` replicate holds the data as given, so `as.data.frame(o_nca_boot)` has the estimates as well as every replicate.  The standard deviation of the replicates is the standard error of the estimate:  with only three animals at each time, it is smaller for `auclast` than the Nedelman-Jia/Holder standard error (`auclast_se` above), because resampling three values understates their variance by a factor of 2/3; `vignette("v24-sparse-auc-to-infinity")` compares the methods.
 
-To compare groups, such as a test and a reference formulation in a parallel design, `sparse_bootstrap_compare()` gives the ratio of the estimates with the percentile interval of the replicate ratios (90% by default) and whether it is within the acceptance limits.  For a crossover, where each animal receives every treatment, give the treatment column as `paired` to `sparse_bootstrap()` so that each replicate draws the same animals for every treatment.
+To compare groups, such as a test and a reference formulation in a parallel design, `be_assess()` takes the bootstrap results like any other:  the ratio of the estimates is the point estimate, and its confidence interval is the percentile interval of the replicate ratios (90% by default), judged against the acceptance limits.  For a crossover, where each animal receives every treatment, give the treatment column as `paired` to `sparse_bootstrap()` so that each replicate draws the same animals for every treatment.
 
 ```{r bootstrap-compare}
 d_sparse_formulations <-
@@ -176,15 +176,20 @@ d_sparse_formulations <-
       dose=d_sparse$dose, formulation="test"
     )
   )
-o_conc_formulations <- PKNCAconc(d_sparse_formulations, conc~time|formulation+id, sparse=TRUE)
+o_conc_formulations <-
+  PKNCAconc(
+    d_sparse_formulations, conc~time|formulation+id, sparse=TRUE,
+    concu="ng/mL", timeu="hr"
+  )
 o_nca_formulations <-
   pk.nca(PKNCAdata(
     sparse_bootstrap(o_conc_formulations, seed=20261008),
     intervals=data.frame(start=0, end=24, auclast=TRUE, cmax=TRUE),
     options=list(progress=FALSE)
   ))
-sparse_bootstrap_compare(
-  o_nca_formulations, reference_col="formulation", reference_value="reference"
+be_assess(
+  o_nca_formulations, reference_col="formulation", reference_value="reference",
+  endpoints=c("auclast", "cmax")
 )
 ```
 

@@ -45,8 +45,9 @@ with serial sacrifice, or each batch in a batch design.  An animal's samples
 stay together, so the correlation between samples from the same animal is
 kept.  \code{\link[=pk.nca]{pk.nca()}} then calculates every parameter for every replicate the
 same way as for the original data (from the arithmetic-mean profile, or with
-the sparse estimators), and \code{\link[=sparse_bootstrap_summary]{sparse_bootstrap_summary()}} and
-\code{\link[=sparse_bootstrap_compare]{sparse_bootstrap_compare()}} summarize the replicates.
+the sparse estimators).  Its results summarize the replicates with
+\link[=summary.PKNCAresults_sparse_bootstrap]{summary()}, and \code{\link[=be_assess]{be_assess()}}
+compares groups with the percentile intervals of the replicates.
 }
 \details{
 The replicates are a new group (\code{replicate_col}) with the values
@@ -61,6 +62,9 @@ its samples from every level of those groups.  Use \code{paired} for a crossover
 where each animal (or eye, as in Shen and Machado 2017) receives each
 treatment.  Other groups (such as the treatment of a parallel design) are
 resampled independently.
+
+The \code{"original"} replicate holds the data as given, so the same \code{\link[=pk.nca]{pk.nca()}}
+run also gives the estimates.
 }
 \examples{
 d_sparse <-
@@ -73,7 +77,7 @@ o_conc <- PKNCAconc(d_sparse, conc ~ time | animal, sparse = TRUE)
 o_conc_boot <- sparse_bootstrap(o_conc, n_boot = 20, seed = 1)
 o_data_boot <-
   PKNCAdata(o_conc_boot, intervals = data.frame(start = 0, end = 24, auclast = TRUE, cmax = TRUE))
-sparse_bootstrap_summary(pk.nca(o_data_boot))
+summary(pk.nca(o_data_boot))
 }
 \references{
 Shen M, Machado SG.  Bioequivalence evaluation of sparse sampling
@@ -95,8 +99,7 @@ Other Sparse Methods:
 \code{\link[=pk.calc.sparse_auc]{pk.calc.sparse_auc()}},
 \code{\link[=pk.calc.sparse_aumc]{pk.calc.sparse_aumc()}},
 \code{\link[=sparse_auc_weight_linear]{sparse_auc_weight_linear()}},
-\code{\link[=sparse_bootstrap_compare]{sparse_bootstrap_compare()}},
-\code{\link[=sparse_bootstrap_summary]{sparse_bootstrap_summary()}},
-\code{\link[=sparse_mean]{sparse_mean()}}
+\code{\link[=sparse_mean]{sparse_mean()}},
+\code{\link[=summary.PKNCAresults_sparse_bootstrap]{summary.PKNCAresults_sparse_bootstrap()}}
 }
 \concept{Sparse Methods}

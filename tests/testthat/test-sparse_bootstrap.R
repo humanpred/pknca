@@ -143,39 +143,58 @@ test_that("sparse_bootstrap() resamples analytes together", {
   }
 })
 
-test_that("sparse_bootstrap_summary() summarizes the replicates", {
+test_that("pk.nca() results of a sparse bootstrap are their own class", {
+  o_sparse <- PKNCAconc(d_boot_serial, conc ~ time | animal, sparse = TRUE)
+  d_intervals <- data.frame(start = 0, end = 24, auclast = TRUE)
+  o_nca_boot <- suppressMessages(pk.nca(PKNCAdata(sparse_bootstrap(o_sparse, n_boot = 2, seed = 1), intervals = d_intervals)))
+  expect_s3_class(o_nca_boot, c("PKNCAresults_sparse_bootstrap", "PKNCAresults"), exact = FALSE)
+  o_nca <- suppressMessages(pk.nca(PKNCAdata(o_sparse, intervals = d_intervals)))
+  expect_false(inherits(o_nca, "PKNCAresults_sparse_bootstrap"))
+})
+
+test_that("summary() of a sparse bootstrap summarizes the replicates like subjects", {
   o_sparse <- PKNCAconc(d_boot_serial, conc ~ time | animal, sparse = TRUE)
   o_boot <- sparse_bootstrap(o_sparse, n_boot = 30, seed = 8)
   d_intervals <- data.frame(start = 0, end = 24, auclast = TRUE, cmax = TRUE)
   o_nca_boot <- suppressMessages(pk.nca(PKNCAdata(o_boot, intervals = d_intervals)))
-  o_nca <- suppressMessages(pk.nca(PKNCAdata(o_sparse, intervals = d_intervals)))
-  result <- sparse_bootstrap_summary(o_nca_boot, conf_level = 0.9)
-  expect_equal(result$PPTESTCD, c("cmax", "auclast"))
-  # The standard errors of one replicate are not part of the bootstrap
-  expect_false(any(c("auclast_se", "auclast_df") %in% result$PPTESTCD))
+  result <- summary(o_nca_boot)
   values <- as.data.frame(o_nca_boot)
   auclast_boot <- values$PPORRES[values$PPTESTCD == "auclast" & values$bootstrap != "original"]
-  expected <- as.data.frame(o_nca)
-  row <- result[result$PPTESTCD == "auclast", ]
-  expect_equal(row$estimate, expected$PPORRES[expected$PPTESTCD == "auclast"])
-  expect_equal(row$n_boot, 30)
-  expect_equal(row$n, 30)
-  expect_equal(row$mean, mean(auclast_boot))
-  expect_equal(row$sd, stats::sd(auclast_boot))
-  expect_equal(row$geomean, exp(mean(log(auclast_boot))))
-  expect_equal(row$geocv, 100*sqrt(exp(stats::sd(log(auclast_boot))^2) - 1))
-  expect_equal(c(row$ci_lower, row$ci_upper), unname(stats::quantile(auclast_boot, c(0.05, 0.95))))
-  expect_equal(attr(result, "seed"), 8)
-  # Results that are not from a bootstrap are refused
-  expect_error(sparse_bootstrap_summary(o_nca), class = "pknca_error_bootstrap_not_bootstrap")
+  # N is the number of animals in the study, not the number of replicates
+  expect_equal(result$N, "18")
+  # The registered summary of auclast (geometric mean and CV) over the
+  # replicates, without the original data
+  expect_equal(
+    result$auclast,
+    sprintf(
+      "%s [%s]",
+      roundingSummarize(business.geomean(auclast_boot), "auclast"),
+      roundingSummarize(business.geocv(auclast_boot), "auclast")
+    )
+  )
+  # The standard errors of single replicates are not summarized
+  expect_false(any(grepl("_se|_df", names(result))))
+  expect_match(attr(result, "caption"), "N: number of subjects; summarized over 30 bootstrap replicates (seed 8)", fixed = TRUE)
+
+  # With groups, N counts the animals in each group
+  o_crossover <- PKNCAconc(d_boot_crossover, conc ~ time | treatment + animal, sparse = TRUE)
+  o_nca_crossover <-
+    suppressMessages(pk.nca(PKNCAdata(sparse_bootstrap(o_crossover, n_boot = 5, seed = 3), intervals = d_intervals)))
+  result_crossover <- summary(o_nca_crossover)
+  expect_equal(result_crossover$treatment, c("R", "T"))
+  expect_equal(result_crossover$N, c("18", "18"))
 })
 
-test_that("sparse_bootstrap_compare() gives the percentile interval of the ratio", {
+test_that("be_assess() of a sparse bootstrap gives the percentile interval of the ratio", {
   o_sparse <- PKNCAconc(d_boot_crossover, conc ~ time | treatment + animal, sparse = TRUE)
   o_boot <- sparse_bootstrap(o_sparse, n_boot = 40, seed = 9, paired = "treatment")
   d_intervals <- data.frame(start = 0, end = 24, auclast = TRUE, cmax = TRUE)
   o_nca_boot <- suppressMessages(pk.nca(PKNCAdata(o_boot, intervals = d_intervals)))
-  result <- sparse_bootstrap_compare(o_nca_boot, reference_col = "treatment", reference_value = "R", parameters = "auclast")
+  expect_warning(
+    result <- be_assess(o_nca_boot, reference_col = "treatment", reference_value = "R", endpoints = "auclast", alpha = 0.2),
+    class = "pknca_be_units_missing"
+  )
+  expect_s3_class(result, "be_assess")
   values <- as.data.frame(o_nca_boot)
   values <- values[values$PPTESTCD == "auclast", ]
   test <- values[values$treatment == "T", ]
@@ -185,18 +204,77 @@ test_that("sparse_bootstrap_compare() gives the percentile interval of the ratio
   expect_equal(nrow(result), 1)
   expect_equal(result$endpoint, "auclast")
   expect_equal(result$test, "T")
-  expect_equal(result$reference, "R")
-  expect_equal(result$ratio_percent, 100*ratio[is_original])
-  expect_equal(c(result$ci_lower, result$ci_upper), 100*unname(stats::quantile(ratio[!is_original], c(0.05, 0.95))))
+  # The same 18 animals receive both treatments
+  expect_equal(result$n, 18)
+  expect_equal(result$design, "crossover")
+  expect_equal(result$model_type, "bootstrap")
+  expect_equal(result$gm_reference, reference$PPORRES[reference$bootstrap == "original"])
+  expect_equal(result$gmr_percent, 100*ratio[is_original])
+  # alpha = 0.2 gives the 10th and 90th percentiles
+  expect_equal(c(result$ci_lower, result$ci_upper), 100*unname(stats::quantile(ratio[!is_original], c(0.1, 0.9))))
   expect_equal(c(result$limit_lower, result$limit_upper), c(80, 125))
   # The test is 1.1 times the reference in every animal, and the animals are
   # drawn together, so every replicate ratio is 1.1 and the products pass
-  expect_equal(result$ci_lower, 110)
-  expect_equal(result$ci_upper, 110)
+  expect_equal(c(result$ci_lower, result$ci_upper), c(110, 110))
   expect_true(result$pass)
-  # Narrow limits fail
-  narrow <- sparse_bootstrap_compare(o_nca_boot, "treatment", "R", parameters = "auclast", limits = c(90, 105))
-  expect_false(narrow$pass)
-  expect_error(sparse_bootstrap_compare(o_nca_boot, "treatment", "X"), regexp = "reference_value")
-  expect_error(sparse_bootstrap_compare(o_nca_boot, "bootstrap", "original"), regexp = "reference_col")
+  expect_match(attr(result, "caption"), "percentile interval of 40 replicates", fixed = TRUE)
+  # No regulatory decision with the descriptive framework
+  descriptive <- suppressWarnings(be_assess(o_nca_boot, "treatment", "R", endpoints = "auclast", regulator = "descriptive"))
+  expect_false("pass" %in% names(descriptive))
+  # Reference scaling needs within-subject variability
+  expect_error(
+    be_assess(o_nca_boot, "treatment", "R", endpoints = "auclast", regulator = "EMA"),
+    class = "pknca_error_be_bootstrap_scaled"
+  )
+  expect_error(
+    be_assess(o_nca_boot, "treatment", "R", endpoints = "auclast", model_type = "lmer"),
+    class = "pknca_error_be_bootstrap_model_type"
+  )
+  expect_error(
+    be_assess(o_nca_boot, "treatment", "R", endpoints = "auclast", subject = "animal"),
+    class = "pknca_error_be_bootstrap_argument"
+  )
+  expect_error(
+    be_assess(o_nca_boot, "treatment", "R", endpoints = "auclast", heteroscedastic = TRUE),
+    class = "pknca_error_be_bootstrap_argument"
+  )
+  expect_error(be_assess(o_nca_boot, "treatment", "X", endpoints = "auclast"), class = "pknca_error_be_dataset_ref_not_found")
+  expect_error(be_assess(o_nca_boot, "bootstrap", "original", endpoints = "auclast"), regexp = "reference_col")
+  # be_compare() keeps the frameworks that apply
+  compared <- suppressWarnings(be_compare(o_nca_boot, "treatment", "R", endpoints = "auclast", regulators = c("ABE", "EMA")))
+  expect_equal(compared$regulator, "ABE")
+})
+
+test_that("be_assess() of a sparse bootstrap counts a parallel design's groups separately", {
+  # Parallel groups whose animal identifiers repeat between treatments
+  o_sparse <- PKNCAconc(d_boot_crossover, conc ~ time | treatment + animal, sparse = TRUE)
+  o_nca_boot <-
+    suppressMessages(pk.nca(PKNCAdata(
+      sparse_bootstrap(o_sparse, n_boot = 20, seed = 10),
+      intervals = data.frame(start = 0, end = 24, auclast = TRUE)
+    )))
+  result <- suppressWarnings(be_assess(o_nca_boot, "treatment", "R", endpoints = "auclast"))
+  expect_equal(result$n, 36)
+  expect_equal(result$design, "parallel")
+  # Independent resampling gives replicate ratios that vary
+  expect_true(result$ci_lower < 110 && result$ci_upper > 110)
+})
+
+test_that("be_assess() of a sparse bootstrap needs one level of the other groups and one interval", {
+  d_two_studies <- rbind(data.frame(d_boot_crossover, study = 1), data.frame(d_boot_crossover, study = 2))
+  o_sparse <- PKNCAconc(d_two_studies, conc ~ time | study + treatment + animal, sparse = TRUE)
+  o_nca_boot <-
+    suppressMessages(pk.nca(PKNCAdata(
+      sparse_bootstrap(o_sparse, n_boot = 2, seed = 11),
+      intervals = data.frame(start = 0, end = c(8, 24), auclast = TRUE)
+    )))
+  expect_error(
+    be_assess(o_nca_boot, "treatment", "R", endpoints = "auclast"),
+    class = "pknca_error_be_bootstrap_groups"
+  )
+  o_nca_one_study <- dplyr::filter(o_nca_boot, study == 1)
+  expect_error(
+    be_assess(o_nca_one_study, "treatment", "R", endpoints = "auclast"),
+    class = "pknca_error_be_bootstrap_intervals"
+  )
 })

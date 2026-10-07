@@ -26,6 +26,10 @@ PKNCAresults <- function(result, data, exclude = NULL) {
               data=data)
   ret <- setExcludeColumn(ret, exclude = exclude, dataname = "result")
   class(ret) <- c("PKNCAresults", class(ret))
+  if (!is.null(data$conc$bootstrap)) {
+    # The replicates of a sparse bootstrap (see sparse_bootstrap())
+    class(ret) <- c("PKNCAresults_sparse_bootstrap", class(ret))
+  }
   addProvenance(ret)
 }
 

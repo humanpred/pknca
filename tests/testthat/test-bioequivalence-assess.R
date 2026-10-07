@@ -596,7 +596,7 @@ test_that("be_assess defaults to ABE so a simple 2x2 works out of the box", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("lmerTest")
   skip_if_not_installed("emmeans")
-  expect_identical(formals(be_assess)$regulator, "ABE")
+  expect_identical(formals(be_assess.default)$regulator, "ABE")
   d <- be_replicate_long(generate_be_replicate(16, 9, "2x2", cv_wr = 0.3, cv_wt = 0.3))
   res <- be_assess(d, "treatment", "R", "auclast") # no regulator argument
   expect_identical(res$regulator, "ABE")
