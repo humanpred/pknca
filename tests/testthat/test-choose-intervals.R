@@ -1234,3 +1234,15 @@ test_that("PKNCAdata chooses intervals for each segment of a regimen change", {
   expect_equal(ret$intervals$start, c(0, 48, 96, 120, 120))
   expect_equal(ret$intervals$end, c(24, 72, 108, 132, Inf))
 })
+
+test_that("choose.auc.intervals says when a regimen change leaves no interval", {
+  # A single sample an hour after the first dose bounds no interval
+  doses <- c(0, 24, 48, 72, 84, 96, 108, 120)
+  expect_warning(
+    ret <- choose.auc.intervals(1, doses),
+    regexp = "Intervals chosen: none$",
+    class = "pknca_warning_intervals_by_segment"
+  )
+  expect_equal(nrow(ret), 0)
+  expect_equal(names(ret), names(empty_interval_specification()))
+})
