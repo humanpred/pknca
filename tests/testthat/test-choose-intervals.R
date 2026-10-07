@@ -933,11 +933,12 @@ test_that("pknca_group_timeu finds the time unit of a group", {
     "hr"
   )
   # No unit at all gives no unit (taken to be hours), and a unit that is not a
-  # time unit gives one that cannot be used
+  # time unit gives one that cannot be used.  Without the units package the
+  # unit is passed on as given, and find.dose.regimen() says that it fell back.
   expect_null(pknca_group_timeu(PKNCAconc(d_conc, conc~time|subject)))
   expect_equal(
     pknca_group_timeu(PKNCAconc(d_conc, conc~time|subject, timeu = "not_a_unit")),
-    NA_character_
+    if (rlang::is_installed("units")) NA_character_ else "not_a_unit"
   )
 })
 

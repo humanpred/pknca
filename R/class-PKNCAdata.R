@@ -252,7 +252,8 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
         o_dose = as_PKNCAdose(ret_numeric),
         extra_cols_conc = pknca_timeu_extra_col(o_conc_numeric)
       )
-    n_conc_dose$data_intervals <- rep(list(NULL), nrow(n_conc_dose))
+    # Each group's generated intervals, with the group's columns in front
+    generated <- list()
     # The single.dose.aucs option is only consulted by the legacy method; the
     # builder gives a single dose one interval to infinity, with no 24 in it to
     # be in the wrong unit.
@@ -265,7 +266,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
       current_group <-
         n_conc_dose[
           idx,
-          setdiff(names(n_conc_dose), c("data_conc", "data_dose", "data_sparse_conc", "data_intervals")),
+          setdiff(names(n_conc_dose), c("data_conc", "data_dose", "data_sparse_conc")),
           drop=FALSE
         ]
       warning_prefix <- pknca_group_warning_prefix(current_group)
@@ -298,7 +299,11 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
           (identical(auto_interval_method, "legacy") &&
              length(unique(current_dose$time)) == 1)
         if (nrow(generated_intervals) > 0) {
-          n_conc_dose$data_intervals[[idx]] <- generated_intervals
+          generated[[length(generated) + 1L]] <-
+            dplyr::bind_cols(
+              current_group[rep(1L, nrow(generated_intervals)), , drop=FALSE],
+              generated_intervals
+            )
         } else {
           rlang::warn(
             sprintf(
@@ -318,11 +323,16 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
         )
       }
     }
-    intervals <-
-      tidyr::unnest(
-        n_conc_dose[, setdiff(names(n_conc_dose), c("data_conc", "data_dose", "data_sparse_conc")), drop=FALSE],
-        cols="data_intervals"
+    if (length(generated) == 0) {
+      rlang::abort(
+        paste(
+          "No intervals could be generated for any group; the warnings above say why for each group.",
+          "Give `intervals` to PKNCAdata() to choose them."
+        ),
+        class = "pknca_error_no_intervals"
       )
+    }
+    intervals <- dplyr::bind_rows(generated)
     if (used_single_dose_aucs) {
       pknca_warn_single_dose_aucs_unit(o_conc = ret$conc, options = options)
     }
