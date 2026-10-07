@@ -502,17 +502,6 @@ add.interval.col("aucinf.obs",
                  formula="$AUC_{\\infty,\\text{obs}} = AUC_{0-\\text{last}} + \\frac{C_{\\text{last,obs}}}{\\lambda_z}$",
                  tier = "common")
 
-add.interval.col("aucinf.pred",
-                 FUN="pk.calc.auc.inf.pred",
-                 values=c(FALSE, TRUE),
-                 unit_type="auc",
-                 pretty_name="AUCinf,pred",
-                 desc="AUC start to inf, pred Clast extrap",
-                 depends=c("lambda.z", "clast.pred"),
-                 pptestcd_cdisc="AUCIFP",
-                 pptest_cdisc="AUC Infinity Pred",
-                 formula="$AUC_{\\infty,\\text{pred}} = AUC_{0-\\text{last}} + \\frac{C_{\\text{last,pred}}}{\\lambda_z}$")
-
 add.interval.col("aucinf.obs_se",
                  FUN=NA,
                  values=c(FALSE, TRUE),
@@ -536,6 +525,17 @@ add.interval.col("aucinf.obs_df",
                  pptest_cdisc="Sparse AUCinf obs degrees of freedom",
                  formula="$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$",
                  formula_note="Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)")
+
+add.interval.col("aucinf.pred",
+                 FUN="pk.calc.auc.inf.pred",
+                 values=c(FALSE, TRUE),
+                 unit_type="auc",
+                 pretty_name="AUCinf,pred",
+                 desc="AUC start to inf, pred Clast extrap",
+                 depends=c("lambda.z", "clast.pred"),
+                 pptestcd_cdisc="AUCIFP",
+                 pptest_cdisc="AUC Infinity Pred",
+                 formula="$AUC_{\\infty,\\text{pred}} = AUC_{0-\\text{last}} + \\frac{C_{\\text{last,pred}}}{\\lambda_z}$")
 
 add.interval.col("auclast",
                  FUN="pk.calc.auc.last",
