@@ -123,6 +123,124 @@ find.tau <- function(x, na.action=stats::na.omit,
   ret
 }
 
+# The time unit of one group's times, for matching its dosing interval to the
+# nominal intervals of find.dose.regimen():  the unit given to PKNCAconc() as a
+# value; or the one unit in the group's unit column, read from the group's
+# columns when the unit column is a grouping column and otherwise from its rows
+# (the pooled samples, with sparse PK); or, for date-times (`datetime`), the
+# hours they were converted to.  NULL leaves the interval to the dose times
+# alone, as it is when there is no unit, when the group's rows give more than
+# one unit, or when the unit cannot be converted to hours (a unit may be any
+# label, and without the units package only "hr" can be converted).
+pknca_group_timeu <- function(o_conc, data_conc = NULL, data_sparse_conc = NULL,
+                              group = NULL, datetime = FALSE) {
+  timeu <- o_conc$units$timeu
+  column <- o_conc$columns$timeu
+  if (is.null(timeu) && !is.null(column)) {
+    rows <- if (column %in% names(group)) group else if (is.null(data_sparse_conc)) data_conc else data_sparse_conc
+    timeu <- unique(as.character(rows[[column]]))
+    timeu <- timeu[!is.na(timeu)]
+  } else if (is.null(timeu) && datetime) {
+    timeu <- pknca_datetime_time_unit(o_conc)
+  }
+  timeu <- as.vector(timeu)
+  if (length(timeu) != 1) {
+    return(NULL)
+  }
+  if (!identical(timeu, "hr") && !requireNamespace("units", quietly = TRUE)) {
+    return(NULL) # nocov
+  }
+  if (is.na(pknca_hours_factor(timeu))) {
+    return(NULL)
+  }
+  timeu
+}
+
+# The unit column to carry with each group's concentration data, so that
+# pknca_group_timeu() can read it:  none when the unit is a value, and none
+# when the column is already carried as a grouping column or a column that the
+# calculations use, where carrying it twice would collide.
+pknca_timeu_extra_col <- function(o_conc) {
+  column <- o_conc$columns$timeu
+  carried <-
+    c(
+      unlist(o_conc$columns$groups), o_conc$columns$subject,
+      o_conc$columns$concentration, o_conc$columns$time, o_conc$columns$volume,
+      o_conc$columns$duration, o_conc$columns$include_half.life,
+      o_conc$columns$exclude_half.life, o_conc$columns$lloq
+    )
+  if (is.null(column) || column %in% carried) {
+    return(character(0))
+  }
+  as.character(column)
+}
+
+# The time unit of each group of a split PKNCAdata object (see
+# full_join_PKNCAdata()), as a list with one element per row
+pknca_split_timeu <- function(splitdata, group_info, o_conc, datetime) {
+  ret <- vector("list", nrow(splitdata))
+  for (idx in seq_len(nrow(splitdata))) {
+    timeu <-
+      pknca_group_timeu(
+        o_conc = o_conc,
+        data_conc = splitdata$data_conc[[idx]],
+        data_sparse_conc = splitdata[["data_sparse_conc"]][[idx]],
+        group = group_info[idx, , drop = FALSE],
+        datetime = datetime
+      )
+    if (!is.null(timeu)) {
+      ret[[idx]] <- timeu
+    }
+  }
+  ret
+}
+
+# Gathering the dose regimen warnings of one group (the
+# "pknca_warning_dose_regimen" class of find.dose.regimen() and
+# resolve_dose_tau()) so that each is given once for the group, with the group
+# named, rather than once for every interval and every parameter that needed
+# tau.
+pknca_regimen_warning_collector <- function() {
+  collector <- new.env(parent = emptyenv())
+  collector$conditions <- list()
+  collector
+}
+
+# Evaluate `expr`, keeping its dose regimen warnings in `collector`
+pknca_collect_regimen_warnings <- function(expr, collector) {
+  withCallingHandlers(
+    expr,
+    pknca_warning_dose_regimen = function(cnd) pknca_keep_regimen_warning(cnd, collector)
+  )
+}
+
+# Keep one dose regimen warning (by class and message) and muffle it
+pknca_keep_regimen_warning <- function(cnd, collector) {
+  key <- paste(class(cnd)[1], conditionMessage(cnd))
+  collector$conditions[[key]] <- cnd
+  invokeRestart("muffleWarning")
+}
+
+# Evaluate `expr` for one group, giving its dose regimen warnings once each,
+# prefixed with the group.  They are given on the way out, so an error in
+# `expr` does not lose the warnings that came before it.
+pknca_with_regimen_warnings <- function(expr, prefix) {
+  collector <- pknca_regimen_warning_collector()
+  on.exit(pknca_emit_regimen_warnings(collector, prefix), add = TRUE)
+  pknca_collect_regimen_warnings(expr, collector)
+}
+
+# Give the kept dose regimen warnings, each once, prefixed with the group
+pknca_emit_regimen_warnings <- function(collector, prefix) {
+  for (cnd in collector$conditions) {
+    rlang::warn(
+      paste0(prefix, conditionMessage(cnd)),
+      class = setdiff(class(cnd), c("rlang_warning", "warning", "condition"))
+    )
+  }
+  invisible(NULL)
+}
+
 # The route to build an interval for, from the route and duration recorded with
 # the doses.  `PKNCAdose()` records the route as extravascular or intravascular
 # and the way the drug entered the vein as a duration, while the parameter
@@ -226,6 +344,12 @@ interval_samples_reach_end <- function(time.conc, start, end) {
 #'         calculated to infinity as a single dose.
 #'  }
 #'
+#' With a time unit (`timeu`), \eqn{\tau} is matched to the nominal dosing
+#' intervals of [find.dose.regimen()]:  dose times recorded a little early or
+#' late give the nominal interval, and an interval that matches none of them,
+#' such as dosing every hour, gives a `"pknca_warning_tau_not_nominal"` warning.
+#' Without a time unit, \eqn{\tau} is found from the dose times alone.
+#'
 #' Times are matched within a tolerance rather than exactly, so a sample drawn a
 #' little before its nominal time still bounds the interval it belongs to.  The
 #' window is the `auto.interval.tolerance` option as a fraction of the
@@ -244,6 +368,9 @@ interval_samples_reach_end <- function(time.conc, start, end) {
 #' @param time.dosing Time of dosing
 #' @param single.dose.aucs The AUC specification for single dosing.
 #' @param route How the drug was given, as one of [pknca_routes()].
+#' @param timeu The time unit of `time.conc` and `time.dosing`, or `NULL` when
+#'   it is not known (see [find.tau()]).  [PKNCAdata()] gives the time unit of
+#'   its concentration data.
 #' @param sparse Is this a sparse sampling design?  A sparse design imputes
 #'   nothing; see [pknca_interval_table()].
 #' @returns A data frame with columns for `start`, `end`, and the parameters to
@@ -267,7 +394,8 @@ choose.auc.intervals <- function(time.conc, time.dosing,
                                  options=list(),
                                  single.dose.aucs=NULL,
                                  route="extravascular",
-                                 sparse=FALSE) {
+                                 sparse=FALSE,
+                                 timeu=NULL) {
   # Check inputs
   single.dose.aucs <- PKNCA.choose.option(name="single.dose.aucs", value=single.dose.aucs, options=options)
   tolerance_fraction <-
@@ -341,7 +469,7 @@ choose.auc.intervals <- function(time.conc, time.dosing,
   # ends it, the half-life when samples carry on past it, and the whole profile
   # when neither applies but samples were taken after it.
   last_dose <- max(time.dosing)
-  tau <- find.tau(time.dosing, options=options)
+  tau <- find.tau(time.dosing, options=options, timeu=timeu)
   samples_after_last_dose <-
     any(time.conc > last_dose & !time_same(time.conc, last_dose))
   last_dose_interval <- FALSE
@@ -395,25 +523,27 @@ choose.auc.intervals <- function(time.conc, time.dosing,
 #' @inheritParams PKNCA.choose.option
 #' @param interval One row of an interval definition (see
 #'   [check.interval.specification()])
+#' @param timeu The time unit of `time.dose`, or `NULL` when it is not known
+#'   (see [find.tau()])
 #' @param time.dose The dose times for the whole group (not just the interval;
 #'   an interval one `tau` long contains a single dose, so nothing repeats
 #'   within it)
 #' @returns The dosing interval, or `NA_real_` when it cannot be determined
 #' @family Interval determination
 #' @keywords Internal
-resolve_dose_tau <- function(interval, time.dose, options=list()) {
+resolve_dose_tau <- function(interval, time.dose, options=list(), timeu=NULL) {
   tau_manual <- interval[["tau"]]
   if (!is.null(tau_manual) && !is.na(tau_manual[1])) {
     return(assert_dosetau(as.numeric(tau_manual[1])))
   }
-  ret <- find.tau(time.dose, options=options)
+  ret <- find.tau(time.dose, options=options, timeu=timeu)
   # find.tau() gives 0 for a single dose time and NA when no interval repeats.
   # Neither is a dosing interval, and a tau of 0 would silently reduce a
   # multiple-dose parameter to its single-dose equivalent rather than failing.
   if (is.na(ret) || ret <= 0) {
     rlang::warn(
       "Cannot determine tau from the dose times; add a 'tau' column to the intervals to calculate multiple-dose parameters",
-      class = "pknca_warning_tau_undetermined"
+      class = c("pknca_warning_tau_undetermined", "pknca_warning_dose_regimen")
     )
     return(NA_real_)
   }

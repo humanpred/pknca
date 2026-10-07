@@ -243,10 +243,14 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
         class = "pknca_error_missing_dose_times"
       )
     }
+    o_conc_numeric <- as_PKNCAconc(ret_numeric)
+    # The unit column comes along so that each group's dosing interval can be
+    # matched to the nominal intervals for its time unit
     n_conc_dose <-
       full_join_PKNCAconc_PKNCAdose(
-        o_conc = as_PKNCAconc(ret_numeric),
-        o_dose = as_PKNCAdose(ret_numeric)
+        o_conc = o_conc_numeric,
+        o_dose = as_PKNCAdose(ret_numeric),
+        extra_cols_conc = pknca_timeu_extra_col(o_conc_numeric)
       )
     n_conc_dose$data_intervals <- rep(list(NULL), nrow(n_conc_dose))
     # The single.dose.aucs option is only consulted by the legacy method; the
@@ -261,21 +265,15 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
       current_group <-
         n_conc_dose[
           idx,
-          setdiff(names(n_conc_dose), c("data_conc", "data_dose", "data_sparse_conc")),
+          setdiff(names(n_conc_dose), c("data_conc", "data_dose", "data_sparse_conc", "data_intervals")),
           drop=FALSE
         ]
-      warning_prefix <-
-        if (ncol(current_group) > 0) {
-          paste0(
-            paste(names(current_group), unlist(lapply(current_group, as.character)), sep="=", collapse="; "),
-            ": "
-          )
-        } else {
-          "" # nocov
-        }
+      warning_prefix <- pknca_group_warning_prefix(current_group)
       if (!is.null(current_conc)) {
         generated_intervals <-
-          choose.auc.intervals(
+          pknca_with_regimen_warnings(
+            prefix = warning_prefix,
+            choose.auc.intervals(
             current_conc$time,
             current_dose$time,
             options=options,
@@ -284,7 +282,16 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
                 route=current_dose$route,
                 duration=current_dose$duration
               ),
-            sparse=is_sparse_pk(ret$conc)
+            sparse=is_sparse_pk(ret$conc),
+            timeu=
+              pknca_group_timeu(
+                o_conc=o_conc_numeric,
+                data_conc=current_conc,
+                data_sparse_conc=n_conc_dose[["data_sparse_conc"]][[idx]],
+                group=current_group,
+                datetime=!is.null(ret_numeric$time_reference)
+              )
+            )
           )
         # choose.auc.intervals() uses single.dose.aucs for one dose time
         used_single_dose_aucs <-
@@ -364,6 +371,22 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   ret
 }
 
+
+#' The prefix that names a group in a warning
+#'
+#' @param group A one-row data.frame of the group columns
+#' @returns `"name=value; name=value: "`, or `""` without group columns
+#' @keywords Internal
+#' @noRd
+pknca_group_warning_prefix <- function(group) {
+  if (ncol(group) == 0) {
+    return("")
+  }
+  paste0(
+    paste(names(group), unlist(lapply(group, as.character)), sep="=", collapse="; "),
+    ": "
+  )
+}
 
 #' Warn when the default single-dose intervals are used with a time unit that is
 #' not hours
