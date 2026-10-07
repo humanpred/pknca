@@ -749,3 +749,43 @@ test_that("exclude_nca_tmax_coverage takes time in proportion to the number of s
   # timing noise
   expect_lt(time_coverage, 10 * max(time_tmax_early, 0.05))
 })
+
+test_that("exclude_nca_tmax_coverage judges the first dose by its own samples when the nominal times restart", {
+  d_conc <- restart_conc(peaks = c(1, 1, 2, 2, 1, 1))
+  # Subject 6 has no sample from 0.5 to 4 hours after the first dose, but has
+  # them after the second dose, at the same nominal times
+  d_conc <- d_conc[!(d_conc$subject == 6 & d_conc$time %in% c(1, 2, 4)), ]
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject, time.nominal = "time_nominal", timeu = "hr", concu = "ng/mL")
+  o_nca <-
+    suppressMessages(pk.nca(PKNCAdata(
+      o_conc,
+      intervals = data.frame(start = c(0, 24), end = c(24, 48), cmax = TRUE, tmax = TRUE)
+    )))
+  collected <- collect_conditions(exclude(o_nca, FUN = exclude_nca_tmax_coverage()), "warning")
+  result <- as.data.frame(collected$value)
+  # In the first interval, subject 6 has Tmax at 8 hours:  the Tmax values 1,
+  # 1, 2, 2, 1, and 8 give the range 0 to 3.5 hours, which subject 6 has no
+  # sample in
+  expect_equal(result$PPORRES[result$start == 0 & result$PPTESTCD == "tmax"], c(1, 1, 2, 2, 1, 8))
+  expect_equal(
+    result$exclude[!is.na(result$exclude)],
+    rep("no sample in the Tmax range of the group (nominal time 0 to 3.5 hr after the interval start, nearest sample at 8 hr)", 2)
+  )
+  expect_equal(unique(result[!is.na(result$exclude), c("subject", "start")]), data.frame(subject = 6, start = 0), ignore_attr = TRUE)
+  # The second interval is not checked
+  expect_length(collected$conditions, 1)
+  expect_s3_class(collected$conditions[[1]], "pknca_warning_tmax_coverage_no_nominal")
+  expect_match(conditionMessage(collected$conditions[[1]]), "Tmax coverage is not checked for start=24, end=48:", fixed = TRUE)
+})
+
+test_that("exclude_nca_tmax_coverage does not check an interval with more than one dose when the nominal times restart", {
+  o_conc <- PKNCAconc(restart_conc(peaks = c(1, 1, 2, 2, 1, 4)), conc ~ time | subject, time.nominal = "time_nominal", timeu = "hr", concu = "ng/mL")
+  o_nca <- suppressMessages(pk.nca(PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 48, cmax = TRUE, tmax = TRUE))))
+  collected <- collect_conditions(exclude(o_nca, FUN = exclude_nca_tmax_coverage()), "warning")
+  expect_true(all(is.na(as.data.frame(collected$value)$exclude)))
+  expect_length(collected$conditions, 1)
+  expect_equal(
+    conditionMessage(collected$conditions[[1]]),
+    "Tmax coverage is not checked for start=0, end=48:  the nominal times of 6 subject(s) decrease while the actual times increase within the interval, so the nominal times may not share the origin of the actual times and the interval (0 to 48 hr)"
+  )
+})

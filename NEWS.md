@@ -298,7 +298,10 @@ the generated intervals:
     its group's sampling schedule that have no usable concentration, with the
     reason (`"no row"`, `"NA concentration"`, or `"excluded"`).  It takes a
     `PKNCAconc`, `PKNCAdata`, or `PKNCAresults` object and needs the
-    `time.nominal` argument of `PKNCAconc()`.
+    `time.nominal` argument of `PKNCAconc()`.  Groups where a subject's
+    nominal times decrease while its actual times increase (as when the
+    nominal times restart at each dose) are not reported, with a classed
+    warning.
   * The `exclude_nca_tmax_coverage()` exclusion rule excludes every result of
     a subject's interval when the subject has no sample within the Tmax range
     of its summary group (Tukey's fences around the subjects' Tmax values),

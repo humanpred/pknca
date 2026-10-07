@@ -25,6 +25,13 @@
 #' of any schedule, and they neither add a time to it nor fill one.  Nominal
 #' times are compared as they are, so they may be in any unit.
 #'
+#' The nominal times must share one origin for each subject (for example, the
+#' time since the first dose).  Nominal times that restart at each dose repeat
+#' for each dose, so one dose's samples would fill another dose's missing
+#' times.  They are found when a subject's nominal times decrease while its
+#' actual times increase; the groups with such a subject are not reported, and
+#' a `pknca_warning_missing_samples_nominal_restart` warning names them.
+#'
 #' Sparse data (see the `sparse` argument of [PKNCAconc()]) have no schedule
 #' that each subject follows:  each subject gives a few of the group's
 #' samples by design.  For sparse data, only the rows that exist are checked
@@ -84,14 +91,41 @@ pknca_missing_samples <- function(object) {
     )
   }
   subject_col <- o_conc$columns$subject
+  group_cols <- setdiff(group_vars(o_conc), subject_col)
+  excluded <- !is.na(normalize_exclude(o_conc))
+  restarts <-
+    pknca_nominal_restart_keys(
+      data = data,
+      id_cols = c(group_cols, subject_col),
+      actual_col = o_conc$columns$time,
+      nominal_col = nominal_col
+    )
+  if (length(restarts) > 0) {
+    subject_key <- pknca_interval_group_key(data, c(group_cols, subject_col))
+    group_key <- pknca_interval_group_key(data, group_cols)
+    skipped <- group_key %in% group_key[subject_key %in% restarts]
+    skipped_groups <- unique(data[skipped, group_cols, drop = FALSE])
+    rownames(skipped_groups) <- NULL
+    rlang::warn(
+      sprintf(
+        "Missing samples are not reported for %s:  the nominal times of %d subject(s) decrease while the actual times increase, as when the nominal times restart at each dose",
+        if (length(group_cols) == 0) "the data" else paste(name_value_text(skipped_groups), collapse = "; "),
+        length(restarts)
+      ),
+      class = "pknca_warning_missing_samples_nominal_restart",
+      group = skipped_groups
+    )
+    data <- data[!skipped, , drop = FALSE]
+    excluded <- excluded[!skipped]
+  }
   status <-
     pknca_nominal_sample_status(
       data = data,
-      group_cols = setdiff(group_vars(o_conc), subject_col),
+      group_cols = group_cols,
       subject_col = subject_col,
       nominal_col = nominal_col,
       conc_col = o_conc$columns$concentration,
-      excluded = !is.na(normalize_exclude(o_conc)),
+      excluded = excluded,
       complete = !sparse
     )
   ret <- status[status$status != "present", , drop = FALSE]
@@ -132,11 +166,16 @@ pknca_nominal_sample_status <- function(data, group_cols, subject_col, nominal_c
       ifelse(excluded[scheduled], 2L, 1L)
     )
   ret <-
-    dplyr::summarise(
-      dplyr::grouped_df(rows, key_cols),
-      status_code = min(.data$status_code),
-      .groups = "drop"
-    )
+    if (nrow(rows) == 0) {
+      # summarise() would evaluate min() once on no rows
+      rows
+    } else {
+      dplyr::summarise(
+        dplyr::grouped_df(rows, key_cols),
+        status_code = min(.data$status_code),
+        .groups = "drop"
+      )
+    }
   if (complete) {
     schedule <- unique(rows[, c(group_cols, nominal_col), drop = FALSE])
     grid <-
@@ -174,4 +213,40 @@ pknca_semi_join <- function(x, y, by) {
   } else {
     dplyr::semi_join(x, y, by = by)
   }
+}
+
+#' The subjects whose nominal times decrease while their actual times increase
+#'
+#' With one origin for a subject's nominal times (for example, the time since
+#' the first dose), the nominal times never decrease as the actual times
+#' increase; nominal times that restart at each dose do.  Repeated samples at
+#' one nominal time are allowed.  Only the order of the times is used, so the
+#' times may be in any unit (or date-times).
+#'
+#' @param data The concentration data
+#' @param id_cols The columns that identify a subject (the grouping columns)
+#' @param actual_col,nominal_col The actual and nominal time columns
+#' @returns The keys (see `pknca_interval_group_key()`) of the subjects whose
+#'   nominal times decrease
+#' @keywords Internal
+#' @noRd
+pknca_nominal_restart_keys <- function(data, id_cols, actual_col, nominal_col) {
+  key <- pknca_interval_group_key(data, id_cols)
+  actual <- data[[actual_col]]
+  nominal <- data[[nominal_col]]
+  keep <- !is.na(actual) & !is.na(nominal)
+  key <- key[keep]
+  actual <- actual[keep]
+  nominal <- nominal[keep]
+  # Ties in actual time are ordered by nominal time, so that they never look
+  # like a decrease
+  ord <- order(key, actual, nominal)
+  key <- key[ord]
+  nominal <- nominal[ord]
+  n <- length(key)
+  if (n < 2) {
+    return(character())
+  }
+  decrease <- key[-1] == key[-n] & nominal[-1] < nominal[-n]
+  unique(key[-1][decrease])
 }

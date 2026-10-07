@@ -47,3 +47,27 @@ tmax_coverage_results <- function(d_conc = tmax_coverage_conc(), time.nominal = 
     )
   suppressMessages(pk.nca(o_data))
 }
+
+# Concentration data with doses at 0 and `tau` hours and nominal times that
+# restart at each dose:  `nominal_first` after the first dose and
+# `nominal_second` after the second, for subjects with Tmax at `peaks` hours
+restart_conc <- function(peaks, nominal_first = c(0, 1, 2, 4, 8, 24), nominal_second = c(1, 2, 4, 8, 24), tau = 24) {
+  ret <- data.frame()
+  for (current_subject in seq_along(peaks)) {
+    ret <-
+      rbind(
+        ret,
+        data.frame(
+          subject = current_subject,
+          time_nominal = c(nominal_first, nominal_second),
+          time = c(nominal_first, tau + nominal_second),
+          conc =
+            c(
+              ifelse(nominal_first == 0, 0, 10 / (1 + abs(nominal_first - peaks[current_subject]))),
+              2 + 10 / (1 + abs(nominal_second - peaks[current_subject]))
+            )
+        )
+      )
+  }
+  ret
+}

@@ -98,10 +98,11 @@ counts as within the range only when a subject of the group has its Tmax
 at the interval start, which shows that the start is a plausible Tmax (as
 after an IV bolus).
 
-The samples are the concentration rows within the interval that have a
-concentration and are not excluded.  When the concentration data have a
-nominal time (\code{time.nominal} in \code{\link[=PKNCAconc]{PKNCAconc()}}), the samples are placed by
-their nominal time minus the interval start, so the nominal times must
+The samples are the concentration rows with an actual time within the
+interval (the rows that \code{\link[=pk.nca]{pk.nca()}} used) that have a concentration and
+are not excluded.  When the concentration data have a nominal time
+(\code{time.nominal} in \code{\link[=PKNCAconc]{PKNCAconc()}}), the samples are placed by their
+nominal time minus the interval start, so the nominal times must
 share the origin of the interval times (for example, the nominal time
 since the first dose); otherwise, they are placed by their actual time.
 Times are never converted between units, and the time unit is only used
@@ -128,9 +129,10 @@ group poorly.
 \item When the nominal times disagree with the interval, the group is not
 checked, and a \code{pknca_warning_tmax_coverage_no_nominal} warning says so
 once per group.  They disagree when no nominal time of the group is
-after the interval start, or when most samples of the group with an
-actual time in the interval have a nominal time outside it, as when the
-nominal times restart at each dose.
+after the interval start, when most samples of the group with an
+actual time in the interval have a nominal time outside it, or when a
+subject's nominal times decrease while its actual times increase within
+the interval, as when the nominal times restart at each dose.
 \item Sparse data have one Tmax per group, from the mean profile, so they are
 not checked, and a \code{pknca_message_tmax_coverage_sparse} message says so
 once per call to \code{\link[=exclude]{exclude()}}.

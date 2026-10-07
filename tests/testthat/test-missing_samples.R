@@ -124,3 +124,62 @@ test_that("pknca_semi_join keeps every row of x when there are no columns to mat
   expect_equal(pknca_semi_join(x, data.frame(b = numeric()), by = character()), x[0, , drop = FALSE])
   expect_equal(pknca_semi_join(x, data.frame(a = c(1L, 3L)), by = "a"), data.frame(a = c(1L, 3L)))
 })
+
+test_that("pknca_missing_samples does not report groups whose nominal times restart at each dose", {
+  d_restart <- restart_conc(peaks = c(1, 1, 2))
+  # Subject 3 misses the 2-hour sample after the second dose, which the first
+  # dose's 2-hour sample would otherwise fill
+  d_restart <- d_restart[!(d_restart$subject == 3 & d_restart$time == 26), ]
+  o_conc <- PKNCAconc(d_restart, conc ~ time | subject, time.nominal = "time_nominal")
+  expect_warning(
+    result <- pknca_missing_samples(o_conc),
+    regexp = "Missing samples are not reported for the data:  the nominal times of 3 subject(s) decrease while the actual times increase, as when the nominal times restart at each dose",
+    fixed = TRUE,
+    class = "pknca_warning_missing_samples_nominal_restart"
+  )
+  expect_equal(result, data.frame(subject = numeric(), time_nominal = numeric(), reason = character()))
+
+  # Only the group with restarting nominal times is left out
+  d_restart$treatment <- "A"
+  d_once <- tmax_coverage_conc()
+  d_once$treatment <- "B"
+  o_conc_two <- PKNCAconc(rbind(d_restart, d_once), conc ~ time | treatment + subject, time.nominal = "time_nominal")
+  result_two <-
+    withCallingHandlers(
+      pknca_missing_samples(o_conc_two),
+      pknca_warning_missing_samples_nominal_restart = function(w) {
+        expect_equal(w$group, data.frame(treatment = "A"))
+        expect_match(conditionMessage(w), "Missing samples are not reported for treatment=A:", fixed = TRUE)
+        invokeRestart("muffleWarning")
+      }
+    )
+  expect_equal(
+    result_two,
+    cbind(treatment = "B", pknca_missing_samples(PKNCAconc(tmax_coverage_conc(), conc ~ time | subject, time.nominal = "time_nominal")))
+  )
+})
+
+test_that("pknca_nominal_restart_keys finds decreasing nominal times and allows repeats", {
+  d_conc <-
+    rbind(
+      # Repeated samples at one nominal time, and two samples at one actual time
+      data.frame(subject = 1, time = c(0, 1, 1.1, 2, 2), time_nominal = c(0, 1, 1, 2, 3)),
+      # A restart
+      data.frame(subject = 2, time = c(0, 1, 24, 25), time_nominal = c(0, 1, 0, 1)),
+      # Missing times are ignored
+      data.frame(subject = 3, time = c(0, NA, 2), time_nominal = c(0, 5, NA))
+    )
+  expect_equal(
+    pknca_nominal_restart_keys(d_conc, id_cols = "subject", actual_col = "time", nominal_col = "time_nominal"),
+    pknca_interval_group_key(data.frame(subject = 2), "subject")
+  )
+  expect_equal(
+    pknca_nominal_restart_keys(d_conc[1, ], id_cols = "subject", actual_col = "time", nominal_col = "time_nominal"),
+    character()
+  )
+  # Without subject columns, the data are one subject
+  expect_equal(
+    pknca_nominal_restart_keys(d_conc[d_conc$subject == 2, ], id_cols = character(), actual_col = "time", nominal_col = "time_nominal"),
+    ""
+  )
+})

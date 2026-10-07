@@ -47,6 +47,13 @@ sample.  Rows with an \code{NA} nominal time (unscheduled samples) are not part
 of any schedule, and they neither add a time to it nor fill one.  Nominal
 times are compared as they are, so they may be in any unit.
 
+The nominal times must share one origin for each subject (for example, the
+time since the first dose).  Nominal times that restart at each dose repeat
+for each dose, so one dose's samples would fill another dose's missing
+times.  They are found when a subject's nominal times decrease while its
+actual times increase; the groups with such a subject are not reported, and
+a \code{pknca_warning_missing_samples_nominal_restart} warning names them.
+
 Sparse data (see the \code{sparse} argument of \code{\link[=PKNCAconc]{PKNCAconc()}}) have no schedule
 that each subject follows:  each subject gives a few of the group's
 samples by design.  For sparse data, only the rows that exist are checked

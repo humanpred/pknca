@@ -24,10 +24,11 @@
 #'   at the interval start, which shows that the start is a plausible Tmax (as
 #'   after an IV bolus).
 #'
-#'   The samples are the concentration rows within the interval that have a
-#'   concentration and are not excluded.  When the concentration data have a
-#'   nominal time (`time.nominal` in [PKNCAconc()]), the samples are placed by
-#'   their nominal time minus the interval start, so the nominal times must
+#'   The samples are the concentration rows with an actual time within the
+#'   interval (the rows that [pk.nca()] used) that have a concentration and
+#'   are not excluded.  When the concentration data have a nominal time
+#'   (`time.nominal` in [PKNCAconc()]), the samples are placed by their
+#'   nominal time minus the interval start, so the nominal times must
 #'   share the origin of the interval times (for example, the nominal time
 #'   since the first dose); otherwise, they are placed by their actual time.
 #'   Times are never converted between units, and the time unit is only used
@@ -54,9 +55,10 @@
 #'   * When the nominal times disagree with the interval, the group is not
 #'     checked, and a `pknca_warning_tmax_coverage_no_nominal` warning says so
 #'     once per group.  They disagree when no nominal time of the group is
-#'     after the interval start, or when most samples of the group with an
-#'     actual time in the interval have a nominal time outside it, as when the
-#'     nominal times restart at each dose.
+#'     after the interval start, when most samples of the group with an
+#'     actual time in the interval have a nominal time outside it, or when a
+#'     subject's nominal times decrease while its actual times increase within
+#'     the interval, as when the nominal times restart at each dose.
 #'   * Sparse data have one Tmax per group, from the mean profile, so they are
 #'     not checked, and a `pknca_message_tmax_coverage_sparse` message says so
 #'     once per call to [exclude()].
@@ -587,10 +589,16 @@ exclude_nca_tmax_coverage_group <- function(current, group_key, min_subjects, ca
   conc_data <- cache$conc_data
   peer_key <- pknca_interval_group_key(current, cache$conc_peer_cols)
   is_group <- cache$conc_peer_key == peer_key
-  group_time <- conc_data[[time_col]]
-  in_interval <- is_group & !is.na(group_time) & group_time >= start - tolerance & group_time <= end + tolerance
+  # The samples of the interval are those that pk.nca() used, selected by
+  # their actual time; with nominal times, they are then placed by those
+  actual <- conc_data[[cache$actual_col]]
+  in_interval <- is_group & !is.na(actual) & actual >= start - tolerance & actual <= end + tolerance
   if (cache$use_nominal) {
-    mismatch <- exclude_nca_tmax_coverage_nominal_mismatch(cache = cache, is_group = is_group, start = start, end = end, tolerance = tolerance)
+    mismatch <-
+      exclude_nca_tmax_coverage_nominal_mismatch(
+        cache = cache, is_group = is_group, in_interval = in_interval,
+        start = start, end = end, tolerance = tolerance
+      )
     if (!is.null(mismatch)) {
       rlang::warn(
         sprintf(
@@ -633,6 +641,8 @@ exclude_nca_tmax_coverage_group <- function(current, group_key, min_subjects, ca
     if (is.null(rows)) rows <- integer()
     usable <- !is.na(group_conc[[cache$conc_col]][rows]) & !group_excluded[rows]
     position <- group_conc[[time_col]][rows][usable] - start
+    # Unscheduled samples have no nominal time to place them by
+    position <- position[!is.na(position)]
     if (after_start) {
       position <- position[position > tolerance]
     }
@@ -688,16 +698,20 @@ exclude_nca_tmax_coverage_group <- function(current, group_key, min_subjects, ca
 #' share the origin of the actual times.  Nominal times relative to each dose
 #' instead (restarting at every dose) disagree:  most samples whose actual time
 #' is after the interval start then have a nominal time outside the interval,
-#' or no nominal time of the group is after the interval start at all.
+#' no nominal time of the group is after the interval start at all, or, for an
+#' interval with more than one dose, a subject's nominal times decrease while
+#' its actual times increase (see `pknca_nominal_restart_keys()`).
 #'
 #' @param is_group A logical vector:  is the concentration row in the group?
+#' @param in_interval A logical vector:  is the concentration row in the group
+#'   and the interval (by its actual time)?
 #' @param start,end The interval
 #' @param tolerance The tolerance for comparing times
 #' @inheritParams exclude_nca_tmax_coverage_subject
 #' @returns `NULL` when they agree, or text describing the disagreement
 #' @keywords Internal
 #' @noRd
-exclude_nca_tmax_coverage_nominal_mismatch <- function(cache, is_group, start, end, tolerance) {
+exclude_nca_tmax_coverage_nominal_mismatch <- function(cache, is_group, in_interval, start, end, tolerance) {
   nominal <- cache$conc_data[[cache$nominal_col]][is_group]
   actual <- cache$conc_data[[cache$actual_col]][is_group]
   nominal_after_start <- !is.na(nominal) & nominal > start + tolerance & nominal <= end + tolerance
@@ -714,6 +728,21 @@ exclude_nca_tmax_coverage_nominal_mismatch <- function(cache, is_group, start, e
       sprintf(
         "%d of the %d samples of the group with an actual time in the interval have a nominal time outside it",
         sum(outside), sum(actual_after_start)
+      )
+    )
+  }
+  restarts <-
+    pknca_nominal_restart_keys(
+      data = cache$conc_data[in_interval, , drop = FALSE],
+      id_cols = cache$conc_group_cols,
+      actual_col = cache$actual_col,
+      nominal_col = cache$nominal_col
+    )
+  if (length(restarts) > 0) {
+    return(
+      sprintf(
+        "the nominal times of %d subject(s) decrease while the actual times increase within the interval",
+        length(restarts)
       )
     )
   }
