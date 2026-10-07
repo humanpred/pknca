@@ -667,6 +667,20 @@ the generated intervals:
   to summarize a parameter with the spread from another parameter's results
   this way.  (#170)
 
+* With sparse PK, `aucinf.obs` and `aumcinf.obs` are now estimated as the sparse
+  AUClast or AUMClast plus the extrapolation from the mean concentration at
+  tlast, with standard errors and degrees of freedom in the new
+  `aucinf.obs_se`, `aucinf.obs_df`, `aumcinf.obs_se`, and `aumcinf.obs_df`
+  parameters (`pk.calc.aucinf.obs_sparse()` and `pk.calc.aumcinf.obs_sparse()`).
+  The AUC standard error is Yuan's (1993), which treats `lambda.z` as known,
+  extended to any sampling design and to the AUMC; the new `sparse_lambda_z_se`
+  option set to `"delta"` adds the uncertainty of `lambda.z` with the delta
+  method, including its covariance with Clast and the AUClast.  Before, these
+  parameters were calculated on the arithmetic-mean profile with the
+  `auc.method` option and had no standard error; like the sparse AUClast, they
+  now use the linear trapezoidal rule.  See
+  `vignette("v24-sparse-auc-to-infinity")`.  (#428)
+
 * The sparse degrees of freedom (`auclast_df`, `aumclast_df`, and the deprecated
   `sparse_auc_df` and `sparse_aumc_df`) are now calculated when subjects
   contribute more than one sample, as in batch designs, with the Satterthwaite

@@ -48,6 +48,7 @@ the option is set to anything else.
 \seealso{
 Other Sparse Methods:
 \code{\link[=as_sparse_pk]{as_sparse_pk()}},
+\code{\link[=pk.calc.aucinf.obs_sparse]{pk.calc.aucinf.obs_sparse()}},
 \code{\link[=pk.calc.sparse_auc]{pk.calc.sparse_auc()}},
 \code{\link[=pk.calc.sparse_aumc]{pk.calc.sparse_aumc()}},
 \code{\link[=sparse_auc_weight_linear]{sparse_auc_weight_linear()}},

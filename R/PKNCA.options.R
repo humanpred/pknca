@@ -484,6 +484,22 @@ pair_r_squared_factors <- function(x, name) {
     x
   },
 
+  sparse_lambda_z_se = function(x, default = FALSE, description = FALSE) {
+    choices <- c("none", "delta")
+    if (description)
+      return(paste(
+        "How the standard error of a sparse AUCinf,obs or AUMCinf,obs accounts for",
+        "the estimated lambda.z:  \"none\" treats it as known (Yuan 1993), and",
+        "\"delta\" adds its uncertainty with the delta method.  Options are:",
+        paste0('"', choices, '"', collapse = ", ")
+      ))
+    if (default)
+      return(choices[1])
+    checkmate::assert_string(x, .var.name = "sparse_lambda_z_se")
+    x <- match.arg(x, choices)
+    x
+  },
+
   tobit_n_points_penalty = function(x, default = FALSE, description = FALSE) {
     if (description)
       return(paste(

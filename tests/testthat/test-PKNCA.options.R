@@ -93,6 +93,7 @@ test_that("PKNCA.options", {
       ),
       allow_partial_missing_units = FALSE,
       hl_method = "log-linear",
+      sparse_lambda_z_se = "none",
       tobit_n_points_penalty = 0,
       tobit_optim_control = list()
     )
@@ -259,6 +260,14 @@ test_that("PKNCA.options", {
                regexp="May not be NA")
   expect_error(PKNCA.options(first.tmax="x", check=TRUE),
                regexp="Could not convert first.tmax to a logical value")
+
+  # sparse_lambda_z_se
+  expect_equal(PKNCA.options(sparse_lambda_z_se="delta", check=TRUE), "delta")
+  expect_equal(PKNCA.options(sparse_lambda_z_se="none", check=TRUE), "none")
+  expect_error(PKNCA.options(sparse_lambda_z_se="bootstrap", check=TRUE),
+               regexp="'arg' should be one of")
+  expect_error(PKNCA.options(sparse_lambda_z_se=c("none", "delta"), check=TRUE),
+               regexp="Must have length 1")
 
   # min.hl.points
   expect_equal(PKNCA.options(min.hl.points=3, check=TRUE), 3)

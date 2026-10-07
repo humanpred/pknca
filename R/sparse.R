@@ -187,6 +187,127 @@ sparse_pk_weighted <- function(sparse_pk) {
   ret
 }
 
+#' Sparse AUC or AUMC to infinity with its standard error
+#'
+#' The estimate is the AUClast (or AUMClast) of the mean profile plus its
+#' extrapolation from tlast with `lambda.z`:  \eqn{C_{last}/\lambda_z} for the
+#' AUC (Yuan 1993) and \eqn{t_{last} C_{last}/\lambda_z + C_{last}/\lambda_z^2}
+#' for the AUMC, where \eqn{C_{last}} is the mean concentration at tlast.  Both
+#' are linear in the means at each time (the moment means \eqn{t_i \bar{y}_i}
+#' for the AUMC), so the variance is that of [var_sparse_auc()] (or
+#' [var_sparse_aumc()]) with the trapezoidal weights plus the extrapolation
+#' weight at tlast.
+#'
+#' With `lambda_z_se = "none"` (Yuan 1993), `lambda.z` is treated as known.  With
+#' `"delta"`, its uncertainty is added with the delta method:  `lambda.z` is minus
+#' the least-squares slope of the log mean concentrations on time over the
+#' half-life points, \eqn{\lambda_z = -\sum_j c_j \log \bar{y}_j} with
+#' \eqn{c_j = (t_j - \bar{t})/\sum_k (t_k - \bar{t})^2}, so the estimate is a
+#' smooth function of the means, and its gradient takes the place of the weights.
+#' For the AUC, the weight of the mean at time \eqn{j} is
+#' \deqn{w_j + \frac{\delta_{j,last}}{\lambda_z} + \frac{C_{last}}{\lambda_z^2} \frac{c_j}{\bar{y}_j}.}
+#' The gradient covers the covariance of `lambda.z` with \eqn{C_{last}} and the
+#' AUClast, which come from the same samples.  The half-life points are taken as
+#' fixed:  the uncertainty of choosing them is not included.
+#'
+#' @param moment Calculate the AUMC (`TRUE`) or the AUC (`FALSE`)?
+#' @param lambda_z_se How the standard error accounts for `lambda.z` (see
+#'   Details and the `sparse_lambda_z_se` option of [PKNCA.options()])
+#' @inheritParams pk.calc.sparse_auc
+#' @inheritParams pk.calc.half.life
+#' @param lambda.z The elimination rate of the mean profile
+#' @param lambda.z.time.first,lambda.z.time.last,lambda.z.n.points The first
+#'   and last time and the number of points of the half-life fit to the mean
+#'   profile (used with `lambda_z_se = "delta"`)
+#' @returns A list with the `estimate`, its standard error (`se`), and the
+#'   degrees of freedom (`df`)
+#' @references
+#' Yuan J. Estimation of variance for AUC in animal studies.  Journal of
+#' Pharmaceutical Sciences.  1993;82(7):761-763. doi:10.1002/jps.2600820718
+#' @keywords Internal
+#' @noRd
+sparse_auxc_inf_obs <- function(conc, time, subject, lambda.z,
+                                lambda.z.time.first = NA, lambda.z.time.last = NA,
+                                lambda.z.n.points = NA,
+                                moment = FALSE, lambda_z_se = "none",
+                                hl_method = "log-linear") {
+  na_ret <- list(estimate = NA_real_, se = NA_real_, df = NA_real_)
+  sparse_pk <- as_sparse_pk(conc = conc, time = time, subject = subject)
+  sparse_pk <- sparse_mean(sparse_pk = sparse_pk, sparse_mean_method = "arithmetic mean, <=50% BLQ")
+  sparse_pk <- sparse_auc_weight_type(sparse_pk, auc.type = "AUClast")
+  times <- sparse_pk_attribute(sparse_pk, "time")
+  means <- sparse_pk_attribute(sparse_pk, "mean")
+  weights <- sparse_pk_attribute(sparse_pk, "weight")
+  idx_last <- max(c(0L, which(means > 0)))
+  if (idx_last == 0 || is.na(lambda.z) || lambda.z <= 0) {
+    return(na_ret)
+  }
+  tlast <- times[idx_last]
+  clast <- means[idx_last]
+  if (moment) {
+    # Moment means and the AUMClast of the mean profile (linear trapezoidal)
+    values <- times * means
+    extrapolation_weight <- 1/lambda.z + 1/(tlast*lambda.z^2)
+  } else {
+    values <- means
+    extrapolation_weight <- 1/lambda.z
+  }
+  estimate <- sum(weights*values) + values[idx_last]*extrapolation_weight
+  weights[idx_last] <- weights[idx_last] + extrapolation_weight
+  if (lambda_z_se == "delta") {
+    if (hl_method != "log-linear") {
+      rlang::abort(
+        "The delta-method standard error for lambda.z needs the log-linear half-life (the hl_method option)",
+        class = "pknca_error_sparse_lambda_z_se_hl_method"
+      )
+    }
+    # The half-life points of the mean profile (the half-life is fit to the
+    # positive means from lambda.z.time.first through lambda.z.time.last)
+    tolerance <- sqrt(.Machine$double.eps)*max(1, abs(times))
+    idx_hl <-
+      which(
+        times >= lambda.z.time.first - tolerance &
+          times <= lambda.z.time.last + tolerance &
+          means > 0
+      )
+    if (length(idx_hl) != lambda.z.n.points) {
+      rlang::warn(
+        sprintf(
+          "The %d half-life points of the mean profile could not be identified (%d positive means are between %g and %g), so the delta-method standard error is not calculated",
+          lambda.z.n.points, length(idx_hl), lambda.z.time.first, lambda.z.time.last
+        ),
+        class = "pknca_warning_sparse_lambda_z_points"
+      )
+      return(list(estimate = estimate, se = NA_real_, df = NA_real_))
+    }
+    time_hl <- times[idx_hl]
+    slope_weights <- (time_hl - mean(time_hl))/sum((time_hl - mean(time_hl))^2)
+    # d(estimate)/d(lambda.z) times d(lambda.z)/d(value_j) = -c_j/value_j; the
+    # log of a moment mean differs from the log of the mean by the constant
+    # log(t_j), so the same holds for moment means
+    d_estimate_d_lambda_z <-
+      if (moment) {
+        -values[idx_last]*(1/lambda.z^2 + 2/(tlast*lambda.z^3))
+      } else {
+        -values[idx_last]/lambda.z^2
+      }
+    weights[idx_hl] <-
+      weights[idx_hl] + d_estimate_d_lambda_z*(-slope_weights/values[idx_hl])
+  }
+  sparse_pk <- sparse_pk_attribute(sparse_pk, weight = weights)
+  variance <-
+    if (moment) {
+      var_sparse_aumc(sparse_pk)
+    } else {
+      var_sparse_auc(sparse_pk)
+    }
+  list(
+    estimate = estimate,
+    se = sqrt(as.numeric(variance)),
+    df = attr(variance, "df")
+  )
+}
+
 #' Calculate the variance for the AUC of sparsely sampled PK
 #'
 #' Equation 7.vii in Nedelman and Jia, 1998 is used for this calculation:
