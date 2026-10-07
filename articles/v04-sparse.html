@@ -48,6 +48,7 @@
     <li><a class="dropdown-item" href="../articles/v21-methods-for-dose-aware-interpolation-and-extrapolation.html">Methods Used for Dose-Aware Concentration Interpolation/Extrapolation</a></li>
     <li><a class="dropdown-item" href="../articles/v22-time-to-steady-state.html">Noncompartmental evaluation of time to steady-state</a></li>
     <li><a class="dropdown-item" href="../articles/v23-auc-integration-methods.html">AUC integration methods</a></li>
+    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of Lambda z</a></li>
     <li><a class="dropdown-item" href="../articles/v30-training-session.html">PKNCA Training Sessions</a></li>
     <li><a class="dropdown-item" href="../articles/v31-FDA-introduction.html">PKNCA – an R package for noncompartmental analysis of pharmacokinetic data</a></li>
     <li><a class="dropdown-item" href="../articles/v40-options-for-controlling-PKNCA.html">Options for Controlling PKNCA</a></li>
@@ -220,7 +221,7 @@ PKNCA stops with an error identifying the inconsistent group.</p>
 <span><span class="va">o_data_sparse</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc_sparse</span>, intervals<span class="op">=</span><span class="va">d_intervals</span><span class="op">)</span></span>
 <span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_sparse</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## The sparse estimators use the linear trapezoidal rule, so the auc.method option</span></span>
-<span><span class="co">## ("lin up/log down") does not apply to: auclast</span></span></code></pre>
+<span><span class="co">## ("lin up/log down") does not apply to: auclast, aucinf.obs</span></span></code></pre>
 <pre><code><span><span class="co">## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2</span></span>
 <span><span class="co">## points)</span></span></code></pre>
 <p><code><a href="../reference/pknca_interval_table.html">pknca_interval_table()</a></code> builds the same kind of
@@ -240,7 +241,7 @@ imputation (there is no individual profile to impute into):</p>
 <pre><code><span><span class="co">##  start end     auclast auclast_df cmax aucinf.obs</span></span>
 <span><span class="co">##      0  24 39.5 [7.31]       2.75 3.05         NC</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Caption: auclast: estimate and standard error; auclast_df: arithmetic mean and standard deviation; cmax, aucinf.obs: geometric mean and geometric coefficient of variation; NC: not calculated</span></span></code></pre>
+<span><span class="co">## Caption: auclast, aucinf.obs: estimate and standard error; auclast_df: arithmetic mean and standard deviation; cmax: geometric mean and geometric coefficient of variation; NC: not calculated</span></span></code></pre>
 <p>In the summary, the sparse <code>auclast</code> is the estimate with
 its standard error in brackets (from the <code>auclast_se</code>
 result), as the caption says; <code>auclast_se</code> has no column of
@@ -249,7 +250,7 @@ its own.</p>
 <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> function:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 18 × 6</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 20 × 6</span></span></span>
 <span><span class="co">##    start   end PPTESTCD            PPORRES PPANMETH                      exclude</span></span>
 <span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 1</span>     0    24 cmax                  3.05  <span style="color: #949494;">""</span>                            <span style="color: #BB0000;">NA</span>     </span></span>
@@ -266,10 +267,12 @@ its own.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">12</span>     0    24 clast.pred           <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                            Too fe…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">13</span>     0    24 half.life            <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                            Too fe…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">14</span>     0    24 span.ratio           <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">""</span>                            Too fe…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">15</span>     0    24 aucinf.obs           <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">"</span>AUC: lin up/log down<span style="color: #949494;">"</span>        Too fe…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">16</span>     0    24 auclast              39.5   <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">17</span>     0    24 auclast_se            7.31  <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">18</span>     0    24 auclast_df            2.75  <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">15</span>     0    24 auclast              39.5   <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">16</span>     0    24 auclast_se            7.31  <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">17</span>     0    24 auclast_df            2.75  <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">18</span>     0    24 aucinf.obs           <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… Too fe…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">19</span>     0    24 aucinf.obs_se        <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… Too fe…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">20</span>     0    24 aucinf.obs_df        <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… Too fe…</span></span></code></pre>
 <p><code>auclast_se</code> and <code>auclast_df</code> are reported
 whether or not they were requested, because the sparse estimator returns
 all three together. They are only calculable from sparse data:

@@ -30,7 +30,11 @@ pk.calc.aumclast_sparse(conc, time, subject, ..., options = list())
 
 - subject:
 
-  Subject identifiers (may be any class; may not be null)
+  Subject identifiers (may be any class; may not be null). A missing
+  subject marks an imputed concentration (such as the zero that the
+  `start_conc0` imputation adds at the start of an interval): a time
+  where every subject is missing has a known concentration, which enters
+  sparse estimates but not their variance.
 
 - ...:
 
@@ -63,6 +67,8 @@ so when the option is set to anything else.
 
 Other Sparse Methods:
 [`as_sparse_pk()`](https://humanpred.github.io/pknca/reference/as_sparse_pk.md),
+[`pk.calc.aucinf.obs_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.aucinf.obs_sparse.md),
+[`pk.calc.aucivlast_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.aucivlast_sparse.md),
 [`pk.calc.sparse_auc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md),
 [`pk.calc.sparse_aumc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.md),
 [`sparse_auc_weight_linear()`](https://humanpred.github.io/pknca/reference/sparse_auc_weight_linear.md),

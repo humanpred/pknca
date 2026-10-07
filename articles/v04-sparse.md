@@ -150,7 +150,7 @@ o_nca <- pk.nca(o_data_sparse)
 ```
 
     ## The sparse estimators use the linear trapezoidal rule, so the auc.method option
-    ## ("lin up/log down") does not apply to: auclast
+    ## ("lin up/log down") does not apply to: auclast, aucinf.obs
 
     ## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2
     ## points)
@@ -178,7 +178,7 @@ summary(o_nca)
     ##  start end     auclast auclast_df cmax aucinf.obs
     ##      0  24 39.5 [7.31]       2.75 3.05         NC
     ## 
-    ## Caption: auclast: estimate and standard error; auclast_df: arithmetic mean and standard deviation; cmax, aucinf.obs: geometric mean and geometric coefficient of variation; NC: not calculated
+    ## Caption: auclast, aucinf.obs: estimate and standard error; auclast_df: arithmetic mean and standard deviation; cmax: geometric mean and geometric coefficient of variation; NC: not calculated
 
 In the summary, the sparse `auclast` is the estimate with its standard
 error in brackets (from the `auclast_se` result), as the caption says;
@@ -192,7 +192,7 @@ or individual results are available through the
 as.data.frame(o_nca)
 ```
 
-    ## # A tibble: 18 × 6
+    ## # A tibble: 20 × 6
     ##    start   end PPTESTCD            PPORRES PPANMETH                      exclude
     ##    <dbl> <dbl> <chr>                 <dbl> <chr>                         <chr>  
     ##  1     0    24 cmax                  3.05  ""                            NA     
@@ -209,10 +209,12 @@ as.data.frame(o_nca)
     ## 12     0    24 clast.pred           NA     ""                            Too fe…
     ## 13     0    24 half.life            NA     ""                            Too fe…
     ## 14     0    24 span.ratio           NA     ""                            Too fe…
-    ## 15     0    24 aucinf.obs           NA     "AUC: lin up/log down"        Too fe…
-    ## 16     0    24 auclast              39.5   "AUC: linear. Sparse: arithm… NA     
-    ## 17     0    24 auclast_se            7.31  "AUC: linear. Sparse: arithm… NA     
-    ## 18     0    24 auclast_df            2.75  "AUC: linear. Sparse: arithm… NA
+    ## 15     0    24 auclast              39.5   "AUC: linear. Sparse: arithm… NA     
+    ## 16     0    24 auclast_se            7.31  "AUC: linear. Sparse: arithm… NA     
+    ## 17     0    24 auclast_df            2.75  "AUC: linear. Sparse: arithm… NA     
+    ## 18     0    24 aucinf.obs           NA     "AUC: linear. Sparse: arithm… Too fe…
+    ## 19     0    24 aucinf.obs_se        NA     "AUC: linear. Sparse: arithm… Too fe…
+    ## 20     0    24 aucinf.obs_df        NA     "AUC: linear. Sparse: arithm… Too fe…
 
 `auclast_se` and `auclast_df` are reported whether or not they were
 requested, because the sparse estimator returns all three together. They

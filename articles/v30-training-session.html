@@ -48,6 +48,7 @@
     <li><a class="dropdown-item" href="../articles/v21-methods-for-dose-aware-interpolation-and-extrapolation.html">Methods Used for Dose-Aware Concentration Interpolation/Extrapolation</a></li>
     <li><a class="dropdown-item" href="../articles/v22-time-to-steady-state.html">Noncompartmental evaluation of time to steady-state</a></li>
     <li><a class="dropdown-item" href="../articles/v23-auc-integration-methods.html">AUC integration methods</a></li>
+    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of Lambda z</a></li>
     <li><a class="dropdown-item" href="../articles/v30-training-session.html">PKNCA Training Sessions</a></li>
     <li><a class="dropdown-item" href="../articles/v31-FDA-introduction.html">PKNCA – an R package for noncompartmental analysis of pharmacokinetic data</a></li>
     <li><a class="dropdown-item" href="../articles/v40-options-for-controlling-PKNCA.html">Options for Controlling PKNCA</a></li>
@@ -1561,8 +1562,8 @@ PKNCA will calculate other required parameters behind the scenes.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">14</span>     0   <span style="color: #BB0000;">Inf</span> aucinf.obs           0.721  <span style="color: #949494;">"</span>AUC: lin up/log down<span style="color: #949494;">"</span> <span style="color: #BB0000;">NA</span></span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="how-to-select-the-correct-parameters-for-calculations-aka-why-are-there-30-types-of-auc-in-pknca">How to select the correct parameters for calculations (aka, why are
-there 30 types of AUC in PKNCA?)<a class="anchor" aria-label="anchor" href="#how-to-select-the-correct-parameters-for-calculations-aka-why-are-there-30-types-of-auc-in-pknca"></a>
+<h3 id="how-to-select-the-correct-parameters-for-calculations-aka-why-are-there-38-types-of-auc-in-pknca">How to select the correct parameters for calculations (aka, why are
+there 38 types of AUC in PKNCA?)<a class="anchor" aria-label="anchor" href="#how-to-select-the-correct-parameters-for-calculations-aka-why-are-there-38-types-of-auc-in-pknca"></a>
 </h3>
 <p>CDISC has one set of names, but they are not precise (e.g. AUCINT
 doesn’t tell the interpolation/extrapolation method).</p>
@@ -1943,58 +1944,70 @@ basic analysis<a class="anchor" aria-label="anchor" href="#single--and-multiple-
 <span><span class="co">## 1         FALSE           FALSE          FALSE          FALSE      FALSE</span></span>
 <span><span class="co">## 2         FALSE           FALSE          FALSE          FALSE      FALSE</span></span>
 <span><span class="co">## 3         FALSE           FALSE          FALSE          FALSE      FALSE</span></span>
-<span><span class="co">##   aucivlast aucivall aucivint.last aucivint.all aucivpbextlast aucivpbextall</span></span>
-<span><span class="co">## 1     FALSE    FALSE         FALSE        FALSE          FALSE         FALSE</span></span>
-<span><span class="co">## 2     FALSE    FALSE         FALSE        FALSE          FALSE         FALSE</span></span>
-<span><span class="co">## 3     FALSE    FALSE         FALSE        FALSE          FALSE         FALSE</span></span>
-<span><span class="co">##   aucivpbextint.last aucivpbextint.all aumcivlast aumcivall aumcivint.last</span></span>
-<span><span class="co">## 1              FALSE             FALSE      FALSE     FALSE          FALSE</span></span>
-<span><span class="co">## 2              FALSE             FALSE      FALSE     FALSE          FALSE</span></span>
-<span><span class="co">## 3              FALSE             FALSE      FALSE     FALSE          FALSE</span></span>
-<span><span class="co">##   aumcivint.all half.life r.squared adj.r.squared lambda.z.corrxy lambda.z</span></span>
-<span><span class="co">## 1         FALSE      TRUE     FALSE         FALSE           FALSE    FALSE</span></span>
-<span><span class="co">## 2         FALSE      TRUE     FALSE         FALSE           FALSE    FALSE</span></span>
-<span><span class="co">## 3         FALSE      TRUE     FALSE         FALSE           FALSE    FALSE</span></span>
-<span><span class="co">##   lambda.z.time.first lambda.z.time.last lambda.z.n.points clast.pred</span></span>
-<span><span class="co">## 1               FALSE              FALSE             FALSE      FALSE</span></span>
-<span><span class="co">## 2               FALSE              FALSE             FALSE      FALSE</span></span>
-<span><span class="co">## 3               FALSE              FALSE             FALSE      FALSE</span></span>
-<span><span class="co">##   span.ratio tobit_residual adj_tobit_residual lambda.z.n.points_blq</span></span>
-<span><span class="co">## 1      FALSE          FALSE              FALSE                 FALSE</span></span>
-<span><span class="co">## 2      FALSE          FALSE              FALSE                 FALSE</span></span>
-<span><span class="co">## 3      FALSE          FALSE              FALSE                 FALSE</span></span>
-<span><span class="co">##   thalf.eff.last thalf.eff.iv.last kel.last kel.iv.last kel.all kel.int.all</span></span>
-<span><span class="co">## 1          FALSE             FALSE    FALSE       FALSE   FALSE       FALSE</span></span>
-<span><span class="co">## 2          FALSE             FALSE    FALSE       FALSE   FALSE       FALSE</span></span>
-<span><span class="co">## 3          FALSE             FALSE    FALSE       FALSE   FALSE       FALSE</span></span>
-<span><span class="co">##   kel.int.last cl.iv.all cl.iv.last cl.ivint.all cl.ivint.last cl.sparse.last</span></span>
-<span><span class="co">## 1        FALSE     FALSE      FALSE        FALSE         FALSE          FALSE</span></span>
-<span><span class="co">## 2        FALSE     FALSE      FALSE        FALSE         FALSE          FALSE</span></span>
-<span><span class="co">## 3        FALSE     FALSE      FALSE        FALSE         FALSE          FALSE</span></span>
-<span><span class="co">##   f.last f.int.last f.int.all mrt.sparse.last mrt.iv.all mrt.ivint.all</span></span>
-<span><span class="co">## 1  FALSE      FALSE     FALSE           FALSE      FALSE         FALSE</span></span>
-<span><span class="co">## 2  FALSE      FALSE     FALSE           FALSE      FALSE         FALSE</span></span>
-<span><span class="co">## 3  FALSE      FALSE     FALSE           FALSE      FALSE         FALSE</span></span>
-<span><span class="co">##   mrt.ivint.last vz.all vz.int.all vz.int.last vz.iv.all vz.iv.last</span></span>
-<span><span class="co">## 1          FALSE  FALSE      FALSE       FALSE     FALSE      FALSE</span></span>
-<span><span class="co">## 2          FALSE  FALSE      FALSE       FALSE     FALSE      FALSE</span></span>
-<span><span class="co">## 3          FALSE  FALSE      FALSE       FALSE     FALSE      FALSE</span></span>
-<span><span class="co">##   vz.ivint.all vz.ivint.last vz.last vss.iv.all vss.ivint.all vss.ivint.last</span></span>
-<span><span class="co">## 1        FALSE         FALSE   FALSE      FALSE         FALSE          FALSE</span></span>
-<span><span class="co">## 2        FALSE         FALSE   FALSE      FALSE         FALSE          FALSE</span></span>
-<span><span class="co">## 3        FALSE         FALSE   FALSE      FALSE         FALSE          FALSE</span></span>
-<span><span class="co">##   vss.sparse.last aucinf.obs aucinf.pred aumcinf.obs aumcinf.pred</span></span>
-<span><span class="co">## 1           FALSE       TRUE       FALSE       FALSE        FALSE</span></span>
-<span><span class="co">## 2           FALSE       TRUE       FALSE       FALSE        FALSE</span></span>
-<span><span class="co">## 3           FALSE      FALSE       FALSE       FALSE        FALSE</span></span>
-<span><span class="co">##   aucint.inf.obs aucint.inf.pred aumcint.inf.obs aumcint.inf.pred aucivinf.obs</span></span>
-<span><span class="co">## 1          FALSE           FALSE           FALSE            FALSE        FALSE</span></span>
-<span><span class="co">## 2          FALSE           FALSE           FALSE            FALSE        FALSE</span></span>
-<span><span class="co">## 3           TRUE           FALSE           FALSE            FALSE        FALSE</span></span>
-<span><span class="co">##   aucivinf.pred aucivpbextinf.obs aucivpbextinf.pred aumcivinf.obs</span></span>
-<span><span class="co">## 1         FALSE             FALSE              FALSE         FALSE</span></span>
-<span><span class="co">## 2         FALSE             FALSE              FALSE         FALSE</span></span>
-<span><span class="co">## 3         FALSE             FALSE              FALSE         FALSE</span></span>
+<span><span class="co">##   aucivlast aucivlast_se aucivlast_df aucivall aucivall_se aucivall_df</span></span>
+<span><span class="co">## 1     FALSE        FALSE        FALSE    FALSE       FALSE       FALSE</span></span>
+<span><span class="co">## 2     FALSE        FALSE        FALSE    FALSE       FALSE       FALSE</span></span>
+<span><span class="co">## 3     FALSE        FALSE        FALSE    FALSE       FALSE       FALSE</span></span>
+<span><span class="co">##   aucivint.last aucivint.all aucivpbextlast aucivpbextall aucivpbextint.last</span></span>
+<span><span class="co">## 1         FALSE        FALSE          FALSE         FALSE              FALSE</span></span>
+<span><span class="co">## 2         FALSE        FALSE          FALSE         FALSE              FALSE</span></span>
+<span><span class="co">## 3         FALSE        FALSE          FALSE         FALSE              FALSE</span></span>
+<span><span class="co">##   aucivpbextint.all aumcivlast aumcivlast_se aumcivlast_df aumcivall</span></span>
+<span><span class="co">## 1             FALSE      FALSE         FALSE         FALSE     FALSE</span></span>
+<span><span class="co">## 2             FALSE      FALSE         FALSE         FALSE     FALSE</span></span>
+<span><span class="co">## 3             FALSE      FALSE         FALSE         FALSE     FALSE</span></span>
+<span><span class="co">##   aumcivall_se aumcivall_df aumcivint.last aumcivint.all half.life r.squared</span></span>
+<span><span class="co">## 1        FALSE        FALSE          FALSE         FALSE      TRUE     FALSE</span></span>
+<span><span class="co">## 2        FALSE        FALSE          FALSE         FALSE      TRUE     FALSE</span></span>
+<span><span class="co">## 3        FALSE        FALSE          FALSE         FALSE      TRUE     FALSE</span></span>
+<span><span class="co">##   adj.r.squared lambda.z.corrxy lambda.z lambda.z.time.first lambda.z.time.last</span></span>
+<span><span class="co">## 1         FALSE           FALSE    FALSE               FALSE              FALSE</span></span>
+<span><span class="co">## 2         FALSE           FALSE    FALSE               FALSE              FALSE</span></span>
+<span><span class="co">## 3         FALSE           FALSE    FALSE               FALSE              FALSE</span></span>
+<span><span class="co">##   lambda.z.n.points clast.pred span.ratio tobit_residual adj_tobit_residual</span></span>
+<span><span class="co">## 1             FALSE      FALSE      FALSE          FALSE              FALSE</span></span>
+<span><span class="co">## 2             FALSE      FALSE      FALSE          FALSE              FALSE</span></span>
+<span><span class="co">## 3             FALSE      FALSE      FALSE          FALSE              FALSE</span></span>
+<span><span class="co">##   lambda.z.n.points_blq thalf.eff.last thalf.eff.iv.last kel.last kel.iv.last</span></span>
+<span><span class="co">## 1                 FALSE          FALSE             FALSE    FALSE       FALSE</span></span>
+<span><span class="co">## 2                 FALSE          FALSE             FALSE    FALSE       FALSE</span></span>
+<span><span class="co">## 3                 FALSE          FALSE             FALSE    FALSE       FALSE</span></span>
+<span><span class="co">##   kel.all kel.int.all kel.int.last cl.iv.all cl.iv.last cl.ivint.all</span></span>
+<span><span class="co">## 1   FALSE       FALSE        FALSE     FALSE      FALSE        FALSE</span></span>
+<span><span class="co">## 2   FALSE       FALSE        FALSE     FALSE      FALSE        FALSE</span></span>
+<span><span class="co">## 3   FALSE       FALSE        FALSE     FALSE      FALSE        FALSE</span></span>
+<span><span class="co">##   cl.ivint.last cl.sparse.last f.last f.int.last f.int.all mrt.sparse.last</span></span>
+<span><span class="co">## 1         FALSE          FALSE  FALSE      FALSE     FALSE           FALSE</span></span>
+<span><span class="co">## 2         FALSE          FALSE  FALSE      FALSE     FALSE           FALSE</span></span>
+<span><span class="co">## 3         FALSE          FALSE  FALSE      FALSE     FALSE           FALSE</span></span>
+<span><span class="co">##   mrt.iv.all mrt.ivint.all mrt.ivint.last vz.all vz.int.all vz.int.last</span></span>
+<span><span class="co">## 1      FALSE         FALSE          FALSE  FALSE      FALSE       FALSE</span></span>
+<span><span class="co">## 2      FALSE         FALSE          FALSE  FALSE      FALSE       FALSE</span></span>
+<span><span class="co">## 3      FALSE         FALSE          FALSE  FALSE      FALSE       FALSE</span></span>
+<span><span class="co">##   vz.iv.all vz.iv.last vz.ivint.all vz.ivint.last vz.last vss.iv.all</span></span>
+<span><span class="co">## 1     FALSE      FALSE        FALSE         FALSE   FALSE      FALSE</span></span>
+<span><span class="co">## 2     FALSE      FALSE        FALSE         FALSE   FALSE      FALSE</span></span>
+<span><span class="co">## 3     FALSE      FALSE        FALSE         FALSE   FALSE      FALSE</span></span>
+<span><span class="co">##   vss.ivint.all vss.ivint.last vss.sparse.last aucinf.obs aucinf.obs_se</span></span>
+<span><span class="co">## 1         FALSE          FALSE           FALSE       TRUE         FALSE</span></span>
+<span><span class="co">## 2         FALSE          FALSE           FALSE       TRUE         FALSE</span></span>
+<span><span class="co">## 3         FALSE          FALSE           FALSE      FALSE         FALSE</span></span>
+<span><span class="co">##   aucinf.obs_df aucinf.pred aumcinf.obs aumcinf.obs_se aumcinf.obs_df</span></span>
+<span><span class="co">## 1         FALSE       FALSE       FALSE          FALSE          FALSE</span></span>
+<span><span class="co">## 2         FALSE       FALSE       FALSE          FALSE          FALSE</span></span>
+<span><span class="co">## 3         FALSE       FALSE       FALSE          FALSE          FALSE</span></span>
+<span><span class="co">##   aumcinf.pred aucint.inf.obs aucint.inf.pred aumcint.inf.obs aumcint.inf.pred</span></span>
+<span><span class="co">## 1        FALSE          FALSE           FALSE           FALSE            FALSE</span></span>
+<span><span class="co">## 2        FALSE          FALSE           FALSE           FALSE            FALSE</span></span>
+<span><span class="co">## 3        FALSE           TRUE           FALSE           FALSE            FALSE</span></span>
+<span><span class="co">##   aucivinf.obs aucivinf.obs_se aucivinf.obs_df aucivinf.pred aucivpbextinf.obs</span></span>
+<span><span class="co">## 1        FALSE           FALSE           FALSE         FALSE             FALSE</span></span>
+<span><span class="co">## 2        FALSE           FALSE           FALSE         FALSE             FALSE</span></span>
+<span><span class="co">## 3        FALSE           FALSE           FALSE         FALSE             FALSE</span></span>
+<span><span class="co">##   aucivpbextinf.pred aumcivinf.obs aumcivinf.obs_se aumcivinf.obs_df</span></span>
+<span><span class="co">## 1              FALSE         FALSE            FALSE            FALSE</span></span>
+<span><span class="co">## 2              FALSE         FALSE            FALSE            FALSE</span></span>
+<span><span class="co">## 3              FALSE         FALSE            FALSE            FALSE</span></span>
 <span><span class="co">##   aumcivinf.pred aucpext.obs aucpext.pred kel.iv.all kel.ivint.all</span></span>
 <span><span class="co">## 1          FALSE        TRUE        FALSE      FALSE         FALSE</span></span>
 <span><span class="co">## 2          FALSE        TRUE        FALSE      FALSE         FALSE</span></span>

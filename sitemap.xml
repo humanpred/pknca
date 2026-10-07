@@ -21,6 +21,7 @@
 <url><loc>https://humanpred.github.io/pknca/articles/v21-methods-for-dose-aware-interpolation-and-extrapolation.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/articles/v22-time-to-steady-state.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/articles/v23-auc-integration-methods.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/articles/v24-sparse-auc-to-infinity.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/articles/v30-training-session.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/articles/v31-FDA-introduction.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/articles/v40-options-for-controlling-PKNCA.html</loc></url>
@@ -132,6 +133,8 @@
 <url><loc>https://humanpred.github.io/pknca/reference/pk.business.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pk.calc.ae.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pk.calc.aucabove.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/pk.calc.aucinf.obs_sparse.html</loc></url>
+<url><loc>https://humanpred.github.io/pknca/reference/pk.calc.aucivlast_sparse.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pk.calc.auclast_sparse.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pk.calc.aucpext.html</loc></url>
 <url><loc>https://humanpred.github.io/pknca/reference/pk.calc.auxc.html</loc></url>

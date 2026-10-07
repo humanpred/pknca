@@ -398,6 +398,18 @@
 - [`pk.calc.aucabove()`](https://humanpred.github.io/pknca/reference/pk.calc.aucabove.md)
   : Calculate the AUC above a given concentration
 
+- [`pk.calc.aucinf.obs_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.aucinf.obs_sparse.md)
+  [`pk.calc.aumcinf.obs_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.aucinf.obs_sparse.md)
+  : Sparse estimators for the AUC and AUMC to infinity
+
+- [`pk.calc.aucivlast_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.aucivlast_sparse.md)
+  [`pk.calc.aucivall_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.aucivlast_sparse.md)
+  [`pk.calc.aucivinf.obs_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.aucivlast_sparse.md)
+  [`pk.calc.aumcivlast_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.aucivlast_sparse.md)
+  [`pk.calc.aumcivall_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.aucivlast_sparse.md)
+  [`pk.calc.aumcivinf.obs_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.aucivlast_sparse.md)
+  : Sparse AUC and AUMC for IV bolus dosing with C0 back-extrapolation
+
 - [`pk.calc.auclast_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.auclast_sparse.md)
   [`pk.calc.aumclast_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.auclast_sparse.md)
   : Sparse estimators for the AUC and AUMC to the last measured

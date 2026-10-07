@@ -17,13 +17,14 @@ articles:
   v21-methods-for-dose-aware-interpolation-and-extrapolation: v21-methods-for-dose-aware-interpolation-and-extrapolation.html
   v22-time-to-steady-state: v22-time-to-steady-state.html
   v23-auc-integration-methods: v23-auc-integration-methods.html
+  v24-sparse-auc-to-infinity: v24-sparse-auc-to-infinity.html
   v30-training-session: v30-training-session.html
   v31-FDA-introduction: v31-FDA-introduction.html
   v40-options-for-controlling-PKNCA: v40-options-for-controlling-PKNCA.html
   v50-bioequivalence: v50-bioequivalence.html
   v60-PKNCA-validation: v60-PKNCA-validation.html
   v80-writing-parameter-functions: v80-writing-parameter-functions.html
-last_built: 2026-10-07T12:30Z
+last_built: 2026-10-07T16:36Z
 urls:
   reference: https://humanpred.github.io/pknca/reference
   article: https://humanpred.github.io/pknca/articles

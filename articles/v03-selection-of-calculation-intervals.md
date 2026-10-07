@@ -595,6 +595,8 @@ information about the parameter, see the documentation for the function.
 | aucall | $`AUC_{\text{all}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule (linear-up/log-down by default) | auc | AUClast plus triangle, 0 at BLQ | pk.calc.auc.all |
 | aucall.dn | $`AUC_{\text{all},dn} = \frac{AUC_{\text{all}}}{Dose}`$ |  | auc_dosenorm | Dose normalized aucall | pk.calc.dn |
 | aucinf.obs | $`AUC_{\infty,\text{obs}} = AUC_{0-\text{last}} + \frac{C_{\text{last,obs}}}{\lambda_z}`$ |  | auc | AUC start to inf, obs Clast extrap | pk.calc.auc.inf.obs |
+| aucinf.obs_df | $`df = \frac{\left(tr(M\Omega)\right)^2}{tr\left(\left(M\Omega\right)^2\right)}`$ | Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6) | count | DF for AUCinf,obs (sparse PK only) | See the parameter name: aucinf.obs |
+| aucinf.obs_se | $`SE(AUC_{\infty,\text{obs}}) = \sqrt{\sum_{i,j} g_i g_j \hat{\sigma}_{ij} r_{ij} / (r_i r_j)}`$ | Weights g are the trapezoidal weights plus the extrapolation weight at tlast (Yuan 1993), with the delta-method gradient for lambda.z when the sparse_lambda_z_se option is “delta” | auc | SE of AUCinf,obs (sparse PK only) | See the parameter name: aucinf.obs |
 | aucinf.obs.dn | $`AUC_{\infty,\text{obs},dn} = \frac{AUC_{\infty,\text{obs}}}{Dose}`$ |  | auc_dosenorm | Dose normalized aucinf.obs | pk.calc.dn |
 | aucinf.pred | $`AUC_{\infty,\text{pred}} = AUC_{0-\text{last}} + \frac{C_{\text{last,pred}}}{\lambda_z}`$ |  | auc | AUC start to inf, pred Clast extrap | pk.calc.auc.inf.pred |
 | aucinf.pred.dn | $`AUC_{\infty,\text{pred},dn} = \frac{AUC_{\infty,\text{pred}}}{Dose}`$ |  | auc_dosenorm | Dose normalized aucinf.pred | pk.calc.dn |
@@ -603,11 +605,17 @@ information about the parameter, see the documentation for the function.
 | aucint.inf.pred | $`AUC_{\text{int,}\infty\text{,pred}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | auc | AUC from T1 to T2 (AUCinf,pred extrap) | pk.calc.aucint.inf.pred |
 | aucint.last | $`AUC_{\text{int,last}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | auc | AUC from T1 to T2 (zero extrap) | pk.calc.aucint.last |
 | aucivall | $`AUC_{\text{iv,all}} = AUC_{\text{all}} + AUC(C_0, t_1) - AUC(C(0), t_1)`$ |  | auc | AUCall, IV back-extrap C0 | pk.calc.auciv |
+| aucivall_df | $`df = \frac{\left(tr(M\Omega)\right)^2}{tr\left(\left(M\Omega\right)^2\right)}`$ | Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6) | count | DF for AUCall IV (sparse PK only) | See the parameter name: aucivall |
+| aucivall_se |  | With sparse PK, the trapezoidal weights plus the delta-method gradient of the back-extrapolated C0 | auc | SE of AUCall IV (sparse PK only) | See the parameter name: aucivall |
 | aucivinf.obs | $`AUC_{\text{iv,}\infty\text{,obs}} = AUC_{\infty,\text{obs}} + AUC(C_0, t_1) - AUC(C(0), t_1)`$ |  | auc | AUCinf.obs, IV back-extrap C0 | pk.calc.auciv |
+| aucivinf.obs_df | $`df = \frac{\left(tr(M\Omega)\right)^2}{tr\left(\left(M\Omega\right)^2\right)}`$ | Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6) | count | DF for AUCinf,obs IV (sparse PK only) | See the parameter name: aucivinf.obs |
+| aucivinf.obs_se |  | With sparse PK, the trapezoidal weights plus the delta-method gradient of the back-extrapolated C0, the extrapolation weight at tlast, and the delta-method gradient for lambda.z when the sparse_lambda_z_se option is “delta” | auc | SE of AUCinf,obs IV (sparse PK only) | See the parameter name: aucivinf.obs |
 | aucivinf.pred | $`AUC_{\text{iv,}\infty\text{,pred}} = AUC_{\infty,\text{pred}} + AUC(C_0, t_1) - AUC(C(0), t_1)`$ |  | auc | AUCinf.pred, IV back-extrap C0 | pk.calc.auciv |
 | aucivint.all | $`AUC_{\text{iv,int,all}} = AUC_{\text{int,all}} + AUC(C_0, t_1) - AUC(C(0), t_1)`$ |  | auc | AUCint.all, IV back-extrap C0 | pk.calc.auciv |
 | aucivint.last | $`AUC_{\text{iv,int,last}} = AUC_{\text{int,last}} + AUC(C_0, t_1) - AUC(C(0), t_1)`$ |  | auc | AUCint.last, IV back-extrap C0 | pk.calc.auciv |
 | aucivlast | $`AUC_{\text{iv,last}} = AUC_{\text{last}} + AUC(C_0, t_1) - AUC(C(0), t_1)`$ |  | auc | AUClast, IV back-extrap C0 | pk.calc.auciv |
+| aucivlast_df | $`df = \frac{\left(tr(M\Omega)\right)^2}{tr\left(\left(M\Omega\right)^2\right)}`$ | Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6) | count | DF for AUClast IV (sparse PK only) | See the parameter name: aucivlast |
+| aucivlast_se |  | With sparse PK, the trapezoidal weights plus the delta-method gradient of the back-extrapolated C0 | auc | SE of AUClast IV (sparse PK only) | See the parameter name: aucivlast |
 | aucivpbextall | $`\%AUC_{\text{bext,all}} = 100 \cdot \left(1 - \frac{AUC_{\text{all}}}{AUC_{\text{iv,all}}}\right)`$ |  | % | Back-extrap %, IV, AUCall | pk.calc.auciv_pbext |
 | aucivpbextinf.obs | $`\%AUC_{\text{bext,}\infty\text{,obs}} = 100 \cdot \left(1 - \frac{AUC_{\infty,\text{obs}}}{AUC_{\text{iv,}\infty\text{,obs}}}\right)`$ |  | % | Back-extrap %, IV, AUCinf.obs | pk.calc.auciv_pbext |
 | aucivpbextinf.pred | $`\%AUC_{\text{bext,}\infty\text{,pred}} = 100 \cdot \left(1 - \frac{AUC_{\infty,\text{pred}}}{AUC_{\text{iv,}\infty\text{,pred}}}\right)`$ |  | % | Back-extrap %, IV, AUCinf.pred | pk.calc.auciv_pbext |
@@ -623,6 +631,8 @@ information about the parameter, see the documentation for the function.
 | aumcall | $`AUMC_{\text{all}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule (linear-up/log-down by default) | aumc | AUMClast plus triangle moment, 0 at BLQ | pk.calc.aumc.all |
 | aumcall.dn | $`AUMC_{\text{all},dn} = \frac{AUMC_{\text{all}}}{Dose}`$ |  | aumc_dosenorm | Dose normalized aumcall | pk.calc.dn |
 | aumcinf.obs | $`AUMC_{\infty,\text{obs}} = AUMC_{0-\text{last}} + \frac{C_{\text{last,obs}} T_{\text{last}}}{\lambda_z} + \frac{C_{\text{last,obs}}}{\lambda_z^2}`$ |  | aumc | AUMC start to inf, obs Clast extrap | pk.calc.aumc.inf.obs |
+| aumcinf.obs_df | $`df = \frac{\left(tr(M\Omega)\right)^2}{tr\left(\left(M\Omega\right)^2\right)}`$ | Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6) | count | DF for AUMCinf,obs (sparse PK only) | See the parameter name: aumcinf.obs |
+| aumcinf.obs_se | $`SE(AUMC_{\infty,\text{obs}}) = \sqrt{\sum_{i,j} g_i g_j \hat{\sigma}^{m}_{ij} r_{ij} / (r_i r_j)}`$ | Weights g on the moment means are the trapezoidal weights plus the extrapolation weight at tlast, with the delta-method gradient for lambda.z when the sparse_lambda_z_se option is “delta” | aumc | SE of AUMCinf,obs (sparse PK only) | See the parameter name: aumcinf.obs |
 | aumcinf.obs.dn | $`AUMC_{\infty,\text{obs},dn} = \frac{AUMC_{\infty,\text{obs}}}{Dose}`$ |  | aumc_dosenorm | Dose normalized aumcinf.obs | pk.calc.dn |
 | aumcinf.pred | $`AUMC_{\infty,\text{pred}} = AUMC_{0-\text{last}} + \frac{C_{\text{last,pred}} T_{\text{last}}}{\lambda_z} + \frac{C_{\text{last,pred}}}{\lambda_z^2}`$ |  | aumc | AUMC start to inf, pred Clast extrap | pk.calc.aumc.inf.pred |
 | aumcinf.pred.dn | $`AUMC_{\infty,\text{pred},dn} = \frac{AUMC_{\infty,\text{pred}}}{Dose}`$ |  | aumc_dosenorm | Dose normalized aumcinf.pred | pk.calc.dn |
@@ -631,11 +641,17 @@ information about the parameter, see the documentation for the function.
 | aumcint.inf.pred | $`AUMC_{\text{int,}\infty\text{,pred}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | aumc | AUMC from T1 to T2 (AUMCinf,pred extrap) | pk.calc.aumcint.inf.pred |
 | aumcint.last | $`AUMC_{\text{int,last}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule with interpolation at interval boundaries | aumc | AUMC from T1 to T2 (zero extrap) | pk.calc.aumcint.last |
 | aumcivall |  |  | aumc | AUMCall, IV back-extrap C0 | pk.calc.aumciv |
+| aumcivall_df | $`df = \frac{\left(tr(M\Omega)\right)^2}{tr\left(\left(M\Omega\right)^2\right)}`$ | Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6) | count | DF for AUMCall IV (sparse PK only) | See the parameter name: aumcivall |
+| aumcivall_se |  | With sparse PK, the trapezoidal weights on the moment means (C0 does not change the AUMC with the linear trapezoidal rule) | aumc | SE of AUMCall IV (sparse PK only) | See the parameter name: aumcivall |
 | aumcivinf.obs |  |  | aumc | AUMCinf.obs, IV back-extrap C0 | pk.calc.aumciv |
+| aumcivinf.obs_df | $`df = \frac{\left(tr(M\Omega)\right)^2}{tr\left(\left(M\Omega\right)^2\right)}`$ | Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6) | count | DF for AUMCinf,obs IV (sparse PK only) | See the parameter name: aumcivinf.obs |
+| aumcivinf.obs_se |  | With sparse PK, the trapezoidal weights on the moment means (C0 does not change the AUMC with the linear trapezoidal rule), plus the extrapolation weight at tlast and the delta-method gradient for lambda.z when the sparse_lambda_z_se option is “delta” | aumc | SE of AUMCinf,obs IV (sparse PK only) | See the parameter name: aumcivinf.obs |
 | aumcivinf.pred |  |  | aumc | AUMCinf.pred, IV back-extrap C0 | pk.calc.aumciv |
 | aumcivint.all |  |  | aumc | AUMCint.all, IV back-extrap C0 | pk.calc.aumciv |
 | aumcivint.last |  |  | aumc | AUMCint.last, IV back-extrap C0 | pk.calc.aumciv |
 | aumcivlast |  |  | aumc | AUMClast, IV back-extrap C0 | pk.calc.aumciv |
+| aumcivlast_df | $`df = \frac{\left(tr(M\Omega)\right)^2}{tr\left(\left(M\Omega\right)^2\right)}`$ | Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6) | count | DF for AUMClast IV (sparse PK only) | See the parameter name: aumcivlast |
+| aumcivlast_se |  | With sparse PK, the trapezoidal weights on the moment means (C0 does not change the AUMC with the linear trapezoidal rule) | aumc | SE of AUMClast IV (sparse PK only) | See the parameter name: aumcivlast |
 | aumclast | $`AUMC_{\text{last}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule (linear-up/log-down by default) | aumc | AUMC start to last conc above LOQ | pk.calc.aumc.last |
 | aumclast_df | $`df = \frac{\left(tr(M\Omega)\right)^2}{tr\left(\left(M\Omega\right)^2\right)}`$ | Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6) | count | DF for AUMClast (sparse PK only) | See the parameter name: aumclast |
 | aumclast_se | $`SE(AUMC_{\text{last}}) = \sqrt{\sum_{i,j} w_i w_j \hat{\sigma}_{ij} / n}`$ | Variance from the weighted covariance of the moment curve across subjects | aumc | SE of AUMClast (sparse PK only) | See the parameter name: aumclast |

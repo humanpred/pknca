@@ -5131,7 +5131,7 @@ get.interval.cols()
 #> [1] "pk.calc.auciv"
 #> 
 #> $aucivlast$FUN_sparse
-#> [1] NA
+#> [1] "pk.calc.aucivlast_sparse"
 #> 
 #> $aucivlast$values
 #> [1] FALSE  TRUE
@@ -5202,12 +5202,142 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> 
+#> $aucivlast_se
+#> $aucivlast_se$FUN
+#> [1] NA
+#> 
+#> $aucivlast_se$FUN_sparse
+#> [1] NA
+#> 
+#> $aucivlast_se$values
+#> [1] FALSE  TRUE
+#> 
+#> $aucivlast_se$unit_type
+#> [1] "auc"
+#> 
+#> $aucivlast_se$pretty_name
+#> [1] "AUClast (IV dosing) standard error"
+#> 
+#> $aucivlast_se$desc
+#> [1] "SE of AUClast IV (sparse PK only)"
+#> 
+#> $aucivlast_se$formalsmap
+#> list()
+#> 
+#> $aucivlast_se$formalsmap_sparse
+#> list()
+#> 
+#> $aucivlast_se$depends
+#> [1] "aucivlast"
+#> 
+#> $aucivlast_se$datatype
+#> [1] "interval"
+#> 
+#> $aucivlast_se$pptestcd_cdisc
+#> [1] "AUCIVLSE"
+#> 
+#> $aucivlast_se$pptest_cdisc
+#> [1] "Sparse AUClast IV standard error"
+#> 
+#> $aucivlast_se$formula
+#> NULL
+#> 
+#> $aucivlast_se$formula_note
+#> [1] "With sparse PK, the trapezoidal weights plus the delta-method gradient of the back-extrapolated C0"
+#> 
+#> $aucivlast_se$tier
+#> [1] "uncommon"
+#> 
+#> $aucivlast_se$selection
+#> list()
+#> 
+#> $aucivlast_se$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aucivlast_se$requires_dose_time
+#> [1] TRUE
+#> 
+#> $aucivlast_se$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aucivlast_se$requires_volume
+#> [1] FALSE
+#> 
+#> $aucivlast_se$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $aucivlast_df
+#> $aucivlast_df$FUN
+#> [1] NA
+#> 
+#> $aucivlast_df$FUN_sparse
+#> [1] NA
+#> 
+#> $aucivlast_df$values
+#> [1] FALSE  TRUE
+#> 
+#> $aucivlast_df$unit_type
+#> [1] "count"
+#> 
+#> $aucivlast_df$pretty_name
+#> [1] "AUClast (IV dosing) degrees of freedom"
+#> 
+#> $aucivlast_df$desc
+#> [1] "DF for AUClast IV (sparse PK only)"
+#> 
+#> $aucivlast_df$formalsmap
+#> list()
+#> 
+#> $aucivlast_df$formalsmap_sparse
+#> list()
+#> 
+#> $aucivlast_df$depends
+#> [1] "aucivlast"
+#> 
+#> $aucivlast_df$datatype
+#> [1] "interval"
+#> 
+#> $aucivlast_df$pptestcd_cdisc
+#> [1] "AUCIVLDF"
+#> 
+#> $aucivlast_df$pptest_cdisc
+#> [1] "Sparse AUClast IV degrees of freedom"
+#> 
+#> $aucivlast_df$formula
+#> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"
+#> 
+#> $aucivlast_df$formula_note
+#> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"
+#> 
+#> $aucivlast_df$tier
+#> [1] "uncommon"
+#> 
+#> $aucivlast_df$selection
+#> list()
+#> 
+#> $aucivlast_df$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aucivlast_df$requires_dose_time
+#> [1] TRUE
+#> 
+#> $aucivlast_df$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aucivlast_df$requires_volume
+#> [1] FALSE
+#> 
+#> $aucivlast_df$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
 #> $aucivall
 #> $aucivall$FUN
 #> [1] "pk.calc.auciv"
 #> 
 #> $aucivall$FUN_sparse
-#> [1] NA
+#> [1] "pk.calc.aucivall_sparse"
 #> 
 #> $aucivall$values
 #> [1] FALSE  TRUE
@@ -5275,6 +5405,136 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> $aucivall$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $aucivall_se
+#> $aucivall_se$FUN
+#> [1] NA
+#> 
+#> $aucivall_se$FUN_sparse
+#> [1] NA
+#> 
+#> $aucivall_se$values
+#> [1] FALSE  TRUE
+#> 
+#> $aucivall_se$unit_type
+#> [1] "auc"
+#> 
+#> $aucivall_se$pretty_name
+#> [1] "AUCall (IV dosing) standard error"
+#> 
+#> $aucivall_se$desc
+#> [1] "SE of AUCall IV (sparse PK only)"
+#> 
+#> $aucivall_se$formalsmap
+#> list()
+#> 
+#> $aucivall_se$formalsmap_sparse
+#> list()
+#> 
+#> $aucivall_se$depends
+#> [1] "aucivall"
+#> 
+#> $aucivall_se$datatype
+#> [1] "interval"
+#> 
+#> $aucivall_se$pptestcd_cdisc
+#> [1] "AUCIVASE"
+#> 
+#> $aucivall_se$pptest_cdisc
+#> [1] "Sparse AUCall IV standard error"
+#> 
+#> $aucivall_se$formula
+#> NULL
+#> 
+#> $aucivall_se$formula_note
+#> [1] "With sparse PK, the trapezoidal weights plus the delta-method gradient of the back-extrapolated C0"
+#> 
+#> $aucivall_se$tier
+#> [1] "uncommon"
+#> 
+#> $aucivall_se$selection
+#> list()
+#> 
+#> $aucivall_se$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aucivall_se$requires_dose_time
+#> [1] TRUE
+#> 
+#> $aucivall_se$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aucivall_se$requires_volume
+#> [1] FALSE
+#> 
+#> $aucivall_se$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $aucivall_df
+#> $aucivall_df$FUN
+#> [1] NA
+#> 
+#> $aucivall_df$FUN_sparse
+#> [1] NA
+#> 
+#> $aucivall_df$values
+#> [1] FALSE  TRUE
+#> 
+#> $aucivall_df$unit_type
+#> [1] "count"
+#> 
+#> $aucivall_df$pretty_name
+#> [1] "AUCall (IV dosing) degrees of freedom"
+#> 
+#> $aucivall_df$desc
+#> [1] "DF for AUCall IV (sparse PK only)"
+#> 
+#> $aucivall_df$formalsmap
+#> list()
+#> 
+#> $aucivall_df$formalsmap_sparse
+#> list()
+#> 
+#> $aucivall_df$depends
+#> [1] "aucivall"
+#> 
+#> $aucivall_df$datatype
+#> [1] "interval"
+#> 
+#> $aucivall_df$pptestcd_cdisc
+#> [1] "AUCIVADF"
+#> 
+#> $aucivall_df$pptest_cdisc
+#> [1] "Sparse AUCall IV degrees of freedom"
+#> 
+#> $aucivall_df$formula
+#> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"
+#> 
+#> $aucivall_df$formula_note
+#> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"
+#> 
+#> $aucivall_df$tier
+#> [1] "uncommon"
+#> 
+#> $aucivall_df$selection
+#> list()
+#> 
+#> $aucivall_df$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aucivall_df$requires_dose_time
+#> [1] TRUE
+#> 
+#> $aucivall_df$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aucivall_df$requires_volume
+#> [1] FALSE
+#> 
+#> $aucivall_df$requires_conc_dur
 #> [1] FALSE
 #> 
 #> 
@@ -5715,7 +5975,7 @@ get.interval.cols()
 #> [1] "pk.calc.aumciv"
 #> 
 #> $aumcivlast$FUN_sparse
-#> [1] NA
+#> [1] "pk.calc.aumcivlast_sparse"
 #> 
 #> $aumcivlast$values
 #> [1] FALSE  TRUE
@@ -5786,12 +6046,142 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> 
+#> $aumcivlast_se
+#> $aumcivlast_se$FUN
+#> [1] NA
+#> 
+#> $aumcivlast_se$FUN_sparse
+#> [1] NA
+#> 
+#> $aumcivlast_se$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcivlast_se$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcivlast_se$pretty_name
+#> [1] "AUMClast (IV dosing) standard error"
+#> 
+#> $aumcivlast_se$desc
+#> [1] "SE of AUMClast IV (sparse PK only)"
+#> 
+#> $aumcivlast_se$formalsmap
+#> list()
+#> 
+#> $aumcivlast_se$formalsmap_sparse
+#> list()
+#> 
+#> $aumcivlast_se$depends
+#> [1] "aumcivlast"
+#> 
+#> $aumcivlast_se$datatype
+#> [1] "interval"
+#> 
+#> $aumcivlast_se$pptestcd_cdisc
+#> [1] "AUMIVLSE"
+#> 
+#> $aumcivlast_se$pptest_cdisc
+#> [1] "Sparse AUMClast IV standard error"
+#> 
+#> $aumcivlast_se$formula
+#> NULL
+#> 
+#> $aumcivlast_se$formula_note
+#> [1] "With sparse PK, the trapezoidal weights on the moment means (C0 does not change the AUMC with the linear trapezoidal rule)"
+#> 
+#> $aumcivlast_se$tier
+#> [1] "uncommon"
+#> 
+#> $aumcivlast_se$selection
+#> list()
+#> 
+#> $aumcivlast_se$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aumcivlast_se$requires_dose_time
+#> [1] TRUE
+#> 
+#> $aumcivlast_se$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aumcivlast_se$requires_volume
+#> [1] FALSE
+#> 
+#> $aumcivlast_se$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $aumcivlast_df
+#> $aumcivlast_df$FUN
+#> [1] NA
+#> 
+#> $aumcivlast_df$FUN_sparse
+#> [1] NA
+#> 
+#> $aumcivlast_df$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcivlast_df$unit_type
+#> [1] "count"
+#> 
+#> $aumcivlast_df$pretty_name
+#> [1] "AUMClast (IV dosing) degrees of freedom"
+#> 
+#> $aumcivlast_df$desc
+#> [1] "DF for AUMClast IV (sparse PK only)"
+#> 
+#> $aumcivlast_df$formalsmap
+#> list()
+#> 
+#> $aumcivlast_df$formalsmap_sparse
+#> list()
+#> 
+#> $aumcivlast_df$depends
+#> [1] "aumcivlast"
+#> 
+#> $aumcivlast_df$datatype
+#> [1] "interval"
+#> 
+#> $aumcivlast_df$pptestcd_cdisc
+#> [1] "AUMIVLDF"
+#> 
+#> $aumcivlast_df$pptest_cdisc
+#> [1] "Sparse AUMClast IV degrees of freedom"
+#> 
+#> $aumcivlast_df$formula
+#> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"
+#> 
+#> $aumcivlast_df$formula_note
+#> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"
+#> 
+#> $aumcivlast_df$tier
+#> [1] "uncommon"
+#> 
+#> $aumcivlast_df$selection
+#> list()
+#> 
+#> $aumcivlast_df$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aumcivlast_df$requires_dose_time
+#> [1] TRUE
+#> 
+#> $aumcivlast_df$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aumcivlast_df$requires_volume
+#> [1] FALSE
+#> 
+#> $aumcivlast_df$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
 #> $aumcivall
 #> $aumcivall$FUN
 #> [1] "pk.calc.aumciv"
 #> 
 #> $aumcivall$FUN_sparse
-#> [1] NA
+#> [1] "pk.calc.aumcivall_sparse"
 #> 
 #> $aumcivall$values
 #> [1] FALSE  TRUE
@@ -5859,6 +6249,136 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> $aumcivall$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $aumcivall_se
+#> $aumcivall_se$FUN
+#> [1] NA
+#> 
+#> $aumcivall_se$FUN_sparse
+#> [1] NA
+#> 
+#> $aumcivall_se$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcivall_se$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcivall_se$pretty_name
+#> [1] "AUMCall (IV dosing) standard error"
+#> 
+#> $aumcivall_se$desc
+#> [1] "SE of AUMCall IV (sparse PK only)"
+#> 
+#> $aumcivall_se$formalsmap
+#> list()
+#> 
+#> $aumcivall_se$formalsmap_sparse
+#> list()
+#> 
+#> $aumcivall_se$depends
+#> [1] "aumcivall"
+#> 
+#> $aumcivall_se$datatype
+#> [1] "interval"
+#> 
+#> $aumcivall_se$pptestcd_cdisc
+#> [1] "AUMIVASE"
+#> 
+#> $aumcivall_se$pptest_cdisc
+#> [1] "Sparse AUMCall IV standard error"
+#> 
+#> $aumcivall_se$formula
+#> NULL
+#> 
+#> $aumcivall_se$formula_note
+#> [1] "With sparse PK, the trapezoidal weights on the moment means (C0 does not change the AUMC with the linear trapezoidal rule)"
+#> 
+#> $aumcivall_se$tier
+#> [1] "uncommon"
+#> 
+#> $aumcivall_se$selection
+#> list()
+#> 
+#> $aumcivall_se$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aumcivall_se$requires_dose_time
+#> [1] TRUE
+#> 
+#> $aumcivall_se$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aumcivall_se$requires_volume
+#> [1] FALSE
+#> 
+#> $aumcivall_se$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $aumcivall_df
+#> $aumcivall_df$FUN
+#> [1] NA
+#> 
+#> $aumcivall_df$FUN_sparse
+#> [1] NA
+#> 
+#> $aumcivall_df$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcivall_df$unit_type
+#> [1] "count"
+#> 
+#> $aumcivall_df$pretty_name
+#> [1] "AUMCall (IV dosing) degrees of freedom"
+#> 
+#> $aumcivall_df$desc
+#> [1] "DF for AUMCall IV (sparse PK only)"
+#> 
+#> $aumcivall_df$formalsmap
+#> list()
+#> 
+#> $aumcivall_df$formalsmap_sparse
+#> list()
+#> 
+#> $aumcivall_df$depends
+#> [1] "aumcivall"
+#> 
+#> $aumcivall_df$datatype
+#> [1] "interval"
+#> 
+#> $aumcivall_df$pptestcd_cdisc
+#> [1] "AUMIVADF"
+#> 
+#> $aumcivall_df$pptest_cdisc
+#> [1] "Sparse AUMCall IV degrees of freedom"
+#> 
+#> $aumcivall_df$formula
+#> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"
+#> 
+#> $aumcivall_df$formula_note
+#> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"
+#> 
+#> $aumcivall_df$tier
+#> [1] "uncommon"
+#> 
+#> $aumcivall_df$selection
+#> list()
+#> 
+#> $aumcivall_df$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aumcivall_df$requires_dose_time
+#> [1] TRUE
+#> 
+#> $aumcivall_df$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aumcivall_df$requires_volume
+#> [1] FALSE
+#> 
+#> $aumcivall_df$requires_conc_dur
 #> [1] FALSE
 #> 
 #> 
@@ -9097,7 +9617,7 @@ get.interval.cols()
 #> [1] "pk.calc.auc.inf.obs"
 #> 
 #> $aucinf.obs$FUN_sparse
-#> [1] NA
+#> [1] "pk.calc.aucinf.obs_sparse"
 #> 
 #> $aucinf.obs$values
 #> [1] FALSE  TRUE
@@ -9179,6 +9699,136 @@ get.interval.cols()
 #> 
 #> 
 #> 
+#> $aucinf.obs_se
+#> $aucinf.obs_se$FUN
+#> [1] NA
+#> 
+#> $aucinf.obs_se$FUN_sparse
+#> [1] NA
+#> 
+#> $aucinf.obs_se$values
+#> [1] FALSE  TRUE
+#> 
+#> $aucinf.obs_se$unit_type
+#> [1] "auc"
+#> 
+#> $aucinf.obs_se$pretty_name
+#> [1] "AUCinf,obs standard error"
+#> 
+#> $aucinf.obs_se$desc
+#> [1] "SE of AUCinf,obs (sparse PK only)"
+#> 
+#> $aucinf.obs_se$formalsmap
+#> list()
+#> 
+#> $aucinf.obs_se$formalsmap_sparse
+#> list()
+#> 
+#> $aucinf.obs_se$depends
+#> [1] "aucinf.obs"
+#> 
+#> $aucinf.obs_se$datatype
+#> [1] "interval"
+#> 
+#> $aucinf.obs_se$pptestcd_cdisc
+#> [1] "AUCIFOSE"
+#> 
+#> $aucinf.obs_se$pptest_cdisc
+#> [1] "Sparse AUCinf obs standard error"
+#> 
+#> $aucinf.obs_se$formula
+#> [1] "$SE(AUC_{\\infty,\\text{obs}}) = \\sqrt{\\sum_{i,j} g_i g_j \\hat{\\sigma}_{ij} r_{ij} / (r_i r_j)}$"
+#> 
+#> $aucinf.obs_se$formula_note
+#> [1] "Weights g are the trapezoidal weights plus the extrapolation weight at tlast (Yuan 1993), with the delta-method gradient for lambda.z when the sparse_lambda_z_se option is \"delta\""
+#> 
+#> $aucinf.obs_se$tier
+#> [1] "uncommon"
+#> 
+#> $aucinf.obs_se$selection
+#> list()
+#> 
+#> $aucinf.obs_se$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aucinf.obs_se$requires_dose_time
+#> [1] FALSE
+#> 
+#> $aucinf.obs_se$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aucinf.obs_se$requires_volume
+#> [1] FALSE
+#> 
+#> $aucinf.obs_se$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $aucinf.obs_df
+#> $aucinf.obs_df$FUN
+#> [1] NA
+#> 
+#> $aucinf.obs_df$FUN_sparse
+#> [1] NA
+#> 
+#> $aucinf.obs_df$values
+#> [1] FALSE  TRUE
+#> 
+#> $aucinf.obs_df$unit_type
+#> [1] "count"
+#> 
+#> $aucinf.obs_df$pretty_name
+#> [1] "AUCinf,obs degrees of freedom"
+#> 
+#> $aucinf.obs_df$desc
+#> [1] "DF for AUCinf,obs (sparse PK only)"
+#> 
+#> $aucinf.obs_df$formalsmap
+#> list()
+#> 
+#> $aucinf.obs_df$formalsmap_sparse
+#> list()
+#> 
+#> $aucinf.obs_df$depends
+#> [1] "aucinf.obs"
+#> 
+#> $aucinf.obs_df$datatype
+#> [1] "interval"
+#> 
+#> $aucinf.obs_df$pptestcd_cdisc
+#> [1] "AUCIFODF"
+#> 
+#> $aucinf.obs_df$pptest_cdisc
+#> [1] "Sparse AUCinf obs degrees of freedom"
+#> 
+#> $aucinf.obs_df$formula
+#> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"
+#> 
+#> $aucinf.obs_df$formula_note
+#> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"
+#> 
+#> $aucinf.obs_df$tier
+#> [1] "uncommon"
+#> 
+#> $aucinf.obs_df$selection
+#> list()
+#> 
+#> $aucinf.obs_df$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aucinf.obs_df$requires_dose_time
+#> [1] FALSE
+#> 
+#> $aucinf.obs_df$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aucinf.obs_df$requires_volume
+#> [1] FALSE
+#> 
+#> $aucinf.obs_df$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
 #> $aucinf.pred
 #> $aucinf.pred$FUN
 #> [1] "pk.calc.auc.inf.pred"
@@ -9249,7 +9899,7 @@ get.interval.cols()
 #> [1] "pk.calc.aumc.inf.obs"
 #> 
 #> $aumcinf.obs$FUN_sparse
-#> [1] NA
+#> [1] "pk.calc.aumcinf.obs_sparse"
 #> 
 #> $aumcinf.obs$values
 #> [1] FALSE  TRUE
@@ -9306,6 +9956,136 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> $aumcinf.obs$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $aumcinf.obs_se
+#> $aumcinf.obs_se$FUN
+#> [1] NA
+#> 
+#> $aumcinf.obs_se$FUN_sparse
+#> [1] NA
+#> 
+#> $aumcinf.obs_se$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcinf.obs_se$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcinf.obs_se$pretty_name
+#> [1] "AUMCinf,obs standard error"
+#> 
+#> $aumcinf.obs_se$desc
+#> [1] "SE of AUMCinf,obs (sparse PK only)"
+#> 
+#> $aumcinf.obs_se$formalsmap
+#> list()
+#> 
+#> $aumcinf.obs_se$formalsmap_sparse
+#> list()
+#> 
+#> $aumcinf.obs_se$depends
+#> [1] "aumcinf.obs"
+#> 
+#> $aumcinf.obs_se$datatype
+#> [1] "interval"
+#> 
+#> $aumcinf.obs_se$pptestcd_cdisc
+#> [1] "AUMIFOSE"
+#> 
+#> $aumcinf.obs_se$pptest_cdisc
+#> [1] "Sparse AUMCinf obs standard error"
+#> 
+#> $aumcinf.obs_se$formula
+#> [1] "$SE(AUMC_{\\infty,\\text{obs}}) = \\sqrt{\\sum_{i,j} g_i g_j \\hat{\\sigma}^{m}_{ij} r_{ij} / (r_i r_j)}$"
+#> 
+#> $aumcinf.obs_se$formula_note
+#> [1] "Weights g on the moment means are the trapezoidal weights plus the extrapolation weight at tlast, with the delta-method gradient for lambda.z when the sparse_lambda_z_se option is \"delta\""
+#> 
+#> $aumcinf.obs_se$tier
+#> [1] "uncommon"
+#> 
+#> $aumcinf.obs_se$selection
+#> list()
+#> 
+#> $aumcinf.obs_se$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aumcinf.obs_se$requires_dose_time
+#> [1] FALSE
+#> 
+#> $aumcinf.obs_se$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aumcinf.obs_se$requires_volume
+#> [1] FALSE
+#> 
+#> $aumcinf.obs_se$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $aumcinf.obs_df
+#> $aumcinf.obs_df$FUN
+#> [1] NA
+#> 
+#> $aumcinf.obs_df$FUN_sparse
+#> [1] NA
+#> 
+#> $aumcinf.obs_df$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcinf.obs_df$unit_type
+#> [1] "count"
+#> 
+#> $aumcinf.obs_df$pretty_name
+#> [1] "AUMCinf,obs degrees of freedom"
+#> 
+#> $aumcinf.obs_df$desc
+#> [1] "DF for AUMCinf,obs (sparse PK only)"
+#> 
+#> $aumcinf.obs_df$formalsmap
+#> list()
+#> 
+#> $aumcinf.obs_df$formalsmap_sparse
+#> list()
+#> 
+#> $aumcinf.obs_df$depends
+#> [1] "aumcinf.obs"
+#> 
+#> $aumcinf.obs_df$datatype
+#> [1] "interval"
+#> 
+#> $aumcinf.obs_df$pptestcd_cdisc
+#> [1] "AUMIFODF"
+#> 
+#> $aumcinf.obs_df$pptest_cdisc
+#> [1] "Sparse AUMCinf obs degrees of freedom"
+#> 
+#> $aumcinf.obs_df$formula
+#> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"
+#> 
+#> $aumcinf.obs_df$formula_note
+#> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"
+#> 
+#> $aumcinf.obs_df$tier
+#> [1] "uncommon"
+#> 
+#> $aumcinf.obs_df$selection
+#> list()
+#> 
+#> $aumcinf.obs_df$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aumcinf.obs_df$requires_dose_time
+#> [1] FALSE
+#> 
+#> $aumcinf.obs_df$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aumcinf.obs_df$requires_volume
+#> [1] FALSE
+#> 
+#> $aumcinf.obs_df$requires_conc_dur
 #> [1] FALSE
 #> 
 #> 
@@ -9695,7 +10475,7 @@ get.interval.cols()
 #> [1] "pk.calc.auciv"
 #> 
 #> $aucivinf.obs$FUN_sparse
-#> [1] NA
+#> [1] "pk.calc.aucivinf.obs_sparse"
 #> 
 #> $aucivinf.obs$values
 #> [1] FALSE  TRUE
@@ -9760,6 +10540,136 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> $aucivinf.obs$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $aucivinf.obs_se
+#> $aucivinf.obs_se$FUN
+#> [1] NA
+#> 
+#> $aucivinf.obs_se$FUN_sparse
+#> [1] NA
+#> 
+#> $aucivinf.obs_se$values
+#> [1] FALSE  TRUE
+#> 
+#> $aucivinf.obs_se$unit_type
+#> [1] "auc"
+#> 
+#> $aucivinf.obs_se$pretty_name
+#> [1] "AUCinf,obs (IV dosing) standard error"
+#> 
+#> $aucivinf.obs_se$desc
+#> [1] "SE of AUCinf,obs IV (sparse PK only)"
+#> 
+#> $aucivinf.obs_se$formalsmap
+#> list()
+#> 
+#> $aucivinf.obs_se$formalsmap_sparse
+#> list()
+#> 
+#> $aucivinf.obs_se$depends
+#> [1] "aucivinf.obs"
+#> 
+#> $aucivinf.obs_se$datatype
+#> [1] "interval"
+#> 
+#> $aucivinf.obs_se$pptestcd_cdisc
+#> [1] "AUCIVISE"
+#> 
+#> $aucivinf.obs_se$pptest_cdisc
+#> [1] "Sparse AUCinf obs IV standard error"
+#> 
+#> $aucivinf.obs_se$formula
+#> NULL
+#> 
+#> $aucivinf.obs_se$formula_note
+#> [1] "With sparse PK, the trapezoidal weights plus the delta-method gradient of the back-extrapolated C0, the extrapolation weight at tlast, and the delta-method gradient for lambda.z when the sparse_lambda_z_se option is \"delta\""
+#> 
+#> $aucivinf.obs_se$tier
+#> [1] "uncommon"
+#> 
+#> $aucivinf.obs_se$selection
+#> list()
+#> 
+#> $aucivinf.obs_se$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aucivinf.obs_se$requires_dose_time
+#> [1] TRUE
+#> 
+#> $aucivinf.obs_se$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aucivinf.obs_se$requires_volume
+#> [1] FALSE
+#> 
+#> $aucivinf.obs_se$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $aucivinf.obs_df
+#> $aucivinf.obs_df$FUN
+#> [1] NA
+#> 
+#> $aucivinf.obs_df$FUN_sparse
+#> [1] NA
+#> 
+#> $aucivinf.obs_df$values
+#> [1] FALSE  TRUE
+#> 
+#> $aucivinf.obs_df$unit_type
+#> [1] "count"
+#> 
+#> $aucivinf.obs_df$pretty_name
+#> [1] "AUCinf,obs (IV dosing) degrees of freedom"
+#> 
+#> $aucivinf.obs_df$desc
+#> [1] "DF for AUCinf,obs IV (sparse PK only)"
+#> 
+#> $aucivinf.obs_df$formalsmap
+#> list()
+#> 
+#> $aucivinf.obs_df$formalsmap_sparse
+#> list()
+#> 
+#> $aucivinf.obs_df$depends
+#> [1] "aucivinf.obs"
+#> 
+#> $aucivinf.obs_df$datatype
+#> [1] "interval"
+#> 
+#> $aucivinf.obs_df$pptestcd_cdisc
+#> [1] "AUCIVIDF"
+#> 
+#> $aucivinf.obs_df$pptest_cdisc
+#> [1] "Sparse AUCinf obs IV degrees of freedom"
+#> 
+#> $aucivinf.obs_df$formula
+#> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"
+#> 
+#> $aucivinf.obs_df$formula_note
+#> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"
+#> 
+#> $aucivinf.obs_df$tier
+#> [1] "uncommon"
+#> 
+#> $aucivinf.obs_df$selection
+#> list()
+#> 
+#> $aucivinf.obs_df$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aucivinf.obs_df$requires_dose_time
+#> [1] TRUE
+#> 
+#> $aucivinf.obs_df$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aucivinf.obs_df$requires_volume
+#> [1] FALSE
+#> 
+#> $aucivinf.obs_df$requires_conc_dur
 #> [1] FALSE
 #> 
 #> 
@@ -9981,7 +10891,7 @@ get.interval.cols()
 #> [1] "pk.calc.aumciv"
 #> 
 #> $aumcivinf.obs$FUN_sparse
-#> [1] NA
+#> [1] "pk.calc.aumcivinf.obs_sparse"
 #> 
 #> $aumcivinf.obs$values
 #> [1] FALSE  TRUE
@@ -10046,6 +10956,136 @@ get.interval.cols()
 #> [1] FALSE
 #> 
 #> $aumcivinf.obs$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $aumcivinf.obs_se
+#> $aumcivinf.obs_se$FUN
+#> [1] NA
+#> 
+#> $aumcivinf.obs_se$FUN_sparse
+#> [1] NA
+#> 
+#> $aumcivinf.obs_se$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcivinf.obs_se$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcivinf.obs_se$pretty_name
+#> [1] "AUMCinf,obs (IV dosing) standard error"
+#> 
+#> $aumcivinf.obs_se$desc
+#> [1] "SE of AUMCinf,obs IV (sparse PK only)"
+#> 
+#> $aumcivinf.obs_se$formalsmap
+#> list()
+#> 
+#> $aumcivinf.obs_se$formalsmap_sparse
+#> list()
+#> 
+#> $aumcivinf.obs_se$depends
+#> [1] "aumcivinf.obs"
+#> 
+#> $aumcivinf.obs_se$datatype
+#> [1] "interval"
+#> 
+#> $aumcivinf.obs_se$pptestcd_cdisc
+#> [1] "AUMIVISE"
+#> 
+#> $aumcivinf.obs_se$pptest_cdisc
+#> [1] "Sparse AUMCinf obs IV standard error"
+#> 
+#> $aumcivinf.obs_se$formula
+#> NULL
+#> 
+#> $aumcivinf.obs_se$formula_note
+#> [1] "With sparse PK, the trapezoidal weights on the moment means (C0 does not change the AUMC with the linear trapezoidal rule), plus the extrapolation weight at tlast and the delta-method gradient for lambda.z when the sparse_lambda_z_se option is \"delta\""
+#> 
+#> $aumcivinf.obs_se$tier
+#> [1] "uncommon"
+#> 
+#> $aumcivinf.obs_se$selection
+#> list()
+#> 
+#> $aumcivinf.obs_se$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aumcivinf.obs_se$requires_dose_time
+#> [1] TRUE
+#> 
+#> $aumcivinf.obs_se$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aumcivinf.obs_se$requires_volume
+#> [1] FALSE
+#> 
+#> $aumcivinf.obs_se$requires_conc_dur
+#> [1] FALSE
+#> 
+#> 
+#> $aumcivinf.obs_df
+#> $aumcivinf.obs_df$FUN
+#> [1] NA
+#> 
+#> $aumcivinf.obs_df$FUN_sparse
+#> [1] NA
+#> 
+#> $aumcivinf.obs_df$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcivinf.obs_df$unit_type
+#> [1] "count"
+#> 
+#> $aumcivinf.obs_df$pretty_name
+#> [1] "AUMCinf,obs (IV dosing) degrees of freedom"
+#> 
+#> $aumcivinf.obs_df$desc
+#> [1] "DF for AUMCinf,obs IV (sparse PK only)"
+#> 
+#> $aumcivinf.obs_df$formalsmap
+#> list()
+#> 
+#> $aumcivinf.obs_df$formalsmap_sparse
+#> list()
+#> 
+#> $aumcivinf.obs_df$depends
+#> [1] "aumcivinf.obs"
+#> 
+#> $aumcivinf.obs_df$datatype
+#> [1] "interval"
+#> 
+#> $aumcivinf.obs_df$pptestcd_cdisc
+#> [1] "AUMIVIDF"
+#> 
+#> $aumcivinf.obs_df$pptest_cdisc
+#> [1] "Sparse AUMCinf obs IV degrees of freedom"
+#> 
+#> $aumcivinf.obs_df$formula
+#> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"
+#> 
+#> $aumcivinf.obs_df$formula_note
+#> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"
+#> 
+#> $aumcivinf.obs_df$tier
+#> [1] "uncommon"
+#> 
+#> $aumcivinf.obs_df$selection
+#> list()
+#> 
+#> $aumcivinf.obs_df$requires_dose_amt
+#> [1] FALSE
+#> 
+#> $aumcivinf.obs_df$requires_dose_time
+#> [1] TRUE
+#> 
+#> $aumcivinf.obs_df$requires_dose_dur
+#> [1] FALSE
+#> 
+#> $aumcivinf.obs_df$requires_volume
+#> [1] FALSE
+#> 
+#> $aumcivinf.obs_df$requires_conc_dur
 #> [1] FALSE
 #> 
 #> 

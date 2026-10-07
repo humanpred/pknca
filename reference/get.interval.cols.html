@@ -33,6 +33,7 @@
     <li><a class="dropdown-item" href="../articles/v21-methods-for-dose-aware-interpolation-and-extrapolation.html">Methods Used for Dose-Aware Concentration Interpolation/Extrapolation</a></li>
     <li><a class="dropdown-item" href="../articles/v22-time-to-steady-state.html">Noncompartmental evaluation of time to steady-state</a></li>
     <li><a class="dropdown-item" href="../articles/v23-auc-integration-methods.html">AUC integration methods</a></li>
+    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of Lambda z</a></li>
     <li><a class="dropdown-item" href="../articles/v30-training-session.html">PKNCA Training Sessions</a></li>
     <li><a class="dropdown-item" href="../articles/v31-FDA-introduction.html">PKNCA – an R package for noncompartmental analysis of pharmacokinetic data</a></li>
     <li><a class="dropdown-item" href="../articles/v40-options-for-controlling-PKNCA.html">Options for Controlling PKNCA</a></li>
@@ -5189,7 +5190,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.auciv"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast$FUN_sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aucivlast_sparse"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast$values</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
@@ -5260,12 +5261,142 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auc"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUClast (IV dosing) standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of AUClast IV (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucivlast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCIVLSE"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUClast IV standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "With sparse PK, the trapezoidal weights plus the delta-method gradient of the back-extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_se$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUClast (IV dosing) degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DF for AUClast IV (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucivlast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCIVLDF"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUClast IV degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivlast_df$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall$FUN</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.auciv"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall$FUN_sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aucivall_sparse"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall$values</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
@@ -5333,6 +5464,136 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auc"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCall (IV dosing) standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of AUCall IV (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucivall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCIVASE"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUCall IV standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "With sparse PK, the trapezoidal weights plus the delta-method gradient of the back-extrapolated C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_se$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCall (IV dosing) degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DF for AUCall IV (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucivall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCIVADF"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUCall IV degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivall_df$requires_conc_dur</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -5773,7 +6034,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumciv"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast$FUN_sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumcivlast_sparse"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast$values</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
@@ -5844,12 +6105,142 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMClast (IV dosing) standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of AUMClast IV (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivlast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMIVLSE"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMClast IV standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "With sparse PK, the trapezoidal weights on the moment means (C0 does not change the AUMC with the linear trapezoidal rule)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_se$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMClast (IV dosing) degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DF for AUMClast IV (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivlast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMIVLDF"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMClast IV degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivlast_df$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall$FUN</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumciv"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall$FUN_sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumcivall_sparse"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall$values</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
@@ -5917,6 +6308,136 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCall (IV dosing) standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of AUMCall IV (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMIVASE"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMCall IV standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "With sparse PK, the trapezoidal weights on the moment means (C0 does not change the AUMC with the linear trapezoidal rule)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_se$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCall (IV dosing) degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DF for AUMCall IV (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMIVADF"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMCall IV degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivall_df$requires_conc_dur</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -9155,7 +9676,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.auc.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs$FUN_sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aucinf.obs_sparse"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs$values</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
@@ -9237,6 +9758,136 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auc"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf,obs standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of AUCinf,obs (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCIFOSE"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUCinf obs standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$SE(AUC_{\\infty,\\text{obs}}) = \\sqrt{\\sum_{i,j} g_i g_j \\hat{\\sigma}_{ij} r_{ij} / (r_i r_j)}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Weights g are the trapezoidal weights plus the extrapolation weight at tlast (Yuan 1993), with the delta-method gradient for lambda.z when the sparse_lambda_z_se option is \"delta\""</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_se$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf,obs degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DF for AUCinf,obs (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCIFODF"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUCinf obs degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs_df$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.pred</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.pred$FUN</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.auc.inf.pred"</span>
@@ -9307,7 +9958,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumc.inf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs$FUN_sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumcinf.obs_sparse"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs$values</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
@@ -9364,6 +10015,136 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,obs standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of AUMCinf,obs (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMIFOSE"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMCinf obs standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$SE(AUMC_{\\infty,\\text{obs}}) = \\sqrt{\\sum_{i,j} g_i g_j \\hat{\\sigma}^{m}_{ij} r_{ij} / (r_i r_j)}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Weights g on the moment means are the trapezoidal weights plus the extrapolation weight at tlast, with the delta-method gradient for lambda.z when the sparse_lambda_z_se option is \"delta\""</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_se$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,obs degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DF for AUMCinf,obs (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMIFODF"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMCinf obs degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs_df$requires_conc_dur</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -9753,7 +10534,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.auciv"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs$FUN_sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aucivinf.obs_sparse"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs$values</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
@@ -9818,6 +10599,136 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auc"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf,obs (IV dosing) standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of AUCinf,obs IV (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucivinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCIVISE"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUCinf obs IV standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "With sparse PK, the trapezoidal weights plus the delta-method gradient of the back-extrapolated C0, the extrapolation weight at tlast, and the delta-method gradient for lambda.z when the sparse_lambda_z_se option is \"delta\""</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_se$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf,obs (IV dosing) degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DF for AUCinf,obs IV (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucivinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCIVIDF"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUCinf obs IV degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs_df$requires_conc_dur</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -10039,7 +10950,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumciv"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$FUN_sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumcivinf.obs_sparse"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$values</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
@@ -10104,6 +11015,136 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,obs (IV dosing) standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of AUMCinf,obs IV (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMIVISE"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMCinf obs IV standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "With sparse PK, the trapezoidal weights on the moment means (C0 does not change the AUMC with the linear trapezoidal rule), plus the extrapolation weight at tlast and the delta-method gradient for lambda.z when the sparse_lambda_z_se option is \"delta\""</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_se$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,obs (IV dosing) degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DF for AUMCinf,obs IV (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcivinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMIVIDF"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMCinf obs IV degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs_df$requires_conc_dur</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
