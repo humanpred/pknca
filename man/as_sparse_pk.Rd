@@ -11,12 +11,17 @@ as_sparse_pk(conc, time, subject)
 
 \item{time}{Time of the measurement of the concentrations}
 
-\item{subject}{Subject identifiers (may be any class; may not be null)}
+\item{subject}{Subject identifiers (may be any class; may not be null).  A
+missing subject marks an imputed concentration (such as the zero that the
+\code{start_conc0} imputation adds at the start of an interval):  a time where
+every subject is missing has a known concentration, which enters sparse
+estimates but not their variance.}
 }
 \value{
 A sparse_pk object which is a list of lists.  The inner lists have
 elements named: "time", The time of measurement; "conc", The concentration
-measured; "subject", The subject identifiers.  The object will usually be
+measured; "subject", The subject identifiers; "imputed", Whether the
+concentration at that time is imputed (known).  The object will usually be
 modified by future functions to add more named elements to the inner list.
 }
 \description{
@@ -24,6 +29,8 @@ Generate a sparse_pk object
 }
 \seealso{
 Other Sparse Methods:
+\code{\link[=pk.calc.aucinf.obs_sparse]{pk.calc.aucinf.obs_sparse()}},
+\code{\link[=pk.calc.aucivlast_sparse]{pk.calc.aucivlast_sparse()}},
 \code{\link[=pk.calc.auclast_sparse]{pk.calc.auclast_sparse()}},
 \code{\link[=pk.calc.sparse_auc]{pk.calc.sparse_auc()}},
 \code{\link[=pk.calc.sparse_aumc]{pk.calc.sparse_aumc()}},

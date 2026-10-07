@@ -31,6 +31,19 @@ regimen_candidates <- function(tau.choices, timeu) {
   if (is.na(timeu)) {
     return(list(values = numeric(0), explicit = FALSE))
   }
+  if (!identical(timeu, "hr") && !rlang::is_installed("units")) {
+    rlang::inform(
+      sprintf(
+        paste(
+          "The units package is not installed, so times in '%s' cannot be compared with the nominal dosing intervals,",
+          "and the interval is the one found in the dose times.  Installing the units package enables the comparison."
+        ),
+        timeu
+      ),
+      class = "pknca_message_tau_units_fallback"
+    )
+    return(list(values = numeric(0), explicit = FALSE))
+  }
   hours <- pknca_hours_factor(timeu)
   if (is.na(hours)) {
     rlang::abort(
@@ -740,10 +753,10 @@ regimen_warn <- function(detection, has_candidates) {
 #' `"pknca_warning_tau_not_nominal"` warning; give `timeu` to avoid that.
 #' `timeu = NA` says that the unit is not one PKNCA can use, and the intervals
 #' then come from the data alone (every source is `"auto"`).  Converting a unit
-#' other than `"hr"` needs the units package; without it, [PKNCAdata()] and
-#' [pk.nca()] treat such a unit as one they cannot use, so their results for
-#' data in other units can differ between installations with and without that
-#' package.
+#' other than `"hr"` needs the units package; without it, such a unit gives a
+#' `"pknca_message_tau_units_fallback"` message and the intervals come from the
+#' data alone, so results for data in other units can differ between
+#' installations with and without that package.
 #'
 #' @section Conditions:
 #' \describe{
@@ -757,6 +770,9 @@ regimen_warn <- function(detection, has_candidates) {
 #'     The message includes the regimen table.}
 #'   \item{`pknca_warning_dose_regimen`}{The parent class of the three warnings
 #'     above, to handle them together.}
+#'   \item{`pknca_message_tau_units_fallback`}{`timeu` is not `"hr"` and the
+#'     units package is not installed to convert it, so the intervals come from
+#'     the data alone.}
 #'   \item{`pknca_error_regimen_time_unit`}{`timeu` cannot be converted to
 #'     hours.}
 #'   \item{`pknca_error_regimen_time_class`}{`x` is a date-time or difftime
@@ -771,7 +787,10 @@ regimen_warn <- function(detection, has_candidates) {
 #' @param timeu The time unit of `x` (such as `"hr"` or `"day"`); `NULL` (or
 #'   `""`) when it is not known, which is taken to be hours; or `NA` when it is
 #'   known not to be a unit PKNCA can use, which leaves the intervals to the
-#'   data.  Any other unit that cannot be converted to hours is an error.
+#'   data.  Any other unit that cannot be converted to hours is an error, except
+#'   that without the units package a unit other than `"hr"` leaves the
+#'   intervals to the data with a message, so an unrecognized unit such as
+#'   `"zzz"` is an error only when the units package is installed.
 #' @param tol Relative tolerance for grouping spacings with one another and with
 #'   a candidate
 #' @param snap.tol Relative tolerance for reporting an interval as a candidate

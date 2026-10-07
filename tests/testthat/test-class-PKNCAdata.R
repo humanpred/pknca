@@ -595,3 +595,42 @@ test_that("pknca_hours_factor converts time units with the units package", {
   expect_equal(pknca_hours_factor("day"), 24)
   expect_equal(pknca_hours_factor("not_a_unit"), NA_real_)
 })
+
+test_that("PKNCAdata stops when no group gets an interval", {
+  # Samples only at the dose leave every group without an interval
+  d_conc <- data.frame(subject = 1:2, time = 0, conc = 1)
+  d_dose <- data.frame(subject = 1:2, time = 0, dose = 1)
+  # The warnings for each group come first and are kept
+  expect_warning(
+    expect_warning(
+      expect_error(
+        PKNCAdata(PKNCAconc(d_conc, conc~time|subject), PKNCAdose(d_dose, dose~time|subject)),
+        regexp = "No intervals could be generated for any group",
+        class = "pknca_error_no_intervals"
+      ),
+      regexp = "^subject=2: No intervals generated",
+      class = "pknca_warning_no_intervals_limited_data"
+    ),
+    regexp = "^subject=1: No intervals generated",
+    class = "pknca_warning_no_intervals_limited_data"
+  )
+})
+
+test_that("PKNCAdata keeps the intervals of the groups that get them", {
+  times <- c(0, 0.5, 1, 2, 4, 8, 12, 24)
+  d_conc <-
+    rbind(
+      data.frame(subject = 1, time = times, conc = exp(-0.2 * times)),
+      data.frame(subject = 2, time = 0, conc = 1)
+    )
+  d_dose <- data.frame(subject = 1:2, time = 0, dose = 1)
+  expect_warning(
+    ret <- PKNCAdata(PKNCAconc(d_conc, conc~time|subject), PKNCAdose(d_dose, dose~time|subject)),
+    regexp = "^subject=2: No intervals generated",
+    class = "pknca_warning_no_intervals_limited_data"
+  )
+  expect_equal(ret$intervals$subject, 1)
+  expect_equal(ret$intervals$start, 0)
+  expect_equal(ret$intervals$end, Inf)
+  expect_false("data_intervals" %in% names(ret$intervals))
+})

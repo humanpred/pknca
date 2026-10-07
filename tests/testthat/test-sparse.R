@@ -54,9 +54,11 @@ test_that("as_sparse_pk rejects invalid subject vectors", {
     as_sparse_pk(conc = conc, time = time, subject = 1:5),
     regexp = "Must have length 6, but has length 5"
   )
+  # A missing subject marks an imputed concentration, which cannot share a
+  # time with measured ones
   expect_error(
-    as_sparse_pk(conc = conc, time = time, subject = c(1, 2, 3, 4, 5, NA)),
-    regexp = "Contains missing values"
+    as_sparse_pk(conc = conc, time = time, subject = c(1, 2, 3, NA, 5, 6)),
+    class = "pknca_error_sparse_pk_mixed_imputed"
   )
 })
 
@@ -225,6 +227,350 @@ test_that("sparse AUC degrees of freedom are NA when a time has one subject", {
     )
   expect_true(is.na(result$sparse_auc_se))
   expect_true(is.na(result$sparse_auc_df))
+})
+
+# Serial sacrifice where two of three animals are BLQ at 24 hours, so the mean
+# there is zero and tlast is 8 hours
+d_trailing_zero <-
+  data.frame(
+    time = rep(c(0, 1, 2, 4, 8, 24), each = 3),
+    conc = c(0, 0, 0,  5, 6, 4,  8, 7, 9,  6, 5, 7,  3, 2.5, 3.5,  0, 0, 0.4)
+  )
+d_trailing_zero$subject <- seq_len(nrow(d_trailing_zero))
+
+test_that("the sparse AUClast standard error stops at tlast with it", {
+  result <-
+    pk.calc.sparse_auc(
+      conc = d_trailing_zero$conc, time = d_trailing_zero$time,
+      subject = d_trailing_zero$subject
+    )
+  # Bailer (1988) to tlast:  sum(w^2 s^2 / n) over the times up to 8 hours
+  times <- c(0, 1, 2, 4, 8)
+  w <- c(0, diff(times)/2) + c(diff(times)/2, 0)
+  s2 <- tapply(d_trailing_zero$conc, d_trailing_zero$time, stats::var)[1:5]
+  expect_equal(as.numeric(result$sparse_auc), 41)
+  expect_equal(as.numeric(result$sparse_auc_se), sqrt(sum(w^2*s2/3)))
+  # The time after tlast does not change the result
+  mask <- d_trailing_zero$time <= 8
+  expect_equal(
+    result,
+    pk.calc.sparse_auc(
+      conc = d_trailing_zero$conc[mask], time = d_trailing_zero$time[mask],
+      subject = d_trailing_zero$subject[mask]
+    )
+  )
+})
+
+test_that("the sparse AUCall standard error includes the triangle after tlast", {
+  result <-
+    pk.calc.sparse_auc(
+      conc = d_trailing_zero$conc, time = d_trailing_zero$time,
+      subject = d_trailing_zero$subject, auc.type = "AUCall"
+    )
+  # The 24-hour mean is zero, so only the weight of the 8-hour mean grows (by
+  # half of the 16 hours to the next time)
+  times <- c(0, 1, 2, 4, 8)
+  w <- c(0, diff(times)/2) + c(diff(times)/2, 0)
+  w[5] <- w[5] + (24 - 8)/2
+  s2 <- tapply(d_trailing_zero$conc, d_trailing_zero$time, stats::var)[1:5]
+  expect_equal(as.numeric(result$sparse_auc), 41 + 3*16/2)
+  expect_equal(as.numeric(result$sparse_auc_se), sqrt(sum(w^2*s2/3)))
+})
+
+test_that("the sparse AUMClast standard error stops at tlast with it", {
+  mask <- d_trailing_zero$time <= 8
+  expect_equal(
+    pk.calc.sparse_aumc(
+      conc = d_trailing_zero$conc, time = d_trailing_zero$time,
+      subject = d_trailing_zero$subject
+    ),
+    pk.calc.sparse_aumc(
+      conc = d_trailing_zero$conc[mask], time = d_trailing_zero$time[mask],
+      subject = d_trailing_zero$subject[mask]
+    )
+  )
+})
+
+test_that("sparse AUC and AUMC with no positive mean have no variance", {
+  result <- pk.calc.sparse_auc(conc = rep(0, 6), time = rep(c(0, 1, 2), each = 2), subject = 1:6)
+  expect_equal(as.numeric(result$sparse_auc), 0)
+  expect_equal(as.numeric(result$sparse_auc_se), 0)
+  expect_true(is.na(result$sparse_auc_df))
+})
+
+test_that("sparse AUC and AUMC refuse an AUC type whose variance they do not calculate", {
+  expect_error(
+    pk.calc.sparse_auc(conc = d_trailing_zero$conc, time = d_trailing_zero$time,
+                       subject = d_trailing_zero$subject, auc.type = "AUCinf.obs"),
+    class = "pknca_error_sparse_auc_type"
+  )
+  expect_error(
+    pk.calc.sparse_aumc(conc = d_trailing_zero$conc, time = d_trailing_zero$time,
+                        subject = d_trailing_zero$subject, auc.type = "AUCinf.obs"),
+    class = "pknca_error_sparse_auc_type"
+  )
+})
+
+# ============================================================================
+# Sparse AUC and AUMC to infinity (Yuan 1993 and the delta method)
+# ============================================================================
+# Serial sacrifice:  four animals at each time, each sampled once
+d_sparse_inf <-
+  data.frame(
+    time = rep(c(0, 0.5, 1, 2, 4, 6, 8, 12, 24), each = 4),
+    conc =
+      c(0, 0, 0, 0,  3.1, 4.4, 3.6, 5.2,  5.8, 6.9, 5.1, 7.4,  7.2, 6.1, 8.3, 6.6,
+        5.0, 6.2, 4.4, 5.6,  4.1, 3.4, 4.8, 3.7,  2.9, 3.5, 2.4, 3.1,
+        1.6, 1.9, 1.3, 1.8,  0.33, 0.27, 0.41, 0.30)
+  )
+d_sparse_inf$subject <- seq_len(nrow(d_sparse_inf))
+
+# The half-life of the mean profile, as pk.nca() calculates it for sparse data
+sparse_inf_half_life <- function(d) {
+  means <- tapply(d$conc, d$time, mean)
+  pk.calc.half.life(conc = unname(means), time = as.numeric(names(means)))
+}
+
+# AUCinf (or AUMCinf) as a function of the time-point means, with lambda.z
+# refit by least squares to the log means of the half-life points; its numeric
+# gradient is the delta-method weight vector
+sparse_inf_from_means <- function(means, times, idx_hl, moment) {
+  idx_last <- length(means)
+  w <- c(0, diff(times)/2) + c(diff(times)/2, 0)
+  lambda_z <- -unname(stats::coef(stats::lm(log(means[idx_hl]) ~ times[idx_hl]))[2])
+  if (moment) {
+    sum(w*times*means) + times[idx_last]*means[idx_last]/lambda_z + means[idx_last]/lambda_z^2
+  } else {
+    sum(w*means) + means[idx_last]/lambda_z
+  }
+}
+
+sparse_inf_numeric_se <- function(d, hl, moment) {
+  means <- unname(tapply(d$conc, d$time, mean))
+  times <- sort(unique(d$time))
+  idx_hl <- which(times >= hl$lambda.z.time.first & times <= hl$lambda.z.time.last)
+  gradient <- numeric(length(means))
+  for (j in seq_along(means)) {
+    h <- 1e-6*max(means[j], 1)
+    up <- down <- means
+    up[j] <- up[j] + h
+    down[j] <- down[j] - h
+    gradient[j] <-
+      (sparse_inf_from_means(up, times, idx_hl, moment) - sparse_inf_from_means(down, times, idx_hl, moment))/(2*h)
+  }
+  # Serial sacrifice:  the means are independent with variance s^2/n.  The
+  # moment means t*ybar have variance t^2 s^2/n and gradient (d/dybar)/t, so
+  # the same sum results.
+  s2 <- unname(tapply(d$conc, d$time, stats::var))
+  n <- unname(tapply(d$conc, d$time, length))
+  sqrt(sum(gradient^2*s2/n))
+}
+
+test_that("sparse AUCinf,obs with lambda.z known is Yuan (1993) equations 3 and 4", {
+  hl <- sparse_inf_half_life(d_sparse_inf)
+  result <-
+    pk.calc.aucinf.obs_sparse(
+      conc = d_sparse_inf$conc, time = d_sparse_inf$time, subject = d_sparse_inf$subject,
+      lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
+      lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points,
+      options = list(sparse_lambda_z_se = "none")
+    )
+  times <- sort(unique(d_sparse_inf$time))
+  means <- tapply(d_sparse_inf$conc, d_sparse_inf$time, mean)
+  s2 <- tapply(d_sparse_inf$conc, d_sparse_inf$time, stats::var)
+  w <- c(0, diff(times)/2) + c(diff(times)/2, 0)
+  g <- w
+  g[length(g)] <- g[length(g)] + 1/hl$lambda.z
+  expect_equal(names(result), c("aucinf.obs", "aucinf.obs_se", "aucinf.obs_df"))
+  expect_equal(result$aucinf.obs, unname(sum(w*means) + means[length(means)]/hl$lambda.z))
+  expect_equal(result$aucinf.obs_se, unname(sqrt(sum(g^2*s2/4))))
+  # The estimate is the sparse AUClast plus the extrapolation from the mean at tlast
+  auclast <- pk.calc.sparse_auclast(conc = d_sparse_inf$conc, time = d_sparse_inf$time, subject = d_sparse_inf$subject)
+  expect_equal(result$aucinf.obs, as.numeric(auclast$sparse_auclast) + unname(means[length(means)])/hl$lambda.z)
+  expect_equal(attr(result, "method")[3], "Sparse SE: lambda.z treated as known (Yuan 1993)")
+})
+
+test_that("the delta-method standard error of sparse AUCinf,obs and AUMCinf,obs matches a numeric gradient", {
+  hl <- sparse_inf_half_life(d_sparse_inf)
+  args <-
+    list(
+      conc = d_sparse_inf$conc, time = d_sparse_inf$time, subject = d_sparse_inf$subject,
+      lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
+      lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points,
+      options = list(sparse_lambda_z_se = "delta")
+    )
+  auc <- do.call(pk.calc.aucinf.obs_sparse, args)
+  aumc <- do.call(pk.calc.aumcinf.obs_sparse, args)
+  expect_equal(auc$aucinf.obs_se, sparse_inf_numeric_se(d_sparse_inf, hl, moment = FALSE), tolerance = 1e-6)
+  expect_equal(aumc$aumcinf.obs_se, sparse_inf_numeric_se(d_sparse_inf, hl, moment = TRUE), tolerance = 1e-6)
+  expect_equal(attr(auc, "method")[3], "Sparse SE: delta method for lambda.z")
+  # The delta method is the default
+  args$options <- list()
+  expect_equal(do.call(pk.calc.aucinf.obs_sparse, args), auc)
+  # The point estimates do not depend on the standard error method
+  args$options <- list(sparse_lambda_z_se = "none")
+  expect_equal(auc$aucinf.obs, do.call(pk.calc.aucinf.obs_sparse, args)$aucinf.obs)
+  expect_equal(aumc$aumcinf.obs, do.call(pk.calc.aumcinf.obs_sparse, args)$aumcinf.obs)
+})
+
+test_that("the delta-method standard error covers the covariances of a batch design", {
+  # Three batches of four animals, each batch sampled at three times (and the
+  # first batch predose)
+  d_batch <-
+    data.frame(
+      time = rep(c(0, 0.5, 2, 6, 1, 4, 12, 3, 8, 24), each = 4),
+      subject = rep(c(rep(1:4, 4), rep(5:8, 3), rep(9:12, 3))),
+      conc =
+        c(0, 0, 0, 0,  4.1, 3.2, 5.0, 3.8,  6.9, 5.6, 7.7, 6.1,  4.4, 3.5, 5.3, 3.9,
+          6.0, 4.8, 6.8, 5.1,  6.3, 5.0, 7.1, 5.6,  2.0, 1.5, 2.4, 1.7,
+          7.1, 5.9, 7.9, 6.4,  3.1, 2.4, 3.6, 2.7,  0.40, 0.29, 0.47, 0.33)
+    )
+  hl <- sparse_inf_half_life(d_batch)
+  auc <-
+    pk.calc.aucinf.obs_sparse(
+      conc = d_batch$conc, time = d_batch$time, subject = d_batch$subject,
+      lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
+      lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points,
+      options = list(sparse_lambda_z_se = "delta")
+    )
+  # The covariance of the means:  r_ij sigma_ij / (r_i r_j), with Holder's
+  # covariance sigma_ij
+  sparse_pk <- sparse_mean(as_sparse_pk(conc = d_batch$conc, time = d_batch$time, subject = d_batch$subject))
+  sigma <- cov_holder(sparse_pk)
+  subjects <- lapply(sparse_pk, `[[`, "subject")
+  r_both <- matrix(0, length(subjects), length(subjects))
+  for (i in seq_along(subjects)) {
+    for (j in seq_along(subjects)) {
+      r_both[i, j] <- length(intersect(subjects[[i]], subjects[[j]]))
+    }
+  }
+  cov_means <- r_both*sigma/outer(diag(r_both), diag(r_both))
+  means <- sparse_pk_attribute(sparse_pk, "mean")
+  times <- sparse_pk_attribute(sparse_pk, "time")
+  idx_hl <- which(times >= hl$lambda.z.time.first & times <= hl$lambda.z.time.last)
+  gradient <- numeric(length(means))
+  for (j in seq_along(means)) {
+    h <- 1e-6*max(means[j], 1)
+    up <- down <- means
+    up[j] <- up[j] + h
+    down[j] <- down[j] - h
+    gradient[j] <- (sparse_inf_from_means(up, times, idx_hl, FALSE) - sparse_inf_from_means(down, times, idx_hl, FALSE))/(2*h)
+  }
+  expect_equal(auc$aucinf.obs_se, sqrt(drop(t(gradient) %*% cov_means %*% gradient)), tolerance = 1e-6)
+  expect_false(is.na(auc$aucinf.obs_df))
+})
+
+test_that("sparse AUMCinf,obs with lambda.z known extrapolates the moment at tlast", {
+  hl <- sparse_inf_half_life(d_sparse_inf)
+  result <-
+    pk.calc.aumcinf.obs_sparse(
+      conc = d_sparse_inf$conc, time = d_sparse_inf$time, subject = d_sparse_inf$subject,
+      lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
+      lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points,
+      options = list(sparse_lambda_z_se = "none")
+    )
+  times <- sort(unique(d_sparse_inf$time))
+  means <- unname(tapply(d_sparse_inf$conc, d_sparse_inf$time, mean))
+  s2 <- unname(tapply(d_sparse_inf$conc, d_sparse_inf$time, stats::var))
+  w <- c(0, diff(times)/2) + c(diff(times)/2, 0)
+  tlast <- 24
+  clast <- means[length(means)]
+  # Weights on the moment means t*ybar, whose variance is t^2 s^2/n
+  g <- w
+  g[length(g)] <- g[length(g)] + 1/hl$lambda.z + 1/(tlast*hl$lambda.z^2)
+  expect_equal(result$aumcinf.obs, sum(w*times*means) + tlast*clast/hl$lambda.z + clast/hl$lambda.z^2)
+  expect_equal(result$aumcinf.obs_se, sqrt(sum(g^2*times^2*s2/4)))
+})
+
+test_that("sparse AUCinf,obs and AUMCinf,obs are NA without a lambda.z", {
+  result <-
+    pk.calc.aucinf.obs_sparse(
+      conc = d_sparse_inf$conc, time = d_sparse_inf$time, subject = d_sparse_inf$subject,
+      lambda.z = NA_real_, lambda.z.time.first = NA_real_, lambda.z.time.last = NA_real_,
+      lambda.z.n.points = NA_integer_
+    )
+  expect_true(all(is.na(unlist(result))))
+})
+
+test_that("sparse AUCinf,obs and AUMCinf,obs are NA without a sample at time 0, like the sparse AUClast", {
+  d_late <- d_sparse_inf[d_sparse_inf$time > 0, ]
+  hl <- sparse_inf_half_life(d_late)
+  args <-
+    list(
+      conc = d_late$conc, time = d_late$time, subject = d_late$subject,
+      lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
+      lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points
+    )
+  expect_warning(
+    auclast <- pk.calc.sparse_auclast(conc = d_late$conc, time = d_late$time, subject = d_late$subject),
+    class = "pknca_warning_auc_before_first"
+  )
+  expect_true(is.na(auclast$sparse_auclast))
+  expect_warning(auc <- do.call(pk.calc.aucinf.obs_sparse, args), class = "pknca_warning_auc_before_first")
+  expect_warning(aumc <- do.call(pk.calc.aumcinf.obs_sparse, args), class = "pknca_warning_auc_before_first")
+  expect_true(all(is.na(unlist(auc))))
+  expect_true(all(is.na(unlist(aumc))))
+})
+
+test_that("the delta-method standard error needs identifiable log-linear half-life points", {
+  hl <- sparse_inf_half_life(d_sparse_inf)
+  args <-
+    list(
+      conc = d_sparse_inf$conc, time = d_sparse_inf$time, subject = d_sparse_inf$subject,
+      lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
+      lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points + 1,
+      options = list(sparse_lambda_z_se = "delta")
+    )
+  expect_warning(
+    result <- do.call(pk.calc.aucinf.obs_sparse, args),
+    class = "pknca_warning_sparse_lambda_z_points"
+  )
+  expect_false(is.na(result$aucinf.obs))
+  expect_true(is.na(result$aucinf.obs_se))
+  args$lambda.z.n.points <- hl$lambda.z.n.points
+  args$options <- list(sparse_lambda_z_se = "none")
+  yuan <- do.call(pk.calc.aucinf.obs_sparse, args)
+  # Without the log-linear half-life, the estimate is kept and the standard
+  # error is NA
+  args$options <- list(sparse_lambda_z_se = "delta", hl_method = "tobit")
+  expect_warning(
+    result <- do.call(pk.calc.aucinf.obs_sparse, args),
+    class = "pknca_warning_sparse_lambda_z_se_hl_method"
+  )
+  expect_equal(result$aucinf.obs, yuan$aucinf.obs)
+  expect_true(is.na(result$aucinf.obs_se))
+  expect_true(is.na(result$aucinf.obs_df))
+})
+
+test_that("pk.nca() calculates sparse AUCinf,obs and AUMCinf,obs with their standard errors", {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_sparse_inf, conc ~ time | subject, sparse = TRUE),
+      intervals = data.frame(start = 0, end = Inf, aucinf.obs = TRUE, aumcinf.obs = TRUE),
+      options = list(sparse_lambda_z_se = "delta")
+    )
+  o_nca <- suppressMessages(pk.nca(o_data))
+  d_res <- as.data.frame(o_nca)
+  hl <- sparse_inf_half_life(d_sparse_inf)
+  direct <-
+    pk.calc.aucinf.obs_sparse(
+      conc = d_sparse_inf$conc, time = d_sparse_inf$time, subject = d_sparse_inf$subject,
+      lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
+      lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points,
+      options = list(sparse_lambda_z_se = "delta")
+    )
+  result_values <- stats::setNames(d_res$PPORRES, d_res$PPTESTCD)
+  expect_equal(result_values[["aucinf.obs"]], direct$aucinf.obs)
+  expect_equal(result_values[["aucinf.obs_se"]], direct$aucinf.obs_se)
+  expect_equal(result_values[["aucinf.obs_df"]], direct$aucinf.obs_df)
+  expect_false(is.na(result_values[["aumcinf.obs_se"]]))
+  expect_match(d_res$PPANMETH[d_res$PPTESTCD == "aucinf.obs"], "Sparse SE: delta method for lambda.z", fixed = TRUE)
+  # The summary shows the estimate with its standard error
+  o_summary <- summary(o_nca)
+  expect_equal(
+    o_summary$aucinf.obs,
+    sprintf("%s [%s]", signifString(direct$aucinf.obs, 3), signifString(direct$aucinf.obs_se, 3))
+  )
 })
 
 # ============================================================================
@@ -588,9 +934,10 @@ test_that("the deprecated names still give the values they always have", {
 # ============================================================================
 # Imputation and the sparse estimators
 # ============================================================================
-test_that("an imputation that changes the pooled samples is refused for a sparse estimator", {
-  # No time-0 sample, so start_conc0 adds a measurement that belongs to no
-  # subject.  The sparse estimators need one subject per measurement.
+test_that("an imputation that adds a nonzero concentration is refused for a sparse estimator", {
+  # No time-0 sample, so start_cmin adds the minimum concentration at time 0:
+  # an estimate that belongs to no subject, with a variance that the sparse
+  # estimators cannot account for.
   d_sparse <-
     data.frame(
       id = 1:9,
@@ -602,11 +949,11 @@ test_that("an imputation that changes the pooled samples is refused for a sparse
     PKNCAdata(
       o_conc,
       intervals = data.frame(start = 0, end = 24, auclast = TRUE),
-      impute = "start_conc0"
+      impute = "start_cmin"
     )
   expect_error(
     suppressMessages(pk.nca(o_data)),
-    regexp = "sparse estimators do not support imputation.*'start_conc0' changed the pooled samples for the interval start=0, end=24.*calculated from the pooled samples: auclast",
+    regexp = "sparse estimators support only imputed zero concentrations.*'start_cmin' imputed other values in the pooled samples for the interval start=0, end=24.*calculated from the pooled samples: auclast",
     class = "pknca_error_sparse_impute"
   )
   # It is a diagnosed problem, so it does not ask for a bug report
@@ -623,7 +970,7 @@ test_that("an imputation that changes the pooled samples is refused for a sparse
     PKNCAdata(
       o_conc,
       intervals = data.frame(start = 0, end = 24, cmax = TRUE, tmax = TRUE),
-      impute = "start_conc0"
+      impute = "start_cmin"
     )
   expect_no_error(suppressMessages(suppressWarnings(pk.nca(o_data_dense_params))))
 
@@ -634,13 +981,63 @@ test_that("an imputation that changes the pooled samples is refused for a sparse
       PKNCAdata(
         o_conc,
         intervals = data.frame(start = 0, end = 24, sparse_auclast = TRUE),
-        impute = "start_conc0"
+        impute = "start_cmin"
       )
     )
   expect_error(
     suppressMessages(pk.nca(o_data_legacy)),
     class = "pknca_error_sparse_impute"
   )
+})
+
+test_that("a sparse AUC needs a time-0 concentration, measured or imputed as zero", {
+  # Serial sacrifice without a time-0 sample
+  d_no_zero <- d_sparse_inf[d_sparse_inf$time > 0, ]
+  d_no_zero$id <- seq_len(nrow(d_no_zero))
+  # The same animals with known zero concentrations at time 0 from three more
+  # animals
+  d_zero <- rbind(data.frame(time = 0, conc = 0, id = 100 + 1:3), d_no_zero[, c("time", "conc", "id")])
+  params <- c("auclast", "aumclast", "aucinf.obs", "aumcinf.obs")
+  d_intervals <- data.frame(start = 0, end = Inf)
+  d_intervals[params] <- TRUE
+  res_missing <-
+    as.data.frame(suppressMessages(suppressWarnings(pk.nca(
+      PKNCAdata(PKNCAconc(d_no_zero, conc~time|id, sparse = TRUE), intervals = d_intervals)
+    ))))
+  res_imputed <-
+    as.data.frame(suppressMessages(pk.nca(
+      PKNCAdata(PKNCAconc(d_no_zero, conc~time|id, sparse = TRUE), intervals = d_intervals, impute = "start_conc0")
+    )))
+  res_zero <-
+    as.data.frame(suppressMessages(pk.nca(
+      PKNCAdata(PKNCAconc(d_zero, conc~time|id, sparse = TRUE), intervals = d_intervals)
+    )))
+  all_params <- c(params, paste0(params, "_se"), paste0(params, "_df"))
+  for (current_param in all_params) {
+    value_missing <- res_missing$PPORRES[res_missing$PPTESTCD == current_param]
+    value_imputed <- res_imputed$PPORRES[res_imputed$PPTESTCD == current_param]
+    value_zero <- res_zero$PPORRES[res_zero$PPTESTCD == current_param]
+    # Without a time-0 concentration, every sparse AUC and AUMC is missing
+    expect_equal(value_missing, NA_real_, info = current_param)
+    # An imputed zero is a known concentration:  the estimates, standard
+    # errors, and degrees of freedom match those of measured zeros, which have
+    # no variance
+    expect_equal(value_imputed, value_zero, info = current_param)
+    expect_false(is.na(value_imputed), info = current_param)
+  }
+  expect_true(all(grepl("Imputation: start_conc0", res_imputed$PPANMETH, fixed = TRUE)))
+})
+
+test_that("as_sparse_pk() marks a time with only missing subjects as imputed", {
+  sparse_pk <- as_sparse_pk(conc = c(0, 1, 2, 3), time = c(0, 1, 1, 2), subject = c(NA, 1, 2, 3))
+  expect_equal(vapply(sparse_pk, `[[`, "imputed", FUN.VALUE = TRUE), c(TRUE, FALSE, FALSE))
+  expect_error(
+    as_sparse_pk(conc = c(0, 1, 2, 3), time = c(0, 1, 1, 2), subject = c(NA, 1, NA, 3)),
+    class = "pknca_error_sparse_pk_mixed_imputed"
+  )
+  # The imputed time enters the estimate but not the variance
+  sparse_pk <- sparse_auc_weight_linear(sparse_mean(sparse_pk))
+  expect_equal(length(sparse_pk_weighted(sparse_pk)), 2)
 })
 
 test_that("an imputation that leaves the pooled samples alone still calculates", {

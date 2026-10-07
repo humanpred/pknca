@@ -482,3 +482,172 @@ test_that("pk.calc.auciv_pbext requires a measured concentration at time 0", {
     100 * (1 - 81/95)
   )
 })
+
+# ============================================================================
+# Sparse IV bolus AUC and AUMC
+# ============================================================================
+# Serial sacrifice after an IV bolus, without a sample at time 0
+d_sparse_iv <-
+  data.frame(
+    time = rep(c(0.25, 0.5, 1, 2, 4, 8, 24), each = 4),
+    conc =
+      c(9.1, 10.4, 8.7, 9.9,  8.8, 9.5, 8.1, 9.2,  8.2, 7.6, 8.9, 7.9,
+        6.4, 7.1, 6.0, 6.9,  4.6, 4.1, 5.0, 4.3,  2.1, 1.8, 2.3, 1.9,
+        0.10, 0.08, 0.12, 0.09)
+  )
+d_sparse_iv$subject <- seq_len(nrow(d_sparse_iv))
+
+# The sparse IV AUC (or AUMC) as a function of the time-point means:  C0 from
+# the log-linear back-extrapolation of the first two means, the linear
+# trapezoidal rule from time 0, and, with half-life points `idx_hl`, the
+# extrapolation with lambda.z refit to their log means
+sparse_iv_from_means <- function(means, times, idx_hl, moment) {
+  c0 <- means[1]*(means[1]/means[2])^(times[1]/(times[2] - times[1]))
+  all_times <- c(0, times)
+  values <- c(c0, means)
+  if (moment) {
+    values <- all_times*values
+  }
+  ret <- sum(diff(all_times)*(values[-1] + values[-length(values)])/2)
+  if (length(idx_hl) > 0) {
+    lambda_z <- -unname(stats::coef(stats::lm(log(means[idx_hl]) ~ times[idx_hl]))[2])
+    tlast <- times[length(times)]
+    clast <- means[length(means)]
+    ret <- ret + if (moment) tlast*clast/lambda_z + clast/lambda_z^2 else clast/lambda_z
+  }
+  ret
+}
+
+# The serial-sacrifice standard error from the numeric gradient of
+# sparse_iv_from_means()
+sparse_iv_numeric_se <- function(d, idx_hl, moment) {
+  means <- unname(tapply(d$conc, d$time, mean))
+  times <- sort(unique(d$time))
+  gradient <- numeric(length(means))
+  for (j in seq_along(means)) {
+    h <- 1e-6*means[j]
+    up <- down <- means
+    up[j] <- up[j] + h
+    down[j] <- down[j] - h
+    gradient[j] <-
+      (sparse_iv_from_means(up, times, idx_hl, moment) - sparse_iv_from_means(down, times, idx_hl, moment))/(2*h)
+  }
+  s2 <- unname(tapply(d$conc, d$time, stats::var))
+  n <- unname(tapply(d$conc, d$time, length))
+  sqrt(sum(gradient^2*s2/n))
+}
+
+test_that("sparse IV bolus AUClast back-extrapolates C0 with its uncertainty", {
+  result <- pk.calc.aucivlast_sparse(conc = d_sparse_iv$conc, time = d_sparse_iv$time, subject = d_sparse_iv$subject)
+  means <- unname(tapply(d_sparse_iv$conc, d_sparse_iv$time, mean))
+  times <- sort(unique(d_sparse_iv$time))
+  expect_equal(names(result), c("aucivlast", "aucivlast_se", "aucivlast_df"))
+  expect_equal(result$aucivlast, sparse_iv_from_means(means, times, integer(), FALSE))
+  expect_equal(result$aucivlast_se, sparse_iv_numeric_se(d_sparse_iv, integer(), FALSE), tolerance = 1e-6)
+  expect_false(is.na(result$aucivlast_df))
+  expect_equal(attr(result, "method")[3], "Sparse C0: logslope on the mean profile")
+  # C0 is the c0 parameter of the mean profile
+  expect_equal(
+    result$aucivlast - sum(diff(times)*(means[-1] + means[-length(means)])/2),
+    times[1]*(pk.calc.c0(conc = means, time = times) + means[1])/2
+  )
+})
+
+test_that("sparse IV bolus AUCinf,obs adds the uncertainty of C0 and lambda.z", {
+  means <- unname(tapply(d_sparse_iv$conc, d_sparse_iv$time, mean))
+  times <- sort(unique(d_sparse_iv$time))
+  hl <- pk.calc.half.life(conc = means, time = times)
+  idx_hl <- which(times >= hl$lambda.z.time.first & times <= hl$lambda.z.time.last)
+  args <-
+    list(
+      conc = d_sparse_iv$conc, time = d_sparse_iv$time, subject = d_sparse_iv$subject,
+      lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
+      lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points
+    )
+  auc <- do.call(pk.calc.aucivinf.obs_sparse, args)
+  aumc <- do.call(pk.calc.aumcivinf.obs_sparse, args)
+  expect_equal(auc$aucivinf.obs, sparse_iv_from_means(means, times, idx_hl, FALSE))
+  expect_equal(auc$aucivinf.obs_se, sparse_iv_numeric_se(d_sparse_iv, idx_hl, FALSE), tolerance = 1e-6)
+  expect_equal(aumc$aumcivinf.obs, sparse_iv_from_means(means, times, idx_hl, TRUE))
+  expect_equal(aumc$aumcivinf.obs_se, sparse_iv_numeric_se(d_sparse_iv, idx_hl, TRUE), tolerance = 1e-6)
+  expect_equal(
+    attr(auc, "method")[3:4],
+    c("Sparse C0: logslope on the mean profile", "Sparse SE: delta method for lambda.z")
+  )
+})
+
+test_that("C0 does not change the sparse IV bolus AUMC", {
+  # The AUMC from time 0 to the first sample is t1^2 ybar_1/2 with the linear
+  # trapezoidal rule, so it equals the sparse AUMC with any known
+  # concentration at time 0
+  result <- pk.calc.aumcivlast_sparse(conc = d_sparse_iv$conc, time = d_sparse_iv$time, subject = d_sparse_iv$subject)
+  known_zero <-
+    pk.calc.aumclast_sparse(
+      conc = c(0, d_sparse_iv$conc), time = c(0, d_sparse_iv$time), subject = c(NA, d_sparse_iv$subject)
+    )
+  expect_equal(result$aumcivlast, known_zero$aumclast)
+  expect_equal(result$aumcivlast_se, known_zero$aumclast_se)
+  expect_equal(result$aumcivlast_df, known_zero$aumclast_df)
+})
+
+test_that("sparse IV bolus C0 falls back to C1 when the first means rise", {
+  d_rise <- d_sparse_iv
+  # The second mean is above the first, so logslope does not apply
+  d_rise$conc[d_rise$time == 0.5] <- d_rise$conc[d_rise$time == 0.5] + 2
+  result <- pk.calc.aucivlast_sparse(conc = d_rise$conc, time = d_rise$time, subject = d_rise$subject)
+  means <- unname(tapply(d_rise$conc, d_rise$time, mean))
+  times <- sort(unique(d_rise$time))
+  w <- c(0, diff(times)/2) + c(diff(times)/2, 0)
+  # C0 = ybar_1, so the first mean also carries the weight of the trapezoid
+  # from time 0:  t1/2 as its own end and t1/2 through C0
+  g <- w
+  g[1] <- g[1] + times[1]
+  s2 <- unname(tapply(d_rise$conc, d_rise$time, stats::var))
+  expect_equal(result$aucivlast, sum(w*means) + times[1]*means[1])
+  expect_equal(result$aucivlast_se, sqrt(sum(g^2*s2/4)))
+  expect_equal(attr(result, "method")[3], "Sparse C0: c1 on the mean profile")
+})
+
+test_that("a sparse IV bolus with a measured time 0 uses it", {
+  d_zero <- rbind(data.frame(time = 0, conc = c(12.1, 11.4, 12.8, 11.9), subject = 101:104), d_sparse_iv)
+  result <- pk.calc.aucivlast_sparse(conc = d_zero$conc, time = d_zero$time, subject = d_zero$subject)
+  auclast <- pk.calc.auclast_sparse(conc = d_zero$conc, time = d_zero$time, subject = d_zero$subject)
+  expect_equal(unname(unlist(result)), unname(unlist(auclast)))
+  expect_false(any(grepl("Sparse C0", attr(result, "method"), fixed = TRUE)))
+})
+
+test_that("every IV AUC and AUMC calculates for sparse IV bolus data", {
+  all_cols <- get.interval.cols()
+  # The back-extrapolated percentage needs a measured time 0 (tested above)
+  iv_params <- grep("^au[mc]*civ", names(all_cols), value = TRUE)
+  iv_params <- iv_params[!grepl("pbext|_(se|df)$", iv_params)]
+  d_intervals <- data.frame(start = 0, end = 24)
+  d_intervals[iv_params] <- TRUE
+  d_dose <- data.frame(time = 0, dose = 100)
+  res_sparse <-
+    as.data.frame(suppressMessages(suppressWarnings(pk.nca(PKNCAdata(
+      PKNCAconc(d_sparse_iv, conc ~ time | subject, sparse = TRUE),
+      PKNCAdose(d_dose, dose ~ time, route = "intravascular"),
+      intervals = d_intervals, options = list(auc.method = "linear")
+    )))))
+  d_mean <- stats::aggregate(conc ~ time, d_sparse_iv, mean)
+  d_mean$subject <- 1
+  res_mean <-
+    as.data.frame(suppressMessages(suppressWarnings(pk.nca(PKNCAdata(
+      PKNCAconc(d_mean, conc ~ time | subject),
+      PKNCAdose(cbind(d_dose, subject = 1), dose ~ time | subject, route = "intravascular"),
+      intervals = d_intervals, options = list(auc.method = "linear")
+    )))))
+  for (current_param in iv_params) {
+    value_sparse <- res_sparse$PPORRES[res_sparse$PPTESTCD == current_param]
+    value_mean <- res_mean$PPORRES[res_mean$PPTESTCD == current_param]
+    expect_false(is.na(value_sparse), info = current_param)
+    # The sparse estimators use the linear trapezoidal rule on the mean profile
+    expect_equal(value_sparse, value_mean, tolerance = 1e-6, info = current_param)
+    # Parameters with a sparse estimator report its standard error
+    if (!is.na(all_cols[[current_param]]$FUN_sparse %||% NA)) {
+      expect_false(is.na(res_sparse$PPORRES[res_sparse$PPTESTCD == paste0(current_param, "_se")]), info = current_param)
+      expect_false(is.na(res_sparse$PPORRES[res_sparse$PPTESTCD == paste0(current_param, "_df")]), info = current_param)
+    }
+  }
+})
