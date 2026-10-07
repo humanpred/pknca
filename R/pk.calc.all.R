@@ -335,6 +335,29 @@ impute_conc_time <- function(impute_funs, conc, time, start, end,
   impute_data
 }
 
+# The pooled sparse samples after an imputation, when the imputation only added
+# zero concentrations at times without samples (as start_conc0 does at the
+# start of an interval).  Those zeros are known, not measured, so they have a
+# missing subject (see as_sparse_pk()).  Returns NULL when the imputation added
+# a nonzero concentration or changed a sample:  that value is an estimate with
+# its own variance, which the sparse estimators cannot account for.
+sparse_impute_zeros <- function(conc, time, subject, conc_imputed, time_imputed) {
+  mask_added <- !(time_imputed %in% time)
+  for (current_time in unique(time)) {
+    if (!isTRUE(all.equal(sort(conc[time == current_time]), sort(conc_imputed[time_imputed == current_time])))) {
+      return(NULL)
+    }
+  }
+  if (anyNA(conc_imputed[mask_added]) || any(conc_imputed[mask_added] != 0)) {
+    return(NULL)
+  }
+  list(
+    conc = c(conc, conc_imputed[mask_added]),
+    time = c(time, time_imputed[mask_added]),
+    subject = c(subject, rep(NA, sum(mask_added)))
+  )
+}
+
 # Re-raise an error from a single interval calculation with the interval named.
 #
 # PKNCA raises a `pknca_error_*` condition wherever it has diagnosed the problem
@@ -749,16 +772,24 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           start=interval$start[1], end=interval$end[1],
           conc.group=conc.sparse.group, time.group=time.sparse.group, options=options
         )
-      # An imputation that added or altered a pooled measurement has no subject
-      # to attribute it to, so a sparse estimator cannot use the result.  The
-      # calculation loop below refuses it rather than estimating from a profile
-      # whose subject bookkeeping no longer matches.  An imputation that changed
-      # nothing (a sample already exists at the interval start, say) is fine.
-      sparse_impute_changed <-
-        !isTRUE(all.equal(conc.sparse, impute_sparse$conc)) ||
-        !isTRUE(all.equal(time.sparse, impute_sparse$time))
-      conc.sparse <- impute_sparse$conc
-      time.sparse <- impute_sparse$time
+      # An imputed zero at a time without samples is known and enters the
+      # sparse estimators with a missing subject.  Any other imputed value has
+      # no subject to attribute it to and its own uncertainty, so the
+      # calculation loop below refuses the sparse estimators for it.
+      sparse_imputed <-
+        sparse_impute_zeros(
+          conc = conc.sparse, time = time.sparse, subject = subject,
+          conc_imputed = impute_sparse$conc, time_imputed = impute_sparse$time
+        )
+      if (is.null(sparse_imputed)) {
+        sparse_impute_changed <- TRUE
+        conc.sparse <- impute_sparse$conc
+        time.sparse <- impute_sparse$time
+      } else {
+        conc.sparse <- sparse_imputed$conc
+        time.sparse <- sparse_imputed$time
+        subject <- sparse_imputed$subject
+      }
     }
     tmp_imp_method <- paste0("Imputation: ", paste(na.omit(impute_method), collapse = ", "))
   } else {
@@ -818,7 +849,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     if (length(calculated_sparsely) > 0) {
       rlang::abort(
         sprintf(
-          "The sparse estimators do not support imputation, and '%s' changed the pooled samples for the interval %s.  Either drop the imputation for the sparse data, or request only parameters calculated from the mean profile (these are calculated from the pooled samples: %s).",
+          "The sparse estimators support only imputed zero concentrations at times without samples (such as from start_conc0), and '%s' imputed other values in the pooled samples for the interval %s.  Either change the imputation for the sparse data, or request only parameters calculated from the mean profile (these are calculated from the pooled samples: %s).",
           paste(na.omit(impute_method), collapse = ", "),
           name_value_text(interval[, c("start", "end")]),
           paste(calculated_sparsely, collapse = ", ")

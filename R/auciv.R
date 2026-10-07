@@ -124,10 +124,61 @@ pk.calc.auciv <- function(conc, time, c0, auc, auc.type = NULL,
 
 pknca_concept(pk.calc.auciv) <- "auc"
 
+#' Sparse AUC and AUMC for IV bolus dosing with C0 back-extrapolation
+#'
+#' These are the `FUN_sparse` of `aucivlast`, `aucivall`, `aucivinf.obs`,
+#' `aumcivlast`, `aumcivall`, and `aumcivinf.obs`:  with sparse PK and no
+#' concentration at time 0, \eqn{C_0} is
+#' back-extrapolated from the mean profile with the methods of [pk.calc.c0()]
+#' (log-linear from the first two means when the profile declines), and the
+#' area from time 0 to the first sample is added to the sparse AUC (see
+#' [pk.calc.auclast_sparse()], [pk.calc.sparse_auc()] for AUCall, and
+#' [pk.calc.aucinf.obs_sparse()]).  \eqn{C_0} is
+#' a function of the means, so its uncertainty is added to the standard error
+#' with the delta method.  With the linear trapezoidal rule, the AUMC from time
+#' 0 to the first sample does not depend on \eqn{C_0}.  When a concentration is
+#' measured (or imputed) at time 0, it is used as it is.
+#'
+#' @inheritParams pk.calc.aucinf.obs_sparse
+#' @returns A data.frame with the point estimate, its standard error, and the
+#'   degrees of freedom, named for the parameter (for example, `aucivlast`,
+#'   `aucivlast_se`, and `aucivlast_df`)
+#' @family Sparse Methods
+#' @export
+pk.calc.aucivlast_sparse <- function(conc, time, subject, ..., options=list()) {
+  sparse_auxc_result(
+    conc=conc, time=time, subject=subject, moment=FALSE, extrapolate=FALSE,
+    iv_bolus=TRUE, name="aucivlast", options=options
+  )
+}
+
+#' @describeIn pk.calc.aucivlast_sparse Sparse AUCall for IV bolus dosing
+#' @export
+pk.calc.aucivall_sparse <- function(conc, time, subject, ..., options=list()) {
+  sparse_auxc_result(
+    conc=conc, time=time, subject=subject, moment=FALSE, extrapolate=FALSE,
+    auc.type="AUCall", iv_bolus=TRUE, name="aucivall", options=options
+  )
+}
+
+#' @describeIn pk.calc.aucivlast_sparse Sparse AUCinf,obs for IV bolus dosing
+#' @export
+pk.calc.aucivinf.obs_sparse <- function(conc, time, subject, lambda.z,
+                                        lambda.z.time.first, lambda.z.time.last,
+                                        lambda.z.n.points, ..., options=list()) {
+  sparse_auxc_result(
+    conc=conc, time=time, subject=subject, lambda.z=lambda.z,
+    lambda.z.time.first=lambda.z.time.first, lambda.z.time.last=lambda.z.time.last,
+    lambda.z.n.points=lambda.z.n.points, moment=FALSE, extrapolate=TRUE,
+    iv_bolus=TRUE, name="aucivinf.obs", options=options
+  )
+}
+
 
 add.interval.col(
   name = "aucivlast",
   FUN = "pk.calc.auciv",
+  FUN_sparse = "pk.calc.aucivlast_sparse",
   unit_type = "auc",
   pretty_name = "AUClast (IV dosing)",
   depends = c("auclast", "c0"),
@@ -139,8 +190,32 @@ add.interval.col(
   formula = "$AUC_{\\text{iv,last}} = AUC_{\\text{last}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
 
 add.interval.col(
+  name = "aucivlast_se",
+  FUN = NA,
+  unit_type = "auc",
+  pretty_name = "AUClast (IV dosing) standard error",
+  desc = "SE of AUClast (IV dosing) (sparse PK only)",
+  depends = "aucivlast",
+  pptestcd_cdisc = "AUCIVLSE",
+  pptest_cdisc = "Sparse AUClast IV standard error",
+  formula_note = "With sparse PK, the trapezoidal weights plus the delta-method gradient of the back-extrapolated C0")
+
+add.interval.col(
+  name = "aucivlast_df",
+  FUN = NA,
+  unit_type = "count",
+  pretty_name = "AUClast (IV dosing) degrees of freedom",
+  desc = "DF for AUClast (IV dosing) (sparse PK only)",
+  depends = "aucivlast",
+  pptestcd_cdisc = "AUCIVLDF",
+  pptest_cdisc = "Sparse AUClast IV degrees of freedom",
+  formula = "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$",
+  formula_note = "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)")
+
+add.interval.col(
   name = "aucivall",
   FUN = "pk.calc.auciv",
+  FUN_sparse = "pk.calc.aucivall_sparse",
   unit_type = "auc",
   pretty_name = "AUCall (IV dosing)",
   depends = c("aucall", "c0"),
@@ -150,6 +225,29 @@ add.interval.col(
   pptestcd_cdisc="AUCIVA",
   pptest_cdisc="AUCall (IV dosing)",
   formula = "$AUC_{\\text{iv,all}} = AUC_{\\text{all}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
+
+add.interval.col(
+  name = "aucivall_se",
+  FUN = NA,
+  unit_type = "auc",
+  pretty_name = "AUCall (IV dosing) standard error",
+  desc = "SE of AUCall (IV dosing) (sparse PK only)",
+  depends = "aucivall",
+  pptestcd_cdisc = "AUCIVASE",
+  pptest_cdisc = "Sparse AUCall IV standard error",
+  formula_note = "With sparse PK, the trapezoidal weights plus the delta-method gradient of the back-extrapolated C0")
+
+add.interval.col(
+  name = "aucivall_df",
+  FUN = NA,
+  unit_type = "count",
+  pretty_name = "AUCall (IV dosing) degrees of freedom",
+  desc = "DF for AUCall (IV dosing) (sparse PK only)",
+  depends = "aucivall",
+  pptestcd_cdisc = "AUCIVADF",
+  pptest_cdisc = "Sparse AUCall IV degrees of freedom",
+  formula = "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$",
+  formula_note = "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)")
 
 add.interval.col(
   name = "aucivint.last",
@@ -180,6 +278,7 @@ add.interval.col(
 add.interval.col(
   name = "aucivinf.obs",
   FUN = "pk.calc.auciv",
+  FUN_sparse = "pk.calc.aucivinf.obs_sparse",
   unit_type = "auc",
   pretty_name = "AUCinf,obs (IV dosing)",
   depends = c("aucinf.obs", "c0", "lambda.z", "clast.obs"),
@@ -189,6 +288,29 @@ add.interval.col(
   pptestcd_cdisc="AUCIVIS",
   pptest_cdisc="AUCinf,obs (IV dosing)",
   formula = "$AUC_{\\text{iv,}\\infty\\text{,obs}} = AUC_{\\infty,\\text{obs}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
+
+add.interval.col(
+  name = "aucivinf.obs_se",
+  FUN = NA,
+  unit_type = "auc",
+  pretty_name = "AUCinf,obs (IV dosing) standard error",
+  desc = "SE of AUCinf,obs (IV dosing) (sparse PK only)",
+  depends = "aucivinf.obs",
+  pptestcd_cdisc = "AUCIVISE",
+  pptest_cdisc = "Sparse AUCinf obs IV standard error",
+  formula_note = "With sparse PK, the trapezoidal weights plus the delta-method gradient of the back-extrapolated C0, the extrapolation weight at tlast, and the delta-method gradient for lambda.z when the sparse_lambda_z_se option is \"delta\"")
+
+add.interval.col(
+  name = "aucivinf.obs_df",
+  FUN = NA,
+  unit_type = "count",
+  pretty_name = "AUCinf,obs (IV dosing) degrees of freedom",
+  desc = "DF for AUCinf,obs (IV dosing) (sparse PK only)",
+  depends = "aucivinf.obs",
+  pptestcd_cdisc = "AUCIVIDF",
+  pptest_cdisc = "Sparse AUCinf obs IV degrees of freedom",
+  formula = "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$",
+  formula_note = "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)")
 
 add.interval.col(
   name = "aucivinf.pred",
@@ -341,10 +463,42 @@ pk.calc.aumciv <- function(conc, time, c0, aumc, auc.type = NULL,
 }
 
 pknca_concept(pk.calc.aumciv) <- "aumc"
+
+#' @describeIn pk.calc.aucivlast_sparse Sparse AUMClast for IV bolus dosing
+#' @export
+pk.calc.aumcivlast_sparse <- function(conc, time, subject, ..., options=list()) {
+  sparse_auxc_result(
+    conc=conc, time=time, subject=subject, moment=TRUE, extrapolate=FALSE,
+    iv_bolus=TRUE, name="aumcivlast", options=options
+  )
+}
+
+#' @describeIn pk.calc.aucivlast_sparse Sparse AUMCall for IV bolus dosing
+#' @export
+pk.calc.aumcivall_sparse <- function(conc, time, subject, ..., options=list()) {
+  sparse_auxc_result(
+    conc=conc, time=time, subject=subject, moment=TRUE, extrapolate=FALSE,
+    auc.type="AUCall", iv_bolus=TRUE, name="aumcivall", options=options
+  )
+}
+
+#' @describeIn pk.calc.aucivlast_sparse Sparse AUMCinf,obs for IV bolus dosing
+#' @export
+pk.calc.aumcivinf.obs_sparse <- function(conc, time, subject, lambda.z,
+                                         lambda.z.time.first, lambda.z.time.last,
+                                         lambda.z.n.points, ..., options=list()) {
+  sparse_auxc_result(
+    conc=conc, time=time, subject=subject, lambda.z=lambda.z,
+    lambda.z.time.first=lambda.z.time.first, lambda.z.time.last=lambda.z.time.last,
+    lambda.z.n.points=lambda.z.n.points, moment=TRUE, extrapolate=TRUE,
+    iv_bolus=TRUE, name="aumcivinf.obs", options=options
+  )
+}
 # Register all standard AUMC IV versions
 add.interval.col(
   name = "aumcivlast",
   FUN = "pk.calc.aumciv",
+  FUN_sparse = "pk.calc.aumcivlast_sparse",
   unit_type = "aumc",
   pretty_name = "AUMClast (IV dosing)",
   depends = c("aumclast", "c0"),
@@ -356,8 +510,32 @@ add.interval.col(
 )
 
 add.interval.col(
+  name = "aumcivlast_se",
+  FUN = NA,
+  unit_type = "aumc",
+  pretty_name = "AUMClast (IV dosing) standard error",
+  desc = "SE of AUMClast (IV dosing) (sparse PK only)",
+  depends = "aumcivlast",
+  pptestcd_cdisc = "AUMIVLSE",
+  pptest_cdisc = "Sparse AUMClast IV standard error",
+  formula_note = "With sparse PK, the trapezoidal weights on the moment means (C0 does not change the AUMC with the linear trapezoidal rule)")
+
+add.interval.col(
+  name = "aumcivlast_df",
+  FUN = NA,
+  unit_type = "count",
+  pretty_name = "AUMClast (IV dosing) degrees of freedom",
+  desc = "DF for AUMClast (IV dosing) (sparse PK only)",
+  depends = "aumcivlast",
+  pptestcd_cdisc = "AUMIVLDF",
+  pptest_cdisc = "Sparse AUMClast IV degrees of freedom",
+  formula = "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$",
+  formula_note = "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)")
+
+add.interval.col(
   name = "aumcivall",
   FUN = "pk.calc.aumciv",
+  FUN_sparse = "pk.calc.aumcivall_sparse",
   unit_type = "aumc",
   pretty_name = "AUMCall (IV dosing)",
   depends = c("aumcall", "c0"),
@@ -367,6 +545,29 @@ add.interval.col(
   pptestcd_cdisc = "AUMCIVA",
   pptest_cdisc = "AUMCall (IV dosing)"
 )
+
+add.interval.col(
+  name = "aumcivall_se",
+  FUN = NA,
+  unit_type = "aumc",
+  pretty_name = "AUMCall (IV dosing) standard error",
+  desc = "SE of AUMCall (IV dosing) (sparse PK only)",
+  depends = "aumcivall",
+  pptestcd_cdisc = "AUMIVASE",
+  pptest_cdisc = "Sparse AUMCall IV standard error",
+  formula_note = "With sparse PK, the trapezoidal weights on the moment means (C0 does not change the AUMC with the linear trapezoidal rule)")
+
+add.interval.col(
+  name = "aumcivall_df",
+  FUN = NA,
+  unit_type = "count",
+  pretty_name = "AUMCall (IV dosing) degrees of freedom",
+  desc = "DF for AUMCall (IV dosing) (sparse PK only)",
+  depends = "aumcivall",
+  pptestcd_cdisc = "AUMIVADF",
+  pptest_cdisc = "Sparse AUMCall IV degrees of freedom",
+  formula = "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$",
+  formula_note = "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)")
 
 add.interval.col(
   name = "aumcivint.last",
@@ -397,6 +598,7 @@ add.interval.col(
 add.interval.col(
   name = "aumcivinf.obs",
   FUN = "pk.calc.aumciv",
+  FUN_sparse = "pk.calc.aumcivinf.obs_sparse",
   unit_type = "aumc",
   pretty_name = "AUMCinf,obs (IV dosing)",
   depends = c("aumcinf.obs", "c0", "lambda.z", "clast.obs"),
@@ -406,6 +608,29 @@ add.interval.col(
   pptestcd_cdisc = "AUMCIVIS",
   pptest_cdisc = "AUMCinf,obs (IV dosing)"
 )
+
+add.interval.col(
+  name = "aumcivinf.obs_se",
+  FUN = NA,
+  unit_type = "aumc",
+  pretty_name = "AUMCinf,obs (IV dosing) standard error",
+  desc = "SE of AUMCinf,obs (IV dosing) (sparse PK only)",
+  depends = "aumcivinf.obs",
+  pptestcd_cdisc = "AUMIVISE",
+  pptest_cdisc = "Sparse AUMCinf obs IV standard error",
+  formula_note = "With sparse PK, the trapezoidal weights on the moment means (C0 does not change the AUMC with the linear trapezoidal rule), plus the extrapolation weight at tlast and the delta-method gradient for lambda.z when the sparse_lambda_z_se option is \"delta\"")
+
+add.interval.col(
+  name = "aumcivinf.obs_df",
+  FUN = NA,
+  unit_type = "count",
+  pretty_name = "AUMCinf,obs (IV dosing) degrees of freedom",
+  desc = "DF for AUMCinf,obs (IV dosing) (sparse PK only)",
+  depends = "aumcivinf.obs",
+  pptestcd_cdisc = "AUMIVIDF",
+  pptest_cdisc = "Sparse AUMCinf obs IV degrees of freedom",
+  formula = "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$",
+  formula_note = "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)")
 
 add.interval.col(
   name = "aumcivinf.pred",
@@ -434,6 +659,60 @@ PKNCA.set.summary(
   description = "geometric mean and geometric coefficient of variation",
   point = business.geomean,
   spread = business.geocv
+)
+
+# Sparse standard errors are shown with their estimates, and the degrees of
+# freedom with the arithmetic mean and standard deviation
+PKNCA.set.summary(
+  name = "aucivlast_se",
+  description = "estimate and standard error",
+  point = business.mean,
+  spread = summary_spread_one_se,
+  spread_for = "aucivlast"
+)
+PKNCA.set.summary(
+  name = "aucivall_se",
+  description = "estimate and standard error",
+  point = business.mean,
+  spread = summary_spread_one_se,
+  spread_for = "aucivall"
+)
+PKNCA.set.summary(
+  name = "aucivinf.obs_se",
+  description = "estimate and standard error",
+  point = business.mean,
+  spread = summary_spread_one_se,
+  spread_for = "aucivinf.obs"
+)
+PKNCA.set.summary(
+  name = "aumcivlast_se",
+  description = "estimate and standard error",
+  point = business.mean,
+  spread = summary_spread_one_se,
+  spread_for = "aumcivlast"
+)
+PKNCA.set.summary(
+  name = "aumcivall_se",
+  description = "estimate and standard error",
+  point = business.mean,
+  spread = summary_spread_one_se,
+  spread_for = "aumcivall"
+)
+PKNCA.set.summary(
+  name = "aumcivinf.obs_se",
+  description = "estimate and standard error",
+  point = business.mean,
+  spread = summary_spread_one_se,
+  spread_for = "aumcivinf.obs"
+)
+PKNCA.set.summary(
+  name = c(
+    "aucivlast_df", "aucivall_df", "aucivinf.obs_df",
+    "aumcivlast_df", "aumcivall_df", "aumcivinf.obs_df"
+  ),
+  description = "arithmetic mean and standard deviation",
+  point = business.mean,
+  spread = business.sd
 )
 
 # Arithmetic summaries for percent back-extrapolation

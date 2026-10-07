@@ -246,7 +246,7 @@ test_that("the bolus-only set is exactly what c0 reaches without a dose duration
     names(specs)[vapply(specs, function(x) isTRUE(x$requires_dose_dur), TRUE)]
   from_c0 <- intersect(get.parameter.deps("c0"), names(classification$route))
   expect_equal(sort(bolus_only), sort(setdiff(from_c0, needs_duration)))
-  expect_length(bolus_only, 31L)
+  expect_length(bolus_only, 43L)
 })
 
 test_that("tlag is extravascular", {

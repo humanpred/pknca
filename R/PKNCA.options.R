@@ -485,12 +485,12 @@ pair_r_squared_factors <- function(x, name) {
   },
 
   sparse_lambda_z_se = function(x, default = FALSE, description = FALSE) {
-    choices <- c("none", "delta")
+    choices <- c("delta", "none")
     if (description)
       return(paste(
         "How the standard error of a sparse AUCinf,obs or AUMCinf,obs accounts for",
-        "the estimated lambda.z:  \"none\" treats it as known (Yuan 1993), and",
-        "\"delta\" adds its uncertainty with the delta method.  Options are:",
+        "the estimated lambda.z:  \"delta\" (the default) adds its uncertainty with",
+        "the delta method, and \"none\" treats it as known (Yuan 1993).  Options are:",
         paste0('"', choices, '"', collapse = ", ")
       ))
     if (default)

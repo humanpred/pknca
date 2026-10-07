@@ -14,7 +14,11 @@ pk.calc.aumclast_sparse(conc, time, subject, ..., options = list())
 
 \item{time}{Time of the measurement of the concentrations}
 
-\item{subject}{Subject identifiers (may be any class; may not be null)}
+\item{subject}{Subject identifiers (may be any class; may not be null).  A
+missing subject marks an imputed concentration (such as the zero that the
+\code{start_conc0} imputation adds at the start of an interval):  a time where
+every subject is missing has a known concentration, which enters sparse
+estimates but not their variance.}
 
 \item{...}{For functions other than \code{pk.calc.auxc}, these values are passed
 to \code{pk.calc.auxc}}
@@ -49,6 +53,7 @@ the option is set to anything else.
 Other Sparse Methods:
 \code{\link[=as_sparse_pk]{as_sparse_pk()}},
 \code{\link[=pk.calc.aucinf.obs_sparse]{pk.calc.aucinf.obs_sparse()}},
+\code{\link[=pk.calc.aucivlast_sparse]{pk.calc.aucivlast_sparse()}},
 \code{\link[=pk.calc.sparse_auc]{pk.calc.sparse_auc()}},
 \code{\link[=pk.calc.sparse_aumc]{pk.calc.sparse_aumc()}},
 \code{\link[=sparse_auc_weight_linear]{sparse_auc_weight_linear()}},

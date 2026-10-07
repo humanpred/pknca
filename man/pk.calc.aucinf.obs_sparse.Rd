@@ -34,7 +34,11 @@ pk.calc.aumcinf.obs_sparse(
 
 \item{time}{Time of the measurement of the concentrations}
 
-\item{subject}{Subject identifiers (may be any class; may not be null)}
+\item{subject}{Subject identifiers (may be any class; may not be null).  A
+missing subject marks an imputed concentration (such as the zero that the
+\code{start_conc0} imputation adds at the start of an interval):  a time where
+every subject is missing has a known concentration, which enters sparse
+estimates but not their variance.}
 
 \item{lambda.z}{The elimination rate of the mean profile}
 
@@ -60,8 +64,8 @@ PK, \code{\link[=pk.nca]{pk.nca()}} estimates them as the sparse AUClast or AUMC
 concentration at tlast with the \code{lambda.z} of the mean profile, with the
 standard error of Yuan (1993) and its extension to the AUMC.  The
 \code{sparse_lambda_z_se} option of \code{\link[=PKNCA.options]{PKNCA.options()}} chooses whether the standard
-error treats \code{lambda.z} as known (\code{"none"}, Yuan's method) or adds its
-uncertainty with the delta method (\code{"delta"}); see
+error adds the uncertainty of \code{lambda.z} with the delta method (\code{"delta"},
+the default) or treats it as known (\code{"none"}, Yuan's method); see
 \code{vignette("v24-sparse-auc-to-infinity")}.
 }
 \section{Functions}{
@@ -76,6 +80,7 @@ Pharmaceutical Sciences.  1993;82(7):761-763. doi:10.1002/jps.2600820718
 \seealso{
 Other Sparse Methods:
 \code{\link[=as_sparse_pk]{as_sparse_pk()}},
+\code{\link[=pk.calc.aucivlast_sparse]{pk.calc.aucivlast_sparse()}},
 \code{\link[=pk.calc.auclast_sparse]{pk.calc.auclast_sparse()}},
 \code{\link[=pk.calc.sparse_auc]{pk.calc.sparse_auc()}},
 \code{\link[=pk.calc.sparse_aumc]{pk.calc.sparse_aumc()}},

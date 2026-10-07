@@ -93,7 +93,7 @@ test_that("PKNCA.options", {
       ),
       allow_partial_missing_units = FALSE,
       hl_method = "log-linear",
-      sparse_lambda_z_se = "none",
+      sparse_lambda_z_se = "delta",
       tobit_n_points_penalty = 0,
       tobit_optim_control = list()
     )

@@ -34,6 +34,7 @@ are:
 Other Sparse Methods:
 \code{\link[=as_sparse_pk]{as_sparse_pk()}},
 \code{\link[=pk.calc.aucinf.obs_sparse]{pk.calc.aucinf.obs_sparse()}},
+\code{\link[=pk.calc.aucivlast_sparse]{pk.calc.aucivlast_sparse()}},
 \code{\link[=pk.calc.auclast_sparse]{pk.calc.auclast_sparse()}},
 \code{\link[=pk.calc.sparse_auc]{pk.calc.sparse_auc()}},
 \code{\link[=pk.calc.sparse_aumc]{pk.calc.sparse_aumc()}},

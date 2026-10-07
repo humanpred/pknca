@@ -54,9 +54,11 @@ test_that("as_sparse_pk rejects invalid subject vectors", {
     as_sparse_pk(conc = conc, time = time, subject = 1:5),
     regexp = "Must have length 6, but has length 5"
   )
+  # A missing subject marks an imputed concentration, which cannot share a
+  # time with measured ones
   expect_error(
-    as_sparse_pk(conc = conc, time = time, subject = c(1, 2, 3, 4, 5, NA)),
-    regexp = "Contains missing values"
+    as_sparse_pk(conc = conc, time = time, subject = c(1, 2, 3, NA, 5, 6)),
+    class = "pknca_error_sparse_pk_mixed_imputed"
   )
 })
 
@@ -370,7 +372,8 @@ test_that("sparse AUCinf,obs with lambda.z known is Yuan (1993) equations 3 and 
     pk.calc.aucinf.obs_sparse(
       conc = d_sparse_inf$conc, time = d_sparse_inf$time, subject = d_sparse_inf$subject,
       lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
-      lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points
+      lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points,
+      options = list(sparse_lambda_z_se = "none")
     )
   times <- sort(unique(d_sparse_inf$time))
   means <- tapply(d_sparse_inf$conc, d_sparse_inf$time, mean)
@@ -401,20 +404,24 @@ test_that("the delta-method standard error of sparse AUCinf,obs and AUMCinf,obs 
   expect_equal(auc$aucinf.obs_se, sparse_inf_numeric_se(d_sparse_inf, hl, moment = FALSE), tolerance = 1e-6)
   expect_equal(aumc$aumcinf.obs_se, sparse_inf_numeric_se(d_sparse_inf, hl, moment = TRUE), tolerance = 1e-6)
   expect_equal(attr(auc, "method")[3], "Sparse SE: delta method for lambda.z")
-  # The point estimates do not depend on the standard error method
+  # The delta method is the default
   args$options <- list()
+  expect_equal(do.call(pk.calc.aucinf.obs_sparse, args), auc)
+  # The point estimates do not depend on the standard error method
+  args$options <- list(sparse_lambda_z_se = "none")
   expect_equal(auc$aucinf.obs, do.call(pk.calc.aucinf.obs_sparse, args)$aucinf.obs)
   expect_equal(aumc$aumcinf.obs, do.call(pk.calc.aumcinf.obs_sparse, args)$aumcinf.obs)
 })
 
 test_that("the delta-method standard error covers the covariances of a batch design", {
-  # Three batches of four animals, each batch sampled at three times
+  # Three batches of four animals, each batch sampled at three times (and the
+  # first batch predose)
   d_batch <-
     data.frame(
-      time = rep(c(0.5, 2, 6, 1, 4, 12, 3, 8, 24), each = 4),
-      subject = rep(c(rep(1:4, 3), rep(5:8, 3), rep(9:12, 3))),
+      time = rep(c(0, 0.5, 2, 6, 1, 4, 12, 3, 8, 24), each = 4),
+      subject = rep(c(rep(1:4, 4), rep(5:8, 3), rep(9:12, 3))),
       conc =
-        c(4.1, 3.2, 5.0, 3.8,  6.9, 5.6, 7.7, 6.1,  4.4, 3.5, 5.3, 3.9,
+        c(0, 0, 0, 0,  4.1, 3.2, 5.0, 3.8,  6.9, 5.6, 7.7, 6.1,  4.4, 3.5, 5.3, 3.9,
           6.0, 4.8, 6.8, 5.1,  6.3, 5.0, 7.1, 5.6,  2.0, 1.5, 2.4, 1.7,
           7.1, 5.9, 7.9, 6.4,  3.1, 2.4, 3.6, 2.7,  0.40, 0.29, 0.47, 0.33)
     )
@@ -443,7 +450,7 @@ test_that("the delta-method standard error covers the covariances of a batch des
   idx_hl <- which(times >= hl$lambda.z.time.first & times <= hl$lambda.z.time.last)
   gradient <- numeric(length(means))
   for (j in seq_along(means)) {
-    h <- 1e-6*means[j]
+    h <- 1e-6*max(means[j], 1)
     up <- down <- means
     up[j] <- up[j] + h
     down[j] <- down[j] - h
@@ -459,7 +466,8 @@ test_that("sparse AUMCinf,obs with lambda.z known extrapolates the moment at tla
     pk.calc.aumcinf.obs_sparse(
       conc = d_sparse_inf$conc, time = d_sparse_inf$time, subject = d_sparse_inf$subject,
       lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
-      lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points
+      lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points,
+      options = list(sparse_lambda_z_se = "none")
     )
   times <- sort(unique(d_sparse_inf$time))
   means <- unname(tapply(d_sparse_inf$conc, d_sparse_inf$time, mean))
@@ -484,6 +492,26 @@ test_that("sparse AUCinf,obs and AUMCinf,obs are NA without a lambda.z", {
   expect_true(all(is.na(unlist(result))))
 })
 
+test_that("sparse AUCinf,obs and AUMCinf,obs are NA without a sample at time 0, like the sparse AUClast", {
+  d_late <- d_sparse_inf[d_sparse_inf$time > 0, ]
+  hl <- sparse_inf_half_life(d_late)
+  args <-
+    list(
+      conc = d_late$conc, time = d_late$time, subject = d_late$subject,
+      lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
+      lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points
+    )
+  expect_warning(
+    auclast <- pk.calc.sparse_auclast(conc = d_late$conc, time = d_late$time, subject = d_late$subject),
+    class = "pknca_warning_auc_before_first"
+  )
+  expect_true(is.na(auclast$sparse_auclast))
+  expect_warning(auc <- do.call(pk.calc.aucinf.obs_sparse, args), class = "pknca_warning_auc_before_first")
+  expect_warning(aumc <- do.call(pk.calc.aumcinf.obs_sparse, args), class = "pknca_warning_auc_before_first")
+  expect_true(all(is.na(unlist(auc))))
+  expect_true(all(is.na(unlist(aumc))))
+})
+
 test_that("the delta-method standard error needs identifiable log-linear half-life points", {
   hl <- sparse_inf_half_life(d_sparse_inf)
   args <-
@@ -500,8 +528,18 @@ test_that("the delta-method standard error needs identifiable log-linear half-li
   expect_false(is.na(result$aucinf.obs))
   expect_true(is.na(result$aucinf.obs_se))
   args$lambda.z.n.points <- hl$lambda.z.n.points
+  args$options <- list(sparse_lambda_z_se = "none")
+  yuan <- do.call(pk.calc.aucinf.obs_sparse, args)
+  # Without the log-linear half-life, the estimate is kept and the standard
+  # error is NA
   args$options <- list(sparse_lambda_z_se = "delta", hl_method = "tobit")
-  expect_error(do.call(pk.calc.aucinf.obs_sparse, args), class = "pknca_error_sparse_lambda_z_se_hl_method")
+  expect_warning(
+    result <- do.call(pk.calc.aucinf.obs_sparse, args),
+    class = "pknca_warning_sparse_lambda_z_se_hl_method"
+  )
+  expect_equal(result$aucinf.obs, yuan$aucinf.obs)
+  expect_true(is.na(result$aucinf.obs_se))
+  expect_true(is.na(result$aucinf.obs_df))
 })
 
 test_that("pk.nca() calculates sparse AUCinf,obs and AUMCinf,obs with their standard errors", {
@@ -896,9 +934,10 @@ test_that("the deprecated names still give the values they always have", {
 # ============================================================================
 # Imputation and the sparse estimators
 # ============================================================================
-test_that("an imputation that changes the pooled samples is refused for a sparse estimator", {
-  # No time-0 sample, so start_conc0 adds a measurement that belongs to no
-  # subject.  The sparse estimators need one subject per measurement.
+test_that("an imputation that adds a nonzero concentration is refused for a sparse estimator", {
+  # No time-0 sample, so start_cmin adds the minimum concentration at time 0:
+  # an estimate that belongs to no subject, with a variance that the sparse
+  # estimators cannot account for.
   d_sparse <-
     data.frame(
       id = 1:9,
@@ -910,11 +949,11 @@ test_that("an imputation that changes the pooled samples is refused for a sparse
     PKNCAdata(
       o_conc,
       intervals = data.frame(start = 0, end = 24, auclast = TRUE),
-      impute = "start_conc0"
+      impute = "start_cmin"
     )
   expect_error(
     suppressMessages(pk.nca(o_data)),
-    regexp = "sparse estimators do not support imputation.*'start_conc0' changed the pooled samples for the interval start=0, end=24.*calculated from the pooled samples: auclast",
+    regexp = "sparse estimators support only imputed zero concentrations.*'start_cmin' imputed other values in the pooled samples for the interval start=0, end=24.*calculated from the pooled samples: auclast",
     class = "pknca_error_sparse_impute"
   )
   # It is a diagnosed problem, so it does not ask for a bug report
@@ -931,7 +970,7 @@ test_that("an imputation that changes the pooled samples is refused for a sparse
     PKNCAdata(
       o_conc,
       intervals = data.frame(start = 0, end = 24, cmax = TRUE, tmax = TRUE),
-      impute = "start_conc0"
+      impute = "start_cmin"
     )
   expect_no_error(suppressMessages(suppressWarnings(pk.nca(o_data_dense_params))))
 
@@ -942,13 +981,63 @@ test_that("an imputation that changes the pooled samples is refused for a sparse
       PKNCAdata(
         o_conc,
         intervals = data.frame(start = 0, end = 24, sparse_auclast = TRUE),
-        impute = "start_conc0"
+        impute = "start_cmin"
       )
     )
   expect_error(
     suppressMessages(pk.nca(o_data_legacy)),
     class = "pknca_error_sparse_impute"
   )
+})
+
+test_that("a sparse AUC needs a time-0 concentration, measured or imputed as zero", {
+  # Serial sacrifice without a time-0 sample
+  d_no_zero <- d_sparse_inf[d_sparse_inf$time > 0, ]
+  d_no_zero$id <- seq_len(nrow(d_no_zero))
+  # The same animals with known zero concentrations at time 0 from three more
+  # animals
+  d_zero <- rbind(data.frame(time = 0, conc = 0, id = 100 + 1:3), d_no_zero[, c("time", "conc", "id")])
+  params <- c("auclast", "aumclast", "aucinf.obs", "aumcinf.obs")
+  d_intervals <- data.frame(start = 0, end = Inf)
+  d_intervals[params] <- TRUE
+  res_missing <-
+    as.data.frame(suppressMessages(suppressWarnings(pk.nca(
+      PKNCAdata(PKNCAconc(d_no_zero, conc~time|id, sparse = TRUE), intervals = d_intervals)
+    ))))
+  res_imputed <-
+    as.data.frame(suppressMessages(pk.nca(
+      PKNCAdata(PKNCAconc(d_no_zero, conc~time|id, sparse = TRUE), intervals = d_intervals, impute = "start_conc0")
+    )))
+  res_zero <-
+    as.data.frame(suppressMessages(pk.nca(
+      PKNCAdata(PKNCAconc(d_zero, conc~time|id, sparse = TRUE), intervals = d_intervals)
+    )))
+  all_params <- c(params, paste0(params, "_se"), paste0(params, "_df"))
+  for (current_param in all_params) {
+    value_missing <- res_missing$PPORRES[res_missing$PPTESTCD == current_param]
+    value_imputed <- res_imputed$PPORRES[res_imputed$PPTESTCD == current_param]
+    value_zero <- res_zero$PPORRES[res_zero$PPTESTCD == current_param]
+    # Without a time-0 concentration, every sparse AUC and AUMC is missing
+    expect_equal(value_missing, NA_real_, info = current_param)
+    # An imputed zero is a known concentration:  the estimates, standard
+    # errors, and degrees of freedom match those of measured zeros, which have
+    # no variance
+    expect_equal(value_imputed, value_zero, info = current_param)
+    expect_false(is.na(value_imputed), info = current_param)
+  }
+  expect_true(all(grepl("Imputation: start_conc0", res_imputed$PPANMETH, fixed = TRUE)))
+})
+
+test_that("as_sparse_pk() marks a time with only missing subjects as imputed", {
+  sparse_pk <- as_sparse_pk(conc = c(0, 1, 2, 3), time = c(0, 1, 1, 2), subject = c(NA, 1, 2, 3))
+  expect_equal(vapply(sparse_pk, `[[`, "imputed", FUN.VALUE = TRUE), c(TRUE, FALSE, FALSE))
+  expect_error(
+    as_sparse_pk(conc = c(0, 1, 2, 3), time = c(0, 1, 1, 2), subject = c(NA, 1, NA, 3)),
+    class = "pknca_error_sparse_pk_mixed_imputed"
+  )
+  # The imputed time enters the estimate but not the variance
+  sparse_pk <- sparse_auc_weight_linear(sparse_mean(sparse_pk))
+  expect_equal(length(sparse_pk_weighted(sparse_pk)), 2)
 })
 
 test_that("an imputation that leaves the pooled samples alone still calculates", {

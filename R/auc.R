@@ -419,8 +419,8 @@ pk.calc.aumclast_sparse <- function(conc, time, subject, ..., options=list()) {
 #' concentration at tlast with the `lambda.z` of the mean profile, with the
 #' standard error of Yuan (1993) and its extension to the AUMC.  The
 #' `sparse_lambda_z_se` option of [PKNCA.options()] chooses whether the standard
-#' error treats `lambda.z` as known (`"none"`, Yuan's method) or adds its
-#' uncertainty with the delta method (`"delta"`); see
+#' error adds the uncertainty of `lambda.z` with the delta method (`"delta"`,
+#' the default) or treats it as known (`"none"`, Yuan's method); see
 #' `vignette("v24-sparse-auc-to-infinity")`.
 #'
 #' @inheritParams pk.calc.sparse_auc
@@ -440,10 +440,10 @@ pk.calc.aumclast_sparse <- function(conc, time, subject, ..., options=list()) {
 pk.calc.aucinf.obs_sparse <- function(conc, time, subject, lambda.z,
                                       lambda.z.time.first, lambda.z.time.last,
                                       lambda.z.n.points, ..., options=list()) {
-  sparse_inf_obs_result(
+  sparse_auxc_result(
     conc=conc, time=time, subject=subject, lambda.z=lambda.z,
     lambda.z.time.first=lambda.z.time.first, lambda.z.time.last=lambda.z.time.last,
-    lambda.z.n.points=lambda.z.n.points, moment=FALSE, name="aucinf.obs",
+    lambda.z.n.points=lambda.z.n.points, moment=FALSE, extrapolate=TRUE, name="aucinf.obs",
     options=options
   )
 }
@@ -453,24 +453,28 @@ pk.calc.aucinf.obs_sparse <- function(conc, time, subject, lambda.z,
 pk.calc.aumcinf.obs_sparse <- function(conc, time, subject, lambda.z,
                                        lambda.z.time.first, lambda.z.time.last,
                                        lambda.z.n.points, ..., options=list()) {
-  sparse_inf_obs_result(
+  sparse_auxc_result(
     conc=conc, time=time, subject=subject, lambda.z=lambda.z,
     lambda.z.time.first=lambda.z.time.first, lambda.z.time.last=lambda.z.time.last,
-    lambda.z.n.points=lambda.z.n.points, moment=TRUE, name="aumcinf.obs",
+    lambda.z.n.points=lambda.z.n.points, moment=TRUE, extrapolate=TRUE, name="aumcinf.obs",
     options=options
   )
 }
 
-# The shared body of pk.calc.aucinf.obs_sparse() and pk.calc.aumcinf.obs_sparse()
-sparse_inf_obs_result <- function(conc, time, subject, lambda.z,
-                                  lambda.z.time.first, lambda.z.time.last,
-                                  lambda.z.n.points, moment, name, options) {
+# The shared body of the sparse estimators that use sparse_auxc_obs():
+# pk.calc.aucinf.obs_sparse(), pk.calc.aumcinf.obs_sparse(), and their IV bolus
+# versions
+sparse_auxc_result <- function(conc, time, subject, lambda.z = NA,
+                               lambda.z.time.first = NA, lambda.z.time.last = NA,
+                               lambda.z.n.points = NA, moment, extrapolate,
+                               auc.type = "AUClast", iv_bolus = FALSE, name, options) {
   lambda_z_se <- PKNCA.choose.option(name="sparse_lambda_z_se", options=options)
   result <-
-    sparse_auxc_inf_obs(
+    sparse_auxc_obs(
       conc=conc, time=time, subject=subject, lambda.z=lambda.z,
       lambda.z.time.first=lambda.z.time.first, lambda.z.time.last=lambda.z.time.last,
-      lambda.z.n.points=lambda.z.n.points, moment=moment, lambda_z_se=lambda_z_se,
+      lambda.z.n.points=lambda.z.n.points, moment=moment, extrapolate=extrapolate,
+      auc.type=auc.type, iv_bolus=iv_bolus, lambda_z_se=lambda_z_se,
       hl_method=PKNCA.choose.option(name="hl_method", options=options)
     )
   unify_sparse_result(
@@ -479,9 +483,12 @@ sparse_inf_obs_result <- function(conc, time, subject, lambda.z,
     method=
       c(
         "AUC: linear", "Sparse: arithmetic mean, <=50% BLQ",
-        if (lambda_z_se == "delta") {
+        if (!is.na(result$c0_method)) {
+          paste0("Sparse C0: ", result$c0_method, " on the mean profile")
+        },
+        if (extrapolate && lambda_z_se == "delta") {
           "Sparse SE: delta method for lambda.z"
-        } else {
+        } else if (extrapolate) {
           "Sparse SE: lambda.z treated as known (Yuan 1993)"
         }
       )
