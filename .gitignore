@@ -29,3 +29,6 @@ src/*.dll
 Rplots.pdf
 tests/testthat/_problems/
 tests/testthat/testthat-problems.rds
+
+# Replicate-level output of data-raw/sparse_aucinf_simulation.R (the summary is in vignettes/)
+data-raw/sparse_aucinf_simulation_replicates.rds
