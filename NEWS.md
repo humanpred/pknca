@@ -771,6 +771,20 @@ the generated intervals:
   interval, measured or imputed.  See `vignette("v24-sparse-auc-to-infinity")`.
   (#428)
 
+* `sparse_bootstrap()` resamples sparse data with the stratified nonparametric
+  bootstrap of Shen and Machado (2017):  the animals are resampled with
+  replacement within each set of sampling times (each time with serial
+  sacrifice, each batch in a batch design), keeping an animal's samples
+  together, and paired groups (such as the treatments of a crossover) and
+  analytes are resampled together.  It returns a sparse `PKNCAconc` object with
+  the original data and the replicates (200 by default) as a new group, storing
+  the random seed.  `pk.nca()` calculates every parameter for every replicate,
+  `sparse_bootstrap_summary()` gives each parameter's estimate with the
+  bootstrap mean, standard deviation, geometric mean, geometric coefficient of
+  variation, and percentile interval, and `sparse_bootstrap_compare()` gives
+  the ratio of a test to a reference group with its percentile interval and
+  acceptance limits for bioequivalence.  (#295)
+
 * With sparse PK, `aucall` and `aumcall` are now sparse estimators like
   `auclast` and `aumclast`, with standard errors and degrees of freedom in the
   new `aucall_se`, `aucall_df`, `aumcall_se`, and `aumcall_df` parameters

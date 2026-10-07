@@ -81,6 +81,7 @@ Other Bioequivalence:
 \code{\link[=be_fit_models]{be_fit_models()}},
 \code{\link[=be_regulator]{be_regulator()}},
 \code{\link[=be_table]{be_table()}},
-\code{\link[=be_within_var]{be_within_var()}}
+\code{\link[=be_within_var]{be_within_var()}},
+\code{\link[=sparse_bootstrap_compare]{sparse_bootstrap_compare()}}
 }
 \concept{Bioequivalence}

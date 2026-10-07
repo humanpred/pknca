@@ -35,6 +35,9 @@ Other Sparse Methods:
 \code{\link[=pk.calc.sparse_auc]{pk.calc.sparse_auc()}},
 \code{\link[=pk.calc.sparse_aumc]{pk.calc.sparse_aumc()}},
 \code{\link[=sparse_auc_weight_linear]{sparse_auc_weight_linear()}},
+\code{\link[=sparse_bootstrap]{sparse_bootstrap()}},
+\code{\link[=sparse_bootstrap_compare]{sparse_bootstrap_compare()}},
+\code{\link[=sparse_bootstrap_summary]{sparse_bootstrap_summary()}},
 \code{\link[=sparse_mean]{sparse_mean()}}
 }
 \concept{Sparse Methods}
