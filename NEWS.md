@@ -303,6 +303,29 @@ the generated intervals:
 
 ## New features
 
+* Missing samples and Tmax coverage (#269, @billdenney):
+  * `pknca_missing_samples()` lists, for each subject, the nominal times of
+    its group's sampling schedule that have no usable concentration, with the
+    reason (`"no row"`, `"NA concentration"`, or `"excluded"`).  It takes a
+    `PKNCAconc`, `PKNCAdata`, or `PKNCAresults` object and needs the
+    `time.nominal` argument of `PKNCAconc()`.  Groups where a subject's
+    nominal times restart while its actual times increase (as when the
+    nominal times restart at each dose) are not reported, with a classed
+    warning.
+  * The `exclude_nca_tmax_coverage()` exclusion rule flags subjects whose
+    samples miss the usual Tmax times of their summary group, and excludes
+    only beyond the outer fences.  With Tukey's fences around the subjects'
+    Tmax values, a subject with no sample within the outer fences
+    (`k_exclude = 3` interquartile ranges) has every result of its interval
+    excluded; one with no sample within the inner fences (`k_warn = 1.5`)
+    gets the classed `pknca_warning_tmax_coverage_outlier` warning; and one
+    missing some of the group's nominal times within the inner fences gets the
+    classed `pknca_message_tmax_coverage_partial` message.  A predose sample
+    counts only after an intravascular bolus.  Groups with fewer than `min_subjects`
+    (default 4) subjects, sparse data, and groups whose nominal times disagree
+    with the interval (as when the nominal times restart at each dose) are not
+    checked, with a classed message or warning.
+
 * CDISC output (#403):
   * `as.data.frame.PKNCAresults()` gains `out_format = "cdisc"`, which
     translates PPTESTCD to CDISC standard codes and adds a PPTEST column.
@@ -890,6 +913,13 @@ the generated intervals:
 
 ## Bug fixes
 
+* A warning signaled by an exclusion function given to `exclude(FUN = )` now
+  reaches the caller with its class and fields.  Before, the function ran inside
+  a grouped `dplyr::mutate()`, which collected the warnings and signaled one
+  summary warning in their place, so a handler for a classed warning never saw
+  it.  An exclusion function that returns neither one value nor one value per
+  row of its group is now the `pknca_error_exclude_fun_length` error
+  (#269, @billdenney).
 * The standard error and degrees of freedom of a sparse AUClast or AUMClast
   (`auclast_se`, `auclast_df`, `aumclast_se`, `aumclast_df`, and the deprecated
   `sparse_*` equivalents) no longer include the times after tlast.  The point

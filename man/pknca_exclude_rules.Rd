@@ -41,6 +41,7 @@ falls back to its option, as it does in use).
    \code{\link[=exclude_nca_min.hl.r.squared]{exclude_nca_min.hl.r.squared()}} \tab Exclude based on half-life r-squared \tab \code{min.hl.r.squared} \cr
    \code{\link[=exclude_nca_span.ratio]{exclude_nca_span.ratio()}} \tab Exclude based on the half-life span ratio \tab \code{min.span.ratio} \cr
    \code{\link[=exclude_nca_tmax_0]{exclude_nca_tmax_0()}} \tab Exclude based on implausibly early Tmax (special case for tmax_early = 0) \tab (none) \cr
+   \code{\link[=exclude_nca_tmax_coverage]{exclude_nca_tmax_coverage()}} \tab Exclude based on whether a subject has a sample within Tukey's fences around the Tmax values of its group; the rule flags a subject with no sample within the inner fences, and excludes only a subject with no sample within the outer fences \tab (none) \cr
    \code{\link[=exclude_nca_tmax_early]{exclude_nca_tmax_early()}} \tab Exclude based on implausibly early Tmax (often used for extravascular dosing with a Tmax value of 0) \tab (none) \cr
 }
 }
@@ -54,6 +55,7 @@ rules[, c("rule", "description")]
 
 Other Result exclusions:
 \code{\link[=exclude]{exclude()}},
-\code{\link{exclude_nca}}
+\code{\link{exclude_nca}},
+\code{\link[=pknca_missing_samples]{pknca_missing_samples()}}
 }
 \concept{Result exclusions}

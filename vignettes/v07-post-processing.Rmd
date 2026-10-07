@@ -59,7 +59,7 @@ In many scenarios, individual results may need to be excluded from summaries.  T
 
 Several exclusion functions are built into PKNCA.  The built-in functions will exclude all results that either apply to the current value or are dependents of the current value (parameters that depend on it).  For example, $AUC_\infty$ depends on $\lambda_z$, and excluding based on span ratio will exclude all parameters that depend on $\lambda_z$, including $AUC_\infty$.
 
-To see the built-in functions, type `?exclude_nca` and `?exclude_nca_by_param` at the R command line and review those help pages.  The built-in rules exclude based on a low span ratio (`exclude_nca_span.ratio()`), a high percent AUC extrapolated (`exclude_nca_max.aucinf.pext()`), too few measured concentrations for AUC calculation (`exclude_nca_count_conc_measured()`), a low half-life r-squared or adjusted r-squared (`exclude_nca_min.hl.r.squared()` and `exclude_nca_min.hl.adj.r.squared()`), and an implausibly early $T_{max}$ (`exclude_nca_tmax_early()` and `exclude_nca_tmax_0()`).  They are built on the more general `exclude_nca_by_param()`, which excludes results when a single parameter is below a minimum threshold and/or above a maximum threshold, and which can also be used directly for any parameter.  To use them, provide the function to the `FUN` argument of `exclude()` as illustrated below.  When an exclusion function returns its own reason text (as the built-in functions do), that text is used as the reason for exclusion, overriding the `reason` argument to `exclude()`.
+To see the built-in functions, type `?exclude_nca` and `?exclude_nca_by_param` at the R command line and review those help pages.  The built-in rules exclude based on a low span ratio (`exclude_nca_span.ratio()`), a high percent AUC extrapolated (`exclude_nca_max.aucinf.pext()`), too few measured concentrations for AUC calculation (`exclude_nca_count_conc_measured()`), a low half-life r-squared or adjusted r-squared (`exclude_nca_min.hl.r.squared()` and `exclude_nca_min.hl.adj.r.squared()`), an implausibly early $T_{max}$ (`exclude_nca_tmax_early()` and `exclude_nca_tmax_0()`), and samples far from the usual $T_{max}$ times of the group (`exclude_nca_tmax_coverage()`, described below).  They are built on the more general `exclude_nca_by_param()`, which excludes results when a single parameter is below a minimum threshold and/or above a maximum threshold, and which can also be used directly for any parameter.  To use them, provide the function to the `FUN` argument of `exclude()` as illustrated below.  When an exclusion function returns its own reason text (as the built-in functions do), that text is used as the reason for exclusion, overriding the `reason` argument to `exclude()`.
 
 ```{r exclude-function}
 results_excl_span <- exclude(results_obj, FUN=exclude_nca_span.ratio())
@@ -70,6 +70,36 @@ as.data.frame(results_obj) %>%
 # With exclusions applied, the 'exclude' column has the reason for exclusion.
 as.data.frame(results_excl_span) %>%
   filter(Subject == 1)
+```
+
+### Missing Samples and $T_{max}$ Coverage
+
+A subject who missed the samples around the peak can have a $C_{max}$ and $T_{max}$ that describe some other part of the profile.  Two functions find those subjects, and both work best with nominal times (the `time.nominal` argument of `PKNCAconc()`).
+
+`pknca_missing_samples()` lists, for each subject, the nominal times of its group's sampling schedule that have no usable concentration:  the subject has no row at that time, the concentration is `NA`, or the row is excluded.  The schedule of a group is every nominal time that any subject of the group has a row for, so recording a missed sample as a row with an `NA` concentration keeps that time in the schedule.
+
+`exclude_nca_tmax_coverage()` is an exclusion rule that flags subjects whose samples miss the usual $T_{max}$ times, and excludes only beyond the outer fences.  Within each summary group, it finds the first and third quartiles of the subjects' $T_{max}$ values (with `stats::quantile()` type 7, its default) and extends them by 1.5 times the interquartile range for the inner fences and by 3 times it for the outer fences (Tukey's fences; the multiples are the `k_warn` and `k_exclude` arguments).  A subject with no sample within the outer fences is excluded.  A subject with a sample within the outer fences but none within the inner fences gets a warning that it may be a data issue, and is not excluded.  A subject with a sample within the inner fences that is missing other nominal times within them gets a message that $C_{max}$ and $T_{max}$ may be unreliable.  A predose sample counts only after an intravascular bolus.  Groups with fewer than four subjects are not checked.  See `?exclude_nca` for the details.
+
+The example below adds nominal times to the theophylline data and removes some samples:  subject 2 loses every sample from 0.25 to 7 hours, and subject 3 loses its 1-hour concentration.  Subject 2 has no sample left within the inner fences (up to 7.25 hours), but its 9-hour sample is within the outer fences (up to 11 hours), so it is flagged with a warning and not excluded.  Subjects 3 and 10 (whose 0.5-hour sample was taken nearer to 1 hour) have samples within the inner fences, but each is missing one nominal time within them, so each gets a message.
+
+```{r missing-samples}
+nominal_times <- c(0, 0.25, 0.5, 1, 2, 3.5, 5, 7, 9, 12, 24)
+d_conc_nominal <- d_conc
+d_conc_nominal$Time_nominal <-
+  sapply(d_conc_nominal$Time, function(x) nominal_times[which.min(abs(nominal_times - x))])
+d_conc_nominal <-
+  d_conc_nominal %>%
+  filter(!(Subject == 2 & Time_nominal > 0 & Time_nominal <= 7)) %>%
+  mutate(conc = ifelse(Subject == 3 & Time_nominal == 1, NA, conc))
+
+conc_obj_nominal <- PKNCAconc(d_conc_nominal, conc~Time|Subject, time.nominal = "Time_nominal")
+pknca_missing_samples(conc_obj_nominal)
+
+results_obj_nominal <- pk.nca(PKNCAdata(conc_obj_nominal, dose_obj))
+results_excl_tmax <- exclude(results_obj_nominal, FUN = exclude_nca_tmax_coverage())
+as.data.frame(results_excl_tmax) %>%
+  filter(Subject %in% 1:2, PPTESTCD %in% c("cmax", "tmax", "auclast")) %>%
+  select(Subject, start, end, PPTESTCD, PPORRES, exclude)
 ```
 
 You may also write your own exclusion function.  The exclusion functions built-into PKNCA are a bit more complex than required because they handle options and manage general functionality that may not apply to a user-specific need.  To write your own exclusion function, it should follow the description of how to write your own exclusion function as described in the details section of `?exclude`.
