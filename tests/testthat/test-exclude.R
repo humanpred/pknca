@@ -378,3 +378,127 @@ test_that("every exclusion rule gives the same result as applying it to each gro
   # The fixture triggers the rules, so the comparison is not only of NA values
   expect_true(any_excluded)
 })
+
+# exclude.default() as it was before the exclusion function ran outside of
+# dplyr::mutate() (a verbatim copy), to confirm that the loop over the groups
+# gives the same results
+exclude_default_main <- function(object, reason, mask, FUN) {
+  dataname <- getDataName(object)
+  # Check inputs
+  if (missing(mask) && !missing(FUN)) {
+    # operate on one group at a time
+    groupnames <-
+      unique(c(
+        names(getGroups(object)),
+        intersect(names(object[[dataname]]),
+                  c("start", "end"))
+      ))
+    mask_df <-
+      object[[dataname]] %>%
+      dplyr::mutate(row_number_XXX=seq_len(dplyr::n())) %>%
+      dplyr::grouped_df(groupnames) %>%
+      dplyr::mutate(
+        exclude_current_group_XXX_row_num=row_number_XXX,
+        exclude_current_group_XXX=
+          do.call(
+            FUN,
+            list(
+              as.data.frame(.)[.$row_number_XXX %in% row_number_XXX,,drop=FALSE],
+              object
+            )
+          )
+      ) %>%
+      dplyr::mutate(
+        exclude_lengths_match=length(exclude_current_group_XXX) ==
+          length(exclude_current_group_XXX_row_num)
+      )
+    # Extract the output and ensure that the output order equals the input order
+    mask <- mask_df$exclude_current_group_XXX[order(mask_df$exclude_current_group_XXX_row_num)]
+    if (is.character(mask)) {
+      reason <- mask
+      mask <- !is.na(reason)
+    }
+  } else if (!xor(missing(mask), missing(FUN))) {
+    rlang::abort("Either mask or FUN must be given (but not both).", class = "pknca_error_mask_or_fun")
+  }
+  if (!(length(reason) %in% c(1, nrow(object[[dataname]])))) {
+    rlang::abort("reason must be a scalar or have the same length as the data.", class = "pknca_error_reason_length")
+  } else if (!is.character(reason)) {
+    rlang::abort("reason must be a character vector.", class = "pknca_error_reason_type")
+  }
+
+  if (!("exclude" %in% names(object$columns))) {
+    rlang::abort("object must have an exclude column specified.", class = "pknca_error_no_exclude_col")
+  } else if (!(object$columns$exclude %in% names(object[[dataname]]))) {
+    rlang::abort(
+      sprintf(
+        "exclude column must exist in object[['%s']].",
+        dataname
+      ),
+      class = "pknca_error_exclude_col_missing"
+    )
+  }
+  # Make a scalar reason a vector
+  if (length(reason) == 1)
+    reason <- rep(reason, length(mask))
+  # Find the original value of the 'exclude' column.
+  orig <- object[[dataname]][[object$columns$exclude]]
+  if (length(mask) != length(orig)) {
+    rlang::abort("mask must match the length of the data.", class = "pknca_error_mask_length")
+  }
+  # No current value for exclude
+  mask.none <- orig %in% c(NA, "")
+  # Replace the empty value with the reason
+  mask.one <- mask & mask.none
+  # Add the new reason to an existing reason
+  mask.multiple <- mask & (!mask.one)
+  ret <- orig
+  if (any(mask.one)) {
+    ret[mask.one] <- reason[mask.one]
+  }
+  if (any(mask.multiple)) {
+    ret[mask.multiple] <- paste(ret[mask.multiple], reason[mask.multiple], sep="; ")
+  }
+  ret_object <- object
+  ret_object[[dataname]][,object$columns$exclude] <- ret
+  mark_provenance_modified(ret_object, object, "excluded")
+}
+
+test_that("exclude() gives the same result as the grouped dplyr::mutate() it replaced", {
+  my_conc <- generate.conc(nsub = 3, ntreat = 2, time.points = c(0, 0.5, 1, 2, 4, 8, 12, 24))
+  my_dose <- generate.dose(my_conc)
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(my_conc, conc ~ time | treatment + ID),
+      PKNCAdose(my_dose, dose ~ time | treatment + ID),
+      intervals =
+        rbind(
+          data.frame(start = 0, end = 24, cmax = TRUE, tmax = TRUE, auclast = TRUE, half.life = FALSE, aucinf.obs = FALSE),
+          data.frame(start = 0, end = Inf, cmax = FALSE, tmax = FALSE, auclast = FALSE, half.life = TRUE, aucinf.obs = TRUE)
+        )
+    )
+  o_nca <- suppressMessages(pk.nca(o_data))
+  arguments <-
+    list(
+      exclude_nca_by_param = list(parameter = "cmax", max_thr = 0.9, affected_parameters = c("cmax", "tmax")),
+      exclude_nca_count_conc_measured = list(min_count = 3),
+      exclude_nca_span.ratio = list(min.span.ratio = 4),
+      exclude_nca_tmax_coverage = list(min_subjects = 3),
+      exclude_nca_tmax_early = list(tmax_early = 1.5)
+    )
+  for (rule in names(get("exclude_rules", envir = .PKNCAEnv))) {
+    rule_args <- if (is.null(arguments[[rule]])) list() else arguments[[rule]]
+    expected <- suppressWarnings(suppressMessages(exclude_default_main(o_nca, FUN = do.call(getExportedValue("PKNCA", rule), rule_args))))
+    actual <- suppressWarnings(suppressMessages(exclude(o_nca, FUN = do.call(getExportedValue("PKNCA", rule), rule_args))))
+    expect_equal(actual, expected, info = rule)
+  }
+  # A logical result with a reason, and a result of length one for a group
+  expect_equal(
+    exclude(o_nca, reason = "ID 1", FUN = function(x, ...) x$ID == 1),
+    exclude_default_main(o_nca, reason = "ID 1", FUN = function(x, ...) x$ID == 1)
+  )
+  expect_equal(
+    exclude(o_nca, reason = "All", FUN = function(x, ...) TRUE),
+    exclude_default_main(o_nca, reason = "All", FUN = function(x, ...) TRUE)
+  )
+})
