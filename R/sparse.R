@@ -158,25 +158,29 @@ sparse_mean <- function(sparse_pk, sparse_mean_method=c("arithmetic mean, <=50% 
 #'
 #' \deqn{var\left(\hat{AUC}\right) = \sum\limits_{i=0}^m\left(\frac{w_i^2 s_i^2}{r_i}\right) + 2\sum\limits_{i<j}\left(\frac{w_i w_j r_{ij} s_{ij}}{r_i r_j}\right)}{var(AUC) = sum_(i=0)^(m) ((w_i^2 * s_i^2)/(r_i) + + 2*sum_(i<j)((w_i * w_j * r_ij * s_ij)/(r_i * r_j))}
 #'
-#' The degrees of freedom are calculated as described in equation 6 of the same
-#' paper.
+#' The degrees of freedom are the Satterthwaite approximation of equation 6 of
+#' the same paper for any sampling design, including subjects with more than
+#' one sample (see the `"df"` attribute of the return value and Details of
+#' [cov_holder()] for the covariance).
 #'
 #' @inheritParams sparse_pk_attribute
+#' @returns The variance of the AUC estimate with a `"df"` attribute containing
+#'   its degrees of freedom.
 #' @references
 #' Nedelman JR, Jia X. An extension of Satterthwaite’s approximation applied to
 #' pharmacokinetics. Journal of Biopharmaceutical Statistics. 1998;8(2):317-328.
 #' doi:10.1080/10543409808835241
+#'
+#' Holder DJ. Comments on Nedelman and Jia’s Extension of Satterthwaite’s
+#' Approximation Applied to Pharmacokinetics. Journal of Biopharmaceutical
+#' Statistics. 2001;11(1-2):75-79. doi:10.1081/BIP-100104199
 #' @export
 var_sparse_auc <- function(sparse_pk) {
   covariance <- cov_holder(sparse_pk)
   var_auc <- 0
   weights <- sparse_pk_attribute(sparse_pk, "weight")
-  # number of subjects at a given time point
-  n <- rep(0, length(sparse_pk))
-  df <- 0
   for (idx1 in seq_along(sparse_pk)) {
     n_idx1 <- length(unique(sparse_pk[[idx1]]$subject))
-    n[idx1] <- n_idx1
     var_auc <-
       var_auc +
       weights[idx1]^2*covariance[idx1, idx1]/n_idx1
@@ -188,23 +192,70 @@ var_sparse_auc <- function(sparse_pk) {
         2*weights[idx1]*weights[idx2]*n_both*covariance[idx1, idx2]/(n_idx1*n_idx2)
     }
   }
-  # df based on equation 6 of Nedelman and Jia 1998
-  # df_e <- sum(diag(covariance))
-  # df_v <- 2*sum(diag(covariance %*% covariance))
-  # df <- 2*df_e^2/df_v
-  # df based on equation 6a of Nedelman et al 1995
-  df <-
-    sum(weights^2 * diag(covariance)/n)^2 /
-    sum(weights^4 * diag(covariance)^2/(n^2*(n-1)))
-  if (sum(covariance[lower.tri(covariance)] != 0) > 0) {
-    rlang::warn(
-      "Cannot yet calculate sparse degrees of freedom for multiple samples per subject",
-      class = "pknca_warning_sparse_df_multi"
-    )
-    df <- NA_real_
-  } 
-  attr(var_auc, "df") <- df
+  attr(var_auc, "df") <-
+    sparse_satterthwaite_df(sparse_pk = sparse_pk, weights = weights, covariance = covariance)
   var_auc
+}
+
+#' Satterthwaite degrees of freedom for the variance of a sparse AUC or AUMC
+#'
+#' The variance estimate is a quadratic form in the individual measurements,
+#' \eqn{\hat{V} = y^T M y} with
+#' \eqn{M = (I - P)^T \Delta B \Delta (I - P)} in the notation of equation 6 of
+#' Nedelman and Jia (1998):  \eqn{(I - P)} subtracts the mean at each time, and
+#' \eqn{B} pairs the measurements of each subject with the weights
+#' \eqn{A_{ij} = w_i w_j r_{ij} / (r_i r_j h_{ij})}, where \eqn{h_{ij}} is the
+#' divisor of Holder's covariance (see [cov_holder()]) and \eqn{A_{ij} = 0} where
+#' fewer than two subjects are sampled at both times (where [cov_holder()] gives
+#' 0).  With \eqn{\Omega} the covariance of the measurements (`covariance` for
+#' the measurements of one subject, 0 between subjects), the degrees of freedom
+#' are \eqn{2 E^2 / V} with \eqn{E = tr(M\Omega)}, which equals the variance
+#' estimate, and \eqn{V = 2 tr(M\Omega M\Omega)}.  When each subject has one
+#' sample, this is equation 6a of Nedelman, Gibiansky, and Lau (1995).
+#'
+#' The matrices have one row per measurement, so they are only built for the
+#' measurements of one group.
+#'
+#' @inheritParams sparse_pk_attribute
+#' @param weights The weight of each time in the estimate (such as the
+#'   trapezoidal weights)
+#' @param covariance The covariance matrix of the times from [cov_holder()]
+#' @returns The degrees of freedom, or `NA` if a time has fewer than two
+#'   subjects (when its variance cannot be estimated)
+#' @references
+#' Nedelman JR, Jia X. An extension of Satterthwaite’s approximation applied to
+#' pharmacokinetics. Journal of Biopharmaceutical Statistics. 1998;8(2):317-328.
+#' doi:10.1080/10543409808835241
+#'
+#' Nedelman JR, Gibiansky E, Lau DTW. Applying Bailer’s method for AUC
+#' confidence intervals to sparse sampling. Pharmaceutical Research.
+#' 1995;12(1):124-128. doi:10.1023/A:1016255124336
+#' @keywords Internal
+#' @noRd
+sparse_satterthwaite_df <- function(sparse_pk, weights, covariance) {
+  if (anyNA(covariance)) {
+    return(NA_real_)
+  }
+  n_times <- length(sparse_pk)
+  subject <- unlist(lapply(sparse_pk, `[[`, "subject"))
+  time_idx <- rep(seq_len(n_times), lengths(lapply(sparse_pk, `[[`, "subject")))
+  # Subjects at each time (r_i) and at both of two times (r_ij)
+  incidence <- unclass(table(factor(time_idx, levels = seq_len(n_times)), subject) > 0) * 1
+  r_both <- incidence %*% t(incidence)
+  r <- diag(r_both)
+  holder_divisor <- (r_both - 1) + (1 - r_both/r) * (1 - t(t(r_both)/r))
+  weight_pairs <- outer(weights, weights) * r_both / (outer(r, r) * holder_divisor)
+  weight_pairs[r_both < 2] <- 0
+  # One row and column per measurement
+  same_subject <- outer(subject, subject, "==")
+  center <- diag(length(subject)) - outer(time_idx, time_idx, "==")/r[time_idx]
+  omega <- covariance[time_idx, time_idx] * same_subject
+  b_matrix <- weight_pairs[time_idx, time_idx] * same_subject
+  m_omega <- t(center) %*% b_matrix %*% center %*% omega
+  expected <- sum(diag(m_omega))
+  # tr(X X) is the sum of the elementwise product of X and its transpose
+  variance <- 2*sum(m_omega * t(m_omega))
+  2*expected^2/variance
 }
 
 #' Calculate the covariance for two time points with sparse sampling
@@ -425,8 +476,8 @@ add.interval.col(
   depends="sparse_auclast",
   pptestcd_cdisc="SPARSEAD",
   pptest_cdisc="Sparse AUClast degrees of freedom",
-  formula="$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$",
-  formula_note="Satterthwaite approximation (Nedelman et al 1995, eq. 6a)")
+  formula="$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$",
+  formula_note="Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)")
 
 # The interval-specification names that the unified sparse parameters replace.
 # They still calculate, and give the same values they always have, but they are
@@ -543,12 +594,9 @@ var_sparse_aumc <- function(sparse_pk) {
   var_aumc <- 0
   # Use ORIGINAL sparse_pk for weights (time-based, not moment-based)
   weights <- sparse_pk_attribute(sparse_pk, "weight")
-  # number of subjects at a given time point
-  n <- rep(0, length(sparse_pk))
-  
+
   for (idx1 in seq_along(sparse_pk)) {
     n_idx1 <- length(unique(sparse_pk[[idx1]]$subject))
-    n[idx1] <- n_idx1
     var_aumc <-
       var_aumc +
       weights[idx1]^2 * covariance[idx1, idx1] / n_idx1
@@ -563,24 +611,9 @@ var_sparse_aumc <- function(sparse_pk) {
   }
   
   # Step 5: Degrees of freedom — Satterthwaite approximation
-  # (equation 6, Nedelman and Jia 1998)
-  df <-
-    sum(weights^2 * diag(covariance) / n)^2 /
-    sum(weights^4 * diag(covariance)^2 / (n^2 * (n - 1)))
-  
-  if (sum(covariance[lower.tri(covariance)] != 0) > 0) {
-    rlang::warn(
-      "Cannot yet calculate sparse degrees of freedom for multiple samples per subject",
-      class = "pknca_warning_sparse_aumc_df_multi"
-    )
-    df <- NA_real_
-  }
-  # else if (any(n == 1)) {
-  #   # Requires >= 2 subjects per time point for df calculation
-  #   df <- NA_real_
-  # }
-  
-  attr(var_aumc, "df") <- df
+  # (equation 6, Nedelman and Jia 1998, on the moment data)
+  attr(var_aumc, "df") <-
+    sparse_satterthwaite_df(sparse_pk = sparse_pk, weights = weights, covariance = covariance)
   var_aumc
 }
 

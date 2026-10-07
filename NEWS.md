@@ -676,6 +676,19 @@ the generated intervals:
   to summarize a parameter with the spread from another parameter's results
   this way.  (#170)
 
+* The sparse degrees of freedom (`auclast_df`, `aumclast_df`, and the deprecated
+  `sparse_auc_df` and `sparse_aumc_df`) are now calculated when subjects
+  contribute more than one sample, as in batch designs, with the Satterthwaite
+  approximation of Nedelman and Jia (1998, equation 6) and the covariance
+  estimator of Holder (2001) that the standard error already uses.  Before
+  (including PKNCA 0.12.1), they were `NA` with a "Cannot yet calculate sparse
+  degrees of freedom for multiple samples per subject" warning; that warning
+  (classes `pknca_warning_sparse_df_multi` and
+  `pknca_warning_sparse_aumc_df_multi`) is no longer given.  With one sample per
+  subject the result is unchanged, and the degrees of freedom are `NA` when a
+  time has a single subject.  The results match the PK package for batch designs
+  and the published example of Nedelman and Jia (1998).  (#170)
+
 * New derived PK parameters to complete coverage across all AUC variants
   (#152):
   * 10 clearance parameters (`cl.*`)
