@@ -81,7 +81,7 @@
                         <h4 data-toc-skip class="author">Bill
 Denney</h4>
             
-            <h4 data-toc-skip class="date">2026-10-06</h4>
+            <h4 data-toc-skip class="date">2026-10-07</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/humanpred/pknca/blob/main/vignettes/v04-sparse.Rmd" class="external-link"><code>vignettes/v04-sparse.Rmd</code></a></small>
       <div class="d-none name"><code>v04-sparse.Rmd</code></div>
@@ -221,15 +221,13 @@ PKNCA stops with an error identifying the inconsistent group.</p>
 <span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_sparse</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## The sparse estimators use the linear trapezoidal rule, so the auc.method option</span></span>
 <span><span class="co">## ("lin up/log down") does not apply to: auclast</span></span></code></pre>
-<pre><code><span><span class="co">## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples</span></span>
-<span><span class="co">## per subject</span></span></code></pre>
 <pre><code><span><span class="co">## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2</span></span>
 <span><span class="co">## points)</span></span></code></pre>
 <p><code><a href="../reference/pknca_interval_table.html">pknca_interval_table()</a></code> builds the same kind of
 specification from a description of the study, and its
 <code>sparse_single_dose</code> preset is the single-dose set with no
 imputation (there is no individual profile to impute into):</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/pknca_interval_table.html">pknca_interval_table</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">24</span>, preset<span class="op">=</span><span class="st">"sparse_single_dose"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -237,10 +235,10 @@ imputation (there is no individual profile to impute into):</p>
 </h2>
 <p>As with any other PKNCA result, the data are available through the
 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> function:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end     auclast auclast_df cmax aucinf.obs</span></span>
-<span><span class="co">##      0  24 39.5 [7.31]         NC 3.05         NC</span></span>
+<span><span class="co">##      0  24 39.5 [7.31]       2.75 3.05         NC</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Caption: auclast: estimate and standard error; auclast_df: arithmetic mean and standard deviation; cmax, aucinf.obs: geometric mean and geometric coefficient of variation; NC: not calculated</span></span></code></pre>
 <p>In the summary, the sparse <code>auclast</code> is the estimate with
@@ -249,7 +247,7 @@ result), as the caption says; <code>auclast_se</code> has no column of
 its own.</p>
 <p>or individual results are available through the
 <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> function:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 18 × 6</span></span></span>
 <span><span class="co">##    start   end PPTESTCD            PPORRES PPANMETH                      exclude</span></span>
@@ -271,7 +269,7 @@ its own.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">15</span>     0    24 aucinf.obs           <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">"</span>AUC: lin up/log down<span style="color: #949494;">"</span>        Too fe…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">16</span>     0    24 auclast              39.5   <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">17</span>     0    24 auclast_se            7.31  <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">18</span>     0    24 auclast_df           <span style="color: #BB0000;">NA</span>     <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">18</span>     0    24 auclast_df            2.75  <span style="color: #949494;">"</span>AUC: linear. Sparse: arithm… <span style="color: #BB0000;">NA</span></span></span></code></pre>
 <p><code>auclast_se</code> and <code>auclast_df</code> are reported
 whether or not they were requested, because the sparse estimator returns
 all three together. They are only calculable from sparse data:
@@ -286,7 +284,7 @@ with no extra work. <code>cl.last</code> divides the dose by
 <code>auclast</code>, <code>mrt.last</code> divides
 <code>aumclast</code> by <code>auclast</code>, and so on down the usual
 derived graph.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>id<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">d_sparse</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, dose<span class="op">=</span><span class="fl">100</span>, time<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">o_dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span><span class="va">d_dose</span>, <span class="va">dose</span><span class="op">~</span><span class="va">time</span><span class="op">|</span><span class="va">id</span>, route<span class="op">=</span><span class="st">"intravascular"</span><span class="op">)</span></span>
 <span><span class="va">d_intervals_derived</span> <span class="op">&lt;-</span></span>
@@ -305,13 +303,9 @@ derived graph.</p>
 <span><span class="va">o_nca_derived</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_derived</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## The sparse estimators use the linear trapezoidal rule, so the auc.method option</span></span>
 <span><span class="co">## ("lin up/log down") does not apply to: auclast, aumclast</span></span></code></pre>
-<pre><code><span><span class="co">## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples</span></span>
-<span><span class="co">## per subject</span></span></code></pre>
-<pre><code><span><span class="co">## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples</span></span>
-<span><span class="co">## per subject</span></span></code></pre>
 <pre><code><span><span class="co">## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2</span></span>
 <span><span class="co">## points)</span></span></code></pre>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">o_nca_derived</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 23 × 6</span></span></span>
 <span><span class="co">##    start   end PPTESTCD            PPORRES PPANMETH exclude                     </span></span>
@@ -424,14 +418,13 @@ outside <code><a href="../reference/pk.nca.html">pk.nca()</a></code>.</p>
 <h3 id="degrees-of-freedom-with-multiple-samples-per-subject">Degrees of freedom with multiple samples per subject<a class="anchor" aria-label="anchor" href="#degrees-of-freedom-with-multiple-samples-per-subject"></a>
 </h3>
 <p>The degrees of freedom (<code>auclast_df</code> and
-<code>aumclast_df</code>) can only be calculated when each subject
-contributes a single sample to the profile (as in a serial sacrifice
-design). When any subject contributes more than one sample, as in the
-example data here, PKNCA warns that it “Cannot yet calculate sparse
-degrees of freedom for multiple samples per subject”, and the degrees of
-freedom are <code>NA</code>. That warning is the source of the warnings
-in the results above. The point estimates and standard errors are still
-calculated.</p>
+<code>aumclast_df</code>) are the Satterthwaite approximation of
+Nedelman and Jia (1998), which accounts for the correlation between
+samples from the same subject, so they are calculated whether each
+subject contributes one sample (as in a serial sacrifice design) or
+several (as in the example data here and in batch designs). They are
+<code>NA</code> when a time point has a single subject, because its
+variance cannot be estimated.</p>
 </div>
 <div class="section level3">
 <h3 id="more-than-half-of-the-measurements-below-the-limit-of-quantification">More than half of the measurements below the limit of

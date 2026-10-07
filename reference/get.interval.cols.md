@@ -323,10 +323,10 @@ get.interval.cols()
 #> [1] "Sparse AUClast degrees of freedom"
 #> 
 #> $auclast_df$formula
-#> [1] "$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$"
+#> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"
 #> 
 #> $auclast_df$formula_note
-#> [1] "Satterthwaite approximation (Nedelman et al 1995, eq. 6a)"
+#> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"
 #> 
 #> $auclast_df$tier
 #> [1] "uncommon"
@@ -588,10 +588,10 @@ get.interval.cols()
 #> [1] "Sparse AUMClast degrees of freedom"
 #> 
 #> $aumclast_df$formula
-#> [1] "$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$"
+#> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"
 #> 
 #> $aumclast_df$formula_note
-#> [1] "Satterthwaite approximation (Nedelman et al 1995, eq. 6a)"
+#> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"
 #> 
 #> $aumclast_df$tier
 #> [1] "uncommon"
@@ -4839,10 +4839,10 @@ get.interval.cols()
 #> [1] "Sparse AUClast degrees of freedom"
 #> 
 #> $sparse_auc_df$formula
-#> [1] "$df = \\frac{\\left(\\sum w_i^2 \\hat{\\sigma}_{ii}/n_i\\right)^2}{\\sum w_i^4 \\hat{\\sigma}_{ii}^2 / (n_i^2(n_i-1))}$"
+#> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"
 #> 
 #> $sparse_auc_df$formula_note
-#> [1] "Satterthwaite approximation (Nedelman et al 1995, eq. 6a)"
+#> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"
 #> 
 #> $sparse_auc_df$tier
 #> [1] "uncommon"

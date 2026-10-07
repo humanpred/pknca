@@ -76,16 +76,26 @@
 
 </dl></div>
     <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    <p>The variance of the AUC estimate with a <code>"df"</code> attribute containing
+its degrees of freedom.</p>
+    </div>
+    <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>$$var\left(\hat{AUC}\right) = \sum\limits_{i=0}^m\left(\frac{w_i^2 s_i^2}{r_i}\right) + 2\sum\limits_{i&lt;j}\left(\frac{w_i w_j r_{ij} s_{ij}}{r_i r_j}\right)$$</p>
-<p>The degrees of freedom are calculated as described in equation 6 of the same
-paper.</p>
+<p>The degrees of freedom are the Satterthwaite approximation of equation 6 of
+the same paper for any sampling design, including subjects with more than
+one sample (see the <code>"df"</code> attribute of the return value and Details of
+<code><a href="cov_holder.html">cov_holder()</a></code> for the covariance).</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Nedelman JR, Jia X. An extension of Satterthwaite’s approximation applied to
 pharmacokinetics. Journal of Biopharmaceutical Statistics. 1998;8(2):317-328.
 doi:10.1080/10543409808835241</p>
+<p>Holder DJ. Comments on Nedelman and Jia’s Extension of Satterthwaite’s
+Approximation Applied to Pharmacokinetics. Journal of Biopharmaceutical
+Statistics. 2001;11(1-2):75-79. doi:10.1081/BIP-100104199</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

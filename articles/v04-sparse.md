@@ -152,9 +152,6 @@ o_nca <- pk.nca(o_data_sparse)
     ## The sparse estimators use the linear trapezoidal rule, so the auc.method option
     ## ("lin up/log down") does not apply to: auclast
 
-    ## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples
-    ## per subject
-
     ## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2
     ## points)
 
@@ -179,7 +176,7 @@ summary(o_nca)
 ```
 
     ##  start end     auclast auclast_df cmax aucinf.obs
-    ##      0  24 39.5 [7.31]         NC 3.05         NC
+    ##      0  24 39.5 [7.31]       2.75 3.05         NC
     ## 
     ## Caption: auclast: estimate and standard error; auclast_df: arithmetic mean and standard deviation; cmax, aucinf.obs: geometric mean and geometric coefficient of variation; NC: not calculated
 
@@ -215,7 +212,7 @@ as.data.frame(o_nca)
     ## 15     0    24 aucinf.obs           NA     "AUC: lin up/log down"        Too fe…
     ## 16     0    24 auclast              39.5   "AUC: linear. Sparse: arithm… NA     
     ## 17     0    24 auclast_se            7.31  "AUC: linear. Sparse: arithm… NA     
-    ## 18     0    24 auclast_df           NA     "AUC: linear. Sparse: arithm… NA
+    ## 18     0    24 auclast_df            2.75  "AUC: linear. Sparse: arithm… NA
 
 `auclast_se` and `auclast_df` are reported whether or not they were
 requested, because the sparse estimator returns all three together. They
@@ -251,12 +248,6 @@ o_nca_derived <- pk.nca(o_data_derived)
 
     ## The sparse estimators use the linear trapezoidal rule, so the auc.method option
     ## ("lin up/log down") does not apply to: auclast, aumclast
-
-    ## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples
-    ## per subject
-
-    ## Warning: Cannot yet calculate sparse degrees of freedom for multiple samples
-    ## per subject
 
     ## Warning: Too few points for half-life calculation (min.hl.points=3 with only 2
     ## points)
@@ -337,14 +328,13 @@ they remain available for calculations outside
 
 ### Degrees of freedom with multiple samples per subject
 
-The degrees of freedom (`auclast_df` and `aumclast_df`) can only be
-calculated when each subject contributes a single sample to the profile
-(as in a serial sacrifice design). When any subject contributes more
-than one sample, as in the example data here, PKNCA warns that it
-“Cannot yet calculate sparse degrees of freedom for multiple samples per
-subject”, and the degrees of freedom are `NA`. That warning is the
-source of the warnings in the results above. The point estimates and
-standard errors are still calculated.
+The degrees of freedom (`auclast_df` and `aumclast_df`) are the
+Satterthwaite approximation of Nedelman and Jia (1998), which accounts
+for the correlation between samples from the same subject, so they are
+calculated whether each subject contributes one sample (as in a serial
+sacrifice design) or several (as in the example data here and in batch
+designs). They are `NA` when a time point has a single subject, because
+its variance cannot be estimated.
 
 ### More than half of the measurements below the limit of quantification
 

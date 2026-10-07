@@ -613,7 +613,7 @@ information about the parameter, see the documentation for the function.
 | aucivpbextint.last | $`\%AUC_{\text{bext,int,last}} = 100 \cdot \left(1 - \frac{AUC_{\text{int,last}}}{AUC_{\text{iv,int,last}}}\right)`$ |  | % | Back-extrap %, IV, AUCint.last | pk.calc.auciv_pbext |
 | aucivpbextlast | $`\%AUC_{\text{bext,last}} = 100 \cdot \left(1 - \frac{AUC_{\text{last}}}{AUC_{\text{iv,last}}}\right)`$ |  | % | Back-extrap %, IV, AUClast | pk.calc.auciv_pbext |
 | auclast | $`AUC_{\text{last}} = \sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule (linear-up/log-down by default) | auc | AUC start to last conc above LOQ | pk.calc.auc.last |
-| auclast_df | $`df = \frac{\left(\sum w_i^2 \hat{\sigma}_{ii}/n_i\right)^2}{\sum w_i^4 \hat{\sigma}_{ii}^2 / (n_i^2(n_i-1))}`$ | Satterthwaite approximation (Nedelman et al 1995, eq. 6a) | count | DF for AUClast (sparse PK only) | See the parameter name: auclast |
+| auclast_df | $`df = \frac{\left(tr(M\Omega)\right)^2}{tr\left(\left(M\Omega\right)^2\right)}`$ | Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6) | count | DF for AUClast (sparse PK only) | See the parameter name: auclast |
 | auclast_se | $`SE(AUC_{\text{last}}) = \sqrt{\sum_{i,j} w_i w_j \hat{\sigma}_{ij} / n}`$ | Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001) | auc | SE of AUClast (sparse PK only) | See the parameter name: auclast |
 | auclast.dn | $`AUC_{\text{last},dn} = \frac{AUC_{\text{last}}}{Dose}`$ |  | auc_dosenorm | Dose normalized auclast | pk.calc.dn |
 | aucpext.obs | $`\%AUC_{\text{ext,obs}} = 100 \cdot \left(1 - \frac{AUC_{\text{last}}}{AUC_{\infty,\text{obs}}}\right)`$ |  | % | % AUCinf extrap after Tlast, obs | pk.calc.aucpext |
@@ -635,7 +635,7 @@ information about the parameter, see the documentation for the function.
 | aumcivint.last |  |  | aumc | AUMCint.last, IV back-extrap C0 | pk.calc.aumciv |
 | aumcivlast |  |  | aumc | AUMClast, IV back-extrap C0 | pk.calc.aumciv |
 | aumclast | $`AUMC_{\text{last}} = \sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})`$ | Trapezoidal rule (linear-up/log-down by default) | aumc | AUMC start to last conc above LOQ | pk.calc.aumc.last |
-| aumclast_df | $`df = \frac{\left(\sum w_i^2 \hat{\sigma}_{ii}/n_i\right)^2}{\sum w_i^4 \hat{\sigma}_{ii}^2 / (n_i^2(n_i-1))}`$ | Satterthwaite approximation (Nedelman et al 1995, eq. 6a) | count | DF for AUMClast (sparse PK only) | See the parameter name: aumclast |
+| aumclast_df | $`df = \frac{\left(tr(M\Omega)\right)^2}{tr\left(\left(M\Omega\right)^2\right)}`$ | Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6) | count | DF for AUMClast (sparse PK only) | See the parameter name: aumclast |
 | aumclast_se | $`SE(AUMC_{\text{last}}) = \sqrt{\sum_{i,j} w_i w_j \hat{\sigma}_{ij} / n}`$ | Variance from the weighted covariance of the moment curve across subjects | aumc | SE of AUMClast (sparse PK only) | See the parameter name: aumclast |
 | aumclast.dn | $`AUMC_{\text{last},dn} = \frac{AUMC_{\text{last}}}{Dose}`$ |  | aumc_dosenorm | Dose normalized aumclast | pk.calc.dn |
 | c0 | $`C_0 = \text{if measured, } C_{t=0}; \text{ else, } C_0 = C_1 \exp\left(-\frac{\ln(C_2) - \ln(C_1)}{t_2-t_1} (t_1 - t_{\text{dose}})\right)`$ | Methods are tried in order: c0, logslope, c1, cmin, set0; the formula shows c0 and logslope | conc | Initial conc after IV bolus | pk.calc.c0 |
@@ -744,7 +744,7 @@ information about the parameter, see the documentation for the function.
 | ratio.auclast |  |  | fraction | Ratio of AUClast to reference | pk.calc.ratio |
 | ratio.cmax |  |  | fraction | Ratio of Cmax to reference | pk.calc.ratio |
 | span.ratio | $`\text{span ratio} = \frac{t_{\lambda_z,\text{last}} - t_{\lambda_z,\text{first}}}{t_{1/2}}`$ |  | fraction | Lambda z time span to half-life ratio | See the parameter name: half.life |
-| sparse_auc_df | $`df = \frac{\left(\sum w_i^2 \hat{\sigma}_{ii}/n_i\right)^2}{\sum w_i^4 \hat{\sigma}_{ii}^2 / (n_i^2(n_i-1))}`$ | Satterthwaite approximation (Nedelman et al 1995, eq. 6a) | count | DF for sparse AUC to last conc above LOQ | See the parameter name: sparse_auclast |
+| sparse_auc_df | $`df = \frac{\left(tr(M\Omega)\right)^2}{tr\left(\left(M\Omega\right)^2\right)}`$ | Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6) | count | DF for sparse AUC to last conc above LOQ | See the parameter name: sparse_auclast |
 | sparse_auc_se | $`SE(AUC_{\text{sparse}}) = \sqrt{\sum_{i,j} w_i w_j \hat{\sigma}_{ij} / n}`$ | Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001) | auc | SE of sparse AUC to last conc above LOQ | See the parameter name: sparse_auclast |
 | sparse_auclast | $`AUC_{\text{sparse}} = \sum_k \frac{\bar{C}_k + \bar{C}_{k+1}}{2} \Delta t_k`$ | Linear trapezoidal using population mean concentrations | auc | Sparse AUC to last conc above LOQ | pk.calc.sparse_auclast |
 | sparse_aumc_df |  |  | count | variance DF for sparse AUMC to Tlast | See the parameter name: sparse_aumclast |
