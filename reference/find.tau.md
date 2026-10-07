@@ -45,13 +45,15 @@ find.tau(
 - tau.choices:
 
   The nominal intervals to match, in the unit of `x`, or `NA` to use the
-  built-in set (when `timeu` is given) or none. Names are used as
-  labels. `NULL` takes the `tau.choices` option.
+  built-in set. Names are used as labels. `NULL` takes the `tau.choices`
+  option.
 
 - timeu:
 
-  The time unit of `x` (such as `"hr"` or `"day"`), or `NULL` (or `""`)
-  when it is not known. A unit that cannot be converted to hours is an
+  The time unit of `x` (such as `"hr"` or `"day"`); `NULL` (or `""`)
+  when it is not known, which is taken to be hours; or `NA` when it is
+  known not to be a unit PKNCA can use, which leaves the intervals to
+  the data. Any other unit that cannot be converted to hours is an
   error.
 
 ## Value
@@ -67,11 +69,15 @@ times a day at 0, 6, and 12 hours, from being reported as a 6 hour
 interval with a dose missing overnight.
 
 The intervals are matched to `tau.choices` when it is given. When it is
-`NA` (the default) and `timeu` is given, they are matched to the
-built-in nominal intervals listed in
-[`find.dose.regimen()`](https://humanpred.github.io/pknca/reference/find.dose.regimen.md).
-When neither is given, the interval is the one found in the data,
-because the unit of `x` is not known. The warnings of
+`NA` (the default), they are matched to the built-in nominal intervals
+listed in
+[`find.dose.regimen()`](https://humanpred.github.io/pknca/reference/find.dose.regimen.md),
+in the unit `timeu`. **Without a time unit, the times are taken to be
+hours**, so `find.tau(c(0, 24, 50))` is 24 (once daily) rather than the
+median spacing of 25; times in another unit should give `timeu`, or they
+are compared with intervals in hours and an interval that matches none
+of them gives a `"pknca_warning_tau_not_nominal"` warning. The warnings
+of
 [`find.dose.regimen()`](https://humanpred.github.io/pknca/reference/find.dose.regimen.md)
 are given here as well, notably `"pknca_warning_tau_irregular_dosing"`
 for missed doses or doses off schedule.

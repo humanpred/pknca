@@ -172,9 +172,10 @@ nothing; see <code><a href="pknca_interval_table.html">pknca_interval_table()</a
 
 
 <dt id="arg-timeu">timeu<a class="anchor" aria-label="anchor" href="#arg-timeu"></a></dt>
-<dd><p>The time unit of <code>time.conc</code> and <code>time.dosing</code>, or <code>NULL</code> when
-it is not known (see <code><a href="find.tau.html">find.tau()</a></code>).  <code><a href="PKNCAdata.html">PKNCAdata()</a></code> gives the time unit of
-its concentration data.</p></dd>
+<dd><p>The time unit of <code>time.conc</code> and <code>time.dosing</code>; <code>NULL</code> when it is
+not known, which is taken to be hours; or <code>NA</code> when it cannot be used (see
+<code><a href="find.dose.regimen.html">find.dose.regimen()</a></code>).  <code><a href="PKNCAdata.html">PKNCAdata()</a></code> gives the time unit of its
+concentration data.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -185,11 +186,12 @@ The data frame may have zero rows if no intervals could be found.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>With a time unit (<code>timeu</code>), \(\tau\) is matched to the nominal dosing
-intervals of <code><a href="find.dose.regimen.html">find.dose.regimen()</a></code>:  dose times recorded a little early or
-late give the nominal interval, and an interval that matches none of them,
-such as dosing every hour, gives a <code>"pknca_warning_tau_not_nominal"</code> warning.
-Without a time unit, \(\tau\) is found from the dose times alone.</p>
+    <p>\(\tau\) is matched to the nominal dosing intervals of
+<code><a href="find.dose.regimen.html">find.dose.regimen()</a></code> in the time unit <code>timeu</code>, taken to be hours when it is
+not given:  dose times recorded a little early or late give the nominal
+interval, and an interval that matches none of them, such as dosing every
+hour, gives a <code>"pknca_warning_tau_not_nominal"</code> warning.  With <code>timeu = NA</code>
+(a unit PKNCA cannot use), \(\tau\) is found from the dose times alone.</p>
 <p>Times are matched within a tolerance rather than exactly, so a sample drawn a
 little before its nominal time still bounds the interval it belongs to.  The
 window is the <code>auto.interval.tolerance</code> option as a fraction of the

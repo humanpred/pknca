@@ -34,8 +34,8 @@ resolve_dose_tau(interval, time.dose, options = list(), timeu = NULL)
 
 - timeu:
 
-  The time unit of `time.dose`, or `NULL` when it is not known (see
-  [`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md))
+  The time unit of `time.dose` (see
+  [`choose.auc.intervals()`](https://humanpred.github.io/pknca/reference/choose.auc.intervals.md))
 
 ## Value
 

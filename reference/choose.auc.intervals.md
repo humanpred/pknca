@@ -75,9 +75,9 @@ choose.auc.intervals(
 
 - timeu:
 
-  The time unit of `time.conc` and `time.dosing`, or `NULL` when it is
-  not known (see
-  [`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md)).
+  The time unit of `time.conc` and `time.dosing`; `NULL` when it is not
+  known, which is taken to be hours; or `NA` when it cannot be used (see
+  [`find.dose.regimen()`](https://humanpred.github.io/pknca/reference/find.dose.regimen.md)).
   [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
   gives the time unit of its concentration data.
 
@@ -91,13 +91,13 @@ intervals could be found.
 
 ## Details
 
-With a time unit (`timeu`), \\\tau\\ is matched to the nominal dosing
-intervals of
-[`find.dose.regimen()`](https://humanpred.github.io/pknca/reference/find.dose.regimen.md):
-dose times recorded a little early or late give the nominal interval,
-and an interval that matches none of them, such as dosing every hour,
-gives a `"pknca_warning_tau_not_nominal"` warning. Without a time unit,
-\\\tau\\ is found from the dose times alone.
+\\\tau\\ is matched to the nominal dosing intervals of
+[`find.dose.regimen()`](https://humanpred.github.io/pknca/reference/find.dose.regimen.md)
+in the time unit `timeu`, taken to be hours when it is not given: dose
+times recorded a little early or late give the nominal interval, and an
+interval that matches none of them, such as dosing every hour, gives a
+`"pknca_warning_tau_not_nominal"` warning. With `timeu = NA` (a unit
+PKNCA cannot use), \\\tau\\ is found from the dose times alone.
 
 Times are matched within a tolerance rather than exactly, so a sample
 drawn a little before its nominal time still bounds the interval it

@@ -75,13 +75,15 @@ find.dose.regimen(
 - tau.choices:
 
   The nominal intervals to match, in the unit of `x`, or `NA` to use the
-  built-in set (when `timeu` is given) or none. Names are used as
-  labels. `NULL` takes the `tau.choices` option.
+  built-in set. Names are used as labels. `NULL` takes the `tau.choices`
+  option.
 
 - timeu:
 
-  The time unit of `x` (such as `"hr"` or `"day"`), or `NULL` (or `""`)
-  when it is not known. A unit that cannot be converted to hours is an
+  The time unit of `x` (such as `"hr"` or `"day"`); `NULL` (or `""`)
+  when it is not known, which is taken to be hours; or `NA` when it is
+  known not to be a unit PKNCA can use, which leaves the intervals to
+  the data. Any other unit that cannot be converted to hours is an
   error.
 
 - options:
@@ -170,18 +172,25 @@ The interval of a segment is snapped to the nearest candidate within
 data (source `"auto"`). The value found in the data is the median of the
 spacings (or spans) that set it, so scatter in the recorded times does
 not move it. The candidates are `tau.choices` when it is given.
-Otherwise, when `timeu` is given, they are the built-in nominal
-intervals converted from hours to `timeu`: Q4H (4 hours), QID (6), TID
-(8), BID (12), QD (24), QOD (48), Q72H (72), QW (168), Q2W (336), Q3W
-(504), Q4W (672), Q6W (1008), Q8W (1344), and Q12W (2016). Without
-either, PKNCA cannot know what the numbers mean, so the intervals come
-from the data alone and every source is `"auto"`. Converting a unit
-other than `"hr"` needs the units package; without it,
+Otherwise they are the built-in nominal intervals, converted from hours
+to `timeu`: Q4H (4 hours), QID (6), TID (8), BID (12), QD (24), QOD
+(48), Q72H (72), QW (168), Q2W (336), Q3W (504), Q4W (672), Q6W (1008),
+Q8W (1344), and Q12W (2016).
+
+**Without a time unit, the times are taken to be hours**, as PKNCA takes
+date-times to be, so dose times 24 and 26 hours apart are once-daily
+dosing. Times recorded in another unit without saying so are then
+compared with intervals in hours, and an interval that matches none of
+them gives a `"pknca_warning_tau_not_nominal"` warning; give `timeu` to
+avoid that. `timeu = NA` says that the unit is not one PKNCA can use,
+and the intervals then come from the data alone (every source is
+`"auto"`). Converting a unit other than `"hr"` needs the units package;
+without it,
 [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
 and [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
-match only data in hours to the nominal intervals, so their results for
-data in other units can differ between installations with and without
-that package.
+treat such a unit as one they cannot use, so their results for data in
+other units can differ between installations with and without that
+package.
 
 ## Conditions
 
@@ -192,8 +201,8 @@ that package.
 
 - `pknca_warning_tau_not_nominal`:
 
-  There were candidates to match and a segment matched none of them. The
-  message includes the regimen table.
+  There were candidates to match (any `timeu` other than `NA`) and a
+  segment matched none of them. The message includes the regimen table.
 
 - `pknca_warning_tau_regimen_change`:
 

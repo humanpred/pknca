@@ -159,10 +159,11 @@ pk.nca.interval(
 
 - timeu:
 
-  The time unit of the group's times, or `NULL` when it is not known. A
-  \\\tau\\ detected from the dose times is matched to the nominal dosing
+  The time unit of the group's times: `NULL` when it is not known, which
+  is taken to be hours, or `NA` when it cannot be used. A \\\tau\\
+  detected from the dose times is matched to the nominal dosing
   intervals for that unit (see
-  [`find.tau()`](https://humanpred.github.io/pknca/reference/find.tau.md)).
+  [`find.dose.regimen()`](https://humanpred.github.io/pknca/reference/find.dose.regimen.md)).
 
 ## Value
 

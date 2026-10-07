@@ -215,14 +215,15 @@ regimen.</p></li>
 
 <dt id="arg-tau-choices">tau.choices<a class="anchor" aria-label="anchor" href="#arg-tau-choices"></a></dt>
 <dd><p>The nominal intervals to match, in the unit of <code>x</code>, or
-<code>NA</code> to use the built-in set (when <code>timeu</code> is given) or none.  Names are used
-as labels.  <code>NULL</code> takes the <code>tau.choices</code> option.</p></dd>
+<code>NA</code> to use the built-in set.  Names are used as labels.  <code>NULL</code> takes the
+<code>tau.choices</code> option.</p></dd>
 
 
 <dt id="arg-timeu">timeu<a class="anchor" aria-label="anchor" href="#arg-timeu"></a></dt>
-<dd><p>The time unit of <code>x</code> (such as <code>"hr"</code> or <code>"day"</code>), or <code>NULL</code> (or
-<code>""</code>) when it is not known.  A unit that cannot be converted to hours is an
-error.</p></dd>
+<dd><p>The time unit of <code>x</code> (such as <code>"hr"</code> or <code>"day"</code>); <code>NULL</code> (or
+<code>""</code>) when it is not known, which is taken to be hours; or <code>NA</code> when it is
+known not to be a unit PKNCA can use, which leaves the intervals to the
+data.  Any other unit that cannot be converted to hours is an error.</p></dd>
 
 
 <dt id="arg-options">options<a class="anchor" aria-label="anchor" href="#arg-options"></a></dt>
@@ -300,16 +301,21 @@ relative to the first dose of the period</p></dd>
 <code>snap.tol</code> (source <code>"nominal"</code>), and is otherwise the value found in the data
 (source <code>"auto"</code>).  The value found in the data is the median of the
 spacings (or spans) that set it, so scatter in the recorded times does not
-move it.  The candidates are <code>tau.choices</code> when it is given.  Otherwise, when
-<code>timeu</code> is given, they are the built-in nominal intervals converted from hours
-to <code>timeu</code>:  Q4H (4 hours), QID (6), TID (8), BID (12), QD (24), QOD (48),
-Q72H (72), QW (168), Q2W (336), Q3W (504), Q4W (672), Q6W (1008), Q8W (1344),
-and Q12W (2016).  Without either, PKNCA cannot know what the numbers mean, so
-the intervals come from the data alone and every source is <code>"auto"</code>.
-Converting a unit other than <code>"hr"</code> needs the units package; without it,
-<code><a href="PKNCAdata.html">PKNCAdata()</a></code> and <code><a href="pk.nca.html">pk.nca()</a></code> match only data in hours to the nominal
-intervals, so their results for data in other units can differ between
-installations with and without that package.</p>
+move it.  The candidates are <code>tau.choices</code> when it is given.  Otherwise they
+are the built-in nominal intervals, converted from hours to <code>timeu</code>:  Q4H (4
+hours), QID (6), TID (8), BID (12), QD (24), QOD (48), Q72H (72), QW (168),
+Q2W (336), Q3W (504), Q4W (672), Q6W (1008), Q8W (1344), and Q12W (2016).</p>
+<p><strong>Without a time unit, the times are taken to be hours</strong>, as PKNCA takes
+date-times to be, so dose times 24 and 26 hours apart are once-daily dosing.
+Times recorded in another unit without saying so are then compared with
+intervals in hours, and an interval that matches none of them gives a
+<code>"pknca_warning_tau_not_nominal"</code> warning; give <code>timeu</code> to avoid that.
+<code>timeu = NA</code> says that the unit is not one PKNCA can use, and the intervals
+then come from the data alone (every source is <code>"auto"</code>).  Converting a unit
+other than <code>"hr"</code> needs the units package; without it, <code><a href="PKNCAdata.html">PKNCAdata()</a></code> and
+<code><a href="pk.nca.html">pk.nca()</a></code> treat such a unit as one they cannot use, so their results for
+data in other units can differ between installations with and without that
+package.</p>
     </div>
     <div class="section level2">
     <h2 id="conditions">Conditions<a class="anchor" aria-label="anchor" href="#conditions"></a></h2>
@@ -321,8 +327,9 @@ installations with and without that package.</p>
 (the message names those doses).</p></dd>
 
 <dt><code>pknca_warning_tau_not_nominal</code></dt>
-<dd><p>There were candidates to match and
-a segment matched none of them.  The message includes the regimen table.</p></dd>
+<dd><p>There were candidates to match (any
+<code>timeu</code> other than <code>NA</code>) and a segment matched none of them.  The message
+includes the regimen table.</p></dd>
 
 <dt><code>pknca_warning_tau_regimen_change</code></dt>
 <dd><p>More than one segment was found.

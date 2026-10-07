@@ -122,14 +122,15 @@ daily dose.</p>
 
 <dt id="arg-tau-choices">tau.choices<a class="anchor" aria-label="anchor" href="#arg-tau-choices"></a></dt>
 <dd><p>The nominal intervals to match, in the unit of <code>x</code>, or
-<code>NA</code> to use the built-in set (when <code>timeu</code> is given) or none.  Names are used
-as labels.  <code>NULL</code> takes the <code>tau.choices</code> option.</p></dd>
+<code>NA</code> to use the built-in set.  Names are used as labels.  <code>NULL</code> takes the
+<code>tau.choices</code> option.</p></dd>
 
 
 <dt id="arg-timeu">timeu<a class="anchor" aria-label="anchor" href="#arg-timeu"></a></dt>
-<dd><p>The time unit of <code>x</code> (such as <code>"hr"</code> or <code>"day"</code>), or <code>NULL</code> (or
-<code>""</code>) when it is not known.  A unit that cannot be converted to hours is an
-error.</p></dd>
+<dd><p>The time unit of <code>x</code> (such as <code>"hr"</code> or <code>"day"</code>); <code>NULL</code> (or
+<code>""</code>) when it is not known, which is taken to be hours; or <code>NA</code> when it is
+known not to be a unit PKNCA can use, which leaves the intervals to the
+data.  Any other unit that cannot be converted to hours is an error.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -144,9 +145,12 @@ what keeps a regimen with a regular gap in it, such as dosing three times a
 day at 0, 6, and 12 hours, from being reported as a 6 hour interval with a
 dose missing overnight.</p>
 <p>The intervals are matched to <code>tau.choices</code> when it is given.  When it is <code>NA</code>
-(the default) and <code>timeu</code> is given, they are matched to the built-in nominal
-intervals listed in <code><a href="find.dose.regimen.html">find.dose.regimen()</a></code>.  When neither is given, the
-interval is the one found in the data, because the unit of <code>x</code> is not known.
+(the default), they are matched to the built-in nominal intervals listed in
+<code><a href="find.dose.regimen.html">find.dose.regimen()</a></code>, in the unit <code>timeu</code>.  <strong>Without a time unit, the times
+are taken to be hours</strong>, so <code>find.tau(c(0, 24, 50))</code> is 24 (once daily)
+rather than the median spacing of 25; times in another unit should give
+<code>timeu</code>, or they are compared with intervals in hours and an interval that
+matches none of them gives a <code>"pknca_warning_tau_not_nominal"</code> warning.
 The warnings of <code><a href="find.dose.regimen.html">find.dose.regimen()</a></code> are given here as well, notably
 <code>"pknca_warning_tau_irregular_dosing"</code> for missed doses or doses off schedule.</p>
     </div>
