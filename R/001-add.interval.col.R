@@ -217,8 +217,7 @@ pknca_route_synonym_table <- function() {
   ret <-
     data.frame(
       synonym = unlist(spellings, use.names = FALSE),
-      route = rep(names(spellings), lengths(spellings)),
-      stringsAsFactors = FALSE
+      route = rep(names(spellings), lengths(spellings))
     )
   ret$dose_route <- ifelse(ret$route %in% "extravascular", "extravascular", "intravascular")
   ret
@@ -250,8 +249,7 @@ pknca_match_route <- function(x) {
   idx <- match(normalized, tbl$synonym)
   data.frame(
     route = tbl$route[idx],
-    dose_route = tbl$dose_route[idx],
-    stringsAsFactors = FALSE
+    dose_route = tbl$dose_route[idx]
   )
 }
 

@@ -427,8 +427,7 @@ kable(
     `Unit Type`=vapply(X = interval_spec, FUN = "[[", "unit_type", FUN.VALUE = ""),
     `Parameter Description`=vapply(X = interval_spec, FUN = "[[", "desc", FUN.VALUE = ""),
     `Function for Calculation`=vapply(X = interval_spec, FUN = get_function_for_calc, FUN.VALUE = ""),
-    check.names=FALSE,
-    stringsAsFactors=FALSE
+    check.names=FALSE
   ),
   row.names=FALSE
 )
