@@ -94,7 +94,7 @@ o_data_sparse <- PKNCAdata(o_conc_sparse, intervals=d_intervals)
 o_nca <- pk.nca(o_data_sparse)
 ```
 
-`pknca_interval_table()` builds the same kind of specification from a description of the study, and its `sparse_single_dose` preset is the single-dose set with no imputation (there is no individual profile to impute into):
+`pknca_interval_table()` builds the same kind of specification from a description of the study, and its `sparse_single_dose` preset is the single-dose set with a zero imputed at the start (`start_conc0`), the one imputation the sparse estimators accept:
 
 ```{r eval=FALSE}
 pknca_interval_table(0, 24, preset="sparse_single_dose")

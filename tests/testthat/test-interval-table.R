@@ -82,10 +82,11 @@ test_that("an interval collection gives the excreta parameters and no imputation
   expect_false("impute" %in% names(ret))
 })
 
-test_that("a sparse design reports the same parameters as the dense one, with no imputation", {
-  # `auclast` and `aumclast` are estimated with the sparse methods and the rest
-  # are calculated from the arithmetic-mean profile, so the parameter set does
-  # not change; only the imputation does, because there is nothing to impute
+test_that("a sparse design reports the same parameters as the dense one, imputing only a zero", {
+  # The AUCs with a sparse estimator are estimated with the sparse methods and
+  # the rest are calculated from the arithmetic-mean profile, so the parameter
+  # set does not change; only the imputation does, because the sparse
+  # estimators accept only an imputed zero
   ret <-
     pknca_interval_table(0, 24, dosing = "single", route = "extravascular", sparse = TRUE)
   dense <-
@@ -96,10 +97,17 @@ test_that("a sparse design reports the same parameters as the dense one, with no
            "half.life", "tlag", "tmax"))
   )
   expect_equal(params_of(ret), params_of(dense))
-  expect_false("impute" %in% names(ret))
-  expect_true("impute" %in% names(dense))
+  expect_equal(unique(ret$impute), "start_conc0")
+  expect_equal(unique(dense$impute), "start_predose_conc0")
   # The preset gives the same thing
-  expect_equal(params_of(pknca_interval_table(0, 24, preset = "sparse_single_dose")), params_of(ret))
+  preset <- pknca_interval_table(0, 24, preset = "sparse_single_dose")
+  expect_equal(params_of(preset), params_of(ret))
+  expect_equal(unique(preset$impute), "start_conc0")
+  # Repeated sparse doses would need a nonzero imputation, which the sparse
+  # estimators refuse, so they impute nothing
+  expect_false(
+    "impute" %in% names(pknca_interval_table(0, 24, dosing = "multiple", route = "extravascular", sparse = TRUE))
+  )
 })
 
 test_that("no context chooses a parameter that needs sparse data", {

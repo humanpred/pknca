@@ -80,8 +80,9 @@ area from time 0 to the first sample is added to the sparse AUC (see
 \code{\link[=pk.calc.aucinf.obs_sparse]{pk.calc.aucinf.obs_sparse()}}).  \eqn{C_0} is
 a function of the means, so its uncertainty is added to the standard error
 with the delta method.  With the linear trapezoidal rule, the AUMC from time
-0 to the first sample does not depend on \eqn{C_0}.  When a concentration is
-measured (or imputed) at time 0, it is used as it is.
+0 to the first sample does not depend on \eqn{C_0}.  A nonzero concentration
+measured at time 0 is used as \eqn{C_0}; a zero there, measured or imputed
+(as by the \code{start_conc0} imputation), is not, as for \code{\link[=pk.calc.c0]{pk.calc.c0()}}.
 }
 \section{Functions}{
 \itemize{

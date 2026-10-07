@@ -231,7 +231,8 @@ sparse_pk_weighted <- function(sparse_pk) {
 #'
 #' The area starts at time 0.  Without a concentration at time 0 (measured or
 #' imputed), the result is `NA`, except for an IV bolus (`iv_bolus = TRUE`):
-#' then \eqn{C_0} is estimated from the mean profile as [pk.calc.c0()] does
+#' then, and when the mean at time 0 is zero (as an imputed zero is),
+#' \eqn{C_0} is estimated from the mean profile as [pk.calc.c0()] does
 #' (see `sparse_c0()`), and the AUC from time 0 to the first sample is added.
 #' \eqn{C_0} is a smooth function of the means, so its gradient adds to the
 #' weights of the means it comes from.  The AUMC from time 0 to the first sample
@@ -273,6 +274,23 @@ sparse_auxc_obs <- function(conc, time, subject, lambda.z = NA,
   # The area starts at time 0 (the start of the interval in pk.nca()), as for
   # the sparse AUClast
   time_first <- min(sparse_pk_attribute(sparse_pk, "time"))
+  if (iv_bolus && time_first == 0 && sparse_pk[[1]]$mean == 0) {
+    # As in pk.calc.c0(), a zero at time 0 (measured or imputed, as by
+    # start_conc0) is not C0 after an IV bolus, so C0 is back-extrapolated
+    mask_after_zero <- time > 0
+    if (!any(mask_after_zero)) {
+      return(na_ret)
+    }
+    conc <- conc[mask_after_zero]
+    time <- time[mask_after_zero]
+    subject <- subject[mask_after_zero]
+    sparse_pk <-
+      sparse_mean(
+        as_sparse_pk(conc = conc, time = time, subject = subject),
+        sparse_mean_method = "arithmetic mean, <=50% BLQ"
+      )
+    time_first <- min(sparse_pk_attribute(sparse_pk, "time"))
+  }
   c0 <- list(c0 = NA_real_, gradient = numeric(), method = NA_character_)
   if (time_first > 0 && iv_bolus) {
     c0 <- sparse_c0(sparse_pk)

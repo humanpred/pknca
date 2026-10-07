@@ -608,6 +608,33 @@ test_that("sparse IV bolus C0 falls back to C1 when the first means rise", {
   expect_equal(attr(result, "method")[3], "Sparse C0: c1 on the mean profile")
 })
 
+test_that("a zero at time 0 does not become the sparse IV bolus C0", {
+  # As for pk.calc.c0(), an imputed (or measured) zero at time 0 is not C0, so
+  # the result is the same as without a time-0 concentration
+  expected <- pk.calc.aucivlast_sparse(conc = d_sparse_iv$conc, time = d_sparse_iv$time, subject = d_sparse_iv$subject)
+  imputed <-
+    pk.calc.aucivlast_sparse(
+      conc = c(0, d_sparse_iv$conc), time = c(0, d_sparse_iv$time), subject = c(NA, d_sparse_iv$subject)
+    )
+  measured <-
+    pk.calc.aucivlast_sparse(
+      conc = c(0, 0, d_sparse_iv$conc), time = c(0, 0, d_sparse_iv$time), subject = c(101, 102, d_sparse_iv$subject)
+    )
+  expect_equal(imputed, expected)
+  expect_equal(measured, expected)
+  # Through pk.nca() with the start_conc0 imputation
+  d_intervals <- data.frame(start = 0, end = Inf, aucivlast = TRUE)
+  d_dose <- data.frame(time = 0, dose = 100)
+  res <-
+    as.data.frame(suppressMessages(suppressWarnings(pk.nca(PKNCAdata(
+      PKNCAconc(d_sparse_iv, conc ~ time | subject, sparse = TRUE),
+      PKNCAdose(d_dose, dose ~ time, route = "intravascular"),
+      intervals = d_intervals, impute = "start_conc0"
+    )))))
+  expect_equal(res$PPORRES[res$PPTESTCD == "aucivlast"], expected$aucivlast)
+  expect_equal(res$PPORRES[res$PPTESTCD == "aucivlast_se"], expected$aucivlast_se)
+})
+
 test_that("a sparse IV bolus with a measured time 0 uses it", {
   d_zero <- rbind(data.frame(time = 0, conc = c(12.1, 11.4, 12.8, 11.9), subject = 101:104), d_sparse_iv)
   result <- pk.calc.aucivlast_sparse(conc = d_zero$conc, time = d_zero$time, subject = d_zero$subject)
