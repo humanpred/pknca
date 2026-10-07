@@ -649,8 +649,11 @@ the generated intervals:
   `pknca_presets()` gives named argument sets for common analyses.
 
 * `pknca_interval_table()` with `sparse = TRUE` (and the `sparse_single_dose`
-  preset) now gives the same parameters as the matching dense design, with no
-  imputation.  No preset selects a deprecated name, and no context selects a
+  preset) now gives the same parameters as the matching dense design.  A
+  sparse single dose imputes zero at the start (`start_conc0`), the imputation
+  the sparse estimators accept, and other sparse designs impute nothing; the
+  intervals that `PKNCAdata()` chooses automatically for sparse data follow the
+  same rule.  No preset selects a deprecated name, and no context selects a
   parameter that needs sparse data:  the `_se` and `_df` companions arrive as
   estimator output without being requested.
 
@@ -768,13 +771,21 @@ the generated intervals:
   interval, measured or imputed.  See `vignette("v24-sparse-auc-to-infinity")`.
   (#428)
 
+* With sparse PK, `aucall` and `aumcall` are now sparse estimators like
+  `auclast` and `aumclast`, with standard errors and degrees of freedom in the
+  new `aucall_se`, `aucall_df`, `aumcall_se`, and `aumcall_df` parameters
+  (`pk.calc.aucall_sparse()` and `pk.calc.aumcall_sparse()`).  Before, they
+  were calculated on the arithmetic-mean profile with the `auc.method` option
+  and had no standard error.
+
 * With sparse PK after an IV bolus, `aucivlast`, `aucivall`, `aucivinf.obs`,
   `aumcivlast`, `aumcivall`, and `aumcivinf.obs` are now sparse estimators with
   standard errors and degrees of freedom (the new `_se` and `_df` parameters,
   such as `aucivlast_se` and `aucivlast_df`; `pk.calc.aucivlast_sparse()` and
   its siblings).  Without a sample at time 0, C0 is back-extrapolated from the
   mean profile with the methods of `pk.calc.c0()`, and its uncertainty is added
-  to the standard error with the delta method.  The other IV parameters
+  to the standard error with the delta method; as for `pk.calc.c0()`, a zero at
+  time 0 (measured or imputed) is not used as C0.  The other IV parameters
   (`aucivint.*`, `aucivinf.pred`, and the AUMC equivalents) are calculated from
   the mean profile, as before.
 

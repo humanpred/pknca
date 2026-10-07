@@ -37,9 +37,12 @@ collection over an interval (\code{"interval"}, the usual case for urine and
 feces)?  See \code{\link[=pknca_sample_types]{pknca_sample_types()}}.}
 
 \item{sparse}{Is this a sparse sampling design?  The parameters chosen are
-the same either way -- \code{auclast} and \code{aumclast} are estimated with the
-sparse methods when the data are sparse, and the rest are calculated from
-the arithmetic-mean profile -- but a sparse design imputes nothing.}
+the same either way -- the AUCs and AUMCs with a sparse estimator are
+estimated with the sparse methods when the data are sparse, and the rest
+are calculated from the arithmetic-mean profile -- but the imputation
+differs:  the sparse estimators accept only an imputed zero, so a sparse
+single dose imputes zero at the start (\code{"start_conc0"}), and other sparse
+designs impute nothing.}
 
 \item{tier}{\code{"common"} (the default) gives the parameters usually reported
 for the context; \code{"all"} gives every parameter it can calculate.}

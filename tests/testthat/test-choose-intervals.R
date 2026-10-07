@@ -252,9 +252,10 @@ test_that("choose.auc.intervals builds the single-dose interval from the builder
   # concentration at the start of the interval
   expect_true(any(choose.auc.intervals(c(0, 1, 2, 4, 8, 24), 0, route="iv_bolus")$c0))
   expect_false(any(choose.auc.intervals(c(0, 1, 2, 4, 8, 24), 0, route="extravascular")$c0))
-  # A sparse design imputes nothing
-  expect_false(
-    "impute" %in% names(choose.auc.intervals(c(0, 1, 2, 4, 8, 24), 0, sparse=TRUE))
+  # A sparse single dose imputes only a zero, which the sparse estimators accept
+  expect_equal(
+    unique(choose.auc.intervals(c(0, 1, 2, 4, 8, 24), 0, sparse=TRUE)$impute),
+    "start_conc0"
   )
 })
 
@@ -810,11 +811,15 @@ test_that("choose.auc.intervals handles a sparse design", {
   ret <- choose.auc.intervals(c(0, 1, 2, 4, 8, 24), 0, sparse=TRUE)
   expect_equal(ret$start, 0)
   expect_equal(ret$end, Inf)
-  # A sparse design imputes nothing, so there is no impute column at all
-  expect_false("impute" %in% names(ret))
+  # A sparse single dose imputes only a zero, which the sparse estimators
+  # accept; the dense version of the same design imputes the predose
+  # concentration or zero
+  expect_equal(unique(ret$impute), "start_conc0")
   expect_equal(ret, pknca_interval_table(0, Inf, dosing="single", sparse=TRUE))
-  # The dense version of the same design does impute
-  expect_true("impute" %in% names(choose.auc.intervals(c(0, 1, 2, 4, 8, 24), 0)))
+  expect_equal(
+    unique(choose.auc.intervals(c(0, 1, 2, 4, 8, 24), 0)$impute),
+    "start_predose_conc0"
+  )
 })
 
 test_that("PKNCAdata passes an infusion route and sparseness into the intervals", {
@@ -834,7 +839,7 @@ test_that("PKNCAdata passes an infusion route and sparseness into the intervals"
       PKNCAdose(d_dose_bolus, dose~time, route="rt", duration="dur")
     )
   expect_true(any(ret_bolus$intervals$c0))
-  # A sparse design imputes nothing
+  # A sparse single dose imputes only a zero
   d_conc_sparse <-
     data.frame(
       id=rep(1:3, each=6),
@@ -847,7 +852,7 @@ test_that("PKNCAdata passes an infusion route and sparseness into the intervals"
       PKNCAconc(d_conc_sparse, conc~time|id, sparse=TRUE),
       PKNCAdose(d_dose_sparse, dose~time|id)
     )
-  expect_false("impute" %in% names(ret_sparse$intervals))
+  expect_equal(unique(ret_sparse$intervals$impute), "start_conc0")
 })
 
 test_that("a two-day twice-daily regimen gives the intervals it should", {

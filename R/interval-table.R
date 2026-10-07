@@ -64,10 +64,15 @@ pknca_auc_roots <- function() {
 
 # The imputation an interval needs, assuming it starts at a dose.  An interval
 # that starts partway through a profile has nothing to impute to, and an
-# excreta or sparse analysis has no concentration to impute.
+# excreta analysis has no concentration to impute.  A sparse design takes only
+# an imputed zero (the imputation the sparse estimators accept), so it imputes
+# zero at the start of a single dose and nothing otherwise.
 context_impute <- function(dosing, sample_type, sparse) {
-  if (!identical(sample_type, "spot") || isTRUE(sparse)) {
+  if (!identical(sample_type, "spot")) {
     return(NA_character_)
+  }
+  if (isTRUE(sparse)) {
+    return(if (identical(dosing, "single")) "start_conc0" else NA_character_)
   }
   switch(
     dosing,
@@ -94,6 +99,7 @@ impute_exclusions <- function(impute, dosing) {
       # fabricated one; either way it was not measured there
       start_predose = "count_conc_measured",
       start_predose_conc0 = "count_conc_measured",
+      start_conc0 = "count_conc_measured",
       # start_cmin imputes the minimum, so a minimum calculated afterward is
       # the imputed value
       start_cmin = c("count_conc_measured", "tfirst", "cmin", "tmin"),
@@ -206,9 +212,12 @@ resolve_selection <- function(x, available, arg_name) {
 #'   collection over an interval (`"interval"`, the usual case for urine and
 #'   feces)?  See [pknca_sample_types()].
 #' @param sparse Is this a sparse sampling design?  The parameters chosen are
-#'   the same either way -- `auclast` and `aumclast` are estimated with the
-#'   sparse methods when the data are sparse, and the rest are calculated from
-#'   the arithmetic-mean profile -- but a sparse design imputes nothing.
+#'   the same either way -- the AUCs and AUMCs with a sparse estimator are
+#'   estimated with the sparse methods when the data are sparse, and the rest
+#'   are calculated from the arithmetic-mean profile -- but the imputation
+#'   differs:  the sparse estimators accept only an imputed zero, so a sparse
+#'   single dose imputes zero at the start (`"start_conc0"`), and other sparse
+#'   designs impute nothing.
 #' @param tier `"common"` (the default) gives the parameters usually reported
 #'   for the context; `"all"` gives every parameter it can calculate.
 #' @param include,exclude NCA parameters or concepts (see [pknca_concepts()])

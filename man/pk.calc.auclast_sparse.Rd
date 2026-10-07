@@ -3,11 +3,17 @@
 \name{pk.calc.auclast_sparse}
 \alias{pk.calc.auclast_sparse}
 \alias{pk.calc.aumclast_sparse}
+\alias{pk.calc.aucall_sparse}
+\alias{pk.calc.aumcall_sparse}
 \title{Sparse estimators for the AUC and AUMC to the last measured concentration}
 \usage{
 pk.calc.auclast_sparse(conc, time, subject, ..., options = list())
 
 pk.calc.aumclast_sparse(conc, time, subject, ..., options = list())
+
+pk.calc.aucall_sparse(conc, time, subject, ..., options = list())
+
+pk.calc.aumcall_sparse(conc, time, subject, ..., options = list())
 }
 \arguments{
 \item{conc}{Measured concentrations}
@@ -28,16 +34,18 @@ to \code{pk.calc.auxc}}
 }
 \value{
 A data.frame with the point estimate, its standard error, and the
-degrees of freedom, named for the parameter (\code{auclast}, \code{auclast_se}, and
-\code{auclast_df}, or the \code{aumclast} equivalents)
+degrees of freedom, named for the parameter (for example, \code{auclast},
+\code{auclast_se}, and \code{auclast_df})
 }
 \description{
-These are the \code{FUN_sparse} of \code{auclast} and \code{aumclast}:  with sparse PK,
-\code{\link[=pk.nca]{pk.nca()}} estimates those parameters from the pooled individual samples with
-the Bailer point estimate and the Nedelman-Jia/Holder standard error rather
-than integrating the arithmetic-mean profile.  They wrap
-\code{\link[=pk.calc.sparse_auclast]{pk.calc.sparse_auclast()}} and \code{\link[=pk.calc.sparse_aumclast]{pk.calc.sparse_aumclast()}}, reporting the
-results under the unified parameter names.
+These are the \code{FUN_sparse} of \code{auclast}, \code{aumclast}, \code{aucall}, and
+\code{aumcall}:  with sparse PK, \code{\link[=pk.nca]{pk.nca()}} estimates those parameters from the
+pooled individual samples with the Bailer point estimate and the
+Nedelman-Jia/Holder standard error rather than integrating the
+arithmetic-mean profile.  They wrap \code{\link[=pk.calc.sparse_auc]{pk.calc.sparse_auc()}} and
+\code{\link[=pk.calc.sparse_aumc]{pk.calc.sparse_aumc()}} (with \code{auc.type = "AUClast"} or \code{"AUCall"}),
+reporting the results under the unified parameter names.  AUCall adds the
+triangle from tlast to the next time, whose mean is zero.
 }
 \details{
 The sparse variance theory is defined for the linear trapezoidal
@@ -47,6 +55,10 @@ the option is set to anything else.
 \section{Functions}{
 \itemize{
 \item \code{pk.calc.aumclast_sparse()}: Sparse AUMClast
+
+\item \code{pk.calc.aucall_sparse()}: Sparse AUCall
+
+\item \code{pk.calc.aumcall_sparse()}: Sparse AUMCall
 
 }}
 \seealso{
