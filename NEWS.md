@@ -264,6 +264,22 @@ the generated intervals:
   to `PKNCAconc()` to avoid it.  A unit that cannot be converted to hours (or
   `timeu = NA` to `find.tau()` and its relatives) leaves the interval to the
   dose times, as before.  (@billdenney)
+* After a change of regimen in a group's dose times (more than one segment from
+  `find.dose.regimen()`), `choose.auc.intervals()` and so `PKNCAdata()` choose
+  the intervals by segment:  one steady-state interval for each segment at its
+  own period, the interval after the first dose, and the interval after any
+  other dose that is sampled densely (at least `dense.samples` samples, 3 by
+  default, within one period after it, counted by nominal time when the data
+  carry `time.nominal`).  The last dose uses the last segment's period even when
+  an earlier segment has more doses.  A new
+  `"pknca_warning_intervals_by_segment"` warning, also a
+  `"pknca_warning_tau_regimen_change"` warning, names the segments and the
+  intervals.  **Results change for dense data with a regimen change:**  the
+  last-dose interval used the period of the segment with the most doses, and
+  every sampled dosing interval got an interval.  Sparse data and a single
+  regimen are unchanged.  `choose.auc.intervals()` gains the
+  `time.conc.nominal`, `time.dosing.nominal`, and `dense.samples` arguments.
+  (@billdenney)
 * The interval generated for the last dose now starts at the first dose of the
   last complete dosing cycle, so a regimen giving more than one dose per
   interval no longer gets an interval that contains a dose that was never
