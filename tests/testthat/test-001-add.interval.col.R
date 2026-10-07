@@ -567,3 +567,101 @@ test_that("parameter names that would collide with the interval-linkage columns 
 
 # Reset the original state
 assign("interval.cols", original_state, envir=PKNCA:::.PKNCAEnv)
+
+test_that("every parameter's pretty name and description follow the naming rules", {
+  cols <- get.interval.cols()
+  pretty <- vapply(X = cols, FUN = "[[", "pretty_name", FUN.VALUE = "")
+  desc <- vapply(X = cols, FUN = "[[", "desc", FUN.VALUE = "")
+  # The symbol for lambda.z is written as math in a pretty name, and as the
+  # PKNCA name in a description
+  mentions_lambda <- grepl(pattern = "lambda", x = pretty, ignore.case = TRUE)
+  expect_true(all(grepl(pattern = "$\\lambda_z$", x = pretty[mentions_lambda], fixed = TRUE)))
+  pretty_without_math <- gsub(pattern = "$\\lambda_z$", replacement = "", x = pretty, fixed = TRUE)
+  expect_equal(names(pretty)[grepl(pattern = "lambda", x = pretty_without_math, ignore.case = TRUE)], character())
+  desc_without_name <- gsub(pattern = "lambda.z", replacement = "", x = desc, fixed = TRUE)
+  expect_equal(names(desc)[grepl(pattern = "lambda", x = desc_without_name, ignore.case = TRUE)], character())
+  # Each pretty name tells its parameter apart in a summary
+  expect_equal(names(pretty)[duplicated(pretty) | duplicated(pretty, fromLast = TRUE)], character())
+  # One space between words, no trailing period, and descriptions short enough
+  # for SDTM
+  expect_equal(names(pretty)[grepl(pattern = "  ", x = pretty, fixed = TRUE)], character())
+  expect_equal(names(desc)[grepl(pattern = "  ", x = desc, fixed = TRUE)], character())
+  expect_equal(names(pretty)[grepl(pattern = "\\.$", x = pretty)], character())
+  expect_equal(names(desc)[grepl(pattern = "\\.$", x = desc)], character())
+  expect_equal(names(desc)[nchar(desc) > 40], character())
+  # The display form of the AUC, AUMC, and MRT variants joins the qualifiers
+  # with commas (AUCinf,obs and AUCint,last), and last and all attach directly
+  # (AUClast and AUMCall)
+  display_dots <- "(AUM?C|MRT)(int|inf)\\.(inf|obs|pred|last|all)"
+  expect_equal(names(pretty)[grepl(pattern = display_dots, x = pretty)], character())
+  expect_equal(names(desc)[grepl(pattern = display_dots, x = desc)], character())
+  expect_equal(names(pretty)[grepl(pattern = "(AUM?C|MRT),(last|all)", x = pretty)], character())
+})
+
+# The text of a line of R or R Markdown that is prose:  comments and roxygen,
+# and the string literals of R code (messages, warnings, and other text).
+# Inline code, math, and identifiers that only contain a spelling of lambda.z
+# as part of a longer name (an option, a function, a condition class) are
+# removed, as are CDISC terms, which follow the CDISC spelling.
+prose_text <- function(line) {
+  if (grepl(pattern = "pptest_cdisc", x = line, fixed = TRUE)) {
+    return("")
+  }
+  text <-
+    if (grepl(pattern = "^\\s*#", x = line)) {
+      line
+    } else {
+      paste(regmatches(line, gregexpr(pattern = "\"(?:[^\"\\\\]|\\\\.)*\"", text = line, perl = TRUE))[[1]], collapse = " ")
+    }
+  text <- gsub(pattern = "`[^`]*`", replacement = "", x = text)
+  text <- gsub(pattern = "\\$[^$]*\\$", replacement = "", x = text)
+  text <- gsub(pattern = "[[:alnum:]_.]+lambda_?z[[:alnum:]_.]*|lambda_?z[[:alnum:]_.]+", replacement = "", x = text, ignore.case = TRUE)
+  # The name of an element of the Tobit fit's parameters
+  text <- gsub(pattern = "\"lambda_z\"", replacement = "", x = text, fixed = TRUE)
+  # The CDISC spelling in the PPANMETH method text
+  gsub(pattern = "Lambda z: ", replacement = "", x = text, fixed = TRUE)
+}
+
+# The prose lines of an R Markdown file:  the text outside code chunks
+rmd_prose_lines <- function(lines) {
+  in_chunk <- cumsum(grepl(pattern = "^\\s*```", x = lines)) %% 2 == 1
+  is_fence <- grepl(pattern = "^\\s*```", x = lines)
+  ifelse(in_chunk | is_fence, "", lines)
+}
+
+test_that("prose spells the parameter lambda.z, or as math, and never lambda_z, lambdaz, or Lambda z", {
+  pkg_dir <- test_path("..", "..")
+  skip_if_not(dir.exists(file.path(pkg_dir, "R")), "The package source is needed")
+  # The math form (with a backslash) is allowed, also inside display math
+  bad_spelling <- "(?<!\\\\)lambda_z|lambdaz|lambda\\s+z"
+  found <- character()
+  for (current_file in list.files(file.path(pkg_dir, "R"), pattern = "\\.R$", full.names = TRUE)) {
+    current_lines <- readLines(current_file, warn = FALSE)
+    prose <- vapply(X = current_lines, FUN = prose_text, FUN.VALUE = "", USE.NAMES = FALSE)
+    bad <- grepl(pattern = bad_spelling, x = prose, ignore.case = TRUE, perl = TRUE)
+    found <- c(found, sprintf("%s:%d: %s", basename(current_file), which(bad), current_lines[bad]))
+  }
+  for (current_file in list.files(file.path(pkg_dir, "vignettes"), pattern = "\\.Rmd$", full.names = TRUE)) {
+    current_lines <- readLines(current_file, warn = FALSE)
+    prose <- rmd_prose_lines(current_lines)
+    prose <- gsub(pattern = "`[^`]*`", replacement = "", x = prose)
+    prose <- gsub(pattern = "\\$[^$]*\\$", replacement = "", x = prose)
+    bad <- grepl(pattern = bad_spelling, x = prose, ignore.case = TRUE, perl = TRUE)
+    found <- c(found, sprintf("%s:%d: %s", basename(current_file), which(bad), current_lines[bad]))
+  }
+  expect_equal(found, character())
+})
+
+test_that("the prose check finds the spellings it is meant to find", {
+  expect_equal(prose_text("#' The lambda_z of the fit"), "#' The lambda_z of the fit")
+  expect_equal(prose_text("  rlang::warn(\"Lambda z is missing\")"), "\"Lambda z is missing\"")
+  # Identifiers, inline code, math, CDISC terms, and code outside strings are
+  # not prose
+  expect_equal(prose_text("#' The `sparse_lambda_z_se` option"), "#' The  option")
+  expect_equal(prose_text("#' Uses sparse_lambda_z_se and assert_lambdaz"), "#' Uses  and ")
+  expect_equal(prose_text("  pretty_name=\"First time for $\\\\lambda_z$\","), "\"First time for \"")
+  expect_equal(prose_text("  pptest_cdisc=\"Lambda z\","), "")
+  expect_equal(prose_text("  lambda_z <- 2"), "")
+  expect_equal(prose_text("  attr(ret, \"method\") <- \"Lambda z: Manual selection\""), "\"method\" \"Manual selection\"")
+  expect_equal(rmd_prose_lines(c("text lambda z", "```{r}", "lambda_z <- 1", "```", "after")), c("text lambda z", "", "", "", "after"))
+})

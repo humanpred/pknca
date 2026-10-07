@@ -394,7 +394,7 @@ test_that("summary pretty_name control", {
   expect_equal(
     names(s_pretty),
     c(
-      "Interval Start", "Interval End", "treatment", "N", "AUClast",
+      "Interval start", "Interval end", "treatment", "N", "AUClast",
       "Cmax", "Tmax", "Half-life", "AUCinf,obs"
     )
   )
@@ -408,7 +408,7 @@ test_that("summary pretty_name control", {
   expect_equal(
     names(s_pretty_units),
     c(
-      "Interval Start", "Interval End", "treatment", "N", "AUClast (hr*ng/mL)",
+      "Interval start", "Interval end", "treatment", "N", "AUClast (hr*ng/mL)",
       "Cmax (ng/mL)", "Tmax (hr)", "Half-life (hr)", "AUCinf,obs (hr*ng/mL)"
     )
   )

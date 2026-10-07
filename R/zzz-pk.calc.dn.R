@@ -60,7 +60,7 @@ local({
       values=c(FALSE, TRUE),
       unit_type=paste0(current_unit_type, "_dose"),
       pretty_name=paste(current_pretty_name, "(dose-normalized)"),
-      desc=paste("Dose normalized", n),
+      desc=paste("Dose-normalized", n),
       formalsmap=list(parameter=n),
       depends=c(n),
       formula=dn_formula,

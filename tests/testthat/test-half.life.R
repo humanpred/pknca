@@ -194,7 +194,7 @@ test_that("half-life manual point selection", {
       tlast = 3L
     )
   attr(excluded_result, "exclude") <- "Negative half-life estimated with manually-selected points"
-  attr(excluded_result, "method") <- "Lambda Z: Manual selection"
+  attr(excluded_result, "method") <- "Lambda z: Manual selection"
   expect_equal(
     pk.calc.half.life(conc = 2^(1:3), time = 1:3, manually.selected.points = TRUE),
     excluded_result
@@ -1058,7 +1058,7 @@ test_that("pk.calc.half.life tobit manually.selected.points sets exclude for neg
 
 test_that("span.ratio is described as span over half-life, not the inverse (#582)", {
   # ret$span.ratio <- (max(data$time) - min(data$time))/ret$half.life
-  expect_equal(get.interval.cols()[["span.ratio"]]$desc, "Lambda z time span to half-life ratio")
+  expect_equal(get.interval.cols()[["span.ratio"]]$desc, "Ratio of lambda.z time span to half-life")
 })
 
 # Refit a half-life from the concentrations used, for testing get_halflife_fit()

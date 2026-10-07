@@ -8,6 +8,25 @@ the dosing including dose amount and route.
 
 ## Breaking changes
 
+* Parameter names and descriptions follow one style, so some column headers of
+  `summary()` and some descriptions change (@billdenney):
+  * Pretty names write lambda.z as math (`$\lambda_z$`), including "Number of
+    points used for $\lambda_z$", and prose, descriptions, and messages call
+    it `lambda.z`.  The method text for a manual half-life selection is
+    "Lambda z: Manual selection", in the CDISC spelling.
+  * Pretty names are in sentence case ("Interval start", "Interval end",
+    "Total urine volume", "Time above concentration").
+  * AUMC, interval AUC, and MRT variants are written like the AUC ones
+    ("AUMClast", "AUMCinf,obs", "AUCint,last", "MRTlast").
+  * Qualifiers read "based on" ("Renal clearance (based on AUClast)",
+    "Bioavailability (based on AUCinf,obs)"), "for IV dosing" replaces "IV
+    dose interval", and "for multiple dosing" replaces "for multiple-dose".
+  * Pretty names that were shared by several parameters now tell them apart
+    ("Cav (based on AUCint,last)", "AUC above predose", "AUC above trough",
+    "Sparse AUMClast standard error").
+  * Descriptions write the display names with commas ("AUCinf,obs") and
+    "Dose-normalized" with a hyphen.
+
 * `PKNCAconc()` no longer adds `volume` and `duration` columns to the data when
   those arguments are not given.  They are only used by urine and fecal
   calculations, so most datasets carried two columns of `NA` and `0` that
