@@ -57,8 +57,7 @@ pknca_cdisc_codes <- function() {
         tier = spec$tier %||% "uncommon",
         variant = variant,
         pptestcd_cdisc = unname(codes),
-        pptest_cdisc = test_aligned,
-        stringsAsFactors = FALSE
+        pptest_cdisc = test_aligned
       )
     }
   )
