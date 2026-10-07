@@ -302,12 +302,16 @@ the generated intervals:
     nominal times decrease while its actual times increase (as when the
     nominal times restart at each dose) are not reported, with a classed
     warning.
-  * The `exclude_nca_tmax_coverage()` exclusion rule excludes every result of
-    a subject's interval when the subject has no sample within the Tmax range
-    of its summary group (Tukey's fences around the subjects' Tmax values),
-    and warns with the classed `pknca_warning_tmax_coverage_partial` warning
-    when a subject has a sample in the range but is missing some of the
-    group's nominal times within it.  Groups with fewer than `min_subjects`
+  * The `exclude_nca_tmax_coverage()` exclusion rule flags subjects whose
+    samples miss the usual Tmax times of their summary group, and excludes
+    only beyond the outer fences.  With Tukey's fences around the subjects'
+    Tmax values, a subject with no sample within the outer fences
+    (`k_exclude = 3` interquartile ranges) has every result of its interval
+    excluded; one with no sample within the inner fences (`k_warn = 1.5`)
+    gets the classed `pknca_warning_tmax_coverage_outlier` warning; and one
+    missing some of the group's nominal times within the inner fences gets the
+    classed `pknca_message_tmax_coverage_partial` message.  A predose sample
+    counts only after an intravascular bolus.  Groups with fewer than `min_subjects`
     (default 4) subjects, sparse data, and groups whose nominal times disagree
     with the interval (as when the nominal times restart at each dose) are not
     checked, with a classed message or warning.

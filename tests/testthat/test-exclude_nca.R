@@ -345,12 +345,15 @@ collect_conditions <- function(expr, class) {
   list(value = value, conditions = acc$conditions)
 }
 
+# The main fixture's Tmax values 1, 1, 2, 2, 2, and 8 have quartiles 1.25 and
+# 2:  the inner fences are 0.125 and 3.125 hours, and the outer fences -1 and
+# 4.25 hours
 tmax_coverage_reason_nominal <-
-  "no sample in the Tmax range of the group (nominal time 0.125 to 3.125 hr after the interval start, nearest sample at 8 hr)"
+  "no sample in the outer Tmax range of the group (nominal time 0 to 4.25 hr after the interval start, nearest sample at 8 hr)"
 
-test_that("exclude_nca_tmax_coverage excludes a subject with no sample in the Tmax range and warns for one missing some", {
+test_that("exclude_nca_tmax_coverage excludes a subject with no sample within the outer fences and tells of one missing some", {
   o_nca <- tmax_coverage_results()
-  collected <- collect_conditions(exclude(o_nca, FUN = exclude_nca_tmax_coverage()), "pknca_warning_tmax_coverage_partial")
+  collected <- collect_conditions(exclude(o_nca, FUN = exclude_nca_tmax_coverage()), "pknca_message_tmax_coverage_partial")
   result <- as.data.frame(collected$value)
   # Every parameter of subject 6, and nothing else, is excluded
   expect_equal(
@@ -358,12 +361,12 @@ test_that("exclude_nca_tmax_coverage excludes a subject with no sample in the Tm
     c(rep(NA_character_, 15), rep(tmax_coverage_reason_nominal, 3))
   )
   expect_equal(result$subject[!is.na(result$exclude)], rep(6, 3))
-  # Subject 5 is warned about, once, and not excluded
+  # Subject 5 gets a message, once, and is not excluded
   expect_length(collected$conditions, 1)
   partial <- collected$conditions[[1]]
   expect_equal(
     conditionMessage(partial),
-    "Cmax and Tmax may be unreliable for start=0, end=24, subject=5:  no usable sample at nominal time 1 hr, within the Tmax range of the group (nominal time 0.125 to 3.125 hr after the interval start)"
+    "Cmax and Tmax may be unreliable for start=0, end=24, subject=5:  no usable sample at nominal time 1 hr, within the inner Tmax range of the group (nominal time 0.125 to 3.125 hr after the interval start)"
   )
   expect_equal(partial$group, data.frame(start = 0, end = 24, subject = 5))
   expect_equal(partial$tmax_range, c(0.125, 3.125))
@@ -380,7 +383,7 @@ test_that("exclude_nca_tmax_coverage treats NA concentrations at the nominal tim
       data.frame(subject = 6, time_nominal = c(0.5, 1, 2, 4), time = c(0.5, 1, 2, 4), conc = NA_real_)
     )
   o_nca <- tmax_coverage_results(d_conc)
-  result <- as.data.frame(suppressWarnings(exclude(o_nca, FUN = exclude_nca_tmax_coverage())))
+  result <- as.data.frame(suppressMessages(exclude(o_nca, FUN = exclude_nca_tmax_coverage())))
   expect_equal(result$exclude[result$subject == 6], rep(tmax_coverage_reason_nominal, 3))
   expect_true(all(is.na(result$exclude[result$subject != 6])))
   missing_samples <- pknca_missing_samples(o_nca)
@@ -394,23 +397,21 @@ test_that("exclude_nca_tmax_coverage treats excluded concentrations as missing s
   d_conc$excl[d_conc$subject == 4 & d_conc$time_nominal %in% c(0.5, 1, 2)] <- "Swap"
   o_conc <- PKNCAconc(d_conc, conc ~ time | subject, time.nominal = "time_nominal", exclude = "excl", timeu = "hr", concu = "ng/mL")
   o_nca <- suppressMessages(pk.nca(PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 24, cmax = TRUE, tmax = TRUE))))
-  collected <- collect_conditions(exclude(o_nca, FUN = exclude_nca_tmax_coverage()), "pknca_warning_tmax_coverage_partial")
+  collected <- collect_conditions(suppressWarnings(exclude(o_nca, FUN = exclude_nca_tmax_coverage())), "pknca_message_tmax_coverage_partial")
+  outliers <- collect_conditions(suppressMessages(exclude(o_nca, FUN = exclude_nca_tmax_coverage())), "pknca_warning_tmax_coverage_outlier")
   result <- as.data.frame(collected$value)
   # Subject 4 now has Tmax at 4 hours:  the Tmax values 1, 1, 2, 4, 2, and 8
-  # have quartiles 1.25 and 3.5, so Tukey's fences are -2.125 and 6.875 hours.
-  # No Tmax is at the interval start, so the range starts after it, and the
-  # predose sample of subject 6 does not count.
+  # have quartiles 1.25 and 3.5, so the inner range is 0 to 6.875 hours and the
+  # outer range 0 to 10.25 hours.  Without dose data, the predose sample of
+  # subject 6 does not count, and its 8-hour sample is only within the outer
+  # range, so it is flagged and not excluded.
   expect_equal(result$PPORRES[result$subject == 4 & result$PPTESTCD == "tmax"], 4)
-  expect_equal(
-    result$exclude,
-    c(
-      rep(NA_character_, 10),
-      rep("no sample in the Tmax range of the group (nominal time 0 to 6.875 hr after the interval start, nearest sample at 8 hr)", 2)
-    )
-  )
-  expect_equal(result$subject[!is.na(result$exclude)], c(6, 6))
+  expect_true(all(is.na(result$exclude)))
+  expect_length(outliers$conditions, 1)
+  expect_equal(outliers$conditions[[1]]$group$subject, 6)
+  expect_equal(outliers$conditions[[1]]$nearest_sample, 8)
   # Subjects 4 (excluded samples) and 5 (an NA concentration) are missing
-  # samples in the range
+  # samples in the inner range
   expect_equal(
     vapply(collected$conditions, function(x) x$group$subject, FUN.VALUE = 1),
     c(4, 5)
@@ -419,7 +420,7 @@ test_that("exclude_nca_tmax_coverage treats excluded concentrations as missing s
   expect_equal(collected$conditions[[1]]$reason, rep("excluded", 3))
   expect_match(
     conditionMessage(collected$conditions[[1]]),
-    "no usable sample at nominal time 0.5, 1, 2 hr, within the Tmax range of the group (nominal time 0 to 6.875 hr after the interval start)",
+    "no usable sample at nominal time 0.5, 1, 2 hr, within the inner Tmax range of the group (nominal time 0 to 6.875 hr after the interval start)",
     fixed = TRUE
   )
 })
@@ -428,14 +429,14 @@ test_that("exclude_nca_tmax_coverage uses the actual times without nominal times
   d_conc <- tmax_coverage_conc()
   d_conc$time <- d_conc$time + 0.05 * (d_conc$time > 0)
   o_nca <- tmax_coverage_results(d_conc, time.nominal = NULL)
-  collected <- collect_conditions(exclude(o_nca, FUN = exclude_nca_tmax_coverage()), "warning")
+  collected <- collect_conditions(exclude(o_nca, FUN = exclude_nca_tmax_coverage()), c("warning", "message"))
   result <- as.data.frame(collected$value)
   expect_equal(
     result$exclude[result$subject == 6],
-    rep("no sample in the Tmax range of the group (actual time 0.175 to 3.175 hr after the interval start, nearest sample at 8.05 hr)", 3)
+    rep("no sample in the outer Tmax range of the group (actual time 0 to 4.3 hr after the interval start, nearest sample at 8.05 hr)", 3)
   )
   expect_true(all(is.na(result$exclude[result$subject != 6])))
-  # Without a schedule, a subject missing some samples is not warned about
+  # Without a schedule, a subject missing some samples gets no message
   expect_length(collected$conditions, 0)
 })
 
@@ -451,13 +452,13 @@ test_that("exclude_nca_tmax_coverage does not check a group with too few subject
     "Tmax coverage is not checked for start=0, end=24:  3 subject(s) have a Tmax, fewer than the 4 needed (min_subjects)"
   )
   # The group is checked when min_subjects allows it:  the Tmax values 1, 1,
-  # and 8 have quartiles 1 and 4.5, so the range is after the interval start
-  # up to 9.75 hours, and subject 6 has a sample in it but is missing the others
-  expect_warning(
+  # and 8 have quartiles 1 and 4.5, so the inner range is 0 to 9.75 hours, and
+  # subject 6 has a sample in it but is missing the others
+  expect_message(
     result_min3 <- as.data.frame(exclude(o_nca, FUN = exclude_nca_tmax_coverage(min_subjects = 3))),
-    regexp = "subject=6:  no usable sample at nominal time 0.5, 1, 2, 4 hr, within the Tmax range of the group (nominal time 0 to 9.75 hr after the interval start)",
+    regexp = "subject=6:  no usable sample at nominal time 0.5, 1, 2, 4 hr, within the inner Tmax range of the group (nominal time 0 to 9.75 hr after the interval start)",
     fixed = TRUE,
-    class = "pknca_warning_tmax_coverage_partial"
+    class = "pknca_message_tmax_coverage_partial"
   )
   expect_true(all(is.na(result_min3$exclude)))
   # A single-subject group is never checked
@@ -471,6 +472,8 @@ test_that("exclude_nca_tmax_coverage does not check a group with too few subject
   expect_true(all(is.na(as.data.frame(result_one)$exclude)))
   expect_error(exclude_nca_tmax_coverage(min_subjects = 1))
   expect_error(exclude_nca_tmax_coverage(min_subjects = 4.5))
+  expect_error(exclude_nca_tmax_coverage(k_warn = -1))
+  expect_error(exclude_nca_tmax_coverage(k_warn = 3, k_exclude = 1.5))
 })
 
 test_that("exclude_nca_tmax_coverage checks each summary group on its own", {
@@ -489,7 +492,7 @@ test_that("exclude_nca_tmax_coverage checks each summary group on its own", {
       time.nominal = "time_nominal", timeu = "hr", concu = "ng/mL"
     )
   o_nca <- suppressMessages(pk.nca(PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 24, cmax = TRUE, tmax = TRUE))))
-  result <- as.data.frame(suppressWarnings(exclude(o_nca, FUN = exclude_nca_tmax_coverage())))
+  result <- as.data.frame(suppressMessages(exclude(o_nca, FUN = exclude_nca_tmax_coverage())))
   excluded <- as.data.frame(unique(result[!is.na(result$exclude), c("treatment", "subject")]))
   rownames(excluded) <- NULL
   expect_equal(excluded, data.frame(treatment = "A", subject = 6))
@@ -532,7 +535,7 @@ test_that("exclude_nca_tmax_coverage reports a subject with no sample in the int
   result <- as.data.frame(suppressWarnings(exclude(o_nca, FUN = exclude_nca_tmax_coverage())))
   expect_equal(
     result$exclude[result$subject == 6],
-    rep("no sample in the Tmax range of the group (nominal time 0.125 to 3.125 hr after the interval start, no sample after the interval start)", 3)
+    rep("no sample in the outer Tmax range of the group (nominal time 0 to 4.25 hr after the interval start, no sample after the interval start)", 3)
   )
 })
 
@@ -543,7 +546,7 @@ test_that("exclude_nca_tmax_coverage leaves the time unit out of the text when t
   result <- as.data.frame(suppressWarnings(exclude(o_nca, FUN = exclude_nca_tmax_coverage())))
   expect_equal(
     result$exclude[result$subject == 6],
-    rep("no sample in the Tmax range of the group (nominal time 0.125 to 3.125 after the interval start, nearest sample at 8)", 2)
+    rep("no sample in the outer Tmax range of the group (nominal time 0 to 4.25 after the interval start, nearest sample at 8)", 2)
   )
 })
 
@@ -577,24 +580,6 @@ test_that("exclude_nca_tmax_coverage only checks NCA results", {
     regexp = "Should not see more than one tmax (please report this as a bug)",
     fixed = TRUE
   )
-})
-
-test_that("exclude_nca_tmax_coverage counts a sample at the interval start when a subject has its Tmax there", {
-  d_conc <- tmax_coverage_conc()
-  # Subjects 1 and 2 have Tmax at the interval start:  the Tmax values 0, 0, 2,
-  # 2, 2, and 8 have quartiles 0.5 and 2, so the fences are -1.75 and 4.25
-  # hours, the range is 0 to 4.25 hours, and the predose sample of subject 6
-  # is in it
-  d_conc$conc[d_conc$subject %in% 1:2 & d_conc$time == 0] <- 20
-  o_nca <- tmax_coverage_results(d_conc)
-  collected <- collect_conditions(exclude(o_nca, FUN = exclude_nca_tmax_coverage()), "pknca_warning_tmax_coverage_partial")
-  expect_true(all(is.na(as.data.frame(collected$value)$exclude)))
-  expect_equal(
-    vapply(collected$conditions, function(x) x$group$subject, FUN.VALUE = 1),
-    c(5, 6)
-  )
-  expect_equal(collected$conditions[[2]]$tmax_range, c(0, 4.25))
-  expect_equal(collected$conditions[[2]]$time_nominal_missing, c(0.5, 1, 2, 4))
 })
 
 test_that("exclude_nca_tmax_coverage does not exclude when the nominal times restart at each dose", {
@@ -691,34 +676,6 @@ tmax_coverage_start_conc <- function(peaks) {
   )
 }
 
-test_that("exclude_nca_tmax_coverage counts a sample at the interval start only when a Tmax is there", {
-  # Tmax values 1, 1, 2, 2, 1, and 8 have quartiles 1 and 2 (type 7), so the
-  # fences are -0.5 and 3.5 hours, and the range is 0 to 3.5 hours
-  o_nca_after <- tmax_coverage_results(tmax_coverage_start_conc(c(1, 1, 2, 2, 1)))
-  result_after <- as.data.frame(exclude(o_nca_after, FUN = exclude_nca_tmax_coverage()))
-  expect_equal(result_after$PPORRES[result_after$PPTESTCD == "tmax"], c(1, 1, 2, 2, 1, 8))
-  expect_equal(
-    result_after$exclude,
-    c(
-      rep(NA_character_, 15),
-      rep("no sample in the Tmax range of the group (nominal time 0 to 3.5 hr after the interval start, nearest sample at 8 hr)", 3)
-    )
-  )
-  # Tmax values 0, 1, 1, 2, 2, and 8 have the same quartiles, and with a Tmax
-  # at the interval start, the predose sample of subject 6 is in the range
-  o_nca_start <- tmax_coverage_results(tmax_coverage_start_conc(c(0, 1, 1, 2, 2)))
-  collected <- collect_conditions(exclude(o_nca_start, FUN = exclude_nca_tmax_coverage()), "pknca_warning_tmax_coverage_partial")
-  result_start <- as.data.frame(collected$value)
-  expect_equal(result_start$PPORRES[result_start$PPTESTCD == "tmax"], c(0, 1, 1, 2, 2, 8))
-  expect_true(all(is.na(result_start$exclude)))
-  expect_length(collected$conditions, 1)
-  expect_equal(
-    conditionMessage(collected$conditions[[1]]),
-    "Cmax and Tmax may be unreliable for start=0, end=24, subject=6:  no usable sample at nominal time 0.5, 1, 2 hr, within the Tmax range of the group (nominal time 0 to 3.5 hr after the interval start)"
-  )
-  expect_equal(collected$conditions[[1]]$tmax_range, c(0, 3.5))
-})
-
 test_that("an exclude_nca_tmax_coverage rule can be used again, on the same or another object", {
   d_conc <- tmax_coverage_conc()
   o_nca_small <- tmax_coverage_results(d_conc[d_conc$subject %in% c(1, 2, 6), ])
@@ -728,12 +685,12 @@ test_that("an exclude_nca_tmax_coverage rule can be used again, on the same or a
   expect_message(exclude(o_nca_small, FUN = rule_fun), class = "pknca_message_tmax_coverage_few_subjects")
   expect_message(exclude(o_nca_small, FUN = rule_fun), class = "pknca_message_tmax_coverage_few_subjects")
   # Another object gets its own verdicts, and the same object gets the same ones
-  first <- suppressWarnings(exclude(o_nca, FUN = rule_fun))
-  second <- suppressWarnings(exclude(o_nca, FUN = rule_fun))
+  first <- suppressMessages(exclude(o_nca, FUN = rule_fun))
+  second <- suppressMessages(exclude(o_nca, FUN = rule_fun))
   expect_equal(as.data.frame(first)$exclude, c(rep(NA_character_, 15), rep(tmax_coverage_reason_nominal, 3)))
   expect_equal(second, first)
-  # The subject warning is given in every call, too
-  expect_warning(exclude(o_nca, FUN = rule_fun), class = "pknca_warning_tmax_coverage_partial")
+  # The subject message is given in every call, too
+  expect_message(exclude(o_nca, FUN = rule_fun), class = "pknca_message_tmax_coverage_partial")
 })
 
 test_that("exclude_nca_tmax_coverage takes time in proportion to the number of subjects", {
@@ -764,12 +721,12 @@ test_that("exclude_nca_tmax_coverage judges the first dose by its own samples wh
   collected <- collect_conditions(exclude(o_nca, FUN = exclude_nca_tmax_coverage()), "warning")
   result <- as.data.frame(collected$value)
   # In the first interval, subject 6 has Tmax at 8 hours:  the Tmax values 1,
-  # 1, 2, 2, 1, and 8 give the range 0 to 3.5 hours, which subject 6 has no
-  # sample in
+  # 1, 2, 2, 1, and 8 give the outer range 0 to 5 hours, which subject 6 has
+  # no sample in
   expect_equal(result$PPORRES[result$start == 0 & result$PPTESTCD == "tmax"], c(1, 1, 2, 2, 1, 8))
   expect_equal(
     result$exclude[!is.na(result$exclude)],
-    rep("no sample in the Tmax range of the group (nominal time 0 to 3.5 hr after the interval start, nearest sample at 8 hr)", 2)
+    rep("no sample in the outer Tmax range of the group (nominal time 0 to 5 hr after the interval start, nearest sample at 8 hr)", 2)
   )
   expect_equal(unique(result[!is.na(result$exclude), c("subject", "start")]), data.frame(subject = 6, start = 0), ignore_attr = TRUE)
   # The second interval is not checked
@@ -788,4 +745,105 @@ test_that("exclude_nca_tmax_coverage does not check an interval with more than o
     conditionMessage(collected$conditions[[1]]),
     "Tmax coverage is not checked for start=0, end=48:  the nominal times of 6 subject(s) decrease while the actual times increase within the interval, so the nominal times may not share the origin of the actual times and the interval (0 to 48 hr)"
   )
+})
+
+test_that("exclude_nca_tmax_coverage flags, and does not exclude, a subject with a sample only within the outer fences", {
+  d_conc <- tmax_coverage_conc()
+  # Subject 6 has samples at 0, 4, and 12 hours, so its Tmax is 4 hours:  the
+  # Tmax values 1, 1, 2, 2, 2, and 4 have quartiles 1.25 and 2, so the inner
+  # range is 0.125 to 3.125 hours and the outer range 0 to 4.25 hours
+  d_conc <- d_conc[d_conc$subject != 6, ]
+  d_conc <- rbind(d_conc, data.frame(subject = 6, time_nominal = c(0, 4, 12), time = c(0, 4, 12), conc = c(0, 3, 1)))
+  o_nca <- tmax_coverage_results(d_conc)
+  collected <- collect_conditions(suppressMessages(exclude(o_nca, FUN = exclude_nca_tmax_coverage())), "pknca_warning_tmax_coverage_outlier")
+  expect_true(all(is.na(as.data.frame(collected$value)$exclude)))
+  expect_length(collected$conditions, 1)
+  outlier <- collected$conditions[[1]]
+  expect_equal(
+    conditionMessage(outlier),
+    "Possible data issue for start=0, end=24, subject=6:  no sample in the inner Tmax range of the group (nominal time 0.125 to 3.125 hr after the interval start, nearest sample at 4 hr); not excluded, since a sample is in the outer range"
+  )
+  expect_equal(outlier$group, data.frame(start = 0, end = 24, subject = 6))
+  expect_equal(outlier$tmax_range, c(0.125, 3.125))
+  expect_equal(outlier$nearest_sample, 4)
+  # With the outer fences at the inner fences, the same subject is excluded
+  result_equal <- as.data.frame(suppressMessages(exclude(o_nca, FUN = exclude_nca_tmax_coverage(k_exclude = 1.5))))
+  expect_equal(
+    result_equal$exclude[!is.na(result_equal$exclude)],
+    rep("no sample in the outer Tmax range of the group (nominal time 0.125 to 3.125 hr after the interval start, nearest sample at 4 hr)", 3)
+  )
+  expect_equal(result_equal$subject[!is.na(result_equal$exclude)], rep(6, 3))
+})
+
+# NCA results of tmax_coverage_start_conc() over 0 to 24 hours, with a dose at
+# time 0 given as `...` to PKNCAdose(), or without dose data when `...` is
+# empty
+tmax_coverage_start_results <- function(peaks, ...) {
+  d_conc <- tmax_coverage_start_conc(peaks)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | subject, time.nominal = "time_nominal", timeu = "hr", concu = "ng/mL")
+  intervals <- data.frame(start = 0, end = 24, cmax = TRUE, tmax = TRUE)
+  o_data <-
+    if (...length() == 0) {
+      PKNCAdata(o_conc, intervals = intervals)
+    } else {
+      d_dose <- data.frame(subject = unique(d_conc$subject), time = 0, dose = 1)
+      PKNCAdata(o_conc, PKNCAdose(d_dose, dose ~ time | subject, ...), intervals = intervals)
+    }
+  suppressMessages(pk.nca(o_data))
+}
+
+test_that("exclude_nca_tmax_coverage counts a sample at the interval start only after an intravascular bolus", {
+  # Subjects 1 to 5 have Tmax at 0, 1, 1, 2, and 2 hours, and subject 6 has
+  # samples only at 0, 8, and 24 hours (Tmax at 8 hours).  The quartiles are 1
+  # and 2, so the inner range is 0 to 3.5 hours and the outer range 0 to 5
+  # hours.
+  peaks <- c(0, 1, 1, 2, 2)
+  excluded_reason <-
+    rep("no sample in the outer Tmax range of the group (nominal time 0 to 5 hr after the interval start, nearest sample at 8 hr)", 2)
+  # After an extravascular dose, the predose sample does not count, even with a
+  # Tmax at the interval start in the group
+  o_nca_ev <- tmax_coverage_start_results(peaks, route = "extravascular")
+  result_ev <- as.data.frame(exclude(o_nca_ev, FUN = exclude_nca_tmax_coverage()))
+  expect_equal(result_ev$PPORRES[result_ev$PPTESTCD == "tmax"], c(0, 1, 1, 2, 2, 8))
+  expect_equal(result_ev$exclude[!is.na(result_ev$exclude)], excluded_reason)
+  expect_equal(result_ev$subject[!is.na(result_ev$exclude)], c(6, 6))
+  # Without dose data, the route is unknown, and it is treated as extravascular
+  o_nca_none <- tmax_coverage_start_results(peaks)
+  result_none <- as.data.frame(exclude(o_nca_none, FUN = exclude_nca_tmax_coverage()))
+  expect_equal(result_none$exclude, result_ev$exclude)
+  # An infusion is not a bolus
+  o_nca_infusion <- tmax_coverage_start_results(peaks, route = "intravascular", duration = 0.5)
+  result_infusion <- as.data.frame(exclude(o_nca_infusion, FUN = exclude_nca_tmax_coverage()))
+  expect_equal(result_infusion$exclude[!is.na(result_infusion$exclude)], excluded_reason)
+  # After an intravascular bolus, the sample at the interval start counts, so
+  # subject 6 has a sample within the inner range and only gets a message for
+  # the samples it is missing
+  o_nca_bolus <- tmax_coverage_start_results(peaks, route = "intravascular")
+  collected <- collect_conditions(exclude(o_nca_bolus, FUN = exclude_nca_tmax_coverage()), "pknca_message_tmax_coverage_partial")
+  expect_true(all(is.na(as.data.frame(collected$value)$exclude)))
+  expect_length(collected$conditions, 1)
+  expect_equal(
+    conditionMessage(collected$conditions[[1]]),
+    "Cmax and Tmax may be unreliable for start=0, end=24, subject=6:  no usable sample at nominal time 0.5, 1, 2 hr, within the inner Tmax range of the group (nominal time 0 to 3.5 hr after the interval start)"
+  )
+  expect_equal(collected$conditions[[1]]$tmax_range, c(0, 3.5))
+})
+
+test_that("exclude_nca_tmax_coverage uses the last dose at or before the interval start for the route", {
+  cache <- new.env(parent = emptyenv())
+  cache$has_dose <- TRUE
+  cache$dose_key_cols <- "subject"
+  cache$dose_key <- pknca_interval_group_key(data.frame(subject = c(1, 1, 2)), "subject")
+  cache$dose_time <- c(0, 24, 0)
+  cache$dose_route <- c("intravascular", "extravascular", "intravascular")
+  cache$dose_duration <- c(0, 0, 0)
+  subject_1 <- data.frame(subject = 1)
+  expect_true(exclude_nca_tmax_coverage_start_counts(subject_1, start = 0, tolerance = 1e-8, cache = cache))
+  expect_true(exclude_nca_tmax_coverage_start_counts(subject_1, start = 12, tolerance = 1e-8, cache = cache))
+  expect_false(exclude_nca_tmax_coverage_start_counts(subject_1, start = 24, tolerance = 1e-8, cache = cache))
+  # No dose at or before the interval start
+  expect_false(exclude_nca_tmax_coverage_start_counts(subject_1, start = -1, tolerance = 1e-8, cache = cache))
+  # No dose for the subject
+  expect_false(exclude_nca_tmax_coverage_start_counts(data.frame(subject = 3), start = 0, tolerance = 1e-8, cache = cache))
+  expect_true(exclude_nca_tmax_coverage_start_counts(data.frame(subject = 2), start = 0, tolerance = 1e-8, cache = cache))
 })

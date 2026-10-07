@@ -7,46 +7,53 @@
 #' @section Tmax coverage:
 #'
 #'   `exclude_nca_tmax_coverage()` compares each subject's samples with the
-#'   Tmax values of its group.  The group is the summary group of
-#'   [summary.PKNCAresults()]:  every grouping column except the subject, with
-#'   the interval start and end (so each part, treatment, analyte, and
-#'   interval is its own group).  The Tmax range of the group is the first to
-#'   third quartile of the Tmax values of every subject in the group (the
-#'   subject being judged included), extended by 1.5 times the interquartile
-#'   range on each side (Tukey's fences).  The quartiles are those of
+#'   Tmax values of its group; it flags a subject whose samples miss the usual
+#'   Tmax times, and excludes only beyond the outer fences.  The group is the
+#'   summary group of [summary.PKNCAresults()]:  every grouping column except
+#'   the subject, with the interval start and end (so each part, treatment,
+#'   analyte, and interval is its own group).  From the first and third
+#'   quartiles of the Tmax values of every subject in the group (the subject
+#'   being judged included), Tukey's inner fences are the quartiles extended
+#'   by `k_warn` times the interquartile range, and the outer fences by
+#'   `k_exclude` times it.  The quartiles are those of
 #'   `stats::quantile(type = 7)`, the default type; with few subjects, the
 #'   types differ (Tmax values of 1, 1, 2, 2, 1, and 8 give a third quartile
 #'   of 2 with type 7, 3.5 with type 6, and 2.5 with type 8).  Tmax values
-#'   that are missing or already excluded are not used.  The range never starts before
-#'   the interval start, where the reported range starts when the lower fence
-#'   is below it.  A sample at the interval start (usually the predose sample)
-#'   counts as within the range only when a subject of the group has its Tmax
-#'   at the interval start, which shows that the start is a plausible Tmax (as
-#'   after an IV bolus).
+#'   that are missing or already excluded are not used.  The ranges never
+#'   start before the interval start, where a reported range starts when its
+#'   lower fence is below it.  A sample at the interval start counts only when
+#'   the subject's dose at or before the interval start is an intravascular
+#'   bolus (route intravascular and no duration or a duration of zero in
+#'   [PKNCAdose()]), so a predose sample does not count after an extravascular
+#'   dose or when the results have no dose data.
 #'
 #'   The samples are the concentration rows with an actual time within the
 #'   interval (the rows that [pk.nca()] used) that have a concentration and
 #'   are not excluded.  When the concentration data have a nominal time
 #'   (`time.nominal` in [PKNCAconc()]), the samples are placed by their
-#'   nominal time minus the interval start, so the nominal times must
-#'   share the origin of the interval times (for example, the nominal time
-#'   since the first dose); otherwise, they are placed by their actual time.
-#'   Times are never converted between units, and the time unit is only used
-#'   in the text.
+#'   nominal time minus the interval start, so the nominal times must share
+#'   the origin of the interval times (for example, the nominal time since the
+#'   first dose); otherwise, they are placed by their actual time.  Times are
+#'   never converted between units, and the time unit is only used in the
+#'   text.
 #'
-#'   * A subject with no sample in the Tmax range is excluded:  every
+#'   * A subject with no sample within the outer fences is excluded:  every
 #'     parameter of that interval is excluded with a reason that gives the
-#'     range and the subject's sample nearest to it.
-#'   * With nominal times, a subject with a sample in the range that is
-#'     missing some of the group's nominal times within the range (see
-#'     [pknca_missing_samples()]) is not excluded.  Instead, a
-#'     `pknca_warning_tmax_coverage_partial` warning says that Cmax and Tmax
-#'     may be unreliable.  The warning's fields are `group` (a one-row
-#'     data.frame with the group and subject), `tmax_range` (the reported
-#'     range, relative to the interval start), `time_nominal_missing`, and
-#'     `reason` (as in [pknca_missing_samples()]), and it can be caught with
-#'     [withCallingHandlers()].  Without nominal times, there is no schedule to
-#'     compare with, and no warning is given.
+#'     outer range and the subject's sample nearest to it.
+#'   * A subject with a sample within the outer fences but none within the
+#'     inner fences is flagged as a possible data issue and not excluded:  a
+#'     `pknca_warning_tmax_coverage_outlier` warning has the fields `group` (a
+#'     one-row data.frame with the group and subject), `tmax_range` (the inner
+#'     range, relative to the interval start), and `nearest_sample` (the
+#'     subject's sample nearest to it, relative to the interval start).
+#'   * With nominal times, a subject with a sample within the inner fences
+#'     that is missing some of the group's nominal times within them (see
+#'     [pknca_missing_samples()]) gets a `pknca_message_tmax_coverage_partial`
+#'     message that Cmax and Tmax may be unreliable.  Its fields are `group`,
+#'     `tmax_range`, `time_nominal_missing`, and `reason` (as in
+#'     [pknca_missing_samples()]).  Without nominal times, there is no
+#'     schedule to compare with, and no message is given.
+#'   * The warnings and messages can be caught with [withCallingHandlers()].
 #'   * A group with fewer than `min_subjects` subjects with a Tmax (one subject,
 #'     for example) is not checked, and a
 #'     `pknca_message_tmax_coverage_few_subjects` message says so once per
@@ -403,8 +410,10 @@ pknca_register_exclude_rule(
 
 #' @eval pknca_rd_exclude_rule("exclude_nca_tmax_coverage")
 #' @export
-exclude_nca_tmax_coverage <- function(min_subjects = 4) {
+exclude_nca_tmax_coverage <- function(min_subjects = 4, k_warn = 1.5, k_exclude = 3) {
   checkmate::assert_int(min_subjects, lower = 2)
+  checkmate::assert_number(k_warn, lower = 0, finite = TRUE)
+  checkmate::assert_number(k_exclude, lower = k_warn, finite = TRUE)
   affected_parameters <- setdiff(names(get.interval.cols()), c("start", "end"))
   # The inputs shared by the subjects of one exclude() call, and each group's
   # verdicts, are kept here so that each is computed once per call
@@ -413,7 +422,7 @@ exclude_nca_tmax_coverage <- function(min_subjects = 4) {
     exclude_nca_tmax_coverage_subject(
       x = x,
       object = object,
-      min_subjects = min_subjects,
+      settings = list(min_subjects = min_subjects, k_warn = k_warn, k_exclude = k_exclude),
       affected_parameters = affected_parameters,
       cache = cache
     )
@@ -422,9 +431,13 @@ exclude_nca_tmax_coverage <- function(min_subjects = 4) {
 }
 pknca_register_exclude_rule(
   name = "exclude_nca_tmax_coverage",
-  description = "Exclude based on whether a subject has a sample within the Tmax range of its group (the first to third quartile of the Tmax values, extended by 1.5 times the interquartile range); a subject with no sample in the range is excluded, and a subject missing some of the nominal times in the range gets a warning",
+  description = "Exclude based on whether a subject has a sample within Tukey's fences around the Tmax values of its group; the rule flags a subject with no sample within the inner fences, and excludes only a subject with no sample within the outer fences",
   arguments =
-    c(min_subjects = "The fewest subjects with a Tmax in a group for the group to be checked (smaller groups are not checked, with a message)")
+    c(
+      min_subjects = "The fewest subjects with a Tmax in a group for the group to be checked (smaller groups are not checked, with a message)",
+      k_warn = "The multiple of the interquartile range that sets the inner fences; a subject with no sample within them gets a warning",
+      k_exclude = "The multiple of the interquartile range that sets the outer fences (at least k_warn); a subject with no sample within them is excluded"
+    )
 )
 
 #' Judge the Tmax coverage of one subject and interval
@@ -439,12 +452,14 @@ pknca_register_exclude_rule(
 #' @param x The results of one subject and interval (one group of
 #'   [exclude()])
 #' @param object The PKNCAresults object
-#' @param min_subjects,affected_parameters See [exclude_nca_tmax_coverage()]
+#' @param settings A list of the `min_subjects`, `k_warn`, and `k_exclude`
+#'   arguments of [exclude_nca_tmax_coverage()]
+#' @param affected_parameters The parameters that an exclusion applies to
 #' @param cache The environment that holds the prepared inputs and verdicts
 #' @returns The exclusion reasons for the rows of `x`
 #' @keywords Internal
 #' @noRd
-exclude_nca_tmax_coverage_subject <- function(x, object, min_subjects, affected_parameters, cache) {
+exclude_nca_tmax_coverage_subject <- function(x, object, settings, affected_parameters, cache) {
   if (!inherits(object, "PKNCAresults")) {
     rlang::abort(
       "exclude_nca_tmax_coverage() checks NCA results; use it with exclude() on a PKNCAresults object",
@@ -480,7 +495,7 @@ exclude_nca_tmax_coverage_subject <- function(x, object, min_subjects, affected_
   group_key <- pknca_interval_group_key(current, cache$summary_group_cols)
   if (is.null(cache$groups[[group_key]])) {
     cache$groups[[group_key]] <-
-      exclude_nca_tmax_coverage_group(current = current, group_key = group_key, min_subjects = min_subjects, cache = cache)
+      exclude_nca_tmax_coverage_group(current = current, group_key = group_key, settings = settings, cache = cache)
   }
   verdict <- cache$groups[[group_key]][[pknca_interval_group_key(current, cache$conc_group_cols)]]
   if (!is.null(verdict$reason)) {
@@ -488,6 +503,9 @@ exclude_nca_tmax_coverage_subject <- function(x, object, min_subjects, affected_
   }
   if (!is.null(verdict$warning)) {
     do.call(rlang::warn, verdict$warning)
+  }
+  if (!is.null(verdict$message)) {
+    do.call(rlang::inform, verdict$message)
   }
   ret
 }
@@ -537,7 +555,49 @@ exclude_nca_tmax_coverage_prepare <- function(object, cache) {
   cache$time_type <- if (cache$use_nominal) "nominal" else "actual"
   timeu <- pknca_cdisc_get_timeu_orig(object)
   cache$unit_text <- if (is.na(timeu)) "" else paste0(" ", timeu)
+
+  # The doses, to find each subject's route at the interval start
+  o_dose <- as_PKNCAdose(object)
+  cache$has_dose <- !identical(o_dose, NA) && length(o_dose$columns$time) == 1
+  if (cache$has_dose) {
+    dose_data <- as.data.frame(o_dose)
+    cache$dose_key_cols <- intersect(unlist(o_dose$columns$groups), cache$conc_group_cols)
+    cache$dose_key <- pknca_interval_group_key(dose_data, cache$dose_key_cols)
+    cache$dose_time <- dose_data[[o_dose$columns$time]]
+    cache$dose_route <- getAttributeColumn(o_dose, attr_name = "route", warn_missing = character())[[1]]
+    cache$dose_duration <- getAttributeColumn(o_dose, attr_name = "duration", warn_missing = character())[[1]]
+  }
   invisible(NULL)
+}
+
+#' Does a sample at the interval start count toward a subject's coverage?
+#'
+#' It does when the dose at or before the interval start is an intravascular
+#' bolus (as [PKNCAdose()] records it:  route intravascular with no duration
+#' or a duration of zero), since the concentration then peaks at the start.
+#' Without dose data, it does not.
+#'
+#' @param subject The subject's Tmax row of the results
+#' @param start The interval start
+#' @param tolerance The tolerance for comparing times
+#' @inheritParams exclude_nca_tmax_coverage_subject
+#' @returns `TRUE` or `FALSE`
+#' @keywords Internal
+#' @noRd
+exclude_nca_tmax_coverage_start_counts <- function(subject, start, tolerance, cache) {
+  if (!cache$has_dose) {
+    return(FALSE)
+  }
+  subject_key <- pknca_interval_group_key(subject, cache$dose_key_cols)
+  candidates <- which(cache$dose_key == subject_key & !is.na(cache$dose_time) & cache$dose_time <= start + tolerance)
+  if (length(candidates) == 0) {
+    return(FALSE)
+  }
+  last_dose <- candidates[which.max(cache$dose_time[candidates])]
+  identical(
+    dose_route_for_intervals(route = cache$dose_route[last_dose], duration = cache$dose_duration[last_dose]),
+    "iv_bolus"
+  )
 }
 
 #' The verdicts for every subject of one group and interval
@@ -549,20 +609,21 @@ exclude_nca_tmax_coverage_prepare <- function(object, cache) {
 #' @param group_key The key of the group (see `pknca_interval_group_key()`)
 #' @inheritParams exclude_nca_tmax_coverage_subject
 #' @returns A list named by the subject's key (of the concentration grouping
-#'   columns) with, for each subject, `reason` (the exclusion reason, or `NULL`)
-#'   and `warning` (the arguments to [rlang::warn()], or `NULL`); an empty
-#'   list when the group is not checked
+#'   columns) with, for each subject, `reason` (the exclusion reason),
+#'   `warning` (the arguments to [rlang::warn()]), and `message` (the arguments
+#'   to [rlang::inform()]), each `NULL` when there is none; an empty list when
+#'   the group is not checked
 #' @keywords Internal
 #' @noRd
-exclude_nca_tmax_coverage_group <- function(current, group_key, min_subjects, cache) {
+exclude_nca_tmax_coverage_group <- function(current, group_key, settings, cache) {
   peers <- cache$all_tmax[cache$all_tmax_key == group_key, , drop = FALSE]
   group_text <- name_value_text(current[, cache$summary_group_cols, drop = FALSE])
   unit_text <- cache$unit_text
-  if (nrow(peers) < min_subjects) {
+  if (nrow(peers) < settings$min_subjects) {
     rlang::inform(
       sprintf(
         "Tmax coverage is not checked for %s:  %d subject(s) have a Tmax, fewer than the %d needed (min_subjects)",
-        group_text, nrow(peers), min_subjects
+        group_text, nrow(peers), settings$min_subjects
       ),
       class = "pknca_message_tmax_coverage_few_subjects"
     )
@@ -572,16 +633,13 @@ exclude_nca_tmax_coverage_group <- function(current, group_key, min_subjects, ca
   # give different quartiles, so it is fixed here and in the documentation
   quartiles <- stats::quantile(peers$PPORRES, probs = c(0.25, 0.75), names = FALSE, type = 7)
   iqr <- quartiles[2] - quartiles[1]
-  # Samples before the interval start are not in the interval, so the range
-  # starts at the interval start at the earliest
-  tmax_range <- c(max(quartiles[1] - 1.5 * iqr, 0), quartiles[2] + 1.5 * iqr)
-  # A sample at the interval start (usually the predose sample) only counts
-  # when a subject of the group has its Tmax there, showing that the start is
-  # a plausible Tmax (as after an IV bolus)
-  after_start <- all(peers$PPORRES > 0)
+  # Samples before the interval start are not in the interval, so the ranges
+  # start at the interval start at the earliest
+  inner_range <- c(max(quartiles[1] - settings$k_warn * iqr, 0), quartiles[2] + settings$k_warn * iqr)
+  outer_range <- c(max(quartiles[1] - settings$k_exclude * iqr, 0), quartiles[2] + settings$k_exclude * iqr)
   # Times relative to the interval start are differences, which can differ
   # from the Tmax values in the last bits
-  tolerance <- sqrt(.Machine$double.eps) * max(1, abs(tmax_range))
+  tolerance <- sqrt(.Machine$double.eps) * max(1, abs(outer_range))
 
   start <- current$start
   end <- current$end
@@ -613,11 +671,10 @@ exclude_nca_tmax_coverage_group <- function(current, group_key, min_subjects, ca
   group_conc <- conc_data[in_interval, , drop = FALSE]
   group_excluded <- cache$conc_excluded[in_interval]
   subject_rows <- split(seq_len(nrow(group_conc)), pknca_interval_group_key(group_conc, cache$conc_group_cols))
-  range_text <-
-    sprintf(
-      "%s time %g to %g%s after the interval start",
-      cache$time_type, tmax_range[1], tmax_range[2], unit_text
-    )
+  inner_text <-
+    sprintf("%s time %g to %g%s after the interval start", cache$time_type, inner_range[1], inner_range[2], unit_text)
+  outer_text <-
+    sprintf("%s time %g to %g%s after the interval start", cache$time_type, outer_range[1], outer_range[2], unit_text)
   status_rows <- list()
   if (cache$use_nominal) {
     status <-
@@ -637,51 +694,64 @@ exclude_nca_tmax_coverage_group <- function(current, group_key, min_subjects, ca
   ret <- list()
   for (idx_peer in seq_len(nrow(peers))) {
     current_key <- peer_subject_key[idx_peer]
+    subject_group <- as.data.frame(peers[idx_peer, unique(c(cache$summary_group_cols, cache$subject_col)), drop = FALSE])
+    rownames(subject_group) <- NULL
+    start_counts <- exclude_nca_tmax_coverage_start_counts(subject = peers[idx_peer, , drop = FALSE], start = start, tolerance = tolerance, cache = cache)
     rows <- subject_rows[[current_key]]
     if (is.null(rows)) rows <- integer()
     usable <- !is.na(group_conc[[cache$conc_col]][rows]) & !group_excluded[rows]
     position <- group_conc[[time_col]][rows][usable] - start
     # Unscheduled samples have no nominal time to place them by
     position <- position[!is.na(position)]
-    if (after_start) {
+    if (!start_counts) {
       position <- position[position > tolerance]
     }
-    in_range <- exclude_nca_tmax_in_range(position, tmax_range = tmax_range, after_start = after_start, tolerance = tolerance)
-    verdict <- list(reason = NULL, warning = NULL)
-    if (!any(in_range)) {
-      nearest_text <-
-        if (length(position) == 0 && after_start) {
-          "no sample after the interval start"
-        } else if (length(position) == 0) {
-          "no sample in the interval"
-        } else {
-          distance <- pmax(tmax_range[1] - position, position - tmax_range[2], 0)
-          sprintf("nearest sample at %g%s", position[which.min(distance)], unit_text)
-        }
-      verdict$reason <- sprintf("no sample in the Tmax range of the group (%s, %s)", range_text, nearest_text)
+    nearest <- exclude_nca_tmax_coverage_nearest(position, outer_range)
+    nearest_text <-
+      if (length(position) == 0 && !start_counts) {
+        "no sample after the interval start"
+      } else if (length(position) == 0) {
+        "no sample in the interval"
+      } else {
+        sprintf("nearest sample at %g%s", nearest, unit_text)
+      }
+    verdict <- list(reason = NULL, warning = NULL, message = NULL)
+    if (!any(exclude_nca_tmax_in_range(position, tmax_range = outer_range, start_counts = start_counts, tolerance = tolerance))) {
+      verdict$reason <- sprintf("no sample in the outer Tmax range of the group (%s, %s)", outer_text, nearest_text)
+    } else if (!any(exclude_nca_tmax_in_range(position, tmax_range = inner_range, start_counts = start_counts, tolerance = tolerance))) {
+      nearest_inner <- exclude_nca_tmax_coverage_nearest(position, inner_range)
+      verdict$warning <-
+        list(
+          message =
+            sprintf(
+              "Possible data issue for %s:  no sample in the inner Tmax range of the group (%s, nearest sample at %g%s); not excluded, since a sample is in the outer range",
+              name_value_text(subject_group), inner_text, nearest_inner, unit_text
+            ),
+          class = "pknca_warning_tmax_coverage_outlier",
+          group = subject_group,
+          tmax_range = inner_range,
+          nearest_sample = nearest_inner
+        )
     } else if (cache$use_nominal) {
       current_status <- status[status_rows[[current_key]], , drop = FALSE]
       missing_in_range <-
         current_status$status != "present" &
-        exclude_nca_tmax_in_range(current_status[[cache$nominal_col]] - start, tmax_range = tmax_range, after_start = after_start, tolerance = tolerance)
+        exclude_nca_tmax_in_range(current_status[[cache$nominal_col]] - start, tmax_range = inner_range, start_counts = start_counts, tolerance = tolerance)
       if (any(missing_in_range)) {
-        subject_group <- peers[idx_peer, unique(c(cache$summary_group_cols, cache$subject_col)), drop = FALSE]
-        subject_group <- as.data.frame(subject_group)
-        rownames(subject_group) <- NULL
         missing_times <- current_status[[cache$nominal_col]][missing_in_range]
-        verdict$warning <-
+        verdict$message <-
           list(
             message =
               sprintf(
-                "Cmax and Tmax may be unreliable for %s:  no usable sample at nominal time %s%s, within the Tmax range of the group (%s)",
+                "Cmax and Tmax may be unreliable for %s:  no usable sample at nominal time %s%s, within the inner Tmax range of the group (%s)",
                 name_value_text(subject_group),
                 paste(sprintf("%g", missing_times), collapse = ", "),
                 unit_text,
-                range_text
+                inner_text
               ),
-            class = "pknca_warning_tmax_coverage_partial",
+            class = "pknca_message_tmax_coverage_partial",
             group = subject_group,
-            tmax_range = tmax_range,
+            tmax_range = inner_range,
             time_nominal_missing = missing_times,
             reason = current_status$status[missing_in_range]
           )
@@ -690,6 +760,22 @@ exclude_nca_tmax_coverage_group <- function(current, group_key, min_subjects, ca
     ret[[current_key]] <- verdict
   }
   ret
+}
+
+#' The sample time nearest to a range
+#'
+#' @param position Sample times relative to the interval start
+#' @param tmax_range The lower and upper bounds of the range
+#' @returns The time in `position` nearest to the range (the first of equally
+#'   near times), or `NA` when there is none
+#' @keywords Internal
+#' @noRd
+exclude_nca_tmax_coverage_nearest <- function(position, tmax_range) {
+  if (length(position) == 0) {
+    return(NA_real_)
+  }
+  distance <- pmax(tmax_range[1] - position, position - tmax_range[2], 0)
+  position[which.min(distance)]
 }
 
 #' Do the nominal times of a group disagree with its interval?
@@ -753,15 +839,16 @@ exclude_nca_tmax_coverage_nominal_mismatch <- function(cache, is_group, in_inter
 #'
 #' @param position Times relative to the interval start
 #' @param tmax_range The lower and upper bounds of the range
-#' @param after_start Must a time be after the interval start?
+#' @param start_counts Does a time at the interval start count (see
+#'   `exclude_nca_tmax_coverage_start_counts()`)?
 #' @param tolerance The tolerance for comparing times
 #' @returns A logical vector, one value per `position`
 #' @keywords Internal
 #' @noRd
-exclude_nca_tmax_in_range <- function(position, tmax_range, after_start, tolerance) {
+exclude_nca_tmax_in_range <- function(position, tmax_range, start_counts, tolerance) {
   position >= tmax_range[1] - tolerance &
     position <= tmax_range[2] + tolerance &
-    (!after_start | position > tolerance)
+    (start_counts | position > tolerance)
 }
 
 #' @eval pknca_rd_exclude_rule("exclude_nca_by_param", describe_in = NULL)
