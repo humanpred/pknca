@@ -32,3 +32,4 @@ tests/testthat/testthat-problems.rds
 
 # Replicate-level output of data-raw/sparse_aucinf_simulation.R (the summary is in vignettes/)
 data-raw/sparse_aucinf_simulation_replicates.rds
+data-raw/sparse_mean_type_simulation_replicates.rds
