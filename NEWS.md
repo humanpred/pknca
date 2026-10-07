@@ -264,6 +264,16 @@ the generated intervals:
   to `PKNCAconc()` to avoid it.  A unit that cannot be converted to hours (or
   `timeu = NA` to `find.tau()` and its relatives) leaves the interval to the
   dose times, as before.  (@billdenney)
+* Without the units package, a time unit other than `"hr"` now gives a
+  `"pknca_message_tau_units_fallback"` message, once for each group, saying
+  that the dosing interval is the one found in the dose times and that
+  installing units enables the comparison with the nominal intervals.
+  `find.dose.regimen()` and `find.tau()` used to stop for such a unit, and
+  `PKNCAdata()` and `pk.nca()` fell back silently.  (@billdenney)
+* `PKNCAdata()` stops with a `"pknca_error_no_intervals"` error when no group
+  gets an automatically generated interval, after the warnings that say why for
+  each group.  It used to stop with an unrelated error about a
+  `data_intervals` column.  (@billdenney)
 * The interval generated for the last dose now starts at the first dose of the
   last complete dosing cycle, so a regimen giving more than one dose per
   interval no longer gets an interval that contains a dose that was never

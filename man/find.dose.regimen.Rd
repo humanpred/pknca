@@ -25,7 +25,10 @@ find.dose.regimen(
 \item{timeu}{The time unit of \code{x} (such as \code{"hr"} or \code{"day"}); \code{NULL} (or
 \code{""}) when it is not known, which is taken to be hours; or \code{NA} when it is
 known not to be a unit PKNCA can use, which leaves the intervals to the
-data.  Any other unit that cannot be converted to hours is an error.}
+data.  Any other unit that cannot be converted to hours is an error, except
+that without the units package a unit other than \code{"hr"} leaves the
+intervals to the data with a message, so an unrecognized unit such as
+\code{"zzz"} is an error only when the units package is installed.}
 
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
@@ -129,10 +132,10 @@ intervals in hours, and an interval that matches none of them gives a
 \code{"pknca_warning_tau_not_nominal"} warning; give \code{timeu} to avoid that.
 \code{timeu = NA} says that the unit is not one PKNCA can use, and the intervals
 then come from the data alone (every source is \code{"auto"}).  Converting a unit
-other than \code{"hr"} needs the units package; without it, \code{\link[=PKNCAdata]{PKNCAdata()}} and
-\code{\link[=pk.nca]{pk.nca()}} treat such a unit as one they cannot use, so their results for
-data in other units can differ between installations with and without that
-package.
+other than \code{"hr"} needs the units package; without it, such a unit gives a
+\code{"pknca_message_tau_units_fallback"} message and the intervals come from the
+data alone, so results for data in other units can differ between
+installations with and without that package.
 }
 \section{Conditions}{
 
@@ -147,6 +150,9 @@ includes the regimen table.}
 The message includes the regimen table.}
 \item{\code{pknca_warning_dose_regimen}}{The parent class of the three warnings
 above, to handle them together.}
+\item{\code{pknca_message_tau_units_fallback}}{\code{timeu} is not \code{"hr"} and the
+units package is not installed to convert it, so the intervals come from
+the data alone.}
 \item{\code{pknca_error_regimen_time_unit}}{\code{timeu} cannot be converted to
 hours.}
 \item{\code{pknca_error_regimen_time_class}}{\code{x} is a date-time or difftime
