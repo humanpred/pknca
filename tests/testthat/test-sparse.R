@@ -227,6 +227,88 @@ test_that("sparse AUC degrees of freedom are NA when a time has one subject", {
   expect_true(is.na(result$sparse_auc_df))
 })
 
+# Serial sacrifice where two of three animals are BLQ at 24 hours, so the mean
+# there is zero and tlast is 8 hours
+d_trailing_zero <-
+  data.frame(
+    time = rep(c(0, 1, 2, 4, 8, 24), each = 3),
+    conc = c(0, 0, 0,  5, 6, 4,  8, 7, 9,  6, 5, 7,  3, 2.5, 3.5,  0, 0, 0.4)
+  )
+d_trailing_zero$subject <- seq_len(nrow(d_trailing_zero))
+
+test_that("the sparse AUClast standard error stops at tlast with it", {
+  result <-
+    pk.calc.sparse_auc(
+      conc = d_trailing_zero$conc, time = d_trailing_zero$time,
+      subject = d_trailing_zero$subject
+    )
+  # Bailer (1988) to tlast:  sum(w^2 s^2 / n) over the times up to 8 hours
+  times <- c(0, 1, 2, 4, 8)
+  w <- c(0, diff(times)/2) + c(diff(times)/2, 0)
+  s2 <- tapply(d_trailing_zero$conc, d_trailing_zero$time, stats::var)[1:5]
+  expect_equal(as.numeric(result$sparse_auc), 41)
+  expect_equal(as.numeric(result$sparse_auc_se), sqrt(sum(w^2*s2/3)))
+  # The time after tlast does not change the result
+  mask <- d_trailing_zero$time <= 8
+  expect_equal(
+    result,
+    pk.calc.sparse_auc(
+      conc = d_trailing_zero$conc[mask], time = d_trailing_zero$time[mask],
+      subject = d_trailing_zero$subject[mask]
+    )
+  )
+})
+
+test_that("the sparse AUCall standard error includes the triangle after tlast", {
+  result <-
+    pk.calc.sparse_auc(
+      conc = d_trailing_zero$conc, time = d_trailing_zero$time,
+      subject = d_trailing_zero$subject, auc.type = "AUCall"
+    )
+  # The 24-hour mean is zero, so only the weight of the 8-hour mean grows (by
+  # half of the 16 hours to the next time)
+  times <- c(0, 1, 2, 4, 8)
+  w <- c(0, diff(times)/2) + c(diff(times)/2, 0)
+  w[5] <- w[5] + (24 - 8)/2
+  s2 <- tapply(d_trailing_zero$conc, d_trailing_zero$time, stats::var)[1:5]
+  expect_equal(as.numeric(result$sparse_auc), 41 + 3*16/2)
+  expect_equal(as.numeric(result$sparse_auc_se), sqrt(sum(w^2*s2/3)))
+})
+
+test_that("the sparse AUMClast standard error stops at tlast with it", {
+  mask <- d_trailing_zero$time <= 8
+  expect_equal(
+    pk.calc.sparse_aumc(
+      conc = d_trailing_zero$conc, time = d_trailing_zero$time,
+      subject = d_trailing_zero$subject
+    ),
+    pk.calc.sparse_aumc(
+      conc = d_trailing_zero$conc[mask], time = d_trailing_zero$time[mask],
+      subject = d_trailing_zero$subject[mask]
+    )
+  )
+})
+
+test_that("sparse AUC and AUMC with no positive mean have no variance", {
+  result <- pk.calc.sparse_auc(conc = rep(0, 6), time = rep(c(0, 1, 2), each = 2), subject = 1:6)
+  expect_equal(as.numeric(result$sparse_auc), 0)
+  expect_equal(as.numeric(result$sparse_auc_se), 0)
+  expect_true(is.na(result$sparse_auc_df))
+})
+
+test_that("sparse AUC and AUMC refuse an AUC type whose variance they do not calculate", {
+  expect_error(
+    pk.calc.sparse_auc(conc = d_trailing_zero$conc, time = d_trailing_zero$time,
+                       subject = d_trailing_zero$subject, auc.type = "AUCinf.obs"),
+    class = "pknca_error_sparse_auc_type"
+  )
+  expect_error(
+    pk.calc.sparse_aumc(conc = d_trailing_zero$conc, time = d_trailing_zero$time,
+                        subject = d_trailing_zero$subject, auc.type = "AUCinf.obs"),
+    class = "pknca_error_sparse_auc_type"
+  )
+})
+
 # ============================================================================
 # Sparse AUMC Tests
 # ============================================================================

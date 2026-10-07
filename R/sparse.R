@@ -152,6 +152,41 @@ sparse_mean <- function(sparse_pk, sparse_mean_method=c("arithmetic mean, <=50% 
   sparse_pk
 }
 
+# The trapezoidal weights of the mean profile for an AUC or AUMC:  AUClast
+# integrates to tlast, the last time with a positive mean, and AUCall adds the
+# triangle from tlast to the next time.  That next time's mean is zero by the
+# definition of tlast, so it carries no weight either; neither do later times.
+# Times without weight do not enter the variance or its degrees of freedom.
+sparse_auc_weight_type <- function(sparse_pk, auc.type) {
+  if (!(auc.type %in% c("AUClast", "AUCall"))) {
+    rlang::abort(
+      sprintf(
+        "The sparse AUC and AUMC are calculated with auc.type 'AUClast' or 'AUCall', not '%s'",
+        auc.type
+      ),
+      class = "pknca_error_sparse_auc_type"
+    )
+  }
+  times <- sparse_pk_attribute(sparse_pk, "time")
+  means <- sparse_pk_attribute(sparse_pk, "mean")
+  idx_last <- max(c(0L, which(means > 0)))
+  idx_end <- if (auc.type == "AUCall") min(idx_last + 1L, length(times)) else idx_last
+  weights <- rep(0, length(times))
+  if (idx_end > 1) {
+    half_diff_times <- diff(times[seq_len(idx_end)])/2
+    weights[seq_len(idx_end)] <- c(0, half_diff_times) + c(half_diff_times, 0)
+  }
+  weights[seq_along(weights) > idx_last] <- 0
+  sparse_pk_attribute(sparse_pk = sparse_pk, weight = weights)
+}
+
+# The times of a sparse_pk object that have a nonzero weight in the estimate
+sparse_pk_weighted <- function(sparse_pk) {
+  ret <- sparse_pk[sparse_pk_attribute(sparse_pk, "weight") != 0]
+  class(ret) <- class(sparse_pk)
+  ret
+}
+
 #' Calculate the variance for the AUC of sparsely sampled PK
 #'
 #' Equation 7.vii in Nedelman and Jia, 1998 is used for this calculation:
@@ -176,6 +211,11 @@ sparse_mean <- function(sparse_pk, sparse_mean_method=c("arithmetic mean, <=50% 
 #' Statistics. 2001;11(1-2):75-79. doi:10.1081/BIP-100104199
 #' @export
 var_sparse_auc <- function(sparse_pk) {
+  # Times with no weight in the AUC do not contribute to its variance
+  sparse_pk <- sparse_pk_weighted(sparse_pk)
+  if (length(sparse_pk) == 0) {
+    return(structure(0, df = NA_real_))
+  }
   covariance <- cov_holder(sparse_pk)
   var_auc <- 0
   weights <- sparse_pk_attribute(sparse_pk, "weight")
@@ -382,8 +422,9 @@ pk.calc.sparse_auc <- function(conc, time, subject,
     rlang::abort('Sparse AUC calculation only supports `method = "linear"`.', class = "pknca_error_sparse_auc_method")
   }
   sparse_pk <- as_sparse_pk(conc=conc, time=time, subject=subject)
-  sparse_pk_wt <- sparse_auc_weight_linear(sparse_pk)
-  sparse_pk_mean <- sparse_mean(sparse_pk=sparse_pk_wt, sparse_mean_method="arithmetic mean, <=50% BLQ")
+  sparse_pk_mean <- sparse_mean(sparse_pk=sparse_pk, sparse_mean_method="arithmetic mean, <=50% BLQ")
+  # The weights end where the AUC does, so the variance describes the same area
+  sparse_pk_mean <- sparse_auc_weight_type(sparse_pk_mean, auc.type = auc.type)
   auc <-
     pk.calc.auc(
       conc=sparse_pk_attribute(sparse_pk_mean, "mean"),
@@ -567,6 +608,11 @@ is_sparse_pk <- function(object) {
 #' @keywords internal
 #' @export
 var_sparse_aumc <- function(sparse_pk) {
+  # Times with no weight in the AUMC do not contribute to its variance
+  sparse_pk <- sparse_pk_weighted(sparse_pk)
+  if (length(sparse_pk) == 0) {
+    return(structure(0, df = NA_real_))
+  }
   # Step 1: Transform concentration to moment data (t * C) per subject
   # Must be done BEFORE calculating means — variance must be estimated
   # on individual moment values, not on mean concentrations
@@ -649,15 +695,14 @@ pk.calc.sparse_aumc <- function(conc, time, subject,
   }
   # Create sparse_pk object from data
   sparse_pk <- as_sparse_pk(conc = conc, time = time, subject = subject)
-  
-  # Calculate weights (same as for AUC)
-  sparse_pk_wt <- sparse_auc_weight_linear(sparse_pk)
-  
+
   # Calculate mean CONCENTRATION (for pk.calc.aumc integration)
   sparse_pk_mean <- sparse_mean(
-    sparse_pk = sparse_pk_wt,
+    sparse_pk = sparse_pk,
     sparse_mean_method = "arithmetic mean, <=50% BLQ"
   )
+  # Calculate weights (same as for AUC), ending where the AUMC does
+  sparse_pk_mean <- sparse_auc_weight_type(sparse_pk_mean, auc.type = auc.type)
   
   # Use pk.calc.aumc on the mean concentration profile
   # pk.calc.aumc will handle the time*conc multiplication during integration
@@ -672,7 +717,7 @@ pk.calc.sparse_aumc <- function(conc, time, subject,
   
   # Calculate variance on MOMENT data (this is where the fix matters)
   # var_sparse_aumc will create moment data internally
-  var_aumc <- var_sparse_aumc(sparse_pk_wt)
+  var_aumc <- var_sparse_aumc(sparse_pk_mean)
   
   data.frame(
     sparse_aumc = aumc,

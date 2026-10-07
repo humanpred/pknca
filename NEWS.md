@@ -846,6 +846,18 @@ the generated intervals:
 
 ## Bug fixes
 
+* The standard error and degrees of freedom of a sparse AUClast or AUMClast
+  (`auclast_se`, `auclast_df`, `aumclast_se`, `aumclast_df`, and the deprecated
+  `sparse_*` equivalents) no longer include the times after tlast.  The point
+  estimate stops at tlast, the last time with a positive mean, but the variance
+  weighted every sampled time, so a profile whose last times have a zero mean
+  (more than half of the samples BLQ) had too large a standard error:  in one
+  example 3.68 instead of the 2.10 of Bailer's method, and 35.2 instead of 8.52
+  for the AUMC.  `pk.calc.sparse_auc()` and `pk.calc.sparse_aumc()` with
+  `auc.type = "AUCall"` include the triangle after tlast in the variance too, and
+  they now refuse other `auc.type` values, whose variance they do not calculate
+  (`pknca_error_sparse_auc_type`).
+
 * The `aucint` and `aumcint` parameters are dose-aware.  The profile
   being integrated ends at the first dose at or after the end of the interval,
   so a concentration measured after that dose is no longer interpolated back
