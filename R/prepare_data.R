@@ -168,6 +168,7 @@ prepare_PKNCAconc <- function(.dat, extra_cols = character()) {
     list(
       conc=.dat$columns$concentration,
       time=.dat$columns$time,
+      time.nominal=.dat$columns$time.nominal,
       volume=.dat$columns$volume,
       duration=.dat$columns$duration,
       include_half.life=.dat$columns$include_half.life,
@@ -268,6 +269,7 @@ prepare_PKNCAdose_general <- function(.dat) {
     list(
       dose=dose_col,
       time=time_col,
+      time.nominal=.dat$columns$time.nominal,
       duration=.dat$columns$duration,
       route=.dat$columns$route
     )

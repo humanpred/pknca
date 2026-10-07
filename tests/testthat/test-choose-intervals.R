@@ -1106,3 +1106,131 @@ test_that("find.tau takes times without a unit to be hours", {
   expect_no_warning(tau_unusable <- find.tau(c(0, 24, 50), timeu = NA))
   expect_equal(tau_unusable, 25)
 })
+
+# Interval bounds, with the warnings that choosing them by segment gives muffled
+segment_bounds <- function(...) {
+  ret <-
+    withCallingHandlers(
+      choose.auc.intervals(...),
+      pknca_warning_intervals_by_segment = function(w) invokeRestart("muffleWarning")
+    )
+  data.frame(start = ret$start, end = ret$end)
+}
+
+test_that("choose.auc.intervals chooses intervals for each segment of a regimen change", {
+  # Once daily at 0 to 72 hours, then twice daily from 72 to 120, sampled
+  # densely after the first dose, after the dose at 48, and after the last dose
+  dense <- c(0.5, 1, 2, 4, 8)
+  doses <- c(0, 24, 48, 72, 84, 96, 108, 120)
+  conc <- sort(unique(c(doses, dense, 48 + dense, 120 + c(dense, 12, 24, 36))))
+  expect_warning(
+    ret <- choose.auc.intervals(conc, doses),
+    regexp = "Intervals chosen: 0 to 24; 48 to 72; 120 to 132; 120 to Inf$",
+    class = "pknca_warning_intervals_by_segment"
+  )
+  # The first dose, the steady state of each segment (each at its own period),
+  # and the half-life after the last dose
+  expect_equal(ret$start, c(0, 48, 120, 120))
+  expect_equal(ret$end, c(24, 72, 132, Inf))
+  steady_state_cols <- names(pknca_interval_table(48, 72, dosing = "steady_state"))
+  expect_equal(
+    ret[2, steady_state_cols],
+    pknca_interval_table(48, 72, dosing = "steady_state"),
+    ignore_attr = TRUE
+  )
+  expect_equal(
+    ret[3, steady_state_cols],
+    pknca_interval_table(120, 132, dosing = "steady_state"),
+    ignore_attr = TRUE
+  )
+  # The warning is a regimen-change warning, too
+  expect_warning(choose.auc.intervals(conc, doses), class = "pknca_warning_tau_regimen_change")
+  expect_warning(choose.auc.intervals(conc, doses), class = "pknca_warning_dose_regimen")
+})
+
+test_that("choose.auc.intervals uses the last segment's period for the last dose", {
+  # Seven once-daily doses, then three twice-daily ones:  the earlier segment has
+  # more doses, but the last dose is in the twice-daily one
+  dense <- c(0.5, 1, 2, 4, 8)
+  doses <- c(seq(0, 144, by = 24), 156, 168)
+  conc <- sort(unique(c(doses, dense, 168 + c(dense, 12, 24))))
+  expect_equal(
+    segment_bounds(conc, doses),
+    data.frame(start = c(0, 120, 168, 168), end = c(24, 144, 180, Inf))
+  )
+})
+
+test_that("choose.auc.intervals gives an intermediate dose an interval only when sampled densely", {
+  dense <- c(0.5, 1, 2, 4, 8)
+  doses <- c(0, 24, 48, 72, 84, 96, 108, 120)
+  conc_base <- sort(unique(c(doses, dense, 120 + c(dense, 12))))
+  # Three samples after the dose at 96 are dense; two are not, unless the
+  # threshold is lowered
+  conc_three <- sort(unique(c(conc_base, 96 + c(1, 2, 4))))
+  conc_two <- sort(unique(c(conc_base, 96 + c(1, 2))))
+  expect_true(any(segment_bounds(conc_three, doses)$start == 96))
+  expect_false(any(segment_bounds(conc_two, doses)$start == 96))
+  expect_true(any(segment_bounds(conc_two, doses, dense.samples = 2)$start == 96))
+  expect_equal(
+    segment_bounds(conc_three, doses),
+    data.frame(start = c(0, 48, 96, 120), end = c(24, 72, 108, 132))
+  )
+  expect_error(choose.auc.intervals(conc_two, doses, dense.samples = 0), regexp = "dense.samples")
+})
+
+test_that("choose.auc.intervals judges dense sampling from nominal times when given", {
+  # After the dose at 96, two samples fall within twelve hours by the clock, but
+  # the third was scheduled at 107.5 and drawn at 108.7; by nominal time there are
+  # three
+  dense <- c(0.5, 1, 2, 4, 8)
+  doses <- c(0, 24, 48, 72, 84, 96, 108, 120)
+  conc <- sort(unique(c(doses, dense, 96 + c(1, 2), 108.7, 120 + c(dense, 12))))
+  nominal <- conc
+  nominal[conc == 108.7] <- 107.5
+  expect_false(any(segment_bounds(conc, doses)$start == 96))
+  expect_true(any(segment_bounds(conc, doses, time.conc.nominal = nominal)$start == 96))
+  # The dose's nominal time is the reference when it is given:  a dose recorded
+  # at 97 but scheduled at 96 still counts the sample scheduled at 107.5
+  doses_late <- doses
+  doses_late[doses == 96] <- 97
+  expect_true(
+    any(segment_bounds(conc, doses_late, time.conc.nominal = nominal, time.dosing.nominal = doses)$start == 97)
+  )
+  expect_error(
+    choose.auc.intervals(conc, doses, time.conc.nominal = 1:2),
+    regexp = "time.conc.nominal"
+  )
+})
+
+test_that("choose.auc.intervals keeps today's intervals for sparse data with a regimen change", {
+  dense <- c(0.5, 1, 2, 4, 8)
+  doses <- c(0, 24, 48, 72, 84, 96, 108, 120)
+  conc <- sort(unique(c(doses, dense, 48 + dense, 120 + c(dense, 12, 24, 36))))
+  # Only the regimen-change warning, not the one for intervals by segment
+  warnings <- testthat::capture_warnings(ret <- choose.auc.intervals(conc, doses, sparse = TRUE))
+  expect_length(warnings, 1)
+  expect_match(warnings, "^The dosing regimen changes within the dose times:")
+  expect_equal(ret$start, c(0, 48, 120, 120))
+  expect_equal(ret$end, c(24, 72, 132, Inf))
+})
+
+test_that("PKNCAdata chooses intervals for each segment of a regimen change", {
+  dense <- c(0.5, 1, 2, 4, 8)
+  doses <- c(0, 24, 48, 72, 84, 96, 108, 120)
+  times <- sort(unique(c(doses, dense, 96 + c(1, 2), 108.7, 120 + c(dense, 12, 24, 36))))
+  d_conc <- data.frame(subject = 1, time = times, conc = exp(-0.1 * (times %% 12)) + 1)
+  d_conc$nominal <- d_conc$time
+  d_conc$nominal[d_conc$time == 108.7] <- 107.5
+  d_dose <- data.frame(subject = 1, time = doses, dose = 1)
+  expect_warning(
+    ret <-
+      PKNCAdata(
+        PKNCAconc(d_conc, conc~time|subject, time.nominal = "nominal"),
+        PKNCAdose(d_dose, dose~time|subject)
+      ),
+    regexp = "^subject=1: The dosing regimen changes within the dose times, so intervals are chosen",
+    class = "pknca_warning_intervals_by_segment"
+  )
+  expect_equal(ret$intervals$start, c(0, 48, 96, 120, 120))
+  expect_equal(ret$intervals$end, c(24, 72, 108, 132, Inf))
+})

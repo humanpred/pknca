@@ -114,7 +114,12 @@ find.tau <- function(x, na.action=stats::na.omit,
   if (length(x) == 0) {
     return(NA)
   }
-  regimen <- find.dose.regimen(x, tau.choices=tau.choices, timeu=timeu, options=options)
+  regimen_tau(find.dose.regimen(x, tau.choices=tau.choices, timeu=timeu, options=options))
+}
+
+# The tau of a regimen table from find.dose.regimen():  the period of the
+# segment with the most doses, 0 for a single dose, and NA when nothing repeats
+regimen_tau <- function(regimen) {
   primary <- regimen_primary(regimen)
   if (regimen$n_doses[primary] == 1) {
     return(0)
@@ -350,6 +355,28 @@ interval_samples_reach_end <- function(time.conc, start, end) {
 #'         calculated to infinity as a single dose.
 #'  }
 #'
+#' When [find.dose.regimen()] finds a change of regimen in the dose times (more
+#' than one segment) and the design is not sparse, the intervals follow the
+#' segments instead:
+#' \itemize{
+#'   \item One steady-state interval for each segment:  its last complete cycle,
+#'         at the segment's own period, when a sample ends it.  The cycle of an
+#'         earlier segment ends at the dose that starts the next one.
+#'   \item The interval after the first dose, as above.
+#'   \item The interval after any other dose only when the dose is sampled
+#'         densely:  at least `dense.samples` samples (3 by default) strictly
+#'         within one period of its segment after the dose.  The nominal sample
+#'         times are counted when they are given (`time.conc.nominal`), from the
+#'         dose's nominal time when that is given, so that a sample drawn a little
+#'         late counts where it was scheduled; otherwise the actual sample times
+#'         are counted.
+#'   \item The last dose gets the intervals above at the period of the last
+#'         segment, even when an earlier segment has more doses.
+#' }
+#' A `"pknca_warning_intervals_by_segment"` warning names the segments and the
+#' intervals chosen.  It is also a `"pknca_warning_tau_regimen_change"` warning,
+#' which it replaces.
+#'
 #' \eqn{\tau} is matched to the nominal dosing intervals of
 #' [find.dose.regimen()] in the time unit `timeu`, taken to be hours when it is
 #' not given:  dose times recorded a little early or late give the nominal
@@ -379,6 +406,14 @@ interval_samples_reach_end <- function(time.conc, start, end) {
 #'   not known, which is taken to be hours; or `NA` when it cannot be used (see
 #'   [find.dose.regimen()]).  [PKNCAdata()] gives the time unit of its
 #'   concentration data.
+#' @param time.conc.nominal,time.dosing.nominal Nominal times of the samples
+#'   and of the doses, on the same scale as `time.conc` and `time.dosing` and
+#'   the same length, or `NULL`.  They are used only to judge whether a dose is
+#'   sampled densely after a change of regimen.  [PKNCAdata()] gives the
+#'   `time.nominal` columns of [PKNCAconc()] and [PKNCAdose()].
+#' @param dense.samples The fewest samples within one dosing period after a
+#'   dose that make it sampled densely, which gives it an interval after a
+#'   change of regimen
 #' @param sparse Is this a sparse sampling design?  A sparse design imputes
 #'   nothing; see [pknca_interval_table()].
 #' @returns A data frame with columns for `start`, `end`, and the parameters to
@@ -403,7 +438,10 @@ choose.auc.intervals <- function(time.conc, time.dosing,
                                  single.dose.aucs=NULL,
                                  route="extravascular",
                                  sparse=FALSE,
-                                 timeu=NULL) {
+                                 timeu=NULL,
+                                 time.conc.nominal=NULL,
+                                 time.dosing.nominal=NULL,
+                                 dense.samples=3) {
   # Check inputs
   single.dose.aucs <- PKNCA.choose.option(name="single.dose.aucs", value=single.dose.aucs, options=options)
   tolerance_fraction <-
@@ -412,6 +450,7 @@ choose.auc.intervals <- function(time.conc, time.dosing,
     PKNCA.choose.option(name="auto.interval.method", value=NULL, options=options)
   route <- match.arg(route, choices=pknca_routes())
   checkmate::assert_flag(sparse)
+  checkmate::assert_count(dense.samples, positive=TRUE)
   if (anyNA(time.conc)) {
     rlang::abort("time.conc may not have any NA values", class = "pknca_error_timeconc_na")
   }
@@ -419,7 +458,10 @@ choose.auc.intervals <- function(time.conc, time.dosing,
   if (anyNA(time.dosing)) {
     rlang::abort("time.dosing may not have any NA values", class = "pknca_error_timedosing_na")
   }
-  time.dosing <- sort_unique_time(as.numeric(time.dosing))
+  checkmate::assert_numeric(time.conc.nominal, len=length(time.conc), null.ok=TRUE)
+  checkmate::assert_numeric(time.dosing.nominal, len=length(time.dosing), null.ok=TRUE)
+  doses <- interval_dose_times(as.numeric(time.dosing), time.dosing.nominal)
+  time.dosing <- doses$time
   time.conc <- sort_unique_time(as.numeric(time.conc))
   ret <- empty_interval_specification()
   if (length(time.dosing) == 0) {
@@ -455,34 +497,113 @@ choose.auc.intervals <- function(time.conc, time.dosing,
     return(build(start=time.dosing, end=Inf, dosing="single"))
   }
 
+  found <- interval_dose_regimen(time.dosing, options=options, timeu=timeu)
+  if (!sparse && nrow(found$regimen) > 1) {
+    nominal_conc <- time.conc.nominal[!is.na(time.conc.nominal)]
+    return(
+      choose_intervals_by_segment(
+        time.conc=time.conc, doses=doses, regimen=found$regimen, build=build,
+        tolerance_fraction=tolerance_fraction,
+        nominal_conc=if (length(nominal_conc) > 0) nominal_conc else NULL,
+        dense.samples=dense.samples
+      )
+    )
+  }
+  if (!is.null(found$change_warning)) {
+    rlang::cnd_signal(found$change_warning)
+  }
   pieces <- list(ret)
   for (n in seq_len(length(time.dosing) - 1)) {
-    start <- time.dosing[n]
-    end <- time.dosing[n + 1]
-    window <- tolerance_fraction * (end - start)
-    has_sample_between <-
-      any(
-        time.conc > start & time.conc < end &
-          !time_same(time.conc, start) & !time_same(time.conc, end)
-      )
-    if (time_has_boundary_sample(start, time.conc, window) &&
-        time_has_boundary_sample(end, time.conc, window) &&
-        has_sample_between) {
-      dosing <-
-        if (interval_samples_reach_end(time.conc, start, end)) "multiple" else "single"
-      pieces <- c(pieces, list(build(start=start, end=end, dosing=dosing)))
-    }
+    pieces <-
+      c(pieces, list(interval_between_doses(time.conc, time.dosing, n, build, tolerance_fraction)))
   }
-  # The last dose:  the whole of the last complete dosing cycle when a sample
-  # ends it, the half-life when samples carry on past it, and the whole profile
-  # when neither applies but samples were taken after it.
+  last_dose <-
+    interval_last_dose(
+      time.conc=time.conc, time.dosing=time.dosing, cycle_doses=time.dosing,
+      tau=regimen_tau(found$regimen), build=build, tolerance_fraction=tolerance_fraction
+    )
+  if (last_dose$no_tau) {
+    rlang::warn(
+      "The dosing interval could not be determined from the dose times, so no interval was generated for one dosing interval after the last dose",
+      class = "pknca_warning_no_tau_for_intervals"
+    )
+  }
+  ret <- dplyr::bind_rows(c(pieces, last_dose$pieces))
+  if (nrow(ret) == 0) {
+    return(ret)
+  }
+  check.interval.specification(ret)
+}
+
+# Sorted, unique dose times (see sort_unique_time()), with the nominal time of
+# each when the nominal times are given (NULL otherwise)
+interval_dose_times <- function(time, nominal = NULL) {
+  dose_order <- order(time)
+  sorted <- time[dose_order]
+  keep <- c(TRUE, !time_same(sorted[-1], sorted[-length(sorted)]))[seq_along(sorted)]
+  list(
+    time = sorted[keep],
+    nominal = if (is.null(nominal)) NULL else nominal[dose_order][keep]
+  )
+}
+
+# The regimen of the dose times, holding back its warning that the regimen
+# changes:  choose_intervals_by_segment() gives that warning with the
+# intervals it chose, and the other paths give it as it is
+interval_dose_regimen <- function(time.dosing, options, timeu) {
+  held <- new.env(parent = emptyenv())
+  held$change <- NULL
+  regimen <-
+    withCallingHandlers(
+      find.dose.regimen(time.dosing, options = options, timeu = timeu),
+      pknca_warning_tau_regimen_change = function(cnd) interval_hold_warning(cnd, held)
+    )
+  list(regimen = regimen, change_warning = held$change)
+}
+
+# Keep a warning in `held` and muffle it
+interval_hold_warning <- function(cnd, held) {
+  held$change <- cnd
+  invokeRestart("muffleWarning")
+}
+
+# The interval between dose `n` and the next one, when samples bound it at both
+# doses and fall between them; an empty list otherwise.  It is a dosing
+# interval when the samples run up to the next dose and a single-dose profile
+# when they stop partway and leave a washout.
+interval_between_doses <- function(time.conc, time.dosing, n, build, tolerance_fraction) {
+  start <- time.dosing[n]
+  end <- time.dosing[n + 1]
+  window <- tolerance_fraction * (end - start)
+  has_sample_between <-
+    any(
+      time.conc > start & time.conc < end &
+        !time_same(time.conc, start) & !time_same(time.conc, end)
+    )
+  if (!(time_has_boundary_sample(start, time.conc, window) &&
+        time_has_boundary_sample(end, time.conc, window) &&
+        has_sample_between)) {
+    return(list())
+  }
+  dosing <-
+    if (interval_samples_reach_end(time.conc, start, end)) "multiple" else "single"
+  build(start=start, end=end, dosing=dosing)
+}
+
+# The intervals for the last dose:  the whole of the last complete dosing cycle
+# of `cycle_doses` when a sample ends it, the half-life when samples carry on
+# past it, and the whole profile when neither applies but samples were taken
+# after it.  `no_tau` says that samples followed the last dose but no tau was
+# found.
+interval_last_dose <- function(time.conc, time.dosing, cycle_doses, tau, build, tolerance_fraction) {
+  pieces <- list()
   last_dose <- max(time.dosing)
-  tau <- find.tau(time.dosing, options=options, timeu=timeu)
   samples_after_last_dose <-
     any(time.conc > last_dose & !time_same(time.conc, last_dose))
   last_dose_interval <- FALSE
+  no_tau <- FALSE
   if (!is.na(tau) && tau > 0) {
-    cycle_start <- last_cycle_start(time.dosing, tau)
+    cycle_start <- last_cycle_start(cycle_doses, tau)
     interval_end <- cycle_start + tau
     window <- tolerance_fraction * tau
     if (time_has_boundary_sample(interval_end, time.conc, window)) {
@@ -504,19 +625,151 @@ choose.auc.intervals <- function(time.conc, time.dosing,
       last_dose_interval <- TRUE
     }
   } else if (samples_after_last_dose) {
-    rlang::warn(
-      "The dosing interval could not be determined from the dose times, so no interval was generated for one dosing interval after the last dose",
-      class = "pknca_warning_no_tau_for_intervals"
-    )
+    no_tau <- TRUE
   }
   if (!last_dose_interval && samples_after_last_dose) {
     pieces <- c(pieces, list(build(start=last_dose, end=Inf, dosing="single")))
   }
-  ret <- dplyr::bind_rows(pieces)
-  if (nrow(ret) == 0) {
-    return(ret)
+  list(pieces = pieces, no_tau = no_tau)
+}
+
+# Is a dose followed by at least `dense.samples` samples within one `tau`?  The
+# nominal sample times are counted when there are any, from the dose's nominal
+# time when it has one, so that a sample drawn a little late is still counted
+# where it was scheduled; otherwise the actual sample times are counted.
+interval_dense_after_dose <- function(dose, dose_nominal, tau, time.conc, nominal_conc, dense.samples) {
+  times <- time.conc
+  reference <- dose
+  if (!is.null(nominal_conc)) {
+    times <- nominal_conc
+    if (!is.null(dose_nominal) && !is.na(dose_nominal)) {
+      reference <- dose_nominal
+    }
   }
+  inside <-
+    times > reference & times < reference + tau &
+    !time_same(times, reference) & !time_same(times, reference + tau)
+  sum(inside) >= dense.samples
+}
+
+# The dose times of segment `segment` of a regimen table.  A dose where the
+# regimen changes starts the next segment, so it belongs to an earlier segment
+# only as the end of its last cycle.
+interval_segment_doses <- function(time.dosing, regimen, segment) {
+  from <- time.dosing > regimen$start[segment] | time_same(time.dosing, regimen$start[segment])
+  if (segment == nrow(regimen)) {
+    return(time.dosing[from])
+  }
+  before <- time.dosing < regimen$end[segment] & !time_same(time.dosing, regimen$end[segment])
+  time.dosing[from & before]
+}
+
+# The segment of a regimen table that the spacing after dose `n` belongs to
+interval_segment_of_spacing <- function(time.dosing, regimen, n) {
+  after_start <- time.dosing[n] > regimen$start | time_same(time.dosing[n], regimen$start)
+  before_end <- time.dosing[n + 1] < regimen$end | time_same(time.dosing[n + 1], regimen$end)
+  which(after_start & before_end)[1]
+}
+
+# Intervals after a change of regimen:  one steady-state interval for each
+# segment of the regimen (the last complete cycle of the segment, at its own
+# period), the interval after the first dose, and the interval after any other
+# dose that is sampled densely.  The last segment's period sets the intervals
+# for the last dose even when an earlier segment has more doses.  A warning
+# names the segments and the intervals chosen.
+choose_intervals_by_segment <- function(time.conc, doses, regimen, build, tolerance_fraction,
+                                        nominal_conc, dense.samples) {
+  time.dosing <- doses$time
+  n_segment <- nrow(regimen)
+  steady_state <- list()
+  for (segment in seq_len(n_segment - 1L)) {
+    period <- regimen$interval[segment]
+    cycle_start <- last_cycle_start(interval_segment_doses(time.dosing, regimen, segment), period)
+    interval_end <- cycle_start + period
+    if (time_has_boundary_sample(interval_end, time.conc, tolerance_fraction * period)) {
+      steady_state <-
+        c(steady_state, list(build(start=cycle_start, end=interval_end, dosing="steady_state")))
+    }
+  }
+  last_dose <-
+    interval_last_dose(
+      time.conc=time.conc, time.dosing=time.dosing,
+      cycle_doses=interval_segment_doses(time.dosing, regimen, n_segment),
+      tau=regimen$interval[n_segment], build=build, tolerance_fraction=tolerance_fraction
+    )
+  chosen <- c(steady_state, last_dose$pieces)
+  between <- list()
+  for (n in seq_len(length(time.dosing) - 1L)) {
+    period <- regimen$interval[interval_segment_of_spacing(time.dosing, regimen, n)]
+    if (n > 1 &&
+        !interval_dense_after_dose(
+          dose=time.dosing[n], dose_nominal=doses$nominal[n], tau=period,
+          time.conc=time.conc, nominal_conc=nominal_conc, dense.samples=dense.samples
+        )) {
+      next
+    }
+    between <- c(between, list(interval_between_doses(time.conc, time.dosing, n, build, tolerance_fraction)))
+  }
+  ret <- dplyr::bind_rows(c(between, chosen))
+  if (nrow(ret) == 0) {
+    interval_warn_by_segment(regimen, ret)
+    return(empty_interval_specification())
+  }
+  # A dosing interval that is also a segment's steady-state interval is kept
+  # once, as the steady-state interval
+  ret <- ret[!interval_duplicated_bounds(ret), , drop=FALSE]
+  ret <- ret[order(ret$start, ret$end), , drop=FALSE]
+  rownames(ret) <- NULL
+  interval_warn_by_segment(regimen, ret)
   check.interval.specification(ret)
+}
+
+# Are two interval bounds the same, allowing for floating point and for both
+# being infinite?
+interval_same_bound <- function(x, y) {
+  both_infinite <- is.infinite(x) & is.infinite(y) & sign(x) == sign(y)
+  both_infinite | (is.finite(x) & is.finite(y) & time_same(x, y))
+}
+
+# Rows of an interval table whose start and end repeat those of a later row
+interval_duplicated_bounds <- function(intervals) {
+  n_row <- nrow(intervals)
+  ret <- rep(FALSE, n_row)
+  for (row_index in seq_len(n_row - 1L)) {
+    later <- seq(row_index + 1L, n_row)
+    ret[row_index] <-
+      any(
+        interval_same_bound(intervals$start[later], intervals$start[row_index]) &
+          interval_same_bound(intervals$end[later], intervals$end[row_index])
+      )
+  }
+  ret
+}
+
+# The warning that a change of regimen chose the intervals by segment, naming
+# the segments and the intervals.  It is also a regimen-change warning, which
+# it replaces.
+interval_warn_by_segment <- function(regimen, intervals) {
+  chosen <-
+    if (nrow(intervals) == 0) {
+      "none"
+    } else {
+      paste(
+        paste(format(intervals$start, trim = TRUE), "to", format(intervals$end, trim = TRUE)),
+        collapse = "; "
+      )
+    }
+  rlang::warn(
+    paste0(
+      "The dosing regimen changes within the dose times, so intervals are chosen for each segment of it:\n",
+      regimen_table_text(regimen),
+      "\nIntervals chosen: ", chosen
+    ),
+    class = c(
+      "pknca_warning_intervals_by_segment", "pknca_warning_tau_regimen_change",
+      "pknca_warning_dose_regimen"
+    )
+  )
 }
 
 #' Determine the dosing interval (tau) to use for a calculation interval

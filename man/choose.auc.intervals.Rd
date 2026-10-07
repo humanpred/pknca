@@ -11,7 +11,10 @@ choose.auc.intervals(
   single.dose.aucs = NULL,
   route = "extravascular",
   sparse = FALSE,
-  timeu = NULL
+  timeu = NULL,
+  time.conc.nominal = NULL,
+  time.dosing.nominal = NULL,
+  dense.samples = 3
 )
 }
 \arguments{
@@ -33,6 +36,16 @@ nothing; see \code{\link[=pknca_interval_table]{pknca_interval_table()}}.}
 not known, which is taken to be hours; or \code{NA} when it cannot be used (see
 \code{\link[=find.dose.regimen]{find.dose.regimen()}}).  \code{\link[=PKNCAdata]{PKNCAdata()}} gives the time unit of its
 concentration data.}
+
+\item{time.conc.nominal, time.dosing.nominal}{Nominal times of the samples
+and of the doses, on the same scale as \code{time.conc} and \code{time.dosing} and
+the same length, or \code{NULL}.  They are used only to judge whether a dose is
+sampled densely after a change of regimen.  \code{\link[=PKNCAdata]{PKNCAdata()}} gives the
+\code{time.nominal} columns of \code{\link[=PKNCAconc]{PKNCAconc()}} and \code{\link[=PKNCAdose]{PKNCAdose()}}.}
+
+\item{dense.samples}{The fewest samples within one dosing period after a
+dose that make it sampled densely, which gives it an interval after a
+change of regimen}
 }
 \value{
 A data frame with columns for \code{start}, \code{end}, and the parameters to
@@ -66,6 +79,28 @@ calculated to infinity as a single dose.
 }
 }
 \details{
+When \code{\link[=find.dose.regimen]{find.dose.regimen()}} finds a change of regimen in the dose times (more
+than one segment) and the design is not sparse, the intervals follow the
+segments instead:
+\itemize{
+\item One steady-state interval for each segment:  its last complete cycle,
+at the segment's own period, when a sample ends it.  The cycle of an
+earlier segment ends at the dose that starts the next one.
+\item The interval after the first dose, as above.
+\item The interval after any other dose only when the dose is sampled
+densely:  at least \code{dense.samples} samples (3 by default) strictly
+within one period of its segment after the dose.  The nominal sample
+times are counted when they are given (\code{time.conc.nominal}), from the
+dose's nominal time when that is given, so that a sample drawn a little
+late counts where it was scheduled; otherwise the actual sample times
+are counted.
+\item The last dose gets the intervals above at the period of the last
+segment, even when an earlier segment has more doses.
+}
+A \code{"pknca_warning_intervals_by_segment"} warning names the segments and the
+intervals chosen.  It is also a \code{"pknca_warning_tau_regimen_change"} warning,
+which it replaces.
+
 \eqn{\tau} is matched to the nominal dosing intervals of
 \code{\link[=find.dose.regimen]{find.dose.regimen()}} in the time unit \code{timeu}, taken to be hours when it is
 not given:  dose times recorded a little early or late give the nominal
