@@ -811,6 +811,17 @@ test_that("the sparse estimators report under the unified parameter names", {
     c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")
   )
 
+  # AUCall and AUMCall wrap the same functions with auc.type = "AUCall"
+  aucall_unified <- pk.calc.aucall_sparse(conc = d_sparse$conc, time = d_sparse$time, subject = subject)
+  aucall_direct <- pk.calc.sparse_auc(conc = d_sparse$conc, time = d_sparse$time, subject = subject, auc.type = "AUCall")
+  expect_equal(names(aucall_unified), c("aucall", "aucall_se", "aucall_df"))
+  expect_equal(as.numeric(unlist(aucall_unified)), as.numeric(unlist(aucall_direct)))
+  expect_equal(attr(aucall_unified, "method"), c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ"))
+  aumcall_unified <- pk.calc.aumcall_sparse(conc = d_sparse$conc, time = d_sparse$time, subject = subject)
+  aumcall_direct <- pk.calc.sparse_aumc(conc = d_sparse$conc, time = d_sparse$time, subject = subject, auc.type = "AUCall")
+  expect_equal(names(aumcall_unified), c("aumcall", "aumcall_se", "aumcall_df"))
+  expect_equal(as.numeric(unlist(aumcall_unified)), as.numeric(unlist(aumcall_direct)))
+
   # The estimators are linear-trapezoidal only, the same as the functions they
   # wrap
   expect_error(
@@ -819,6 +830,14 @@ test_that("the sparse estimators report under the unified parameter names", {
   )
   expect_error(
     pk.calc.aumclast_sparse(conc = d_sparse$conc, time = d_sparse$time, subject = subject, method = "lin up/log down"),
+    class = "pknca_error_sparse_aumc_method"
+  )
+  expect_error(
+    pk.calc.aucall_sparse(conc = d_sparse$conc, time = d_sparse$time, subject = subject, method = "lin up/log down"),
+    class = "pknca_error_sparse_auc_method"
+  )
+  expect_error(
+    pk.calc.aumcall_sparse(conc = d_sparse$conc, time = d_sparse$time, subject = subject, method = "lin up/log down"),
     class = "pknca_error_sparse_aumc_method"
   )
 })

@@ -17,7 +17,9 @@ Sparse noncompartmental analysis (NCA) is performed when multiple individuals co
 
 Sparse NCA is setup the same way as normal, dense PK sampling is setup with PKNCA.  The only difference is that you give the `sparse` option to `PKNCAconc()`; the parameters are requested by their usual names.
 
-Two things happen behind that flag.  For `auclast` and `aumclast`, PKNCA uses the sparse estimators -- the Bailer point estimate with the Nedelman-Jia/Holder standard error -- calculated from the pooled samples of all the animals in a group, and reports the standard error and degrees of freedom alongside the estimate as `auclast_se`/`auclast_df` and `aumclast_se`/`aumclast_df`.  Every other parameter is calculated from the arithmetic-mean profile of the animals in the group.
+Two things happen behind that flag.  For the AUC and AUMC parameters with a sparse estimator, PKNCA calculates them from the pooled samples of all the animals in a group with the Bailer point estimate and the Nedelman-Jia/Holder standard error, and reports the standard error and degrees of freedom alongside the estimate with the suffixes `_se` and `_df` (for example, `auclast_se` and `auclast_df`).  Those parameters are `auclast`, `aucall`, `aucinf.obs`, `aumclast`, `aumcall`, and `aumcinf.obs`, and after an IV bolus `aucivlast`, `aucivall`, `aucivinf.obs`, `aumcivlast`, `aumcivall`, and `aumcivinf.obs` (see `vignette("v24-sparse-auc-to-infinity")` for the AUC to infinity and the IV bolus $C_0$).  Every other parameter is calculated from the arithmetic-mean profile of the animals in the group.
+
+As for any AUC in PKNCA, the sparse AUCs need a concentration at the start of the interval, measured or imputed.  Animals are rarely sampled at the dose in sacrificial designs, so after an extravascular dose impute zero with `impute = "start_conc0"`; the imputed zero is known, so it adds nothing to the variance.
 
 The example below uses data extracted from Holder D. J., Hsuan F., Dixit R. and Soper K. (1999). A method for estimating and testing area under the curve in serial sacrifice, batch, and complete data designs. Journal of Biopharmaceutical Statistics, 9(3):451-464.
 

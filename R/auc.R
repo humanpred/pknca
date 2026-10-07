@@ -377,17 +377,19 @@ unify_sparse_result <- function(x, name, method) {
 
 #' Sparse estimators for the AUC and AUMC to the last measured concentration
 #'
-#' These are the `FUN_sparse` of `auclast` and `aumclast`:  with sparse PK,
-#' [pk.nca()] estimates those parameters from the pooled individual samples with
-#' the Bailer point estimate and the Nedelman-Jia/Holder standard error rather
-#' than integrating the arithmetic-mean profile.  They wrap
-#' [pk.calc.sparse_auclast()] and [pk.calc.sparse_aumclast()], reporting the
-#' results under the unified parameter names.
+#' These are the `FUN_sparse` of `auclast`, `aumclast`, `aucall`, and
+#' `aumcall`:  with sparse PK, [pk.nca()] estimates those parameters from the
+#' pooled individual samples with the Bailer point estimate and the
+#' Nedelman-Jia/Holder standard error rather than integrating the
+#' arithmetic-mean profile.  They wrap [pk.calc.sparse_auc()] and
+#' [pk.calc.sparse_aumc()] (with `auc.type = "AUClast"` or `"AUCall"`),
+#' reporting the results under the unified parameter names.  AUCall adds the
+#' triangle from tlast to the next time, whose mean is zero.
 #'
 #' @inheritParams pk.calc.sparse_auc
 #' @returns A data.frame with the point estimate, its standard error, and the
-#'   degrees of freedom, named for the parameter (`auclast`, `auclast_se`, and
-#'   `auclast_df`, or the `aumclast` equivalents)
+#'   degrees of freedom, named for the parameter (for example, `auclast`,
+#'   `auclast_se`, and `auclast_df`)
 #' @details The sparse variance theory is defined for the linear trapezoidal
 #'   rule only, so these ignore the `auc.method` option; [pk.nca()] says so when
 #'   the option is set to anything else.
@@ -407,6 +409,26 @@ pk.calc.aumclast_sparse <- function(conc, time, subject, ..., options=list()) {
   unify_sparse_result(
     pk.calc.sparse_aumclast(conc=conc, time=time, subject=subject, ..., options=options),
     name="aumclast",
+    method=c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")
+  )
+}
+
+#' @describeIn pk.calc.auclast_sparse Sparse AUCall
+#' @export
+pk.calc.aucall_sparse <- function(conc, time, subject, ..., options=list()) {
+  unify_sparse_result(
+    pk.calc.sparse_auc(conc=conc, time=time, subject=subject, ..., auc.type="AUCall", options=options),
+    name="aucall",
+    method=c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")
+  )
+}
+
+#' @describeIn pk.calc.auclast_sparse Sparse AUMCall
+#' @export
+pk.calc.aumcall_sparse <- function(conc, time, subject, ..., options=list()) {
+  unify_sparse_result(
+    pk.calc.sparse_aumc(conc=conc, time=time, subject=subject, ..., auc.type="AUCall", options=options),
+    name="aumcall",
     method=c("AUC: linear", "Sparse: arithmetic mean, <=50% BLQ")
   )
 }
@@ -587,6 +609,7 @@ add.interval.col("auclast_df",
 
 add.interval.col("aucall",
                  FUN="pk.calc.auc.all",
+                 FUN_sparse="pk.calc.aucall_sparse",
                  values=c(FALSE, TRUE),
                  unit_type="auc",
                  pretty_name="AUCall",
@@ -595,6 +618,29 @@ add.interval.col("aucall",
                  pptest_cdisc="AUC All",
                  formula="$AUC_{\\text{all}} = \\sum_{k} AUC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule (linear-up/log-down by default)")
+
+add.interval.col("aucall_se",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="auc",
+                 pretty_name="AUCall standard error",
+                 desc="SE of AUCall (sparse PK only)",
+                 depends="aucall",
+                 pptestcd_cdisc="AUCALLSE",
+                 pptest_cdisc="Sparse AUCall standard error",
+                 formula_note="Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001), with the trapezoidal weights to the time after tlast")
+
+add.interval.col("aucall_df",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="count",
+                 pretty_name="AUCall degrees of freedom",
+                 desc="DF for AUCall (sparse PK only)",
+                 depends="aucall",
+                 pptestcd_cdisc="AUCALLDF",
+                 pptest_cdisc="Sparse AUCall degrees of freedom",
+                 formula="$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$",
+                 formula_note="Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)")
 
 add.interval.col("aumcinf.obs",
                  FUN="pk.calc.aumc.inf.obs",
@@ -684,6 +730,7 @@ add.interval.col("aumclast_df",
 
 add.interval.col("aumcall",
                  FUN="pk.calc.aumc.all",
+                 FUN_sparse="pk.calc.aumcall_sparse",
                  values=c(FALSE, TRUE),
                  unit_type="aumc",
                  pretty_name="AUMC,all",
@@ -692,6 +739,29 @@ add.interval.col("aumcall",
                  pptest_cdisc="AUMC All",
                  formula="$AUMC_{\\text{all}} = \\sum_{k} AUMC_k(C_k, C_{k+1}, t_k, t_{k+1})$",
                  formula_note="Trapezoidal rule (linear-up/log-down by default)")
+
+add.interval.col("aumcall_se",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="aumc",
+                 pretty_name="AUMC,all standard error",
+                 desc="SE of AUMCall (sparse PK only)",
+                 depends="aumcall",
+                 pptestcd_cdisc="AUMCALSE",
+                 pptest_cdisc="Sparse AUMCall standard error",
+                 formula_note="Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001), with the trapezoidal weights to the time after tlast")
+
+add.interval.col("aumcall_df",
+                 FUN=NA,
+                 values=c(FALSE, TRUE),
+                 unit_type="count",
+                 pretty_name="AUMC,all degrees of freedom",
+                 desc="DF for AUMCall (sparse PK only)",
+                 depends="aumcall",
+                 pptestcd_cdisc="AUMCALDF",
+                 pptest_cdisc="Sparse AUMCall degrees of freedom",
+                 formula="$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$",
+                 formula_note="Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)")
 
 PKNCA.set.summary(
   name=
@@ -705,7 +775,7 @@ PKNCA.set.summary(
 )
 
 PKNCA.set.summary(
-  name=c("auclast_df", "aumclast_df"),
+  name=c("auclast_df", "aumclast_df", "aucall_df", "aumcall_df"),
   description="arithmetic mean and standard deviation",
   point=business.mean,
   spread=business.sd
@@ -746,4 +816,18 @@ PKNCA.set.summary(
   point=business.mean,
   spread=summary_spread_one_se,
   spread_for="aumclast"
+)
+PKNCA.set.summary(
+  name="aucall_se",
+  description="estimate and standard error",
+  point=business.mean,
+  spread=summary_spread_one_se,
+  spread_for="aucall"
+)
+PKNCA.set.summary(
+  name="aumcall_se",
+  description="estimate and standard error",
+  point=business.mean,
+  spread=summary_spread_one_se,
+  spread_for="aumcall"
 )

@@ -18,7 +18,7 @@ test_that("sparse-derived parameters are each registered exactly once", {
   expect_equal(anyDuplicated(names(cols)), 0L)
   # Pin the registry size so that a lost or accumulating registration is
   # caught; update the value when a parameter is added or removed.
-  expect_length(cols, 233)
+  expect_length(cols, 237)
 })
 
 test_that("add.interval.col", {
@@ -310,7 +310,7 @@ test_that("the sparse estimators and the parameters only they can produce are en
     fun_sparse_params(),
     c(
       # Both a dense function and a sparse estimator
-      "auclast", "aumclast", "aucinf.obs", "aumcinf.obs",
+      "auclast", "aumclast", "aucall", "aumcall", "aucinf.obs", "aumcinf.obs",
       "aucivlast", "aucivall", "aucivinf.obs", "aumcivlast", "aumcivall", "aumcivinf.obs",
       # A sparse estimator and no dense function
       "sparse_auclast", "sparse_aumclast", "cl.sparse.last", "mrt.sparse.last",
@@ -326,18 +326,20 @@ test_that("the sparse estimators and the parameters only they can produce are en
       # Companions:  columns of a sparse estimator's result
       "sparse_auc_se", "sparse_auc_df", "sparse_aumc_se", "sparse_aumc_df",
       "auclast_se", "auclast_df", "aumclast_se", "aumclast_df",
+      "aucall_se", "aucall_df", "aumcall_se", "aumcall_df",
       "aucinf.obs_se", "aucinf.obs_df", "aumcinf.obs_se", "aumcinf.obs_df",
       iv_companions
     )
   )
   # A parameter with a dense function as well as an estimator is not sparse-only
-  expect_false(any(c("auclast", "aumclast", "aucinf.obs", "aumcinf.obs", iv_params) %in% sparse_only_params()))
+  expect_false(any(c("auclast", "aumclast", "aucall", "aumcall", "aucinf.obs", "aumcinf.obs", iv_params) %in% sparse_only_params()))
   # Only the non-deprecated sparse-only parameters are refused for dense data;
   # the deprecated ones are still skipped
   expect_setequal(
     setdiff(sparse_only_params(), names(deprecated_sparse_parameters)),
     c(
       "auclast_se", "auclast_df", "aumclast_se", "aumclast_df",
+      "aucall_se", "aucall_df", "aumcall_se", "aumcall_df",
       "aucinf.obs_se", "aucinf.obs_df", "aumcinf.obs_se", "aumcinf.obs_df",
       iv_companions
     )

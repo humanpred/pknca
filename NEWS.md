@@ -693,6 +693,13 @@ the generated intervals:
   interval, measured or imputed.  See `vignette("v24-sparse-auc-to-infinity")`.
   (#428)
 
+* With sparse PK, `aucall` and `aumcall` are now sparse estimators like
+  `auclast` and `aumclast`, with standard errors and degrees of freedom in the
+  new `aucall_se`, `aucall_df`, `aumcall_se`, and `aumcall_df` parameters
+  (`pk.calc.aucall_sparse()` and `pk.calc.aumcall_sparse()`).  Before, they
+  were calculated on the arithmetic-mean profile with the `auc.method` option
+  and had no standard error.
+
 * With sparse PK after an IV bolus, `aucivlast`, `aucivall`, `aucivinf.obs`,
   `aumcivlast`, `aumcivall`, and `aumcivinf.obs` are now sparse estimators with
   standard errors and degrees of freedom (the new `_se` and `_df` parameters,

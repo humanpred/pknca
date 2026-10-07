@@ -232,7 +232,7 @@ sparse_pk_weighted <- function(sparse_pk) {
 #' The area starts at time 0.  Without a concentration at time 0 (measured or
 #' imputed), the result is `NA`, except for an IV bolus (`iv_bolus = TRUE`):
 #' then \eqn{C_0} is estimated from the mean profile as [pk.calc.c0()] does
-#' (see [sparse_c0()]), and the AUC from time 0 to the first sample is added.
+#' (see `sparse_c0()`), and the AUC from time 0 to the first sample is added.
 #' \eqn{C_0} is a smooth function of the means, so its gradient adds to the
 #' weights of the means it comes from.  The AUMC from time 0 to the first sample
 #' is \eqn{t_1^2 \bar{y}_1/2} with the linear trapezoidal rule whatever

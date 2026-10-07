@@ -277,6 +277,35 @@ test_that("the sparse AUCall standard error includes the triangle after tlast", 
   expect_equal(as.numeric(result$sparse_auc_se), sqrt(sum(w^2*s2/3)))
 })
 
+test_that("pk.nca() calculates the sparse AUCall and AUMCall with their standard errors", {
+  d_intervals <- data.frame(start = 0, end = 24, auclast = TRUE, aucall = TRUE, aumcall = TRUE)
+  res <-
+    as.data.frame(suppressMessages(pk.nca(PKNCAdata(
+      PKNCAconc(d_trailing_zero, conc ~ time | subject, sparse = TRUE),
+      intervals = d_intervals
+    ))))
+  direct_auc <-
+    pk.calc.sparse_auc(
+      conc = d_trailing_zero$conc, time = d_trailing_zero$time,
+      subject = d_trailing_zero$subject, auc.type = "AUCall"
+    )
+  direct_aumc <-
+    pk.calc.sparse_aumc(
+      conc = d_trailing_zero$conc, time = d_trailing_zero$time,
+      subject = d_trailing_zero$subject, auc.type = "AUCall"
+    )
+  values <- stats::setNames(res$PPORRES, res$PPTESTCD)
+  # The triangle after tlast makes AUCall differ from AUClast (41)
+  expect_equal(values[["auclast"]], 41)
+  expect_equal(values[["aucall"]], 41 + 3*16/2)
+  expect_equal(values[["aucall_se"]], as.numeric(direct_auc$sparse_auc_se))
+  expect_equal(values[["aucall_df"]], as.numeric(direct_auc$sparse_auc_df))
+  expect_equal(values[["aumcall"]], as.numeric(direct_aumc$sparse_aumc))
+  expect_equal(values[["aumcall_se"]], as.numeric(direct_aumc$sparse_aumc_se))
+  expect_equal(values[["aumcall_df"]], as.numeric(direct_aumc$sparse_aumc_df))
+  expect_match(res$PPANMETH[res$PPTESTCD == "aucall"], "Sparse: arithmetic mean", fixed = TRUE)
+})
+
 test_that("the sparse AUMClast standard error stops at tlast with it", {
   mask <- d_trailing_zero$time <= 8
   expect_equal(
@@ -997,7 +1026,7 @@ test_that("a sparse AUC needs a time-0 concentration, measured or imputed as zer
   # The same animals with known zero concentrations at time 0 from three more
   # animals
   d_zero <- rbind(data.frame(time = 0, conc = 0, id = 100 + 1:3), d_no_zero[, c("time", "conc", "id")])
-  params <- c("auclast", "aumclast", "aucinf.obs", "aumcinf.obs")
+  params <- c("auclast", "aumclast", "aucall", "aumcall", "aucinf.obs", "aumcinf.obs")
   d_intervals <- data.frame(start = 0, end = Inf)
   d_intervals[params] <- TRUE
   res_missing <-
