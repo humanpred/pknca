@@ -789,7 +789,8 @@ regimen_warn <- function(detection, has_candidates) {
 #'   known not to be a unit PKNCA can use, which leaves the intervals to the
 #'   data.  Any other unit that cannot be converted to hours is an error, except
 #'   that without the units package a unit other than `"hr"` leaves the
-#'   intervals to the data with a message.
+#'   intervals to the data with a message, so an unrecognized unit such as
+#'   `"zzz"` is an error only when the units package is installed.
 #' @param tol Relative tolerance for grouping spacings with one another and with
 #'   a candidate
 #' @param snap.tol Relative tolerance for reporting an interval as a candidate

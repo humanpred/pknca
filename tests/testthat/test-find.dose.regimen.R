@@ -623,3 +623,35 @@ test_that("PKNCAdata says once per group when the units package is needed", {
   # The interval is the median spacing found in the data
   expect_equal(unique(ret$intervals$end), c(122, Inf))
 })
+
+test_that("without the units package, the interval found in the data is used, not converted", {
+  local_mocked_bindings(is_installed = function(...) FALSE, .package = "rlang")
+  # The conversion to hours must not be reached
+  local_mocked_bindings(pknca_hours_factor = function(...) stop("the conversion was reached"))
+  # Doses 1470 minutes apart:  in hours that would snap to once daily (1440
+  # minutes); without units it is the 1470 found in the data
+  doses <- c(0, 1470, 2940)
+  expect_message(tau <- find.tau(doses, timeu = "min"), class = "pknca_message_tau_units_fallback")
+  expect_equal(tau, 1470)
+  expect_message(
+    ret <- find.dose.regimen(doses, timeu = "zzz"),
+    class = "pknca_message_tau_units_fallback"
+  )
+  expect_equal(ret$interval, 1470)
+  expect_equal(ret$source, "auto")
+  # Through PKNCAdata(), the interval for the last dose ends one data interval
+  # after it
+  times <- sort(unique(c(doses, 2940 + c(30, 60, 120, 240, 480, 1470))))
+  d_conc <- data.frame(subject = 1, time = times, conc = exp(-0.001 * times) + 1)
+  d_dose <- data.frame(subject = 1, time = doses, dose = 1)
+  expect_message(
+    o_data <-
+      PKNCAdata(
+        PKNCAconc(d_conc, conc~time|subject, timeu = "min"),
+        PKNCAdose(d_dose, dose~time|subject)
+      ),
+    class = "pknca_message_tau_units_fallback"
+  )
+  expect_equal(o_data$intervals$start, 2940)
+  expect_equal(o_data$intervals$end, 4410)
+})

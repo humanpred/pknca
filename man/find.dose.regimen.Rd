@@ -27,7 +27,8 @@ find.dose.regimen(
 known not to be a unit PKNCA can use, which leaves the intervals to the
 data.  Any other unit that cannot be converted to hours is an error, except
 that without the units package a unit other than \code{"hr"} leaves the
-intervals to the data with a message.}
+intervals to the data with a message, so an unrecognized unit such as
+\code{"zzz"} is an error only when the units package is installed.}
 
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
