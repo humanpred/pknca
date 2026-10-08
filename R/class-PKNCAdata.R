@@ -452,7 +452,7 @@ pknca_warn_single_dose_aucs_unit <- function(o_conc, options) {
 #' @rdname is_sparse_pk
 #' @export
 is_sparse_pk.PKNCAdata <- function(object) {
-  is_sparse_pk(object$conc)
+  is_sparse_pk(as_PKNCAconc(object))
 }
 
 #' Print a PKNCAdata object
@@ -460,11 +460,12 @@ is_sparse_pk.PKNCAdata <- function(object) {
 #' @param ... Arguments passed on to [print.PKNCAconc()] and [print.PKNCAdose()]
 #' @export
 print.PKNCAdata <- function(x, ...) {
-  print.PKNCAconc(x$conc, ...)
-  if (identical(NA, x$dose)) {
+  print.PKNCAconc(as_PKNCAconc(x), ...)
+  dose <- as_PKNCAdose(x)
+  if (identical(NA, dose)) {
     cat("No dosing information.\n")
   } else {
-    print.PKNCAdose(x$dose, ...)
+    print.PKNCAdose(dose, ...)
   }
   cat(sprintf("\nWith %d rows of interval specifications.\n",
               nrow(x$intervals)))

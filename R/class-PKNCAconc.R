@@ -289,17 +289,17 @@ formula.PKNCAconc <- function(x, ...) {
 #' @importFrom stats model.frame
 #' @method model.frame PKNCAconc
 model.frame.PKNCAconc <- function(formula, ...) {
-  formula$data[, all.vars(formula$formula), drop=FALSE]
+  as.data.frame(formula)[, all.vars(formula$formula), drop=FALSE]
 }
 
 #' @export
 getDepVar.PKNCAconc <- function(x, ...) {
-  x$data[, x$columns$concentration]
+  as.data.frame(x)[, x$columns$concentration]
 }
 
 #' @export
 getIndepVar.PKNCAconc <- function(x, ...) {
-  x$data[, x$columns$time]
+  as.data.frame(x)[, x$columns$time]
 }
 
 #' Get the groups (right hand side after the `|` from a PKNCA
@@ -407,13 +407,8 @@ setDuration.PKNCAconc <- function(object, duration, ...) {
 print.PKNCAconc <- function(x, n=6, summarize=FALSE, ...) {
   cat(sprintf("Formula for concentration:\n "))
   print(stats::formula(x), ...)
-  if (is_sparse_pk(x)) {
-    data_current <- x$data_sparse
-    cat("Data are sparse PK.\n")
-  } else {
-    data_current <- x$data
-    cat("Data are dense PK.\n")
-  }
+  data_current <- as.data.frame(x)
+  cat(if (is_sparse_pk(x)) "Data are sparse PK.\n" else "Data are dense PK.\n")
   single_subject <- is.na(x$columns$subject) || (length(x$columns$subject) == 0)
   if (single_subject) {
     cat("As a single-subject dataset.\n")

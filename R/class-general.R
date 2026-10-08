@@ -246,7 +246,7 @@ duplicate_check <- function(object, data_type) {
 pknca_set_units <- function(object, units_orig = list(), units_pref = list()) {
   all_units <-
     list(
-      orig = lapply(X = units_orig, FUN = assert_unit, data = object$data),
+      orig = lapply(X = units_orig, FUN = assert_unit, data = as.data.frame(object)),
       pref = lapply(X = units_pref, FUN = assert_unit_value)
     )
 

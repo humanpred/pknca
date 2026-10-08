@@ -63,7 +63,7 @@ pk.nca <- function(data, verbose=FALSE) {
     splitdata <-
       full_join_PKNCAdata(
         data_calc,
-        extra_conc_cols = pknca_timeu_extra_col(data_calc$conc)
+        extra_conc_cols = pknca_timeu_extra_col(as_PKNCAconc(data_calc))
       )
     group_info <-
       splitdata[
@@ -84,7 +84,7 @@ pk.nca <- function(data, verbose=FALSE) {
       if (sparse) splitdata$data_sparse_conc else rep(list(NULL), nrow(splitdata))
     group_timeu <-
       pknca_split_timeu(
-        splitdata = splitdata, group_info = group_info, o_conc = data_calc$conc
+        splitdata = splitdata, group_info = group_info, o_conc = as_PKNCAconc(data_calc)
       )
     group_warning_prefix <-
       vapply(

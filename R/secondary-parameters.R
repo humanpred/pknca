@@ -451,7 +451,7 @@ expand_secondary_intervals <- function(data) {
   }
   found <-
     expand_secondary_auto(
-      current_intervals, requested_secondary, conc = data$conc,
+      current_intervals, requested_secondary, conc = as_PKNCAconc(data),
       group_ref = data$group_ref
     )
   data$intervals <- found$intervals
@@ -1750,7 +1750,7 @@ interval_add_secondary.PKNCAdata <- function(data, param, reference = NULL,
     interval_edit_secondary(
       data$intervals, param = param, reference = reference,
       target_groups = target_groups, ref_id = ref_id,
-      conc = data$conc, group_ref = data$group_ref
+      conc = as_PKNCAconc(data), group_ref = data$group_ref
     )
   data
 }
