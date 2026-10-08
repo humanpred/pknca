@@ -1474,8 +1474,9 @@ code over the sketches:
   `side = "own"`) — never "home", which reads unclearly; interval-row
   arguments are `interval_row` — never `iv_row`, and `iv` means intravenous
   and nothing else anywhere in the package (test fixtures are
-  `intervals_*`).  `stringsAsFactors = FALSE` is gone from the whole code
-  base (the package depends on R >= 4.4, where it is the default).
+  `intervals_*`).  `stringsAsFactors = FALSE` is not given to
+  `data.frame()` (the package depends on R >= 4.1, where it is the
+  default); `expand.grid()` still defaults to `TRUE`, so its calls keep it.
 
 * **`find_secondary_reference()` takes the pieces it needs, not the
   `PKNCAdata`**: `find_secondary_reference(intervals, row, param, info, conc,

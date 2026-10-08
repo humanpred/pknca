@@ -259,3 +259,21 @@ test_that("requesting a parameter that needs a collection duration without one i
     )))
   expect_equal(as.data.frame(res)$PPORRES, max(d_conc$conc * 10 / 1))
 })
+
+test_that("the sparse mean profile carries the median LLOQ of each time", {
+  d <-
+    data.frame(
+      time = rep(c(1, 2, 4), each = 3),
+      conc = c(5, 6, 4, 3, NA, 2, 0, 0, 0.7),
+      subject = 1:9,
+      lloq = c(0.5, 0.5, 0.5, 0.4, 0.6, 0.5, 0.5, 0.5, 0.6)
+    )
+  profile <- sparse_mean_profile(d)
+  expect_equal(profile$time, c(1, 2, 4))
+  # The BLQ rule sets the mean at 4 hours to zero (two of three samples BLQ)
+  expect_equal(profile$conc, c(5, 2.5, 0))
+  # The NA concentration at 2 hours does not count toward its LLOQ
+  expect_equal(profile$lloq, c(0.5, 0.45, 0.5))
+  # Without an LLOQ, the profile has none
+  expect_false("lloq" %in% names(sparse_mean_profile(d[, c("time", "conc", "subject")])))
+})

@@ -153,11 +153,24 @@ prepare_PKNCAconc_sparse <- function(.dat, needed_cols, group_cols_selected) {
       group_cols=setdiff(group_cols_selected, .dat$columns$subject)
     )
   # Generate the mean profile for non-sparse parameters
-  ret$data_conc <-
-    ret$data_sparse_conc %>%
-    lapply(FUN=as_sparse_pk) %>%
-    lapply(FUN=sparse_mean) %>%
-    lapply(FUN=sparse_to_dense_pk)
+  ret$data_conc <- lapply(X = ret$data_sparse_conc, FUN = sparse_mean_profile)
+  ret
+}
+
+# The arithmetic mean profile of one group's pooled samples (a data.frame with
+# `conc`, `time`, and `subject`), with the LLOQ of each time when the samples
+# have one:  the median of the LLOQs of its samples, so that a time whose mean
+# the BLQ rule of sparse_mean() sets to zero (more than half of its samples
+# BLQ) is below it.  A half-life method that needs the LLOQ (hl_method =
+# "tobit") can then use the mean profile.
+sparse_mean_profile <- function(data) {
+  ret <- sparse_to_dense_pk(sparse_mean(as_sparse_pk(data)))
+  if ("lloq" %in% names(data)) {
+    # The samples as_sparse_pk() keeps
+    measured <- data[!is.na(data$conc), , drop = FALSE]
+    lloq_by_time <- tapply(measured$lloq, match(measured$time, ret$time), stats::median)
+    ret$lloq <- as.numeric(lloq_by_time[as.character(seq_len(nrow(ret)))])
+  }
   ret
 }
 
