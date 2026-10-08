@@ -162,13 +162,15 @@ prepare_PKNCAconc_sparse <- function(.dat, needed_cols, group_cols_selected) {
 # have one:  the median of the LLOQs of its samples, so that a time whose mean
 # the BLQ rule of sparse_mean() sets to zero (more than half of its samples
 # BLQ) is below it.  A half-life method that needs the LLOQ (hl_method =
-# "tobit") can then use the mean profile.
+# "tobit") can then use the mean profile.  Missing LLOQs are ignored:  a time
+# whose samples have none has an NA LLOQ, and when no sample has one, the
+# profile has no LLOQ, as when none is given.
 sparse_mean_profile <- function(data) {
   ret <- sparse_to_dense_pk(sparse_mean(as_sparse_pk(data)))
-  if ("lloq" %in% names(data)) {
+  if ("lloq" %in% names(data) && !all(is.na(data$lloq))) {
     # The samples as_sparse_pk() keeps
     measured <- data[!is.na(data$conc), , drop = FALSE]
-    lloq_by_time <- tapply(measured$lloq, match(measured$time, ret$time), stats::median)
+    lloq_by_time <- tapply(measured$lloq, match(measured$time, ret$time), stats::median, na.rm = TRUE)
     ret$lloq <- as.numeric(lloq_by_time[as.character(seq_len(nrow(ret)))])
   }
   ret
