@@ -33,6 +33,13 @@ Details of
 [`cov_holder()`](https://humanpred.github.io/pknca/reference/cov_holder.md)
 for the covariance).
 
+When the animals form groups sampled at exactly the same times, with no
+time sampled in more than one group (serial sacrifice, batch, and
+complete designs), the same variance and degrees of freedom are
+calculated from the weighted sum of each animal's samples, which is much
+faster for many animals. For serial sacrifice, the degrees of freedom
+are then equation 6a of Nedelman, Gibiansky, and Lau (1995).
+
 ## References
 
 Nedelman JR, Jia X. An extension of Satterthwaite’s approximation
@@ -42,3 +49,7 @@ applied to pharmacokinetics. Journal of Biopharmaceutical Statistics.
 Holder DJ. Comments on Nedelman and Jia’s Extension of Satterthwaite’s
 Approximation Applied to Pharmacokinetics. Journal of Biopharmaceutical
 Statistics. 2001;11(1-2):75-79. doi:10.1081/BIP-100104199
+
+Nedelman JR, Gibiansky E, Lau DTW. Applying Bailer's method for AUC
+confidence intervals to sparse sampling. Pharmaceutical Research.
+1995;12(1):124-128.
