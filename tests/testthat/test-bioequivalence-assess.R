@@ -618,3 +618,11 @@ test_that("be_dataset warns for non-log-normal endpoints (e.g. Tmax)", {
     "not log-normal"
   )
 })
+
+test_that("the be_assess object keeps the classes of its table", {
+  tbl <- tibble::tibble(endpoint = "auclast", regulator = "ABE", model_type = "anova", design = "2x2")
+  result <- .be_assess_object(tbl, alpha = 0.1)
+  expect_equal(class(result), c("be_assess", class(tbl)))
+  expect_equal(attr(result, "alpha"), 0.1)
+  expect_equal(attr(result, "regulator"), "ABE")
+})

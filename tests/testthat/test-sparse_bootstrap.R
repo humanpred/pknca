@@ -174,7 +174,14 @@ test_that("summary() of a sparse bootstrap summarizes the replicates like subjec
   )
   # The standard errors of single replicates are not summarized
   expect_false(any(grepl("_se|_df", names(result))))
-  expect_match(attr(result, "caption"), "N: number of subjects; summarized over 30 bootstrap replicates (seed 8)", fixed = TRUE)
+  expect_match(attr(result, "caption"), "N: number of animals in the study; summarized over 30 bootstrap replicates (seed 8)", fixed = TRUE)
+  expect_s3_class(result, "summary_PKNCAresults")
+  # N follows the groups, as for dense data
+  expect_equal(names(result)[1:3], c("start", "end", "N"))
+  # summarize_n = FALSE leaves N out
+  result_no_n <- summary(o_nca_boot, summarize_n = FALSE)
+  expect_false("N" %in% names(result_no_n))
+  expect_equal(result_no_n$auclast, result$auclast)
 
   # With groups, N counts the animals in each group
   o_crossover <- PKNCAconc(d_boot_crossover, conc ~ time | treatment + animal, sparse = TRUE)
@@ -183,6 +190,15 @@ test_that("summary() of a sparse bootstrap summarizes the replicates like subjec
   result_crossover <- summary(o_nca_crossover)
   expect_equal(result_crossover$treatment, c("R", "T"))
   expect_equal(result_crossover$N, c("18", "18"))
+  # Dropping the treatment as well counts the animals of each unpaired
+  # treatment, which may reuse identifiers for different animals...
+  result_pooled <- summary(o_nca_crossover, drop_group = "treatment")
+  expect_false("treatment" %in% names(result_pooled))
+  expect_equal(result_pooled$N, "36")
+  # ... and each animal once when the treatments are paired
+  o_nca_paired <-
+    suppressMessages(pk.nca(PKNCAdata(sparse_bootstrap(o_crossover, n_boot = 5, seed = 3, paired = "treatment"), intervals = d_intervals)))
+  expect_equal(summary(o_nca_paired, drop_group = "treatment")$N, "18")
 })
 
 test_that("be_assess() of a sparse bootstrap gives the percentile interval of the ratio", {

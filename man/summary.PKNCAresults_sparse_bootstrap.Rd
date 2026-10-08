@@ -4,12 +4,18 @@
 \alias{summary.PKNCAresults_sparse_bootstrap}
 \title{Summarize the results of a sparse bootstrap}
 \usage{
-\method{summary}{PKNCAresults_sparse_bootstrap}(object, ...)
+\method{summary}{PKNCAresults_sparse_bootstrap}(object, ..., drop_group = character(), summarize_n = NA)
 }
 \arguments{
 \item{object}{The results to summarize}
 
 \item{...}{Ignored.}
+
+\item{drop_group}{Groups to drop from the summary, in addition to the
+bootstrap replicate}
+
+\item{summarize_n}{Should a column for \code{N}, the number of animals in the
+study, be added?  \code{NA} (the default) and \code{TRUE} add it.}
 }
 \value{
 A data frame of the summarized bootstrap results (see

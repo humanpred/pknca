@@ -1749,7 +1749,7 @@ be_fit_models <- function(object, reference_col, reference_value,
 .be_assess_object <- function(tbl, alpha) {
   structure(
     tbl,
-    class = c("be_assess", "data.frame"),
+    class = c("be_assess", class(tbl)),
     regulator = tbl$regulator[1], model_type = tbl$model_type[1],
     design = tbl$design[1], alpha = alpha
   )

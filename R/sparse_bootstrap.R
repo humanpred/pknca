@@ -91,7 +91,7 @@ sparse_bootstrap <- function(object, n_boot = 200, seed = NULL, paired = NULL,
   analyte_cols <- object$columns$groups$group_analyte
   checkmate::assert_subset(paired, choices = setdiff(group_cols, subject_col))
   subject_col_new <- paste0(replicate_col, "_subject")
-  data <- object$data_sparse
+  data <- as.data.frame(object)
   clash <- intersect(c(replicate_col, subject_col_new), names(data))
   if (length(clash) > 0) {
     rlang::abort(
@@ -114,35 +114,19 @@ sparse_bootstrap <- function(object, n_boot = 200, seed = NULL, paired = NULL,
   rows_by_group <- split(seq_len(nrow(data)), resample_key)
   strata <- lapply(rows_by_group, sparse_bootstrap_strata, data = data, subject_col = subject_col, time_col = object$columns$time)
 
-  previous_seed <- sparse_bootstrap_get_seed()
-  on.exit(sparse_bootstrap_set_seed(previous_seed), add = TRUE)
-  set.seed(seed)
-  replicates <- vector(mode = "list", length = n_boot + 1)
   original <- data
   original[[replicate_col]] <- "original"
   original[[subject_col_new]] <- as.character(data[[subject_col]])
-  replicates[[1]] <- original
-  for (current_boot in seq_len(n_boot)) {
-    rows <- integer()
-    draws <- character()
-    # By position:  a single group's name is "", which [[ cannot look up
-    for (current_group in seq_along(rows_by_group)) {
-      for (current_stratum in strata[[current_group]]) {
-        drawn <- current_stratum$subjects[sample.int(length(current_stratum$subjects), replace = TRUE)]
-        for (current_draw in seq_along(drawn)) {
-          subject_rows <- current_stratum$rows[[drawn[current_draw]]]
-          rows <- c(rows, subject_rows)
-          draws <- c(draws, rep(paste0(drawn[current_draw], "_", current_draw), length(subject_rows)))
-        }
-      }
-    }
-    current_data <- data[rows, , drop = FALSE]
-    current_data[[replicate_col]] <- paste0("bootstrap", current_boot)
-    current_data[[subject_col_new]] <- draws
-    replicates[[current_boot + 1]] <- current_data
-  }
+  replicates <-
+    withr::with_seed(
+      seed,
+      lapply(
+        X = seq_len(n_boot), FUN = sparse_bootstrap_draw,
+        data = data, strata = strata, replicate_col = replicate_col, subject_col_new = subject_col_new
+      )
+    )
   ret <- object
-  ret$data_sparse <- do.call(rbind, replicates)
+  ret$data_sparse <- do.call(rbind, c(list(original), replicates))
   rownames(ret$data_sparse) <- NULL
   idx_subject <- which(group_cols == subject_col)
   ret$columns$groups$group_vars <-
@@ -183,51 +167,51 @@ sparse_bootstrap_strata <- function(rows, data, subject_col, time_col) {
   ret
 }
 
-# The random number state of the session (NULL if none), so that it can be
-# restored after the resampling
-sparse_bootstrap_get_seed <- function() {
-  if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
-    get(".Random.seed", envir = globalenv(), inherits = FALSE)
-  } else {
-    NULL
-  }
-}
-
-sparse_bootstrap_set_seed <- function(seed) {
-  if (is.null(seed)) {
-    if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
-      rm(".Random.seed", envir = globalenv())
+# One bootstrap replicate:  in each resampling group and stratum, as many
+# animals as the stratum has are drawn with replacement, each with all of its
+# rows and a new subject identifier for the draw
+sparse_bootstrap_draw <- function(current_boot, data, strata, replicate_col, subject_col_new) {
+  rows <- integer()
+  draws <- character()
+  for (group_strata in strata) {
+    for (current_stratum in group_strata) {
+      drawn <- current_stratum$subjects[sample.int(length(current_stratum$subjects), replace = TRUE)]
+      for (current_draw in seq_along(drawn)) {
+        subject_rows <- current_stratum$rows[[drawn[current_draw]]]
+        rows <- c(rows, subject_rows)
+        draws <- c(draws, rep(paste0(drawn[current_draw], "_", current_draw), length(subject_rows)))
+      }
     }
-  } else {
-    assign(".Random.seed", seed, envir = globalenv())
   }
-}
-
-# The results of the bootstrap replicates as an ordinary sparse PKNCAresults
-# object whose subjects are the replicates, so that the summary and comparison
-# functions for dense data apply to them.  The original data and the sparse
-# standard errors and degrees of freedom (which describe one replicate, not the
-# bootstrap) are dropped.
-sparse_bootstrap_replicates <- function(object) {
-  bootstrap <- object$data$conc$bootstrap
-  replicate_col <- bootstrap$replicate_col
-  ret <- object
-  keep <- ret$result[[replicate_col]] != "original" & !(ret$result$PPTESTCD %in% sparse_only_params())
-  ret$result <- ret$result[keep, , drop = FALSE]
-  columns <- ret$data$conc$columns
-  columns$groups$group_vars <- setdiff(columns$groups$group_vars, columns$subject)
-  columns$subject <- replicate_col
-  ret$data$conc$columns <- columns
-  class(ret) <- setdiff(class(ret), "PKNCAresults_sparse_bootstrap")
+  ret <- data[rows, , drop = FALSE]
+  ret[[replicate_col]] <- paste0("bootstrap", current_boot)
+  ret[[subject_col_new]] <- draws
   ret
 }
 
-# The animals in the original data, with the `groups` columns
-sparse_bootstrap_animals <- function(object, groups) {
-  bootstrap <- object$data$conc$bootstrap
-  data <- object$data$conc$data_sparse
+# The animals in the original data of a bootstrap PKNCAconc object, with the
+# `groups` columns
+sparse_bootstrap_animals <- function(conc, groups) {
+  bootstrap <- conc$bootstrap
+  data <- as.data.frame(conc)
   data <- data[data[[bootstrap$replicate_col]] == "original", , drop = FALSE]
   unique(data.frame(data[groups], .subject = data[[bootstrap$subject]]))
+}
+
+# The number of animals for each combination of `key_cols` in `animals` (from
+# sparse_bootstrap_animals()), as a table named by sparse_bootstrap_key().  An
+# animal is a subject within its unpaired groups, which may reuse subject
+# identifiers for different animals; a paired group (such as a crossover's
+# treatment) has the same animals in each level, so it does not count them
+# again.
+sparse_bootstrap_count_animals <- function(animals, key_cols, paired) {
+  identity_cols <- c(setdiff(names(animals), c(".subject", paired)), ".subject")
+  counted <-
+    unique(data.frame(
+      key = sparse_bootstrap_key(animals, key_cols),
+      identity = sparse_bootstrap_key(animals, identity_cols)
+    ))
+  table(counted$key)
 }
 
 # A key identifying the combination of `cols` in each row of `data` ("" when
@@ -253,25 +237,57 @@ sparse_bootstrap_key <- function(data, cols) {
 #' [be_assess()].
 #'
 #' @inheritParams summary.PKNCAresults
+#' @param drop_group Groups to drop from the summary, in addition to the
+#'   bootstrap replicate
+#' @param summarize_n Should a column for `N`, the number of animals in the
+#'   study, be added?  `NA` (the default) and `TRUE` add it.
 #' @returns A data frame of the summarized bootstrap results (see
 #'   [summary.PKNCAresults()])
 #' @family Sparse Methods
 #' @export
-summary.PKNCAresults_sparse_bootstrap <- function(object, ...) {
-  bootstrap <- object$data$conc$bootstrap
-  ret <- summary(sparse_bootstrap_replicates(object), ...)
-  if ("N" %in% names(ret)) {
-    groups <- intersect(names(ret), names(object$data$conc$data_sparse))
-    animals <- sparse_bootstrap_animals(object, groups)
-    n_study <- table(sparse_bootstrap_key(animals, groups))
-    ret$N <- as.character(as.vector(n_study[match(sparse_bootstrap_key(ret, groups), names(n_study))]))
-  }
-  attr(ret, "caption") <-
-    paste0(
-      attr(ret, "caption"),
-      sprintf("; summarized over %d bootstrap replicates (seed %d)", bootstrap$n_boot, bootstrap$seed)
+summary.PKNCAresults_sparse_bootstrap <- function(object, ..., drop_group = character(), summarize_n = NA) {
+  conc <- as_PKNCAconc(object)
+  bootstrap <- conc$bootstrap
+  replicate_col <- bootstrap$replicate_col
+  # The animals are counted first:  filtering the replicate column also drops
+  # the original data from the concentrations
+  animals <-
+    sparse_bootstrap_animals(
+      conc, setdiff(dplyr::group_vars(conc), c(replicate_col, conc$columns$subject))
     )
-  ret
+  # The replicates are summarized like subjects; the original data and the
+  # sparse standard errors of single replicates are not part of that
+  replicate_sym <- rlang::sym(replicate_col)
+  parameter_sym <- rlang::sym("PPTESTCD")
+  object <-
+    dplyr::filter(
+      object, !!replicate_sym != "original", !(!!parameter_sym %in% sparse_only_params())
+    )
+  drop_group <- union(replicate_col, drop_group)
+  ret <- summary.PKNCAresults(object, ..., drop_group = drop_group, summarize_n = FALSE)
+  caption <- attr(ret, "caption")
+  if (!isFALSE(summarize_n)) {
+    group_cols <- intersect(get_summary_PKNCAresults_drop_group(object = object, drop_group = drop_group), names(ret))
+    n_cols <- intersect(group_cols, names(animals))
+    n_study <- sparse_bootstrap_count_animals(animals, n_cols, bootstrap$paired)
+    n_value <- as.character(as.vector(n_study[match(sparse_bootstrap_key(ret, n_cols), names(n_study))]))
+    # N follows the groups, as in summary.PKNCAresults()
+    n_position <- max(c(0L, match(group_cols, names(ret))))
+    ret <-
+      data.frame(
+        ret[seq_len(n_position)], N = n_value, ret[setdiff(seq_along(ret), seq_len(n_position))],
+        check.names = FALSE
+      )
+    caption <- paste0(caption, "; N: number of animals in the study")
+  }
+  as_summary_PKNCAresults(
+    ret,
+    caption =
+      paste0(
+        caption,
+        sprintf("; summarized over %d bootstrap replicates (seed %d)", bootstrap$n_boot, bootstrap$seed)
+      )
+  )
 }
 
 #' @describeIn be_dataset The replicates of a sparse bootstrap, one row per
@@ -281,7 +297,8 @@ be_dataset.PKNCAresults_sparse_bootstrap <- function(object, reference_col, refe
                                                      endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
                                                      subject = NULL, sequence = NULL, period = NULL,
                                                      covariates = NULL, ...) {
-  bootstrap <- object$data$conc$bootstrap
+  conc <- as_PKNCAconc(object)
+  bootstrap <- conc$bootstrap
   given <- c(subject = !is.null(subject), sequence = !is.null(sequence), period = !is.null(period), covariates = !is.null(covariates))
   if (any(given)) {
     rlang::abort(
@@ -334,7 +351,7 @@ be_dataset.PKNCAresults_sparse_bootstrap <- function(object, reference_col, refe
       reference_value = reference_value,
       test_levels = setdiff(levels(data$.trt), reference_value),
       endpoints = present,
-      animals = sparse_bootstrap_animals(object, reference_col),
+      animals = sparse_bootstrap_animals(conc, reference_col),
       design = if (reference_col %in% bootstrap$paired) "crossover" else "parallel",
       bootstrap = bootstrap
     ),
@@ -363,18 +380,11 @@ sparse_bootstrap_values <- function(data, treatment, endpoint) {
   stats::setNames(data$.value[rows], data$.replicate[rows])
 }
 
-# The number of animals in a comparison of a test with the reference:  each
-# animal once with a crossover (paired treatments), and the sum of the
-# treatment groups with a parallel design (where animal identifiers may repeat
-# between groups)
+# The number of animals in a comparison of a test with the reference
 sparse_bootstrap_n_compared <- function(ds, test) {
   treatments <- c(ds$reference_value, test)
   animals <- ds$animals[as.character(ds$animals[[ds$columns$treatment]]) %in% treatments, , drop = FALSE]
-  if (identical(ds$design, "crossover")) {
-    length(unique(animals$.subject))
-  } else {
-    nrow(animals)
-  }
+  sum(sparse_bootstrap_count_animals(animals, character(), ds$bootstrap$paired))
 }
 
 #' @describeIn be_assess Bioequivalence from the percentile intervals of a
