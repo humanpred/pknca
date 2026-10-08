@@ -448,6 +448,13 @@ sparse_c0 <- function(sparse_pk) {
 #' one sample (see the `"df"` attribute of the return value and Details of
 #' [cov_holder()] for the covariance).
 #'
+#' When the animals form groups sampled at exactly the same times, with no time
+#' sampled in more than one group (serial sacrifice, batch, and complete
+#' designs), the same variance and degrees of freedom are calculated from the
+#' weighted sum of each animal's samples, which is much faster for many
+#' animals.  For serial sacrifice, the degrees of freedom are then equation 6a
+#' of Nedelman, Gibiansky, and Lau (1995).
+#'
 #' @inheritParams sparse_pk_attribute
 #' @returns The variance of the AUC estimate with a `"df"` attribute containing
 #'   its degrees of freedom.
@@ -459,6 +466,10 @@ sparse_c0 <- function(sparse_pk) {
 #' Holder DJ. Comments on Nedelman and Jia’s Extension of Satterthwaite’s
 #' Approximation Applied to Pharmacokinetics. Journal of Biopharmaceutical
 #' Statistics. 2001;11(1-2):75-79. doi:10.1081/BIP-100104199
+#'
+#' Nedelman JR, Gibiansky E, Lau DTW.  Applying Bailer's method for AUC
+#' confidence intervals to sparse sampling.  Pharmaceutical Research.
+#' 1995;12(1):124-128.
 #' @export
 var_sparse_auc <- function(sparse_pk) {
   # Times with no weight in the AUC or an imputed (known) concentration do not
@@ -467,25 +478,94 @@ var_sparse_auc <- function(sparse_pk) {
   if (length(sparse_pk) == 0) {
     return(structure(0, df = NA_real_))
   }
-  covariance <- cov_holder(sparse_pk)
-  var_auc <- 0
+  var_sparse_weighted_sum(sparse_pk)
+}
+
+# The variance of the weighted sum of the means, sum_i w_i ybar_i (equation
+# 7.vii of Nedelman and Jia 1998), with its Satterthwaite degrees of freedom.
+# `sparse_pk` has the weights and the means of the values (concentrations for
+# the AUC, or moments t*C for the AUMC).
+#
+# When the animals form strata sampled at exactly the same times, with no time
+# sampled in more than one stratum (serial sacrifice, batch, and complete
+# designs), Holder's covariance within a stratum is the sample covariance, so
+# the variance is sum_b a_b with a_b = s_b^2/n_b, where s_b^2 is the sample
+# variance of the animals' weighted sums sum_i w_i y_i over the n_b animals of
+# stratum b, and the degrees of freedom are (sum_b a_b)^2/sum_b (a_b^2/(n_b - 1))
+# (equation 6a of Nedelman, Gibiansky, and Lau 1995 for serial sacrifice).
+# This equals the general calculation below without its matrices over every
+# pair of measurements.
+var_sparse_weighted_sum <- function(sparse_pk) {
   weights <- sparse_pk_attribute(sparse_pk, "weight")
+  strata <- sparse_pk_strata(sparse_pk)
+  if (!is.null(strata)) {
+    a <- numeric(length(strata))
+    n <- integer(length(strata))
+    for (idx_stratum in seq_along(strata)) {
+      subjects <- strata[[idx_stratum]]$subjects
+      weighted_sum <- rep(0, length(subjects))
+      for (idx_time in strata[[idx_stratum]]$times) {
+        current <- sparse_pk[[idx_time]]
+        weighted_sum <- weighted_sum + weights[idx_time]*current$conc[match(subjects, as.character(current$subject))]
+      }
+      n[idx_stratum] <- length(subjects)
+      a[idx_stratum] <- stats::var(weighted_sum)/n[idx_stratum]
+    }
+    ret <- sum(a)
+    attr(ret, "df") <- if (anyNA(a)) NA_real_ else sum(a)^2/sum(a^2/(n - 1))
+    return(ret)
+  }
+  covariance <- cov_holder(sparse_pk)
+  ret <- 0
   for (idx1 in seq_along(sparse_pk)) {
     n_idx1 <- length(unique(sparse_pk[[idx1]]$subject))
-    var_auc <-
-      var_auc +
+    ret <-
+      ret +
       weights[idx1]^2*covariance[idx1, idx1]/n_idx1
     for (idx2 in seq_len(idx1 - 1)) {
       n_idx2 <- length(unique(sparse_pk[[idx2]]$subject))
       n_both <- length(unique(intersect(sparse_pk[[idx1]]$subject, sparse_pk[[idx2]]$subject)))
-      var_auc <-
-        var_auc +
+      ret <-
+        ret +
         2*weights[idx1]*weights[idx2]*n_both*covariance[idx1, idx2]/(n_idx1*n_idx2)
     }
   }
-  attr(var_auc, "df") <-
+  attr(ret, "df") <-
     sparse_satterthwaite_df(sparse_pk = sparse_pk, weights = weights, covariance = covariance)
-  var_auc
+  ret
+}
+
+# The strata of animals sampled at exactly the same times (each a list of the
+# time indices and the subjects), when no time is sampled in more than one
+# stratum and every time's mean is the mean of its values; NULL otherwise.  A
+# mean set to zero by the BLQ rule of sparse_mean() is not the sample mean
+# that the stratum calculation of var_sparse_weighted_sum() centers on.
+sparse_pk_strata <- function(sparse_pk) {
+  subjects <- lapply(sparse_pk, `[[`, "subject")
+  for (idx in seq_along(sparse_pk)) {
+    if (anyNA(subjects[[idx]]) || anyDuplicated(subjects[[idx]]) > 0 ||
+        !identical(sparse_pk[[idx]]$mean, mean(sparse_pk[[idx]]$conc))) {
+      return(NULL)
+    }
+  }
+  time_idx <- rep(seq_along(sparse_pk), lengths(subjects))
+  subject <- as.character(unlist(subjects))
+  # The times of each subject, in order, as one string
+  signature <- vapply(split(time_idx, subject), FUN = paste, collapse = ",", FUN.VALUE = "")
+  time_signature <- unique(data.frame(time_idx = time_idx, signature = signature[subject]))
+  if (anyDuplicated(time_signature$time_idx) > 0) {
+    # A time is sampled in more than one stratum
+    return(NULL)
+  }
+  ret <- list()
+  for (current_signature in unique(signature)) {
+    ret[[length(ret) + 1]] <-
+      list(
+        times = time_signature$time_idx[time_signature$signature == current_signature],
+        subjects = names(signature)[signature == current_signature]
+      )
+  }
+  ret
 }
 
 #' Satterthwaite degrees of freedom for the variance of a sparse AUC or AUMC
@@ -891,35 +971,11 @@ var_sparse_aumc <- function(sparse_pk) {
     sparse_mean_method = "arithmetic mean, <=50% BLQ"
   )
   
-  # Step 3: Covariance matrix on moment data using Holder (2001) estimator
-  covariance <- cov_holder(moment_sparse_pk_mean)
-  
-  # Step 4: Variance of AUMC via weighted sum (equation 7.vii,
-  # Nedelman and Jia 1998, applied to moment data)
-  var_aumc <- 0
-  # Use ORIGINAL sparse_pk for weights (time-based, not moment-based)
-  weights <- sparse_pk_attribute(sparse_pk, "weight")
-
-  for (idx1 in seq_along(sparse_pk)) {
-    n_idx1 <- length(unique(sparse_pk[[idx1]]$subject))
-    var_aumc <-
-      var_aumc +
-      weights[idx1]^2 * covariance[idx1, idx1] / n_idx1
-    
-    for (idx2 in seq_len(idx1 - 1)) {
-      n_idx2 <- length(unique(sparse_pk[[idx2]]$subject))
-      n_both <- length(unique(intersect(sparse_pk[[idx1]]$subject, sparse_pk[[idx2]]$subject)))
-      var_aumc <-
-        var_aumc +
-        2 * weights[idx1] * weights[idx2] * n_both * covariance[idx1, idx2] / (n_idx1 * n_idx2)
-    }
-  }
-  
-  # Step 5: Degrees of freedom — Satterthwaite approximation
-  # (equation 6, Nedelman and Jia 1998, on the moment data)
-  attr(var_aumc, "df") <-
-    sparse_satterthwaite_df(sparse_pk = sparse_pk, weights = weights, covariance = covariance)
-  var_aumc
+  # Step 3: Variance of AUMC via the weighted sum of the moment means
+  # (equation 7.vii of Nedelman and Jia 1998, applied to moment data, with the
+  # Holder covariance and the Satterthwaite degrees of freedom of equation 6);
+  # the weights are carried over from sparse_pk
+  var_sparse_weighted_sum(moment_sparse_pk_mean)
 }
 
 #' Calculate AUMC and related parameters using sparse NCA methods

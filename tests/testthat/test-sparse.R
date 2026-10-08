@@ -1090,3 +1090,101 @@ test_that("an imputation that leaves the pooled samples alone still calculates",
   expect_equal(res_imputed$PPORRES, res_plain$PPORRES)
   expect_true(all(grepl("Imputation: start_conc0", res_imputed$PPANMETH, fixed = TRUE)))
 })
+
+# The variance of sum_i w_i ybar_i in matrix form (equation 7.vii of Nedelman
+# and Jia 1998) with the Holder covariance, and its general Satterthwaite
+# degrees of freedom:  the reference for the stratum calculation
+sparse_var_matrix_reference <- function(sparse_pk) {
+  covariance <- cov_holder(sparse_pk)
+  weights <- sparse_pk_attribute(sparse_pk, "weight")
+  subjects <- lapply(sparse_pk, `[[`, "subject")
+  r_both <- matrix(0, length(subjects), length(subjects))
+  for (i in seq_along(subjects)) {
+    for (j in seq_along(subjects)) {
+      r_both[i, j] <- length(intersect(subjects[[i]], subjects[[j]]))
+    }
+  }
+  r <- diag(r_both)
+  structure(
+    drop(t(weights) %*% (r_both*covariance/outer(r, r)) %*% weights),
+    df = sparse_satterthwaite_df(sparse_pk = sparse_pk, weights = weights, covariance = covariance)
+  )
+}
+
+test_that("the sparse variance of serial, batch, and complete designs uses the strata of animals", {
+  times <- c(0.5, 1, 2, 4, 8, 12, 24)
+  d_serial <- data.frame(time = rep(times, each = 4), subject = seq_len(28))
+  d_batch <-
+    rbind(
+      expand.grid(subject = 1:4, time = times[c(1, 4, 7)]),
+      expand.grid(subject = 5:8, time = times[c(2, 5)]),
+      expand.grid(subject = 9:12, time = times[c(3, 6)])
+    )
+  d_complete <- expand.grid(subject = 1:5, time = times)
+  designs <- list(serial = d_serial, batch = d_batch, complete = d_complete)
+  for (current_design in names(designs)) {
+    d <- designs[[current_design]]
+    d$conc <- 10*exp(-0.15*d$time)*exp(sin(seq_len(nrow(d)))/3)
+    sparse_pk <- sparse_auc_weight_linear(sparse_mean(as_sparse_pk(conc = d$conc, time = d$time, subject = d$subject)))
+    strata <- sparse_pk_strata(sparse_pk)
+    expect_equal(
+      length(strata),
+      c(serial = 7, batch = 3, complete = 1)[[current_design]],
+      info = current_design
+    )
+    # The same variance and degrees of freedom as the matrix form
+    expected <- sparse_var_matrix_reference(sparse_pk)
+    result <- var_sparse_auc(sparse_pk)
+    expect_equal(as.numeric(result), as.numeric(expected), tolerance = 1e-12, info = current_design)
+    expect_equal(attr(result, "df"), attr(expected, "df"), tolerance = 1e-10, info = current_design)
+    # The AUMC uses the moments t*C with the same strata
+    moment_pk <- sparse_pk
+    for (idx in seq_along(moment_pk)) {
+      moment_pk[[idx]]$conc <- moment_pk[[idx]]$conc*moment_pk[[idx]]$time
+    }
+    moment_pk <- sparse_mean(moment_pk)
+    expected_aumc <- sparse_var_matrix_reference(moment_pk)
+    result_aumc <- var_sparse_aumc(sparse_pk)
+    expect_equal(as.numeric(result_aumc), as.numeric(expected_aumc), tolerance = 1e-12, info = current_design)
+    expect_equal(attr(result_aumc, "df"), attr(expected_aumc, "df"), tolerance = 1e-10, info = current_design)
+  }
+})
+
+test_that("the sparse variance uses the general calculation when the strata do not separate the times", {
+  times <- c(0.5, 1, 2, 4, 8, 12, 24)
+  # Every batch is also sampled at 24 hours
+  d_shared <-
+    rbind(
+      expand.grid(subject = 1:4, time = c(0.5, 4, 24)),
+      expand.grid(subject = 5:8, time = c(1, 8, 24)),
+      expand.grid(subject = 9:12, time = c(2, 12, 24))
+    )
+  d_shared$conc <- 10*exp(-0.15*d_shared$time)*exp(sin(seq_len(nrow(d_shared)))/3)
+  sparse_pk <- sparse_auc_weight_linear(sparse_mean(as_sparse_pk(conc = d_shared$conc, time = d_shared$time, subject = d_shared$subject)))
+  expect_null(sparse_pk_strata(sparse_pk))
+  expected <- sparse_var_matrix_reference(sparse_pk)
+  result <- var_sparse_auc(sparse_pk)
+  expect_equal(as.numeric(result), as.numeric(expected), tolerance = 1e-12)
+  expect_equal(attr(result, "df"), attr(expected, "df"))
+
+  # A mean set to zero by the BLQ rule is not the sample mean that the strata
+  # center on, so serial sacrifice then uses the general calculation as well
+  d_blq <- data.frame(time = rep(times, each = 3), subject = seq_len(21))
+  d_blq$conc <- 10*exp(-0.15*d_blq$time)
+  d_blq$conc[d_blq$time == 2] <- c(0, 0, 3)
+  sparse_pk_blq <- sparse_auc_weight_linear(sparse_mean(as_sparse_pk(conc = d_blq$conc, time = d_blq$time, subject = d_blq$subject)))
+  expect_null(sparse_pk_strata(sparse_pk_blq))
+  expected_blq <- sparse_var_matrix_reference(sparse_pk_blq)
+  expect_equal(as.numeric(var_sparse_auc(sparse_pk_blq)), as.numeric(expected_blq), tolerance = 1e-12)
+})
+
+test_that("the stratum calculation gives NA for a stratum of one animal, as the general calculation does", {
+  d <- data.frame(time = c(0.5, 1, 1, 2, 2), subject = 1:5, conc = c(4, 5, 6, 3, 3.5))
+  sparse_pk <- sparse_auc_weight_linear(sparse_mean(as_sparse_pk(conc = d$conc, time = d$time, subject = d$subject)))
+  expect_false(is.null(sparse_pk_strata(sparse_pk)))
+  result <- var_sparse_auc(sparse_pk)
+  expect_true(is.na(result))
+  expect_true(is.na(attr(result, "df")))
+  expected <- sparse_var_matrix_reference(sparse_pk)
+  expect_true(is.na(expected))
+})
