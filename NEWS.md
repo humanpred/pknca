@@ -358,9 +358,10 @@ the generated intervals:
 * The Tobit half-life (`hl_method = "tobit"`) now works with sparse PK:  the
   mean profile, which the half-life is calculated from, carries the LLOQ of
   each time (the median of the LLOQs of its samples, given by the `lloq`
-  argument of `PKNCAconc()`), so a time whose mean is set to zero because more
-  than half of its samples are BLQ is censored at the LLOQ.  Before, the
-  mean profile had no LLOQ and the Tobit half-life was an error.
+  argument of `PKNCAconc()`, ignoring missing ones), so a time whose mean is set
+  to zero because more than half of its samples are BLQ is censored at the
+  LLOQ.  Before, the mean profile had no LLOQ and the Tobit half-life was an
+  error.
 
 * Missing samples and Tmax coverage (#269, @billdenney):
   * `pknca_missing_samples()` lists, for each subject, the nominal times of

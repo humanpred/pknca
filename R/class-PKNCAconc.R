@@ -60,7 +60,7 @@
 #'   observations.  When provided, it is passed through to
 #'   [pk.calc.half.life()].  With sparse PK, the half-life is calculated from
 #'   the mean profile, and the LLOQ of each time is the median of the LLOQs of
-#'   its samples.  See the "Half-Life Calculation with Tobit Regression"
+#'   its samples (missing LLOQs are ignored).  See the "Half-Life Calculation with Tobit Regression"
 #'   vignette for more details.
 #' @param sparse Are the concentration-time data sparse PK (commonly used in
 #'   small nonclinical species or with terminal or difficult sampling) or dense

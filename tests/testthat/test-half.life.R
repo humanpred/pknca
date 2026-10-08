@@ -1654,10 +1654,20 @@ test_that("the Tobit half-life works for sparse data with the LLOQ of the mean p
   expected <- pk.calc.half.life(conc = unname(means), time = times, lloq = 0.3, hl_method = "tobit")
   expect_equal(res$PPORRES[res$PPTESTCD == "half.life"], expected$half.life)
   expect_false(is.na(expected$half.life))
-  # Without an LLOQ, the Tobit half-life still needs one
+  # Without an LLOQ, the Tobit half-life still needs one, including when the
+  # LLOQ column has only missing values
   expect_error(
     suppressMessages(pk.nca(PKNCAdata(
       PKNCAconc(d_sparse, conc ~ time | subject, sparse = TRUE),
+      intervals = d_intervals,
+      options = list(hl_method = "tobit")
+    ))),
+    regexp = "lloq must be provided"
+  )
+  d_sparse$lloq <- NA_real_
+  expect_error(
+    suppressMessages(pk.nca(PKNCAdata(
+      PKNCAconc(d_sparse, conc ~ time | subject, sparse = TRUE, lloq = "lloq"),
       intervals = d_intervals,
       options = list(hl_method = "tobit")
     ))),

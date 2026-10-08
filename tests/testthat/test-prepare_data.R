@@ -277,3 +277,19 @@ test_that("the sparse mean profile carries the median LLOQ of each time", {
   # Without an LLOQ, the profile has none
   expect_false("lloq" %in% names(sparse_mean_profile(d[, c("time", "conc", "subject")])))
 })
+
+test_that("the sparse mean profile ignores missing LLOQs", {
+  d <-
+    data.frame(
+      time = rep(c(1, 2, 4), each = 3),
+      conc = c(5, 6, 4, 3, 2.5, 2, 0, 0, 0.7),
+      subject = 1:9,
+      lloq = c(0.5, NA, 0.7, NA, NA, NA, 0.5, 0.5, 0.6)
+    )
+  profile <- sparse_mean_profile(d)
+  # The median of the LLOQs that are given, and NA for a time with none
+  expect_equal(profile$lloq, c(0.6, NA, 0.5))
+  # When no sample has an LLOQ, the profile has none, as when none is given
+  d$lloq <- NA_real_
+  expect_false("lloq" %in% names(sparse_mean_profile(d)))
+})
