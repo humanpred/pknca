@@ -14,6 +14,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 library(PKNCA)
 simulation <- readRDS("v24-sparse-auc-to-infinity-simulation.rds")
 mean_type <- readRDS("v24-sparse-auc-to-infinity-mean-type.rds")
+bootstrap <- readRDS("v24-sparse-auc-to-infinity-bootstrap.rds")
 # The rows of a simulation summary that match every given column value
 sim_rows <- function(summary, filters) {
   keep <- rep(TRUE, nrow(summary))
@@ -26,6 +27,11 @@ sim_rows <- function(summary, filters) {
 # `...` (column = value), as text
 se_range <- function(column, ..., digits = 0) {
   v <- sim_rows(simulation$summary, list(...))[[column]]
+  paste(format(round(range(v), digits), nsmall = digits), collapse = " to ")
+}
+# The same for the bootstrap study
+boot_range <- function(column, ..., digits = 0) {
+  v <- sim_rows(bootstrap$summary, list(...))[[column]]
   paste(format(round(range(v), digits), nsmall = digits), collapse = " to ")
 }
 # The same for the arithmetic and geometric mean profile study
@@ -74,6 +80,13 @@ For sparse sampling, where each animal gives one or a few samples:
   curve), need a rule for BLQ samples that drives their BLQ results, and fall
   outside the variance methods for sparse AUCs, which are for arithmetic means;
   adopting them would change all sparse calculations for a modest gain.
+* **The bootstrap (`sparse_bootstrap()`) gives intervals for any parameter, but
+  they are too narrow with few animals at each time.**  With three or four
+  animals per time, its 95% intervals for the AUC to infinity covered
+  `r boot_range("coverage_percentile", parameter = "auc")`% of the time.  Prefer
+  the analytical standard errors for the AUCs, and use the bootstrap for
+  parameters and comparisons that have none, such as Cmax and ratios between
+  groups.
 * **Estimating $\lambda_z$ from the individual samples was evaluated and not
   adopted.**  A (mixed-effects) Tobit fit gave a steadier point estimate when
   $\lambda_z$ was uncertain, but its standard error, added to Yuan's, did not
@@ -398,6 +411,46 @@ and the CI width is the median width relative to the truth (%).  The Monte Carlo
 standard error of each coverage is at most
 `r round(max(simulation$summary$coverage_mcse), 1)` percentage points.
 
+## Results:  the bootstrap
+
+The bootstrap of Shen and Machado (2017) (`sparse_bootstrap()`) was run on the
+first `r format(bootstrap$n_replicates, big.mark = ",")` data sets of each
+scenario with `r bootstrap$n_boot` replicates each, its default.  Each replicate
+resampled the animals within each sampling time (or batch), and its AUC and
+AUMC to infinity were calculated as for the original data.  Two intervals were
+formed:  the percentile interval of the replicates and the estimate plus or
+minus 1.96 bootstrap standard errors (the standard deviation of the
+replicates).  The delta method (on all of the scenario's data sets, which
+include these) is shown for comparison.
+
+```{r simulation-bootstrap, echo = FALSE}
+show_bootstrap <- function(parameter) {
+  b <- bootstrap$summary[bootstrap$summary$parameter == parameter, ]
+  b <- b[order(b$scenario), ]
+  delta <- results[results$parameter == parameter & results$method == "delta", ]
+  delta <- delta[match(b$scenario, delta$scenario), ]
+  out <-
+    data.frame(
+      scenario_columns(b),
+      `Coverage percentile` = round(b$coverage_percentile, 1),
+      `Coverage boot. SE` = round(b$coverage_normal, 1),
+      `Coverage delta` = round(delta$coverage, 1),
+      `CI width percentile` = round(b$median_ci_width_percentile),
+      `CI width delta` = round(delta$median_ci_width),
+      check.names = FALSE
+    )
+  knitr::kable(out, row.names = FALSE)
+}
+```
+
+```{r simulation-bootstrap-auc, echo = FALSE}
+show_bootstrap("auc")
+```
+
+```{r simulation-bootstrap-aumc, echo = FALSE}
+show_bootstrap("aumc")
+```
+
 ## Results:  accuracy of the point estimates
 
 The point estimate with $\lambda_z$ from the log means ("mean", shared by Yuan
@@ -464,6 +517,30 @@ declines ever more slowly, which a single exponential from $t_{last}$ misses.
 
 **Interval width.**  The delta-method intervals were wider than Yuan's, most
 when elimination was slow; the extra width is what improved the coverage.
+
+**The bootstrap.**  With three or four animals at each time, the bootstrap
+intervals were too narrow.  For the AUC to infinity, the percentile interval
+covered
+`r boot_range("coverage_percentile", parameter = "auc", elimination = "fast", digits = 1)`%
+with fast elimination and
+`r boot_range("coverage_percentile", parameter = "auc", elimination = "slow", digits = 1)`%
+with slow elimination, against
+`r se_range("coverage", method = "delta", parameter = "auc", elimination = "fast", digits = 1)`%
+and
+`r se_range("coverage", method = "delta", parameter = "auc", elimination = "slow", digits = 1)`%
+for the delta method, and the interval from the bootstrap standard error was
+little better
+(`r boot_range("coverage_normal", parameter = "auc", digits = 1)`%).
+Resampling $n$ animals understates the variance of their mean by the factor
+$(n - 1)/n$ (3/4 with four animals), and the percentile interval of a skewed
+estimate is narrow as well.  For the AUMC to infinity, the bootstrap covered
+`r boot_range("coverage_percentile", parameter = "aumc", digits = 1)`%:  better
+than Yuan's method when elimination was slow, and as good as or better than
+the delta method only with slow elimination and BLQ samples, where the
+first-order delta method is weakest.  The bootstrap's advantage is that it applies to every
+parameter and to ratios between groups (Shen and Machado 2017), including
+parameters with no analytical standard error, such as Cmax and the half-life;
+with few animals at each time, its intervals should be read as too narrow.
 
 # Arithmetic or geometric mean profiles
 
@@ -676,6 +753,16 @@ confidence intervals to sparse sampling.  Pharmaceutical Research.
 Nedelman JR, Jia X.  An extension of Satterthwaite's approximation applied to
 pharmacokinetics.  Journal of Biopharmaceutical Statistics.
 1998;8(2):317-328.  doi:10.1080/10543409808835241
+
+Shen M, Machado SG.  Bioequivalence evaluation of sparse sampling
+pharmacokinetics data using bootstrap resampling method.  Journal of
+Biopharmaceutical Statistics.  2017;27(2):257-264.
+doi:10.1080/10543406.2016.1265543
+
+Takemoto S, Yamaoka K, Nishikawa M, Takakura Y.  Histogram analysis of
+pharmacokinetic parameters by bootstrap resampling from one-point sampling data
+in animal experiments.  Drug Metabolism and Pharmacokinetics.
+2006;21(6):458-464.  doi:10.2133/dmpk.21.458
 
 Yuan J.  Estimation of variance for AUC in animal studies.  Journal of
 Pharmaceutical Sciences.  1993;82(7):761-763.  doi:10.1002/jps.2600820718
