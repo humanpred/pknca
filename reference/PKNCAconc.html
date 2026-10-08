@@ -187,8 +187,10 @@ arguments.</p></dd>
 half-life method (<code>hl_method = "tobit"</code>).  Either the name of a column in
 <code>data</code> giving the per-observation LLOQ or a numeric scalar applied to all
 observations.  When provided, it is passed through to
-<code><a href="pk.calc.half.life.html">pk.calc.half.life()</a></code>.  See the "Half-Life Calculation with Tobit
-Regression" vignette for more details.</p></dd>
+<code><a href="pk.calc.half.life.html">pk.calc.half.life()</a></code>.  With sparse PK, the half-life is calculated from
+the mean profile, and the LLOQ of each time is the median of the LLOQs of
+its samples (missing LLOQs are ignored).  See the "Half-Life Calculation with Tobit Regression"
+vignette for more details.</p></dd>
 
 
 <dt id="arg-sparse">sparse<a class="anchor" aria-label="anchor" href="#arg-sparse"></a></dt>

@@ -129,8 +129,10 @@ PKNCAconc(
   in `data` giving the per-observation LLOQ or a numeric scalar applied
   to all observations. When provided, it is passed through to
   [`pk.calc.half.life()`](https://humanpred.github.io/pknca/reference/pk.calc.half.life.md).
-  See the "Half-Life Calculation with Tobit Regression" vignette for
-  more details.
+  With sparse PK, the half-life is calculated from the mean profile, and
+  the LLOQ of each time is the median of the LLOQs of its samples
+  (missing LLOQs are ignored). See the "Half-Life Calculation with Tobit
+  Regression" vignette for more details.
 
 - sparse:
 
