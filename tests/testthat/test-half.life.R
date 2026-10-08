@@ -1627,3 +1627,50 @@ test_that("pk.nca() uses max.hl.points and min.hl.start.time from the options (#
     c(lambda.z.time.first = 5, lambda.z.n.points = 6)
   )
 })
+
+test_that("the Tobit half-life works for sparse data with the LLOQ of the mean profile", {
+  # Time 0 is measured (zero) rather than imputed:  an imputed row does not yet
+  # carry the LLOQ
+  times <- c(0, 0.5, 1, 2, 4, 8, 12, 24)
+  d_sparse <- data.frame(time = rep(times, each = 3))
+  # Noise that differs between times, so the fit has a residual error
+  d_sparse$conc <-
+    ifelse(d_sparse$time == 0, 0, 10*exp(-0.2*d_sparse$time)*exp(sin(seq_len(nrow(d_sparse)))/4))
+  d_sparse$subject <- seq_len(nrow(d_sparse))
+  d_sparse$lloq <- 0.3
+  # All of the 24-hour samples are BLQ
+  d_sparse$conc[d_sparse$conc < d_sparse$lloq] <- 0
+  d_intervals <- data.frame(start = 0, end = Inf, half.life = TRUE)
+  res <-
+    as.data.frame(suppressMessages(pk.nca(PKNCAdata(
+      PKNCAconc(d_sparse, conc ~ time | subject, sparse = TRUE, lloq = "lloq"),
+      intervals = d_intervals,
+      options = list(hl_method = "tobit")
+    ))))
+  # The same as the Tobit fit to the mean profile, where the 24-hour mean is
+  # zero (censored at the LLOQ)
+  means <- tapply(d_sparse$conc, d_sparse$time, mean)
+  means[["24"]] <- 0
+  expected <- pk.calc.half.life(conc = unname(means), time = times, lloq = 0.3, hl_method = "tobit")
+  expect_equal(res$PPORRES[res$PPTESTCD == "half.life"], expected$half.life)
+  expect_false(is.na(expected$half.life))
+  # Without an LLOQ, the Tobit half-life still needs one, including when the
+  # LLOQ column has only missing values
+  expect_error(
+    suppressMessages(pk.nca(PKNCAdata(
+      PKNCAconc(d_sparse, conc ~ time | subject, sparse = TRUE),
+      intervals = d_intervals,
+      options = list(hl_method = "tobit")
+    ))),
+    regexp = "lloq must be provided"
+  )
+  d_sparse$lloq <- NA_real_
+  expect_error(
+    suppressMessages(pk.nca(PKNCAdata(
+      PKNCAconc(d_sparse, conc ~ time | subject, sparse = TRUE, lloq = "lloq"),
+      intervals = d_intervals,
+      options = list(hl_method = "tobit")
+    ))),
+    regexp = "lloq must be provided"
+  )
+})

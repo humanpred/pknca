@@ -103,8 +103,10 @@ arguments.}
 half-life method (\code{hl_method = "tobit"}).  Either the name of a column in
 \code{data} giving the per-observation LLOQ or a numeric scalar applied to all
 observations.  When provided, it is passed through to
-\code{\link[=pk.calc.half.life]{pk.calc.half.life()}}.  See the "Half-Life Calculation with Tobit
-Regression" vignette for more details.}
+\code{\link[=pk.calc.half.life]{pk.calc.half.life()}}.  With sparse PK, the half-life is calculated from
+the mean profile, and the LLOQ of each time is the median of the LLOQs of
+its samples (missing LLOQs are ignored).  See the "Half-Life Calculation with Tobit Regression"
+vignette for more details.}
 
 \item{sparse}{Are the concentration-time data sparse PK (commonly used in
 small nonclinical species or with terminal or difficult sampling) or dense
