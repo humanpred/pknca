@@ -15,6 +15,7 @@ library(PKNCA)
 simulation <- readRDS("v24-sparse-auc-to-infinity-simulation.rds")
 mean_type <- readRDS("v24-sparse-auc-to-infinity-mean-type.rds")
 bootstrap <- readRDS("v24-sparse-auc-to-infinity-bootstrap.rds")
+bootstrap_n <- readRDS("v24-sparse-auc-to-infinity-bootstrap-n.rds")
 # The rows of a simulation summary that match every given column value
 sim_rows <- function(summary, filters) {
   keep <- rep(TRUE, nrow(summary))
@@ -33,6 +34,12 @@ se_range <- function(column, ..., digits = 0) {
 boot_range <- function(column, ..., digits = 0) {
   v <- sim_rows(bootstrap$summary, list(...))[[column]]
   paste(format(round(range(v), digits), nsmall = digits), collapse = " to ")
+}
+# One value of the profile over the number of animals per time
+profile_value <- function(column, n_per_time, blq, method, parameter, digits = 1) {
+  v <- sim_rows(bootstrap_n$summary, list(n_per_time = n_per_time, blq = blq, method = method, parameter = parameter))[[column]]
+  stopifnot(length(v) == 1)
+  format(round(v, digits), nsmall = digits)
 }
 # The same for the arithmetic and geometric mean profile study
 mt_range <- function(column, ..., digits = 0) {
@@ -86,7 +93,15 @@ For sparse sampling, where each animal gives one or a few samples:
   `r boot_range("coverage_percentile", parameter = "auc")`% of the time.  Prefer
   the analytical standard errors for the AUCs, and use the bootstrap for
   parameters and comparisons that have none, such as Cmax and ratios between
-  groups.
+  groups.  With 20 or more animals per time, its standard error was accurate
+  and its intervals matched the delta method's.
+* **With many animals, the bias of the sparse estimate dominates.**  BLQ
+  samples and the extrapolation of the mean profile biased the AUC to infinity
+  low (by about
+  `r gsub("-", "", profile_value("median_bias", 100, "moderate", "yuan", "auc", digits = 0))`%
+  with BLQ samples here), whatever the number of animals, so with many animals
+  every confidence interval missed the truth more often than its nominal
+  level.
 * **Estimating $\lambda_z$ from the individual samples was evaluated and not
   adopted.**  A (mixed-effects) Tobit fit gave a steadier point estimate when
   $\lambda_z$ was uncertain, but its standard error, added to Yuan's, did not
@@ -451,6 +466,59 @@ show_bootstrap("auc")
 show_bootstrap("aumc")
 ```
 
+## Results:  the bootstrap with more animals at each time
+
+Published uses of the bootstrap had either a few animals per time (three mice in
+Takemoto et al. 2006, which compared only the means and standard deviations
+with Bailer's) or many (about 88 subjects per time and treatment in the
+bioequivalence study of Shen and Machado 2017).  To see how the number of
+animals per time changes the comparison, the two-compartment, oral,
+serial-sacrifice design with slow elimination was simulated with
+`r paste(bootstrap_n$n_per_time, collapse = ", ")` animals per time, without
+and with BLQ samples (`r format(bootstrap_n$n_replicates, big.mark = ",")` data
+sets each, `r bootstrap_n$n_boot` bootstrap replicates;
+`data-raw/sparse_bootstrap_n_profile.R`).  The data seeds do not depend on the
+number of animals, so 4 animals per time reproduces the data sets above.  The
+bias is that of the point estimate, which all of the methods share.
+
+```{r simulation-bootstrap-n, echo = FALSE}
+show_bootstrap_n <- function(parameter) {
+  b <- bootstrap_n$summary[bootstrap_n$summary$parameter == parameter, ]
+  keys <- unique(b[, c("blq", "n_per_time")])
+  keys <- keys[order(keys$blq != "none", keys$n_per_time), ]
+  out <- data.frame()
+  for (i in seq_len(nrow(keys))) {
+    current <- merge(b, keys[i, ])
+    value_of <- current[match(c("percentile", "boot_se", "yuan", "delta"), current$method), ]
+    out <-
+      rbind(
+        out,
+        data.frame(
+          BLQ = keys$blq[i],
+          `Animals per time` = keys$n_per_time[i],
+          `Coverage percentile` = round(value_of$coverage[1], 1),
+          `Coverage boot. SE` = round(value_of$coverage[2], 1),
+          `Coverage Yuan` = round(value_of$coverage[3], 1),
+          `Coverage delta` = round(value_of$coverage[4], 1),
+          `CI width percentile` = round(value_of$median_ci_width[1]),
+          `CI width delta` = round(value_of$median_ci_width[4]),
+          `Bias (%)` = round(value_of$median_bias[1], 1),
+          check.names = FALSE
+        )
+      )
+  }
+  knitr::kable(out, row.names = FALSE)
+}
+```
+
+```{r simulation-bootstrap-n-auc, echo = FALSE}
+show_bootstrap_n("auc")
+```
+
+```{r simulation-bootstrap-n-aumc, echo = FALSE}
+show_bootstrap_n("aumc")
+```
+
 ## Results:  accuracy of the point estimates
 
 The point estimate with $\lambda_z$ from the log means ("mean", shared by Yuan
@@ -537,10 +605,39 @@ estimate is narrow as well.  For the AUMC to infinity, the bootstrap covered
 `r boot_range("coverage_percentile", parameter = "aumc", digits = 1)`%:  better
 than Yuan's method when elimination was slow, and as good as or better than
 the delta method only with slow elimination and BLQ samples, where the
-first-order delta method is weakest.  The bootstrap's advantage is that it applies to every
-parameter and to ratios between groups (Shen and Machado 2017), including
-parameters with no analytical standard error, such as Cmax and the half-life;
-with few animals at each time, its intervals should be read as too narrow.
+first-order delta method is weakest.  The bootstrap's advantage is that it
+applies to every parameter and to ratios between groups (Shen and Machado
+2017), including parameters with no analytical standard error, such as Cmax and
+the half-life; with few animals at each time, its intervals should be read as
+too narrow.
+
+**More animals at each time.**  The bootstrap improved with more animals, as
+its $(n - 1)/n$ shortfall shrank.  Without BLQ samples, its percentile interval
+for the AUC to infinity covered
+`r profile_value("coverage", 4, "none", "percentile", "auc")`% with 4 animals
+per time and `r profile_value("coverage", 20, "none", "percentile", "auc")`%
+with 20, when the delta method covered
+`r profile_value("coverage", 20, "none", "delta", "auc")`%; with BLQ samples, it
+matched or passed the delta method from 6 animals per time.  Its standard
+error was then as accurate as the delta method's.  But with many animals,
+every interval under-covered:  with 100 animals per time, the percentile
+interval covered
+`r profile_value("coverage", 100, "none", "percentile", "auc")`% without and
+`r profile_value("coverage", 100, "moderate", "percentile", "auc")`% with BLQ
+samples (the delta method,
+`r profile_value("coverage", 100, "none", "delta", "auc")`% and
+`r profile_value("coverage", 100, "moderate", "delta", "auc")`%).  The cause is
+the estimate, not its standard error:  the sparse AUC to infinity was biased by
+`r profile_value("median_bias", 100, "none", "yuan", "auc")`% without and
+`r profile_value("median_bias", 100, "moderate", "yuan", "auc")`% with BLQ
+samples, whatever the number of animals, from the BLQ samples counted as zero
+in the late means and the extrapolation of a mean of animals with different
+elimination rates.  More animals make every interval narrower around the same
+biased estimate, so no choice of interval corrects it.  The AUMC to infinity,
+biased by
+`r profile_value("median_bias", 100, "none", "yuan", "aumc")`% and
+`r profile_value("median_bias", 100, "moderate", "yuan", "aumc")`%, showed the
+same pattern sooner.
 
 # Arithmetic or geometric mean profiles
 
