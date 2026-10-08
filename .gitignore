@@ -35,3 +35,4 @@ data-raw/sparse_aucinf_simulation_replicates.rds
 data-raw/sparse_mean_type_simulation_replicates.rds
 data-raw/sparse_bootstrap_simulation_replicates.rds
 data-raw/sparse_bootstrap_n_profile_replicates.rds
+data-raw/sparse_tobit_simulation_replicates.rds
