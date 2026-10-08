@@ -58,8 +58,10 @@
 #'   half-life method (`hl_method = "tobit"`).  Either the name of a column in
 #'   `data` giving the per-observation LLOQ or a numeric scalar applied to all
 #'   observations.  When provided, it is passed through to
-#'   [pk.calc.half.life()].  See the "Half-Life Calculation with Tobit
-#'   Regression" vignette for more details.
+#'   [pk.calc.half.life()].  With sparse PK, the half-life is calculated from
+#'   the mean profile, and the LLOQ of each time is the median of the LLOQs of
+#'   its samples.  See the "Half-Life Calculation with Tobit Regression"
+#'   vignette for more details.
 #' @param sparse Are the concentration-time data sparse PK (commonly used in
 #'   small nonclinical species or with terminal or difficult sampling) or dense
 #'   PK (commonly used in clinical studies or larger nonclinical species)?
