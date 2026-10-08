@@ -13,9 +13,11 @@ for AUCall, and
 [`pk.calc.aucinf.obs_sparse()`](https://humanpred.github.io/pknca/reference/pk.calc.aucinf.obs_sparse.md)).
 \\C_0\\ is a function of the means, so its uncertainty is added to the
 standard error with the delta method. With the linear trapezoidal rule,
-the AUMC from time 0 to the first sample does not depend on \\C_0\\.
-When a concentration is measured (or imputed) at time 0, it is used as
-it is.
+the AUMC from time 0 to the first sample does not depend on \\C_0\\. A
+nonzero concentration measured at time 0 is used as \\C_0\\; a zero
+there, measured or imputed (as by the `start_conc0` imputation), is not,
+as for
+[`pk.calc.c0()`](https://humanpred.github.io/pknca/reference/pk.calc.c0.md).
 
 ## Usage
 

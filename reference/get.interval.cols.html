@@ -33,7 +33,7 @@
     <li><a class="dropdown-item" href="../articles/v21-methods-for-dose-aware-interpolation-and-extrapolation.html">Methods Used for Dose-Aware Concentration Interpolation/Extrapolation</a></li>
     <li><a class="dropdown-item" href="../articles/v22-time-to-steady-state.html">Noncompartmental evaluation of time to steady-state</a></li>
     <li><a class="dropdown-item" href="../articles/v23-auc-integration-methods.html">AUC integration methods</a></li>
-    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of Lambda z</a></li>
+    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of lambda.z</a></li>
     <li><a class="dropdown-item" href="../articles/v30-training-session.html">PKNCA Training Sessions</a></li>
     <li><a class="dropdown-item" href="../articles/v31-FDA-introduction.html">PKNCA – an R package for noncompartmental analysis of pharmacokinetic data</a></li>
     <li><a class="dropdown-item" href="../articles/v40-options-for-controlling-PKNCA.html">Options for Controlling PKNCA</a></li>
@@ -112,7 +112,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $start$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Interval Start"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Interval start"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $start$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Starting time of the interval"</span>
@@ -162,10 +162,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $end$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Interval End"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Interval end"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $end$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "End time of interval (may be Inf)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "End time of the interval (may be Inf)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $end$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
@@ -183,7 +183,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "end"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $end$pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "End time of interval (may be Inf)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "End time of the interval (may be Inf)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $end$formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -414,7 +414,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.auc.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucall$FUN_sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aucall_sparse"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucall$values</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
@@ -474,6 +474,136 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auc"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCall standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of AUCall (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCALLSE"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUCall standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001), with the trapezoidal weights to the time after tlast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_se$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCall degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DF for AUCall (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aucall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCALLDF"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUCall degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aucall_df$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast$FUN</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumc.last"</span>
@@ -488,7 +618,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC,last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC start to last conc above LOQ"</span>
@@ -558,7 +688,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast_se$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC,last standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMClast standard error"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast_se$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of AUMClast (sparse PK only)"</span>
@@ -623,7 +753,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast_df$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC,last degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMClast degrees of freedom"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast_df$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DF for AUMClast (sparse PK only)"</span>
@@ -679,7 +809,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumc.all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall$FUN_sparse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pk.calc.aumcall_sparse"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall$values</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
@@ -688,7 +818,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC,all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMClast plus triangle moment, 0 at BLQ"</span>
@@ -736,6 +866,136 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCall standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of AUMCall (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCALSE"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMCall standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001), with the trapezoidal weights to the time after tlast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_se$requires_conc_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$FUN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$FUN_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$unit_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$pretty_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCall degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$desc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DF for AUMCall (sparse PK only)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$formalsmap</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$formalsmap_sparse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$depends</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumcall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interval"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$pptestcd_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCALDF"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMCall degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$formula</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "$df = \\frac{\\left(tr(M\\Omega)\\right)^2}{tr\\left(\\left(M\\Omega\\right)^2\\right)}$"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$formula_note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Satterthwaite approximation for any sampling design (Nedelman and Jia 1998, eq. 6)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$tier</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "uncommon"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$requires_dose_amt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$requires_dose_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$requires_dose_dur</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$requires_volume</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall_df$requires_conc_dur</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -1818,10 +2078,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "clearance"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint,all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.all$formalsmap$auc</span>
@@ -1885,10 +2145,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "clearance"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint,last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.last$formalsmap$auc</span>
@@ -2106,7 +2366,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.all$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUCall/AUMCall"</span>
@@ -2176,7 +2436,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.last$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUClast/AUMClast"</span>
@@ -2319,7 +2579,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc'd through Tlast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from AUClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.last$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.last$formalsmap$cl</span>
@@ -2540,10 +2800,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint,all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.all$formalsmap$cl</span>
@@ -2610,10 +2870,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint,last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.last$formalsmap$cl</span>
@@ -2747,10 +3007,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "conc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cav"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cav (based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Avg conc in interval (AUCint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Avg conc in interval (AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.last$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.last$formalsmap$auc</span>
@@ -2814,10 +3074,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "conc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cav"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cav (based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Avg conc in interval (AUCint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Avg conc in interval (AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.all$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.all$formalsmap$auc</span>
@@ -3359,7 +3619,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.predose.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC,above"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC above predose"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.predose.all$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC above predose, floor at 0"</span>
@@ -3426,7 +3686,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "auc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.trough.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC,above"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC above trough"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucabove.trough.all$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUC above trough, floor at 0"</span>
@@ -3701,7 +3961,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $volpk$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Total Urine Volume"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Total urine volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $volpk$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sum of urine volumes for interval"</span>
@@ -3831,7 +4091,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "renal_clearance"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (from AUClast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance, AUClast"</span>
@@ -3904,7 +4164,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "renal_clearance"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (from AUCinf,obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance, AUCinf,obs"</span>
@@ -3977,7 +4237,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "renal_clearance"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (from AUCinf,pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance, AUCinf,pred"</span>
@@ -5004,7 +5264,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_se$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMC standard error"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMClast standard error"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_se$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SE of sparse AUMC to last conc above LOQ"</span>
@@ -5069,10 +5329,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_df$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMC degrees of freedom"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Sparse AUMClast degrees of freedom"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_df$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "variance DF for sparse AUMC to Tlast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DF for sparse AUMClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sparse_aumc_df$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
@@ -5134,7 +5394,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $time_above$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time above Concentration"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time above concentration"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $time_above$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Time above a given concentration"</span>
@@ -5614,7 +5874,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint,last (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint.last, IV back-extrap C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint,last, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.last$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.last$formalsmap$auc</span>
@@ -5690,7 +5950,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint,all (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint.all, IV back-extrap C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCint,all, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.all$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivint.all$formalsmap$auc</span>
@@ -5906,7 +6166,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCbext (based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Back-extrap %, IV, AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Back-extrap %, IV, AUCint,last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.last$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.last$formalsmap$auc</span>
@@ -5976,7 +6236,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCbext (based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Back-extrap %, IV, AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Back-extrap %, IV, AUCint,all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.all$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextint.all$formalsmap$auc</span>
@@ -6458,7 +6718,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint,last (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint.last, IV back-extrap C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint,last, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.last$formalsmap$aumc</span>
@@ -6534,7 +6794,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint,all (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint.all, IV back-extrap C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCint,all, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.all$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivint.all$formalsmap$aumc</span>
@@ -7135,7 +7395,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of points used for lambda_z"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of points used for $\\lambda_z$"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of points used, lambda.z"</span>
@@ -7270,7 +7530,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Span ratio"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $span.ratio$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Lambda z time span to half-life ratio"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ratio of lambda.z time span to half-life"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $span.ratio$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
@@ -7462,7 +7722,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "count"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points_blq$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of BLQ points for lambda_z (Tobit)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of BLQ points for $\\lambda_z$ (Tobit)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $lambda.z.n.points_blq$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "BLQ points in Tobit lambda.z"</span>
@@ -7527,7 +7787,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life (based on MRT,last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life (based on MRTlast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $thalf.eff.last$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Effective half-life, MRTlast"</span>
@@ -7862,10 +8122,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "inverse_time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint,all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.all$formalsmap$mrt</span>
@@ -7929,10 +8189,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "inverse_time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint,last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.last$formalsmap$mrt</span>
@@ -7996,7 +8256,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "clearance"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing,  based on AUCall)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing, based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.all$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCall"</span>
@@ -8063,7 +8323,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "clearance"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing,  based on AUClast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing, based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.last$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUClast"</span>
@@ -8130,10 +8390,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "clearance"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (IV dose interval, based on AUCint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing, based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCint,all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.all$formalsmap$auc</span>
@@ -8197,10 +8457,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "clearance"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (IV dose interval, based on AUCint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing, based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCint,last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.ivint.last$formalsmap$auc</span>
@@ -8331,7 +8591,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (AUClast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f.last$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability from AUClast"</span>
@@ -8417,7 +8677,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (AUCint,last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.last$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability from AUCint,last"</span>
@@ -8503,7 +8763,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (AUCint,all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.all$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability from AUCint,all"</span>
@@ -8729,10 +8989,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (IV dose interval, based on AUCint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for IV dosing, based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, interval AUC/AUMCall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, interval AUCall/AUMCall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.all$formalsmap$auc</span>
@@ -8799,10 +9059,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (IV dose interval, based on AUCint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for IV dosing, based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, interval AUC/AUMClast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, interval AUClast/AUMClast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivint.last$formalsmap$auc</span>
@@ -8936,10 +9196,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint,all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.all$formalsmap$cl</span>
@@ -9003,10 +9263,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint,last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.last$formalsmap$cl</span>
@@ -9070,7 +9330,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing,  based on AUCall)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing, based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.all$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, AUCall"</span>
@@ -9137,7 +9397,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing,  based on AUClast)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing, based on AUClast)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.last$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, AUClast"</span>
@@ -9204,10 +9464,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (IV dose interval, based on AUCint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing, based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, interval AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, interval AUCint,all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.all$formalsmap$cl</span>
@@ -9271,10 +9531,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (IV dose interval, based on AUCint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing, based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, interval AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, interval AUCint,last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.ivint.last$formalsmap$cl</span>
@@ -9405,7 +9665,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for IV dosing,  based on AUCall)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for IV dosing, based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.iv.all$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from AUCall"</span>
@@ -9475,10 +9735,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (IV dose interval, based on AUCint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for IV dosing, based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from interval AUCint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from interval AUCint,all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.all$formalsmap$cl</span>
@@ -9545,10 +9805,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (IV dose interval, based on AUCint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for IV dosing, based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from interval AUCint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, calc from interval AUCint,last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivint.last$formalsmap$cl</span>
@@ -9967,7 +10227,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC,inf,obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC start to inf, obs Clast extrap"</span>
@@ -10162,7 +10422,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC,inf,pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC start to inf, pred Clast extrap"</span>
@@ -10546,7 +10806,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf,obs (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf.obs, IV back-extrap C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf,obs, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.obs$formalsmap$auc</span>
@@ -10749,7 +11009,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf,pred (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf.pred, IV back-extrap C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf,pred, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.pred$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivinf.pred$formalsmap$auc</span>
@@ -10822,7 +11082,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCbext (based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Back-extrap %, IV, AUCinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Back-extrap %, IV, AUCinf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.obs$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.obs$formalsmap$auc</span>
@@ -10892,7 +11152,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCbext (based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Back-extrap %, IV, AUCinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Back-extrap %, IV, AUCinf,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.pred$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucivpbextinf.pred$formalsmap$auc</span>
@@ -10962,7 +11222,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,obs (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf.obs, IV back-extrap C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,obs, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.obs$formalsmap$aumc</span>
@@ -11165,7 +11425,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,pred (IV dosing)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf.pred, IV back-extrap C0"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,pred, IV back-extrap C0"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.pred$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcivinf.pred$formalsmap$aumc</span>
@@ -11382,7 +11642,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "inverse_time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (for IV dosing,  based on AUCall)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (for IV dosing, based on AUCall)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.iv.all$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTall"</span>
@@ -11449,10 +11709,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "inverse_time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (IV dose interval, based on AUCint.all)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (for IV dosing, based on AUCint,all)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTint.all"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTint,all"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.all$formalsmap$mrt</span>
@@ -11516,10 +11776,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "inverse_time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (IV dose interval, based on AUCint.last)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (for IV dosing, based on AUCint,last)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTint.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, IV MRTint,last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.ivint.last$formalsmap$mrt</span>
@@ -11825,10 +12085,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "clearance"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint.inf.obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint,inf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint,inf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.obs$formalsmap$auc</span>
@@ -11892,10 +12152,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "clearance"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint.inf.pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (based on AUCint,inf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clearance, AUCint,inf,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.int.inf.pred$formalsmap$auc</span>
@@ -11959,10 +12219,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "clearance"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing,  based on AUCinf,obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing, based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCinf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.obs$formalsmap$auc</span>
@@ -12026,10 +12286,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "clearance"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing,  based on AUCinf,pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "CL (for IV dosing, based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV clearance, AUCinf,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cl.iv.pred$formalsmap$auc</span>
@@ -12093,7 +12353,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (AUCinf,obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f.obs$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability from AUCinf,obs"</span>
@@ -12179,7 +12439,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (AUCinf,pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f.pred$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability from AUCinf,pred"</span>
@@ -12265,7 +12525,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (AUCint,inf,obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (based on AUCint,inf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.obs$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability from AUCint,inf,obs"</span>
@@ -12351,7 +12611,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fraction"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (AUCint,inf,pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability (based on AUCint,inf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $f.int.pred$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Bioavailability from AUCint,inf,pred"</span>
@@ -12605,10 +12865,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint.inf.obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint,inf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUC/AUMCinf obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUCinf,obs/AUMCinf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.obs$formalsmap$auc</span>
@@ -12675,10 +12935,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint.inf.pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (based on AUCint,inf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUC/AUMCinf pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, interval AUCinf,pred/AUMCinf,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.int.inf.pred$formalsmap$auc</span>
@@ -12748,7 +13008,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for IV dosing, based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, AUCinf.obs/AUMCinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, AUCinf,obs/AUMCinf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.obs$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.obs$formalsmap$auc</span>
@@ -12818,7 +13078,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for IV dosing, based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, AUCinf.pred/AUMCinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, AUCinf,pred/AUMCinf,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.pred$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.iv.pred$formalsmap$auc</span>
@@ -12888,7 +13148,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for multiple dosing, based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, multi-dose AUCinf.obs/AUMCinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, multi-dose AUCinf,obs/AUMCinf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.obs$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.obs$formalsmap$auctau</span>
@@ -12963,7 +13223,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for multiple dosing, based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, multi-dose AUCinf.pred/AUMCinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT, multi-dose AUCinf,pred/AUMCinf,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.pred$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.md.pred$formalsmap$auctau</span>
@@ -13038,7 +13298,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for multiple dosing of an IV infusion, based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivmd.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, multi-dose, AUCinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, multi-dose, AUCinf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivmd.obs$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivmd.obs$formalsmap$auctau</span>
@@ -13113,7 +13373,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "MRT (for multiple dosing of an IV infusion, based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivmd.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, multi-dose, AUCinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV MRT, multi-dose, AUCinf,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivmd.pred$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mrt.ivmd.pred$formalsmap$auctau</span>
@@ -13347,10 +13607,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint.inf.obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint,inf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint,inf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.obs$formalsmap$cl</span>
@@ -13414,10 +13674,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint.inf.pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (based on AUCint,inf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz, interval AUCint,inf,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.int.inf.pred$formalsmap$cl</span>
@@ -13481,7 +13741,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.obs$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing,  based on AUCinf,obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing, based on AUCinf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.obs$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, observed AUCinf"</span>
@@ -13548,7 +13808,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.pred$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing,  based on AUCinf,pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vz (for IV dosing, based on AUCinf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vz.iv.pred$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vz, predicted AUCinf"</span>
@@ -13993,7 +14253,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.obs$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for multiple-dose, based on Clast,obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for multiple dosing, based on Clast,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.obs$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, multi-dose, obs"</span>
@@ -14065,7 +14325,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.pred$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for multiple-dose, based on Clast,pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for multiple dosing, based on Clast,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.md.pred$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, multi-dose, pred"</span>
@@ -14137,7 +14397,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivmd.obs$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for multiple-dose IV infusion, based on Clast,obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for multiple dosing of an IV infusion, based on Clast,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivmd.obs$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, multi-dose, obs"</span>
@@ -14209,7 +14469,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivmd.pred$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for multiple-dose IV infusion, based on Clast,pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (for multiple dosing of an IV infusion, based on Clast,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.ivmd.pred$desc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "IV Vss, multi-dose, pred"</span>
@@ -14281,10 +14541,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint.inf.obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint,inf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint,inf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.obs$formalsmap$cl</span>
@@ -14351,10 +14611,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "volume"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint.inf.pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss (based on AUCint,inf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Vss, calc from interval AUCint,inf,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $vss.int.inf.pred$formalsmap$cl</span>
@@ -14421,10 +14681,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "conc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.obs$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cav"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cav (based on AUCint,inf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Avg conc in interval (AUCint.inf.obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Avg conc in interval (AUCint,inf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.obs$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.obs$formalsmap$auc</span>
@@ -14488,10 +14748,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "conc"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.pred$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cav"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cav (based on AUCint,inf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Avg conc in interval (AUCint.inf.pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Avg conc in interval (AUCint,inf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.pred$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.int.inf.pred$formalsmap$auc</span>
@@ -15243,10 +15503,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "inverse_time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint.inf.obs)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint,inf,obs)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.inf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint,inf,obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.obs$formalsmap$mrt</span>
@@ -15310,10 +15570,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "inverse_time"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint.inf.pred)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Kel (based on AUCint,inf,pred)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint.inf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Elim rate, MRTint,inf,pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $kel.int.inf.pred$formalsmap$mrt</span>
@@ -15380,7 +15640,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUClast (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized auclast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized auclast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $auclast.dn$formalsmap$parameter</span>
@@ -15447,7 +15707,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCall (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucall.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized aucall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized aucall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucall.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucall.dn$formalsmap$parameter</span>
@@ -15514,7 +15774,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf,obs (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized aucinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized aucinf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.obs.dn$formalsmap$parameter</span>
@@ -15581,7 +15841,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUCinf,pred (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.pred.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized aucinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized aucinf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.pred.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aucinf.pred.dn$formalsmap$parameter</span>
@@ -15645,10 +15905,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc_dosenorm"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast.dn$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC,last (dose-normalized)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMClast (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized aumclast"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized aumclast"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumclast.dn$formalsmap$parameter</span>
@@ -15717,10 +15977,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc_dosenorm"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall.dn$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC,all (dose-normalized)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCall (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized aumcall"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized aumcall"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcall.dn$formalsmap$parameter</span>
@@ -15784,10 +16044,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc_dosenorm"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs.dn$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC,inf,obs (dose-normalized)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,obs (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized aumcinf.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized aumcinf.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.obs.dn$formalsmap$parameter</span>
@@ -15851,10 +16111,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "aumc_dosenorm"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred.dn$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMC,inf,pred (dose-normalized)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AUMCinf,pred (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized aumcinf.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized aumcinf.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aumcinf.pred.dn$formalsmap$parameter</span>
@@ -15921,7 +16181,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cmax (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmax.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized cmax"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized cmax"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmax.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmax.dn$formalsmap$parameter</span>
@@ -15988,7 +16248,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cmin (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmin.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized cmin"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized cmin"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmin.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cmin.dn$formalsmap$parameter</span>
@@ -16055,7 +16315,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clast (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized clast.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized clast.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.obs.dn$formalsmap$parameter</span>
@@ -16122,7 +16382,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Clast,pred (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized clast.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized clast.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clast.pred.dn$formalsmap$parameter</span>
@@ -16189,7 +16449,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Cav (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized cav"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized cav"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cav.dn$formalsmap$parameter</span>
@@ -16256,7 +16516,7 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ctrough (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized ctrough"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized ctrough"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ctrough.dn$formalsmap$parameter</span>
@@ -16320,10 +16580,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "renal_clearance_dosenorm"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last.dn$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (from AUClast) (dose-normalized)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (based on AUClast) (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized clr.last"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized clr.last"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.last.dn$formalsmap$parameter</span>
@@ -16387,10 +16647,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "renal_clearance_dosenorm"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs.dn$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (from AUCinf,obs) (dose-normalized)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (based on AUCinf,obs) (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized clr.obs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized clr.obs"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.obs.dn$formalsmap$parameter</span>
@@ -16454,10 +16714,10 @@ Calculation Intervals"</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "renal_clearance_dosenorm"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred.dn$pretty_name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (from AUCinf,pred) (dose-normalized)"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Renal clearance (based on AUCinf,pred) (dose-normalized)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred.dn$desc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose normalized clr.pred"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Dose-normalized clr.pred"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred.dn$formalsmap</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $clr.pred.dn$formalsmap$parameter</span>

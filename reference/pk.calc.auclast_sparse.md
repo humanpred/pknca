@@ -1,14 +1,17 @@
 # Sparse estimators for the AUC and AUMC to the last measured concentration
 
-These are the `FUN_sparse` of `auclast` and `aumclast`: with sparse PK,
+These are the `FUN_sparse` of `auclast`, `aumclast`, `aucall`, and
+`aumcall`: with sparse PK,
 [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
 estimates those parameters from the pooled individual samples with the
 Bailer point estimate and the Nedelman-Jia/Holder standard error rather
 than integrating the arithmetic-mean profile. They wrap
-[`pk.calc.sparse_auclast()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md)
+[`pk.calc.sparse_auc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_auc.md)
 and
-[`pk.calc.sparse_aumclast()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.md),
-reporting the results under the unified parameter names.
+[`pk.calc.sparse_aumc()`](https://humanpred.github.io/pknca/reference/pk.calc.sparse_aumc.md)
+(with `auc.type = "AUClast"` or `"AUCall"`), reporting the results under
+the unified parameter names. AUCall adds the triangle from tlast to the
+next time, whose mean is zero.
 
 ## Usage
 
@@ -16,6 +19,10 @@ reporting the results under the unified parameter names.
 pk.calc.auclast_sparse(conc, time, subject, ..., options = list())
 
 pk.calc.aumclast_sparse(conc, time, subject, ..., options = list())
+
+pk.calc.aucall_sparse(conc, time, subject, ..., options = list())
+
+pk.calc.aumcall_sparse(conc, time, subject, ..., options = list())
 ```
 
 ## Arguments
@@ -49,8 +56,8 @@ pk.calc.aumclast_sparse(conc, time, subject, ..., options = list())
 ## Value
 
 A data.frame with the point estimate, its standard error, and the
-degrees of freedom, named for the parameter (`auclast`, `auclast_se`,
-and `auclast_df`, or the `aumclast` equivalents)
+degrees of freedom, named for the parameter (for example, `auclast`,
+`auclast_se`, and `auclast_df`)
 
 ## Details
 
@@ -62,6 +69,10 @@ so when the option is set to anything else.
 ## Functions
 
 - `pk.calc.aumclast_sparse()`: Sparse AUMClast
+
+- `pk.calc.aucall_sparse()`: Sparse AUCall
+
+- `pk.calc.aumcall_sparse()`: Sparse AUMCall
 
 ## See also
 

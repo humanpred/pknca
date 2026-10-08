@@ -40,7 +40,11 @@ choose.auc.intervals(
   single.dose.aucs = NULL,
   route = "extravascular",
   sparse = FALSE,
-  timeu = NULL
+  timeu = NULL,
+  time.conc.nominal = NULL,
+  time.dosing.nominal = NULL,
+  dense.samples = 3,
+  conc = NULL
 )
 ```
 
@@ -81,6 +85,28 @@ choose.auc.intervals(
   [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
   gives the time unit of its concentration data.
 
+- time.conc.nominal, time.dosing.nominal:
+
+  Nominal times of the samples and of the doses, on the same scale as
+  `time.conc` and `time.dosing` and the same length, or `NULL`. They are
+  used, and checked to be numeric, only to judge whether a dose is
+  sampled densely after a change of regimen.
+  [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md)
+  gives the `time.nominal` columns of
+  [`PKNCAconc()`](https://humanpred.github.io/pknca/reference/PKNCAconc.md)
+  and
+  [`PKNCAdose()`](https://humanpred.github.io/pknca/reference/PKNCAdose.md).
+
+- dense.samples:
+
+  The fewest samples within one dosing period after a dose that make it
+  sampled densely, which gives it an interval after a change of regimen
+
+- conc:
+
+  The concentrations at `time.conc`, or `NULL`. Used only to leave
+  samples without a concentration out of the dense-sampling count.
+
 ## Value
 
 A data frame with columns for `start`, `end`, and the parameters to
@@ -90,6 +116,43 @@ for column definitions. The data frame may have zero rows if no
 intervals could be found.
 
 ## Details
+
+When
+[`find.dose.regimen()`](https://humanpred.github.io/pknca/reference/find.dose.regimen.md)
+finds a change of regimen in the dose times (more than one segment) and
+the design is not sparse, the intervals follow the segments instead:
+
+- One steady-state interval for each segment, when a sample ends it. An
+  earlier segment's interval is its last complete cycle, from the
+  cycle's first dose to the recorded dose one period later (the dose
+  that starts the next segment, unless a dose was missed before it), so
+  it never contains a later dose. The last segment's interval is its
+  last cycle, one period at the segment's own period. Like the interval
+  after the last dose, a steady-state interval needs only a sample at
+  its end, so it may have as few as two samples.
+
+- The interval after the first dose, as above.
+
+- The interval after any other dose only when the dose is sampled
+  densely: at least `dense.samples` samples (3 by default) strictly
+  within one period of its segment after the dose. A sample counts by
+  its nominal time when it has one (`time.conc.nominal`), from the
+  dose's nominal time when that is given (`time.dosing.nominal`), so
+  that a sample drawn a little late counts where it was scheduled; a
+  sample without a nominal time counts by its actual time. Samples at
+  the same time count once, and samples without a concentration (`conc`
+  is `NA`) do not count; samples below the limit of quantification do.
+  Nominal times must share the actual times' origin (time since the
+  first dose, for example). When they restart instead, as times since
+  the latest dose do, the actual times are used with a
+  `"pknca_warning_intervals_nominal_restart"` warning.
+
+- The last dose gets the intervals above at the period of the last
+  segment, even when an earlier segment has more doses.
+
+A `"pknca_warning_intervals_by_segment"` warning names the segments and
+the intervals chosen. It is also a `"pknca_warning_tau_regimen_change"`
+warning, which it replaces.
 
 \\\tau\\ is matched to the nominal dosing intervals of
 [`find.dose.regimen()`](https://humanpred.github.io/pknca/reference/find.dose.regimen.md)

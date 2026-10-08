@@ -58,7 +58,7 @@ units.
 o_data <- PKNCAdata(o_conc, o_dose)
 o_nca <- pk.nca(o_data)
 summary(o_nca)
-#>  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)
+#>  Interval start Interval end  N AUClast (hr*mg/L) Cmax (mg/L)
 #>               0          Inf 12       98.7 [22.5] 8.65 [17.0]
 #>           Tmax (hr)            Tlag (hr) Concentration count (count)
 #>  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]
@@ -95,7 +95,7 @@ o_dose <- PKNCAdose(d_dose, Dose~Time|Subject, doseu = "mg/kg")
 o_data <- PKNCAdata(o_conc, o_dose)
 o_nca <- pk.nca(o_data)
 summary(o_nca)
-#>  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)
+#>  Interval start Interval end  N AUClast (hr*mg/L) Cmax (mg/L)
 #>               0          Inf 12       98.7 [22.5] 8.65 [17.0]
 #>           Tmax (hr)            Tlag (hr) Concentration count (count)
 #>  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]
@@ -121,7 +121,7 @@ o_dose <- PKNCAdose(d_dose, Dose~Time|Subject, doseu = "mg/kg")
 o_data <- PKNCAdata(o_conc, o_dose)
 o_nca <- pk.nca(o_data)
 summary(o_nca)
-#>  Interval Start Interval End  N AUClast (day*ug/L) Cmax (ug/L)
+#>  Interval start Interval end  N AUClast (day*ug/L) Cmax (ug/L)
 #>               0          Inf 12        4110 [22.5] 8650 [17.0]
 #>              Tmax (day)           Tlag (day) Concentration count (count)
 #>  0.0473 [0.0262, 0.148] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]
@@ -171,7 +171,7 @@ d_units <-
 o_data <- PKNCAdata(o_conc, o_dose, units=d_units)
 o_nca <- pk.nca(o_data)
 summary(o_nca)
-#>  Interval Start Interval End  N AUClast (hr*mmol/L) Cmax (mmol/L)
+#>  Interval start Interval end  N AUClast (hr*mmol/L) Cmax (mmol/L)
 #>               0          Inf 12        0.548 [22.5] 0.0480 [17.0]
 #>           Tmax (hr)            Tlag (hr) Concentration count (count)
 #>  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]
@@ -199,10 +199,10 @@ d_units_auto <- pknca_units_table(concu="ng/mL", doseu="mg", amountu="mg", timeu
 # Show a selection of the units generated
 d_units_auto[d_units_auto$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
 #>          PPORRESU PPTESTCD
-#> 49             hr     tmax
-#> 102         ng/mL     cmax
-#> 158      hr*ng/mL  auclast
-#> 222 mg/(hr*ng/mL)   cl.obs
+#> 51             hr     tmax
+#> 104         ng/mL     cmax
+#> 160      hr*ng/mL  auclast
+#> 226 mg/(hr*ng/mL)   cl.obs
 ```
 
 As you see above, the default units table has a column for the
@@ -233,11 +233,11 @@ d_units_clean <-
 # Show a selection of the units generated
 d_units_clean[d_units_clean$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs", "fe"), ]
 #>          PPORRESU PPTESTCD PPSTRESU conversion_factor
-#> 49             hr     tmax      day      4.166667e-02
-#> 102         ng/mL     cmax    ng/mL      1.000000e+00
-#> 115         ng/mg       fe fraction      1.000000e-06
-#> 158      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
-#> 222 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
+#> 51             hr     tmax      day      4.166667e-02
+#> 104         ng/mL     cmax    ng/mL      1.000000e+00
+#> 117         ng/mg       fe fraction      1.000000e-06
+#> 160      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
+#> 226 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
 ```
 
 Now, the units are much cleaner to look at.
@@ -266,10 +266,10 @@ d_units_clean_manual <-
 # Show a selection of the units generated
 d_units_clean_manual[d_units_clean_manual$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
 #>          PPORRESU PPTESTCD PPSTRESU conversion_factor
-#> 49             hr     tmax      day      4.166667e-02
-#> 102         ng/mL     cmax   nmol/L      8.130081e+00
-#> 158      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
-#> 222 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
+#> 51             hr     tmax      day      4.166667e-02
+#> 104         ng/mL     cmax   nmol/L      8.130081e+00
+#> 160      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
+#> 226 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
 ```
 
 ## What happens when units are missing for some parameters?
@@ -304,7 +304,7 @@ o_data_partial <-
 o_nca_partial <- pk.nca(o_data_partial)
 #> Warning: Units are provided for some but not all parameters; missing for: tmax
 summary(o_nca_partial)
-#>  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)
+#>  Interval start Interval end  N AUClast (hr*mg/L) Cmax (mg/L)
 #>               0          Inf 12       98.7 [22.5] 8.65 [17.0]
 #>                Tmax            Tlag (hr) Concentration count (count)
 #>  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]
@@ -386,7 +386,7 @@ o_dose <- PKNCAdose(d_dose, Dose~Time|Subject)
 o_data <- PKNCAdata(o_conc, o_dose, units=d_units)
 o_nca <- pk.nca(o_data)
 summary(o_nca)
-#>  Interval Start Interval End      Analyte  N AUClast (hr*mmol/L)  Cmax (mmol/L)
+#>  Interval start Interval end      Analyte  N AUClast (hr*mmol/L)  Cmax (mmol/L)
 #>               0          Inf Theophylline 12        0.548 [22.5]  0.0480 [17.0]
 #>               0          Inf     Caffeine 12       0.0305 [22.5] 0.00267 [17.0]
 #>           Tmax (hr)            Tlag (hr) Concentration count (count)

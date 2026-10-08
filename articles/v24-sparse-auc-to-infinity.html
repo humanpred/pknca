@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Sparse AUC to Infinity and the Uncertainty of Lambda z • PKNCA</title>
+<title>Sparse AUC to Infinity and the Uncertainty of lambda.z • PKNCA</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Sparse AUC to Infinity and the Uncertainty of Lambda z">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Sparse AUC to Infinity and the Uncertainty of lambda.z">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -48,7 +48,7 @@
     <li><a class="dropdown-item" href="../articles/v21-methods-for-dose-aware-interpolation-and-extrapolation.html">Methods Used for Dose-Aware Concentration Interpolation/Extrapolation</a></li>
     <li><a class="dropdown-item" href="../articles/v22-time-to-steady-state.html">Noncompartmental evaluation of time to steady-state</a></li>
     <li><a class="dropdown-item" href="../articles/v23-auc-integration-methods.html">AUC integration methods</a></li>
-    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of Lambda z</a></li>
+    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of lambda.z</a></li>
     <li><a class="dropdown-item" href="../articles/v30-training-session.html">PKNCA Training Sessions</a></li>
     <li><a class="dropdown-item" href="../articles/v31-FDA-introduction.html">PKNCA – an R package for noncompartmental analysis of pharmacokinetic data</a></li>
     <li><a class="dropdown-item" href="../articles/v40-options-for-controlling-PKNCA.html">Options for Controlling PKNCA</a></li>
@@ -78,11 +78,11 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Sparse AUC to Infinity and the Uncertainty of Lambda z</h1>
+      <h1>Sparse AUC to Infinity and the Uncertainty of lambda.z</h1>
                         <h4 data-toc-skip class="author">Bill
 Denney</h4>
             
-            <h4 data-toc-skip class="date">2026-10-07</h4>
+            <h4 data-toc-skip class="date">2026-10-08</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/humanpred/pknca/blob/main/vignettes/v24-sparse-auc-to-infinity.Rmd" class="external-link"><code>vignettes/v24-sparse-auc-to-infinity.Rmd</code></a></small>
       <div class="d-none name"><code>v24-sparse-auc-to-infinity.Rmd</code></div>
@@ -312,7 +312,7 @@ does not affect the AUMC. These are the sparse <code>aucivlast</code>,
 equivalents), each with its standard error and degrees of freedom.</p>
 </div>
 <div class="section level2">
-<h2 id="the-uncertainty-of-lambda-z-delta-method">The uncertainty of lambda z (delta method)<a class="anchor" aria-label="anchor" href="#the-uncertainty-of-lambda-z-delta-method"></a>
+<h2 id="the-uncertainty-of-lambda-z-delta-method">The uncertainty of lambda.z (delta method)<a class="anchor" aria-label="anchor" href="#the-uncertainty-of-lambda-z-delta-method"></a>
 </h2>
 <p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
 is estimated from the mean profile: PKNCA fits a line to the log mean
@@ -387,7 +387,7 @@ for the AUC and AUMC to infinity, with or without the delta-method
 terms.</p>
 </div>
 <div class="section level2">
-<h2 id="an-alternative-lambda-z-from-the-individual-samples">An alternative: lambda z from the individual samples<a class="anchor" aria-label="anchor" href="#an-alternative-lambda-z-from-the-individual-samples"></a>
+<h2 id="an-alternative-lambda-z-from-the-individual-samples">An alternative: lambda.z from the individual samples<a class="anchor" aria-label="anchor" href="#an-alternative-lambda-z-from-the-individual-samples"></a>
 </h2>
 <p>Instead of the log means,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>

@@ -9,8 +9,9 @@ pk.calc.auclast_sparse(), pk.calc.sparse_auc() for AUCall, and
 pk.calc.aucinf.obs_sparse()).  \(C_0\) is
 a function of the means, so its uncertainty is added to the standard error
 with the delta method.  With the linear trapezoidal rule, the AUMC from time
-0 to the first sample does not depend on \(C_0\).  When a concentration is
-measured (or imputed) at time 0, it is used as it is."><meta property="og:description" content="These are the FUN_sparse of aucivlast, aucivall, aucivinf.obs,
+0 to the first sample does not depend on \(C_0\).  A nonzero concentration
+measured at time 0 is used as \(C_0\); a zero there, measured or imputed
+(as by the start_conc0 imputation), is not, as for pk.calc.c0()."><meta property="og:description" content="These are the FUN_sparse of aucivlast, aucivall, aucivinf.obs,
 aumcivlast, aumcivall, and aumcivinf.obs:  with sparse PK and no
 concentration at time 0, \(C_0\) is
 back-extrapolated from the mean profile with the methods of pk.calc.c0()
@@ -20,8 +21,9 @@ pk.calc.auclast_sparse(), pk.calc.sparse_auc() for AUCall, and
 pk.calc.aucinf.obs_sparse()).  \(C_0\) is
 a function of the means, so its uncertainty is added to the standard error
 with the delta method.  With the linear trapezoidal rule, the AUMC from time
-0 to the first sample does not depend on \(C_0\).  When a concentration is
-measured (or imputed) at time 0, it is used as it is."></head><body>
+0 to the first sample does not depend on \(C_0\).  A nonzero concentration
+measured at time 0 is used as \(C_0\); a zero there, measured or imputed
+(as by the start_conc0 imputation), is not, as for pk.calc.c0()."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -55,7 +57,7 @@ measured (or imputed) at time 0, it is used as it is."></head><body>
     <li><a class="dropdown-item" href="../articles/v21-methods-for-dose-aware-interpolation-and-extrapolation.html">Methods Used for Dose-Aware Concentration Interpolation/Extrapolation</a></li>
     <li><a class="dropdown-item" href="../articles/v22-time-to-steady-state.html">Noncompartmental evaluation of time to steady-state</a></li>
     <li><a class="dropdown-item" href="../articles/v23-auc-integration-methods.html">AUC integration methods</a></li>
-    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of Lambda z</a></li>
+    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of lambda.z</a></li>
     <li><a class="dropdown-item" href="../articles/v30-training-session.html">PKNCA Training Sessions</a></li>
     <li><a class="dropdown-item" href="../articles/v31-FDA-introduction.html">PKNCA – an R package for noncompartmental analysis of pharmacokinetic data</a></li>
     <li><a class="dropdown-item" href="../articles/v40-options-for-controlling-PKNCA.html">Options for Controlling PKNCA</a></li>
@@ -92,8 +94,9 @@ area from time 0 to the first sample is added to the sparse AUC (see
 <code><a href="pk.calc.aucinf.obs_sparse.html">pk.calc.aucinf.obs_sparse()</a></code>).  \(C_0\) is
 a function of the means, so its uncertainty is added to the standard error
 with the delta method.  With the linear trapezoidal rule, the AUMC from time
-0 to the first sample does not depend on \(C_0\).  When a concentration is
-measured (or imputed) at time 0, it is used as it is.</p>
+0 to the first sample does not depend on \(C_0\).  A nonzero concentration
+measured at time 0 is used as \(C_0\); a zero there, measured or imputed
+(as by the <code>start_conc0</code> imputation), is not, as for <code><a href="pk.calc.c0.html">pk.calc.c0()</a></code>.</p>
     </div>
 
     <div class="section level2">

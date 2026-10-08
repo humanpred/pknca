@@ -79,7 +79,7 @@ calculated to infinity as a single dose.
     <li><a class="dropdown-item" href="../articles/v21-methods-for-dose-aware-interpolation-and-extrapolation.html">Methods Used for Dose-Aware Concentration Interpolation/Extrapolation</a></li>
     <li><a class="dropdown-item" href="../articles/v22-time-to-steady-state.html">Noncompartmental evaluation of time to steady-state</a></li>
     <li><a class="dropdown-item" href="../articles/v23-auc-integration-methods.html">AUC integration methods</a></li>
-    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of Lambda z</a></li>
+    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of lambda.z</a></li>
     <li><a class="dropdown-item" href="../articles/v30-training-session.html">PKNCA Training Sessions</a></li>
     <li><a class="dropdown-item" href="../articles/v31-FDA-introduction.html">PKNCA – an R package for noncompartmental analysis of pharmacokinetic data</a></li>
     <li><a class="dropdown-item" href="../articles/v40-options-for-controlling-PKNCA.html">Options for Controlling PKNCA</a></li>
@@ -138,7 +138,11 @@ calculated to infinity as a single dose.</p></li>
 <span>  single.dose.aucs <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  route <span class="op">=</span> <span class="st">"extravascular"</span>,</span>
 <span>  sparse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  timeu <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  timeu <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  time.conc.nominal <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  time.dosing.nominal <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dense.samples <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  conc <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -178,6 +182,26 @@ not known, which is taken to be hours; or <code>NA</code> when it cannot be used
 <code><a href="find.dose.regimen.html">find.dose.regimen()</a></code>).  <code><a href="PKNCAdata.html">PKNCAdata()</a></code> gives the time unit of its
 concentration data.</p></dd>
 
+
+<dt id="arg-time-conc-nominal-time-dosing-nominal">time.conc.nominal, time.dosing.nominal<a class="anchor" aria-label="anchor" href="#arg-time-conc-nominal-time-dosing-nominal"></a></dt>
+<dd><p>Nominal times of the samples
+and of the doses, on the same scale as <code>time.conc</code> and <code>time.dosing</code> and
+the same length, or <code>NULL</code>.  They are used, and checked to be numeric, only
+to judge whether a dose is sampled densely after a change of regimen.
+<code><a href="PKNCAdata.html">PKNCAdata()</a></code> gives the <code>time.nominal</code> columns of <code><a href="PKNCAconc.html">PKNCAconc()</a></code> and
+<code><a href="PKNCAdose.html">PKNCAdose()</a></code>.</p></dd>
+
+
+<dt id="arg-dense-samples">dense.samples<a class="anchor" aria-label="anchor" href="#arg-dense-samples"></a></dt>
+<dd><p>The fewest samples within one dosing period after a
+dose that make it sampled densely, which gives it an interval after a
+change of regimen</p></dd>
+
+
+<dt id="arg-conc">conc<a class="anchor" aria-label="anchor" href="#arg-conc"></a></dt>
+<dd><p>The concentrations at <code>time.conc</code>, or <code>NULL</code>.  Used only to leave
+samples without a concentration out of the dense-sampling count.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -187,7 +211,36 @@ The data frame may have zero rows if no intervals could be found.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>\(\tau\) is matched to the nominal dosing intervals of
+    <p>When <code><a href="find.dose.regimen.html">find.dose.regimen()</a></code> finds a change of regimen in the dose times (more
+than one segment) and the design is not sparse, the intervals follow the
+segments instead:</p><ul><li><p>One steady-state interval for each segment, when a sample ends it.
+An earlier segment's interval is its last complete cycle, from the
+cycle's first dose to the recorded dose one period later (the dose
+that starts the next segment, unless a dose was missed before it), so
+it never contains a later dose.  The last segment's interval is its
+last cycle, one period at the segment's own period.  Like the
+interval after the last dose, a steady-state interval needs only a
+sample at its end, so it may have as few as two samples.</p></li>
+<li><p>The interval after the first dose, as above.</p></li>
+<li><p>The interval after any other dose only when the dose is sampled
+densely:  at least <code>dense.samples</code> samples (3 by default) strictly
+within one period of its segment after the dose.  A sample counts by
+its nominal time when it has one (<code>time.conc.nominal</code>), from the
+dose's nominal time when that is given (<code>time.dosing.nominal</code>), so
+that a sample drawn a little late counts where it was scheduled; a
+sample without a nominal time counts by its actual time.  Samples at
+the same time count once, and samples without a concentration
+(<code>conc</code> is <code>NA</code>) do not count; samples below the limit of
+quantification do.  Nominal times must share the actual times'
+origin (time since the first dose, for example).  When they restart
+instead, as times since the latest dose do, the actual times are
+used with a <code>"pknca_warning_intervals_nominal_restart"</code> warning.</p></li>
+<li><p>The last dose gets the intervals above at the period of the last
+segment, even when an earlier segment has more doses.</p></li>
+</ul><p>A <code>"pknca_warning_intervals_by_segment"</code> warning names the segments and the
+intervals chosen.  It is also a <code>"pknca_warning_tau_regimen_change"</code> warning,
+which it replaces.</p>
+<p>\(\tau\) is matched to the nominal dosing intervals of
 <code><a href="find.dose.regimen.html">find.dose.regimen()</a></code> in the time unit <code>timeu</code>, taken to be hours when it is
 not given:  dose times recorded a little early or late give the nominal
 interval, and an interval that matches none of them, such as dosing every

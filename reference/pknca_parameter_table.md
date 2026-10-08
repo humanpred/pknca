@@ -54,13 +54,13 @@ Other Interval specifications:
 
 ``` r
 head(pknca_parameter_table())
-#>     parameter concept     tier sample_type sparse secondary dose_normalized
-#> 1     auclast     auc   common        spot  FALSE     FALSE           FALSE
-#> 2  auclast_se     auc uncommon        spot   TRUE     FALSE           FALSE
-#> 3  auclast_df     auc uncommon        spot   TRUE     FALSE           FALSE
-#> 4      aucall     auc uncommon        spot  FALSE     FALSE           FALSE
-#> 5    aumclast    aumc uncommon        spot  FALSE     FALSE           FALSE
-#> 6 aumclast_se    aumc uncommon        spot   TRUE     FALSE           FALSE
+#>    parameter concept     tier sample_type sparse secondary dose_normalized
+#> 1    auclast     auc   common        spot  FALSE     FALSE           FALSE
+#> 2 auclast_se     auc uncommon        spot   TRUE     FALSE           FALSE
+#> 3 auclast_df     auc uncommon        spot   TRUE     FALSE           FALSE
+#> 4     aucall     auc uncommon        spot  FALSE     FALSE           FALSE
+#> 5  aucall_se     auc uncommon        spot   TRUE     FALSE           FALSE
+#> 6  aucall_df     auc uncommon        spot   TRUE     FALSE           FALSE
 #>                                                       route
 #> 1 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion
 #> 2 extravascular,iv_bolus,iv_infusion,iv_continuous_infusion

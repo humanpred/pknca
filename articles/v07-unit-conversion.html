@@ -48,7 +48,7 @@
     <li><a class="dropdown-item" href="../articles/v21-methods-for-dose-aware-interpolation-and-extrapolation.html">Methods Used for Dose-Aware Concentration Interpolation/Extrapolation</a></li>
     <li><a class="dropdown-item" href="../articles/v22-time-to-steady-state.html">Noncompartmental evaluation of time to steady-state</a></li>
     <li><a class="dropdown-item" href="../articles/v23-auc-integration-methods.html">AUC integration methods</a></li>
-    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of Lambda z</a></li>
+    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of lambda.z</a></li>
     <li><a class="dropdown-item" href="../articles/v30-training-session.html">PKNCA Training Sessions</a></li>
     <li><a class="dropdown-item" href="../articles/v31-FDA-introduction.html">PKNCA – an R package for noncompartmental analysis of pharmacokinetic data</a></li>
     <li><a class="dropdown-item" href="../articles/v40-options-for-controlling-PKNCA.html">Options for Controlling PKNCA</a></li>
@@ -128,7 +128,7 @@ have units.</p>
 <code class="sourceCode R"><span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span><span class="op">)</span></span>
 <span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)</span></span>
+<span><span class="co">#&gt;  Interval start Interval end  N AUClast (hr*mg/L) Cmax (mg/L)</span></span>
 <span><span class="co">#&gt;               0          Inf 12       98.7 [22.5] 8.65 [17.0]</span></span>
 <span><span class="co">#&gt;           Tmax (hr)            Tlag (hr) Concentration count (count)</span></span>
 <span><span class="co">#&gt;  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]</span></span>
@@ -155,7 +155,7 @@ columns in the data.</p>
 <span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span><span class="op">)</span></span>
 <span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)</span></span>
+<span><span class="co">#&gt;  Interval start Interval end  N AUClast (hr*mg/L) Cmax (mg/L)</span></span>
 <span><span class="co">#&gt;               0          Inf 12       98.7 [22.5] 8.65 [17.0]</span></span>
 <span><span class="co">#&gt;           Tmax (hr)            Tlag (hr) Concentration count (count)</span></span>
 <span><span class="co">#&gt;  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]</span></span>
@@ -177,7 +177,7 @@ below.</p>
 <span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span><span class="op">)</span></span>
 <span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  Interval Start Interval End  N AUClast (day*ug/L) Cmax (ug/L)</span></span>
+<span><span class="co">#&gt;  Interval start Interval end  N AUClast (day*ug/L) Cmax (ug/L)</span></span>
 <span><span class="co">#&gt;               0          Inf 12        4110 [22.5] 8650 [17.0]</span></span>
 <span><span class="co">#&gt;              Tmax (day)           Tlag (day) Concentration count (count)</span></span>
 <span><span class="co">#&gt;  0.0473 [0.0262, 0.148] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]</span></span>
@@ -220,7 +220,7 @@ the <code>PKNCAdata</code> object. You will add the units with the
 <span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span>, units<span class="op">=</span><span class="va">d_units</span><span class="op">)</span></span>
 <span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  Interval Start Interval End  N AUClast (hr*mmol/L) Cmax (mmol/L)</span></span>
+<span><span class="co">#&gt;  Interval start Interval end  N AUClast (hr*mmol/L) Cmax (mmol/L)</span></span>
 <span><span class="co">#&gt;               0          Inf 12        0.548 [22.5] 0.0480 [17.0]</span></span>
 <span><span class="co">#&gt;           Tmax (hr)            Tlag (hr) Concentration count (count)</span></span>
 <span><span class="co">#&gt;  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]</span></span>
@@ -245,10 +245,10 @@ automatically generates the units for each NCA parameter.</p>
 <span><span class="co"># Show a selection of the units generated</span></span>
 <span><span class="va">d_units_auto</span><span class="op">[</span><span class="va">d_units_auto</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cmax"</span>, <span class="st">"tmax"</span>, <span class="st">"auclast"</span>, <span class="st">"cl.obs"</span>, <span class="st">"vd.obs"</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;          PPORRESU PPTESTCD</span></span>
-<span><span class="co">#&gt; 49             hr     tmax</span></span>
-<span><span class="co">#&gt; 102         ng/mL     cmax</span></span>
-<span><span class="co">#&gt; 158      hr*ng/mL  auclast</span></span>
-<span><span class="co">#&gt; 222 mg/(hr*ng/mL)   cl.obs</span></span></code></pre></div>
+<span><span class="co">#&gt; 51             hr     tmax</span></span>
+<span><span class="co">#&gt; 104         ng/mL     cmax</span></span>
+<span><span class="co">#&gt; 160      hr*ng/mL  auclast</span></span>
+<span><span class="co">#&gt; 226 mg/(hr*ng/mL)   cl.obs</span></span></code></pre></div>
 <p>As you see above, the default units table has a column for the
 <code>PPTESTCD</code> indicating the parameter. And, the column
 <code>PPORRESU</code> indicates what the default units are.</p>
@@ -274,11 +274,11 @@ that it is usable for fraction excreted (<code>fe</code>).</p>
 <span><span class="co"># Show a selection of the units generated</span></span>
 <span><span class="va">d_units_clean</span><span class="op">[</span><span class="va">d_units_clean</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cmax"</span>, <span class="st">"tmax"</span>, <span class="st">"auclast"</span>, <span class="st">"cl.obs"</span>, <span class="st">"vd.obs"</span>, <span class="st">"fe"</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;          PPORRESU PPTESTCD PPSTRESU conversion_factor</span></span>
-<span><span class="co">#&gt; 49             hr     tmax      day      4.166667e-02</span></span>
-<span><span class="co">#&gt; 102         ng/mL     cmax    ng/mL      1.000000e+00</span></span>
-<span><span class="co">#&gt; 115         ng/mg       fe fraction      1.000000e-06</span></span>
-<span><span class="co">#&gt; 158      hr*ng/mL  auclast hr*ng/mL      1.000000e+00</span></span>
-<span><span class="co">#&gt; 222 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03</span></span></code></pre></div>
+<span><span class="co">#&gt; 51             hr     tmax      day      4.166667e-02</span></span>
+<span><span class="co">#&gt; 104         ng/mL     cmax    ng/mL      1.000000e+00</span></span>
+<span><span class="co">#&gt; 117         ng/mg       fe fraction      1.000000e-06</span></span>
+<span><span class="co">#&gt; 160      hr*ng/mL  auclast hr*ng/mL      1.000000e+00</span></span>
+<span><span class="co">#&gt; 226 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03</span></span></code></pre></div>
 <p>Now, the units are much cleaner to look at.</p>
 <p>To do a conversion that is not possible directly with the
 <code>units</code> library, you can add the conversion factor manually
@@ -302,10 +302,10 @@ not specify that conversion; all conversions must be specified.</p>
 <span><span class="co"># Show a selection of the units generated</span></span>
 <span><span class="va">d_units_clean_manual</span><span class="op">[</span><span class="va">d_units_clean_manual</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cmax"</span>, <span class="st">"tmax"</span>, <span class="st">"auclast"</span>, <span class="st">"cl.obs"</span>, <span class="st">"vd.obs"</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;          PPORRESU PPTESTCD PPSTRESU conversion_factor</span></span>
-<span><span class="co">#&gt; 49             hr     tmax      day      4.166667e-02</span></span>
-<span><span class="co">#&gt; 102         ng/mL     cmax   nmol/L      8.130081e+00</span></span>
-<span><span class="co">#&gt; 158      hr*ng/mL  auclast hr*ng/mL      1.000000e+00</span></span>
-<span><span class="co">#&gt; 222 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03</span></span></code></pre></div>
+<span><span class="co">#&gt; 51             hr     tmax      day      4.166667e-02</span></span>
+<span><span class="co">#&gt; 104         ng/mL     cmax   nmol/L      8.130081e+00</span></span>
+<span><span class="co">#&gt; 160      hr*ng/mL  auclast hr*ng/mL      1.000000e+00</span></span>
+<span><span class="co">#&gt; 226 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="what-happens-when-units-are-missing-for-some-parameters">What happens when units are missing for some parameters?<a class="anchor" aria-label="anchor" href="#what-happens-when-units-are-missing-for-some-parameters"></a>
@@ -336,7 +336,7 @@ argument to <code><a href="../reference/PKNCAdata.html">PKNCAdata()</a></code> (
 <span><span class="va">o_nca_partial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_partial</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: Units are provided for some but not all parameters; missing for: tmax</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca_partial</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  Interval Start Interval End  N AUClast (hr*mg/L) Cmax (mg/L)</span></span>
+<span><span class="co">#&gt;  Interval start Interval end  N AUClast (hr*mg/L) Cmax (mg/L)</span></span>
 <span><span class="co">#&gt;               0          Inf 12       98.7 [22.5] 8.65 [17.0]</span></span>
 <span><span class="co">#&gt;                Tmax            Tlag (hr) Concentration count (count)</span></span>
 <span><span class="co">#&gt;  1.14 [0.630, 3.55] 0.000 [0.000, 0.000]           11.0 [11.0, 11.0]</span></span>
@@ -407,7 +407,7 @@ object.</p>
 <span><span class="va">o_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span><span class="va">o_conc</span>, <span class="va">o_dose</span>, units<span class="op">=</span><span class="va">d_units</span><span class="op">)</span></span>
 <span><span class="va">o_nca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  Interval Start Interval End      Analyte  N AUClast (hr*mmol/L)  Cmax (mmol/L)</span></span>
+<span><span class="co">#&gt;  Interval start Interval end      Analyte  N AUClast (hr*mmol/L)  Cmax (mmol/L)</span></span>
 <span><span class="co">#&gt;               0          Inf Theophylline 12        0.548 [22.5]  0.0480 [17.0]</span></span>
 <span><span class="co">#&gt;               0          Inf     Caffeine 12       0.0305 [22.5] 0.00267 [17.0]</span></span>
 <span><span class="co">#&gt;           Tmax (hr)            Tlag (hr) Concentration count (count)</span></span>

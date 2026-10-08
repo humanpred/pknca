@@ -48,7 +48,7 @@
     <li><a class="dropdown-item" href="../articles/v21-methods-for-dose-aware-interpolation-and-extrapolation.html">Methods Used for Dose-Aware Concentration Interpolation/Extrapolation</a></li>
     <li><a class="dropdown-item" href="../articles/v22-time-to-steady-state.html">Noncompartmental evaluation of time to steady-state</a></li>
     <li><a class="dropdown-item" href="../articles/v23-auc-integration-methods.html">AUC integration methods</a></li>
-    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of Lambda z</a></li>
+    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of lambda.z</a></li>
     <li><a class="dropdown-item" href="../articles/v30-training-session.html">PKNCA Training Sessions</a></li>
     <li><a class="dropdown-item" href="../articles/v31-FDA-introduction.html">PKNCA – an R package for noncompartmental analysis of pharmacokinetic data</a></li>
     <li><a class="dropdown-item" href="../articles/v40-options-for-controlling-PKNCA.html">Options for Controlling PKNCA</a></li>
@@ -277,6 +277,20 @@ cycle, which is the last dose itself unless the regimen gives more than
 one dose per <code>tau</code>, so the interval never contains a dose
 that was not recorded. When samples continue beyond it, the half-life is
 calculated from the last dose onward.</li>
+<li>When the dose times change regimen, such as from once to twice
+daily, the intervals follow the segments of the regimen that
+<code><a href="../reference/find.dose.regimen.html">find.dose.regimen()</a></code> reports instead: one steady-state
+interval for each segment at its own period, the interval after the
+first dose, and the interval after any other dose only when that dose is
+sampled densely (at least <code>dense.samples</code> samples within one
+period after it, judged by nominal time when the data carry it). The
+last dose uses the period of the last segment. An earlier segment’s
+steady-state interval runs to the dose that starts its next cycle and,
+like the interval after the last dose, needs only a sample at its end,
+so it may have as few as two samples. A
+<code>pknca_warning_intervals_by_segment</code> warning names the
+segments and the intervals. Sparse designs and a single regimen are
+unaffected.</li>
 </ul>
 <p>Sample and dose times are matched within a tolerance rather than
 exactly, so a trough drawn at 167.5 hours still ends an interval that
@@ -727,11 +741,30 @@ function.</p>
 <td align="left">pk.calc.auc.all</td>
 </tr>
 <tr class="odd">
+<td align="left">aucall_df</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mi>f</mi><mo>=</mo><mfrac><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mi>r</mi><mo stretchy="false" form="prefix">(</mo><mi>M</mi><mi mathvariant="normal">Ω</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mrow><mi>t</mi><mi>r</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>M</mi><mi mathvariant="normal">Ω</mi><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">df = \frac{\left(tr(M\Omega)\right)^2}{tr\left(\left(M\Omega\right)^2\right)}</annotation></semantics></math></td>
+<td align="left">Satterthwaite approximation for any sampling design
+(Nedelman and Jia 1998, eq. 6)</td>
+<td align="left">count</td>
+<td align="left">DF for AUCall (sparse PK only)</td>
+<td align="left">See the parameter name: aucall</td>
+</tr>
+<tr class="even">
+<td align="left">aucall_se</td>
+<td align="left"></td>
+<td align="left">Variance from weighted covariance across subjects
+(Nedelman and Jia 1998, Holder 2001), with the trapezoidal weights to
+the time after tlast</td>
+<td align="left">auc</td>
+<td align="left">SE of AUCall (sparse PK only)</td>
+<td align="left">See the parameter name: aucall</td>
+</tr>
+<tr class="odd">
 <td align="left">aucall.dn</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">all</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">all</mtext></msub></mrow><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">AUC_{\text{all},dn} = \frac{AUC_{\text{all}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">auc_dosenorm</td>
-<td align="left">Dose normalized aucall</td>
+<td align="left">Dose-normalized aucall</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="even">
@@ -766,7 +799,7 @@ gradient for lambda.z when the sparse_lambda_z_se option is “delta”</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">obs</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">obs</mtext></mrow></msub></mrow><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">AUC_{\infty,\text{obs},dn} = \frac{AUC_{\infty,\text{obs}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">auc_dosenorm</td>
-<td align="left">Dose normalized aucinf.obs</td>
+<td align="left">Dose-normalized aucinf.obs</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="even">
@@ -782,7 +815,7 @@ gradient for lambda.z when the sparse_lambda_z_se option is “delta”</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">pred</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">pred</mtext></mrow></msub></mrow><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">AUC_{\infty,\text{pred},dn} = \frac{AUC_{\infty,\text{pred}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">auc_dosenorm</td>
-<td align="left">Dose normalized aucinf.pred</td>
+<td align="left">Dose-normalized aucinf.pred</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="even">
@@ -852,7 +885,7 @@ delta-method gradient of the back-extrapolated C0</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">iv,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub><mo>=</mo><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">obs</mtext></mrow></msub><mo>+</mo><mi>A</mi><mi>U</mi><mi>C</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mn>0</mn></msub><mo>,</mo><msub><mi>t</mi><mn>1</mn></msub><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mi>A</mi><mi>U</mi><mi>C</mi><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo stretchy="false" form="postfix">)</mo><mo>,</mo><msub><mi>t</mi><mn>1</mn></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUC_{\text{iv,}\infty\text{,obs}} = AUC_{\infty,\text{obs}} + AUC(C_0, t_1) - AUC(C(0), t_1)</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">auc</td>
-<td align="left">AUCinf.obs, IV back-extrap C0</td>
+<td align="left">AUCinf,obs, IV back-extrap C0</td>
 <td align="left">pk.calc.auciv</td>
 </tr>
 <tr class="even">
@@ -880,7 +913,7 @@ sparse_lambda_z_se option is “delta”</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">iv,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub><mo>=</mo><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">pred</mtext></mrow></msub><mo>+</mo><mi>A</mi><mi>U</mi><mi>C</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mn>0</mn></msub><mo>,</mo><msub><mi>t</mi><mn>1</mn></msub><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mi>A</mi><mi>U</mi><mi>C</mi><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo stretchy="false" form="postfix">)</mo><mo>,</mo><msub><mi>t</mi><mn>1</mn></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUC_{\text{iv,}\infty\text{,pred}} = AUC_{\infty,\text{pred}} + AUC(C_0, t_1) - AUC(C(0), t_1)</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">auc</td>
-<td align="left">AUCinf.pred, IV back-extrap C0</td>
+<td align="left">AUCinf,pred, IV back-extrap C0</td>
 <td align="left">pk.calc.auciv</td>
 </tr>
 <tr class="odd">
@@ -888,7 +921,7 @@ sparse_lambda_z_se option is “delta”</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">iv,int,all</mtext></msub><mo>=</mo><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">int,all</mtext></msub><mo>+</mo><mi>A</mi><mi>U</mi><mi>C</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mn>0</mn></msub><mo>,</mo><msub><mi>t</mi><mn>1</mn></msub><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mi>A</mi><mi>U</mi><mi>C</mi><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo stretchy="false" form="postfix">)</mo><mo>,</mo><msub><mi>t</mi><mn>1</mn></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUC_{\text{iv,int,all}} = AUC_{\text{int,all}} + AUC(C_0, t_1) - AUC(C(0), t_1)</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">auc</td>
-<td align="left">AUCint.all, IV back-extrap C0</td>
+<td align="left">AUCint,all, IV back-extrap C0</td>
 <td align="left">pk.calc.auciv</td>
 </tr>
 <tr class="even">
@@ -896,7 +929,7 @@ sparse_lambda_z_se option is “delta”</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">iv,int,last</mtext></msub><mo>=</mo><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">int,last</mtext></msub><mo>+</mo><mi>A</mi><mi>U</mi><mi>C</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mn>0</mn></msub><mo>,</mo><msub><mi>t</mi><mn>1</mn></msub><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mi>A</mi><mi>U</mi><mi>C</mi><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo stretchy="false" form="postfix">)</mo><mo>,</mo><msub><mi>t</mi><mn>1</mn></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">AUC_{\text{iv,int,last}} = AUC_{\text{int,last}} + AUC(C_0, t_1) - AUC(C(0), t_1)</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">auc</td>
-<td align="left">AUCint.last, IV back-extrap C0</td>
+<td align="left">AUCint,last, IV back-extrap C0</td>
 <td align="left">pk.calc.auciv</td>
 </tr>
 <tr class="odd">
@@ -938,7 +971,7 @@ delta-method gradient of the back-extrapolated C0</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>%</mi><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">bext,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub><mo>=</mo><mn>100</mn><mo>⋅</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">obs</mtext></mrow></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">iv,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\%AUC_{\text{bext,}\infty\text{,obs}} = 100 \cdot \left(1 - \frac{AUC_{\infty,\text{obs}}}{AUC_{\text{iv,}\infty\text{,obs}}}\right)</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">%</td>
-<td align="left">Back-extrap %, IV, AUCinf.obs</td>
+<td align="left">Back-extrap %, IV, AUCinf,obs</td>
 <td align="left">pk.calc.auciv_pbext</td>
 </tr>
 <tr class="even">
@@ -946,7 +979,7 @@ delta-method gradient of the back-extrapolated C0</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>%</mi><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">bext,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub><mo>=</mo><mn>100</mn><mo>⋅</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">pred</mtext></mrow></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">iv,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\%AUC_{\text{bext,}\infty\text{,pred}} = 100 \cdot \left(1 - \frac{AUC_{\infty,\text{pred}}}{AUC_{\text{iv,}\infty\text{,pred}}}\right)</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">%</td>
-<td align="left">Back-extrap %, IV, AUCinf.pred</td>
+<td align="left">Back-extrap %, IV, AUCinf,pred</td>
 <td align="left">pk.calc.auciv_pbext</td>
 </tr>
 <tr class="odd">
@@ -954,7 +987,7 @@ delta-method gradient of the back-extrapolated C0</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>%</mi><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">bext,int,all</mtext></msub><mo>=</mo><mn>100</mn><mo>⋅</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">int,all</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">iv,int,all</mtext></msub></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\%AUC_{\text{bext,int,all}} = 100 \cdot \left(1 - \frac{AUC_{\text{int,all}}}{AUC_{\text{iv,int,all}}}\right)</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">%</td>
-<td align="left">Back-extrap %, IV, AUCint.all</td>
+<td align="left">Back-extrap %, IV, AUCint,all</td>
 <td align="left">pk.calc.auciv_pbext</td>
 </tr>
 <tr class="even">
@@ -962,7 +995,7 @@ delta-method gradient of the back-extrapolated C0</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>%</mi><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">bext,int,last</mtext></msub><mo>=</mo><mn>100</mn><mo>⋅</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">int,last</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">iv,int,last</mtext></msub></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\%AUC_{\text{bext,int,last}} = 100 \cdot \left(1 - \frac{AUC_{\text{int,last}}}{AUC_{\text{iv,int,last}}}\right)</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">%</td>
-<td align="left">Back-extrap %, IV, AUCint.last</td>
+<td align="left">Back-extrap %, IV, AUCint,last</td>
 <td align="left">pk.calc.auciv_pbext</td>
 </tr>
 <tr class="odd">
@@ -1004,7 +1037,7 @@ delta-method gradient of the back-extrapolated C0</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">last</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">AUC_{\text{last},dn} = \frac{AUC_{\text{last}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">auc_dosenorm</td>
-<td align="left">Dose normalized auclast</td>
+<td align="left">Dose-normalized auclast</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="even">
@@ -1032,11 +1065,30 @@ delta-method gradient of the back-extrapolated C0</td>
 <td align="left">pk.calc.aumc.all</td>
 </tr>
 <tr class="odd">
+<td align="left">aumcall_df</td>
+<td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mi>f</mi><mo>=</mo><mfrac><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mi>r</mi><mo stretchy="false" form="prefix">(</mo><mi>M</mi><mi mathvariant="normal">Ω</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mrow><mi>t</mi><mi>r</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>M</mi><mi mathvariant="normal">Ω</mi><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">df = \frac{\left(tr(M\Omega)\right)^2}{tr\left(\left(M\Omega\right)^2\right)}</annotation></semantics></math></td>
+<td align="left">Satterthwaite approximation for any sampling design
+(Nedelman and Jia 1998, eq. 6)</td>
+<td align="left">count</td>
+<td align="left">DF for AUMCall (sparse PK only)</td>
+<td align="left">See the parameter name: aumcall</td>
+</tr>
+<tr class="even">
+<td align="left">aumcall_se</td>
+<td align="left"></td>
+<td align="left">Variance from weighted covariance across subjects
+(Nedelman and Jia 1998, Holder 2001), with the trapezoidal weights to
+the time after tlast</td>
+<td align="left">aumc</td>
+<td align="left">SE of AUMCall (sparse PK only)</td>
+<td align="left">See the parameter name: aumcall</td>
+</tr>
+<tr class="odd">
 <td align="left">aumcall.dn</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">all</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mtext mathvariant="normal">all</mtext></msub></mrow><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">AUMC_{\text{all},dn} = \frac{AUMC_{\text{all}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">aumc_dosenorm</td>
-<td align="left">Dose normalized aumcall</td>
+<td align="left">Dose-normalized aumcall</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="even">
@@ -1071,7 +1123,7 @@ gradient for lambda.z when the sparse_lambda_z_se option is “delta”</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">obs</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">obs</mtext></mrow></msub></mrow><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">AUMC_{\infty,\text{obs},dn} = \frac{AUMC_{\infty,\text{obs}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">aumc_dosenorm</td>
-<td align="left">Dose normalized aumcinf.obs</td>
+<td align="left">Dose-normalized aumcinf.obs</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="even">
@@ -1087,7 +1139,7 @@ gradient for lambda.z when the sparse_lambda_z_se option is “delta”</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">pred</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">pred</mtext></mrow></msub></mrow><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">AUMC_{\infty,\text{pred},dn} = \frac{AUMC_{\infty,\text{pred}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">aumc_dosenorm</td>
-<td align="left">Dose normalized aumcinf.pred</td>
+<td align="left">Dose-normalized aumcinf.pred</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="even">
@@ -1158,7 +1210,7 @@ rule)</td>
 <td align="left"></td>
 <td align="left"></td>
 <td align="left">aumc</td>
-<td align="left">AUMCinf.obs, IV back-extrap C0</td>
+<td align="left">AUMCinf,obs, IV back-extrap C0</td>
 <td align="left">pk.calc.aumciv</td>
 </tr>
 <tr class="even">
@@ -1186,7 +1238,7 @@ lambda.z when the sparse_lambda_z_se option is “delta”</td>
 <td align="left"></td>
 <td align="left"></td>
 <td align="left">aumc</td>
-<td align="left">AUMCinf.pred, IV back-extrap C0</td>
+<td align="left">AUMCinf,pred, IV back-extrap C0</td>
 <td align="left">pk.calc.aumciv</td>
 </tr>
 <tr class="odd">
@@ -1194,7 +1246,7 @@ lambda.z when the sparse_lambda_z_se option is “delta”</td>
 <td align="left"></td>
 <td align="left"></td>
 <td align="left">aumc</td>
-<td align="left">AUMCint.all, IV back-extrap C0</td>
+<td align="left">AUMCint,all, IV back-extrap C0</td>
 <td align="left">pk.calc.aumciv</td>
 </tr>
 <tr class="even">
@@ -1202,7 +1254,7 @@ lambda.z when the sparse_lambda_z_se option is “delta”</td>
 <td align="left"></td>
 <td align="left"></td>
 <td align="left">aumc</td>
-<td align="left">AUMCint.last, IV back-extrap C0</td>
+<td align="left">AUMCint,last, IV back-extrap C0</td>
 <td align="left">pk.calc.aumciv</td>
 </tr>
 <tr class="odd">
@@ -1263,7 +1315,7 @@ curve across subjects</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">last</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">AUMC_{\text{last},dn} = \frac{AUMC_{\text{last}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">aumc_dosenorm</td>
-<td align="left">Dose normalized aumclast</td>
+<td align="left">Dose-normalized aumclast</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="even">
@@ -1288,7 +1340,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mrow><mi>a</mi><mi>v</mi><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><msub><mi>C</mi><mrow><mi>a</mi><mi>v</mi></mrow></msub><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">C_{av,dn} = \frac{C_{av}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">conc_dosenorm</td>
-<td align="left">Dose normalized cav</td>
+<td align="left">Dose-normalized cav</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="odd">
@@ -1296,7 +1348,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mrow><mi>a</mi><mi>v</mi><mo>,</mo><mtext mathvariant="normal">int,all</mtext></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">int,all</mtext></msub></mrow><mrow><msub><mi>t</mi><mrow><mi>e</mi><mi>n</mi><mi>d</mi></mrow></msub><mo>−</mo><msub><mi>t</mi><mrow><mi>s</mi><mi>t</mi><mi>a</mi><mi>r</mi><mi>t</mi></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">C_{av,\text{int,all}} = \frac{AUC_{\text{int,all}}}{t_{end} - t_{start}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">conc</td>
-<td align="left">Avg conc in interval (AUCint.all)</td>
+<td align="left">Avg conc in interval (AUCint,all)</td>
 <td align="left">pk.calc.cav</td>
 </tr>
 <tr class="even">
@@ -1304,7 +1356,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mrow><mi>a</mi><mi>v</mi><mo>,</mo><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub></mrow><mrow><msub><mi>t</mi><mrow><mi>e</mi><mi>n</mi><mi>d</mi></mrow></msub><mo>−</mo><msub><mi>t</mi><mrow><mi>s</mi><mi>t</mi><mi>a</mi><mi>r</mi><mi>t</mi></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">C_{av,\text{int,}\infty\text{,obs}} = \frac{AUC_{\text{int,}\infty\text{,obs}}}{t_{end} - t_{start}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">conc</td>
-<td align="left">Avg conc in interval (AUCint.inf.obs)</td>
+<td align="left">Avg conc in interval (AUCint,inf,obs)</td>
 <td align="left">pk.calc.cav</td>
 </tr>
 <tr class="odd">
@@ -1312,7 +1364,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mrow><mi>a</mi><mi>v</mi><mo>,</mo><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub></mrow><mrow><msub><mi>t</mi><mrow><mi>e</mi><mi>n</mi><mi>d</mi></mrow></msub><mo>−</mo><msub><mi>t</mi><mrow><mi>s</mi><mi>t</mi><mi>a</mi><mi>r</mi><mi>t</mi></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">C_{av,\text{int,}\infty\text{,pred}} = \frac{AUC_{\text{int,}\infty\text{,pred}}}{t_{end} - t_{start}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">conc</td>
-<td align="left">Avg conc in interval (AUCint.inf.pred)</td>
+<td align="left">Avg conc in interval (AUCint,inf,pred)</td>
 <td align="left">pk.calc.cav</td>
 </tr>
 <tr class="even">
@@ -1320,7 +1372,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mrow><mi>a</mi><mi>v</mi><mo>,</mo><mtext mathvariant="normal">int,last</mtext></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">int,last</mtext></msub></mrow><mrow><msub><mi>t</mi><mrow><mi>e</mi><mi>n</mi><mi>d</mi></mrow></msub><mo>−</mo><msub><mi>t</mi><mrow><mi>s</mi><mi>t</mi><mi>a</mi><mi>r</mi><mi>t</mi></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">C_{av,\text{int,last}} = \frac{AUC_{\text{int,last}}}{t_{end} - t_{start}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">conc</td>
-<td align="left">Avg conc in interval (AUCint.last)</td>
+<td align="left">Avg conc in interval (AUCint,last)</td>
 <td align="left">pk.calc.cav</td>
 </tr>
 <tr class="odd">
@@ -1344,7 +1396,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">int,all</mtext></msub><mo>=</mo><mfrac><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">int,all</mtext></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">CL_{\text{int,all}} = \frac{Dose}{AUC_{\text{int,all}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">clearance</td>
-<td align="left">Clearance, AUCint.all</td>
+<td align="left">Clearance, AUCint,all</td>
 <td align="left">pk.calc.cl</td>
 </tr>
 <tr class="even">
@@ -1352,7 +1404,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>L</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub><mo>=</mo><mfrac><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">CL_{\text{int,}\infty\text{,obs}} = \frac{Dose}{AUC_{\text{int,}\infty\text{,obs}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">clearance</td>
-<td align="left">Clearance, AUCint.inf.obs</td>
+<td align="left">Clearance, AUCint,inf,obs</td>
 <td align="left">pk.calc.cl</td>
 </tr>
 <tr class="odd">
@@ -1360,7 +1412,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>L</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub><mo>=</mo><mfrac><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">CL_{\text{int,}\infty\text{,pred}} = \frac{Dose}{AUC_{\text{int,}\infty\text{,pred}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">clearance</td>
-<td align="left">Clearance, AUCint.inf.pred</td>
+<td align="left">Clearance, AUCint,inf,pred</td>
 <td align="left">pk.calc.cl</td>
 </tr>
 <tr class="even">
@@ -1368,7 +1420,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">int,last</mtext></msub><mo>=</mo><mfrac><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">int,last</mtext></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">CL_{\text{int,last}} = \frac{Dose}{AUC_{\text{int,last}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">clearance</td>
-<td align="left">Clearance, AUCint.last</td>
+<td align="left">Clearance, AUCint,last</td>
 <td align="left">pk.calc.cl</td>
 </tr>
 <tr class="odd">
@@ -1392,7 +1444,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">iv,obs</mtext></msub><mo>=</mo><mfrac><mrow><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mtext mathvariant="normal">iv</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">iv,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">CL_{\text{iv,obs}} = \frac{Dose_{\text{iv}}}{AUC_{\text{iv,}\infty\text{,obs}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">clearance</td>
-<td align="left">IV clearance, AUCinf.obs</td>
+<td align="left">IV clearance, AUCinf,obs</td>
 <td align="left">pk.calc.cl</td>
 </tr>
 <tr class="even">
@@ -1400,7 +1452,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">iv,pred</mtext></msub><mo>=</mo><mfrac><mrow><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mtext mathvariant="normal">iv</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">iv,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">CL_{\text{iv,pred}} = \frac{Dose_{\text{iv}}}{AUC_{\text{iv,}\infty\text{,pred}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">clearance</td>
-<td align="left">IV clearance, AUCinf.pred</td>
+<td align="left">IV clearance, AUCinf,pred</td>
 <td align="left">pk.calc.cl</td>
 </tr>
 <tr class="odd">
@@ -1408,7 +1460,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">iv,int,all</mtext></msub><mo>=</mo><mfrac><mrow><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mtext mathvariant="normal">iv</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">iv,int,all</mtext></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">CL_{\text{iv,int,all}} = \frac{Dose_{\text{iv}}}{AUC_{\text{iv,int,all}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">clearance</td>
-<td align="left">IV clearance, AUCint.all</td>
+<td align="left">IV clearance, AUCint,all</td>
 <td align="left">pk.calc.cl</td>
 </tr>
 <tr class="even">
@@ -1416,7 +1468,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">iv,int,last</mtext></msub><mo>=</mo><mfrac><mrow><mi>D</mi><mi>o</mi><mi>s</mi><msub><mi>e</mi><mtext mathvariant="normal">iv</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">iv,int,last</mtext></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">CL_{\text{iv,int,last}} = \frac{Dose_{\text{iv}}}{AUC_{\text{iv,int,last}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">clearance</td>
-<td align="left">IV clearance, AUCint.last</td>
+<td align="left">IV clearance, AUCint,last</td>
 <td align="left">pk.calc.cl</td>
 </tr>
 <tr class="odd">
@@ -1464,7 +1516,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mrow><mtext mathvariant="normal">last,obs</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><msub><mi>C</mi><mtext mathvariant="normal">last,obs</mtext></msub><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">C_{\text{last,obs},dn} = \frac{C_{\text{last,obs}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">conc_dosenorm</td>
-<td align="left">Dose normalized clast.obs</td>
+<td align="left">Dose-normalized clast.obs</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="odd">
@@ -1480,7 +1532,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mrow><mtext mathvariant="normal">last,pred</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><msub><mi>C</mi><mtext mathvariant="normal">last,pred</mtext></msub><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">C_{\text{last,pred},dn} = \frac{C_{\text{last,pred}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">conc_dosenorm</td>
-<td align="left">Dose normalized clast.pred</td>
+<td align="left">Dose-normalized clast.pred</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="odd">
@@ -1496,7 +1548,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>L</mi><mrow><mi>R</mi><mo>,</mo><mtext mathvariant="normal">last</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mrow><mi>C</mi><msub><mi>L</mi><mrow><mi>R</mi><mo>,</mo><mtext mathvariant="normal">last</mtext></mrow></msub></mrow><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">CL_{R,\text{last},dn} = \frac{CL_{R,\text{last}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">renal_clearance_dosenorm</td>
-<td align="left">Dose normalized clr.last</td>
+<td align="left">Dose-normalized clr.last</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="odd">
@@ -1512,7 +1564,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>L</mi><mrow><mi>R</mi><mo>,</mo><mtext mathvariant="normal">obs</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mrow><mi>C</mi><msub><mi>L</mi><mrow><mi>R</mi><mo>,</mo><mtext mathvariant="normal">obs</mtext></mrow></msub></mrow><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">CL_{R,\text{obs},dn} = \frac{CL_{R,\text{obs}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">renal_clearance_dosenorm</td>
-<td align="left">Dose normalized clr.obs</td>
+<td align="left">Dose-normalized clr.obs</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="odd">
@@ -1528,7 +1580,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>L</mi><mrow><mi>R</mi><mo>,</mo><mtext mathvariant="normal">pred</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mrow><mi>C</mi><msub><mi>L</mi><mrow><mi>R</mi><mo>,</mo><mtext mathvariant="normal">pred</mtext></mrow></msub></mrow><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">CL_{R,\text{pred},dn} = \frac{CL_{R,\text{pred}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">renal_clearance_dosenorm</td>
-<td align="left">Dose normalized clr.pred</td>
+<td align="left">Dose-normalized clr.pred</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="odd">
@@ -1544,7 +1596,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mrow><mrow><mi mathvariant="normal">max</mi><mo>⁡</mo></mrow><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><msub><mi>C</mi><mi mathvariant="normal">max</mi></msub><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">C_{\max,dn} = \frac{C_{\max}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">conc_dosenorm</td>
-<td align="left">Dose normalized cmax</td>
+<td align="left">Dose-normalized cmax</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="odd">
@@ -1560,7 +1612,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mrow><mrow><mi mathvariant="normal">min</mi><mo>⁡</mo></mrow><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><msub><mi>C</mi><mi mathvariant="normal">min</mi></msub><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">C_{\min,dn} = \frac{C_{\min}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">conc_dosenorm</td>
-<td align="left">Dose normalized cmin</td>
+<td align="left">Dose-normalized cmin</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="odd">
@@ -1600,7 +1652,7 @@ set0; the formula shows c0 and logslope</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mrow><mtext mathvariant="normal">trough</mtext><mo>,</mo><mi>d</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><msub><mi>C</mi><mtext mathvariant="normal">trough</mtext></msub><mrow><mi>D</mi><mi>o</mi><mi>s</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">C_{\text{trough},dn} = \frac{C_{\text{trough}}}{Dose}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">conc_dosenorm</td>
-<td align="left">Dose normalized ctrough</td>
+<td align="left">Dose-normalized ctrough</td>
 <td align="left">pk.calc.dn</td>
 </tr>
 <tr class="even">
@@ -1738,7 +1790,7 @@ ordered by collection midpoint</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>k</mi><mrow><mi>e</mi><mi>l</mi><mo>,</mo><mtext mathvariant="normal">int,all</mtext></mrow></msub><mo>=</mo><mfrac><mn>1</mn><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">int,all</mtext></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">k_{el,\text{int,all}} = \frac{1}{MRT_{\text{int,all}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">inverse_time</td>
-<td align="left">Elim rate, MRTint.all</td>
+<td align="left">Elim rate, MRTint,all</td>
 <td align="left">pk.calc.kel</td>
 </tr>
 <tr class="odd">
@@ -1746,7 +1798,7 @@ ordered by collection midpoint</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>k</mi><mrow><mi>e</mi><mi>l</mi><mo>,</mo><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub><mo>=</mo><mfrac><mn>1</mn><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">k_{el,\text{int,}\infty\text{,obs}} = \frac{1}{MRT_{\text{int,}\infty\text{,obs}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">inverse_time</td>
-<td align="left">Elim rate, MRTint.inf.obs</td>
+<td align="left">Elim rate, MRTint,inf,obs</td>
 <td align="left">pk.calc.kel</td>
 </tr>
 <tr class="even">
@@ -1754,7 +1806,7 @@ ordered by collection midpoint</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>k</mi><mrow><mi>e</mi><mi>l</mi><mo>,</mo><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub><mo>=</mo><mfrac><mn>1</mn><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">k_{el,\text{int,}\infty\text{,pred}} = \frac{1}{MRT_{\text{int,}\infty\text{,pred}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">inverse_time</td>
-<td align="left">Elim rate, MRTint.inf.pred</td>
+<td align="left">Elim rate, MRTint,inf,pred</td>
 <td align="left">pk.calc.kel</td>
 </tr>
 <tr class="odd">
@@ -1762,7 +1814,7 @@ ordered by collection midpoint</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>k</mi><mrow><mi>e</mi><mi>l</mi><mo>,</mo><mtext mathvariant="normal">int,last</mtext></mrow></msub><mo>=</mo><mfrac><mn>1</mn><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">int,last</mtext></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">k_{el,\text{int,last}} = \frac{1}{MRT_{\text{int,last}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">inverse_time</td>
-<td align="left">Elim rate, MRTint.last</td>
+<td align="left">Elim rate, MRTint,last</td>
 <td align="left">pk.calc.kel</td>
 </tr>
 <tr class="even">
@@ -1802,7 +1854,7 @@ ordered by collection midpoint</td>
 <td align="left"></td>
 <td align="left"></td>
 <td align="left">inverse_time</td>
-<td align="left">Elim rate, IV MRTint.all</td>
+<td align="left">Elim rate, IV MRTint,all</td>
 <td align="left">pk.calc.kel</td>
 </tr>
 <tr class="odd">
@@ -1810,7 +1862,7 @@ ordered by collection midpoint</td>
 <td align="left"></td>
 <td align="left"></td>
 <td align="left">inverse_time</td>
-<td align="left">Elim rate, IV MRTint.last</td>
+<td align="left">Elim rate, IV MRTint,last</td>
 <td align="left">pk.calc.kel</td>
 </tr>
 <tr class="even">
@@ -1915,7 +1967,7 @@ ordered by collection midpoint</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">MRT_{\text{int,}\infty\text{,obs}} = \frac{AUMC_{\text{int,}\infty\text{,obs}}}{AUC_{\text{int,}\infty\text{,obs}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">time</td>
-<td align="left">MRT, interval AUC/AUMCinf obs</td>
+<td align="left">MRT, interval AUCinf,obs/AUMCinf,obs</td>
 <td align="left">pk.calc.mrt</td>
 </tr>
 <tr class="odd">
@@ -1923,7 +1975,7 @@ ordered by collection midpoint</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">MRT_{\text{int,}\infty\text{,pred}} = \frac{AUMC_{\text{int,}\infty\text{,pred}}}{AUC_{\text{int,}\infty\text{,pred}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">time</td>
-<td align="left">MRT, interval AUC/AUMCinf pred</td>
+<td align="left">MRT, interval AUCinf,pred/AUMCinf,pred</td>
 <td align="left">pk.calc.mrt</td>
 </tr>
 <tr class="even">
@@ -1955,7 +2007,7 @@ ordered by collection midpoint</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">iv,obs</mtext></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">obs</mtext></mrow></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">obs</mtext></mrow></msub></mrow></mfrac><mo>−</mo><mfrac><msub><mi>T</mi><mtext mathvariant="normal">inf</mtext></msub><mn>2</mn></mfrac></mrow><annotation encoding="application/x-tex">MRT_{\text{iv,obs}} = \frac{AUMC_{\infty,\text{obs}}}{AUC_{\infty,\text{obs}}} - \frac{T_{\text{inf}}}{2}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">time</td>
-<td align="left">IV MRT, AUCinf.obs/AUMCinf.obs</td>
+<td align="left">IV MRT, AUCinf,obs/AUMCinf,obs</td>
 <td align="left">pk.calc.mrt.iv</td>
 </tr>
 <tr class="even">
@@ -1963,7 +2015,7 @@ ordered by collection midpoint</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">iv,pred</mtext></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">pred</mtext></mrow></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">pred</mtext></mrow></msub></mrow></mfrac><mo>−</mo><mfrac><msub><mi>T</mi><mtext mathvariant="normal">inf</mtext></msub><mn>2</mn></mfrac></mrow><annotation encoding="application/x-tex">MRT_{\text{iv,pred}} = \frac{AUMC_{\infty,\text{pred}}}{AUC_{\infty,\text{pred}}} - \frac{T_{\text{inf}}}{2}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">time</td>
-<td align="left">IV MRT, AUCinf.pred/AUMCinf.pred</td>
+<td align="left">IV MRT, AUCinf,pred/AUMCinf,pred</td>
 <td align="left">pk.calc.mrt.iv</td>
 </tr>
 <tr class="odd">
@@ -1971,7 +2023,7 @@ ordered by collection midpoint</td>
 <td align="left"></td>
 <td align="left"></td>
 <td align="left">time</td>
-<td align="left">IV MRT, interval AUC/AUMCall</td>
+<td align="left">IV MRT, interval AUCall/AUMCall</td>
 <td align="left">pk.calc.mrt.iv</td>
 </tr>
 <tr class="even">
@@ -1979,7 +2031,7 @@ ordered by collection midpoint</td>
 <td align="left"></td>
 <td align="left"></td>
 <td align="left">time</td>
-<td align="left">IV MRT, interval AUC/AUMClast</td>
+<td align="left">IV MRT, interval AUClast/AUMClast</td>
 <td align="left">pk.calc.mrt.iv</td>
 </tr>
 <tr class="odd">
@@ -1987,7 +2039,7 @@ ordered by collection midpoint</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">ivmd,obs</mtext></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow></mfrac><mo>+</mo><mi>τ</mi><mo>⋅</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">obs</mtext></mrow></msub><mo>−</mo><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow></mfrac><mo>−</mo><mfrac><msub><mi>T</mi><mtext mathvariant="normal">inf</mtext></msub><mn>2</mn></mfrac></mrow><annotation encoding="application/x-tex">MRT_{\text{ivmd,obs}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{obs}} - AUC_{\text{last}}}{AUC_{\text{last}}} - \frac{T_{\text{inf}}}{2}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">time</td>
-<td align="left">IV MRT, multi-dose, AUCinf.obs</td>
+<td align="left">IV MRT, multi-dose, AUCinf,obs</td>
 <td align="left">pk.calc.mrt.md.iv</td>
 </tr>
 <tr class="even">
@@ -1995,7 +2047,7 @@ ordered by collection midpoint</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">ivmd,pred</mtext></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow></mfrac><mo>+</mo><mi>τ</mi><mo>⋅</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">pred</mtext></mrow></msub><mo>−</mo><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow></mfrac><mo>−</mo><mfrac><msub><mi>T</mi><mtext mathvariant="normal">inf</mtext></msub><mn>2</mn></mfrac></mrow><annotation encoding="application/x-tex">MRT_{\text{ivmd,pred}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{pred}} - AUC_{\text{last}}}{AUC_{\text{last}}} - \frac{T_{\text{inf}}}{2}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">time</td>
-<td align="left">IV MRT, multi-dose, AUCinf.pred</td>
+<td align="left">IV MRT, multi-dose, AUCinf,pred</td>
 <td align="left">pk.calc.mrt.md.iv</td>
 </tr>
 <tr class="odd">
@@ -2011,7 +2063,7 @@ ordered by collection midpoint</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">md,obs</mtext></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow></mfrac><mo>+</mo><mi>τ</mi><mo>⋅</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">obs</mtext></mrow></msub><mo>−</mo><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">MRT_{\text{md,obs}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{obs}} - AUC_{\text{last}}}{AUC_{\text{last}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">time</td>
-<td align="left">MRT, multi-dose AUCinf.obs/AUMCinf.obs</td>
+<td align="left">MRT, multi-dose AUCinf,obs/AUMCinf,obs</td>
 <td align="left">pk.calc.mrt.md</td>
 </tr>
 <tr class="odd">
@@ -2019,7 +2071,7 @@ ordered by collection midpoint</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">md,pred</mtext></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mi>U</mi><mi>M</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow></mfrac><mo>+</mo><mi>τ</mi><mo>⋅</mo><mfrac><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mrow><mi>∞</mi><mo>,</mo><mtext mathvariant="normal">pred</mtext></mrow></msub><mo>−</mo><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow><mrow><mi>A</mi><mi>U</mi><msub><mi>C</mi><mtext mathvariant="normal">last</mtext></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">MRT_{\text{md,pred}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{pred}} - AUC_{\text{last}}}{AUC_{\text{last}}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">time</td>
-<td align="left">MRT, multi-dose AUCinf.pred/AUMCinf.pred</td>
+<td align="left">MRT, multi-dose AUCinf,pred/AUMCinf,pred</td>
 <td align="left">pk.calc.mrt.md</td>
 </tr>
 <tr class="even">
@@ -2117,7 +2169,7 @@ on time over the terminal points</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">span ratio</mtext><mo>=</mo><mfrac><mrow><msub><mi>t</mi><mrow><msub><mi>λ</mi><mi>z</mi></msub><mo>,</mo><mtext mathvariant="normal">last</mtext></mrow></msub><mo>−</mo><msub><mi>t</mi><mrow><msub><mi>λ</mi><mi>z</mi></msub><mo>,</mo><mtext mathvariant="normal">first</mtext></mrow></msub></mrow><msub><mi>t</mi><mrow><mn>1</mn><mi>/</mi><mn>2</mn></mrow></msub></mfrac></mrow><annotation encoding="application/x-tex">\text{span ratio} = \frac{t_{\lambda_z,\text{last}} - t_{\lambda_z,\text{first}}}{t_{1/2}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">fraction</td>
-<td align="left">Lambda z time span to half-life ratio</td>
+<td align="left">Ratio of lambda.z time span to half-life</td>
 <td align="left">See the parameter name: half.life</td>
 </tr>
 <tr class="even">
@@ -2152,7 +2204,7 @@ concentrations</td>
 <td align="left"></td>
 <td align="left"></td>
 <td align="left">count</td>
-<td align="left">variance DF for sparse AUMC to Tlast</td>
+<td align="left">DF for sparse AUMClast</td>
 <td align="left">See the parameter name: sparse_aumclast</td>
 </tr>
 <tr class="even">
@@ -2313,7 +2365,7 @@ concentrations</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi><mo>,</mo><mtext mathvariant="normal">int,all</mtext></mrow></msub><mo>=</mo><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">int,all</mtext></msub><mo>⋅</mo><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">int,all</mtext></msub></mrow><annotation encoding="application/x-tex">V_{ss,\text{int,all}} = CL_{\text{int,all}} \cdot MRT_{\text{int,all}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">volume</td>
-<td align="left">Vss, calc from interval AUCint.all</td>
+<td align="left">Vss, calc from interval AUCint,all</td>
 <td align="left">pk.calc.vss</td>
 </tr>
 <tr class="even">
@@ -2321,7 +2373,7 @@ concentrations</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi><mo>,</mo><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub><mo>=</mo><mi>C</mi><msub><mi>L</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub><mo>⋅</mo><mi>M</mi><mi>R</mi><msub><mi>T</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub></mrow><annotation encoding="application/x-tex">V_{ss,\text{int,}\infty\text{,obs}} = CL_{\text{int,}\infty\text{,obs}} \cdot MRT_{\text{int,}\infty\text{,obs}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">volume</td>
-<td align="left">Vss, calc from interval AUCint.inf.obs</td>
+<td align="left">Vss, calc from interval AUCint,inf,obs</td>
 <td align="left">pk.calc.vss</td>
 </tr>
 <tr class="odd">
@@ -2329,7 +2381,7 @@ concentrations</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi><mo>,</mo><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub><mo>=</mo><mi>C</mi><msub><mi>L</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub><mo>⋅</mo><mi>M</mi><mi>R</mi><msub><mi>T</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub></mrow><annotation encoding="application/x-tex">V_{ss,\text{int,}\infty\text{,pred}} = CL_{\text{int,}\infty\text{,pred}} \cdot MRT_{\text{int,}\infty\text{,pred}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">volume</td>
-<td align="left">Vss, calc from interval AUCint.inf.pred</td>
+<td align="left">Vss, calc from interval AUCint,inf,pred</td>
 <td align="left">pk.calc.vss</td>
 </tr>
 <tr class="even">
@@ -2337,7 +2389,7 @@ concentrations</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi><mo>,</mo><mtext mathvariant="normal">int,last</mtext></mrow></msub><mo>=</mo><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">int,last</mtext></msub><mo>⋅</mo><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">int,last</mtext></msub></mrow><annotation encoding="application/x-tex">V_{ss,\text{int,last}} = CL_{\text{int,last}} \cdot MRT_{\text{int,last}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">volume</td>
-<td align="left">Vss, calc from interval AUCint.last</td>
+<td align="left">Vss, calc from interval AUCint,last</td>
 <td align="left">pk.calc.vss</td>
 </tr>
 <tr class="odd">
@@ -2377,7 +2429,7 @@ concentrations</td>
 <td align="left"></td>
 <td align="left"></td>
 <td align="left">volume</td>
-<td align="left">IV Vss, calc from interval AUCint.all</td>
+<td align="left">IV Vss, calc from interval AUCint,all</td>
 <td align="left">pk.calc.vss</td>
 </tr>
 <tr class="even">
@@ -2385,7 +2437,7 @@ concentrations</td>
 <td align="left"></td>
 <td align="left"></td>
 <td align="left">volume</td>
-<td align="left">IV Vss, calc from interval AUCint.last</td>
+<td align="left">IV Vss, calc from interval AUCint,last</td>
 <td align="left">pk.calc.vss</td>
 </tr>
 <tr class="odd">
@@ -2409,7 +2461,7 @@ concentrations</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi><mo>,</mo><mtext mathvariant="normal">last</mtext></mrow></msub><mo>=</mo><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">last</mtext></msub><mo>⋅</mo><mi>M</mi><mi>R</mi><msub><mi>T</mi><mtext mathvariant="normal">last</mtext></msub></mrow><annotation encoding="application/x-tex">V_{ss,\text{last}} = CL_{\text{last}} \cdot MRT_{\text{last}}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">volume</td>
-<td align="left">Vss, calc’d through Tlast</td>
+<td align="left">Vss, calc from AUClast</td>
 <td align="left">pk.calc.vss</td>
 </tr>
 <tr class="even">
@@ -2465,7 +2517,7 @@ concentrations</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>z</mi><mo>,</mo><mtext mathvariant="normal">int,all</mtext></mrow></msub><mo>=</mo><mfrac><mrow><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">int,all</mtext></msub></mrow><msub><mi>λ</mi><mi>z</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">V_{z,\text{int,all}} = \frac{CL_{\text{int,all}}}{\lambda_z}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">volume</td>
-<td align="left">Vz, interval AUCint.all</td>
+<td align="left">Vz, interval AUCint,all</td>
 <td align="left">pk.calc.vz</td>
 </tr>
 <tr class="odd">
@@ -2473,7 +2525,7 @@ concentrations</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>z</mi><mo>,</mo><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub><mo>=</mo><mfrac><mrow><mi>C</mi><msub><mi>L</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,obs</mtext></mrow></msub></mrow><msub><mi>λ</mi><mi>z</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">V_{z,\text{int,}\infty\text{,obs}} = \frac{CL_{\text{int,}\infty\text{,obs}}}{\lambda_z}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">volume</td>
-<td align="left">Vz, interval AUCint.inf.obs</td>
+<td align="left">Vz, interval AUCint,inf,obs</td>
 <td align="left">pk.calc.vz</td>
 </tr>
 <tr class="even">
@@ -2481,7 +2533,7 @@ concentrations</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>z</mi><mo>,</mo><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub><mo>=</mo><mfrac><mrow><mi>C</mi><msub><mi>L</mi><mrow><mtext mathvariant="normal">int,</mtext><mi>∞</mi><mtext mathvariant="normal">,pred</mtext></mrow></msub></mrow><msub><mi>λ</mi><mi>z</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">V_{z,\text{int,}\infty\text{,pred}} = \frac{CL_{\text{int,}\infty\text{,pred}}}{\lambda_z}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">volume</td>
-<td align="left">Vz, interval AUCint.inf.pred</td>
+<td align="left">Vz, interval AUCint,inf,pred</td>
 <td align="left">pk.calc.vz</td>
 </tr>
 <tr class="odd">
@@ -2489,7 +2541,7 @@ concentrations</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>z</mi><mo>,</mo><mtext mathvariant="normal">int,last</mtext></mrow></msub><mo>=</mo><mfrac><mrow><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">int,last</mtext></msub></mrow><msub><mi>λ</mi><mi>z</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">V_{z,\text{int,last}} = \frac{CL_{\text{int,last}}}{\lambda_z}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">volume</td>
-<td align="left">Vz, interval AUCint.last</td>
+<td align="left">Vz, interval AUCint,last</td>
 <td align="left">pk.calc.vz</td>
 </tr>
 <tr class="even">
@@ -2529,7 +2581,7 @@ concentrations</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>z</mi><mo>,</mo><mtext mathvariant="normal">iv,int,all</mtext></mrow></msub><mo>=</mo><mfrac><mrow><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">iv,int,all</mtext></msub></mrow><msub><mi>λ</mi><mi>z</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">V_{z,\text{iv,int,all}} = \frac{CL_{\text{iv,int,all}}}{\lambda_z}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">volume</td>
-<td align="left">IV Vz, interval AUCint.all</td>
+<td align="left">IV Vz, interval AUCint,all</td>
 <td align="left">pk.calc.vz</td>
 </tr>
 <tr class="odd">
@@ -2537,7 +2589,7 @@ concentrations</td>
 <td align="left"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>z</mi><mo>,</mo><mtext mathvariant="normal">iv,int,last</mtext></mrow></msub><mo>=</mo><mfrac><mrow><mi>C</mi><msub><mi>L</mi><mtext mathvariant="normal">iv,int,last</mtext></msub></mrow><msub><mi>λ</mi><mi>z</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">V_{z,\text{iv,int,last}} = \frac{CL_{\text{iv,int,last}}}{\lambda_z}</annotation></semantics></math></td>
 <td align="left"></td>
 <td align="left">volume</td>
-<td align="left">IV Vz, interval AUCint.last</td>
+<td align="left">IV Vz, interval AUCint,last</td>
 <td align="left">pk.calc.vz</td>
 </tr>
 <tr class="even">

@@ -48,7 +48,7 @@
     <li><a class="dropdown-item" href="../articles/v21-methods-for-dose-aware-interpolation-and-extrapolation.html">Methods Used for Dose-Aware Concentration Interpolation/Extrapolation</a></li>
     <li><a class="dropdown-item" href="../articles/v22-time-to-steady-state.html">Noncompartmental evaluation of time to steady-state</a></li>
     <li><a class="dropdown-item" href="../articles/v23-auc-integration-methods.html">AUC integration methods</a></li>
-    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of Lambda z</a></li>
+    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of lambda.z</a></li>
     <li><a class="dropdown-item" href="../articles/v30-training-session.html">PKNCA Training Sessions</a></li>
     <li><a class="dropdown-item" href="../articles/v31-FDA-introduction.html">PKNCA – an R package for noncompartmental analysis of pharmacokinetic data</a></li>
     <li><a class="dropdown-item" href="../articles/v40-options-for-controlling-PKNCA.html">Options for Controlling PKNCA</a></li>
@@ -82,7 +82,7 @@
                         <h4 data-toc-skip class="author">Bill
 Denney</h4>
             
-            <h4 data-toc-skip class="date">2026-10-07</h4>
+            <h4 data-toc-skip class="date">2026-10-08</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/humanpred/pknca/blob/main/vignettes/v04-sparse.Rmd" class="external-link"><code>vignettes/v04-sparse.Rmd</code></a></small>
       <div class="d-none name"><code>v04-sparse.Rmd</code></div>
@@ -107,15 +107,29 @@ interval, but no animal has the full profile.</p>
 setup with PKNCA. The only difference is that you give the
 <code>sparse</code> option to <code><a href="../reference/PKNCAconc.html">PKNCAconc()</a></code>; the parameters
 are requested by their usual names.</p>
-<p>Two things happen behind that flag. For <code>auclast</code> and
-<code>aumclast</code>, PKNCA uses the sparse estimators – the Bailer
-point estimate with the Nedelman-Jia/Holder standard error – calculated
-from the pooled samples of all the animals in a group, and reports the
-standard error and degrees of freedom alongside the estimate as
-<code>auclast_se</code>/<code>auclast_df</code> and
-<code>aumclast_se</code>/<code>aumclast_df</code>. Every other parameter
-is calculated from the arithmetic-mean profile of the animals in the
-group.</p>
+<p>Two things happen behind that flag. For the AUC and AUMC parameters
+with a sparse estimator, PKNCA calculates them from the pooled samples
+of all the animals in a group with the Bailer point estimate and the
+Nedelman-Jia/Holder standard error, and reports the standard error and
+degrees of freedom alongside the estimate with the suffixes
+<code>_se</code> and <code>_df</code> (for example,
+<code>auclast_se</code> and <code>auclast_df</code>). Those parameters
+are <code>auclast</code>, <code>aucall</code>, <code>aucinf.obs</code>,
+<code>aumclast</code>, <code>aumcall</code>, and
+<code>aumcinf.obs</code>, and after an IV bolus <code>aucivlast</code>,
+<code>aucivall</code>, <code>aucivinf.obs</code>,
+<code>aumcivlast</code>, <code>aumcivall</code>, and
+<code>aumcivinf.obs</code> (see
+<code><a href="../articles/v24-sparse-auc-to-infinity.html">vignette("v24-sparse-auc-to-infinity")</a></code> for the AUC to
+infinity and the IV bolus
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>C</mi><mn>0</mn></msub><annotation encoding="application/x-tex">C_0</annotation></semantics></math>).
+Every other parameter is calculated from the arithmetic-mean profile of
+the animals in the group.</p>
+<p>As for any AUC in PKNCA, the sparse AUCs need a concentration at the
+start of the interval, measured or imputed. Animals are rarely sampled
+at the dose in sacrificial designs, so after an extravascular dose
+impute zero with <code>impute = "start_conc0"</code>; the imputed zero
+is known, so it adds nothing to the variance.</p>
 <p>The example below uses data extracted from Holder D. J., Hsuan F.,
 Dixit R. and Soper K. (1999). A method for estimating and testing area
 under the curve in serial sacrifice, batch, and complete data designs.
@@ -226,8 +240,9 @@ PKNCA stops with an error identifying the inconsistent group.</p>
 <span><span class="co">## points)</span></span></code></pre>
 <p><code><a href="../reference/pknca_interval_table.html">pknca_interval_table()</a></code> builds the same kind of
 specification from a description of the study, and its
-<code>sparse_single_dose</code> preset is the single-dose set with no
-imputation (there is no individual profile to impute into):</p>
+<code>sparse_single_dose</code> preset is the single-dose set with a
+zero imputed at the start (<code>start_conc0</code>), the one imputation
+the sparse estimators accept:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/pknca_interval_table.html">pknca_interval_table</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">24</span>, preset<span class="op">=</span><span class="st">"sparse_single_dose"</span><span class="op">)</span></span></code></pre></div>
 </div>

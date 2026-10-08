@@ -212,7 +212,7 @@ Markdown report or another file for reporting.
 pander::pander(summary(o_result), split.tables = Inf)
 ```
 
-| Interval Start | Interval End | AUClast (hr\*mg/L) | Cmax (mg/L) | Tmax (hr) | Tlag (hr) | Concentration count (count) | Half-life (hr) | AUCinf,obs (hr\*mg/L) | AUCpext (based on AUCinf,obs) (%) | CL (based on AUCinf,obs) (mg/(hr\*mg/L)) |
+| Interval start | Interval end | AUClast (hr\*mg/L) | Cmax (mg/L) | Tmax (hr) | Tlag (hr) | Concentration count (count) | Half-life (hr) | AUCinf,obs (hr\*mg/L) | AUCpext (based on AUCinf,obs) (%) | CL (based on AUCinf,obs) (mg/(hr\*mg/L)) |
 |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
 | 0 | Inf | 147 | 10.5 | 1.12 | 0.000 | 11.0 | 14.3 | 215 | 31.5 | 0.0187 |
 
@@ -292,7 +292,7 @@ NCA results makes a listing.
 pander::pander(summary(o_result), split.tables = Inf)
 ```
 
-| Interval Start | Interval End | AUClast (hr\*mg/L) | Cmax (mg/L) | Tmax (hr) | Tlag (hr) | Concentration count (count) | Half-life (hr) | AUCinf,obs (hr\*mg/L) | AUCpext (based on AUCinf,obs) (%) | CL (based on AUCinf,obs) (mg/(hr\*mg/L)) |
+| Interval start | Interval end | AUClast (hr\*mg/L) | Cmax (mg/L) | Tmax (hr) | Tlag (hr) | Concentration count (count) | Half-life (hr) | AUCinf,obs (hr\*mg/L) | AUCpext (based on AUCinf,obs) (%) | CL (based on AUCinf,obs) (mg/(hr\*mg/L)) |
 |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
 | 0 | Inf | 147 | 10.5 | 1.12 | 0.000 | 11.0 | 14.3 | 215 | 31.5 | 0.0187 |
 

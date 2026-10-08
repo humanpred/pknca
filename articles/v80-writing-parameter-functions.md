@@ -146,7 +146,7 @@ instead of from the interval being calculated:
                      FUN="pk.calc.clr",
                      values=c(FALSE, TRUE),
                      unit_type="renal_clearance",
-                     pretty_name="Renal clearance (from AUClast)",
+                     pretty_name="Renal clearance (based on AUClast)",
                      formalsmap=list(auc=pknca_ref("auclast")),
                      depends="ae",
                      desc="Renal clearance, AUClast",

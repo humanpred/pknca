@@ -262,13 +262,13 @@ as.data.frame(result_obj_include6)
     ##    <ord>   <dbl> <dbl> <chr>                 <dbl> <chr>                 <chr>  
     ##  1 1           0   Inf tmax                 1.12   ""                    NA     
     ##  2 1           0   Inf tlast               24.4    ""                    NA     
-    ##  3 1           0   Inf lambda.z             0.0475 "Lambda Z: Manual se… NA     
-    ##  4 1           0   Inf r.squared            0.999  "Lambda Z: Manual se… NA     
-    ##  5 1           0   Inf adj.r.squared        0.998  "Lambda Z: Manual se… NA     
-    ##  6 1           0   Inf lambda.z.corrxy     -0.999  "Lambda Z: Manual se… NA     
-    ##  7 1           0   Inf lambda.z.time.first  3.82   "Lambda Z: Manual se… NA     
-    ##  8 1           0   Inf lambda.z.time.last  24.4    "Lambda Z: Manual se… NA     
-    ##  9 1           0   Inf lambda.z.n.points    6      "Lambda Z: Manual se… NA     
-    ## 10 1           0   Inf clast.pred           3.30   "Lambda Z: Manual se… NA     
-    ## 11 1           0   Inf half.life           14.6    "Lambda Z: Manual se… NA     
-    ## 12 1           0   Inf span.ratio           1.41   "Lambda Z: Manual se… NA
+    ##  3 1           0   Inf lambda.z             0.0475 "Lambda z: Manual se… NA     
+    ##  4 1           0   Inf r.squared            0.999  "Lambda z: Manual se… NA     
+    ##  5 1           0   Inf adj.r.squared        0.998  "Lambda z: Manual se… NA     
+    ##  6 1           0   Inf lambda.z.corrxy     -0.999  "Lambda z: Manual se… NA     
+    ##  7 1           0   Inf lambda.z.time.first  3.82   "Lambda z: Manual se… NA     
+    ##  8 1           0   Inf lambda.z.time.last  24.4    "Lambda z: Manual se… NA     
+    ##  9 1           0   Inf lambda.z.n.points    6      "Lambda z: Manual se… NA     
+    ## 10 1           0   Inf clast.pred           3.30   "Lambda z: Manual se… NA     
+    ## 11 1           0   Inf half.life           14.6    "Lambda z: Manual se… NA     
+    ## 12 1           0   Inf span.ratio           1.41   "Lambda z: Manual se… NA

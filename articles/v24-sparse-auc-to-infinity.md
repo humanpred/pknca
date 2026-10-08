@@ -1,4 +1,4 @@
-# Sparse AUC to Infinity and the Uncertainty of Lambda z
+# Sparse AUC to Infinity and the Uncertainty of lambda.z
 
 ## Summary and recommendations
 
@@ -172,7 +172,7 @@ AUMC. These are the sparse `aucivlast`, `aucivall`, and `aucivinf.obs`
 (and their AUMC equivalents), each with its standard error and degrees
 of freedom.
 
-## The uncertainty of lambda z (delta method)
+## The uncertainty of lambda.z (delta method)
 
 $`\lambda_z`$ is estimated from the mean profile: PKNCA fits a line to
 the log mean concentrations at the half-life points, chosen
@@ -239,7 +239,7 @@ With serial sacrifice, this is equation 6a of Nedelman, Gibiansky, and
 Lau (1995). PKNCA uses the same expression with the weights $`g`$ for
 the AUC and AUMC to infinity, with or without the delta-method terms.
 
-## An alternative: lambda z from the individual samples
+## An alternative: lambda.z from the individual samples
 
 Instead of the log means, $`\lambda_z`$ could be estimated from every
 individual sample in the terminal phase, with its standard error from

@@ -62,18 +62,18 @@ Other Interval specifications:
 
 ``` r
 head(pknca_cdisc_codes())
-#>     parameter     tier variant pptestcd_cdisc                      pptest_cdisc
-#> 1     auclast   common  single         AUCLST          AUC to Last Nonzero Conc
-#> 2  auclast_se uncommon  single       SPARSEAS     Sparse AUClast standard error
-#> 3  auclast_df uncommon  single       SPARSEAD Sparse AUClast degrees of freedom
-#> 4      aucall uncommon  single         AUCALL                           AUC All
-#> 5    aumclast uncommon  single        AUMCLST         AUMC to Last Nonzero Conc
-#> 6 aumclast_se uncommon  single       AUMCLSES    Sparse AUMClast standard error
+#>    parameter     tier variant pptestcd_cdisc                      pptest_cdisc
+#> 1    auclast   common  single         AUCLST          AUC to Last Nonzero Conc
+#> 2 auclast_se uncommon  single       SPARSEAS     Sparse AUClast standard error
+#> 3 auclast_df uncommon  single       SPARSEAD Sparse AUClast degrees of freedom
+#> 4     aucall uncommon  single         AUCALL                           AUC All
+#> 5  aucall_se uncommon  single       AUCALLSE      Sparse AUCall standard error
+#> 6  aucall_df uncommon  single       AUCALLDF  Sparse AUCall degrees of freedom
 #>   in_ct
 #> 1  TRUE
 #> 2 FALSE
 #> 3 FALSE
 #> 4  TRUE
-#> 5  TRUE
+#> 5 FALSE
 #> 6 FALSE
 ```

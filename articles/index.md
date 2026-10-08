@@ -31,8 +31,8 @@
   steady-state](https://humanpred.github.io/pknca/articles/v22-time-to-steady-state.md):
 - [AUC integration
   methods](https://humanpred.github.io/pknca/articles/v23-auc-integration-methods.md):
-- [Sparse AUC to Infinity and the Uncertainty of Lambda
-  z](https://humanpred.github.io/pknca/articles/v24-sparse-auc-to-infinity.md):
+- [Sparse AUC to Infinity and the Uncertainty of
+  lambda.z](https://humanpred.github.io/pknca/articles/v24-sparse-auc-to-infinity.md):
 - [PKNCA Training
   Sessions](https://humanpred.github.io/pknca/articles/v30-training-session.md):
 - [PKNCA – an R package for noncompartmental analysis of pharmacokinetic

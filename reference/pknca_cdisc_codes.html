@@ -43,7 +43,7 @@ parameters actually registered (including by another package)."></head><body>
     <li><a class="dropdown-item" href="../articles/v21-methods-for-dose-aware-interpolation-and-extrapolation.html">Methods Used for Dose-Aware Concentration Interpolation/Extrapolation</a></li>
     <li><a class="dropdown-item" href="../articles/v22-time-to-steady-state.html">Noncompartmental evaluation of time to steady-state</a></li>
     <li><a class="dropdown-item" href="../articles/v23-auc-integration-methods.html">AUC integration methods</a></li>
-    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of Lambda z</a></li>
+    <li><a class="dropdown-item" href="../articles/v24-sparse-auc-to-infinity.html">Sparse AUC to Infinity and the Uncertainty of lambda.z</a></li>
     <li><a class="dropdown-item" href="../articles/v30-training-session.html">PKNCA Training Sessions</a></li>
     <li><a class="dropdown-item" href="../articles/v31-FDA-introduction.html">PKNCA – an R package for noncompartmental analysis of pharmacokinetic data</a></li>
     <li><a class="dropdown-item" href="../articles/v40-options-for-controlling-PKNCA.html">Options for Controlling PKNCA</a></li>
@@ -125,19 +125,19 @@ comments at their <code><a href="add.interval.col.html">add.interval.col()</a></
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">pknca_cdisc_codes</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     parameter     tier variant pptestcd_cdisc                      pptest_cdisc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     auclast   common  single         AUCLST          AUC to Last Nonzero Conc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  auclast_se uncommon  single       SPARSEAS     Sparse AUClast standard error</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  auclast_df uncommon  single       SPARSEAD Sparse AUClast degrees of freedom</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4      aucall uncommon  single         AUCALL                           AUC All</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5    aumclast uncommon  single        AUMCLST         AUMC to Last Nonzero Conc</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 aumclast_se uncommon  single       AUMCLSES    Sparse AUMClast standard error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    parameter     tier variant pptestcd_cdisc                      pptest_cdisc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    auclast   common  single         AUCLST          AUC to Last Nonzero Conc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 auclast_se uncommon  single       SPARSEAS     Sparse AUClast standard error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 auclast_df uncommon  single       SPARSEAD Sparse AUClast degrees of freedom</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     aucall uncommon  single         AUCALL                           AUC All</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  aucall_se uncommon  single       AUCALLSE      Sparse AUCall standard error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  aucall_df uncommon  single       AUCALLDF  Sparse AUCall degrees of freedom</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   in_ct</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1  TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3 FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6 FALSE</span>
 </code></pre></div>
     </div>
