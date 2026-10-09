@@ -16,6 +16,13 @@ simulation <- readRDS("v24-sparse-auc-to-infinity-simulation.rds")
 mean_type <- readRDS("v24-sparse-auc-to-infinity-mean-type.rds")
 bootstrap <- readRDS("v24-sparse-auc-to-infinity-bootstrap.rds")
 bootstrap_n <- readRDS("v24-sparse-auc-to-infinity-bootstrap-n.rds")
+tobit <- readRDS("v24-sparse-auc-to-infinity-tobit.rds")
+tobit$summary <-
+  merge(
+    tobit$summary,
+    tobit$scenarios[, c("scenario", "compartments", "route", "design", "blq", "elimination")],
+    by = "scenario"
+  )
 # The rows of a simulation summary that match every given column value
 sim_rows <- function(summary, filters) {
   keep <- rep(TRUE, nrow(summary))
@@ -38,6 +45,16 @@ boot_range <- function(column, ..., digits = 0) {
 # One value of the profile over the number of animals per time
 profile_value <- function(column, n_per_time, blq, method, parameter, digits = 1) {
   v <- sim_rows(bootstrap_n$summary, list(n_per_time = n_per_time, blq = blq, method = method, parameter = parameter))[[column]]
+  stopifnot(length(v) == 1)
+  format(round(v, digits), nsmall = digits)
+}
+# The same for the Tobit half-life study
+tobit_range <- function(column, ..., digits = 0) {
+  v <- sim_rows(tobit$summary, list(...))[[column]]
+  paste(format(round(range(v), digits), nsmall = digits), collapse = " to ")
+}
+tobit_value <- function(column, ..., digits = 1) {
+  v <- sim_rows(tobit$summary, list(...))[[column]]
   stopifnot(length(v) == 1)
   format(round(v, digits), nsmall = digits)
 }
@@ -99,13 +116,19 @@ For sparse sampling, where each animal gives one or a few samples:
   samples and the extrapolation of the mean profile biased the AUC to infinity
   low (by about
   `r gsub("-", "", profile_value("median_bias", 100, "moderate", "yuan", "auc", digits = 0))`%
-  with BLQ samples here), whatever the number of animals, so with many animals
-  every confidence interval missed the truth more often than its nominal
-  level.
-* **Estimating $\lambda_z$ from the individual samples was evaluated and not
-  adopted.**  A (mixed-effects) Tobit fit gave a steadier point estimate when
-  $\lambda_z$ was uncertain, but its standard error, added to Yuan's, did not
-  cover as well as the delta method.
+  with BLQ samples here), whatever the number of animals and whichever
+  half-life was used, so with many animals every confidence interval missed the
+  truth more often than its nominal level.
+* **The Tobit half-life was evaluated with BLQ samples and not adopted for the
+  sparse AUC.**  The Tobit fit of the mean profile (`hl_method = "tobit"`, with
+  the LLOQ carried through the mean profile) gave nearly the same AUC to
+  infinity as the log-linear fit, and it has no delta-method standard error.  A
+  (mixed-effects) Tobit fit of the individual samples was slightly less biased
+  and more precise, but its standard error added to Yuan's covered less well
+  than the delta method with slow elimination
+  (`r tobit_range("coverage", interval = "tobit-individual yuan+var", parameter = "auc", elimination = "slow", n_per_time = 4)`%
+  against `r tobit_range("coverage", interval = "log-linear delta", parameter = "auc", elimination = "slow", n_per_time = 4)`%),
+  and neither Tobit fit removed the bias that BLQ samples cause.
 
 # Introduction
 
@@ -519,6 +542,117 @@ show_bootstrap_n("auc")
 show_bootstrap_n("aumc")
 ```
 
+## Results:  the Tobit half-life with BLQ samples
+
+PKNCA can also fit the half-life by Tobit regression (`hl_method = "tobit"`),
+which treats BLQ samples as censored below the LLOQ rather than dropping them.
+For sparse data, it fits the mean profile, with the median LLOQ of the samples
+at each time and a time whose mean is BLQ censored.  With the BLQ scenarios
+above (the first `r format(tobit$n_se_replicates, big.mark = ",")` data sets of
+each) and the BLQ arm of the profile over the number of animals per time
+(`r format(tobit$n_profile_replicates, big.mark = ",")` data sets at each
+number), three estimates of $\lambda_z$ were compared:  the log-linear fit of
+the mean profile ("log-linear", as above), the Tobit fit of the mean profile
+("Tobit mean"), and the Tobit fit of the individual samples ("Tobit indiv.", as
+the "individual" method above).  Each gave the AUC and AUMC to infinity from
+the same sparse AUC to $t_{last}$ and mean at $t_{last}$, with these intervals:
+Yuan's and the delta method for the log-linear fit; Yuan's for the Tobit fit
+of the mean profile, which has no standard error for $\lambda_z$; Yuan's
+variance plus that of $\lambda_z$ for the Tobit fit of the individual samples;
+and, for each, the bootstrap percentile interval (`r tobit$n_boot` replicates,
+each refitting its own $\lambda_z$;
+`data-raw/sparse_tobit_simulation.R`).
+
+```{r simulation-tobit, echo = FALSE}
+tobit_intervals <-
+  c(
+    "log-linear yuan" = "Log-lin. Yuan", "log-linear delta" = "Log-lin. delta",
+    "log-linear bootstrap" = "Log-lin. boot.", "tobit-mean yuan" = "Tobit mean Yuan",
+    "tobit-mean bootstrap" = "Tobit mean boot.", "tobit-individual yuan+var" = "Tobit indiv. Yuan+var",
+    "tobit-individual bootstrap" = "Tobit indiv. boot."
+  )
+tobit_methods <- c("log-linear" = "log-lin.", "tobit-mean" = "Tobit mean", "tobit-individual" = "Tobit indiv.")
+# One column of `column` for each interval (or lambda.z method), in the order
+# of `keys`
+tobit_columns <- function(r, keys, labels, key_column, column, digits) {
+  out <- list()
+  for (current in names(labels)) {
+    current_rows <- r[r[[key_column]] == current, ]
+    # The point estimate does not depend on the interval
+    current_rows <- current_rows[!duplicated(current_rows$scenario_n), ]
+    out[[labels[[current]]]] <- round(current_rows[[column]][match(keys, current_rows$scenario_n)], digits)
+  }
+  as.data.frame(out, check.names = FALSE)
+}
+show_tobit <- function(parameter) {
+  r <- tobit$summary[tobit$summary$parameter == parameter & tobit$summary$n_per_time == 4, ]
+  r$scenario_n <- r$scenario
+  first <- r[r$interval == "log-linear yuan", ]
+  first <- first[order(first$scenario), ]
+  coverage <- tobit_columns(r, first$scenario, tobit_intervals, "interval", "coverage", 1)
+  knitr::kable(data.frame(scenario_columns(first)[, -4], coverage, check.names = FALSE), row.names = FALSE)
+}
+show_tobit_accuracy <- function(parameter) {
+  r <- tobit$summary[tobit$summary$parameter == parameter & tobit$summary$n_per_time == 4, ]
+  r$scenario_n <- r$scenario
+  first <- r[r$interval == "log-linear yuan", ]
+  first <- first[order(first$scenario), ]
+  bias <- tobit_columns(r, first$scenario, tobit_methods, "lambda_z_method", "median_bias", 1)
+  mae <- tobit_columns(r, first$scenario, tobit_methods, "lambda_z_method", "median_absolute_error", 1)
+  names(bias) <- paste("Bias", names(bias))
+  names(mae) <- paste("MAE", names(mae))
+  knitr::kable(data.frame(scenario_columns(first)[, -4], bias, mae, check.names = FALSE), row.names = FALSE)
+}
+show_tobit_n <- function(parameter) {
+  r <- tobit$summary[tobit$summary$parameter == parameter & tobit$summary$scenario == tobit$profile_scenario, ]
+  r$scenario_n <- r$n_per_time
+  keys <- sort(unique(r$n_per_time))
+  coverage <- tobit_columns(r, keys, tobit_intervals, "interval", "coverage", 1)
+  bias <- tobit_columns(r, keys, tobit_methods, "lambda_z_method", "median_bias", 1)
+  names(bias) <- paste("Bias", names(bias))
+  knitr::kable(data.frame(`Animals per time` = keys, coverage, bias, check.names = FALSE), row.names = FALSE)
+}
+```
+
+Coverage (%) of the 95% intervals for the AUC to infinity, with four animals
+per time (three per batch):
+
+```{r simulation-tobit-auc, echo = FALSE}
+show_tobit("auc")
+```
+
+And for the AUMC to infinity:
+
+```{r simulation-tobit-aumc, echo = FALSE}
+show_tobit("aumc")
+```
+
+Bias and median absolute error (MAE), relative to the truth (%), of the AUC
+and then the AUMC to infinity with each $\lambda_z$ (the point estimate does
+not depend on the interval):
+
+```{r simulation-tobit-auc-accuracy, echo = FALSE}
+show_tobit_accuracy("auc")
+```
+
+```{r simulation-tobit-aumc-accuracy, echo = FALSE}
+show_tobit_accuracy("aumc")
+```
+
+Over the number of animals per time (two compartments, oral, serial sacrifice,
+slow elimination, BLQ samples), the coverage (%) and the bias (%) of the AUC to
+infinity:
+
+```{r simulation-tobit-n-auc, echo = FALSE}
+show_tobit_n("auc")
+```
+
+And of the AUMC to infinity:
+
+```{r simulation-tobit-n-aumc, echo = FALSE}
+show_tobit_n("aumc")
+```
+
 ## Results:  accuracy of the point estimates
 
 The point estimate with $\lambda_z$ from the log means ("mean", shared by Yuan
@@ -638,6 +772,35 @@ biased by
 `r profile_value("median_bias", 100, "none", "yuan", "aumc")`% and
 `r profile_value("median_bias", 100, "moderate", "yuan", "aumc")`%, showed the
 same pattern sooner.
+
+**The Tobit half-life.**  With BLQ samples, the Tobit fit of the mean profile
+changed little:  the bias of the AUC to infinity was
+`r tobit_range("median_bias", lambda_z_method = "tobit-mean", parameter = "auc", interval = "tobit-mean yuan", n_per_time = 4, digits = 1)`%,
+against
+`r tobit_range("median_bias", lambda_z_method = "log-linear", parameter = "auc", interval = "log-linear yuan", n_per_time = 4, digits = 1)`%
+for the log-linear fit, and Yuan's intervals covered the same.  Its bootstrap
+intervals were narrower than the log-linear fit's and covered less
+(`r tobit_range("coverage", interval = "tobit-mean bootstrap", parameter = "auc", elimination = "slow", n_per_time = 4)`%
+against
+`r tobit_range("coverage", interval = "log-linear bootstrap", parameter = "auc", elimination = "slow", n_per_time = 4)`%
+with slow elimination), and with no standard error for $\lambda_z$ it cannot use
+the delta method.  The Tobit fit of the individual samples was slightly less
+biased and more precise:  with 100 animals per time, its AUC to infinity was
+biased by
+`r tobit_value("median_bias", scenario = tobit$profile_scenario, n_per_time = 100, interval = "tobit-individual yuan+var", parameter = "auc")`%
+and its AUMC by
+`r tobit_value("median_bias", scenario = tobit$profile_scenario, n_per_time = 100, interval = "tobit-individual yuan+var", parameter = "aumc")`%,
+against
+`r tobit_value("median_bias", scenario = tobit$profile_scenario, n_per_time = 100, interval = "log-linear yuan", parameter = "auc")`%
+and
+`r tobit_value("median_bias", scenario = tobit$profile_scenario, n_per_time = 100, interval = "log-linear yuan", parameter = "aumc")`%
+for the log-linear fit.  Its intervals were still less reliable than the delta
+method with few animals per time, and with many animals the bias left every
+interval short of nominal, whichever $\lambda_z$ was used.  So most of the
+bias that BLQ samples add does not come from $\lambda_z$, and a better fit of
+$\lambda_z$ does not remove it:  it comes from the late means, where BLQ
+samples count as zero, and from the mean profile ending earlier, when more
+than half of a time's samples are BLQ.
 
 # Arithmetic or geometric mean profiles
 
@@ -819,10 +982,14 @@ Estimating $\lambda_z$ from the individual samples with a (mixed-effects) Tobit
 regression gave a more stable point estimate when samples were BLQ, but adding
 its variance to Yuan's did not give adequate coverage, and its mixed-effects
 fit was itself occasionally unstable in the batch design with BLQ samples and
-slow elimination.  A natural refinement, not studied
-here, would combine the individual-sample $\lambda_z$ with a variance that
-includes its covariance with the means, for example by a joint delta method or a
-bootstrap over animals.
+slow elimination.  A bootstrap over animals, which includes the covariance of
+that $\lambda_z$ with the means, was too narrow with few animals per time, as
+every bootstrap was.  The Tobit fit of the mean profile, which uses the LLOQs,
+gave nearly the same results as the log-linear fit.  Neither Tobit fit removed
+the bias of the sparse estimate with BLQ samples, which comes mostly from
+counting BLQ samples as zero in the late means and from the mean profile
+ending earlier; estimating those means with the censoring taken into account
+would be the place to reduce it.
 
 Limitations remain.  The delta method conditions on the selected half-life
 points, so the uncertainty of the automatic point selection is not included; it

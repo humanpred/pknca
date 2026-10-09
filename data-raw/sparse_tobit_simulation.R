@@ -296,6 +296,7 @@ if (sys.nframe() == 0) {
       summary = summarize_tobit(results),
       scenarios = scenarios,
       n_per_time = n_per_time,
+      profile_scenario = profile_scenario,
       n_boot = n_boot,
       n_se_replicates = n_tobit_se_replicates,
       n_profile_replicates = n_tobit_profile_replicates,
