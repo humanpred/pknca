@@ -127,7 +127,15 @@ PKNCAconc(
   (optional) The lower limit of quantification used by the Tobit
   half-life method (`hl_method = "tobit"`). Either the name of a column
   in `data` giving the per-observation LLOQ or a numeric scalar applied
-  to all observations. When provided, it is passed through to
+  to all observations. Values must be numeric, finite, and greater than
+  zero; missing values (`NA`) are allowed, and `NaN` is not. A column of
+  numbers is stored as given (an integer column stays integer and a
+  `units` column stays a `units` column). A column or scalar that is
+  entirely `NA` of any class (such as the logical `NA` of a column read
+  from a file with no LLOQ, or an all-`NA` integer column) is accepted
+  and stored as double `NA`. Anything else is the error
+  `pknca_error_conc_invalid_lloq`. When provided, it is passed through
+  to
   [`pk.calc.half.life()`](https://humanpred.github.io/pknca/reference/pk.calc.half.life.md).
   With sparse PK, the half-life is calculated from the mean profile, and
   the LLOQ of each time is the median of the LLOQs of its samples

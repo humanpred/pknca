@@ -186,7 +186,14 @@ arguments.</p></dd>
 <dd><p>(optional) The lower limit of quantification used by the Tobit
 half-life method (<code>hl_method = "tobit"</code>).  Either the name of a column in
 <code>data</code> giving the per-observation LLOQ or a numeric scalar applied to all
-observations.  When provided, it is passed through to
+observations.  Values must be numeric, finite, and greater than zero;
+missing values (<code>NA</code>) are allowed, and <code>NaN</code> is not.  A column of numbers
+is stored as given (an integer column stays integer and a <code>units</code> column
+stays a <code>units</code> column).  A column or scalar that is entirely <code>NA</code> of any
+class (such as the logical <code>NA</code> of a column read from a file with no LLOQ,
+or an all-<code>NA</code> integer column) is accepted and stored as double <code>NA</code>.
+Anything else is the error <code>pknca_error_conc_invalid_lloq</code>.  When provided,
+it is passed through to
 <code><a href="pk.calc.half.life.html">pk.calc.half.life()</a></code>.  With sparse PK, the half-life is calculated from
 the mean profile, and the LLOQ of each time is the median of the LLOQs of
 its samples (missing LLOQs are ignored).  See the "Half-Life Calculation with Tobit Regression"
