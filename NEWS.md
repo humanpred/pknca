@@ -355,6 +355,15 @@ the generated intervals:
 
 ## New features
 
+* `PKNCAconc()` now checks the values of the `lloq` argument:  every non-missing
+  value must be numeric, finite (not `NaN` or `Inf`), and greater than zero, and
+  anything else is the
+  `pknca_error_conc_invalid_lloq` error (@billdenney).  Missing values (`NA`)
+  are still allowed, and a column or scalar that is entirely `NA` of any class
+  (such as the logical `NA` of a column read from a file with no LLOQ) is
+  accepted and stored as numeric `NA`.  Before, only the class was checked,
+  with a `checkmate` error.
+
 * The Tobit half-life (`hl_method = "tobit"`) now works with sparse PK:  the
   mean profile, which the half-life is calculated from, carries the LLOQ of
   each time (the median of the LLOQs of its samples, given by the `lloq`
