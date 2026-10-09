@@ -104,7 +104,10 @@ extract the parameters, and <code><a href="be_table.html">be_table()</a></code> 
 <dl><dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
 <dd><p>A <code>PKNCAresults</code> object or a tidy long data.frame with a
 <code>PPTESTCD</code> column of parameter names, a <code>PPORRES</code>/<code>PPSTRES</code> column of
-values, and subject/sequence/period/treatment columns.</p></dd>
+values, and subject/sequence/period/treatment columns.  The results of a
+sparse bootstrap (from a <code>PKNCAconc</code> object made by <code><a href="sparse_bootstrap.html">sparse_bootstrap()</a></code>)
+are compared with the percentile intervals of the bootstrap replicates
+(Shen and Machado 2017); see Details.</p></dd>
 
 
 <dt id="arg-reference-col">reference_col<a class="anchor" aria-label="anchor" href="#arg-reference-col"></a></dt>

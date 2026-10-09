@@ -25,9 +25,9 @@ getGroups(...)
 # S3 method for class 'PKNCAresults'
 getGroups(
   object,
-  form = formula(object$data$conc),
+  form = formula(as_PKNCAconc(object)),
   level,
-  data = object$result,
+  data = as.data.frame(object),
   sep
 )
 ```

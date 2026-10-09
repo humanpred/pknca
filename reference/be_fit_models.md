@@ -44,7 +44,11 @@ be_fit_models(
 
   A `PKNCAresults` object or a tidy long data.frame with a `PPTESTCD`
   column of parameter names, a `PPORRES`/`PPSTRES` column of values, and
-  subject/sequence/period/treatment columns.
+  subject/sequence/period/treatment columns. The results of a sparse
+  bootstrap (from a `PKNCAconc` object made by
+  [`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md))
+  are compared with the percentile intervals of the bootstrap replicates
+  (Shen and Machado 2017); see Details.
 
 - reference_col:
 

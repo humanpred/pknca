@@ -300,6 +300,130 @@ identical to Vss.
 unchanged from the retired `kel.sparse.last`. Ask for `lambda.z` when
 you want the terminal rate constant itself.
 
+## Bootstrap
+
+The sparse standard errors above come from the variance of the means at
+each time. A nonparametric bootstrap (Shen and Machado 2017) is an
+alternative that applies to every parameter, including Cmax, the
+half-life, and ratios between groups:
+[`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md)
+resamples the animals with replacement within each set of sampling times
+(each time with serial sacrifice, each batch in a batch design, keeping
+an animal’s samples together), and every replicate is calculated just as
+the original data are. It stores the random seed so the replicates can
+be reproduced, and the default of 200 replicates is enough for the mean
+and standard deviation (Takemoto et al. 2006).
+
+``` r
+
+o_conc_boot <- sparse_bootstrap(o_conc_sparse, seed=20261007)
+o_data_boot <-
+  PKNCAdata(
+    o_conc_boot,
+    intervals=data.frame(start=0, end=24, auclast=TRUE, cmax=TRUE, tmax=TRUE),
+    # Many replicate groups would otherwise show a progress bar
+    options=list(progress=FALSE)
+  )
+o_nca_boot <- pk.nca(o_data_boot)
+```
+
+    ## The sparse estimators use the linear trapezoidal rule, so the auc.method option
+    ## ("lin up/log down") does not apply to: auclast
+
+``` r
+
+summary(o_nca_boot)
+```
+
+    ##  start end N     auclast        cmax              tmax
+    ##      0  24 9 39.2 [15.4] 3.29 [13.0] 6.00 [2.00, 10.0]
+    ## 
+    ## Caption: auclast, cmax: geometric mean and geometric coefficient of variation; tmax: median and range; N: number of animals in the study; summarized over 200 bootstrap replicates (seed 20261007)
+
+The summary treats the replicates the way the summary of dense data
+treats subjects, with each parameter’s usual summary statistics; `N` is
+the number of animals in the study, and the caption gives the number of
+replicates. The `"original"` replicate holds the data as given, so
+`as.data.frame(o_nca_boot)` has the estimates as well as every
+replicate. The standard deviation of the replicates is the standard
+error of the estimate: with only three animals at each time, it is
+smaller for `auclast` than the Nedelman-Jia/Holder standard error
+(`auclast_se` above), because resampling three values understates their
+variance by a factor of 2/3;
+[`vignette("v24-sparse-auc-to-infinity")`](https://humanpred.github.io/pknca/articles/v24-sparse-auc-to-infinity.md)
+compares the methods.
+
+To compare groups, such as a test and a reference formulation in a
+parallel design,
+[`be_assess()`](https://humanpred.github.io/pknca/reference/be_assess.md)
+takes the bootstrap results like any other: the ratio of the estimates
+is the point estimate, and its confidence interval is the percentile
+interval of the replicate ratios (90% by default), judged against the
+acceptance limits. For a crossover, where each animal receives every
+treatment, give the treatment column as `paired` to
+[`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md)
+so that each replicate draws the same animals for every treatment.
+
+``` r
+
+d_sparse_formulations <-
+  rbind(
+    data.frame(d_sparse, formulation="reference"),
+    data.frame(
+      id=d_sparse$id + 100, conc=d_sparse$conc*c(0.9, 1.05, 1.1), time=d_sparse$time,
+      dose=d_sparse$dose, formulation="test"
+    )
+  )
+o_conc_formulations <-
+  PKNCAconc(
+    d_sparse_formulations, conc~time|formulation+id, sparse=TRUE,
+    concu="ng/mL", timeu="hr"
+  )
+o_nca_formulations <-
+  pk.nca(PKNCAdata(
+    sparse_bootstrap(o_conc_formulations, seed=20261008),
+    intervals=data.frame(start=0, end=24, auclast=TRUE, cmax=TRUE),
+    options=list(progress=FALSE)
+  ))
+```
+
+    ## The sparse estimators use the linear trapezoidal rule, so the auc.method option
+    ## ("lin up/log down") does not apply to: auclast
+
+``` r
+
+be_assess(
+  o_nca_formulations, reference_col="formulation", reference_value="reference",
+  endpoints=c("auclast", "cmax")
+)
+```
+
+    ## Bioequivalence assessment: ABE (model_type bootstrap, 90% CI)
+    ## Design: parallel
+    ## 
+    ##  endpoint test  n   design    units gm_reference gm_reference_lower
+    ##   auclast test 18 parallel hr*ng/mL        39.47              30.51
+    ##      cmax test 18 parallel    ng/mL         3.05               2.65
+    ##  gm_reference_upper gm_test gm_test_lower gm_test_upper gmr_percent ci_lower
+    ##               48.68   38.92         31.99         46.63       98.62    72.97
+    ##                4.08    2.99          2.92          3.82       98.23    73.29
+    ##  ci_upper cvwr_percent cvwt_percent swr limit_lower limit_upper criterion
+    ##    133.54           NA           NA  NA          80         125        NA
+    ##    126.14           NA           NA  NA          80         125        NA
+    ##  regulator model_type  pass
+    ##        ABE  bootstrap FALSE
+    ##        ABE  bootstrap FALSE
+    ## 
+    ## Caption: ABE bioequivalence assessment (90% CI). The estimates and their ratio come from the sparse data of each treatment; each 90% CI is the percentile interval of 200 replicates of a stratified nonparametric bootstrap (Shen and Machado 2017). Bioequivalence requires the confidence interval within 80.00-125.00%.
+
+The bootstrap methods are from Shen M. and Machado S. G. (2017).
+Bioequivalence evaluation of sparse sampling pharmacokinetics data using
+bootstrap resampling method. Journal of Biopharmaceutical Statistics,
+27(2):257-264, and Takemoto S., Yamaoka K., Nishikawa M. and Takakura Y.
+(2006). Histogram analysis of pharmacokinetic parameters by bootstrap
+resampling from one-point sampling data in animal experiments. Drug
+Metabolism and Pharmacokinetics, 21(6):458-464.
+
 ## Deprecated Parameter Names
 
 Sparse calculations were originally requested through a parallel set of

@@ -356,6 +356,110 @@ family, is <code>1/MRT</code>, so it is unchanged from the retired
 want the terminal rate constant itself.</p>
 </div>
 <div class="section level2">
+<h2 id="bootstrap">Bootstrap<a class="anchor" aria-label="anchor" href="#bootstrap"></a>
+</h2>
+<p>The sparse standard errors above come from the variance of the means
+at each time. A nonparametric bootstrap (Shen and Machado 2017) is an
+alternative that applies to every parameter, including Cmax, the
+half-life, and ratios between groups: <code><a href="../reference/sparse_bootstrap.html">sparse_bootstrap()</a></code>
+resamples the animals with replacement within each set of sampling times
+(each time with serial sacrifice, each batch in a batch design, keeping
+an animal’s samples together), and every replicate is calculated just as
+the original data are. It stores the random seed so the replicates can
+be reproduced, and the default of 200 replicates is enough for the mean
+and standard deviation (Takemoto et al. 2006).</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">o_conc_boot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sparse_bootstrap.html">sparse_bootstrap</a></span><span class="op">(</span><span class="va">o_conc_sparse</span>, seed<span class="op">=</span><span class="fl">20261007</span><span class="op">)</span></span>
+<span><span class="va">o_data_boot</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span></span>
+<span>    <span class="va">o_conc_boot</span>,</span>
+<span>    intervals<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>start<span class="op">=</span><span class="fl">0</span>, end<span class="op">=</span><span class="fl">24</span>, auclast<span class="op">=</span><span class="cn">TRUE</span>, cmax<span class="op">=</span><span class="cn">TRUE</span>, tmax<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    <span class="co"># Many replicate groups would otherwise show a progress bar</span></span>
+<span>    options<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>progress<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">o_nca_boot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_boot</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## The sparse estimators use the linear trapezoidal rule, so the auc.method option</span></span>
+<span><span class="co">## ("lin up/log down") does not apply to: auclast</span></span></code></pre>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">o_nca_boot</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##  start end N     auclast        cmax              tmax</span></span>
+<span><span class="co">##      0  24 9 39.2 [15.4] 3.29 [13.0] 6.00 [2.00, 10.0]</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Caption: auclast, cmax: geometric mean and geometric coefficient of variation; tmax: median and range; N: number of animals in the study; summarized over 200 bootstrap replicates (seed 20261007)</span></span></code></pre>
+<p>The summary treats the replicates the way the summary of dense data
+treats subjects, with each parameter’s usual summary statistics;
+<code>N</code> is the number of animals in the study, and the caption
+gives the number of replicates. The <code>"original"</code> replicate
+holds the data as given, so <code>as.data.frame(o_nca_boot)</code> has
+the estimates as well as every replicate. The standard deviation of the
+replicates is the standard error of the estimate: with only three
+animals at each time, it is smaller for <code>auclast</code> than the
+Nedelman-Jia/Holder standard error (<code>auclast_se</code> above),
+because resampling three values understates their variance by a factor
+of 2/3; <code><a href="../articles/v24-sparse-auc-to-infinity.html">vignette("v24-sparse-auc-to-infinity")</a></code> compares the
+methods.</p>
+<p>To compare groups, such as a test and a reference formulation in a
+parallel design, <code><a href="../reference/be_assess.html">be_assess()</a></code> takes the bootstrap results
+like any other: the ratio of the estimates is the point estimate, and
+its confidence interval is the percentile interval of the replicate
+ratios (90% by default), judged against the acceptance limits. For a
+crossover, where each animal receives every treatment, give the
+treatment column as <code>paired</code> to
+<code><a href="../reference/sparse_bootstrap.html">sparse_bootstrap()</a></code> so that each replicate draws the same
+animals for every treatment.</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">d_sparse_formulations</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">d_sparse</span>, formulation<span class="op">=</span><span class="st">"reference"</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>      id<span class="op">=</span><span class="va">d_sparse</span><span class="op">$</span><span class="va">id</span> <span class="op">+</span> <span class="fl">100</span>, conc<span class="op">=</span><span class="va">d_sparse</span><span class="op">$</span><span class="va">conc</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.9</span>, <span class="fl">1.05</span>, <span class="fl">1.1</span><span class="op">)</span>, time<span class="op">=</span><span class="va">d_sparse</span><span class="op">$</span><span class="va">time</span>,</span>
+<span>      dose<span class="op">=</span><span class="va">d_sparse</span><span class="op">$</span><span class="va">dose</span>, formulation<span class="op">=</span><span class="st">"test"</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">o_conc_formulations</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span></span>
+<span>    <span class="va">d_sparse_formulations</span>, <span class="va">conc</span><span class="op">~</span><span class="va">time</span><span class="op">|</span><span class="va">formulation</span><span class="op">+</span><span class="va">id</span>, sparse<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>    concu<span class="op">=</span><span class="st">"ng/mL"</span>, timeu<span class="op">=</span><span class="st">"hr"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">o_nca_formulations</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="../reference/sparse_bootstrap.html">sparse_bootstrap</a></span><span class="op">(</span><span class="va">o_conc_formulations</span>, seed<span class="op">=</span><span class="fl">20261008</span><span class="op">)</span>,</span>
+<span>    intervals<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>start<span class="op">=</span><span class="fl">0</span>, end<span class="op">=</span><span class="fl">24</span>, auclast<span class="op">=</span><span class="cn">TRUE</span>, cmax<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    options<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>progress<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span>  <span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## The sparse estimators use the linear trapezoidal rule, so the auc.method option</span></span>
+<span><span class="co">## ("lin up/log down") does not apply to: auclast</span></span></code></pre>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/be_assess.html">be_assess</a></span><span class="op">(</span></span>
+<span>  <span class="va">o_nca_formulations</span>, reference_col<span class="op">=</span><span class="st">"formulation"</span>, reference_value<span class="op">=</span><span class="st">"reference"</span>,</span>
+<span>  endpoints<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auclast"</span>, <span class="st">"cmax"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Bioequivalence assessment: ABE (model_type bootstrap, 90% CI)</span></span>
+<span><span class="co">## Design: parallel</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">##  endpoint test  n   design    units gm_reference gm_reference_lower</span></span>
+<span><span class="co">##   auclast test 18 parallel hr*ng/mL        39.47              30.51</span></span>
+<span><span class="co">##      cmax test 18 parallel    ng/mL         3.05               2.65</span></span>
+<span><span class="co">##  gm_reference_upper gm_test gm_test_lower gm_test_upper gmr_percent ci_lower</span></span>
+<span><span class="co">##               48.68   38.92         31.99         46.63       98.62    72.97</span></span>
+<span><span class="co">##                4.08    2.99          2.92          3.82       98.23    73.29</span></span>
+<span><span class="co">##  ci_upper cvwr_percent cvwt_percent swr limit_lower limit_upper criterion</span></span>
+<span><span class="co">##    133.54           NA           NA  NA          80         125        NA</span></span>
+<span><span class="co">##    126.14           NA           NA  NA          80         125        NA</span></span>
+<span><span class="co">##  regulator model_type  pass</span></span>
+<span><span class="co">##        ABE  bootstrap FALSE</span></span>
+<span><span class="co">##        ABE  bootstrap FALSE</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Caption: ABE bioequivalence assessment (90% CI). The estimates and their ratio come from the sparse data of each treatment; each 90% CI is the percentile interval of 200 replicates of a stratified nonparametric bootstrap (Shen and Machado 2017). Bioequivalence requires the confidence interval within 80.00-125.00%.</span></span></code></pre>
+<p>The bootstrap methods are from Shen M. and Machado S. G. (2017).
+Bioequivalence evaluation of sparse sampling pharmacokinetics data using
+bootstrap resampling method. Journal of Biopharmaceutical Statistics,
+27(2):257-264, and Takemoto S., Yamaoka K., Nishikawa M. and Takakura Y.
+(2006). Histogram analysis of pharmacokinetic parameters by bootstrap
+resampling from one-point sampling data in animal experiments. Drug
+Metabolism and Pharmacokinetics, 21(6):458-464.</p>
+</div>
+<div class="section level2">
 <h2 id="deprecated-parameter-names">Deprecated Parameter Names<a class="anchor" aria-label="anchor" href="#deprecated-parameter-names"></a>
 </h2>
 <p>Sparse calculations were originally requested through a parallel set

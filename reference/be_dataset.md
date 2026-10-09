@@ -11,6 +11,9 @@ standardizes the modeling columns (`.subject`, `.sequence`, `.period`,
 ## Usage
 
 ``` r
+be_dataset(object, ...)
+
+# Default S3 method
 be_dataset(
   object,
   reference_col,
@@ -19,7 +22,21 @@ be_dataset(
   subject = NULL,
   sequence = NULL,
   period = NULL,
-  covariates = NULL
+  covariates = NULL,
+  ...
+)
+
+# S3 method for class 'PKNCAresults_sparse_bootstrap'
+be_dataset(
+  object,
+  reference_col,
+  reference_value,
+  endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
+  subject = NULL,
+  sequence = NULL,
+  period = NULL,
+  covariates = NULL,
+  ...
 )
 ```
 
@@ -29,7 +46,15 @@ be_dataset(
 
   A `PKNCAresults` object or a tidy long data.frame with a `PPTESTCD`
   column of parameter names, a `PPORRES`/`PPSTRES` column of values, and
-  subject/sequence/period/treatment columns.
+  subject/sequence/period/treatment columns. The results of a sparse
+  bootstrap (from a `PKNCAconc` object made by
+  [`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md))
+  are compared with the percentile intervals of the bootstrap replicates
+  (Shen and Machado 2017); see Details.
+
+- ...:
+
+  Arguments passed to the methods
 
 - reference_col:
 
@@ -66,7 +91,10 @@ An object of class `be_dataset`: a list with `data` (the standardized
 long frame, including a `.units` column and one `.cov_<name>` column per
 covariate), `columns` (the resolved column names, including `units` and
 `covariates`), `reference_value`, `test_levels`, and `endpoints` (those
-present).
+present). For the results of a sparse bootstrap (see
+[`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md)),
+`data` has one row per bootstrap replicate, group, and endpoint instead
+of one per subject and period.
 
 ## Details
 
@@ -82,6 +110,11 @@ Each covariate is copied to a standardized column named `.cov_<name>`
 (character columns become factors). A covariate may not be one of the
 subject, sequence, period, treatment, or value columns, and it may not
 be missing in any row that is analyzed.
+
+## Methods (by class)
+
+- `be_dataset(PKNCAresults_sparse_bootstrap)`: The replicates of a
+  sparse bootstrap, one row per replicate, treatment, and endpoint
 
 ## See also
 

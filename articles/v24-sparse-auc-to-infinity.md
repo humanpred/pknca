@@ -36,10 +36,31 @@ For sparse sampling, where each animal gives one or a few samples:
   BLQ results, and fall outside the variance methods for sparse AUCs,
   which are for arithmetic means; adopting them would change all sparse
   calculations for a modest gain.
-- **Estimating $`\lambda_z`$ from the individual samples was evaluated
-  and not adopted.** A (mixed-effects) Tobit fit gave a steadier point
-  estimate when $`\lambda_z`$ was uncertain, but its standard error,
-  added to Yuan’s, did not cover as well as the delta method.
+- **The bootstrap
+  ([`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md))
+  gives intervals for any parameter, but they are too narrow with few
+  animals at each time.** With three or four animals per time, its 95%
+  intervals for the AUC to infinity covered 82 to 90% of the time.
+  Prefer the analytical standard errors for the AUCs, and use the
+  bootstrap for parameters and comparisons that have none, such as Cmax
+  and ratios between groups. With 20 or more animals per time, its
+  standard error was accurate and its intervals matched the delta
+  method’s.
+- **With many animals, the bias of the sparse estimate dominates.** BLQ
+  samples and the extrapolation of the mean profile biased the AUC to
+  infinity low (by about 7% with BLQ samples here), whatever the number
+  of animals and whichever half-life was used, so with many animals
+  every confidence interval missed the truth more often than its nominal
+  level.
+- **The Tobit half-life was evaluated with BLQ samples and not adopted
+  for the sparse AUC.** The Tobit fit of the mean profile
+  (`hl_method = "tobit"`, with the LLOQ carried through the mean
+  profile) gave nearly the same AUC to infinity as the log-linear fit,
+  and it has no delta-method standard error. A (mixed-effects) Tobit fit
+  of the individual samples was slightly less biased and more precise,
+  but its standard error added to Yuan’s covered less well than the
+  delta method with slow elimination (87 to 92% against 91 to 94%), and
+  neither Tobit fit removed the bias that BLQ samples cause.
 
 ## Introduction
 
@@ -391,6 +412,264 @@ truth, and the CI width is the median width relative to the truth (%).
 The Monte Carlo standard error of each coverage is at most 0.7
 percentage points.
 
+### Results: the bootstrap
+
+The bootstrap of Shen and Machado (2017)
+([`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md))
+was run on the first 2,000 data sets of each scenario with 200
+replicates each, its default. Each replicate resampled the animals
+within each sampling time (or batch), and its AUC and AUMC to infinity
+were calculated as for the original data. Two intervals were formed: the
+percentile interval of the replicates and the estimate plus or minus
+1.96 bootstrap standard errors (the standard deviation of the
+replicates). The delta method (on all of the scenario’s data sets, which
+include these) is shown for comparison.
+
+| Model | Route | Design | BLQ | Elimination | Coverage percentile | Coverage boot. SE | Coverage delta | CI width percentile | CI width delta |
+|:---|:---|:---|:---|:---|---:|---:|---:|---:|---:|
+| 1-cmt | oral | serial | none | fast | 87.8 | 90.5 | 95.5 | 31 | 42 |
+| 1-cmt | IV bolus | serial | none | fast | 86.7 | 89.2 | 96.3 | 33 | 45 |
+| 1-cmt | oral | batch | none | fast | 85.4 | 86.8 | 95.4 | 41 | 61 |
+| 1-cmt | IV bolus | batch | none | fast | 86.3 | 88.6 | 96.2 | 41 | 60 |
+| 1-cmt | oral | serial | moderate | fast | 87.5 | 92.2 | 95.1 | 36 | 44 |
+| 1-cmt | IV bolus | serial | moderate | fast | 88.3 | 92.8 | 95.7 | 37 | 47 |
+| 1-cmt | oral | batch | moderate | fast | 88.0 | 89.9 | 95.6 | 46 | 64 |
+| 1-cmt | IV bolus | batch | moderate | fast | 87.0 | 89.6 | 95.7 | 44 | 62 |
+| 1-cmt | oral | serial | none | slow | 82.0 | 84.1 | 90.6 | 45 | 64 |
+| 1-cmt | IV bolus | serial | none | slow | 83.1 | 85.3 | 91.2 | 43 | 61 |
+| 1-cmt | oral | batch | none | slow | 81.8 | 84.2 | 91.9 | 48 | 72 |
+| 1-cmt | IV bolus | batch | none | slow | 81.6 | 83.8 | 92.0 | 47 | 70 |
+| 1-cmt | oral | serial | moderate | slow | 89.4 | 90.3 | 92.2 | 64 | 77 |
+| 1-cmt | IV bolus | serial | moderate | slow | 89.6 | 90.4 | 93.6 | 62 | 74 |
+| 1-cmt | oral | batch | moderate | slow | 89.6 | 91.1 | 93.6 | 67 | 83 |
+| 1-cmt | IV bolus | batch | moderate | slow | 89.6 | 90.1 | 93.4 | 63 | 82 |
+| 2-cmt | oral | serial | none | fast | 86.5 | 88.8 | 95.2 | 25 | 32 |
+| 2-cmt | IV bolus | serial | none | fast | 83.7 | 86.6 | 95.1 | 25 | 33 |
+| 2-cmt | oral | batch | none | fast | 84.9 | 87.4 | 95.9 | 30 | 44 |
+| 2-cmt | IV bolus | batch | none | fast | 84.0 | 87.1 | 95.5 | 30 | 44 |
+| 2-cmt | oral | serial | moderate | fast | 89.0 | 91.6 | 95.7 | 27 | 33 |
+| 2-cmt | IV bolus | serial | moderate | fast | 85.2 | 88.1 | 95.5 | 27 | 34 |
+| 2-cmt | oral | batch | moderate | fast | 87.3 | 90.0 | 95.7 | 33 | 45 |
+| 2-cmt | IV bolus | batch | moderate | fast | 86.4 | 89.8 | 95.5 | 32 | 44 |
+| 2-cmt | oral | serial | none | slow | 81.8 | 82.9 | 90.2 | 33 | 50 |
+| 2-cmt | IV bolus | serial | none | slow | 83.2 | 83.9 | 91.6 | 32 | 47 |
+| 2-cmt | oral | batch | none | slow | 82.4 | 84.4 | 92.4 | 35 | 54 |
+| 2-cmt | IV bolus | batch | none | slow | 83.2 | 83.9 | 92.5 | 35 | 52 |
+| 2-cmt | oral | serial | moderate | slow | 86.4 | 86.2 | 91.9 | 42 | 61 |
+| 2-cmt | IV bolus | serial | moderate | slow | 87.1 | 86.6 | 92.1 | 40 | 58 |
+| 2-cmt | oral | batch | moderate | slow | 86.7 | 86.9 | 92.9 | 45 | 64 |
+| 2-cmt | IV bolus | batch | moderate | slow | 89.0 | 89.2 | 93.3 | 44 | 63 |
+
+| Model | Route | Design | BLQ | Elimination | Coverage percentile | Coverage boot. SE | Coverage delta | CI width percentile | CI width delta |
+|:---|:---|:---|:---|:---|---:|---:|---:|---:|---:|
+| 1-cmt | oral | serial | none | fast | 79.8 | 81.0 | 87.5 | 58 | 88 |
+| 1-cmt | IV bolus | serial | none | fast | 77.6 | 77.4 | 87.3 | 58 | 86 |
+| 1-cmt | oral | batch | none | fast | 78.6 | 79.0 | 88.8 | 61 | 95 |
+| 1-cmt | IV bolus | batch | none | fast | 79.1 | 80.0 | 87.7 | 61 | 91 |
+| 1-cmt | oral | serial | moderate | fast | 88.1 | 88.8 | 89.0 | 87 | 101 |
+| 1-cmt | IV bolus | serial | moderate | fast | 87.0 | 86.9 | 89.5 | 82 | 99 |
+| 1-cmt | oral | batch | moderate | fast | 87.9 | 89.0 | 91.8 | 92 | 111 |
+| 1-cmt | IV bolus | batch | moderate | fast | 87.4 | 87.1 | 89.9 | 87 | 107 |
+| 1-cmt | oral | serial | none | slow | 75.8 | 74.0 | 82.8 | 116 | 159 |
+| 1-cmt | IV bolus | serial | none | slow | 76.2 | 74.7 | 81.8 | 107 | 151 |
+| 1-cmt | oral | batch | none | slow | 75.6 | 73.9 | 82.1 | 108 | 153 |
+| 1-cmt | IV bolus | batch | none | slow | 74.8 | 73.8 | 82.5 | 102 | 146 |
+| 1-cmt | oral | serial | moderate | slow | 89.0 | 88.5 | 84.6 | 185 | 185 |
+| 1-cmt | IV bolus | serial | moderate | slow | 89.4 | 88.2 | 86.2 | 172 | 177 |
+| 1-cmt | oral | batch | moderate | slow | 90.0 | 89.6 | 85.6 | 180 | 178 |
+| 1-cmt | IV bolus | batch | moderate | slow | 89.4 | 89.4 | 85.8 | 162 | 171 |
+| 2-cmt | oral | serial | none | fast | 80.0 | 80.2 | 87.4 | 54 | 81 |
+| 2-cmt | IV bolus | serial | none | fast | 77.7 | 77.6 | 86.7 | 55 | 82 |
+| 2-cmt | oral | batch | none | fast | 78.0 | 78.9 | 88.7 | 57 | 89 |
+| 2-cmt | IV bolus | batch | none | fast | 76.0 | 76.7 | 87.5 | 57 | 87 |
+| 2-cmt | oral | serial | moderate | fast | 84.5 | 85.2 | 87.5 | 72 | 91 |
+| 2-cmt | IV bolus | serial | moderate | fast | 84.2 | 83.6 | 86.9 | 70 | 92 |
+| 2-cmt | oral | batch | moderate | fast | 86.1 | 86.7 | 89.5 | 76 | 98 |
+| 2-cmt | IV bolus | batch | moderate | fast | 85.5 | 85.2 | 87.5 | 73 | 95 |
+| 2-cmt | oral | serial | none | slow | 74.3 | 70.5 | 80.0 | 89 | 134 |
+| 2-cmt | IV bolus | serial | none | slow | 73.2 | 69.0 | 79.9 | 85 | 129 |
+| 2-cmt | oral | batch | none | slow | 74.7 | 71.6 | 81.2 | 87 | 135 |
+| 2-cmt | IV bolus | batch | none | slow | 71.8 | 68.9 | 79.2 | 85 | 129 |
+| 2-cmt | oral | serial | moderate | slow | 80.6 | 77.6 | 82.4 | 112 | 158 |
+| 2-cmt | IV bolus | serial | moderate | slow | 80.2 | 74.4 | 80.3 | 105 | 148 |
+| 2-cmt | oral | batch | moderate | slow | 82.8 | 80.1 | 81.9 | 113 | 154 |
+| 2-cmt | IV bolus | batch | moderate | slow | 83.5 | 79.0 | 81.7 | 110 | 151 |
+
+### Results: the bootstrap with more animals at each time
+
+Published uses of the bootstrap had either a few animals per time (three
+mice in Takemoto et al. 2006, which compared only the means and standard
+deviations with Bailer’s) or many (about 88 subjects per time and
+treatment in the bioequivalence study of Shen and Machado 2017). To see
+how the number of animals per time changes the comparison, the
+two-compartment, oral, serial-sacrifice design with slow elimination was
+simulated with 4, 6, 10, 20, 50, 100 animals per time, without and with
+BLQ samples (2,000 data sets each, 200 bootstrap replicates;
+`data-raw/sparse_bootstrap_n_profile.R`). The data seeds do not depend
+on the number of animals, so 4 animals per time reproduces the data sets
+above. The bias is that of the point estimate, which all of the methods
+share.
+
+| BLQ | Animals per time | Coverage percentile | Coverage boot. SE | Coverage Yuan | Coverage delta | CI width percentile | CI width delta | Bias (%) |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| none | 4 | 81.8 | 82.9 | 83.9 | 89.9 | 33 | 49 | -2.3 |
+| none | 6 | 84.9 | 85.3 | 81.4 | 90.4 | 30 | 38 | -2.4 |
+| none | 10 | 87.6 | 87.8 | 77.7 | 89.8 | 25 | 29 | -2.2 |
+| none | 20 | 89.8 | 89.6 | 79.8 | 90.0 | 19 | 20 | -1.9 |
+| none | 50 | 89.8 | 88.9 | 74.2 | 89.1 | 12 | 13 | -1.8 |
+| none | 100 | 86.3 | 85.9 | 69.4 | 85.6 | 9 | 9 | -1.7 |
+| moderate | 4 | 86.5 | 86.2 | 80.6 | 90.9 | 42 | 60 | -6.1 |
+| moderate | 6 | 89.2 | 87.5 | 76.2 | 88.2 | 38 | 44 | -6.7 |
+| moderate | 10 | 90.1 | 86.6 | 69.8 | 83.9 | 31 | 33 | -6.7 |
+| moderate | 20 | 84.3 | 78.8 | 55.8 | 74.3 | 22 | 22 | -6.8 |
+| moderate | 50 | 55.9 | 50.3 | 30.0 | 49.4 | 14 | 14 | -7.0 |
+| moderate | 100 | 29.2 | 26.0 | 11.2 | 25.8 | 10 | 10 | -6.9 |
+
+| BLQ | Animals per time | Coverage percentile | Coverage boot. SE | Coverage Yuan | Coverage delta | CI width percentile | CI width delta | Bias (%) |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| none | 4 | 74.3 | 70.5 | 62.9 | 79.8 | 89 | 135 | -18.6 |
+| none | 6 | 75.8 | 71.9 | 56.8 | 77.6 | 83 | 100 | -18.5 |
+| none | 10 | 77.0 | 72.2 | 48.9 | 73.6 | 68 | 75 | -17.3 |
+| none | 20 | 74.1 | 66.8 | 39.0 | 66.6 | 51 | 51 | -16.7 |
+| none | 50 | 59.0 | 52.5 | 21.0 | 51.8 | 33 | 33 | -16.1 |
+| none | 100 | 37.1 | 32.6 | 8.7 | 30.6 | 23 | 23 | -15.9 |
+| moderate | 4 | 80.6 | 77.6 | 60.5 | 81.3 | 112 | 154 | -29.1 |
+| moderate | 6 | 81.7 | 75.8 | 48.0 | 72.8 | 97 | 108 | -29.4 |
+| moderate | 10 | 78.8 | 71.0 | 37.9 | 63.1 | 80 | 79 | -29.8 |
+| moderate | 20 | 65.5 | 55.2 | 20.9 | 47.0 | 57 | 54 | -29.4 |
+| moderate | 50 | 24.6 | 18.0 | 3.9 | 16.2 | 34 | 33 | -30.0 |
+| moderate | 100 | 3.8 | 2.4 | 0.1 | 2.1 | 24 | 23 | -29.5 |
+
+### Results: the Tobit half-life with BLQ samples
+
+PKNCA can also fit the half-life by Tobit regression
+(`hl_method = "tobit"`), which treats BLQ samples as censored below the
+LLOQ rather than dropping them. For sparse data, it fits the mean
+profile, with the median LLOQ of the samples at each time and a time
+whose mean is BLQ censored. With the BLQ scenarios above (the first
+1,000 data sets of each) and the BLQ arm of the profile over the number
+of animals per time (2,000 data sets at each number), three estimates of
+$`\lambda_z`$ were compared: the log-linear fit of the mean profile
+(“log-linear”, as above), the Tobit fit of the mean profile (“Tobit
+mean”), and the Tobit fit of the individual samples (“Tobit indiv.”, as
+the “individual” method above). Each gave the AUC and AUMC to infinity
+from the same sparse AUC to $`t_{last}`$ and mean at $`t_{last}`$, with
+these intervals: Yuan’s and the delta method for the log-linear fit;
+Yuan’s for the Tobit fit of the mean profile, which has no standard
+error for $`\lambda_z`$; Yuan’s variance plus that of $`\lambda_z`$ for
+the Tobit fit of the individual samples; and, for each, the bootstrap
+percentile interval (200 replicates, each refitting its own
+$`\lambda_z`$; `data-raw/sparse_tobit_simulation.R`).
+
+Coverage (%) of the 95% intervals for the AUC to infinity, with four
+animals per time (three per batch):
+
+| Model | Route | Design | Elimination | Log-lin. Yuan | Log-lin. delta | Log-lin. boot. | Tobit mean Yuan | Tobit mean boot. | Tobit indiv. Yuan+var | Tobit indiv. boot. |
+|:---|:---|:---|:---|---:|---:|---:|---:|---:|---:|---:|
+| 1-cmt | oral | serial | fast | 94.9 | 96.3 | 88.0 | 94.5 | 87.9 | 95.5 | 87.7 |
+| 1-cmt | IV bolus | serial | fast | 94.9 | 96.4 | 88.2 | 95.0 | 88.1 | 95.0 | 87.7 |
+| 1-cmt | oral | batch | fast | 95.2 | 95.5 | 88.5 | 94.9 | 86.9 | 95.2 | 87.1 |
+| 1-cmt | IV bolus | batch | fast | 94.9 | 96.2 | 87.3 | 94.7 | 87.5 | 94.7 | 87.0 |
+| 1-cmt | oral | serial | slow | 82.7 | 92.9 | 88.8 | 82.0 | 82.2 | 89.0 | 82.8 |
+| 1-cmt | IV bolus | serial | slow | 86.3 | 93.5 | 89.7 | 85.8 | 84.4 | 91.2 | 85.0 |
+| 1-cmt | oral | batch | slow | 87.5 | 94.3 | 89.9 | 87.2 | 80.6 | 92.2 | 83.9 |
+| 1-cmt | IV bolus | batch | slow | 89.1 | 93.8 | 90.3 | 88.8 | 84.1 | 91.5 | 85.4 |
+| 2-cmt | oral | serial | fast | 94.2 | 95.6 | 90.2 | 94.5 | 89.4 | 94.7 | 89.4 |
+| 2-cmt | IV bolus | serial | fast | 93.5 | 94.9 | 85.4 | 93.7 | 85.0 | 94.4 | 85.7 |
+| 2-cmt | oral | batch | fast | 95.1 | 96.4 | 88.4 | 95.3 | 87.1 | 96.0 | 87.6 |
+| 2-cmt | IV bolus | batch | fast | 95.2 | 95.8 | 87.2 | 95.4 | 86.7 | 95.5 | 86.8 |
+| 2-cmt | oral | serial | slow | 80.6 | 90.9 | 86.5 | 80.6 | 78.9 | 86.7 | 80.1 |
+| 2-cmt | IV bolus | serial | slow | 84.2 | 92.0 | 86.6 | 82.6 | 80.2 | 89.5 | 82.1 |
+| 2-cmt | oral | batch | slow | 85.0 | 93.4 | 86.2 | 84.8 | 80.0 | 89.5 | 81.2 |
+| 2-cmt | IV bolus | batch | slow | 86.0 | 93.6 | 88.9 | 86.3 | 80.9 | 90.4 | 83.3 |
+
+And for the AUMC to infinity:
+
+| Model | Route | Design | Elimination | Log-lin. Yuan | Log-lin. delta | Log-lin. boot. | Tobit mean Yuan | Tobit mean boot. | Tobit indiv. Yuan+var | Tobit indiv. boot. |
+|:---|:---|:---|:---|---:|---:|---:|---:|---:|---:|---:|
+| 1-cmt | oral | serial | fast | 86.6 | 91.5 | 88.5 | 86.6 | 82.1 | 87.4 | 82.1 |
+| 1-cmt | IV bolus | serial | fast | 84.6 | 89.2 | 86.8 | 83.5 | 79.4 | 84.9 | 79.3 |
+| 1-cmt | oral | batch | fast | 88.9 | 91.8 | 88.4 | 87.8 | 81.6 | 88.8 | 82.2 |
+| 1-cmt | IV bolus | batch | fast | 88.2 | 91.9 | 89.2 | 86.9 | 81.4 | 88.0 | 82.0 |
+| 1-cmt | oral | serial | slow | 66.8 | 85.0 | 89.2 | 64.1 | 77.7 | 76.5 | 78.2 |
+| 1-cmt | IV bolus | serial | slow | 67.5 | 85.1 | 89.0 | 65.2 | 77.2 | 76.0 | 77.9 |
+| 1-cmt | oral | batch | slow | 67.5 | 86.3 | 89.8 | 64.7 | 74.8 | 77.1 | 77.6 |
+| 1-cmt | IV bolus | batch | slow | 71.2 | 86.8 | 89.8 | 68.7 | 77.1 | 78.7 | 79.2 |
+| 2-cmt | oral | serial | fast | 82.4 | 87.2 | 84.7 | 83.1 | 76.6 | 83.7 | 76.6 |
+| 2-cmt | IV bolus | serial | fast | 84.6 | 88.3 | 85.1 | 85.0 | 79.0 | 85.3 | 79.0 |
+| 2-cmt | oral | batch | fast | 84.3 | 87.7 | 85.9 | 84.3 | 78.3 | 85.2 | 78.2 |
+| 2-cmt | IV bolus | batch | fast | 84.7 | 88.6 | 85.4 | 83.9 | 77.6 | 85.0 | 76.6 |
+| 2-cmt | oral | serial | slow | 60.5 | 81.3 | 80.6 | 59.2 | 71.8 | 69.7 | 71.8 |
+| 2-cmt | IV bolus | serial | slow | 61.4 | 80.5 | 80.6 | 59.4 | 73.4 | 68.9 | 72.5 |
+| 2-cmt | oral | batch | slow | 64.2 | 82.6 | 83.1 | 62.2 | 74.0 | 74.3 | 74.3 |
+| 2-cmt | IV bolus | batch | slow | 62.7 | 81.7 | 82.8 | 61.0 | 73.2 | 71.9 | 72.5 |
+
+Bias and median absolute error (MAE), relative to the truth (%), of the
+AUC and then the AUMC to infinity with each $`\lambda_z`$ (the point
+estimate does not depend on the interval):
+
+| Model | Route | Design | Elimination | Bias log-lin. | Bias Tobit mean | Bias Tobit indiv. | MAE log-lin. | MAE Tobit mean | MAE Tobit indiv. |
+|:---|:---|:---|:---|---:|---:|---:|---:|---:|---:|
+| 1-cmt | oral | serial | fast | 2.7 | 2.1 | 1.9 | 7.0 | 6.8 | 6.7 |
+| 1-cmt | IV bolus | serial | fast | 3.0 | 2.4 | 2.1 | 8.1 | 8.1 | 7.6 |
+| 1-cmt | oral | batch | fast | 2.6 | 1.7 | 1.4 | 9.2 | 9.0 | 8.9 |
+| 1-cmt | IV bolus | batch | fast | 2.8 | 2.0 | 1.7 | 9.0 | 9.0 | 9.0 |
+| 1-cmt | oral | serial | slow | -6.0 | -6.6 | -5.8 | 12.5 | 12.8 | 11.6 |
+| 1-cmt | IV bolus | serial | slow | -6.0 | -6.3 | -5.7 | 11.8 | 11.9 | 11.0 |
+| 1-cmt | oral | batch | slow | -4.9 | -6.1 | -5.1 | 13.1 | 13.5 | 12.1 |
+| 1-cmt | IV bolus | batch | slow | -4.0 | -5.5 | -4.7 | 12.6 | 13.1 | 11.5 |
+| 2-cmt | oral | serial | fast | 1.9 | 1.9 | 1.7 | 5.5 | 5.4 | 5.2 |
+| 2-cmt | IV bolus | serial | fast | 4.0 | 4.0 | 3.6 | 6.2 | 6.1 | 6.0 |
+| 2-cmt | oral | batch | fast | 2.1 | 1.9 | 1.4 | 7.0 | 7.0 | 6.7 |
+| 2-cmt | IV bolus | batch | fast | 3.2 | 3.4 | 2.9 | 7.1 | 7.2 | 6.9 |
+| 2-cmt | oral | serial | slow | -6.1 | -6.2 | -5.5 | 10.3 | 10.7 | 9.6 |
+| 2-cmt | IV bolus | serial | slow | -5.3 | -5.3 | -4.9 | 9.9 | 10.3 | 8.9 |
+| 2-cmt | oral | batch | slow | -5.7 | -5.7 | -5.0 | 10.4 | 10.8 | 9.4 |
+| 2-cmt | IV bolus | batch | slow | -4.9 | -4.8 | -4.4 | 9.8 | 10.4 | 9.1 |
+
+| Model | Route | Design | Elimination | Bias log-lin. | Bias Tobit mean | Bias Tobit indiv. | MAE log-lin. | MAE Tobit mean | MAE Tobit indiv. |
+|:---|:---|:---|:---|---:|---:|---:|---:|---:|---:|
+| 1-cmt | oral | serial | fast | -5.1 | -6.7 | -7.1 | 16.4 | 16.4 | 14.7 |
+| 1-cmt | IV bolus | serial | fast | -6.6 | -8.2 | -8.8 | 16.4 | 17.1 | 15.9 |
+| 1-cmt | oral | batch | fast | -5.4 | -7.5 | -7.7 | 16.8 | 17.1 | 16.1 |
+| 1-cmt | IV bolus | batch | fast | -7.0 | -9.2 | -10.3 | 17.0 | 17.5 | 16.0 |
+| 1-cmt | oral | serial | slow | -23.1 | -25.3 | -21.8 | 35.4 | 37.5 | 31.8 |
+| 1-cmt | IV bolus | serial | slow | -25.6 | -26.8 | -24.0 | 34.4 | 35.3 | 31.1 |
+| 1-cmt | oral | batch | slow | -22.2 | -25.5 | -22.3 | 34.0 | 36.2 | 30.0 |
+| 1-cmt | IV bolus | batch | slow | -21.6 | -23.8 | -21.6 | 33.0 | 35.4 | 28.5 |
+| 2-cmt | oral | serial | fast | -8.5 | -9.6 | -10.4 | 16.0 | 16.6 | 15.5 |
+| 2-cmt | IV bolus | serial | fast | -9.0 | -8.9 | -10.5 | 15.8 | 16.1 | 15.2 |
+| 2-cmt | oral | batch | fast | -8.6 | -9.3 | -10.0 | 17.1 | 18.1 | 16.3 |
+| 2-cmt | IV bolus | batch | fast | -9.8 | -9.8 | -11.2 | 17.0 | 17.6 | 16.5 |
+| 2-cmt | oral | serial | slow | -29.1 | -29.4 | -26.3 | 34.8 | 36.0 | 32.2 |
+| 2-cmt | IV bolus | serial | slow | -30.0 | -29.9 | -27.7 | 35.8 | 37.9 | 32.3 |
+| 2-cmt | oral | batch | slow | -27.5 | -27.9 | -25.5 | 33.7 | 35.7 | 30.7 |
+| 2-cmt | IV bolus | batch | slow | -28.8 | -28.4 | -27.1 | 35.0 | 37.1 | 31.9 |
+
+Over the number of animals per time (two compartments, oral, serial
+sacrifice, slow elimination, BLQ samples), the coverage (%) and the bias
+(%) of the AUC to infinity:
+
+| Animals per time | Log-lin. Yuan | Log-lin. delta | Log-lin. boot. | Tobit mean Yuan | Tobit mean boot. | Tobit indiv. Yuan+var | Tobit indiv. boot. | Bias log-lin. | Bias Tobit mean | Bias Tobit indiv. |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 4 | 80.6 | 90.9 | 86.5 | 80.6 | 78.9 | 86.7 | 80.1 | -6.1 | -6.2 | -5.5 |
+| 6 | 76.2 | 88.2 | 89.2 | 75.3 | 81.3 | 83.9 | 83.0 | -6.7 | -6.7 | -5.8 |
+| 10 | 69.8 | 83.9 | 90.1 | 68.4 | 82.2 | 79.7 | 84.5 | -6.7 | -6.8 | -5.6 |
+| 20 | 55.8 | 74.3 | 84.3 | 55.5 | 77.1 | 69.4 | 79.2 | -6.8 | -6.9 | -5.6 |
+| 50 | 30.0 | 49.4 | 55.9 | 30.6 | 54.6 | 48.2 | 63.0 | -7.0 | -7.0 | -5.6 |
+| 100 | 11.2 | 25.8 | 29.2 | 11.3 | 30.6 | 27.4 | 43.5 | -6.9 | -6.8 | -5.5 |
+
+And of the AUMC to infinity:
+
+| Animals per time | Log-lin. Yuan | Log-lin. delta | Log-lin. boot. | Tobit mean Yuan | Tobit mean boot. | Tobit indiv. Yuan+var | Tobit indiv. boot. | Bias log-lin. | Bias Tobit mean | Bias Tobit indiv. |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 4 | 60.5 | 81.3 | 80.6 | 59.2 | 71.8 | 69.7 | 71.8 | -29.1 | -29.4 | -26.3 |
+| 6 | 48.0 | 72.8 | 81.7 | 47.5 | 72.0 | 60.2 | 72.5 | -29.4 | -30.1 | -26.3 |
+| 10 | 37.9 | 63.1 | 78.8 | 37.2 | 70.2 | 50.7 | 71.0 | -29.8 | -29.8 | -26.0 |
+| 20 | 20.9 | 47.0 | 65.5 | 22.0 | 58.1 | 36.0 | 60.8 | -29.4 | -29.7 | -25.1 |
+| 50 | 3.9 | 16.2 | 24.6 | 4.0 | 25.6 | 12.3 | 30.9 | -30.0 | -29.8 | -25.4 |
+| 100 | 0.1 | 2.1 | 3.8 | 0.1 | 4.2 | 1.8 | 8.3 | -29.5 | -29.5 | -24.8 |
+
 ### Results: accuracy of the point estimates
 
 The point estimate with $`\lambda_z`$ from the log means (“mean”, shared
@@ -509,6 +788,58 @@ which a single exponential from $`t_{last}`$ misses.
 **Interval width.** The delta-method intervals were wider than Yuan’s,
 most when elimination was slow; the extra width is what improved the
 coverage.
+
+**The bootstrap.** With three or four animals at each time, the
+bootstrap intervals were too narrow. For the AUC to infinity, the
+percentile interval covered 83.7 to 89.0% with fast elimination and 81.6
+to 89.6% with slow elimination, against 95.1 to 96.3% and 90.2 to 93.6%
+for the delta method, and the interval from the bootstrap standard error
+was little better (82.9 to 92.8%). Resampling $`n`$ animals understates
+the variance of their mean by the factor $`(n - 1)/n`$ (3/4 with four
+animals), and the percentile interval of a skewed estimate is narrow as
+well. For the AUMC to infinity, the bootstrap covered 71.8 to 90.0%:
+better than Yuan’s method when elimination was slow, and as good as or
+better than the delta method only with slow elimination and BLQ samples,
+where the first-order delta method is weakest. The bootstrap’s advantage
+is that it applies to every parameter and to ratios between groups (Shen
+and Machado 2017), including parameters with no analytical standard
+error, such as Cmax and the half-life; with few animals at each time,
+its intervals should be read as too narrow.
+
+**More animals at each time.** The bootstrap improved with more animals,
+as its $`(n - 1)/n`$ shortfall shrank. Without BLQ samples, its
+percentile interval for the AUC to infinity covered 81.8% with 4 animals
+per time and 89.8% with 20, when the delta method covered 90.0%; with
+BLQ samples, it matched or passed the delta method from 6 animals per
+time. Its standard error was then as accurate as the delta method’s. But
+with many animals, every interval under-covered: with 100 animals per
+time, the percentile interval covered 86.3% without and 29.2% with BLQ
+samples (the delta method, 85.6% and 25.8%). The cause is the estimate,
+not its standard error: the sparse AUC to infinity was biased by -1.7%
+without and -6.9% with BLQ samples, whatever the number of animals, from
+the BLQ samples counted as zero in the late means and the extrapolation
+of a mean of animals with different elimination rates. More animals make
+every interval narrower around the same biased estimate, so no choice of
+interval corrects it. The AUMC to infinity, biased by -15.9% and -29.5%,
+showed the same pattern sooner.
+
+**The Tobit half-life.** With BLQ samples, the Tobit fit of the mean
+profile changed little: the bias of the AUC to infinity was -6.6 to
+4.0%, against -6.1 to 4.0% for the log-linear fit, and Yuan’s intervals
+covered the same. Its bootstrap intervals were narrower than the
+log-linear fit’s and covered less (79 to 84% against 86 to 90% with slow
+elimination), and with no standard error for $`\lambda_z`$ it cannot use
+the delta method. The Tobit fit of the individual samples was slightly
+less biased and more precise: with 100 animals per time, its AUC to
+infinity was biased by -5.5% and its AUMC by -24.8%, against -6.9% and
+-29.5% for the log-linear fit. Its intervals were still less reliable
+than the delta method with few animals per time, and with many animals
+the bias left every interval short of nominal, whichever $`\lambda_z`$
+was used. So most of the bias that BLQ samples add does not come from
+$`\lambda_z`$, and a better fit of $`\lambda_z`$ does not remove it: it
+comes from the late means, where BLQ samples count as zero, and from the
+mean profile ending earlier, when more than half of a time’s samples are
+BLQ.
 
 ## Arithmetic or geometric mean profiles
 
@@ -695,10 +1026,14 @@ Estimating $`\lambda_z`$ from the individual samples with a
 samples were BLQ, but adding its variance to Yuan’s did not give
 adequate coverage, and its mixed-effects fit was itself occasionally
 unstable in the batch design with BLQ samples and slow elimination. A
-natural refinement, not studied here, would combine the
-individual-sample $`\lambda_z`$ with a variance that includes its
-covariance with the means, for example by a joint delta method or a
-bootstrap over animals.
+bootstrap over animals, which includes the covariance of that
+$`\lambda_z`$ with the means, was too narrow with few animals per time,
+as every bootstrap was. The Tobit fit of the mean profile, which uses
+the LLOQs, gave nearly the same results as the log-linear fit. Neither
+Tobit fit removed the bias of the sparse estimate with BLQ samples,
+which comes mostly from counting BLQ samples as zero in the late means
+and from the mean profile ending earlier; estimating those means with
+the censoring taken into account would be the place to reduce it.
 
 Limitations remain. The delta method conditions on the selected
 half-life points, so the uncertainty of the automatic point selection is
@@ -727,6 +1062,16 @@ confidence intervals to sparse sampling. Pharmaceutical Research.
 Nedelman JR, Jia X. An extension of Satterthwaite’s approximation
 applied to pharmacokinetics. Journal of Biopharmaceutical Statistics.
 1998;8(2):317-328. <doi:10.1080/10543409808835241>
+
+Shen M, Machado SG. Bioequivalence evaluation of sparse sampling
+pharmacokinetics data using bootstrap resampling method. Journal of
+Biopharmaceutical Statistics. 2017;27(2):257-264.
+<doi:10.1080/10543406.2016.1265543>
+
+Takemoto S, Yamaoka K, Nishikawa M, Takakura Y. Histogram analysis of
+pharmacokinetic parameters by bootstrap resampling from one-point
+sampling data in animal experiments. Drug Metabolism and
+Pharmacokinetics. 2006;21(6):458-464. <doi:10.2133/dmpk.21.458>
 
 Yuan J. Estimation of variance for AUC in animal studies. Journal of
 Pharmaceutical Sciences. 1993;82(7):761-763.

@@ -734,6 +734,9 @@
   : Calculate the weight for sparse AUC calculation with the
   linear-trapezoidal rule
 
+- [`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md)
+  : Bootstrap resampling of sparse PK data
+
 - [`sparse_mean()`](https://humanpred.github.io/pknca/reference/sparse_mean.md)
   : Calculate the mean concentration at all time points for use in
   sparse NCA calculations
@@ -750,6 +753,9 @@
 
 - [`summary(`*`<PKNCAresults>`*`)`](https://humanpred.github.io/pknca/reference/summary.PKNCAresults.md)
   : Summarize PKNCA results
+
+- [`summary(`*`<PKNCAresults_sparse_bootstrap>`*`)`](https://humanpred.github.io/pknca/reference/summary.PKNCAresults_sparse_bootstrap.md)
+  : Summarize the results of a sparse bootstrap
 
 - [`superposition()`](https://humanpred.github.io/pknca/reference/superposition.md)
   : Compute noncompartmental superposition for repeated dosing

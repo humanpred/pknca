@@ -14,6 +14,9 @@ that adds the `be_assess` class and its print/summary methods.
 ## Usage
 
 ``` r
+be_assess(object, ...)
+
+# Default S3 method
 be_assess(
   object,
   reference_col,
@@ -27,7 +30,26 @@ be_assess(
   period = NULL,
   design = NULL,
   covariates = NULL,
-  heteroscedastic = FALSE
+  heteroscedastic = FALSE,
+  ...
+)
+
+# S3 method for class 'PKNCAresults_sparse_bootstrap'
+be_assess(
+  object,
+  reference_col,
+  reference_value,
+  endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
+  regulator = "ABE",
+  model_type = NULL,
+  alpha = 0.1,
+  subject = NULL,
+  sequence = NULL,
+  period = NULL,
+  design = NULL,
+  covariates = NULL,
+  heteroscedastic = FALSE,
+  ...
 )
 ```
 
@@ -37,7 +59,15 @@ be_assess(
 
   A `PKNCAresults` object or a tidy long data.frame with a `PPTESTCD`
   column of parameter names, a `PPORRES`/`PPSTRES` column of values, and
-  subject/sequence/period/treatment columns.
+  subject/sequence/period/treatment columns. The results of a sparse
+  bootstrap (from a `PKNCAconc` object made by
+  [`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md))
+  are compared with the percentile intervals of the bootstrap replicates
+  (Shen and Machado 2017); see Details.
+
+- ...:
+
+  Arguments passed to the methods
 
 - reference_col:
 
@@ -153,6 +183,32 @@ per-formulation variances are then used as the within-subject variances.
 and its confidence interval exactly as for `"ABE"` but applies no
 acceptance limits and reports no pass/fail, for comparisons such as food
 effect and drug-drug interaction studies.
+
+For the results of a sparse bootstrap (Shen and Machado 2017; see
+[`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md)),
+there is one estimate per treatment, from the sparse data, rather than
+one per subject. The ratio of the test and reference estimates is the
+point estimate, and its confidence interval is the percentile interval
+of the ratios of the bootstrap replicates (`model_type = "bootstrap"`).
+The `gm_*` columns hold the estimates of each treatment with their
+percentile intervals. A parallel design resamples the treatments
+independently; for a crossover, give the treatment column as `paired` to
+[`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md).
+There is no within-subject variance, so only the `"ABE"` and
+`"descriptive"` frameworks apply, and the results may have no groups
+other than `reference_col` (filter them first).
+
+## Methods (by class)
+
+- `be_assess(PKNCAresults_sparse_bootstrap)`: Bioequivalence from the
+  percentile intervals of a sparse bootstrap (Shen and Machado 2017)
+
+## References
+
+Shen M, Machado SG. Bioequivalence evaluation of sparse sampling
+pharmacokinetics data using bootstrap resampling method. Journal of
+Biopharmaceutical Statistics. 2017;27(2):257-264.
+doi:10.1080/10543406.2016.1265543
 
 ## See also
 

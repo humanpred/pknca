@@ -139,13 +139,31 @@ BLQ samples that drives their BLQ results, and fall outside the variance
 methods for sparse AUCs, which are for arithmetic means; adopting them
 would change all sparse calculations for a modest gain.</li>
 <li>
-<strong>Estimating
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
-from the individual samples was evaluated and not adopted.</strong> A
-(mixed-effects) Tobit fit gave a steadier point estimate when
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
-was uncertain, but its standard error, added to Yuan’s, did not cover as
-well as the delta method.</li>
+<strong>The bootstrap (<code><a href="../reference/sparse_bootstrap.html">sparse_bootstrap()</a></code>) gives
+intervals for any parameter, but they are too narrow with few animals at
+each time.</strong> With three or four animals per time, its 95%
+intervals for the AUC to infinity covered 82 to 90% of the time. Prefer
+the analytical standard errors for the AUCs, and use the bootstrap for
+parameters and comparisons that have none, such as Cmax and ratios
+between groups. With 20 or more animals per time, its standard error was
+accurate and its intervals matched the delta method’s.</li>
+<li>
+<strong>With many animals, the bias of the sparse estimate
+dominates.</strong> BLQ samples and the extrapolation of the mean
+profile biased the AUC to infinity low (by about 7% with BLQ samples
+here), whatever the number of animals and whichever half-life was used,
+so with many animals every confidence interval missed the truth more
+often than its nominal level.</li>
+<li>
+<strong>The Tobit half-life was evaluated with BLQ samples and not
+adopted for the sparse AUC.</strong> The Tobit fit of the mean profile
+(<code>hl_method = "tobit"</code>, with the LLOQ carried through the
+mean profile) gave nearly the same AUC to infinity as the log-linear
+fit, and it has no delta-method standard error. A (mixed-effects) Tobit
+fit of the individual samples was slightly less biased and more precise,
+but its standard error added to Yuan’s covered less well than the delta
+method with slow elimination (87 to 92% against 91 to 94%), and neither
+Tobit fit removed the bias that BLQ samples cause.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -1461,6 +1479,2348 @@ the truth, and the CI width is the median width relative to the truth
 percentage points.</p>
 </div>
 <div class="section level3">
+<h3 id="results-the-bootstrap">Results: the bootstrap<a class="anchor" aria-label="anchor" href="#results-the-bootstrap"></a>
+</h3>
+<p>The bootstrap of Shen and Machado (2017)
+(<code><a href="../reference/sparse_bootstrap.html">sparse_bootstrap()</a></code>) was run on the first 2,000 data sets
+of each scenario with 200 replicates each, its default. Each replicate
+resampled the animals within each sampling time (or batch), and its AUC
+and AUMC to infinity were calculated as for the original data. Two
+intervals were formed: the percentile interval of the replicates and the
+estimate plus or minus 1.96 bootstrap standard errors (the standard
+deviation of the replicates). The delta method (on all of the scenario’s
+data sets, which include these) is shown for comparison.</p>
+<table class="table">
+<colgroup>
+<col width="4%">
+<col width="6%">
+<col width="5%">
+<col width="6%">
+<col width="9%">
+<col width="15%">
+<col width="13%">
+<col width="11%">
+<col width="15%">
+<col width="11%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Route</th>
+<th align="left">Design</th>
+<th align="left">BLQ</th>
+<th align="left">Elimination</th>
+<th align="right">Coverage percentile</th>
+<th align="right">Coverage boot. SE</th>
+<th align="right">Coverage delta</th>
+<th align="right">CI width percentile</th>
+<th align="right">CI width delta</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">87.8</td>
+<td align="right">90.5</td>
+<td align="right">95.5</td>
+<td align="right">31</td>
+<td align="right">42</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">86.7</td>
+<td align="right">89.2</td>
+<td align="right">96.3</td>
+<td align="right">33</td>
+<td align="right">45</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">85.4</td>
+<td align="right">86.8</td>
+<td align="right">95.4</td>
+<td align="right">41</td>
+<td align="right">61</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">86.3</td>
+<td align="right">88.6</td>
+<td align="right">96.2</td>
+<td align="right">41</td>
+<td align="right">60</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">87.5</td>
+<td align="right">92.2</td>
+<td align="right">95.1</td>
+<td align="right">36</td>
+<td align="right">44</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">88.3</td>
+<td align="right">92.8</td>
+<td align="right">95.7</td>
+<td align="right">37</td>
+<td align="right">47</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">88.0</td>
+<td align="right">89.9</td>
+<td align="right">95.6</td>
+<td align="right">46</td>
+<td align="right">64</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">87.0</td>
+<td align="right">89.6</td>
+<td align="right">95.7</td>
+<td align="right">44</td>
+<td align="right">62</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">82.0</td>
+<td align="right">84.1</td>
+<td align="right">90.6</td>
+<td align="right">45</td>
+<td align="right">64</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">83.1</td>
+<td align="right">85.3</td>
+<td align="right">91.2</td>
+<td align="right">43</td>
+<td align="right">61</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">81.8</td>
+<td align="right">84.2</td>
+<td align="right">91.9</td>
+<td align="right">48</td>
+<td align="right">72</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">81.6</td>
+<td align="right">83.8</td>
+<td align="right">92.0</td>
+<td align="right">47</td>
+<td align="right">70</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">89.4</td>
+<td align="right">90.3</td>
+<td align="right">92.2</td>
+<td align="right">64</td>
+<td align="right">77</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">89.6</td>
+<td align="right">90.4</td>
+<td align="right">93.6</td>
+<td align="right">62</td>
+<td align="right">74</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">89.6</td>
+<td align="right">91.1</td>
+<td align="right">93.6</td>
+<td align="right">67</td>
+<td align="right">83</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">89.6</td>
+<td align="right">90.1</td>
+<td align="right">93.4</td>
+<td align="right">63</td>
+<td align="right">82</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">86.5</td>
+<td align="right">88.8</td>
+<td align="right">95.2</td>
+<td align="right">25</td>
+<td align="right">32</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">83.7</td>
+<td align="right">86.6</td>
+<td align="right">95.1</td>
+<td align="right">25</td>
+<td align="right">33</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">84.9</td>
+<td align="right">87.4</td>
+<td align="right">95.9</td>
+<td align="right">30</td>
+<td align="right">44</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">84.0</td>
+<td align="right">87.1</td>
+<td align="right">95.5</td>
+<td align="right">30</td>
+<td align="right">44</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">89.0</td>
+<td align="right">91.6</td>
+<td align="right">95.7</td>
+<td align="right">27</td>
+<td align="right">33</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">85.2</td>
+<td align="right">88.1</td>
+<td align="right">95.5</td>
+<td align="right">27</td>
+<td align="right">34</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">87.3</td>
+<td align="right">90.0</td>
+<td align="right">95.7</td>
+<td align="right">33</td>
+<td align="right">45</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">86.4</td>
+<td align="right">89.8</td>
+<td align="right">95.5</td>
+<td align="right">32</td>
+<td align="right">44</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">81.8</td>
+<td align="right">82.9</td>
+<td align="right">90.2</td>
+<td align="right">33</td>
+<td align="right">50</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">83.2</td>
+<td align="right">83.9</td>
+<td align="right">91.6</td>
+<td align="right">32</td>
+<td align="right">47</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">82.4</td>
+<td align="right">84.4</td>
+<td align="right">92.4</td>
+<td align="right">35</td>
+<td align="right">54</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">83.2</td>
+<td align="right">83.9</td>
+<td align="right">92.5</td>
+<td align="right">35</td>
+<td align="right">52</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">86.4</td>
+<td align="right">86.2</td>
+<td align="right">91.9</td>
+<td align="right">42</td>
+<td align="right">61</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">87.1</td>
+<td align="right">86.6</td>
+<td align="right">92.1</td>
+<td align="right">40</td>
+<td align="right">58</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">86.7</td>
+<td align="right">86.9</td>
+<td align="right">92.9</td>
+<td align="right">45</td>
+<td align="right">64</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">89.0</td>
+<td align="right">89.2</td>
+<td align="right">93.3</td>
+<td align="right">44</td>
+<td align="right">63</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<colgroup>
+<col width="4%">
+<col width="6%">
+<col width="5%">
+<col width="6%">
+<col width="9%">
+<col width="15%">
+<col width="13%">
+<col width="11%">
+<col width="15%">
+<col width="11%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Route</th>
+<th align="left">Design</th>
+<th align="left">BLQ</th>
+<th align="left">Elimination</th>
+<th align="right">Coverage percentile</th>
+<th align="right">Coverage boot. SE</th>
+<th align="right">Coverage delta</th>
+<th align="right">CI width percentile</th>
+<th align="right">CI width delta</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">79.8</td>
+<td align="right">81.0</td>
+<td align="right">87.5</td>
+<td align="right">58</td>
+<td align="right">88</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">77.6</td>
+<td align="right">77.4</td>
+<td align="right">87.3</td>
+<td align="right">58</td>
+<td align="right">86</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">78.6</td>
+<td align="right">79.0</td>
+<td align="right">88.8</td>
+<td align="right">61</td>
+<td align="right">95</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">79.1</td>
+<td align="right">80.0</td>
+<td align="right">87.7</td>
+<td align="right">61</td>
+<td align="right">91</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">88.1</td>
+<td align="right">88.8</td>
+<td align="right">89.0</td>
+<td align="right">87</td>
+<td align="right">101</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">87.0</td>
+<td align="right">86.9</td>
+<td align="right">89.5</td>
+<td align="right">82</td>
+<td align="right">99</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">87.9</td>
+<td align="right">89.0</td>
+<td align="right">91.8</td>
+<td align="right">92</td>
+<td align="right">111</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">87.4</td>
+<td align="right">87.1</td>
+<td align="right">89.9</td>
+<td align="right">87</td>
+<td align="right">107</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">75.8</td>
+<td align="right">74.0</td>
+<td align="right">82.8</td>
+<td align="right">116</td>
+<td align="right">159</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">76.2</td>
+<td align="right">74.7</td>
+<td align="right">81.8</td>
+<td align="right">107</td>
+<td align="right">151</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">75.6</td>
+<td align="right">73.9</td>
+<td align="right">82.1</td>
+<td align="right">108</td>
+<td align="right">153</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">74.8</td>
+<td align="right">73.8</td>
+<td align="right">82.5</td>
+<td align="right">102</td>
+<td align="right">146</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">89.0</td>
+<td align="right">88.5</td>
+<td align="right">84.6</td>
+<td align="right">185</td>
+<td align="right">185</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">89.4</td>
+<td align="right">88.2</td>
+<td align="right">86.2</td>
+<td align="right">172</td>
+<td align="right">177</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">90.0</td>
+<td align="right">89.6</td>
+<td align="right">85.6</td>
+<td align="right">180</td>
+<td align="right">178</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">89.4</td>
+<td align="right">89.4</td>
+<td align="right">85.8</td>
+<td align="right">162</td>
+<td align="right">171</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">80.0</td>
+<td align="right">80.2</td>
+<td align="right">87.4</td>
+<td align="right">54</td>
+<td align="right">81</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">77.7</td>
+<td align="right">77.6</td>
+<td align="right">86.7</td>
+<td align="right">55</td>
+<td align="right">82</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">78.0</td>
+<td align="right">78.9</td>
+<td align="right">88.7</td>
+<td align="right">57</td>
+<td align="right">89</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">76.0</td>
+<td align="right">76.7</td>
+<td align="right">87.5</td>
+<td align="right">57</td>
+<td align="right">87</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">84.5</td>
+<td align="right">85.2</td>
+<td align="right">87.5</td>
+<td align="right">72</td>
+<td align="right">91</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">84.2</td>
+<td align="right">83.6</td>
+<td align="right">86.9</td>
+<td align="right">70</td>
+<td align="right">92</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">86.1</td>
+<td align="right">86.7</td>
+<td align="right">89.5</td>
+<td align="right">76</td>
+<td align="right">98</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">85.5</td>
+<td align="right">85.2</td>
+<td align="right">87.5</td>
+<td align="right">73</td>
+<td align="right">95</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">74.3</td>
+<td align="right">70.5</td>
+<td align="right">80.0</td>
+<td align="right">89</td>
+<td align="right">134</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">73.2</td>
+<td align="right">69.0</td>
+<td align="right">79.9</td>
+<td align="right">85</td>
+<td align="right">129</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">74.7</td>
+<td align="right">71.6</td>
+<td align="right">81.2</td>
+<td align="right">87</td>
+<td align="right">135</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">71.8</td>
+<td align="right">68.9</td>
+<td align="right">79.2</td>
+<td align="right">85</td>
+<td align="right">129</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">80.6</td>
+<td align="right">77.6</td>
+<td align="right">82.4</td>
+<td align="right">112</td>
+<td align="right">158</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">80.2</td>
+<td align="right">74.4</td>
+<td align="right">80.3</td>
+<td align="right">105</td>
+<td align="right">148</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">82.8</td>
+<td align="right">80.1</td>
+<td align="right">81.9</td>
+<td align="right">113</td>
+<td align="right">154</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">83.5</td>
+<td align="right">79.0</td>
+<td align="right">81.7</td>
+<td align="right">110</td>
+<td align="right">151</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="results-the-bootstrap-with-more-animals-at-each-time">Results: the bootstrap with more animals at each time<a class="anchor" aria-label="anchor" href="#results-the-bootstrap-with-more-animals-at-each-time"></a>
+</h3>
+<p>Published uses of the bootstrap had either a few animals per time
+(three mice in Takemoto et al. 2006, which compared only the means and
+standard deviations with Bailer’s) or many (about 88 subjects per time
+and treatment in the bioequivalence study of Shen and Machado 2017). To
+see how the number of animals per time changes the comparison, the
+two-compartment, oral, serial-sacrifice design with slow elimination was
+simulated with 4, 6, 10, 20, 50, 100 animals per time, without and with
+BLQ samples (2,000 data sets each, 200 bootstrap replicates;
+<code>data-raw/sparse_bootstrap_n_profile.R</code>). The data seeds do
+not depend on the number of animals, so 4 animals per time reproduces
+the data sets above. The bias is that of the point estimate, which all
+of the methods share.</p>
+<table class="table">
+<colgroup>
+<col width="6%">
+<col width="12%">
+<col width="14%">
+<col width="13%">
+<col width="10%">
+<col width="10%">
+<col width="14%">
+<col width="10%">
+<col width="6%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">BLQ</th>
+<th align="right">Animals per time</th>
+<th align="right">Coverage percentile</th>
+<th align="right">Coverage boot. SE</th>
+<th align="right">Coverage Yuan</th>
+<th align="right">Coverage delta</th>
+<th align="right">CI width percentile</th>
+<th align="right">CI width delta</th>
+<th align="right">Bias (%)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">none</td>
+<td align="right">4</td>
+<td align="right">81.8</td>
+<td align="right">82.9</td>
+<td align="right">83.9</td>
+<td align="right">89.9</td>
+<td align="right">33</td>
+<td align="right">49</td>
+<td align="right">-2.3</td>
+</tr>
+<tr class="even">
+<td align="left">none</td>
+<td align="right">6</td>
+<td align="right">84.9</td>
+<td align="right">85.3</td>
+<td align="right">81.4</td>
+<td align="right">90.4</td>
+<td align="right">30</td>
+<td align="right">38</td>
+<td align="right">-2.4</td>
+</tr>
+<tr class="odd">
+<td align="left">none</td>
+<td align="right">10</td>
+<td align="right">87.6</td>
+<td align="right">87.8</td>
+<td align="right">77.7</td>
+<td align="right">89.8</td>
+<td align="right">25</td>
+<td align="right">29</td>
+<td align="right">-2.2</td>
+</tr>
+<tr class="even">
+<td align="left">none</td>
+<td align="right">20</td>
+<td align="right">89.8</td>
+<td align="right">89.6</td>
+<td align="right">79.8</td>
+<td align="right">90.0</td>
+<td align="right">19</td>
+<td align="right">20</td>
+<td align="right">-1.9</td>
+</tr>
+<tr class="odd">
+<td align="left">none</td>
+<td align="right">50</td>
+<td align="right">89.8</td>
+<td align="right">88.9</td>
+<td align="right">74.2</td>
+<td align="right">89.1</td>
+<td align="right">12</td>
+<td align="right">13</td>
+<td align="right">-1.8</td>
+</tr>
+<tr class="even">
+<td align="left">none</td>
+<td align="right">100</td>
+<td align="right">86.3</td>
+<td align="right">85.9</td>
+<td align="right">69.4</td>
+<td align="right">85.6</td>
+<td align="right">9</td>
+<td align="right">9</td>
+<td align="right">-1.7</td>
+</tr>
+<tr class="odd">
+<td align="left">moderate</td>
+<td align="right">4</td>
+<td align="right">86.5</td>
+<td align="right">86.2</td>
+<td align="right">80.6</td>
+<td align="right">90.9</td>
+<td align="right">42</td>
+<td align="right">60</td>
+<td align="right">-6.1</td>
+</tr>
+<tr class="even">
+<td align="left">moderate</td>
+<td align="right">6</td>
+<td align="right">89.2</td>
+<td align="right">87.5</td>
+<td align="right">76.2</td>
+<td align="right">88.2</td>
+<td align="right">38</td>
+<td align="right">44</td>
+<td align="right">-6.7</td>
+</tr>
+<tr class="odd">
+<td align="left">moderate</td>
+<td align="right">10</td>
+<td align="right">90.1</td>
+<td align="right">86.6</td>
+<td align="right">69.8</td>
+<td align="right">83.9</td>
+<td align="right">31</td>
+<td align="right">33</td>
+<td align="right">-6.7</td>
+</tr>
+<tr class="even">
+<td align="left">moderate</td>
+<td align="right">20</td>
+<td align="right">84.3</td>
+<td align="right">78.8</td>
+<td align="right">55.8</td>
+<td align="right">74.3</td>
+<td align="right">22</td>
+<td align="right">22</td>
+<td align="right">-6.8</td>
+</tr>
+<tr class="odd">
+<td align="left">moderate</td>
+<td align="right">50</td>
+<td align="right">55.9</td>
+<td align="right">50.3</td>
+<td align="right">30.0</td>
+<td align="right">49.4</td>
+<td align="right">14</td>
+<td align="right">14</td>
+<td align="right">-7.0</td>
+</tr>
+<tr class="even">
+<td align="left">moderate</td>
+<td align="right">100</td>
+<td align="right">29.2</td>
+<td align="right">26.0</td>
+<td align="right">11.2</td>
+<td align="right">25.8</td>
+<td align="right">10</td>
+<td align="right">10</td>
+<td align="right">-6.9</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<colgroup>
+<col width="6%">
+<col width="12%">
+<col width="14%">
+<col width="13%">
+<col width="10%">
+<col width="10%">
+<col width="14%">
+<col width="10%">
+<col width="6%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">BLQ</th>
+<th align="right">Animals per time</th>
+<th align="right">Coverage percentile</th>
+<th align="right">Coverage boot. SE</th>
+<th align="right">Coverage Yuan</th>
+<th align="right">Coverage delta</th>
+<th align="right">CI width percentile</th>
+<th align="right">CI width delta</th>
+<th align="right">Bias (%)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">none</td>
+<td align="right">4</td>
+<td align="right">74.3</td>
+<td align="right">70.5</td>
+<td align="right">62.9</td>
+<td align="right">79.8</td>
+<td align="right">89</td>
+<td align="right">135</td>
+<td align="right">-18.6</td>
+</tr>
+<tr class="even">
+<td align="left">none</td>
+<td align="right">6</td>
+<td align="right">75.8</td>
+<td align="right">71.9</td>
+<td align="right">56.8</td>
+<td align="right">77.6</td>
+<td align="right">83</td>
+<td align="right">100</td>
+<td align="right">-18.5</td>
+</tr>
+<tr class="odd">
+<td align="left">none</td>
+<td align="right">10</td>
+<td align="right">77.0</td>
+<td align="right">72.2</td>
+<td align="right">48.9</td>
+<td align="right">73.6</td>
+<td align="right">68</td>
+<td align="right">75</td>
+<td align="right">-17.3</td>
+</tr>
+<tr class="even">
+<td align="left">none</td>
+<td align="right">20</td>
+<td align="right">74.1</td>
+<td align="right">66.8</td>
+<td align="right">39.0</td>
+<td align="right">66.6</td>
+<td align="right">51</td>
+<td align="right">51</td>
+<td align="right">-16.7</td>
+</tr>
+<tr class="odd">
+<td align="left">none</td>
+<td align="right">50</td>
+<td align="right">59.0</td>
+<td align="right">52.5</td>
+<td align="right">21.0</td>
+<td align="right">51.8</td>
+<td align="right">33</td>
+<td align="right">33</td>
+<td align="right">-16.1</td>
+</tr>
+<tr class="even">
+<td align="left">none</td>
+<td align="right">100</td>
+<td align="right">37.1</td>
+<td align="right">32.6</td>
+<td align="right">8.7</td>
+<td align="right">30.6</td>
+<td align="right">23</td>
+<td align="right">23</td>
+<td align="right">-15.9</td>
+</tr>
+<tr class="odd">
+<td align="left">moderate</td>
+<td align="right">4</td>
+<td align="right">80.6</td>
+<td align="right">77.6</td>
+<td align="right">60.5</td>
+<td align="right">81.3</td>
+<td align="right">112</td>
+<td align="right">154</td>
+<td align="right">-29.1</td>
+</tr>
+<tr class="even">
+<td align="left">moderate</td>
+<td align="right">6</td>
+<td align="right">81.7</td>
+<td align="right">75.8</td>
+<td align="right">48.0</td>
+<td align="right">72.8</td>
+<td align="right">97</td>
+<td align="right">108</td>
+<td align="right">-29.4</td>
+</tr>
+<tr class="odd">
+<td align="left">moderate</td>
+<td align="right">10</td>
+<td align="right">78.8</td>
+<td align="right">71.0</td>
+<td align="right">37.9</td>
+<td align="right">63.1</td>
+<td align="right">80</td>
+<td align="right">79</td>
+<td align="right">-29.8</td>
+</tr>
+<tr class="even">
+<td align="left">moderate</td>
+<td align="right">20</td>
+<td align="right">65.5</td>
+<td align="right">55.2</td>
+<td align="right">20.9</td>
+<td align="right">47.0</td>
+<td align="right">57</td>
+<td align="right">54</td>
+<td align="right">-29.4</td>
+</tr>
+<tr class="odd">
+<td align="left">moderate</td>
+<td align="right">50</td>
+<td align="right">24.6</td>
+<td align="right">18.0</td>
+<td align="right">3.9</td>
+<td align="right">16.2</td>
+<td align="right">34</td>
+<td align="right">33</td>
+<td align="right">-30.0</td>
+</tr>
+<tr class="even">
+<td align="left">moderate</td>
+<td align="right">100</td>
+<td align="right">3.8</td>
+<td align="right">2.4</td>
+<td align="right">0.1</td>
+<td align="right">2.1</td>
+<td align="right">24</td>
+<td align="right">23</td>
+<td align="right">-29.5</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="results-the-tobit-half-life-with-blq-samples">Results: the Tobit half-life with BLQ samples<a class="anchor" aria-label="anchor" href="#results-the-tobit-half-life-with-blq-samples"></a>
+</h3>
+<p>PKNCA can also fit the half-life by Tobit regression
+(<code>hl_method = "tobit"</code>), which treats BLQ samples as censored
+below the LLOQ rather than dropping them. For sparse data, it fits the
+mean profile, with the median LLOQ of the samples at each time and a
+time whose mean is BLQ censored. With the BLQ scenarios above (the first
+1,000 data sets of each) and the BLQ arm of the profile over the number
+of animals per time (2,000 data sets at each number), three estimates of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
+were compared: the log-linear fit of the mean profile (“log-linear”, as
+above), the Tobit fit of the mean profile (“Tobit mean”), and the Tobit
+fit of the individual samples (“Tobit indiv.”, as the “individual”
+method above). Each gave the AUC and AUMC to infinity from the same
+sparse AUC to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mrow><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">t_{last}</annotation></semantics></math>
+and mean at
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mrow><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">t_{last}</annotation></semantics></math>,
+with these intervals: Yuan’s and the delta method for the log-linear
+fit; Yuan’s for the Tobit fit of the mean profile, which has no standard
+error for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>;
+Yuan’s variance plus that of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
+for the Tobit fit of the individual samples; and, for each, the
+bootstrap percentile interval (200 replicates, each refitting its own
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>;
+<code>data-raw/sparse_tobit_simulation.R</code>).</p>
+<p>Coverage (%) of the 95% intervals for the AUC to infinity, with four
+animals per time (three per batch):</p>
+<table class="table">
+<colgroup>
+<col width="3%">
+<col width="5%">
+<col width="4%">
+<col width="7%">
+<col width="9%">
+<col width="9%">
+<col width="9%">
+<col width="10%">
+<col width="11%">
+<col width="14%">
+<col width="12%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Route</th>
+<th align="left">Design</th>
+<th align="left">Elimination</th>
+<th align="right">Log-lin. Yuan</th>
+<th align="right">Log-lin. delta</th>
+<th align="right">Log-lin. boot.</th>
+<th align="right">Tobit mean Yuan</th>
+<th align="right">Tobit mean boot.</th>
+<th align="right">Tobit indiv. Yuan+var</th>
+<th align="right">Tobit indiv. boot.</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">94.9</td>
+<td align="right">96.3</td>
+<td align="right">88.0</td>
+<td align="right">94.5</td>
+<td align="right">87.9</td>
+<td align="right">95.5</td>
+<td align="right">87.7</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">94.9</td>
+<td align="right">96.4</td>
+<td align="right">88.2</td>
+<td align="right">95.0</td>
+<td align="right">88.1</td>
+<td align="right">95.0</td>
+<td align="right">87.7</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">95.2</td>
+<td align="right">95.5</td>
+<td align="right">88.5</td>
+<td align="right">94.9</td>
+<td align="right">86.9</td>
+<td align="right">95.2</td>
+<td align="right">87.1</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">94.9</td>
+<td align="right">96.2</td>
+<td align="right">87.3</td>
+<td align="right">94.7</td>
+<td align="right">87.5</td>
+<td align="right">94.7</td>
+<td align="right">87.0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">82.7</td>
+<td align="right">92.9</td>
+<td align="right">88.8</td>
+<td align="right">82.0</td>
+<td align="right">82.2</td>
+<td align="right">89.0</td>
+<td align="right">82.8</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">86.3</td>
+<td align="right">93.5</td>
+<td align="right">89.7</td>
+<td align="right">85.8</td>
+<td align="right">84.4</td>
+<td align="right">91.2</td>
+<td align="right">85.0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">87.5</td>
+<td align="right">94.3</td>
+<td align="right">89.9</td>
+<td align="right">87.2</td>
+<td align="right">80.6</td>
+<td align="right">92.2</td>
+<td align="right">83.9</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">89.1</td>
+<td align="right">93.8</td>
+<td align="right">90.3</td>
+<td align="right">88.8</td>
+<td align="right">84.1</td>
+<td align="right">91.5</td>
+<td align="right">85.4</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">94.2</td>
+<td align="right">95.6</td>
+<td align="right">90.2</td>
+<td align="right">94.5</td>
+<td align="right">89.4</td>
+<td align="right">94.7</td>
+<td align="right">89.4</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">93.5</td>
+<td align="right">94.9</td>
+<td align="right">85.4</td>
+<td align="right">93.7</td>
+<td align="right">85.0</td>
+<td align="right">94.4</td>
+<td align="right">85.7</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">95.1</td>
+<td align="right">96.4</td>
+<td align="right">88.4</td>
+<td align="right">95.3</td>
+<td align="right">87.1</td>
+<td align="right">96.0</td>
+<td align="right">87.6</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">95.2</td>
+<td align="right">95.8</td>
+<td align="right">87.2</td>
+<td align="right">95.4</td>
+<td align="right">86.7</td>
+<td align="right">95.5</td>
+<td align="right">86.8</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">80.6</td>
+<td align="right">90.9</td>
+<td align="right">86.5</td>
+<td align="right">80.6</td>
+<td align="right">78.9</td>
+<td align="right">86.7</td>
+<td align="right">80.1</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">84.2</td>
+<td align="right">92.0</td>
+<td align="right">86.6</td>
+<td align="right">82.6</td>
+<td align="right">80.2</td>
+<td align="right">89.5</td>
+<td align="right">82.1</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">85.0</td>
+<td align="right">93.4</td>
+<td align="right">86.2</td>
+<td align="right">84.8</td>
+<td align="right">80.0</td>
+<td align="right">89.5</td>
+<td align="right">81.2</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">86.0</td>
+<td align="right">93.6</td>
+<td align="right">88.9</td>
+<td align="right">86.3</td>
+<td align="right">80.9</td>
+<td align="right">90.4</td>
+<td align="right">83.3</td>
+</tr>
+</tbody>
+</table>
+<p>And for the AUMC to infinity:</p>
+<table class="table">
+<colgroup>
+<col width="3%">
+<col width="5%">
+<col width="4%">
+<col width="7%">
+<col width="9%">
+<col width="9%">
+<col width="9%">
+<col width="10%">
+<col width="11%">
+<col width="14%">
+<col width="12%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Route</th>
+<th align="left">Design</th>
+<th align="left">Elimination</th>
+<th align="right">Log-lin. Yuan</th>
+<th align="right">Log-lin. delta</th>
+<th align="right">Log-lin. boot.</th>
+<th align="right">Tobit mean Yuan</th>
+<th align="right">Tobit mean boot.</th>
+<th align="right">Tobit indiv. Yuan+var</th>
+<th align="right">Tobit indiv. boot.</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">86.6</td>
+<td align="right">91.5</td>
+<td align="right">88.5</td>
+<td align="right">86.6</td>
+<td align="right">82.1</td>
+<td align="right">87.4</td>
+<td align="right">82.1</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">84.6</td>
+<td align="right">89.2</td>
+<td align="right">86.8</td>
+<td align="right">83.5</td>
+<td align="right">79.4</td>
+<td align="right">84.9</td>
+<td align="right">79.3</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">88.9</td>
+<td align="right">91.8</td>
+<td align="right">88.4</td>
+<td align="right">87.8</td>
+<td align="right">81.6</td>
+<td align="right">88.8</td>
+<td align="right">82.2</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">88.2</td>
+<td align="right">91.9</td>
+<td align="right">89.2</td>
+<td align="right">86.9</td>
+<td align="right">81.4</td>
+<td align="right">88.0</td>
+<td align="right">82.0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">66.8</td>
+<td align="right">85.0</td>
+<td align="right">89.2</td>
+<td align="right">64.1</td>
+<td align="right">77.7</td>
+<td align="right">76.5</td>
+<td align="right">78.2</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">67.5</td>
+<td align="right">85.1</td>
+<td align="right">89.0</td>
+<td align="right">65.2</td>
+<td align="right">77.2</td>
+<td align="right">76.0</td>
+<td align="right">77.9</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">67.5</td>
+<td align="right">86.3</td>
+<td align="right">89.8</td>
+<td align="right">64.7</td>
+<td align="right">74.8</td>
+<td align="right">77.1</td>
+<td align="right">77.6</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">71.2</td>
+<td align="right">86.8</td>
+<td align="right">89.8</td>
+<td align="right">68.7</td>
+<td align="right">77.1</td>
+<td align="right">78.7</td>
+<td align="right">79.2</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">82.4</td>
+<td align="right">87.2</td>
+<td align="right">84.7</td>
+<td align="right">83.1</td>
+<td align="right">76.6</td>
+<td align="right">83.7</td>
+<td align="right">76.6</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">84.6</td>
+<td align="right">88.3</td>
+<td align="right">85.1</td>
+<td align="right">85.0</td>
+<td align="right">79.0</td>
+<td align="right">85.3</td>
+<td align="right">79.0</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">84.3</td>
+<td align="right">87.7</td>
+<td align="right">85.9</td>
+<td align="right">84.3</td>
+<td align="right">78.3</td>
+<td align="right">85.2</td>
+<td align="right">78.2</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">84.7</td>
+<td align="right">88.6</td>
+<td align="right">85.4</td>
+<td align="right">83.9</td>
+<td align="right">77.6</td>
+<td align="right">85.0</td>
+<td align="right">76.6</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">60.5</td>
+<td align="right">81.3</td>
+<td align="right">80.6</td>
+<td align="right">59.2</td>
+<td align="right">71.8</td>
+<td align="right">69.7</td>
+<td align="right">71.8</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">61.4</td>
+<td align="right">80.5</td>
+<td align="right">80.6</td>
+<td align="right">59.4</td>
+<td align="right">73.4</td>
+<td align="right">68.9</td>
+<td align="right">72.5</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">64.2</td>
+<td align="right">82.6</td>
+<td align="right">83.1</td>
+<td align="right">62.2</td>
+<td align="right">74.0</td>
+<td align="right">74.3</td>
+<td align="right">74.3</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">62.7</td>
+<td align="right">81.7</td>
+<td align="right">82.8</td>
+<td align="right">61.0</td>
+<td align="right">73.2</td>
+<td align="right">71.9</td>
+<td align="right">72.5</td>
+</tr>
+</tbody>
+</table>
+<p>Bias and median absolute error (MAE), relative to the truth (%), of
+the AUC and then the AUMC to infinity with each
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
+(the point estimate does not depend on the interval):</p>
+<table class="table">
+<colgroup>
+<col width="4%">
+<col width="7%">
+<col width="5%">
+<col width="9%">
+<col width="11%">
+<col width="12%">
+<col width="14%">
+<col width="10%">
+<col width="11%">
+<col width="13%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Route</th>
+<th align="left">Design</th>
+<th align="left">Elimination</th>
+<th align="right">Bias log-lin.</th>
+<th align="right">Bias Tobit mean</th>
+<th align="right">Bias Tobit indiv.</th>
+<th align="right">MAE log-lin.</th>
+<th align="right">MAE Tobit mean</th>
+<th align="right">MAE Tobit indiv.</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">2.7</td>
+<td align="right">2.1</td>
+<td align="right">1.9</td>
+<td align="right">7.0</td>
+<td align="right">6.8</td>
+<td align="right">6.7</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">3.0</td>
+<td align="right">2.4</td>
+<td align="right">2.1</td>
+<td align="right">8.1</td>
+<td align="right">8.1</td>
+<td align="right">7.6</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">2.6</td>
+<td align="right">1.7</td>
+<td align="right">1.4</td>
+<td align="right">9.2</td>
+<td align="right">9.0</td>
+<td align="right">8.9</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">2.8</td>
+<td align="right">2.0</td>
+<td align="right">1.7</td>
+<td align="right">9.0</td>
+<td align="right">9.0</td>
+<td align="right">9.0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">-6.0</td>
+<td align="right">-6.6</td>
+<td align="right">-5.8</td>
+<td align="right">12.5</td>
+<td align="right">12.8</td>
+<td align="right">11.6</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">-6.0</td>
+<td align="right">-6.3</td>
+<td align="right">-5.7</td>
+<td align="right">11.8</td>
+<td align="right">11.9</td>
+<td align="right">11.0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">-4.9</td>
+<td align="right">-6.1</td>
+<td align="right">-5.1</td>
+<td align="right">13.1</td>
+<td align="right">13.5</td>
+<td align="right">12.1</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">-4.0</td>
+<td align="right">-5.5</td>
+<td align="right">-4.7</td>
+<td align="right">12.6</td>
+<td align="right">13.1</td>
+<td align="right">11.5</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">1.9</td>
+<td align="right">1.9</td>
+<td align="right">1.7</td>
+<td align="right">5.5</td>
+<td align="right">5.4</td>
+<td align="right">5.2</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">4.0</td>
+<td align="right">4.0</td>
+<td align="right">3.6</td>
+<td align="right">6.2</td>
+<td align="right">6.1</td>
+<td align="right">6.0</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">2.1</td>
+<td align="right">1.9</td>
+<td align="right">1.4</td>
+<td align="right">7.0</td>
+<td align="right">7.0</td>
+<td align="right">6.7</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">3.2</td>
+<td align="right">3.4</td>
+<td align="right">2.9</td>
+<td align="right">7.1</td>
+<td align="right">7.2</td>
+<td align="right">6.9</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">-6.1</td>
+<td align="right">-6.2</td>
+<td align="right">-5.5</td>
+<td align="right">10.3</td>
+<td align="right">10.7</td>
+<td align="right">9.6</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">-5.3</td>
+<td align="right">-5.3</td>
+<td align="right">-4.9</td>
+<td align="right">9.9</td>
+<td align="right">10.3</td>
+<td align="right">8.9</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">-5.7</td>
+<td align="right">-5.7</td>
+<td align="right">-5.0</td>
+<td align="right">10.4</td>
+<td align="right">10.8</td>
+<td align="right">9.4</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">-4.9</td>
+<td align="right">-4.8</td>
+<td align="right">-4.4</td>
+<td align="right">9.8</td>
+<td align="right">10.4</td>
+<td align="right">9.1</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<colgroup>
+<col width="4%">
+<col width="7%">
+<col width="5%">
+<col width="9%">
+<col width="11%">
+<col width="12%">
+<col width="14%">
+<col width="10%">
+<col width="11%">
+<col width="13%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Route</th>
+<th align="left">Design</th>
+<th align="left">Elimination</th>
+<th align="right">Bias log-lin.</th>
+<th align="right">Bias Tobit mean</th>
+<th align="right">Bias Tobit indiv.</th>
+<th align="right">MAE log-lin.</th>
+<th align="right">MAE Tobit mean</th>
+<th align="right">MAE Tobit indiv.</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">-5.1</td>
+<td align="right">-6.7</td>
+<td align="right">-7.1</td>
+<td align="right">16.4</td>
+<td align="right">16.4</td>
+<td align="right">14.7</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">-6.6</td>
+<td align="right">-8.2</td>
+<td align="right">-8.8</td>
+<td align="right">16.4</td>
+<td align="right">17.1</td>
+<td align="right">15.9</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">-5.4</td>
+<td align="right">-7.5</td>
+<td align="right">-7.7</td>
+<td align="right">16.8</td>
+<td align="right">17.1</td>
+<td align="right">16.1</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">-7.0</td>
+<td align="right">-9.2</td>
+<td align="right">-10.3</td>
+<td align="right">17.0</td>
+<td align="right">17.5</td>
+<td align="right">16.0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">-23.1</td>
+<td align="right">-25.3</td>
+<td align="right">-21.8</td>
+<td align="right">35.4</td>
+<td align="right">37.5</td>
+<td align="right">31.8</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">-25.6</td>
+<td align="right">-26.8</td>
+<td align="right">-24.0</td>
+<td align="right">34.4</td>
+<td align="right">35.3</td>
+<td align="right">31.1</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">-22.2</td>
+<td align="right">-25.5</td>
+<td align="right">-22.3</td>
+<td align="right">34.0</td>
+<td align="right">36.2</td>
+<td align="right">30.0</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">-21.6</td>
+<td align="right">-23.8</td>
+<td align="right">-21.6</td>
+<td align="right">33.0</td>
+<td align="right">35.4</td>
+<td align="right">28.5</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">-8.5</td>
+<td align="right">-9.6</td>
+<td align="right">-10.4</td>
+<td align="right">16.0</td>
+<td align="right">16.6</td>
+<td align="right">15.5</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">-9.0</td>
+<td align="right">-8.9</td>
+<td align="right">-10.5</td>
+<td align="right">15.8</td>
+<td align="right">16.1</td>
+<td align="right">15.2</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">-8.6</td>
+<td align="right">-9.3</td>
+<td align="right">-10.0</td>
+<td align="right">17.1</td>
+<td align="right">18.1</td>
+<td align="right">16.3</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">-9.8</td>
+<td align="right">-9.8</td>
+<td align="right">-11.2</td>
+<td align="right">17.0</td>
+<td align="right">17.6</td>
+<td align="right">16.5</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">-29.1</td>
+<td align="right">-29.4</td>
+<td align="right">-26.3</td>
+<td align="right">34.8</td>
+<td align="right">36.0</td>
+<td align="right">32.2</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">-30.0</td>
+<td align="right">-29.9</td>
+<td align="right">-27.7</td>
+<td align="right">35.8</td>
+<td align="right">37.9</td>
+<td align="right">32.3</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">-27.5</td>
+<td align="right">-27.9</td>
+<td align="right">-25.5</td>
+<td align="right">33.7</td>
+<td align="right">35.7</td>
+<td align="right">30.7</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">-28.8</td>
+<td align="right">-28.4</td>
+<td align="right">-27.1</td>
+<td align="right">35.0</td>
+<td align="right">37.1</td>
+<td align="right">31.9</td>
+</tr>
+</tbody>
+</table>
+<p>Over the number of animals per time (two compartments, oral, serial
+sacrifice, slow elimination, BLQ samples), the coverage (%) and the bias
+(%) of the AUC to infinity:</p>
+<table class="table">
+<colgroup>
+<col width="9%">
+<col width="7%">
+<col width="8%">
+<col width="8%">
+<col width="8%">
+<col width="9%">
+<col width="12%">
+<col width="10%">
+<col width="7%">
+<col width="8%">
+<col width="9%">
+</colgroup>
+<thead><tr class="header">
+<th align="right">Animals per time</th>
+<th align="right">Log-lin. Yuan</th>
+<th align="right">Log-lin. delta</th>
+<th align="right">Log-lin. boot.</th>
+<th align="right">Tobit mean Yuan</th>
+<th align="right">Tobit mean boot.</th>
+<th align="right">Tobit indiv. Yuan+var</th>
+<th align="right">Tobit indiv. boot.</th>
+<th align="right">Bias log-lin.</th>
+<th align="right">Bias Tobit mean</th>
+<th align="right">Bias Tobit indiv.</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">4</td>
+<td align="right">80.6</td>
+<td align="right">90.9</td>
+<td align="right">86.5</td>
+<td align="right">80.6</td>
+<td align="right">78.9</td>
+<td align="right">86.7</td>
+<td align="right">80.1</td>
+<td align="right">-6.1</td>
+<td align="right">-6.2</td>
+<td align="right">-5.5</td>
+</tr>
+<tr class="even">
+<td align="right">6</td>
+<td align="right">76.2</td>
+<td align="right">88.2</td>
+<td align="right">89.2</td>
+<td align="right">75.3</td>
+<td align="right">81.3</td>
+<td align="right">83.9</td>
+<td align="right">83.0</td>
+<td align="right">-6.7</td>
+<td align="right">-6.7</td>
+<td align="right">-5.8</td>
+</tr>
+<tr class="odd">
+<td align="right">10</td>
+<td align="right">69.8</td>
+<td align="right">83.9</td>
+<td align="right">90.1</td>
+<td align="right">68.4</td>
+<td align="right">82.2</td>
+<td align="right">79.7</td>
+<td align="right">84.5</td>
+<td align="right">-6.7</td>
+<td align="right">-6.8</td>
+<td align="right">-5.6</td>
+</tr>
+<tr class="even">
+<td align="right">20</td>
+<td align="right">55.8</td>
+<td align="right">74.3</td>
+<td align="right">84.3</td>
+<td align="right">55.5</td>
+<td align="right">77.1</td>
+<td align="right">69.4</td>
+<td align="right">79.2</td>
+<td align="right">-6.8</td>
+<td align="right">-6.9</td>
+<td align="right">-5.6</td>
+</tr>
+<tr class="odd">
+<td align="right">50</td>
+<td align="right">30.0</td>
+<td align="right">49.4</td>
+<td align="right">55.9</td>
+<td align="right">30.6</td>
+<td align="right">54.6</td>
+<td align="right">48.2</td>
+<td align="right">63.0</td>
+<td align="right">-7.0</td>
+<td align="right">-7.0</td>
+<td align="right">-5.6</td>
+</tr>
+<tr class="even">
+<td align="right">100</td>
+<td align="right">11.2</td>
+<td align="right">25.8</td>
+<td align="right">29.2</td>
+<td align="right">11.3</td>
+<td align="right">30.6</td>
+<td align="right">27.4</td>
+<td align="right">43.5</td>
+<td align="right">-6.9</td>
+<td align="right">-6.8</td>
+<td align="right">-5.5</td>
+</tr>
+</tbody>
+</table>
+<p>And of the AUMC to infinity:</p>
+<table class="table">
+<colgroup>
+<col width="9%">
+<col width="7%">
+<col width="8%">
+<col width="8%">
+<col width="8%">
+<col width="9%">
+<col width="12%">
+<col width="10%">
+<col width="7%">
+<col width="8%">
+<col width="9%">
+</colgroup>
+<thead><tr class="header">
+<th align="right">Animals per time</th>
+<th align="right">Log-lin. Yuan</th>
+<th align="right">Log-lin. delta</th>
+<th align="right">Log-lin. boot.</th>
+<th align="right">Tobit mean Yuan</th>
+<th align="right">Tobit mean boot.</th>
+<th align="right">Tobit indiv. Yuan+var</th>
+<th align="right">Tobit indiv. boot.</th>
+<th align="right">Bias log-lin.</th>
+<th align="right">Bias Tobit mean</th>
+<th align="right">Bias Tobit indiv.</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">4</td>
+<td align="right">60.5</td>
+<td align="right">81.3</td>
+<td align="right">80.6</td>
+<td align="right">59.2</td>
+<td align="right">71.8</td>
+<td align="right">69.7</td>
+<td align="right">71.8</td>
+<td align="right">-29.1</td>
+<td align="right">-29.4</td>
+<td align="right">-26.3</td>
+</tr>
+<tr class="even">
+<td align="right">6</td>
+<td align="right">48.0</td>
+<td align="right">72.8</td>
+<td align="right">81.7</td>
+<td align="right">47.5</td>
+<td align="right">72.0</td>
+<td align="right">60.2</td>
+<td align="right">72.5</td>
+<td align="right">-29.4</td>
+<td align="right">-30.1</td>
+<td align="right">-26.3</td>
+</tr>
+<tr class="odd">
+<td align="right">10</td>
+<td align="right">37.9</td>
+<td align="right">63.1</td>
+<td align="right">78.8</td>
+<td align="right">37.2</td>
+<td align="right">70.2</td>
+<td align="right">50.7</td>
+<td align="right">71.0</td>
+<td align="right">-29.8</td>
+<td align="right">-29.8</td>
+<td align="right">-26.0</td>
+</tr>
+<tr class="even">
+<td align="right">20</td>
+<td align="right">20.9</td>
+<td align="right">47.0</td>
+<td align="right">65.5</td>
+<td align="right">22.0</td>
+<td align="right">58.1</td>
+<td align="right">36.0</td>
+<td align="right">60.8</td>
+<td align="right">-29.4</td>
+<td align="right">-29.7</td>
+<td align="right">-25.1</td>
+</tr>
+<tr class="odd">
+<td align="right">50</td>
+<td align="right">3.9</td>
+<td align="right">16.2</td>
+<td align="right">24.6</td>
+<td align="right">4.0</td>
+<td align="right">25.6</td>
+<td align="right">12.3</td>
+<td align="right">30.9</td>
+<td align="right">-30.0</td>
+<td align="right">-29.8</td>
+<td align="right">-25.4</td>
+</tr>
+<tr class="even">
+<td align="right">100</td>
+<td align="right">0.1</td>
+<td align="right">2.1</td>
+<td align="right">3.8</td>
+<td align="right">0.1</td>
+<td align="right">4.2</td>
+<td align="right">1.8</td>
+<td align="right">8.3</td>
+<td align="right">-29.5</td>
+<td align="right">-29.5</td>
+<td align="right">-24.8</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
 <h3 id="results-accuracy-of-the-point-estimates">Results: accuracy of the point estimates<a class="anchor" aria-label="anchor" href="#results-accuracy-of-the-point-estimates"></a>
 </h3>
 <p>The point estimate with
@@ -2415,6 +4775,64 @@ misses.</p>
 <p><strong>Interval width.</strong> The delta-method intervals were
 wider than Yuan’s, most when elimination was slow; the extra width is
 what improved the coverage.</p>
+<p><strong>The bootstrap.</strong> With three or four animals at each
+time, the bootstrap intervals were too narrow. For the AUC to infinity,
+the percentile interval covered 83.7 to 89.0% with fast elimination and
+81.6 to 89.6% with slow elimination, against 95.1 to 96.3% and 90.2 to
+93.6% for the delta method, and the interval from the bootstrap standard
+error was little better (82.9 to 92.8%). Resampling
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
+animals understates the variance of their mean by the factor
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mi>n</mi></mrow><annotation encoding="application/x-tex">(n - 1)/n</annotation></semantics></math>
+(3/4 with four animals), and the percentile interval of a skewed
+estimate is narrow as well. For the AUMC to infinity, the bootstrap
+covered 71.8 to 90.0%: better than Yuan’s method when elimination was
+slow, and as good as or better than the delta method only with slow
+elimination and BLQ samples, where the first-order delta method is
+weakest. The bootstrap’s advantage is that it applies to every parameter
+and to ratios between groups (Shen and Machado 2017), including
+parameters with no analytical standard error, such as Cmax and the
+half-life; with few animals at each time, its intervals should be read
+as too narrow.</p>
+<p><strong>More animals at each time.</strong> The bootstrap improved
+with more animals, as its
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mi>n</mi></mrow><annotation encoding="application/x-tex">(n - 1)/n</annotation></semantics></math>
+shortfall shrank. Without BLQ samples, its percentile interval for the
+AUC to infinity covered 81.8% with 4 animals per time and 89.8% with 20,
+when the delta method covered 90.0%; with BLQ samples, it matched or
+passed the delta method from 6 animals per time. Its standard error was
+then as accurate as the delta method’s. But with many animals, every
+interval under-covered: with 100 animals per time, the percentile
+interval covered 86.3% without and 29.2% with BLQ samples (the delta
+method, 85.6% and 25.8%). The cause is the estimate, not its standard
+error: the sparse AUC to infinity was biased by -1.7% without and -6.9%
+with BLQ samples, whatever the number of animals, from the BLQ samples
+counted as zero in the late means and the extrapolation of a mean of
+animals with different elimination rates. More animals make every
+interval narrower around the same biased estimate, so no choice of
+interval corrects it. The AUMC to infinity, biased by -15.9% and -29.5%,
+showed the same pattern sooner.</p>
+<p><strong>The Tobit half-life.</strong> With BLQ samples, the Tobit fit
+of the mean profile changed little: the bias of the AUC to infinity was
+-6.6 to 4.0%, against -6.1 to 4.0% for the log-linear fit, and Yuan’s
+intervals covered the same. Its bootstrap intervals were narrower than
+the log-linear fit’s and covered less (79 to 84% against 86 to 90% with
+slow elimination), and with no standard error for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
+it cannot use the delta method. The Tobit fit of the individual samples
+was slightly less biased and more precise: with 100 animals per time,
+its AUC to infinity was biased by -5.5% and its AUMC by -24.8%, against
+-6.9% and -29.5% for the log-linear fit. Its intervals were still less
+reliable than the delta method with few animals per time, and with many
+animals the bias left every interval short of nominal, whichever
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
+was used. So most of the bias that BLQ samples add does not come from
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>,
+and a better fit of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
+does not remove it: it comes from the late means, where BLQ samples
+count as zero, and from the mean profile ending earlier, when more than
+half of a time’s samples are BLQ.</p>
 </div>
 </div>
 <div class="section level2">
@@ -2740,11 +5158,16 @@ from the individual samples with a (mixed-effects) Tobit regression gave
 a more stable point estimate when samples were BLQ, but adding its
 variance to Yuan’s did not give adequate coverage, and its mixed-effects
 fit was itself occasionally unstable in the batch design with BLQ
-samples and slow elimination. A natural refinement, not studied here,
-would combine the individual-sample
+samples and slow elimination. A bootstrap over animals, which includes
+the covariance of that
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
-with a variance that includes its covariance with the means, for example
-by a joint delta method or a bootstrap over animals.</p>
+with the means, was too narrow with few animals per time, as every
+bootstrap was. The Tobit fit of the mean profile, which uses the LLOQs,
+gave nearly the same results as the log-linear fit. Neither Tobit fit
+removed the bias of the sparse estimate with BLQ samples, which comes
+mostly from counting BLQ samples as zero in the late means and from the
+mean profile ending earlier; estimating those means with the censoring
+taken into account would be the place to reduce it.</p>
 <p>Limitations remain. The delta method conditions on the selected
 half-life points, so the uncertainty of the automatic point selection is
 not included; it is a first-order approximation, which is least accurate
@@ -2773,6 +5196,13 @@ confidence intervals to sparse sampling. Pharmaceutical Research.
 <p>Nedelman JR, Jia X. An extension of Satterthwaite’s approximation
 applied to pharmacokinetics. Journal of Biopharmaceutical Statistics.
 1998;8(2):317-328. <a href="doi:10.1080/10543409808835241" class="uri">doi:10.1080/10543409808835241</a></p>
+<p>Shen M, Machado SG. Bioequivalence evaluation of sparse sampling
+pharmacokinetics data using bootstrap resampling method. Journal of
+Biopharmaceutical Statistics. 2017;27(2):257-264. <a href="doi:10.1080/10543406.2016.1265543" class="uri">doi:10.1080/10543406.2016.1265543</a></p>
+<p>Takemoto S, Yamaoka K, Nishikawa M, Takakura Y. Histogram analysis of
+pharmacokinetic parameters by bootstrap resampling from one-point
+sampling data in animal experiments. Drug Metabolism and
+Pharmacokinetics. 2006;21(6):458-464. <a href="doi:10.2133/dmpk.21.458" class="uri">doi:10.2133/dmpk.21.458</a></p>
 <p>Yuan J. Estimation of variance for AUC in animal studies. Journal of
 Pharmaceutical Sciences. 1993;82(7):761-763. <a href="doi:10.1002/jps.2600820718" class="uri">doi:10.1002/jps.2600820718</a></p>
 </div>
