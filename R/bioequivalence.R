@@ -914,12 +914,20 @@ print.be_within_var <- function(x, ...) {
 #'   standardized long frame, including a `.units` column and one `.cov_<name>`
 #'   column per covariate), `columns` (the resolved column names, including
 #'   `units` and `covariates`), `reference_value`, `test_levels`, and
-#'   `endpoints` (those present).
+#'   `endpoints` (those present).  For the results of a sparse bootstrap (see
+#'   [sparse_bootstrap()]), `data` has one row per bootstrap replicate, group,
+#'   and endpoint instead of one per subject and period.
 #' @family Bioequivalence
 #' @export
-be_dataset <- function(object, reference_col, reference_value,
-                       endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
-                       subject = NULL, sequence = NULL, period = NULL, covariates = NULL) {
+be_dataset <- function(object, ...) {
+  UseMethod("be_dataset")
+}
+
+#' @rdname be_dataset
+#' @export
+be_dataset.default <- function(object, reference_col, reference_value,
+                               endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
+                               subject = NULL, sequence = NULL, period = NULL, covariates = NULL, ...) {
   if (inherits(object, "PKNCAresults")) {
     assert_PKNCAresults(object)
     data <- as.data.frame(as.data.frame(object, filter_excluded = TRUE))
@@ -941,38 +949,14 @@ be_dataset <- function(object, reference_col, reference_value,
   checkmate::assert_character(endpoints, min.len = 1, any.missing = FALSE)
   checkmate::assert_character(covariates, min.len = 1, any.missing = FALSE, unique = TRUE, null.ok = TRUE)
   checkmate::assert_subset(covariates, choices = names(data))
-  value_col <-
-    if ("PPSTRES" %in% names(data)) {
-      "PPSTRES"
-    } else if ("PPORRES" %in% names(data)) {
-      "PPORRES"
-    } else {
-      rlang::abort(
-        "The data must contain a `PPORRES` or `PPSTRES` column of results.",
-        class = "pknca_error_be_missing_value_col"
-      )
-    }
-  # Units column matching the value column (PKNCAresults provides PPSTRESU /
-  # PPORRESU).  May be absent, in which case units are unavailable.
-  unit_col <-
-    if (value_col == "PPSTRES" && "PPSTRESU" %in% names(data)) {
-      "PPSTRESU"
-    } else if (value_col == "PPORRES" && "PPORRESU" %in% names(data)) {
-      "PPORRESU"
-    } else {
-      NA_character_
-    }
+  value_unit_cols <- .be_value_unit_cols(data)
+  value_col <- value_unit_cols$value
+  unit_col <- value_unit_cols$units
   subject <- .be_find_col(subject, data, c("USUBJID", "subject", "Subject", "ID", "id"), "subject")
   period <- .be_find_col(period, data, c("period", "Period", "PERIOD", "PER", "per"), "period")
   sequence <-
     .be_find_col(sequence, data, c("sequence", "Sequence", "SEQUENCE", "SEQ", "seq"), "sequence", required = FALSE)
-  reference_value <- as.character(reference_value)
-  if (!(reference_value %in% as.character(data[[reference_col]]))) {
-    rlang::abort(
-      sprintf("Reference value, \"%s\", not found in column \"%s\".", reference_value, reference_col),
-      class = "pknca_error_be_dataset_ref_not_found"
-    )
-  }
+  reference_value <- .be_check_reference(data, reference_col, reference_value)
 
   covariates <- if (is.null(covariates)) character() else covariates
   design_cols <- c(subject, sequence, period, reference_col, value_col, "PPTESTCD")
@@ -1012,6 +996,65 @@ be_dataset <- function(object, reference_col, reference_value,
   data$.logval <- log(data[[value_col]])
   data$.units <- if (!is.na(unit_col)) as.character(data[[unit_col]]) else NA_character_
 
+  present <- .be_check_endpoints(data, endpoints)
+  structure(
+    list(
+      data = data,
+      columns = list(
+        subject = subject, sequence = sequence, period = period,
+        treatment = reference_col, value = value_col, units = unit_col,
+        covariates = covariates
+      ),
+      reference_value = reference_value,
+      test_levels = setdiff(levels(data$.trt), reference_value),
+      endpoints = present
+    ),
+    class = "be_dataset"
+  )
+}
+
+# The value column (PPSTRES when present, otherwise PPORRES) and the units
+# column matching it (PKNCAresults provides PPSTRESU / PPORRESU).  The units
+# may be absent, in which case they are unavailable (NA).
+.be_value_unit_cols <- function(data) {
+  value_col <-
+    if ("PPSTRES" %in% names(data)) {
+      "PPSTRES"
+    } else if ("PPORRES" %in% names(data)) {
+      "PPORRES"
+    } else {
+      rlang::abort(
+        "The data must contain a `PPORRES` or `PPSTRES` column of results.",
+        class = "pknca_error_be_missing_value_col"
+      )
+    }
+  unit_col <-
+    if (value_col == "PPSTRES" && "PPSTRESU" %in% names(data)) {
+      "PPSTRESU"
+    } else if (value_col == "PPORRES" && "PPORRESU" %in% names(data)) {
+      "PPORRESU"
+    } else {
+      NA_character_
+    }
+  list(value = value_col, units = unit_col)
+}
+
+# The reference value as a character string, after checking that it is in the
+# reference column
+.be_check_reference <- function(data, reference_col, reference_value) {
+  reference_value <- as.character(reference_value)
+  if (!(reference_value %in% as.character(data[[reference_col]]))) {
+    rlang::abort(
+      sprintf("Reference value, \"%s\", not found in column \"%s\".", reference_value, reference_col),
+      class = "pknca_error_be_dataset_ref_not_found"
+    )
+  }
+  reference_value
+}
+
+# The requested endpoints that are in the data, warning about the ones that are
+# not and about endpoints that are not log-normal exposure metrics
+.be_check_endpoints <- function(data, endpoints) {
   present <- intersect(endpoints, unique(as.character(data$PPTESTCD)))
   if (length(present) == 0) {
     rlang::abort(
@@ -1039,20 +1082,7 @@ be_dataset <- function(object, reference_col, reference_value,
       class = "pknca_warning_be_nonlognormal_endpoint"
     )
   }
-  structure(
-    list(
-      data = data,
-      columns = list(
-        subject = subject, sequence = sequence, period = period,
-        treatment = reference_col, value = value_col, units = unit_col,
-        covariates = covariates
-      ),
-      reference_value = reference_value,
-      test_levels = setdiff(levels(data$.trt), reference_value),
-      endpoints = present
-    ),
-    class = "be_dataset"
-  )
+  present
 }
 
 #' @export
@@ -1698,22 +1728,36 @@ be_fit_models <- function(object, reference_col, reference_value,
     params[[length(params) + 1]] <- p
   }
   tbl <- be_table(do.call(rbind, params), reg, alpha, design = design$design, model_type = model_type)
-  # Order by endpoint (in the requested order) then by test formulation (in the
-  # reference-first treatment factor order).
+  .be_table_finish(tbl, ds, caption = .be_caption(reg, model_type, alpha, ds$columns$covariates))
+}
+
+# Order the table from be_table() by endpoint (in the requested order) then by
+# test formulation (in the reference-first treatment factor order), omit the
+# units column (with a warning) when units are unavailable, and add the caption
+.be_table_finish <- function(tbl, ds, caption) {
   tbl <- tbl[order(match(tbl$endpoint, ds$endpoints), match(tbl$test, levels(ds$data$.trt))), , drop = FALSE]
   rownames(tbl) <- NULL
-  # Omit the units column entirely (with a warning) when units are unavailable.
   if (all(is.na(tbl$units))) {
     .be_warn_units_missing()
     tbl$units <- NULL
   }
-  attr(tbl, "caption") <- .be_caption(reg, model_type, alpha, ds$columns$covariates)
+  attr(tbl, "caption") <- caption
   tbl
+}
+
+# The be_assess object from the table of be_fit_models() (or its equivalent)
+.be_assess_object <- function(tbl, alpha) {
+  structure(
+    tbl,
+    class = c("be_assess", class(tbl)),
+    regulator = tbl$regulator[1], model_type = tbl$model_type[1],
+    design = tbl$design[1], alpha = alpha
+  )
 }
 
 # A methods caption documenting the model, any covariates, and the regulatory
 # decision rule (or that no decision was applied).
-.be_caption <- function(reg, model_type, alpha, covariates = character()) {
+.be_caption <- function(reg, model_type, alpha, covariates = character(), n_boot = NA_integer_) {
   ci <- sprintf("%g%% CI", 100 * (1 - alpha))
   model_desc <-
     switch(
@@ -1722,10 +1766,19 @@ be_fit_models <- function(object, reference_col, reference_value,
       nlme = "a mixed-effects model with treatment-specific residual variances (nlme::lme)",
       gls = "a generalized least-squares model with treatment-specific residual variances (nlme::gls, Satterthwaite degrees of freedom from emmeans)",
       anova = ,
-      isc = "a fixed-effects ANOVA"
+      isc = "a fixed-effects ANOVA",
+      bootstrap = sprintf("%d replicates of a stratified nonparametric bootstrap (Shen and Machado 2017)", n_boot)
     )
   point <-
-    if (identical(reg$est_method, "isc")) {
+    if (identical(model_type, "bootstrap")) {
+      sprintf(
+        paste(
+          "The estimates and their ratio come from the sparse data of each treatment;",
+          "each %s is the percentile interval of %s."
+        ),
+        ci, model_desc
+      )
+    } else if (identical(reg$est_method, "isc")) {
       sprintf(
         paste(
           "Geometric means (with %s) are least-squares means from %s;",
@@ -1823,9 +1876,31 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' limits and reports no pass/fail, for comparisons such as food effect and
 #' drug-drug interaction studies.
 #'
+#' For the results of a sparse bootstrap (Shen and Machado 2017; see
+#' [sparse_bootstrap()]), there is one estimate per treatment, from the sparse
+#' data, rather than one per subject.  The ratio of the test and reference
+#' estimates is the point estimate, and its confidence interval is the
+#' percentile interval of the ratios of the bootstrap replicates (`model_type =
+#' "bootstrap"`).  The `gm_*` columns hold the estimates of each treatment with
+#' their percentile intervals.  A parallel design resamples the treatments
+#' independently; for a crossover, give the treatment column as `paired` to
+#' [sparse_bootstrap()].  There is no within-subject variance, so only the
+#' `"ABE"` and `"descriptive"` frameworks apply, and the results may have no
+#' groups other than `reference_col` (filter them first).
+#'
+#' @references
+#' Shen M, Machado SG.  Bioequivalence evaluation of sparse sampling
+#' pharmacokinetics data using bootstrap resampling method.  Journal of
+#' Biopharmaceutical Statistics.  2017;27(2):257-264.
+#' doi:10.1080/10543406.2016.1265543
+#'
 #' @param object A `PKNCAresults` object or a tidy long data.frame with a
 #'   `PPTESTCD` column of parameter names, a `PPORRES`/`PPSTRES` column of
-#'   values, and subject/sequence/period/treatment columns.
+#'   values, and subject/sequence/period/treatment columns.  The results of a
+#'   sparse bootstrap (from a `PKNCAconc` object made by [sparse_bootstrap()])
+#'   are compared with the percentile intervals of the bootstrap replicates
+#'   (Shen and Machado 2017); see Details.
+#' @param ... Arguments passed to the methods
 #' @param reference_col The column identifying the formulation/treatment.
 #' @param reference_value The value of `reference_col` that is the reference
 #'   formulation.
@@ -1894,23 +1969,24 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' be_assess(d, reference_col = "treatment", reference_value = "R",
 #'           endpoints = "auclast", regulator = "EMA")
 #' @export
-be_assess <- function(object, reference_col, reference_value,
-                      endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
-                      regulator = "ABE", model_type = NULL, alpha = 0.10,
-                      subject = NULL, sequence = NULL, period = NULL, design = NULL,
-                      covariates = NULL, heteroscedastic = FALSE) {
+be_assess <- function(object, ...) {
+  UseMethod("be_assess")
+}
+
+#' @rdname be_assess
+#' @export
+be_assess.default <- function(object, reference_col, reference_value,
+                              endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
+                              regulator = "ABE", model_type = NULL, alpha = 0.10,
+                              subject = NULL, sequence = NULL, period = NULL, design = NULL,
+                              covariates = NULL, heteroscedastic = FALSE, ...) {
   out <- be_fit_models(
     object, reference_col = reference_col, reference_value = reference_value,
     endpoints = endpoints, regulator = regulator, model_type = model_type, alpha = alpha,
     subject = subject, sequence = sequence, period = period, design = design,
     covariates = covariates, heteroscedastic = heteroscedastic
   )
-  structure(
-    out,
-    class = c("be_assess", "data.frame"),
-    regulator = out$regulator[1], model_type = out$model_type[1],
-    design = out$design[1], alpha = alpha
-  )
+  .be_assess_object(out, alpha)
 }
 
 #' @export

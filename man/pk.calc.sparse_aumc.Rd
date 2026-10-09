@@ -73,6 +73,8 @@ Other Sparse Methods:
 \code{\link[=pk.calc.auclast_sparse]{pk.calc.auclast_sparse()}},
 \code{\link[=pk.calc.sparse_auc]{pk.calc.sparse_auc()}},
 \code{\link[=sparse_auc_weight_linear]{sparse_auc_weight_linear()}},
-\code{\link[=sparse_mean]{sparse_mean()}}
+\code{\link[=sparse_bootstrap]{sparse_bootstrap()}},
+\code{\link[=sparse_mean]{sparse_mean()}},
+\code{\link[=summary.PKNCAresults_sparse_bootstrap]{summary.PKNCAresults_sparse_bootstrap()}}
 }
 \concept{Sparse Methods}
