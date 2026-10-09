@@ -635,10 +635,13 @@ test_that("PKNCAconc lloq argument is stored and validated (scalar and column)",
     class = "pknca_error_conc_invalid_lloq",
     regexp = "^lloq must be numeric \\(or entirely missing, NA\\); its class is 'character'$"
   )
-  expect_error(
+  e_scalar <- expect_error(
     PKNCAconc(tmp.conc, conc ~ time | ID, lloq = "x"),
-    class = "pknca_error_conc_invalid_lloq",
-    regexp = "its class is 'character'"
+    class = "pknca_error_conc_invalid_lloq"
+  )
+  expect_identical(
+    conditionMessage(e_scalar),
+    "lloq must be numeric (or entirely missing, NA); its class is 'character'"
   )
 
   # Without lloq, no lloq column or attribute is added
@@ -706,12 +709,85 @@ test_that("PKNCAconc lloq values must be missing or finite and positive", {
   expect_equal(o_mixed$data$assay_lloq, mixed)
   # Integer values are numeric
   o_int <- PKNCAconc(with_lloq(rep(2L, n)), conc ~ time | ID, lloq = "assay_lloq")
-  expect_equal(o_int$data$assay_lloq, rep(2L, n))
+  expect_identical(o_int$data$assay_lloq, rep(2L, n))
+  # An all-NA integer column becomes double
+  expect_identical(
+    PKNCAconc(with_lloq(rep(NA_integer_, n)), conc ~ time | ID, lloq = "assay_lloq")$data$assay_lloq,
+    rep(NA_real_, n)
+  )
   # A valid scalar and a valid column pass
   expect_equal(PKNCAconc(tmp.conc, conc ~ time | ID, lloq = 0.5)$data$lloq, rep(0.5, n))
   expect_equal(
     PKNCAconc(with_lloq(rep(0.1, n)), conc ~ time | ID, lloq = "assay_lloq")$data$assay_lloq,
     rep(0.1, n)
+  )
+})
+
+test_that("PKNCAconc lloq refuses non-numeric classes and caps the listed values", {
+  tmp.conc <- generate.conc(nsub = 2, ntreat = 1, time.points = 0:6)
+  n <- nrow(tmp.conc)
+  lloq_message <- function(value) {
+    tmp.conc$assay_lloq <- value
+    e <- expect_error(
+      PKNCAconc(tmp.conc, conc ~ time | ID, lloq = "assay_lloq"),
+      class = "pknca_error_conc_invalid_lloq"
+    )
+    conditionMessage(e)
+  }
+  expect_identical(
+    lloq_message(factor(rep("a", n))),
+    "lloq must be numeric (or entirely missing, NA); its class is 'factor'"
+  )
+  expect_identical(
+    lloq_message(rep(TRUE, n)),
+    "lloq must be numeric (or entirely missing, NA); its class is 'logical'"
+  )
+  expect_identical(
+    lloq_message(rep(as.Date("2026-01-01"), n)),
+    "lloq must be numeric (or entirely missing, NA); its class is 'Date'"
+  )
+  # An all-NA Date column is accepted and stored as double NA
+  tmp.conc$assay_lloq <- rep(as.Date(NA), n)
+  expect_identical(
+    PKNCAconc(tmp.conc, conc ~ time | ID, lloq = "assay_lloq")$data$assay_lloq,
+    rep(NA_real_, n)
+  )
+  # Five distinct invalid values are all listed; more are cut with "..."
+  prefix <- "lloq must be finite and greater than zero (or missing, NA); invalid value(s): "
+  expect_identical(
+    lloq_message(c(-1, -2, -3, -4, -5, rep(1, n - 5))),
+    paste0(prefix, "-1, -2, -3, -4, -5")
+  )
+  expect_identical(
+    lloq_message(c(-1:-10, rep(1, n - 10))),
+    paste0(prefix, "-1, -2, -3, -4, -5, ...")
+  )
+})
+
+test_that("PKNCAconc lloq accepts a units column and checks its numbers", {
+  skip_if_not_installed("units")
+  tmp.conc <- generate.conc(nsub = 2, ntreat = 1, time.points = 0:6)
+  n <- nrow(tmp.conc)
+  # A positive units column is accepted and stays a units column
+  tmp.conc$assay_lloq <- units::set_units(rep(0.5, n), "ng/mL")
+  o_units <- PKNCAconc(tmp.conc, conc ~ time | ID, lloq = "assay_lloq")
+  expect_s3_class(o_units$data$assay_lloq, "units")
+  expect_equal(as.numeric(o_units$data$assay_lloq), rep(0.5, n))
+  # A negative units column is the classed error
+  tmp.conc$assay_lloq <- units::set_units(c(-1, rep(0.5, n - 1)), "ng/mL")
+  e_units <- expect_error(
+    PKNCAconc(tmp.conc, conc ~ time | ID, lloq = "assay_lloq"),
+    class = "pknca_error_conc_invalid_lloq"
+  )
+  expect_identical(
+    conditionMessage(e_units),
+    "lloq must be finite and greater than zero (or missing, NA); invalid value(s): -1"
+  )
+  # An all-NA units column is stored as double NA
+  tmp.conc$assay_lloq <- units::set_units(rep(NA_real_, n), "ng/mL")
+  expect_identical(
+    PKNCAconc(tmp.conc, conc ~ time | ID, lloq = "assay_lloq")$data$assay_lloq,
+    rep(NA_real_, n)
   )
 })
 

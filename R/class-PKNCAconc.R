@@ -58,10 +58,13 @@
 #'   half-life method (`hl_method = "tobit"`).  Either the name of a column in
 #'   `data` giving the per-observation LLOQ or a numeric scalar applied to all
 #'   observations.  Values must be numeric, finite, and greater than zero;
-#'   missing values (`NA`) are allowed.  A column or scalar that is entirely
-#'   `NA` of any class (such as the logical `NA` of a column read from a file
-#'   with no LLOQ) is accepted and stored as numeric `NA`.  Anything else is
-#'   the error `pknca_error_conc_invalid_lloq`.  When provided, it is passed through to
+#'   missing values (`NA`) are allowed, and `NaN` is not.  A column of numbers
+#'   is stored as given (an integer column stays integer and a `units` column
+#'   stays a `units` column).  A column or scalar that is entirely `NA` of any
+#'   class (such as the logical `NA` of a column read from a file with no LLOQ,
+#'   or an all-`NA` integer column) is accepted and stored as double `NA`.
+#'   Anything else is the error `pknca_error_conc_invalid_lloq`.  When provided,
+#'   it is passed through to
 #'   [pk.calc.half.life()].  With sparse PK, the half-life is calculated from
 #'   the mean profile, and the LLOQ of each time is the median of the LLOQs of
 #'   its samples (missing LLOQs are ignored).  See the "Half-Life Calculation with Tobit Regression"
@@ -398,17 +401,22 @@ setDuration.PKNCAconc <- function(object, duration, ...) {
 }
 
 # Validate the values of the LLOQ column of a PKNCAconc object.  Returns the
-# values, with an entirely missing vector of any class (a logical `NA` read
-# from a file with no LLOQ) converted to `NA_real_`.
+# values as stored (a units column stays a units column, an integer column stays
+# integer), except that an entirely missing vector of any class (a logical `NA`
+# read from a file with no LLOQ) becomes `NA_real_`.  The checks use the plain
+# numbers so that no method of the column's class is needed.
 pknca_lloq_check_values <- function(x) {
   if (is.numeric(x)) {
+    values <- as.numeric(x)
     # NA is allowed; NaN, Inf, zero, and negative values are not.
-    bad <- is.nan(x) | (!is.na(x) & (!is.finite(x) | x <= 0))
+    bad <- is.nan(values) | (!is.na(values) & (!is.finite(values) | values <= 0))
     if (any(bad)) {
+      shown <- unique(values[bad])
       rlang::abort(
         sprintf(
-          "lloq must be finite and greater than zero (or missing, NA); invalid value(s): %s",
-          paste(utils::head(as.character(unique(x[bad])), 5), collapse = ", ")
+          "lloq must be finite and greater than zero (or missing, NA); invalid value(s): %s%s",
+          paste(as.character(utils::head(shown, 5)), collapse = ", "),
+          if (length(shown) > 5) ", ..." else ""
         ),
         class = "pknca_error_conc_invalid_lloq"
       )
