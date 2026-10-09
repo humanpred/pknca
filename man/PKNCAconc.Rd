@@ -102,7 +102,11 @@ arguments.}
 \item{lloq}{(optional) The lower limit of quantification used by the Tobit
 half-life method (\code{hl_method = "tobit"}).  Either the name of a column in
 \code{data} giving the per-observation LLOQ or a numeric scalar applied to all
-observations.  When provided, it is passed through to
+observations.  Values must be numeric, finite, and greater than zero;
+missing values (\code{NA}) are allowed.  A column or scalar that is entirely
+\code{NA} of any class (such as the logical \code{NA} of a column read from a file
+with no LLOQ) is accepted and stored as numeric \code{NA}.  Anything else is
+the error \code{pknca_error_conc_invalid_lloq}.  When provided, it is passed through to
 \code{\link[=pk.calc.half.life]{pk.calc.half.life()}}.  With sparse PK, the half-life is calculated from
 the mean profile, and the LLOQ of each time is the median of the LLOQs of
 its samples (missing LLOQs are ignored).  See the "Half-Life Calculation with Tobit Regression"

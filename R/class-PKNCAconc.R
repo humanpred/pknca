@@ -57,7 +57,11 @@
 #' @param lloq (optional) The lower limit of quantification used by the Tobit
 #'   half-life method (`hl_method = "tobit"`).  Either the name of a column in
 #'   `data` giving the per-observation LLOQ or a numeric scalar applied to all
-#'   observations.  When provided, it is passed through to
+#'   observations.  Values must be numeric, finite, and greater than zero;
+#'   missing values (`NA`) are allowed.  A column or scalar that is entirely
+#'   `NA` of any class (such as the logical `NA` of a column read from a file
+#'   with no LLOQ) is accepted and stored as numeric `NA`.  Anything else is
+#'   the error `pknca_error_conc_invalid_lloq`.  When provided, it is passed through to
 #'   [pk.calc.half.life()].  With sparse PK, the half-life is calculated from
 #'   the mean profile, and the LLOQ of each time is the median of the LLOQs of
 #'   its samples (missing LLOQs are ignored).  See the "Half-Life Calculation with Tobit Regression"
@@ -252,9 +256,8 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   }
   if (!missing(lloq)) {
     ret <- setAttributeColumn(object=ret, attr_name="lloq", col_or_value=lloq)
-    checkmate::assertNumeric(
-      getAttributeColumn(object = ret, attr_name = "lloq")[[1]]
-    )
+    lloq_col <- ret$columns$lloq
+    ret[[getDataName(ret)]][[lloq_col]] <- pknca_lloq_check_values(ret[[getDataName(ret)]][[lloq_col]])
   }
 
   # Unit handling
@@ -392,6 +395,37 @@ setDuration.PKNCAconc <- function(object, duration, ...) {
     )
   }
   object
+}
+
+# Validate the values of the LLOQ column of a PKNCAconc object.  Returns the
+# values, with an entirely missing vector of any class (a logical `NA` read
+# from a file with no LLOQ) converted to `NA_real_`.
+pknca_lloq_check_values <- function(x) {
+  if (is.numeric(x)) {
+    # NA is allowed; NaN, Inf, zero, and negative values are not.
+    bad <- is.nan(x) | (!is.na(x) & (!is.finite(x) | x <= 0))
+    if (any(bad)) {
+      rlang::abort(
+        sprintf(
+          "lloq must be finite and greater than zero (or missing, NA); invalid value(s): %s",
+          paste(utils::head(as.character(unique(x[bad])), 5), collapse = ", ")
+        ),
+        class = "pknca_error_conc_invalid_lloq"
+      )
+    }
+  } else if (!all(is.na(x))) {
+    rlang::abort(
+      sprintf(
+        "lloq must be numeric (or entirely missing, NA); its class is '%s'",
+        paste(class(x), collapse = "', '")
+      ),
+      class = "pknca_error_conc_invalid_lloq"
+    )
+  }
+  if (all(is.na(x))) {
+    x <- rep(NA_real_, length(x))
+  }
+  x
 }
 
 #' Print and/or summarize a PKNCAconc or PKNCAdose object.

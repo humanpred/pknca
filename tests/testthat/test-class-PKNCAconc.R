@@ -627,18 +627,92 @@ test_that("PKNCAconc lloq argument is stored and validated (scalar and column)",
   expect_equal(o_col$columns$lloq, "assay_lloq")
   expect_equal(o_col$data$assay_lloq, rep(0.25, nrow(tmp.conc.col)))
 
-  # A non-numeric lloq column is rejected
+  # A non-numeric lloq column with a value is rejected
   tmp.conc.bad <- tmp.conc
   tmp.conc.bad$bad_lloq <- "x"
   expect_error(
     PKNCAconc(tmp.conc.bad, conc ~ time | ID, lloq = "bad_lloq"),
-    regexp = "Must be of type 'numeric'"
+    class = "pknca_error_conc_invalid_lloq",
+    regexp = "^lloq must be numeric \\(or entirely missing, NA\\); its class is 'character'$"
+  )
+  expect_error(
+    PKNCAconc(tmp.conc, conc ~ time | ID, lloq = "x"),
+    class = "pknca_error_conc_invalid_lloq",
+    regexp = "its class is 'character'"
   )
 
   # Without lloq, no lloq column or attribute is added
   o_none <- PKNCAconc(tmp.conc, conc ~ time | ID)
   expect_null(o_none$columns$lloq)
   expect_false("lloq" %in% names(o_none$data))
+})
+
+test_that("PKNCAconc lloq values must be missing or finite and positive", {
+  tmp.conc <- generate.conc(nsub = 2, ntreat = 1, time.points = 0:6)
+  n <- nrow(tmp.conc)
+  with_lloq <- function(value) {
+    tmp.conc$assay_lloq <- value
+    tmp.conc
+  }
+
+  invalid_msg <- function(value) {
+    paste0(
+      "^lloq must be finite and greater than zero \\(or missing, NA\\); invalid value\\(s\\): ",
+      value, "$"
+    )
+  }
+  # Zero, negative, Inf, and NaN, in a column and as a scalar
+  for (case in list(
+    list(value = 0, shown = "0"),
+    list(value = -1, shown = "-1"),
+    list(value = Inf, shown = "Inf"),
+    list(value = -Inf, shown = "-Inf"),
+    list(value = NaN, shown = "NaN")
+  )) {
+    col <- rep(0.5, n)
+    col[2] <- case$value
+    expect_error(
+      PKNCAconc(with_lloq(col), conc ~ time | ID, lloq = "assay_lloq"),
+      class = "pknca_error_conc_invalid_lloq",
+      regexp = invalid_msg(case$shown)
+    )
+    expect_error(
+      PKNCAconc(tmp.conc, conc ~ time | ID, lloq = case$value),
+      class = "pknca_error_conc_invalid_lloq",
+      regexp = invalid_msg(case$shown)
+    )
+  }
+  # All offending values are named, once each
+  expect_error(
+    PKNCAconc(with_lloq(c(0, -2, 0, rep(1, n - 3))), conc ~ time | ID, lloq = "assay_lloq"),
+    class = "pknca_error_conc_invalid_lloq",
+    regexp = invalid_msg("0, -2")
+  )
+
+  # An entirely missing column of any class is accepted and stored as numeric NA
+  for (all_na in list(rep(NA, n), rep(NA_character_, n), rep(NA_real_, n), rep(NA_integer_, n), factor(rep(NA, n)))) {
+    o_na <- PKNCAconc(with_lloq(all_na), conc ~ time | ID, lloq = "assay_lloq")
+    expect_equal(o_na$data$assay_lloq, rep(NA_real_, n))
+    expect_type(o_na$data$assay_lloq, "double")
+  }
+  # An entirely missing scalar is accepted and stored as numeric NA
+  o_scalar_na <- PKNCAconc(tmp.conc, conc ~ time | ID, lloq = NA)
+  expect_equal(o_scalar_na$data$lloq, rep(NA_real_, n))
+  expect_type(o_scalar_na$data$lloq, "double")
+
+  # NA mixed with valid values is accepted unchanged
+  mixed <- rep(c(0.5, NA), length.out = n)
+  o_mixed <- PKNCAconc(with_lloq(mixed), conc ~ time | ID, lloq = "assay_lloq")
+  expect_equal(o_mixed$data$assay_lloq, mixed)
+  # Integer values are numeric
+  o_int <- PKNCAconc(with_lloq(rep(2L, n)), conc ~ time | ID, lloq = "assay_lloq")
+  expect_equal(o_int$data$assay_lloq, rep(2L, n))
+  # A valid scalar and a valid column pass
+  expect_equal(PKNCAconc(tmp.conc, conc ~ time | ID, lloq = 0.5)$data$lloq, rep(0.5, n))
+  expect_equal(
+    PKNCAconc(with_lloq(rep(0.1, n)), conc ~ time | ID, lloq = "assay_lloq")$data$assay_lloq,
+    rep(0.1, n)
+  )
 })
 
 test_that("exclude_half.life and include_half.life columns must be logical (#583)", {
