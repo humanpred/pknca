@@ -984,6 +984,13 @@ the generated intervals:
 
 ## Bug fixes
 
+* `include_half.life`, `exclude_half.life`, and a per-observation `lloq` are
+  now applied to the intended observations when imputation (e.g.
+  `impute = "start_conc0"`) adds a concentration at the start of the interval.
+  Before, the vectors were not realigned with the imputed data, so each value
+  applied to the observation before the intended one, without a warning
+  (@roninsightrx).
+
 * A warning signaled by an exclusion function given to `exclude(FUN = )` now
   reaches the caller with its class and fields.  Before, the function ran inside
   a grouped `dplyr::mutate()`, which collected the warnings and signaled one
