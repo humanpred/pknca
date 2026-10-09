@@ -964,7 +964,7 @@ get_halflife_points <- function(object) {
 get_halflife_points.PKNCAresults <- function(object) {
   # Insert a ROWID column so that we can reconstruct the order at the end
   rowid_col <- paste0(max(names(as.data.frame(as_PKNCAconc(object)))), "ROWID")
-  object$data$conc$data[[rowid_col]] <- seq_len(nrow(object$data$conc$data))
+  object$data$conc$data[[rowid_col]] <- seq_len(nrow(as.data.frame(as_PKNCAconc(object))))
 
   # Find the concentrations and results that go together
   splitdata <- full_join_PKNCAdata(as_PKNCAdata(object), extra_conc_cols = rowid_col)

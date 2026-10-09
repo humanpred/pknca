@@ -110,8 +110,8 @@ filter_results_slot <- function(slot, keep) {
 filter_PKNCAresults <- function(.data, ..., .by = NULL, .preserve=FALSE) {
   by_quo <- rlang::enquo(.by)
   quos <- c(rlang::enquos(...), list(by_quo))
-  referenced <- filter_referenced_columns(quos, .data$result)
-  group_cols <- dplyr::group_vars(.data$data$conc)
+  referenced <- filter_referenced_columns(quos, as.data.frame(.data))
+  group_cols <- dplyr::group_vars(as_PKNCAconc(.data))
   indirect <- any(vapply(quos, function(q) filter_expr_is_indirect(rlang::quo_get_expr(q)), logical(1)))
   if (indirect) {
     rlang::inform(
@@ -121,7 +121,7 @@ filter_PKNCAresults <- function(.data, ..., .by = NULL, .preserve=FALSE) {
   }
   ret <- .data
   ret$result <- dplyr::filter(
-    .data$result, ..., .by = !!by_quo, .preserve = .preserve
+    as.data.frame(.data), ..., .by = !!by_quo, .preserve = .preserve
   )
   # A filter that uses a column only the result table has (or no column at
   # all) cannot be applied to the data slots.  Otherwise the filter is
@@ -129,12 +129,14 @@ filter_PKNCAresults <- function(.data, ..., .by = NULL, .preserve=FALSE) {
   # survived.
   if (!indirect && length(referenced) > 0 && all(referenced %in% group_cols)) {
     keep <- ret$result[, intersect(group_cols, names(ret$result)), drop = FALSE]
-    ret$data$conc <- filter_results_slot(.data$data$conc, keep)
-    if (inherits(.data$data$dose, "PKNCAdose")) {
-      ret$data$dose <- filter_results_slot(.data$data$dose, keep)
+    ret$data$conc <- filter_results_slot(as_PKNCAconc(.data), keep)
+    dose <- as_PKNCAdose(.data)
+    if (inherits(dose, "PKNCAdose")) {
+      ret$data$dose <- filter_results_slot(dose, keep)
     }
-    if (is.data.frame(.data$data$intervals)) {
-      ret$data$intervals <- filter_results_slot(.data$data$intervals, keep)
+    intervals <- as_PKNCAdata(.data)$intervals
+    if (is.data.frame(intervals)) {
+      ret$data$intervals <- filter_results_slot(intervals, keep)
     }
   }
   mark_provenance_modified(ret, .data, "filtered")

@@ -321,14 +321,15 @@ pknca_grpid_format <- function(group_text, number, width) {
 pknca_cdisc_add_grpid <- function(ret, x, grpid_cols, grpid_numeric) {
   o_conc <- as_PKNCAconc(x)
   if (is.null(grpid_cols)) {
-    grpid_cols <- x$data$grpid_cols
+    grpid_cols <- as_PKNCAdata(x)$grpid_cols
   }
   if (is.null(grpid_numeric)) {
     # The columns that PKNCAdata() marked numeric apply to the columns in use
-    grpid_numeric <- intersect(x$data$grpid_numeric, names(grpid_cols))
+    grpid_numeric <- intersect(as_PKNCAdata(x)$grpid_numeric, names(grpid_cols))
   }
   assert_grpid_cols(grpid_cols, o_conc, grpid_numeric)
-  all_rows <- as.data.frame(x$result)
+  # Every result row, as a data.frame rather than a tibble
+  all_rows <- as.data.frame(as.data.frame(x))
   if (nrow(all_rows) == 0) {
     ret$PPGRPID <- character()
     return(ret)

@@ -123,7 +123,7 @@ as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'c
   if (filter_requested) {
     intervals_long <-
       tidyr::pivot_longer(
-        x$data$intervals,
+        as_PKNCAdata(x)$intervals,
         cols = setdiff(names(get.interval.cols()), c("start", "end")),
         names_to = "PPTESTCD",
         values_to = "keep_interval"
@@ -263,7 +263,7 @@ pknca_cdisc_add_interval_reference <- function(ret, x) {
   ret$PPSTINT <- vapply(X = start_rel, FUN = format_iso8601_duration, FUN.VALUE = "", timeu = timeu_report$unit)
   ret$PPENINT <- vapply(X = end_rel, FUN = format_iso8601_duration, FUN.VALUE = "", timeu = timeu_report$unit)
   ret$PPTPTREF <- unname(pknca_cdisc_tptref[ref$type])
-  time_reference <- x$data$time_reference
+  time_reference <- as_PKNCAdata(x)$time_reference
   if (!is.null(time_reference)) {
     # Date-time times were converted to the time unit of the analysis relative
     # to each group's time reference, so the date-time of a row's reference is
@@ -368,7 +368,7 @@ pknca_cdisc_interval_reference <- function(ret, x) {
 # @noRd
 pknca_cdisc_get_timeu <- function(x) {
   timeu <- pknca_cdisc_get_timeu_orig(x)
-  timeu_pref <- x$data$conc$units$timeu_pref
+  timeu_pref <- pknca_results_conc(x)$units$timeu_pref
   factor <-
     if (is.null(timeu_pref) || is.na(timeu_pref)) {
       NA_real_
@@ -382,6 +382,19 @@ pknca_cdisc_get_timeu <- function(x) {
   }
 }
 
+# The PKNCAconc or PKNCAdose object of a PKNCAresults object, or NULL when the
+# results have none (as for a PKNCAresults object made directly from a data
+# frame, or a PKNCAdata object without doses)
+pknca_results_conc <- function(x) {
+  data <- as_PKNCAdata(x)
+  if (inherits(data, "PKNCAdata")) as_PKNCAconc(data) else NULL
+}
+pknca_results_dose <- function(x) {
+  data <- as_PKNCAdata(x)
+  dose <- if (inherits(data, "PKNCAdata")) as_PKNCAdose(data) else NULL
+  if (inherits(dose, "PKNCAdose")) dose else NULL
+}
+
 # Get the original time unit (timeu) of the concentration data
 #
 # @param x The PKNCAresults object
@@ -390,18 +403,19 @@ pknca_cdisc_get_timeu <- function(x) {
 # @keywords Internal
 # @noRd
 pknca_cdisc_get_timeu_orig <- function(x) {
-  if (is.null(x$data$conc) || !inherits(x$data$conc, "PKNCAconc")) {
+  conc <- pknca_results_conc(x)
+  if (is.null(conc)) {
     return(NA_character_)
   }
-  timeu <- x$data$conc$units$timeu
+  timeu <- conc$units$timeu
   if (!is.null(timeu) && !is.na(timeu)) {
     return(as.vector(timeu))
   }
   # Check if timeu is stored as a column attribute
-  timeu_col <- x$data$conc$columns$timeu
+  timeu_col <- conc$columns$timeu
   if (!is.null(timeu_col) && length(timeu_col) > 0) {
     # Column-based: take the first value
-    vals <- unique(x$data$conc$data[[timeu_col]])
+    vals <- unique(as.data.frame(conc)[[timeu_col]])
     vals <- vals[!is.na(vals)]
     if (length(vals) == 1) return(vals)
   }
@@ -488,20 +502,20 @@ resolve_cdisc_value <- function(value, route, sparse = FALSE) {
 pknca_cdisc_get_route <- function(ret, x) {
   default_route <- "extravascular"
   # Check if dose data is available
-  if (is.null(x$data$dose) || identical(x$data$dose, NA) ||
-      !inherits(x$data$dose, "PKNCAdose")) {
+  dose <- pknca_results_dose(x)
+  if (is.null(dose)) {
     return(rep(default_route, nrow(ret)))
   }
   route_data <- getAttributeColumn(
-    object = x$data$dose, attr_name = "route", warn_missing = character()
+    object = dose, attr_name = "route", warn_missing = character()
   )
   if (is.null(route_data)) {
     return(rep(default_route, nrow(ret)))
   }
   # Get the dose data with route and group columns
-  dose_df <- x$data$dose$data
-  route_col <- x$data$dose$columns$route
-  group_cols <- unlist(x$data$dose$columns$groups)
+  dose_df <- as.data.frame(dose)
+  route_col <- dose$columns$route
+  group_cols <- unlist(dose$columns$groups)
   # If route is a scalar (same for all), return it for all rows
   if (length(unique(route_data[[1]])) == 1) {
     return(rep(tolower(route_data[[1]][1]), nrow(ret)))
@@ -537,18 +551,19 @@ getDataName.PKNCAresults <- function(object) {
 #' @rdname is_sparse_pk
 #' @export
 is_sparse_pk.PKNCAresults <- function(object) {
-  is_sparse_pk(object$data)
+  is_sparse_pk(as_PKNCAdata(object))
 }
 
 #' @rdname getGroups.PKNCAconc
 #' @export
 getGroups.PKNCAresults <- function(object,
-                                   form=formula(object$data$conc), level,
-                                   data=object$result, sep) {
+                                   form=formula(as_PKNCAconc(object)), level,
+                                   data=as.data.frame(object), sep) {
+  conc <- as_PKNCAconc(object)
   # Include the start time as a group; this may be dropped later
-  grpnames <- c(unlist(object$data$conc$columns$groups), "start", "end")
+  grpnames <- c(unlist(conc$columns$groups), "start", "end")
   if (is_sparse_pk(object)) {
-    grpnames <- setdiff(grpnames, object$data$conc$columns$subject)
+    grpnames <- setdiff(grpnames, conc$columns$subject)
   }
   if (!missing(level))
     if (is.factor(level) || is.character(level)) {

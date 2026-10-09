@@ -241,7 +241,7 @@ assert_PKNCAdata <- function(object) {
   if (nrow(object$intervals) == 0) {
     rlang::warn("No intervals given; no calculations will be done.", class = "pknca_warning_no_intervals")
   }
-  assert_PKNCAconc(object$conc)
+  assert_PKNCAconc(as_PKNCAconc(object))
   object
 }
 

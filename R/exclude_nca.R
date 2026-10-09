@@ -532,8 +532,9 @@ exclude_nca_tmax_coverage_prepare <- function(object, cache) {
   o_conc <- as_PKNCAconc(object)
   prepared$sparse <- is_sparse_pk(object)
   # The groups that exclude() calls the rule with (see exclude.default())
+  results <- as.data.frame(object)
   prepared$call_cols <-
-    unique(c(names(getGroups(object)), intersect(names(object$result), c("start", "end"))))
+    unique(c(names(getGroups(object)), intersect(names(results), c("start", "end"))))
   if (prepared$sparse) {
     rm(list = ls(cache), envir = cache)
     list2env(prepared, envir = cache)
@@ -548,7 +549,7 @@ exclude_nca_tmax_coverage_prepare <- function(object, cache) {
   prepared$conc_peer_cols <- setdiff(prepared$conc_group_cols, prepared$subject_col)
   prepared$summary_group_cols <- get_summary_PKNCAresults_drop_group(object = object, drop_group = prepared$subject_col)
 
-  all_tmax <- object$result[object$result$PPTESTCD == "tmax", , drop = FALSE]
+  all_tmax <- results[results$PPTESTCD == "tmax", , drop = FALSE]
   all_tmax <- all_tmax[!is.na(all_tmax$PPORRES) & all_tmax[[object$columns$exclude]] %in% c(NA, ""), , drop = FALSE]
   prepared$all_tmax <- all_tmax
   prepared$all_tmax_key <- pknca_interval_group_key(all_tmax, prepared$summary_group_cols)

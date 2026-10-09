@@ -126,13 +126,14 @@ normalize_by_col <- function(object, col, unit, parameters, suffix){
       class = "pknca_error_norm_col_not_found"
     )
   }
-  conc_groups <- dplyr::group_vars(object$data$conc)
+  conc <- as_PKNCAconc(object)
+  conc_groups <- dplyr::group_vars(conc)
   if (unit %in% obj_conc_cols) {
-    norm_table <- unique(object$data$conc$data[, c(conc_groups, col, unit)])
+    norm_table <- unique(as.data.frame(conc)[, c(conc_groups, col, unit)])
     names(norm_table)[names(norm_table) == col] <- "normalization"
     names(norm_table)[names(norm_table) == unit] <- "unit"
   } else {
-    norm_table <- unique(object$data$conc$data[, c(conc_groups, col)])
+    norm_table <- unique(as.data.frame(conc)[, c(conc_groups, col)])
     names(norm_table)[names(norm_table) == col] <- "normalization"
     norm_table$unit <- unit
   }
