@@ -547,6 +547,10 @@ getGroups.PKNCAresults <- function(object,
                                    data=object$result, sep) {
   # Include the start time as a group; this may be dropped later
   grpnames <- c(unlist(object$data$conc$columns$groups), "start", "end")
+  # The total/unbound concentration grouping comes first when frac_unbound is used
+  if ("frac_unbound" %in% names(data)) {
+    grpnames <- c("frac_unbound", grpnames)
+  }
   if (is_sparse_pk(object)) {
     grpnames <- setdiff(grpnames, object$data$conc$columns$subject)
   }
@@ -577,5 +581,8 @@ getGroups.PKNCAresults <- function(object,
 #'   from the PKNCAconc object within
 #' @exportS3Method dplyr::group_vars
 group_vars.PKNCAresults <- function(x) {
-  c("start","end",group_vars.PKNCAconc(as_PKNCAconc(x))) 
+  c(
+    if ("frac_unbound" %in% names(x$result)) "frac_unbound",
+    "start", "end", group_vars.PKNCAconc(as_PKNCAconc(x))
+  ) 
 }

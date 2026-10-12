@@ -739,3 +739,22 @@ test_that("Sparse concentration data are checked for duplicates per subject and 
     class = "pknca_error_duplicate_rows"
   )
 })
+
+test_that("frac_unbound accepts a column or a constant and validates its values", {
+  d <- data.frame(subject = 1, time = 0:3, conc = c(0, 4, 2, 1), fu = c(0.5, 0.5, 1, NA))
+  from_col <- PKNCAconc(d, conc~time|subject, frac_unbound = "fu")
+  expect_equal(from_col$columns$frac_unbound, "fu")
+  from_const <- PKNCAconc(d, conc~time|subject, frac_unbound = 0.1)
+  expect_equal(from_const$data$frac_unbound, rep(0.1, 4))
+  # 1 is allowed; 0 and values above 1 are not
+  expect_no_error(PKNCAconc(d, conc~time|subject, frac_unbound = 1))
+  expect_error(PKNCAconc(d, conc~time|subject, frac_unbound = 0), class = "pknca_error_numeric_between")
+  expect_error(PKNCAconc(d, conc~time|subject, frac_unbound = 1.1), regexp = "frac_unbound")
+  # The grouping column name is reserved
+  d_group <- transform(d, frac_unbound = "x")
+  expect_error(
+    PKNCAconc(d_group, conc~time|frac_unbound+subject, frac_unbound = 0.5),
+    class = "pknca_error_frac_unbound_group_name"
+  )
+})
+

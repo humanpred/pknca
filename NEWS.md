@@ -8,6 +8,14 @@ the dosing including dose amount and route.
 
 ## Breaking changes
 
+* `PKNCAconc()` has a new `frac_unbound` argument: a value or the name of a
+  column, greater than 0 and at most 1, with `NA` where fraction unbound does
+  not apply (#544).  When given, `pk.nca()` calculates the parameters on the
+  total concentration and on the unbound concentration (concentration times
+  `frac_unbound`), and the results have a new first grouping column,
+  `frac_unbound`.  Within an interval, the values must be all `NA` or all
+  non-`NA`.  This works for dense and sparse PK.
+
 * Parameter names and descriptions follow one style, so some column headers of
   `summary()` and some descriptions change (@billdenney):
   * Pretty names write lambda.z as math (`$\lambda_z$`), including "Number of

@@ -293,3 +293,19 @@ test_that("the sparse mean profile ignores missing LLOQs", {
   d$lloq <- NA_real_
   expect_false("lloq" %in% names(sparse_mean_profile(d)))
 })
+
+test_that("prepare_PKNCAconc carries frac_unbound only when it is used", {
+  d <- data.frame(
+    subject = rep(1:2, each = 3), time = rep(0:2, 2),
+    conc = 1:6, fu = c(0.5, 0.5, NA, 0.25, 0.25, 0.25)
+  )
+  # With frac_unbound, the column is available to the calculation data
+  o_fu <- PKNCAconc(d, conc~time|subject, frac_unbound = "fu")
+  prep_fu <- prepare_PKNCAconc(o_fu)
+  expect_true(all(vapply(prep_fu$data_conc, function(x) "frac_unbound" %in% names(x), TRUE)))
+  expect_equal(prep_fu$data_conc[[1]]$frac_unbound, c(0.5, 0.5, NA))
+  # Without frac_unbound, the column is not added
+  o_plain <- PKNCAconc(d, conc~time|subject)
+  prep_plain <- prepare_PKNCAconc(o_plain)
+  expect_false(any(vapply(prep_plain$data_conc, function(x) "frac_unbound" %in% names(x), TRUE)))
+})
