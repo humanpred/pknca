@@ -260,6 +260,17 @@ sparse_pk_weighted <- function(sparse_pk) {
 #' @references
 #' Yuan J. Estimation of variance for AUC in animal studies.  Journal of
 #' Pharmaceutical Sciences.  1993;82(7):761-763. doi:10.1002/jps.2600820718
+#'
+#' Wolfsegger MJ, Jaki T.  Estimation of AUC from 0 to infinity in serial
+#' sacrifice designs.  Journal of Pharmacokinetics and Pharmacodynamics.
+#' 2005;32(5-6):757-766.  doi:10.1007/s10928-005-0044-0  (The AUC to infinity
+#' with `lambda.z` fit to the time points after the trapezoidal sum, so the two
+#' are independent; the delta method here uses the same samples for both and
+#' their covariance.)
+#'
+#' Jaki T, Wolfsegger MJ.  Non-compartmental estimation of pharmacokinetic
+#' parameters for flexible sampling designs.  Statistics in Medicine.
+#' 2012;31(11-12):1059-1073.  doi:10.1002/sim.4386
 #' @keywords Internal
 #' @noRd
 sparse_auxc_obs <- function(conc, time, subject, lambda.z = NA,
@@ -453,7 +464,9 @@ sparse_c0 <- function(sparse_pk) {
 #' designs), the same variance and degrees of freedom are calculated from the
 #' weighted sum of each animal's samples, which is much faster for many
 #' animals.  For serial sacrifice, the degrees of freedom are then equation 6a
-#' of Nedelman, Gibiansky, and Lau (1995).
+#' of Nedelman, Gibiansky, and Lau (1995).  Jaki and Wolfsegger (2009) give an
+#' estimator and asymptotic variance of the AUC to the last time for the same
+#' three designs.
 #'
 #' @inheritParams sparse_pk_attribute
 #' @returns The variance of the AUC estimate with a `"df"` attribute containing
@@ -470,6 +483,10 @@ sparse_c0 <- function(sparse_pk) {
 #' Nedelman JR, Gibiansky E, Lau DTW.  Applying Bailer's method for AUC
 #' confidence intervals to sparse sampling.  Pharmaceutical Research.
 #' 1995;12(1):124-128.
+#'
+#' Jaki T, Wolfsegger MJ.  A theoretical framework for estimation of AUCs in
+#' complete and incomplete sampling designs.  Statistics in Biopharmaceutical
+#' Research.  2009;1(2):176-184.  doi:10.1198/sbr.2009.0025
 #' @export
 var_sparse_auc <- function(sparse_pk) {
   # Times with no weight in the AUC or an imputed (known) concentration do not

@@ -145,11 +145,28 @@ extended Bailer's method to the AUC from 0 to infinity by adding the
 extrapolation $\bar{y}_n/\lambda_z$, treating the terminal elimination rate
 $\lambda_z$ as known.
 
+Wolfsegger and Jaki (2005) estimated the AUC to infinity in serial sacrifice
+designs with $\lambda_z$ fit to the mean concentrations of the time points after
+the last one in the trapezoidal sum, so that the two parts of the estimate are
+independent by construction, and built bootstrap-$t$ intervals on the resulting
+variance; they noted that using the covariance between the trapezoidal AUC and
+$\lambda_z$, so that the same samples serve both, was a subject for further
+research.  Jaki and Wolfsegger (2009) gave one estimator and variance of the
+AUC to the last time for complete, batch, and serial sacrifice designs, and Jaki
+and Wolfsegger (2012) extended the serial-sampling parameters of Wolfsegger and
+Jaki (2009), the AUC and AUMC to infinity, MRT, half-life, clearance, and
+$V_{ss}$ after an IV bolus, to those designs, with asymptotic and bootstrap-$t$
+intervals, as implemented in the R package PK.  Barnett, Geys, Jacobs, and Jaki
+(2021) compared eight treatments of samples below the limit of quantification
+in the AUC, from substitution to censored maximum likelihood and kernel-density
+imputation.
+
 In practice, $\lambda_z$ is estimated from the same data, so its uncertainty
 adds to that of the AUC to infinity.  This vignette describes how PKNCA
 calculates the sparse AUC and AUMC to infinity with their standard errors and
 degrees of freedom, gives a delta-method extension of Yuan's method that
-includes the uncertainty in $\lambda_z$, extends both to IV bolus dosing, and
+includes the uncertainty in $\lambda_z$ and its covariance with the means (the
+covariance Wolfsegger and Jaki left open), extends both to IV bolus dosing, and
 compares the methods in a simulation-estimation study.  A second study compares
 arithmetic and geometric mean profiles.
 
@@ -1006,9 +1023,22 @@ Bailer AJ.  Testing for the equality of area under the curves when using
 destructive measurement techniques.  Journal of Pharmacokinetics and
 Biopharmaceutics.  1988;16(3):303-309.
 
+Barnett HY, Geys H, Jacobs T, Jaki T.  Methods for non-compartmental
+pharmacokinetic analysis with observations below the limit of quantification.
+Statistics in Biopharmaceutical Research.  2021;13(1):59-70.
+doi:10.1080/19466315.2019.1701546
+
 Holder DJ.  Comments on Nedelman and Jia's extension of Satterthwaite's
 approximation applied to pharmacokinetics.  Journal of Biopharmaceutical
 Statistics.  2001;11(1-2):75-79.  doi:10.1081/BIP-100104199
+
+Jaki T, Wolfsegger MJ.  A theoretical framework for estimation of AUCs in
+complete and incomplete sampling designs.  Statistics in Biopharmaceutical
+Research.  2009;1(2):176-184.  doi:10.1198/sbr.2009.0025
+
+Jaki T, Wolfsegger MJ.  Non-compartmental estimation of pharmacokinetic
+parameters for flexible sampling designs.  Statistics in Medicine.
+2012;31(11-12):1059-1073.  doi:10.1002/sim.4386
 
 Nedelman JR, Gibiansky E, Lau DTW.  Applying Bailer's method for AUC
 confidence intervals to sparse sampling.  Pharmaceutical Research.
@@ -1022,6 +1052,14 @@ Shen M, Machado SG.  Bioequivalence evaluation of sparse sampling
 pharmacokinetics data using bootstrap resampling method.  Journal of
 Biopharmaceutical Statistics.  2017;27(2):257-264.
 doi:10.1080/10543406.2016.1265543
+
+Wolfsegger MJ, Jaki T.  Estimation of AUC from 0 to infinity in serial
+sacrifice designs.  Journal of Pharmacokinetics and Pharmacodynamics.
+2005;32(5-6):757-766.  doi:10.1007/s10928-005-0044-0
+
+Wolfsegger MJ, Jaki T.  Non-compartmental estimation of pharmacokinetic
+parameters in serial sampling designs.  Journal of Pharmacokinetics and
+Pharmacodynamics.  2009;36(5):479-494.  doi:10.1007/s10928-009-9133-9
 
 Takemoto S, Yamaoka K, Nishikawa M, Takakura Y.  Histogram analysis of
 pharmacokinetic parameters by bootstrap resampling from one-point sampling data

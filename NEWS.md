@@ -1231,6 +1231,12 @@ the generated intervals:
 
 ## Other changes
 
+* The sparse AUC vignette and the help of `var_sparse_auc()` and
+  `sparse_bootstrap()` cite Wolfsegger and Jaki's estimators for serial
+  sacrifice, batch, and complete designs and Barnett et al.'s comparison of
+  methods for samples below the limit of quantification, and say how PKNCA's
+  delta-method standard error relates to them (@billdenney)
+
 * The variance of a sparse AUC or AUMC and its degrees of freedom are
   calculated much faster for serial sacrifice, batch, and complete designs
   (for example, about 260 ms down to 5 ms with 100 animals at each of nine
