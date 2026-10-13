@@ -131,10 +131,23 @@ pk_nca <- function(d_pk, design, nsample, seed) {
   )
 }
 
+# Whether nca() gave a usable result:  a finite, positive standard error of
+# the AUC to infinity.  With BLQ samples as 0, its batch-design function
+# returns non-finite or vanishing standard errors.
+pk_result_usable <- function(result) {
+  if (is.null(result)) {
+    return(FALSE)
+  }
+  row <- result$CIs[grepl("CI for the AUC to infinity using a z", rownames(result$CIs), fixed = TRUE), ]
+  nrow(row) == 1 && is.finite(row$stderr) && is.finite(row$est) && row$stderr > 1e-6*abs(row$est)
+}
+
 # The PK package's intervals of one data set, with the dose for the clearance
-# and Vss.  BLQ samples are given as 0, as PKNCA takes them; PK's batch-design
-# function stops with an error when some but not all of a time's samples are
-# 0, and then the BLQ samples are omitted instead (`n_fallback` is 1).
+# and Vss.  BLQ samples are given as 0, as PKNCA takes them.  PK's
+# batch-design function stops with an error, or returns no usable standard
+# error, when some of a time's samples are 0; then the BLQ samples are omitted
+# instead (`n_fallback` is 1), and a data set with no usable result is a
+# failure.
 pk_intervals <- function(d, scenario_row, nsample, seed) {
   design <- if (scenario_row$design == "serial") "ssd" else "batch"
   d_pk <- data.frame(id = d$subject, conc = d$conc_reported, time = d$time)
@@ -148,11 +161,11 @@ pk_intervals <- function(d, scenario_row, nsample, seed) {
   }
   n_fallback <- 0L
   result <- pk_nca(rbind(d_zero, d_pk), design, nsample, seed)
-  if (is.null(result) && any(d$blq)) {
+  if (!pk_result_usable(result) && any(d$blq)) {
     n_fallback <- 1L
     result <- pk_nca(rbind(d_zero, d_pk[!d$blq, ]), design, nsample, seed)
   }
-  if (is.null(result)) {
+  if (!pk_result_usable(result)) {
     return(
       data.frame(
         interval = rep(c("pk z", "pk boot-t"), each = length(pk_parameter_names)),
