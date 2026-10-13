@@ -91,20 +91,20 @@ The full pipeline cannot run on a laptop in an hour; it takes days.  The
 comparisons added with the pipeline (the result files
 `v24-sparse-auc-to-infinity-comparisons.rds` and
 `v24-sparse-auc-to-infinity-blq.rds`) took 10.5 hours with 6 workers on an
-8-core laptop (Intel Core Ultra 7 268V), or 64 core-hours by the targets'
+8-core laptop (Intel Core Ultra 7 268V), or 60 core-hours by the targets'
 timings:
 
 | Targets | Core-hours |
 |---------|-----------:|
-| PK and Wolfsegger-Jaki comparisons, with PKNCA's bootstrap (`results_comparison_*`) | 49 |
+| PK and Wolfsegger-Jaki comparisons, with PKNCA's bootstrap (`results_comparison_*`) | 52 |
 | PKNCA's bootstrap-t over animals per time (`results_boott_profile_*`) | 7 |
 | BLQ treatments (`results_blq_*`) | 0.7 |
-| Data sets and truth | 0.5 |
+| Data sets and truth | 0.6 |
 
 The five earlier studies took 17 hours on 16 cores when last run (the sum of
 the `run_minutes` recorded in their result files); the individual-sample Tobit
 study was 10 of those hours.  Timing single data sets on the laptop gives a
-similar total, about 260 core-hours, so the whole pipeline needs about three
+similar total, about 260 core-hours, so the whole pipeline needs two to three
 days with 7 workers on such a laptop.  Each result file records `run_minutes`,
 the summed compute time of its targets.
 

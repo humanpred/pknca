@@ -25,6 +25,7 @@ Imports:
     lubridate,
     withr
 Suggests:
+    BLOQ,
     cdiscdata (>= 0.2.0),
     covr,
     cowplot,
@@ -36,6 +37,7 @@ Suggests:
     lme4,
     lmerTest,
     pander,
+    PK,
     rmarkdown,
     spelling,
     testthat (>= 3.0.0),
