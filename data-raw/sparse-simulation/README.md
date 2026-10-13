@@ -23,7 +23,8 @@ cannot run the simulations, so the vignette only reads the stored summaries.
 | `R/wolfsegger_jaki_2005.R` | The estimator of Wolfsegger and Jaki (2005), written from the paper |
 | `R/study_comparisons.R` | PKNCA against the PK package and Wolfsegger and Jaki (2005), with PKNCA's bootstrap-t |
 | `R/study_blq.R` | The BLQ treatments of Barnett et al. (2021) from the BLOQ package |
-| `R/outputs.R` | The contents of each result file |
+| `R/outputs.R` | The contents of each result file, and the runner of the known-answer tests |
+| `tests/testthat/` | Known-answer tests of the 2005 estimator (a literal transcription of the paper's equations) and of the coverage summary |
 | `_targets/` | The pipeline's store (not in git) |
 
 ## Running it
@@ -73,19 +74,33 @@ of parallel workers (default: one fewer than the cores).
 | `SIM_WJ_NSAMPLE` | 1000 | Wolfsegger-Jaki bootstrap-t replicates (as in the paper) |
 | `SIM_BOOTT_PROFILE_REPLICATES` | 500 | Data sets per number of animals, PKNCA's bootstrap-t |
 | `SIM_BLQ_REPLICATES` | 1000 | Data sets per BLQ scenario, BLOQ comparison |
+| `SIM_LARGE_REPLICATES` | 20 | Data sets per scenario, large-sample bias of the 2005 estimator |
+| `SIM_LARGE_N_PER_TIME` | 2000 | Animals per time for that check |
+| `SIM_OUTPUT_DIR` | `../../vignettes` | Where the result files are written |
 
-A trial run of every study takes a couple of minutes:
+A trial run of every study takes a few minutes.  Give it its own output
+directory, so that it does not overwrite the result files in `vignettes/`:
 
 ```sh
-SIM_SE_REPLICATES=6 SIM_VIRTUAL=300 SIM_BOOT=20 SIM_BOOT_REPLICATES=3 \
+mkdir -p /tmp/sparse-trial
+SIM_OUTPUT_DIR=/tmp/sparse-trial SIM_LARGE_REPLICATES=2 SIM_LARGE_N_PER_TIME=50 \
+  SIM_SE_REPLICATES=6 SIM_VIRTUAL=300 SIM_BOOT=20 SIM_BOOT_REPLICATES=3 \
   SIM_PROFILE_REPLICATES=2 SIM_TOBIT_SE_REPLICATES=2 SIM_TOBIT_PROFILE_REPLICATES=2 \
   SIM_MEAN_TYPE_REPLICATES=3 SIM_MEAN_TYPE_VIRTUAL=200 SIM_COMPARISON_REPLICATES=4 \
   SIM_PK_NSAMPLE=50 SIM_WJ_NSAMPLE=50 SIM_BLQ_REPLICATES=3 SIM_BOOTT_PROFILE_REPLICATES=2 \
   Rscript -e "targets::tar_make()"
 ```
 
-It writes its small results over the result files in `vignettes/`, so restore
-them with git afterward.
+The targets store (`_targets/`) is shared, so a trial run's targets replace the
+full run's; use `targets::tar_config_set(store = "_targets_trial")` (or a
+copy of this directory) to keep both.
+
+The known-answer tests run as the target `known_answers`, and the comparisons'
+result file is not written unless they pass.  To run them alone:
+
+```r
+testthat::test_dir("tests/testthat", load_package = "none")
+```
 
 The full pipeline cannot run on a laptop in an hour; it takes days.  The
 comparisons added with the pipeline (the result files
@@ -102,11 +117,14 @@ timings:
 | Data sets and truth | 0.6 |
 
 The five earlier studies took 17 hours on 16 cores when last run (the sum of
-the `run_minutes` recorded in their result files); the individual-sample Tobit
-study was 10 of those hours.  Timing single data sets on the laptop gives a
-similar total, about 260 core-hours, so the whole pipeline needs two to three
-days with 7 workers on such a laptop.  Each result file records `run_minutes`,
-the summed compute time of its targets.
+the `run_minutes` recorded in their result files, about 270 core-hours); the
+individual-sample Tobit study was 10 of those hours.  Timing single data sets
+of those five studies on the laptop gives a similar 260 core-hours, but with 6
+workers busy the laptop ran the comparisons at about half the speed that
+single data sets suggested (60 core-hours against 29).  So the whole pipeline,
+about 320 core-hours, needs three to four days with 7 workers on such a laptop,
+or about a day on 16 cores.  Each result file records `run_minutes`, the summed
+compute time of its targets.
 
 ## Adding a scenario or an estimator
 

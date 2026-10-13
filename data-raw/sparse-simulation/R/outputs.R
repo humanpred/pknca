@@ -104,11 +104,18 @@ output_tobit <- function(results, scenarios_truth, profile_scenario, settings) {
   )
 }
 
-output_comparisons <- function(results, results_profile, scenarios_truth, settings) {
+# `known_answers` is the result of the known-answer tests of the 2005
+# estimator and of summarize_intervals(), so the file is not written unless
+# they pass
+output_comparisons <- function(results, results_profile, results_large_n, scenarios_truth, settings, known_answers) {
+  stopifnot(isTRUE(known_answers))
   c(
     list(
       summary = summarize_intervals(results, scenarios_truth),
       profile_summary = summarize_intervals(results_profile, scenarios_truth),
+      large_n_summary = summarize_large_n(results_large_n, scenarios_truth),
+      n_large_replicates = settings$n_large_replicates,
+      large_n_per_time = settings$large_n_per_time,
       n_per_time = settings$comparison_n_per_time,
       n_replicates = settings$n_comparison_replicates,
       n_profile_replicates = settings$n_boott_profile_replicates,
@@ -126,7 +133,8 @@ output_comparisons <- function(results, results_profile, scenarios_truth, settin
     list(
       run_minutes =
         compute_minutes(results, c("scenario", "n_per_time")) +
-        compute_minutes(results_profile, c("scenario", "n_per_time"))
+        compute_minutes(results_profile, c("scenario", "n_per_time")) +
+        compute_minutes(results_large_n, "scenario")
     )
   )
 }
@@ -143,4 +151,22 @@ output_blq <- function(results, scenarios_truth, settings) {
     run_versions("BLOQ"),
     list(run_minutes = compute_minutes(results, "scenario"))
   )
+}
+
+# Run the known-answer tests in tests/testthat/ of the pipeline; TRUE when
+# every test passes, and an error otherwise
+run_known_answer_tests <- function(test_files) {
+  # The tests source the pipeline's functions themselves; PKNCA's parallel
+  # testthat setting does not apply to them
+  results <-
+    withr::with_envvar(
+      c(TESTTHAT_PARALLEL = "false"),
+      as.data.frame(
+        testthat::test_dir(dirname(test_files[1]), reporter = "silent", stop_on_failure = TRUE, load_package = "none")
+      )
+    )
+  if (sum(results$failed) > 0 || any(results$error)) {
+    stop("The pipeline's known-answer tests failed")
+  }
+  TRUE
 }

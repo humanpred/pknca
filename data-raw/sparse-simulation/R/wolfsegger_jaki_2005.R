@@ -82,7 +82,7 @@ wj2005_estimate <- function(summaries, time, n, n_tail, zero_first) {
 # The asymptotic and bootstrap-t intervals of one serial data set (columns
 # time and conc_reported).  For oral dosing, `zero_first` adds the known zero
 # at time 0.  The bootstrap resamples the animals at each time
-# (`n_bootstrap` replicates under `seed`).
+# (`n_bootstrap` replicates under `seed`; none gives no bootstrap-t interval).
 wj2005_intervals <- function(d, n_tail = 3, zero_first, n_bootstrap, seed, conf_level = 0.95) {
   time <- sort(unique(d$time))
   conc_by_time <- list()
@@ -98,6 +98,16 @@ wj2005_intervals <- function(d, n_tail = 3, zero_first, n_bootstrap, seed, conf_
   alpha <- 1 - conf_level
   se <- sqrt(original$variance)
   z <- stats::qnorm(1 - alpha/2)
+  if (n_bootstrap == 0) {
+    return(
+      data.frame(
+        interval = c("wj2005 z", "wj2005 boot-t"), parameter = "auc",
+        estimate = original$estimate, se = se,
+        lower = c(original$estimate - z*se, NA_real_), upper = c(original$estimate + z*se, NA_real_),
+        n_valid_bootstrap = c(NA_integer_, 0L)
+      )
+    )
+  }
   boot_by_time <- list()
   withr::with_seed(seed, {
     for (j in seq_along(conc_by_time)) {

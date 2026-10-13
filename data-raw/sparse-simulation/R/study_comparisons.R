@@ -131,23 +131,34 @@ pk_nca <- function(d_pk, design, nsample, seed) {
   )
 }
 
-# Whether nca() gave a usable result:  a finite, positive standard error of
-# the AUC to infinity.  With BLQ samples as 0, its batch-design function
-# returns non-finite or vanishing standard errors.
-pk_result_usable <- function(result) {
+# Which rows of nca()'s intervals are usable:  a finite estimate and a finite
+# standard error that is not PK's placeholder.  When a variance is NaN,
+# PK's batch-design code sets it to 1e-08, so the reported standard error is
+# sqrt(1e-08/n) with n the smallest number of animals at a time.
+pk_rows_usable <- function(cis, n_min) {
+  placeholder <- sqrt(1e-08/n_min)
+  is.finite(cis$est) & is.finite(cis$stderr) & cis$stderr > 1.01*placeholder
+}
+
+# Whether nca() gave a usable AUC to infinity (the other parameters depend
+# on it)
+pk_result_usable <- function(result, n_min) {
   if (is.null(result)) {
     return(FALSE)
   }
-  row <- result$CIs[grepl("CI for the AUC to infinity using a z", rownames(result$CIs), fixed = TRUE), ]
-  nrow(row) == 1 && is.finite(row$stderr) && is.finite(row$est) && row$stderr > 1e-6*abs(row$est)
+  is_auc <- grepl("CI for the AUC to infinity using a z", rownames(result$CIs), fixed = TRUE)
+  any(is_auc) && all(pk_rows_usable(result$CIs[is_auc, ], n_min))
 }
 
 # The PK package's intervals of one data set, with the dose for the clearance
-# and Vss.  BLQ samples are given as 0, as PKNCA takes them.  PK's
-# batch-design function stops with an error, or returns no usable standard
-# error, when some of a time's samples are 0; then the BLQ samples are omitted
-# instead (`n_fallback` is 1), and a data set with no usable result is a
-# failure.
+# and Vss.  In serial-sacrifice designs, BLQ samples are given as 0, as PKNCA
+# takes them (PK takes the logarithm of 1e-256 for a 0); if that gives no
+# usable AUC to infinity, the BLQ samples are omitted instead (`n_fallback` is
+# 1).  PK's batch-design function cannot take a 0 at a time where other
+# samples are positive (it stops with an error after oral dosing, and after IV
+# bolus dosing returns placeholder standard errors), so in batch designs the
+# BLQ samples are always omitted (`n_fallback` is 1 for every data set with
+# BLQ samples).  Each row whose standard error is not usable is a failure.
 pk_intervals <- function(d, scenario_row, nsample, seed) {
   design <- if (scenario_row$design == "serial") "ssd" else "batch"
   d_pk <- data.frame(id = d$subject, conc = d$conc_reported, time = d$time)
@@ -159,13 +170,21 @@ pk_intervals <- function(d, scenario_row, nsample, seed) {
   } else {
     d_zero <- d_pk[0, ]
   }
+  n_min <- min(table(d$time))
   n_fallback <- 0L
-  result <- pk_nca(rbind(d_zero, d_pk), design, nsample, seed)
-  if (!pk_result_usable(result) && any(d$blq)) {
+  if (design == "batch" && any(d$blq)) {
     n_fallback <- 1L
+    n_min <- min(table(d$time[!d$blq]))
     result <- pk_nca(rbind(d_zero, d_pk[!d$blq, ]), design, nsample, seed)
+  } else {
+    result <- pk_nca(rbind(d_zero, d_pk), design, nsample, seed)
+    if (!pk_result_usable(result, n_min) && any(d$blq)) {
+      n_fallback <- 1L
+      n_min <- min(table(d$time[!d$blq]))
+      result <- pk_nca(rbind(d_zero, d_pk[!d$blq, ]), design, nsample, seed)
+    }
   }
-  if (!pk_result_usable(result)) {
+  if (!pk_result_usable(result, n_min)) {
     return(
       data.frame(
         interval = rep(c("pk z", "pk boot-t"), each = length(pk_parameter_names)),
@@ -178,11 +197,14 @@ pk_intervals <- function(d, scenario_row, nsample, seed) {
   cis <- result$CIs
   parameter_label <- sub("^.*% CI for the (.*) using a .*$", "\\1", rownames(cis))
   keep <- parameter_label %in% names(pk_parameter_names)
+  usable <- pk_rows_usable(cis, n_min)
   data.frame(
     interval = ifelse(cis$method[keep] == "z", "pk z", "pk boot-t"),
     parameter = unname(pk_parameter_names[parameter_label[keep]]),
-    estimate = cis$est[keep], se = cis$stderr[keep],
-    lower = cis$lower[keep], upper = cis$upper[keep],
+    estimate = ifelse(usable[keep], cis$est[keep], NA_real_),
+    se = ifelse(usable[keep], cis$stderr[keep], NA_real_),
+    lower = ifelse(usable[keep], cis$lower[keep], NA_real_),
+    upper = ifelse(usable[keep], cis$upper[keep], NA_real_),
     n_valid_bootstrap = NA_integer_,
     n_fallback = n_fallback
   )
@@ -277,6 +299,51 @@ summarize_intervals <- function(results, scenarios) {
         # Data sets that needed a method's fallback (see pk_intervals() and
         # the BLQ study)
         percent_fallback = 100*mean(r$n_fallback > 0)
+      )
+  }
+  merge(scenarios, do.call(rbind, rows), by = "scenario")
+}
+
+# The bias of the Wolfsegger and Jaki (2005) estimate and of PKNCA's with many
+# animals per time, on one serial-sacrifice scenario without BLQ samples:  it
+# separates the 2005 estimator's small-sample instability from the bias of
+# its target.  The data seeds are those of the other studies, with
+# `large_n_per_time` animals at each time.
+run_large_n_check <- function(scenario_row, settings) {
+  started <- Sys.time()
+  out <- vector("list", settings$n_large_replicates)
+  for (replicate in seq_len(settings$n_large_replicates)) {
+    d <-
+      withr::with_seed(
+        data_seed(settings$seed_base, scenario_row$scenario, replicate),
+        simulate_data(scenario_row, scenario_lloq(scenario_row), n_per_time = settings$large_n_per_time)
+      )
+    wj <- wj2005_intervals(d, n_tail = 3, zero_first = scenario_row$route == "oral", n_bootstrap = 0, seed = 1)
+    out[[replicate]] <-
+      data.frame(
+        scenario = scenario_row$scenario, replicate = replicate,
+        estimator = c("wj2005", "pknca"),
+        estimate = c(wj$estimate[1], pknca_delta_estimates(d, scenario_row$route)[["auc"]]),
+        truth = scenario_row$truth_auc
+      )
+  }
+  with_branch_seconds(do.call(rbind, out), started)
+}
+
+# The mean relative bias (%) of each estimator with many animals, and its
+# Monte Carlo standard error
+summarize_large_n <- function(results, scenarios) {
+  results$relative_error <- 100*(results$estimate - results$truth)/results$truth
+  key <- paste(results$scenario, results$estimator)
+  rows <- list()
+  for (current_rows in split(seq_len(nrow(results)), factor(key, levels = unique(key)))) {
+    r <- results[current_rows, ]
+    ok <- is.finite(r$relative_error)
+    rows[[length(rows) + 1]] <-
+      data.frame(
+        scenario = r$scenario[1], estimator = r$estimator[1], n = sum(ok),
+        relative_bias = mean(r$relative_error[ok]),
+        relative_bias_mcse = stats::sd(r$relative_error[ok])/sqrt(sum(ok))
       )
   }
   merge(scenarios, do.call(rbind, rows), by = "scenario")

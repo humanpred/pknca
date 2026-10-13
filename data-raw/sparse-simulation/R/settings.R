@@ -50,6 +50,13 @@ simulation_settings <- function() {
     n_boott_profile_replicates = setting_integer("SIM_BOOTT_PROFILE_REPLICATES", 500),
     # BLQ methods (BLOQ package)
     n_blq_replicates = setting_integer("SIM_BLQ_REPLICATES", 1000),
+    # The large-sample bias of the Wolfsegger and Jaki (2005) estimate:  data
+    # sets per scenario, and animals per time
+    n_large_replicates = setting_integer("SIM_LARGE_REPLICATES", 20),
+    large_n_per_time = setting_integer("SIM_LARGE_N_PER_TIME", 2000),
+    # Where the result files go:  the vignette's directory, unless a trial run
+    # sets another
+    output_dir = Sys.getenv("SIM_OUTPUT_DIR", file.path("..", "..", "vignettes")),
     # Parallel workers (crew)
     workers = setting_integer("SIM_WORKERS", max(1L, parallel::detectCores() - 1L))
   )
@@ -82,13 +89,16 @@ run_versions <- function(packages = character()) {
   ret
 }
 
-# Write a result file for the vignette and return its path (a file target)
-write_vignette_rds <- function(object, file) {
-  directory <- file.path("..", "..", "vignettes")
-  if (!dir.exists(directory)) {
-    stop("Run the pipeline from data-raw/sparse-simulation/ in the PKNCA source:  ", normalizePath(directory, mustWork = FALSE), " does not exist")
+# Write a result file to the output directory and return its path (a file
+# target)
+write_vignette_rds <- function(object, file, output_dir) {
+  if (!dir.exists(output_dir)) {
+    stop(
+      "The output directory ", normalizePath(output_dir, mustWork = FALSE), " does not exist:  run the pipeline from ",
+      "data-raw/sparse-simulation/ in the PKNCA source, or set SIM_OUTPUT_DIR to an existing directory"
+    )
   }
-  path <- file.path(directory, file)
+  path <- file.path(output_dir, file)
   saveRDS(object, path)
   path
 }
