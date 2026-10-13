@@ -1,7 +1,9 @@
 # The result files of vignette("v24-sparse-auc-to-infinity") come from the
 # targets pipeline in data-raw/sparse-simulation/.  The vignette reads their
 # fields and summary columns by name, so a pipeline change that renames one
-# fails here rather than in the vignette build.
+# fails here rather than in the vignette build.  The files are read from the
+# source tree's vignettes/ directory, so the test runs with devtools::test()
+# and skips under R CMD check, as the other source-tree tests do.
 
 # For each file:  the fields of the list, the columns of each summary, and the
 # intervals or methods the vignette looks up
@@ -71,7 +73,8 @@ sparse_vignette_results <- list(
   "v24-sparse-auc-to-infinity-comparisons.rds" = list(
     fields = c(
       "summary", "profile_summary", "n_per_time", "n_replicates", "n_profile_replicates", "n_boot",
-      "pk_nsample", "wj_nsample", "n_tail", "pknca_version", "pk_version", "r_version", "run_date"
+      "pk_nsample", "wj_nsample", "n_tail", "large_n_summary", "n_large_replicates", "large_n_per_time",
+      "pknca_version", "pk_version", "r_version", "run_date"
     ),
     summaries = list(
       summary = c(
@@ -79,7 +82,8 @@ sparse_vignette_results <- list(
         "parameter", "n_attempted", "n", "coverage", "coverage_mcse", "median_ci_width", "relative_bias",
         "median_bias", "percent_fallback"
       ),
-      profile_summary = c("scenario", "blq", "n_per_time", "interval", "parameter", "coverage", "median_ci_width")
+      profile_summary = c("scenario", "blq", "n_per_time", "interval", "parameter", "coverage", "median_ci_width"),
+      large_n_summary = c("scenario", "elimination", "estimator", "relative_bias", "relative_bias_mcse")
     ),
     values = list(
       summary = list(
@@ -89,7 +93,8 @@ sparse_vignette_results <- list(
         ),
         parameter = c("auc", "aumc", "cl", "half_life_nc", "mrt", "vss")
       ),
-      profile_summary = list(interval = c("pknca boot-t", "pknca delta", "pknca percentile", "pknca yuan"))
+      profile_summary = list(interval = c("pknca boot-t", "pknca delta", "pknca percentile", "pknca yuan")),
+      large_n_summary = list(estimator = c("pknca", "wj2005"))
     )
   ),
   "v24-sparse-auc-to-infinity-blq.rds" = list(

@@ -89,6 +89,23 @@ serial_range <- function(column, interval, n_per_time, ..., digits = 1) {
 batch_range <- function(column, interval, parameter, ..., digits = 1) {
   cmp_range(column, interval = interval, design = "batch", parameter = parameter, ..., digits = digits)
 }
+# The percentage of data sets whose interval could not be calculated, from
+# the number of data sets of each cell
+failure_range <- function(..., digits = 1) {
+  r <- sim_rows(comparisons$summary, list(...))
+  v <- 100*(1 - r$n/comparisons$n_replicates)
+  paste(unique(format(round(range(v), digits), nsmall = digits)), collapse = " to ")
+}
+# The largest drop in coverage (percentage points) from counting a failure as
+# a miss
+max_coverage_drop <- function(..., digits = 1) {
+  r <- sim_rows(comparisons$summary, list(...))
+  format(round(max(r$coverage*(1 - r$n/comparisons$n_replicates)), digits), nsmall = digits)
+}
+# The bias (%) of an estimator with many animals per time
+large_range <- function(estimator, ..., digits = 1) {
+  summary_range(comparisons$large_n_summary, "relative_bias", estimator = estimator, ..., digits = digits)
+}
 # PKNCA's intervals over the number of animals per time
 boott_value <- function(column, n_per_time, blq, parameter, interval = "pknca boot-t", digits = 1) {
   summary_value(
@@ -160,7 +177,7 @@ For sparse sampling, where each animal gives one or a few samples:
 * **The published intervals for these designs did not cover better with few
   animals.**  With three animals per time in serial-sacrifice designs, the delta
   method covered `r serial_range("coverage", "pknca delta", 3)`%.  The
-  bootstrap-$t$ of Wolfsegger and Jaki (2005) covered as well or better without
+  bootstrap-$t$ of Wolfsegger and Jaki (2005) covered about as well without
   BLQ samples, but with intervals about twice as wide from an unstable estimate.
   Both it and the PK package take the logarithm of every sample, and they broke
   down with BLQ samples:  with slow elimination, PK's asymptotic interval
@@ -213,7 +230,7 @@ AUC to the last time for complete, batch, and serial sacrifice designs, and Jaki
 and Wolfsegger (2012) extended the serial-sampling parameters of Wolfsegger and
 Jaki (2009), the AUC and AUMC to infinity, MRT, half-life, clearance, and
 $V_{ss}$ after an IV bolus, to those designs, with asymptotic and bootstrap-$t$
-intervals, as implemented in the R package PK.  Barnett, Geys, Jacobs, and Jaki
+intervals, as implemented in the R package PK (Jaki and Wolfsegger 2011).  Barnett, Geys, Jacobs, and Jaki
 (2021) compared eight treatments of samples below the limit of quantification
 in the AUC, from substitution to censored maximum likelihood and kernel-density
 imputation.
@@ -871,6 +888,19 @@ $10^{-256}$ in the logarithms as `PK::nca()` does, which violates their
 assumption of a constant coefficient of variation in the tail.  They were run
 anyway, so the BLQ scenarios show what happens when that assumption fails.
 
+Coverage, here and below, is among the data sets for which the interval could
+be calculated.  Without BLQ samples,
+`r failure_range(design = "serial", blq = "none", parameter = "auc")`% of the
+data sets failed, depending on the interval and scenario.  With BLQ samples, the 2005 estimator failed
+(no positive $\hat{\lambda}_z$) in
+`r failure_range(design = "serial", blq = "moderate", parameter = "auc", interval = "wj2005 z")`%
+of them and PKNCA's estimate (no half-life) in
+`r failure_range(design = "serial", blq = "moderate", parameter = "auc", interval = "pknca delta")`%.
+Counting a failure as a miss would lower a coverage in the serial-sacrifice
+tables by at most
+`r max_coverage_drop(design = "serial", parameter = "auc")` points (the result
+file has both).
+
 Coverage (%) of the 95% intervals for the AUC to infinity with three animals
 per time:
 
@@ -904,10 +934,13 @@ intervals were compared with PKNCA's delta method and bootstrap-$t$ (AUC and
 AUMC) and its percentile bootstrap (MRT, the ratio of the AUMC and AUC to
 infinity of each replicate).  The true MRT is that of the population mean
 curve, the ratio of its AUMC and AUC; after oral dosing, it includes the mean
-absorption time, as both packages' estimates do.  `PK::nca()` stops with an
-error for a batch design when some but not all of a time's samples are zero, so
-for those data sets the BLQ samples were omitted, as it allows; the last column
-gives how often.  PK's bootstrap resamples the concentrations at each time
+absorption time, as both packages' estimates do.  In a batch design,
+`PK::nca()` cannot take a zero at a time where other samples are positive:
+after oral dosing it stops with an error, and after IV bolus dosing it replaces
+the resulting NaN variances with a placeholder ($10^{-8}$), which gives a
+standard error near zero.  So every batch data set with BLQ samples was given
+to PK with them omitted, as it allows (the last column gives how often), and any
+interval whose standard error was PK's placeholder counted as a failure.  PK's bootstrap resamples the concentrations at each time
 without regard to animal, while `sparse_bootstrap()` resamples whole animals
 within each batch.
 
@@ -1131,8 +1164,15 @@ because its estimate was unstable:  its median bias was
 `r serial_range("median_bias", "wj2005 z", 3, blq = "none")`%, against
 `r serial_range("median_bias", "pknca delta", 3, blq = "none")`% for PKNCA's
 estimate and `r serial_range("median_bias", "pk z", 3, blq = "none")`% for PK's.
-In a separate check with 2,000 animals per time, the 2005 estimate was within
-3% of the truth in these scenarios, so the instability is that of small samples:
+With `r format(comparisons$large_n_per_time, big.mark = ",")` animals per time
+(`r comparisons$n_large_replicates` data sets of each scenario without BLQ
+samples), the 2005 estimate was biased by
+`r large_range("wj2005", elimination = "fast")`% with fast elimination, much as
+PKNCA's was (`r large_range("pknca", elimination = "fast")`%), from the linear
+trapezoidal rule over a declining curve, and by
+`r large_range("wj2005", elimination = "slow")`% with slow elimination
+(PKNCA's, `r large_range("pknca", elimination = "slow")`%).  So its large
+errors with three or four animals are those of small samples:
 its bias correction divides the variance of $\hat{\lambda}_z$ by
 $\hat{\lambda}_z^3$, its correction of the log means divides one noisy variance
 by a noisy squared mean, and the variability of the elimination rate here gives
@@ -1192,20 +1232,15 @@ profile was biased by
 (PKNCA), because the AUMC to infinity is underestimated, and PKNCA's percentile
 bootstrap of the MRT covered no better
 (`r batch_range("coverage", "pknca percentile", "mrt", blq = "none")`%).  With
-BLQ samples, PK's batch function could not take them as zeros:  after oral
-dosing it stopped with an error, and after IV bolus dosing it often returned a
-standard error that was not finite or was essentially zero.  Those data sets
+BLQ samples, every batch data set that had any
 (`r batch_range("percent_fallback", "pk z", "auc", blq = "moderate", digits = 0)`%
-of each scenario) were rerun with the BLQ samples omitted, which biased PK's AUC
-to infinity high where most data sets needed it (median bias
-`r batch_range("median_bias", "pk z", "auc", blq = "moderate")`% over the
-scenarios), and its asymptotic interval covered
-`r batch_range("coverage", "pk z", "auc", blq = "moderate")`%:  lowest in the
-two-compartment IV bolus scenarios
-(`r batch_range("coverage", "pk z", "auc", blq = "moderate", route = "iv", compartments = 2)`%),
-where the data sets that kept their zeros had standard errors that were finite
-but far too small.  The delta method covered
-`r batch_range("coverage", "pknca delta", "auc", blq = "moderate")`%.
+of each scenario) went to PK with them omitted.  Dropping the lowest late
+concentrations biased PK's AUC to infinity high (median
+`r batch_range("median_bias", "pk z", "auc", blq = "moderate")`%), but its
+asymptotic interval still covered
+`r batch_range("coverage", "pk z", "auc", blq = "moderate")`%, against
+`r batch_range("coverage", "pknca delta", "auc", blq = "moderate")`% for the
+delta method.
 
 **PKNCA's bootstrap-$t$.**  The bootstrap-$t$ on the delta-method standard
 error covered about as well as the delta method without BLQ samples, but less
@@ -1522,7 +1557,8 @@ the results give:
   without BLQ samples), mostly from the bias of the MRT estimate, which a
   standard error cannot fix.
 * **$\lambda_z$ fit after the trapezoidal sum, with a bias correction**
-  (Wolfsegger and Jaki 2005):  nearly unbiased with many animals, but unstable
+  (Wolfsegger and Jaki 2005):  as accurate as PKNCA's estimate with many
+  animals, but unstable
   with three or four, and its intervals about twice as wide.
 * **Bootstrap-$t$ intervals** (both papers):  on PKNCA's delta-method standard
   error, the bootstrap-$t$ covered the AUMC better than the delta method, but
@@ -1557,6 +1593,9 @@ Research.  2009;1(2):176-184.  doi:10.1198/sbr.2009.0025
 Jaki T, Wolfsegger MJ.  Non-compartmental estimation of pharmacokinetic
 parameters for flexible sampling designs.  Statistics in Medicine.
 2012;31(11-12):1059-1073.  doi:10.1002/sim.4386
+
+Jaki T, Wolfsegger MJ.  Estimation of pharmacokinetic parameters with the R
+package PK.  Pharmaceutical Statistics.  2011;10(3):284-288.  doi:10.1002/pst.449
 
 Jaki T, Wolfsegger MJ.  PK:  Basic non-compartmental pharmacokinetics.  R
 package version 1.3-6.  https://CRAN.R-project.org/package=PK
