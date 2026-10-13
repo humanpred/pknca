@@ -1245,8 +1245,8 @@ the generated intervals:
   treatments of BLQ samples of Barnett et al. (2021) from the BLOQ package.
   The simulations behind the vignette are now a targets pipeline in
   `data-raw/sparse-simulation/` that reproduces the earlier results exactly.
-  PK and BLOQ join Suggests for these comparisons; the package does not call
-  them, and the vignette reads stored results (@billdenney)
+  Only that pipeline uses the PK and BLOQ packages; the vignette reads its
+  stored results, so they are not package dependencies (@billdenney)
 
 * The variance of a sparse AUC or AUMC and its degrees of freedom are
   calculated much faster for serial sacrifice, batch, and complete designs

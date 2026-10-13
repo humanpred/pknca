@@ -31,7 +31,9 @@ cannot run the simulations, so the vignette only reads the stored summaries.
 
 Install the PKNCA of this source tree first, since the studies use functions
 that may not be released yet. The pipeline also needs targets, tarchetypes,
-crew, withr, pmxTools, PK, and BLOQ.
+crew, testthat, withr, pmxTools, PK, and BLOQ. Only the pipeline uses targets,
+tarchetypes, crew, PK, and BLOQ, so they are not PKNCA dependencies; install
+them before running it.
 
 ```r
 # From the root of the PKNCA source
