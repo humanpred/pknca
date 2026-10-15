@@ -10,6 +10,7 @@ interval_add_secondary(
   reference = NULL,
   target_groups = NULL,
   ref_id = NULL,
+  ref_vary = NULL,
   ...
 )
 }
@@ -42,6 +43,14 @@ at the old identifier or already has \code{ref_id}.  Reference rows that
 already carry more than one \code{interval_id} are an error
 (\code{pknca_error_secondary_ref_ambiguous_spec}) when \code{ref_id} is given, as it
 cannot name more than one interval.}
+
+\item{ref_vary}{The group columns in which the reference may differ from
+the interval calculating \code{param}, such as \code{"period"} in a crossover (see
+"Group columns that may differ").  They are written into the
+\verb{<param>_ref_vary} column of the linked intervals.  The default of \code{NULL}
+writes nothing, so the \code{ref_vary} given to \code{\link[=PKNCAdata]{PKNCAdata()}} applies, and
+\code{character(0)} declares that no column may differ (overriding that
+default).}
 
 \item{...}{Ignored.}
 }
@@ -91,6 +100,38 @@ explicit \code{end} in \code{reference} overrides the extension, and the data.fr
 method (which has no concentration data) copies the test interval's times
 unchanged.
 }
+\section{Group columns that may differ}{
+
+
+A reference is matched on the requesting group's own values in every
+group column except the ones the reference interval names:  with groups
+\code{treatment+subject} and \code{reference = data.frame(treatment = "iv")}, each
+subject's oral profile uses that subject's IV profile.  When the
+concentration data are also grouped by a column that the reference
+treatment does not share, such as the period of a crossover, the IV
+profile is in a different period than the oral one and is not found
+(\code{pknca_error_secondary_ref_value_missing}).
+
+\code{ref_vary} names such columns.  The reference is then matched on every
+other group column and on the reference interval's own columns, and takes
+whichever value of the varying columns has the reference interval's
+results.  Exactly one may:  more than one (a replicate design giving the
+reference twice) is an error (\code{pknca_error_secondary_ref_vary_ambiguous})
+naming the requesting group and the candidates, which is resolved by
+adding a group column that tells them apart to the intervals and naming
+it in \code{reference}.  A varying column that the reference interval names
+is pinned by it.  The subject column cannot vary, as a reference is always
+the subject's own profile.
+
+The declaration is stored per link as column names separated by commas
+in the \verb{<param>_ref_vary} column of the intervals, so it can also be
+written by hand.  \code{NA} there takes the \code{ref_vary} of \code{\link[=PKNCAdata]{PKNCAdata()}} (which
+declares the varying columns once for every link of the data), and \code{""}
+declares that no column varies.  The result names the reference's group
+in its \verb{<group column>_ref} columns and in \code{PPANMETH}
+(\code{"Reference interval: treatment=iv, period=1, 0-Inf"}).
+}
+
 \examples{
 intervals <-
   data.frame(
@@ -103,6 +144,17 @@ interval_add_secondary(
   intervals,
   param = "clr.last",
   reference = data.frame(PCSPEC = "plasma")
+)
+
+# A crossover where each subject received the IV reference in a different
+# period than the oral treatment
+intervals_crossover <-
+  data.frame(treatment = c("iv", "oral"), start = 0, end = Inf, aucinf.obs = TRUE)
+interval_add_secondary(
+  intervals_crossover,
+  param = "f.obs",
+  reference = data.frame(treatment = "iv"),
+  ref_vary = "period"
 )
 }
 \seealso{

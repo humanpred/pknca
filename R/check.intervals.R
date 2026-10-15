@@ -218,7 +218,10 @@ assert_interval_ids_identify_one <- function(x, impute = NA_character_) {
   compare_cols <-
     setdiff(
       names(x),
-      c(request_cols, pointer_cols, "impute", impute_column_names(impute), "interval_id")
+      c(
+        request_cols, pointer_cols, interval_ref_vary_cols(x),
+        "impute", impute_column_names(impute), "interval_id"
+      )
     )
   # Only an id on more than one row can describe different intervals
   ids <- as.character(x$interval_id)
@@ -252,6 +255,7 @@ assert_interval_ids_identify_one <- function(x, impute = NA_character_) {
 # Returns the (possibly coerced) interval specification.
 check_interval_secondary_cols <- function(x, impute = NA_character_) {
   interval_cols <- get.interval.cols()
+  x <- check_interval_ref_vary_cols(x)
   candidate <- grep(pattern = "_ref$", x = names(x), value = TRUE)
   # A `<something>_ref` column whose prefix is not a parameter is the user's own
   # data and is left alone.
@@ -315,6 +319,51 @@ check_interval_secondary_cols <- function(x, impute = NA_character_) {
           col, paste(which(mask_self), collapse = ", ")
         ),
         class = "pknca_error_secondary_ref_self"
+      )
+    }
+  }
+  x
+}
+
+# Validate the `<parameter>_ref_vary` columns:  each belongs to a secondary
+# parameter, holds group column names as text, and is set only where its
+# parameter is requested.  Whether the names are group columns needs the data,
+# so assert_intervals() checks that.  An all-NA logical column is an unfilled
+# column and becomes character.
+check_interval_ref_vary_cols <- function(x) {
+  secondary_params <- secondary_parameter_names()
+  for (col in interval_ref_vary_cols(x)) {
+    prefix <- sub(pattern = "_ref_vary$", replacement = "", x = col)
+    if (!(prefix %in% secondary_params)) {
+      rlang::abort(
+        sprintf(
+          "Column '%s' declares varying reference groups for '%s', which is not a secondary parameter",
+          col, prefix
+        ),
+        class = "pknca_error_secondary_ref_not_secondary"
+      )
+    }
+    if (is.logical(x[[col]]) && all(is.na(x[[col]]))) {
+      x[[col]] <- as.character(x[[col]])
+    }
+    if (!is.character(x[[col]])) {
+      rlang::abort(
+        sprintf(
+          "Column '%s' must be character, holding group column names separated by commas",
+          col
+        ),
+        class = "pknca_error_secondary_ref_vary_invalid"
+      )
+    }
+    mask_declared <- !is.na(x[[col]])
+    mask_requested <- vapply(X = x[[prefix]], FUN = isTRUE, FUN.VALUE = TRUE)
+    if (any(mask_declared & !mask_requested)) {
+      rlang::abort(
+        sprintf(
+          "Column '%s' declares varying reference groups in row(s) %s where '%s' is not requested. Request the parameter or clear the declaration.",
+          col, paste(which(mask_declared & !mask_requested), collapse = ", "), prefix
+        ),
+        class = "pknca_error_secondary_ref_without_request"
       )
     }
   }

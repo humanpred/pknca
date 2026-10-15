@@ -36,6 +36,9 @@ set_intervals <- function(data, intervals) {
 #'  An `interval_id` identifies one interval:  rows that share it may differ
 #'  only in the parameters they request (and `impute`), not in `start`, `end`,
 #'  or the groups, or a `pknca_error_secondary_id_conflict` error is raised.
+#'  The `<parameter>_ref_vary` columns (see [interval_add_secondary()]) must
+#'  name group columns of the concentration data other than the subject, or a
+#'  `pknca_error_secondary_ref_vary_invalid` error is raised.
 #'  It will return the intervals argument unchanged, or it will raise an error.
 #'  
 #' @param intervals Proposed intervals
@@ -59,6 +62,7 @@ assert_intervals <- function(intervals, data) {
       "interval_id",
       "interval_time_kind",
       paste0(secondary_parameter_names(), "_ref"),
+      ref_vary_col(secondary_parameter_names()),
       # If not used, data$options$keep_interval_cols will be NULL
       data$options$keep_interval_cols
     )
@@ -116,6 +120,10 @@ assert_intervals <- function(intervals, data) {
   # One interval_id identifies one interval, so it cannot be reused for rows
   # with a different window or group
   assert_interval_ids_identify_one(intervals, impute = data$impute)
+
+  # The group columns a secondary link's reference may differ in must be group
+  # columns of the data
+  assert_interval_ref_vary(intervals, as_PKNCAconc(data))
 
   # Name only what the specification itself asks for, not the dependencies it
   # drags in, so that the user is told about the columns they wrote

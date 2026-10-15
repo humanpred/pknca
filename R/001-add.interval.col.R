@@ -394,9 +394,9 @@ assert_selection <- function(selection, name) {
 #' Add columns for calculations within PKNCA intervals
 #'
 #' @param name The column name as a non-empty character string (length 1,
-#'   may not be `NA` or `""`).  Names ending in `_ref` and the name
-#'   `interval_id` are reserved for the reference-interval linkage columns of
-#'   the interval specification and may not be used.
+#'   may not be `NA` or `""`).  Names ending in `_ref` or `_ref_vary` and the
+#'   name `interval_id` are reserved for the reference-interval linkage columns
+#'   of the interval specification and may not be used.
 #' @param FUN The function to run (as a character string) or `NA` if the
 #'   parameter is automatically calculated when calculating another parameter.
 #' @param values Valid values for the column: either a function used to
@@ -593,12 +593,13 @@ add.interval.col <- function(name,
   # Check inputs
   checkmate::assert_character(x = name, len = 1, min.chars = 1, any.missing = FALSE)
   # `<name>_ref` columns in an interval specification are the reference-interval
-  # pointers for secondary parameters, and `interval_id` names intervals, so a
-  # parameter may not take either form.
-  if (grepl(pattern = "_ref$", x = name) || name %in% "interval_id") {
+  # pointers for secondary parameters, `<name>_ref_vary` columns declare the
+  # group columns those references may differ in, and `interval_id` names
+  # intervals, so a parameter may not take any of these forms.
+  if (grepl(pattern = "_ref(_vary)?$", x = name) || name %in% "interval_id") {
     rlang::abort(
       sprintf(
-        "The parameter name '%s' is reserved: names ending in '_ref' and the name 'interval_id' identify the reference-interval linkage columns of the interval specification",
+        "The parameter name '%s' is reserved: names ending in '_ref' or '_ref_vary' and the name 'interval_id' identify the reference-interval linkage columns of the interval specification",
         name
       ),
       class = "pknca_error_param_name_reserved"
