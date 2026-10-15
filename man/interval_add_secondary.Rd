@@ -47,10 +47,12 @@ cannot name more than one interval.}
 \item{ref_vary}{The group columns in which the reference may differ from
 the interval calculating \code{param}, such as \code{"period"} in a crossover (see
 "Group columns that may differ").  They are written into the
-\verb{<param>_ref_vary} column of the linked intervals.  The default of \code{NULL}
-writes nothing, so the \code{ref_vary} given to \code{\link[=PKNCAdata]{PKNCAdata()}} applies, and
-\code{character(0)} declares that no column may differ (overriding that
-default).}
+\verb{<param>_ref_vary} column of the linked intervals, so the names may not
+contain spaces or commas (per-link declarations need group column names
+without spaces or commas; give such a column to \code{\link[=PKNCAdata]{PKNCAdata()}} instead).
+The default of \code{NULL} writes nothing, so the \code{ref_vary} given to
+\code{\link[=PKNCAdata]{PKNCAdata()}} applies, and \code{character(0)} declares that no column may
+differ (overriding that default).}
 
 \item{...}{Ignored.}
 }
@@ -117,7 +119,10 @@ other group column and on the reference interval's own columns, and takes
 whichever value of the varying columns has the reference interval's
 results.  Exactly one may:  more than one (a replicate design giving the
 reference twice) is an error (\code{pknca_error_secondary_ref_vary_ambiguous})
-naming the requesting group and the candidates, which is resolved by
+naming the requesting group and the candidates.  A candidate counts when
+the reference interval has a result row for it, even an \code{NA} one, so a
+replicate design with one administration that could not be fitted is
+still ambiguous rather than silently using the other.  It is resolved by
 adding a group column that tells them apart to the intervals and naming
 it in \code{reference}.  A varying column that the reference interval names
 is pinned by it.  The subject column cannot vary, as a reference is always

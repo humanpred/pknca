@@ -1893,6 +1893,11 @@ the grouping worked.
   rest at the instance's own values) and on the reference interval's
   `start`/`end`; the candidates are the distinct values of the varying columns
   among the results of the link's source parameters (`ref_args`) there.
+  * A candidate counts when the reference interval has a result row for a
+    source parameter there, even one whose value is `NA` (excluded or not
+    calculable).  This is deliberate:  a replicate design whose one reference
+    administration could not be fitted is still ambiguous, rather than quietly
+    using the other administration.
   * Exactly one candidate:  it becomes the reference group.
   * More than one:  an explicit link aborts with
     `pknca_error_secondary_ref_vary_ambiguous`, naming the requesting group and
@@ -1931,7 +1936,10 @@ the grouping worked.
   columns other than the subject.
 * **Per data object:**  `PKNCAdata(ref_vary = )`, a character vector of group
   columns stored as `data$ref_vary`, applies to every link whose
-  `<param>_ref_vary` is `NA` or absent, explicit or derived.  `""` in the
+  `<param>_ref_vary` is `NA` or absent, explicit or derived.  A zero-length
+  `ref_vary` is stored as `NULL`.  The per-link form is one text cell, so
+  `interval_add_secondary()` rejects names containing a space or comma there;
+  only the data-level form can name such a column.  `""` in the
   column declares that nothing varies, overriding the data-level default
   (`interval_add_secondary(ref_vary = character(0))` writes it).  The
   data-level form is the natural one for a whole crossover; the per-link form

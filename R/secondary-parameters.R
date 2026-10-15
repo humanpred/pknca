@@ -285,7 +285,8 @@ interval_ref_vary <- function(intervals, row, param, default = NULL) {
 # Validate varying group columns against the concentration data:  each must be
 # one of its group columns, and never the subject, since a reference is always
 # the subject's own profile (across-subject references are not supported).
-# `what` names the argument or column in the message.
+# `what` names the argument or column in the message.  No columns at all is the
+# same as NULL (nothing varies), and is returned as NULL.
 assert_ref_vary <- function(ref_vary, o_conc, what = "`ref_vary`") {
   if (is.null(ref_vary)) {
     return(NULL)
@@ -317,7 +318,7 @@ assert_ref_vary <- function(ref_vary, o_conc, what = "`ref_vary`") {
       class = "pknca_error_secondary_ref_vary_invalid"
     )
   }
-  ref_vary
+  if (length(ref_vary) == 0) NULL else ref_vary
 }
 
 # Validate every `<parameter>_ref_vary` declaration of an intervals data.frame
@@ -349,13 +350,26 @@ interval_set_ref_vary <- function(intervals, rows, param, ref_vary) {
 }
 
 # The argument check shared by both interval_add_secondary() methods; the
-# PKNCAdata method additionally checks the names against its data.
+# PKNCAdata method additionally checks the names against its data.  The names
+# are written into one `<parameter>_ref_vary` cell separated by commas, so a
+# name containing a space or comma could not be read back.
 assert_ref_vary_arg <- function(ref_vary) {
-  if (!is.null(ref_vary) &&
-      (!checkmate::test_character(ref_vary, any.missing = FALSE, min.chars = 1, unique = TRUE) ||
-       any(grepl(pattern = "[ ,]", x = ref_vary)))) {
+  if (is.null(ref_vary)) {
+    return(NULL)
+  }
+  if (!checkmate::test_character(ref_vary, any.missing = FALSE, min.chars = 1, unique = TRUE)) {
     rlang::abort(
       "`ref_vary` must be NULL or a character vector of unique group column names",
+      class = "pknca_error_secondary_ref_vary_invalid"
+    )
+  }
+  separated <- ref_vary[grepl(pattern = "[ ,]", x = ref_vary)]
+  if (length(separated) > 0) {
+    rlang::abort(
+      sprintf(
+        "`ref_vary` is stored per link as names separated by commas or spaces, so per-link declarations need group column names without spaces or commas: %s.  Give such a column to PKNCAdata(ref_vary = ) instead.",
+        paste(sprintf("'%s'", separated), collapse = ", ")
+      ),
       class = "pknca_error_secondary_ref_vary_invalid"
     )
   }
@@ -1918,10 +1932,12 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
 #' @param ref_vary The group columns in which the reference may differ from
 #'   the interval calculating `param`, such as `"period"` in a crossover (see
 #'   "Group columns that may differ").  They are written into the
-#'   `<param>_ref_vary` column of the linked intervals.  The default of `NULL`
-#'   writes nothing, so the `ref_vary` given to [PKNCAdata()] applies, and
-#'   `character(0)` declares that no column may differ (overriding that
-#'   default).
+#'   `<param>_ref_vary` column of the linked intervals, so the names may not
+#'   contain spaces or commas (per-link declarations need group column names
+#'   without spaces or commas; give such a column to [PKNCAdata()] instead).
+#'   The default of `NULL` writes nothing, so the `ref_vary` given to
+#'   [PKNCAdata()] applies, and `character(0)` declares that no column may
+#'   differ (overriding that default).
 #' @returns The input with the parameter requested and the linkage columns set,
 #'   after [check.interval.specification()].
 #' @details The reference interval gains whatever the linked calculation reads
@@ -1972,7 +1988,10 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
 #'   whichever value of the varying columns has the reference interval's
 #'   results.  Exactly one may:  more than one (a replicate design giving the
 #'   reference twice) is an error (`pknca_error_secondary_ref_vary_ambiguous`)
-#'   naming the requesting group and the candidates, which is resolved by
+#'   naming the requesting group and the candidates.  A candidate counts when
+#'   the reference interval has a result row for it, even an `NA` one, so a
+#'   replicate design with one administration that could not be fitted is
+#'   still ambiguous rather than silently using the other.  It is resolved by
 #'   adding a group column that tells them apart to the intervals and naming
 #'   it in `reference`.  A varying column that the reference interval names
 #'   is pinned by it.  The subject column cannot vary, as a reference is always

@@ -35,7 +35,7 @@
 #'   (see "Group columns that may differ" in [interval_add_secondary()]).  It
 #'   applies to every link whose `<parameter>_ref_vary` column in the intervals
 #'   is `NA` (or absent), whether the link is explicit or derived from the
-#'   data.  The default of `NULL` lets no column differ.
+#'   data.  The default of `NULL` (or `character(0)`) lets no column differ.
 #' @param grpid_cols The grouping columns that prefix the interval number in
 #'   the PPGRPID column of `as.data.frame(results, out_format = "cdisc")`, as a
 #'   named character vector of [PKNCAconc()] grouping columns (other than the
@@ -548,7 +548,7 @@ print.PKNCAdata <- function(x, ...) {
       )
     )
   }
-  if (!is.null(x$ref_vary)) {
+  if (length(x$ref_vary) > 0) {
     cat(
       sprintf(
         "With secondary-parameter references that may differ in (ref_vary): %s\n",

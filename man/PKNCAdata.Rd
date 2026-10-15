@@ -74,7 +74,7 @@ for a crossover where the reference treatment was given in another period
 (see "Group columns that may differ" in \code{\link[=interval_add_secondary]{interval_add_secondary()}}).  It
 applies to every link whose \verb{<parameter>_ref_vary} column in the intervals
 is \code{NA} (or absent), whether the link is explicit or derived from the
-data.  The default of \code{NULL} lets no column differ.}
+data.  The default of \code{NULL} (or \code{character(0)}) lets no column differ.}
 
 \item{grpid_cols}{The grouping columns that prefix the interval number in
 the PPGRPID column of \code{as.data.frame(results, out_format = "cdisc")}, as a
