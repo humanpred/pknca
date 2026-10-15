@@ -609,6 +609,23 @@ the generated intervals:
   `check.interval.specification()` does, when rows sharing an `interval_id`
   differ in `start`, `end`, or the groups.  (@billdenney)
 
+* A secondary parameter's reference may now differ from the interval
+  calculating it in named group columns.  In a crossover grouped by period, the
+  reference treatment was given in a different period than the test treatment,
+  so the IV profile for an oral profile in period 2 was looked up in period 2
+  and not found, and every bioavailability (`f.obs`, `f.pred`, `f.last`, ...)
+  stopped with "the value 'totdose' from the reference interval is not
+  available".  `interval_add_secondary(ref_vary = "period")` declares that the
+  reference may come from another period:  it is matched on every other group
+  column (the subject always among them) and found in whichever period has it.
+  More than one candidate (a replicate design giving the reference twice) is a
+  `pknca_error_secondary_ref_vary_ambiguous` error naming the candidates,
+  resolved by naming the occasion in `reference`.  The declaration is stored
+  per link in a `<parameter>_ref_vary` column of the intervals, and
+  `PKNCAdata(ref_vary = "period")` declares it once for every link of the data,
+  including the links `pk.nca()` derives.  Nothing varies by default, so
+  existing analyses are unchanged (@billdenney, #76).
+
 * New `ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`,
   `ratio.aucint.last`, and `ratio.aucint.all` parameters give the ratio of a
   parameter between the interval calculating it and its reference interval, for
@@ -639,9 +656,9 @@ the generated intervals:
 * `add.interval.col()` accepts `pknca_ref()` in `formalsmap` to declare an
   argument that comes from the reference interval rather than the current one.
 
-* `add.interval.col()` rejects parameter names ending in `_ref` and the name
-  `interval_id`, which are reserved for the interval-linkage columns of the
-  interval specification.
+* `add.interval.col()` rejects parameter names ending in `_ref` or `_ref_vary`
+  and the name `interval_id`, which are reserved for the interval-linkage
+  columns of the interval specification.
 
 * The `interval_id` and `<parameter>_ref` columns hold identifiers of any
   comparable class: character names, factors, or numbers such as row indices.

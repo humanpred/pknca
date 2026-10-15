@@ -42,6 +42,7 @@ these):
 | 8 | **Superseded by section 6.4** (maintainer direction, 2026-08-31): secondary units go through the units table and its one join, keyed by `_ref`-suffixed group columns with source-composed unit strings, instead of section 6.1's calculation-time value conversion.  Appendix A's issue text describes the superseded approach; post section 6.4's summary instead. |
 | 9 | Sparse data (`is_sparse_pk(data)` is `TRUE`) with any secondary parameter requested aborts with `pknca_error_secondary_sparse_unsupported`.  Lifting this is a to-do (§8). |
 | 10 | Aggregated (across-subject) references are **not** planned: parallel-design comparisons of that kind are bioavailability-style analyses already served by the existing bioavailability/`be_assess()` calculation methods. |
+| 11 | A link may declare group columns in which its reference differs from the requesting group (`ref_vary`, section 6.5), per link in a `<param>_ref_vary` intervals column with a `PKNCAdata(ref_vary=)` default.  Nothing varies by default, and the subject column never varies (decision 10). |
 
 **Work is split into four PRs, in order.**  Each PR ends with the "Definition
 of done" in §7.  Do not start a PR before the previous one is merged or at
@@ -924,6 +925,12 @@ implementers should trust the code over the sketches where they differ:
   a reference row's last parameter still surfaces as
   `pknca_error_secondary_ref_unknown` at the next validation, which is the
   correct loud outcome.
+* The reference group of an instance is its own group with the reference
+  interval's columns swapped in, **except** in the group columns its link
+  declares as varying, which are matched to whichever value has the reference
+  interval's results (section 6.5).  Without that declaration a crossover
+  grouped by period finds no reference, because the reference treatment was
+  given in another period.
 
 ---
 
@@ -1866,6 +1873,83 @@ Differences from the section-6.4 text above; trust the code over the sketches:
   the join takes the intersection.  The checkpoint's test earns its place all
   the same — it pins that a dropped group column stays dropped in the table
   while both subjects still get the composed units.
+
+### 6.5 Group columns in which a reference may differ (`ref_vary`)
+
+Added after PR 4.  The reference group of an instance was always its own group
+with only the reference interval's columns swapped in (section 3.16).  In an
+IV/oral crossover grouped by `treatment+period+subject`, the IV reference of
+subject 1's oral profile in period 2 was then looked up in period 2, where
+subject 1 had no IV profile, and every bioavailability link failed with
+`pknca_error_secondary_ref_value_missing`.  The same data without `period` in
+the grouping worked.
+
+#### The rule
+
+* A link names the group columns in which its reference may differ from the
+  requesting instance:  `interval_add_secondary(ref_vary = "period")`.  For
+  each instance, the reference is matched on every other result group column
+  (the reference interval's columns at the reference interval's values, the
+  rest at the instance's own values) and on the reference interval's
+  `start`/`end`; the candidates are the distinct values of the varying columns
+  among the results of the link's source parameters (`ref_args`) there.
+  * Exactly one candidate:  it becomes the reference group.
+  * More than one:  an explicit link aborts with
+    `pknca_error_secondary_ref_vary_ambiguous`, naming the requesting group and
+    the candidates.  (The class is not `..._reference_ambiguous`, which would
+    read as a near-duplicate of the existing
+    `pknca_error_secondary_ambiguous_reference` for duplicated result rows.)
+    An automatic link degrades to `NA` with the reason (decision 5), and its
+    result names no reference group (`NA` `_ref` columns and `PPANMETH`).
+  * None:  the reference group keeps the instance's own values, so the lookup
+    fails exactly as before (`pknca_error_secondary_ref_value_missing`).
+* A varying column that the intervals carry is pinned by the reference interval
+  (it is one of the swapped-in columns), so naming the occasion in `reference`
+  resolves a replicate design.
+* The subject column may not vary
+  (`pknca_error_secondary_ref_vary_invalid`):  a reference is always the
+  subject's own profile, and allowing it would introduce the across-subject
+  references decision 10 rules out.
+* `PPANMETH` lists the varying columns that differ along with the reference
+  interval's ("Reference interval: treatment=iv, period=1, 0-Inf"), and the
+  result's `<group column>_ref` columns (section 6.4) name the reference group,
+  so the units join needs no change.
+
+#### Where the declaration lives
+
+* **Per link, in the intervals:**  a `<param>_ref_vary` character column, next
+  to the `<param>_ref` pointer, holding column names separated by commas or
+  spaces (split with `impute_split()`, written with `impute_paste()`).  It is a
+  linkage column like the pointer:  excluded from `interval_describe_cols()`
+  and from the `interval_id` identity comparison, allowed by
+  `assert_intervals()`, cleared with the pointer by
+  `clear_orphan_ref_pointers()`, and reserved as a parameter-name suffix by
+  `add.interval.col()`.  `check.interval.specification()` requires it to be
+  character (an all-`NA` logical column is unfilled), to belong to a secondary
+  parameter, and to be set only where the parameter is requested;
+  `assert_intervals()`, which has the data, requires the names to be group
+  columns other than the subject.
+* **Per data object:**  `PKNCAdata(ref_vary = )`, a character vector of group
+  columns stored as `data$ref_vary`, applies to every link whose
+  `<param>_ref_vary` is `NA` or absent, explicit or derived.  `""` in the
+  column declares that nothing varies, overriding the data-level default
+  (`interval_add_secondary(ref_vary = character(0))` writes it).  The
+  data-level form is the natural one for a whole crossover; the per-link form
+  keeps the intervals self-describing for consumers that read only them.
+
+#### The automatic finder
+
+`find_secondary_reference()` takes the row's varying columns (the row's own
+declaration, else the data-level default).  Varying columns that the intervals
+do not carry are not differences:  they neither count towards a candidate's
+distance nor become overrides, and a candidate that differs from the requesting
+profile only in them is the same profile at another time, not a reference.
+Nearest candidates that differ from each other only in them give one override,
+so they no longer tie; `pk_nca_secondary()` then picks the profile per instance
+or reports the ambiguity.  Without the declaration, a crossover with
+`group_ref = data.frame(treatment = "iv")` ties for every oral profile (the IV
+profile in the other period and the other subject's IV profile in the same
+period each differ in the treatment and one more column).
 
 ---
 
