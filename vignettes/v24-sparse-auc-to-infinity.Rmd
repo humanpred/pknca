@@ -106,6 +106,15 @@ max_coverage_drop <- function(..., digits = 1) {
 large_range <- function(estimator, ..., digits = 1) {
   summary_range(comparisons$large_n_summary, "relative_bias", estimator = estimator, ..., digits = digits)
 }
+# The ratio of the median widths of PKNCA's bootstrap-t and delta-method
+# intervals over the number of animals per time
+boott_width_ratio <- function(n_per_time, blq, parameter, digits = 2) {
+  rows <- list(n_per_time = n_per_time, blq = blq, parameter = parameter)
+  boot_t <- sim_rows(comparisons$profile_summary, c(rows, list(interval = "pknca boot-t")))$median_ci_width
+  delta <- sim_rows(comparisons$profile_summary, c(rows, list(interval = "pknca delta")))$median_ci_width
+  stopifnot(length(boot_t) == 1, length(delta) == 1)
+  format(round(boot_t/delta, digits), nsmall = digits)
+}
 # PKNCA's intervals over the number of animals per time
 boott_value <- function(column, n_per_time, blq, parameter, interval = "pknca boot-t", digits = 1) {
   summary_value(
@@ -166,7 +175,8 @@ For sparse sampling, where each animal gives one or a few samples:
   groups.  With 20 or more animals per time, its standard error was accurate
   and its intervals matched the delta method's.  A bootstrap-$t$ on the
   delta-method standard error covered the AUMC better than the delta method,
-  but not the AUC.
+  but not the AUC, and it was not adopted:  it keeps the same, biased
+  estimate, and its gain comes from a wider or shifted interval around it.
 * **With many animals, the bias of the sparse estimate dominates.**  BLQ
   samples and the extrapolation of the mean profile biased the AUC to infinity
   low (by about
@@ -1260,9 +1270,24 @@ it covered the AUMC to infinity better
 (`r boott_value("coverage", 4, "none", "aumc")`% and
 `r boott_value("coverage", 100, "none", "aumc")`%, against
 `r boott_value("coverage", 4, "none", "aumc", interval = "pknca delta")`% and
-`r boott_value("coverage", 100, "none", "aumc", interval = "pknca delta")`%),
-whose skewness the first-order delta method misses.  It does not remove the bias
-of the estimate, which limits every interval with many animals.
+`r boott_value("coverage", 100, "none", "aumc", interval = "pknca delta")`%).
+But it keeps the same point estimate, and so the same bias:  the AUMC to
+infinity was biased by
+`r boott_value("median_bias", 4, "none", "aumc", interval = "pknca delta")`%
+with 4 animals and
+`r boott_value("median_bias", 100, "none", "aumc", interval = "pknca delta")`%
+with 100 in both rows.  Its better coverage comes from the interval, not from
+a better estimate.  With 4 animals per time it was
+`r boott_width_ratio(4, "none", "aumc")` times as wide as the delta method's;
+with 100 it was about as wide
+(`r boott_width_ratio(100, "none", "aumc")` times), but its asymmetric
+quantiles moved it up toward the truth, so the share of intervals entirely
+below the truth fell from
+`r boott_value("miss_low", 100, "none", "aumc", interval = "pknca delta")`% to
+`r boott_value("miss_low", 100, "none", "aumc")`%.  An interval that widens or
+moves around a biased estimate is not a better method for it, so the
+bootstrap-$t$ is not adopted; the bias of the estimate, which limits every
+interval with many animals, is the thing to reduce.
 
 **Treatments of BLQ samples.**  With fast elimination, the treatment hardly
 mattered:  every imputation covered
@@ -1562,7 +1587,15 @@ the results give:
   with three or four, and its intervals about twice as wide.
 * **Bootstrap-$t$ intervals** (both papers):  on PKNCA's delta-method standard
   error, the bootstrap-$t$ covered the AUMC better than the delta method, but
-  not the AUC, and covered the AUC worse with BLQ samples.
+  not the AUC, and covered the AUC worse with BLQ samples.  It keeps the same
+  point estimate and so the same bias
+  (`r boott_value("median_bias", 4, "none", "aumc", interval = "pknca delta")`%
+  for the AUMC with 4 animals per time, in both); its gain in coverage
+  (`r boott_value("coverage", 4, "none", "aumc", interval = "pknca delta")`% to
+  `r boott_value("coverage", 4, "none", "aumc")`%) comes from an interval
+  `r boott_width_ratio(4, "none", "aumc")` times as wide, and with many
+  animals from one shifted around the same biased estimate, which is not a
+  better method.
 * **Imputation of BLQ samples** (Barnett et al. 2021):  ROS and kernel
   imputation reduced the bias with slow elimination, but none covered better
   than zero substitution, and each needs measured samples at the time, which
