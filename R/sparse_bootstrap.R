@@ -54,6 +54,12 @@
 #' pharmacokinetic parameters by bootstrap resampling from one-point sampling
 #' data in animal experiments.  Drug Metabolism and Pharmacokinetics.
 #' 2006;21(6):458-464.  doi:10.2133/dmpk.21.458
+#'
+#' Wolfsegger MJ, Jaki T.  Estimation of AUC from 0 to infinity in serial
+#' sacrifice designs.  Journal of Pharmacokinetics and Pharmacodynamics.
+#' 2005;32(5-6):757-766.  doi:10.1007/s10928-005-0044-0  (Bootstrap-t
+#' intervals on the analytical variance, where this bootstrap resamples the
+#' animals and takes the percentile or normal interval.)
 #' @examples
 #' d_sparse <-
 #'   data.frame(
