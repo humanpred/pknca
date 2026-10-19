@@ -596,7 +596,7 @@ test_that("be_assess defaults to ABE so a simple 2x2 works out of the box", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("lmerTest")
   skip_if_not_installed("emmeans")
-  expect_identical(formals(be_assess)$regulator, "ABE")
+  expect_identical(formals(be_assess.default)$regulator, "ABE")
   d <- be_replicate_long(generate_be_replicate(16, 9, "2x2", cv_wr = 0.3, cv_wt = 0.3))
   res <- be_assess(d, "treatment", "R", "auclast") # no regulator argument
   expect_identical(res$regulator, "ABE")
@@ -617,4 +617,12 @@ test_that("be_dataset warns for non-log-normal endpoints (e.g. Tmax)", {
     be_dataset(d, "treatment", "R", "tmax"),
     "not log-normal"
   )
+})
+
+test_that("the be_assess object keeps the classes of its table", {
+  tbl <- tibble::tibble(endpoint = "auclast", regulator = "ABE", model_type = "anova", design = "2x2")
+  result <- .be_assess_object(tbl, alpha = 0.1)
+  expect_equal(class(result), c("be_assess", class(tbl)))
+  expect_equal(attr(result, "alpha"), 0.1)
+  expect_equal(attr(result, "regulator"), "ABE")
 })

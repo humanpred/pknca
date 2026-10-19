@@ -112,11 +112,11 @@ tobit_nll <- function(par, log_conc, time, censored, log_lloq, subject, random) 
   }
   tau <- exp(par[4])
   # The log-likelihood of each subject's observations at each quadrature node
-  subjects <- unique(subject)
-  node_ll <- matrix(NA_real_, length(subjects), length(gh$nodes))
+  subject_index <- match(subject, unique(subject))
+  node_ll <- matrix(NA_real_, max(subject_index), length(gh$nodes))
   for (q in seq_along(gh$nodes)) {
     obs_ll <- tobit_obs_ll(mean_fixed + sqrt(2)*tau*gh$nodes[q], sigma, log_conc, censored, log_lloq)
-    node_ll[, q] <- tapply(obs_ll, factor(subject, levels = subjects), sum) + log(gh$weights[q])
+    node_ll[, q] <- rowsum(obs_ll, subject_index)[, 1] + log(gh$weights[q])
   }
   -sum(log_sum_exp_rows(node_ll))
 }

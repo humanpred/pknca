@@ -45,10 +45,12 @@ full_join_PKNCAconc_PKNCAdose <- function(o_conc, o_dose, extra_cols_conc = char
 #' @keywords Internal
 #' @noRd
 full_join_PKNCAdata <- function(x, extra_conc_cols = character()) {
+  conc <- as_PKNCAconc(x)
+  dose <- as_PKNCAdose(x)
   # Report only the absent inputs that something actually needs, so that (for
   # example) a plasma analysis is not told about the sample volume it will
   # never use.
-  absent_conc <- absent_conc_inputs(x$conc)
+  absent_conc <- absent_conc_inputs(conc)
   blocking_conc <-
     absent_conc[vapply(
       X = absent_conc,
@@ -68,7 +70,7 @@ full_join_PKNCAdata <- function(x, extra_conc_cols = character()) {
       class = "pknca_error_missing_conc_input"
     )
   }
-  missing_dose_params <- uncalculable_without(x$intervals, absent_dose_inputs(x$dose))
+  missing_dose_params <- uncalculable_without(x$intervals, absent_dose_inputs(dose))
   if (length(missing_dose_params) > 0) {
     rlang::inform(
       sprintf(
@@ -78,7 +80,7 @@ full_join_PKNCAdata <- function(x, extra_conc_cols = character()) {
       class = "pknca_message_missing_dose"
     )
   }
-  conc_dose <- full_join_PKNCAconc_PKNCAdose(o_conc = x$conc, o_dose = x$dose, extra_cols_conc = extra_conc_cols)
+  conc_dose <- full_join_PKNCAconc_PKNCAdose(o_conc = conc, o_dose = dose, extra_cols_conc = extra_conc_cols)
   n_i <-
     prepare_PKNCAintervals(
       .dat=x$intervals,
@@ -146,7 +148,7 @@ prepare_PKNCAconc_sparse <- function(.dat, needed_cols, group_cols_selected) {
   needed_cols$subject <- .dat$columns$subject
   ret <-
     prepare_PKNCA_general(
-      .dat=.dat$data_sparse,
+      .dat=as.data.frame(.dat),
       exclude=.dat$columns$exclude,
       cols=needed_cols,
       data_name="data_sparse_conc",

@@ -22,7 +22,8 @@ Imports:
     tibble,
     utils,
     lifecycle,
-    lubridate
+    lubridate,
+    withr
 Suggests:
     cdiscdata (>= 0.2.0),
     covr,
@@ -39,8 +40,7 @@ Suggests:
     spelling,
     testthat (>= 3.0.0),
     tools,
-    units,
-    withr
+    units
 Description: Compute standard Non-Compartmental Analysis (NCA) parameters for
     typical pharmacokinetic analyses and summarize them.
 License: AGPL-3

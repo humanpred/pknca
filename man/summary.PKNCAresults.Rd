@@ -7,7 +7,7 @@
 \method{summary}{PKNCAresults}(
   object,
   ...,
-  drop_group = object$data$conc$columns$subject,
+  drop_group = as_PKNCAconc(object)$columns$subject,
   drop_param = character(),
   summarize_n = NA,
   not_requested = ".",

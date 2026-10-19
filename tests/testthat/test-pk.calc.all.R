@@ -2051,7 +2051,7 @@ test_that("frac_unbound NA rows (e.g., urine) only get the total concentration r
 
 test_that("frac_unbound calculates total and unbound results for sparse PK", {
   d <- data.frame(
-    subject = rep(1:3, each = 3), time = rep(c(1, 2, 4), 3),
+    subject = rep(1:3, each = 3), time = rep(c(0, 2, 4), 3),
     conc = c(2, 4, 1, 3, 5, 2, 2.5, 4.5, 1.5), fu = 0.5
   )
   intervals <- data.frame(start = 0, end = Inf, cmax = TRUE, auclast = TRUE)
@@ -2073,6 +2073,8 @@ test_that("frac_unbound calculates total and unbound results for sparse PK", {
     res$PPORRES[res$frac_unbound == label & res$PPTESTCD == test]
   }
   expect_equal(pick("unbound concentration", "cmax"), pick("total concentration", "cmax") * 0.5)
+  # AUC must be calculated (not NA) so that the check is meaningful
+  expect_false(anyNA(c(pick("total concentration", "auclast"), pick("unbound concentration", "auclast"))))
   expect_equal(pick("unbound concentration", "auclast"), pick("total concentration", "auclast") * 0.5)
 })
 
@@ -2090,3 +2092,115 @@ test_that("frac_unbound mixed NA check uses the sparse groups", {
   )
 })
 
+test_that("frac_unbound only checks each group against its own intervals", {
+  d <- data.frame(
+    subject = rep(c("1", "2"), each = 5), time = rep(c(0, 1, 2, 8, 12), 2),
+    conc = c(0, 4, 6, 2, 1, 0, 3, 5, 2, 1),
+    fu = c(0.5, 0.5, 0.5, NA, NA, 0.25, 0.25, 0.25, 0.25, 0.25)
+  )
+  dose <- PKNCAdose(data.frame(subject = c("1", "2"), time = 0, dose = 10), dose ~ time | subject)
+  # Subject 1 has NA after 2 h, but only subject 2 has an interval, so no error
+  ints_2 <- data.frame(subject = "2", start = 0, end = 24, cmax = TRUE)
+  # Subject 1 has no interval, which is reported as usual
+  expect_warning(
+    res <- pk.nca(PKNCAdata(PKNCAconc(d, conc ~ time | subject, frac_unbound = "fu"), dose, intervals = ints_2)),
+    "No intervals for data"
+  )
+  df <- as.data.frame(res)
+  expect_equal(unique(df$subject), "2")
+  expect_equal(
+    df$PPORRES[df$frac_unbound == "unbound concentration" & df$PPTESTCD == "cmax"],
+    1.25
+  )
+  # When subject 1 does have the interval, the mixed NA is still an error
+  ints_all <- data.frame(subject = c("1", "2"), start = 0, end = 24, cmax = TRUE)
+  expect_error(
+    pk.nca(PKNCAdata(PKNCAconc(d, conc ~ time | subject, frac_unbound = "fu"), dose, intervals = ints_all)),
+    class = "pknca_error_frac_unbound_mixed_na"
+  )
+})
+
+test_that("frac_unbound results keep the class of the results", {
+  d <- data.frame(subject = 1:2, time = 0, conc = c(1, 2))
+  d <- rbind(d, data.frame(subject = 1:2, time = 1, conc = c(3, 4)))
+  dose <- PKNCAdose(data.frame(subject = 1:2, time = 0, dose = 10), dose ~ time | subject)
+  ints <- data.frame(start = 0, end = 24, cmax = TRUE)
+  res_plain <- pk.nca(PKNCAdata(PKNCAconc(d, conc ~ time | subject), dose, intervals = ints))
+  d$fu <- 0.5
+  res_fu <- pk.nca(PKNCAdata(PKNCAconc(d, conc ~ time | subject, frac_unbound = "fu"), dose, intervals = ints))
+  expect_identical(class(as.data.frame(res_fu)), class(as.data.frame(res_plain)))
+  expect_s3_class(as.data.frame(res_fu), "tbl_df")
+})
+
+test_that("frac_unbound is a grouping variable for group_vars() and summary()", {
+  d <- data.frame(subject = rep(1:2, each = 3), time = rep(0:2, 2), conc = c(0, 4, 2, 0, 5, 3), fu = 0.5)
+  dose <- PKNCAdose(data.frame(subject = 1:2, time = 0, dose = 10), dose ~ time | subject)
+  res <- pk.nca(PKNCAdata(PKNCAconc(d, conc ~ time | subject, frac_unbound = "fu"), dose,
+                          intervals = data.frame(start = 0, end = 24, cmax = TRUE)))
+  expect_equal(group_vars(res)[1], "frac_unbound")
+  expect_true("frac_unbound" %in% names(summary(res)))
+  expect_true("frac_unbound" %in% names(getGroups(res)))
+})
+
+test_that("excluded concentrations are ignored by the frac_unbound checks", {
+  d <- data.frame(
+    subject = 1, time = c(0, 1, 2, 4), conc = c(0, 4, 2, 1),
+    fu = c(0.5, 0.5, NA, 0.5), excl = c(NA, NA, "lab error", NA)
+  )
+  dose <- PKNCAdose(data.frame(subject = 1, time = 0, dose = 10), dose ~ time | subject)
+  res <- pk.nca(PKNCAdata(
+    PKNCAconc(d, conc ~ time | subject, exclude = "excl", frac_unbound = "fu"), dose,
+    intervals = data.frame(start = 0, end = 24, cmax = TRUE)
+  ))
+  df <- as.data.frame(res)
+  expect_equal(df$PPORRES[df$frac_unbound == "unbound concentration"], 2)
+})
+
+test_that("frac_unbound works with per-sample fraction unbound in sparse data", {
+  d <- data.frame(
+    treatment = "A", subject = c(1, 1, 2, 2, 3, 3), time = c(0, 2, 0, 2, 0, 2),
+    conc = c(0, 4, 0, 6, 0, 2), fu = c(0.5, 0.5, 0.25, 0.25, 0.1, 0.1)
+  )
+  dose <- PKNCAdose(data.frame(treatment = "A", subject = 1:3, time = 0, dose = 10),
+                    dose ~ time | treatment + subject, sparse = TRUE)
+  res <- as.data.frame(pk.nca(PKNCAdata(
+    PKNCAconc(d, conc ~ time | treatment + subject, sparse = TRUE, frac_unbound = "fu"), dose,
+    intervals = data.frame(start = 0, end = 24, cmax = TRUE)
+  )))
+  unbound_cmax <- res$PPORRES[res$frac_unbound == "unbound concentration" & res$PPTESTCD == "cmax"]
+  # Mean of the unbound samples at time 2: (4 * 0.5 + 6 * 0.25 + 2 * 0.1) / 3
+  expect_equal(unbound_cmax, (4 * 0.5 + 6 * 0.25 + 2 * 0.1) / 3)
+
+  # Within one group and interval, a mix of NA and non-NA is an error
+  d$fu[3] <- NA
+  expect_error(
+    pk.nca(PKNCAdata(
+      PKNCAconc(d, conc ~ time | treatment + subject, sparse = TRUE, frac_unbound = "fu"), dose,
+      intervals = data.frame(start = 0, end = 24, cmax = TRUE)
+    )),
+    class = "pknca_error_frac_unbound_mixed_na"
+  )
+})
+
+test_that("frac_unbound CDISC output keeps total and unbound rows apart", {
+  d <- data.frame(
+    subject = rep(c("S01", "S02"), each = 5), time = rep(c(0, 1, 2, 4, 8), 2),
+    conc = c(0, 4, 6, 2, 1, 0, 3, 5, 2, 1), fu = c(rep(0.5, 5), rep(0.25, 5))
+  )
+  dose <- PKNCAdose(data.frame(subject = c("S01", "S02"), time = 0, dose = 10), dose ~ time | subject)
+  intervals <- data.frame(start = 0, end = 24, cmax = TRUE, auclast = TRUE)
+  res <- pk.nca(PKNCAdata(PKNCAconc(d, conc ~ time | subject, frac_unbound = "fu"), dose, intervals = intervals))
+  cd <- as.data.frame(res, out_format = "cdisc")
+  expect_equal(anyDuplicated(cd[, c("subject", "PPGRPID", "pknca_parameter")]), 0L)
+  unbound <- cd$frac_unbound == "unbound concentration"
+  expect_true(all(startsWith(cd$PPGRPID[unbound], "UNB.")))
+  expect_false(any(startsWith(cd$PPGRPID[!unbound], "UNB.")))
+  expect_equal(unique(cd$PPCAT[unbound]), "UNBOUND CONCENTRATION")
+  expect_equal(unique(cd$PPCAT[!unbound]), "TOTAL CONCENTRATION")
+  # Total rows get the same PPGRPID as a run without frac_unbound
+  plain <- pk.nca(PKNCAdata(PKNCAconc(d[, 1:3], conc ~ time | subject), dose, intervals = intervals))
+  cd_plain <- as.data.frame(plain, out_format = "cdisc")
+  total <- cd[!unbound, ]
+  expect_equal(total$PPGRPID, cd_plain$PPGRPID)
+  expect_equal(total$PPTESTCD, cd_plain$PPTESTCD)
+})

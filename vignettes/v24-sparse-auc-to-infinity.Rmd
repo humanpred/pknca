@@ -14,6 +14,15 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 library(PKNCA)
 simulation <- readRDS("v24-sparse-auc-to-infinity-simulation.rds")
 mean_type <- readRDS("v24-sparse-auc-to-infinity-mean-type.rds")
+bootstrap <- readRDS("v24-sparse-auc-to-infinity-bootstrap.rds")
+bootstrap_n <- readRDS("v24-sparse-auc-to-infinity-bootstrap-n.rds")
+tobit <- readRDS("v24-sparse-auc-to-infinity-tobit.rds")
+tobit$summary <-
+  merge(
+    tobit$summary,
+    tobit$scenarios[, c("scenario", "compartments", "route", "design", "blq", "elimination")],
+    by = "scenario"
+  )
 # The rows of a simulation summary that match every given column value
 sim_rows <- function(summary, filters) {
   keep <- rep(TRUE, nrow(summary))
@@ -27,6 +36,27 @@ sim_rows <- function(summary, filters) {
 se_range <- function(column, ..., digits = 0) {
   v <- sim_rows(simulation$summary, list(...))[[column]]
   paste(format(round(range(v), digits), nsmall = digits), collapse = " to ")
+}
+# The same for the bootstrap study
+boot_range <- function(column, ..., digits = 0) {
+  v <- sim_rows(bootstrap$summary, list(...))[[column]]
+  paste(format(round(range(v), digits), nsmall = digits), collapse = " to ")
+}
+# One value of the profile over the number of animals per time
+profile_value <- function(column, n_per_time, blq, method, parameter, digits = 1) {
+  v <- sim_rows(bootstrap_n$summary, list(n_per_time = n_per_time, blq = blq, method = method, parameter = parameter))[[column]]
+  stopifnot(length(v) == 1)
+  format(round(v, digits), nsmall = digits)
+}
+# The same for the Tobit half-life study
+tobit_range <- function(column, ..., digits = 0) {
+  v <- sim_rows(tobit$summary, list(...))[[column]]
+  paste(format(round(range(v), digits), nsmall = digits), collapse = " to ")
+}
+tobit_value <- function(column, ..., digits = 1) {
+  v <- sim_rows(tobit$summary, list(...))[[column]]
+  stopifnot(length(v) == 1)
+  format(round(v, digits), nsmall = digits)
 }
 # The same for the arithmetic and geometric mean profile study
 mt_range <- function(column, ..., digits = 0) {
@@ -74,10 +104,31 @@ For sparse sampling, where each animal gives one or a few samples:
   curve), need a rule for BLQ samples that drives their BLQ results, and fall
   outside the variance methods for sparse AUCs, which are for arithmetic means;
   adopting them would change all sparse calculations for a modest gain.
-* **Estimating $\lambda_z$ from the individual samples was evaluated and not
-  adopted.**  A (mixed-effects) Tobit fit gave a steadier point estimate when
-  $\lambda_z$ was uncertain, but its standard error, added to Yuan's, did not
-  cover as well as the delta method.
+* **The bootstrap (`sparse_bootstrap()`) gives intervals for any parameter, but
+  they are too narrow with few animals at each time.**  With three or four
+  animals per time, its 95% intervals for the AUC to infinity covered
+  `r boot_range("coverage_percentile", parameter = "auc")`% of the time.  Prefer
+  the analytical standard errors for the AUCs, and use the bootstrap for
+  parameters and comparisons that have none, such as Cmax and ratios between
+  groups.  With 20 or more animals per time, its standard error was accurate
+  and its intervals matched the delta method's.
+* **With many animals, the bias of the sparse estimate dominates.**  BLQ
+  samples and the extrapolation of the mean profile biased the AUC to infinity
+  low (by about
+  `r gsub("-", "", profile_value("median_bias", 100, "moderate", "yuan", "auc", digits = 0))`%
+  with BLQ samples here), whatever the number of animals and whichever
+  half-life was used, so with many animals every confidence interval missed the
+  truth more often than its nominal level.
+* **The Tobit half-life was evaluated with BLQ samples and not adopted for the
+  sparse AUC.**  The Tobit fit of the mean profile (`hl_method = "tobit"`, with
+  the LLOQ carried through the mean profile) gave nearly the same AUC to
+  infinity as the log-linear fit, and it has no delta-method standard error.  A
+  (mixed-effects) Tobit fit of the individual samples was slightly less biased
+  and more precise, but its standard error added to Yuan's covered less well
+  than the delta method with slow elimination
+  (`r tobit_range("coverage", interval = "tobit-individual yuan+var", parameter = "auc", elimination = "slow", n_per_time = 4)`%
+  against `r tobit_range("coverage", interval = "log-linear delta", parameter = "auc", elimination = "slow", n_per_time = 4)`%),
+  and neither Tobit fit removed the bias that BLQ samples cause.
 
 # Introduction
 
@@ -398,6 +449,210 @@ and the CI width is the median width relative to the truth (%).  The Monte Carlo
 standard error of each coverage is at most
 `r round(max(simulation$summary$coverage_mcse), 1)` percentage points.
 
+## Results:  the bootstrap
+
+The bootstrap of Shen and Machado (2017) (`sparse_bootstrap()`) was run on the
+first `r format(bootstrap$n_replicates, big.mark = ",")` data sets of each
+scenario with `r bootstrap$n_boot` replicates each, its default.  Each replicate
+resampled the animals within each sampling time (or batch), and its AUC and
+AUMC to infinity were calculated as for the original data.  Two intervals were
+formed:  the percentile interval of the replicates and the estimate plus or
+minus 1.96 bootstrap standard errors (the standard deviation of the
+replicates).  The delta method (on all of the scenario's data sets, which
+include these) is shown for comparison.
+
+```{r simulation-bootstrap, echo = FALSE}
+show_bootstrap <- function(parameter) {
+  b <- bootstrap$summary[bootstrap$summary$parameter == parameter, ]
+  b <- b[order(b$scenario), ]
+  delta <- results[results$parameter == parameter & results$method == "delta", ]
+  delta <- delta[match(b$scenario, delta$scenario), ]
+  out <-
+    data.frame(
+      scenario_columns(b),
+      `Coverage percentile` = round(b$coverage_percentile, 1),
+      `Coverage boot. SE` = round(b$coverage_normal, 1),
+      `Coverage delta` = round(delta$coverage, 1),
+      `CI width percentile` = round(b$median_ci_width_percentile),
+      `CI width delta` = round(delta$median_ci_width),
+      check.names = FALSE
+    )
+  knitr::kable(out, row.names = FALSE)
+}
+```
+
+```{r simulation-bootstrap-auc, echo = FALSE}
+show_bootstrap("auc")
+```
+
+```{r simulation-bootstrap-aumc, echo = FALSE}
+show_bootstrap("aumc")
+```
+
+## Results:  the bootstrap with more animals at each time
+
+Published uses of the bootstrap had either a few animals per time (three mice in
+Takemoto et al. 2006, which compared only the means and standard deviations
+with Bailer's) or many (about 88 subjects per time and treatment in the
+bioequivalence study of Shen and Machado 2017).  To see how the number of
+animals per time changes the comparison, the two-compartment, oral,
+serial-sacrifice design with slow elimination was simulated with
+`r paste(bootstrap_n$n_per_time, collapse = ", ")` animals per time, without
+and with BLQ samples (`r format(bootstrap_n$n_replicates, big.mark = ",")` data
+sets each, `r bootstrap_n$n_boot` bootstrap replicates;
+`data-raw/sparse_bootstrap_n_profile.R`).  The data seeds do not depend on the
+number of animals, so 4 animals per time reproduces the data sets above.  The
+bias is that of the point estimate, which all of the methods share.
+
+```{r simulation-bootstrap-n, echo = FALSE}
+show_bootstrap_n <- function(parameter) {
+  b <- bootstrap_n$summary[bootstrap_n$summary$parameter == parameter, ]
+  keys <- unique(b[, c("blq", "n_per_time")])
+  keys <- keys[order(keys$blq != "none", keys$n_per_time), ]
+  out <- data.frame()
+  for (i in seq_len(nrow(keys))) {
+    current <- merge(b, keys[i, ])
+    value_of <- current[match(c("percentile", "boot_se", "yuan", "delta"), current$method), ]
+    out <-
+      rbind(
+        out,
+        data.frame(
+          BLQ = keys$blq[i],
+          `Animals per time` = keys$n_per_time[i],
+          `Coverage percentile` = round(value_of$coverage[1], 1),
+          `Coverage boot. SE` = round(value_of$coverage[2], 1),
+          `Coverage Yuan` = round(value_of$coverage[3], 1),
+          `Coverage delta` = round(value_of$coverage[4], 1),
+          `CI width percentile` = round(value_of$median_ci_width[1]),
+          `CI width delta` = round(value_of$median_ci_width[4]),
+          `Bias (%)` = round(value_of$median_bias[1], 1),
+          check.names = FALSE
+        )
+      )
+  }
+  knitr::kable(out, row.names = FALSE)
+}
+```
+
+```{r simulation-bootstrap-n-auc, echo = FALSE}
+show_bootstrap_n("auc")
+```
+
+```{r simulation-bootstrap-n-aumc, echo = FALSE}
+show_bootstrap_n("aumc")
+```
+
+## Results:  the Tobit half-life with BLQ samples
+
+PKNCA can also fit the half-life by Tobit regression (`hl_method = "tobit"`),
+which treats BLQ samples as censored below the LLOQ rather than dropping them.
+For sparse data, it fits the mean profile, with the median LLOQ of the samples
+at each time and a time whose mean is BLQ censored.  With the BLQ scenarios
+above (the first `r format(tobit$n_se_replicates, big.mark = ",")` data sets of
+each) and the BLQ arm of the profile over the number of animals per time
+(`r format(tobit$n_profile_replicates, big.mark = ",")` data sets at each
+number), three estimates of $\lambda_z$ were compared:  the log-linear fit of
+the mean profile ("log-linear", as above), the Tobit fit of the mean profile
+("Tobit mean"), and the Tobit fit of the individual samples ("Tobit indiv.", as
+the "individual" method above).  Each gave the AUC and AUMC to infinity from
+the same sparse AUC to $t_{last}$ and mean at $t_{last}$, with these intervals:
+Yuan's and the delta method for the log-linear fit; Yuan's for the Tobit fit
+of the mean profile, which has no standard error for $\lambda_z$; Yuan's
+variance plus that of $\lambda_z$ for the Tobit fit of the individual samples;
+and, for each, the bootstrap percentile interval (`r tobit$n_boot` replicates,
+each refitting its own $\lambda_z$;
+`data-raw/sparse_tobit_simulation.R`).
+
+```{r simulation-tobit, echo = FALSE}
+tobit_intervals <-
+  c(
+    "log-linear yuan" = "Log-lin. Yuan", "log-linear delta" = "Log-lin. delta",
+    "log-linear bootstrap" = "Log-lin. boot.", "tobit-mean yuan" = "Tobit mean Yuan",
+    "tobit-mean bootstrap" = "Tobit mean boot.", "tobit-individual yuan+var" = "Tobit indiv. Yuan+var",
+    "tobit-individual bootstrap" = "Tobit indiv. boot."
+  )
+tobit_methods <- c("log-linear" = "log-lin.", "tobit-mean" = "Tobit mean", "tobit-individual" = "Tobit indiv.")
+# One column of `column` for each interval (or lambda.z method), in the order
+# of `keys`
+tobit_columns <- function(r, keys, labels, key_column, column, digits) {
+  out <- list()
+  for (current in names(labels)) {
+    current_rows <- r[r[[key_column]] == current, ]
+    # The point estimate does not depend on the interval
+    current_rows <- current_rows[!duplicated(current_rows$scenario_n), ]
+    out[[labels[[current]]]] <- round(current_rows[[column]][match(keys, current_rows$scenario_n)], digits)
+  }
+  as.data.frame(out, check.names = FALSE)
+}
+show_tobit <- function(parameter) {
+  r <- tobit$summary[tobit$summary$parameter == parameter & tobit$summary$n_per_time == 4, ]
+  r$scenario_n <- r$scenario
+  first <- r[r$interval == "log-linear yuan", ]
+  first <- first[order(first$scenario), ]
+  coverage <- tobit_columns(r, first$scenario, tobit_intervals, "interval", "coverage", 1)
+  knitr::kable(data.frame(scenario_columns(first)[, -4], coverage, check.names = FALSE), row.names = FALSE)
+}
+show_tobit_accuracy <- function(parameter) {
+  r <- tobit$summary[tobit$summary$parameter == parameter & tobit$summary$n_per_time == 4, ]
+  r$scenario_n <- r$scenario
+  first <- r[r$interval == "log-linear yuan", ]
+  first <- first[order(first$scenario), ]
+  bias <- tobit_columns(r, first$scenario, tobit_methods, "lambda_z_method", "median_bias", 1)
+  mae <- tobit_columns(r, first$scenario, tobit_methods, "lambda_z_method", "median_absolute_error", 1)
+  names(bias) <- paste("Bias", names(bias))
+  names(mae) <- paste("MAE", names(mae))
+  knitr::kable(data.frame(scenario_columns(first)[, -4], bias, mae, check.names = FALSE), row.names = FALSE)
+}
+show_tobit_n <- function(parameter) {
+  r <- tobit$summary[tobit$summary$parameter == parameter & tobit$summary$scenario == tobit$profile_scenario, ]
+  r$scenario_n <- r$n_per_time
+  keys <- sort(unique(r$n_per_time))
+  coverage <- tobit_columns(r, keys, tobit_intervals, "interval", "coverage", 1)
+  bias <- tobit_columns(r, keys, tobit_methods, "lambda_z_method", "median_bias", 1)
+  names(bias) <- paste("Bias", names(bias))
+  knitr::kable(data.frame(`Animals per time` = keys, coverage, bias, check.names = FALSE), row.names = FALSE)
+}
+```
+
+Coverage (%) of the 95% intervals for the AUC to infinity, with four animals
+per time (three per batch):
+
+```{r simulation-tobit-auc, echo = FALSE}
+show_tobit("auc")
+```
+
+And for the AUMC to infinity:
+
+```{r simulation-tobit-aumc, echo = FALSE}
+show_tobit("aumc")
+```
+
+Bias and median absolute error (MAE), relative to the truth (%), of the AUC
+and then the AUMC to infinity with each $\lambda_z$ (the point estimate does
+not depend on the interval):
+
+```{r simulation-tobit-auc-accuracy, echo = FALSE}
+show_tobit_accuracy("auc")
+```
+
+```{r simulation-tobit-aumc-accuracy, echo = FALSE}
+show_tobit_accuracy("aumc")
+```
+
+Over the number of animals per time (two compartments, oral, serial sacrifice,
+slow elimination, BLQ samples), the coverage (%) and the bias (%) of the AUC to
+infinity:
+
+```{r simulation-tobit-n-auc, echo = FALSE}
+show_tobit_n("auc")
+```
+
+And of the AUMC to infinity:
+
+```{r simulation-tobit-n-aumc, echo = FALSE}
+show_tobit_n("aumc")
+```
+
 ## Results:  accuracy of the point estimates
 
 The point estimate with $\lambda_z$ from the log means ("mean", shared by Yuan
@@ -464,6 +719,88 @@ declines ever more slowly, which a single exponential from $t_{last}$ misses.
 
 **Interval width.**  The delta-method intervals were wider than Yuan's, most
 when elimination was slow; the extra width is what improved the coverage.
+
+**The bootstrap.**  With three or four animals at each time, the bootstrap
+intervals were too narrow.  For the AUC to infinity, the percentile interval
+covered
+`r boot_range("coverage_percentile", parameter = "auc", elimination = "fast", digits = 1)`%
+with fast elimination and
+`r boot_range("coverage_percentile", parameter = "auc", elimination = "slow", digits = 1)`%
+with slow elimination, against
+`r se_range("coverage", method = "delta", parameter = "auc", elimination = "fast", digits = 1)`%
+and
+`r se_range("coverage", method = "delta", parameter = "auc", elimination = "slow", digits = 1)`%
+for the delta method, and the interval from the bootstrap standard error was
+little better
+(`r boot_range("coverage_normal", parameter = "auc", digits = 1)`%).
+Resampling $n$ animals understates the variance of their mean by the factor
+$(n - 1)/n$ (3/4 with four animals), and the percentile interval of a skewed
+estimate is narrow as well.  For the AUMC to infinity, the bootstrap covered
+`r boot_range("coverage_percentile", parameter = "aumc", digits = 1)`%:  better
+than Yuan's method when elimination was slow, and as good as or better than
+the delta method only with slow elimination and BLQ samples, where the
+first-order delta method is weakest.  The bootstrap's advantage is that it
+applies to every parameter and to ratios between groups (Shen and Machado
+2017), including parameters with no analytical standard error, such as Cmax and
+the half-life; with few animals at each time, its intervals should be read as
+too narrow.
+
+**More animals at each time.**  The bootstrap improved with more animals, as
+its $(n - 1)/n$ shortfall shrank.  Without BLQ samples, its percentile interval
+for the AUC to infinity covered
+`r profile_value("coverage", 4, "none", "percentile", "auc")`% with 4 animals
+per time and `r profile_value("coverage", 20, "none", "percentile", "auc")`%
+with 20, when the delta method covered
+`r profile_value("coverage", 20, "none", "delta", "auc")`%; with BLQ samples, it
+matched or passed the delta method from 6 animals per time.  Its standard
+error was then as accurate as the delta method's.  But with many animals,
+every interval under-covered:  with 100 animals per time, the percentile
+interval covered
+`r profile_value("coverage", 100, "none", "percentile", "auc")`% without and
+`r profile_value("coverage", 100, "moderate", "percentile", "auc")`% with BLQ
+samples (the delta method,
+`r profile_value("coverage", 100, "none", "delta", "auc")`% and
+`r profile_value("coverage", 100, "moderate", "delta", "auc")`%).  The cause is
+the estimate, not its standard error:  the sparse AUC to infinity was biased by
+`r profile_value("median_bias", 100, "none", "yuan", "auc")`% without and
+`r profile_value("median_bias", 100, "moderate", "yuan", "auc")`% with BLQ
+samples, whatever the number of animals, from the BLQ samples counted as zero
+in the late means and the extrapolation of a mean of animals with different
+elimination rates.  More animals make every interval narrower around the same
+biased estimate, so no choice of interval corrects it.  The AUMC to infinity,
+biased by
+`r profile_value("median_bias", 100, "none", "yuan", "aumc")`% and
+`r profile_value("median_bias", 100, "moderate", "yuan", "aumc")`%, showed the
+same pattern sooner.
+
+**The Tobit half-life.**  With BLQ samples, the Tobit fit of the mean profile
+changed little:  the bias of the AUC to infinity was
+`r tobit_range("median_bias", lambda_z_method = "tobit-mean", parameter = "auc", interval = "tobit-mean yuan", n_per_time = 4, digits = 1)`%,
+against
+`r tobit_range("median_bias", lambda_z_method = "log-linear", parameter = "auc", interval = "log-linear yuan", n_per_time = 4, digits = 1)`%
+for the log-linear fit, and Yuan's intervals covered the same.  Its bootstrap
+intervals were narrower than the log-linear fit's and covered less
+(`r tobit_range("coverage", interval = "tobit-mean bootstrap", parameter = "auc", elimination = "slow", n_per_time = 4)`%
+against
+`r tobit_range("coverage", interval = "log-linear bootstrap", parameter = "auc", elimination = "slow", n_per_time = 4)`%
+with slow elimination), and with no standard error for $\lambda_z$ it cannot use
+the delta method.  The Tobit fit of the individual samples was slightly less
+biased and more precise:  with 100 animals per time, its AUC to infinity was
+biased by
+`r tobit_value("median_bias", scenario = tobit$profile_scenario, n_per_time = 100, interval = "tobit-individual yuan+var", parameter = "auc")`%
+and its AUMC by
+`r tobit_value("median_bias", scenario = tobit$profile_scenario, n_per_time = 100, interval = "tobit-individual yuan+var", parameter = "aumc")`%,
+against
+`r tobit_value("median_bias", scenario = tobit$profile_scenario, n_per_time = 100, interval = "log-linear yuan", parameter = "auc")`%
+and
+`r tobit_value("median_bias", scenario = tobit$profile_scenario, n_per_time = 100, interval = "log-linear yuan", parameter = "aumc")`%
+for the log-linear fit.  Its intervals were still less reliable than the delta
+method with few animals per time, and with many animals the bias left every
+interval short of nominal, whichever $\lambda_z$ was used.  So most of the
+bias that BLQ samples add does not come from $\lambda_z$, and a better fit of
+$\lambda_z$ does not remove it:  it comes from the late means, where BLQ
+samples count as zero, and from the mean profile ending earlier, when more
+than half of a time's samples are BLQ.
 
 # Arithmetic or geometric mean profiles
 
@@ -645,10 +982,14 @@ Estimating $\lambda_z$ from the individual samples with a (mixed-effects) Tobit
 regression gave a more stable point estimate when samples were BLQ, but adding
 its variance to Yuan's did not give adequate coverage, and its mixed-effects
 fit was itself occasionally unstable in the batch design with BLQ samples and
-slow elimination.  A natural refinement, not studied
-here, would combine the individual-sample $\lambda_z$ with a variance that
-includes its covariance with the means, for example by a joint delta method or a
-bootstrap over animals.
+slow elimination.  A bootstrap over animals, which includes the covariance of
+that $\lambda_z$ with the means, was too narrow with few animals per time, as
+every bootstrap was.  The Tobit fit of the mean profile, which uses the LLOQs,
+gave nearly the same results as the log-linear fit.  Neither Tobit fit removed
+the bias of the sparse estimate with BLQ samples, which comes mostly from
+counting BLQ samples as zero in the late means and from the mean profile
+ending earlier; estimating those means with the censoring taken into account
+would be the place to reduce it.
 
 Limitations remain.  The delta method conditions on the selected half-life
 points, so the uncertainty of the automatic point selection is not included; it
@@ -676,6 +1017,16 @@ confidence intervals to sparse sampling.  Pharmaceutical Research.
 Nedelman JR, Jia X.  An extension of Satterthwaite's approximation applied to
 pharmacokinetics.  Journal of Biopharmaceutical Statistics.
 1998;8(2):317-328.  doi:10.1080/10543409808835241
+
+Shen M, Machado SG.  Bioequivalence evaluation of sparse sampling
+pharmacokinetics data using bootstrap resampling method.  Journal of
+Biopharmaceutical Statistics.  2017;27(2):257-264.
+doi:10.1080/10543406.2016.1265543
+
+Takemoto S, Yamaoka K, Nishikawa M, Takakura Y.  Histogram analysis of
+pharmacokinetic parameters by bootstrap resampling from one-point sampling data
+in animal experiments.  Drug Metabolism and Pharmacokinetics.
+2006;21(6):458-464.  doi:10.2133/dmpk.21.458
 
 Yuan J.  Estimation of variance for AUC in animal studies.  Journal of
 Pharmaceutical Sciences.  1993;82(7):761-763.  doi:10.1002/jps.2600820718

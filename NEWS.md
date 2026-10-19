@@ -8,14 +8,6 @@ the dosing including dose amount and route.
 
 ## Breaking changes
 
-* `PKNCAconc()` has a new `frac_unbound` argument: a value or the name of a
-  column, greater than 0 and at most 1, with `NA` where fraction unbound does
-  not apply (#544).  When given, `pk.nca()` calculates the parameters on the
-  total concentration and on the unbound concentration (concentration times
-  `frac_unbound`), and the results have a new first grouping column,
-  `frac_unbound`.  Within an interval, the values must be all `NA` or all
-  non-`NA`.  This works for dense and sparse PK.
-
 * Parameter names and descriptions follow one style, so some column headers of
   `summary()` and some descriptions change (@billdenney):
   * Pretty names write lambda.z as math (`$\lambda_z$`), including "Number of
@@ -362,6 +354,28 @@ the generated intervals:
 (@billdenney, #642)
 
 ## New features
+
+* `PKNCAconc()` has a new `frac_unbound` argument: a value or the name of a
+  column, greater than 0 and at most 1, with `NA` where fraction unbound does
+  not apply (for example, urine).  When it is given, `pk.nca()` calculates the
+  parameters on the total concentration and on the unbound concentration
+  (concentration times `frac_unbound`), and the results have a new first
+  grouping column, `frac_unbound`, with the values `"total concentration"` and
+  `"unbound concentration"`.  Within an interval, the values for a group must be
+  all `NA` or all non-`NA`.  Rows with `NA` are not used for unbound results, so
+  parameters such as unbound renal clearance are not calculated for them.  Works
+  for dense and sparse PK (@PavanLomati, #544, #683).  In CDISC output (`out_format
+  = "cdisc"`) unbound results have `PPCAT` "UNBOUND CONCENTRATION" and a `UNB.`
+  prefix in `PPGRPID`; this mapping is a proposal pending review.
+
+* `PKNCAconc()` now checks the values of the `lloq` argument:  every non-missing
+  value must be numeric, finite (not `NaN` or `Inf`), and greater than zero, and
+  anything else is the
+  `pknca_error_conc_invalid_lloq` error (@billdenney).  Missing values (`NA`)
+  are still allowed, and a column or scalar that is entirely `NA` of any class
+  (such as the logical `NA` of a column read from a file with no LLOQ) is
+  accepted and stored as numeric `NA`.  Before, only the class was checked,
+  with a `checkmate` error.
 
 * The Tobit half-life (`hl_method = "tobit"`) now works with sparse PK:  the
   mean profile, which the half-life is calculated from, carries the LLOQ of
@@ -786,6 +800,22 @@ the generated intervals:
   Like the sparse AUClast, they need a concentration at the start of the
   interval, measured or imputed.  See `vignette("v24-sparse-auc-to-infinity")`.
   (#428)
+
+* `sparse_bootstrap()` resamples sparse data with the stratified nonparametric
+  bootstrap of Shen and Machado (2017):  the animals are resampled with
+  replacement within each set of sampling times (each time with serial
+  sacrifice, each batch in a batch design), keeping an animal's samples
+  together, and paired groups (such as the treatments of a crossover) and
+  analytes are resampled together.  It returns a sparse `PKNCAconc` object with
+  the original data and the replicates (200 by default) as a new group, storing
+  the random seed.  `pk.nca()` calculates every parameter for every replicate,
+  and its results are a `PKNCAresults_sparse_bootstrap` object:  `summary()`
+  summarizes the replicates the way it summarizes the subjects of dense data
+  (with `N` the number of animals in the study and the number of replicates in
+  the caption), and `be_assess()` and `be_compare()` give the ratio of a test
+  to a reference group with the percentile interval of the replicate ratios
+  for bioequivalence (the `"ABE"` and `"descriptive"` frameworks).
+  `be_assess()` and `be_dataset()` are now S3 generics.  (#295)
 
 * With sparse PK, `aucall` and `aumcall` are now sparse estimators like
   `auclast` and `aumclast`, with standard errors and degrees of freedom in the

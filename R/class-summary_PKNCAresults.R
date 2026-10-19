@@ -62,7 +62,7 @@
 #' @export
 #' @importFrom lifecycle deprecated
 summary.PKNCAresults <- function(object, ...,
-                                 drop_group = object$data$conc$columns$subject,
+                                 drop_group = as_PKNCAconc(object)$columns$subject,
                                  drop_param = character(),
                                  summarize_n = NA,
                                  not_requested = ".",
@@ -114,7 +114,7 @@ summary.PKNCAresults <- function(object, ...,
 
   ## Simple inputs ####
   group_cols <- get_summary_PKNCAresults_drop_group(object = object, drop_group = drop_group)
-  subject_col <- object$data$conc$columns$subject
+  subject_col <- as_PKNCAconc(object)$columns$subject
   has_subject_col <- length(subject_col) > 0
   if (is.na(summarize_n)) {
     summarize_n <- has_subject_col
@@ -133,10 +133,11 @@ summary.PKNCAresults <- function(object, ...,
 
   # Find any parameters that request any summaries, and exclude ones that are
   # not requested
+  intervals <- as_PKNCAdata(object)$intervals
   parameter_cols <-
     setdiff(
       intersect(
-        names(object$data$intervals),
+        names(intervals),
         names(get.interval.cols())
       ),
       c(c("start", "end"), drop_param, names(summary_spread_for()))
@@ -146,7 +147,7 @@ summary.PKNCAresults <- function(object, ...,
   # intervals
   result_data_cols_list <-
     lapply(
-      X = object$data$intervals[, parameter_cols, drop = FALSE],
+      X = intervals[, parameter_cols, drop = FALSE],
       FUN = any
     )
   # Then, filter them to the ones that have any "TRUE" values
@@ -186,7 +187,7 @@ summary.PKNCAresults <- function(object, ...,
       subject_col = subject_col,
       result_value_template = result_values,
       result_units = unit_list,
-      intervals = object$data$intervals,
+      intervals = intervals,
       not_calculated = not_calculated
     )
 
@@ -224,7 +225,7 @@ get_summary_PKNCAresults_drop_group <- function(object, drop_group) {
   ret <-
     unique(
       setdiff(
-        c("start", "end", object$data$options$keep_interval_cols, names(all_group_cols)),
+        c("start", "end", as_PKNCAdata(object)$options$keep_interval_cols, names(all_group_cols)),
         drop_group
       )
     )
@@ -233,21 +234,13 @@ get_summary_PKNCAresults_drop_group <- function(object, drop_group) {
 
 # Get the column name with the results to use for summarization
 get_summary_PKNCAresults_result_number_col <- function(object) {
-  if (is.data.frame(object)) {
-    data <- object
-  } else {
-    data <- object$result
-  }
+  data <- if (is.data.frame(object)) object else as.data.frame(object)
   intersect(c("PPSTRES", "PPORRES"), names(data))[1]
 }
 
 # Get the column name with the result units to use for summarization
 get_summary_PKNCAresults_result_unit_col <- function(object) {
-  if (is.data.frame(object)) {
-    data <- object
-  } else {
-    data <- object$result
-  }
+  data <- if (is.data.frame(object)) object else as.data.frame(object)
   # This will return NULL if neither column is present
   ret <- intersect(c("PPSTRESU", "PPORRESU"), names(data))[1]
   if (is.na(ret)) {
@@ -387,7 +380,7 @@ summarize_PKNCAresults_clean_exclude <- function(object) {
   result_number_col <- get_summary_PKNCAresults_result_number_col(object)
   exclude_col <- object$columns$exclude
   # Ensure that the exclude_col is NA instead of "" for subsequent processing.
-  raw_results <- object$result
+  raw_results <- as.data.frame(object)
   raw_results[[exclude_col]] <- normalize_exclude(raw_results[[exclude_col]])
   raw_results[[result_number_col]][!is.na(raw_results[[exclude_col]])] <- NA
   raw_results

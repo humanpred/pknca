@@ -57,7 +57,14 @@
 #' @param lloq (optional) The lower limit of quantification used by the Tobit
 #'   half-life method (`hl_method = "tobit"`).  Either the name of a column in
 #'   `data` giving the per-observation LLOQ or a numeric scalar applied to all
-#'   observations.  When provided, it is passed through to
+#'   observations.  Values must be numeric, finite, and greater than zero;
+#'   missing values (`NA`) are allowed, and `NaN` is not.  A column of numbers
+#'   is stored as given (an integer column stays integer and a `units` column
+#'   stays a `units` column).  A column or scalar that is entirely `NA` of any
+#'   class (such as the logical `NA` of a column read from a file with no LLOQ,
+#'   or an all-`NA` integer column) is accepted and stored as double `NA`.
+#'   Anything else is the error `pknca_error_conc_invalid_lloq`.  When provided,
+#'   it is passed through to
 #'   [pk.calc.half.life()].  With sparse PK, the half-life is calculated from
 #'   the mean profile, and the LLOQ of each time is the median of the LLOQs of
 #'   its samples (missing LLOQs are ignored).  See the "Half-Life Calculation with Tobit Regression"
@@ -71,7 +78,11 @@
 #'   the parameters on the total concentration and again on the unbound
 #'   concentration (concentration multiplied by `frac_unbound`).  The results
 #'   have a new first grouping column, `frac_unbound`, with the values
-#'   `"total concentration"` and `"unbound concentration"`.  This works for
+#'   `"total concentration"` and `"unbound concentration"`.  Rows with `NA`
+#'   `frac_unbound` have no unbound concentration, so parameters that need an
+#'   unbound value (for example, unbound renal clearance for urine rows) are not
+#'   calculated for them.  The check that each interval is all `NA` or all
+#'   non-`NA` uses only the intervals of each group.  This works for
 #'   dense and sparse PK; for sparse PK each sample is multiplied by its own
 #'   `frac_unbound` before the mean profile is calculated.
 #' @param sparse Are the concentration-time data sparse PK (commonly used in
@@ -265,10 +276,10 @@ PKNCAconc.data.frame <- function(data, formula, subject,
   }
   if (!missing(lloq)) {
     ret <- setAttributeColumn(object=ret, attr_name="lloq", col_or_value=lloq)
-    checkmate::assertNumeric(
-      getAttributeColumn(object = ret, attr_name = "lloq")[[1]]
-    )
+    lloq_col <- ret$columns$lloq
+    ret[[getDataName(ret)]][[lloq_col]] <- pknca_lloq_check_values(ret[[getDataName(ret)]][[lloq_col]])
   }
+  
   if (!missing(frac_unbound)) {
     ret <- setAttributeColumn(object = ret, attr_name = "frac_unbound", col_or_value = frac_unbound)
     assert_numeric_between(
@@ -316,17 +327,17 @@ formula.PKNCAconc <- function(x, ...) {
 #' @importFrom stats model.frame
 #' @method model.frame PKNCAconc
 model.frame.PKNCAconc <- function(formula, ...) {
-  formula$data[, all.vars(formula$formula), drop=FALSE]
+  as.data.frame(formula)[, all.vars(formula$formula), drop=FALSE]
 }
 
 #' @export
 getDepVar.PKNCAconc <- function(x, ...) {
-  x$data[, x$columns$concentration]
+  as.data.frame(x)[, x$columns$concentration]
 }
 
 #' @export
 getIndepVar.PKNCAconc <- function(x, ...) {
-  x$data[, x$columns$time]
+  as.data.frame(x)[, x$columns$time]
 }
 
 #' Get the groups (right hand side after the `|` from a PKNCA
@@ -421,6 +432,42 @@ setDuration.PKNCAconc <- function(object, duration, ...) {
   object
 }
 
+# Validate the values of the LLOQ column of a PKNCAconc object.  Returns the
+# values as stored (a units column stays a units column, an integer column stays
+# integer), except that an entirely missing vector of any class (a logical `NA`
+# read from a file with no LLOQ) becomes `NA_real_`.  The checks use the plain
+# numbers so that no method of the column's class is needed.
+pknca_lloq_check_values <- function(x) {
+  if (is.numeric(x)) {
+    values <- as.numeric(x)
+    # NA is allowed; NaN, Inf, zero, and negative values are not.
+    bad <- is.nan(values) | (!is.na(values) & (!is.finite(values) | values <= 0))
+    if (any(bad)) {
+      shown <- unique(values[bad])
+      rlang::abort(
+        sprintf(
+          "lloq must be finite and greater than zero (or missing, NA); invalid value(s): %s%s",
+          paste(as.character(utils::head(shown, 5)), collapse = ", "),
+          if (length(shown) > 5) ", ..." else ""
+        ),
+        class = "pknca_error_conc_invalid_lloq"
+      )
+    }
+  } else if (!all(is.na(x))) {
+    rlang::abort(
+      sprintf(
+        "lloq must be numeric (or entirely missing, NA); its class is '%s'",
+        paste(class(x), collapse = "', '")
+      ),
+      class = "pknca_error_conc_invalid_lloq"
+    )
+  }
+  if (all(is.na(x))) {
+    x <- rep(NA_real_, length(x))
+  }
+  x
+}
+
 #' Print and/or summarize a PKNCAconc or PKNCAdose object.
 #'
 #' @param x The object to print
@@ -434,13 +481,8 @@ setDuration.PKNCAconc <- function(object, duration, ...) {
 print.PKNCAconc <- function(x, n=6, summarize=FALSE, ...) {
   cat(sprintf("Formula for concentration:\n "))
   print(stats::formula(x), ...)
-  if (is_sparse_pk(x)) {
-    data_current <- x$data_sparse
-    cat("Data are sparse PK.\n")
-  } else {
-    data_current <- x$data
-    cat("Data are dense PK.\n")
-  }
+  data_current <- as.data.frame(x)
+  cat(if (is_sparse_pk(x)) "Data are sparse PK.\n" else "Data are dense PK.\n")
   single_subject <- is.na(x$columns$subject) || (length(x$columns$subject) == 0)
   if (single_subject) {
     cat("As a single-subject dataset.\n")

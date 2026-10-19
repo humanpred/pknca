@@ -287,9 +287,9 @@ model.frame.PKNCAdose <- function(formula, ...) {
 getDepVar.PKNCAdose <- function(x, ...) {
   dose_col <- x$columns$dose
   if (length(dose_col) == 0) {
-    rep(NA_integer_, nrow(x$data))
+    rep(NA_integer_, nrow(as.data.frame(x)))
   } else {
-    x$data[, dose_col]
+    as.data.frame(x)[, dose_col]
   }
 }
 
@@ -297,9 +297,9 @@ getDepVar.PKNCAdose <- function(x, ...) {
 getIndepVar.PKNCAdose <- function(x, ...) {
   time_col <- x$columns$time
   if (length(time_col) == 0) {
-    rep(NA_integer_, nrow(x$data))
+    rep(NA_integer_, nrow(as.data.frame(x)))
   } else {
-    x$data[, time_col]
+    as.data.frame(x)[, time_col]
   }
 }
 
@@ -344,16 +344,17 @@ print.PKNCAdose <- function(x, n=6, summarize=FALSE, ...) {
     }
   } else {
     if (n != 0) {
-      if (n >= nrow(x$data)) {
+      data_current <- as.data.frame(x)
+      if (n >= nrow(data_current)) {
         cat("\nData for dosing:\n")
       } else if (n < 0) {
         cat(sprintf("\nFirst %d rows of dosing data:\n",
-                    nrow(x$data)+n))
+                    nrow(data_current)+n))
       } else {
         cat(sprintf("\nFirst %d rows of dosing data:\n",
                     n))
       }
-      print.data.frame(utils::head(x$data, n=n), ..., row.names=FALSE)
+      print.data.frame(utils::head(data_current, n=n), ..., row.names=FALSE)
     }
   }
 }

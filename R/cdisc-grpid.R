@@ -321,14 +321,15 @@ pknca_grpid_format <- function(group_text, number, width) {
 pknca_cdisc_add_grpid <- function(ret, x, grpid_cols, grpid_numeric) {
   o_conc <- as_PKNCAconc(x)
   if (is.null(grpid_cols)) {
-    grpid_cols <- x$data$grpid_cols
+    grpid_cols <- as_PKNCAdata(x)$grpid_cols
   }
   if (is.null(grpid_numeric)) {
     # The columns that PKNCAdata() marked numeric apply to the columns in use
-    grpid_numeric <- intersect(x$data$grpid_numeric, names(grpid_cols))
+    grpid_numeric <- intersect(as_PKNCAdata(x)$grpid_numeric, names(grpid_cols))
   }
   assert_grpid_cols(grpid_cols, o_conc, grpid_numeric)
-  all_rows <- as.data.frame(x$result)
+  # Every result row, as a data.frame rather than a tibble
+  all_rows <- as.data.frame(as.data.frame(x))
   if (nrow(all_rows) == 0) {
     ret$PPGRPID <- character()
     return(ret)
@@ -355,12 +356,19 @@ pknca_cdisc_add_grpid <- function(ret, x, grpid_cols, grpid_numeric) {
       )
   }
   grpid_all <- pknca_grpid_format(group_text, number, width)
+  # Total and unbound results of one interval share the interval number, so
+  # the unbound ones are marked with a prefix and matched on their label too
+  has_frac <- "frac_unbound" %in% names(all_rows)
+  ret_key <- pknca_interval_window_key(as.data.frame(ret), number_cols)
+  all_key <- pknca_interval_window_key(all_rows, number_cols)
+  if (has_frac) {
+    grpid_all[all_rows$frac_unbound %in% "unbound concentration"] <-
+      paste0("UNB.", grpid_all[all_rows$frac_unbound %in% "unbound concentration"])
+    ret_key <- paste(ret_key, as.character(ret$frac_unbound), sep = "\r")
+    all_key <- paste(all_key, as.character(all_rows$frac_unbound), sep = "\r")
+  }
   # Every returned row is a row of the results, so it finds its own window
-  row_match <-
-    match(
-      pknca_interval_window_key(as.data.frame(ret), number_cols),
-      pknca_interval_window_key(all_rows, number_cols)
-    )
+  row_match <- match(ret_key, all_key)
   if (anyNA(row_match)) {
     rlang::abort( # nocov start
       "A row of the output is not a row of the results, so its interval cannot be numbered.  This is likely a bug.",

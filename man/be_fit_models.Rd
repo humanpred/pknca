@@ -23,7 +23,10 @@ be_fit_models(
 \arguments{
 \item{object}{A \code{PKNCAresults} object or a tidy long data.frame with a
 \code{PPTESTCD} column of parameter names, a \code{PPORRES}/\code{PPSTRES} column of
-values, and subject/sequence/period/treatment columns.}
+values, and subject/sequence/period/treatment columns.  The results of a
+sparse bootstrap (from a \code{PKNCAconc} object made by \code{\link[=sparse_bootstrap]{sparse_bootstrap()}})
+are compared with the percentile intervals of the bootstrap replicates
+(Shen and Machado 2017); see Details.}
 
 \item{reference_col}{The column identifying the formulation/treatment.}
 
