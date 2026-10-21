@@ -119,7 +119,12 @@ from the mean profile and include its uncertainty.</li>
 <strong>Treat the AUMC, and the MRT and Vss that come from it, with
 caution.</strong> The AUMC to infinity was biased low in most scenarios,
 and its confidence intervals under-covered in every scenario, even with
-the delta method (79 to 92%), most when elimination was slow.</li>
+the delta method (79 to 92%), most when elimination was slow. PKNCA
+gives no standard error for the MRT or
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi></mrow></msub><annotation encoding="application/x-tex">V_{ss}</annotation></semantics></math>;
+the PK package’s intervals for them under-covered in the batch design
+(65.8 to 74.2% for the MRT), as its help warns, because the MRT of the
+mean profile is itself biased.</li>
 <li>
 <strong>The half-life of the mean profile is not the typical
 animal’s half-life.</strong> It was too long when the terminal phase was
@@ -146,7 +151,12 @@ intervals for the AUC to infinity covered 82 to 90% of the time. Prefer
 the analytical standard errors for the AUCs, and use the bootstrap for
 parameters and comparisons that have none, such as Cmax and ratios
 between groups. With 20 or more animals per time, its standard error was
-accurate and its intervals matched the delta method’s.</li>
+accurate and its intervals matched the delta method’s. A
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+on the delta-method standard error covered the AUMC better than the
+delta method, but not the AUC, and it was not adopted: it keeps the
+same, biased estimate, and its gain comes from a wider or shifted
+interval around it.</li>
 <li>
 <strong>With many animals, the bias of the sparse estimate
 dominates.</strong> BLQ samples and the extrapolation of the mean
@@ -154,6 +164,25 @@ profile biased the AUC to infinity low (by about 7% with BLQ samples
 here), whatever the number of animals and whichever half-life was used,
 so with many animals every confidence interval missed the truth more
 often than its nominal level.</li>
+<li>
+<strong>The published intervals for these designs did not cover
+better with few animals.</strong> With three animals per time in
+serial-sacrifice designs, the delta method covered 91.5 to 97.0%. The
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+of Wolfsegger and Jaki (2005) covered about as well without BLQ samples,
+but with intervals about twice as wide from an unstable estimate. Both
+it and the PK package take the logarithm of every sample, and they broke
+down with BLQ samples: with slow elimination, PK’s asymptotic interval
+covered 38 to 44% and the 2005
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+30 to 39%.</li>
+<li>
+<strong>Imputing BLQ samples was evaluated and not adopted.</strong>
+The treatments that Barnett et al. (2021) compared, applied at each
+time, reduced the bias of the AUC to infinity with slow elimination
+(kernel imputation -3.2 to -2.1%, against -6.0 to -4.0% for zero), but
+none covered better than zero substitution, and the direct censored
+likelihood under-covered.</li>
 <li>
 <strong>The Tobit half-life was evaluated with BLQ samples and not
 adopted for the sparse AUC.</strong> The Tobit fit of the mean profile
@@ -204,10 +233,11 @@ half-life, clearance, and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi></mrow></msub><annotation encoding="application/x-tex">V_{ss}</annotation></semantics></math>
 after an IV bolus, to those designs, with asymptotic and
 bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
-intervals, as implemented in the R package PK. Barnett, Geys, Jacobs,
-and Jaki (2021) compared eight treatments of samples below the limit of
-quantification in the AUC, from substitution to censored maximum
-likelihood and kernel-density imputation.</p>
+intervals, as implemented in the R package PK (Jaki and Wolfsegger
+2011). Barnett, Geys, Jacobs, and Jaki (2021) compared eight treatments
+of samples below the limit of quantification in the AUC, from
+substitution to censored maximum likelihood and kernel-density
+imputation.</p>
 <p>In practice,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
 is estimated from the same data, so its uncertainty adds to that of the
@@ -218,8 +248,12 @@ the uncertainty in
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
 and its covariance with the means (the covariance Wolfsegger and Jaki
 left open), extends both to IV bolus dosing, and compares the methods in
-a simulation-estimation study. A second study compares arithmetic and
-geometric mean profiles.</p>
+a simulation-estimation study, with the estimators of Wolfsegger and
+Jaki (2005) and of the PK package, a
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+interval, and the treatments of BLQ samples that Barnett et al. (2021)
+compared. A second study compares arithmetic and geometric mean
+profiles.</p>
 </div>
 <div class="section level2">
 <h2 id="the-sparse-auc-to-the-last-measurement">The sparse AUC to the last measurement<a class="anchor" aria-label="anchor" href="#the-sparse-auc-to-the-last-measurement"></a>
@@ -458,12 +492,14 @@ simulation below compares both.</p>
 <div class="section level3">
 <h3 id="design">Design<a class="anchor" aria-label="anchor" href="#design"></a>
 </h3>
-<p>Both studies in this vignette share one design
-(<code>data-raw/sparse_simulation_design.R</code> in the PKNCA source).
-Concentrations come from one- and two-compartment models (pmxTools)
-after a dose of 100, given orally or as an IV bolus, with log-normal
-between-animal variability (30% on each structural parameter) and a
-multiplicative residual error (15%) with mean 1:</p>
+<p>Every study in this vignette shares one design. The simulations are a
+targets pipeline in <code>data-raw/sparse-simulation/</code> of the
+PKNCA source; its README says how to run it, how long it takes, and how
+to add a scenario or an estimator. Concentrations come from one- and
+two-compartment models (pmxTools) after a dose of 100, given orally or
+as an IV bolus, with log-normal between-animal variability (30% on each
+structural parameter) and a multiplicative residual error (15%) with
+mean 1:</p>
 <ul>
 <li>
 <strong>One compartment:</strong>
@@ -525,10 +561,9 @@ animal in the batch design), with that
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
 in the extrapolation and its variance added to Yuan’s.</li>
 </ul>
-<p>The simulation is in <code>data-raw/sparse_aucinf_simulation.R</code>
-in the PKNCA source, which was run with PKNCA 0.12.1.9002 and pmxTools
-1.5 (R version 4.6.1 (2026-06-24), 2026-10-07); every replicate has its
-own seed, so the results can be reproduced.</p>
+<p>This study was run with PKNCA 0.12.1.9002 and pmxTools 1.5 (R version
+4.6.1 (2026-06-24), 2026-10-07); every replicate has its own seed, so
+the results can be reproduced.</p>
 </div>
 <div class="section level3">
 <h3 id="results-coverage-of-the-auc-to-infinity">Results: coverage of the AUC to infinity<a class="anchor" aria-label="anchor" href="#results-coverage-of-the-auc-to-infinity"></a>
@@ -2345,26 +2380,28 @@ data sets, which include these) is shown for comparison.</p>
 <p>Published uses of the bootstrap had either a few animals per time
 (three mice in Takemoto et al. 2006, which compared only the means and
 standard deviations with Bailer’s) or many (about 88 subjects per time
-and treatment in the bioequivalence study of Shen and Machado 2017). To
-see how the number of animals per time changes the comparison, the
-two-compartment, oral, serial-sacrifice design with slow elimination was
-simulated with 4, 6, 10, 20, 50, 100 animals per time, without and with
-BLQ samples (2,000 data sets each, 200 bootstrap replicates;
-<code>data-raw/sparse_bootstrap_n_profile.R</code>). The data seeds do
-not depend on the number of animals, so 4 animals per time reproduces
-the data sets above. The bias is that of the point estimate, which all
-of the methods share.</p>
+and treatment in the bioequivalence study of Shen and Machado 2017), and
+Tardivon et al. (2023) compared it with a model-based test for
+single-sample bioequivalence studies, but not with an analytical
+standard error. To see how the number of animals per time changes the
+comparison, the two-compartment, oral, serial-sacrifice design with slow
+elimination was simulated with 4, 6, 10, 20, 50, 100 animals per time,
+without and with BLQ samples (2,000 data sets each, 200 bootstrap
+replicates). The data seeds do not depend on the number of animals, so 4
+animals per time reproduces the data sets above. The bias is that of the
+point estimate, which all of the methods share.</p>
 <table class="table">
 <colgroup>
-<col width="6%">
-<col width="12%">
-<col width="14%">
+<col width="5%">
+<col width="11%">
 <col width="13%">
+<col width="11%">
+<col width="9%">
+<col width="9%">
 <col width="10%">
-<col width="10%">
-<col width="14%">
-<col width="10%">
-<col width="6%">
+<col width="13%">
+<col width="9%">
+<col width="5%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">BLQ</th>
@@ -2373,6 +2410,7 @@ of the methods share.</p>
 <th align="right">Coverage boot. SE</th>
 <th align="right">Coverage Yuan</th>
 <th align="right">Coverage delta</th>
+<th align="right">Coverage boot-t</th>
 <th align="right">CI width percentile</th>
 <th align="right">CI width delta</th>
 <th align="right">Bias (%)</th>
@@ -2385,6 +2423,7 @@ of the methods share.</p>
 <td align="right">82.9</td>
 <td align="right">83.9</td>
 <td align="right">89.9</td>
+<td align="right">89.4</td>
 <td align="right">33</td>
 <td align="right">49</td>
 <td align="right">-2.3</td>
@@ -2396,6 +2435,7 @@ of the methods share.</p>
 <td align="right">85.3</td>
 <td align="right">81.4</td>
 <td align="right">90.4</td>
+<td align="right">89.2</td>
 <td align="right">30</td>
 <td align="right">38</td>
 <td align="right">-2.4</td>
@@ -2407,6 +2447,7 @@ of the methods share.</p>
 <td align="right">87.8</td>
 <td align="right">77.7</td>
 <td align="right">89.8</td>
+<td align="right">89.6</td>
 <td align="right">25</td>
 <td align="right">29</td>
 <td align="right">-2.2</td>
@@ -2418,6 +2459,7 @@ of the methods share.</p>
 <td align="right">89.6</td>
 <td align="right">79.8</td>
 <td align="right">90.0</td>
+<td align="right">90.2</td>
 <td align="right">19</td>
 <td align="right">20</td>
 <td align="right">-1.9</td>
@@ -2429,6 +2471,7 @@ of the methods share.</p>
 <td align="right">88.9</td>
 <td align="right">74.2</td>
 <td align="right">89.1</td>
+<td align="right">91.4</td>
 <td align="right">12</td>
 <td align="right">13</td>
 <td align="right">-1.8</td>
@@ -2440,6 +2483,7 @@ of the methods share.</p>
 <td align="right">85.9</td>
 <td align="right">69.4</td>
 <td align="right">85.6</td>
+<td align="right">86.4</td>
 <td align="right">9</td>
 <td align="right">9</td>
 <td align="right">-1.7</td>
@@ -2451,6 +2495,7 @@ of the methods share.</p>
 <td align="right">86.2</td>
 <td align="right">80.6</td>
 <td align="right">90.9</td>
+<td align="right">82.4</td>
 <td align="right">42</td>
 <td align="right">60</td>
 <td align="right">-6.1</td>
@@ -2462,6 +2507,7 @@ of the methods share.</p>
 <td align="right">87.5</td>
 <td align="right">76.2</td>
 <td align="right">88.2</td>
+<td align="right">84.0</td>
 <td align="right">38</td>
 <td align="right">44</td>
 <td align="right">-6.7</td>
@@ -2473,6 +2519,7 @@ of the methods share.</p>
 <td align="right">86.6</td>
 <td align="right">69.8</td>
 <td align="right">83.9</td>
+<td align="right">82.4</td>
 <td align="right">31</td>
 <td align="right">33</td>
 <td align="right">-6.7</td>
@@ -2484,6 +2531,7 @@ of the methods share.</p>
 <td align="right">78.8</td>
 <td align="right">55.8</td>
 <td align="right">74.3</td>
+<td align="right">73.0</td>
 <td align="right">22</td>
 <td align="right">22</td>
 <td align="right">-6.8</td>
@@ -2495,6 +2543,7 @@ of the methods share.</p>
 <td align="right">50.3</td>
 <td align="right">30.0</td>
 <td align="right">49.4</td>
+<td align="right">52.4</td>
 <td align="right">14</td>
 <td align="right">14</td>
 <td align="right">-7.0</td>
@@ -2506,6 +2555,7 @@ of the methods share.</p>
 <td align="right">26.0</td>
 <td align="right">11.2</td>
 <td align="right">25.8</td>
+<td align="right">31.2</td>
 <td align="right">10</td>
 <td align="right">10</td>
 <td align="right">-6.9</td>
@@ -2514,15 +2564,16 @@ of the methods share.</p>
 </table>
 <table class="table">
 <colgroup>
-<col width="6%">
-<col width="12%">
-<col width="14%">
+<col width="5%">
+<col width="11%">
 <col width="13%">
+<col width="11%">
+<col width="9%">
+<col width="9%">
 <col width="10%">
-<col width="10%">
-<col width="14%">
-<col width="10%">
-<col width="6%">
+<col width="13%">
+<col width="9%">
+<col width="5%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">BLQ</th>
@@ -2531,6 +2582,7 @@ of the methods share.</p>
 <th align="right">Coverage boot. SE</th>
 <th align="right">Coverage Yuan</th>
 <th align="right">Coverage delta</th>
+<th align="right">Coverage boot-t</th>
 <th align="right">CI width percentile</th>
 <th align="right">CI width delta</th>
 <th align="right">Bias (%)</th>
@@ -2543,6 +2595,7 @@ of the methods share.</p>
 <td align="right">70.5</td>
 <td align="right">62.9</td>
 <td align="right">79.8</td>
+<td align="right">84.4</td>
 <td align="right">89</td>
 <td align="right">135</td>
 <td align="right">-18.6</td>
@@ -2554,6 +2607,7 @@ of the methods share.</p>
 <td align="right">71.9</td>
 <td align="right">56.8</td>
 <td align="right">77.6</td>
+<td align="right">83.0</td>
 <td align="right">83</td>
 <td align="right">100</td>
 <td align="right">-18.5</td>
@@ -2565,6 +2619,7 @@ of the methods share.</p>
 <td align="right">72.2</td>
 <td align="right">48.9</td>
 <td align="right">73.6</td>
+<td align="right">84.0</td>
 <td align="right">68</td>
 <td align="right">75</td>
 <td align="right">-17.3</td>
@@ -2576,6 +2631,7 @@ of the methods share.</p>
 <td align="right">66.8</td>
 <td align="right">39.0</td>
 <td align="right">66.6</td>
+<td align="right">76.8</td>
 <td align="right">51</td>
 <td align="right">51</td>
 <td align="right">-16.7</td>
@@ -2587,6 +2643,7 @@ of the methods share.</p>
 <td align="right">52.5</td>
 <td align="right">21.0</td>
 <td align="right">51.8</td>
+<td align="right">63.8</td>
 <td align="right">33</td>
 <td align="right">33</td>
 <td align="right">-16.1</td>
@@ -2598,6 +2655,7 @@ of the methods share.</p>
 <td align="right">32.6</td>
 <td align="right">8.7</td>
 <td align="right">30.6</td>
+<td align="right">44.6</td>
 <td align="right">23</td>
 <td align="right">23</td>
 <td align="right">-15.9</td>
@@ -2609,6 +2667,7 @@ of the methods share.</p>
 <td align="right">77.6</td>
 <td align="right">60.5</td>
 <td align="right">81.3</td>
+<td align="right">74.2</td>
 <td align="right">112</td>
 <td align="right">154</td>
 <td align="right">-29.1</td>
@@ -2620,6 +2679,7 @@ of the methods share.</p>
 <td align="right">75.8</td>
 <td align="right">48.0</td>
 <td align="right">72.8</td>
+<td align="right">71.4</td>
 <td align="right">97</td>
 <td align="right">108</td>
 <td align="right">-29.4</td>
@@ -2631,6 +2691,7 @@ of the methods share.</p>
 <td align="right">71.0</td>
 <td align="right">37.9</td>
 <td align="right">63.1</td>
+<td align="right">68.6</td>
 <td align="right">80</td>
 <td align="right">79</td>
 <td align="right">-29.8</td>
@@ -2642,6 +2703,7 @@ of the methods share.</p>
 <td align="right">55.2</td>
 <td align="right">20.9</td>
 <td align="right">47.0</td>
+<td align="right">53.6</td>
 <td align="right">57</td>
 <td align="right">54</td>
 <td align="right">-29.4</td>
@@ -2653,6 +2715,7 @@ of the methods share.</p>
 <td align="right">18.0</td>
 <td align="right">3.9</td>
 <td align="right">16.2</td>
+<td align="right">23.2</td>
 <td align="right">34</td>
 <td align="right">33</td>
 <td align="right">-30.0</td>
@@ -2664,6 +2727,7 @@ of the methods share.</p>
 <td align="right">2.4</td>
 <td align="right">0.1</td>
 <td align="right">2.1</td>
+<td align="right">6.0</td>
 <td align="right">24</td>
 <td align="right">23</td>
 <td align="right">-29.5</td>
@@ -2698,8 +2762,7 @@ Yuan’s variance plus that of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
 for the Tobit fit of the individual samples; and, for each, the
 bootstrap percentile interval (200 replicates, each refitting its own
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>;
-<code>data-raw/sparse_tobit_simulation.R</code>).</p>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>).</p>
 <p>Coverage (%) of the 95% intervals for the AUC to infinity, with four
 animals per time (three per batch):</p>
 <table class="table">
@@ -4748,6 +4811,1962 @@ to the truth (%).</p>
 </table>
 </div>
 <div class="section level3">
+<h3 id="results-wolfsegger-and-jaki-2005-and-the-pk-package">Results: Wolfsegger and Jaki (2005) and the PK package<a class="anchor" aria-label="anchor" href="#results-wolfsegger-and-jaki-2005-and-the-pk-package"></a>
+</h3>
+<p>Wolfsegger and Jaki (2005) estimated the AUC to infinity in serial
+sacrifice designs as the trapezoidal sum to a time
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mi>K</mi></msub><annotation encoding="application/x-tex">t_K</annotation></semantics></math>
+plus
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>y</mi><mo accent="true">‾</mo></mover><mi>K</mi></msub><mi>/</mi><msub><mover><mi>λ</mi><mo accent="true">̂</mo></mover><mi>z</mi></msub></mrow><annotation encoding="application/x-tex">\bar{y}_K/\hat{\lambda}_z</annotation></semantics></math>,
+with
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>λ</mi><mo accent="true">̂</mo></mover><mi>z</mi></msub><annotation encoding="application/x-tex">\hat{\lambda}_z</annotation></semantics></math>
+fit to the bias-corrected log means of the times after
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mi>K</mi></msub><annotation encoding="application/x-tex">t_K</annotation></semantics></math>,
+so that the two parts are independent, and a bias correction for the
+extrapolation. They gave an asymptotic interval and a
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+interval (1000 replicates, stratified by time) on its variance, and they
+left open the covariance between the trapezoidal AUC and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>λ</mi><mo accent="true">̂</mo></mover><mi>z</mi></msub><annotation encoding="application/x-tex">\hat{\lambda}_z</annotation></semantics></math>
+when the same samples serve both, which is what PKNCA’s delta method
+includes. No package implements the 2005 estimator, so it was written
+from the paper (“WJ”), with
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>λ</mi><mo accent="true">̂</mo></mover><mi>z</mi></msub><annotation encoding="application/x-tex">\hat{\lambda}_z</annotation></semantics></math>
+from the last three times as in their simulation. The PK package
+implements the later estimator of Wolfsegger and Jaki (2009) for serial
+sacrifice designs and of Jaki and Wolfsegger (2012) for batch designs
+(<code>PK::nca()</code>): the trapezoidal sum to the last time plus the
+extrapolation from the last mean, with
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
+fit to the mean log concentrations of the last 3 times
+(<code>n.tail</code>), a variance that includes the covariance of each
+time’s mean with its mean log concentration, and asymptotic (“PK z”) and
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+(“PK boot-t”) intervals. PKNCA’s intervals were Yuan’s, the delta
+method, and a
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+interval on the delta-method standard error (“PKNCA boot-t”): the 2005
+construction applied to PKNCA’s estimator, with
+<code><a href="../reference/sparse_bootstrap.html">sparse_bootstrap()</a></code> replicates (200, each with its own
+half-life fit and delta-method standard error).</p>
+<p>All of them were run on the serial-sacrifice scenarios with three and
+four animals per time (the first 500 data sets of each; with four
+animals, those of the standard error study), with 1000 and 1000
+bootstrap replicates for PK’s and WJ’s
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>.
+Both published estimators start the AUC at the first time they are
+given: for oral dosing they were given the known zero at time 0, and for
+IV bolus dosing, which neither back-extrapolates, their AUC starts at
+the first sample (5 minutes), which loses the area before it. Both take
+the logarithm of every sample in the tail; a BLQ sample, reported as
+zero, was replaced by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mi>−</mi><mn>256</mn></mrow></msup><annotation encoding="application/x-tex">10^{-256}</annotation></semantics></math>
+in the logarithms as <code>PK::nca()</code> does, which violates their
+assumption of a constant coefficient of variation in the tail. They were
+run anyway, so the BLQ scenarios show what happens when that assumption
+fails.</p>
+<p>Coverage, here and below, is among the data sets for which the
+interval could be calculated. Without BLQ samples, 0.0 to 0.8% of the
+data sets failed, depending on the interval and scenario. With BLQ
+samples, the 2005 estimator failed (no positive
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>λ</mi><mo accent="true">̂</mo></mover><mi>z</mi></msub><annotation encoding="application/x-tex">\hat{\lambda}_z</annotation></semantics></math>)
+in 0.4 to 6.2% of them and PKNCA’s estimate (no half-life) in 0.0 to
+4.2%. Counting a failure as a miss would lower a coverage in the
+serial-sacrifice tables by at most 4.0 points (the result file has
+both).</p>
+<p>Coverage (%) of the 95% intervals for the AUC to infinity with three
+animals per time:</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="6%">
+<col width="9%">
+<col width="9%">
+<col width="13%">
+<col width="5%">
+<col width="6%">
+<col width="14%">
+<col width="5%">
+<col width="11%">
+<col width="5%">
+<col width="11%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Route</th>
+<th align="left">BLQ</th>
+<th align="left">Elimination</th>
+<th align="right">Yuan</th>
+<th align="right">Delta</th>
+<th align="right">PKNCA boot-t</th>
+<th align="right">PK z</th>
+<th align="right">PK boot-t</th>
+<th align="right">WJ z</th>
+<th align="right">WJ boot-t</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">94.6</td>
+<td align="right">95.8</td>
+<td align="right">94.8</td>
+<td align="right">90.2</td>
+<td align="right">95.0</td>
+<td align="right">87.8</td>
+<td align="right">93.0</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">95.4</td>
+<td align="right">95.4</td>
+<td align="right">95.8</td>
+<td align="right">92.8</td>
+<td align="right">96.2</td>
+<td align="right">87.6</td>
+<td align="right">93.0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">93.4</td>
+<td align="right">95.2</td>
+<td align="right">93.6</td>
+<td align="right">89.2</td>
+<td align="right">94.0</td>
+<td align="right">21.3</td>
+<td align="right">26.7</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">94.2</td>
+<td align="right">95.0</td>
+<td align="right">94.0</td>
+<td align="right">86.2</td>
+<td align="right">94.2</td>
+<td align="right">22.9</td>
+<td align="right">25.0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">87.1</td>
+<td align="right">92.1</td>
+<td align="right">89.1</td>
+<td align="right">86.2</td>
+<td align="right">85.0</td>
+<td align="right">82.7</td>
+<td align="right">92.2</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">87.3</td>
+<td align="right">91.5</td>
+<td align="right">90.5</td>
+<td align="right">85.2</td>
+<td align="right">86.4</td>
+<td align="right">84.2</td>
+<td align="right">93.2</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">88.3</td>
+<td align="right">96.0</td>
+<td align="right">88.3</td>
+<td align="right">42.6</td>
+<td align="right">54.2</td>
+<td align="right">29.2</td>
+<td align="right">30.5</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">88.9</td>
+<td align="right">94.1</td>
+<td align="right">85.7</td>
+<td align="right">43.6</td>
+<td align="right">58.0</td>
+<td align="right">29.7</td>
+<td align="right">30.4</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">94.8</td>
+<td align="right">95.2</td>
+<td align="right">95.0</td>
+<td align="right">91.4</td>
+<td align="right">94.4</td>
+<td align="right">91.4</td>
+<td align="right">94.0</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">94.4</td>
+<td align="right">94.8</td>
+<td align="right">94.6</td>
+<td align="right">90.6</td>
+<td align="right">94.8</td>
+<td align="right">87.4</td>
+<td align="right">91.8</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">95.4</td>
+<td align="right">97.0</td>
+<td align="right">95.4</td>
+<td align="right">91.8</td>
+<td align="right">95.4</td>
+<td align="right">20.8</td>
+<td align="right">24.5</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">94.4</td>
+<td align="right">96.4</td>
+<td align="right">95.2</td>
+<td align="right">89.2</td>
+<td align="right">94.0</td>
+<td align="right">23.6</td>
+<td align="right">23.6</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">88.2</td>
+<td align="right">91.8</td>
+<td align="right">91.8</td>
+<td align="right">87.4</td>
+<td align="right">88.0</td>
+<td align="right">89.6</td>
+<td align="right">95.4</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">90.2</td>
+<td align="right">93.2</td>
+<td align="right">92.8</td>
+<td align="right">85.2</td>
+<td align="right">88.8</td>
+<td align="right">89.6</td>
+<td align="right">94.4</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">82.0</td>
+<td align="right">92.2</td>
+<td align="right">86.6</td>
+<td align="right">38.2</td>
+<td align="right">45.0</td>
+<td align="right">39.0</td>
+<td align="right">39.3</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">85.0</td>
+<td align="right">92.8</td>
+<td align="right">89.0</td>
+<td align="right">41.2</td>
+<td align="right">48.2</td>
+<td align="right">35.4</td>
+<td align="right">36.5</td>
+</tr>
+</tbody>
+</table>
+<p>And with four animals per time (the data sets of the standard error
+study):</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="6%">
+<col width="9%">
+<col width="9%">
+<col width="13%">
+<col width="5%">
+<col width="6%">
+<col width="14%">
+<col width="5%">
+<col width="11%">
+<col width="5%">
+<col width="11%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Route</th>
+<th align="left">BLQ</th>
+<th align="left">Elimination</th>
+<th align="right">Yuan</th>
+<th align="right">Delta</th>
+<th align="right">PKNCA boot-t</th>
+<th align="right">PK z</th>
+<th align="right">PK boot-t</th>
+<th align="right">WJ z</th>
+<th align="right">WJ boot-t</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">96.0</td>
+<td align="right">96.6</td>
+<td align="right">95.2</td>
+<td align="right">95.4</td>
+<td align="right">95.2</td>
+<td align="right">89.0</td>
+<td align="right">90.6</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">95.8</td>
+<td align="right">96.4</td>
+<td align="right">94.8</td>
+<td align="right">92.8</td>
+<td align="right">94.4</td>
+<td align="right">86.2</td>
+<td align="right">87.8</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">96.0</td>
+<td align="right">97.2</td>
+<td align="right">96.8</td>
+<td align="right">92.6</td>
+<td align="right">94.8</td>
+<td align="right">12.8</td>
+<td align="right">13.8</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">95.4</td>
+<td align="right">97.4</td>
+<td align="right">96.6</td>
+<td align="right">90.0</td>
+<td align="right">93.2</td>
+<td align="right">13.9</td>
+<td align="right">13.1</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">84.7</td>
+<td align="right">91.0</td>
+<td align="right">88.2</td>
+<td align="right">86.0</td>
+<td align="right">87.0</td>
+<td align="right">88.2</td>
+<td align="right">92.4</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">87.0</td>
+<td align="right">90.4</td>
+<td align="right">90.2</td>
+<td align="right">87.2</td>
+<td align="right">85.2</td>
+<td align="right">87.6</td>
+<td align="right">92.4</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">79.9</td>
+<td align="right">92.4</td>
+<td align="right">80.5</td>
+<td align="right">30.6</td>
+<td align="right">35.2</td>
+<td align="right">23.1</td>
+<td align="right">22.7</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">86.1</td>
+<td align="right">93.1</td>
+<td align="right">83.6</td>
+<td align="right">30.2</td>
+<td align="right">39.0</td>
+<td align="right">19.5</td>
+<td align="right">19.3</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">93.6</td>
+<td align="right">94.2</td>
+<td align="right">93.2</td>
+<td align="right">92.8</td>
+<td align="right">92.6</td>
+<td align="right">93.2</td>
+<td align="right">93.0</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">94.8</td>
+<td align="right">96.2</td>
+<td align="right">93.0</td>
+<td align="right">94.8</td>
+<td align="right">94.6</td>
+<td align="right">91.6</td>
+<td align="right">90.4</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">94.6</td>
+<td align="right">95.8</td>
+<td align="right">96.2</td>
+<td align="right">92.2</td>
+<td align="right">94.4</td>
+<td align="right">18.0</td>
+<td align="right">17.6</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">93.0</td>
+<td align="right">94.4</td>
+<td align="right">91.6</td>
+<td align="right">90.4</td>
+<td align="right">93.4</td>
+<td align="right">16.5</td>
+<td align="right">15.2</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">84.4</td>
+<td align="right">90.0</td>
+<td align="right">89.4</td>
+<td align="right">85.4</td>
+<td align="right">86.8</td>
+<td align="right">88.4</td>
+<td align="right">90.0</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">84.8</td>
+<td align="right">91.8</td>
+<td align="right">89.2</td>
+<td align="right">82.2</td>
+<td align="right">86.0</td>
+<td align="right">89.6</td>
+<td align="right">91.6</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">78.0</td>
+<td align="right">91.2</td>
+<td align="right">82.4</td>
+<td align="right">30.8</td>
+<td align="right">34.2</td>
+<td align="right">27.9</td>
+<td align="right">27.1</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">86.0</td>
+<td align="right">93.2</td>
+<td align="right">86.0</td>
+<td align="right">27.0</td>
+<td align="right">29.2</td>
+<td align="right">24.5</td>
+<td align="right">23.9</td>
+</tr>
+</tbody>
+</table>
+<p>Bias of the point estimates (mean, % of the truth) and median width
+of the intervals (% of the truth), with three animals per time:</p>
+<table class="table">
+<colgroup>
+<col width="4%">
+<col width="7%">
+<col width="7%">
+<col width="9%">
+<col width="8%">
+<col width="6%">
+<col width="7%">
+<col width="9%">
+<col width="14%">
+<col width="12%">
+<col width="12%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Route</th>
+<th align="left">BLQ</th>
+<th align="left">Elimination</th>
+<th align="right">Bias PKNCA</th>
+<th align="right">Bias PK</th>
+<th align="right">Bias WJ</th>
+<th align="right">Width delta</th>
+<th align="right">Width PKNCA boot-t</th>
+<th align="right">Width PK boot-t</th>
+<th align="right">Width WJ boot-t</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">3.8</td>
+<td align="right">3.5</td>
+<td align="right">-8.3</td>
+<td align="right">53</td>
+<td align="right">58</td>
+<td align="right">61</td>
+<td align="right">111</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">3.0</td>
+<td align="right">1.9</td>
+<td align="right">-74.3</td>
+<td align="right">57</td>
+<td align="right">63</td>
+<td align="right">63</td>
+<td align="right">149</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">4.0</td>
+<td align="right">0.7</td>
+<td align="right">-46.5</td>
+<td align="right">58</td>
+<td align="right">68</td>
+<td align="right">58</td>
+<td align="right">51</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">4.0</td>
+<td align="right">0.1</td>
+<td align="right">-43.5</td>
+<td align="right">62</td>
+<td align="right">73</td>
+<td align="right">63</td>
+<td align="right">44</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">5.2</td>
+<td align="right">4.6</td>
+<td align="right">-160.9</td>
+<td align="right">83</td>
+<td align="right">99</td>
+<td align="right">108</td>
+<td align="right">150</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">2.5</td>
+<td align="right">4.3</td>
+<td align="right">-72.0</td>
+<td align="right">75</td>
+<td align="right">94</td>
+<td align="right">100</td>
+<td align="right">183</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">16.0</td>
+<td align="right">-11.4</td>
+<td align="right">-245773.2</td>
+<td align="right">116</td>
+<td align="right">146</td>
+<td align="right">69</td>
+<td align="right">34</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">5.3</td>
+<td align="right">-19.2</td>
+<td align="right">-74.5</td>
+<td align="right">105</td>
+<td align="right">135</td>
+<td align="right">71</td>
+<td align="right">27</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">4.0</td>
+<td align="right">3.8</td>
+<td align="right">-6.6</td>
+<td align="right">40</td>
+<td align="right">42</td>
+<td align="right">42</td>
+<td align="right">74</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">5.5</td>
+<td align="right">1.4</td>
+<td align="right">-11.3</td>
+<td align="right">41</td>
+<td align="right">43</td>
+<td align="right">43</td>
+<td align="right">107</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">3.4</td>
+<td align="right">1.4</td>
+<td align="right">-26.4</td>
+<td align="right">42</td>
+<td align="right">49</td>
+<td align="right">44</td>
+<td align="right">43</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">5.0</td>
+<td align="right">-0.5</td>
+<td align="right">-30.1</td>
+<td align="right">42</td>
+<td align="right">49</td>
+<td align="right">44</td>
+<td align="right">39</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">0.2</td>
+<td align="right">1.5</td>
+<td align="right">-22.2</td>
+<td align="right">69</td>
+<td align="right">91</td>
+<td align="right">96</td>
+<td align="right">137</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">0.0</td>
+<td align="right">0.9</td>
+<td align="right">-2554.9</td>
+<td align="right">60</td>
+<td align="right">72</td>
+<td align="right">95</td>
+<td align="right">161</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">-1.2</td>
+<td align="right">-12.0</td>
+<td align="right">-29245.2</td>
+<td align="right">82</td>
+<td align="right">119</td>
+<td align="right">61</td>
+<td align="right">37</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">-0.2</td>
+<td align="right">-8.4</td>
+<td align="right">-68.2</td>
+<td align="right">75</td>
+<td align="right">110</td>
+<td align="right">63</td>
+<td align="right">30</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="results-the-pk-packages-parameters-in-the-batch-design">Results: the PK package’s parameters in the batch design<a class="anchor" aria-label="anchor" href="#results-the-pk-packages-parameters-in-the-batch-design"></a>
+</h3>
+<p>The PK package also gives intervals for the AUMC to infinity, the
+MRT, the non-compartmental half-life
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mn>2</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\log(2)</annotation></semantics></math>
+times the MRT, so its coverage is the MRT’s), the clearance, and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi></mrow></msub><annotation encoding="application/x-tex">V_{ss}</annotation></semantics></math>,
+and its help warns that the standard errors of the MRT and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi></mrow></msub><annotation encoding="application/x-tex">V_{ss}</annotation></semantics></math>
+in batch designs under-cover severely. PKNCA gives standard errors only
+for the AUC and AUMC; for other parameters it has the bootstrap. On the
+batch scenarios (four animals per batch, the first 500 data sets of
+each), PK’s intervals were compared with PKNCA’s delta method and
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+(AUC and AUMC) and its percentile bootstrap (MRT, the ratio of the AUMC
+and AUC to infinity of each replicate). The true MRT is that of the
+population mean curve, the ratio of its AUMC and AUC; after oral dosing,
+it includes the mean absorption time, as both packages’ estimates do. In
+a batch design, <code>PK::nca()</code> cannot take a zero at a time
+where other samples are positive: after oral dosing it stops with an
+error, and after IV bolus dosing it replaces the resulting NaN variances
+with a placeholder
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mi>−</mi><mn>8</mn></mrow></msup><annotation encoding="application/x-tex">10^{-8}</annotation></semantics></math>),
+which gives a standard error near zero. So every batch data set with BLQ
+samples was given to PK with them omitted, as it allows (the last column
+gives how often), and any interval whose standard error was PK’s
+placeholder counted as a failure. PK’s bootstrap resamples the
+concentrations at each time without regard to animal, while
+<code><a href="../reference/sparse_bootstrap.html">sparse_bootstrap()</a></code> resamples whole animals within each
+batch.</p>
+<p>Coverage (%) for the AUC to infinity:</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="6%">
+<col width="10%">
+<col width="10%">
+<col width="13%">
+<col width="6%">
+<col width="14%">
+<col width="5%">
+<col width="11%">
+<col width="21%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Route</th>
+<th align="left">BLQ</th>
+<th align="left">Elimination</th>
+<th align="right">Delta</th>
+<th align="right">PKNCA boot-t</th>
+<th align="right">PK z</th>
+<th align="right">PK boot-t</th>
+<th align="right">PK BLQ omitted (%)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">94.8</td>
+<td align="right">94.2</td>
+<td align="right">88.6</td>
+<td align="right">72.2</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">96.8</td>
+<td align="right">95.8</td>
+<td align="right">91.4</td>
+<td align="right">78.0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">94.8</td>
+<td align="right">94.2</td>
+<td align="right">94.2</td>
+<td align="right">65.5</td>
+<td align="right">84</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">96.8</td>
+<td align="right">96.0</td>
+<td align="right">94.6</td>
+<td align="right">68.8</td>
+<td align="right">86</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">93.0</td>
+<td align="right">92.0</td>
+<td align="right">87.6</td>
+<td align="right">68.0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">90.6</td>
+<td align="right">89.6</td>
+<td align="right">84.4</td>
+<td align="right">63.6</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">93.7</td>
+<td align="right">83.8</td>
+<td align="right">92.4</td>
+<td align="right">51.4</td>
+<td align="right">76</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">94.2</td>
+<td align="right">85.0</td>
+<td align="right">92.8</td>
+<td align="right">55.7</td>
+<td align="right">74</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">95.6</td>
+<td align="right">96.0</td>
+<td align="right">92.0</td>
+<td align="right">76.4</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">94.8</td>
+<td align="right">93.4</td>
+<td align="right">91.6</td>
+<td align="right">76.6</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">97.0</td>
+<td align="right">96.4</td>
+<td align="right">91.6</td>
+<td align="right">63.5</td>
+<td align="right">82</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">96.6</td>
+<td align="right">93.8</td>
+<td align="right">95.8</td>
+<td align="right">72.0</td>
+<td align="right">87</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">92.2</td>
+<td align="right">89.4</td>
+<td align="right">87.2</td>
+<td align="right">68.6</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">92.6</td>
+<td align="right">90.4</td>
+<td align="right">83.4</td>
+<td align="right">68.6</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">93.2</td>
+<td align="right">86.4</td>
+<td align="right">88.3</td>
+<td align="right">54.3</td>
+<td align="right">74</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">93.8</td>
+<td align="right">89.0</td>
+<td align="right">91.2</td>
+<td align="right">53.2</td>
+<td align="right">74</td>
+</tr>
+</tbody>
+</table>
+<p>For the AUMC to infinity:</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="6%">
+<col width="10%">
+<col width="10%">
+<col width="13%">
+<col width="6%">
+<col width="14%">
+<col width="5%">
+<col width="11%">
+<col width="21%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Route</th>
+<th align="left">BLQ</th>
+<th align="left">Elimination</th>
+<th align="right">Delta</th>
+<th align="right">PKNCA boot-t</th>
+<th align="right">PK z</th>
+<th align="right">PK boot-t</th>
+<th align="right">PK BLQ omitted (%)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">86.8</td>
+<td align="right">87.6</td>
+<td align="right">80.8</td>
+<td align="right">64.0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">90.4</td>
+<td align="right">90.4</td>
+<td align="right">81.4</td>
+<td align="right">66.6</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">91.8</td>
+<td align="right">90.4</td>
+<td align="right">91.2</td>
+<td align="right">55.9</td>
+<td align="right">84</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">92.6</td>
+<td align="right">89.0</td>
+<td align="right">89.2</td>
+<td align="right">56.2</td>
+<td align="right">86</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">83.2</td>
+<td align="right">85.6</td>
+<td align="right">74.0</td>
+<td align="right">63.6</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">81.2</td>
+<td align="right">82.4</td>
+<td align="right">72.6</td>
+<td align="right">57.6</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">85.6</td>
+<td align="right">73.3</td>
+<td align="right">88.5</td>
+<td align="right">47.1</td>
+<td align="right">76</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">86.6</td>
+<td align="right">72.2</td>
+<td align="right">89.9</td>
+<td align="right">50.4</td>
+<td align="right">74</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">88.2</td>
+<td align="right">89.8</td>
+<td align="right">81.2</td>
+<td align="right">65.2</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">87.2</td>
+<td align="right">89.6</td>
+<td align="right">78.2</td>
+<td align="right">64.0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">87.6</td>
+<td align="right">90.6</td>
+<td align="right">92.8</td>
+<td align="right">54.5</td>
+<td align="right">82</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">88.4</td>
+<td align="right">89.6</td>
+<td align="right">89.2</td>
+<td align="right">57.6</td>
+<td align="right">87</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">80.6</td>
+<td align="right">85.2</td>
+<td align="right">72.4</td>
+<td align="right">60.8</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">78.0</td>
+<td align="right">84.0</td>
+<td align="right">67.2</td>
+<td align="right">62.0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">80.2</td>
+<td align="right">72.2</td>
+<td align="right">88.5</td>
+<td align="right">56.3</td>
+<td align="right">74</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">83.0</td>
+<td align="right">74.0</td>
+<td align="right">89.8</td>
+<td align="right">51.6</td>
+<td align="right">74</td>
+</tr>
+</tbody>
+</table>
+<p>For the MRT, which has no analytical standard error in PKNCA:</p>
+<table class="table">
+<colgroup>
+<col width="6%">
+<col width="10%">
+<col width="10%">
+<col width="13%">
+<col width="19%">
+<col width="5%">
+<col width="11%">
+<col width="21%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Route</th>
+<th align="left">BLQ</th>
+<th align="left">Elimination</th>
+<th align="right">PKNCA percentile</th>
+<th align="right">PK z</th>
+<th align="right">PK boot-t</th>
+<th align="right">PK BLQ omitted (%)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">65.2</td>
+<td align="right">65.8</td>
+<td align="right">56.0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">65.8</td>
+<td align="right">67.2</td>
+<td align="right">60.0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">88.6</td>
+<td align="right">89.8</td>
+<td align="right">54.7</td>
+<td align="right">84</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">86.6</td>
+<td align="right">88.0</td>
+<td align="right">52.6</td>
+<td align="right">86</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">77.2</td>
+<td align="right">74.2</td>
+<td align="right">67.4</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">73.4</td>
+<td align="right">72.0</td>
+<td align="right">62.6</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">92.5</td>
+<td align="right">91.3</td>
+<td align="right">55.2</td>
+<td align="right">76</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">90.0</td>
+<td align="right">92.0</td>
+<td align="right">58.0</td>
+<td align="right">74</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">65.6</td>
+<td align="right">68.2</td>
+<td align="right">59.0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">fast</td>
+<td align="right">62.4</td>
+<td align="right">69.2</td>
+<td align="right">59.8</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">83.4</td>
+<td align="right">90.6</td>
+<td align="right">55.7</td>
+<td align="right">82</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">fast</td>
+<td align="right">76.2</td>
+<td align="right">88.2</td>
+<td align="right">54.0</td>
+<td align="right">87</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">72.4</td>
+<td align="right">72.4</td>
+<td align="right">65.4</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">none</td>
+<td align="left">slow</td>
+<td align="right">67.2</td>
+<td align="right">68.2</td>
+<td align="right">65.0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">76.8</td>
+<td align="right">87.7</td>
+<td align="right">59.7</td>
+<td align="right">74</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">moderate</td>
+<td align="left">slow</td>
+<td align="right">78.8</td>
+<td align="right">89.4</td>
+<td align="right">57.6</td>
+<td align="right">74</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="results-treatments-of-blq-samples">Results: treatments of BLQ samples<a class="anchor" aria-label="anchor" href="#results-treatments-of-blq-samples"></a>
+</h3>
+<p>Barnett, Geys, Jacobs, and Jaki (2021) compared eight treatments of
+BLQ samples in the AUC to the last time and recommended kernel-density
+imputation. Their simulations used complete designs only (10 subjects
+sampled at each of six times); they noted that the methods extend to
+sparse designs, with the imputed values assigned to animals at random in
+serial designs and by the animals’ previous concentrations in batch
+designs. Their BLOQ package takes a subject-by-time matrix, so its
+per-time methods were applied to the samples at each time of each data
+set, and the imputed data went through PKNCA’s sparse AUC to infinity
+with the delta method: zero (PKNCA’s default), half the LLOQ, regression
+on order statistics on the log scale (ROS), kernel-density imputation,
+and censored maximum likelihood at each time followed by imputation of
+the expected order statistics (“CML impute”, their two-step method).
+Their direct method (“CML direct”) instead uses each time’s censored
+maximum-likelihood mean and its variance; here those means gave the AUC
+to infinity and its delta-method variance with the times independent,
+which the batch design violates, and a normal interval. The likelihood
+methods used BLOQ’s additive (normal) model: its multiplicative model
+fits base-10 logarithms but back-transforms with the natural
+exponential, which does not return the fitted mean. As BLOQ does, a time
+whose samples were all BLQ took half the LLOQ; ROS and the likelihood
+methods, which need two measured samples, did the same with fewer. Their
+full-likelihood method needs the within-animal covariance of every pair
+of times, which one sample per animal cannot give, so it was not run.
+The scenarios are those with BLQ samples (1,000 data sets each, the
+first of the standard error study). The last two columns come from the
+Tobit study on the same data sets (and, for the profile’s scenario, the
+next 1,000): Yuan’s interval with the Tobit half-life of the mean
+profile, and Yuan’s variance plus that of the individual-sample Tobit
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>.</p>
+<p>Coverage (%) of the 95% intervals for the AUC to infinity:</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="5%">
+<col width="8%">
+<col width="6%">
+<col width="11%">
+<col width="4%">
+<col width="6%">
+<col width="4%">
+<col width="6%">
+<col width="10%">
+<col width="10%">
+<col width="10%">
+<col width="12%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Route</th>
+<th align="left">Design</th>
+<th align="left">Elimination</th>
+<th align="right">Zero</th>
+<th align="right">LLOQ/2</th>
+<th align="right">ROS</th>
+<th align="right">Kernel</th>
+<th align="right">CML impute</th>
+<th align="right">CML direct</th>
+<th align="right">Tobit mean</th>
+<th align="right">Tobit indiv.</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">96.3</td>
+<td align="right">96.4</td>
+<td align="right">96.3</td>
+<td align="right">96.4</td>
+<td align="right">96.4</td>
+<td align="right">94.6</td>
+<td align="right">94.5</td>
+<td align="right">95.5</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">96.4</td>
+<td align="right">96.6</td>
+<td align="right">96.2</td>
+<td align="right">96.8</td>
+<td align="right">96.8</td>
+<td align="right">94.3</td>
+<td align="right">95.0</td>
+<td align="right">95.0</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">95.5</td>
+<td align="right">96.5</td>
+<td align="right">96.5</td>
+<td align="right">96.6</td>
+<td align="right">96.7</td>
+<td align="right">85.2</td>
+<td align="right">94.9</td>
+<td align="right">95.2</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">96.2</td>
+<td align="right">95.8</td>
+<td align="right">95.9</td>
+<td align="right">95.9</td>
+<td align="right">96.2</td>
+<td align="right">87.1</td>
+<td align="right">94.7</td>
+<td align="right">94.7</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">92.9</td>
+<td align="right">90.6</td>
+<td align="right">89.0</td>
+<td align="right">91.1</td>
+<td align="right">91.0</td>
+<td align="right">86.2</td>
+<td align="right">82.0</td>
+<td align="right">89.0</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">93.5</td>
+<td align="right">91.9</td>
+<td align="right">91.4</td>
+<td align="right">92.3</td>
+<td align="right">92.3</td>
+<td align="right">87.8</td>
+<td align="right">85.8</td>
+<td align="right">91.2</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">94.3</td>
+<td align="right">91.6</td>
+<td align="right">90.3</td>
+<td align="right">92.1</td>
+<td align="right">91.7</td>
+<td align="right">81.3</td>
+<td align="right">87.2</td>
+<td align="right">92.2</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">93.8</td>
+<td align="right">90.7</td>
+<td align="right">90.2</td>
+<td align="right">91.2</td>
+<td align="right">90.9</td>
+<td align="right">83.8</td>
+<td align="right">88.8</td>
+<td align="right">91.5</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">95.6</td>
+<td align="right">96.1</td>
+<td align="right">95.8</td>
+<td align="right">96.3</td>
+<td align="right">96.5</td>
+<td align="right">94.4</td>
+<td align="right">94.5</td>
+<td align="right">94.7</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">94.9</td>
+<td align="right">94.5</td>
+<td align="right">93.7</td>
+<td align="right">94.4</td>
+<td align="right">95.2</td>
+<td align="right">92.2</td>
+<td align="right">93.7</td>
+<td align="right">94.4</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">96.4</td>
+<td align="right">96.7</td>
+<td align="right">96.1</td>
+<td align="right">96.7</td>
+<td align="right">96.9</td>
+<td align="right">89.5</td>
+<td align="right">95.3</td>
+<td align="right">96.0</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">95.8</td>
+<td align="right">95.8</td>
+<td align="right">95.6</td>
+<td align="right">95.8</td>
+<td align="right">96.2</td>
+<td align="right">88.1</td>
+<td align="right">95.4</td>
+<td align="right">95.5</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">91.0</td>
+<td align="right">89.4</td>
+<td align="right">88.0</td>
+<td align="right">89.6</td>
+<td align="right">89.7</td>
+<td align="right">85.0</td>
+<td align="right">80.6</td>
+<td align="right">86.7</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">92.0</td>
+<td align="right">90.6</td>
+<td align="right">90.0</td>
+<td align="right">91.3</td>
+<td align="right">90.7</td>
+<td align="right">86.4</td>
+<td align="right">82.6</td>
+<td align="right">89.5</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">93.4</td>
+<td align="right">91.7</td>
+<td align="right">89.5</td>
+<td align="right">91.7</td>
+<td align="right">91.6</td>
+<td align="right">83.4</td>
+<td align="right">84.8</td>
+<td align="right">89.5</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">93.6</td>
+<td align="right">91.9</td>
+<td align="right">90.3</td>
+<td align="right">92.1</td>
+<td align="right">91.9</td>
+<td align="right">85.5</td>
+<td align="right">86.3</td>
+<td align="right">90.4</td>
+</tr>
+</tbody>
+</table>
+<p>Median bias (% of the truth):</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="5%">
+<col width="8%">
+<col width="6%">
+<col width="11%">
+<col width="4%">
+<col width="6%">
+<col width="4%">
+<col width="6%">
+<col width="10%">
+<col width="10%">
+<col width="10%">
+<col width="12%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Route</th>
+<th align="left">Design</th>
+<th align="left">Elimination</th>
+<th align="right">Zero</th>
+<th align="right">LLOQ/2</th>
+<th align="right">ROS</th>
+<th align="right">Kernel</th>
+<th align="right">CML impute</th>
+<th align="right">CML direct</th>
+<th align="right">Tobit mean</th>
+<th align="right">Tobit indiv.</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">2.7</td>
+<td align="right">3.2</td>
+<td align="right">3.6</td>
+<td align="right">3.3</td>
+<td align="right">2.0</td>
+<td align="right">1.8</td>
+<td align="right">2.1</td>
+<td align="right">1.9</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">3.0</td>
+<td align="right">3.4</td>
+<td align="right">3.7</td>
+<td align="right">3.4</td>
+<td align="right">2.5</td>
+<td align="right">2.4</td>
+<td align="right">2.4</td>
+<td align="right">2.1</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">2.6</td>
+<td align="right">3.0</td>
+<td align="right">3.2</td>
+<td align="right">3.0</td>
+<td align="right">1.6</td>
+<td align="right">1.3</td>
+<td align="right">1.7</td>
+<td align="right">1.4</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">2.8</td>
+<td align="right">3.0</td>
+<td align="right">3.3</td>
+<td align="right">3.2</td>
+<td align="right">2.0</td>
+<td align="right">1.7</td>
+<td align="right">2.0</td>
+<td align="right">1.7</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">-6.0</td>
+<td align="right">-3.7</td>
+<td align="right">-1.6</td>
+<td align="right">-3.2</td>
+<td align="right">-4.3</td>
+<td align="right">-4.9</td>
+<td align="right">-6.6</td>
+<td align="right">-5.8</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">-6.0</td>
+<td align="right">-3.6</td>
+<td align="right">-1.4</td>
+<td align="right">-2.9</td>
+<td align="right">-3.8</td>
+<td align="right">-4.4</td>
+<td align="right">-6.3</td>
+<td align="right">-5.7</td>
+</tr>
+<tr class="odd">
+<td align="left">1-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">-4.9</td>
+<td align="right">-3.0</td>
+<td align="right">-1.0</td>
+<td align="right">-2.5</td>
+<td align="right">-3.9</td>
+<td align="right">-4.5</td>
+<td align="right">-6.1</td>
+<td align="right">-5.1</td>
+</tr>
+<tr class="even">
+<td align="left">1-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">-4.0</td>
+<td align="right">-3.2</td>
+<td align="right">-0.6</td>
+<td align="right">-2.5</td>
+<td align="right">-3.2</td>
+<td align="right">-4.0</td>
+<td align="right">-5.5</td>
+<td align="right">-4.7</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">1.9</td>
+<td align="right">2.7</td>
+<td align="right">2.9</td>
+<td align="right">2.7</td>
+<td align="right">2.0</td>
+<td align="right">1.9</td>
+<td align="right">1.9</td>
+<td align="right">1.7</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">fast</td>
+<td align="right">4.0</td>
+<td align="right">4.6</td>
+<td align="right">4.8</td>
+<td align="right">4.6</td>
+<td align="right">3.9</td>
+<td align="right">3.6</td>
+<td align="right">4.0</td>
+<td align="right">3.6</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">2.1</td>
+<td align="right">2.8</td>
+<td align="right">2.9</td>
+<td align="right">2.8</td>
+<td align="right">1.8</td>
+<td align="right">1.7</td>
+<td align="right">1.9</td>
+<td align="right">1.4</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">fast</td>
+<td align="right">3.2</td>
+<td align="right">4.0</td>
+<td align="right">4.2</td>
+<td align="right">4.0</td>
+<td align="right">3.2</td>
+<td align="right">2.9</td>
+<td align="right">3.4</td>
+<td align="right">2.9</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">-5.7</td>
+<td align="right">-3.7</td>
+<td align="right">-1.4</td>
+<td align="right">-3.2</td>
+<td align="right">-3.5</td>
+<td align="right">-3.9</td>
+<td align="right">-6.2</td>
+<td align="right">-5.5</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">serial</td>
+<td align="left">slow</td>
+<td align="right">-5.3</td>
+<td align="right">-2.9</td>
+<td align="right">-1.2</td>
+<td align="right">-2.4</td>
+<td align="right">-3.1</td>
+<td align="right">-3.5</td>
+<td align="right">-5.3</td>
+<td align="right">-4.9</td>
+</tr>
+<tr class="odd">
+<td align="left">2-cmt</td>
+<td align="left">oral</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">-5.7</td>
+<td align="right">-2.9</td>
+<td align="right">-0.8</td>
+<td align="right">-2.6</td>
+<td align="right">-3.2</td>
+<td align="right">-3.6</td>
+<td align="right">-5.7</td>
+<td align="right">-5.0</td>
+</tr>
+<tr class="even">
+<td align="left">2-cmt</td>
+<td align="left">IV bolus</td>
+<td align="left">batch</td>
+<td align="left">slow</td>
+<td align="right">-4.9</td>
+<td align="right">-2.7</td>
+<td align="right">-0.6</td>
+<td align="right">-2.1</td>
+<td align="right">-2.9</td>
+<td align="right">-3.3</td>
+<td align="right">-4.8</td>
+<td align="right">-4.4</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
 <h3 id="findings">Findings<a class="anchor" aria-label="anchor" href="#findings"></a>
 </h3>
 <p><strong>Coverage of the AUC to infinity.</strong> With fast
@@ -4857,6 +6876,137 @@ and a better fit of
 does not remove it: it comes from the late means, where BLQ samples
 count as zero, and from the mean profile ending earlier, when more than
 half of a time’s samples are BLQ.</p>
+<p><strong>Published estimators with three or four animals per
+time.</strong> Without BLQ samples, no interval was best everywhere.
+With three animals per time, the delta method covered 91.5 to 95.8%,
+PKNCA’s
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+89.1 to 95.8%, PK’s asymptotic and
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+intervals 85.2 to 92.8% and 85.0 to 96.2%, and the 2005 estimator’s 82.7
+to 91.4% and 91.8 to 95.4%. With slow elimination, the 2005
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+came closest to nominal (92.2 to 95.4%, against 91.5 to 93.2% for the
+delta method), and it covered better than their asymptotic interval, as
+Wolfsegger and Jaki found. But it was about twice as wide (median 137 to
+183% of the truth, against 60 to 83%), because its estimate was
+unstable: its median bias was -21.3 to -5.1%, against -3.0 to 5.3% for
+PKNCA’s estimate and -3.7 to 3.1% for PK’s. With 2,000 animals per time
+(20 data sets of each scenario without BLQ samples), the 2005 estimate
+was biased by 1.2 to 2.6% with fast elimination, much as PKNCA’s was
+(2.6 to 4.6%), from the linear trapezoidal rule over a declining curve,
+and by -2.4 to -0.7% with slow elimination (PKNCA’s, -1.6 to -0.8%). So
+its large errors with three or four animals are those of small samples:
+its bias correction divides the variance of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>λ</mi><mo accent="true">̂</mo></mover><mi>z</mi></msub><annotation encoding="application/x-tex">\hat{\lambda}_z</annotation></semantics></math>
+by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mi>λ</mi><mo accent="true">̂</mo></mover><mi>z</mi><mn>3</mn></msubsup><annotation encoding="application/x-tex">\hat{\lambda}_z^3</annotation></semantics></math>,
+its correction of the log means divides one noisy variance by a noisy
+squared mean, and the variability of the elimination rate here gives the
+late times a coefficient of variation far above the 5% to 20% of their
+simulation. Its construction also extrapolates from
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mi>K</mi></msub><annotation encoding="application/x-tex">t_K</annotation></semantics></math>,
+three times before the last, rather than from
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mrow><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">t_{last}</annotation></semantics></math>,
+so more of the AUC rests on
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>λ</mi><mo accent="true">̂</mo></mover><mi>z</mi></msub><annotation encoding="application/x-tex">\hat{\lambda}_z</annotation></semantics></math>.
+That is the price of keeping
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>λ</mi><mo accent="true">̂</mo></mover><mi>z</mi></msub><annotation encoding="application/x-tex">\hat{\lambda}_z</annotation></semantics></math>
+independent of the trapezoidal sum; the delta method instead keeps every
+time in the sum and includes the covariance that Wolfsegger and Jaki
+(2005) left open.</p>
+<p>With BLQ samples, the published estimators broke down: a zero among
+the logarithms (taken as
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mi>−</mi><mn>256</mn></mrow></msup><annotation encoding="application/x-tex">10^{-256}</annotation></semantics></math>)
+drags the mean log concentration of the last time down and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>λ</mi><mo accent="true">̂</mo></mover><mi>z</mi></msub><annotation encoding="application/x-tex">\hat{\lambda}_z</annotation></semantics></math>
+up. The 2005 estimator’s intervals covered 24 to 39% in every scenario
+with BLQ samples. PK’s intervals held up with fast elimination (86.2 to
+91.8%, asymptotic), where little is extrapolated, but covered 38 to 44%
+(asymptotic) and 45 to 58%
+(bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>)
+with slow elimination, while the delta method covered 92.2 to 97.0% with
+BLQ samples. Over every serial-sacrifice scenario with three animals per
+time, the delta method covered best, 91.5 to 97.0%, against 85.7 to
+95.8% for PKNCA’s
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>,
+45.0 to 96.2% for PK’s, and 23.6 to 95.4% for the 2005 estimator’s; with
+four animals per time, the delta method covered 90.0 to 97.4%.</p>
+<p><strong>The PK package in the batch design.</strong> Without BLQ
+samples, PK’s asymptotic interval for the AUC to infinity covered 83.4
+to 92.0% and its
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+63.6 to 78.0%, against 90.6 to 96.8% for the delta method and 89.4 to
+96.0% for PKNCA’s
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>.
+PK’s
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+resamples the concentrations at each time without regard to the animal
+they came from, although each animal gives several samples, and it
+under-covered every parameter. For the AUMC to infinity, PK’s intervals
+covered 67.2 to 81.4% (asymptotic) and 57.6 to 66.6%
+(bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>),
+against 78.0 to 90.4% for the delta method and 82.4 to 90.4% for PKNCA’s
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>.
+The under-coverage that PK’s help warns of for the MRT and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi></mrow></msub><annotation encoding="application/x-tex">V_{ss}</annotation></semantics></math>
+was confirmed: the asymptotic intervals covered 65.8 to 74.2% for the
+MRT (and so for the non-compartmental half-life) and 69.8 to 79.2% for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi></mrow></msub><annotation encoding="application/x-tex">V_{ss}</annotation></semantics></math>
+after an IV bolus, while the clearance, a function of the AUC alone,
+covered 87.2 to 91.8%. The cause is mostly the estimate rather than its
+standard error: the MRT of the mean profile was biased by -19.1 to -9.8%
+(PK) and -19.8 to -9.1% (PKNCA), because the AUMC to infinity is
+underestimated, and PKNCA’s percentile bootstrap of the MRT covered no
+better (62.4 to 77.2%). With BLQ samples, every batch data set that had
+any (74 to 87% of each scenario) went to PK with them omitted. Dropping
+the lowest late concentrations biased PK’s AUC to infinity high (median
+2.9 to 11.5%), but its asymptotic interval still covered 88.3 to 95.8%,
+against 93.2 to 97.0% for the delta method.</p>
+<p><strong>PKNCA’s
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>.</strong>
+The
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+on the delta-method standard error covered about as well as the delta
+method without BLQ samples, but less well with BLQ samples and slow
+elimination (85.7 to 89.0% against 92.2 to 96.0% with three animals per
+time), and its intervals were wider. Over the number of animals per time
+(the first 500 data sets of each), it matched the delta method for the
+AUC to infinity without BLQ samples (89.4% and 86.4% with 4 and 100
+animals, against 90.0% and 83.0%), and it covered the AUMC to infinity
+better (84.4% and 44.6%, against 79.8% and 30.4%). But it keeps the same
+point estimate, and so the same bias: the AUMC to infinity was biased by
+-17.1% with 4 animals and -15.9% with 100 in both rows. Its better
+coverage comes from the interval, not from a better estimate. With 4
+animals per time it was 1.54 times as wide as the delta method’s; with
+100 it was about as wide (1.05 times), but its asymmetric quantiles
+moved it up toward the truth, so the share of intervals entirely below
+the truth fell from 69.6% to 55.4%. An interval that widens or moves
+around a biased estimate is not a better method for it, so the
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+is not adopted; the bias of the estimate, which limits every interval
+with many animals, is the thing to reduce.</p>
+<p><strong>Treatments of BLQ samples.</strong> With fast elimination,
+the treatment hardly mattered: every imputation covered 93.7 to 96.9%,
+as zero substitution did (94.9 to 96.4%). With slow elimination,
+imputing the BLQ samples reduced the bias of zero substitution (median
+-6.0 to -4.0%): ROS most (-1.6 to -0.6%), then kernel imputation (-3.2
+to -2.1%), half the LLOQ (-3.7 to -2.7%), and the censored likelihood
+(-4.3 to -2.9%). But the imputed values also narrowed the intervals, so
+coverage fell by a few points (zero 91.0 to 94.3%, kernel 89.6 to 92.3%,
+ROS 88.0 to 91.4%). The direct method under-covered (81.3 to 94.6%),
+most in the batch design (81.3 to 89.5%), whose correlation between
+times it ignores, as Barnett et al. found with correlated samples in
+complete designs. The additive two-step method imputed a negative
+concentration in 7 to 40% of the data sets. ROS and the likelihood
+methods fell back to half the LLOQ at some time in 7 to 17% of the data
+sets, because a time had fewer than two measured samples; kernel
+imputation, which needs one, fell back in 0.3 to 2.7%. For the AUC to
+the last time in complete designs, Barnett et al. recommended kernel
+imputation; for the sparse AUC to infinity here, it removed about half
+of the bias with slow elimination at the cost of a point or two of
+coverage. None of the treatments gave both less bias and better coverage
+than zero substitution, and neither did the Tobit half-life.</p>
 </div>
 </div>
 <div class="section level2">
@@ -4869,8 +7019,7 @@ animals with high concentrations. The second study compared the two for
 the AUClast, AUCinf, Cmax
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>C</mi><mn>0</mn></msub><annotation encoding="application/x-tex">C_0</annotation></semantics></math>
 for IV bolus), AUMClast, AUMCinf, and half-life, using the same design
-with 2,000 replicates per scenario
-(<code>data-raw/sparse_mean_type_simulation.R</code>).</p>
+with 2,000 replicates per scenario.</p>
 <p>For each replicate, both mean profiles were formed, and
 <code><a href="../reference/pk.nca.html">pk.nca()</a></code> calculated the parameters from each with the
 linear trapezoidal rule (imputing zero at time 0 for oral dosing and
@@ -5190,8 +7339,35 @@ bootstrap was. The Tobit fit of the mean profile, which uses the LLOQs,
 gave nearly the same results as the log-linear fit. Neither Tobit fit
 removed the bias of the sparse estimate with BLQ samples, which comes
 mostly from counting BLQ samples as zero in the late means and from the
-mean profile ending earlier; estimating those means with the censoring
-taken into account would be the place to reduce it.</p>
+mean profile ending earlier. Estimating those means with the censoring
+taken into account, by the imputations and censored likelihoods that
+Barnett et al. (2021) compared, removed part of that bias with slow
+elimination, but the imputed values also narrowed the intervals, so none
+covered better than zero substitution, and the direct censored
+likelihood, which treats the times as independent, under-covered.</p>
+<p>Against the published estimators for these designs, the delta method
+held up best with three or four animals per time. The estimator of
+Wolfsegger and Jaki (2005) avoids the covariance of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>λ</mi><mo accent="true">̂</mo></mover><mi>z</mi></msub><annotation encoding="application/x-tex">\hat{\lambda}_z</annotation></semantics></math>
+with the trapezoidal sum by fitting
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>λ</mi><mo accent="true">̂</mo></mover><mi>z</mi></msub><annotation encoding="application/x-tex">\hat{\lambda}_z</annotation></semantics></math>
+only after it; with few animals, its bias corrections made it unstable
+and its
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+intervals about twice as wide. The estimators of the PK package include
+the covariance of each time’s mean with its mean log concentration and
+covered a few points less than the delta method without BLQ samples.
+Neither published estimator has a rule for BLQ samples: the 2005
+estimator broke down with any BLQ samples, and PK’s with BLQ samples and
+slow elimination, where PKNCA’s rule of ending the mean profile at a
+time with more than half of its samples BLQ kept the delta method near
+nominal. In the batch design, PK’s
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>,
+which resamples concentrations rather than animals, under-covered every
+parameter, and its MRT and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi></mrow></msub><annotation encoding="application/x-tex">V_{ss}</annotation></semantics></math>
+intervals under-covered as its help warns, mostly because the MRT of the
+mean profile is itself biased.</p>
 <p>Limitations remain. The delta method conditions on the selected
 half-life points, so the uncertainty of the automatic point selection is
 not included; it is a first-order approximation, which is least accurate
@@ -5204,6 +7380,86 @@ monoexponential, so the extrapolation
 is itself biased for the population mean curve, which is part of why the
 AUMC to infinity is underestimated. Where the extrapolated area is
 large, sampling longer remains the better remedy.</p>
+<div class="section level3">
+<h3 id="extensions-beyond-the-published-methods">Extensions beyond the published methods<a class="anchor" aria-label="anchor" href="#extensions-beyond-the-published-methods"></a>
+</h3>
+<p>PKNCA has these, which the published methods compared here do
+not:</p>
+<ul>
+<li>
+<strong>The covariance of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>λ</mi><mo accent="true">̂</mo></mover><mi>z</mi></msub><annotation encoding="application/x-tex">\hat{\lambda}_z</annotation></semantics></math>
+with every mean, in any design.</strong> The delta method takes it from
+the covariance of the means (Holder’s, for batch and complete designs),
+which answers the question Wolfsegger and Jaki (2005) left open. Their
+later estimators (PK) include the covariance of each time’s mean with
+its own mean log concentration.</li>
+<li>
+<strong>The uncertainty of the back-extrapolated
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>C</mi><mn>0</mn></msub><annotation encoding="application/x-tex">C_0</annotation></semantics></math></strong>
+after an IV bolus. PK and the 2005 estimator start the AUC at the first
+sample.</li>
+<li>
+<strong><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
+from the log arithmetic means at PKNCA’s automatic choice of half-life
+points</strong>, the same
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
+as the point estimate, rather than from the mean log concentrations of a
+fixed number of last times, and Satterthwaite degrees of freedom for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+intervals.</li>
+<li>
+<strong>A rule for BLQ samples:</strong> a time with more than half
+of its samples BLQ ends the mean profile, and the Tobit half-life
+carries the LLOQ through the mean profile. The published estimators take
+the logarithm of every sample.</li>
+<li><strong>An evaluation of arithmetic and geometric mean
+profiles.</strong></li>
+<li>
+<strong>A stratified bootstrap of whole animals</strong>
+(<code><a href="../reference/sparse_bootstrap.html">sparse_bootstrap()</a></code>) for any parameter.</li>
+</ul>
+<p>The published methods have these, which PKNCA does not adopt, for the
+reasons the results give:</p>
+<ul>
+<li>
+<strong>Standard errors of the MRT, clearance,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi></mrow></msub><annotation encoding="application/x-tex">V_{ss}</annotation></semantics></math>,
+and non-compartmental half-life</strong> (PK). PKNCA gives standard
+errors only for the AUC and AUMC. PK’s intervals for the MRT and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>s</mi><mi>s</mi></mrow></msub><annotation encoding="application/x-tex">V_{ss}</annotation></semantics></math>
+under-covered in the batch design (65.8 to 74.2% for the MRT without BLQ
+samples), mostly from the bias of the MRT estimate, which a standard
+error cannot fix.</li>
+<li>
+<strong><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\lambda_z</annotation></semantics></math>
+fit after the trapezoidal sum, with a bias correction</strong>
+(Wolfsegger and Jaki 2005): as accurate as PKNCA’s estimate with many
+animals, but unstable with three or four, and its intervals about twice
+as wide.</li>
+<li>
+<strong>Bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+intervals</strong> (both papers): on PKNCA’s delta-method standard
+error, the
+bootstrap-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+covered the AUMC better than the delta method, but not the AUC, and
+covered the AUC worse with BLQ samples. It keeps the same point estimate
+and so the same bias (-17.1% for the AUMC with 4 animals per time, in
+both); its gain in coverage (79.8% to 84.4%) comes from an interval 1.54
+times as wide, and with many animals from one shifted around the same
+biased estimate, which is not a better method.</li>
+<li>
+<strong>Imputation of BLQ samples</strong> (Barnett et al. 2021):
+ROS and kernel imputation reduced the bias with slow elimination, but
+none covered better than zero substitution, and each needs measured
+samples at the time, which three or four animals do not always
+give.</li>
+<li>
+<strong>The full likelihood over all times</strong> (Barnett et
+al. 2021), which needs the within-animal covariance of every pair of
+times and so cannot apply with one sample per animal.</li>
+</ul>
+</div>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
@@ -5224,6 +7480,13 @@ Biopharmaceutical Research. 2009;1(2):176-184. <a href="doi:10.1198/sbr.2009.002
 <p>Jaki T, Wolfsegger MJ. Non-compartmental estimation of
 pharmacokinetic parameters for flexible sampling designs. Statistics in
 Medicine. 2012;31(11-12):1059-1073. <a href="doi:10.1002/sim.4386" class="uri">doi:10.1002/sim.4386</a></p>
+<p>Jaki T, Wolfsegger MJ. Estimation of pharmacokinetic parameters with
+the R package PK. Pharmaceutical Statistics. 2011;10(3):284-288. <a href="doi:10.1002/pst.449" class="uri">doi:10.1002/pst.449</a></p>
+<p>Jaki T, Wolfsegger MJ. PK: Basic non-compartmental pharmacokinetics.
+R package version 1.3-6. <a href="https://CRAN.R-project.org/package=PK" class="external-link uri">https://CRAN.R-project.org/package=PK</a></p>
+<p>Nassiri V, Barnett H, Geys H, Jacobs T, Jaki T. BLOQ: Methods to
+impute and analyze data with BLOQ observations. R package version 0.1-2.
+<a href="https://CRAN.R-project.org/package=BLOQ" class="external-link uri">https://CRAN.R-project.org/package=BLOQ</a></p>
 <p>Nedelman JR, Gibiansky E, Lau DTW. Applying Bailer’s method for AUC
 confidence intervals to sparse sampling. Pharmaceutical Research.
 1995;12(1):124-128.</p>
@@ -5233,16 +7496,20 @@ applied to pharmacokinetics. Journal of Biopharmaceutical Statistics.
 <p>Shen M, Machado SG. Bioequivalence evaluation of sparse sampling
 pharmacokinetics data using bootstrap resampling method. Journal of
 Biopharmaceutical Statistics. 2017;27(2):257-264. <a href="doi:10.1080/10543406.2016.1265543" class="uri">doi:10.1080/10543406.2016.1265543</a></p>
+<p>Takemoto S, Yamaoka K, Nishikawa M, Takakura Y. Histogram analysis of
+pharmacokinetic parameters by bootstrap resampling from one-point
+sampling data in animal experiments. Drug Metabolism and
+Pharmacokinetics. 2006;21(6):458-464. <a href="doi:10.2133/dmpk.21.458" class="uri">doi:10.2133/dmpk.21.458</a></p>
+<p>Tardivon C, Loingeville F, Donnelly M, Feng K, Sun W, Sun G, Grosser
+S, Zhao L, Fang L, Mentré F, Bertrand J. Evaluation of model-based
+bioequivalence approach for single sample pharmacokinetic studies. CPT:
+Pharmacometrics &amp; Systems Pharmacology. 2023;12(7):904-915. <a href="doi:10.1002/psp4.12960" class="uri">doi:10.1002/psp4.12960</a></p>
 <p>Wolfsegger MJ, Jaki T. Estimation of AUC from 0 to infinity in serial
 sacrifice designs. Journal of Pharmacokinetics and Pharmacodynamics.
 2005;32(5-6):757-766. <a href="doi:10.1007/s10928-005-0044-0" class="uri">doi:10.1007/s10928-005-0044-0</a></p>
 <p>Wolfsegger MJ, Jaki T. Non-compartmental estimation of
 pharmacokinetic parameters in serial sampling designs. Journal of
 Pharmacokinetics and Pharmacodynamics. 2009;36(5):479-494. <a href="doi:10.1007/s10928-009-9133-9" class="uri">doi:10.1007/s10928-009-9133-9</a></p>
-<p>Takemoto S, Yamaoka K, Nishikawa M, Takakura Y. Histogram analysis of
-pharmacokinetic parameters by bootstrap resampling from one-point
-sampling data in animal experiments. Drug Metabolism and
-Pharmacokinetics. 2006;21(6):458-464. <a href="doi:10.2133/dmpk.21.458" class="uri">doi:10.2133/dmpk.21.458</a></p>
 <p>Yuan J. Estimation of variance for AUC in animal studies. Journal of
 Pharmaceutical Sciences. 1993;82(7):761-763. <a href="doi:10.1002/jps.2600820718" class="uri">doi:10.1002/jps.2600820718</a></p>
 </div>

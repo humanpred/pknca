@@ -20,7 +20,11 @@ For sparse sampling, where each animal gives one or a few samples:
 - **Treat the AUMC, and the MRT and Vss that come from it, with
   caution.** The AUMC to infinity was biased low in most scenarios, and
   its confidence intervals under-covered in every scenario, even with
-  the delta method (79 to 92%), most when elimination was slow.
+  the delta method (79 to 92%), most when elimination was slow. PKNCA
+  gives no standard error for the MRT or $`V_{ss}`$; the PK package’s
+  intervals for them under-covered in the batch design (65.8 to 74.2%
+  for the MRT), as its help warns, because the MRT of the mean profile
+  is itself biased.
 - **The half-life of the mean profile is not the typical animal’s
   half-life.** It was too long when the terminal phase was well sampled
   (by up to 11%) and too short when the profile was cut short by BLQ
@@ -45,13 +49,31 @@ For sparse sampling, where each animal gives one or a few samples:
   bootstrap for parameters and comparisons that have none, such as Cmax
   and ratios between groups. With 20 or more animals per time, its
   standard error was accurate and its intervals matched the delta
-  method’s.
+  method’s. A bootstrap-$`t`$ on the delta-method standard error covered
+  the AUMC better than the delta method, but not the AUC, and it was not
+  adopted: it keeps the same, biased estimate, and its gain comes from a
+  wider or shifted interval around it.
 - **With many animals, the bias of the sparse estimate dominates.** BLQ
   samples and the extrapolation of the mean profile biased the AUC to
   infinity low (by about 7% with BLQ samples here), whatever the number
   of animals and whichever half-life was used, so with many animals
   every confidence interval missed the truth more often than its nominal
   level.
+- **The published intervals for these designs did not cover better with
+  few animals.** With three animals per time in serial-sacrifice
+  designs, the delta method covered 91.5 to 97.0%. The bootstrap-$`t`$
+  of Wolfsegger and Jaki (2005) covered about as well without BLQ
+  samples, but with intervals about twice as wide from an unstable
+  estimate. Both it and the PK package take the logarithm of every
+  sample, and they broke down with BLQ samples: with slow elimination,
+  PK’s asymptotic interval covered 38 to 44% and the 2005
+  bootstrap-$`t`$ 30 to 39%.
+- **Imputing BLQ samples was evaluated and not adopted.** The treatments
+  that Barnett et al. (2021) compared, applied at each time, reduced the
+  bias of the AUC to infinity with slow elimination (kernel imputation
+  -3.2 to -2.1%, against -6.0 to -4.0% for zero), but none covered
+  better than zero substitution, and the direct censored likelihood
+  under-covered.
 - **The Tobit half-life was evaluated with BLQ samples and not adopted
   for the sparse AUC.** The Tobit fit of the mean profile
   (`hl_method = "tobit"`, with the LLOQ carried through the mean
@@ -91,10 +113,10 @@ Jaki and Wolfsegger (2012) extended the serial-sampling parameters of
 Wolfsegger and Jaki (2009), the AUC and AUMC to infinity, MRT,
 half-life, clearance, and $`V_{ss}`$ after an IV bolus, to those
 designs, with asymptotic and bootstrap-$`t`$ intervals, as implemented
-in the R package PK. Barnett, Geys, Jacobs, and Jaki (2021) compared
-eight treatments of samples below the limit of quantification in the
-AUC, from substitution to censored maximum likelihood and kernel-density
-imputation.
+in the R package PK (Jaki and Wolfsegger 2011). Barnett, Geys, Jacobs,
+and Jaki (2021) compared eight treatments of samples below the limit of
+quantification in the AUC, from substitution to censored maximum
+likelihood and kernel-density imputation.
 
 In practice, $`\lambda_z`$ is estimated from the same data, so its
 uncertainty adds to that of the AUC to infinity. This vignette describes
@@ -103,8 +125,10 @@ standard errors and degrees of freedom, gives a delta-method extension
 of Yuan’s method that includes the uncertainty in $`\lambda_z`$ and its
 covariance with the means (the covariance Wolfsegger and Jaki left
 open), extends both to IV bolus dosing, and compares the methods in a
-simulation-estimation study. A second study compares arithmetic and
-geometric mean profiles.
+simulation-estimation study, with the estimators of Wolfsegger and Jaki
+(2005) and of the PK package, a bootstrap-$`t`$ interval, and the
+treatments of BLQ samples that Barnett et al. (2021) compared. A second
+study compares arithmetic and geometric mean profiles.
 
 ## The sparse AUC to the last measurement
 
@@ -302,12 +326,14 @@ below compares both.
 
 ### Design
 
-Both studies in this vignette share one design
-(`data-raw/sparse_simulation_design.R` in the PKNCA source).
-Concentrations come from one- and two-compartment models (pmxTools)
-after a dose of 100, given orally or as an IV bolus, with log-normal
-between-animal variability (30% on each structural parameter) and a
-multiplicative residual error (15%) with mean 1:
+Every study in this vignette shares one design. The simulations are a
+targets pipeline in `data-raw/sparse-simulation/` of the PKNCA source;
+its README says how to run it, how long it takes, and how to add a
+scenario or an estimator. Concentrations come from one- and
+two-compartment models (pmxTools) after a dose of 100, given orally or
+as an IV bolus, with log-normal between-animal variability (30% on each
+structural parameter) and a multiplicative residual error (15%) with
+mean 1:
 
 - **One compartment:** $`V`$ 10, $`k_e`$ 0.15/hr (fast elimination,
   half-life 4.6 hr) or 0.07/hr (slow, 9.9 hr), and oral $`k_a`$ 5/hr
@@ -347,8 +373,7 @@ does, and three standard errors were calculated:
   with that $`\lambda_z`$ in the extrapolation and its variance added to
   Yuan’s.
 
-The simulation is in `data-raw/sparse_aucinf_simulation.R` in the PKNCA
-source, which was run with PKNCA 0.12.1.9002 and pmxTools 1.5 (R version
+This study was run with PKNCA 0.12.1.9002 and pmxTools 1.5 (R version
 4.6.1 (2026-06-24), 2026-10-07); every replicate has its own seed, so
 the results can be reproduced.
 
@@ -519,45 +544,46 @@ include these) is shown for comparison.
 Published uses of the bootstrap had either a few animals per time (three
 mice in Takemoto et al. 2006, which compared only the means and standard
 deviations with Bailer’s) or many (about 88 subjects per time and
-treatment in the bioequivalence study of Shen and Machado 2017). To see
-how the number of animals per time changes the comparison, the
-two-compartment, oral, serial-sacrifice design with slow elimination was
-simulated with 4, 6, 10, 20, 50, 100 animals per time, without and with
-BLQ samples (2,000 data sets each, 200 bootstrap replicates;
-`data-raw/sparse_bootstrap_n_profile.R`). The data seeds do not depend
-on the number of animals, so 4 animals per time reproduces the data sets
-above. The bias is that of the point estimate, which all of the methods
-share.
+treatment in the bioequivalence study of Shen and Machado 2017), and
+Tardivon et al. (2023) compared it with a model-based test for
+single-sample bioequivalence studies, but not with an analytical
+standard error. To see how the number of animals per time changes the
+comparison, the two-compartment, oral, serial-sacrifice design with slow
+elimination was simulated with 4, 6, 10, 20, 50, 100 animals per time,
+without and with BLQ samples (2,000 data sets each, 200 bootstrap
+replicates). The data seeds do not depend on the number of animals, so 4
+animals per time reproduces the data sets above. The bias is that of the
+point estimate, which all of the methods share.
 
-| BLQ | Animals per time | Coverage percentile | Coverage boot. SE | Coverage Yuan | Coverage delta | CI width percentile | CI width delta | Bias (%) |
-|:---|---:|---:|---:|---:|---:|---:|---:|---:|
-| none | 4 | 81.8 | 82.9 | 83.9 | 89.9 | 33 | 49 | -2.3 |
-| none | 6 | 84.9 | 85.3 | 81.4 | 90.4 | 30 | 38 | -2.4 |
-| none | 10 | 87.6 | 87.8 | 77.7 | 89.8 | 25 | 29 | -2.2 |
-| none | 20 | 89.8 | 89.6 | 79.8 | 90.0 | 19 | 20 | -1.9 |
-| none | 50 | 89.8 | 88.9 | 74.2 | 89.1 | 12 | 13 | -1.8 |
-| none | 100 | 86.3 | 85.9 | 69.4 | 85.6 | 9 | 9 | -1.7 |
-| moderate | 4 | 86.5 | 86.2 | 80.6 | 90.9 | 42 | 60 | -6.1 |
-| moderate | 6 | 89.2 | 87.5 | 76.2 | 88.2 | 38 | 44 | -6.7 |
-| moderate | 10 | 90.1 | 86.6 | 69.8 | 83.9 | 31 | 33 | -6.7 |
-| moderate | 20 | 84.3 | 78.8 | 55.8 | 74.3 | 22 | 22 | -6.8 |
-| moderate | 50 | 55.9 | 50.3 | 30.0 | 49.4 | 14 | 14 | -7.0 |
-| moderate | 100 | 29.2 | 26.0 | 11.2 | 25.8 | 10 | 10 | -6.9 |
+| BLQ | Animals per time | Coverage percentile | Coverage boot. SE | Coverage Yuan | Coverage delta | Coverage boot-t | CI width percentile | CI width delta | Bias (%) |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| none | 4 | 81.8 | 82.9 | 83.9 | 89.9 | 89.4 | 33 | 49 | -2.3 |
+| none | 6 | 84.9 | 85.3 | 81.4 | 90.4 | 89.2 | 30 | 38 | -2.4 |
+| none | 10 | 87.6 | 87.8 | 77.7 | 89.8 | 89.6 | 25 | 29 | -2.2 |
+| none | 20 | 89.8 | 89.6 | 79.8 | 90.0 | 90.2 | 19 | 20 | -1.9 |
+| none | 50 | 89.8 | 88.9 | 74.2 | 89.1 | 91.4 | 12 | 13 | -1.8 |
+| none | 100 | 86.3 | 85.9 | 69.4 | 85.6 | 86.4 | 9 | 9 | -1.7 |
+| moderate | 4 | 86.5 | 86.2 | 80.6 | 90.9 | 82.4 | 42 | 60 | -6.1 |
+| moderate | 6 | 89.2 | 87.5 | 76.2 | 88.2 | 84.0 | 38 | 44 | -6.7 |
+| moderate | 10 | 90.1 | 86.6 | 69.8 | 83.9 | 82.4 | 31 | 33 | -6.7 |
+| moderate | 20 | 84.3 | 78.8 | 55.8 | 74.3 | 73.0 | 22 | 22 | -6.8 |
+| moderate | 50 | 55.9 | 50.3 | 30.0 | 49.4 | 52.4 | 14 | 14 | -7.0 |
+| moderate | 100 | 29.2 | 26.0 | 11.2 | 25.8 | 31.2 | 10 | 10 | -6.9 |
 
-| BLQ | Animals per time | Coverage percentile | Coverage boot. SE | Coverage Yuan | Coverage delta | CI width percentile | CI width delta | Bias (%) |
-|:---|---:|---:|---:|---:|---:|---:|---:|---:|
-| none | 4 | 74.3 | 70.5 | 62.9 | 79.8 | 89 | 135 | -18.6 |
-| none | 6 | 75.8 | 71.9 | 56.8 | 77.6 | 83 | 100 | -18.5 |
-| none | 10 | 77.0 | 72.2 | 48.9 | 73.6 | 68 | 75 | -17.3 |
-| none | 20 | 74.1 | 66.8 | 39.0 | 66.6 | 51 | 51 | -16.7 |
-| none | 50 | 59.0 | 52.5 | 21.0 | 51.8 | 33 | 33 | -16.1 |
-| none | 100 | 37.1 | 32.6 | 8.7 | 30.6 | 23 | 23 | -15.9 |
-| moderate | 4 | 80.6 | 77.6 | 60.5 | 81.3 | 112 | 154 | -29.1 |
-| moderate | 6 | 81.7 | 75.8 | 48.0 | 72.8 | 97 | 108 | -29.4 |
-| moderate | 10 | 78.8 | 71.0 | 37.9 | 63.1 | 80 | 79 | -29.8 |
-| moderate | 20 | 65.5 | 55.2 | 20.9 | 47.0 | 57 | 54 | -29.4 |
-| moderate | 50 | 24.6 | 18.0 | 3.9 | 16.2 | 34 | 33 | -30.0 |
-| moderate | 100 | 3.8 | 2.4 | 0.1 | 2.1 | 24 | 23 | -29.5 |
+| BLQ | Animals per time | Coverage percentile | Coverage boot. SE | Coverage Yuan | Coverage delta | Coverage boot-t | CI width percentile | CI width delta | Bias (%) |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| none | 4 | 74.3 | 70.5 | 62.9 | 79.8 | 84.4 | 89 | 135 | -18.6 |
+| none | 6 | 75.8 | 71.9 | 56.8 | 77.6 | 83.0 | 83 | 100 | -18.5 |
+| none | 10 | 77.0 | 72.2 | 48.9 | 73.6 | 84.0 | 68 | 75 | -17.3 |
+| none | 20 | 74.1 | 66.8 | 39.0 | 66.6 | 76.8 | 51 | 51 | -16.7 |
+| none | 50 | 59.0 | 52.5 | 21.0 | 51.8 | 63.8 | 33 | 33 | -16.1 |
+| none | 100 | 37.1 | 32.6 | 8.7 | 30.6 | 44.6 | 23 | 23 | -15.9 |
+| moderate | 4 | 80.6 | 77.6 | 60.5 | 81.3 | 74.2 | 112 | 154 | -29.1 |
+| moderate | 6 | 81.7 | 75.8 | 48.0 | 72.8 | 71.4 | 97 | 108 | -29.4 |
+| moderate | 10 | 78.8 | 71.0 | 37.9 | 63.1 | 68.6 | 80 | 79 | -29.8 |
+| moderate | 20 | 65.5 | 55.2 | 20.9 | 47.0 | 53.6 | 57 | 54 | -29.4 |
+| moderate | 50 | 24.6 | 18.0 | 3.9 | 16.2 | 23.2 | 34 | 33 | -30.0 |
+| moderate | 100 | 3.8 | 2.4 | 0.1 | 2.1 | 6.0 | 24 | 23 | -29.5 |
 
 ### Results: the Tobit half-life with BLQ samples
 
@@ -578,7 +604,7 @@ Yuan’s for the Tobit fit of the mean profile, which has no standard
 error for $`\lambda_z`$; Yuan’s variance plus that of $`\lambda_z`$ for
 the Tobit fit of the individual samples; and, for each, the bootstrap
 percentile interval (200 replicates, each refitting its own
-$`\lambda_z`$; `data-raw/sparse_tobit_simulation.R`).
+$`\lambda_z`$).
 
 Coverage (%) of the 95% intervals for the AUC to infinity, with four
 animals per time (three per batch):
@@ -766,6 +792,285 @@ root mean squared error (RMSE), all relative to the truth (%).
 | 2-cmt | oral | batch | moderate | slow | -10.0 | -16.4 | 33.9 | 31.0 | 471.3 | 74.6 |
 | 2-cmt | IV bolus | batch | moderate | slow | -17.3 | -17.1 | 34.0 | 31.1 | 54.0 | 52.6 |
 
+### Results: Wolfsegger and Jaki (2005) and the PK package
+
+Wolfsegger and Jaki (2005) estimated the AUC to infinity in serial
+sacrifice designs as the trapezoidal sum to a time $`t_K`$ plus
+$`\bar{y}_K/\hat{\lambda}_z`$, with $`\hat{\lambda}_z`$ fit to the
+bias-corrected log means of the times after $`t_K`$, so that the two
+parts are independent, and a bias correction for the extrapolation. They
+gave an asymptotic interval and a bootstrap-$`t`$ interval (1000
+replicates, stratified by time) on its variance, and they left open the
+covariance between the trapezoidal AUC and $`\hat{\lambda}_z`$ when the
+same samples serve both, which is what PKNCA’s delta method includes. No
+package implements the 2005 estimator, so it was written from the paper
+(“WJ”), with $`\hat{\lambda}_z`$ from the last three times as in their
+simulation. The PK package implements the later estimator of Wolfsegger
+and Jaki (2009) for serial sacrifice designs and of Jaki and Wolfsegger
+(2012) for batch designs (`PK::nca()`): the trapezoidal sum to the last
+time plus the extrapolation from the last mean, with $`\lambda_z`$ fit
+to the mean log concentrations of the last 3 times (`n.tail`), a
+variance that includes the covariance of each time’s mean with its mean
+log concentration, and asymptotic (“PK z”) and bootstrap-$`t`$ (“PK
+boot-t”) intervals. PKNCA’s intervals were Yuan’s, the delta method, and
+a bootstrap-$`t`$ interval on the delta-method standard error (“PKNCA
+boot-t”): the 2005 construction applied to PKNCA’s estimator, with
+[`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md)
+replicates (200, each with its own half-life fit and delta-method
+standard error).
+
+All of them were run on the serial-sacrifice scenarios with three and
+four animals per time (the first 500 data sets of each; with four
+animals, those of the standard error study), with 1000 and 1000
+bootstrap replicates for PK’s and WJ’s bootstrap-$`t`$. Both published
+estimators start the AUC at the first time they are given: for oral
+dosing they were given the known zero at time 0, and for IV bolus
+dosing, which neither back-extrapolates, their AUC starts at the first
+sample (5 minutes), which loses the area before it. Both take the
+logarithm of every sample in the tail; a BLQ sample, reported as zero,
+was replaced by $`10^{-256}`$ in the logarithms as `PK::nca()` does,
+which violates their assumption of a constant coefficient of variation
+in the tail. They were run anyway, so the BLQ scenarios show what
+happens when that assumption fails.
+
+Coverage, here and below, is among the data sets for which the interval
+could be calculated. Without BLQ samples, 0.0 to 0.8% of the data sets
+failed, depending on the interval and scenario. With BLQ samples, the
+2005 estimator failed (no positive $`\hat{\lambda}_z`$) in 0.4 to 6.2%
+of them and PKNCA’s estimate (no half-life) in 0.0 to 4.2%. Counting a
+failure as a miss would lower a coverage in the serial-sacrifice tables
+by at most 4.0 points (the result file has both).
+
+Coverage (%) of the 95% intervals for the AUC to infinity with three
+animals per time:
+
+| Model | Route | BLQ | Elimination | Yuan | Delta | PKNCA boot-t | PK z | PK boot-t | WJ z | WJ boot-t |
+|:---|:---|:---|:---|---:|---:|---:|---:|---:|---:|---:|
+| 1-cmt | oral | none | fast | 94.6 | 95.8 | 94.8 | 90.2 | 95.0 | 87.8 | 93.0 |
+| 1-cmt | IV bolus | none | fast | 95.4 | 95.4 | 95.8 | 92.8 | 96.2 | 87.6 | 93.0 |
+| 1-cmt | oral | moderate | fast | 93.4 | 95.2 | 93.6 | 89.2 | 94.0 | 21.3 | 26.7 |
+| 1-cmt | IV bolus | moderate | fast | 94.2 | 95.0 | 94.0 | 86.2 | 94.2 | 22.9 | 25.0 |
+| 1-cmt | oral | none | slow | 87.1 | 92.1 | 89.1 | 86.2 | 85.0 | 82.7 | 92.2 |
+| 1-cmt | IV bolus | none | slow | 87.3 | 91.5 | 90.5 | 85.2 | 86.4 | 84.2 | 93.2 |
+| 1-cmt | oral | moderate | slow | 88.3 | 96.0 | 88.3 | 42.6 | 54.2 | 29.2 | 30.5 |
+| 1-cmt | IV bolus | moderate | slow | 88.9 | 94.1 | 85.7 | 43.6 | 58.0 | 29.7 | 30.4 |
+| 2-cmt | oral | none | fast | 94.8 | 95.2 | 95.0 | 91.4 | 94.4 | 91.4 | 94.0 |
+| 2-cmt | IV bolus | none | fast | 94.4 | 94.8 | 94.6 | 90.6 | 94.8 | 87.4 | 91.8 |
+| 2-cmt | oral | moderate | fast | 95.4 | 97.0 | 95.4 | 91.8 | 95.4 | 20.8 | 24.5 |
+| 2-cmt | IV bolus | moderate | fast | 94.4 | 96.4 | 95.2 | 89.2 | 94.0 | 23.6 | 23.6 |
+| 2-cmt | oral | none | slow | 88.2 | 91.8 | 91.8 | 87.4 | 88.0 | 89.6 | 95.4 |
+| 2-cmt | IV bolus | none | slow | 90.2 | 93.2 | 92.8 | 85.2 | 88.8 | 89.6 | 94.4 |
+| 2-cmt | oral | moderate | slow | 82.0 | 92.2 | 86.6 | 38.2 | 45.0 | 39.0 | 39.3 |
+| 2-cmt | IV bolus | moderate | slow | 85.0 | 92.8 | 89.0 | 41.2 | 48.2 | 35.4 | 36.5 |
+
+And with four animals per time (the data sets of the standard error
+study):
+
+| Model | Route | BLQ | Elimination | Yuan | Delta | PKNCA boot-t | PK z | PK boot-t | WJ z | WJ boot-t |
+|:---|:---|:---|:---|---:|---:|---:|---:|---:|---:|---:|
+| 1-cmt | oral | none | fast | 96.0 | 96.6 | 95.2 | 95.4 | 95.2 | 89.0 | 90.6 |
+| 1-cmt | IV bolus | none | fast | 95.8 | 96.4 | 94.8 | 92.8 | 94.4 | 86.2 | 87.8 |
+| 1-cmt | oral | moderate | fast | 96.0 | 97.2 | 96.8 | 92.6 | 94.8 | 12.8 | 13.8 |
+| 1-cmt | IV bolus | moderate | fast | 95.4 | 97.4 | 96.6 | 90.0 | 93.2 | 13.9 | 13.1 |
+| 1-cmt | oral | none | slow | 84.7 | 91.0 | 88.2 | 86.0 | 87.0 | 88.2 | 92.4 |
+| 1-cmt | IV bolus | none | slow | 87.0 | 90.4 | 90.2 | 87.2 | 85.2 | 87.6 | 92.4 |
+| 1-cmt | oral | moderate | slow | 79.9 | 92.4 | 80.5 | 30.6 | 35.2 | 23.1 | 22.7 |
+| 1-cmt | IV bolus | moderate | slow | 86.1 | 93.1 | 83.6 | 30.2 | 39.0 | 19.5 | 19.3 |
+| 2-cmt | oral | none | fast | 93.6 | 94.2 | 93.2 | 92.8 | 92.6 | 93.2 | 93.0 |
+| 2-cmt | IV bolus | none | fast | 94.8 | 96.2 | 93.0 | 94.8 | 94.6 | 91.6 | 90.4 |
+| 2-cmt | oral | moderate | fast | 94.6 | 95.8 | 96.2 | 92.2 | 94.4 | 18.0 | 17.6 |
+| 2-cmt | IV bolus | moderate | fast | 93.0 | 94.4 | 91.6 | 90.4 | 93.4 | 16.5 | 15.2 |
+| 2-cmt | oral | none | slow | 84.4 | 90.0 | 89.4 | 85.4 | 86.8 | 88.4 | 90.0 |
+| 2-cmt | IV bolus | none | slow | 84.8 | 91.8 | 89.2 | 82.2 | 86.0 | 89.6 | 91.6 |
+| 2-cmt | oral | moderate | slow | 78.0 | 91.2 | 82.4 | 30.8 | 34.2 | 27.9 | 27.1 |
+| 2-cmt | IV bolus | moderate | slow | 86.0 | 93.2 | 86.0 | 27.0 | 29.2 | 24.5 | 23.9 |
+
+Bias of the point estimates (mean, % of the truth) and median width of
+the intervals (% of the truth), with three animals per time:
+
+| Model | Route | BLQ | Elimination | Bias PKNCA | Bias PK | Bias WJ | Width delta | Width PKNCA boot-t | Width PK boot-t | Width WJ boot-t |
+|:---|:---|:---|:---|---:|---:|---:|---:|---:|---:|---:|
+| 1-cmt | oral | none | fast | 3.8 | 3.5 | -8.3 | 53 | 58 | 61 | 111 |
+| 1-cmt | IV bolus | none | fast | 3.0 | 1.9 | -74.3 | 57 | 63 | 63 | 149 |
+| 1-cmt | oral | moderate | fast | 4.0 | 0.7 | -46.5 | 58 | 68 | 58 | 51 |
+| 1-cmt | IV bolus | moderate | fast | 4.0 | 0.1 | -43.5 | 62 | 73 | 63 | 44 |
+| 1-cmt | oral | none | slow | 5.2 | 4.6 | -160.9 | 83 | 99 | 108 | 150 |
+| 1-cmt | IV bolus | none | slow | 2.5 | 4.3 | -72.0 | 75 | 94 | 100 | 183 |
+| 1-cmt | oral | moderate | slow | 16.0 | -11.4 | -245773.2 | 116 | 146 | 69 | 34 |
+| 1-cmt | IV bolus | moderate | slow | 5.3 | -19.2 | -74.5 | 105 | 135 | 71 | 27 |
+| 2-cmt | oral | none | fast | 4.0 | 3.8 | -6.6 | 40 | 42 | 42 | 74 |
+| 2-cmt | IV bolus | none | fast | 5.5 | 1.4 | -11.3 | 41 | 43 | 43 | 107 |
+| 2-cmt | oral | moderate | fast | 3.4 | 1.4 | -26.4 | 42 | 49 | 44 | 43 |
+| 2-cmt | IV bolus | moderate | fast | 5.0 | -0.5 | -30.1 | 42 | 49 | 44 | 39 |
+| 2-cmt | oral | none | slow | 0.2 | 1.5 | -22.2 | 69 | 91 | 96 | 137 |
+| 2-cmt | IV bolus | none | slow | 0.0 | 0.9 | -2554.9 | 60 | 72 | 95 | 161 |
+| 2-cmt | oral | moderate | slow | -1.2 | -12.0 | -29245.2 | 82 | 119 | 61 | 37 |
+| 2-cmt | IV bolus | moderate | slow | -0.2 | -8.4 | -68.2 | 75 | 110 | 63 | 30 |
+
+### Results: the PK package’s parameters in the batch design
+
+The PK package also gives intervals for the AUMC to infinity, the MRT,
+the non-compartmental half-life ($`\log(2)`$ times the MRT, so its
+coverage is the MRT’s), the clearance, and $`V_{ss}`$, and its help
+warns that the standard errors of the MRT and $`V_{ss}`$ in batch
+designs under-cover severely. PKNCA gives standard errors only for the
+AUC and AUMC; for other parameters it has the bootstrap. On the batch
+scenarios (four animals per batch, the first 500 data sets of each),
+PK’s intervals were compared with PKNCA’s delta method and
+bootstrap-$`t`$ (AUC and AUMC) and its percentile bootstrap (MRT, the
+ratio of the AUMC and AUC to infinity of each replicate). The true MRT
+is that of the population mean curve, the ratio of its AUMC and AUC;
+after oral dosing, it includes the mean absorption time, as both
+packages’ estimates do. In a batch design, `PK::nca()` cannot take a
+zero at a time where other samples are positive: after oral dosing it
+stops with an error, and after IV bolus dosing it replaces the resulting
+NaN variances with a placeholder ($`10^{-8}`$), which gives a standard
+error near zero. So every batch data set with BLQ samples was given to
+PK with them omitted, as it allows (the last column gives how often),
+and any interval whose standard error was PK’s placeholder counted as a
+failure. PK’s bootstrap resamples the concentrations at each time
+without regard to animal, while
+[`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md)
+resamples whole animals within each batch.
+
+Coverage (%) for the AUC to infinity:
+
+| Model | Route | BLQ | Elimination | Delta | PKNCA boot-t | PK z | PK boot-t | PK BLQ omitted (%) |
+|:---|:---|:---|:---|---:|---:|---:|---:|---:|
+| 1-cmt | oral | none | fast | 94.8 | 94.2 | 88.6 | 72.2 | 0 |
+| 1-cmt | IV bolus | none | fast | 96.8 | 95.8 | 91.4 | 78.0 | 0 |
+| 1-cmt | oral | moderate | fast | 94.8 | 94.2 | 94.2 | 65.5 | 84 |
+| 1-cmt | IV bolus | moderate | fast | 96.8 | 96.0 | 94.6 | 68.8 | 86 |
+| 1-cmt | oral | none | slow | 93.0 | 92.0 | 87.6 | 68.0 | 0 |
+| 1-cmt | IV bolus | none | slow | 90.6 | 89.6 | 84.4 | 63.6 | 0 |
+| 1-cmt | oral | moderate | slow | 93.7 | 83.8 | 92.4 | 51.4 | 76 |
+| 1-cmt | IV bolus | moderate | slow | 94.2 | 85.0 | 92.8 | 55.7 | 74 |
+| 2-cmt | oral | none | fast | 95.6 | 96.0 | 92.0 | 76.4 | 0 |
+| 2-cmt | IV bolus | none | fast | 94.8 | 93.4 | 91.6 | 76.6 | 0 |
+| 2-cmt | oral | moderate | fast | 97.0 | 96.4 | 91.6 | 63.5 | 82 |
+| 2-cmt | IV bolus | moderate | fast | 96.6 | 93.8 | 95.8 | 72.0 | 87 |
+| 2-cmt | oral | none | slow | 92.2 | 89.4 | 87.2 | 68.6 | 0 |
+| 2-cmt | IV bolus | none | slow | 92.6 | 90.4 | 83.4 | 68.6 | 0 |
+| 2-cmt | oral | moderate | slow | 93.2 | 86.4 | 88.3 | 54.3 | 74 |
+| 2-cmt | IV bolus | moderate | slow | 93.8 | 89.0 | 91.2 | 53.2 | 74 |
+
+For the AUMC to infinity:
+
+| Model | Route | BLQ | Elimination | Delta | PKNCA boot-t | PK z | PK boot-t | PK BLQ omitted (%) |
+|:---|:---|:---|:---|---:|---:|---:|---:|---:|
+| 1-cmt | oral | none | fast | 86.8 | 87.6 | 80.8 | 64.0 | 0 |
+| 1-cmt | IV bolus | none | fast | 90.4 | 90.4 | 81.4 | 66.6 | 0 |
+| 1-cmt | oral | moderate | fast | 91.8 | 90.4 | 91.2 | 55.9 | 84 |
+| 1-cmt | IV bolus | moderate | fast | 92.6 | 89.0 | 89.2 | 56.2 | 86 |
+| 1-cmt | oral | none | slow | 83.2 | 85.6 | 74.0 | 63.6 | 0 |
+| 1-cmt | IV bolus | none | slow | 81.2 | 82.4 | 72.6 | 57.6 | 0 |
+| 1-cmt | oral | moderate | slow | 85.6 | 73.3 | 88.5 | 47.1 | 76 |
+| 1-cmt | IV bolus | moderate | slow | 86.6 | 72.2 | 89.9 | 50.4 | 74 |
+| 2-cmt | oral | none | fast | 88.2 | 89.8 | 81.2 | 65.2 | 0 |
+| 2-cmt | IV bolus | none | fast | 87.2 | 89.6 | 78.2 | 64.0 | 0 |
+| 2-cmt | oral | moderate | fast | 87.6 | 90.6 | 92.8 | 54.5 | 82 |
+| 2-cmt | IV bolus | moderate | fast | 88.4 | 89.6 | 89.2 | 57.6 | 87 |
+| 2-cmt | oral | none | slow | 80.6 | 85.2 | 72.4 | 60.8 | 0 |
+| 2-cmt | IV bolus | none | slow | 78.0 | 84.0 | 67.2 | 62.0 | 0 |
+| 2-cmt | oral | moderate | slow | 80.2 | 72.2 | 88.5 | 56.3 | 74 |
+| 2-cmt | IV bolus | moderate | slow | 83.0 | 74.0 | 89.8 | 51.6 | 74 |
+
+For the MRT, which has no analytical standard error in PKNCA:
+
+| Model | Route | BLQ | Elimination | PKNCA percentile | PK z | PK boot-t | PK BLQ omitted (%) |
+|:---|:---|:---|:---|---:|---:|---:|---:|
+| 1-cmt | oral | none | fast | 65.2 | 65.8 | 56.0 | 0 |
+| 1-cmt | IV bolus | none | fast | 65.8 | 67.2 | 60.0 | 0 |
+| 1-cmt | oral | moderate | fast | 88.6 | 89.8 | 54.7 | 84 |
+| 1-cmt | IV bolus | moderate | fast | 86.6 | 88.0 | 52.6 | 86 |
+| 1-cmt | oral | none | slow | 77.2 | 74.2 | 67.4 | 0 |
+| 1-cmt | IV bolus | none | slow | 73.4 | 72.0 | 62.6 | 0 |
+| 1-cmt | oral | moderate | slow | 92.5 | 91.3 | 55.2 | 76 |
+| 1-cmt | IV bolus | moderate | slow | 90.0 | 92.0 | 58.0 | 74 |
+| 2-cmt | oral | none | fast | 65.6 | 68.2 | 59.0 | 0 |
+| 2-cmt | IV bolus | none | fast | 62.4 | 69.2 | 59.8 | 0 |
+| 2-cmt | oral | moderate | fast | 83.4 | 90.6 | 55.7 | 82 |
+| 2-cmt | IV bolus | moderate | fast | 76.2 | 88.2 | 54.0 | 87 |
+| 2-cmt | oral | none | slow | 72.4 | 72.4 | 65.4 | 0 |
+| 2-cmt | IV bolus | none | slow | 67.2 | 68.2 | 65.0 | 0 |
+| 2-cmt | oral | moderate | slow | 76.8 | 87.7 | 59.7 | 74 |
+| 2-cmt | IV bolus | moderate | slow | 78.8 | 89.4 | 57.6 | 74 |
+
+### Results: treatments of BLQ samples
+
+Barnett, Geys, Jacobs, and Jaki (2021) compared eight treatments of BLQ
+samples in the AUC to the last time and recommended kernel-density
+imputation. Their simulations used complete designs only (10 subjects
+sampled at each of six times); they noted that the methods extend to
+sparse designs, with the imputed values assigned to animals at random in
+serial designs and by the animals’ previous concentrations in batch
+designs. Their BLOQ package takes a subject-by-time matrix, so its
+per-time methods were applied to the samples at each time of each data
+set, and the imputed data went through PKNCA’s sparse AUC to infinity
+with the delta method: zero (PKNCA’s default), half the LLOQ, regression
+on order statistics on the log scale (ROS), kernel-density imputation,
+and censored maximum likelihood at each time followed by imputation of
+the expected order statistics (“CML impute”, their two-step method).
+Their direct method (“CML direct”) instead uses each time’s censored
+maximum-likelihood mean and its variance; here those means gave the AUC
+to infinity and its delta-method variance with the times independent,
+which the batch design violates, and a normal interval. The likelihood
+methods used BLOQ’s additive (normal) model: its multiplicative model
+fits base-10 logarithms but back-transforms with the natural
+exponential, which does not return the fitted mean. As BLOQ does, a time
+whose samples were all BLQ took half the LLOQ; ROS and the likelihood
+methods, which need two measured samples, did the same with fewer. Their
+full-likelihood method needs the within-animal covariance of every pair
+of times, which one sample per animal cannot give, so it was not run.
+The scenarios are those with BLQ samples (1,000 data sets each, the
+first of the standard error study). The last two columns come from the
+Tobit study on the same data sets (and, for the profile’s scenario, the
+next 1,000): Yuan’s interval with the Tobit half-life of the mean
+profile, and Yuan’s variance plus that of the individual-sample Tobit
+$`\lambda_z`$.
+
+Coverage (%) of the 95% intervals for the AUC to infinity:
+
+| Model | Route | Design | Elimination | Zero | LLOQ/2 | ROS | Kernel | CML impute | CML direct | Tobit mean | Tobit indiv. |
+|:---|:---|:---|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1-cmt | oral | serial | fast | 96.3 | 96.4 | 96.3 | 96.4 | 96.4 | 94.6 | 94.5 | 95.5 |
+| 1-cmt | IV bolus | serial | fast | 96.4 | 96.6 | 96.2 | 96.8 | 96.8 | 94.3 | 95.0 | 95.0 |
+| 1-cmt | oral | batch | fast | 95.5 | 96.5 | 96.5 | 96.6 | 96.7 | 85.2 | 94.9 | 95.2 |
+| 1-cmt | IV bolus | batch | fast | 96.2 | 95.8 | 95.9 | 95.9 | 96.2 | 87.1 | 94.7 | 94.7 |
+| 1-cmt | oral | serial | slow | 92.9 | 90.6 | 89.0 | 91.1 | 91.0 | 86.2 | 82.0 | 89.0 |
+| 1-cmt | IV bolus | serial | slow | 93.5 | 91.9 | 91.4 | 92.3 | 92.3 | 87.8 | 85.8 | 91.2 |
+| 1-cmt | oral | batch | slow | 94.3 | 91.6 | 90.3 | 92.1 | 91.7 | 81.3 | 87.2 | 92.2 |
+| 1-cmt | IV bolus | batch | slow | 93.8 | 90.7 | 90.2 | 91.2 | 90.9 | 83.8 | 88.8 | 91.5 |
+| 2-cmt | oral | serial | fast | 95.6 | 96.1 | 95.8 | 96.3 | 96.5 | 94.4 | 94.5 | 94.7 |
+| 2-cmt | IV bolus | serial | fast | 94.9 | 94.5 | 93.7 | 94.4 | 95.2 | 92.2 | 93.7 | 94.4 |
+| 2-cmt | oral | batch | fast | 96.4 | 96.7 | 96.1 | 96.7 | 96.9 | 89.5 | 95.3 | 96.0 |
+| 2-cmt | IV bolus | batch | fast | 95.8 | 95.8 | 95.6 | 95.8 | 96.2 | 88.1 | 95.4 | 95.5 |
+| 2-cmt | oral | serial | slow | 91.0 | 89.4 | 88.0 | 89.6 | 89.7 | 85.0 | 80.6 | 86.7 |
+| 2-cmt | IV bolus | serial | slow | 92.0 | 90.6 | 90.0 | 91.3 | 90.7 | 86.4 | 82.6 | 89.5 |
+| 2-cmt | oral | batch | slow | 93.4 | 91.7 | 89.5 | 91.7 | 91.6 | 83.4 | 84.8 | 89.5 |
+| 2-cmt | IV bolus | batch | slow | 93.6 | 91.9 | 90.3 | 92.1 | 91.9 | 85.5 | 86.3 | 90.4 |
+
+Median bias (% of the truth):
+
+| Model | Route | Design | Elimination | Zero | LLOQ/2 | ROS | Kernel | CML impute | CML direct | Tobit mean | Tobit indiv. |
+|:---|:---|:---|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1-cmt | oral | serial | fast | 2.7 | 3.2 | 3.6 | 3.3 | 2.0 | 1.8 | 2.1 | 1.9 |
+| 1-cmt | IV bolus | serial | fast | 3.0 | 3.4 | 3.7 | 3.4 | 2.5 | 2.4 | 2.4 | 2.1 |
+| 1-cmt | oral | batch | fast | 2.6 | 3.0 | 3.2 | 3.0 | 1.6 | 1.3 | 1.7 | 1.4 |
+| 1-cmt | IV bolus | batch | fast | 2.8 | 3.0 | 3.3 | 3.2 | 2.0 | 1.7 | 2.0 | 1.7 |
+| 1-cmt | oral | serial | slow | -6.0 | -3.7 | -1.6 | -3.2 | -4.3 | -4.9 | -6.6 | -5.8 |
+| 1-cmt | IV bolus | serial | slow | -6.0 | -3.6 | -1.4 | -2.9 | -3.8 | -4.4 | -6.3 | -5.7 |
+| 1-cmt | oral | batch | slow | -4.9 | -3.0 | -1.0 | -2.5 | -3.9 | -4.5 | -6.1 | -5.1 |
+| 1-cmt | IV bolus | batch | slow | -4.0 | -3.2 | -0.6 | -2.5 | -3.2 | -4.0 | -5.5 | -4.7 |
+| 2-cmt | oral | serial | fast | 1.9 | 2.7 | 2.9 | 2.7 | 2.0 | 1.9 | 1.9 | 1.7 |
+| 2-cmt | IV bolus | serial | fast | 4.0 | 4.6 | 4.8 | 4.6 | 3.9 | 3.6 | 4.0 | 3.6 |
+| 2-cmt | oral | batch | fast | 2.1 | 2.8 | 2.9 | 2.8 | 1.8 | 1.7 | 1.9 | 1.4 |
+| 2-cmt | IV bolus | batch | fast | 3.2 | 4.0 | 4.2 | 4.0 | 3.2 | 2.9 | 3.4 | 2.9 |
+| 2-cmt | oral | serial | slow | -5.7 | -3.7 | -1.4 | -3.2 | -3.5 | -3.9 | -6.2 | -5.5 |
+| 2-cmt | IV bolus | serial | slow | -5.3 | -2.9 | -1.2 | -2.4 | -3.1 | -3.5 | -5.3 | -4.9 |
+| 2-cmt | oral | batch | slow | -5.7 | -2.9 | -0.8 | -2.6 | -3.2 | -3.6 | -5.7 | -5.0 |
+| 2-cmt | IV bolus | batch | slow | -4.9 | -2.7 | -0.6 | -2.1 | -2.9 | -3.3 | -4.8 | -4.4 |
+
 ### Findings
 
 **Coverage of the AUC to infinity.** With fast elimination, when 3 to 7%
@@ -860,6 +1165,113 @@ comes from the late means, where BLQ samples count as zero, and from the
 mean profile ending earlier, when more than half of a time’s samples are
 BLQ.
 
+**Published estimators with three or four animals per time.** Without
+BLQ samples, no interval was best everywhere. With three animals per
+time, the delta method covered 91.5 to 95.8%, PKNCA’s bootstrap-$`t`$
+89.1 to 95.8%, PK’s asymptotic and bootstrap-$`t`$ intervals 85.2 to
+92.8% and 85.0 to 96.2%, and the 2005 estimator’s 82.7 to 91.4% and 91.8
+to 95.4%. With slow elimination, the 2005 bootstrap-$`t`$ came closest
+to nominal (92.2 to 95.4%, against 91.5 to 93.2% for the delta method),
+and it covered better than their asymptotic interval, as Wolfsegger and
+Jaki found. But it was about twice as wide (median 137 to 183% of the
+truth, against 60 to 83%), because its estimate was unstable: its median
+bias was -21.3 to -5.1%, against -3.0 to 5.3% for PKNCA’s estimate and
+-3.7 to 3.1% for PK’s. With 2,000 animals per time (20 data sets of each
+scenario without BLQ samples), the 2005 estimate was biased by 1.2 to
+2.6% with fast elimination, much as PKNCA’s was (2.6 to 4.6%), from the
+linear trapezoidal rule over a declining curve, and by -2.4 to -0.7%
+with slow elimination (PKNCA’s, -1.6 to -0.8%). So its large errors with
+three or four animals are those of small samples: its bias correction
+divides the variance of $`\hat{\lambda}_z`$ by $`\hat{\lambda}_z^3`$,
+its correction of the log means divides one noisy variance by a noisy
+squared mean, and the variability of the elimination rate here gives the
+late times a coefficient of variation far above the 5% to 20% of their
+simulation. Its construction also extrapolates from $`t_K`$, three times
+before the last, rather than from $`t_{last}`$, so more of the AUC rests
+on $`\hat{\lambda}_z`$. That is the price of keeping $`\hat{\lambda}_z`$
+independent of the trapezoidal sum; the delta method instead keeps every
+time in the sum and includes the covariance that Wolfsegger and Jaki
+(2005) left open.
+
+With BLQ samples, the published estimators broke down: a zero among the
+logarithms (taken as $`10^{-256}`$) drags the mean log concentration of
+the last time down and $`\hat{\lambda}_z`$ up. The 2005 estimator’s
+intervals covered 24 to 39% in every scenario with BLQ samples. PK’s
+intervals held up with fast elimination (86.2 to 91.8%, asymptotic),
+where little is extrapolated, but covered 38 to 44% (asymptotic) and 45
+to 58% (bootstrap-$`t`$) with slow elimination, while the delta method
+covered 92.2 to 97.0% with BLQ samples. Over every serial-sacrifice
+scenario with three animals per time, the delta method covered best,
+91.5 to 97.0%, against 85.7 to 95.8% for PKNCA’s bootstrap-$`t`$, 45.0
+to 96.2% for PK’s, and 23.6 to 95.4% for the 2005 estimator’s; with four
+animals per time, the delta method covered 90.0 to 97.4%.
+
+**The PK package in the batch design.** Without BLQ samples, PK’s
+asymptotic interval for the AUC to infinity covered 83.4 to 92.0% and
+its bootstrap-$`t`$ 63.6 to 78.0%, against 90.6 to 96.8% for the delta
+method and 89.4 to 96.0% for PKNCA’s bootstrap-$`t`$. PK’s
+bootstrap-$`t`$ resamples the concentrations at each time without regard
+to the animal they came from, although each animal gives several
+samples, and it under-covered every parameter. For the AUMC to infinity,
+PK’s intervals covered 67.2 to 81.4% (asymptotic) and 57.6 to 66.6%
+(bootstrap-$`t`$), against 78.0 to 90.4% for the delta method and 82.4
+to 90.4% for PKNCA’s bootstrap-$`t`$. The under-coverage that PK’s help
+warns of for the MRT and $`V_{ss}`$ was confirmed: the asymptotic
+intervals covered 65.8 to 74.2% for the MRT (and so for the
+non-compartmental half-life) and 69.8 to 79.2% for $`V_{ss}`$ after an
+IV bolus, while the clearance, a function of the AUC alone, covered 87.2
+to 91.8%. The cause is mostly the estimate rather than its standard
+error: the MRT of the mean profile was biased by -19.1 to -9.8% (PK) and
+-19.8 to -9.1% (PKNCA), because the AUMC to infinity is underestimated,
+and PKNCA’s percentile bootstrap of the MRT covered no better (62.4 to
+77.2%). With BLQ samples, every batch data set that had any (74 to 87%
+of each scenario) went to PK with them omitted. Dropping the lowest late
+concentrations biased PK’s AUC to infinity high (median 2.9 to 11.5%),
+but its asymptotic interval still covered 88.3 to 95.8%, against 93.2 to
+97.0% for the delta method.
+
+**PKNCA’s bootstrap-$`t`$.** The bootstrap-$`t`$ on the delta-method
+standard error covered about as well as the delta method without BLQ
+samples, but less well with BLQ samples and slow elimination (85.7 to
+89.0% against 92.2 to 96.0% with three animals per time), and its
+intervals were wider. Over the number of animals per time (the first 500
+data sets of each), it matched the delta method for the AUC to infinity
+without BLQ samples (89.4% and 86.4% with 4 and 100 animals, against
+90.0% and 83.0%), and it covered the AUMC to infinity better (84.4% and
+44.6%, against 79.8% and 30.4%). But it keeps the same point estimate,
+and so the same bias: the AUMC to infinity was biased by -17.1% with 4
+animals and -15.9% with 100 in both rows. Its better coverage comes from
+the interval, not from a better estimate. With 4 animals per time it was
+1.54 times as wide as the delta method’s; with 100 it was about as wide
+(1.05 times), but its asymmetric quantiles moved it up toward the truth,
+so the share of intervals entirely below the truth fell from 69.6% to
+55.4%. An interval that widens or moves around a biased estimate is not
+a better method for it, so the bootstrap-$`t`$ is not adopted; the bias
+of the estimate, which limits every interval with many animals, is the
+thing to reduce.
+
+**Treatments of BLQ samples.** With fast elimination, the treatment
+hardly mattered: every imputation covered 93.7 to 96.9%, as zero
+substitution did (94.9 to 96.4%). With slow elimination, imputing the
+BLQ samples reduced the bias of zero substitution (median -6.0 to
+-4.0%): ROS most (-1.6 to -0.6%), then kernel imputation (-3.2 to
+-2.1%), half the LLOQ (-3.7 to -2.7%), and the censored likelihood (-4.3
+to -2.9%). But the imputed values also narrowed the intervals, so
+coverage fell by a few points (zero 91.0 to 94.3%, kernel 89.6 to 92.3%,
+ROS 88.0 to 91.4%). The direct method under-covered (81.3 to 94.6%),
+most in the batch design (81.3 to 89.5%), whose correlation between
+times it ignores, as Barnett et al. found with correlated samples in
+complete designs. The additive two-step method imputed a negative
+concentration in 7 to 40% of the data sets. ROS and the likelihood
+methods fell back to half the LLOQ at some time in 7 to 17% of the data
+sets, because a time had fewer than two measured samples; kernel
+imputation, which needs one, fell back in 0.3 to 2.7%. For the AUC to
+the last time in complete designs, Barnett et al. recommended kernel
+imputation; for the sparse AUC to infinity here, it removed about half
+of the bias with slow elimination at the cost of a point or two of
+coverage. None of the treatments gave both less bias and better coverage
+than zero substitution, and neither did the Tobit half-life.
+
 ## Arithmetic or geometric mean profiles
 
 The sparse AUC uses the arithmetic mean at each time, whose profile is
@@ -867,8 +1279,7 @@ the population mean concentration curve. A geometric mean profile
 instead approximates the typical animal, and it may be less affected by
 animals with high concentrations. The second study compared the two for
 the AUClast, AUCinf, Cmax ($`C_0`$ for IV bolus), AUMClast, AUMCinf, and
-half-life, using the same design with 2,000 replicates per scenario
-(`data-raw/sparse_mean_type_simulation.R`).
+half-life, using the same design with 2,000 replicates per scenario.
 
 For each replicate, both mean profiles were formed, and
 [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
@@ -1051,8 +1462,30 @@ as every bootstrap was. The Tobit fit of the mean profile, which uses
 the LLOQs, gave nearly the same results as the log-linear fit. Neither
 Tobit fit removed the bias of the sparse estimate with BLQ samples,
 which comes mostly from counting BLQ samples as zero in the late means
-and from the mean profile ending earlier; estimating those means with
-the censoring taken into account would be the place to reduce it.
+and from the mean profile ending earlier. Estimating those means with
+the censoring taken into account, by the imputations and censored
+likelihoods that Barnett et al. (2021) compared, removed part of that
+bias with slow elimination, but the imputed values also narrowed the
+intervals, so none covered better than zero substitution, and the direct
+censored likelihood, which treats the times as independent,
+under-covered.
+
+Against the published estimators for these designs, the delta method
+held up best with three or four animals per time. The estimator of
+Wolfsegger and Jaki (2005) avoids the covariance of $`\hat{\lambda}_z`$
+with the trapezoidal sum by fitting $`\hat{\lambda}_z`$ only after it;
+with few animals, its bias corrections made it unstable and its
+bootstrap-$`t`$ intervals about twice as wide. The estimators of the PK
+package include the covariance of each time’s mean with its mean log
+concentration and covered a few points less than the delta method
+without BLQ samples. Neither published estimator has a rule for BLQ
+samples: the 2005 estimator broke down with any BLQ samples, and PK’s
+with BLQ samples and slow elimination, where PKNCA’s rule of ending the
+mean profile at a time with more than half of its samples BLQ kept the
+delta method near nominal. In the batch design, PK’s bootstrap-$`t`$,
+which resamples concentrations rather than animals, under-covered every
+parameter, and its MRT and $`V_{ss}`$ intervals under-covered as its
+help warns, mostly because the MRT of the mean profile is itself biased.
 
 Limitations remain. The delta method conditions on the selected
 half-life points, so the uncertainty of the automatic point selection is
@@ -1063,6 +1496,61 @@ rates is not monoexponential, so the extrapolation
 $`C_{last}/\lambda_z`$ is itself biased for the population mean curve,
 which is part of why the AUMC to infinity is underestimated. Where the
 extrapolated area is large, sampling longer remains the better remedy.
+
+### Extensions beyond the published methods
+
+PKNCA has these, which the published methods compared here do not:
+
+- **The covariance of $`\hat{\lambda}_z`$ with every mean, in any
+  design.** The delta method takes it from the covariance of the means
+  (Holder’s, for batch and complete designs), which answers the question
+  Wolfsegger and Jaki (2005) left open. Their later estimators (PK)
+  include the covariance of each time’s mean with its own mean log
+  concentration.
+- **The uncertainty of the back-extrapolated $`C_0`$** after an IV
+  bolus. PK and the 2005 estimator start the AUC at the first sample.
+- **$`\lambda_z`$ from the log arithmetic means at PKNCA’s automatic
+  choice of half-life points**, the same $`\lambda_z`$ as the point
+  estimate, rather than from the mean log concentrations of a fixed
+  number of last times, and Satterthwaite degrees of freedom for $`t`$
+  intervals.
+- **A rule for BLQ samples:** a time with more than half of its samples
+  BLQ ends the mean profile, and the Tobit half-life carries the LLOQ
+  through the mean profile. The published estimators take the logarithm
+  of every sample.
+- **An evaluation of arithmetic and geometric mean profiles.**
+- **A stratified bootstrap of whole animals**
+  ([`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md))
+  for any parameter.
+
+The published methods have these, which PKNCA does not adopt, for the
+reasons the results give:
+
+- **Standard errors of the MRT, clearance, $`V_{ss}`$, and
+  non-compartmental half-life** (PK). PKNCA gives standard errors only
+  for the AUC and AUMC. PK’s intervals for the MRT and $`V_{ss}`$
+  under-covered in the batch design (65.8 to 74.2% for the MRT without
+  BLQ samples), mostly from the bias of the MRT estimate, which a
+  standard error cannot fix.
+- **$`\lambda_z`$ fit after the trapezoidal sum, with a bias
+  correction** (Wolfsegger and Jaki 2005): as accurate as PKNCA’s
+  estimate with many animals, but unstable with three or four, and its
+  intervals about twice as wide.
+- **Bootstrap-$`t`$ intervals** (both papers): on PKNCA’s delta-method
+  standard error, the bootstrap-$`t`$ covered the AUMC better than the
+  delta method, but not the AUC, and covered the AUC worse with BLQ
+  samples. It keeps the same point estimate and so the same bias (-17.1%
+  for the AUMC with 4 animals per time, in both); its gain in coverage
+  (79.8% to 84.4%) comes from an interval 1.54 times as wide, and with
+  many animals from one shifted around the same biased estimate, which
+  is not a better method.
+- **Imputation of BLQ samples** (Barnett et al. 2021): ROS and kernel
+  imputation reduced the bias with slow elimination, but none covered
+  better than zero substitution, and each needs measured samples at the
+  time, which three or four animals do not always give.
+- **The full likelihood over all times** (Barnett et al. 2021), which
+  needs the within-animal covariance of every pair of times and so
+  cannot apply with one sample per animal.
 
 ## References
 
@@ -1088,6 +1576,17 @@ Jaki T, Wolfsegger MJ. Non-compartmental estimation of pharmacokinetic
 parameters for flexible sampling designs. Statistics in Medicine.
 2012;31(11-12):1059-1073. <doi:10.1002/sim.4386>
 
+Jaki T, Wolfsegger MJ. Estimation of pharmacokinetic parameters with the
+R package PK. Pharmaceutical Statistics. 2011;10(3):284-288.
+<doi:10.1002/pst.449>
+
+Jaki T, Wolfsegger MJ. PK: Basic non-compartmental pharmacokinetics. R
+package version 1.3-6. <https://CRAN.R-project.org/package=PK>
+
+Nassiri V, Barnett H, Geys H, Jacobs T, Jaki T. BLOQ: Methods to impute
+and analyze data with BLOQ observations. R package version 0.1-2.
+<https://CRAN.R-project.org/package=BLOQ>
+
 Nedelman JR, Gibiansky E, Lau DTW. Applying Bailer’s method for AUC
 confidence intervals to sparse sampling. Pharmaceutical Research.
 1995;12(1):124-128.
@@ -1101,6 +1600,17 @@ pharmacokinetics data using bootstrap resampling method. Journal of
 Biopharmaceutical Statistics. 2017;27(2):257-264.
 <doi:10.1080/10543406.2016.1265543>
 
+Takemoto S, Yamaoka K, Nishikawa M, Takakura Y. Histogram analysis of
+pharmacokinetic parameters by bootstrap resampling from one-point
+sampling data in animal experiments. Drug Metabolism and
+Pharmacokinetics. 2006;21(6):458-464. <doi:10.2133/dmpk.21.458>
+
+Tardivon C, Loingeville F, Donnelly M, Feng K, Sun W, Sun G, Grosser S,
+Zhao L, Fang L, Mentré F, Bertrand J. Evaluation of model-based
+bioequivalence approach for single sample pharmacokinetic studies. CPT:
+Pharmacometrics & Systems Pharmacology. 2023;12(7):904-915.
+<doi:10.1002/psp4.12960>
+
 Wolfsegger MJ, Jaki T. Estimation of AUC from 0 to infinity in serial
 sacrifice designs. Journal of Pharmacokinetics and Pharmacodynamics.
 2005;32(5-6):757-766. <doi:10.1007/s10928-005-0044-0>
@@ -1108,11 +1618,6 @@ sacrifice designs. Journal of Pharmacokinetics and Pharmacodynamics.
 Wolfsegger MJ, Jaki T. Non-compartmental estimation of pharmacokinetic
 parameters in serial sampling designs. Journal of Pharmacokinetics and
 Pharmacodynamics. 2009;36(5):479-494. <doi:10.1007/s10928-009-9133-9>
-
-Takemoto S, Yamaoka K, Nishikawa M, Takakura Y. Histogram analysis of
-pharmacokinetic parameters by bootstrap resampling from one-point
-sampling data in animal experiments. Drug Metabolism and
-Pharmacokinetics. 2006;21(6):458-464. <doi:10.2133/dmpk.21.458>
 
 Yuan J. Estimation of variance for AUC in animal studies. Journal of
 Pharmaceutical Sciences. 1993;82(7):761-763.
