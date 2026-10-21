@@ -25,6 +25,7 @@ PKNCAconc(
   exclude_half.life,
   include_half.life,
   lloq,
+  frac_unbound,
   sparse = FALSE,
   ...,
   concu = NULL,
@@ -141,6 +142,27 @@ PKNCAconc(
   the LLOQ of each time is the median of the LLOQs of its samples
   (missing LLOQs are ignored). See the "Half-Life Calculation with Tobit
   Regression" vignette for more details.
+
+- frac_unbound:
+
+  (optional) The fraction of the concentration that is unbound. Either a
+  numeric value or the name of a column in `data`. Values must be
+  greater than 0 and less than or equal to 1. `NA` is allowed for
+  measurements where fraction unbound is not applicable (for example,
+  urine measurements). Within a calculation interval, the values must be
+  either all `NA` or all non-`NA`. When given,
+  [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+  calculates the parameters on the total concentration and again on the
+  unbound concentration (concentration multiplied by `frac_unbound`).
+  The results have a new first grouping column, `frac_unbound`, with the
+  values `"total concentration"` and `"unbound concentration"`. Rows
+  with `NA` `frac_unbound` have no unbound concentration, so parameters
+  that need an unbound value (for example, unbound renal clearance for
+  urine rows) are not calculated for them. The check that each interval
+  is all `NA` or all non-`NA` uses only the intervals of each group.
+  This works for dense and sparse PK; for sparse PK each sample is
+  multiplied by its own `frac_unbound` before the mean profile is
+  calculated.
 
 - sparse:
 

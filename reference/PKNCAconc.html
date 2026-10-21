@@ -85,6 +85,7 @@
 <span>  <span class="va">exclude_half.life</span>,</span>
 <span>  <span class="va">include_half.life</span>,</span>
 <span>  <span class="va">lloq</span>,</span>
+<span>  <span class="va">frac_unbound</span>,</span>
 <span>  sparse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span>,</span>
 <span>  concu <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -198,6 +199,25 @@ it is passed through to
 the mean profile, and the LLOQ of each time is the median of the LLOQs of
 its samples (missing LLOQs are ignored).  See the "Half-Life Calculation with Tobit Regression"
 vignette for more details.</p></dd>
+
+
+<dt id="arg-frac-unbound">frac_unbound<a class="anchor" aria-label="anchor" href="#arg-frac-unbound"></a></dt>
+<dd><p>(optional) The fraction of the concentration that is
+unbound.  Either a numeric value or the name of a column in <code>data</code>.
+Values must be greater than 0 and less than or equal to 1.  <code>NA</code> is
+allowed for measurements where fraction unbound is not applicable (for
+example, urine measurements).  Within a calculation interval, the values
+must be either all <code>NA</code> or all non-<code>NA</code>.  When given, <code><a href="pk.nca.html">pk.nca()</a></code> calculates
+the parameters on the total concentration and again on the unbound
+concentration (concentration multiplied by <code>frac_unbound</code>).  The results
+have a new first grouping column, <code>frac_unbound</code>, with the values
+<code>"total concentration"</code> and <code>"unbound concentration"</code>.  Rows with <code>NA</code>
+<code>frac_unbound</code> have no unbound concentration, so parameters that need an
+unbound value (for example, unbound renal clearance for urine rows) are not
+calculated for them.  The check that each interval is all <code>NA</code> or all
+non-<code>NA</code> uses only the intervals of each group.  This works for
+dense and sparse PK; for sparse PK each sample is multiplied by its own
+<code>frac_unbound</code> before the mean profile is calculated.</p></dd>
 
 
 <dt id="arg-sparse">sparse<a class="anchor" aria-label="anchor" href="#arg-sparse"></a></dt>
