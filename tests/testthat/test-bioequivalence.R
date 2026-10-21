@@ -110,6 +110,40 @@ test_that("be_dataset prefers PPSTRES over PPORRES", {
   expect_identical(ds$columns$value, "PPSTRES")
 })
 
+test_that("be_dataset stops when a design column is missing in an analyzed row", {
+  for (col in c("subject", "sequence", "period", "form")) {
+    d <- make_be_df()
+    d[[col]][3] <- NA
+    expect_error(
+      be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast"),
+      regexp = paste0("Design column\\(s\\) ", col, " have missing values"),
+      class = "pknca_error_be_design_missing"
+    )
+  }
+  # A row without a value is not analyzed, so its design columns may be missing.
+  d <- make_be_df()
+  d$PPORRES[3] <- NA
+  d$sequence[3] <- NA
+  ds <- be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast")
+  expect_equal(nrow(ds$data), nrow(d) - 1)
+  # Without a sequence column there is no sequence to check.
+  d <- make_be_df()
+  d$sequence <- NULL
+  ds <- be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast")
+  expect_true(all(is.na(ds$data$.sequence)))
+})
+
+test_that("be_dataset stops when a subject has more than one sequence", {
+  d <- make_be_df()
+  # Subject 2 is in sequence TR.
+  d$sequence[d$subject == 2][1] <- "RT"
+  expect_error(
+    be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast"),
+    regexp = "Subject\\(s\\) 2 have more than one sequence",
+    class = "pknca_error_be_sequence_inconsistent"
+  )
+})
+
 test_that("be_dataset warns about and skips a missing endpoint", {
   expect_warning(
     ds <- be_dataset(make_be_df(), reference_col = "form", reference_value = "R",

@@ -262,15 +262,17 @@ test_that(".be_isc errors when it cannot be estimated", {
   mixed$.sequence[which(mixed$.subject == "3")[1]] <- "RTRT"
   expect_error(.be_isc(mixed, "R", "T"), class = "pknca_error_be_isc_sequence_inconsistent")
   expect_identical(.be_isc_or_na(mixed, "R", "T"), .be_isc_na())
-  # The FDA family needs the estimate, so be_assess() reports the problem.
+  # be_assess() rejects a missing sequence in be_dataset(), before any model
+  # could drop the row, for every regulator.
   long <- be_replicate_long(d)
   long$sequence <- as.character(long$sequence)
   long$sequence[long$subject == "3"] <- NA
-  expect_error(
-    be_assess(long, "treatment", "R", "auclast", regulator = "FDA"),
-    regexp = "known sequence for every subject",
-    class = "pknca_error_be_isc_insufficient"
-  )
+  for (regulator in c("ABE", "EMA", "FDA")) {
+    expect_error(
+      be_assess(long, "treatment", "R", "auclast", regulator = regulator),
+      class = "pknca_error_be_design_missing"
+    )
+  }
 })
 
 test_that(".be_isc with a single sequence is the mean of the contrasts", {

@@ -575,6 +575,13 @@ the generated intervals:
   column the sequence is the subject's treatment-by-period pattern.
   (@billdenney)
 
+* `be_dataset()`, and so `be_assess()` and `be_compare()`, stops with
+  `pknca_error_be_design_missing` when the subject, sequence, period, or
+  treatment is missing in a row that would be analyzed, and with
+  `pknca_error_be_sequence_inconsistent` when a subject has more than one
+  sequence, so no model drops such rows while the subject count includes them.
+  (@billdenney)
+
 * Secondary parameters can now be calculated by linking intervals with
   `interval_id` and `<parameter>_ref` columns in the interval specification.
   The reference interval supplies the cross-profile input (the plasma AUC for

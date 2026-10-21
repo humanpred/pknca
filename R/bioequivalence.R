@@ -973,6 +973,11 @@ print.be_within_var <- function(x, ...) {
 #' column is present, units are unavailable and the `units` column is omitted
 #' from the assessment table.
 #'
+#' The subject, period, treatment, and (when present) sequence may not be
+#' missing in any row that is analyzed, and each subject must have a single
+#' sequence; otherwise `be_dataset()` stops with an error rather than letting a
+#' model drop those rows.
+#'
 #' Each covariate is copied to a standardized column named `.cov_<name>`
 #' (character columns become factors).  A covariate may not be one of the
 #' subject, sequence, period, treatment, or value columns, and it may not be
@@ -1041,6 +1046,7 @@ be_dataset.default <- function(object, reference_col, reference_value,
   }
 
   data <- data[!is.na(data[[value_col]]) & data[[value_col]] > 0, , drop = FALSE]
+  .be_check_design_cols(data, subject = subject, sequence = sequence, period = period, treatment = reference_col)
   missing_cov <- covariates[vapply(data[covariates], anyNA, logical(1))]
   if (length(missing_cov) > 0) {
     rlang::abort(
@@ -1080,6 +1086,36 @@ be_dataset.default <- function(object, reference_col, reference_value,
     ),
     class = "be_dataset"
   )
+}
+
+# Stop when a design column (subject, sequence, period, or treatment) is
+# missing in a row that would be analyzed, or when a subject has more than one
+# sequence.  The model fits would otherwise drop those rows while the subject
+# counts still include them.  `sequence` is NA when the data have no sequence
+# column.
+.be_check_design_cols <- function(data, subject, sequence, period, treatment) {
+  cols <- c(subject, if (!is.na(sequence)) sequence, period, treatment)
+  missing_cols <- cols[vapply(data[cols], anyNA, logical(1))]
+  if (length(missing_cols) > 0) {
+    rlang::abort(
+      sprintf(
+        "Design column(s) %s have missing values in rows that would be analyzed.",
+        paste(missing_cols, collapse = ", ")
+      ),
+      class = "pknca_error_be_design_missing"
+    )
+  }
+  if (!is.na(sequence)) {
+    labels <- unique(data[c(subject, sequence)])
+    multi <- unique(labels[[subject]][duplicated(labels[[subject]])])
+    if (length(multi) > 0) {
+      rlang::abort(
+        sprintf("Subject(s) %s have more than one sequence.", paste(multi, collapse = ", ")),
+        class = "pknca_error_be_sequence_inconsistent"
+      )
+    }
+  }
+  invisible(data)
 }
 
 # The value column (PPSTRES when present, otherwise PPORRES) and the units
