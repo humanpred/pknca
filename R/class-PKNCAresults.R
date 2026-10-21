@@ -227,7 +227,17 @@ pknca_cdisc_translate <- function(ret, x, grpid_cols = NULL, grpid_numeric = NUL
     ret$PPTEST <- cdisc_pptest
   }
   ret <- pknca_cdisc_add_interval_reference(ret, x)
-  pknca_cdisc_add_grpid(ret, x, grpid_cols = grpid_cols, grpid_numeric = grpid_numeric)
+  ret <- pknca_cdisc_add_grpid(ret, x, grpid_cols = grpid_cols, grpid_numeric = grpid_numeric)
+  # Unbound results are marked as a category (PPCAT); total results and output
+  # without frac_unbound get no PPCAT column
+  if ("frac_unbound" %in% names(ret)) {
+    ret$PPCAT <- ifelse(
+      ret$frac_unbound %in% "unbound concentration",
+      "UNBOUND CONCENTRATION",
+      "TOTAL CONCENTRATION"
+    )
+  }
+  ret
 }
 
 # The PPTPTREF text for each kind of time point reference (see
@@ -566,6 +576,10 @@ getGroups.PKNCAresults <- function(object,
   conc <- as_PKNCAconc(object)
   # Include the start time as a group; this may be dropped later
   grpnames <- c(unlist(conc$columns$groups), "start", "end")
+  # The total/unbound concentration grouping comes first when frac_unbound is used
+  if ("frac_unbound" %in% names(data)) {
+    grpnames <- c("frac_unbound", grpnames)
+  }
   if (is_sparse_pk(object)) {
     grpnames <- setdiff(grpnames, conc$columns$subject)
   }
@@ -596,5 +610,8 @@ getGroups.PKNCAresults <- function(object,
 #'   from the PKNCAconc object within
 #' @exportS3Method dplyr::group_vars
 group_vars.PKNCAresults <- function(x) {
-  c("start","end",group_vars.PKNCAconc(as_PKNCAconc(x))) 
+  c(
+    if ("frac_unbound" %in% names(as.data.frame(x))) "frac_unbound",
+    "start", "end", group_vars.PKNCAconc(as_PKNCAconc(x))
+  )
 }

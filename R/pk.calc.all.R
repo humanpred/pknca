@@ -57,83 +57,289 @@ pk.nca <- function(data, verbose=FALSE) {
     # A working copy: reference intervals gain the source parameters their links
     # need.  The PKNCAresults below keeps the user's own `data`, so the
     # expansion never becomes visible in `x$data$intervals`.
-    data_calc <- expand_secondary_intervals(data)
-    # The unit column comes along so that each group's tau can be matched to the
-    # nominal intervals for its time unit
-    splitdata <-
-      full_join_PKNCAdata(
-        data_calc,
-        extra_conc_cols = pknca_timeu_extra_col(as_PKNCAconc(data_calc))
-      )
-    group_info <-
-      splitdata[
-        ,
-        setdiff(names(splitdata), c("data_conc", "data_sparse_conc", "data_dose", "data_intervals")),
-        drop=FALSE
-      ]
-    # Calculate the results.  Sparse data reach the calculations as two
-    # representations of the same samples: the pooled individual measurements
-    # and the arithmetic-mean profile that prepare_PKNCAconc_sparse() built from
-    # them.  Both are in scope for every interval, and each parameter draws from
-    # the one its registration calls for.
-    sparse <- is_sparse_pk(data)
-    if (sparse) {
-      inform_sparse_auc_method(data_calc$intervals, options = data$options)
+    results <- if (is_frac_unbound_pk(data = data)) {
+      pk_nca_frac_unbound(data = data, verbose = verbose)
+    } else {
+      pk_nca_calculate(data = data, verbose = verbose)
     }
-    data_sparse_conc <-
-      if (sparse) splitdata$data_sparse_conc else rep(list(NULL), nrow(splitdata))
-    group_timeu <-
-      pknca_split_timeu(
-        splitdata = splitdata, group_info = group_info, o_conc = as_PKNCAconc(data_calc)
-      )
-    group_warning_prefix <-
-      vapply(
-        X = split(group_info, seq_len(nrow(group_info))),
-        FUN = pknca_group_warning_prefix,
-        FUN.VALUE = ""
-      )
-    if (verbose) {
-      rlang::inform("Starting PK NCA calculations.", class = "pknca_message_pk_start")
-    }
-    results_all <-
-      purrr::pmap(
-        .l = list(
-          data_conc = splitdata$data_conc,
-          data_sparse_conc = data_sparse_conc,
-          data_dose = splitdata$data_dose,
-          data_intervals = splitdata$data_intervals,
-          timeu = group_timeu,
-          warning_prefix = unname(group_warning_prefix)
-        ),
-        .f = pk.nca.intervals,
-        options = data$options,
-        impute = data$impute,
-        verbose = verbose,
-        .progress = data$options$progress
-      )
-    if (verbose) {
-      rlang::inform("Combining completed dense PK calculation results.", class = "pknca_message_dense_pk_combine")
-    }
-    # Every dense result comes before every sparse one in the output, so the two
-    # are gathered separately even though they were calculated together.
-    results <- pk_nca_result_to_df(group_info, lapply(results_all, `[[`, "dense"))
-    if (sparse) {
-      if (verbose) {
-        rlang::inform("Combining completed sparse PK calculation results.", class = "pknca_message_sparse_pk_combine")
-      }
-      results <-
-        dplyr::bind_rows(
-          results,
-          pk_nca_result_to_df(group_info, lapply(results_all, `[[`, "sparse"))
-        )
-    }
-    results <- pk_nca_secondary(results, data_calc)
   }
   PKNCAresults(
     result=results,
     data=data,
     exclude="exclude"
   )
+}
+
+#' Calculate the NCA results for a PKNCAdata object
+#'
+#' @param data A PKNCAdata object with merged options
+#' @param verbose Print progress messages?
+#' @returns A data.frame of results including secondary parameters
+#' @keywords Internal
+#' @noRd
+pk_nca_calculate <- function(data, verbose) {
+  data_calc <- expand_secondary_intervals(data)
+  # The unit column comes along so that each group's tau can be matched to the
+  # nominal intervals for its time unit
+  splitdata <-
+    full_join_PKNCAdata(
+      data_calc,
+      extra_conc_cols = pknca_timeu_extra_col(as_PKNCAconc(data_calc))
+    )
+  pk_nca_run_splitdata(
+    splitdata = splitdata, data = data, data_calc = data_calc, verbose = verbose
+  )
+}
+
+#' Run the NCA calculations on joined group data
+#'
+#' @param splitdata The result of `full_join_PKNCAdata()` (possibly restricted)
+#' @param data The PKNCAdata object with merged options
+#' @param data_calc The working copy of `data` with expanded secondary intervals
+#' @param verbose Print progress messages?
+#' @returns A data.frame of results including secondary parameters
+#' @keywords Internal
+#' @noRd
+pk_nca_run_splitdata <- function(splitdata, data, data_calc, verbose) {
+  group_info <-
+    splitdata[
+      ,
+      setdiff(names(splitdata), c("data_conc", "data_sparse_conc", "data_dose", "data_intervals")),
+      drop=FALSE
+    ]
+  # Calculate the results.  Sparse data reach the calculations as two
+  # representations of the same samples: the pooled individual measurements
+  # and the arithmetic-mean profile that prepare_PKNCAconc_sparse() built from
+  # them.  Both are in scope for every interval, and each parameter draws from
+  # the one its registration calls for.
+  sparse <- is_sparse_pk(data)
+  if (sparse) {
+    inform_sparse_auc_method(data_calc$intervals, options = data$options)
+  }
+  data_sparse_conc <-
+    if (sparse) splitdata$data_sparse_conc else rep(list(NULL), nrow(splitdata))
+  group_timeu <-
+    pknca_split_timeu(
+      splitdata = splitdata, group_info = group_info, o_conc = as_PKNCAconc(data_calc)
+    )
+  group_warning_prefix <-
+    vapply(
+      X = split(group_info, seq_len(nrow(group_info))),
+      FUN = pknca_group_warning_prefix,
+      FUN.VALUE = ""
+    )
+  if (verbose) {
+    rlang::inform("Starting PK NCA calculations.", class = "pknca_message_pk_start")
+  }
+  results_all <-
+    purrr::pmap(
+      .l = list(
+        data_conc = splitdata$data_conc,
+        data_sparse_conc = data_sparse_conc,
+        data_dose = splitdata$data_dose,
+        data_intervals = splitdata$data_intervals,
+        timeu = group_timeu,
+        warning_prefix = unname(group_warning_prefix)
+      ),
+      .f = pk.nca.intervals,
+      options = data$options,
+      impute = data$impute,
+      verbose = verbose,
+      .progress = data$options$progress
+    )
+  if (verbose) {
+    rlang::inform("Combining completed dense PK calculation results.", class = "pknca_message_dense_pk_combine")
+  }
+  # Every dense result comes before every sparse one in the output, so the two
+  # are gathered separately even though they were calculated together.
+  results <- pk_nca_result_to_df(group_info, lapply(results_all, `[[`, "dense"))
+  if (sparse) {
+    if (verbose) {
+      rlang::inform("Combining completed sparse PK calculation results.", class = "pknca_message_sparse_pk_combine")
+    }
+    results <-
+      dplyr::bind_rows(
+        results,
+        pk_nca_result_to_df(group_info, lapply(results_all, `[[`, "sparse"))
+      )
+  }
+  results <- pk_nca_secondary(results, data_calc)
+  results
+}
+
+#' Does the PKNCAconc object carry a frac_unbound column?
+#' @keywords Internal
+#' @noRd
+is_frac_unbound_pk <- function(data) {
+  !is.null(as_PKNCAconc(data)$columns$frac_unbound)
+}
+
+#' Calculate total and unbound concentration results
+#'
+#' The NCA is run on the total concentrations and then on the unbound
+#' concentrations.  Each group is handled with its own intervals.  Only the
+#' intervals that have an unbound concentration are calculated for the unbound
+#' run, so a group or interval without fraction unbound produces no unbound
+#' results and no warnings.  The results are separated by a new first grouping
+#' column, `frac_unbound`.
+#' @keywords Internal
+#' @noRd
+pk_nca_frac_unbound <- function(data, verbose) {
+  sparse <- is_sparse_pk(data)
+  data_calc <- expand_secondary_intervals(data)
+  splitdata <-
+    full_join_PKNCAdata(
+      data_calc,
+      extra_conc_cols = pknca_timeu_extra_col(as_PKNCAconc(data_calc))
+    )
+  assert_frac_unbound_intervals(splitdata = splitdata, sparse = sparse)
+  results_total <-
+    pk_nca_add_frac_unbound_group(
+      results = pk_nca_run_splitdata(
+        splitdata = splitdata, data = data, data_calc = data_calc, verbose = verbose
+      ),
+      label = "total concentration"
+    )
+
+  data_unbound <- pk_nca_frac_unbound_data(data = data)
+  if (is.null(data_unbound)) {
+    # No fraction unbound values, so there is no unbound concentration
+    return(results_total)
+  }
+  data_unbound_calc <- expand_secondary_intervals(data_unbound)
+  splitdata_unbound <-
+    full_join_PKNCAdata(
+      data_unbound_calc,
+      extra_conc_cols = pknca_timeu_extra_col(as_PKNCAconc(data_unbound_calc))
+    )
+  splitdata_unbound <-
+    pk_nca_keep_unbound_intervals(splitdata = splitdata_unbound, sparse = sparse)
+  if (nrow(splitdata_unbound) == 0) {
+    return(results_total)
+  }
+  results_unbound <-
+    pk_nca_run_splitdata(
+      splitdata = splitdata_unbound,
+      data = data_unbound,
+      data_calc = data_unbound_calc,
+      verbose = verbose
+    )
+  dplyr::bind_rows(
+    results_total,
+    pk_nca_add_frac_unbound_group(results = results_unbound, label = "unbound concentration")
+  )
+}
+
+#' Concentration representation used for the frac_unbound checks
+#'
+#' Dense PK uses the concentrations of each group.  Sparse PK uses the pooled
+#' individual samples of each group, because the unbound mean profile is built
+#' from them.
+#' @keywords Internal
+#' @noRd
+frac_unbound_conc_rows <- function(splitdata, idx, sparse) {
+  if (sparse) splitdata$data_sparse_conc[[idx]] else splitdata$data_conc[[idx]]
+}
+
+#' Make the unbound concentration data
+#'
+#' Rows without fraction unbound are removed, and the concentration (and LLOQ)
+#' of the others are multiplied by fraction unbound.  Dense PK scales `data`
+#' and sparse PK scales the individual samples in `data_sparse`.
+#' @returns The PKNCAdata object with unbound concentrations, or `NULL` when
+#'   there are no fraction unbound values
+#' @keywords Internal
+#' @noRd
+pk_nca_frac_unbound_data <- function(data) {
+  conc <- as_PKNCAconc(data)
+  dat_name <- getDataName(conc)
+  dat <- as.data.frame(conc)
+  fu_col <- conc$columns$frac_unbound
+  conc_col <- conc$columns$concentration
+  lloq_col <- conc$columns$lloq
+  if (all(is.na(dat[[fu_col]]))) {
+    return(NULL)
+  }
+  dat <- dat[!is.na(dat[[fu_col]]), , drop = FALSE]
+  fu <- dat[[fu_col]]
+  dat[[conc_col]] <- dat[[conc_col]] * fu
+  if (isTRUE(lloq_col %in% names(dat))) {
+    dat[[lloq_col]] <- dat[[lloq_col]] * fu
+  }
+  conc[[dat_name]] <- dat
+  data$conc <- conc
+  data
+}
+
+#' Require frac_unbound to be all NA or all non-NA within each interval
+#'
+#' Checked for each group against that group's own intervals (from
+#' `full_join_PKNCAdata()`).  Excluded concentrations were already removed when
+#' the data were prepared, so they are not considered.
+#' @keywords Internal
+#' @noRd
+assert_frac_unbound_intervals <- function(splitdata, sparse) {
+  for (idx in seq_len(nrow(splitdata))) {
+    conc_rows <- frac_unbound_conc_rows(splitdata = splitdata, idx = idx, sparse = sparse)
+    intervals <- splitdata$data_intervals[[idx]]
+    if (is.null(conc_rows) || nrow(conc_rows) == 0 || is.null(intervals)) {
+      next
+    }
+    for (i in seq_len(nrow(intervals))) {
+      fu <- filter_interval(conc_rows, start = intervals$start[i], end = intervals$end[i])$frac_unbound
+      if (anyNA(fu) && !all(is.na(fu))) {
+        rlang::abort(
+          sprintf(
+            "frac_unbound must be either all NA or all non-NA within an interval (interval start=%g, end=%g).",
+            intervals$start[i], intervals$end[i]
+          ),
+          class = "pknca_error_frac_unbound_mixed_na"
+        )
+      }
+    }
+  }
+  invisible(splitdata)
+}
+
+#' Keep only the intervals that have unbound concentrations for each group
+#'
+#' Groups without any remaining concentration rows, and intervals without any
+#' remaining concentration rows, are removed so that the unbound run does not
+#' report missing data for them.
+#' @returns `splitdata` restricted to the groups and intervals with unbound data
+#' @keywords Internal
+#' @noRd
+pk_nca_keep_unbound_intervals <- function(splitdata, sparse) {
+  keep <- rep(FALSE, nrow(splitdata))
+  for (idx in seq_len(nrow(splitdata))) {
+    conc_rows <- frac_unbound_conc_rows(splitdata = splitdata, idx = idx, sparse = sparse)
+    intervals <- splitdata$data_intervals[[idx]]
+    if (is.null(conc_rows) || nrow(conc_rows) == 0 || is.null(intervals) || nrow(intervals) == 0) {
+      next
+    }
+    has_rows <- vapply(
+      X = seq_len(nrow(intervals)),
+      FUN = function(i) {
+        nrow(filter_interval(conc_rows, start = intervals$start[i], end = intervals$end[i])) > 0
+      },
+      FUN.VALUE = logical(1)
+    )
+    splitdata$data_intervals[[idx]] <- intervals[has_rows, , drop = FALSE]
+    keep[idx] <- any(has_rows)
+  }
+  splitdata[keep, , drop = FALSE]
+}
+
+#' Add the frac_unbound grouping column as the first column of results
+#'
+#' Keeps the class of `results` (a tibble stays a tibble).
+#' @keywords Internal
+#' @noRd
+pk_nca_add_frac_unbound_group <- function(results, label) {
+  if (nrow(results) == 0) {
+    return(results)
+  }
+  tibble::add_column(results, frac_unbound = rep(label, nrow(results)), .before = 1)
 }
 
 #' Convert the grouping info and list of results for each group into a results

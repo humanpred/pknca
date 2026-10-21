@@ -190,7 +190,8 @@ prepare_PKNCAconc <- function(.dat, extra_cols = character()) {
       duration=.dat$columns$duration,
       include_half.life=.dat$columns$include_half.life,
       exclude_half.life=.dat$columns$exclude_half.life,
-      lloq=.dat$columns$lloq
+      lloq=.dat$columns$lloq,
+      frac_unbound=.dat$columns$frac_unbound
     )
   needed_cols <- append(needed_cols, stats::setNames(nm = extra_cols))
   data_name <- getDataName(.dat)

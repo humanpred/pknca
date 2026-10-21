@@ -69,6 +69,22 @@
 #'   the mean profile, and the LLOQ of each time is the median of the LLOQs of
 #'   its samples (missing LLOQs are ignored).  See the "Half-Life Calculation with Tobit Regression"
 #'   vignette for more details.
+#' @param frac_unbound (optional) The fraction of the concentration that is
+#'   unbound.  Either a numeric value or the name of a column in `data`.
+#'   Values must be greater than 0 and less than or equal to 1.  `NA` is
+#'   allowed for measurements where fraction unbound is not applicable (for
+#'   example, urine measurements).  Within a calculation interval, the values
+#'   must be either all `NA` or all non-`NA`.  When given, [pk.nca()] calculates
+#'   the parameters on the total concentration and again on the unbound
+#'   concentration (concentration multiplied by `frac_unbound`).  The results
+#'   have a new first grouping column, `frac_unbound`, with the values
+#'   `"total concentration"` and `"unbound concentration"`.  Rows with `NA`
+#'   `frac_unbound` have no unbound concentration, so parameters that need an
+#'   unbound value (for example, unbound renal clearance for urine rows) are not
+#'   calculated for them.  The check that each interval is all `NA` or all
+#'   non-`NA` uses only the intervals of each group.  This works for
+#'   dense and sparse PK; for sparse PK each sample is multiplied by its own
+#'   `frac_unbound` before the mean profile is calculated.
 #' @param sparse Are the concentration-time data sparse PK (commonly used in
 #'   small nonclinical species or with terminal or difficult sampling) or dense
 #'   PK (commonly used in clinical studies or larger nonclinical species)?
@@ -120,7 +136,8 @@ PKNCAconc.tbl_df <- function(data, ...) {
 #' @export
 PKNCAconc.data.frame <- function(data, formula, subject,
                                  time.nominal, exclude = NULL, duration, volume,
-                                 exclude_half.life, include_half.life, lloq, sparse = FALSE, ...,
+                                 exclude_half.life, include_half.life, lloq,
+                                 frac_unbound, sparse = FALSE, ...,
                                  concu = NULL, amountu = NULL, timeu = NULL,
                                  concu_pref = NULL, amountu_pref = NULL, timeu_pref = NULL) {
   # The data must have... data
@@ -261,6 +278,21 @@ PKNCAconc.data.frame <- function(data, formula, subject,
     ret <- setAttributeColumn(object=ret, attr_name="lloq", col_or_value=lloq)
     lloq_col <- ret$columns$lloq
     ret[[getDataName(ret)]][[lloq_col]] <- pknca_lloq_check_values(ret[[getDataName(ret)]][[lloq_col]])
+  }
+  
+  if (!missing(frac_unbound)) {
+    ret <- setAttributeColumn(object = ret, attr_name = "frac_unbound", col_or_value = frac_unbound)
+    assert_numeric_between(
+      getAttributeColumn(object = ret, attr_name = "frac_unbound")[[1]],
+      lower = 0, upper_eq = 1, any.missing = TRUE,
+      .var.name = "frac_unbound"
+    )
+    if ("frac_unbound" %in% unlist(ret$columns$groups)) {
+      rlang::abort(
+        "A grouping variable cannot be named 'frac_unbound' when frac_unbound is given; that name is used for the total/unbound concentration grouping.",
+        class = "pknca_error_frac_unbound_group_name"
+      )
+    }
   }
 
   # Unit handling

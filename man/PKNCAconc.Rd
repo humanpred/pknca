@@ -24,6 +24,7 @@ PKNCAconc(data, ...)
   exclude_half.life,
   include_half.life,
   lloq,
+  frac_unbound,
   sparse = FALSE,
   ...,
   concu = NULL,
@@ -114,6 +115,23 @@ it is passed through to
 the mean profile, and the LLOQ of each time is the median of the LLOQs of
 its samples (missing LLOQs are ignored).  See the "Half-Life Calculation with Tobit Regression"
 vignette for more details.}
+
+\item{frac_unbound}{(optional) The fraction of the concentration that is
+unbound.  Either a numeric value or the name of a column in \code{data}.
+Values must be greater than 0 and less than or equal to 1.  \code{NA} is
+allowed for measurements where fraction unbound is not applicable (for
+example, urine measurements).  Within a calculation interval, the values
+must be either all \code{NA} or all non-\code{NA}.  When given, \code{\link[=pk.nca]{pk.nca()}} calculates
+the parameters on the total concentration and again on the unbound
+concentration (concentration multiplied by \code{frac_unbound}).  The results
+have a new first grouping column, \code{frac_unbound}, with the values
+\code{"total concentration"} and \code{"unbound concentration"}.  Rows with \code{NA}
+\code{frac_unbound} have no unbound concentration, so parameters that need an
+unbound value (for example, unbound renal clearance for urine rows) are not
+calculated for them.  The check that each interval is all \code{NA} or all
+non-\code{NA} uses only the intervals of each group.  This works for
+dense and sparse PK; for sparse PK each sample is multiplied by its own
+\code{frac_unbound} before the mean profile is calculated.}
 
 \item{sparse}{Are the concentration-time data sparse PK (commonly used in
 small nonclinical species or with terminal or difficult sampling) or dense

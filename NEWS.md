@@ -355,6 +355,19 @@ the generated intervals:
 
 ## New features
 
+* `PKNCAconc()` has a new `frac_unbound` argument: a value or the name of a
+  column, greater than 0 and at most 1, with `NA` where fraction unbound does
+  not apply (for example, urine).  When it is given, `pk.nca()` calculates the
+  parameters on the total concentration and on the unbound concentration
+  (concentration times `frac_unbound`), and the results have a new first
+  grouping column, `frac_unbound`, with the values `"total concentration"` and
+  `"unbound concentration"`.  Within an interval, the values for a group must be
+  all `NA` or all non-`NA`.  Rows with `NA` are not used for unbound results, so
+  parameters such as unbound renal clearance are not calculated for them.  Works
+  for dense and sparse PK (@PavanLomati, #544, #683).  In CDISC output (`out_format
+  = "cdisc"`) unbound results have `PPCAT` "UNBOUND CONCENTRATION" and a `UNB.`
+  prefix in `PPGRPID`; this mapping is a proposal pending review.
+
 * `PKNCAconc()` now checks the values of the `lloq` argument:  every non-missing
   value must be numeric, finite (not `NaN` or `Inf`), and greater than zero, and
   anything else is the
