@@ -26,6 +26,7 @@ PKNCAdata(
   units,
   options = list(),
   group_ref = NULL,
+  ref_vary = NULL,
   grpid_cols = NULL,
   grpid_numeric = NULL
 )
@@ -93,6 +94,18 @@ PKNCAdata(
   The reference profiles for automatically-linked secondary parameters,
   as a data.frame of group values, optionally parameter-specific (see
   Details). `NULL` (the default) derives the reference from the data.
+
+- ref_vary:
+
+  The group columns in which every secondary parameter's reference may
+  differ from the interval calculating it, such as `"period"` for a
+  crossover where the reference treatment was given in another period
+  (see "Group columns that may differ" in
+  [`interval_add_secondary()`](https://humanpred.github.io/pknca/reference/interval_add_secondary.md)).
+  It applies to every link whose `<parameter>_ref_vary` column in the
+  intervals is `NA` (or absent), whether the link is explicit or derived
+  from the data. The default of `NULL` (or `character(0)`) lets no
+  column differ.
 
 - grpid_cols:
 

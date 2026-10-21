@@ -1419,6 +1419,131 @@ used changes the answer and is not recoverable from the number:</p>
 <code>ratio.aucinf.obs</code>, <code>ratio.aucinf.pred</code>,
 <code>ratio.aucint.last</code>, and <code>ratio.aucint.all</code> each
 compare the parameter they are named for.</p>
+<div class="section level3">
+<h3 id="a-crossover-grouped-by-period">A crossover grouped by period<a class="anchor" aria-label="anchor" href="#a-crossover-grouped-by-period"></a>
+</h3>
+<p>A reference is matched on the requesting profile’s own values in
+every group column the reference interval does not name. A crossover is
+usually grouped by period as well, and the reference treatment was given
+in a different period than the test treatment, so the IV profile for an
+oral profile in period 2 is not in period 2. <code>ref_vary</code> names
+the group columns in which the reference may differ:</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">d_conc_period</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    subject <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, each <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
+<span>    period <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>    treatment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iv"</span>, <span class="st">"oral"</span>, <span class="st">"oral"</span>, <span class="st">"iv"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>,</span>
+<span>    time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span>,</span>
+<span>    conc <span class="op">=</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">32</span>, <span class="fl">16</span>, <span class="fl">8</span>, <span class="fl">2</span>, <span class="fl">0.5</span>, <span class="fl">0</span>, <span class="fl">8</span>, <span class="fl">5</span>, <span class="fl">2</span>, <span class="fl">0.4</span>,</span>
+<span>        <span class="fl">0</span>, <span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">1.5</span>, <span class="fl">0.3</span>, <span class="fl">30</span>, <span class="fl">15</span>, <span class="fl">7</span>, <span class="fl">2</span>, <span class="fl">0.4</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">d_dose_period</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    subject <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>, period <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>    treatment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iv"</span>, <span class="st">"oral"</span>, <span class="st">"oral"</span>, <span class="st">"iv"</span><span class="op">)</span>,</span>
+<span>    time <span class="op">=</span> <span class="fl">0</span>, dose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">20</span>, <span class="fl">20</span>, <span class="fl">10</span><span class="op">)</span>,</span>
+<span>    route <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"intravascular"</span>, <span class="st">"extravascular"</span>, <span class="st">"extravascular"</span>, <span class="st">"intravascular"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">intervals_period</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="../reference/interval_add_secondary.html">interval_add_secondary</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>treatment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iv"</span>, <span class="st">"oral"</span><span class="op">)</span>, start <span class="op">=</span> <span class="fl">0</span>, end <span class="op">=</span> <span class="cn">Inf</span>, aucinf.obs <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    param <span class="op">=</span> <span class="st">"f.obs"</span>,</span>
+<span>    reference <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>treatment <span class="op">=</span> <span class="st">"iv"</span><span class="op">)</span>,</span>
+<span>    ref_vary <span class="op">=</span> <span class="st">"period"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">intervals_period</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"treatment"</span>, <span class="st">"interval_id"</span>, <span class="st">"f.obs"</span>, <span class="st">"f.obs_ref"</span>, <span class="st">"f.obs_ref_vary"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="left">treatment</th>
+<th align="left">interval_id</th>
+<th align="left">f.obs</th>
+<th align="left">f.obs_ref</th>
+<th align="left">f.obs_ref_vary</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">iv</td>
+<td align="left">ref1</td>
+<td align="left">FALSE</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">oral</td>
+<td align="left">NA</td>
+<td align="left">TRUE</td>
+<td align="left">ref1</td>
+<td align="left">period</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">o_data_period</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="../reference/PKNCAconc.html">PKNCAconc</a></span><span class="op">(</span><span class="va">d_conc_period</span>, <span class="va">conc</span><span class="op">~</span><span class="va">time</span><span class="op">|</span><span class="va">treatment</span><span class="op">+</span><span class="va">period</span><span class="op">+</span><span class="va">subject</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="../reference/PKNCAdose.html">PKNCAdose</a></span><span class="op">(</span><span class="va">d_dose_period</span>, <span class="va">dose</span><span class="op">~</span><span class="va">time</span><span class="op">|</span><span class="va">treatment</span><span class="op">+</span><span class="va">period</span><span class="op">+</span><span class="va">subject</span>, route <span class="op">=</span> <span class="st">"route"</span><span class="op">)</span>,</span>
+<span>    intervals <span class="op">=</span> <span class="va">intervals_period</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">d_period</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_period</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="va">d_period</span><span class="op">[</span></span>
+<span>    <span class="va">d_period</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"f.obs"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"subject"</span>, <span class="st">"period"</span>, <span class="st">"treatment"</span>, <span class="st">"PPORRES"</span>, <span class="st">"period_ref"</span>, <span class="st">"PPANMETH"</span><span class="op">)</span></span>
+<span>  <span class="op">]</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="8%">
+<col width="7%">
+<col width="10%">
+<col width="10%">
+<col width="11%">
+<col width="52%">
+</colgroup>
+<thead><tr class="header">
+<th align="right">subject</th>
+<th align="right">period</th>
+<th align="left">treatment</th>
+<th align="right">PPORRES</th>
+<th align="right">period_ref</th>
+<th align="left">PPANMETH</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="left">oral</td>
+<td align="right">0.2247840</td>
+<td align="right">1</td>
+<td align="left">Reference interval: treatment=iv, period=1, 0-Inf</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="left">oral</td>
+<td align="right">0.1859072</td>
+<td align="right">2</td>
+<td align="left">Reference interval: treatment=iv, period=2, 0-Inf</td>
+</tr>
+</tbody>
+</table>
+<p>Each oral profile uses its own subject’s IV profile, from whichever
+period has it, and <code>period_ref</code> and <code>PPANMETH</code> say
+which. The subject is never a varying column: a reference is always the
+subject’s own profile. When more than one profile qualifies (a replicate
+design giving the reference twice), the result is a
+<code>pknca_error_secondary_ref_vary_ambiguous</code> error naming the
+candidates; a group column that tells the administrations apart, named
+in <code>reference</code>, resolves it.</p>
+<p><code>PKNCAdata(ref_vary = "period")</code> declares the varying
+columns once for every link of the data, including the links PKNCA
+derives with <code>group_ref</code>. A link’s own declaration, the
+<code>&lt;parameter&gt;_ref_vary</code> column of the intervals, takes
+precedence, and an empty one (<code>ref_vary = character(0)</code>)
+declares that nothing varies.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="exclusions-cross-the-link">Exclusions cross the link<a class="anchor" aria-label="anchor" href="#exclusions-cross-the-link"></a>
@@ -1427,7 +1552,7 @@ compare the parameter they are named for.</p>
 result. Here the plasma profile has too few points for a half-life, so
 the <code>aucinf.obs</code> that extrapolates with it is excluded, and
 the renal clearance built on that AUC inherits the reason:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_conc_x</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    subject <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -1516,7 +1641,7 @@ and another from the reference interval, so when units are given per
 group its units are a quotient of the two groups’ units. The urine
 collection below is reported in mg/L and the plasma profile in
 ng/mL:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_conc_u</span> <span class="op">&lt;-</span> <span class="va">d_conc</span></span>
 <span><span class="va">d_conc_u</span><span class="op">$</span><span class="va">cu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">d_conc_u</span><span class="op">$</span><span class="va">PCSPEC</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"plasma"</span>, <span class="st">"ng/mL"</span>, <span class="st">"mg/L"</span><span class="op">)</span></span>
 <span><span class="va">d_conc_u</span><span class="op">$</span><span class="va">tu</span> <span class="op">&lt;-</span> <span class="st">"hr"</span></span>
@@ -1577,7 +1702,7 @@ reference came from in a <code>&lt;group column&gt;_ref</code> column
 (above, <code>PCSPEC_ref</code> is <code>plasma</code> on the renal
 clearance and <code>NA</code> on everything else), and the units table
 carries a row for each pair of groups:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">u</span> <span class="op">&lt;-</span> <span class="va">o_data_u</span><span class="op">$</span><span class="va">units</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">u</span><span class="op">[</span><span class="va">u</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auclast"</span>, <span class="st">"ae"</span>, <span class="st">"clr.last"</span><span class="op">)</span>, <span class="op">]</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
@@ -1693,7 +1818,7 @@ quotient is dimensionless, and the table also gives it a
 <code>PPSTRESU</code> of <code>fraction</code> with the factor that
 turns the raw quotient into the number it stands for. Here the
 metabolite is reported in ng/mL and the parent in mg/L:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_conc_r</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    subject <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -1785,7 +1910,7 @@ which is <code>PPSTRES</code>.</p>
 bioavailability between a dose in mg and a dose in mg/kg is not
 dimensionless, and the units say so instead of reporting the number as a
 <code>fraction</code>:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_conc_fu</span> <span class="op">&lt;-</span> <span class="va">d_conc_f</span></span>
 <span><span class="va">d_conc_fu</span><span class="op">$</span><span class="va">cu</span> <span class="op">&lt;-</span> <span class="st">"ng/mL"</span></span>
 <span><span class="va">d_conc_fu</span><span class="op">$</span><span class="va">tu</span> <span class="op">&lt;-</span> <span class="st">"hr"</span></span>
@@ -1834,14 +1959,14 @@ composite units stand. Nothing is <code>NA</code> for unit reasons.</p>
 <p><code>PPANMETH</code> discloses the reference interval on every
 linked result: how it differs from the interval reporting the result,
 and its times.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_linked</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_linked</span><span class="op">)</span></span>
 <span><span class="va">d_linked</span><span class="op">$</span><span class="va">PPANMETH</span><span class="op">[</span><span class="va">d_linked</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"clr.last"</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] "Reference interval: PCSPEC=plasma, 0-24"</span></span></code></pre></div>
 <p>Secondary parameters are summarized like any other parameter, on the
 interval that requested them. Rows that did not request the parameter
 are <code>.</code>:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_linked</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <thead><tr class="header">

@@ -12,8 +12,12 @@ is also allowed, and it must be a character column, or a
 `interval_id` identifies one interval: rows that share it may differ
 only in the parameters they request (and `impute`), not in `start`,
 `end`, or the groups, or a `pknca_error_secondary_id_conflict` error is
-raised. It will return the intervals argument unchanged, or it will
-raise an error.
+raised. The `<parameter>_ref_vary` columns (see
+[`interval_add_secondary()`](https://humanpred.github.io/pknca/reference/interval_add_secondary.md))
+must name group columns of the concentration data other than the
+subject, or a `pknca_error_secondary_ref_vary_invalid` error is raised.
+It will return the intervals argument unchanged, or it will raise an
+error.
 
 ## Usage
 

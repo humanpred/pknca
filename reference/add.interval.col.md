@@ -32,9 +32,9 @@ add.interval.col(
 - name:
 
   The column name as a non-empty character string (length 1, may not be
-  `NA` or `""`). Names ending in `_ref` and the name `interval_id` are
-  reserved for the reference-interval linkage columns of the interval
-  specification and may not be used.
+  `NA` or `""`). Names ending in `_ref` or `_ref_vary` and the name
+  `interval_id` are reserved for the reference-interval linkage columns
+  of the interval specification and may not be used.
 
 - FUN:
 

@@ -10,6 +10,9 @@ or a pknca_error_interval_impute_not_character error is raised.
 An interval_id identifies one interval:  rows that share it may differ
 only in the parameters they request (and impute), not in start, end,
 or the groups, or a pknca_error_secondary_id_conflict error is raised.
+The &amp;lt;parameter&amp;gt;_ref_vary columns (see interval_add_secondary()) must
+name group columns of the concentration data other than the subject, or a
+pknca_error_secondary_ref_vary_invalid error is raised.
 It will return the intervals argument unchanged, or it will raise an error."><meta property="og:description" content="Verifies that an interval definition is valid for a PKNCAdata object.
 Valid means that intervals are a data.frame (or data.frame-like object),
 that the column names are either the groupings of the PKNCAconc part of
@@ -21,6 +24,9 @@ or a pknca_error_interval_impute_not_character error is raised.
 An interval_id identifies one interval:  rows that share it may differ
 only in the parameters they request (and impute), not in start, end,
 or the groups, or a pknca_error_secondary_id_conflict error is raised.
+The &amp;lt;parameter&amp;gt;_ref_vary columns (see interval_add_secondary()) must
+name group columns of the concentration data other than the subject, or a
+pknca_error_secondary_ref_vary_invalid error is raised.
 It will return the intervals argument unchanged, or it will raise an error."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -93,6 +99,9 @@ or a <code>pknca_error_interval_impute_not_character</code> error is raised.
 An <code>interval_id</code> identifies one interval:  rows that share it may differ
 only in the parameters they request (and <code>impute</code>), not in <code>start</code>, <code>end</code>,
 or the groups, or a <code>pknca_error_secondary_id_conflict</code> error is raised.
+The <code>&lt;parameter&gt;_ref_vary</code> columns (see <code><a href="interval_add_secondary.html">interval_add_secondary()</a></code>) must
+name group columns of the concentration data other than the subject, or a
+<code>pknca_error_secondary_ref_vary_invalid</code> error is raised.
 It will return the intervals argument unchanged, or it will raise an error.</p>
     </div>
 
