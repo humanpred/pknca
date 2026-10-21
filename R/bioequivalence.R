@@ -656,18 +656,29 @@ print.be_within_var <- function(x, ...) {
       class = c("pknca_error_be_isc_sequence_missing", "pknca_error_be_isc_insufficient")
     )
   }
+  labels <- unique(data.frame(subj = subj, sequence = as.character(work$.sequence)))
+  if (anyDuplicated(labels$subj) > 0) {
+    rlang::abort(
+      "The intra-subject contrast estimate needs a single sequence for each subject.",
+      class = c("pknca_error_be_isc_sequence_inconsistent", "pknca_error_be_isc_insufficient")
+    )
+  }
   as.character(tapply(as.character(work$.sequence), subj, `[`, 1))
 }
 
 # Whether each subject (one value per level of `subj`) has every test and
 # reference administration its sequence calls for: as many as the most seen in
-# that sequence.  A derived sequence cannot tell a subject who missed a period
-# from a different sequence, so with `derived = TRUE` every period of the design
-# is also required.
+# that sequence, and no administration of unknown (missing) treatment.  The
+# counts are inferred from the subjects of each sequence, so a sequence in which
+# every subject lacks the same administration counts as complete.  A derived
+# sequence cannot tell a subject who missed a period from a different sequence,
+# so with `derived = TRUE` every period of the design is also required.
 .be_isc_complete <- function(work, subj, seq_id, reference_value, test_level, derived) {
-  n_ref <- as.vector(tapply(work$.trt == reference_value, subj, sum))
-  n_test <- as.vector(tapply(work$.trt == test_level, subj, sum))
+  n_ref <- as.vector(tapply(work$.trt %in% reference_value, subj, sum))
+  n_test <- as.vector(tapply(work$.trt %in% test_level, subj, sum))
+  known_trt <- !as.vector(tapply(is.na(work$.trt), subj, any))
   complete <-
+    known_trt &
     n_ref == stats::ave(n_ref, seq_id, FUN = max) &
     n_test == stats::ave(n_test, seq_id, FUN = max)
   if (derived) {
@@ -706,12 +717,14 @@ print.be_within_var <- function(x, ...) {
       class = "pknca_error_be_isc_insufficient"
     )
   }
-  fit <- stats::lm(ilat ~ 0 + sq)
-  pe_log <- mean(stats::coef(fit))
-  # The estimate weights each sequence mean by 1/m, so its variance is the sum
-  # of the coefficient covariance matrix divided by m^2.
-  se <- sqrt(sum(stats::vcov(fit))) / m
-  df <- fit$df.residual
+  # The one-way model on sequence: its residual mean square gives the variance
+  # of each sequence mean, and the estimate weights each sequence mean by 1/m.
+  # With a single sequence this is the mean, sd / sqrt(n), and n - 1.
+  seq_mean <- as.vector(tapply(ilat, sq, mean))
+  df <- n - m
+  mse <- sum((ilat - seq_mean[as.integer(sq)])^2) / df
+  pe_log <- mean(seq_mean)
+  se <- sqrt(mse * sum(1 / as.vector(table(sq)))) / m
   ci <- exp(pe_log + c(-1, 1) * stats::qt(1 - alpha / 2, df) * se) * 100
   list(
     pe_log = pe_log, se = se, df = df, n = n,
@@ -1667,7 +1680,7 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
       }
     if (identical(reg$est_method, "isc") && is.na(est$pe_log)) {
       rlang::abort(
-        "The intra-subject contrast estimate needs the sequence of every subject and complete test and reference data from more subjects than there are sequences.",
+        "The intra-subject contrast estimate needs one known sequence for every subject and complete test and reference data from more subjects than there are sequences.",
         class = "pknca_error_be_isc_insufficient"
       )
     }

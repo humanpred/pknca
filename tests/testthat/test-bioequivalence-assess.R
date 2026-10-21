@@ -256,15 +256,67 @@ test_that(".be_isc errors when it cannot be estimated", {
     .be_isc(work[work$.subject %in% c("1", "2"), ], "R", "T"),
     class = "pknca_error_be_isc_insufficient"
   )
+  # Subject 3 is in sequence TRTR; one of its rows says RTRT.
+  mixed <- work
+  mixed$.sequence <- as.character(mixed$.sequence)
+  mixed$.sequence[which(mixed$.subject == "3")[1]] <- "RTRT"
+  expect_error(.be_isc(mixed, "R", "T"), class = "pknca_error_be_isc_sequence_inconsistent")
+  expect_identical(.be_isc_or_na(mixed, "R", "T"), .be_isc_na())
   # The FDA family needs the estimate, so be_assess() reports the problem.
   long <- be_replicate_long(d)
   long$sequence <- as.character(long$sequence)
   long$sequence[long$subject == "3"] <- NA
   expect_error(
     be_assess(long, "treatment", "R", "auclast", regulator = "FDA"),
-    regexp = "sequence of every subject",
+    regexp = "known sequence for every subject",
     class = "pknca_error_be_isc_insufficient"
   )
+})
+
+test_that(".be_isc with a single sequence is the mean of the contrasts", {
+  # A fixed-order crossover (every subject gets T then R) has one sequence, so
+  # the estimate is the mean contrast with sd / sqrt(n) and n - 1 degrees of
+  # freedom.
+  d <- generate_be_replicate(24, 20240501, "2x2", cv_wr = 0.3, cv_wt = 0.3)
+  d <- d[d$sequence == "TR", ]
+  ilat <- log(d$PK[d$treatment == "T"]) - log(d$PK[d$treatment == "R"])
+  isc <- .be_isc(be_isc_work(d), "R", "T", alpha = 0.10)
+  expect_equal(isc$pe_log, mean(ilat), tolerance = 1e-12)
+  expect_equal(isc$se, stats::sd(ilat) / sqrt(12), tolerance = 1e-12)
+  expect_equal(isc$df, 11)
+  expect_equal(isc$n, 12)
+  # The ISC is computed for every regulator, so average bioequivalence on the
+  # same design must still run.
+  abe <- suppressMessages(be_assess(be_replicate_long(d), "treatment", "R", "auclast", regulator = "ABE"))
+  expect_equal(abe$gmr_percent, 100 * exp(mean(ilat)), tolerance = 1e-8)
+})
+
+test_that(".be_isc excludes a subject with an administration of unknown treatment", {
+  for (design in c("full", "partial")) {
+    d <- generate_be_replicate(24, 20240501, design, cv_wr = 0.45, cv_wt = 0.40)
+    work <- be_isc_work(d)
+    unknown <- work
+    unknown$.trt[which(unknown$.subject == "5")[1]] <- NA
+    expected <- .be_isc(work[work$.subject != "5", ], "R", "T")
+    expect_equal(.be_isc(unknown, "R", "T"), expected)
+    unknown$.sequence <- factor(NA_character_)
+    expect_equal(.be_isc(unknown, "R", "T"), expected)
+  }
+})
+
+test_that(".be_isc compares each test formulation with the reference", {
+  d <- generate_be_williams()
+  work <- data.frame(
+    .subject = factor(d$subject), .sequence = factor(d$sequence),
+    .period = factor(d$period), .trt = d$treatment, .logval = log(d$PPORRES)
+  )
+  for (tl in c("T1", "T2")) {
+    expect_equal(.be_isc(work, "R", tl), .be_isc(work[work$.trt %in% c("R", tl), ], "R", tl))
+  }
+  # A subject missing only T2 still contributes to T1 versus R.
+  drop_row <- which(work$.subject == "1" & work$.trt == "T2")
+  expect_equal(.be_isc(work[-drop_row, ], "R", "T1")$n, 18)
+  expect_equal(.be_isc(work[-drop_row, ], "R", "T2")$n, 17)
 })
 
 test_that(".be_rsabe_bound is monotone in the point estimate and flips once", {
@@ -537,8 +589,11 @@ test_that("be_extract_param returns both the model and ISC point estimates", {
   # lmer model contrast == replicateBE method.A on the balanced design
   expect_equal(p$model_gmr_percent, 88.359573, tolerance = 1e-5)
   expect_equal(c(p$model_ci_lower, p$model_ci_upper), c(75.617477, 103.248804), tolerance = 1e-4)
-  # ISC point estimate (wider, used by the FDA family)
-  expect_equal(p$isc_gmr_percent, 88.3595729, tolerance = 1e-5)
+  # The ISC estimate used by the FDA family: the same ratio as the model on this
+  # balanced, complete design, with a wider interval on n - m degrees of freedom.
+  expect_equal(p$isc_gmr_percent, 88.3595729, tolerance = 1e-8)
+  expect_equal(c(p$isc_ci_lower, p$isc_ci_upper), c(73.7959174, 105.797372), tolerance = 1e-8)
+  expect_equal(p$isc_df, 22)
   expect_equal(p$swr, 0.485616493, tolerance = 1e-7)
 })
 

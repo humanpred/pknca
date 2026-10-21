@@ -5,7 +5,9 @@
 # coefficients of variation are controllable.  The expected values pinned in
 # test-bioequivalence-assess.R were computed from the data this function
 # produces and were cross-checked against PowerTOST and replicateBE during
-# development (those packages are not dependencies of PKNCA).
+# development (those packages are not dependencies of PKNCA).  The
+# intra-subject contrast values were checked against a transcription of the SAS
+# code in the FDA progesterone and warfarin guidances.
 generate_be_replicate <- function(nsub = 24, seed = 20240501,
                                   design = c("full", "partial", "2x2"),
                                   cv_wr = 0.45, cv_wt = 0.40, gmr = 1.05,

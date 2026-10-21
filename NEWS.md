@@ -569,12 +569,11 @@ the generated intervals:
   with every test and reference administration their sequence calls for
   contribute, the ratio is the unweighted mean of the sequence means of the
   contrasts, and its standard error and `n - m` degrees of freedom (`n`
-  subjects, `m` sequences) come from the one-way model on sequence.  The
-  contrasts previously pooled all subjects with `n - 1` degrees of freedom,
-  so period effects widened the interval and, with unequal sequence sizes,
-  shifted the ratio.  A subject with a missing sequence is now an error for
-  these frameworks, and without a sequence column the sequence is the
-  subject's treatment-by-period pattern.  (@billdenney)
+  subjects, `m` sequences) come from the one-way model on sequence, so period
+  effects do not enter the ratio or its interval.  A subject without a single
+  known sequence is an error for these frameworks, and without a sequence
+  column the sequence is the subject's treatment-by-period pattern.
+  (@billdenney)
 
 * Secondary parameters can now be calculated by linking intervals with
   `interval_id` and `<parameter>_ref` columns in the interval specification.
