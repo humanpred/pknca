@@ -847,6 +847,7 @@ print.be_within_var <- function(x, ...) {
   }
   if (!is.na(reg$switch_swr) && wv$swR < reg$switch_swr) {
     # Unscaled average bioequivalence fallback.
+    .be_check_unscaled(unscaled)
     list(
       limit_lower = 80, limit_upper = 125, criterion = NA_real_,
       pass = isTRUE(
@@ -876,6 +877,7 @@ print.be_within_var <- function(x, ...) {
       class = "pknca_error_be_ntid_not_replicated"
     )
   }
+  .be_check_unscaled(unscaled)
   bound <- .be_rsabe_bound(est$pe_log, est$se, est$df, wv$s2wR, wv$df_wR, reg$r_const)
   list(
     limit_lower = 80, limit_upper = 125, criterion = bound,
@@ -901,6 +903,7 @@ print.be_within_var <- function(x, ...) {
       class = "pknca_error_be_hvntid_not_replicated"
     )
   }
+  .be_check_unscaled(unscaled)
   list(
     limit_lower = 80, limit_upper = 125, criterion = NA_real_,
     pass = isTRUE(
@@ -910,6 +913,18 @@ print.be_within_var <- function(x, ...) {
     ),
     report = unscaled
   )
+}
+
+# Stop when the unscaled criterion needs the model estimate but the model
+# (the FDA mixed model) could not be fit; `unscaled$error` is its message.
+.be_check_unscaled <- function(unscaled) {
+  if (!is.null(unscaled$error) && !is.na(unscaled$error)) {
+    rlang::abort(
+      paste("The unscaled criterion needs the FDA mixed model, which failed:", unscaled$error),
+      class = c("pknca_error_be_fda_model_unavailable", "pknca_error_be_fda_model")
+    )
+  }
+  invisible(unscaled)
 }
 
 # Dispatch to the decider for a regulator's scaling type.  The descriptive
@@ -1490,13 +1505,21 @@ be_fit_model_anova <- function(ds_ep, scaling = TRUE) {
 }
 
 # Internal fitter dispatched by be_fit_model_single().  The fixed-effects ANOVA
-# gives the geometric means; the FDA mixed model (see .be_fda_mixed()) gives
-# the unscaled ratio for repeated measures.  A parallel design has no
-# within-subject structure, so it keeps the ANOVA ratio.
+# gives the geometric means; for a replicate design the FDA mixed model (see
+# .be_fda_mixed()) gives the unscaled ratio, and a design without a replicated
+# formulation keeps the ANOVA ratio.  An error from the mixed model is kept as
+# `fda$error` and raised only by a decision that needs the unscaled ratio.
 be_fit_model_isc <- function(ds_ep, scaling = TRUE) {
   fit <- be_fit_model_anova(ds_ep, scaling = scaling)
-  fit$fda <- if (.be_is_parallel(ds_ep)) NULL else .be_fda_mixed(ds_ep)
+  if (any(duplicated(paste(ds_ep$.subject, ds_ep$.trt)))) {
+    fit$fda <- tryCatch(.be_fda_mixed(ds_ep), pknca_error_be_fda_model = .be_fda_failed)
+  }
   fit
+}
+
+# The `fda` element of a fit whose FDA mixed model failed with condition `cnd`.
+.be_fda_failed <- function(cnd) {
+  list(error = conditionMessage(cnd))
 }
 
 # Internal fitter dispatched by be_fit_model_single().  Several test
@@ -1594,6 +1617,7 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
         gm_test = m$gm_test, gm_test_lower = m$gm_test_lower, gm_test_upper = m$gm_test_upper,
         model_gmr_percent = m$gmr_percent, model_ci_lower = m$ci_lower,
         model_ci_upper = m$ci_upper, model_df = m$df,
+        model_error = if (is.null(m$error)) NA_character_ else m$error,
         isc_pe_log = isc$pe_log, isc_se = isc$se, isc_df = isc$df,
         isc_gmr_percent = isc$gmr_percent, isc_ci_lower = isc$ci_lower, isc_ci_upper = isc$ci_upper,
         swr = wv$ref_var$sw, swt = wv$test_var$sw,
@@ -1770,13 +1794,22 @@ be_extract_param_anova <- function(fit, ds_ep, alpha = 0.10) {
 
 # Internal extractor dispatched by be_extract_param().  The geometric means
 # come from the fixed-effects ANOVA; the ratio, its confidence interval, and
-# its degrees of freedom come from the FDA mixed model when it was fit.
+# its degrees of freedom come from the FDA mixed model when it was fit, and are
+# missing, with the model's error message, when it failed.
 be_extract_param_isc <- function(fit, ds_ep, alpha = 0.10) {
   part <- be_extract_param_anova(fit, ds_ep, alpha)
   if (is.null(fit$fda)) {
     return(part)
   }
   for (tl in names(part$contrasts)) {
+    if (!is.null(fit$fda$error)) {
+      part$contrasts[[tl]]$gmr_percent <- NA_real_
+      part$contrasts[[tl]]$ci_lower <- NA_real_
+      part$contrasts[[tl]]$ci_upper <- NA_real_
+      part$contrasts[[tl]]$df <- NA_real_
+      part$contrasts[[tl]]$error <- fit$fda$error
+      next
+    }
     fc <- fit$fda$contrasts[[tl]]
     ci <- exp(fc$pe_log + c(-1, 1) * stats::qt(1 - alpha / 2, fc$df) * fc$se) * 100
     part$contrasts[[tl]]$gmr_percent <- exp(fc$pe_log) * 100
@@ -1817,7 +1850,8 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
     wv <- .be_wv_from_params(p, if (identical(reg$est_method, "isc")) "isc_" else "")
     model_est <- list(
       pe_log = log(p$model_gmr_percent / 100), se = NA_real_, df = p$model_df, n = p$n,
-      gmr_percent = p$model_gmr_percent, ci_lower = p$model_ci_lower, ci_upper = p$model_ci_upper
+      gmr_percent = p$model_gmr_percent, ci_lower = p$model_ci_lower, ci_upper = p$model_ci_upper,
+      error = p$model_error
     )
     est <-
       if (identical(reg$est_method, "isc")) {

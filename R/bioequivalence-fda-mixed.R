@@ -17,11 +17,16 @@
 # subjects; subjects with the same treatment pattern share one covariance
 # block.
 #
-# A treatment that no subject receives twice has a residual variance that
-# cannot be separated from its between-subject variance (the guidance model is
-# over-specified for a partial replicate's test formulation).  That residual
-# variance is fixed at zero, which leaves the likelihood, the estimates, and
-# their variance unchanged.
+# The model is for replicate designs, where some formulation is given twice
+# and its within-subject variance keeps every covariance block positive
+# definite.  A treatment that no subject receives twice has a residual variance
+# that cannot be separated from its between-subject variance (the guidance
+# model is over-specified for a partial replicate's test formulation); that
+# residual variance is fixed at zero, which leaves the likelihood, the
+# estimates, and their variance unchanged.
+#
+# Every error raised here has the class `pknca_error_be_fda_model`, so callers
+# can defer it until a decision needs the model.
 #
 # Parameter scales: `theta` holds the natural covariance parameters (the lower
 # triangle of G by column, then the residual variance of each replicated
@@ -49,7 +54,7 @@
   if (!all(test_cols %in% colnames(X))) {
     rlang::abort(
       "The treatment effect is aliased with the sequence or period effects, so the FDA mixed model cannot estimate it.",
-      class = "pknca_error_be_fda_model_aliased"
+      class = c("pknca_error_be_fda_model_aliased", "pknca_error_be_fda_model")
     )
   }
   trt_idx <- as.integer(ds_ep$.trt)
@@ -312,26 +317,26 @@
 # Fit the FDA mixed model to one endpoint and return, for each test
 # formulation, the log test/reference estimate, its standard error, and the
 # Satterthwaite degrees of freedom, plus the REML log-likelihood (without its
-# constant) and the natural covariance parameters.
+# constant), the natural covariance parameters `theta`, and the optimization
+# scale parameters `u`.
 .be_fda_mixed <- function(ds_ep) {
   d <- .be_fda_design(ds_ep)
-  best <- NULL
-  for (rho in c(0.9, 0)) {
-    opt <- stats::optim(
-      .be_fda_start(d, rho), .be_fda_objective, .be_fda_objective_grad, d = d,
-      method = "BFGS", control = list(maxit = 2000, reltol = 1e-14)
-    )
-    if (opt$convergence == 0 && (is.null(best) || opt$value < best$value)) {
-      best <- opt
-    }
-  }
-  if (is.null(best)) {
+  n_par <- d$n_g + sum(d$replicated)
+  if (length(d$y) - ncol(d$X) <= n_par) {
     rlang::abort(
-      "The REML fit of the FDA mixed model did not converge.",
-      class = "pknca_error_be_fda_model_convergence"
+      sprintf(
+        "The FDA mixed model has %d covariance parameters but only %d residual degrees of freedom.",
+        n_par, length(d$y) - ncol(d$X)
+      ),
+      class = c("pknca_error_be_fda_model_insufficient", "pknca_error_be_fda_model")
     )
   }
+  best <- .be_fda_optimize(d)
   theta <- .be_fda_theta(best$par, d)
+  .be_fda_check_variances(theta, d)
+  if (max(abs(.be_fda_objective_grad(best$par, d))) > 1e-3 * max(1, abs(best$value))) {
+    .be_fda_abort_convergence()
+  }
   fit <- .be_fda_reml(theta, d)
   M <- .be_fda_m(fit, d)
   info_theta <- .be_fda_information(fit, d, M)
@@ -347,13 +352,11 @@
   for (m in idx_g) {
     info[idx_g, idx_g] <- info[idx_g, idx_g] - grad_theta[m] * derivs$hess[[m]]
   }
-  # A residual variance at its lower bound of zero is held fixed there.
-  free <- c(rep(TRUE, d$n_g), theta[-idx_g] > 1e-10 * sum(abs(theta)))
-  cov_par <- tryCatch(solve(info[free, free, drop = FALSE]), error = .be_fda_null)
+  cov_par <- tryCatch(solve(info), error = .be_fda_null)
   if (is.null(cov_par)) {
     rlang::abort(
       "The information matrix of the FDA mixed model is singular, so its Satterthwaite degrees of freedom are not available.",
-      class = "pknca_error_be_fda_model_singular"
+      class = c("pknca_error_be_fda_model_singular", "pknca_error_be_fda_model")
     )
   }
   contrasts <- list()
@@ -362,13 +365,64 @@
     cc <- drop(fit$C %*% cvec)
     f <- sum(cvec * cc)
     # d f / d theta_j = c' C M_j C c, carried to the SAS scale.
-    g <- crossprod(jac, vapply(M, .be_fda_quad, numeric(1), x = cc))[free]
-    contrasts[[d$levels[j + 1]]] <- list(
-      pe_log = sum(cvec * fit$beta), se = sqrt(f),
-      df = 2 * f^2 / drop(crossprod(g, cov_par %*% g))
+    g <- crossprod(jac, vapply(M, .be_fda_quad, numeric(1), x = cc))
+    df <- 2 * f^2 / drop(crossprod(g, cov_par %*% g))
+    if (!is.finite(df) || df <= 0) {
+      rlang::abort(
+        sprintf("The Satterthwaite degrees of freedom of the FDA mixed model are not positive (%g).", df),
+        class = c("pknca_error_be_fda_model_df", "pknca_error_be_fda_model")
+      )
+    }
+    contrasts[[d$levels[j + 1]]] <- list(pe_log = sum(cvec * fit$beta), se = sqrt(f), df = df)
+  }
+  list(contrasts = contrasts, loglik = fit$loglik, theta = theta, u = best$par)
+}
+
+# Maximize the REML log-likelihood from two starting points (high and zero
+# between-subject correlation) and return the better optim() result.  Stops
+# unless a fit converged to a finite likelihood.
+.be_fda_optimize <- function(d) {
+  best <- NULL
+  for (rho in c(0.9, 0)) {
+    opt <- stats::optim(
+      .be_fda_start(d, rho), .be_fda_objective, .be_fda_objective_grad, d = d,
+      method = "BFGS", control = list(maxit = 2000, reltol = 1e-14)
+    )
+    if (opt$convergence == 0 && opt$value < .Machine$double.xmax && (is.null(best) || opt$value < best$value)) {
+      best <- opt
+    }
+  }
+  if (is.null(best)) {
+    .be_fda_abort_convergence()
+  }
+  best
+}
+
+.be_fda_abort_convergence <- function() {
+  rlang::abort(
+    "The REML fit of the FDA mixed model did not converge.",
+    class = c("pknca_error_be_fda_model_convergence", "pknca_error_be_fda_model")
+  )
+}
+
+# Stop when a replicated formulation's within-subject variance is zero (its
+# replicate administrations agree exactly once the fixed effects are removed),
+# where the REML likelihood has no maximum.
+.be_fda_check_variances <- function(theta, d) {
+  idx_g <- seq_len(d$n_g)
+  diag_g <- theta[idx_g][d$gi[, 1] == d$gi[, 2]]
+  s2 <- theta[-idx_g]
+  zero <- s2 < 1e-8 * (diag_g[d$replicated] + s2)
+  if (any(zero)) {
+    rlang::abort(
+      sprintf(
+        "The within-subject variance of formulation(s) %s is zero, so the FDA mixed model is degenerate.",
+        paste(d$levels[d$replicated][zero], collapse = ", ")
+      ),
+      class = c("pknca_error_be_fda_model_degenerate", "pknca_error_be_fda_model")
     )
   }
-  list(contrasts = contrasts, loglik = fit$loglik, theta = theta)
+  invisible(theta)
 }
 
 # The quadratic form x' M x.
