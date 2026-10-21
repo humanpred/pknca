@@ -437,11 +437,13 @@ print.be_design <- function(x, ...) {
   }
   arm$.subject <- droplevels(arm$.subject)
   arm$.period <- droplevels(arm$.period)
+  if (by_sequence) {
+    arm$.sequence <- droplevels(factor(arm$.sequence))
+  }
   fit_formula <-
     if (nlevels(arm$.period) <= 1) {
       .logval ~ .subject
     } else if (by_sequence) {
-      arm$.sequence <- droplevels(factor(arm$.sequence))
       .logval ~ .subject + .sequence:.period
     } else {
       .logval ~ .subject + .period
@@ -1438,9 +1440,9 @@ print.be_dataset <- function(x, ...) {
 #' @param ds_ep The standardized single-endpoint data.frame from [be_dataset()]
 #'   (`be_dataset(...)$data` filtered to one endpoint).
 #' @param model_type One of `"lmer"`, `"nlme"`, `"anova"`, `"isc"` (the FDA
-#'   path: `"anova"` for the geometric means plus the FDA mixed-effects model
-#'   for the unscaled ratio), or `"gls"` (generalized
-#'   least squares with treatment-specific residual variances, for parallel
+#'   path: `"anova"` for the geometric means plus, for a replicate design, the
+#'   FDA mixed-effects model for the ratio), or `"gls"` (generalized least
+#'   squares with treatment-specific residual variances, for parallel
 #'   designs).
 #' @param scaling Logical; whether reference scaling is needed (controls whether
 #'   the within-formulation variances are estimated).
@@ -1979,7 +1981,11 @@ be_fit_models <- function(object, reference_col, reference_value,
   if (length(ds$columns$covariates) > 0 && identical(reg$est_method, "isc")) {
     rlang::warn(
       sprintf(
-        "The %s framework uses intra-subject contrasts for the ratio and its decision; covariates affect only the geometric means.",
+        if (identical(model_type, "isc")) {
+          "The %s framework decides with intra-subject contrasts and the FDA mixed model, which do not use covariates; covariates affect only the geometric means."
+        } else {
+          "The %s framework decides its reference-scaled criterion with intra-subject contrasts, which do not use covariates; covariates enter the geometric means and the unscaled criterion."
+        },
         reg$name
       ),
       class = "pknca_warning_be_covariates_isc"
@@ -2103,7 +2109,13 @@ be_fit_models <- function(object, reference_col, reference_value,
           ),
           paste(covariates, collapse = ", ")
         ),
-        if (identical(reg$est_method, "isc")) " Covariates do not enter the intra-subject contrasts." else ""
+        if (!identical(reg$est_method, "isc")) {
+          ""
+        } else if (identical(model_type, "isc")) {
+          " Covariates enter neither the intra-subject contrasts nor the FDA mixed model."
+        } else {
+          " Covariates do not enter the intra-subject contrasts."
+        }
       )
     }
   title <-
@@ -2139,16 +2151,23 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' progesterone and warfarin sodium).  Without a sequence column, a subject's
 #' sequence is its treatment-by-period pattern.  The unscaled 80.00-125.00%
 #' criterion of these frameworks (FDA RSABE when `swR < 0.294`, NTID, and
-#' HVNTID) uses the guidance mixed-effects model instead: fixed sequence,
-#' period, and treatment effects, correlated treatment random effects for each
-#' subject, a residual variance per treatment, REML, and Satterthwaite degrees
-#' of freedom (SAS `RANDOM TRT/TYPE=FA0(2)`, `REPEATED/GRP=TRT`).  A
-#' formulation that no subject receives twice has its residual variance folded
-#' into its between-subject variance, where the guidance model is
-#' over-specified.  Each row shows the ratio and interval its decision used:
-#' the intra-subject contrasts for the reference-scaled criterion and the mixed
-#' model for the unscaled one.  Pass `model_type` to override
-#' (`"lmer"`, `"anova"`, `"isc"`, `"nlme"`, or `"gls"`).  Within-subject
+#' HVNTID) uses the model of `model_type`; the default `"isc"` is the guidance
+#' mixed-effects model for replicate designs: fixed sequence, period, and
+#' treatment effects, correlated treatment random effects for each subject, a
+#' residual variance per treatment, REML, and Satterthwaite degrees of freedom
+#' (SAS `RANDOM TRT/TYPE=FA0(2)`, `REPEATED/GRP=TRT`).  A formulation that no
+#' subject receives twice has its residual variance folded into its
+#' between-subject variance, where the guidance model is over-specified, and a
+#' subject missing a period forms its own sequence when the sequence is derived
+#' from the treatment pattern.  When the mixed model cannot be fit (for
+#' example, a formulation whose replicates agree exactly), only a decision that
+#' needs the unscaled criterion stops with an error.  Each row shows the ratio
+#' and interval its decision used: the intra-subject contrasts for the
+#' reference-scaled criterion and the model for the unscaled one.  Pass
+#' `model_type` to override (`"lmer"`, `"anova"`, `"isc"`, `"nlme"`, or
+#' `"gls"`); with `"isc"` the FDA mixed model also gives the ratio for the
+#' other frameworks, and a design without a replicated formulation keeps the
+#' fixed-effects ANOVA ratio.  Within-subject
 #' variability for the FDA frameworks uses the FDA estimator from within-sequence
 #' differences between replicate administrations (`model_type = "isc"` in
 #' [be_within_var()]); for the other frameworks it uses the EMA ANOVA estimator

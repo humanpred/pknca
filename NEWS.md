@@ -585,17 +585,22 @@ the generated intervals:
   `isc_`-prefixed columns.  (@billdenney)
 
 * The unscaled 80.00-125.00% criterion of the FDA frameworks (RSABE when
-  `swR < 0.294`, NTID, and HVNTID) uses the mixed-effects model of the FDA
-  progesterone and warfarin guidances (SAS `RANDOM TRT/TYPE=FA0(2)`,
-  `REPEATED/GRP=TRT`, `DDFM=SATTERTH`): correlated treatment random effects
-  for each subject, a residual variance per treatment, REML, and Satterthwaite
-  degrees of freedom, fit by subject so that large studies stay fast.
-  `model_type = "isc"` fits it for the ratio and keeps the fixed-effects ANOVA
-  for the geometric means.  The reference-scaled criterion keeps the
-  intra-subject contrasts, and each row of `be_assess()` shows the ratio and
-  interval that its decision used.  The `be_assess()` caption for HVNTID
-  states its criteria (the conventional interval and the `swT`/`swR` bound).
-  (@billdenney)
+  `swR < 0.294`, NTID, and HVNTID) uses the model of `model_type`.  The
+  default, `model_type = "isc"`, is for a replicate design the mixed-effects
+  model of the FDA progesterone and warfarin guidances (SAS
+  `RANDOM TRT/TYPE=FA0(2)`, `REPEATED/GRP=TRT`, `DDFM=SATTERTH`): correlated
+  treatment random effects for each subject, a residual variance per
+  treatment, REML, and Satterthwaite degrees of freedom, fit by subject so
+  that large studies stay fast; the fixed-effects ANOVA gives the geometric
+  means, and a design without a replicated formulation keeps the ANOVA ratio.
+  The reference-scaled criterion keeps the intra-subject contrasts, and each
+  row of `be_assess()` shows the ratio and interval that its decision used.
+  When the mixed model cannot be fit (too few subjects, a formulation whose
+  replicates agree exactly, or no convergence), `be_extract_param()` reports
+  the message in `model_error`, and only a decision that needs the unscaled
+  criterion stops, with an error of class `pknca_error_be_fda_model`.  The
+  `be_assess()` caption for HVNTID states its criteria (the conventional
+  interval and the `swT`/`swR` bound).  (@billdenney)
 
 * `be_dataset()`, and so `be_assess()` and `be_compare()`, stops with
   `pknca_error_be_design_missing` when the subject, sequence, period, or

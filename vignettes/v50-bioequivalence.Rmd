@@ -357,8 +357,9 @@ bioequivalence decision.
   replicated design.
 * **`covariates`** names columns added to every model as additive fixed
   effects.  The least-squares means are then at the mean of numeric covariates.
-  The intra-subject contrasts used by the FDA frameworks and the within-subject
-  variances used for reference scaling do not use covariates.
+  The intra-subject contrasts and the FDA mixed model used by the FDA frameworks
+  and the within-subject variances used for reference scaling do not use
+  covariates.
 * **`regulator = "descriptive"`** estimates the geometric means, their ratio,
   and its confidence interval exactly as `"ABE"` does, but applies no
   acceptance limits and reports no pass/fail.  It is meant for comparisons that

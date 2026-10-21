@@ -166,7 +166,7 @@ test_that("be_within_var (isc) is the FDA within-sequence estimator (known answe
   expect_equal(be_within_var(d, "PK", "subject", "period", "treatment", "R", model_type = "isc"), wv)
 })
 
-test_that("be_within_var (isc) matches the FDA guidance and the ANOVA for a full replicate", {
+test_that("be_within_var (isc) matches the FDA guidance, and equals the ANOVA for a full replicate", {
   # Partial replicate: the expected value comes from a literal transcription of
   # the FDA progesterone guidance SAS code (`model dlat = seq`, s2wr = MSE / 2).
   dp <- generate_be_replicate(24, 20240501, "partial", cv_wr = 0.45, cv_wt = 0.40)

@@ -15,9 +15,9 @@ be_fit_model_single(
 (\code{be_dataset(...)$data} filtered to one endpoint).}
 
 \item{model_type}{One of \code{"lmer"}, \code{"nlme"}, \code{"anova"}, \code{"isc"} (the FDA
-path: \code{"anova"} for the geometric means plus the FDA mixed-effects model
-for the unscaled ratio), or \code{"gls"} (generalized
-least squares with treatment-specific residual variances, for parallel
+path: \code{"anova"} for the geometric means plus, for a replicate design, the
+FDA mixed-effects model for the ratio), or \code{"gls"} (generalized least
+squares with treatment-specific residual variances, for parallel
 designs).}
 
 \item{scaling}{Logical; whether reference scaling is needed (controls whether

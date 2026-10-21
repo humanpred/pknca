@@ -426,7 +426,17 @@ test_that("covariates with an intra-subject-contrast framework warn that they do
   plain <- be_assess(d, "treatment", "R", "auclast", regulator = "FDA")
   expect_equal(res$gmr_percent, plain$gmr_percent)
   expect_equal(res$criterion, plain$criterion)
-  expect_match(attr(res, "caption"), "Covariates do not enter the intra-subject contrasts.", fixed = TRUE)
+  expect_match(
+    attr(res, "caption"),
+    "Covariates enter neither the intra-subject contrasts nor the FDA mixed model.",
+    fixed = TRUE
+  )
+  # The unscaled criterion, from the FDA mixed model, does not use them either.
+  d_lo <- be_replicate_long(generate_be_replicate(24, 2024, "full", cv_wr = 0.12, cv_wt = 0.12))
+  d_lo$WT <- as.numeric(d_lo$subject) + 60
+  lo <- suppressWarnings(be_assess(d_lo, "treatment", "R", "auclast", regulator = "HVNTID", covariates = "WT"))
+  lo_plain <- be_assess(d_lo, "treatment", "R", "auclast", regulator = "HVNTID")
+  expect_equal(c(lo$ci_lower, lo$ci_upper), c(lo_plain$ci_lower, lo_plain$ci_upper))
 })
 
 # Heteroscedastic models ------------------------------------------------------

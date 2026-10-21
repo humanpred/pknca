@@ -135,16 +135,23 @@ of freedom for \code{n} subjects in \code{m} sequences (FDA draft guidances on
 progesterone and warfarin sodium).  Without a sequence column, a subject's
 sequence is its treatment-by-period pattern.  The unscaled 80.00-125.00\%
 criterion of these frameworks (FDA RSABE when \code{swR < 0.294}, NTID, and
-HVNTID) uses the guidance mixed-effects model instead: fixed sequence,
-period, and treatment effects, correlated treatment random effects for each
-subject, a residual variance per treatment, REML, and Satterthwaite degrees
-of freedom (SAS \verb{RANDOM TRT/TYPE=FA0(2)}, \code{REPEATED/GRP=TRT}).  A
-formulation that no subject receives twice has its residual variance folded
-into its between-subject variance, where the guidance model is
-over-specified.  Each row shows the ratio and interval its decision used:
-the intra-subject contrasts for the reference-scaled criterion and the mixed
-model for the unscaled one.  Pass \code{model_type} to override
-(\code{"lmer"}, \code{"anova"}, \code{"isc"}, \code{"nlme"}, or \code{"gls"}).  Within-subject
+HVNTID) uses the model of \code{model_type}; the default \code{"isc"} is the guidance
+mixed-effects model for replicate designs: fixed sequence, period, and
+treatment effects, correlated treatment random effects for each subject, a
+residual variance per treatment, REML, and Satterthwaite degrees of freedom
+(SAS \verb{RANDOM TRT/TYPE=FA0(2)}, \code{REPEATED/GRP=TRT}).  A formulation that no
+subject receives twice has its residual variance folded into its
+between-subject variance, where the guidance model is over-specified, and a
+subject missing a period forms its own sequence when the sequence is derived
+from the treatment pattern.  When the mixed model cannot be fit (for
+example, a formulation whose replicates agree exactly), only a decision that
+needs the unscaled criterion stops with an error.  Each row shows the ratio
+and interval its decision used: the intra-subject contrasts for the
+reference-scaled criterion and the model for the unscaled one.  Pass
+\code{model_type} to override (\code{"lmer"}, \code{"anova"}, \code{"isc"}, \code{"nlme"}, or
+\code{"gls"}); with \code{"isc"} the FDA mixed model also gives the ratio for the
+other frameworks, and a design without a replicated formulation keeps the
+fixed-effects ANOVA ratio.  Within-subject
 variability for the FDA frameworks uses the FDA estimator from within-sequence
 differences between replicate administrations (\code{model_type = "isc"} in
 \code{\link[=be_within_var]{be_within_var()}}); for the other frameworks it uses the EMA ANOVA estimator
