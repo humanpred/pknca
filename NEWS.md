@@ -575,6 +575,15 @@ the generated intervals:
   column the sequence is the subject's treatment-by-period pattern.
   (@billdenney)
 
+* `be_within_var()` gains `model_type = "isc"`, the FDA progesterone and
+  warfarin guidance estimator (each subject's difference between its two
+  administrations of a formulation, centered within sequence, on `n - m`
+  degrees of freedom), and a `sequence` argument for it.  The FDA RSABE, NTID,
+  and HVNTID frameworks in `be_assess()` use it for `swR`, `swT`, and the
+  `swT`/`swR` bound; it equals the EMA ANOVA estimate for `TRTR`/`RTRT` and
+  differs for `TRR`/`RTR`/`RRT`.  `be_extract_param()` reports it in `isc_`-prefixed columns.
+  (@billdenney)
+
 * `be_dataset()`, and so `be_assess()` and `be_compare()`, stops with
   `pknca_error_be_design_missing` when the subject, sequence, period, or
   treatment is missing in a row that would be analyzed, and with

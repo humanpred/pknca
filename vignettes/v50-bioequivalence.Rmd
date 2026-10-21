@@ -68,7 +68,11 @@ FDA reference-scaled family always uses intra-subject contrasts (`"isc"`)
 regardless of design: each subject's mean log test minus mean log reference,
 from the subjects with every administration their sequence calls for, averaged
 with equal weight per sequence and with `n - m` degrees of freedom (`n` subjects,
-`m` sequences), as the FDA progesterone and warfarin guidances specify.
+`m` sequences), as the FDA progesterone and warfarin guidances specify.  Their
+within-subject variability comes from each subject's difference between its two
+administrations of a formulation, centered within sequence
+(`be_within_var(model_type = "isc")`); the expanding-limits frameworks use the
+EMA ANOVA estimator.  The two agree for a `TRTR`/`RTRT` full replicate.
 
 | Regulator | Design required | Auto `model_type` | Notes |
 |---|---|---|---|

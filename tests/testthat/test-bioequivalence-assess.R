@@ -146,6 +146,47 @@ test_that("be_within_var returns NA test variability for a partial replicate", {
   )
 })
 
+test_that("be_within_var (isc) is the FDA within-sequence estimator (known answer)", {
+  # Reference differences D = R1 - R2 of 0.1, 0.3 (TRR), -0.2, 0 (RTR), and 0.4,
+  # 0.2 (RRT): the sequence means are 0.2, -0.1, and 0.3, each D deviates by
+  # 0.1, so s2wR = 6 * 0.01 / (2 * (6 - 3)) = 0.01 on 3 degrees of freedom.
+  seqs <- rep(c("TRR", "RTR", "RRT"), each = 2)
+  d <- data.frame(
+    subject = rep(1:6, each = 3), sequence = rep(seqs, each = 3),
+    period = rep(1:3, 6), treatment = unlist(strsplit(seqs, ""))
+  )
+  d$logpk <- 0
+  first_r <- !duplicated(paste(d$subject, d$treatment)) & d$treatment == "R"
+  d$logpk[first_r] <- c(0.1, 0.3, -0.2, 0, 0.4, 0.2)
+  d$PK <- exp(d$logpk)
+  wv <- be_within_var(d, "PK", "subject", "period", "treatment", "R", model_type = "isc", sequence = "sequence")
+  expect_equal(wv$s2wR, 0.01, tolerance = 1e-12)
+  expect_equal(wv$df_wR, 3)
+  # Without the sequence column, the sequence is the treatment pattern.
+  expect_equal(be_within_var(d, "PK", "subject", "period", "treatment", "R", model_type = "isc"), wv)
+})
+
+test_that("be_within_var (isc) matches the FDA guidance and the ANOVA for a full replicate", {
+  # Partial replicate: the expected value comes from a literal transcription of
+  # the FDA progesterone guidance SAS code (`model dlat = seq`, s2wr = MSE / 2).
+  dp <- generate_be_replicate(24, 20240501, "partial", cv_wr = 0.45, cv_wt = 0.40)
+  wp <- be_within_var(dp, "PK", "subject", "period", "treatment", "R", model_type = "isc", sequence = "sequence")
+  expect_equal(wp$swR, 0.565267363, tolerance = 1e-8)
+  expect_equal(wp$df_wR, 21)
+  expect_true(is.na(wp$swT))
+  # The EMA ANOVA has period effects common to the sequences, so it differs.
+  wa <- be_within_var(dp, "PK", "subject", "period", "treatment", "R", model_type = "anova")
+  expect_equal(wa$swR, 0.576194165, tolerance = 1e-8)
+  expect_equal(wa$df_wR, 22)
+  # Full replicate (TRTR/RTRT): the two estimators are identical.
+  d <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
+  wf <- be_within_var(d, "PK", "subject", "period", "treatment", "R", model_type = "isc", sequence = "sequence")
+  wf_anova <- be_within_var(d, "PK", "subject", "period", "treatment", "R")
+  for (nm in c("swR", "swT", "df_wR", "df_wT", "sw_ratio", "sw_ratio_ci_upper")) {
+    expect_equal(wf[[nm]], wf_anova[[nm]], tolerance = 1e-10)
+  }
+})
+
 test_that("be_within_var nlme agrees with anova to within a few percent", {
   d <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
   a <- be_within_var(d, "PK", "subject", "period", "treatment", "R", model_type = "anova")
@@ -404,6 +445,19 @@ test_that("be_assess (FDA RSABE) computes the linearized criterion", {
   expect_equal(res$criterion, -0.0735236679, tolerance = 1e-8)
   expect_true(is.na(res$limit_lower))
   expect_true(res$pass)
+})
+
+test_that("be_assess (FDA RSABE) uses the FDA within-subject variance for a partial replicate", {
+  dp <- be_replicate_long(generate_be_replicate(24, 20240501, "partial", cv_wr = 0.45, cv_wt = 0.40))
+  res <- be_assess(dp, "treatment", "R", "auclast", regulator = "FDA")
+  # From the SAS transcription of the FDA progesterone guidance.
+  expect_equal(res$swr, 0.565267363, tolerance = 1e-8)
+  expect_equal(res$cvwr_percent, 100 * sqrt(exp(0.565267363^2) - 1), tolerance = 1e-8)
+  expect_equal(c(res$ci_lower, res$ci_upper), c(80.8048204, 114.610061), tolerance = 1e-8)
+  expect_equal(res$criterion, -0.157507556, tolerance = 1e-8)
+  # The expanding-limits frameworks keep the EMA ANOVA estimator.
+  ema <- be_assess(dp, "treatment", "R", "auclast", regulator = "EMA", model_type = "anova")
+  expect_equal(ema$swr, 0.576194165, tolerance = 1e-8)
 })
 
 test_that("be_assess (FDA RSABE) falls back to unscaled ABE when swR < 0.294", {

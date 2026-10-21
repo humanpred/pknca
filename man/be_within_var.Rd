@@ -11,8 +11,9 @@ be_within_var(
   period,
   treatment,
   reference_value,
-  model_type = c("anova", "nlme"),
-  alpha = 0.1
+  model_type = c("anova", "nlme", "isc"),
+  alpha = 0.1,
+  sequence = NULL
 )
 }
 \arguments{
@@ -27,13 +28,17 @@ and treatment.}
 
 \item{reference_value}{The value of \code{treatment} that is the reference.}
 
-\item{model_type}{\code{"anova"} (the default and the regulatory standard) or
-\code{"nlme"} (mixed model with treatment-specific residual variances; full
-replicate only).}
+\item{model_type}{\code{"anova"} (the default; the EMA estimator), \code{"isc"} (the
+FDA estimator), or \code{"nlme"} (mixed model with treatment-specific residual
+variances; full replicate only).}
 
 \item{alpha}{The significance level for the \code{swT}/\code{swR} ratio confidence
 bound (default \code{0.10} gives the 90\% upper bound used for narrow therapeutic
 index drugs).}
+
+\item{sequence}{The column name of the randomization sequence, used by
+\code{model_type = "isc"}.  When \code{NULL}, a subject's sequence is its
+treatment-by-period pattern.}
 }
 \value{
 An object of class \code{be_within_var}: a list with \code{swR}, \code{swT},
@@ -48,13 +53,20 @@ partial replicate design).
 log-transformed endpoint separately for the reference (\code{swR}) and test
 (\code{swT}) formulations, the quantities that reference-scaling frameworks need.
 The default \code{model_type = "anova"} is an analysis of variance (ANOVA) of the
-replicate observations within each formulation; this is the estimator used by
-both Method A and Method B of the EMA \code{replicateBE} reference implementation
-and by the FDA moment-based approach, and it works for full and partial
-replicate designs.  \code{model_type = "nlme"} instead fits a single mixed model
-with treatment-specific residual variances and requires a fully replicated
-design; it is provided as the alternative described in the FDA progesterone
-guidance and can differ slightly from \code{"anova"}.
+replicate observations within each formulation with subject and period
+effects; this is the estimator used by both Method A and Method B of the EMA
+\code{replicateBE} reference implementation, and it works for full and partial
+replicate designs.  \code{model_type = "isc"} is the estimator of the FDA
+progesterone and warfarin guidances, used by the FDA frameworks in
+\code{\link[=be_assess]{be_assess()}}: each subject's difference between its two administrations of
+a formulation, centered within sequence, so that
+\verb{s2wR = sum((D - mean D within sequence)^2) / (2 * (n - m))} on \code{n - m}
+degrees of freedom for \code{n} subjects in \code{m} sequences.  It equals the
+\code{"anova"} estimate for a two-sequence full replicate (\code{TRTR}/\code{RTRT}) and
+differs for a partial replicate (\code{TRR}/\code{RTR}/\code{RRT}), where the period effects of the
+reference administrations differ by sequence.  \code{model_type = "nlme"} instead
+fits a single mixed model with treatment-specific residual variances and
+requires a fully replicated design; it can differ slightly from \code{"anova"}.
 }
 \seealso{
 \code{\link[=be_assess]{be_assess()}}

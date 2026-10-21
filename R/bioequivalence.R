@@ -420,19 +420,32 @@ print.be_design <- function(x, ...) {
   list(s2w = NA_real_, sw = NA_real_, df = NA_real_, cv = NA_real_)
 }
 
-# ANOVA within-formulation variance: lm(log(value) ~ subject + period) on a
-# single formulation's replicate rows.  The subject factor absorbs sequence, so
-# the residual mean square is the within-subject variance; this reproduces
-# replicateBE's CV.calc exactly.  `arm` carries the `.subject`, `.period`, and
-# `.logval` columns.
-.be_arm_var <- function(arm) {
+# ANOVA within-formulation variance on a single formulation's replicate rows.
+# With `by_sequence = FALSE` the model is lm(log(value) ~ subject + period); the
+# subject factor absorbs sequence, so the residual mean square is the
+# within-subject variance, and this reproduces replicateBE's CV.calc exactly.
+# With `by_sequence = TRUE` the period effects differ by sequence
+# (lm(log(value) ~ subject + sequence:period)), which reproduces the FDA
+# progesterone and warfarin guidance estimator sum((D - mean D within
+# sequence)^2) / (2 (n - m)) for D, a subject's first minus second
+# administration.  The two agree for TRTR/RTRT and differ for TRR/RTR/RRT.
+# `arm` carries the `.subject`, `.period`, and `.logval` columns, and
+# `.sequence` for `by_sequence = TRUE`.
+.be_arm_var <- function(arm, by_sequence = FALSE) {
   if (nrow(arm) == 0 || max(table(arm$.subject)) < 2) {
     return(.be_arm_var_na())
   }
   arm$.subject <- droplevels(arm$.subject)
   arm$.period <- droplevels(arm$.period)
   fit_formula <-
-    if (nlevels(arm$.period) > 1) .logval ~ .subject + .period else .logval ~ .subject
+    if (nlevels(arm$.period) <= 1) {
+      .logval ~ .subject
+    } else if (by_sequence) {
+      arm$.sequence <- droplevels(factor(arm$.sequence))
+      .logval ~ .subject + .sequence:.period
+    } else {
+      .logval ~ .subject + .period
+    }
   a <- stats::anova(stats::lm(fit_formula, data = arm))
   s2w <- a["Residuals", "Mean Sq"]
   df <- a["Residuals", "Df"]
@@ -448,13 +461,20 @@ print.be_design <- function(x, ...) {
 #' log-transformed endpoint separately for the reference (`swR`) and test
 #' (`swT`) formulations, the quantities that reference-scaling frameworks need.
 #' The default `model_type = "anova"` is an analysis of variance (ANOVA) of the
-#' replicate observations within each formulation; this is the estimator used by
-#' both Method A and Method B of the EMA `replicateBE` reference implementation
-#' and by the FDA moment-based approach, and it works for full and partial
-#' replicate designs.  `model_type = "nlme"` instead fits a single mixed model
-#' with treatment-specific residual variances and requires a fully replicated
-#' design; it is provided as the alternative described in the FDA progesterone
-#' guidance and can differ slightly from `"anova"`.
+#' replicate observations within each formulation with subject and period
+#' effects; this is the estimator used by both Method A and Method B of the EMA
+#' `replicateBE` reference implementation, and it works for full and partial
+#' replicate designs.  `model_type = "isc"` is the estimator of the FDA
+#' progesterone and warfarin guidances, used by the FDA frameworks in
+#' [be_assess()]: each subject's difference between its two administrations of
+#' a formulation, centered within sequence, so that
+#' `s2wR = sum((D - mean D within sequence)^2) / (2 * (n - m))` on `n - m`
+#' degrees of freedom for `n` subjects in `m` sequences.  It equals the
+#' `"anova"` estimate for a two-sequence full replicate (`TRTR`/`RTRT`) and
+#' differs for a partial replicate (`TRR`/`RTR`/`RRT`), where the period effects of the
+#' reference administrations differ by sequence.  `model_type = "nlme"` instead
+#' fits a single mixed model with treatment-specific residual variances and
+#' requires a fully replicated design; it can differ slightly from `"anova"`.
 #'
 #' @param data A long data.frame with one row per observation for a *single*
 #'   endpoint (subject, period, treatment, and the endpoint value).
@@ -463,12 +483,15 @@ print.be_design <- function(x, ...) {
 #' @param subject,period,treatment Column names identifying the subject, period,
 #'   and treatment.
 #' @param reference_value The value of `treatment` that is the reference.
-#' @param model_type `"anova"` (the default and the regulatory standard) or
-#'   `"nlme"` (mixed model with treatment-specific residual variances; full
-#'   replicate only).
+#' @param model_type `"anova"` (the default; the EMA estimator), `"isc"` (the
+#'   FDA estimator), or `"nlme"` (mixed model with treatment-specific residual
+#'   variances; full replicate only).
 #' @param alpha The significance level for the `swT`/`swR` ratio confidence
 #'   bound (default `0.10` gives the 90% upper bound used for narrow therapeutic
 #'   index drugs).
+#' @param sequence The column name of the randomization sequence, used by
+#'   `model_type = "isc"`.  When `NULL`, a subject's sequence is its
+#'   treatment-by-period pattern.
 #' @returns An object of class `be_within_var`: a list with `swR`, `swT`,
 #'   `s2wR`, `s2wT`, `cvwr_percent`, `cvwt_percent`, `df_wR`, `df_wT`,
 #'   `sw_ratio` (= `swT`/`swR`), `sw_ratio_ci_upper` (the upper `1 - alpha`
@@ -479,14 +502,15 @@ print.be_design <- function(x, ...) {
 #' @seealso [be_assess()]
 #' @export
 be_within_var <- function(data, value, subject, period, treatment, reference_value,
-                          model_type = c("anova", "nlme"), alpha = 0.10) {
+                          model_type = c("anova", "nlme", "isc"), alpha = 0.10, sequence = NULL) {
   model_type <- match.arg(model_type)
   checkmate::assert_data_frame(data, min.rows = 1)
   checkmate::assert_string(value)
   checkmate::assert_string(subject)
   checkmate::assert_string(period)
   checkmate::assert_string(treatment)
-  for (col in c(value, subject, period, treatment)) {
+  checkmate::assert_string(sequence, null.ok = TRUE)
+  for (col in c(value, subject, period, treatment, sequence)) {
     checkmate::assert_choice(col, choices = names(data))
   }
   assert_numeric_between(alpha, lower = 0, upper = 1)
@@ -494,6 +518,7 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
 
   work <- data.frame(
     .subject = factor(as.character(data[[subject]])),
+    .sequence = if (is.null(sequence)) NA_character_ else as.character(data[[sequence]]),
     .period = factor(as.character(data[[period]])),
     .trt = as.character(data[[treatment]]),
     .val = data[[value]]
@@ -508,12 +533,13 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
   }
   test_levels <- setdiff(unique(work$.trt), reference_value)
 
-  # ANOVA within-formulation variance on each formulation's replicate rows
-  # (see .be_arm_var).
-  ref_v <- .be_arm_var(work[work$.trt == reference_value, , drop = FALSE])
+  # Within-formulation variance on each formulation's replicate rows (see
+  # .be_arm_var and .be_isc_arm_var).
+  arm_var <- if (model_type == "isc") .be_isc_arm_var else .be_arm_var_level
+  ref_v <- arm_var(work, reference_value)
   test_v <-
     if (length(test_levels) == 1) {
-      .be_arm_var(work[work$.trt == test_levels, , drop = FALSE])
+      arm_var(work, test_levels)
     } else {
       # Multiple test formulations: swT (and the ratio) are not defined for a
       # single test arm; report reference variability only.
@@ -539,26 +565,52 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
     test_v$cv <- sqrt(exp(mixed$s2wT) - 1) * 100
   }
 
-  sw_ratio <-
-    if (!is.na(test_v$sw) && !is.na(ref_v$sw) && ref_v$sw > 0) test_v$sw / ref_v$sw else NA_real_
-  sw_ratio_ci_upper <-
-    if (!is.na(sw_ratio) && !is.na(test_v$df) && !is.na(ref_v$df)) {
-      sw_ratio / sqrt(stats::qf(1 - alpha / 2, test_v$df, ref_v$df, lower.tail = FALSE))
-    } else {
-      NA_real_
-    }
-
+  sw_ratio <- .be_sw_ratio(test_v$sw, ref_v$sw)
   structure(
     list(
       swR = ref_v$sw, swT = test_v$sw,
       s2wR = ref_v$s2w, s2wT = test_v$s2w,
       cvwr_percent = ref_v$cv, cvwt_percent = test_v$cv,
       df_wR = ref_v$df, df_wT = test_v$df,
-      sw_ratio = sw_ratio, sw_ratio_ci_upper = sw_ratio_ci_upper,
+      sw_ratio = sw_ratio,
+      sw_ratio_ci_upper = .be_sw_ratio_ci_upper(sw_ratio, test_v$df, ref_v$df, alpha),
       model_type = model_type, alpha = alpha
     ),
     class = "be_within_var"
   )
+}
+
+# The ANOVA within-formulation variance (.be_arm_var()) of the rows of `work`
+# given formulation `level`.
+.be_arm_var_level <- function(work, level) {
+  .be_arm_var(work[work$.trt %in% level, , drop = FALSE])
+}
+
+# The FDA within-formulation variance (.be_arm_var() with sequence-specific
+# period effects) of the rows of `work` given formulation `level`.  The sequence
+# is the `.sequence` column, or each subject's treatment-by-period pattern when
+# `.sequence` is all missing (see .be_isc_sequence()).
+.be_isc_arm_var <- function(work, level) {
+  subj <- droplevels(factor(work$.subject))
+  seq_id <- .be_isc_sequence(work, subj, derived = all(is.na(work$.sequence)))
+  work$.sequence <- seq_id[as.integer(subj)]
+  .be_arm_var(work[work$.trt %in% level, , drop = FALSE], by_sequence = TRUE)
+}
+
+# Ratio of the test to the reference within-subject standard deviation, NA
+# when either is unavailable.  Vectorized.
+.be_sw_ratio <- function(swt, swr) {
+  ifelse(!is.na(swt) & !is.na(swr) & swr > 0, swt / swr, NA_real_)
+}
+
+# Upper limit of the equal-tailed 1 - alpha confidence interval of swT/swR (FDA
+# warfarin guidance): the ratio divided by the square root of the F quantile
+# with probability 1 - alpha/2 to its right.  Vectorized.
+.be_sw_ratio_ci_upper <- function(sw_ratio, df_wt, df_wr, alpha) {
+  ok <- !is.na(sw_ratio) & !is.na(df_wt) & !is.na(df_wr)
+  out <- rep(NA_real_, length(sw_ratio))
+  out[ok] <- sw_ratio[ok] / sqrt(stats::qf(1 - alpha / 2, df_wt[ok], df_wr[ok], lower.tail = FALSE))
+  out
 }
 
 # Mixed model with treatment-specific residual variances (nlme::lme +
@@ -652,14 +704,14 @@ print.be_within_var <- function(x, ...) {
   }
   if (anyNA(work$.sequence)) {
     rlang::abort(
-      "The intra-subject contrast estimate needs the sequence of every subject.",
+      "Intra-subject contrasts need the sequence of every subject.",
       class = c("pknca_error_be_isc_sequence_missing", "pknca_error_be_isc_insufficient")
     )
   }
   labels <- unique(data.frame(subj = subj, sequence = as.character(work$.sequence)))
   if (anyDuplicated(labels$subj) > 0) {
     rlang::abort(
-      "The intra-subject contrast estimate needs a single sequence for each subject.",
+      "Intra-subject contrasts need a single sequence for each subject.",
       class = c("pknca_error_be_isc_sequence_inconsistent", "pknca_error_be_isc_insufficient")
     )
   }
@@ -1452,9 +1504,10 @@ be_fit_model_gls <- function(ds_ep) {
 #'
 #' `be_extract_param()` turns a [be_fit_model_single()] fit into the parameters
 #' the regulatory decision needs.  It always computes the intra-subject-contrast
-#' (ISC) point estimate, then dispatches on the model type to extract the
-#' model-based geometric means, the geometric mean ratio and its confidence
-#' interval, and the within-formulation standard deviations.
+#' (ISC) point estimate and the FDA within-formulation standard deviations, then
+#' dispatches on the model type to extract the model-based geometric means, the
+#' geometric mean ratio and its confidence interval, and the model's
+#' within-formulation standard deviations.
 #'
 #' @param fit A `be_fit` object from [be_fit_model_single()].
 #' @param ds_ep The standardized single-endpoint data.frame from [be_dataset()].
@@ -1462,7 +1515,9 @@ be_fit_model_gls <- function(ds_ep) {
 #'   `1 - alpha`.
 #' @returns A data.frame with one row per test formulation, carrying the model
 #'   and ISC point estimates/intervals, geometric means, and within-formulation
-#'   variances.
+#'   variances: `swr`, `swt`, `cvwr_percent`, `cvwt_percent`, `df_wr`, `df_wt`,
+#'   `sw_ratio`, and `sw_ratio_ci_upper` from the model's estimator, and the same
+#'   columns prefixed `isc_` from the FDA estimator (see [be_within_var()]).
 #' @family Bioequivalence
 #' @export
 be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
@@ -1480,11 +1535,13 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
   # Within-formulation variances: from the ANOVA fits (lmer/anova) or the
   # varIdent model (nlme); none for gls (parallel).
   wv <- model_part$within
+  isc_ref_var <- .be_isc_arm_var(ds_ep, reference_value)
   units <- attr(fit, "units")
   if (is.null(units)) units <- NA_character_
   rows <- list()
   for (tl in test_levels) {
     isc <- .be_isc_or_na(ds_ep, reference_value, tl, alpha)
+    isc_test_var <- .be_isc_arm_var(ds_ep, tl)
     m <- model_part$contrasts[[tl]]
     n_tl <- length(unique(ds_ep$.subject[ds_ep$.trt %in% c(reference_value, tl)]))
     rows[[length(rows) + 1]] <-
@@ -1500,18 +1557,17 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
         isc_gmr_percent = isc$gmr_percent, isc_ci_lower = isc$ci_lower, isc_ci_upper = isc$ci_upper,
         swr = wv$ref_var$sw, swt = wv$test_var$sw,
         cvwr_percent = wv$ref_var$cv, cvwt_percent = wv$test_var$cv,
-        df_wr = wv$ref_var$df, df_wt = wv$test_var$df
+        df_wr = wv$ref_var$df, df_wt = wv$test_var$df,
+        isc_swr = isc_ref_var$sw, isc_swt = isc_test_var$sw,
+        isc_cvwr_percent = isc_ref_var$cv, isc_cvwt_percent = isc_test_var$cv,
+        isc_df_wr = isc_ref_var$df, isc_df_wt = isc_test_var$df
       )
   }
   out <- do.call(rbind, rows)
-  out$sw_ratio <-
-    ifelse(!is.na(out$swt) & !is.na(out$swr) & out$swr > 0, out$swt / out$swr, NA_real_)
-  out$sw_ratio_ci_upper <-
-    ifelse(
-      !is.na(out$sw_ratio) & !is.na(out$df_wt) & !is.na(out$df_wr),
-      out$sw_ratio / sqrt(stats::qf(1 - alpha / 2, out$df_wt, out$df_wr, lower.tail = FALSE)),
-      NA_real_
-    )
+  out$sw_ratio <- .be_sw_ratio(out$swt, out$swr)
+  out$sw_ratio_ci_upper <- .be_sw_ratio_ci_upper(out$sw_ratio, out$df_wt, out$df_wr, alpha)
+  out$isc_sw_ratio <- .be_sw_ratio(out$isc_swt, out$isc_swr)
+  out$isc_sw_ratio_ci_upper <- .be_sw_ratio_ci_upper(out$isc_sw_ratio, out$isc_df_wt, out$isc_df_wr, alpha)
   out
 }
 
@@ -1696,12 +1752,7 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
   rows <- list()
   for (i in seq_len(nrow(params))) {
     p <- params[i, , drop = FALSE]
-    wv <- list(
-      swR = p$swr, swT = p$swt, s2wR = p$swr^2, s2wT = p$swt^2,
-      cvwr_percent = p$cvwr_percent, cvwt_percent = p$cvwt_percent,
-      df_wR = p$df_wr, df_wT = p$df_wt,
-      sw_ratio = p$sw_ratio, sw_ratio_ci_upper = p$sw_ratio_ci_upper
-    )
+    wv <- .be_wv_from_params(p, if (identical(reg$est_method, "isc")) "isc_" else "")
     est <-
       if (identical(reg$est_method, "isc")) {
         list(
@@ -1728,7 +1779,7 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
         gm_reference_upper = p$gm_reference_upper,
         gm_test = p$gm_test, gm_test_lower = p$gm_test_lower, gm_test_upper = p$gm_test_upper,
         gmr_percent = est$gmr_percent, ci_lower = est$ci_lower, ci_upper = est$ci_upper,
-        cvwr_percent = p$cvwr_percent, cvwt_percent = p$cvwt_percent, swr = p$swr,
+        cvwr_percent = wv$cvwr_percent, cvwt_percent = wv$cvwt_percent, swr = wv$swR,
         limit_lower = dec$limit_lower, limit_upper = dec$limit_upper, criterion = dec$criterion,
         regulator = reg$name, model_type = model_type, pass = dec$pass
       )
@@ -1739,6 +1790,20 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
     out <- out[, setdiff(names(out), c("limit_lower", "limit_upper", "criterion", "pass")), drop = FALSE]
   }
   out
+}
+
+# Within-subject variability for the decision functions from one row `p` of
+# be_extract_param() output: the model's estimator with `prefix = ""`, or the
+# FDA estimator with `prefix = "isc_"`.
+.be_wv_from_params <- function(p, prefix) {
+  cols <- c("swr", "swt", "cvwr_percent", "cvwt_percent", "df_wr", "df_wt", "sw_ratio", "sw_ratio_ci_upper")
+  v <- stats::setNames(as.list(p[paste0(prefix, cols)]), cols)
+  list(
+    swR = v$swr, swT = v$swt, s2wR = v$swr^2, s2wT = v$swt^2,
+    cvwr_percent = v$cvwr_percent, cvwt_percent = v$cvwt_percent,
+    df_wR = v$df_wr, df_wT = v$df_wt,
+    sw_ratio = v$sw_ratio, sw_ratio_ci_upper = v$sw_ratio_ci_upper
+  )
 }
 
 # Confirm the design supports the chosen framework.
@@ -1968,9 +2033,11 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' progesterone and warfarin sodium).  Without a sequence column, a subject's
 #' sequence is its treatment-by-period pattern.  Pass `model_type` to override
 #' (`"lmer"`, `"anova"`, `"isc"`, `"nlme"`, or `"gls"`).  Within-subject
-#' variability uses the regulatory ANOVA estimator for the
-#' `"lmer"`/`"anova"`/`"isc"` paths and the treatment-specific mixed-model
-#' estimator for `"nlme"`.
+#' variability for the FDA frameworks uses the FDA estimator from within-sequence
+#' differences between replicate administrations (`model_type = "isc"` in
+#' [be_within_var()]); for the other frameworks it uses the EMA ANOVA estimator
+#' for the `"lmer"`/`"anova"`/`"isc"` paths and the treatment-specific
+#' mixed-model estimator for `"nlme"`.
 #'
 #' With `heteroscedastic = TRUE` the residual variance is estimated separately
 #' for each treatment: a crossover or replicate study uses `nlme::lme()` with

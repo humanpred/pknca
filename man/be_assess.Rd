@@ -135,9 +135,11 @@ of freedom for \code{n} subjects in \code{m} sequences (FDA draft guidances on
 progesterone and warfarin sodium).  Without a sequence column, a subject's
 sequence is its treatment-by-period pattern.  Pass \code{model_type} to override
 (\code{"lmer"}, \code{"anova"}, \code{"isc"}, \code{"nlme"}, or \code{"gls"}).  Within-subject
-variability uses the regulatory ANOVA estimator for the
-\code{"lmer"}/\code{"anova"}/\code{"isc"} paths and the treatment-specific mixed-model
-estimator for \code{"nlme"}.
+variability for the FDA frameworks uses the FDA estimator from within-sequence
+differences between replicate administrations (\code{model_type = "isc"} in
+\code{\link[=be_within_var]{be_within_var()}}); for the other frameworks it uses the EMA ANOVA estimator
+for the \code{"lmer"}/\code{"anova"}/\code{"isc"} paths and the treatment-specific
+mixed-model estimator for \code{"nlme"}.
 
 With \code{heteroscedastic = TRUE} the residual variance is estimated separately
 for each treatment: a crossover or replicate study uses \code{nlme::lme()} with
