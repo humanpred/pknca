@@ -38,7 +38,9 @@ time sampled in more than one group (serial sacrifice, batch, and
 complete designs), the same variance and degrees of freedom are
 calculated from the weighted sum of each animal's samples, which is much
 faster for many animals. For serial sacrifice, the degrees of freedom
-are then equation 6a of Nedelman, Gibiansky, and Lau (1995).
+are then equation 6a of Nedelman, Gibiansky, and Lau (1995). Jaki and
+Wolfsegger (2009) give an estimator and asymptotic variance of the AUC
+to the last time for the same three designs.
 
 ## References
 
@@ -53,3 +55,7 @@ Statistics. 2001;11(1-2):75-79. doi:10.1081/BIP-100104199
 Nedelman JR, Gibiansky E, Lau DTW. Applying Bailer's method for AUC
 confidence intervals to sparse sampling. Pharmaceutical Research.
 1995;12(1):124-128.
+
+Jaki T, Wolfsegger MJ. A theoretical framework for estimation of AUCs in
+complete and incomplete sampling designs. Statistics in
+Biopharmaceutical Research. 2009;1(2):176-184. doi:10.1198/sbr.2009.0025
