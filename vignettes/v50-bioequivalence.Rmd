@@ -72,7 +72,12 @@ with equal weight per sequence and with `n - m` degrees of freedom (`n` subjects
 within-subject variability comes from each subject's difference between its two
 administrations of a formulation, centered within sequence
 (`be_within_var(model_type = "isc")`); the expanding-limits frameworks use the
-EMA ANOVA estimator.  The two agree for a `TRTR`/`RTRT` full replicate.
+EMA ANOVA estimator.  The two agree for a `TRTR`/`RTRT` full replicate.  The unscaled
+80.00-125.00% criterion of the FDA frameworks (RSABE below the switching
+variability, NTID, and HVNTID) uses the guidance's mixed-effects model, with
+correlated treatment random effects per subject, a residual variance per
+treatment, and Satterthwaite degrees of freedom; with complete data it gives the
+same ratio and interval as the intra-subject contrasts.
 
 | Regulator | Design required | Auto `model_type` | Notes |
 |---|---|---|---|

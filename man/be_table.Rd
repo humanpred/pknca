@@ -33,9 +33,11 @@ columns (\code{limit_lower}, \code{limit_upper}, \code{criterion}, and \code{pas
 \code{be_table()} takes the parameters from \code{\link[=be_extract_param]{be_extract_param()}} and a regulatory
 framework and produces the final per-endpoint pass/fail table.  It selects the
 regulator-appropriate statistic (the model contrast for the expanding-limits
-frameworks, intra-subject contrasts for the FDA family) and calls the
-per-framework decision functions; it is the only place regulator decisions
-are made.
+frameworks; for the FDA family, intra-subject contrasts for the
+reference-scaled criterion and the model contrast for the unscaled
+80.00-125.00\% criterion) and calls the per-framework decision functions; it
+is the only place regulator decisions are made.  Each row shows the ratio and
+confidence interval that its decision used.
 }
 \seealso{
 Other Bioequivalence:

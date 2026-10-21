@@ -133,7 +133,17 @@ reference administration their sequence calls for; the ratio is the
 unweighted mean of the sequence means of the contrasts, with \code{n - m} degrees
 of freedom for \code{n} subjects in \code{m} sequences (FDA draft guidances on
 progesterone and warfarin sodium).  Without a sequence column, a subject's
-sequence is its treatment-by-period pattern.  Pass \code{model_type} to override
+sequence is its treatment-by-period pattern.  The unscaled 80.00-125.00\%
+criterion of these frameworks (FDA RSABE when \code{swR < 0.294}, NTID, and
+HVNTID) uses the guidance mixed-effects model instead: fixed sequence,
+period, and treatment effects, correlated treatment random effects for each
+subject, a residual variance per treatment, REML, and Satterthwaite degrees
+of freedom (SAS \verb{RANDOM TRT/TYPE=FA0(2)}, \code{REPEATED/GRP=TRT}).  A
+formulation that no subject receives twice has its residual variance folded
+into its between-subject variance, where the guidance model is
+over-specified.  Each row shows the ratio and interval its decision used:
+the intra-subject contrasts for the reference-scaled criterion and the mixed
+model for the unscaled one.  Pass \code{model_type} to override
 (\code{"lmer"}, \code{"anova"}, \code{"isc"}, \code{"nlme"}, or \code{"gls"}).  Within-subject
 variability for the FDA frameworks uses the FDA estimator from within-sequence
 differences between replicate administrations (\code{model_type = "isc"} in

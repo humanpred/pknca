@@ -14,8 +14,9 @@ be_fit_model_single(
 \item{ds_ep}{The standardized single-endpoint data.frame from \code{\link[=be_dataset]{be_dataset()}}
 (\code{be_dataset(...)$data} filtered to one endpoint).}
 
-\item{model_type}{One of \code{"lmer"}, \code{"nlme"}, \code{"anova"}, \code{"isc"} (the
-intra-subject-contrast path, fit like \code{"anova"}), or \code{"gls"} (generalized
+\item{model_type}{One of \code{"lmer"}, \code{"nlme"}, \code{"anova"}, \code{"isc"} (the FDA
+path: \code{"anova"} for the geometric means plus the FDA mixed-effects model
+for the unscaled ratio), or \code{"gls"} (generalized
 least squares with treatment-specific residual variances, for parallel
 designs).}
 
@@ -24,8 +25,9 @@ the within-formulation variances are estimated).}
 }
 \value{
 An object of class \code{be_fit}: a list with \code{model_type}, the fitted
-\code{model}, and (for lmer/anova/isc) \code{ref_var}/\code{test_var} within-formulation
-ANOVA variances.  The endpoint's measurement units are attached as a \code{units}
+\code{model}, (for lmer/anova/isc) \code{ref_var}/\code{test_var} within-formulation
+ANOVA variances, and (for isc with repeated measures) \code{fda}, the FDA
+mixed-model estimates.  The endpoint's measurement units are attached as a \code{units}
 attribute (\code{NULL} when not provided).
 }
 \description{
@@ -34,7 +36,10 @@ dispatches on \code{model_type} to \code{be_fit_model_lmer()}, \code{be_fit_mode
 \code{be_fit_model_gls()}, or \code{be_fit_model_anova()}.  This is the only place
 model fitting happens.  For the \code{"lmer"}, \code{"anova"}, and \code{"isc"} types the
 within-formulation ANOVA variances are also fit here; for \code{"nlme"} they come
-from the single mixed model.  Covariate columns carried by \code{\link[=be_dataset]{be_dataset()}}
+from the single mixed model.  The \code{"isc"} type, the FDA path, also fits the
+FDA mixed-effects model for the unscaled ratio (treatment-specific
+between- and within-subject variances, Satterthwaite degrees of freedom, as
+in the FDA progesterone and warfarin guidance SAS code).  Covariate columns carried by \code{\link[=be_dataset]{be_dataset()}}
 (\verb{.cov_<name>}) enter every model as additive fixed effects.
 }
 \seealso{

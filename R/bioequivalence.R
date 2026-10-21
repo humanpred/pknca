@@ -654,9 +654,13 @@ print.be_within_var <- function(x, ...) {
 #
 # Each `.be_*` decider takes the average-BE estimate `est` (a list with
 # `pe_log`, `se`, `df`, `n`, `gmr_percent`, `ci_lower`, `ci_upper`), a
-# `be_within_var` object `wv`, a `be_regulator` object `reg`, and `alpha`, and
-# returns the decision fragment `list(limit_lower, limit_upper, criterion,
-# pass)` that becomes one row of the [be_assess()] result.
+# `be_within_var` object `wv`, a `be_regulator` object `reg`, `alpha`, and
+# `unscaled`, the model estimate (same fields) whose interval decides the
+# unscaled 80.00-125.00% criterion of the FDA frameworks; for the other
+# frameworks `est` is the model estimate.  It returns the decision fragment
+# `list(limit_lower, limit_upper, criterion, pass, report)` that becomes one
+# row of the [be_assess()] result, where `report` is the estimate whose ratio
+# and interval the row shows.
 
 # Within-subject contrast for one subject: mean log test minus mean log
 # reference, or NA if the subject lacks either formulation.  `s` carries the
@@ -805,15 +809,16 @@ print.be_within_var <- function(x, ...) {
 }
 
 # Average bioequivalence: conventional 80-125% on the 90% confidence interval.
-.be_abe <- function(est, wv, reg, alpha) {
+.be_abe <- function(est, wv, reg, alpha, unscaled = est) {
   list(
     limit_lower = 80, limit_upper = 125, criterion = NA_real_,
-    pass = isTRUE(est$ci_lower >= 80 && est$ci_upper <= 125)
+    pass = isTRUE(est$ci_lower >= 80 && est$ci_upper <= 125),
+    report = est
   )
 }
 
 # Average bioequivalence with expanding limits (EMA / HC / GCC).
-.be_abel <- function(est, wv, reg, alpha) {
+.be_abel <- function(est, wv, reg, alpha, unscaled = est) {
   if (is.na(wv$swR)) {
     rlang::abort(
       "Reference scaling requires a replicated reference; the reference is not replicated.",
@@ -825,40 +830,46 @@ print.be_within_var <- function(x, ...) {
   list(
     limit_lower = unname(lim[["lower"]]), limit_upper = unname(lim[["upper"]]),
     criterion = NA_real_,
-    pass = isTRUE(ci_ok && .be_pe_ok(reg, est$gmr_percent))
+    pass = isTRUE(ci_ok && .be_pe_ok(reg, est$gmr_percent)),
+    report = est
   )
 }
 
 # FDA reference-scaled average bioequivalence (RSABE).  Below the switching
-# variability (swR < 0.294) it falls back to unscaled average bioequivalence.
-.be_rsabe <- function(est, wv, reg, alpha) {
+# variability (swR < 0.294) it falls back to unscaled average bioequivalence on
+# the `unscaled` estimate (the FDA mixed model by default).
+.be_rsabe <- function(est, wv, reg, alpha, unscaled = est) {
   if (is.na(wv$swR)) {
     rlang::abort(
       "Reference scaling requires a replicated reference; the reference is not replicated.",
       class = "pknca_error_be_rsabe_reference_not_replicated"
     )
   }
-  pe_ok <- .be_pe_ok(reg, est$gmr_percent)
   if (!is.na(reg$switch_swr) && wv$swR < reg$switch_swr) {
     # Unscaled average bioequivalence fallback.
     list(
       limit_lower = 80, limit_upper = 125, criterion = NA_real_,
-      pass = isTRUE(est$ci_lower >= 80 && est$ci_upper <= 125 && pe_ok)
+      pass = isTRUE(
+        unscaled$ci_lower >= 80 && unscaled$ci_upper <= 125 && .be_pe_ok(reg, unscaled$gmr_percent)
+      ),
+      report = unscaled
     )
   } else {
     bound <- .be_rsabe_bound(est$pe_log, est$se, est$df, wv$s2wR, wv$df_wR, reg$r_const)
     list(
       limit_lower = NA_real_, limit_upper = NA_real_, criterion = bound,
-      pass = isTRUE(bound <= 0 && pe_ok)
+      pass = isTRUE(bound <= 0 && .be_pe_ok(reg, est$gmr_percent)),
+      report = est
     )
   }
 }
 
-# FDA narrow therapeutic index drugs (NTID): the scaled criterion must pass, the
-# conventional 90% CI must lie within 80-125%, and the upper 90% confidence
-# bound of swT/swR must be at most the regulator's ratio cap (2.5).  Matches
-# PowerTOST's power.NTID (BEscABE & BEABE & BEsratio).
-.be_ntid <- function(est, wv, reg, alpha) {
+# FDA narrow therapeutic index drugs (NTID): the scaled criterion (on the
+# intra-subject contrasts) must pass, the conventional 90% CI of the `unscaled`
+# estimate must lie within 80-125%, and the upper 90% confidence bound of
+# swT/swR must be at most the regulator's ratio cap (2.5), as in the FDA
+# warfarin guidance.
+.be_ntid <- function(est, wv, reg, alpha, unscaled = est) {
   if (is.na(wv$swT)) {
     rlang::abort(
       "NTID assessment requires a fully replicated design (both formulations replicated).",
@@ -870,19 +881,20 @@ print.be_within_var <- function(x, ...) {
     limit_lower = 80, limit_upper = 125, criterion = bound,
     pass = isTRUE(
       bound <= 0 &&
-        est$ci_lower >= 80 && est$ci_upper <= 125 &&
+        unscaled$ci_lower >= 80 && unscaled$ci_upper <= 125 &&
         !is.na(wv$sw_ratio_ci_upper) && wv$sw_ratio_ci_upper <= reg$sw_ratio_cap &&
         .be_pe_ok(reg, est$gmr_percent)
-    )
+    ),
+    report = unscaled
   )
 }
 
 # FDA highly variable narrow therapeutic index drugs (HVNTID): unscaled --
-# the conventional 90% CI must lie within 80-125% and the upper 90% confidence
-# bound of swT/swR must be at most the regulator's ratio cap (2.5).  There is no
-# reference-scaled bound (reference scaling does not apply to highly variable
-# NTIDs).  Matches PowerTOST's power.HVNTID (BEABE & BEsratio).
-.be_hvntid <- function(est, wv, reg, alpha) {
+# the conventional 90% CI of the `unscaled` estimate must lie within 80-125%
+# and the upper 90% confidence bound of swT/swR must be at most the regulator's
+# ratio cap (2.5).  There is no reference-scaled bound (reference scaling does
+# not apply to highly variable NTIDs).
+.be_hvntid <- function(est, wv, reg, alpha, unscaled = est) {
   if (is.na(wv$swT)) {
     rlang::abort(
       "HVNTID assessment requires a fully replicated design (both formulations replicated).",
@@ -892,26 +904,27 @@ print.be_within_var <- function(x, ...) {
   list(
     limit_lower = 80, limit_upper = 125, criterion = NA_real_,
     pass = isTRUE(
-      est$ci_lower >= 80 && est$ci_upper <= 125 &&
+      unscaled$ci_lower >= 80 && unscaled$ci_upper <= 125 &&
         !is.na(wv$sw_ratio_ci_upper) && wv$sw_ratio_ci_upper <= reg$sw_ratio_cap &&
-        .be_pe_ok(reg, est$gmr_percent)
-    )
+        .be_pe_ok(reg, unscaled$gmr_percent)
+    ),
+    report = unscaled
   )
 }
 
 # Dispatch to the decider for a regulator's scaling type.  The descriptive
 # framework makes no decision.
-.be_decide <- function(est, wv, reg, alpha) {
+.be_decide <- function(est, wv, reg, alpha, unscaled = est) {
   if (!reg$decision) {
-    return(list(limit_lower = NA_real_, limit_upper = NA_real_, criterion = NA_real_, pass = NA))
+    return(list(limit_lower = NA_real_, limit_upper = NA_real_, criterion = NA_real_, pass = NA, report = est))
   }
   switch(
     reg$scaling,
-    none = .be_abe(est, wv, reg, alpha),
-    abel = .be_abel(est, wv, reg, alpha),
-    rsabe = .be_rsabe(est, wv, reg, alpha),
-    ntid = .be_ntid(est, wv, reg, alpha),
-    hvntid = .be_hvntid(est, wv, reg, alpha)
+    none = .be_abe(est, wv, reg, alpha, unscaled),
+    abel = .be_abel(est, wv, reg, alpha, unscaled),
+    rsabe = .be_rsabe(est, wv, reg, alpha, unscaled),
+    ntid = .be_ntid(est, wv, reg, alpha, unscaled),
+    hvntid = .be_hvntid(est, wv, reg, alpha, unscaled)
   )
 }
 
@@ -1388,20 +1401,25 @@ print.be_dataset <- function(x, ...) {
 #' `be_fit_model_gls()`, or `be_fit_model_anova()`.  This is the only place
 #' model fitting happens.  For the `"lmer"`, `"anova"`, and `"isc"` types the
 #' within-formulation ANOVA variances are also fit here; for `"nlme"` they come
-#' from the single mixed model.  Covariate columns carried by [be_dataset()]
+#' from the single mixed model.  The `"isc"` type, the FDA path, also fits the
+#' FDA mixed-effects model for the unscaled ratio (treatment-specific
+#' between- and within-subject variances, Satterthwaite degrees of freedom, as
+#' in the FDA progesterone and warfarin guidance SAS code).  Covariate columns carried by [be_dataset()]
 #' (`.cov_<name>`) enter every model as additive fixed effects.
 #'
 #' @param ds_ep The standardized single-endpoint data.frame from [be_dataset()]
 #'   (`be_dataset(...)$data` filtered to one endpoint).
-#' @param model_type One of `"lmer"`, `"nlme"`, `"anova"`, `"isc"` (the
-#'   intra-subject-contrast path, fit like `"anova"`), or `"gls"` (generalized
+#' @param model_type One of `"lmer"`, `"nlme"`, `"anova"`, `"isc"` (the FDA
+#'   path: `"anova"` for the geometric means plus the FDA mixed-effects model
+#'   for the unscaled ratio), or `"gls"` (generalized
 #'   least squares with treatment-specific residual variances, for parallel
 #'   designs).
 #' @param scaling Logical; whether reference scaling is needed (controls whether
 #'   the within-formulation variances are estimated).
 #' @returns An object of class `be_fit`: a list with `model_type`, the fitted
-#'   `model`, and (for lmer/anova/isc) `ref_var`/`test_var` within-formulation
-#'   ANOVA variances.  The endpoint's measurement units are attached as a `units`
+#'   `model`, (for lmer/anova/isc) `ref_var`/`test_var` within-formulation
+#'   ANOVA variances, and (for isc with repeated measures) `fda`, the FDA
+#'   mixed-model estimates.  The endpoint's measurement units are attached as a `units`
 #'   attribute (`NULL` when not provided).
 #' @family Bioequivalence
 #' @export
@@ -1413,8 +1431,8 @@ be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova", "
       lmer = be_fit_model_lmer(ds_ep, scaling = scaling),
       nlme = be_fit_model_nlme(ds_ep, scaling = scaling),
       gls = be_fit_model_gls(ds_ep),
-      anova = ,
-      isc = be_fit_model_anova(ds_ep, scaling = scaling)
+      anova = be_fit_model_anova(ds_ep, scaling = scaling),
+      isc = be_fit_model_isc(ds_ep, scaling = scaling)
     )
   fit$model_type <- model_type
   # Units of the endpoint (from be_dataset); NULL when not provided.
@@ -1456,6 +1474,16 @@ be_fit_model_lmer <- function(ds_ep, scaling = TRUE) {
 be_fit_model_anova <- function(ds_ep, scaling = TRUE) {
   model <- stats::lm(.be_model_formula(ds_ep, random = FALSE), data = ds_ep)
   c(list(model = model), .be_fit_within(ds_ep, scaling))
+}
+
+# Internal fitter dispatched by be_fit_model_single().  The fixed-effects ANOVA
+# gives the geometric means; the FDA mixed model (see .be_fda_mixed()) gives
+# the unscaled ratio for repeated measures.  A parallel design has no
+# within-subject structure, so it keeps the ANOVA ratio.
+be_fit_model_isc <- function(ds_ep, scaling = TRUE) {
+  fit <- be_fit_model_anova(ds_ep, scaling = scaling)
+  fit$fda <- if (.be_is_parallel(ds_ep)) NULL else .be_fda_mixed(ds_ep)
+  fit
 }
 
 # Internal fitter dispatched by be_fit_model_single().  Several test
@@ -1529,8 +1557,8 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
       lmer = be_extract_param_lmer(fit, alpha),
       nlme = be_extract_param_nlme(fit, alpha),
       gls = be_extract_param_gls(fit, ds_ep, alpha),
-      anova = ,
-      isc = be_extract_param_anova(fit, ds_ep, alpha)
+      anova = be_extract_param_anova(fit, ds_ep, alpha),
+      isc = be_extract_param_isc(fit, ds_ep, alpha)
     )
   # Within-formulation variances: from the ANOVA fits (lmer/anova) or the
   # varIdent model (nlme); none for gls (parallel).
@@ -1727,14 +1755,35 @@ be_extract_param_anova <- function(fit, ds_ep, alpha = 0.10) {
   )
 }
 
+# Internal extractor dispatched by be_extract_param().  The geometric means
+# come from the fixed-effects ANOVA; the ratio, its confidence interval, and
+# its degrees of freedom come from the FDA mixed model when it was fit.
+be_extract_param_isc <- function(fit, ds_ep, alpha = 0.10) {
+  part <- be_extract_param_anova(fit, ds_ep, alpha)
+  if (is.null(fit$fda)) {
+    return(part)
+  }
+  for (tl in names(part$contrasts)) {
+    fc <- fit$fda$contrasts[[tl]]
+    ci <- exp(fc$pe_log + c(-1, 1) * stats::qt(1 - alpha / 2, fc$df) * fc$se) * 100
+    part$contrasts[[tl]]$gmr_percent <- exp(fc$pe_log) * 100
+    part$contrasts[[tl]]$ci_lower <- ci[1]
+    part$contrasts[[tl]]$ci_upper <- ci[2]
+    part$contrasts[[tl]]$df <- fc$df
+  }
+  part
+}
+
 #' Build the regulatory bioequivalence table
 #'
 #' `be_table()` takes the parameters from [be_extract_param()] and a regulatory
 #' framework and produces the final per-endpoint pass/fail table.  It selects the
 #' regulator-appropriate statistic (the model contrast for the expanding-limits
-#' frameworks, intra-subject contrasts for the FDA family) and calls the
-#' per-framework decision functions; it is the only place regulator decisions
-#' are made.
+#' frameworks; for the FDA family, intra-subject contrasts for the
+#' reference-scaled criterion and the model contrast for the unscaled
+#' 80.00-125.00% criterion) and calls the per-framework decision functions; it
+#' is the only place regulator decisions are made.  Each row shows the ratio and
+#' confidence interval that its decision used.
 #'
 #' @param params A data.frame of parameters from [be_extract_param()] (with an
 #'   `endpoint` column added per endpoint).
@@ -1753,6 +1802,10 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
   for (i in seq_len(nrow(params))) {
     p <- params[i, , drop = FALSE]
     wv <- .be_wv_from_params(p, if (identical(reg$est_method, "isc")) "isc_" else "")
+    model_est <- list(
+      pe_log = log(p$model_gmr_percent / 100), se = NA_real_, df = p$model_df, n = p$n,
+      gmr_percent = p$model_gmr_percent, ci_lower = p$model_ci_lower, ci_upper = p$model_ci_upper
+    )
     est <-
       if (identical(reg$est_method, "isc")) {
         list(
@@ -1760,10 +1813,7 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
           gmr_percent = p$isc_gmr_percent, ci_lower = p$isc_ci_lower, ci_upper = p$isc_ci_upper
         )
       } else {
-        list(
-          pe_log = log(p$model_gmr_percent / 100), se = NA_real_, df = p$model_df, n = p$n,
-          gmr_percent = p$model_gmr_percent, ci_lower = p$model_ci_lower, ci_upper = p$model_ci_upper
-        )
+        model_est
       }
     if (identical(reg$est_method, "isc") && is.na(est$pe_log)) {
       rlang::abort(
@@ -1771,14 +1821,14 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
         class = "pknca_error_be_isc_insufficient"
       )
     }
-    dec <- .be_decide(est, wv, reg, alpha)
+    dec <- .be_decide(est, wv, reg, alpha, unscaled = model_est)
     rows[[length(rows) + 1]] <-
       data.frame(
         endpoint = p$endpoint, test = p$test, n = p$n, design = design, units = p$units,
         gm_reference = p$gm_reference, gm_reference_lower = p$gm_reference_lower,
         gm_reference_upper = p$gm_reference_upper,
         gm_test = p$gm_test, gm_test_lower = p$gm_test_lower, gm_test_upper = p$gm_test_upper,
-        gmr_percent = est$gmr_percent, ci_lower = est$ci_lower, ci_upper = est$ci_upper,
+        gmr_percent = dec$report$gmr_percent, ci_lower = dec$report$ci_lower, ci_upper = dec$report$ci_upper,
         cvwr_percent = wv$cvwr_percent, cvwt_percent = wv$cvwt_percent, swr = wv$swR,
         limit_lower = dec$limit_lower, limit_upper = dec$limit_upper, criterion = dec$criterion,
         regulator = reg$name, model_type = model_type, pass = dec$pass
@@ -1949,12 +1999,19 @@ be_fit_models <- function(object, reference_col, reference_value,
         ci, model_desc
       )
     } else if (identical(reg$est_method, "isc")) {
+      unscaled_desc <-
+        if (identical(model_type, "isc")) {
+          "the FDA mixed-effects model (treatment-specific between- and within-subject variances, REML, Satterthwaite degrees of freedom)"
+        } else {
+          model_desc
+        }
       sprintf(
         paste(
-          "Geometric means (with %s) are least-squares means from %s;",
-          "the geometric mean ratio and reference-scaling criterion use intra-subject contrasts."
+          "Geometric means (with %s) are least-squares means from %s.",
+          "The reference-scaled criterion uses intra-subject contrasts, and the unscaled",
+          "80.00-125.00%% criterion uses %s; the ratio and %s shown are the ones the decision used."
         ),
-        ci, model_desc
+        ci, model_desc, unscaled_desc, ci
       )
     } else {
       sprintf(
@@ -1972,7 +2029,7 @@ be_fit_models <- function(object, reference_col, reference_value,
       abel = "Acceptance limits are widened by the within-reference variability (ABEL) and capped per the regulator.",
       rsabe = "Reference scaling uses the linearized (Howe/Hyslop) criterion with a one-sided 95% upper bound.",
       ntid = "Narrow therapeutic index scaling requires the scaled bound, the conventional 90% CI within 80.00-125.00%, and the swT/swR ratio bound.",
-      hvntid = "Highly variable NTID scaling requires the scaled bound and the swT/swR ratio bound."
+      hvntid = "Highly variable NTID assessment requires the conventional 90% CI within 80.00-125.00% and the swT/swR ratio bound; reference scaling does not apply."
     )
   if (!reg$decision) {
     decision <- "No regulatory decision was applied: there are no acceptance limits and no pass/fail."
@@ -1980,6 +2037,8 @@ be_fit_models <- function(object, reference_col, reference_value,
   within <-
     if (identical(reg$scaling, "none")) {
       ""
+    } else if (identical(reg$est_method, "isc")) {
+      " Within-formulation variances (swR, swT) are estimated from within-sequence differences between each subject's replicate administrations (FDA)."
     } else if (identical(model_type, "nlme")) {
       " Within-formulation variances are the treatment-specific residual variances from the mixed model."
     } else {
@@ -2031,7 +2090,17 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' unweighted mean of the sequence means of the contrasts, with `n - m` degrees
 #' of freedom for `n` subjects in `m` sequences (FDA draft guidances on
 #' progesterone and warfarin sodium).  Without a sequence column, a subject's
-#' sequence is its treatment-by-period pattern.  Pass `model_type` to override
+#' sequence is its treatment-by-period pattern.  The unscaled 80.00-125.00%
+#' criterion of these frameworks (FDA RSABE when `swR < 0.294`, NTID, and
+#' HVNTID) uses the guidance mixed-effects model instead: fixed sequence,
+#' period, and treatment effects, correlated treatment random effects for each
+#' subject, a residual variance per treatment, REML, and Satterthwaite degrees
+#' of freedom (SAS `RANDOM TRT/TYPE=FA0(2)`, `REPEATED/GRP=TRT`).  A
+#' formulation that no subject receives twice has its residual variance folded
+#' into its between-subject variance, where the guidance model is
+#' over-specified.  Each row shows the ratio and interval its decision used:
+#' the intra-subject contrasts for the reference-scaled criterion and the mixed
+#' model for the unscaled one.  Pass `model_type` to override
 #' (`"lmer"`, `"anova"`, `"isc"`, `"nlme"`, or `"gls"`).  Within-subject
 #' variability for the FDA frameworks uses the FDA estimator from within-sequence
 #' differences between replicate administrations (`model_type = "isc"` in

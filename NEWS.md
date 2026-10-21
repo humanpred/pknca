@@ -581,7 +581,20 @@ the generated intervals:
   degrees of freedom), and a `sequence` argument for it.  The FDA RSABE, NTID,
   and HVNTID frameworks in `be_assess()` use it for `swR`, `swT`, and the
   `swT`/`swR` bound; it equals the EMA ANOVA estimate for `TRTR`/`RTRT` and
-  differs for `TRR`/`RTR`/`RRT`.  `be_extract_param()` reports it in `isc_`-prefixed columns.
+  differs for `TRR`/`RTR`/`RRT`.  `be_extract_param()` reports it in
+  `isc_`-prefixed columns.  (@billdenney)
+
+* The unscaled 80.00-125.00% criterion of the FDA frameworks (RSABE when
+  `swR < 0.294`, NTID, and HVNTID) uses the mixed-effects model of the FDA
+  progesterone and warfarin guidances (SAS `RANDOM TRT/TYPE=FA0(2)`,
+  `REPEATED/GRP=TRT`, `DDFM=SATTERTH`): correlated treatment random effects
+  for each subject, a residual variance per treatment, REML, and Satterthwaite
+  degrees of freedom, fit by subject so that large studies stay fast.
+  `model_type = "isc"` fits it for the ratio and keeps the fixed-effects ANOVA
+  for the geometric means.  The reference-scaled criterion keeps the
+  intra-subject contrasts, and each row of `be_assess()` shows the ratio and
+  interval that its decision used.  The `be_assess()` caption for HVNTID
+  states its criteria (the conventional interval and the `swT`/`swR` bound).
   (@billdenney)
 
 * `be_dataset()`, and so `be_assess()` and `be_compare()`, stops with
