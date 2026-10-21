@@ -606,9 +606,6 @@ print.be_within_var <- function(x, ...) {
 # returns the decision fragment `list(limit_lower, limit_upper, criterion,
 # pass)` that becomes one row of the [be_assess()] result.
 
-# Intra-subject contrasts (ISC) point estimate, the FDA reference-scaled
-# approach: within each subject form the mean log test minus mean log reference,
-# then average across subjects.  `work` carries `.subject`, `.trt`, `.logval`.
 # Within-subject contrast for one subject: mean log test minus mean log
 # reference, or NA if the subject lacks either formulation.  `s` carries the
 # `.trt` and `.logval` columns.
@@ -622,9 +619,10 @@ print.be_within_var <- function(x, ...) {
   }
 }
 
-# ISC estimate with the same fields as .be_isc(), all missing.  Used when no two
-# subjects received both formulations (a parallel design), where intra-subject
-# contrasts do not exist.  The argument is the condition from tryCatch().
+# ISC estimate with the same fields as .be_isc(), all missing.  Used when the
+# contrasts cannot be estimated: no subject received both formulations (a
+# parallel design), too few subjects have complete data, or a subject's sequence
+# is missing.  The argument is the condition from tryCatch().
 .be_isc_na <- function(cnd = NULL) {
   list(
     pe_log = NA_real_, se = NA_real_, df = NA_real_, n = 0L,
@@ -632,9 +630,9 @@ print.be_within_var <- function(x, ...) {
   )
 }
 
-# .be_isc(), or all-missing values when too few subjects have both formulations.
-# be_table() errors if a regulator that needs the ISC estimate gets the missing
-# values.
+# .be_isc(), or all-missing values when it cannot be estimated (see
+# .be_isc_na()).  be_table() errors if a regulator that needs the ISC estimate
+# gets the missing values.
 .be_isc_or_na <- function(work, reference_value, test_level, alpha = 0.10) {
   tryCatch(
     .be_isc(work, reference_value, test_level, alpha),
@@ -642,20 +640,78 @@ print.be_within_var <- function(x, ...) {
   )
 }
 
-.be_isc <- function(work, reference_value, test_level, alpha = 0.10) {
-  byid <- split(work, work$.subject)
-  ilat <- vapply(byid, .be_subject_ilat, numeric(1), reference_value, test_level)
-  ilat <- ilat[!is.na(ilat)]
-  n <- length(ilat)
-  if (n < 2) {
+# The sequence of each subject, one value per level of `subj`: the `.sequence`
+# column, or with `derived = TRUE` the subject's treatment-by-period pattern (as
+# in be_design()).
+.be_isc_sequence <- function(work, subj, derived) {
+  if (derived) {
+    return(as.character(tapply(
+      seq_len(nrow(work)), subj, .be_subject_pattern,
+      per = work$.period, trt = as.character(work$.trt)
+    )))
+  }
+  if (anyNA(work$.sequence)) {
     rlang::abort(
-      "The intra-subject contrast estimate needs at least 2 subjects with both formulations.",
+      "The intra-subject contrast estimate needs the sequence of every subject.",
+      class = c("pknca_error_be_isc_sequence_missing", "pknca_error_be_isc_insufficient")
+    )
+  }
+  as.character(tapply(as.character(work$.sequence), subj, `[`, 1))
+}
+
+# Whether each subject (one value per level of `subj`) has every test and
+# reference administration its sequence calls for: as many as the most seen in
+# that sequence.  A derived sequence cannot tell a subject who missed a period
+# from a different sequence, so with `derived = TRUE` every period of the design
+# is also required.
+.be_isc_complete <- function(work, subj, seq_id, reference_value, test_level, derived) {
+  n_ref <- as.vector(tapply(work$.trt == reference_value, subj, sum))
+  n_test <- as.vector(tapply(work$.trt == test_level, subj, sum))
+  complete <-
+    n_ref == stats::ave(n_ref, seq_id, FUN = max) &
+    n_test == stats::ave(n_test, seq_id, FUN = max)
+  if (derived) {
+    n_obs <- as.vector(table(subj))
+    complete <- complete & n_obs == max(n_obs)
+  }
+  complete
+}
+
+# Intra-subject contrasts (ISC), the estimate for the FDA reference-scaled
+# frameworks (FDA draft guidances on progesterone, 2011, and warfarin sodium,
+# 2012).  Each subject's contrast is its mean log test minus its mean log
+# reference, from subjects with every test and reference administration their
+# sequence calls for.  The estimate is the unweighted mean of the sequence means
+# of the contrasts (SAS `model ilat = seq; estimate 'average' intercept 1 seq
+# 1/m ... 1/m`) with n - m degrees of freedom (n subjects, m sequences).  Each
+# sequence mean carries that sequence's period effects; the unweighted mean
+# cancels them for the standard designs (TRTR/RTRT, TRR/RTR/RRT, TR/RT) for any
+# number of subjects per sequence, and the one-way model keeps them out of the
+# standard error.  `work` carries `.subject`, `.sequence`, `.period`, `.trt`,
+# and `.logval`; an all-missing `.sequence` is derived from the treatment
+# pattern.
+.be_isc <- function(work, reference_value, test_level, alpha = 0.10) {
+  subj <- droplevels(factor(work$.subject))
+  derived <- all(is.na(work$.sequence))
+  seq_id <- .be_isc_sequence(work, subj, derived)
+  ilat <- vapply(split(work, subj), .be_subject_ilat, numeric(1), reference_value, test_level)
+  use <- !is.na(ilat) & .be_isc_complete(work, subj, seq_id, reference_value, test_level, derived)
+  ilat <- unname(ilat[use])
+  sq <- factor(seq_id[use])
+  n <- length(ilat)
+  m <- nlevels(sq)
+  if (n - m < 1) {
+    rlang::abort(
+      "The intra-subject contrast estimate needs complete test and reference data from more subjects than there are sequences.",
       class = "pknca_error_be_isc_insufficient"
     )
   }
-  pe_log <- mean(ilat)
-  se <- stats::sd(ilat) / sqrt(n)
-  df <- n - 1
+  fit <- stats::lm(ilat ~ 0 + sq)
+  pe_log <- mean(stats::coef(fit))
+  # The estimate weights each sequence mean by 1/m, so its variance is the sum
+  # of the coefficient covariance matrix divided by m^2.
+  se <- sqrt(sum(stats::vcov(fit))) / m
+  df <- fit$df.residual
   ci <- exp(pe_log + c(-1, 1) * stats::qt(1 - alpha / 2, df) * se) * 100
   list(
     pe_log = pe_log, se = se, df = df, n = n,
@@ -1611,7 +1667,7 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
       }
     if (identical(reg$est_method, "isc") && is.na(est$pe_log)) {
       rlang::abort(
-        "The intra-subject contrast estimate needs at least 2 subjects with both formulations.",
+        "The intra-subject contrast estimate needs the sequence of every subject and complete test and reference data from more subjects than there are sequences.",
         class = "pknca_error_be_isc_insufficient"
       )
     }
@@ -1855,10 +1911,17 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' subject) uses the mixed model (`"lmer"`) for the geometric mean ratio and its
 #' confidence interval.  The FDA reference-scaled frameworks (FDA RSABE, NTID,
 #' HVNTID) always use intra-subject contrasts (`"isc"`), as the guidances
-#' specify, regardless of design.  Pass `model_type` to override (`"lmer"`,
-#' `"anova"`, `"isc"`, `"nlme"`, or `"gls"`).  Within-subject variability uses
-#' the regulatory ANOVA estimator for the `"lmer"`/`"anova"`/`"isc"` paths and
-#' the treatment-specific mixed-model estimator for `"nlme"`.
+#' specify, regardless of design.  Each subject's contrast is its mean log test
+#' minus its mean log reference, from the subjects with every test and
+#' reference administration their sequence calls for; the ratio is the
+#' unweighted mean of the sequence means of the contrasts, with `n - m` degrees
+#' of freedom for `n` subjects in `m` sequences (FDA draft guidances on
+#' progesterone and warfarin sodium).  Without a sequence column, a subject's
+#' sequence is its treatment-by-period pattern.  Pass `model_type` to override
+#' (`"lmer"`, `"anova"`, `"isc"`, `"nlme"`, or `"gls"`).  Within-subject
+#' variability uses the regulatory ANOVA estimator for the
+#' `"lmer"`/`"anova"`/`"isc"` paths and the treatment-specific mixed-model
+#' estimator for `"nlme"`.
 #'
 #' With `heteroscedastic = TRUE` the residual variance is estimated separately
 #' for each treatment: a crossover or replicate study uses `nlme::lme()` with

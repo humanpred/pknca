@@ -65,7 +65,10 @@ pass `model_type` to `be_assess()` to override it.  A parallel study (one
 measurement per subject) is analyzed by a fixed-effects ANOVA, while a crossover
 or replicate study (repeated measures per subject) uses the mixed model.  The
 FDA reference-scaled family always uses intra-subject contrasts (`"isc"`)
-regardless of design.
+regardless of design: each subject's mean log test minus mean log reference,
+from the subjects with every administration their sequence calls for, averaged
+with equal weight per sequence and with `n - m` degrees of freedom (`n` subjects,
+`m` sequences), as the FDA progesterone and warfarin guidances specify.
 
 | Regulator | Design required | Auto `model_type` | Notes |
 |---|---|---|---|

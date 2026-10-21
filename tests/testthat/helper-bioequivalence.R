@@ -45,6 +45,16 @@ generate_be_replicate <- function(nsub = 24, seed = 20240501,
   out
 }
 
+# Convert generate_be_replicate() output into the standardized single-endpoint
+# frame that .be_isc() reads (the `.`-prefixed columns built by be_dataset()).
+be_isc_work <- function(d) {
+  data.frame(
+    .subject = factor(d$subject), .sequence = factor(d$sequence),
+    .period = factor(d$period), .trt = as.character(d$treatment),
+    .logval = log(d$PK)
+  )
+}
+
 # Convert generate_be_replicate() output into the long PPTESTCD/PPORRES format
 # that be_assess() consumes, with a per-endpoint units column (PPORRESU).
 be_replicate_long <- function(d, endpoint = "auclast", units = if (endpoint == "cmax") "ng/mL" else "h*ng/mL") {

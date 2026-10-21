@@ -564,6 +564,18 @@ the generated intervals:
   test-replicated, and the NTID and HVNTID frameworks are not feasible for
   it).  `reps_test` is the smallest of the per-formulation medians.
 
+* The intra-subject contrasts used by the FDA RSABE, NTID, and HVNTID
+  frameworks follow the FDA progesterone and warfarin guidances:  only subjects
+  with every test and reference administration their sequence calls for
+  contribute, the ratio is the unweighted mean of the sequence means of the
+  contrasts, and its standard error and `n - m` degrees of freedom (`n`
+  subjects, `m` sequences) come from the one-way model on sequence.  The
+  contrasts previously pooled all subjects with `n - 1` degrees of freedom,
+  so period effects widened the interval and, with unequal sequence sizes,
+  shifted the ratio.  A subject with a missing sequence is now an error for
+  these frameworks, and without a sequence column the sequence is the
+  subject's treatment-by-period pattern.  (@billdenney)
+
 * Secondary parameters can now be calculated by linking intervals with
   `interval_id` and `<parameter>_ref` columns in the interval specification.
   The reference interval supplies the cross-profile input (the plasma AUC for

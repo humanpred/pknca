@@ -127,10 +127,17 @@ ANOVA (\code{"anova"}), while a crossover or replicate study (repeated measures 
 subject) uses the mixed model (\code{"lmer"}) for the geometric mean ratio and its
 confidence interval.  The FDA reference-scaled frameworks (FDA RSABE, NTID,
 HVNTID) always use intra-subject contrasts (\code{"isc"}), as the guidances
-specify, regardless of design.  Pass \code{model_type} to override (\code{"lmer"},
-\code{"anova"}, \code{"isc"}, \code{"nlme"}, or \code{"gls"}).  Within-subject variability uses
-the regulatory ANOVA estimator for the \code{"lmer"}/\code{"anova"}/\code{"isc"} paths and
-the treatment-specific mixed-model estimator for \code{"nlme"}.
+specify, regardless of design.  Each subject's contrast is its mean log test
+minus its mean log reference, from the subjects with every test and
+reference administration their sequence calls for; the ratio is the
+unweighted mean of the sequence means of the contrasts, with \code{n - m} degrees
+of freedom for \code{n} subjects in \code{m} sequences (FDA draft guidances on
+progesterone and warfarin sodium).  Without a sequence column, a subject's
+sequence is its treatment-by-period pattern.  Pass \code{model_type} to override
+(\code{"lmer"}, \code{"anova"}, \code{"isc"}, \code{"nlme"}, or \code{"gls"}).  Within-subject
+variability uses the regulatory ANOVA estimator for the
+\code{"lmer"}/\code{"anova"}/\code{"isc"} paths and the treatment-specific mixed-model
+estimator for \code{"nlme"}.
 
 With \code{heteroscedastic = TRUE} the residual variance is estimated separately
 for each treatment: a crossover or replicate study uses \code{nlme::lme()} with
