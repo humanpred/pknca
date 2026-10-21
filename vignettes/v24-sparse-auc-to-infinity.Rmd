@@ -63,6 +63,65 @@ mt_range <- function(column, ..., digits = 0) {
   v <- sim_rows(mean_type$summary, list(...))[[column]]
   paste(format(round(range(v), digits), nsmall = digits), collapse = " to ")
 }
+# The comparisons with published methods (PK package, Wolfsegger and Jaki
+# 2005, and PKNCA's bootstrap-t) and with the BLOQ package's BLQ treatments
+comparisons <- readRDS("v24-sparse-auc-to-infinity-comparisons.rds")
+blq <- readRDS("v24-sparse-auc-to-infinity-blq.rds")
+# The range, or the one value, of a column of any summary over the rows
+# matching `...` (column = value), as text
+summary_range <- function(summary, column, ..., digits = 0) {
+  v <- sim_rows(summary, list(...))[[column]]
+  stopifnot(length(v) > 0)
+  paste(unique(format(round(range(v), digits), nsmall = digits)), collapse = " to ")
+}
+summary_value <- function(summary, column, ..., digits = 1) {
+  v <- sim_rows(summary, list(...))[[column]]
+  stopifnot(length(v) == 1)
+  format(round(v, digits), nsmall = digits)
+}
+cmp_range <- function(column, ..., digits = 0) summary_range(comparisons$summary, column, ..., digits = digits)
+blq_range <- function(column, ..., digits = 0) summary_range(blq$summary, column, ..., digits = digits)
+# The AUC to infinity in the serial-sacrifice comparisons
+serial_range <- function(column, interval, n_per_time, ..., digits = 1) {
+  cmp_range(column, interval = interval, design = "serial", parameter = "auc", n_per_time = n_per_time, ..., digits = digits)
+}
+# The batch-design comparisons
+batch_range <- function(column, interval, parameter, ..., digits = 1) {
+  cmp_range(column, interval = interval, design = "batch", parameter = parameter, ..., digits = digits)
+}
+# The percentage of data sets whose interval could not be calculated, from
+# the number of data sets of each cell
+failure_range <- function(..., digits = 1) {
+  r <- sim_rows(comparisons$summary, list(...))
+  v <- 100*(1 - r$n/comparisons$n_replicates)
+  paste(unique(format(round(range(v), digits), nsmall = digits)), collapse = " to ")
+}
+# The largest drop in coverage (percentage points) from counting a failure as
+# a miss
+max_coverage_drop <- function(..., digits = 1) {
+  r <- sim_rows(comparisons$summary, list(...))
+  format(round(max(r$coverage*(1 - r$n/comparisons$n_replicates)), digits), nsmall = digits)
+}
+# The bias (%) of an estimator with many animals per time
+large_range <- function(estimator, ..., digits = 1) {
+  summary_range(comparisons$large_n_summary, "relative_bias", estimator = estimator, ..., digits = digits)
+}
+# The ratio of the median widths of PKNCA's bootstrap-t and delta-method
+# intervals over the number of animals per time
+boott_width_ratio <- function(n_per_time, blq, parameter, digits = 2) {
+  rows <- list(n_per_time = n_per_time, blq = blq, parameter = parameter)
+  boot_t <- sim_rows(comparisons$profile_summary, c(rows, list(interval = "pknca boot-t")))$median_ci_width
+  delta <- sim_rows(comparisons$profile_summary, c(rows, list(interval = "pknca delta")))$median_ci_width
+  stopifnot(length(boot_t) == 1, length(delta) == 1)
+  format(round(boot_t/delta, digits), nsmall = digits)
+}
+# PKNCA's intervals over the number of animals per time
+boott_value <- function(column, n_per_time, blq, parameter, interval = "pknca boot-t", digits = 1) {
+  summary_value(
+    comparisons$profile_summary, column,
+    interval = interval, n_per_time = n_per_time, blq = blq, parameter = parameter, digits = digits
+  )
+}
 ```
 
 # Summary and recommendations
@@ -87,7 +146,10 @@ For sparse sampling, where each animal gives one or a few samples:
   AUMC to infinity was biased low in most scenarios, and its confidence intervals
   under-covered in every scenario, even with the delta method
   (`r se_range("coverage", method = "delta", parameter = "aumc")`%), most when
-  elimination was slow.
+  elimination was slow.  PKNCA gives no standard error for the MRT or $V_{ss}$;
+  the PK package's intervals for them under-covered in the batch design
+  (`r batch_range("coverage", "pk z", "mrt", blq = "none")`% for the MRT),
+  as its help warns, because the MRT of the mean profile is itself biased.
 * **The half-life of the mean profile is not the typical animal's half-life.**
   It was too long when the terminal phase was well sampled (by up to
   `r max(round(sim_rows(mean_type$summary, list(mean_type = "arithmetic", parameter = "half.life", elimination = "fast", blq = "none"))$bias_typical))`%)
@@ -111,7 +173,10 @@ For sparse sampling, where each animal gives one or a few samples:
   the analytical standard errors for the AUCs, and use the bootstrap for
   parameters and comparisons that have none, such as Cmax and ratios between
   groups.  With 20 or more animals per time, its standard error was accurate
-  and its intervals matched the delta method's.
+  and its intervals matched the delta method's.  A bootstrap-$t$ on the
+  delta-method standard error covered the AUMC better than the delta method,
+  but not the AUC, and it was not adopted:  it keeps the same, biased
+  estimate, and its gain comes from a wider or shifted interval around it.
 * **With many animals, the bias of the sparse estimate dominates.**  BLQ
   samples and the extrapolation of the mean profile biased the AUC to infinity
   low (by about
@@ -119,6 +184,25 @@ For sparse sampling, where each animal gives one or a few samples:
   with BLQ samples here), whatever the number of animals and whichever
   half-life was used, so with many animals every confidence interval missed the
   truth more often than its nominal level.
+* **The published intervals for these designs did not cover better with few
+  animals.**  With three animals per time in serial-sacrifice designs, the delta
+  method covered `r serial_range("coverage", "pknca delta", 3)`%.  The
+  bootstrap-$t$ of Wolfsegger and Jaki (2005) covered about as well without
+  BLQ samples, but with intervals about twice as wide from an unstable estimate.
+  Both it and the PK package take the logarithm of every sample, and they broke
+  down with BLQ samples:  with slow elimination, PK's asymptotic interval
+  covered
+  `r serial_range("coverage", "pk z", 3, blq = "moderate", elimination = "slow", digits = 0)`%
+  and the 2005 bootstrap-$t$
+  `r serial_range("coverage", "wj2005 boot-t", 3, blq = "moderate", elimination = "slow", digits = 0)`%.
+* **Imputing BLQ samples was evaluated and not adopted.**  The treatments that
+  Barnett et al. (2021) compared, applied at each time, reduced the bias of the
+  AUC to infinity with slow elimination (kernel imputation
+  `r blq_range("median_bias", elimination = "slow", interval = "kernel delta", digits = 1)`%,
+  against
+  `r blq_range("median_bias", elimination = "slow", interval = "zero delta", digits = 1)`%
+  for zero), but none covered better than zero substitution, and the direct
+  censored likelihood under-covered.
 * **The Tobit half-life was evaluated with BLQ samples and not adopted for the
   sparse AUC.**  The Tobit fit of the mean profile (`hl_method = "tobit"`, with
   the LLOQ carried through the mean profile) gave nearly the same AUC to
@@ -156,7 +240,7 @@ AUC to the last time for complete, batch, and serial sacrifice designs, and Jaki
 and Wolfsegger (2012) extended the serial-sampling parameters of Wolfsegger and
 Jaki (2009), the AUC and AUMC to infinity, MRT, half-life, clearance, and
 $V_{ss}$ after an IV bolus, to those designs, with asymptotic and bootstrap-$t$
-intervals, as implemented in the R package PK.  Barnett, Geys, Jacobs, and Jaki
+intervals, as implemented in the R package PK (Jaki and Wolfsegger 2011).  Barnett, Geys, Jacobs, and Jaki
 (2021) compared eight treatments of samples below the limit of quantification
 in the AUC, from substitution to censored maximum likelihood and kernel-density
 imputation.
@@ -167,8 +251,10 @@ calculates the sparse AUC and AUMC to infinity with their standard errors and
 degrees of freedom, gives a delta-method extension of Yuan's method that
 includes the uncertainty in $\lambda_z$ and its covariance with the means (the
 covariance Wolfsegger and Jaki left open), extends both to IV bolus dosing, and
-compares the methods in a simulation-estimation study.  A second study compares
-arithmetic and geometric mean profiles.
+compares the methods in a simulation-estimation study, with the estimators of
+Wolfsegger and Jaki (2005) and of the PK package, a bootstrap-$t$ interval, and
+the treatments of BLQ samples that Barnett et al. (2021) compared.  A second
+study compares arithmetic and geometric mean profiles.
 
 # The sparse AUC to the last measurement
 
@@ -334,8 +420,10 @@ model <- simulation$model
 
 ## Design
 
-Both studies in this vignette share one design
-(`data-raw/sparse_simulation_design.R` in the PKNCA source).  Concentrations come
+Every study in this vignette shares one design.  The simulations are a targets
+pipeline in `data-raw/sparse-simulation/` of the PKNCA source; its README says
+how to run it, how long it takes, and how to add a scenario or an estimator.
+Concentrations come
 from one- and two-compartment models (pmxTools) after a dose of
 `r model$dose`, given orally or as an IV bolus, with log-normal between-animal
 variability (`r 100*model$omega`% on each structural parameter) and a
@@ -381,8 +469,7 @@ PKNCA does, and three standard errors were calculated:
   intercept for each animal in the batch design), with that $\lambda_z$ in the
   extrapolation and its variance added to Yuan's.
 
-The simulation is in `data-raw/sparse_aucinf_simulation.R` in the PKNCA source,
-which was run with PKNCA `r simulation$pknca_version` and pmxTools
+This study was run with PKNCA `r simulation$pknca_version` and pmxTools
 `r simulation$pmxtools_version` (`r simulation$r_version`,
 `r simulation$run_date`); every replicate has its own seed, so the results can
 be reproduced.
@@ -511,13 +598,14 @@ show_bootstrap("aumc")
 Published uses of the bootstrap had either a few animals per time (three mice in
 Takemoto et al. 2006, which compared only the means and standard deviations
 with Bailer's) or many (about 88 subjects per time and treatment in the
-bioequivalence study of Shen and Machado 2017).  To see how the number of
+bioequivalence study of Shen and Machado 2017), and Tardivon et al. (2023)
+compared it with a model-based test for single-sample bioequivalence studies,
+but not with an analytical standard error.  To see how the number of
 animals per time changes the comparison, the two-compartment, oral,
 serial-sacrifice design with slow elimination was simulated with
 `r paste(bootstrap_n$n_per_time, collapse = ", ")` animals per time, without
 and with BLQ samples (`r format(bootstrap_n$n_replicates, big.mark = ",")` data
-sets each, `r bootstrap_n$n_boot` bootstrap replicates;
-`data-raw/sparse_bootstrap_n_profile.R`).  The data seeds do not depend on the
+sets each, `r bootstrap_n$n_boot` bootstrap replicates).  The data seeds do not depend on the
 number of animals, so 4 animals per time reproduces the data sets above.  The
 bias is that of the point estimate, which all of the methods share.
 
@@ -530,6 +618,11 @@ show_bootstrap_n <- function(parameter) {
   for (i in seq_len(nrow(keys))) {
     current <- merge(b, keys[i, ])
     value_of <- current[match(c("percentile", "boot_se", "yuan", "delta"), current$method), ]
+    boot_t <-
+      sim_rows(
+        comparisons$profile_summary,
+        list(interval = "pknca boot-t", parameter = parameter, blq = keys$blq[i], n_per_time = keys$n_per_time[i])
+      )
     out <-
       rbind(
         out,
@@ -540,6 +633,7 @@ show_bootstrap_n <- function(parameter) {
           `Coverage boot. SE` = round(value_of$coverage[2], 1),
           `Coverage Yuan` = round(value_of$coverage[3], 1),
           `Coverage delta` = round(value_of$coverage[4], 1),
+          `Coverage boot-t` = round(boot_t$coverage, 1),
           `CI width percentile` = round(value_of$median_ci_width[1]),
           `CI width delta` = round(value_of$median_ci_width[4]),
           `Bias (%)` = round(value_of$median_bias[1], 1),
@@ -577,8 +671,7 @@ Yuan's and the delta method for the log-linear fit; Yuan's for the Tobit fit
 of the mean profile, which has no standard error for $\lambda_z$; Yuan's
 variance plus that of $\lambda_z$ for the Tobit fit of the individual samples;
 and, for each, the bootstrap percentile interval (`r tobit$n_boot` replicates,
-each refitting its own $\lambda_z$;
-`data-raw/sparse_tobit_simulation.R`).
+each refitting its own $\lambda_z$).
 
 ```{r simulation-tobit, echo = FALSE}
 tobit_intervals <-
@@ -684,6 +777,245 @@ show_accuracy("auc")
 ```{r simulation-aumc-accuracy, echo = FALSE}
 show_accuracy("aumc")
 ```
+
+```{r comparison-tables, echo = FALSE}
+cmp <- comparisons$summary
+# One column of `column` for each interval (named by `labels`), in the order
+# of the scenarios `keys`
+interval_columns <- function(r, keys, labels, column, digits) {
+  out <- list()
+  for (current in names(labels)) {
+    current_rows <- r[r$interval == current, ]
+    out[[labels[[current]]]] <- round(current_rows[[column]][match(keys, current_rows$scenario)], digits)
+  }
+  as.data.frame(out, check.names = FALSE)
+}
+# The rows of one interval of a summary, one per scenario, in scenario order
+first_rows <- function(r, interval) {
+  ret <- r[r$interval == interval, ]
+  ret[order(ret$scenario), ]
+}
+serial_labels <-
+  c(
+    "pknca yuan" = "Yuan", "pknca delta" = "Delta", "pknca boot-t" = "PKNCA boot-t",
+    "pk z" = "PK z", "pk boot-t" = "PK boot-t", "wj2005 z" = "WJ z", "wj2005 boot-t" = "WJ boot-t"
+  )
+show_serial_coverage <- function(n_per_time) {
+  r <- cmp[cmp$design == "serial" & cmp$parameter == "auc" & cmp$n_per_time == n_per_time, ]
+  first <- first_rows(r, "pknca delta")
+  knitr::kable(
+    data.frame(scenario_columns(first)[, -3], interval_columns(r, first$scenario, serial_labels, "coverage", 1), check.names = FALSE),
+    row.names = FALSE
+  )
+}
+show_serial_accuracy <- function(n_per_time) {
+  r <- cmp[cmp$design == "serial" & cmp$parameter == "auc" & cmp$n_per_time == n_per_time, ]
+  first <- first_rows(r, "pknca delta")
+  bias <- interval_columns(r, first$scenario, c("pknca delta" = "Bias PKNCA", "pk z" = "Bias PK", "wj2005 z" = "Bias WJ"), "relative_bias", 1)
+  width <-
+    interval_columns(
+      r, first$scenario,
+      c("pknca delta" = "Width delta", "pknca boot-t" = "Width PKNCA boot-t", "pk boot-t" = "Width PK boot-t", "wj2005 boot-t" = "Width WJ boot-t"),
+      "median_ci_width", 0
+    )
+  knitr::kable(data.frame(scenario_columns(first)[, -3], bias, width, check.names = FALSE), row.names = FALSE)
+}
+show_batch_coverage <- function(parameter, labels) {
+  r <- cmp[cmp$design == "batch" & cmp$parameter == parameter, ]
+  first <- first_rows(r, names(labels)[1])
+  pk <- first_rows(r, "pk z")
+  knitr::kable(
+    data.frame(
+      scenario_columns(first)[, -3],
+      interval_columns(r, first$scenario, labels, "coverage", 1),
+      `PK BLQ omitted (%)` = round(pk$percent_fallback[match(first$scenario, pk$scenario)]),
+      check.names = FALSE
+    ),
+    row.names = FALSE
+  )
+}
+blq_labels <-
+  c(
+    "zero delta" = "Zero", "half_lloq delta" = "LLOQ/2", "ros delta" = "ROS", "kernel delta" = "Kernel",
+    "cml_impute delta" = "CML impute", "cml_direct z" = "CML direct"
+  )
+# The Tobit study's values for the same scenarios (four animals per time)
+tobit_auc <- tobit$summary[tobit$summary$parameter == "auc" & tobit$summary$n_per_time == 4, ]
+show_blq <- function(column, tobit_column, digits) {
+  r <- blq$summary
+  first <- first_rows(r, "zero delta")
+  tobit_values <-
+    interval_columns(
+      tobit_auc, first$scenario,
+      c("tobit-mean yuan" = "Tobit mean", "tobit-individual yuan+var" = "Tobit indiv."),
+      tobit_column, digits
+    )
+  knitr::kable(
+    data.frame(
+      scenario_columns(first)[, -4], interval_columns(r, first$scenario, blq_labels, column, digits), tobit_values,
+      check.names = FALSE
+    ),
+    row.names = FALSE
+  )
+}
+```
+
+## Results:  Wolfsegger and Jaki (2005) and the PK package
+
+Wolfsegger and Jaki (2005) estimated the AUC to infinity in serial sacrifice
+designs as the trapezoidal sum to a time $t_K$ plus $\bar{y}_K/\hat{\lambda}_z$,
+with $\hat{\lambda}_z$ fit to the bias-corrected log means of the times after
+$t_K$, so that the two parts are independent, and a bias correction for the
+extrapolation.  They gave an asymptotic interval and a bootstrap-$t$ interval
+(1000 replicates, stratified by time) on its variance, and they left open the
+covariance between the trapezoidal AUC and $\hat{\lambda}_z$ when the same
+samples serve both, which is what PKNCA's delta method includes.  No package
+implements the 2005 estimator, so it was written from the paper ("WJ"), with
+$\hat{\lambda}_z$ from the last three times as in their simulation.  The PK
+package implements the later estimator of Wolfsegger and Jaki (2009) for serial
+sacrifice designs and of Jaki and Wolfsegger (2012) for batch designs
+(`PK::nca()`):  the trapezoidal sum to the last time plus the extrapolation
+from the last mean, with $\lambda_z$ fit to the mean log concentrations of the
+last `r comparisons$n_tail` times (`n.tail`), a variance that includes the
+covariance of each time's mean with its mean log concentration, and asymptotic
+("PK z") and bootstrap-$t$ ("PK boot-t") intervals.  PKNCA's intervals were
+Yuan's, the delta method, and a bootstrap-$t$ interval on the delta-method
+standard error ("PKNCA boot-t"):  the 2005 construction applied to PKNCA's
+estimator, with `sparse_bootstrap()` replicates
+(`r comparisons$n_boot`, each with its own half-life fit and delta-method
+standard error).
+
+All of them were run on the serial-sacrifice scenarios with three and four
+animals per time (the first `r format(comparisons$n_replicates, big.mark = ",")`
+data sets of each; with four animals, those of the standard error study), with
+`r comparisons$pk_nsample` and `r comparisons$wj_nsample` bootstrap
+replicates for PK's and WJ's bootstrap-$t$.  Both published estimators start the AUC at the first time they
+are given:  for oral dosing they were given the known zero at time 0, and for
+IV bolus dosing, which neither back-extrapolates, their AUC starts at the first
+sample (5 minutes), which loses the area before it.  Both take the logarithm of
+every sample in the tail; a BLQ sample, reported as zero, was replaced by
+$10^{-256}$ in the logarithms as `PK::nca()` does, which violates their
+assumption of a constant coefficient of variation in the tail.  They were run
+anyway, so the BLQ scenarios show what happens when that assumption fails.
+
+Coverage, here and below, is among the data sets for which the interval could
+be calculated.  Without BLQ samples,
+`r failure_range(design = "serial", blq = "none", parameter = "auc")`% of the
+data sets failed, depending on the interval and scenario.  With BLQ samples, the 2005 estimator failed
+(no positive $\hat{\lambda}_z$) in
+`r failure_range(design = "serial", blq = "moderate", parameter = "auc", interval = "wj2005 z")`%
+of them and PKNCA's estimate (no half-life) in
+`r failure_range(design = "serial", blq = "moderate", parameter = "auc", interval = "pknca delta")`%.
+Counting a failure as a miss would lower a coverage in the serial-sacrifice
+tables by at most
+`r max_coverage_drop(design = "serial", parameter = "auc")` points (the result
+file has both).
+
+Coverage (%) of the 95% intervals for the AUC to infinity with three animals
+per time:
+
+```{r comparison-serial-3, echo = FALSE}
+show_serial_coverage(3)
+```
+
+And with four animals per time (the data sets of the standard error study):
+
+```{r comparison-serial-4, echo = FALSE}
+show_serial_coverage(4)
+```
+
+Bias of the point estimates (mean, % of the truth) and median width of the
+intervals (% of the truth), with three animals per time:
+
+```{r comparison-serial-accuracy-3, echo = FALSE}
+show_serial_accuracy(3)
+```
+
+## Results:  the PK package's parameters in the batch design
+
+The PK package also gives intervals for the AUMC to infinity, the MRT, the
+non-compartmental half-life ($\log(2)$ times the MRT, so its coverage is the
+MRT's), the clearance, and $V_{ss}$, and its help warns that the standard
+errors of the MRT and $V_{ss}$ in batch designs under-cover severely.  PKNCA
+gives standard errors only for the AUC and AUMC; for other parameters it has
+the bootstrap.  On the batch scenarios (four animals per batch, the first
+`r format(comparisons$n_replicates, big.mark = ",")` data sets of each), PK's
+intervals were compared with PKNCA's delta method and bootstrap-$t$ (AUC and
+AUMC) and its percentile bootstrap (MRT, the ratio of the AUMC and AUC to
+infinity of each replicate).  The true MRT is that of the population mean
+curve, the ratio of its AUMC and AUC; after oral dosing, it includes the mean
+absorption time, as both packages' estimates do.  In a batch design,
+`PK::nca()` cannot take a zero at a time where other samples are positive:
+after oral dosing it stops with an error, and after IV bolus dosing it replaces
+the resulting NaN variances with a placeholder ($10^{-8}$), which gives a
+standard error near zero.  So every batch data set with BLQ samples was given
+to PK with them omitted, as it allows (the last column gives how often), and any
+interval whose standard error was PK's placeholder counted as a failure.  PK's bootstrap resamples the concentrations at each time
+without regard to animal, while `sparse_bootstrap()` resamples whole animals
+within each batch.
+
+Coverage (%) for the AUC to infinity:
+
+```{r comparison-batch-auc, echo = FALSE}
+show_batch_coverage("auc", c("pknca delta" = "Delta", "pknca boot-t" = "PKNCA boot-t", "pk z" = "PK z", "pk boot-t" = "PK boot-t"))
+```
+
+For the AUMC to infinity:
+
+```{r comparison-batch-aumc, echo = FALSE}
+show_batch_coverage("aumc", c("pknca delta" = "Delta", "pknca boot-t" = "PKNCA boot-t", "pk z" = "PK z", "pk boot-t" = "PK boot-t"))
+```
+
+For the MRT, which has no analytical standard error in PKNCA:
+
+```{r comparison-batch-mrt, echo = FALSE}
+show_batch_coverage("mrt", c("pknca percentile" = "PKNCA percentile", "pk z" = "PK z", "pk boot-t" = "PK boot-t"))
+```
+
+## Results:  treatments of BLQ samples
+
+Barnett, Geys, Jacobs, and Jaki (2021) compared eight treatments of BLQ
+samples in the AUC to the last time and recommended kernel-density imputation.
+Their simulations used complete designs only (10 subjects sampled at each of
+six times); they noted that the methods extend to sparse designs, with the
+imputed values assigned to animals at random in serial designs and by the
+animals' previous concentrations in batch designs.  Their BLOQ package takes a
+subject-by-time matrix, so its per-time methods were applied to the samples at
+each time of each data set, and the imputed data went through PKNCA's sparse
+AUC to infinity with the delta method:  zero (PKNCA's default), half the LLOQ,
+regression on order statistics on the log scale (ROS), kernel-density
+imputation, and censored maximum likelihood at each time followed by
+imputation of the expected order statistics ("CML impute", their two-step
+method).  Their direct method ("CML direct") instead uses each time's censored
+maximum-likelihood mean and its variance; here those means gave the AUC to
+infinity and its delta-method variance with the times independent, which the
+batch design violates, and a normal interval.  The likelihood methods used
+BLOQ's additive (normal) model:  its multiplicative model fits base-10
+logarithms but back-transforms with the natural exponential, which does not
+return the fitted mean.  As BLOQ does, a time whose samples were all BLQ took
+half the LLOQ; ROS and the likelihood methods, which need two measured
+samples, did the same with fewer.  Their full-likelihood method needs the
+within-animal covariance of every pair of times, which one sample per animal
+cannot give, so it was not run.  The scenarios are those with BLQ samples
+(`r format(blq$n_replicates, big.mark = ",")` data sets each, the first of the
+standard error study).  The last two columns come from the Tobit study on the
+same data sets (and, for the profile's scenario, the next
+`r format(tobit$n_profile_replicates - blq$n_replicates, big.mark = ",")`):
+Yuan's interval with the Tobit half-life of the mean profile, and Yuan's
+variance plus that of the individual-sample Tobit $\lambda_z$.
+
+Coverage (%) of the 95% intervals for the AUC to infinity:
+
+```{r blq-coverage, echo = FALSE}
+show_blq("coverage", "coverage", 1)
+```
+
+Median bias (% of the truth):
+
+```{r blq-bias, echo = FALSE}
+show_blq("median_bias", "median_bias", 1)
+```
+
 
 ## Findings
 
@@ -819,6 +1151,187 @@ $\lambda_z$ does not remove it:  it comes from the late means, where BLQ
 samples count as zero, and from the mean profile ending earlier, when more
 than half of a time's samples are BLQ.
 
+**Published estimators with three or four animals per time.**  Without BLQ
+samples, no interval was best everywhere.  With three animals per time, the
+delta method covered
+`r serial_range("coverage", "pknca delta", 3, blq = "none")`%, PKNCA's
+bootstrap-$t$ `r serial_range("coverage", "pknca boot-t", 3, blq = "none")`%,
+PK's asymptotic and bootstrap-$t$ intervals
+`r serial_range("coverage", "pk z", 3, blq = "none")`% and
+`r serial_range("coverage", "pk boot-t", 3, blq = "none")`%, and the 2005
+estimator's `r serial_range("coverage", "wj2005 z", 3, blq = "none")`% and
+`r serial_range("coverage", "wj2005 boot-t", 3, blq = "none")`%.  With slow
+elimination, the 2005 bootstrap-$t$ came closest to nominal
+(`r serial_range("coverage", "wj2005 boot-t", 3, blq = "none", elimination = "slow")`%,
+against
+`r serial_range("coverage", "pknca delta", 3, blq = "none", elimination = "slow")`%
+for the delta method), and it covered better than their asymptotic interval, as
+Wolfsegger and Jaki found.  But it was about twice as wide (median
+`r serial_range("median_ci_width", "wj2005 boot-t", 3, blq = "none", elimination = "slow", digits = 0)`%
+of the truth, against
+`r serial_range("median_ci_width", "pknca delta", 3, blq = "none", elimination = "slow", digits = 0)`%),
+because its estimate was unstable:  its median bias was
+`r serial_range("median_bias", "wj2005 z", 3, blq = "none")`%, against
+`r serial_range("median_bias", "pknca delta", 3, blq = "none")`% for PKNCA's
+estimate and `r serial_range("median_bias", "pk z", 3, blq = "none")`% for PK's.
+With `r format(comparisons$large_n_per_time, big.mark = ",")` animals per time
+(`r comparisons$n_large_replicates` data sets of each scenario without BLQ
+samples), the 2005 estimate was biased by
+`r large_range("wj2005", elimination = "fast")`% with fast elimination, much as
+PKNCA's was (`r large_range("pknca", elimination = "fast")`%), from the linear
+trapezoidal rule over a declining curve, and by
+`r large_range("wj2005", elimination = "slow")`% with slow elimination
+(PKNCA's, `r large_range("pknca", elimination = "slow")`%).  So its large
+errors with three or four animals are those of small samples:
+its bias correction divides the variance of $\hat{\lambda}_z$ by
+$\hat{\lambda}_z^3$, its correction of the log means divides one noisy variance
+by a noisy squared mean, and the variability of the elimination rate here gives
+the late times a coefficient of variation far above the 5% to 20% of their
+simulation.  Its construction also extrapolates from $t_K$, three times before
+the last, rather than from $t_{last}$, so more of the AUC rests on
+$\hat{\lambda}_z$.  That is the price of keeping $\hat{\lambda}_z$ independent
+of the trapezoidal sum; the delta method instead keeps every time in the sum
+and includes the covariance that Wolfsegger and Jaki (2005) left open.
+
+With BLQ samples, the published estimators broke down:  a zero among the
+logarithms (taken as $10^{-256}$) drags the mean log concentration of the last
+time down and $\hat{\lambda}_z$ up.  The 2005 estimator's intervals covered
+`r serial_range("coverage", "wj2005 boot-t", 3, blq = "moderate", digits = 0)`%
+in every scenario with BLQ samples.  PK's intervals held up with fast elimination
+(`r serial_range("coverage", "pk z", 3, blq = "moderate", elimination = "fast")`%,
+asymptotic), where little is extrapolated, but covered
+`r serial_range("coverage", "pk z", 3, blq = "moderate", elimination = "slow", digits = 0)`%
+(asymptotic) and
+`r serial_range("coverage", "pk boot-t", 3, blq = "moderate", elimination = "slow", digits = 0)`%
+(bootstrap-$t$) with slow elimination, while the delta method covered
+`r serial_range("coverage", "pknca delta", 3, blq = "moderate")`% with BLQ
+samples.  Over every
+serial-sacrifice scenario with three animals per time, the delta method covered
+best, `r serial_range("coverage", "pknca delta", 3)`%, against
+`r serial_range("coverage", "pknca boot-t", 3)`% for PKNCA's bootstrap-$t$,
+`r serial_range("coverage", "pk boot-t", 3)`% for PK's, and
+`r serial_range("coverage", "wj2005 boot-t", 3)`% for the 2005 estimator's;
+with four animals per time, the delta method covered
+`r serial_range("coverage", "pknca delta", 4)`%.
+
+**The PK package in the batch design.**  Without BLQ samples, PK's asymptotic
+interval for the AUC to infinity covered
+`r batch_range("coverage", "pk z", "auc", blq = "none")`% and its bootstrap-$t$
+`r batch_range("coverage", "pk boot-t", "auc", blq = "none")`%, against
+`r batch_range("coverage", "pknca delta", "auc", blq = "none")`% for the delta
+method and `r batch_range("coverage", "pknca boot-t", "auc", blq = "none")`%
+for PKNCA's bootstrap-$t$.  PK's bootstrap-$t$ resamples the concentrations at
+each time without regard to the animal they came from, although each animal
+gives several samples, and it under-covered every parameter.  For the AUMC to infinity, PK's intervals
+covered `r batch_range("coverage", "pk z", "aumc", blq = "none")`% (asymptotic)
+and `r batch_range("coverage", "pk boot-t", "aumc", blq = "none")`%
+(bootstrap-$t$), against
+`r batch_range("coverage", "pknca delta", "aumc", blq = "none")`% for the delta
+method and `r batch_range("coverage", "pknca boot-t", "aumc", blq = "none")`%
+for PKNCA's bootstrap-$t$.  The under-coverage that PK's help warns of for the
+MRT and $V_{ss}$ was confirmed:  the asymptotic intervals covered
+`r batch_range("coverage", "pk z", "mrt", blq = "none")`% for the MRT (and so
+for the non-compartmental half-life) and
+`r batch_range("coverage", "pk z", "vss", route = "iv", blq = "none")`% for
+$V_{ss}$ after an IV bolus, while the clearance, a function of the AUC alone,
+covered `r batch_range("coverage", "pk z", "cl", blq = "none")`%.  The cause is
+mostly the estimate rather than its standard error:  the MRT of the mean
+profile was biased by
+`r batch_range("median_bias", "pk z", "mrt", blq = "none")`% (PK) and
+`r batch_range("median_bias", "pknca percentile", "mrt", blq = "none")`%
+(PKNCA), because the AUMC to infinity is underestimated, and PKNCA's percentile
+bootstrap of the MRT covered no better
+(`r batch_range("coverage", "pknca percentile", "mrt", blq = "none")`%).  With
+BLQ samples, every batch data set that had any
+(`r batch_range("percent_fallback", "pk z", "auc", blq = "moderate", digits = 0)`%
+of each scenario) went to PK with them omitted.  Dropping the lowest late
+concentrations biased PK's AUC to infinity high (median
+`r batch_range("median_bias", "pk z", "auc", blq = "moderate")`%), but its
+asymptotic interval still covered
+`r batch_range("coverage", "pk z", "auc", blq = "moderate")`%, against
+`r batch_range("coverage", "pknca delta", "auc", blq = "moderate")`% for the
+delta method.
+
+**PKNCA's bootstrap-$t$.**  The bootstrap-$t$ on the delta-method standard
+error covered about as well as the delta method without BLQ samples, but less
+well with BLQ samples and slow elimination
+(`r serial_range("coverage", "pknca boot-t", 3, blq = "moderate", elimination = "slow")`%
+against
+`r serial_range("coverage", "pknca delta", 3, blq = "moderate", elimination = "slow")`%
+with three animals per time), and its intervals were wider.  Over the number of
+animals per time (the first
+`r format(comparisons$n_profile_replicates, big.mark = ",")` data sets of each),
+it matched the delta method for the AUC to infinity without BLQ samples
+(`r boott_value("coverage", 4, "none", "auc")`% and
+`r boott_value("coverage", 100, "none", "auc")`% with 4 and 100 animals, against
+`r boott_value("coverage", 4, "none", "auc", interval = "pknca delta")`% and
+`r boott_value("coverage", 100, "none", "auc", interval = "pknca delta")`%), and
+it covered the AUMC to infinity better
+(`r boott_value("coverage", 4, "none", "aumc")`% and
+`r boott_value("coverage", 100, "none", "aumc")`%, against
+`r boott_value("coverage", 4, "none", "aumc", interval = "pknca delta")`% and
+`r boott_value("coverage", 100, "none", "aumc", interval = "pknca delta")`%).
+But it keeps the same point estimate, and so the same bias:  the AUMC to
+infinity was biased by
+`r boott_value("median_bias", 4, "none", "aumc", interval = "pknca delta")`%
+with 4 animals and
+`r boott_value("median_bias", 100, "none", "aumc", interval = "pknca delta")`%
+with 100 in both rows.  Its better coverage comes from the interval, not from
+a better estimate.  With 4 animals per time it was
+`r boott_width_ratio(4, "none", "aumc")` times as wide as the delta method's;
+with 100 it was about as wide
+(`r boott_width_ratio(100, "none", "aumc")` times), but its asymmetric
+quantiles moved it up toward the truth, so the share of intervals entirely
+below the truth fell from
+`r boott_value("miss_low", 100, "none", "aumc", interval = "pknca delta")`% to
+`r boott_value("miss_low", 100, "none", "aumc")`%.  An interval that widens or
+moves around a biased estimate is not a better method for it, so the
+bootstrap-$t$ is not adopted; the bias of the estimate, which limits every
+interval with many animals, is the thing to reduce.
+
+**Treatments of BLQ samples.**  With fast elimination, the treatment hardly
+mattered:  every imputation covered
+`r blq_range("coverage", elimination = "fast", interval = c("half_lloq delta", "ros delta", "kernel delta", "cml_impute delta"), digits = 1)`%,
+as zero substitution did
+(`r blq_range("coverage", elimination = "fast", interval = "zero delta", digits = 1)`%).
+With slow elimination, imputing the BLQ samples reduced the bias of zero
+substitution (median
+`r blq_range("median_bias", elimination = "slow", interval = "zero delta", digits = 1)`%):
+ROS most
+(`r blq_range("median_bias", elimination = "slow", interval = "ros delta", digits = 1)`%),
+then kernel imputation
+(`r blq_range("median_bias", elimination = "slow", interval = "kernel delta", digits = 1)`%),
+half the LLOQ
+(`r blq_range("median_bias", elimination = "slow", interval = "half_lloq delta", digits = 1)`%),
+and the censored likelihood
+(`r blq_range("median_bias", elimination = "slow", interval = "cml_impute delta", digits = 1)`%).
+But the imputed values also narrowed the intervals, so coverage fell by a few
+points (zero
+`r blq_range("coverage", elimination = "slow", interval = "zero delta", digits = 1)`%,
+kernel
+`r blq_range("coverage", elimination = "slow", interval = "kernel delta", digits = 1)`%,
+ROS
+`r blq_range("coverage", elimination = "slow", interval = "ros delta", digits = 1)`%).
+The direct method under-covered
+(`r blq_range("coverage", interval = "cml_direct z", digits = 1)`%), most in
+the batch design
+(`r blq_range("coverage", interval = "cml_direct z", design = "batch", digits = 1)`%),
+whose correlation between times it ignores, as Barnett et al. found with
+correlated samples in complete designs.  The additive two-step method imputed a
+negative concentration in
+`r summary_range(blq$fallbacks, "percent_with_negative", interval = "cml_impute delta")`%
+of the data sets.  ROS and the likelihood methods fell back to half the LLOQ at
+some time in
+`r summary_range(blq$fallbacks, "percent_with_fallback", interval = "ros delta")`%
+of the data sets, because a time had fewer than two measured samples; kernel
+imputation, which needs one, fell back in
+`r summary_range(blq$fallbacks, "percent_with_fallback", interval = "kernel delta", digits = 1)`%.
+For the AUC to the last time in complete designs, Barnett et al. recommended
+kernel imputation; for the sparse AUC to infinity here, it removed about half
+of the bias with slow elimination at the cost of a point or two of coverage.
+None of the treatments gave both less bias and better coverage than zero
+substitution, and neither did the Tobit half-life.
+
 # Arithmetic or geometric mean profiles
 
 The sparse AUC uses the arithmetic mean at each time, whose profile is the
@@ -827,7 +1340,7 @@ approximates the typical animal, and it may be less affected by animals with
 high concentrations.  The second study compared the two for the AUClast,
 AUCinf, Cmax ($C_0$ for IV bolus), AUMClast, AUMCinf, and half-life, using the
 same design with `r format(mean_type$n_replicates, big.mark = ",")` replicates
-per scenario (`data-raw/sparse_mean_type_simulation.R`).
+per scenario.
 
 For each replicate, both mean profiles were formed, and `pk.nca()` calculated
 the parameters from each with the linear trapezoidal rule (imputing zero at
@@ -1005,8 +1518,28 @@ every bootstrap was.  The Tobit fit of the mean profile, which uses the LLOQs,
 gave nearly the same results as the log-linear fit.  Neither Tobit fit removed
 the bias of the sparse estimate with BLQ samples, which comes mostly from
 counting BLQ samples as zero in the late means and from the mean profile
-ending earlier; estimating those means with the censoring taken into account
-would be the place to reduce it.
+ending earlier.  Estimating those means with the censoring taken into account,
+by the imputations and censored likelihoods that Barnett et al. (2021)
+compared, removed part of that bias with slow elimination, but the imputed
+values also narrowed the intervals, so none covered better than zero
+substitution, and the direct censored likelihood, which treats the times as
+independent, under-covered.
+
+Against the published estimators for these designs, the delta method held up
+best with three or four animals per time.  The estimator of Wolfsegger and
+Jaki (2005) avoids the covariance of $\hat{\lambda}_z$ with the trapezoidal sum
+by fitting $\hat{\lambda}_z$ only after it; with few animals, its bias
+corrections made it unstable and its bootstrap-$t$ intervals about twice as
+wide.  The estimators of the PK package include the covariance of each time's
+mean with its mean log concentration and covered a few points less than the
+delta method without BLQ samples.  Neither published estimator has a rule for
+BLQ samples:  the 2005 estimator broke down with any BLQ samples, and PK's with
+BLQ samples and slow elimination, where PKNCA's rule of ending the mean profile
+at a time with more than half of its samples BLQ kept the delta method near
+nominal.  In the batch design, PK's bootstrap-$t$, which resamples
+concentrations rather than animals, under-covered every parameter, and its MRT
+and $V_{ss}$ intervals under-covered as its help warns, mostly because the MRT
+of the mean profile is itself biased.
 
 Limitations remain.  The delta method conditions on the selected half-life
 points, so the uncertainty of the automatic point selection is not included; it
@@ -1016,6 +1549,60 @@ profile of animals with different elimination rates is not monoexponential, so
 the extrapolation $C_{last}/\lambda_z$ is itself biased for the population mean
 curve, which is part of why the AUMC to infinity is underestimated.  Where the
 extrapolated area is large, sampling longer remains the better remedy.
+
+## Extensions beyond the published methods
+
+PKNCA has these, which the published methods compared here do not:
+
+* **The covariance of $\hat{\lambda}_z$ with every mean, in any design.**  The
+  delta method takes it from the covariance of the means (Holder's, for batch
+  and complete designs), which answers the question Wolfsegger and Jaki (2005)
+  left open.  Their later estimators (PK) include the covariance of each time's
+  mean with its own mean log concentration.
+* **The uncertainty of the back-extrapolated $C_0$** after an IV bolus.  PK and
+  the 2005 estimator start the AUC at the first sample.
+* **$\lambda_z$ from the log arithmetic means at PKNCA's automatic choice of
+  half-life points**, the same $\lambda_z$ as the point estimate, rather than
+  from the mean log concentrations of a fixed number of last times, and
+  Satterthwaite degrees of freedom for $t$ intervals.
+* **A rule for BLQ samples:**  a time with more than half of its samples BLQ
+  ends the mean profile, and the Tobit half-life carries the LLOQ through the
+  mean profile.  The published estimators take the logarithm of every sample.
+* **An evaluation of arithmetic and geometric mean profiles.**
+* **A stratified bootstrap of whole animals** (`sparse_bootstrap()`) for any
+  parameter.
+
+The published methods have these, which PKNCA does not adopt, for the reasons
+the results give:
+
+* **Standard errors of the MRT, clearance, $V_{ss}$, and non-compartmental
+  half-life** (PK).  PKNCA gives standard errors only for the AUC and AUMC.
+  PK's intervals for the MRT and $V_{ss}$ under-covered in the batch design
+  (`r batch_range("coverage", "pk z", "mrt", blq = "none")`% for the MRT
+  without BLQ samples), mostly from the bias of the MRT estimate, which a
+  standard error cannot fix.
+* **$\lambda_z$ fit after the trapezoidal sum, with a bias correction**
+  (Wolfsegger and Jaki 2005):  as accurate as PKNCA's estimate with many
+  animals, but unstable
+  with three or four, and its intervals about twice as wide.
+* **Bootstrap-$t$ intervals** (both papers):  on PKNCA's delta-method standard
+  error, the bootstrap-$t$ covered the AUMC better than the delta method, but
+  not the AUC, and covered the AUC worse with BLQ samples.  It keeps the same
+  point estimate and so the same bias
+  (`r boott_value("median_bias", 4, "none", "aumc", interval = "pknca delta")`%
+  for the AUMC with 4 animals per time, in both); its gain in coverage
+  (`r boott_value("coverage", 4, "none", "aumc", interval = "pknca delta")`% to
+  `r boott_value("coverage", 4, "none", "aumc")`%) comes from an interval
+  `r boott_width_ratio(4, "none", "aumc")` times as wide, and with many
+  animals from one shifted around the same biased estimate, which is not a
+  better method.
+* **Imputation of BLQ samples** (Barnett et al. 2021):  ROS and kernel
+  imputation reduced the bias with slow elimination, but none covered better
+  than zero substitution, and each needs measured samples at the time, which
+  three or four animals do not always give.
+* **The full likelihood over all times** (Barnett et al. 2021), which needs the
+  within-animal covariance of every pair of times and so cannot apply with one
+  sample per animal.
 
 # References
 
@@ -1040,6 +1627,16 @@ Jaki T, Wolfsegger MJ.  Non-compartmental estimation of pharmacokinetic
 parameters for flexible sampling designs.  Statistics in Medicine.
 2012;31(11-12):1059-1073.  doi:10.1002/sim.4386
 
+Jaki T, Wolfsegger MJ.  Estimation of pharmacokinetic parameters with the R
+package PK.  Pharmaceutical Statistics.  2011;10(3):284-288.  doi:10.1002/pst.449
+
+Jaki T, Wolfsegger MJ.  PK:  Basic non-compartmental pharmacokinetics.  R
+package version 1.3-6.  https://CRAN.R-project.org/package=PK
+
+Nassiri V, Barnett H, Geys H, Jacobs T, Jaki T.  BLOQ:  Methods to impute and
+analyze data with BLOQ observations.  R package version 0.1-2.
+https://CRAN.R-project.org/package=BLOQ
+
 Nedelman JR, Gibiansky E, Lau DTW.  Applying Bailer's method for AUC
 confidence intervals to sparse sampling.  Pharmaceutical Research.
 1995;12(1):124-128.
@@ -1053,6 +1650,16 @@ pharmacokinetics data using bootstrap resampling method.  Journal of
 Biopharmaceutical Statistics.  2017;27(2):257-264.
 doi:10.1080/10543406.2016.1265543
 
+Takemoto S, Yamaoka K, Nishikawa M, Takakura Y.  Histogram analysis of
+pharmacokinetic parameters by bootstrap resampling from one-point sampling data
+in animal experiments.  Drug Metabolism and Pharmacokinetics.
+2006;21(6):458-464.  doi:10.2133/dmpk.21.458
+
+Tardivon C, Loingeville F, Donnelly M, Feng K, Sun W, Sun G, Grosser S, Zhao L,
+Fang L, Mentré F, Bertrand J.  Evaluation of model-based bioequivalence
+approach for single sample pharmacokinetic studies.  CPT:  Pharmacometrics &
+Systems Pharmacology.  2023;12(7):904-915.  doi:10.1002/psp4.12960
+
 Wolfsegger MJ, Jaki T.  Estimation of AUC from 0 to infinity in serial
 sacrifice designs.  Journal of Pharmacokinetics and Pharmacodynamics.
 2005;32(5-6):757-766.  doi:10.1007/s10928-005-0044-0
@@ -1060,11 +1667,6 @@ sacrifice designs.  Journal of Pharmacokinetics and Pharmacodynamics.
 Wolfsegger MJ, Jaki T.  Non-compartmental estimation of pharmacokinetic
 parameters in serial sampling designs.  Journal of Pharmacokinetics and
 Pharmacodynamics.  2009;36(5):479-494.  doi:10.1007/s10928-009-9133-9
-
-Takemoto S, Yamaoka K, Nishikawa M, Takakura Y.  Histogram analysis of
-pharmacokinetic parameters by bootstrap resampling from one-point sampling data
-in animal experiments.  Drug Metabolism and Pharmacokinetics.
-2006;21(6):458-464.  doi:10.2133/dmpk.21.458
 
 Yuan J.  Estimation of variance for AUC in animal studies.  Journal of
 Pharmaceutical Sciences.  1993;82(7):761-763.  doi:10.1002/jps.2600820718

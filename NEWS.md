@@ -1237,6 +1237,17 @@ the generated intervals:
   methods for samples below the limit of quantification, and say how PKNCA's
   delta-method standard error relates to them (@billdenney)
 
+* `vignette("v24-sparse-auc-to-infinity")` compares PKNCA's sparse AUC to
+  infinity with published methods on the same simulated data:  the asymptotic
+  and bootstrap-t intervals of Wolfsegger and Jaki (2005) and of the PK package
+  (including its AUMC, MRT, clearance, and Vss intervals in batch designs), a
+  bootstrap-t interval on PKNCA's delta-method standard error, and the
+  treatments of BLQ samples of Barnett et al. (2021) from the BLOQ package.
+  The simulations behind the vignette are now a targets pipeline in
+  `data-raw/sparse-simulation/` that reproduces the earlier results exactly.
+  Only that pipeline uses the PK and BLOQ packages; the vignette reads its
+  stored results, so they are not package dependencies (@billdenney)
+
 * The variance of a sparse AUC or AUMC and its degrees of freedom are
   calculated much faster for serial sacrifice, batch, and complete designs
   (for example, about 260 ms down to 5 ms with 100 animals at each of nine

@@ -1,6 +1,5 @@
-# The simulation design shared by data-raw/sparse_aucinf_simulation.R and
-# data-raw/sparse_mean_type_simulation.R:  the models, the scenarios, and the
-# simulation of one sparse data set.  Concentrations come from pmxTools.
+# The simulation design shared by every study:  the models, the scenarios, and
+# the simulation of one sparse data set.  Concentrations come from pmxTools.
 
 # Dose 100 and a multiplicative residual error with mean 1, with log-normal
 # between-animal variability (omega 0.3) on each structural parameter.
@@ -15,20 +14,6 @@ model <- list(dose = 100, omega = 0.3, sigma = 0.15)
 model_1cmt <- list(ka = 5, v = 10)
 model_2cmt <- list(ka = 2.5, v1 = 10, v2 = 15, q = 6)
 
-scenarios <-
-  expand.grid(
-    route = c("oral", "iv"),
-    design = c("serial", "batch"),
-    blq = c("none", "moderate"),
-    elimination = c("fast", "slow"),
-    compartments = c(1, 2),
-    stringsAsFactors = FALSE
-  )
-scenarios$scenario <- seq_len(nrow(scenarios))
-# ke for one compartment and CL for two
-scenarios$ke <- ifelse(scenarios$elimination == "fast", 0.15, 0.07)
-scenarios$cl_2cmt <- ifelse(scenarios$elimination == "fast", 5.1, 1.97)
-
 # Sampling:  no sample at the dose (as usual for sacrificial designs), so the
 # oral concentration at time 0 is imputed as zero and the IV bolus C0 is
 # back-extrapolated; IV bolus has an early sample for that.  The batch designs
@@ -41,6 +26,32 @@ batch_times <-
   )
 n_serial <- 4
 n_batch <- 4
+
+# The 32 scenarios, numbered in this order (the data seeds depend on the
+# number)
+design_scenarios <- function() {
+  scenarios <-
+    expand.grid(
+      route = c("oral", "iv"),
+      design = c("serial", "batch"),
+      blq = c("none", "moderate"),
+      elimination = c("fast", "slow"),
+      compartments = c(1, 2),
+      stringsAsFactors = FALSE
+    )
+  scenarios$scenario <- seq_len(nrow(scenarios))
+  # ke for one compartment and CL for two
+  scenarios$ke <- ifelse(scenarios$elimination == "fast", 0.15, 0.07)
+  scenarios$cl_2cmt <- ifelse(scenarios$elimination == "fast", 5.1, 1.97)
+  scenarios
+}
+
+# One scenario's row of the scenario table
+scenario_row <- function(scenarios, scenario) {
+  ret <- scenarios[scenarios$scenario == scenario, ]
+  stopifnot(nrow(ret) == 1)
+  ret
+}
 
 # The concentration of one animal (one row of animal parameters) at the given
 # times (pmxTools)
@@ -117,17 +128,20 @@ conc_moment <- function(time, route, animal, moment) {
   time^moment*conc_animal(time, route, animal)
 }
 
-# One sparse data set:  BLQ samples are reported as 0
-simulate_data <- function(scenario_row, lloq) {
+# One sparse data set:  BLQ samples are reported as 0.  `n_per_time` is the
+# number of animals at each serial-sacrifice time or in each batch.
+simulate_data <- function(scenario_row, lloq, n_per_time = NULL) {
   route <- scenario_row$route
   design <- scenario_row$design
   if (design == "serial") {
+    n_animals <- if (is.null(n_per_time)) n_serial else n_per_time
     times <- sampling_times[[route]]
-    sampling <- data.frame(subject = seq_len(length(times)*n_serial), time = rep(times, each = n_serial))
+    sampling <- data.frame(subject = seq_len(length(times)*n_animals), time = rep(times, each = n_animals))
   } else {
+    n_animals <- if (is.null(n_per_time)) n_batch else n_per_time
     batches <- list()
     for (b in seq_along(batch_times[[route]])) {
-      batches[[b]] <- expand.grid(subject = (b - 1)*n_batch + seq_len(n_batch), time = batch_times[[route]][[b]])
+      batches[[b]] <- expand.grid(subject = (b - 1)*n_animals + seq_len(n_animals), time = batch_times[[route]][[b]])
     }
     sampling <- do.call(rbind, batches)
   }
@@ -145,4 +159,42 @@ simulate_data <- function(scenario_row, lloq) {
   d$blq <- d$conc < lloq
   d$conc_reported <- ifelse(d$blq, 0, d$conc)
   d[order(d$time, d$subject), c("subject", "time", "conc_reported", "blq")]
+}
+
+# The seed of one data set:  every study that analyses the data set of a given
+# scenario and replicate uses this seed, so they share the data
+data_seed <- function(seed_base, scenario, replicate) {
+  seed_base + 100000*scenario + replicate
+}
+
+# The data sets of one scenario, stacked with a `replicate` column
+simulate_datasets <- function(scenario_row, replicates, seed_base, n_per_time = NULL) {
+  lloq <- scenario_lloq(scenario_row)
+  out <- vector("list", length(replicates))
+  for (i in seq_along(replicates)) {
+    d <-
+      withr::with_seed(
+        data_seed(seed_base, scenario_row$scenario, replicates[i]),
+        simulate_data(scenario_row, lloq, n_per_time = n_per_time)
+      )
+    d$replicate <- replicates[i]
+    out[[i]] <- d
+  }
+  ret <- do.call(rbind, out)
+  rownames(ret) <- NULL
+  ret
+}
+
+# The data sets with replicate number at most `n`, as a list of data frames
+# named by replicate
+split_datasets <- function(datasets, n = Inf) {
+  keep <- datasets$replicate <= n
+  if (!any(keep)) {
+    stop("No data sets with replicate number at most ", n)
+  }
+  ret <- split(datasets[keep, c("subject", "time", "conc_reported", "blq")], datasets$replicate[keep])
+  for (i in seq_along(ret)) {
+    rownames(ret[[i]]) <- NULL
+  }
+  ret
 }
