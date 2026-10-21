@@ -90,9 +90,11 @@ column is present, units are unavailable and the \code{units} column is omitted
 from the assessment table.
 
 The subject, period, treatment, and (when present) sequence may not be
-missing in any row that is analyzed, and each subject must have a single
-sequence; otherwise \code{be_dataset()} stops with an error rather than letting a
-model drop those rows.
+missing in any row of the requested endpoints that is analyzed, and each
+subject must have a single sequence; otherwise \code{be_dataset()} stops with an
+error rather than letting a model drop those rows.  In a parallel design
+(one row per subject and endpoint) only the subject and treatment are
+checked, because the sequence and period enter no model.
 
 Each covariate is copied to a standardized column named \verb{.cov_<name>}
 (character columns become factors).  A covariate may not be one of the

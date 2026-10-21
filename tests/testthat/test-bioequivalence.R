@@ -131,6 +131,29 @@ test_that("be_dataset stops when a design column is missing in an analyzed row",
   d$sequence <- NULL
   ds <- be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast")
   expect_true(all(is.na(ds$data$.sequence)))
+  # Rows of an endpoint that was not requested are not analyzed.
+  d <- rbind(make_be_df(), make_be_df(endpoint = "cmax"))
+  d$period[d$PPTESTCD == "cmax"][1] <- NA
+  ds <- be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast")
+  expect_identical(ds$endpoints, "auclast")
+  expect_error(
+    be_dataset(d, reference_col = "form", reference_value = "R", endpoints = c("auclast", "cmax")),
+    class = "pknca_error_be_design_missing"
+  )
+})
+
+test_that("be_dataset checks only the subject and treatment for a parallel design", {
+  d <- generate_be_parallel()
+  d$period <- NA
+  d$sequence <- NA
+  ds <- be_dataset(d, reference_col = "treatment", reference_value = "R", endpoints = "auclast", sequence = "sequence")
+  expect_equal(nrow(ds$data), nrow(d))
+  d$treatment[2] <- NA
+  expect_error(
+    be_dataset(d, reference_col = "treatment", reference_value = "R", endpoints = "auclast"),
+    regexp = "Design column\\(s\\) treatment have missing values",
+    class = "pknca_error_be_design_missing"
+  )
 })
 
 test_that("be_dataset stops when a subject has more than one sequence", {

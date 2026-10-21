@@ -1039,9 +1039,11 @@ print.be_within_var <- function(x, ...) {
 #' from the assessment table.
 #'
 #' The subject, period, treatment, and (when present) sequence may not be
-#' missing in any row that is analyzed, and each subject must have a single
-#' sequence; otherwise `be_dataset()` stops with an error rather than letting a
-#' model drop those rows.
+#' missing in any row of the requested endpoints that is analyzed, and each
+#' subject must have a single sequence; otherwise `be_dataset()` stops with an
+#' error rather than letting a model drop those rows.  In a parallel design
+#' (one row per subject and endpoint) only the subject and treatment are
+#' checked, because the sequence and period enter no model.
 #'
 #' Each covariate is copied to a standardized column named `.cov_<name>`
 #' (character columns become factors).  A covariate may not be one of the
@@ -1111,7 +1113,10 @@ be_dataset.default <- function(object, reference_col, reference_value,
   }
 
   data <- data[!is.na(data[[value_col]]) & data[[value_col]] > 0, , drop = FALSE]
-  .be_check_design_cols(data, subject = subject, sequence = sequence, period = period, treatment = reference_col)
+  .be_check_design_cols(
+    data[data$PPTESTCD %in% endpoints, , drop = FALSE],
+    subject = subject, sequence = sequence, period = period, treatment = reference_col
+  )
   missing_cov <- covariates[vapply(data[covariates], anyNA, logical(1))]
   if (length(missing_cov) > 0) {
     rlang::abort(
@@ -1156,10 +1161,18 @@ be_dataset.default <- function(object, reference_col, reference_value,
 # Stop when a design column (subject, sequence, period, or treatment) is
 # missing in a row that would be analyzed, or when a subject has more than one
 # sequence.  The model fits would otherwise drop those rows while the subject
-# counts still include them.  `sequence` is NA when the data have no sequence
-# column.
+# counts still include them.  `data` holds the rows of the requested endpoints,
+# and `sequence` is NA when the data have no sequence column.  In a parallel
+# design (one row per subject and endpoint) the sequence and period do not
+# enter any model, so only the subject and treatment are checked.
 .be_check_design_cols <- function(data, subject, sequence, period, treatment) {
-  cols <- c(subject, if (!is.na(sequence)) sequence, period, treatment)
+  parallel <- nrow(data) == 0 || max(table(paste(data[[subject]], data$PPTESTCD))) <= 1
+  cols <-
+    if (parallel) {
+      c(subject, treatment)
+    } else {
+      c(subject, if (!is.na(sequence)) sequence, period, treatment)
+    }
   missing_cols <- cols[vapply(data[cols], anyNA, logical(1))]
   if (length(missing_cols) > 0) {
     rlang::abort(
@@ -1170,7 +1183,7 @@ be_dataset.default <- function(object, reference_col, reference_value,
       class = "pknca_error_be_design_missing"
     )
   }
-  if (!is.na(sequence)) {
+  if (!parallel && !is.na(sequence)) {
     labels <- unique(data[c(subject, sequence)])
     multi <- unique(labels[[subject]][duplicated(labels[[subject]])])
     if (length(multi) > 0) {
