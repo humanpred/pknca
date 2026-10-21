@@ -2685,3 +2685,640 @@ test_that("a found reference keeps the interval's other group values", {
   d_auc <- d_res[d_res$PPTESTCD %in% "auclast", ]
   expect_equal(d_auc$PPORRES[order(d_auc$subject)], c(144, 288))
 })
+
+# Group columns in which a reference may differ (`ref_vary`) -----------------
+
+# An IV/oral 2x2 crossover grouped by period:  subject 1 receives IV in period
+# 1 and oral in period 2, subject 2 the reverse.  The profiles halve every hour
+# after the peak, so every half-life fit gives lambda.z = log(2), and with
+# `auc.method = "linear"` the trapezoids are hand-computable:
+#   auclast(IV base)   = (32+16)/2 + (16+8)/2 + (8+2)/2*2 + (2+0.125)/2*4 = 50.25
+#   auclast(oral base) = (0+16)/2  + (16+8)/2 + (8+2)/2*2 + (2+0.125)/2*4 = 34.25
+#   aucinf.obs = auclast + clast/log(2), with clast = 0.125*scale
+# Subject 1 has the IV base profile and half the oral one; subject 2 twice the
+# IV and 0.8 times the oral.  IV doses are 10 and oral doses 20.
+crossover_extrap <- 0.125/log(2)
+d_conc_period <-
+  rbind(
+    data.frame(
+      subject = 1, period = 1, treatment = "iv",
+      time = c(0, 1, 2, 4, 8), conc = c(32, 16, 8, 2, 0.125)
+    ),
+    data.frame(
+      subject = 1, period = 2, treatment = "oral",
+      time = c(0, 1, 2, 4, 8), conc = 0.5*c(0, 16, 8, 2, 0.125)
+    ),
+    data.frame(
+      subject = 2, period = 1, treatment = "oral",
+      time = c(0, 1, 2, 4, 8), conc = 0.8*c(0, 16, 8, 2, 0.125)
+    ),
+    data.frame(
+      subject = 2, period = 2, treatment = "iv",
+      time = c(0, 1, 2, 4, 8), conc = 2*c(32, 16, 8, 2, 0.125)
+    )
+  )
+d_dose_period <-
+  data.frame(
+    subject = c(1, 1, 2, 2), period = c(1, 2, 1, 2),
+    treatment = c("iv", "oral", "oral", "iv"),
+    time = 0, dose = c(10, 20, 20, 10),
+    route = c("intravascular", "extravascular", "extravascular", "intravascular")
+  )
+o_conc_period <- PKNCAconc(d_conc_period, conc~time|treatment+period+subject)
+o_dose_period <- PKNCAdose(d_dose_period, dose~time|treatment+period+subject, route = "route")
+intervals_period <-
+  data.frame(treatment = c("iv", "oral"), start = 0, end = Inf, aucinf.obs = TRUE)
+
+# The bioavailabilities by subject:  (AUC_oral/dose_oral)/(AUC_iv/dose_iv)
+f_last_period <- c((0.5*34.25/20)/(50.25/10), (0.8*34.25/20)/(2*50.25/10))
+f_obs_period <-
+  c(
+    (0.5*(34.25 + crossover_extrap)/20)/((50.25 + crossover_extrap)/10),
+    (0.8*(34.25 + crossover_extrap)/20)/(2*(50.25 + crossover_extrap)/10)
+  )
+
+# The results of one parameter in subject order
+period_values <- function(d_res, param) {
+  d_param <- d_res[d_res$PPTESTCD %in% param, ]
+  d_param$PPORRES[order(d_param$subject)]
+}
+
+test_that("a crossover reference in another period is not found without ref_vary", {
+  intervals_f <-
+    interval_add_secondary(
+      intervals_period, param = "f.obs", reference = data.frame(treatment = "iv")
+    )
+  expect_false("f.obs_ref_vary" %in% names(intervals_f))
+  o_data <-
+    PKNCAdata(
+      o_conc_period, o_dose_period, intervals = intervals_f,
+      options = list(auc.method = "linear")
+    )
+  expect_error(
+    pk.nca(o_data),
+    regexp = "group treatment=oral, period=2, subject=1: the value 'totdose' from the reference interval ('ref1') is not available",
+    fixed = TRUE,
+    class = "pknca_error_secondary_ref_value_missing"
+  )
+})
+
+test_that("ref_vary takes a crossover's reference from another period", {
+  intervals_f <- intervals_period
+  for (current_param in c("f.obs", "f.pred", "f.last")) {
+    intervals_f <-
+      interval_add_secondary(
+        intervals_f, param = current_param, reference = data.frame(treatment = "iv"),
+        ref_vary = "period"
+      )
+    expect_equal(intervals_f[[paste0(current_param, "_ref_vary")]], c(NA, "period"))
+  }
+  o_data <-
+    PKNCAdata(
+      o_conc_period, o_dose_period, intervals = intervals_f,
+      options = list(auc.method = "linear")
+    )
+  res <- pk.nca(o_data)
+  d_res <- as.data.frame(res)
+  # The hand-computed inputs
+  expect_equal(period_values(d_res[d_res$treatment %in% "iv", ], "auclast"), c(50.25, 100.5))
+  expect_equal(period_values(d_res[d_res$treatment %in% "oral", ], "totdose"), c(20, 20))
+  expect_equal(period_values(d_res, "f.last"), f_last_period)
+  expect_equal(period_values(d_res, "f.obs"), f_obs_period)
+  expect_equal(period_values(d_res, "f.pred"), f_obs_period)
+  d_f <- d_res[d_res$PPTESTCD %in% "f.obs", ]
+  d_f <- d_f[order(d_f$subject), ]
+  # Reported on the oral profile, with the IV profile's group alongside
+  expect_equal(d_f$period, c(2, 1))
+  expect_equal(d_f$treatment_ref, c("iv", "iv"))
+  expect_equal(d_f$period_ref, c(1, 2))
+  expect_equal(d_f$subject_ref, c(1, 2))
+  expect_equal(
+    d_f$PPANMETH,
+    c(
+      "Reference interval: treatment=iv, period=1, 0-Inf",
+      "Reference interval: treatment=iv, period=2, 0-Inf"
+    )
+  )
+  # summary() reports each oral period (one subject each) with its value:
+  # 0.1365 for subject 2 (period 1) and 0.1707 for subject 1 (period 2)
+  d_summary <- as.data.frame(summary(res))
+  d_summary_oral <- d_summary[d_summary$treatment %in% "oral", ]
+  expect_equal(d_summary_oral$f.obs[order(d_summary_oral$period)], c("0.137", "0.171"))
+  expect_equal(d_summary$f.obs[d_summary$treatment %in% "iv"], c(".", "."))
+  # The wide layout keeps one row per profile
+  d_wide <- as.data.frame(res, out_format = "wide")
+  expect_equal(nrow(d_wide), 4L)
+  expect_equal(
+    d_wide$f.last[order(d_wide$treatment, d_wide$subject)],
+    c(NA, NA, f_last_period)
+  )
+})
+
+test_that("PKNCAdata(ref_vary=) declares the varying columns for every link", {
+  intervals_f <- intervals_period
+  for (current_param in c("f.obs", "f.last")) {
+    intervals_f <-
+      interval_add_secondary(
+        intervals_f, param = current_param, reference = data.frame(treatment = "iv")
+      )
+  }
+  o_data <-
+    PKNCAdata(
+      o_conc_period, o_dose_period, intervals = intervals_f,
+      options = list(auc.method = "linear"), ref_vary = "period"
+    )
+  expect_equal(o_data$ref_vary, "period")
+  expect_output(
+    print(o_data),
+    regexp = "With secondary-parameter references that may differ in (ref_vary): period",
+    fixed = TRUE
+  )
+  d_res <- as.data.frame(pk.nca(o_data))
+  expect_equal(period_values(d_res, "f.obs"), f_obs_period)
+  expect_equal(period_values(d_res, "f.last"), f_last_period)
+
+  # An empty declaration on the link overrides the data-level default
+  intervals_none <-
+    interval_add_secondary(
+      intervals_f, param = "f.obs", reference = data.frame(treatment = "iv"),
+      ref_vary = character(0)
+    )
+  expect_equal(intervals_none$f.obs_ref_vary, c(NA, ""))
+  o_data_none <-
+    PKNCAdata(
+      o_conc_period, o_dose_period, intervals = intervals_none,
+      options = list(auc.method = "linear"), ref_vary = "period"
+    )
+  expect_error(pk.nca(o_data_none), class = "pknca_error_secondary_ref_value_missing")
+
+  # Hand-written declarations parse the same way, separated by commas or spaces
+  intervals_hand <- intervals_f
+  intervals_hand$f.obs_ref_vary <- c(NA, " period ")
+  intervals_hand$f.last_ref_vary <- c(NA, "period,")
+  o_data_hand <-
+    PKNCAdata(
+      o_conc_period, o_dose_period, intervals = intervals_hand,
+      options = list(auc.method = "linear")
+    )
+  d_res_hand <- as.data.frame(pk.nca(o_data_hand))
+  expect_equal(period_values(d_res_hand, "f.obs"), f_obs_period)
+  expect_equal(period_values(d_res_hand, "f.last"), f_last_period)
+})
+
+test_that("an automatic link takes the reference from another period", {
+  intervals_auto <-
+    data.frame(
+      treatment = c("iv", "oral"), start = 0, end = Inf,
+      aucinf.obs = TRUE, f.obs = c(FALSE, TRUE)
+    )
+  o_data <-
+    PKNCAdata(
+      o_conc_period, o_dose_period, intervals = intervals_auto,
+      options = list(auc.method = "linear"),
+      group_ref = data.frame(treatment = "iv"), ref_vary = "period"
+    )
+  expect_message(
+    res <- pk.nca(o_data),
+    regexp = "Secondary parameter 'f.obs': using (treatment=iv, 0-Inf) as the reference interval 'autoref1'.",
+    fixed = TRUE,
+    class = "pknca_message_secondary_ref_created"
+  )
+  expect_equal(period_values(as.data.frame(res), "f.obs"), f_obs_period)
+  # Without ref_vary the two IV profiles are equally close to each oral one
+  # (one differs in the period, the other in the subject), so nothing is linked
+  o_data_tie <-
+    PKNCAdata(
+      o_conc_period, o_dose_period, intervals = intervals_auto,
+      options = list(auc.method = "linear"),
+      group_ref = data.frame(treatment = "iv")
+    )
+  expect_warning(
+    res_tie <- pk.nca(o_data_tie),
+    class = "pknca_warning_secondary_auto_reference"
+  )
+  expect_equal(period_values(as.data.frame(res_tie), "f.obs"), c(NA_real_, NA_real_))
+
+  # interval_add_secondary() derives and writes the same link from the data
+  o_data_written <-
+    interval_add_secondary(
+      PKNCAdata(
+        o_conc_period, o_dose_period, intervals = intervals_period,
+        options = list(auc.method = "linear"),
+        group_ref = data.frame(treatment = "iv")
+      ),
+      param = "f.obs", ref_vary = "period"
+    )
+  expect_equal(o_data_written$intervals$f.obs_ref, c(NA, "ref1"))
+  expect_equal(o_data_written$intervals$f.obs_ref_vary, c(NA, "period"))
+  expect_equal(period_values(as.data.frame(pk.nca(o_data_written)), "f.obs"), f_obs_period)
+})
+
+# A replicate design:  subject 1 receives IV in periods 1 and 3 around the oral
+# dose in period 2.  `occasion` counts the administrations of each treatment.
+d_conc_replicate <-
+  rbind(
+    data.frame(
+      subject = 1, period = 1, occasion = 1, treatment = "iv",
+      time = c(0, 1, 2, 4, 8), conc = c(32, 16, 8, 2, 0.125)
+    ),
+    data.frame(
+      subject = 1, period = 2, occasion = 1, treatment = "oral",
+      time = c(0, 1, 2, 4, 8), conc = 0.5*c(0, 16, 8, 2, 0.125)
+    ),
+    data.frame(
+      subject = 1, period = 3, occasion = 2, treatment = "iv",
+      time = c(0, 1, 2, 4, 8), conc = 2*c(32, 16, 8, 2, 0.125)
+    )
+  )
+d_dose_replicate <-
+  data.frame(
+    subject = 1, period = 1:3, occasion = c(1, 1, 2), treatment = c("iv", "oral", "iv"),
+    time = 0, dose = c(10, 20, 10)
+  )
+
+test_that("a reference given twice is ambiguous unless the link names its occasion", {
+  o_conc_rep <- PKNCAconc(d_conc_replicate, conc~time|treatment+period+subject)
+  o_dose_rep <- PKNCAdose(d_dose_replicate, dose~time|treatment+period+subject)
+  intervals_f <-
+    interval_add_secondary(
+      intervals_period, param = "f.last", reference = data.frame(treatment = "iv"),
+      ref_vary = "period"
+    )
+  o_data <-
+    PKNCAdata(
+      o_conc_rep, o_dose_rep, intervals = intervals_f,
+      options = list(auc.method = "linear")
+    )
+  expect_error(
+    pk.nca(o_data),
+    regexp = "The secondary parameter 'f.last' has more than one reference for group treatment=oral, period=2, subject=1, because 'period' may differ from the interval's own:  (period=1), (period=3).",
+    fixed = TRUE,
+    class = "pknca_error_secondary_ref_vary_ambiguous"
+  )
+
+  # An automatic link degrades to NA with the reason instead
+  o_data_auto <-
+    PKNCAdata(
+      o_conc_rep, o_dose_rep,
+      intervals =
+        data.frame(
+          treatment = c("iv", "oral"), start = 0, end = Inf,
+          auclast = c(TRUE, FALSE), f.last = c(FALSE, TRUE)
+        ),
+      options = list(auc.method = "linear"),
+      group_ref = data.frame(treatment = "iv"), ref_vary = "period"
+    )
+  expect_warning(
+    expect_message(
+      res_auto <- pk.nca(o_data_auto),
+      class = "pknca_message_secondary_ref_created"
+    ),
+    class = "pknca_warning_secondary_auto_reference"
+  )
+  d_auto <- as.data.frame(res_auto)
+  d_f <- d_auto[d_auto$PPTESTCD %in% "f.last", ]
+  expect_equal(d_f$PPORRES, NA_real_)
+  expect_equal(
+    d_f$exclude,
+    "More than one reference profile matches where 'period' may differ ((period=1), (period=3))"
+  )
+  expect_equal(d_f$PPANMETH, NA_character_)
+  expect_equal(d_f$period_ref, NA_real_)
+
+  # Grouping by the occasion and naming it in the reference resolves it
+  o_conc_occ <- PKNCAconc(d_conc_replicate, conc~time|treatment+occasion+period+subject)
+  o_dose_occ <- PKNCAdose(d_dose_replicate, dose~time|treatment+occasion+period+subject)
+  intervals_occ <-
+    data.frame(
+      treatment = c("iv", "iv", "oral"), occasion = c(1, 2, 1),
+      start = 0, end = Inf, auclast = TRUE
+    )
+  intervals_occ <-
+    interval_add_secondary(
+      intervals_occ, param = "f.last",
+      reference = data.frame(treatment = "iv", occasion = 2),
+      target_groups = data.frame(treatment = "oral"),
+      ref_vary = "period"
+    )
+  o_data_occ <-
+    PKNCAdata(
+      o_conc_occ, o_dose_occ, intervals = intervals_occ,
+      options = list(auc.method = "linear")
+    )
+  d_occ <- as.data.frame(pk.nca(o_data_occ))
+  d_f_occ <- d_occ[d_occ$PPTESTCD %in% "f.last", ]
+  # The second IV administration (period 3, twice the base profile)
+  expect_equal(d_f_occ$PPORRES, (0.5*34.25/20)/(2*50.25/10))
+  expect_equal(d_f_occ$period_ref, 3)
+  expect_equal(
+    d_f_occ$PPANMETH,
+    "Reference interval: treatment=iv, occasion=2, period=3, 0-Inf"
+  )
+})
+
+test_that("a varying column never reaches another subject's profile", {
+  # A parallel design:  each subject receives one treatment, so no oral profile
+  # has an IV reference of its own in any period
+  d_conc_parallel <- d_conc_period[d_conc_period$period == 1, ]
+  d_dose_parallel <- d_dose_period[d_dose_period$period == 1, ]
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc_parallel, conc~time|treatment+period+subject),
+      PKNCAdose(d_dose_parallel, dose~time|treatment+period+subject),
+      intervals =
+        interval_add_secondary(
+          intervals_period, param = "f.obs", reference = data.frame(treatment = "iv"),
+          ref_vary = "period"
+        ),
+      options = list(auc.method = "linear")
+    )
+  expect_error(
+    pk.nca(o_data),
+    regexp = "group treatment=oral, period=1, subject=2: the value 'totdose' from the reference interval ('ref1') is not available",
+    fixed = TRUE,
+    class = "pknca_error_secondary_ref_value_missing"
+  )
+  # ... and the subject column cannot be declared as varying
+  expect_error(
+    PKNCAdata(o_conc_period, o_dose_period, intervals = intervals_period, ref_vary = "subject"),
+    regexp = "may not name the subject column ('subject')",
+    fixed = TRUE,
+    class = "pknca_error_secondary_ref_vary_invalid"
+  )
+})
+
+test_that("a varying column that the reference interval names stays pinned", {
+  # The single-subject crossover of the bioavailability tests:  declaring the
+  # treatment as varying changes nothing, because the reference interval names
+  # it.
+  intervals_basis <-
+    data.frame(treatment = c("ref", "test"), start = 0, end = Inf, auclast = TRUE, totdose = TRUE)
+  intervals_basis <-
+    interval_add_secondary(
+      intervals_basis, param = "f.last", reference = data.frame(treatment = "ref")
+    )
+  o_data <-
+    PKNCAdata(
+      o_conc_cross, o_dose_cross, intervals = intervals_basis,
+      options = list(auc.method = "linear"), ref_vary = "treatment"
+    )
+  d_res <- as.data.frame(pk.nca(o_data))
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "f.last"], (24.5/50)/(41/100))
+  expect_equal(
+    d_res$PPANMETH[d_res$PPTESTCD %in% "f.last"],
+    "Reference interval: treatment=ref, 0-Inf"
+  )
+})
+
+test_that("the varying-column declarations are validated", {
+  # The argument
+  expect_error(
+    interval_add_secondary(
+      intervals_period, param = "f.obs", reference = data.frame(treatment = "iv"),
+      ref_vary = NA_character_
+    ),
+    class = "pknca_error_secondary_ref_vary_invalid"
+  )
+  expect_error(
+    interval_add_secondary(
+      intervals_period, param = "f.obs", reference = data.frame(treatment = "iv"),
+      ref_vary = "period,subject"
+    ),
+    regexp = "per-link declarations need group column names without spaces or commas: 'period,subject'.  Give such a column to PKNCAdata(ref_vary = ) instead.",
+    fixed = TRUE,
+    class = "pknca_error_secondary_ref_vary_invalid"
+  )
+  o_data <- PKNCAdata(o_conc_period, o_dose_period, intervals = intervals_period)
+  expect_error(
+    interval_add_secondary(
+      o_data, param = "f.obs", reference = data.frame(treatment = "iv"),
+      ref_vary = "visit"
+    ),
+    regexp = "`ref_vary` must name group columns of the concentration data; not group columns: visit",
+    fixed = TRUE,
+    class = "pknca_error_secondary_ref_vary_invalid"
+  )
+  expect_error(
+    PKNCAdata(o_conc_period, o_dose_period, intervals = intervals_period, ref_vary = 1),
+    regexp = "`ref_vary` must be a character vector of unique group column names",
+    fixed = TRUE,
+    class = "pknca_error_secondary_ref_vary_invalid"
+  )
+  expect_error(
+    PKNCAdata(o_conc_cross, o_dose_cross, intervals = intervals_period, ref_vary = "period"),
+    regexp = "`ref_vary` must name group columns of the concentration data; not group columns: period",
+    fixed = TRUE,
+    class = "pknca_error_secondary_ref_vary_invalid"
+  )
+  # The intervals column, without data
+  intervals_f <-
+    interval_add_secondary(
+      intervals_period, param = "f.obs", reference = data.frame(treatment = "iv"),
+      ref_vary = "period"
+    )
+  intervals_numeric <- intervals_f
+  intervals_numeric$f.obs_ref_vary <- c(NA, 1)
+  expect_error(
+    check.interval.specification(intervals_numeric),
+    regexp = "Column 'f.obs_ref_vary' must be character, holding group column names separated by commas",
+    fixed = TRUE,
+    class = "pknca_error_secondary_ref_vary_invalid"
+  )
+  intervals_unrequested <- intervals_f
+  intervals_unrequested$f.obs_ref_vary <- "period"
+  expect_error(
+    check.interval.specification(intervals_unrequested),
+    regexp = "Column 'f.obs_ref_vary' declares varying reference groups in row(s) 1 where 'f.obs' is not requested.",
+    fixed = TRUE,
+    class = "pknca_error_secondary_ref_without_request"
+  )
+  intervals_primary <- intervals_period
+  intervals_primary$aucinf.obs_ref_vary <- "period"
+  expect_error(
+    check.interval.specification(intervals_primary),
+    regexp = "Column 'aucinf.obs_ref_vary' declares varying reference groups for 'aucinf.obs', which is not a secondary parameter",
+    fixed = TRUE,
+    class = "pknca_error_secondary_ref_not_secondary"
+  )
+  # An unfilled (all-NA logical) column is accepted as character
+  intervals_unfilled <- intervals_f
+  intervals_unfilled$f.obs_ref_vary <- NA
+  expect_equal(
+    check.interval.specification(intervals_unfilled)$f.obs_ref_vary,
+    c(NA_character_, NA_character_)
+  )
+  # The intervals column, against the data
+  intervals_visit <- intervals_f
+  intervals_visit$f.obs_ref_vary <- c(NA, "period visit")
+  expect_error(
+    assert_intervals(intervals_visit, o_data),
+    regexp = "Column 'f.obs_ref_vary' must name group columns of the concentration data; not group columns: visit",
+    fixed = TRUE,
+    class = "pknca_error_secondary_ref_vary_invalid"
+  )
+  expect_equal(assert_intervals(intervals_f, o_data), intervals_f)
+  # The column name is reserved for the linkage
+  expect_error(
+    add.interval.col(
+      name = "f.obs_ref_vary", FUN = NA, values = c(FALSE, TRUE),
+      unit_type = "fraction", pretty_name = "x", desc = "x"
+    ),
+    class = "pknca_error_param_name_reserved"
+  )
+})
+
+test_that("a varying-column declaration is part of the linkage, not of the interval", {
+  intervals_f <-
+    interval_add_secondary(
+      intervals_period, param = "f.obs", reference = data.frame(treatment = "iv"),
+      ref_vary = "period"
+    )
+  # Not a column that says which interval a row is
+  expect_false("f.obs_ref_vary" %in% PKNCA:::interval_describe_cols(intervals_f))
+  # Rows of one interval may declare different varying columns
+  intervals_split <- intervals_f[c(1, 2, 2), ]
+  intervals_split$interval_id <- c("ref1", "oral", "oral")
+  intervals_split$f.obs_ref_vary <- c(NA, "period", "")
+  expect_equal(
+    check.interval.specification(intervals_split)$f.obs_ref_vary,
+    c(NA, "period", "")
+  )
+  # Removing the parameter removes its declaration with its pointer
+  intervals_removed <- interval_remove_param(intervals_f, "f.obs")
+  expect_equal(intervals_removed$f.obs_ref, c(NA_character_, NA_character_))
+  expect_equal(intervals_removed$f.obs_ref_vary, c(NA_character_, NA_character_))
+})
+
+test_that("removing a secondary parameter keeps a numeric pointer column numeric", {
+  intervals_numeric <-
+    data.frame(
+      treatment = c("ref", "test"), start = 0, end = Inf, interval_id = c(1, NA),
+      auclast = TRUE, totdose = TRUE, f.last = c(FALSE, TRUE), f.last_ref = c(NA, 1)
+    )
+  intervals_removed <- interval_remove_param(intervals_numeric, "f.last")
+  expect_equal(intervals_removed$f.last_ref, c(NA_real_, NA_real_))
+  # ... so the result still validates against the numeric interval_id
+  expect_equal(
+    check.interval.specification(intervals_removed)$f.last_ref,
+    c(NA_real_, NA_real_)
+  )
+})
+
+# Plasma and urine in two periods, with renal clearance requested on a plasma
+# interval, so that the requesting profiles are themselves spot samples
+d_conc_two_periods <-
+  data.frame(
+    subject = 1, period = rep(1:2, each = 4),
+    PCSPEC = rep(rep(c("plasma", "urine"), each = 2), 2),
+    time = rep(c(0, 12), 4), conc = 1,
+    vol = rep(c(NA, NA, 100, 100), 2)
+  )
+o_conc_two_periods <-
+  PKNCAconc(d_conc_two_periods, conc~time|PCSPEC+period+subject, volume = "vol")
+intervals_two_periods <-
+  data.frame(PCSPEC = "plasma", start = 0, end = 24, auclast = TRUE, clr.last = TRUE)
+
+# What the finder derives for the renal clearance of the first intervals row
+find_two_periods <- function(intervals, ref_vary) {
+  PKNCA:::find_secondary_reference(
+    intervals, row = 1, param = "clr.last",
+    info = PKNCA:::secondary_param_info("clr.last"), conc = o_conc_two_periods,
+    group_ref = NULL, ref_vary = ref_vary
+  )
+}
+
+test_that("the finder does not take the interval's own profile in another period as a reference", {
+  # With the period varying, the plasma profile of the other period differs
+  # from the requesting one in nothing else:  it is the same profile at another
+  # time, not a reference.
+  expect_equal(
+    find_two_periods(intervals_two_periods, "period"),
+    "No reference profile is available for PCSPEC=plasma, period=1, subject=1; No reference profile is available for PCSPEC=plasma, period=2, subject=1"
+  )
+  # Without the period varying, the other period's plasma profile is the nearest
+  # candidate, one column away
+  expect_equal(
+    find_two_periods(intervals_two_periods, character(0)),
+    "Add 'period' to the intervals so the reference can be expressed, or set 'clr.last_ref'"
+  )
+  # A varying column the intervals carry is pinned, so it is a difference again
+  intervals_pinned <- intervals_two_periods
+  intervals_pinned$period <- 2
+  expect_equal(find_two_periods(intervals_pinned, "period"), list(period = 1L))
+})
+
+test_that("a varying column the intervals carry is pinned by the reference interval", {
+  # Each oral interval names its period and points at the IV interval of the
+  # other period, so the declared period is pinned and changes nothing
+  intervals_pinned <-
+    data.frame(
+      treatment = c("iv", "iv", "oral", "oral"), period = c(1, 2, 2, 1),
+      start = 0, end = Inf, interval_id = c("iv1", "iv2", NA, NA),
+      aucinf.obs = TRUE, totdose = TRUE,
+      f.obs = c(FALSE, FALSE, TRUE, TRUE), f.obs_ref = c(NA, NA, "iv1", "iv2"),
+      f.obs_ref_vary = c(NA, NA, "period", "period")
+    )
+  o_data <-
+    PKNCAdata(
+      o_conc_period, o_dose_period, intervals = intervals_pinned,
+      options = list(auc.method = "linear")
+    )
+  d_res <- as.data.frame(pk.nca(o_data))
+  expect_equal(period_values(d_res, "f.obs"), f_obs_period)
+  expect_equal(
+    d_res$PPANMETH[d_res$PPTESTCD %in% "f.obs"][order(d_res$subject[d_res$PPTESTCD %in% "f.obs"])],
+    c(
+      "Reference interval: treatment=iv, period=1, 0-Inf",
+      "Reference interval: treatment=iv, period=2, 0-Inf"
+    )
+  )
+  # Pointing subject 2's oral period 1 at the IV interval of period 1 does not
+  # free the period:  subject 2 has no IV profile in period 1
+  intervals_wrong <- intervals_pinned
+  intervals_wrong$f.obs_ref <- c(NA, NA, "iv1", "iv1")
+  o_data_wrong <-
+    PKNCAdata(
+      o_conc_period, o_dose_period, intervals = intervals_wrong,
+      options = list(auc.method = "linear")
+    )
+  expect_error(
+    pk.nca(o_data_wrong),
+    regexp = "group treatment=oral, period=1, subject=2: the value 'totdose' from the reference interval ('iv1') is not available",
+    fixed = TRUE,
+    class = "pknca_error_secondary_ref_value_missing"
+  )
+})
+
+test_that("a link's own varying columns override a different data-level default", {
+  intervals_f <-
+    interval_add_secondary(
+      intervals_period, param = "f.obs", reference = data.frame(treatment = "iv"),
+      ref_vary = "period"
+    )
+  # The data-level default names the treatment, which the reference interval
+  # pins, so on its own it would not find the IV period
+  o_data <-
+    PKNCAdata(
+      o_conc_period, o_dose_period, intervals = intervals_f,
+      options = list(auc.method = "linear"), ref_vary = "treatment"
+    )
+  expect_equal(period_values(as.data.frame(pk.nca(o_data)), "f.obs"), f_obs_period)
+  intervals_default <- intervals_f
+  intervals_default$f.obs_ref_vary <- NA_character_
+  o_data_default <-
+    PKNCAdata(
+      o_conc_period, o_dose_period, intervals = intervals_default,
+      options = list(auc.method = "linear"), ref_vary = "treatment"
+    )
+  expect_error(pk.nca(o_data_default), class = "pknca_error_secondary_ref_value_missing")
+})
+
+test_that("an empty data-level ref_vary is the same as none", {
+  o_data <-
+    PKNCAdata(
+      o_conc_period, o_dose_period, intervals = intervals_period, ref_vary = character(0)
+    )
+  expect_null(o_data$ref_vary)
+  printed <- utils::capture.output(print(o_data))
+  expect_false(any(grepl(pattern = "ref_vary", x = printed, fixed = TRUE)))
+})

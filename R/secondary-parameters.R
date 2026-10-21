@@ -249,6 +249,133 @@ group_ref_for_param <- function(group_ref, param) {
   }
 }
 
+# Group columns in which a reference may differ from the requesting group ----
+#
+# A link's reference is matched on every group column of the requesting
+# instance except the ones the reference interval names and the ones declared
+# here (the period of a crossover, where the reference treatment was given in a
+# different period than the test treatment).  The declaration is the
+# `<parameter>_ref_vary` column of the intervals, one per link, holding column
+# names separated by commas or spaces; `NA` there takes the `ref_vary` given to
+# PKNCAdata(), and `""` declares that no column varies.
+
+# The intervals column declaring the varying group columns of `param`'s link
+ref_vary_col <- function(param) {
+  paste0(param, "_ref_vary")
+}
+
+# The `<parameter>_ref_vary` columns of an intervals data.frame
+interval_ref_vary_cols <- function(intervals) {
+  intersect(names(intervals), ref_vary_col(names(get.interval.cols())))
+}
+
+# The varying group columns of `param`'s link on intervals row `row`:  the
+# row's own declaration, or `default` (the PKNCAdata() `ref_vary`) when the row
+# declares nothing.
+interval_ref_vary <- function(intervals, row, param, default = NULL) {
+  col <- ref_vary_col(param)
+  value <- if (col %in% names(intervals)) intervals[[col]][row] else NA
+  if (is.na(value)) {
+    return(if (is.null(default)) character(0) else default)
+  }
+  ret <- impute_split(as.character(value))[[1]]
+  ret[nzchar(ret)]
+}
+
+# Validate varying group columns against the concentration data:  each must be
+# one of its group columns, and never the subject, since a reference is always
+# the subject's own profile (across-subject references are not supported).
+# `what` names the argument or column in the message.  No columns at all is the
+# same as NULL (nothing varies), and is returned as NULL.
+assert_ref_vary <- function(ref_vary, o_conc, what = "`ref_vary`") {
+  if (is.null(ref_vary)) {
+    return(NULL)
+  }
+  if (!checkmate::test_character(ref_vary, any.missing = FALSE, min.chars = 1, unique = TRUE)) {
+    rlang::abort(
+      sprintf("%s must be a character vector of unique group column names", what),
+      class = "pknca_error_secondary_ref_vary_invalid"
+    )
+  }
+  group_cols <- unlist(o_conc$columns$groups)
+  not_group <- setdiff(ref_vary, group_cols)
+  if (length(not_group) > 0) {
+    rlang::abort(
+      sprintf(
+        "%s must name group columns of the concentration data; not group columns: %s",
+        what, paste(not_group, collapse = ", ")
+      ),
+      class = "pknca_error_secondary_ref_vary_invalid"
+    )
+  }
+  subject_col <- o_conc$columns$subject
+  if (any(ref_vary %in% subject_col)) {
+    rlang::abort(
+      sprintf(
+        "%s may not name the subject column ('%s'):  a reference is always the subject's own profile",
+        what, subject_col
+      ),
+      class = "pknca_error_secondary_ref_vary_invalid"
+    )
+  }
+  if (length(ref_vary) == 0) NULL else ref_vary
+}
+
+# Validate every `<parameter>_ref_vary` declaration of an intervals data.frame
+# against the concentration data (called by assert_intervals(), which has the
+# data that check.interval.specification() does not).
+assert_interval_ref_vary <- function(intervals, o_conc) {
+  for (col in interval_ref_vary_cols(intervals)) {
+    for (value in unique(stats::na.omit(as.character(intervals[[col]])))) {
+      parsed <- impute_split(value)[[1]]
+      assert_ref_vary(parsed[nzchar(parsed)], o_conc, what = sprintf("Column '%s'", col))
+    }
+  }
+  invisible(intervals)
+}
+
+# Write the varying group columns of `param`'s link on `rows`.  NULL leaves the
+# rows as they are; character(0) declares that nothing varies.
+interval_set_ref_vary <- function(intervals, rows, param, ref_vary) {
+  if (is.null(ref_vary) || length(rows) == 0) {
+    return(intervals)
+  }
+  col <- ref_vary_col(param)
+  if (!(col %in% names(intervals)) ||
+      (is.logical(intervals[[col]]) && all(is.na(intervals[[col]])))) {
+    intervals[[col]] <- NA_character_
+  }
+  intervals[[col]][rows] <- impute_paste(list(ref_vary), empty_na = FALSE)
+  intervals
+}
+
+# The argument check shared by both interval_add_secondary() methods; the
+# PKNCAdata method additionally checks the names against its data.  The names
+# are written into one `<parameter>_ref_vary` cell separated by commas, so a
+# name containing a space or comma could not be read back.
+assert_ref_vary_arg <- function(ref_vary) {
+  if (is.null(ref_vary)) {
+    return(NULL)
+  }
+  if (!checkmate::test_character(ref_vary, any.missing = FALSE, min.chars = 1, unique = TRUE)) {
+    rlang::abort(
+      "`ref_vary` must be NULL or a character vector of unique group column names",
+      class = "pknca_error_secondary_ref_vary_invalid"
+    )
+  }
+  separated <- ref_vary[grepl(pattern = "[ ,]", x = ref_vary)]
+  if (length(separated) > 0) {
+    rlang::abort(
+      sprintf(
+        "`ref_vary` is stored per link as names separated by commas or spaces, so per-link declarations need group column names without spaces or commas: %s.  Give such a column to PKNCAdata(ref_vary = ) instead.",
+        paste(sprintf("'%s'", separated), collapse = ", ")
+      ),
+      class = "pknca_error_secondary_ref_vary_invalid"
+    )
+  }
+  ref_vary
+}
+
 #' Calculate the ratio of a parameter between two intervals
 #'
 #' @param test The parameter value in the current (test) interval
@@ -452,7 +579,7 @@ expand_secondary_intervals <- function(data) {
   found <-
     expand_secondary_auto(
       current_intervals, requested_secondary, conc = as_PKNCAconc(data),
-      group_ref = data$group_ref
+      group_ref = data$group_ref, ref_vary = data$ref_vary
     )
   data$intervals <- found$intervals
   data$secondary_auto <- found$secondary_auto
@@ -467,7 +594,9 @@ expand_secondary_intervals <- function(data) {
 # in-interval `pknca_error_secondary_needs_ref` abort never fires for it; the
 # ledger carries the reason to pk_nca_secondary(), which reports it as an NA
 # result (decision 5:  explicit links fail loud, automatic links degrade).
-expand_secondary_auto <- function(intervals, requested_secondary, conc, group_ref) {
+# `ref_vary` is the PKNCAdata() default for the varying group columns.
+expand_secondary_auto <- function(intervals, requested_secondary, conc, group_ref,
+                                  ref_vary = NULL) {
   links <- data.frame(param = character(0), ref_id = character(0))
   failures <- list()
   original_rows <- seq_len(nrow(intervals))
@@ -484,7 +613,8 @@ expand_secondary_auto <- function(intervals, requested_secondary, conc, group_re
       found <-
         find_secondary_reference(
           intervals, r, p, info, conc,
-          group_ref = group_ref_for_param(group_ref, p)
+          group_ref = group_ref_for_param(group_ref, p),
+          ref_vary = interval_ref_vary(intervals, r, p, default = ref_vary)
         )
       if (is.null(found)) {
         # Not applicable:  the in-interval abort tells the user to give a
@@ -633,7 +763,17 @@ interval_override_values <- function(groups, j, cols) {
 # references is a spot sample (renal clearance) and the concentration data
 # declare the collection volume that tells the two kinds of profile apart, or
 # wherever `group_ref` names the reference profiles itself.
-find_secondary_reference <- function(intervals, row, param, info, conc, group_ref) {
+#
+# The group columns in `ref_vary` (a crossover's period) are not differences:
+# they neither count towards a candidate's distance nor become overrides, and a
+# candidate differing from the interval's own profile only in them is the same
+# profile at another time rather than a reference.  Candidates that differ from
+# each other only in them describe one reference interval, and pk.nca() picks
+# the profile (or reports the ambiguity) per instance.  A varying column that
+# the intervals carry is pinned by the reference interval, as in pk.nca(), so
+# it is an ordinary difference here.
+find_secondary_reference <- function(intervals, row, param, info, conc, group_ref,
+                                     ref_vary = character(0)) {
   st_applicable <-
     !is.null(conc) &&
     !is.null(conc$columns$volume) &&
@@ -690,10 +830,19 @@ find_secondary_reference <- function(intervals, row, param, info, conc, group_re
       any(interval_match_groups(groups[own_idx, , drop = FALSE], group_ref))) {
     return("The interval's own group matches `group_ref`, so there is no distinct reference")
   }
+  compare_cols <- setdiff(group_cols, setdiff(ref_vary, names(intervals)))
   overrides <- list()
   reasons <- character(0)
   for (i in own_idx) {
     candidates <- setdiff(which(pool), i)
+    candidates <-
+      candidates[
+        vapply(
+          X = candidates,
+          FUN = function(j) length(group_differing_cols(groups, compare_cols, i, j)) > 0,
+          FUN.VALUE = TRUE
+        )
+      ]
     if (length(candidates) == 0) {
       reasons <-
         c(
@@ -708,15 +857,25 @@ find_secondary_reference <- function(intervals, row, param, info, conc, group_re
     distance <-
       vapply(
         X = candidates,
-        FUN = function(j) length(group_differing_cols(groups, group_cols, i, j)),
+        FUN = function(j) length(group_differing_cols(groups, compare_cols, i, j)),
         FUN.VALUE = 1L
       )
     nearest <- candidates[distance %in% min(distance)]
-    if (length(nearest) > 1) {
+    nearest_overrides <-
+      vapply(
+        X = nearest,
+        FUN = function(j) {
+          name_value_text(
+            groups[j, group_differing_cols(groups, compare_cols, i, j), drop = FALSE]
+          )
+        },
+        FUN.VALUE = ""
+      )
+    if (length(unique(nearest_overrides)) > 1) {
       tied_cols <-
         unique(unlist(lapply(
           X = nearest,
-          FUN = function(j) group_differing_cols(groups, group_cols, i, j)
+          FUN = function(j) group_differing_cols(groups, compare_cols, i, j)
         )))
       reasons <-
         c(
@@ -731,7 +890,7 @@ find_secondary_reference <- function(intervals, row, param, info, conc, group_re
         )
       next
     }
-    differing <- group_differing_cols(groups, group_cols, i, nearest)
+    differing <- group_differing_cols(groups, compare_cols, i, nearest[1])
     inexpressible <- setdiff(differing, names(intervals))
     if (length(inexpressible) > 0) {
       reasons <-
@@ -744,7 +903,7 @@ find_secondary_reference <- function(intervals, row, param, info, conc, group_re
         )
       next
     }
-    overrides[[length(overrides) + 1L]] <- interval_override_values(groups, nearest, differing)
+    overrides[[length(overrides) + 1L]] <- interval_override_values(groups, nearest[1], differing)
   }
   if (length(reasons) > 0) {
     return(paste(unique(reasons), collapse = "; "))
@@ -820,19 +979,17 @@ interval_link_found_reference <- function(intervals, row, param, override, sourc
   )
 }
 
-# Clear reference pointers whose parameter is no longer requested on the row.
-# interval_remove_param() calls this so that removing a secondary parameter
-# also removes its linkage instead of leaving a pointer that fails
-# check.interval.specification().
+# Clear reference pointers and varying-column declarations whose parameter is
+# no longer requested on the row.  interval_remove_param() calls this so that
+# removing a secondary parameter also removes its linkage instead of leaving a
+# pointer that fails check.interval.specification().
 clear_orphan_ref_pointers <- function(intervals) {
   params <- intersect(names(intervals), names(get.interval.cols()))
   for (current_param in params) {
-    ref_col <- paste0(current_param, "_ref")
-    if (ref_col %in% names(intervals)) {
-      orphan <-
-        !is.na(intervals[[ref_col]]) &
-        !vapply(X = intervals[[current_param]], FUN = isTRUE, FUN.VALUE = TRUE)
-      intervals[[ref_col]][orphan] <- NA_character_
+    not_requested <- !vapply(X = intervals[[current_param]], FUN = isTRUE, FUN.VALUE = TRUE)
+    for (link_col in intersect(c(paste0(current_param, "_ref"), ref_vary_col(current_param)), names(intervals))) {
+      orphan <- !is.na(intervals[[link_col]]) & not_requested
+      intervals[[link_col]][orphan] <- NA
     }
   }
   intervals
@@ -851,6 +1008,33 @@ secondary_lookup <- function(results, group_values, start, end, param, group_col
     value = if (length(idx) == 1) results$PPORRES[idx] else NA_real_,
     exclude = if (length(idx) == 1) results$exclude[idx] else NA_character_,
     n = length(idx)
+  )
+}
+
+# The values of the varying columns `free_cols` that the reference of one
+# instance can take:  the distinct `free_cols` combinations among the results of
+# the source parameters `targets` in the reference interval's times, matching
+# `ref_group` on every other group column.  The caller needs exactly one.
+secondary_ref_candidates <- function(results, ref_group, free_cols, start, end, targets,
+                                     result_group_cols) {
+  m <- results$PPTESTCD %in% targets & results$start %in% start & results$end %in% end
+  for (col in setdiff(result_group_cols, free_cols)) {
+    m <- m & (results[[col]] %in% ref_group[[col]])
+  }
+  ret <- unique(results[m, free_cols, drop = FALSE])
+  rownames(ret) <- NULL
+  ret
+}
+
+stop_secondary_ref_vary_ambiguous <- function(param, own_group, candidates) {
+  rlang::abort(
+    sprintf(
+      "The secondary parameter '%s' has more than one reference for group %s, because %s may differ from the interval's own:  %s. Name the reference more narrowly (for example, add the column that tells the candidates apart to the intervals and to `reference`) or stop that column from varying.",
+      param, name_value_text(own_group),
+      paste(sprintf("'%s'", names(candidates)), collapse = ", "),
+      paste(sprintf("(%s)", name_value_text(candidates)), collapse = ", ")
+    ),
+    class = "pknca_error_secondary_ref_vary_ambiguous"
   )
 }
 
@@ -1007,6 +1191,17 @@ pk_nca_secondary <- function(results, data_calc) {
       for (col in override_cols) {
         own_rows <- own_rows & (results[[col]] %in% current_intervals[[col]][r])
       }
+      # Group columns the reference may take from another profile than the
+      # interval's own (a crossover's period).  A column the reference interval
+      # names is pinned by it instead.
+      free_cols <-
+        setdiff(
+          intersect(
+            result_group_cols,
+            interval_ref_vary(current_intervals, r, p, default = data_calc$ref_vary)
+          ),
+          override_cols
+        )
       instances <- secondary_instances(results, own_rows, result_group_cols)
       for (k in seq_len(nrow(instances))) {
         own_group <- instances[k, , drop = FALSE]
@@ -1017,6 +1212,31 @@ pk_nca_secondary <- function(results, data_calc) {
         inputs <- list()      # formal -> value
         excludes <- character(0)
         failed_reason <- NULL
+        if (length(free_cols) > 0) {
+          candidates <-
+            secondary_ref_candidates(
+              results, ref_group, free_cols,
+              current_intervals$start[ref_row], current_intervals$end[ref_row],
+              unname(info$ref_args), result_group_cols
+            )
+          if (nrow(candidates) == 1) {
+            ref_group[free_cols] <- candidates
+          } else if (nrow(candidates) > 1) {
+            if (!is_auto) {
+              stop_secondary_ref_vary_ambiguous(p, own_group, candidates)
+            }
+            failed_reason <-
+              sprintf(
+                "More than one reference profile matches where %s may differ (%s)",
+                paste(sprintf("'%s'", free_cols), collapse = ", "),
+                paste(sprintf("(%s)", name_value_text(candidates)), collapse = ", ")
+              )
+            # No reference group was chosen, so the result names none
+            ref_group <- NULL
+          }
+          # With no candidate, the lookups below find no reference value and
+          # report it as for any other link.
+        }
         for (formal in names(info$own_args)) {
           found <-
             secondary_lookup(
@@ -1047,7 +1267,10 @@ pk_nca_secondary <- function(results, data_calc) {
           inputs[[formal]] <- found$value
           excludes <- c(excludes, found$exclude)
         }
-        for (formal in names(info$ref_args)) {
+        # An automatic link whose reference is ambiguous has no reference group
+        # to read values from.
+        ref_formals <- if (is.null(failed_reason)) names(info$ref_args) else character(0)
+        for (formal in ref_formals) {
           found <-
             secondary_lookup(
               results, ref_group,
@@ -1088,10 +1311,14 @@ pk_nca_secondary <- function(results, data_calc) {
         template$PPTESTCD <- p
         template$PPORRES <- value
         template$PPANMETH <-
-          secondary_ppanmeth(
-            override_cols, own_group, ref_group,
-            current_intervals$start[ref_row], current_intervals$end[ref_row]
-          )
+          if (is.null(ref_group)) {
+            NA_character_
+          } else {
+            secondary_ppanmeth(
+              c(override_cols, free_cols), own_group, ref_group,
+              current_intervals$start[ref_row], current_intervals$end[ref_row]
+            )
+          }
         template$exclude <- excl
         new_rows[[length(new_rows) + 1L]] <- template
       }
@@ -1142,7 +1369,8 @@ pk_nca_secondary <- function(results, data_calc) {
 # does is visible in the intervals it returns.
 
 # The columns that say *which* interval a row is:  not the parameter requests,
-# not the linkage columns, and not the imputation.
+# not the linkage columns (the pointers, their varying-column declarations, and
+# `interval_id`), and not the imputation.
 interval_describe_cols <- function(intervals) {
   all_params <- names(get.interval.cols())
   setdiff(
@@ -1150,6 +1378,7 @@ interval_describe_cols <- function(intervals) {
     c(
       setdiff(all_params, c("start", "end")),
       paste0(all_params, "_ref"),
+      ref_vary_col(all_params),
       "interval_id", "impute"
     )
   )
@@ -1484,8 +1713,10 @@ interval_secondary_validate <- function(intervals, param, reference, ref_id) {
 # from the data.  Everything the finder decides is written into the returned
 # intervals, and a test row it cannot resolve is an error:  this is an explicit
 # request for the linkage, not the engine's opportunistic pass, so there is no
-# result to degrade to NA.
-interval_secondary_auto <- function(intervals, param, target_groups, conc) {
+# result to degrade to NA.  `ref_vary` is written onto the linked rows;
+# `ref_vary_default` (the PKNCAdata() `ref_vary`) only steers the derivation.
+interval_secondary_auto <- function(intervals, param, target_groups, conc,
+                                    ref_vary = NULL, ref_vary_default = NULL) {
   info <- secondary_param_info(param)
   source_params <- unname(info$ref_args)
   test_rows <-
@@ -1504,7 +1735,16 @@ interval_secondary_auto <- function(intervals, param, target_groups, conc) {
   intervals <- interval_ensure_param_cols(intervals, c(param, source_params))
   created_text <- character(0)
   for (row in test_rows) {
-    found <- find_secondary_reference(intervals, row, param, info, conc, group_ref = NULL)
+    found <-
+      find_secondary_reference(
+        intervals, row, param, info, conc, group_ref = NULL,
+        ref_vary =
+          if (is.null(ref_vary)) {
+            interval_ref_vary(intervals, row, param, default = ref_vary_default)
+          } else {
+            ref_vary
+          }
+      )
     if (is.null(found) || is.character(found)) {
       rlang::abort(
         sprintf(
@@ -1517,7 +1757,7 @@ interval_secondary_auto <- function(intervals, param, target_groups, conc) {
     }
     linked <-
       interval_link_found_reference(intervals, row, param, found, source_params, conc)
-    intervals <- linked$intervals
+    intervals <- interval_set_ref_vary(linked$intervals, row, param, ref_vary)
     if (linked$created) {
       created_text <-
         c(
@@ -1546,9 +1786,13 @@ interval_secondary_auto <- function(intervals, param, target_groups, conc) {
 # (a PKNCAconc, given by the PKNCAdata method) lets a created spot-sample
 # reference span the test rows' collections whole, and `group_ref` (from the
 # same object) names the reference profiles when `reference` does not.
+# `ref_vary` is written onto every row the call links; `ref_vary_default` (the
+# same object's `ref_vary`) steers the derivation only.
 interval_edit_secondary <- function(intervals, param, reference, target_groups, ref_id,
-                                    conc = NULL, group_ref = NULL) {
+                                    conc = NULL, group_ref = NULL, ref_vary = NULL,
+                                    ref_vary_default = NULL) {
   assert_secondary_param(intervals, param)
+  assert_ref_vary_arg(ref_vary)
   if (is.null(reference) && !is.null(group_ref)) {
     group_ref <- group_ref_for_param(group_ref, param)
   }
@@ -1558,7 +1802,12 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
     reference <- group_ref
   }
   if (is.null(reference)) {
-    return(interval_secondary_auto(intervals, param, target_groups, conc))
+    return(
+      interval_secondary_auto(
+        intervals, param, target_groups, conc,
+        ref_vary = ref_vary, ref_vary_default = ref_vary_default
+      )
+    )
   }
   reference <- interval_secondary_validate(intervals, param, reference, ref_id)
   source_params <- unname(secondary_param_info(param)$ref_args)
@@ -1633,6 +1882,7 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
     }
     intervals[[param]][row] <- TRUE
     intervals[[ref_col]][row] <- current_id
+    intervals <- interval_set_ref_vary(intervals, row, param, ref_vary)
     used_groups <- c(used_groups, current_group)
   }
   # An impute-split reference interval spans several rows:
@@ -1679,6 +1929,15 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
 #'   already carry more than one `interval_id` are an error
 #'   (`pknca_error_secondary_ref_ambiguous_spec`) when `ref_id` is given, as it
 #'   cannot name more than one interval.
+#' @param ref_vary The group columns in which the reference may differ from
+#'   the interval calculating `param`, such as `"period"` in a crossover (see
+#'   "Group columns that may differ").  They are written into the
+#'   `<param>_ref_vary` column of the linked intervals, so the names may not
+#'   contain spaces or commas (per-link declarations need group column names
+#'   without spaces or commas; give such a column to [PKNCAdata()] instead).
+#'   The default of `NULL` writes nothing, so the `ref_vary` given to
+#'   [PKNCAdata()] applies, and `character(0)` declares that no column may
+#'   differ (overriding that default).
 #' @returns The input with the parameter requested and the linkage columns set,
 #'   after [check.interval.specification()].
 #' @details The reference interval gains whatever the linked calculation reads
@@ -1713,6 +1972,38 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
 #'   explicit `end` in `reference` overrides the extension, and the data.frame
 #'   method (which has no concentration data) copies the test interval's times
 #'   unchanged.
+#' @section Group columns that may differ:
+#'
+#'   A reference is matched on the requesting group's own values in every
+#'   group column except the ones the reference interval names:  with groups
+#'   `treatment+subject` and `reference = data.frame(treatment = "iv")`, each
+#'   subject's oral profile uses that subject's IV profile.  When the
+#'   concentration data are also grouped by a column that the reference
+#'   treatment does not share, such as the period of a crossover, the IV
+#'   profile is in a different period than the oral one and is not found
+#'   (`pknca_error_secondary_ref_value_missing`).
+#'
+#'   `ref_vary` names such columns.  The reference is then matched on every
+#'   other group column and on the reference interval's own columns, and takes
+#'   whichever value of the varying columns has the reference interval's
+#'   results.  Exactly one may:  more than one (a replicate design giving the
+#'   reference twice) is an error (`pknca_error_secondary_ref_vary_ambiguous`)
+#'   naming the requesting group and the candidates.  A candidate counts when
+#'   the reference interval has a result row for it, even an `NA` one, so a
+#'   replicate design with one administration that could not be fitted is
+#'   still ambiguous rather than silently using the other.  It is resolved by
+#'   adding a group column that tells them apart to the intervals and naming
+#'   it in `reference`.  A varying column that the reference interval names
+#'   is pinned by it.  The subject column cannot vary, as a reference is always
+#'   the subject's own profile.
+#'
+#'   The declaration is stored per link as column names separated by commas
+#'   in the `<param>_ref_vary` column of the intervals, so it can also be
+#'   written by hand.  `NA` there takes the `ref_vary` of [PKNCAdata()] (which
+#'   declares the varying columns once for every link of the data), and `""`
+#'   declares that no column varies.  The result names the reference's group
+#'   in its `<group column>_ref` columns and in `PPANMETH`
+#'   (`"Reference interval: treatment=iv, period=1, 0-Inf"`).
 #' @seealso [interval_add_param()], [pknca_ref()], [pk.nca()]
 #' @family Interval specifications
 #' @examples
@@ -1728,29 +2019,46 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
 #'   param = "clr.last",
 #'   reference = data.frame(PCSPEC = "plasma")
 #' )
+#'
+#' # A crossover where each subject received the IV reference in a different
+#' # period than the oral treatment
+#' intervals_crossover <-
+#'   data.frame(treatment = c("iv", "oral"), start = 0, end = Inf, aucinf.obs = TRUE)
+#' interval_add_secondary(
+#'   intervals_crossover,
+#'   param = "f.obs",
+#'   reference = data.frame(treatment = "iv"),
+#'   ref_vary = "period"
+#' )
 #' @export
 interval_add_secondary <- function(data, param, reference = NULL,
-                                   target_groups = NULL, ref_id = NULL, ...) {
+                                   target_groups = NULL, ref_id = NULL, ref_vary = NULL,
+                                   ...) {
   UseMethod("interval_add_secondary", data)
 }
 
 #' @export
 interval_add_secondary.data.frame <- function(data, param, reference = NULL,
-                                              target_groups = NULL, ref_id = NULL, ...) {
+                                              target_groups = NULL, ref_id = NULL,
+                                              ref_vary = NULL, ...) {
   interval_edit_secondary(
     data, param = param, reference = reference, target_groups = target_groups,
-    ref_id = ref_id
+    ref_id = ref_id, ref_vary = ref_vary
   )
 }
 
 #' @export
 interval_add_secondary.PKNCAdata <- function(data, param, reference = NULL,
-                                             target_groups = NULL, ref_id = NULL, ...) {
+                                             target_groups = NULL, ref_id = NULL,
+                                             ref_vary = NULL, ...) {
+  conc <- as_PKNCAconc(data)
+  assert_ref_vary(assert_ref_vary_arg(ref_vary), conc)
   data$intervals <-
     interval_edit_secondary(
       data$intervals, param = param, reference = reference,
       target_groups = target_groups, ref_id = ref_id,
-      conc = as_PKNCAconc(data), group_ref = data$group_ref
+      conc = conc, group_ref = data$group_ref,
+      ref_vary = ref_vary, ref_vary_default = data$ref_vary
     )
   data
 }

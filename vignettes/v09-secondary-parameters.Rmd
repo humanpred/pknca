@@ -491,6 +491,70 @@ The `ratio.*` parameters are named the same way:  `ratio.cmax`,
 `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`, `ratio.aucint.last`,
 and `ratio.aucint.all` each compare the parameter they are named for.
 
+## A crossover grouped by period
+
+A reference is matched on the requesting profile's own values in every group
+column the reference interval does not name.  A crossover is usually grouped by
+period as well, and the reference treatment was given in a different period
+than the test treatment, so the IV profile for an oral profile in period 2 is
+not in period 2.  `ref_vary` names the group columns in which the reference may
+differ:
+
+```{r crossover-period}
+d_conc_period <-
+  data.frame(
+    subject = rep(1:2, each = 10),
+    period = rep(rep(1:2, each = 5), 2),
+    treatment = rep(c("iv", "oral", "oral", "iv"), each = 5),
+    time = rep(c(0, 1, 2, 4, 8), 4),
+    conc =
+      c(32, 16, 8, 2, 0.5, 0, 8, 5, 2, 0.4,
+        0, 6, 4, 1.5, 0.3, 30, 15, 7, 2, 0.4)
+  )
+d_dose_period <-
+  data.frame(
+    subject = c(1, 1, 2, 2), period = c(1, 2, 1, 2),
+    treatment = c("iv", "oral", "oral", "iv"),
+    time = 0, dose = c(10, 20, 20, 10),
+    route = c("intravascular", "extravascular", "extravascular", "intravascular")
+  )
+intervals_period <-
+  interval_add_secondary(
+    data.frame(treatment = c("iv", "oral"), start = 0, end = Inf, aucinf.obs = TRUE),
+    param = "f.obs",
+    reference = data.frame(treatment = "iv"),
+    ref_vary = "period"
+  )
+kable(intervals_period[, c("treatment", "interval_id", "f.obs", "f.obs_ref", "f.obs_ref_vary")])
+o_data_period <-
+  PKNCAdata(
+    PKNCAconc(d_conc_period, conc~time|treatment+period+subject),
+    PKNCAdose(d_dose_period, dose~time|treatment+period+subject, route = "route"),
+    intervals = intervals_period
+  )
+d_period <- as.data.frame(pk.nca(o_data_period))
+kable(
+  d_period[
+    d_period$PPTESTCD %in% "f.obs",
+    c("subject", "period", "treatment", "PPORRES", "period_ref", "PPANMETH")
+  ]
+)
+```
+
+Each oral profile uses its own subject's IV profile, from whichever period has
+it, and `period_ref` and `PPANMETH` say which.  The subject is never a varying
+column:  a reference is always the subject's own profile.  When more than one
+profile qualifies (a replicate design giving the reference twice), the result is
+a `pknca_error_secondary_ref_vary_ambiguous` error naming the candidates; a
+group column that tells the administrations apart, named in `reference`,
+resolves it.
+
+`PKNCAdata(ref_vary = "period")` declares the varying columns once for every
+link of the data, including the links PKNCA derives with `group_ref`.  A link's
+own declaration, the `<parameter>_ref_vary` column of the intervals, takes
+precedence, and an empty one (`ref_vary = character(0)`) declares that nothing
+varies.
+
 # Exclusions cross the link
 
 An exclusion on a value that feeds a secondary parameter reaches the result.

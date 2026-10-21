@@ -26,5 +26,8 @@ or a \code{pknca_error_interval_impute_not_character} error is raised.
 An \code{interval_id} identifies one interval:  rows that share it may differ
 only in the parameters they request (and \code{impute}), not in \code{start}, \code{end},
 or the groups, or a \code{pknca_error_secondary_id_conflict} error is raised.
+The \verb{<parameter>_ref_vary} columns (see \code{\link[=interval_add_secondary]{interval_add_secondary()}}) must
+name group columns of the concentration data other than the subject, or a
+\code{pknca_error_secondary_ref_vary_invalid} error is raised.
 It will return the intervals argument unchanged, or it will raise an error.
 }

@@ -29,6 +29,13 @@
 #'   parameters, as a data.frame of group values, optionally
 #'   parameter-specific (see Details).  `NULL` (the default) derives the
 #'   reference from the data.
+#' @param ref_vary The group columns in which every secondary parameter's
+#'   reference may differ from the interval calculating it, such as `"period"`
+#'   for a crossover where the reference treatment was given in another period
+#'   (see "Group columns that may differ" in [interval_add_secondary()]).  It
+#'   applies to every link whose `<parameter>_ref_vary` column in the intervals
+#'   is `NA` (or absent), whether the link is explicit or derived from the
+#'   data.  The default of `NULL` (or `character(0)`) lets no column differ.
 #' @param grpid_cols The grouping columns that prefix the interval number in
 #'   the PPGRPID column of `as.data.frame(results, out_format = "cdisc")`, as a
 #'   named character vector of [PKNCAconc()] grouping columns (other than the
@@ -164,7 +171,7 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
                               formula.conc, formula.dose,
                               impute = NA_character_,
                               intervals, units, options=list(), group_ref = NULL,
-                              grpid_cols = NULL, grpid_numeric = NULL) {
+                              ref_vary = NULL, grpid_cols = NULL, grpid_numeric = NULL) {
   if (length(list(...))) {
     rlang::abort(
       "Unknown argument provided to PKNCAdata.  All arguments other than `data.conc` and `data.dose` must be named.",
@@ -218,6 +225,9 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   # Which profiles the automatic reference finder may use for secondary
   # parameters
   ret$group_ref <- assert_group_ref(group_ref, ret$conc)
+  # The group columns in which those references may differ from the
+  # requesting interval
+  ret$ref_vary <- assert_ref_vary(ref_vary, ret$conc)
 
   # Which grouping columns prefix the CDISC PPGRPID
   ret$grpid_cols <- assert_grpid_cols(grpid_cols, ret$conc, grpid_numeric)
@@ -535,6 +545,14 @@ print.PKNCAdata <- function(x, ...) {
       sprintf(
         "With reference profiles for secondary parameters (group_ref): %s\n",
         group_ref_text
+      )
+    )
+  }
+  if (length(x$ref_vary) > 0) {
+    cat(
+      sprintf(
+        "With secondary-parameter references that may differ in (ref_vary): %s\n",
+        paste(x$ref_vary, collapse = ", ")
       )
     )
   }
